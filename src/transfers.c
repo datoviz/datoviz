@@ -297,7 +297,7 @@ static void _flush_transfers(DvzTransfers* transfers)
 
 void dvz_upload_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
-    VkDeviceSize offset, VkDeviceSize size, void* data)
+    DvzSize offset, DvzSize size, void* data)
 {
     ASSERT(transfers != NULL);
     ASSERT(br.buffer != NULL);
@@ -331,7 +331,7 @@ void dvz_upload_buffer(
 
 void dvz_download_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
-    VkDeviceSize offset, VkDeviceSize size, void* data)
+    DvzSize offset, DvzSize size, void* data)
 {
     ASSERT(transfers != NULL);
     ASSERT(br.buffer != NULL);
@@ -368,10 +368,10 @@ void dvz_download_buffer(
 
 
 void dvz_copy_buffer(
-    DvzTransfers* transfers,                       //
-    DvzBufferRegions src, VkDeviceSize src_offset, //
-    DvzBufferRegions dst, VkDeviceSize dst_offset, //
-    VkDeviceSize size)
+    DvzTransfers* transfers,                  //
+    DvzBufferRegions src, DvzSize src_offset, //
+    DvzBufferRegions dst, DvzSize dst_offset, //
+    DvzSize size)
 {
     ASSERT(transfers != NULL);
     ASSERT(src.buffer != NULL);
@@ -410,7 +410,7 @@ static void _full_tex_shape(DvzImages* img, uvec3 shape)
 
 void dvz_upload_image(
     DvzTransfers* transfers, DvzImages* img, //
-    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
     ASSERT(transfers != NULL);
     ASSERT(img != NULL);
@@ -444,7 +444,7 @@ void dvz_upload_image(
 
 void dvz_download_image(
     DvzTransfers* transfers, DvzImages* img, //
-    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data)
+    uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
     ASSERT(transfers != NULL);
     ASSERT(img != NULL);
@@ -488,7 +488,7 @@ void dvz_copy_image(
     DvzTransfers* transfers,          //
     DvzImages* src, uvec3 src_offset, //
     DvzImages* dst, uvec3 dst_offset, //
-    uvec3 shape, VkDeviceSize size)
+    uvec3 shape, DvzSize size)
 {
     ASSERT(transfers != NULL);
     ASSERT(src != NULL);

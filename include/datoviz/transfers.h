@@ -87,8 +87,8 @@ typedef struct DvzTransferDups DvzTransferDups;
 struct DvzTransferBuffer
 {
     DvzBufferRegions br;
-    VkDeviceSize offset;
-    VkDeviceSize size;
+    DvzSize offset;
+    DvzSize size;
     void* data;
 };
 
@@ -97,7 +97,7 @@ struct DvzTransferBuffer
 struct DvzTransferBufferCopy
 {
     DvzBufferRegions src, dst;
-    VkDeviceSize src_offset, dst_offset, size;
+    DvzSize src_offset, dst_offset, size;
 };
 
 
@@ -106,7 +106,7 @@ struct DvzTransferImageCopy
 {
     DvzImages *src, *dst;
     uvec3 src_offset, dst_offset, shape;
-    VkDeviceSize size;
+    DvzSize size;
 };
 
 
@@ -116,15 +116,15 @@ struct DvzTransferBufferImage
     DvzImages* img;
     uvec3 img_offset, shape;
     DvzBufferRegions br;
-    VkDeviceSize buf_offset;
-    VkDeviceSize size;
+    DvzSize buf_offset;
+    DvzSize size;
 };
 
 
 
 struct DvzTransferDownloadDone
 {
-    VkDeviceSize size;
+    DvzSize size;
     void* data;
 };
 
@@ -141,7 +141,7 @@ struct DvzTransferDup
 {
     DvzTransferType type;
     DvzBufferRegions br;
-    VkDeviceSize offset, size;
+    DvzSize offset, size;
     bool recurrent;
 
     // For upload dup only:
@@ -149,7 +149,7 @@ struct DvzTransferDup
 
     // For copy dup only:
     DvzBufferRegions stg;
-    VkDeviceSize stg_offset;
+    DvzSize stg_offset;
 };
 
 
@@ -271,7 +271,7 @@ DVZ_EXPORT void dvz_transfers_destroy(DvzTransfers* transfers);
  */
 DVZ_EXPORT void dvz_upload_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
-    VkDeviceSize offset, VkDeviceSize size, void* data);
+    DvzSize offset, DvzSize size, void* data);
 
 
 
@@ -289,7 +289,7 @@ DVZ_EXPORT void dvz_upload_buffer(
  */
 DVZ_EXPORT void dvz_download_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
-    VkDeviceSize offset, VkDeviceSize size, void* data);
+    DvzSize offset, DvzSize size, void* data);
 
 
 
@@ -307,8 +307,8 @@ DVZ_EXPORT void dvz_download_buffer(
  * @param size the size of the data to copy
  */
 DVZ_EXPORT void dvz_copy_buffer(
-    DvzTransfers* transfers, DvzBufferRegions src, VkDeviceSize src_offset, //
-    DvzBufferRegions dst, VkDeviceSize dst_offset, VkDeviceSize size);
+    DvzTransfers* transfers, DvzBufferRegions src, DvzSize src_offset, //
+    DvzBufferRegions dst, DvzSize dst_offset, DvzSize size);
 
 
 
@@ -327,7 +327,7 @@ DVZ_EXPORT void dvz_copy_buffer(
  */
 DVZ_EXPORT void dvz_upload_image(
     DvzTransfers* transfers, DvzImages* img, //
-    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
+    uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
 
 
@@ -346,7 +346,7 @@ DVZ_EXPORT void dvz_upload_image(
  */
 DVZ_EXPORT void dvz_download_image(
     DvzTransfers* transfers, DvzImages* img, //
-    uvec3 offset, uvec3 shape, VkDeviceSize size, void* data);
+    uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
 
 
@@ -368,7 +368,7 @@ DVZ_EXPORT void dvz_copy_image(
     DvzTransfers* transfers,          //
     DvzImages* src, uvec3 src_offset, //
     DvzImages* dst, uvec3 dst_offset, //
-    uvec3 shape, VkDeviceSize size);
+    uvec3 shape, DvzSize size);
 
 
 

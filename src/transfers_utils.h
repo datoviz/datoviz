@@ -23,7 +23,7 @@
 
 // Create a mappable buffer transfer task, either UPLOAD or DOWNLOAD.
 static DvzDeqItem* _create_buffer_transfer(
-    DvzTransferType type, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data,
+    DvzTransferType type, DvzBufferRegions br, DvzSize offset, DvzSize size, void* data,
     uint32_t deq_idx)
 {
     // Upload/download to mappable buffer only (otherwise, will need a GPU-GPU copy task too).
@@ -47,8 +47,8 @@ static DvzDeqItem* _create_buffer_transfer(
 
 // Create a buffer copy task.
 static DvzDeqItem* _create_buffer_copy(
-    DvzBufferRegions src, VkDeviceSize src_offset, DvzBufferRegions dst, VkDeviceSize dst_offset,
-    VkDeviceSize size)
+    DvzBufferRegions src, DvzSize src_offset, DvzBufferRegions dst, DvzSize dst_offset,
+    DvzSize size)
 {
     ASSERT(src.buffer != NULL);
     ASSERT(dst.buffer != NULL);
@@ -68,9 +68,9 @@ static DvzDeqItem* _create_buffer_copy(
 
 // Create a buffer <-> image copy task.
 static DvzDeqItem* _create_buffer_image_copy(
-    DvzTransferType type,                                            //
-    DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size, //
-    DvzImages* img, uvec3 img_offset, uvec3 shape                    //
+    DvzTransferType type,                                  //
+    DvzBufferRegions br, DvzSize buf_offset, DvzSize size, //
+    DvzImages* img, uvec3 img_offset, uvec3 shape          //
 )
 {
     ASSERT(type == DVZ_TRANSFER_IMAGE_BUFFER || type == DVZ_TRANSFER_BUFFER_IMAGE);
@@ -124,7 +124,7 @@ static DvzDeqItem* _create_image_copy(
 
 
 // Create a download done task.
-static DvzDeqItem* _create_download_done(VkDeviceSize size, void* data)
+static DvzDeqItem* _create_download_done(DvzSize size, void* data)
 {
     ASSERT(data != NULL);
 
@@ -150,8 +150,8 @@ static DvzDeqItem* _create_upload_done(void* user_data)
 
 
 // Create a mappable buffer dup upload task.
-static DvzDeqItem* _create_dup_upload(
-    DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data, uint32_t deq_idx)
+static DvzDeqItem*
+_create_dup_upload(DvzBufferRegions br, DvzSize offset, DvzSize size, void* data, uint32_t deq_idx)
 {
     ASSERT(br.buffer != NULL);
     ASSERT(size > 0);
@@ -173,9 +173,9 @@ static DvzDeqItem* _create_dup_upload(
 // Create a dup copy task, copying data from a staging buffer to a non-mappable buffer, on a
 // region-per-region basis (multiple copies of the same data to avoid too much GPU sync).
 static DvzDeqItem* _create_dup_copy(
-    DvzBufferRegions src, VkDeviceSize src_offset, //
-    DvzBufferRegions dst, VkDeviceSize dst_offset, //
-    VkDeviceSize size, uint32_t deq_idx)
+    DvzBufferRegions src, DvzSize src_offset, //
+    DvzBufferRegions dst, DvzSize dst_offset, //
+    DvzSize size, uint32_t deq_idx)
 {
     ASSERT(src.buffer != NULL);
     ASSERT(dst.buffer != NULL);
@@ -205,10 +205,10 @@ static DvzDeqItem* _create_dup_copy(
 // main thread to ensure the upload is done. This is to give a chance to the caller to synchronize
 // access to the mappable buffer.
 static void _enqueue_buffer_upload(
-    DvzDeq* deq,                                   //
-    DvzBufferRegions br, VkDeviceSize buf_offset,  // destination buffer
-    DvzBufferRegions stg, VkDeviceSize stg_offset, // optional staging buffer
-    VkDeviceSize size, void* data, DvzDeqItem* done_item)
+    DvzDeq* deq,                              //
+    DvzBufferRegions br, DvzSize buf_offset,  // destination buffer
+    DvzBufferRegions stg, DvzSize stg_offset, // optional staging buffer
+    DvzSize size, void* data, DvzDeqItem* done_item)
 {
     ASSERT(deq != NULL);
     ASSERT(size > 0);
@@ -258,10 +258,10 @@ static void _enqueue_buffer_upload(
 
 
 static void _enqueue_buffer_download(
-    DvzDeq* deq,                                   //
-    DvzBufferRegions br, VkDeviceSize buf_offset,  //
-    DvzBufferRegions stg, VkDeviceSize stg_offset, //
-    VkDeviceSize size, void* data)
+    DvzDeq* deq,                              //
+    DvzBufferRegions br, DvzSize buf_offset,  //
+    DvzBufferRegions stg, DvzSize stg_offset, //
+    DvzSize size, void* data)
 {
     ASSERT(deq != NULL);
     ASSERT(size > 0);
@@ -306,10 +306,10 @@ static void _enqueue_buffer_download(
 
 
 static void _enqueue_buffer_copy(
-    DvzDeq* deq,                                   //
-    DvzBufferRegions src, VkDeviceSize src_offset, //
-    DvzBufferRegions dst, VkDeviceSize dst_offset, //
-    VkDeviceSize size)
+    DvzDeq* deq,                              //
+    DvzBufferRegions src, DvzSize src_offset, //
+    DvzBufferRegions dst, DvzSize dst_offset, //
+    DvzSize size)
 {
     ASSERT(deq != NULL);
     ASSERT(src.buffer != NULL);
@@ -323,7 +323,7 @@ static void _enqueue_buffer_copy(
 
 
 
-// static void _enqueue_buffer_download_done(DvzDeq* deq, VkDeviceSize size, void* data)
+// static void _enqueue_buffer_download_done(DvzDeq* deq, DvzSize size, void* data)
 // {
 //     ASSERT(deq != NULL);
 //     ASSERT(size > 0);
@@ -338,10 +338,10 @@ static void _enqueue_buffer_copy(
 /*************************************************************************************************/
 
 static void _enqueue_dup_transfer(
-    DvzDeq* deq,                                   //
-    DvzBufferRegions br, VkDeviceSize buf_offset,  // destination buffer
-    DvzBufferRegions stg, VkDeviceSize stg_offset, // optional staging buffer
-    VkDeviceSize size, void* data)
+    DvzDeq* deq,                              //
+    DvzBufferRegions br, DvzSize buf_offset,  // destination buffer
+    DvzBufferRegions stg, DvzSize stg_offset, // optional staging buffer
+    DvzSize size, void* data)
 {
     ASSERT(deq != NULL);
     ASSERT(size > 0);
@@ -390,7 +390,7 @@ static void _enqueue_dup_transfer(
 
 static void _enqueue_image_upload(
     DvzDeq* deq, DvzImages* img, uvec3 offset, uvec3 shape, //
-    DvzBufferRegions stg, VkDeviceSize stg_offset, VkDeviceSize size, void* data)
+    DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data)
 {
     ASSERT(deq != NULL);
 
@@ -427,7 +427,7 @@ static void _enqueue_image_upload(
 
 static void _enqueue_image_download(
     DvzDeq* deq, DvzImages* img, uvec3 offset, uvec3 shape, //
-    DvzBufferRegions stg, VkDeviceSize stg_offset, VkDeviceSize size, void* data)
+    DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data)
 {
     ASSERT(deq != NULL);
 
@@ -488,7 +488,7 @@ static void _enqueue_image_copy(
 static void _enqueue_image_buffer(
     DvzDeq* deq,                                   //
     DvzImages* img, uvec3 img_offset, uvec3 shape, //
-    DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
+    DvzBufferRegions br, DvzSize buf_offset, DvzSize size)
 {
     ASSERT(deq != NULL);
 
@@ -511,9 +511,9 @@ static void _enqueue_image_buffer(
 
 
 static void _enqueue_buffer_image(
-    DvzDeq* deq,                                                     //
-    DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size, //
-    DvzImages* img, uvec3 img_offset, uvec3 shape                    //
+    DvzDeq* deq,                                           //
+    DvzBufferRegions br, DvzSize buf_offset, DvzSize size, //
+    DvzImages* img, uvec3 img_offset, uvec3 shape          //
 )
 {
     ASSERT(deq != NULL);
@@ -691,8 +691,7 @@ static DvzTransferDups _dups()
 
 
 static uint32_t _dups_get_idx(
-    DvzTransferDups* dups, DvzTransferType type, DvzBufferRegions br, VkDeviceSize offset,
-    VkDeviceSize size)
+    DvzTransferDups* dups, DvzTransferType type, DvzBufferRegions br, DvzSize offset, DvzSize size)
 {
     DvzTransferDup* tr = NULL;
     for (uint32_t i = 0; i < DVZ_DUPS_MAX; i++)
@@ -713,8 +712,7 @@ static uint32_t _dups_get_idx(
 
 
 static DvzTransferDupItem* _dups_get(
-    DvzTransferDups* dups, DvzTransferType type, DvzBufferRegions br, VkDeviceSize offset,
-    VkDeviceSize size)
+    DvzTransferDups* dups, DvzTransferType type, DvzBufferRegions br, DvzSize offset, DvzSize size)
 {
     ASSERT(dups != NULL);
     uint32_t idx = _dups_get_idx(dups, type, br, offset, size);
@@ -737,7 +735,7 @@ static bool _dups_empty(DvzTransferDups* dups)
 
 static bool _dups_has(
     DvzTransferDups* dups, DvzTransferType type, //
-    DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size)
+    DvzBufferRegions br, DvzSize offset, DvzSize size)
 {
     ASSERT(dups != NULL);
     return _dups_get(dups, type, br, offset, size) != NULL;
@@ -750,8 +748,8 @@ static void _dups_append(DvzTransferDups* dups, DvzTransferDup* tr)
     ASSERT(dups != NULL);
     ASSERT(tr != NULL);
     DvzBufferRegions* br = &tr->br;
-    VkDeviceSize offset = tr->offset;
-    VkDeviceSize size = tr->size;
+    DvzSize offset = tr->offset;
+    DvzSize size = tr->size;
 
     // Avoid duplicates.
     if (_dups_has(dups, tr->type, *br, offset, size))

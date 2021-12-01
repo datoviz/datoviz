@@ -244,7 +244,7 @@ int test_transfers_image_buffer(TstSuite* suite)
     uvec3 shape_full = {8, 24, 1};
     uvec3 offset = {0, 8, 0};
     uvec3 shape = {8, 8, 1};
-    VkDeviceSize size = 256; // 8*8*4
+    DvzSize size = 256; // 8*8*4
     VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 
     // Texture data.
@@ -316,8 +316,8 @@ int test_transfers_direct_buffer(TstSuite* suite)
     for (uint32_t i = 0; i < 64; i++)
         data[i] = i;
 
-    VkDeviceSize offset = 32;
-    VkDeviceSize size = 64;
+    DvzSize offset = 32;
+    DvzSize size = 64;
 
     log_debug("start uploading data to buffer");
 
@@ -354,7 +354,7 @@ int test_transfers_direct_image(TstSuite* suite)
     uvec3 shape_full = {16, 48, 1};
     uvec3 offset = {0, 16, 0};
     uvec3 shape = {16, 16, 1};
-    VkDeviceSize size = 256 * 4;
+    DvzSize size = 256 * 4;
     VkFormat format = VK_FORMAT_R8G8B8A8_UINT;
 
     // Texture data.
@@ -396,7 +396,7 @@ int test_transfers_dups_util(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     uint32_t count = 3;
-    VkDeviceSize size = 16;
+    DvzSize size = 16;
     DvzBufferRegions br = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, count, size);
     DvzTransferDupItem* item = NULL;
 
@@ -480,7 +480,7 @@ int test_transfers_dups_upload(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     uint32_t count = 3;
-    VkDeviceSize size = 16;
+    DvzSize size = 16;
     DvzBufferRegions br = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, count, size);
 
     // Do nothing.
@@ -538,7 +538,7 @@ int test_transfers_dups_copy(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     uint32_t count = 3;
-    VkDeviceSize size = 16;
+    DvzSize size = 16;
     DvzBufferRegions br = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_VERTEX, count, size);
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
 

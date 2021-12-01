@@ -104,8 +104,7 @@ static DvzBuffer* _make_new_buffer(DvzResources* res)
 
 
 // NOT for staging
-static void
-_make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mappable, VkDeviceSize size)
+static void _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mappable, DvzSize size)
 {
     ASSERT(buffer != NULL);
     CHECK_BUFFER_TYPE
@@ -124,7 +123,7 @@ _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mappable, VkDevi
 
 
 
-static void _make_staging_buffer(DvzBuffer* buffer, VkDeviceSize size)
+static void _make_staging_buffer(DvzBuffer* buffer, DvzSize size)
 {
     ASSERT(buffer != NULL);
     dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_STAGING);
@@ -138,7 +137,7 @@ static void _make_staging_buffer(DvzBuffer* buffer, VkDeviceSize size)
 
 
 static DvzBuffer*
-_make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, VkDeviceSize size)
+_make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size)
 {
     ASSERT(res != NULL);
     ASSERT((uint32_t)type > 0);
@@ -210,7 +209,7 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
 
 // Only for testing: bypass the resources system, useful for testing other modules
 static DvzBufferRegions
-_standalone_buffer_regions(DvzGpu* gpu, DvzBufferType type, uint32_t count, VkDeviceSize size)
+_standalone_buffer_regions(DvzGpu* gpu, DvzBufferType type, uint32_t count, DvzSize size)
 {
     ASSERT(gpu != NULL);
     ASSERT((uint32_t)type > 0);
@@ -427,8 +426,8 @@ static inline bool _dat_persistent_staging(DvzDat* dat)
 
 
 
-static inline VkDeviceSize
-_total_aligned_size(DvzBuffer* buffer, uint32_t count, VkDeviceSize size, VkDeviceSize* alignment)
+static inline DvzSize
+_total_aligned_size(DvzBuffer* buffer, uint32_t count, DvzSize size, DvzSize* alignment)
 {
     // Find the buffer alignment.
     *alignment = buffer->vma.alignment;
@@ -442,7 +441,7 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, VkDeviceSize size, VkDevi
 /*  Dat allocation                                                                               */
 /*************************************************************************************************/
 
-static inline DvzDat* _alloc_staging(DvzResources* res, DvzDatAlloc* datalloc, VkDeviceSize size)
+static inline DvzDat* _alloc_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzSize size)
 {
     ASSERT(res != NULL);
     return dvz_dat(res, datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
@@ -451,15 +450,15 @@ static inline DvzDat* _alloc_staging(DvzResources* res, DvzDatAlloc* datalloc, V
 
 
 static void
-_dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, VkDeviceSize size)
+_dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, DvzSize size)
 {
     ASSERT(res != NULL);
     ASSERT(dat != NULL);
 
     DvzBuffer* buffer = NULL;
-    VkDeviceSize offset = 0; // to determine with allocator if shared buffer
-    VkDeviceSize alignment = 0;
-    VkDeviceSize tot_size = 0;
+    DvzSize offset = 0; // to determine with allocator if shared buffer
+    DvzSize alignment = 0;
+    DvzSize tot_size = 0;
 
     bool shared = !_dat_is_standalone(dat);
     bool mappable = !_dat_has_staging(dat);
@@ -537,8 +536,7 @@ static inline bool _tex_persistent_staging(DvzTex* tex)
 
 
 
-static DvzDat*
-_tex_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzTex* tex, VkDeviceSize size)
+static DvzDat* _tex_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzTex* tex, DvzSize size)
 {
     ASSERT(res != NULL);
     ASSERT(tex != NULL);

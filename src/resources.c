@@ -10,6 +10,7 @@
 #include "resources.h"
 #include "fifo.h"
 #include "resources_utils.h"
+#include "transfers.h"
 #include "vklite_utils.h"
 #include <stdlib.h>
 
@@ -51,8 +52,7 @@ DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, 
 
 
 
-DvzBuffer*
-dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, VkDeviceSize size)
+DvzBuffer* dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size)
 {
     ASSERT(res != NULL);
     DvzBuffer* buffer = _make_standalone_buffer(res, type, mappable, size);
@@ -120,7 +120,7 @@ void dvz_resources_destroy(DvzResources* res)
 /*************************************************************************************************/
 
 DvzDat*
-dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, VkDeviceSize size, int flags)
+dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize size, int flags)
 {
     ASSERT(res != NULL);
     ASSERT(datalloc != NULL);
@@ -157,7 +157,7 @@ dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, VkDeviceSi
 
 
 
-void dvz_dat_resize(DvzDat* dat, VkDeviceSize new_size)
+void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 {
     ASSERT(dat != NULL);
     ASSERT(dat->br.buffer != NULL);
@@ -218,7 +218,7 @@ DvzTex* dvz_tex(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format
 
 
 
-void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, VkDeviceSize new_size)
+void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size)
 {
     ASSERT(tex != NULL);
     ASSERT(tex->img != NULL);

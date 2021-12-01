@@ -184,7 +184,7 @@ DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
  * @param mappable the buffer size
  */
 DVZ_EXPORT DvzBuffer*
-dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, VkDeviceSize size);
+dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size);
 
 /**
  * Create a new GPU image.
@@ -255,8 +255,8 @@ DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
  * @param flags the flags
  * @returns the newly-allocated Dat
  */
-DVZ_EXPORT DvzDat* dvz_dat(
-    DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, VkDeviceSize size, int flags);
+DVZ_EXPORT DvzDat*
+dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize size, int flags);
 
 /**
  * Resize a dat.
@@ -270,7 +270,7 @@ DVZ_EXPORT DvzDat* dvz_dat(
  * @param dat the Dat
  * @param new_size the new size
  */
-DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, VkDeviceSize new_size);
+DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
 
 /**
  * Destroy a dat.
@@ -317,7 +317,7 @@ dvz_tex(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format, int fl
  * @param new_shape the new width, height, depth
  * @param new_size the number of bytes corresponding to the new image shape
  */
-DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, VkDeviceSize new_size);
+DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
 
 /**
  * Destroy a tex.
