@@ -427,6 +427,7 @@ set(sources
     "src/log.c"
     "src/fileio.c"
     "src/fifo.c"
+    "src/array.c"
     "src/host.c"
     "src/window.c"
     "src/vklite.c"
