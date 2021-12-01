@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "context.h"
 #include "host.h"
 #include "resources.h"
 #include "test.h"
@@ -63,23 +64,16 @@ int test_resources_dat_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    // Create the resources object.
-    DvzResources res = {0};
-    dvz_resources(gpu, &res);
-    res.img_count = 3;
-
-    // Create the datalloc object.
-    DvzDatAlloc datalloc = {0};
-    dvz_datalloc(gpu, &res, &datalloc);
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
 
     // Allocate a dat.
     DvzSize size = 128;
-    DvzDat* dat = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
     ASSERT(dat != NULL);
 
     dvz_dat_destroy(dat);
-    dvz_datalloc_destroy(&datalloc);
-    dvz_resources_destroy(&res);
+    dvz_context_destroy(ctx);
     return 0;
 }
 
@@ -119,14 +113,8 @@ int test_resources_transfers_dat(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    // Create the resources object.
-    DvzResources res = {0};
-    dvz_resources(gpu, &res);
-    res.img_count = 3;
-
-    // Datalloc.
-    DvzDatAlloc datalloc = {0};
-    dvz_datalloc(gpu, &res, &datalloc);
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
 
     // Allocate a dat.
     VkDeviceSize size = 128;
@@ -144,7 +132,7 @@ int test_resources_transfers_dat(TstSuite* suite)
     for (uint32_t i = 0; i < sizeof(flags_tests) / sizeof(int); i++)
     {
         // dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_OPTIONS_MAPPABLE);
-        dat = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_VERTEX, size, flags_tests[i]);
+        dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, flags_tests[i]);
         ASSERT(dat != NULL);
 
         // Upload some data.
@@ -160,5 +148,6 @@ int test_resources_transfers_dat(TstSuite* suite)
         dvz_dat_destroy(dat);
     }
 
+    dvz_context_destroy(ctx);
     return 0;
 }

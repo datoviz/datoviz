@@ -108,6 +108,8 @@ typedef struct DvzDatAlloc DvzDatAlloc;
 struct DvzDat
 {
     DvzObject obj;
+
+    DvzContext* ctx;
     DvzResources* res;
     DvzDatAlloc* datalloc;
     DvzTransfers* transfers;
@@ -250,14 +252,13 @@ DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
  * !!! important
  *     Must be called from the main thread.
  *
- * @param res the resources object
+ * @param ctx the context object
  * @param type the buffer type
  * @param size the buffer size
  * @param flags the flags
  * @returns the newly-allocated Dat
  */
-DVZ_EXPORT DvzDat*
-dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize size, int flags);
+DVZ_EXPORT DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags);
 
 /**
  * Resize a dat.

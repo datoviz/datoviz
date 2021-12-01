@@ -8,6 +8,7 @@
 
 
 #include "resources.h"
+#include "context.h"
 #include "fifo.h"
 #include "resources_utils.h"
 #include "transfers.h"
@@ -120,16 +121,19 @@ void dvz_resources_destroy(DvzResources* res)
 /*  Dats                                                                                         */
 /*************************************************************************************************/
 
-DvzDat*
-dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize size, int flags)
+DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
 {
-    ASSERT(res != NULL);
-    ASSERT(datalloc != NULL);
+    ASSERT(ctx != NULL);
     ASSERT(size > 0);
 
+    DvzResources* res = &ctx->res;
+    ASSERT(res != NULL);
+
     DvzDat* dat = (DvzDat*)dvz_container_alloc(&res->dats);
+    dat->ctx = ctx;
     dat->res = res;
-    dat->datalloc = datalloc;
+    dat->datalloc = &ctx->datalloc;
+    dat->transfers = &ctx->transfers;
     dat->flags = flags;
     log_debug("create dat with size %s", pretty_size(size));
 
@@ -149,7 +153,7 @@ dvz_dat(DvzResources* res, DvzDatAlloc* datalloc, DvzBufferType type, DvzSize si
     if (_dat_persistent_staging(dat))
     {
         log_debug("allocate persistent staging for dat with size %s", pretty_size(size));
-        dat->stg = _alloc_staging(res, datalloc, size);
+        dat->stg = _alloc_staging(ctx, size);
     }
 
     dvz_obj_created(&dat->obj);
@@ -205,7 +209,7 @@ void dvz_dat_upload(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* d
         ASSERT(!_dat_persistent_staging(dat));
         log_warn("allocate temporary staging dat, not efficient -- if this message is displayed "
                  "frequently, you should have a permanent staging dat");
-        stg = _alloc_staging(res, datalloc, size);
+        stg = _alloc_staging(dat->ctx, size);
         need_dealloc_stg = true;
     }
 
@@ -265,6 +269,9 @@ void dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void*
 {
     ASSERT(dat != NULL);
 
+    DvzContext* ctx = dat->ctx;
+    ASSERT(ctx != NULL);
+
     DvzResources* res = dat->res;
     ASSERT(res != NULL);
 
@@ -284,7 +291,7 @@ void dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void*
         // Need to allocate a temporary staging buffer.
         ASSERT(!_dat_persistent_staging(dat));
         log_debug("allocate temporary staging dat");
-        stg = _alloc_staging(res, datalloc, size);
+        stg = _alloc_staging(ctx, size);
     }
 
     // Enqueue the transfer task corresponding to the flags.

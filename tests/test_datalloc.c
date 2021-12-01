@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "context.h"
 #include "datalloc.h"
 #include "test.h"
 #include "test_datalloc.h"
@@ -29,17 +30,13 @@ int test_datalloc_1(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Create the resources object.
-    DvzResources res = {0};
-    dvz_resources(gpu, &res);
-
-    DvzDatAlloc datalloc = {0};
-    dvz_datalloc(gpu, &res, &datalloc);
+    DvzContext* ctx = dvz_context(gpu);
 
     VkDeviceSize alignment = 0;
     VkDeviceSize size = 128;
 
     // 2 allocations in the staging buffer.
-    DvzDat* dat = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
+    DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat != NULL);
     AT(dat->br.offsets[0] == 0);
     AT(dat->br.size == size);
@@ -47,7 +44,7 @@ int test_datalloc_1(TstSuite* suite)
     // Get the buffer alignment.
     alignment = dat->br.buffer->vma.alignment;
 
-    DvzDat* dat_1 = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
+    DvzDat* dat_1 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat_1 != NULL);
     AT(dat_1->br.offsets[0] == _align(size, alignment));
     AT(dat_1->br.size == size);
@@ -60,7 +57,7 @@ int test_datalloc_1(TstSuite* suite)
     AT(dat_1->br.size == new_size);
 
     // 1 allocation in the vertex buffer.
-    DvzDat* dat_2 = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    DvzDat* dat_2 = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
     ASSERT(dat_2 != NULL);
     AT(dat_2->br.offsets[0] == 0);
     AT(dat_2->br.size == size);
@@ -70,7 +67,7 @@ int test_datalloc_1(TstSuite* suite)
     dvz_dat_destroy(dat);
 
     // New allocation in the staging buffer.
-    DvzDat* dat_3 = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
+    DvzDat* dat_3 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat_3 != NULL);
     AT(dat_3->br.offsets[0] == 0);
     AT(dat_3->br.size == size);
@@ -86,10 +83,11 @@ int test_datalloc_1(TstSuite* suite)
     AT(dat_3->br.offsets[0] == 2 * alignment);
     AT(dat_3->br.size == new_size);
 
-    dvz_datalloc_stats(&datalloc);
+    dvz_datalloc_stats(&ctx->datalloc);
 
     // NOTE: resources destruction MUST occur before datalloc destruction.
-    dvz_resources_destroy(&res);
-    dvz_datalloc_destroy(&datalloc);
+    // dvz_resources_destroy(&res);
+    // dvz_datalloc_destroy(&datalloc);
+    dvz_context_destroy(ctx);
     return 0;
 }

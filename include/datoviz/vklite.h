@@ -2360,7 +2360,7 @@ DVZ_EXPORT void dvz_cmd_push(
  *
  * @param context the context
  */
-DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
+// DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
 
 
 

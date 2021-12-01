@@ -6,6 +6,7 @@
 #define DVZ_HEADER_RESOURCES_UTILS
 
 #include "alloc.h"
+#include "context.h"
 #include "datalloc.h"
 #include "resources.h"
 
@@ -441,10 +442,10 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, DvzSize size, DvzSize* al
 /*  Dat allocation                                                                               */
 /*************************************************************************************************/
 
-static inline DvzDat* _alloc_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzSize size)
+static inline DvzDat* _alloc_staging(DvzContext* ctx, DvzSize size)
 {
-    ASSERT(res != NULL);
-    return dvz_dat(res, datalloc, DVZ_BUFFER_TYPE_STAGING, size, 0);
+    ASSERT(ctx != NULL);
+    return dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
 }
 
 
@@ -536,9 +537,9 @@ static inline bool _tex_persistent_staging(DvzTex* tex)
 
 
 
-static DvzDat* _tex_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzTex* tex, DvzSize size)
+static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
 {
-    ASSERT(res != NULL);
+    ASSERT(ctx != NULL);
     ASSERT(tex != NULL);
     DvzDat* stg = tex->stg;
     if (stg != NULL)
@@ -546,7 +547,7 @@ static DvzDat* _tex_staging(DvzResources* res, DvzDatAlloc* datalloc, DvzTex* te
 
     // Need to allocate a staging buffer.
     log_debug("allocate persistent staging buffer with size %s for tex", pretty_size(size));
-    stg = _alloc_staging(res, datalloc, size);
+    stg = _alloc_staging(ctx, size);
 
     // If persistent staging, store it.
     if (_tex_persistent_staging(tex))

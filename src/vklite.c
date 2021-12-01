@@ -215,14 +215,8 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
-    // Destroy the context.
-    if (gpu->context != NULL)
-    {
-        // TODO
-        // dvz_context_destroy(gpu->context);
-        FREE(gpu->context);
-        gpu->context = NULL;
-    }
+    // The context must be destroyed separately.
+    ASSERT(gpu->context == NULL);
 
     // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);
