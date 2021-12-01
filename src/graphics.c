@@ -467,6 +467,4 @@ void dvz_graphics_builtin(
         log_error("no graphics type specified");
         break;
     }
-
-    return graphics;
 }
