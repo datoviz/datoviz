@@ -291,6 +291,17 @@ DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
 DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
 /**
+ * Download data from a Dat.
+ *
+ * @param dat the Dat
+ * @param offset the offset within the Dat
+ * @param size the size of the data to download from the Dat
+ * @param wait whether this function should wait until the download is complete or not
+ */
+DVZ_EXPORT void
+dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait);
+
+/**
  * Destroy a dat.
  *
  * !!! important

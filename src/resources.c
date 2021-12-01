@@ -261,6 +261,57 @@ void dvz_dat_upload(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* d
 
 
 
+void dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait)
+{
+    ASSERT(dat != NULL);
+
+    DvzResources* res = dat->res;
+    ASSERT(res != NULL);
+
+    DvzDatAlloc* datalloc = dat->datalloc;
+    ASSERT(datalloc != NULL);
+
+    DvzTransfers* transfers = dat->transfers;
+    ASSERT(transfers != NULL);
+
+    DvzGpu* gpu = res->gpu;
+    ASSERT(gpu != NULL);
+
+    // Do we need a staging buffer?
+    DvzDat* stg = dat->stg;
+    if (_dat_has_staging(dat) && stg == NULL)
+    {
+        // Need to allocate a temporary staging buffer.
+        ASSERT(!_dat_persistent_staging(dat));
+        log_debug("allocate temporary staging dat");
+        stg = _alloc_staging(res, datalloc, size);
+    }
+
+    // Enqueue the transfer task corresponding to the flags.
+    bool staging = stg != NULL;
+    DvzBufferRegions stg_br = staging ? stg->br : (DvzBufferRegions){0};
+
+    log_debug("download %s from dat%s", pretty_size(size), staging ? " (with staging)" : "");
+
+    // Enqueue a standard download task, with or without staging buffer.
+    _enqueue_buffer_download(&transfers->deq, dat->br, offset, stg_br, 0, size, data);
+
+    if (wait)
+    {
+
+        if (staging)
+            dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        else
+            // dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_UD, true);
+            dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+
+        // Wait until the download finished event has been raised.
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    }
+}
+
+
+
 void dvz_dat_destroy(DvzDat* dat)
 {
     ASSERT(dat != NULL);

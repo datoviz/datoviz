@@ -106,3 +106,59 @@ int test_resources_tex_1(TstSuite* suite)
     dvz_resources_destroy(&res);
     return 0;
 }
+
+
+
+/*************************************************************************************************/
+/*  Resources data transfers tests                                                               */
+/*************************************************************************************************/
+
+int test_resources_transfers_dat(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzGpu* gpu = get_gpu(suite);
+    ASSERT(gpu != NULL);
+
+    // Create the resources object.
+    DvzResources res = {0};
+    dvz_resources(gpu, &res);
+    res.img_count = 3;
+
+    // Datalloc.
+    DvzDatAlloc datalloc = {0};
+    dvz_datalloc(gpu, &res, &datalloc);
+
+    // Allocate a dat.
+    VkDeviceSize size = 128;
+    uint8_t data[3] = {1, 2, 3};
+    uint8_t data1[3] = {0};
+    DvzDat* dat = NULL;
+
+    int flags_tests[] = {
+        DVZ_DAT_OPTIONS_NONE,       //
+        DVZ_DAT_OPTIONS_STANDALONE, //
+        DVZ_DAT_OPTIONS_MAPPABLE,   //
+        DVZ_DAT_OPTIONS_DUP,
+    };
+
+    for (uint32_t i = 0; i < sizeof(flags_tests) / sizeof(int); i++)
+    {
+        // dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_OPTIONS_MAPPABLE);
+        dat = dvz_dat(&res, &datalloc, DVZ_BUFFER_TYPE_VERTEX, size, flags_tests[i]);
+        ASSERT(dat != NULL);
+
+        // Upload some data.
+        dvz_dat_upload(dat, 0, sizeof(data), data, true);
+
+        // Download back the data.
+        dvz_dat_download(dat, 0, sizeof(data1), data1, true);
+        // log_info("%d %d %d", data1[0], data1[1], data1[2]);
+        AT(data1[0] == 1);
+        AT(data1[1] == 2);
+        AT(data1[2] == 3);
+
+        dvz_dat_destroy(dat);
+    }
+
+    return 0;
+}
