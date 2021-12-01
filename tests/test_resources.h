@@ -93,7 +93,9 @@ int test_resources_tex_1(TstSuite*);
 /*  Resources data transfers tests                                                               */
 /*************************************************************************************************/
 
-int test_resources_transfers_dat(TstSuite* suite);
+int test_resources_dat_transfers(TstSuite* suite);
+
+int test_resources_dat_resize(TstSuite* suite);
 
 
 

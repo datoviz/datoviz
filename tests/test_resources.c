@@ -107,7 +107,7 @@ int test_resources_tex_1(TstSuite* suite)
 /*  Resources data transfers tests                                                               */
 /*************************************************************************************************/
 
-int test_resources_transfers_dat(TstSuite* suite)
+int test_resources_dat_transfers(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzGpu* gpu = get_gpu(suite);
@@ -115,6 +115,7 @@ int test_resources_transfers_dat(TstSuite* suite)
 
     DvzContext* ctx = dvz_context(gpu);
     ASSERT(ctx != NULL);
+    ctx->res.img_count = 3;
 
     // Allocate a dat.
     VkDeviceSize size = 128;
@@ -147,6 +148,44 @@ int test_resources_transfers_dat(TstSuite* suite)
 
         dvz_dat_destroy(dat);
     }
+
+    dvz_context_destroy(ctx);
+    return 0;
+}
+
+
+
+int test_resources_dat_resize(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzGpu* gpu = get_gpu(suite);
+    ASSERT(gpu != NULL);
+
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
+    ctx->res.img_count = 3;
+
+    // Allocate a dat.
+    VkDeviceSize size = 16;
+    uint8_t data[16] = {0};
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i;
+    uint8_t data1[32] = {0};
+
+    // Upload.
+    DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    dvz_dat_upload(dat, 0, sizeof(data), data, true);
+
+    // Resize.
+    VkDeviceSize new_size = 32;
+    dvz_dat_resize(dat, new_size);
+
+    // Download back the data.
+    dvz_dat_download(dat, 0, sizeof(data1), data1, true);
+
+    ASSERT(memcmp(data1, data, size) == 0);
+
+    dvz_dat_destroy(dat);
 
     dvz_context_destroy(ctx);
     return 0;
