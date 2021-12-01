@@ -183,7 +183,7 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 
 
 
-void dvz_dat_upload(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait)
+void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait)
 {
     ASSERT(dat != NULL);
 
@@ -264,7 +264,7 @@ void dvz_dat_upload(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* d
 
 
 
-void dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait)
+void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait)
 {
     ASSERT(dat != NULL);
 
@@ -375,8 +375,7 @@ void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size)
 
 
 
-void dvz_tex_upload(
-    DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait)
+void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait)
 {
     ASSERT(tex != NULL);
     ASSERT(tex->img != NULL);
@@ -401,8 +400,7 @@ void dvz_tex_upload(
 
 
 
-void dvz_tex_download(
-    DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait)
+void dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait)
 {
     ASSERT(tex != NULL);
     ASSERT(tex->img != NULL);

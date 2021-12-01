@@ -116,7 +116,7 @@ int test_resources_dat_transfers(TstSuite* suite)
     ctx->res.img_count = 3;
 
     // Allocate a dat.
-    VkDeviceSize size = 128;
+    DvzSize size = 128;
     uint8_t data[3] = {1, 2, 3};
     uint8_t data1[3] = {0};
     DvzDat* dat = NULL;
@@ -164,7 +164,7 @@ int test_resources_dat_resize(TstSuite* suite)
     ctx->res.img_count = 3;
 
     // Allocate a dat.
-    VkDeviceSize size = 16;
+    DvzSize size = 16;
     uint8_t data[16] = {0};
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
@@ -175,7 +175,7 @@ int test_resources_dat_resize(TstSuite* suite)
     dvz_dat_upload(dat, 0, sizeof(data), data, true);
 
     // Resize.
-    VkDeviceSize new_size = 32;
+    DvzSize new_size = 32;
     dvz_dat_resize(dat, new_size);
 
     // Download back the data.
@@ -202,7 +202,7 @@ int test_resources_tex_transfers(TstSuite* suite)
 
     uvec3 shape = {2, 4, 1};
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-    VkDeviceSize size = 4 * shape[0] * shape[1] * shape[2];
+    DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.
     uint8_t data[32] = {0};
@@ -220,7 +220,7 @@ int test_resources_tex_transfers(TstSuite* suite)
 
     // Resize.
     uvec3 new_shape = {4, 8, 1};
-    VkDeviceSize new_size = size * 4;
+    DvzSize new_size = size * 4;
     dvz_tex_resize(tex, new_shape, new_size);
 
     // Download back the data.
@@ -249,7 +249,7 @@ int test_resources_tex_resize(TstSuite* suite)
 
     uvec3 shape = {2, 4, 1};
     VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-    VkDeviceSize size = 4 * shape[0] * shape[1] * shape[2];
+    DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.
     uint8_t data[32] = {0};
@@ -267,7 +267,7 @@ int test_resources_tex_resize(TstSuite* suite)
 
     // Resize.
     uvec3 new_shape = {4, 8, 1};
-    VkDeviceSize new_size = size * 4;
+    DvzSize new_size = size * 4;
     dvz_tex_resize(tex, new_shape, new_size);
 
     // Download back the data.

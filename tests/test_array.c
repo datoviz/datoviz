@@ -335,7 +335,7 @@ int test_utils_array_3D(TstSuite* suite)
     dvz_array_data(&arr, 0, 6, 1, &value);
 
     void* data = arr.data;
-    VkDeviceSize size = arr.buffer_size;
+    DvzSize size = arr.buffer_size;
     uint8_t* item = dvz_array_item(&arr, 5);
     AT(*item == value);
 

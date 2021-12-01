@@ -32,8 +32,8 @@ int test_datalloc_1(TstSuite* suite)
     // Create the resources object.
     DvzContext* ctx = dvz_context(gpu);
 
-    VkDeviceSize alignment = 0;
-    VkDeviceSize size = 128;
+    DvzSize alignment = 0;
+    DvzSize size = 128;
 
     // 2 allocations in the staging buffer.
     DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
@@ -50,7 +50,7 @@ int test_datalloc_1(TstSuite* suite)
     AT(dat_1->br.size == size);
 
     // Resize the second buffer.
-    VkDeviceSize new_size = 196;
+    DvzSize new_size = 196;
     dvz_dat_resize(dat_1, new_size);
     // The offset should be the same, just the size should change.
     AT(dat_1->br.offsets[0] == _align(size, alignment));

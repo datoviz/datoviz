@@ -302,8 +302,7 @@ DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* 
  * @param size the size of the data to download from the Dat
  * @param wait whether this function should wait until the download is complete or not
  */
-DVZ_EXPORT void
-dvz_dat_download(DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data, bool wait);
+DVZ_EXPORT void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
 /**
  * Destroy a dat.
@@ -363,7 +362,7 @@ DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
  * @param wait whether this function should wait until the upload is complete or not
  */
 DVZ_EXPORT void
-dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait);
+dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
 
 /**
  * Download data from a Tex.
@@ -376,7 +375,7 @@ dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* 
  * @param wait whether this function should wait until the download is complete or not
  */
 DVZ_EXPORT void
-dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, VkDeviceSize size, void* data, bool wait);
+dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
 
 /**
  * Destroy a tex.

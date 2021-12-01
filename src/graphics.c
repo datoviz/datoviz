@@ -19,7 +19,7 @@
 
 static inline void _load_shader(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, //
-    VkDeviceSize size, const unsigned char* buffer)
+    DvzSize size, const unsigned char* buffer)
 {
     ASSERT(buffer != NULL);
     uint32_t* code = (uint32_t*)calloc(size, 1);
