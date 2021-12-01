@@ -16,6 +16,7 @@
 #include "test_array.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
+#include "test_graphics.h"
 #include "test_obj.h"
 #include "test_resources.h"
 #include "test_thread.h"
@@ -137,6 +138,8 @@ int dvz_run_tests(const char* match)
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
 
+
+    TEST(test_graphics_point)
 
 
     tst_suite_run(&suite, match);

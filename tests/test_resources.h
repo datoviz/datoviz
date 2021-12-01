@@ -11,10 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "../src/resources_utils.h"
+#include "test.h"
 #include "testing.h"
 #include "vklite.h"
-// #include "window.h"
-#include "../src/resources_utils.h"
 
 
 

@@ -8,13 +8,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdio.h>
-
+#include "test_resources.h"
 #include "context.h"
 #include "host.h"
-#include "resources.h"
 #include "test.h"
-#include "test_resources.h"
 #include "testing.h"
 #include "vklite.h"
 
