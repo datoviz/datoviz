@@ -464,10 +464,6 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
     bool shared = !_dat_is_standalone(dat);
     bool mappable = !_dat_has_staging(dat);
 
-    log_debug(
-        "allocate dat, buffer type %d, %s%ssize %s", //
-        type, shared ? "shared, " : "", mappable ? "mappable, " : "", pretty_size(size));
-
     // Shared buffer.
     if (shared)
     {
@@ -496,6 +492,10 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
     // Check alignment.
     if (alignment > 0)
         ASSERT(offset % alignment == 0);
+
+    log_debug(
+        "allocate dat, buffer type %d, offset %d, %s%ssize %s", //
+        type, offset, shared ? "shared, " : "", mappable ? "mappable, " : "", pretty_size(size));
 
     // Set the buffer region.
     dat->br = dvz_buffer_regions(buffer, count, offset, size, alignment);
