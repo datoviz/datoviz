@@ -13,6 +13,7 @@
 #include "_thread.h"
 #include "test.h"
 #include "test_alloc.h"
+#include "test_array.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_obj.h"
@@ -53,6 +54,20 @@ int dvz_run_tests(const char* match)
     TEST(test_utils_fifo_first)
     TEST(test_utils_deq_1)
     TEST(test_utils_deq_2)
+
+    // Testing array.
+    TEST(test_utils_array_1)
+    TEST(test_utils_array_2)
+    TEST(test_utils_array_3)
+    TEST(test_utils_array_4)
+    TEST(test_utils_array_5)
+    TEST(test_utils_array_6)
+    TEST(test_utils_array_7)
+    TEST(test_utils_array_cast)
+    TEST(test_utils_array_mvp)
+    TEST(test_utils_array_3D)
+
+
 
     // Testing alloc.
     TEST(test_utils_alloc_1)
