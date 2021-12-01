@@ -98,6 +98,7 @@ typedef struct DvzResources DvzResources;
 
 // Forward declarations.
 typedef struct DvzDatAlloc DvzDatAlloc;
+typedef struct DvzTransfers DvzTransfers;
 
 
 
