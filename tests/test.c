@@ -73,6 +73,7 @@ int dvz_run_tests(const char* match)
     // Testing alloc.
     TEST(test_utils_alloc_1)
     TEST(test_utils_alloc_2)
+    TEST(test_utils_alloc_3)
 
     // Testing window.
     TEST(test_window_1)

@@ -102,3 +102,30 @@ int test_utils_alloc_2(TstSuite* suite)
     dvz_alloc_destroy(alloc);
     return 0;
 }
+
+
+
+int test_utils_alloc_3(TstSuite* suite)
+{
+    DvzSize size = 128;
+    DvzSize alignment = 16;
+    DvzSize offset = 0;
+    DvzSize resized = 0;
+    ASSERT(size % alignment == 0);
+
+    DvzAlloc* alloc = dvz_alloc(2 * size, alignment);
+
+    offset = dvz_alloc_new(alloc, size, &resized);
+    AT(offset == 0);
+
+    offset = dvz_alloc_new(alloc, size, &resized);
+    AT(offset == size);
+
+    dvz_alloc_free(alloc, offset);
+
+    offset = dvz_alloc_new(alloc, 2 * size, &resized);
+    AT(offset == size);
+
+    dvz_alloc_destroy(alloc);
+    return 0;
+}

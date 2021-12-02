@@ -171,7 +171,7 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
         return;
     }
 
-    log_debug("resize dat to size %s", pretty_size(new_size));
+    log_debug("resize dat with offset %d to size %s", dat->br.offsets[0], pretty_size(new_size));
     _dat_dealloc(dat);
 
     // Resize the persistent staging dat if there is one.

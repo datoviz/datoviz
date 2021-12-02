@@ -64,6 +64,11 @@ typedef uint64_t DvzSize;
 
 static inline char* pretty_size(DvzSize size)
 {
+    if (size <= 8192)
+    {
+        snprintf(_PRETTY_SIZE, 64, "%ld bytes", size);
+        return _PRETTY_SIZE;
+    }
     float s = (float)size;
     const char* u;
     if (size >= GB)
@@ -85,7 +90,7 @@ static inline char* pretty_size(DvzSize size)
     {
         u = "bytes";
     }
-    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
+    snprintf(_PRETTY_SIZE, 64, "%.3f %s", s, u);
     return _PRETTY_SIZE;
 }
 

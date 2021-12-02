@@ -38,6 +38,7 @@ int test_datalloc_1(TstSuite* suite)
     // 2 allocations in the staging buffer.
     DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat != NULL);
+    log_trace("[128 | ---");
     AT(dat->br.offsets[0] == 0);
     AT(dat->br.size == size);
 
@@ -46,12 +47,14 @@ int test_datalloc_1(TstSuite* suite)
 
     DvzDat* dat_1 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat_1 != NULL);
+    log_trace("[128 | 128 | ---");
     AT(dat_1->br.offsets[0] == _align(size, alignment));
     AT(dat_1->br.size == size);
 
     // Resize the second buffer.
-    DvzSize new_size = 196;
+    DvzSize new_size = 192;
     dvz_dat_resize(dat_1, new_size);
+    log_trace("[128 | 192 | ---");
     // The offset should be the same, just the size should change.
     AT(dat_1->br.offsets[0] == _align(size, alignment));
     AT(dat_1->br.size == new_size);
@@ -64,23 +67,27 @@ int test_datalloc_1(TstSuite* suite)
 
 
     // Delete the first staging allocation.
+    log_trace("[--- | 192 | ---");
     dvz_dat_destroy(dat);
 
     // New allocation in the staging buffer.
     DvzDat* dat_3 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
     ASSERT(dat_3 != NULL);
+    log_trace("[128 | 192 | ---");
     AT(dat_3->br.offsets[0] == 0);
     AT(dat_3->br.size == size);
 
     // Resize the lastly-created buffer, we should be in the first position.
-    dvz_dat_resize(dat_3, new_size);
+    dvz_dat_resize(dat_3, size / 2);
+    log_trace("[64 | 192 | ---");
     AT(dat_3->br.offsets[0] == 0);
-    AT(dat_3->br.size == new_size);
+    AT(dat_3->br.size == size / 2);
 
     // Resize the lastly-created buffer, we should now get a new position.
     new_size = 1024;
     dvz_dat_resize(dat_3, new_size);
-    AT(dat_3->br.offsets[0] == 2 * alignment);
+    log_trace("[--- | 192 | 1024 | ---");
+    AT(dat_3->br.offsets[0] >= 128 + 192);
     AT(dat_3->br.size == new_size);
 
     dvz_datalloc_stats(&ctx->datalloc);

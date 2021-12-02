@@ -23,6 +23,8 @@ int test_utils_alloc_1(TstSuite*);
 
 int test_utils_alloc_2(TstSuite*);
 
+int test_utils_alloc_3(TstSuite*);
+
 
 
 #endif

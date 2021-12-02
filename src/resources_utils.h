@@ -506,7 +506,7 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
 static void _dat_dealloc(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    log_debug("deallocate dat");
+    log_debug("deallocate dat, offset %d, size %s", dat->br.offsets[0], pretty_size(dat->br.size));
 
     bool shared = !_dat_is_standalone(dat);
     bool mappable = !_dat_has_staging(dat);

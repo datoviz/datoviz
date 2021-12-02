@@ -68,6 +68,8 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
             }
             // In all cases, remove the existing free slot.
             alloc->free.erase(o);
+
+            log_trace("alloc new %d, found offset %d", req_size, o);
             return o;
         }
     }
@@ -101,6 +103,7 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
         log_trace("will need to resize alloc buffer to %s", pretty_size(alloc->buf_size));
     }
 
+    log_trace("alloc new %d, found offset %d", req_size, out);
     return out;
 }
 
@@ -150,7 +153,7 @@ void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset)
 
     if (alloc->occupied.count(offset) == 0)
     {
-        log_debug("alloc free at offset %u failed because that slot is not occupied", offset);
+        log_debug("cannot free unoccupied slot at offset %u", offset);
         return;
     }
 
@@ -159,9 +162,23 @@ void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset)
     ASSERT(alloc->free.count(offset) == 0);
     DvzSize size = alloc->occupied[offset];
     ASSERT(size > 0);
-    // Remove the slot and put it in the free map.
-    alloc->occupied.erase(offset);
-    alloc->free[offset] = size;
+
+    // If the slot is the last one, just remove it completely and decrease the alloc size.
+    // note: get largest key in the map: https://stackoverflow.com/a/1660220/1595060
+    if (offset == alloc->occupied.rbegin()->first)
+    {
+        log_trace("freeing last occupied slot");
+        alloc->occupied.erase(offset);
+        ASSERT(alloc->alloc_size >= size);
+        alloc->alloc_size -= size;
+    }
+    // Otherwise, remove the slot and put it in the free map.
+    else
+    {
+        log_trace("freeing an occupied slot");
+        alloc->occupied.erase(offset);
+        alloc->free[offset] = size;
+    }
 }
 
 
