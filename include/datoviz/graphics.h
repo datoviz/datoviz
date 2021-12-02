@@ -463,10 +463,6 @@ DVZ_EXPORT void dvz_graphics_builtin(
 
 
 
-// DVZ_EXPORT void aaa(void);
-
-
-
 EXTERN_C_OFF
 
 #endif

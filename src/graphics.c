@@ -9,6 +9,7 @@
 
 #include "graphics.h"
 #include "array.h"
+#include "fileio.h"
 #include "vklite.h"
 
 

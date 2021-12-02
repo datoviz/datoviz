@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include "_thread.h"
+#include "fileio.h"
 #include "test.h"
 #include "test_alloc.h"
 #include "test_array.h"
