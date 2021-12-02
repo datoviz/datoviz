@@ -21,7 +21,9 @@ static inline void _load_shader(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, //
     DvzSize size, const unsigned char* buffer)
 {
+    ASSERT(graphics != NULL);
     ASSERT(buffer != NULL);
+    ASSERT(size > 0);
     uint32_t* code = (uint32_t*)calloc(size, 1);
     memcpy(code, buffer, size);
     ASSERT(size % 4 == 0);
@@ -100,10 +102,13 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
 static void
 _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
+    ASSERT(renderpass != NULL);
+    ASSERT(graphics != NULL);
+
     SHADER(VERTEX, "graphics_basic_vert")
     SHADER(FRAGMENT, "graphics_basic_frag")
 
-    dvz_graphics_renderpass(graphics, &renderpass, 0);
+    dvz_graphics_renderpass(graphics, renderpass, 0);
     dvz_graphics_topology(graphics, topology);
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 

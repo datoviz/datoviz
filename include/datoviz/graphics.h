@@ -13,6 +13,8 @@
 
 #include "_macros.h"
 #include "array.h"
+// #include "fileio.h"
+#include "vklite.h"
 
 
 
@@ -31,6 +33,19 @@
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
+
+// Viewport type.
+// NOTE: must correspond to values in common.glsl
+typedef enum
+{
+    DVZ_VIEWPORT_FULL,
+    DVZ_VIEWPORT_INNER,
+    DVZ_VIEWPORT_OUTER,
+    DVZ_VIEWPORT_OUTER_BOTTOM,
+    DVZ_VIEWPORT_OUTER_LEFT,
+} DvzViewportClip;
+
+
 
 // Graphics flags.
 typedef enum
@@ -140,6 +155,8 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzVertex DvzVertex;
+typedef struct DvzMVP DvzMVP;
+typedef struct DvzViewport DvzViewport;
 
 typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
 
@@ -182,6 +199,42 @@ struct DvzVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
+};
+
+
+
+struct DvzMVP
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
+};
+
+
+
+// NOTE: must correspond to the shader structure in common.glsl
+struct DvzViewport
+{
+    VkViewport viewport; // Vulkan viewport
+    vec4 margins;
+
+    // Position and size of the viewport in screen coordinates.
+    uvec2 offset_screen;
+    uvec2 size_screen;
+
+    // Position and size of the viewport in framebuffer coordinates.
+    uvec2 offset_framebuffer;
+    uvec2 size_framebuffer;
+
+    // Options
+    // Viewport clipping.
+    DvzViewportClip clip; // used by the GPU for viewport clipping
+
+    // Used to discard transform on one axis
+    int32_t interact_axis;
+
+    // TODO: aspect ratio
 };
 
 
@@ -407,6 +460,10 @@ EXTERN_C_ON
  */
 DVZ_EXPORT void dvz_graphics_builtin(
     DvzRenderpass* renderpass, DvzGraphics* graphics, DvzGraphicsType type, int flags);
+
+
+
+// DVZ_EXPORT void aaa(void);
 
 
 
