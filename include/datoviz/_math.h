@@ -66,7 +66,7 @@ static inline char* pretty_size(DvzSize size)
 {
     if (size <= 8192)
     {
-        snprintf(_PRETTY_SIZE, 64, "%ld bytes", size);
+        snprintf(_PRETTY_SIZE, 64, "%llu bytes", size);
         return _PRETTY_SIZE;
     }
     float s = (float)size;
