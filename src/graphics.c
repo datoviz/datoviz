@@ -47,7 +47,9 @@ static inline void _load_shader(
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
 
-#define CREATE dvz_graphics_create(graphics);
+// NOTE: the graphics should be created manually instead
+#define CREATE
+// dvz_graphics_create(graphics);
 
 #define ATTR_BEGIN(t)                                                                             \
     dvz_graphics_vertex_binding(graphics, 0, sizeof(t));                                          \

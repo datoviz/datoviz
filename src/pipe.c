@@ -47,8 +47,6 @@ DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
     DvzGraphics* graphics = &pipe->u.graphics;
     *graphics = dvz_graphics(pipe->gpu);
 
-    pipe->bindings = dvz_bindings(&graphics->slots, count);
-
     return graphics;
 }
 
@@ -62,8 +60,6 @@ DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 
     DvzCompute* compute = &pipe->u.compute;
     *compute = dvz_compute(pipe->gpu, shader_path);
-
-    pipe->bindings = dvz_bindings(&compute->slots, 1);
 
     return compute;
 }
@@ -86,11 +82,32 @@ void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
 
 
 
+static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
+{
+    ASSERT(pipe != NULL);
+
+    if (pipe->bindings.obj.status != DVZ_OBJECT_STATUS_NONE)
+        return;
+
+    ASSERT(count > 0);
+
+    if (pipe->type == DVZ_PIPE_GRAPHICS)
+        pipe->bindings = dvz_bindings(&pipe->u.graphics.slots, count);
+    else if (pipe->type == DVZ_PIPE_COMPUTE)
+        pipe->bindings = dvz_bindings(&pipe->u.compute.slots, count);
+    else
+        log_error("unknown pipe type %d", pipe->type);
+}
+
 void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 {
     ASSERT(pipe != NULL);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
     pipe->dats[idx] = dat;
+
+    // Create the bindings if needed.
+    _ensure_bindings_created(pipe, dat->br.count);
+
     dvz_bindings_buffer(&pipe->bindings, idx, dat->br);
 }
 
@@ -102,6 +119,10 @@ void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
     pipe->texs[idx] = tex;
     pipe->samplers[idx] = sampler;
+
+    // Create the bindings if needed.
+    _ensure_bindings_created(pipe, tex->img->count);
+
     dvz_bindings_texture(&pipe->bindings, idx, tex->img, sampler);
 }
 
@@ -111,6 +132,9 @@ void dvz_pipe_create(DvzPipe* pipe)
 {
     ASSERT(pipe != NULL);
     log_trace("creating pipe");
+
+    // Create the bindings if needed.
+    _ensure_bindings_created(pipe, 1);
 
     if (pipe->type == DVZ_PIPE_GRAPHICS)
         dvz_graphics_create(&pipe->u.graphics);
