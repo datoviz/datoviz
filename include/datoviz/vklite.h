@@ -153,6 +153,18 @@ typedef enum
 
 
 
+// Drawing flags for graphics.
+typedef enum
+{
+    DVZ_DRAWING_NONE = 0x00,
+    DVZ_DRAWING_FLAT = 0x01,
+    DVZ_DRAWING_INDEXED = 0x02,
+    DVZ_DRAWING_DIRECT = 0x04,
+    DVZ_DRAWING_INDIRECT = 0x08,
+} DvzDrawingFlags;
+
+
+
 // Blend type.
 typedef enum
 {
@@ -469,6 +481,7 @@ struct DvzGraphics
     VkPolygonMode polygon_mode;
     VkCullModeFlags cull_mode;
     VkFrontFace front_face;
+    int drawing;
 
     VkPipeline pipeline;
     DvzSlots slots;
@@ -482,8 +495,6 @@ struct DvzGraphics
     uint32_t shader_count;
     VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS];
     VkShaderModule shader_modules[DVZ_MAX_SHADERS_PER_GRAPHICS];
-
-    // DvzGraphicsCallback callback;
 };
 
 
@@ -1531,6 +1542,14 @@ DVZ_EXPORT DvzGraphics dvz_graphics(DvzGpu* gpu);
  */
 DVZ_EXPORT void
 dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass);
+
+/**
+ * Set the graphics drawing mode.
+ *
+ * @param graphics the graphics pipeline
+ * @param drawing the drawing flags: direct/indirect, flat/indexed
+ */
+DVZ_EXPORT void dvz_graphics_drawing(DvzGraphics* graphics, int drawing);
 
 /**
  * Set the graphics pipeline primitive topology

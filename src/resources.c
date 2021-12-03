@@ -67,11 +67,11 @@ DvzSampler* dvz_resources_sampler(DvzResources* res, VkFilter filter, VkSamplerA
     ASSERT(res != NULL);
     DvzSampler* sampler = (DvzSampler*)dvz_container_alloc(&res->samplers);
     *sampler = dvz_sampler(res->gpu);
-    dvz_sampler_min_filter(sampler, VK_FILTER_NEAREST);
-    dvz_sampler_mag_filter(sampler, VK_FILTER_NEAREST);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    dvz_sampler_min_filter(sampler, filter);
+    dvz_sampler_mag_filter(sampler, filter);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, mode);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, mode);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, mode);
     dvz_sampler_create(sampler);
     return sampler;
 }

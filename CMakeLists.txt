@@ -22,9 +22,9 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
 
-option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
+option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" OFF)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
@@ -445,6 +445,7 @@ set(sources
     "src/transfers.c"
     "src/context.c"
     "src/board.c"
+    "src/pipe.c"
     "src/graphics.c"
     "src/graphics_data.c"
 
@@ -501,6 +502,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_datalloc.c"
         "tests/test_transfers.c"
         "tests/test_board.c"
+        "tests/test_pipe.c"
         "tests/test_graphics.c"
         "tests/test.c"
     )

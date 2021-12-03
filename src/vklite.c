@@ -2323,6 +2323,15 @@ void dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, u
 
 
 
+void dvz_graphics_drawing(DvzGraphics* graphics, int drawing)
+{
+
+    ASSERT(graphics != NULL);
+    graphics->drawing = drawing;
+}
+
+
+
 void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
     ASSERT(graphics != NULL);

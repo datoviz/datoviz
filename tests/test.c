@@ -20,6 +20,7 @@
 #include "test_fifo.h"
 #include "test_graphics.h"
 #include "test_obj.h"
+#include "test_pipe.h"
 #include "test_resources.h"
 #include "test_thread.h"
 #include "test_transfers.h"
@@ -140,6 +141,9 @@ int dvz_run_tests(const char* match)
 
     // Testing board.
     TEST(test_board_1)
+
+    // Testing pipe.
+    TEST(test_pipe_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)

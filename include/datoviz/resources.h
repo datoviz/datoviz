@@ -181,6 +181,8 @@ EXTERN_C_ON
  */
 DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
 
+
+
 /**
  * Create a new GPU buffer.
  *
@@ -191,6 +193,8 @@ DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
  */
 DVZ_EXPORT DvzBuffer*
 dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size);
+
+
 
 /**
  * Create a new GPU image.
@@ -203,6 +207,8 @@ dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSi
 DVZ_EXPORT DvzImages*
 dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format);
 
+
+
 /**
  * Create a new GPU sampler, to be used along with an image to create a texture that can be bound
  * to a graphics pipeline.
@@ -214,6 +220,8 @@ dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat fo
 DVZ_EXPORT DvzSampler*
 dvz_resources_sampler(DvzResources* res, VkFilter filter, VkSamplerAddressMode mode);
 
+
+
 /**
  * Create a new compute pipeloine.
  *
@@ -221,6 +229,8 @@ dvz_resources_sampler(DvzResources* res, VkFilter filter, VkSamplerAddressMode m
  * @param shader_path the path to the compiled .spv compute shader
  */
 DVZ_EXPORT DvzCompute* dvz_resources_compute(DvzResources* res, const char* shader_path);
+
+
 
 /**
  * Destroy a resources object.
@@ -263,6 +273,8 @@ DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
  */
 DVZ_EXPORT DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags);
 
+
+
 /**
  * Resize a dat.
  *
@@ -276,6 +288,8 @@ DVZ_EXPORT DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, in
  * @param new_size the new size
  */
 DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
+
+
 
 /**
  * Upload data to a Dat.
@@ -294,6 +308,8 @@ DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
  */
 DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
+
+
 /**
  * Download data from a Dat.
  *
@@ -303,6 +319,8 @@ DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* 
  * @param wait whether this function should wait until the download is complete or not
  */
 DVZ_EXPORT void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
+
+
 
 /**
  * Destroy a dat.
@@ -339,6 +357,8 @@ DVZ_EXPORT void dvz_dat_destroy(DvzDat* dat);
 DVZ_EXPORT DvzTex*
 dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flags);
 
+
+
 /**
  * Resize a Tex.
  *
@@ -350,6 +370,8 @@ dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flag
  * @param new_size the number of bytes corresponding to the new image shape
  */
 DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
+
+
 
 /**
  * Upload data to a Tex.
@@ -364,6 +386,8 @@ DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
 DVZ_EXPORT void
 dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
 
+
+
 /**
  * Download data from a Tex.
  *
@@ -376,6 +400,8 @@ dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data,
  */
 DVZ_EXPORT void
 dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
+
+
 
 /**
  * Destroy a tex.
