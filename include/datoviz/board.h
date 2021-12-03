@@ -66,12 +66,24 @@ DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height);
 DVZ_EXPORT void dvz_board_format(DvzBoard* board, VkFormat format);
 
 
+
+/**
+ * Set the board clear color.
+ *
+ * @param board the board
+ * @param color the color as an array of 4 bytes
+ */
+DVZ_EXPORT void dvz_board_clear_color(DvzBoard* board, cvec4 color);
+
+
+
 /**
  * Create the board after is has been set up.
  *
  * @param board the board
  */
 DVZ_EXPORT void dvz_board_create(DvzBoard* board);
+
 
 
 /**

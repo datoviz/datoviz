@@ -30,6 +30,8 @@ MUTE_OFF
 #endif
 #define M_2PI 6.28318530717958647692
 
+#define M_INV_255 0.00392156862745098
+
 #define DVZ_ZERO_OFFSET                                                                           \
     (uvec3) { 0, 0, 0 }
 
