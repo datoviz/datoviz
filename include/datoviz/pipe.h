@@ -48,8 +48,8 @@ typedef struct DvzTex DvzTex;
 
 union DvzPipeUnion
 {
-    DvzGraphics* graphics;
-    DvzCompute* compute;
+    DvzGraphics graphics;
+    DvzCompute compute;
 };
 
 
@@ -106,7 +106,7 @@ DVZ_EXPORT DvzPipe dvz_pipe(DvzGpu* gpu);
  * @param graphics the graphics
  * @param count the number of descriptor sets (= number of swapchain images)
  */
-DVZ_EXPORT void dvz_pipe_graphics(DvzPipe* pipe, DvzGraphics* graphics, uint32_t count);
+DVZ_EXPORT DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t dset_count);
 
 
 
@@ -116,7 +116,7 @@ DVZ_EXPORT void dvz_pipe_graphics(DvzPipe* pipe, DvzGraphics* graphics, uint32_t
  * @param pipe the pipe
  * @param compute the compute
  */
-DVZ_EXPORT void dvz_pipe_compute(DvzPipe* pipe, DvzCompute* compute);
+DVZ_EXPORT DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path);
 
 
 
@@ -169,6 +169,7 @@ DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSample
  * @param pipe the pipe
  */
 DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
+
 
 
 /**

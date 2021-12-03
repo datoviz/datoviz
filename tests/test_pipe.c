@@ -37,20 +37,29 @@ int test_pipe_1(TstSuite* suite)
     DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
     dvz_board_create(&board);
 
-    // Create the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, &board.renderpass, "");
-    // Create the graphics pipeline.
-    dvz_graphics_create(&graphics);
-
     // Vertex buffer.
     VkDeviceSize size = 3 * sizeof(TestVertex);
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
     TestVertex data[] = TRIANGLE_VERTICES;
     dvz_dat_upload(dat_vertex, 0, size, data, true);
 
-    // Create the pipe.
+    // Create the graphics pipe.
     DvzPipe pipe = dvz_pipe(gpu);
-    dvz_pipe_graphics(&pipe, &graphics, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    dvz_graphics_renderpass(graphics, &board.renderpass, 0);
+    dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+    dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
+    dvz_graphics_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    dvz_graphics_vertex_binding(graphics, 0, sizeof(TestVertex));
+    dvz_graphics_vertex_attr(
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
+    dvz_graphics_vertex_attr(
+        graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
     dvz_pipe_vertex(&pipe, dat_vertex);
     dvz_pipe_create(&pipe);
 
@@ -74,9 +83,9 @@ int test_pipe_1(TstSuite* suite)
     dvz_board_free(&board);
 
     // Destruction.
-    dvz_graphics_destroy(&graphics);
-    dvz_dat_destroy(dat_vertex);
+    // dvz_graphics_destroy(graphics);
     dvz_pipe_destroy(&pipe);
+    dvz_dat_destroy(dat_vertex);
 
     dvz_board_destroy(&board);
     dvz_context_destroy(ctx);

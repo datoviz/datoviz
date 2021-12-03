@@ -38,26 +38,34 @@ DvzPipe dvz_pipe(DvzGpu* gpu)
 
 
 
-void dvz_pipe_graphics(DvzPipe* pipe, DvzGraphics* graphics, uint32_t count)
+DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
 {
     ASSERT(pipe != NULL);
-    ASSERT(graphics != NULL);
+    ASSERT(count > 0);
 
     pipe->type = DVZ_PIPE_GRAPHICS;
-    pipe->u.graphics = graphics;
+    DvzGraphics* graphics = &pipe->u.graphics;
+    *graphics = dvz_graphics(pipe->gpu);
 
     pipe->bindings = dvz_bindings(&graphics->slots, count);
+
+    return graphics;
 }
 
 
 
-void dvz_pipe_compute(DvzPipe* pipe, DvzCompute* compute)
+DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 {
     ASSERT(pipe != NULL);
-    ASSERT(compute != NULL);
 
     pipe->type = DVZ_PIPE_COMPUTE;
-    pipe->u.compute = compute;
+
+    DvzCompute* compute = &pipe->u.compute;
+    *compute = dvz_compute(pipe->gpu, shader_path);
+
+    pipe->bindings = dvz_bindings(&compute->slots, 1);
+
+    return compute;
 }
 
 
@@ -104,6 +112,11 @@ void dvz_pipe_create(DvzPipe* pipe)
     ASSERT(pipe != NULL);
     log_trace("creating pipe");
 
+    if (pipe->type == DVZ_PIPE_GRAPHICS)
+        dvz_graphics_create(&pipe->u.graphics);
+    else if (pipe->type == DVZ_PIPE_COMPUTE)
+        dvz_compute_create(&pipe->u.compute);
+
     if (dvz_obj_is_created(&pipe->bindings.obj))
         dvz_bindings_update(&pipe->bindings);
 
@@ -115,6 +128,11 @@ void dvz_pipe_create(DvzPipe* pipe)
 void dvz_pipe_destroy(DvzPipe* pipe)
 {
     ASSERT(pipe != NULL);
+
+    if (pipe->type == DVZ_PIPE_GRAPHICS)
+        dvz_graphics_destroy(&pipe->u.graphics);
+    else if (pipe->type == DVZ_PIPE_COMPUTE)
+        dvz_compute_destroy(&pipe->u.compute);
 
     if (dvz_obj_is_created(&pipe->bindings.obj))
         dvz_bindings_destroy(&pipe->bindings);
@@ -135,7 +153,7 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
     ASSERT(cmds != NULL);
 
     ASSERT(pipe->type == DVZ_PIPE_GRAPHICS);
-    DvzGraphics* graphics = pipe->u.graphics;
+    DvzGraphics* graphics = &pipe->u.graphics;
     ASSERT(graphics != NULL);
 
     // TODO: dat vertex byte offset?
@@ -201,7 +219,7 @@ void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size)
     ASSERT(cmds != NULL);
 
     ASSERT(pipe->type == DVZ_PIPE_COMPUTE);
-    DvzCompute* compute = pipe->u.compute;
+    DvzCompute* compute = &pipe->u.compute;
     ASSERT(compute != NULL);
 
     dvz_cmd_compute(cmds, idx, compute, size);
