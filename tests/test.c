@@ -15,6 +15,7 @@
 #include "test.h"
 #include "test_alloc.h"
 #include "test_array.h"
+#include "test_board.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_graphics.h"
@@ -136,6 +137,9 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_dat_resize)
     TEST(test_resources_tex_transfers)
     TEST(test_resources_tex_resize)
+
+    // Testing board.
+    TEST(test_board_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)

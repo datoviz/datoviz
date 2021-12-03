@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/*  GPU context holding the Resources, DatAlloc, Transfers instances                             */
+/*  Board: offscreen surface to render on                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_CONTEXT
-#define DVZ_HEADER_CONTEXT
+#ifndef DVZ_HEADER_BOARD
+#define DVZ_HEADER_BOARD
 
 
 
@@ -12,10 +12,16 @@
 /*************************************************************************************************/
 
 #include "common.h"
-#include "datalloc.h"
-#include "resources.h"
-#include "transfers.h"
+#include "context.h"
 #include "vklite.h"
+
+
+
+/*************************************************************************************************/
+/*  Typedefs                                                                                     */
+/*************************************************************************************************/
+
+typedef struct DvzBoard DvzBoard;
 
 
 
@@ -23,14 +29,15 @@
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzContext
+struct DvzBoard
 {
     DvzObject obj;
     DvzGpu* gpu;
 
-    DvzResources res;
-    DvzDatAlloc datalloc;
-    DvzTransfers transfers;
+    DvzImages images;
+    DvzImages depth;
+    DvzRenderpass renderpass;
+    DvzFramebuffers framebuffers;
 };
 
 
@@ -38,27 +45,24 @@ struct DvzContext
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Context                                                                                      */
+/*  Board                                                                                        */
 /*************************************************************************************************/
 
 /**
- * Create a context associated to a GPU.
- *
- * !!! note
- *     The GPU must have been created beforehand.
+ * Create a board.
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu);
+DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height);
 
 
 
 /**
- * Destroy a context.
+ * Destroy a board.
  *
- * @param context the context
+ * @param board the board
  */
-DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
+DVZ_EXPORT void dvz_board_destroy(DvzBoard* board);
 
 
 

@@ -437,6 +437,7 @@ set(sources
     "src/datalloc.c"
     "src/transfers.c"
     "src/context.c"
+    "src/board.c"
     "src/graphics.c"
     "src/graphics_data.c"
 
@@ -492,6 +493,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_resources.c"
         "tests/test_datalloc.c"
         "tests/test_transfers.c"
+        "tests/test_board.c"
         "tests/test_graphics.c"
         "tests/test.c"
     )
