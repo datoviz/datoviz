@@ -76,8 +76,9 @@ DVZ_EXPORT DvzPipelib dvz_pipelib(DvzGpu* gpu);
  * @param flags the graphics creation flags
  * @returns the pipe
  */
-DVZ_EXPORT DvzPipe*
-dvz_pipelib_graphics(DvzPipelib* lib, DvzRenderpass* renderpass, DvzGraphicsType type, int flags);
+DVZ_EXPORT DvzPipe* dvz_pipelib_graphics(
+    DvzPipelib* lib, DvzRenderpass* renderpass, uint32_t img_count, //
+    uvec2 size, DvzGraphicsType type, int flags);
 
 
 

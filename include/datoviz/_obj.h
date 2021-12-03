@@ -46,6 +46,7 @@ typedef enum
     DVZ_OBJECT_TYPE_BINDINGS,
     DVZ_OBJECT_TYPE_COMPUTE,
     DVZ_OBJECT_TYPE_GRAPHICS,
+    DVZ_OBJECT_TYPE_PIPE,
     DVZ_OBJECT_TYPE_BARRIER,
     DVZ_OBJECT_TYPE_FENCES,
     DVZ_OBJECT_TYPE_SEMAPHORES,
@@ -271,8 +272,8 @@ static inline void* dvz_container_alloc(DvzContainer* container)
     if (available_slot == UINT32_MAX)
     {
         log_trace("reallocate container up to %d items", 2 * container->capacity);
-        void** _new =
-            (void**)realloc(container->items, (size_t)(2 * container->capacity * container->item_size));
+        void** _new = (void**)realloc(
+            container->items, (size_t)(2 * container->capacity * container->item_size));
         ASSERT(_new != NULL);
         container->items = _new;
 
