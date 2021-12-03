@@ -35,6 +35,9 @@
 
 typedef struct DvzPipelib DvzPipelib;
 
+// Forward declarations.
+typedef struct DvzContext DvzContext;
+
 
 
 /*************************************************************************************************/
@@ -60,10 +63,10 @@ EXTERN_C_ON
 /**
  * Create a library of pipes (computes/graphics).
  *
- * @param gpu the GPU
+ * @param ctx the context
  * @returns the pipelib
  */
-DVZ_EXPORT DvzPipelib dvz_pipelib(DvzGpu* gpu);
+DVZ_EXPORT DvzPipelib dvz_pipelib(DvzContext* ctx);
 
 
 
@@ -77,8 +80,8 @@ DVZ_EXPORT DvzPipelib dvz_pipelib(DvzGpu* gpu);
  * @returns the pipe
  */
 DVZ_EXPORT DvzPipe* dvz_pipelib_graphics(
-    DvzPipelib* lib, DvzRenderpass* renderpass, uint32_t img_count, //
-    uvec2 size, DvzGraphicsType type, int flags);
+    DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
+    uint32_t img_count, uvec2 size, DvzGraphicsType type, int flags);
 
 
 

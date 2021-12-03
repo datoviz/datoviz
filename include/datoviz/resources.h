@@ -97,6 +97,7 @@ typedef struct DvzTex DvzTex;
 typedef struct DvzResources DvzResources;
 
 // Forward declarations.
+typedef struct DvzContext DvzContext;
 typedef struct DvzDatAlloc DvzDatAlloc;
 typedef struct DvzTransfers DvzTransfers;
 

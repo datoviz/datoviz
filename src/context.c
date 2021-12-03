@@ -70,7 +70,7 @@ DvzContext* dvz_context(DvzGpu* gpu)
     ASSERT(DVZ_DEFAULT_QUEUE_TRANSFER == 0);
 
     // Create the context.
-    gpu->context = ctx;
+    // gpu->context = ctx;
     dvz_obj_created(&ctx->obj);
 
     return ctx;
@@ -90,7 +90,7 @@ void dvz_context_destroy(DvzContext* ctx)
 
     DvzGpu* gpu = ctx->gpu;
     ASSERT(gpu != NULL);
-    ASSERT(gpu->context == ctx);
+    // ASSERT(gpu->context == ctx);
 
     // Destroy the companion objects.
     dvz_transfers_destroy(&ctx->transfers);
@@ -99,5 +99,5 @@ void dvz_context_destroy(DvzContext* ctx)
 
     // Free the context.
     FREE(ctx);
-    gpu->context = NULL;
+    // gpu->context = NULL;
 }

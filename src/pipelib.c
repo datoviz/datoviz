@@ -74,8 +74,8 @@ DvzPipelib dvz_pipelib(DvzGpu* gpu)
 
 
 DvzPipe* dvz_pipelib_graphics(
-    DvzPipelib* lib, DvzRenderpass* renderpass, uint32_t img_count, //
-    uvec2 size, DvzGraphicsType type, int flags)
+    DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
+    uint32_t img_count, uvec2 size, DvzGraphicsType type, int flags)
 {
     ASSERT(lib != NULL);
     ASSERT(renderpass != NULL);
@@ -84,7 +84,6 @@ DvzPipe* dvz_pipelib_graphics(
     ASSERT(gpu != NULL);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    DvzContext* ctx = gpu->context;
     ASSERT(ctx != NULL);
     ASSERT(dvz_obj_is_created(&ctx->obj));
 

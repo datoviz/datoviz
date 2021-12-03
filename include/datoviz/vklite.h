@@ -88,7 +88,7 @@ typedef struct DvzSubmit DvzSubmit;
 // Forward declarations.
 typedef struct DvzHost DvzHost;
 typedef struct DvzWindow DvzWindow;
-typedef struct DvzContext DvzContext;
+// typedef struct DvzContext DvzContext;
 
 
 
@@ -254,7 +254,7 @@ struct DvzGpu
 
     VmaAllocator allocator;
 
-    DvzContext* context;
+    // DvzContext* context;
 };
 
 

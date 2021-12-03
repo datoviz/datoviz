@@ -45,7 +45,7 @@ int test_pipelib_1(TstSuite* suite)
 
     // Create a graphics pipe.
     DvzPipe* pipe =
-        dvz_pipelib_graphics(&lib, &board.renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE, 0);
+        dvz_pipelib_graphics(&lib, ctx, &board.renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE, 0);
 
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
