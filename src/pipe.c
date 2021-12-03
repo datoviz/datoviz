@@ -21,6 +21,23 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
+{
+    ASSERT(pipe != NULL);
+
+    if (pipe->bindings.obj.status != DVZ_OBJECT_STATUS_NONE)
+        return;
+
+    ASSERT(count > 0);
+
+    if (pipe->type == DVZ_PIPE_GRAPHICS)
+        pipe->bindings = dvz_bindings(&pipe->u.graphics.slots, count);
+    else if (pipe->type == DVZ_PIPE_COMPUTE)
+        pipe->bindings = dvz_bindings(&pipe->u.compute.slots, count);
+    else
+        log_error("unknown pipe type %d", pipe->type);
+}
+
 
 
 /*************************************************************************************************/
@@ -81,23 +98,6 @@ void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
 }
 
 
-
-static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
-{
-    ASSERT(pipe != NULL);
-
-    if (pipe->bindings.obj.status != DVZ_OBJECT_STATUS_NONE)
-        return;
-
-    ASSERT(count > 0);
-
-    if (pipe->type == DVZ_PIPE_GRAPHICS)
-        pipe->bindings = dvz_bindings(&pipe->u.graphics.slots, count);
-    else if (pipe->type == DVZ_PIPE_COMPUTE)
-        pipe->bindings = dvz_bindings(&pipe->u.compute.slots, count);
-    else
-        log_error("unknown pipe type %d", pipe->type);
-}
 
 void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 {

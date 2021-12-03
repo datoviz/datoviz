@@ -21,6 +21,7 @@
 #include "test_graphics.h"
 #include "test_obj.h"
 #include "test_pipe.h"
+#include "test_pipelib.h"
 #include "test_resources.h"
 #include "test_thread.h"
 #include "test_transfers.h"
@@ -144,6 +145,9 @@ int dvz_run_tests(const char* match)
 
     // Testing pipe.
     TEST(test_pipe_1)
+
+    // Testing pipelib.
+    TEST(test_pipelib_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)

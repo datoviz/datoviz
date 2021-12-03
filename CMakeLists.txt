@@ -446,6 +446,7 @@ set(sources
     "src/context.c"
     "src/board.c"
     "src/pipe.c"
+    "src/pipelib.c"
     "src/graphics.c"
     "src/graphics_data.c"
 
@@ -503,6 +504,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_transfers.c"
         "tests/test_board.c"
         "tests/test_pipe.c"
+        "tests/test_pipelib.c"
         "tests/test_graphics.c"
         "tests/test.c"
     )
