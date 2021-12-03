@@ -112,46 +112,6 @@ void dvz_pipe_create(DvzPipe* pipe)
 
 
 
-void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
-{
-    ASSERT(pipe != NULL);
-    ASSERT(cmds != NULL);
-
-    if (pipe->type == DVZ_PIPE_GRAPHICS)
-    {
-        ASSERT(pipe->u.graphics != NULL);
-        DvzGraphics* graphics = pipe->u.graphics;
-        ASSERT(graphics != NULL);
-
-        dvz_cmd_bind_vertex_buffer(cmds, idx, pipe->dat_vertex->br, 0);
-        // TODO: dynamic uniform buffer index
-        dvz_cmd_bind_graphics(cmds, idx, graphics, &pipe->bindings, 0);
-
-        switch (graphics->drawing)
-        {
-        case DVZ_DRAWING_DIRECT | DVZ_DRAWING_FLAT:
-            // dvz_cmd_draw(cmds, idx, 0, n_vertices);
-            break;
-
-        case DVZ_DRAWING_DIRECT | DVZ_DRAWING_INDEXED:
-            break;
-
-        case DVZ_DRAWING_INDIRECT | DVZ_DRAWING_FLAT:
-            break;
-
-        case DVZ_DRAWING_INDIRECT | DVZ_DRAWING_INDEXED:
-            break;
-
-        case DVZ_DRAWING_NONE:
-        default:
-            log_error("graphics drawing mode not set");
-            break;
-        }
-    }
-}
-
-
-
 void dvz_pipe_destroy(DvzPipe* pipe)
 {
     ASSERT(pipe != NULL);
@@ -161,4 +121,88 @@ void dvz_pipe_destroy(DvzPipe* pipe)
 
     dvz_obj_destroyed(&pipe->obj);
     log_trace("pipe destroyed");
+}
+
+
+
+/*************************************************************************************************/
+/*  Pipe draw commands                                                                           */
+/*************************************************************************************************/
+
+static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(pipe != NULL);
+    ASSERT(cmds != NULL);
+
+    ASSERT(pipe->type == DVZ_PIPE_GRAPHICS);
+    DvzGraphics* graphics = pipe->u.graphics;
+    ASSERT(graphics != NULL);
+
+    // TODO: dat vertex byte offset?
+    dvz_cmd_bind_vertex_buffer(cmds, idx, pipe->dat_vertex->br, 0);
+
+    // TODO: dat index byte offset?
+    if (pipe->dat_index != NULL)
+        dvz_cmd_bind_index_buffer(cmds, idx, pipe->dat_index->br, 0);
+
+    // TODO: dynamic uniform buffer index
+    dvz_cmd_bind_graphics(cmds, idx, graphics, &pipe->bindings, 0);
+
+    return graphics;
+}
+
+
+
+void dvz_pipe_draw(
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
+{
+    DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    dvz_cmd_draw(cmds, idx, first_vertex, vertex_count);
+}
+
+
+
+void dvz_pipe_draw_indexed(
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
+    uint32_t index_count)
+{
+    DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    dvz_cmd_draw_indexed(cmds, idx, first_index, vertex_offset, index_count);
+}
+
+
+
+void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
+{
+    ASSERT(dat_indirect != NULL);
+    DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    dvz_cmd_draw_indirect(cmds, idx, dat_indirect->br);
+}
+
+
+
+void dvz_pipe_draw_indexed_indirect(
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
+{
+    ASSERT(dat_indirect != NULL);
+    DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    dvz_cmd_draw_indexed_indirect(cmds, idx, dat_indirect->br);
+}
+
+
+
+/*************************************************************************************************/
+/*  Pipe compute commands                                                                        */
+/*************************************************************************************************/
+
+void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size)
+{
+    ASSERT(pipe != NULL);
+    ASSERT(cmds != NULL);
+
+    ASSERT(pipe->type == DVZ_PIPE_COMPUTE);
+    DvzCompute* compute = pipe->u.compute;
+    ASSERT(compute != NULL);
+
+    dvz_cmd_compute(cmds, idx, compute, size);
 }

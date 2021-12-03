@@ -1544,6 +1544,7 @@ DVZ_EXPORT void
 dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass);
 
 /**
+ * NOTE: useless, to delete?
  * Set the graphics drawing mode.
  *
  * @param graphics the graphics pipeline

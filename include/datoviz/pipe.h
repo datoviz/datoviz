@@ -172,13 +172,70 @@ DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
 
 
 /**
- * Insert a render/compute command in a command buffer.
+ * Insert a direct draw command in a command buffer.
+ *
+ * @param pipe the pipe
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param first_vertex index of the first vertex
+ * @param vertex_count number of vertices to draw
+ */
+DVZ_EXPORT void dvz_pipe_draw( //
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
+
+
+
+/**
+ * Insert an indexed draw command in a command buffer.
+ *
+ * @param pipe the pipe
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param first_index index of the first index
+ * @param vertex_offset offset of the vertex
+ * @param index_count number of indices to draw
+ */
+DVZ_EXPORT void dvz_pipe_draw_indexed(              //
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, //
+    uint32_t first_index, uint32_t vertex_offset, uint32_t index_count);
+
+
+
+/**
+ * Insert an indirect draw command in a command buffer.
+ *
+ * @param pipe the pipe
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param dat_indirect dat with the indirect draw info
+ */
+DVZ_EXPORT void dvz_pipe_draw_indirect( //
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect);
+
+
+
+/**
+ * Insert an indexed indirect draw command in a command buffer.
+ *
+ * @param pipe the pipe
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ * @param dat_indirect dat with the indirect draw info
+ */
+DVZ_EXPORT void dvz_pipe_draw_indexed_indirect( //
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect);
+
+
+
+/**
+ * Insert a compute command in a command buffer.
  *
  * @param pipe the pipe
  * @param cmds the command buffers
  * @param idx the command buffer index
  */
-DVZ_EXPORT void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size);
+
 
 
 /**
