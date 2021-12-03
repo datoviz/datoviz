@@ -1356,9 +1356,9 @@ static void _images_create(DvzImages* img)
     VkDeviceSize size = 0;
 
     // Check whether the image format is supported.
+    VkImageFormatProperties props = {0};
     if (!img->is_swapchain)
     {
-        VkImageFormatProperties props = {0};
         VkResult res = vkGetPhysicalDeviceImageFormatProperties(
             gpu->physical_device, img->format, img->image_type, img->tiling, //
             img->usage, 0, &props);
@@ -1372,6 +1372,17 @@ static void _images_create(DvzImages* img)
     uint32_t width = img->shape[0];
     uint32_t height = img->shape[1];
     uint32_t depth = img->shape[2];
+
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(depth > 0);
+
+    if (!img->is_swapchain)
+    {
+        ASSERT(width <= props.maxExtent.width);
+        ASSERT(height <= props.maxExtent.height);
+        ASSERT(depth <= props.maxExtent.depth);
+    }
 
     log_trace("create image %dD %dx%dx%d", img->image_type + 1, width, height, depth);
     ASSERT(width > 0);

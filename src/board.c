@@ -177,7 +177,7 @@ void dvz_board_format(DvzBoard* board, VkFormat format)
 void dvz_board_clear_color(DvzBoard* board, cvec4 color)
 {
     ASSERT(board != NULL);
-    memcpy(board->clear_color, color, sizeof(color));
+    memcpy(&board->clear_color, &color, sizeof(cvec4));
     log_trace("changing board clear color, need to recreate the board");
 }
 
@@ -219,21 +219,29 @@ void dvz_board_recreate(DvzBoard* board)
 
 
 
-void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height) { ASSERT(board != NULL); }
+void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
+{
+    ASSERT(board != NULL);
+    board->width = width;
+    board->height = height;
+    dvz_board_recreate(board);
+}
 
 
 
 void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(board != NULL); //
+    ASSERT(board != NULL);
+    dvz_cmd_begin_renderpass(cmds, idx, &board->renderpass, &board->framebuffers);
 }
 
 
 
-void dvz_board_end(DvzBoard* board, DvzCommands* cmds)
+void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(board != NULL);
     ASSERT(cmds != NULL);
+    dvz_cmd_end_renderpass(cmds, idx);
 }
 
 
@@ -243,6 +251,8 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba)
     ASSERT(board != NULL);
     ASSERT(size > 0);
     ASSERT(rgba != NULL);
+
+    // TODO: use transfers API
 }
 
 

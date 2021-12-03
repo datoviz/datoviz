@@ -117,8 +117,9 @@ DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx
  *
  * @param board the board
  * @param cmds the commands instance
+ * @param idx the command buffer index with the commands instance
  */
-DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds);
+DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
 
 
 

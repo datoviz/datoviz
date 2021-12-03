@@ -10,6 +10,7 @@
 #include "board.h"
 #include "test.h"
 #include "test_resources.h"
+#include "test_vklite.h"
 #include "testing.h"
 
 
@@ -23,6 +24,10 @@ int test_board_1(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
+
+    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
+    dvz_board_create(&board);
+    dvz_board_destroy(&board);
 
     return 0;
 }
