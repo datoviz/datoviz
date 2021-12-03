@@ -463,6 +463,17 @@ DVZ_EXPORT void dvz_graphics_builtin(
 
 
 
+/**
+ * Return a default viewport
+ *
+ * @param width the viewport width, in framebuffer pixels
+ * @param height the viewport height, in framebuffer pixels
+ * @returns the viewport
+ */
+DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
+
+
+
 EXTERN_C_OFF
 
 #endif
