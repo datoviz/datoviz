@@ -34,6 +34,10 @@ struct DvzBoard
     DvzObject obj;
     DvzGpu* gpu;
 
+    VkFormat format;
+    cvec4 clear_color;
+    uint32_t width, height;
+
     DvzImages images;
     DvzImages depth;
     DvzRenderpass renderpass;

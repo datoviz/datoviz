@@ -25,6 +25,22 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static inline VkClearColorValue get_clear_color(cvec4 color)
+{
+    VkClearColorValue value = {0};
+    value.float32[0] = color[0] * M_INV_255;
+    value.float32[1] = color[1] * M_INV_255;
+    value.float32[2] = color[2] * M_INV_255;
+    value.float32[3] = color[3] * M_INV_255;
+    return value;
+}
+
+
+
+/*************************************************************************************************/
+/*  Board creation utils                                                                         */
+/*************************************************************************************************/
+
 static void make_renderpass(
     DvzGpu* gpu, DvzRenderpass* renderpass, VkFormat format, VkClearColorValue clear_color)
 {
@@ -61,6 +77,9 @@ static void make_renderpass(
     // Subpass.
     dvz_renderpass_subpass_attachment(renderpass, 0, 0);
     dvz_renderpass_subpass_attachment(renderpass, 0, 1);
+
+    // Create renderpass.
+    dvz_renderpass_create(renderpass);
 }
 
 
@@ -85,6 +104,7 @@ make_images(DvzGpu* gpu, DvzImages* images, VkFormat format, uint32_t width, uin
 }
 
 
+
 static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
@@ -104,20 +124,26 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
 
 
 
-static inline VkClearColorValue get_clear_color(cvec4 color)
+static void make_framebuffers(
+    DvzGpu* gpu, DvzFramebuffers* framebuffers, DvzRenderpass* renderpass, //
+    DvzImages* images, DvzImages* depth)
 {
-    VkClearColorValue value = {0};
-    value.float32[0] = color[0] * M_INV_255;
-    value.float32[1] = color[1] * M_INV_255;
-    value.float32[2] = color[2] * M_INV_255;
-    value.float32[3] = color[3] * M_INV_255;
-    return value;
+    ASSERT(gpu != NULL);
+    ASSERT(framebuffers != NULL);
+    ASSERT(renderpass != NULL);
+    ASSERT(images != NULL);
+    ASSERT(depth != NULL);
+
+    *framebuffers = dvz_framebuffers(gpu);
+    dvz_framebuffers_attachment(framebuffers, 0, images);
+    dvz_framebuffers_attachment(framebuffers, 1, depth);
+    dvz_framebuffers_create(framebuffers, renderpass);
 }
 
 
 
 /*************************************************************************************************/
-/*  Board                                                                                        */
+/*  Board */
 /*************************************************************************************************/
 
 DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
@@ -127,18 +153,13 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
     ASSERT(height > 0);
 
     DvzBoard board = {0};
+    board.gpu = gpu;
+    board.width = width;
+    board.height = height;
+    dvz_board_format(&board, DVZ_BOARD_DEFAULT_FORMAT);
+    dvz_board_clear_color(&board, DVZ_BOARD_DEFAULT_CLEAR_COLOR);
 
-    // Renderpass.
-    make_renderpass(
-        gpu, &board.renderpass, DVZ_BOARD_DEFAULT_FORMAT,
-        get_clear_color(DVZ_BOARD_DEFAULT_CLEAR_COLOR));
-
-    // Make images.
-    make_images(gpu, &board.images, DVZ_BOARD_DEFAULT_FORMAT, width, height);
-
-    // Make depth buffer image.
-    make_depth(gpu, &board.depth, width, height);
-
+    dvz_obj_init(&board.obj);
     return board;
 }
 
@@ -146,29 +167,59 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
 
 void dvz_board_format(DvzBoard* board, VkFormat format)
 {
-    ASSERT(board != NULL); //
+    ASSERT(board != NULL);
+    board->format = format;
+    log_trace("changing board format, need to recreate the board");
 }
 
 
 
 void dvz_board_clear_color(DvzBoard* board, cvec4 color)
 {
-    ASSERT(board != NULL); //
+    ASSERT(board != NULL);
+    memcpy(board->clear_color, color, sizeof(color));
+    log_trace("changing board clear color, need to recreate the board");
 }
 
 
 
 void dvz_board_create(DvzBoard* board)
 {
-    ASSERT(board != NULL); //
+    ASSERT(board != NULL);
+
+    log_trace("creating the board");
+
+    // Renderpass.
+    make_renderpass(
+        board->gpu, &board->renderpass, board->format, get_clear_color(board->clear_color));
+
+    // Make images.
+    make_images(board->gpu, &board->images, board->format, board->width, board->height);
+
+    // Make depth buffer image.
+    make_depth(board->gpu, &board->depth, board->width, board->height);
+
+    // Make framebuffers.
+    make_framebuffers(
+        board->gpu, &board->framebuffers, &board->renderpass, &board->images, &board->depth);
+
+    dvz_obj_created(&board->obj);
+    log_trace("board created");
 }
 
 
 
-void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
+void dvz_board_recreate(DvzBoard* board)
 {
-    ASSERT(board != NULL); //
+    ASSERT(board != NULL);
+    log_trace("recreating the board");
+    dvz_board_destroy(board);
+    dvz_board_create(board);
 }
+
+
+
+void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height) { ASSERT(board != NULL); }
 
 
 
@@ -203,4 +254,5 @@ void dvz_board_destroy(DvzBoard* board)
     dvz_images_destroy(&board->images);
     dvz_images_destroy(&board->depth);
     dvz_renderpass_destroy(&board->renderpass);
+    dvz_framebuffers_destroy(&board->framebuffers);
 }
