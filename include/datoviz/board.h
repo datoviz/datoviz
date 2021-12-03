@@ -18,6 +18,15 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_VIEWPORT_DEFAULT                                                                      \
+    (vec2) { 0, 0 }
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -116,6 +125,18 @@ DVZ_EXPORT void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t heigh
  */
 DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
 
+
+/**
+ * Set the viewport when filling a command buffer.
+ *
+ * @param board the board
+ * @param cmds the commands instance
+ * @param idx the command buffer index with the commands instance
+ * @param offset the viewport offset (x, y)
+ * @param size the viewport size (w, h)
+ */
+DVZ_EXPORT void dvz_board_viewport( //
+    DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size);
 
 
 /**

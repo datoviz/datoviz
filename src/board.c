@@ -261,7 +261,22 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
 void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(board != NULL);
+    dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, &board->renderpass, &board->framebuffers);
+}
+
+
+
+void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
+{
+    ASSERT(board != NULL);
+    if (size[0] == 0)
+        size[0] = board->width;
+    if (size[1] == 0)
+        size[1] = board->height;
+    dvz_cmd_viewport(
+        cmds, idx,
+        (VkViewport){.x = offset[0], .y = offset[1], .width = size[0], .height = size[1]});
 }
 
 
@@ -271,6 +286,7 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
     ASSERT(board != NULL);
     ASSERT(cmds != NULL);
     dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 }
 
 

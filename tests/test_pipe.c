@@ -36,7 +36,6 @@ int test_pipe_1(TstSuite* suite)
     // Create the board.
     DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
     dvz_board_create(&board);
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
 
     // Create the graphics.
     DvzGraphics graphics = triangle_graphics(gpu, &board.renderpass, "");
@@ -57,12 +56,10 @@ int test_pipe_1(TstSuite* suite)
 
     // Command buffer.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
-    dvz_cmd_begin(&cmds, 0);
     dvz_board_begin(&board, &cmds, 0);
-    dvz_cmd_viewport(&cmds, 0, viewport.viewport);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_VIEWPORT_DEFAULT, DVZ_VIEWPORT_DEFAULT);
     dvz_pipe_draw(&pipe, &cmds, 0, 0, 3);
     dvz_board_end(&board, &cmds, 0);
-    dvz_cmd_end(&cmds, 0);
 
     // Render.
     dvz_cmd_submit_sync(&cmds, 0);
