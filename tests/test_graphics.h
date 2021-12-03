@@ -19,7 +19,7 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_graphics_point(TstSuite*);
+int test_graphics_triangle(TstSuite*);
 
 int test_graphics_line_list(TstSuite*);
 

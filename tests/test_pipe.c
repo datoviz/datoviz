@@ -83,7 +83,6 @@ int test_pipe_1(TstSuite* suite)
     dvz_board_free(&board);
 
     // Destruction.
-    // dvz_graphics_destroy(graphics);
     dvz_pipe_destroy(&pipe);
     dvz_dat_destroy(dat_vertex);
 

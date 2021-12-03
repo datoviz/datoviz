@@ -149,7 +149,8 @@ int dvz_run_tests(const char* match)
     TEARDOWN(teardown_gpu)
 
 
-    TEST(test_graphics_point)
+    // Testing builtin graphics.
+    TEST(test_graphics_triangle)
 
 
     tst_suite_run(&suite, match);
