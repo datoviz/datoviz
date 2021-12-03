@@ -107,6 +107,9 @@ DvzPipe* dvz_pipelib_graphics(
     // Create the bindings.
     dvz_pipe_dat(pipe, 0, dat_mvp);
     dvz_pipe_dat(pipe, 1, dat_viewport);
+
+    // TODO: graphics-specific dats and texs
+
     dvz_pipe_create(pipe);
 
     return pipe;

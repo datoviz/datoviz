@@ -10,6 +10,7 @@
 
 #include "test_pipelib.h"
 #include "board.h"
+#include "fileio.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "test.h"
@@ -45,6 +46,35 @@ int test_pipelib_1(TstSuite* suite)
     // Create a graphics pipe.
     DvzPipe* pipe =
         dvz_pipelib_graphics(&lib, &board.renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE, 0);
+
+    // Create the vertex buffer dat.
+    DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+    ASSERT(dat_vertex != NULL);
+    dvz_pipe_vertex(pipe, dat_vertex);
+
+    // Upload the triangle data.
+    DvzVertex data[] = {
+        {{-1, -1, 0}, {255, 0, 0, 255}},
+        {{+1, -1, 0}, {0, 255, 0, 255}},
+        {{+0, +1, 0}, {0, 0, 255, 255}},
+    };
+    dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
+
+    // Commands.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    dvz_board_begin(&board, &cmds, 0);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_VIEWPORT_DEFAULT, DVZ_VIEWPORT_DEFAULT);
+    dvz_pipe_draw(pipe, &cmds, 0, 0, 3);
+    dvz_board_end(&board, &cmds, 0);
+    dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Screenshot.
+    uint8_t* rgba = dvz_board_alloc(&board);
+    dvz_board_download(&board, board.size, rgba);
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/pipelib.png", ARTIFACTS_DIR);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_board_free(&board);
 
     // Destruction.
     // dvz_pipelib_pipe_destroy(&lib, pipe);
