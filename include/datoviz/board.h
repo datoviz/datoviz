@@ -38,8 +38,14 @@ struct DvzBoard
     cvec4 clear_color;
     uint32_t width, height;
 
+    DvzSize size; // width*height*4
+    cvec4* rgba;  // GPU buffer storing the image
+
     DvzImages images;
     DvzImages depth;
+    DvzImages staging;
+    // TODO: picking
+    // TODO: overlay imgui support
     DvzRenderpass renderpass;
     DvzFramebuffers framebuffers;
 };
@@ -120,6 +126,23 @@ DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx
  * @param idx the command buffer index with the commands instance
  */
 DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
+
+
+/**
+ * Allocate a CPU buffer for downloading the image.
+ *
+ * @param board the board
+ */
+DVZ_EXPORT uint8_t* dvz_board_alloc(DvzBoard* board);
+
+
+
+/**
+ * Free the allocated CPU buffer storing the image.
+ *
+ * @param board the board
+ */
+DVZ_EXPORT void dvz_board_free(DvzBoard* board);
 
 
 

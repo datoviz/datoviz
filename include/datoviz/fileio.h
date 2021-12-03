@@ -51,12 +51,12 @@ DVZ_EXPORT char* dvz_read_npy(const char* filename, size_t* size);
 /*************************************************************************************************/
 
 /**
- * Save an image to a PPM file (short ASCII header and flat binary RGBA values).
+ * Save an image to a PPM file (short ASCII header and flat binary RGB values).
  *
  * @param filename path to the PPM file to create
  * @param width width of the image
  * @param height height of the image
- * @param image pointer to an array of 32-bit RGBA values
+ * @param image pointer to an array of 24-bit RGB values
  */
 DVZ_EXPORT int
 dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);

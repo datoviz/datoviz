@@ -22,8 +22,7 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
 
-# TODO: refactor these options
-option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" OFF)
+option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
@@ -55,12 +54,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cglm)
 
 # ---- libpng (OPTIONAL) --------------------------------------------------------------------------
+set(HAS_PNG 0)
 if(DATOVIZ_WITH_PNG)
     FetchContent_Declare(
         libpng
         GIT_REPOSITORY  https://github.com/glennrp/libpng
     )
     FetchContent_MakeAvailable(libpng)
+    set(HAS_PNG 1)
 endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
@@ -240,6 +241,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
     HAS_GLSLANG=${HAS_GLSLANG}
+    HAS_PNG=${HAS_PNG}
 )
 
 
@@ -325,6 +327,11 @@ endif()
 # Link with glslang.
 if (HAS_GLSLANG)
     set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
+endif()
+
+# Link with png.
+if (HAS_PNG)
+    set(LINK_LIBS ${LINK_LIBS} png)
 endif()
 
 # Link with system libraries.

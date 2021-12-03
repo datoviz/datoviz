@@ -8,6 +8,7 @@
 
 #include "test_board.h"
 #include "board.h"
+#include "fileio.h"
 #include "test.h"
 #include "test_resources.h"
 #include "test_vklite.h"
@@ -24,6 +25,9 @@ int test_board_1(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
+
+    DvzContext* ctx = dvz_context(gpu);
+    ASSERT(ctx != NULL);
 
     // Create the board.
     DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
@@ -63,6 +67,14 @@ int test_board_1(TstSuite* suite)
     // Render.
     dvz_cmd_submit_sync(&cmds, 0);
 
+    // Retrieve the rendered image.
+    uint8_t* rgba = dvz_board_alloc(&board);
+    dvz_board_download(&board, board.size, rgba);
+    // Save it to a file.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/board.png", ARTIFACTS_DIR);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_board_free(&board);
 
     // Destruction.
     dvz_graphics_destroy(&graphics);
@@ -70,5 +82,7 @@ int test_board_1(TstSuite* suite)
     dvz_buffer_destroy(&buffer);
 
     dvz_board_destroy(&board);
+    dvz_context_destroy(ctx);
+
     return 0;
 }

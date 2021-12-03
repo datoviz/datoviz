@@ -124,6 +124,26 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
 
 
 
+static void
+make_staging(DvzGpu* gpu, DvzImages* staging, VkFormat format, uint32_t width, uint32_t height)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(staging != NULL);
+    *staging = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+
+    dvz_images_format(staging, format);
+    dvz_images_size(staging, (uvec3){width, height, 1});
+    dvz_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
+    dvz_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    dvz_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    // dvz_images_memory(
+    //     staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    dvz_images_vma_usage(staging, VMA_MEMORY_USAGE_CPU_ONLY);
+    dvz_images_create(staging);
+}
+
+
+
 static void make_framebuffers(
     DvzGpu* gpu, DvzFramebuffers* framebuffers, DvzRenderpass* renderpass, //
     DvzImages* images, DvzImages* depth)
@@ -156,6 +176,8 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
     board.gpu = gpu;
     board.width = width;
     board.height = height;
+    board.size = width * height * sizeof(cvec4);
+
     dvz_board_format(&board, DVZ_BOARD_DEFAULT_FORMAT);
     dvz_board_clear_color(&board, DVZ_BOARD_DEFAULT_CLEAR_COLOR);
 
@@ -169,6 +191,8 @@ void dvz_board_format(DvzBoard* board, VkFormat format)
 {
     ASSERT(board != NULL);
     board->format = format;
+    // NOTE: for now only 4 bytes per pixel. Otherwise need to update board.size as a function of
+    // the format.
     log_trace("changing board format, need to recreate the board");
 }
 
@@ -177,7 +201,8 @@ void dvz_board_format(DvzBoard* board, VkFormat format)
 void dvz_board_clear_color(DvzBoard* board, cvec4 color)
 {
     ASSERT(board != NULL);
-    memcpy(&board->clear_color, &color, sizeof(cvec4));
+    ASSERT(sizeof(cvec4) == 4);
+    memcpy(board->clear_color, color, sizeof(cvec4));
     log_trace("changing board clear color, need to recreate the board");
 }
 
@@ -198,6 +223,9 @@ void dvz_board_create(DvzBoard* board)
 
     // Make depth buffer image.
     make_depth(board->gpu, &board->depth, board->width, board->height);
+
+    // Make staging image.
+    make_staging(board->gpu, &board->staging, board->format, board->width, board->height);
 
     // Make framebuffers.
     make_framebuffers(
@@ -224,6 +252,7 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
     ASSERT(board != NULL);
     board->width = width;
     board->height = height;
+    board->size = width * height * sizeof(cvec4);
     dvz_board_recreate(board);
 }
 
@@ -246,13 +275,63 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 
 
+uint8_t* dvz_board_alloc(DvzBoard* board)
+{
+    ASSERT(board != NULL);
+    ASSERT(board->width > 0);
+    ASSERT(board->height > 0);
+    if (board->rgba == NULL)
+        board->rgba = calloc(board->width * board->height, sizeof(cvec4));
+    ASSERT(board->rgba != NULL);
+    return board->rgba;
+}
+
+
+
+void dvz_board_free(DvzBoard* board)
+{
+    ASSERT(board != NULL);
+    if (board->rgba != NULL)
+        FREE(board->rgba);
+}
+
+
+
 void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba)
 {
     ASSERT(board != NULL);
     ASSERT(size > 0);
     ASSERT(rgba != NULL);
 
-    // TODO: use transfers API
+    DvzGpu* gpu = board->gpu;
+    ASSERT(gpu != NULL);
+
+    // Start the image transition command buffers.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+    dvz_cmd_begin(&cmds, 0);
+
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, &board->staging);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    // Copy the image to the staging image.
+    dvz_cmd_copy_image(&cmds, 0, &board->images, &board->staging);
+
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    // End the cmds and submit them.
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Now, copy the staging image into CPU memory.
+    dvz_images_download(&board->staging, 0, 1, true, false, rgba);
 }
 
 
@@ -263,6 +342,7 @@ void dvz_board_destroy(DvzBoard* board)
 
     dvz_images_destroy(&board->images);
     dvz_images_destroy(&board->depth);
+    dvz_images_destroy(&board->staging);
     dvz_renderpass_destroy(&board->renderpass);
     dvz_framebuffers_destroy(&board->framebuffers);
 }
