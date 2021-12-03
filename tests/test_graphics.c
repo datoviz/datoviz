@@ -174,6 +174,7 @@ int test_graphics_point(TstSuite* suite)
     dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
 
 
+
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
     dvz_bindings_buffer(&bindings, 0, dat_mvp->br);

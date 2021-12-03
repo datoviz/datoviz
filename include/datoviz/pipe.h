@@ -48,8 +48,8 @@ typedef struct DvzTex DvzTex;
 
 union DvzPipeUnion
 {
-    DvzGraphics graphics;
-    DvzCompute compute;
+    DvzGraphics* graphics;
+    DvzCompute* compute;
 };
 
 
@@ -58,15 +58,28 @@ struct DvzPipe
 {
     DvzObject obj;
     DvzGpu* gpu;
+
     DvzPipeType type;
     DvzPipeUnion u;
+
+    // Bindings.
     DvzBindings bindings;
+
+    // Vertex and index buffers.
     DvzDat* dat_vertex;
     DvzDat* dat_index;
-    uint32_t dat_count;
-    DvzDat** dats; // uniforms, the first ones are mvp, viewport, params
-    uint32_t tex_count;
-    DvzTex** texs;
+
+    // Dat resources.
+    // uint32_t dat_count;
+    DvzDat* dats[DVZ_MAX_BINDINGS_SIZE]; // uniforms, the first ones are mvp, viewport, params
+
+    // Texture resources.
+    // uint32_t tex_count;
+    DvzTex* texs[DVZ_MAX_BINDINGS_SIZE];
+
+    // Sampler resources.
+    // uint32_t tex_count;
+    DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
 };
 
 
@@ -91,8 +104,9 @@ DVZ_EXPORT DvzPipe dvz_pipe(DvzGpu* gpu);
  *
  * @param pipe the pipe
  * @param graphics the graphics
+ * @param count the number of descriptor sets (= number of swapchain images)
  */
-DVZ_EXPORT void dvz_pipe_graphics(DvzPipe* pipe, DvzGraphics* graphics);
+DVZ_EXPORT void dvz_pipe_graphics(DvzPipe* pipe, DvzGraphics* graphics, uint32_t count);
 
 
 
@@ -147,6 +161,24 @@ DVZ_EXPORT void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat);
  */
 DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler);
 
+
+
+/**
+ * Create a pipe.
+ *
+ * @param pipe the pipe
+ */
+DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
+
+
+/**
+ * Insert a render/compute command in a command buffer.
+ *
+ * @param pipe the pipe
+ * @param cmds the command buffers
+ * @param idx the command buffer index
+ */
+DVZ_EXPORT void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx);
 
 
 /**
