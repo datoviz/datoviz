@@ -140,37 +140,39 @@ FetchContent_MakeAvailable(cglm)
 # ---- libpng -------------------------------------------------------------------------------------
 set(HAS_PNG 0)
 if(DATOVIZ_WITH_PNG)
-    set(PNG_ARM_NEON off CACHE INTERNAL "")
-    set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
-    set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-    set(PNG_TESTS OFF)
-    #set(PNG_SHARED OFF)
-    set(PNG_EXECUTABLES OFF)
-    set(ZLIB_LIBRARY zlib)
-    #set(ZLIB_LIBRARY ZLIB::ZLIB)
-    #set(AWK "AWK-NOTFOUND")
 
-    if(OS_WIN32)
-        FetchContent_Declare(
-            zlib
-            GIT_REPOSITORY  https://github.com/datoviz/zlib
-            GIT_TAG         master
-        )
-        FetchContent_MakeAvailable(zlib)
-        set(INCL_DIRS ${INCL_DIRS} ${zlib_SOURCE_DIR})
-        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
-    endif()
+    find_package(PNG)
+    if (PNG_FOUND)
+        set(INCL_DIRS ${INCL_DIRS} ${PNG_INCLUDE_DIRS})
+        set(LINK_LIBS ${LINK_LIBS} ${PNG_LIBRARIES})
+        set(HAS_PNG 1)
+    else()
+
+        set(PNG_ARM_NEON off CACHE INTERNAL "")
+        set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
+        set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
+        set(PNG_TESTS OFF)
+        set(PNG_EXECUTABLES OFF)
+        set(ZLIB_LIBRARY zlib)
+        #set(PNG_SHARED OFF)
+        #set(ZLIB_LIBRARY ZLIB::ZLIB)
+        #set(AWK "AWK-NOTFOUND")
+
+        # Windows: need to download zlib
+        if(OS_WIN32)
+            FetchContent_Declare(
+                zlib
+                GIT_REPOSITORY  https://github.com/datoviz/zlib
+                GIT_TAG         master
+            )
+            FetchContent_MakeAvailable(zlib)
+            set(INCL_DIRS ${INCL_DIRS} ${zlib_SOURCE_DIR})
+            set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
+            set(LINK_LIBS ${LINK_LIBS} zlib)
+        endif()
 
     # HACK: libpng does not seem to compile on Apple M1, so require brew install libpng on mac
     # TODO: only do this on Apple M1, not Apple Intel
-    if(OS_MACOS)
-        find_package(PNG)
-        if (PNG_FOUND)
-            set(INCL_DIRS ${INCL_DIRS} ${PNG_INCLUDE_DIRS})
-            set(LINK_LIBS ${LINK_LIBS} ${PNG_LIBRARIES})
-            set(HAS_PNG 1)
-        endif()
-    else()
         FetchContent_Declare(
             libpng
             GIT_REPOSITORY  https://github.com/datoviz/libpng
