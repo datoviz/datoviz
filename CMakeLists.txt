@@ -142,6 +142,24 @@ set(HAS_PNG 0)
 if(DATOVIZ_WITH_PNG)
     set(PNG_ARM_NEON off CACHE INTERNAL "")
     set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
+    set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
+    set(PNG_TESTS OFF)
+    #set(PNG_SHARED OFF)
+    set(PNG_EXECUTABLES OFF)
+    set(ZLIB_LIBRARY zlib)
+    #set(ZLIB_LIBRARY ZLIB::ZLIB)
+    #set(AWK "AWK-NOTFOUND")
+
+    if(OS_WIN32)
+        FetchContent_Declare(
+            zlib
+            GIT_REPOSITORY  https://github.com/datoviz/zlib
+            GIT_TAG         master
+        )
+        FetchContent_MakeAvailable(zlib)
+        set(INCL_DIRS ${INCL_DIRS} ${zlib_SOURCE_DIR})
+        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
+    endif()
 
     # HACK: libpng does not seem to compile on Apple M1, so require brew install libpng on mac
     # TODO: only do this on Apple M1, not Apple Intel
@@ -154,12 +172,12 @@ if(DATOVIZ_WITH_PNG)
         endif()
     else()
         FetchContent_Declare(
-            PNG
-            GIT_REPOSITORY  https://github.com/glennrp/libpng
+            libpng
+            GIT_REPOSITORY  https://github.com/datoviz/libpng
             GIT_TAG         libpng16
         )
-        FetchContent_MakeAvailable(PNG)
-        set(INCL_DIRS ${INCL_DIRS} ${PNG_SOURCE_DIR})
+        FetchContent_MakeAvailable(libpng)
+        set(INCL_DIRS ${INCL_DIRS} ${libpng_SOURCE_DIR})
         set(LINK_LIBS ${LINK_LIBS} png)
         set(HAS_PNG 1)
     endif()
@@ -282,7 +300,6 @@ if (HAS_GLSLANG)
     set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
 
-
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
@@ -351,8 +368,8 @@ elseif(CC_CLANG)
 elseif(CC_MSVC)
     # MSVC
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 
 endif()
 
