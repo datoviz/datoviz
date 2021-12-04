@@ -141,20 +141,21 @@ FetchContent_MakeAvailable(cglm)
 set(HAS_PNG 0)
 if(DATOVIZ_WITH_PNG)
 
-    find_package(PNG)
+    if (NOT(OS_WIN32))
+        find_package(PNG)
+    endif()
     if (PNG_FOUND)
         set(INCL_DIRS ${INCL_DIRS} ${PNG_INCLUDE_DIRS})
         set(LINK_LIBS ${LINK_LIBS} ${PNG_LIBRARIES})
         set(HAS_PNG 1)
     else()
-
         set(PNG_ARM_NEON off CACHE INTERNAL "")
         set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
         set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
         set(PNG_TESTS OFF)
         set(PNG_EXECUTABLES OFF)
-        set(ZLIB_LIBRARY zlib)
-        #set(PNG_SHARED OFF)
+        set(PNG_SHARED ON)
+        set(SKIP_INSTALL_ALL ON)
         #set(ZLIB_LIBRARY ZLIB::ZLIB)
         #set(AWK "AWK-NOTFOUND")
 
@@ -167,20 +168,23 @@ if(DATOVIZ_WITH_PNG)
             )
             FetchContent_MakeAvailable(zlib)
             set(INCL_DIRS ${INCL_DIRS} ${zlib_SOURCE_DIR})
-            set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
             set(LINK_LIBS ${LINK_LIBS} zlib)
+
+            set(ZLIB_INCLUDE_DIRS ${zlib_SOURCE_DIR})
+            set(ZLIB_ROOT ${zlib_SOURCE_DIR})
+            set(ZLIB_LIBRARY zlib)
+            set(ZLIB_LIBRARIES zlib)
         endif()
 
-    # HACK: libpng does not seem to compile on Apple M1, so require brew install libpng on mac
-    # TODO: only do this on Apple M1, not Apple Intel
         FetchContent_Declare(
             libpng
             GIT_REPOSITORY  https://github.com/datoviz/libpng
             GIT_TAG         libpng16
         )
         FetchContent_MakeAvailable(libpng)
+        
         set(INCL_DIRS ${INCL_DIRS} ${libpng_SOURCE_DIR})
-        set(LINK_LIBS ${LINK_LIBS} png)
+        set(LINK_LIBS ${LINK_LIBS} "${libpng_BINARY_DIR}/libpng16d.lib")
         set(HAS_PNG 1)
     endif()
 endif()

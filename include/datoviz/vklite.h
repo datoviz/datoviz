@@ -1097,7 +1097,7 @@ DVZ_EXPORT void dvz_buffer_regions_upload(
  * @param size the size
  * @param data pointer to the buffer where to download to
  */
-void dvz_buffer_regions_download(
+DVZ_EXPORT void dvz_buffer_regions_download(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
