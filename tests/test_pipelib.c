@@ -41,7 +41,7 @@ int test_pipelib_1(TstSuite* suite)
     dvz_board_create(&board);
 
     // Create the pipelib.
-    DvzPipelib lib = dvz_pipelib(gpu);
+    DvzPipelib lib = dvz_pipelib(ctx);
 
     // Create a graphics pipe.
     DvzPipe* pipe =

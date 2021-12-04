@@ -58,3 +58,4 @@ screenshots
 .vscode
 perf.*
 *~
+.DS_Store

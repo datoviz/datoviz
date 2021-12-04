@@ -37,8 +37,92 @@ option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
-set(PNG_ARM_NEON off CACHE INTERNAL "")
-set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
+
+
+# -------------------------------------------------------------------------------------------------
+# Detect the OS
+# -------------------------------------------------------------------------------------------------
+
+set(OS_LINUX 0)
+set(OS_MACOS 0)
+set(OS_WIN32 0)
+
+if(UNIX AND NOT APPLE)
+    set(OS_LINUX 1)
+elseif(APPLE)
+    set(OS_MACOS 1)
+elseif(WIN32)
+    set(OS_WIN32 1)
+endif()
+
+
+# -------------------------------------------------------------------------------------------------
+# Detect the compiler
+# -------------------------------------------------------------------------------------------------
+
+set(CC_GCC 0)
+set(CC_CLANG 0)
+set(CC_MSVC 0)
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    set(CC_GCC 1)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(CC_CLANG 1)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    set(CC_MSVC 1)
+endif()
+
+
+# -------------------------------------------------------------------------------------------------
+# Directories
+# -------------------------------------------------------------------------------------------------
+
+set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
+set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv)
+set(ARTIFACTS_DIR "${CMAKE_BINARY_DIR}/artifacts")
+
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
+file(MAKE_DIRECTORY ${SPIRV_DIR})
+file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
+
+
+# -------------------------------------------------------------------------------------------------
+# Include directories
+# -------------------------------------------------------------------------------------------------
+
+set(INCL_DIRS
+    ${CMAKE_SOURCE_DIR}/include/datoviz
+    ${CMAKE_SOURCE_DIR}/external
+    ${CMAKE_SOURCE_DIR}/external/imgui
+    ${CMAKE_SOURCE_DIR}/external/imgui/backends
+)
+
+# ---- OS-specific directories --------------------------------------------------------------------
+if(${OS_MACOS})
+    set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
+elseif(${OS_WIN32})
+    set(INCL_DIRS ${INCL_DIRS}) #$ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
+    find_path(MINGW_DIR NAMES "gcc.exe")
+endif()
+
+
+# -------------------------------------------------------------------------------------------------
+# Linking libraries
+# -------------------------------------------------------------------------------------------------
+
+set(LINK_LIBS cglm)
+# Link with system libraries.
+if(NOT ${WIN32})
+    set(LINK_LIBS m dl pthread ${LINK_LIBS})
+endif()
+
+# ---- OS-specific linking libraries --------------------------------------------------------------
+if(${OS_MACOS})
+    link_directories(/usr/local/lib)
+elseif(${OS_WIN32})
+    # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
+    set(LINK_LIBS ${LINK_LIBS})
+endif()
 
 
 # -------------------------------------------------------------------------------------------------
@@ -53,15 +137,32 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cglm)
 
-# ---- libpng (OPTIONAL) --------------------------------------------------------------------------
+# ---- libpng -------------------------------------------------------------------------------------
 set(HAS_PNG 0)
 if(DATOVIZ_WITH_PNG)
-    FetchContent_Declare(
-        libpng
-        GIT_REPOSITORY  https://github.com/glennrp/libpng
-    )
-    FetchContent_MakeAvailable(libpng)
-    set(HAS_PNG 1)
+    set(PNG_ARM_NEON off CACHE INTERNAL "")
+    set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
+
+    # HACK: libpng does not seem to compile on Apple M1, so require brew install libpng on mac
+    # TODO: only do this on Apple M1, not Apple Intel
+    if(OS_MACOS)
+        find_package(PNG)
+        if (PNG_FOUND)
+            set(INCL_DIRS ${INCL_DIRS} ${PNG_INCLUDE_DIRS})
+            set(LINK_LIBS ${LINK_LIBS} ${PNG_LIBRARIES})
+            set(HAS_PNG 1)
+        endif()
+    else()
+        FetchContent_Declare(
+            PNG
+            GIT_REPOSITORY  https://github.com/glennrp/libpng
+            GIT_TAG         libpng16
+        )
+        FetchContent_MakeAvailable(PNG)
+        set(INCL_DIRS ${INCL_DIRS} ${PNG_SOURCE_DIR})
+        set(LINK_LIBS ${LINK_LIBS} png)
+        set(HAS_PNG 1)
+    endif()
 endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
@@ -78,10 +179,12 @@ if(DATOVIZ_WITH_GLFW)
         GIT_TAG         3.3.4
     )
     FetchContent_MakeAvailable(glfw)
+
+    set(INCL_DIRS ${INCL_DIRS} "${glfw_SOURCE_DIR}/include")
+    set(LINK_LIBS ${LINK_LIBS} glfw)
 endif()
 
 # ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
-
 set(HAS_GLSLANG 0)
 if (DATOVIZ_WITH_VULKAN_SDK)
     find_package(Vulkan)
@@ -166,52 +269,18 @@ else()
 
 endif()
 
-
-# -------------------------------------------------------------------------------------------------
-# Detect the OS
-# -------------------------------------------------------------------------------------------------
-
-set(OS_LINUX 0)
-set(OS_MACOS 0)
-set(OS_WIN32 0)
-
-if(UNIX AND NOT APPLE)
-    set(OS_LINUX 1)
-elseif(APPLE)
-    set(OS_MACOS 1)
-elseif(WIN32)
-    set(OS_WIN32 1)
+# Link with Vulkan.
+if(Vulkan_FOUND)
+    set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
+else()
+    set(LINK_LIBS ${LINK_LIBS} vulkan)
 endif()
 
-
-# -------------------------------------------------------------------------------------------------
-# Detect the compiler
-# -------------------------------------------------------------------------------------------------
-
-set(CC_GCC 0)
-set(CC_CLANG 0)
-set(CC_MSVC 0)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    set(CC_GCC 1)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(CC_CLANG 1)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CC_MSVC 1)
+# Link with glslang.
+if (HAS_GLSLANG)
+    set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
+    set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
-
-
-# -------------------------------------------------------------------------------------------------
-# Directories
-# -------------------------------------------------------------------------------------------------
-
-set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
-set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv)
-set(ARTIFACTS_DIR "${CMAKE_BINARY_DIR}/artifacts")
-
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
-file(MAKE_DIRECTORY ${SPIRV_DIR})
-file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -285,73 +354,6 @@ elseif(CC_MSVC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
-endif()
-
-
-# -------------------------------------------------------------------------------------------------
-# Include directories
-# -------------------------------------------------------------------------------------------------
-
-set(INCL_DIRS
-    ${CMAKE_SOURCE_DIR}/include/datoviz
-
-    ${CMAKE_SOURCE_DIR}/external
-    ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends
-)
-if (HAS_GLSLANG)
-    set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
-endif()
-
-# ---- OS-specific directories --------------------------------------------------------------------
-if(${OS_MACOS})
-    set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
-elseif(${OS_WIN32})
-    set(INCL_DIRS ${INCL_DIRS}) #$ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
-    find_path(MINGW_DIR NAMES "gcc.exe")
-
-endif()
-
-
-# -------------------------------------------------------------------------------------------------
-# Linking libraries
-# -------------------------------------------------------------------------------------------------
-
-set(LINK_LIBS cglm)
-
-# Link with glfw.
-if(DATOVIZ_WITH_GLFW)
-    set(LINK_LIBS ${LINK_LIBS} glfw)
-endif()
-
-# Link with glslang.
-if (HAS_GLSLANG)
-    set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
-endif()
-
-# Link with png.
-if (HAS_PNG)
-    set(LINK_LIBS ${LINK_LIBS} png)
-endif()
-
-# Link with system libraries.
-if(NOT ${WIN32})
-    set(LINK_LIBS m dl pthread ${LINK_LIBS})
-endif()
-
-# Link with Vulkan.
-if(Vulkan_FOUND)
-    set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
-else()
-    set(LINK_LIBS ${LINK_LIBS} vulkan)
-endif()
-
-# ---- OS-specific linking libraries --------------------------------------------------------------
-if(${OS_MACOS})
-    link_directories(/usr/local/lib)
-elseif(${OS_WIN32})
-    # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
-    set(LINK_LIBS ${LINK_LIBS})
 endif()
 
 

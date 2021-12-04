@@ -57,11 +57,12 @@ static DvzDat* _make_dat_viewport(DvzContext* ctx, vec2 size)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzPipelib dvz_pipelib(DvzGpu* gpu)
+DvzPipelib dvz_pipelib(DvzContext* ctx)
 {
-    ASSERT(gpu != NULL);
+    ASSERT(ctx != NULL);
+    ASSERT(ctx->gpu != NULL);
     DvzPipelib lib = {0};
-    lib.gpu = gpu;
+    lib.gpu = ctx->gpu;
     lib.graphics =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzPipe), DVZ_OBJECT_TYPE_PIPE);
     lib.computes =
