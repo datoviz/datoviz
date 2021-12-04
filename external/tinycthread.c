@@ -480,6 +480,17 @@ struct TinyCThreadTSSData {
 
 static tss_dtor_t _tinycthread_tss_dtors[1088] = { NULL, };
 
+
+// https://github.com/tinycthread/tinycthread/issues/52
+#if defined(_MSC_VER) &&                                                                          \
+    (!defined(STDC_NO_THREADS) || defined(STDC_NO_THREADS) && STDC_NO_THREADS == 1)
+#define _Thread_local __declspec(thread)
+#else
+#if defined(GNUC) || defined(__INTEL_COMPILER) || defined(__SUNPRO_CC) || defined(IBMCPP)
+#define _Thread_local __thread
+#endif
+#endif
+
 static _Thread_local struct TinyCThreadTSSData* _tinycthread_tss_head = NULL;
 static _Thread_local struct TinyCThreadTSSData* _tinycthread_tss_tail = NULL;
 
