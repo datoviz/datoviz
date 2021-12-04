@@ -385,7 +385,7 @@ static int _proc_wait(DvzDeqProc* proc)
     {
         // NOTE: this call automatically releases the mutex while waiting, and reacquires it
         // afterwards
-        return pthread_cond_wait(&proc->cond, &proc->lock);
+        return dvz_cond_wait(&proc->cond, &proc->lock);
     }
     else
     {
@@ -405,7 +405,7 @@ static int _proc_wait(DvzDeqProc* proc)
 
         // NOTE: this call automatically releases the mutex while waiting, and reacquires it
         // afterwards
-        return pthread_cond_timedwait(&proc->cond, &proc->lock, &proc->wait);
+        return dvz_cond_timedwait(&proc->cond, &proc->lock, &proc->wait);
     }
 }
 
@@ -511,10 +511,8 @@ void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t
     }
 
     // Initialize the thread objects.
-    if (pthread_mutex_init(&proc->lock, NULL) != 0)
-        log_error("mutex creation failed");
-    if (pthread_cond_init(&proc->cond, NULL) != 0)
-        log_error("cond creation failed");
+    proc->lock = dvz_mutex();
+    proc->cond = dvz_cond();
     proc->is_processing = dvz_atomic();
 }
 
@@ -623,15 +621,15 @@ _deq_enqueue_item(DvzDeq* deq, uint32_t deq_idx, DvzDeqItem* deq_item, bool enqu
     DvzDeqProc* proc = &deq->procs[proc_idx];
 
     // We signal that proc that an item has been enqueued to one of its queues.
-    pthread_mutex_lock(&proc->lock);
+    dvz_mutex_lock(&proc->lock);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
     if (!enqueue_first)
         dvz_fifo_enqueue(fifo, deq_item);
     else
         dvz_fifo_enqueue_first(fifo, deq_item);
     // log_trace("signal cond of proc #%d", proc_idx);
-    pthread_cond_signal(&proc->cond);
-    pthread_mutex_unlock(&proc->lock);
+    dvz_cond_signal(&proc->cond);
+    dvz_mutex_unlock(&proc->lock);
 }
 
 void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item)
@@ -741,7 +739,7 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
 
-    pthread_mutex_lock(&proc->lock);
+    dvz_mutex_lock(&proc->lock);
 
     // Wait until the queue is not empty.
     if (wait)
@@ -798,7 +796,7 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
     }
     // IMPORTANT: we must unlock BEFORE calling the callbacks if we want to permit callbacks to
     // enqueue new tasks.
-    pthread_mutex_unlock(&proc->lock);
+    dvz_mutex_unlock(&proc->lock);
 
     // First, call the generic Proc pre callbacks.
     _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_PRE, &item_s);
@@ -872,7 +870,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
 
-    pthread_mutex_lock(&proc->lock);
+    dvz_mutex_lock(&proc->lock);
 
     // Find the number of items that should be dequeued now.
     int size = _deq_size(deq, proc->queue_count, proc->queue_indices);
@@ -885,7 +883,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
     else
     {
         // Skip this function if there are no pending items in the dequeue.
-        pthread_mutex_unlock(&proc->lock);
+        dvz_mutex_unlock(&proc->lock);
         return;
     }
     uint32_t k = 0;     // item index for each queue
@@ -933,7 +931,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
 
     // IMPORTANT: we must unlock BEFORE calling the callbacks if we want to permit callbacks to
     // enqueue new tasks.
-    pthread_mutex_unlock(&proc->lock);
+    dvz_mutex_unlock(&proc->lock);
 
     // Call the typed callbacks.
     dvz_atomic_set(proc->is_processing, 1);
@@ -1018,8 +1016,8 @@ void dvz_deq_destroy(DvzDeq* deq)
 
     for (uint32_t i = 0; i < deq->proc_count; i++)
     {
-        pthread_mutex_destroy(&deq->procs[i].lock);
-        pthread_cond_destroy(&deq->procs[i].cond);
+        dvz_mutex_destroy(&deq->procs[i].lock);
+        dvz_cond_destroy(&deq->procs[i].cond);
         dvz_atomic_destroy(deq->procs[i].is_processing);
     }
 }

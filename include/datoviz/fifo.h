@@ -185,8 +185,8 @@ struct DvzDeqProc
 
     // Mutex and cond to signal when the deq is non-empty, and when to dequeue the first non-empty
     // underlying FIFO queues.
-    pthread_mutex_t lock;
-    pthread_cond_t cond;
+    DvzMutex lock;
+    DvzCond cond;
     uint32_t max_wait; // maximum number of milliseconds to wait between each queue size probing
     struct timespec wait;
     DvzAtomic is_processing;
