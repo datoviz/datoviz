@@ -8,20 +8,15 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdio.h>
-
+#include "test_vklite.h"
 #include "../src/vklite_utils.h"
 #include "fileio.h"
+#include "gui.h"
 #include "resources.h"
 #include "test.h"
-#include "test_vklite.h"
 #include "testing.h"
 #include "vklite.h"
 #include "window.h"
-
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui/cimgui.h"
-#include "cimgui/cimgui_impl.h"
 
 
 
@@ -814,118 +809,6 @@ int test_vklite_graphics(TstSuite* suite)
 
 
 
-static void _imgui_check_vk_result(VkResult err)
-{
-    if (err == 0)
-        return;
-    log_error("VkResult %d\n", err);
-    if (err < 0)
-        abort();
-}
-
-static inline bool _check_imgui_context()
-{
-    if (igGetCurrentContext() == NULL)
-    {
-        log_error("no more ImGui context, skipping Dear ImGui callback");
-        return false;
-    }
-    return true;
-}
-
-static void _imgui_init(DvzGpu* gpu, DvzRenderpass* renderpass)
-{
-    igDebugCheckVersionAndDataLayout(
-        "1.85", sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4),
-        sizeof(ImDrawVert), sizeof(ImDrawIdx));
-    igCreateContext(NULL);
-    ImGuiIO* io = igGetIO();
-
-    io->IniFilename = NULL;
-
-    ImGui_ImplVulkan_InitInfo init_info = {0};
-    init_info.Instance = gpu->host->instance;
-    init_info.PhysicalDevice = gpu->physical_device;
-    init_info.Device = gpu->device;
-    // TODO: queue index: render
-    init_info.QueueFamily = gpu->queues.queue_families[0];
-    init_info.Queue = gpu->queues.queues[0];
-    init_info.DescriptorPool = gpu->dset_pool;
-    // init_info.PipelineCache = gpu->pipeline_cache;
-    // init_info.Allocator = gpu->allocator;
-
-    // TODO
-    init_info.MinImageCount = 2;
-    init_info.ImageCount = 2;
-
-    init_info.CheckVkResultFn = _imgui_check_vk_result;
-
-    ImGui_ImplVulkan_Init(&init_info, renderpass->renderpass);
-
-    io->DisplaySize.x = WIDTH;
-    io->DisplaySize.y = HEIGHT;
-
-
-
-    // int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-    //             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
-    //             | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-    //             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-    //             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-    igSetNextWindowBgAlpha(0.5f);
-
-    float distance = 0;
-    int corner = 0;
-    ASSERT(corner >= 0);
-    ImVec2 window_pos = (ImVec2){
-        (corner & 1) ? io->DisplaySize.x - distance : distance,
-        (corner & 2) ? io->DisplaySize.y - distance : distance};
-    ImVec2 window_pos_pivot = (ImVec2){(corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f};
-    igSetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-}
-
-static void _imgui_destroy()
-{
-    ImGui_ImplVulkan_Shutdown();
-    ASSERT(igGetCurrentContext() != NULL);
-    igDestroyContext(igGetCurrentContext());
-    ASSERT(igGetCurrentContext() == NULL);
-}
-
-static void _imgui_fonts_upload(DvzGpu* gpu)
-{
-    ASSERT(igGetCurrentContext() != NULL);
-
-    // Load Fonts.
-    // Load first font.
-    {
-        // float font_size = 14.0f;
-        // ASSERT(font_size > 0);
-        // ImFontConfig config = {0};
-        // config.FontDataOwnedByAtlas = false; // Important!
-        // ImGuiIO* io = igGetIO();
-        // unsigned long file_size = 0;
-        // unsigned char* buffer = dvz_resource_font("Roboto_Medium", &file_size);
-        // ASSERT(file_size > 0);
-        // ASSERT(buffer != NULL);
-        // ImFontAtlas_AddFontDefault(io->Fonts, NULL);
-        // font = ImFontAtlas_AddFontFromMemoryTTF(
-        //     io->Fonts, buffer, file_size, font_size, &config, NULL);
-        // ASSERT(font != NULL);
-        // ASSERT(ImFont_IsLoaded(font));
-    }
-
-
-    DvzCommands cmd = dvz_commands(gpu, 0, 1);
-    dvz_cmd_begin(&cmd, 0);
-    ImGui_ImplVulkan_CreateFontsTexture(cmd.cmds[0]);
-    dvz_cmd_end(&cmd, 0);
-    dvz_cmd_submit_sync(&cmd, 0);
-
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
-    dvz_commands_destroy(&cmd);
-}
-
 int test_vklite_imgui(TstSuite* suite)
 {
     ASSERT(suite != NULL);
@@ -934,37 +817,28 @@ int test_vklite_imgui(TstSuite* suite)
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
-
     TestCanvas canvas = offscreen(gpu);
-    _imgui_init(gpu, &canvas.renderpass);
-    _imgui_fonts_upload(gpu);
+
+    // Need to init the GUI engine.
+    dvz_gui_init(gpu, &canvas.renderpass, WIDTH, HEIGHT);
 
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
     dvz_cmd_begin_renderpass(&cmds, 0, &canvas.renderpass, &canvas.framebuffers);
-    ImGui_ImplVulkan_NewFrame();
-    igNewFrame();
 
-    const ImGuiViewport* main_viewport = igGetMainViewport();
-    igSetNextWindowPos(
-        (ImVec2){main_viewport->WorkPos.x, main_viewport->WorkPos.y}, ImGuiCond_FirstUseEver,
-        (ImVec2){0, 0});
-    igSetNextWindowSize((ImVec2){200, 200}, ImGuiCond_FirstUseEver);
+    // Mark the beginning and end of the frame.
+    dvz_gui_frame_begin();
+    // The GUI code goes here.
 
-    bool open = true;
-    // igPushFont(font);
-    // igBegin("Hello", &open, ImGuiWindowFlags_NoSavedSettings);
-    // igText("hello");
-    // igPopFont();
-    // igEnd();
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    igText("Hello world");
+    dvz_gui_dialog_end();
+    // dvz_gui_demo();
 
-    ImGuiIO* io = igGetIO();
-    igShowDemoWindow(&open);
+    dvz_gui_frame_end(&cmds, 0);
 
-    igRender();
-    ImGui_ImplVulkan_RenderDrawData(igGetDrawData(), cmds.cmds[0], VK_NULL_HANDLE);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
@@ -978,7 +852,9 @@ int test_vklite_imgui(TstSuite* suite)
 
     test_canvas_destroy(&canvas);
 
-    _imgui_destroy();
+    // Destroy the GUI engine.
+    dvz_gui_destroy();
+
     dvz_gpu_destroy(gpu);
     return 0;
 }

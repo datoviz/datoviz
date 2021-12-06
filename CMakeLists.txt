@@ -505,6 +505,7 @@ set(sources
     "src/pipelib.c"
     "src/graphics.c"
     "src/graphics_data.c"
+    "src/gui.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
