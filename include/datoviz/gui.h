@@ -59,7 +59,8 @@ EXTERN_C_ON
 // TODO: docstrings
 
 DVZ_EXPORT DvzGui dvz_gui(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, uint32_t width, uint32_t height);
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, //
+    uint32_t queue_idx, uint32_t width, uint32_t height);
 
 
 

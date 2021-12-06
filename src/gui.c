@@ -42,7 +42,10 @@ static inline bool _check_imgui_context()
     return true;
 }
 
-static void _imgui_init(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
+
+
+static void _imgui_init(
+    DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t queue_idx, uint32_t width, uint32_t height)
 {
     igDebugCheckVersionAndDataLayout(
         "1.85", sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4),
@@ -56,9 +59,9 @@ static void _imgui_init(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, 
     init_info.Instance = gpu->host->instance;
     init_info.PhysicalDevice = gpu->physical_device;
     init_info.Device = gpu->device;
-    // TODO: queue index: render
-    init_info.QueueFamily = gpu->queues.queue_families[0];
-    init_info.Queue = gpu->queues.queues[0];
+    // should be the render queue idx
+    init_info.QueueFamily = gpu->queues.queue_families[queue_idx];
+    init_info.Queue = gpu->queues.queues[queue_idx];
     init_info.DescriptorPool = gpu->dset_pool;
     // init_info.PipelineCache = gpu->pipeline_cache;
     // init_info.Allocator = gpu->allocator;
@@ -75,6 +78,8 @@ static void _imgui_init(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, 
     io->DisplaySize.y = height;
 }
 
+
+
 static void _imgui_setup()
 {
     ImGuiIO* io = igGetIO();
@@ -83,17 +88,19 @@ static void _imgui_setup()
     //             | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
     //             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
     //             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-    igSetNextWindowBgAlpha(0.5f);
+    // igSetNextWindowBgAlpha(0.5f);
 
-    float distance = 0;
-    int corner = 0;
-    ASSERT(corner >= 0);
-    ImVec2 window_pos = (ImVec2){
-        (corner & 1) ? io->DisplaySize.x - distance : distance,
-        (corner & 2) ? io->DisplaySize.y - distance : distance};
-    ImVec2 window_pos_pivot = (ImVec2){(corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f};
-    igSetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    // float distance = 0;
+    // int corner = 0;
+    // ASSERT(corner >= 0);
+    // ImVec2 window_pos = (ImVec2){
+    //     (corner & 1) ? io->DisplaySize.x - distance : distance,
+    //     (corner & 2) ? io->DisplaySize.y - distance : distance};
+    // ImVec2 window_pos_pivot = (ImVec2){(corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f};
+    // igSetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 }
+
+
 
 static void _imgui_fonts_upload(DvzGpu* gpu)
 {
@@ -129,6 +136,8 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
     dvz_commands_destroy(&cmd);
 }
 
+
+
 static void _imgui_set_window(DvzWindow* window)
 {
     ASSERT(window != NULL);
@@ -140,6 +149,8 @@ static void _imgui_set_window(DvzWindow* window)
             ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->backend_window, true);
     }
 }
+
+
 
 static void _imgui_destroy(bool use_glfw)
 {
@@ -157,12 +168,13 @@ static void _imgui_destroy(bool use_glfw)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzGui
-dvz_gui(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, uint32_t width, uint32_t height)
+DvzGui dvz_gui(
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, //
+    uint32_t queue_idx, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
     ASSERT(renderpass != NULL);
-    _imgui_init(gpu, renderpass, width, height);
+    _imgui_init(gpu, renderpass, queue_idx, width, height);
     _imgui_setup();
     _imgui_fonts_upload(gpu);
     if (window)
@@ -193,8 +205,8 @@ void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size)
 {
     ASSERT(gui != NULL);
 
-    const ImGuiViewport* main_viewport = igGetMainViewport();
-    igSetNextWindowPos((ImVec2){pos[0], pos[1]}, ImGuiCond_Always, (ImVec2){0, 0});
+    // const ImGuiViewport* main_viewport = igGetMainViewport();
+    igSetNextWindowPos((ImVec2){pos[0], pos[1]}, ImGuiCond_FirstUseEver, (ImVec2){0, 0});
     // (ImVec2){main_viewport->WorkPos.x, main_viewport->WorkPos.y},
     igSetNextWindowSize((ImVec2){size[0], size[1]}, ImGuiCond_FirstUseEver);
 

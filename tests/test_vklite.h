@@ -84,6 +84,7 @@ struct TestCanvas
 };
 
 
+
 struct TestVisual
 {
     DvzGpu* gpu;
@@ -451,6 +452,10 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
         {
             dvz_fences_copy(&fences, cur_frame, &bak_fences, swapchain->img_idx);
 
+            // Refill the command buffer.
+            dvz_cmd_reset(&cmds, swapchain->img_idx);
+            fill_commands(canvas, &cmds, swapchain->img_idx);
+
             // Then, we submit the cmds on that image
             DvzSubmit submit = dvz_submit(gpu);
             dvz_submit_commands(&submit, &cmds);
@@ -659,10 +664,11 @@ int test_vklite_surface(TstSuite*);
 int test_vklite_window(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
-int test_vklite_imgui(TstSuite*);
+int test_vklite_gui(TstSuite*);
 
 int test_vklite_canvas_blank(TstSuite*);
 int test_vklite_canvas_triangle(TstSuite*);
+int test_vklite_canvas_gui(TstSuite*);
 
 
 #endif

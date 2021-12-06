@@ -106,9 +106,10 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_window)
     TEST(test_vklite_swapchain)
     TEST(test_vklite_graphics)
-    TEST(test_vklite_imgui)
+    TEST(test_vklite_gui)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
+    TEST(test_vklite_canvas_gui)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

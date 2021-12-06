@@ -809,7 +809,7 @@ int test_vklite_graphics(TstSuite* suite)
 
 
 
-int test_vklite_imgui(TstSuite* suite)
+int test_vklite_gui(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
@@ -820,7 +820,7 @@ int test_vklite_imgui(TstSuite* suite)
     TestCanvas canvas = offscreen(gpu);
 
     // Need to init the GUI engine.
-    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, NULL, WIDTH, HEIGHT);
+    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, NULL, 0, WIDTH, HEIGHT);
 
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
@@ -1007,5 +1007,58 @@ int test_vklite_canvas_triangle(TstSuite* suite)
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);
+    return 0;
+}
+
+
+
+static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(cmds != NULL);
+    DvzGui* gui = (DvzGui*)canvas->data;
+    ASSERT(gui != NULL);
+
+    // Begin the command buffer and renderpass.
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
+
+    // Begin the GUI frame.
+    dvz_gui_frame_begin(gui);
+
+    // GUI code.
+    dvz_gui_dialog_begin(gui, (vec2){100, 100}, (vec2){200, 200});
+    igText("Hello world");
+    dvz_gui_dialog_end(gui);
+
+    // End the GUI frame.
+    dvz_gui_frame_end(gui, cmds, idx);
+
+    // End the renderpass and command buffer.
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
+}
+
+int test_vklite_canvas_gui(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+
+    DvzWindow* window = dvz_window(host, WIDTH, HEIGHT);
+    AT(window != NULL);
+    AT(window->surface != VK_NULL_HANDLE);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
+    dvz_gpu_create(gpu, window->surface);
+
+    TestCanvas canvas = test_canvas_create(gpu, window);
+    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, window, 0, WIDTH, HEIGHT);
+    canvas.data = &gui;
+    test_canvas_show(&canvas, _fill_gui, N_FRAMES);
+    test_canvas_destroy(&canvas);
+    dvz_gui_destroy(&gui);
+    dvz_gpu_destroy(gpu);
     return 0;
 }
