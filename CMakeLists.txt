@@ -93,8 +93,8 @@ file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/include/datoviz
     ${CMAKE_SOURCE_DIR}/external
-    ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends
+    ${CMAKE_SOURCE_DIR}/external/cimgui
+    ${CMAKE_SOURCE_DIR}/external/cimgui/imgui
 )
 
 # ---- OS-specific directories --------------------------------------------------------------------
@@ -451,6 +451,37 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 
 
 # -------------------------------------------------------------------------------------------------
+# Other binary resources
+# -------------------------------------------------------------------------------------------------
+
+# Color texture.
+set(path_colortex "${CMAKE_BINARY_DIR}/_colortex.c")
+add_custom_command(
+    OUTPUT ${path_colortex}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
+    -D PREFIX="texture"
+    -D OUTPUT=${path_colortex}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+)
+
+# Fonts.
+set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
+set(font_files
+    "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
+    "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
+add_custom_command(
+    OUTPUT ${path_fonts}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${font_files}"
+    -D PREFIX="font"
+    -D OUTPUT=${path_fonts}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+)
+
+
+# -------------------------------------------------------------------------------------------------
 # Source files
 # -------------------------------------------------------------------------------------------------
 
@@ -477,13 +508,15 @@ set(sources
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
-    "external/imgui/imgui.cpp"
-    "external/imgui/imgui_demo.cpp"
-    "external/imgui/imgui_draw.cpp"
-    "external/imgui/imgui_tables.cpp"
-    "external/imgui/imgui_widgets.cpp"
-    "external/imgui/backends/imgui_impl_glfw.cpp"
-    "external/imgui/backends/imgui_impl_vulkan.cpp"
+
+    "external/cimgui/imgui/imgui.cpp"
+    "external/cimgui/imgui/imgui_demo.cpp"
+    "external/cimgui/imgui/imgui_draw.cpp"
+    "external/cimgui/imgui/imgui_tables.cpp"
+    "external/cimgui/imgui/imgui_widgets.cpp"
+    "external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
+    "external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
+    "external/cimgui/cimgui.cpp"
 )
 
 
@@ -496,7 +529,7 @@ set(cpp_sources
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
 
-add_library(libdatoviz SHARED ${sources} ${path_shadersc})
+add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${path_fonts})
 set_source_files_properties(${cpp_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}

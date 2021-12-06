@@ -4,3 +4,6 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/datoviz/data
+[submodule "external/cimgui"]
+	path = external/cimgui
+	url = https://github.com/cimgui/cimgui.git
