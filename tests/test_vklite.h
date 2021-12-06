@@ -659,6 +659,8 @@ int test_vklite_surface(TstSuite*);
 int test_vklite_window(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
+int test_vklite_imgui(TstSuite*);
+
 int test_vklite_canvas_blank(TstSuite*);
 int test_vklite_canvas_triangle(TstSuite*);
 
