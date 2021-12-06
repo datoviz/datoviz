@@ -27,16 +27,26 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzGui DvzGui;
+
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderpass DvzRenderpass;
 typedef struct DvzCommands DvzCommands;
+typedef struct DvzWindow DvzWindow;
 
 
 
 /*************************************************************************************************/
-/*  Utils                                                                                        */
+/*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzGui
+{
+    DvzGpu* gpu;
+    bool use_glfw;
+    ImGuiIO* io;
+};
 
 
 
@@ -48,31 +58,32 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-void dvz_gui_init(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzGui dvz_gui(
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, uint32_t width, uint32_t height);
 
 
 
-void dvz_gui_frame_begin();
+DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui);
 
 
 
-void dvz_gui_dialog_begin();
+DVZ_EXPORT void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size);
 
 
 
-void dvz_gui_dialog_end();
+DVZ_EXPORT void dvz_gui_dialog_end(DvzGui* gui);
 
 
 
-void dvz_gui_demo();
+DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
 
 
 
-void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx);
 
 
 
-void dvz_gui_destroy();
+DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 
 
 

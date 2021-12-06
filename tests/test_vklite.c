@@ -820,7 +820,7 @@ int test_vklite_imgui(TstSuite* suite)
     TestCanvas canvas = offscreen(gpu);
 
     // Need to init the GUI engine.
-    dvz_gui_init(gpu, &canvas.renderpass, WIDTH, HEIGHT);
+    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, NULL, WIDTH, HEIGHT);
 
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
@@ -829,15 +829,15 @@ int test_vklite_imgui(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, &canvas.renderpass, &canvas.framebuffers);
 
     // Mark the beginning and end of the frame.
-    dvz_gui_frame_begin();
+    dvz_gui_frame_begin(&gui);
     // The GUI code goes here.
 
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_dialog_begin(&gui, (vec2){100, 100}, (vec2){200, 200});
     igText("Hello world");
-    dvz_gui_dialog_end();
+    dvz_gui_dialog_end(&gui);
     // dvz_gui_demo();
 
-    dvz_gui_frame_end(&cmds, 0);
+    dvz_gui_frame_end(&gui, &cmds, 0);
 
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -853,7 +853,7 @@ int test_vklite_imgui(TstSuite* suite)
     test_canvas_destroy(&canvas);
 
     // Destroy the GUI engine.
-    dvz_gui_destroy();
+    dvz_gui_destroy(&gui);
 
     dvz_gpu_destroy(gpu);
     return 0;
