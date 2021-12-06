@@ -182,7 +182,7 @@ if(DATOVIZ_WITH_PNG)
             GIT_TAG         libpng16
         )
         FetchContent_MakeAvailable(libpng)
-        
+
         set(INCL_DIRS ${INCL_DIRS} ${libpng_SOURCE_DIR})
         set(LINK_LIBS ${LINK_LIBS} "${libpng_BINARY_DIR}/libpng16d.lib")
         set(HAS_PNG 1)
@@ -477,6 +477,13 @@ set(sources
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
+    "external/imgui/imgui.cpp"
+    "external/imgui/imgui_demo.cpp"
+    "external/imgui/imgui_draw.cpp"
+    "external/imgui/imgui_tables.cpp"
+    "external/imgui/imgui_widgets.cpp"
+    "external/imgui/backends/imgui_impl_glfw.cpp"
+    "external/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
 
