@@ -1055,6 +1055,7 @@ int test_vklite_canvas_gui(TstSuite* suite)
 
     TestCanvas canvas = test_canvas_create(gpu, window);
     DvzGui gui = dvz_gui(gpu, &canvas.renderpass, window, 0, WIDTH, HEIGHT);
+    canvas.always_refill = true;
     canvas.data = &gui;
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);
     test_canvas_destroy(&canvas);

@@ -79,6 +79,7 @@ struct TestCanvas
 
     // NOTE: this is used in canvas tests
     // DvzDat* dat;
+    bool always_refill;
 
     void* data;
 };
@@ -452,9 +453,12 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
         {
             dvz_fences_copy(&fences, cur_frame, &bak_fences, swapchain->img_idx);
 
-            // Refill the command buffer.
-            dvz_cmd_reset(&cmds, swapchain->img_idx);
-            fill_commands(canvas, &cmds, swapchain->img_idx);
+            if (canvas->always_refill)
+            {
+                // Refill the command buffer.
+                dvz_cmd_reset(&cmds, swapchain->img_idx);
+                fill_commands(canvas, &cmds, swapchain->img_idx);
+            }
 
             // Then, we submit the cmds on that image
             DvzSubmit submit = dvz_submit(gpu);
