@@ -1,6 +1,0 @@
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui
-[submodule "data"]
-	path = data
-	url = https://github.com/datoviz/data
