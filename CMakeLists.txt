@@ -506,6 +506,7 @@ set(sources
     "src/graphics.c"
     "src/graphics_data.c"
     "src/gui.c"
+    "src/workspace.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
@@ -572,6 +573,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_pipe.c"
         "tests/test_pipelib.c"
         "tests/test_graphics.c"
+        "tests/test_workspace.c"
         "tests/test.c"
     )
 

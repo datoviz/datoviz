@@ -27,6 +27,7 @@
 #include "test_transfers.h"
 #include "test_vklite.h"
 #include "test_window.h"
+#include "test_workspace.h"
 #include "testing.h"
 
 
@@ -150,6 +151,9 @@ int dvz_run_tests(const char* match)
 
     // Testing pipelib.
     TEST(test_pipelib_1)
+
+    // Testing workspace.
+    TEST(test_workspace_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)

@@ -1,18 +1,16 @@
 /*************************************************************************************************/
-/*  Dear ImGUI wrapper                                                                           */
+/*  Workspace                                                                                    */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_GUI
-#define DVZ_HEADER_GUI
+#ifndef DVZ_HEADER_WORKSPACE
+#define DVZ_HEADER_WORKSPACE
 
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                    */
+/*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui/cimgui.h"
 #include "common.h"
 
 
@@ -27,13 +25,12 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzGui DvzGui;
+typedef struct DvzWorkspace DvzWorkspace;
 
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
-typedef struct DvzRenderpass DvzRenderpass;
-typedef struct DvzCommands DvzCommands;
-typedef struct DvzWindow DvzWindow;
+typedef struct DvzCanvas DvzCanvas;
+typedef struct DvzBoard DvzBoard;
 
 
 
@@ -41,11 +38,12 @@ typedef struct DvzWindow DvzWindow;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzGui
+struct DvzWorkspace
 {
+    DvzObject obj;
     DvzGpu* gpu;
-    bool use_glfw;
-    ImGuiIO* io;
+    DvzContainer boards;
+    DvzContainer canvases;
 };
 
 
@@ -58,33 +56,21 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzGui dvz_gui(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, //
-    uint32_t queue_idx, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzWorkspace dvz_workspace(DvzGpu* gpu);
 
 
 
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui);
+DVZ_EXPORT DvzBoard*
+dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
 
 
 
-DVZ_EXPORT void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size);
+DVZ_EXPORT DvzCanvas*
+dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
 
 
 
-DVZ_EXPORT void dvz_gui_dialog_end(DvzGui* gui);
-
-
-
-DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
-
-
-
-DVZ_EXPORT void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx);
-
-
-
-DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
+DVZ_EXPORT void dvz_workspace_destroy(DvzWorkspace* workspace);
 
 
 
