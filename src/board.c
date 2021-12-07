@@ -361,4 +361,6 @@ void dvz_board_destroy(DvzBoard* board)
     dvz_images_destroy(&board->staging);
     dvz_renderpass_destroy(&board->renderpass);
     dvz_framebuffers_destroy(&board->framebuffers);
+
+    dvz_obj_destroyed(&board->obj);
 }
