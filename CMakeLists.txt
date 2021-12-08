@@ -508,6 +508,7 @@ set(sources
     "src/gui.c"
     "src/workspace.c"
     "src/request.c"
+    "src/map.cpp"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
