@@ -53,6 +53,9 @@ void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t heigh
 void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags)
 {
     CREATE_REQUEST(CREATE, DAT)
+    req->content.dat.type = type;
+    req->content.dat.size = size;
+    req->content.dat.flags = flags;
     return 0;
 }
 
@@ -62,6 +65,10 @@ void dvz_create_tex(
     DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
     CREATE_REQUEST(CREATE, TEX)
+    req->content.tex.dims = dims;
+    memcpy(req->content.tex.shape, shape, sizeof(uvec3));
+    req->content.tex.format = format;
+    req->content.tex.flags = flags;
     return 0;
 }
 

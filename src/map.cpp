@@ -153,5 +153,7 @@ void* dvz_map_last(DvzMap* map, int type)
 void dvz_map_destroy(DvzMap* map)
 {
     if (map != NULL)
+    {
         delete map;
+    }
 }

@@ -71,6 +71,21 @@ union DvzRequestContent
         uint32_t width, height;
         int flags;
     } canvas;
+
+    struct
+    {
+        DvzBufferType type;
+        DvzSize size;
+        int flags;
+    } dat;
+
+    struct
+    {
+        DvzTexDims dims;
+        uvec3 shape;
+        DvzFormat format;
+        int flags;
+    } tex;
 };
 
 
