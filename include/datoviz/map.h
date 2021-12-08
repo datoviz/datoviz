@@ -21,6 +21,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_ID_NONE 0
+
 
 
 /*************************************************************************************************/
@@ -74,7 +76,7 @@ DVZ_EXPORT void* dvz_map_get(DvzMap* map, DvzId key);
 
 
 
-DVZ_EXPORT uint32_t dvz_map_count(DvzMap* map, int type);
+DVZ_EXPORT uint64_t dvz_map_count(DvzMap* map, int type);
 
 
 

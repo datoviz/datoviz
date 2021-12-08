@@ -71,6 +71,10 @@ DvzId dvz_map_id(DvzMap* map)
 void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 {
     ASSERT(map != NULL);
+    ASSERT(key > 0);
+    ASSERT(type != 0);
+    ASSERT(value != NULL);
+
     map->_map[key] = std::pair<int, void*>(type, value);
 }
 
@@ -80,6 +84,8 @@ void dvz_map_remove(DvzMap* map, DvzId key)
 {
 
     ASSERT(map != NULL);
+    ASSERT(key != DVZ_ID_NONE);
+
     map->_map.erase(key);
 }
 
@@ -88,15 +94,29 @@ void dvz_map_remove(DvzMap* map, DvzId key)
 void* dvz_map_get(DvzMap* map, DvzId key)
 {
     ASSERT(map != NULL);
+    ASSERT(key != DVZ_ID_NONE);
+
     return map->_map[key].second;
 }
 
 
 
-uint32_t dvz_map_count(DvzMap* map, int type)
+uint64_t dvz_map_count(DvzMap* map, int type)
 {
     ASSERT(map != NULL);
-    return map->_map.size();
+
+    if (type == 0)
+        return map->_map.size();
+    else
+    {
+        uint64_t count = 0;
+        for (const auto& [id, pair] : map->_map)
+        {
+            if (pair.first == type)
+                count++;
+        }
+        return count;
+    }
 }
 
 
@@ -104,9 +124,10 @@ uint32_t dvz_map_count(DvzMap* map, int type)
 void* dvz_map_first(DvzMap* map, int type)
 {
     ASSERT(map != NULL);
+
     for (const auto& [id, pair] : map->_map)
     {
-        if (pair.first == type)
+        if (type == 0 || pair.first == type)
             return pair.second;
     }
     log_trace("no item with type %d found in map", type);
@@ -120,7 +141,7 @@ void* dvz_map_last(DvzMap* map, int type)
     ASSERT(map != NULL);
     for (const auto& [id, pair] : reverse(map->_map))
     {
-        if (pair.first == type)
+        if (type == 0 || pair.first == type)
             return pair.second;
     }
     log_trace("no item with type %d found in map", type);
