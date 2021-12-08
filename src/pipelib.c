@@ -57,17 +57,20 @@ static DvzDat* _make_dat_viewport(DvzContext* ctx, vec2 size)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzPipelib dvz_pipelib(DvzContext* ctx)
+DvzPipelib* dvz_pipelib(DvzContext* ctx)
 {
     ASSERT(ctx != NULL);
     ASSERT(ctx->gpu != NULL);
-    DvzPipelib lib = {0};
-    lib.gpu = ctx->gpu;
-    lib.graphics =
+
+    DvzPipelib* lib = calloc(1, sizeof(DvzPipelib));
+    ASSERT(lib != NULL);
+
+    lib->gpu = ctx->gpu;
+    lib->graphics =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzPipe), DVZ_OBJECT_TYPE_PIPE);
-    lib.computes =
+    lib->computes =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzPipe), DVZ_OBJECT_TYPE_PIPE);
-    dvz_obj_created(&lib.obj);
+    dvz_obj_created(&lib->obj);
     log_trace("pipelib created");
     return lib;
 }
@@ -144,4 +147,6 @@ void dvz_pipelib_destroy(DvzPipelib* lib)
     dvz_container_destroy(&lib->graphics);
     dvz_container_destroy(&lib->computes);
     dvz_obj_destroyed(&lib->obj);
+
+    FREE(lib);
 }

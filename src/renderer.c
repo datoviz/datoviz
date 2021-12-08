@@ -31,7 +31,7 @@ DvzRenderer dvz_renderer_offscreen(DvzGpu* gpu)
     rd.ctx = dvz_context(gpu);
     ASSERT(rd.ctx != NULL);
 
-    rd.lib = dvz_pipelib(rd.ctx);
+    rd.pipelib = dvz_pipelib(rd.ctx);
     rd.workspace = dvz_workspace(gpu);
     rd.map = dvz_map();
 
@@ -68,7 +68,7 @@ void dvz_renderer_destroy(DvzRenderer* rd)
     ASSERT(rd != NULL);
 
     dvz_map_destroy(rd->map);
-    dvz_pipelib_destroy(&rd->lib);
+    dvz_pipelib_destroy(rd->pipelib);
     dvz_workspace_destroy(&rd->workspace);
     dvz_context_destroy(rd->ctx);
     dvz_obj_destroyed(&rd->obj);

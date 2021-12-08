@@ -41,11 +41,11 @@ int test_pipelib_1(TstSuite* suite)
     dvz_board_create(&board);
 
     // Create the pipelib.
-    DvzPipelib lib = dvz_pipelib(ctx);
+    DvzPipelib* lib = dvz_pipelib(ctx);
 
     // Create a graphics pipe.
     DvzPipe* pipe =
-        dvz_pipelib_graphics(&lib, ctx, &board.renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE, 0);
+        dvz_pipelib_graphics(lib, ctx, &board.renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE, 0);
 
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
@@ -77,8 +77,7 @@ int test_pipelib_1(TstSuite* suite)
     dvz_board_free(&board);
 
     // Destruction.
-    // dvz_pipelib_pipe_destroy(&lib, pipe);
-    dvz_pipelib_destroy(&lib);
+    dvz_pipelib_destroy(lib);
     dvz_board_destroy(&board);
     dvz_context_destroy(ctx);
     return 0;

@@ -66,7 +66,7 @@ EXTERN_C_ON
  * @param ctx the context
  * @returns the pipelib
  */
-DVZ_EXPORT DvzPipelib dvz_pipelib(DvzContext* ctx);
+DVZ_EXPORT DvzPipelib* dvz_pipelib(DvzContext* ctx);
 
 
 
