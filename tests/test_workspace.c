@@ -28,8 +28,8 @@ int test_workspace_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    DvzWorkspace ws = dvz_workspace(gpu);
-    DvzBoard* board = dvz_workspace_board(&ws, WIDTH, HEIGHT, 0);
+    DvzWorkspace* ws = dvz_workspace(gpu);
+    DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
     ASSERT(board != NULL);
 
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
@@ -51,6 +51,6 @@ int test_workspace_1(TstSuite* suite)
         AT(rgba[i] == board->clear_color[i % 3])
     dvz_board_free(board);
 
-    dvz_workspace_destroy(&ws);
+    dvz_workspace_destroy(ws);
     return 0;
 }

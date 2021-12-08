@@ -14,17 +14,17 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzWorkspace dvz_workspace(DvzGpu* gpu)
+DvzWorkspace* dvz_workspace(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    DvzWorkspace ws = {0};
-    ws.gpu = gpu;
-    ws.boards =
+    DvzWorkspace* ws = calloc(1, sizeof(DvzWorkspace));
+    ws->gpu = gpu;
+    ws->boards =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBoard), DVZ_OBJECT_TYPE_BOARD);
     // TODO
-    // ws.canvases =
+    // ws->canvases =
     //     dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
-    dvz_obj_init(&ws.obj);
+    dvz_obj_init(&ws->obj);
     return ws;
 }
 
@@ -67,4 +67,5 @@ void dvz_workspace_destroy(DvzWorkspace* workspace)
     dvz_container_destroy(&workspace->canvases);
 
     dvz_obj_destroyed(&workspace->obj);
+    FREE(workspace);
 }

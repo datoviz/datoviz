@@ -56,7 +56,7 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzWorkspace dvz_workspace(DvzGpu* gpu);
+DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu);
 
 
 

@@ -69,7 +69,7 @@ void dvz_renderer_destroy(DvzRenderer* rd)
 
     dvz_map_destroy(rd->map);
     dvz_pipelib_destroy(rd->pipelib);
-    dvz_workspace_destroy(&rd->workspace);
+    dvz_workspace_destroy(rd->workspace);
     dvz_context_destroy(rd->ctx);
     dvz_obj_destroyed(&rd->obj);
 }
