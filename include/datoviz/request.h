@@ -23,7 +23,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_ID_AUTO 0
+#define DVZ_REQUEST_VERSION 1
+#define DVZ_ID_AUTO         0
 
 
 
@@ -93,10 +94,6 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 // TODO: docstrings
-
-DVZ_EXPORT DvzId dvz_id(void);
-
-
 
 DVZ_EXPORT DvzRequest dvz_request();
 
