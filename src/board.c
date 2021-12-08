@@ -254,6 +254,12 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
     board->width = width;
     board->height = height;
     board->size = width * height * sizeof(cvec4);
+    // Realloc the RGBA CPU buffer storing the downloaded image.
+    if (board->rgba != NULL)
+    {
+        dvz_board_free(board);
+        dvz_board_alloc(board);
+    }
     dvz_board_recreate(board);
 }
 
@@ -292,7 +298,7 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 
 
-uint8_t* dvz_board_alloc(DvzBoard* board)
+cvec4* dvz_board_alloc(DvzBoard* board)
 {
     ASSERT(board != NULL);
     ASSERT(board->width > 0);

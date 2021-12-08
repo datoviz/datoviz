@@ -154,7 +154,7 @@ DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
  *
  * @param board the board
  */
-DVZ_EXPORT uint8_t* dvz_board_alloc(DvzBoard* board);
+DVZ_EXPORT cvec4* dvz_board_alloc(DvzBoard* board);
 
 
 
