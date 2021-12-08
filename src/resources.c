@@ -42,6 +42,10 @@ void dvz_resources(DvzGpu* gpu, DvzResources* res)
 
 
 
+void dvz_resources_wait(DvzResources* res) { ASSERT(res != NULL); }
+
+
+
 DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ASSERT(res != NULL);
@@ -112,6 +116,49 @@ void dvz_resources_destroy(DvzResources* res)
     dvz_container_destroy(&res->computes);
 
     dvz_obj_destroyed(&res->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Wait utils                                                                                   */
+/*************************************************************************************************/
+
+static void _wait_dat(DvzTransfers* transfers, bool staging, bool need_dealloc_stg)
+{
+    ASSERT(transfers != NULL);
+
+    if (staging)
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    else
+    {
+        // WARNING: for mappable buffers, the transfer is done on the main thread (using
+        // the COPY queue, not the UD queue), not in the background thread, so we need to
+        // dequeue the COPY queue manually!
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_queue_wait(transfers->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+    }
+
+    // Dequeue the upload_done event if needed.
+    if (need_dealloc_stg)
+        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+}
+
+
+
+static void _wait_dup(DvzTransfers* transfers, DvzDat* dat)
+{
+    ASSERT(transfers != NULL);
+    ASSERT(dat != NULL);
+
+    // IMPORTANT: before calling the dvz_transfers_frame(), we must wait for the DUP task
+    // to be in the queue. Here we dequeue it manually. The callback will add it to the
+    // special Dups structure, and it will be correctly processed by dvz_transfer_frame().
+    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_DUP, true);
+
+    ASSERT(dat->br.count > 0);
+    for (uint32_t i = 0; i < dat->br.count; i++)
+        dvz_transfers_frame(transfers, i);
 }
 
 
@@ -225,22 +272,7 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
         DvzDeqItem* done = need_dealloc_stg ? _create_upload_done(stg) : NULL;
         _enqueue_buffer_upload(&transfers->deq, dat->br, offset, stg_br, 0, size, data, done);
         if (wait)
-        {
-            if (staging)
-                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-            else
-            {
-                // WARNING: for mappable buffers, the transfer is done on the main thread (using
-                // the COPY queue, not the UD queue), not in the background thread, so we need to
-                // dequeue the COPY queue manually!
-                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-                dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
-            }
-
-            // Dequeue the upload_done event if needed.
-            if (need_dealloc_stg)
-                dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
-        }
+            _wait_dat(transfers, staging, need_dealloc_stg);
     }
 
     else
@@ -248,17 +280,7 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
         // Enqueue a dup transfer task, with or without staging buffer.
         _enqueue_dup_transfer(&transfers->deq, dat->br, offset, stg_br, 0, size, data);
         if (wait)
-        {
-
-            // IMPORTANT: before calling the dvz_transfers_frame(), we must wait for the DUP task
-            // to be in the queue. Here we dequeue it manually. The callback will add it to the
-            // special Dups structure, and it will be correctly processed by dvz_transfer_frame().
-            dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_DUP, true);
-
-            ASSERT(dat->br.count > 0);
-            for (uint32_t i = 0; i < dat->br.count; i++)
-                dvz_transfers_frame(transfers, i);
-        }
+            _wait_dup(transfers, dat);
     }
 }
 
@@ -335,7 +357,6 @@ void dvz_dat_destroy(DvzDat* dat)
 /*************************************************************************************************/
 /*  Texs                                                                                         */
 /*************************************************************************************************/
-
 
 DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
