@@ -12,12 +12,8 @@
 /*************************************************************************************************/
 
 #include "common.h"
-#include "context.h"
-#include "map.h"
 #include "pipe.h"
-#include "pipelib.h"
 #include "request.h"
-#include "workspace.h"
 
 
 
@@ -40,6 +36,10 @@
 typedef struct DvzRenderer DvzRenderer;
 
 // Forward declarations.
+typedef struct DvzContext DvzContext;
+typedef struct DvzPipelib DvzPipelib;
+typedef struct DvzWorkspace DvzWorkspace;
+typedef struct DvzMap DvzMap;
 
 
 
@@ -67,11 +67,11 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzRenderer dvz_renderer_offscreen(DvzGpu* gpu);
+DVZ_EXPORT DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu);
 
 
 
-DVZ_EXPORT DvzRenderer dvz_renderer_glfw(DvzGpu* gpu);
+DVZ_EXPORT DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu);
 
 
 

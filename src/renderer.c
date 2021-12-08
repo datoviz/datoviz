@@ -22,29 +22,31 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzRenderer dvz_renderer_offscreen(DvzGpu* gpu)
+DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    DvzRenderer rd = {0};
-    rd.gpu = gpu;
+    DvzRenderer* rd = calloc(1, sizeof(DvzRenderer));
+    ASSERT(rd != NULL);
+    rd->gpu = gpu;
 
-    rd.ctx = dvz_context(gpu);
-    ASSERT(rd.ctx != NULL);
+    rd->ctx = dvz_context(gpu);
+    ASSERT(rd->ctx != NULL);
 
-    rd.pipelib = dvz_pipelib(rd.ctx);
-    rd.workspace = dvz_workspace(gpu);
-    rd.map = dvz_map();
+    rd->pipelib = dvz_pipelib(rd->ctx);
+    rd->workspace = dvz_workspace(gpu);
+    rd->map = dvz_map();
 
-    dvz_obj_init(&rd.obj);
+    dvz_obj_init(&rd->obj);
     return rd;
 }
 
 
 
-DvzRenderer dvz_renderer_glfw(DvzGpu* gpu)
+DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     // TODO
+    return NULL;
 }
 
 
@@ -52,6 +54,7 @@ DvzRenderer dvz_renderer_glfw(DvzGpu* gpu)
 DvzId dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL); //
+    return 0;
 }
 
 
@@ -71,5 +74,7 @@ void dvz_renderer_destroy(DvzRenderer* rd)
     dvz_pipelib_destroy(rd->pipelib);
     dvz_workspace_destroy(rd->workspace);
     dvz_context_destroy(rd->ctx);
+
     dvz_obj_destroyed(&rd->obj);
+    FREE(rd);
 }
