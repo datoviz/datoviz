@@ -507,6 +507,7 @@ set(sources
     "src/graphics_data.c"
     "src/gui.c"
     "src/workspace.c"
+    "src/request.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
