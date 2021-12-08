@@ -806,7 +806,7 @@ void dvz_buffer_create(DvzBuffer* buffer)
 
     log_trace("starting creation of buffer...");
     _buffer_create(buffer);
-    ASSERT(buffer->memory != VK_NULL_HANDLE);
+    ASSERT(buffer->memory != 0);
 
     dvz_obj_created(&buffer->obj);
     log_trace("buffer created");
@@ -2520,7 +2520,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
         shader_stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shader_stages[i].stage = graphics->shader_stages[i];
         shader_stages[i].module = graphics->shader_modules[i];
-        ASSERT(graphics->shader_stages[i] != VK_NULL_HANDLE);
+        ASSERT(graphics->shader_stages[i] != 0);
         ASSERT(graphics->shader_modules[i] != NULL);
         shader_stages[i].pName = "main";
     }
@@ -3362,7 +3362,7 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
         wait_semaphores[i] =
             submit->wait_semaphores[i]->semaphores[submit->wait_semaphores_idx[i]];
         // log_trace("wait for semaphore %d", wait_semaphores[i]);
-        ASSERT(submit->wait_stages[i] != VK_NULL_HANDLE);
+        ASSERT(submit->wait_stages[i] != 0);
     }
 
     VkSemaphore signal_semaphores[DVZ_MAX_SEMAPHORES_PER_SUBMIT] = {0};

@@ -15,7 +15,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_BOARD_DEFAULT_FORMAT VK_FORMAT_B8G8R8A8_UNORM
+#define DVZ_BOARD_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
 #define DVZ_BOARD_DEFAULT_CLEAR_COLOR                                                             \
     (cvec4) { 0, 8, 18, 255 }
 

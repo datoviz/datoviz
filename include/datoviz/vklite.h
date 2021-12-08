@@ -436,7 +436,7 @@ struct DvzGraphics
     DvzObject obj;
     DvzGpu* gpu;
 
-    int type;
+    uint32_t type;
     int flags;
     bool support_pick;
     void* user_data;

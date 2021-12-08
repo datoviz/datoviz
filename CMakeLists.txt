@@ -361,10 +361,10 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wformat=2 -Winit-self \
     -Wno-unused-function \
     -Wno-unused-parameter \
+    -Wno-format-nonliteral \
     ")
     # -Wno-missing-field-initializers
     # -Wno-unused-result \
-    # -Wno-format-nonliteral \
     # -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------
@@ -383,7 +383,11 @@ if(CC_GCC)
 elseif(CC_CLANG)
     # clang
     set(COMMON_FLAGS "${COMMON_FLAGS} \
-        -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces -Wmissing-prototypes")
+        -Wno-unused-parameter \
+        -fcolor-diagnostics \
+        -Wno-missing-braces \
+        -Wmissing-prototypes \
+        ")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")

@@ -37,11 +37,11 @@ int test_resources_1(TstSuite* suite)
     ASSERT(buffer != NULL);
 
     uvec3 shape = {2, 4, 1};
-    DvzImages* img = dvz_resources_image(&res, DVZ_TEX_2D, shape, VK_FORMAT_R8G8B8A8_UNORM);
+    DvzImages* img = dvz_resources_image(&res, DVZ_TEX_2D, shape, DVZ_FORMAT_R8G8B8A8_UNORM);
     ASSERT(img != NULL);
 
     DvzSampler* sampler =
-        dvz_resources_sampler(&res, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+        dvz_resources_sampler(&res, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
     ASSERT(sampler != NULL);
 
     dvz_resources_destroy(&res);
@@ -82,7 +82,7 @@ int test_resources_tex_1(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
 
     // Allocate a tex.
     DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
@@ -196,7 +196,7 @@ int test_resources_tex_transfers(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
     DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.
@@ -243,7 +243,7 @@ int test_resources_tex_resize(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
     DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.

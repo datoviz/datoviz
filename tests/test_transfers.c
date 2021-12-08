@@ -245,7 +245,7 @@ int test_transfers_image_buffer(TstSuite* suite)
     uvec3 offset = {0, 8, 0};
     uvec3 shape = {8, 8, 1};
     DvzSize size = 256; // 8*8*4
-    DvzFormat format = VK_FORMAT_R8G8B8A8_UINT;
+    DvzFormat format = DVZ_FORMAT_R8G8B8A8_UINT;
 
     // Texture data.
     uint8_t data[256] = {0};
@@ -355,7 +355,7 @@ int test_transfers_direct_image(TstSuite* suite)
     uvec3 offset = {0, 16, 0};
     uvec3 shape = {16, 16, 1};
     DvzSize size = 256 * 4;
-    DvzFormat format = VK_FORMAT_R8G8B8A8_UINT;
+    DvzFormat format = DVZ_FORMAT_R8G8B8A8_UINT;
 
     // Texture data.
     uint8_t data[1024] = {0};
