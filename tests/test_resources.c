@@ -87,7 +87,7 @@ int test_resources_tex_1(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
 
     // Allocate a tex.
     DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
@@ -201,7 +201,7 @@ int test_resources_tex_transfers(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
     DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.
@@ -248,7 +248,7 @@ int test_resources_tex_resize(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     uvec3 shape = {2, 4, 1};
-    VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+    DvzFormat format = VK_FORMAT_R8G8B8A8_UNORM;
     DvzSize size = 4 * shape[0] * shape[1] * shape[2];
 
     // Create a data array.

@@ -11,8 +11,11 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
-#include "common.h"
-#include "resources.h"
+#include "_enums.h"
+#include "_log.h"
+#include "_macros.h"
+#include "_math.h"
+#include "_obj.h"
 
 
 
@@ -108,7 +111,7 @@ DVZ_EXPORT DvzId dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize siz
 
 
 DVZ_EXPORT DvzId
-dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, VkFormat format, int flags);
+dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 

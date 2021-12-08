@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_enums.h"
 #include "common.h"
 #include "vklite.h"
 
@@ -23,68 +24,6 @@
 #define TRANSFERABLE (VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT)
 
 #define DVZ_BUFFER_DEFAULT_SIZE (1 * 1024 * 1024)
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-// Default queue.
-typedef enum
-{
-    // NOTE: by convention in vklite, the first queue MUST support transfers
-    DVZ_DEFAULT_QUEUE_TRANSFER,
-    DVZ_DEFAULT_QUEUE_COMPUTE,
-    DVZ_DEFAULT_QUEUE_RENDER,
-    DVZ_DEFAULT_QUEUE_PRESENT,
-    DVZ_DEFAULT_QUEUE_COUNT,
-} DvzDefaultQueue;
-
-
-
-// Dat usage.
-// TODO: not implemented yet, going from these flags to DvzDatOptions
-typedef enum
-{
-    DVZ_DAT_USAGE_FREQUENT_NONE,
-    DVZ_DAT_USAGE_FREQUENT_UPLOAD = 0x0001,
-    DVZ_DAT_USAGE_FREQUENT_DOWNLOAD = 0x0002,
-    DVZ_DAT_USAGE_FREQUENT_RESIZE = 0x0004,
-} DvzDatUsage;
-
-
-
-// Dat options.
-typedef enum
-{
-    DVZ_DAT_OPTIONS_NONE = 0x0000,               // default: shared, with staging, single copy
-    DVZ_DAT_OPTIONS_STANDALONE = 0x0100,         // (or shared)
-    DVZ_DAT_OPTIONS_MAPPABLE = 0x0200,           // (or non-mappable = need staging buffer)
-    DVZ_DAT_OPTIONS_DUP = 0x0400,                // (or single copy)
-    DVZ_DAT_OPTIONS_KEEP_ON_RESIZE = 0x1000,     // (or loose the data when resizing the buffer)
-    DVZ_DAT_OPTIONS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzDatOptions;
-
-
-
-// Tex dims.
-typedef enum
-{
-    DVZ_TEX_NONE,
-    DVZ_TEX_1D,
-    DVZ_TEX_2D,
-    DVZ_TEX_3D,
-} DvzTexDims;
-
-
-
-// Tex options.
-typedef enum
-{
-    DVZ_TEX_OPTIONS_NONE = 0x0000,               // default
-    DVZ_TEX_OPTIONS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzTexOptions;
 
 
 
@@ -206,7 +145,7 @@ dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSi
  * @param format the image format
  */
 DVZ_EXPORT DvzImages*
-dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format);
+dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format);
 
 
 
@@ -358,7 +297,7 @@ DVZ_EXPORT void dvz_dat_destroy(DvzDat* dat);
  * @returns the Tex
  */
 DVZ_EXPORT DvzTex*
-dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flags);
+dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 

@@ -42,7 +42,7 @@ void dvz_resources(DvzGpu* gpu, DvzResources* res)
 
 
 
-DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, VkFormat format)
+DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ASSERT(res != NULL);
     ASSERT(res->gpu != NULL);
@@ -337,7 +337,7 @@ void dvz_dat_destroy(DvzDat* dat)
 /*************************************************************************************************/
 
 
-DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, VkFormat format, int flags)
+DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
     ASSERT(ctx != NULL);
     DvzResources* res = &ctx->res;

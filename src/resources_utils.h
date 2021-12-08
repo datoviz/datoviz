@@ -284,13 +284,14 @@ static void _transition_image(DvzImages* img)
 
 
 
-static void _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, VkFormat format)
+static void
+_make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ASSERT(img != NULL);
     *img = dvz_images(gpu, _image_type_from_dims(dims), 1);
 
     // Create the image.
-    dvz_images_format(img, format);
+    dvz_images_format(img, (VkFormat)format);
     dvz_images_size(img, shape);
     dvz_images_tiling(img, VK_IMAGE_TILING_OPTIMAL);
     dvz_images_layout(img, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -310,7 +311,7 @@ static void _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shap
 
 
 
-static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, VkFormat format)
+static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ASSERT(gpu != NULL);
     ASSERT(1 <= dims && dims <= 3);
@@ -559,7 +560,7 @@ static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
 
 
 static void
-_tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, uvec3 shape, VkFormat format)
+_tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ASSERT(res != NULL);
     ASSERT(tex != NULL);

@@ -11,7 +11,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_enums.h"
 #include "common.h"
+
 #include <vulkan/vulkan.h>
 
 MUTE_ON
@@ -117,39 +119,6 @@ typedef enum
     DVZ_COMMAND_COMPUTE,
     DVZ_COMMAND_GUI,
 } DvzCommandBufferType;
-
-
-
-// Buffer type.
-// NOTE: the enum index should correspond to the buffer index in the context->buffers container
-typedef enum
-{
-    DVZ_BUFFER_TYPE_UNDEFINED,
-    DVZ_BUFFER_TYPE_STAGING, // 1
-    DVZ_BUFFER_TYPE_VERTEX,  // 2
-    DVZ_BUFFER_TYPE_INDEX,   // 3
-    DVZ_BUFFER_TYPE_STORAGE, // 4
-    DVZ_BUFFER_TYPE_UNIFORM, // 5
-} DvzBufferType;
-
-
-
-// Texture axis.
-typedef enum
-{
-    DVZ_SAMPLER_AXIS_U,
-    DVZ_SAMPLER_AXIS_V,
-    DVZ_SAMPLER_AXIS_W,
-} DvzSamplerAxis;
-
-
-
-// Filter type.
-typedef enum
-{
-    DVZ_SAMPLER_FILTER_MIN,
-    DVZ_SAMPLER_FILTER_MAG,
-} DvzSamplerFilter;
 
 
 

@@ -42,7 +42,7 @@ static inline VkClearColorValue get_clear_color(cvec4 color)
 /*************************************************************************************************/
 
 static void make_renderpass(
-    DvzGpu* gpu, DvzRenderpass* renderpass, VkFormat format, VkClearColorValue clear_color)
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFormat format, VkClearColorValue clear_color)
 {
     ASSERT(gpu != NULL);
     ASSERT(renderpass != NULL);
@@ -58,7 +58,8 @@ static void make_renderpass(
     // Color attachment.
     dvz_renderpass_attachment(
         renderpass, 0, //
-        DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        DVZ_RENDERPASS_ATTACHMENT_COLOR, (VkFormat)format,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_renderpass_attachment_layout(renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
     dvz_renderpass_attachment_ops(
         renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
@@ -85,13 +86,13 @@ static void make_renderpass(
 
 
 static void
-make_images(DvzGpu* gpu, DvzImages* images, VkFormat format, uint32_t width, uint32_t height)
+make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
     ASSERT(images != NULL);
     *images = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
 
-    dvz_images_format(images, format);
+    dvz_images_format(images, (VkFormat)format);
     dvz_images_size(images, (uvec3){width, height, 1});
     dvz_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     dvz_images_usage(
@@ -125,13 +126,13 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
 
 
 static void
-make_staging(DvzGpu* gpu, DvzImages* staging, VkFormat format, uint32_t width, uint32_t height)
+make_staging(DvzGpu* gpu, DvzImages* staging, DvzFormat format, uint32_t width, uint32_t height)
 {
     ASSERT(gpu != NULL);
     ASSERT(staging != NULL);
     *staging = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
 
-    dvz_images_format(staging, format);
+    dvz_images_format(staging, (VkFormat)format);
     dvz_images_size(staging, (uvec3){width, height, 1});
     dvz_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
     dvz_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
@@ -187,7 +188,7 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
 
 
 
-void dvz_board_format(DvzBoard* board, VkFormat format)
+void dvz_board_format(DvzBoard* board, DvzFormat format)
 {
     ASSERT(board != NULL);
     board->format = format;

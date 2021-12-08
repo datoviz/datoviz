@@ -43,7 +43,7 @@ struct DvzBoard
     DvzObject obj;
     DvzGpu* gpu;
 
-    VkFormat format;
+    DvzFormat format;
     cvec4 clear_color;
     uint32_t width, height;
 
@@ -82,7 +82,7 @@ DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height);
  * @param board the board
  * @param format the image format
  */
-DVZ_EXPORT void dvz_board_format(DvzBoard* board, VkFormat format);
+DVZ_EXPORT void dvz_board_format(DvzBoard* board, DvzFormat format);
 
 
 
