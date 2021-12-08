@@ -100,8 +100,12 @@ typedef enum
 
 
 
-// VkFormat wrapper, with the most commonly used formats. This is to avoid a dependency to vulkan.h
-// WARNING: it is essential that the values match those of vulkan.h!
+/*************************************************************************************************/
+/*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
+/*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
+/*************************************************************************************************/
+
+// VkFormat wrapper.
 typedef enum
 {
     DVZ_FORMAT_NONE = 0,
@@ -115,6 +119,28 @@ typedef enum
     DVZ_FORMAT_R32_SINT = 99,
     DVZ_FORMAT_R32_SFLOAT = 100,
 } DvzFormat;
+
+
+
+// VkFilter wrapper.
+typedef enum
+{
+    DVZ_FILTER_NEAREST = 0,
+    DVZ_FILTER_LINEAR = 1,
+    DVZ_FILTER_CUBIC_IMG = 1000015000,
+} DvzFilter;
+
+
+
+// VkSamplerAddressMode wrapper.
+typedef enum
+{
+    DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
+    DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+    DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+} DvzSamplerAddressMode;
 
 
 

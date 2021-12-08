@@ -45,7 +45,7 @@ int test_board_1(TstSuite* suite)
 
     // Create the buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(TestVertex);
+    DvzSize size = 3 * sizeof(TestVertex);
     dvz_buffer_size(&buffer, size);
     dvz_buffer_usage(
         &buffer,                                 //

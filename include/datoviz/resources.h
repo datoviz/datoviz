@@ -160,7 +160,7 @@ dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat f
  * @param mode the address mode (along all dimensions)
  */
 DVZ_EXPORT DvzSampler*
-dvz_resources_sampler(DvzResources* res, VkFilter filter, VkSamplerAddressMode mode);
+dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode);
 
 
 

@@ -62,16 +62,16 @@ DvzBuffer* dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mapp
 
 
 
-DvzSampler* dvz_resources_sampler(DvzResources* res, VkFilter filter, VkSamplerAddressMode mode)
+DvzSampler* dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode)
 {
     ASSERT(res != NULL);
     DvzSampler* sampler = (DvzSampler*)dvz_container_alloc(&res->samplers);
     *sampler = dvz_sampler(res->gpu);
-    dvz_sampler_min_filter(sampler, filter);
-    dvz_sampler_mag_filter(sampler, filter);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, mode);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, mode);
-    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, mode);
+    dvz_sampler_min_filter(sampler, (VkFilter)filter);
+    dvz_sampler_mag_filter(sampler, (VkFilter)filter);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_U, (VkSamplerAddressMode)mode);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, (VkSamplerAddressMode)mode);
+    dvz_sampler_address_mode(sampler, DVZ_SAMPLER_AXIS_V, (VkSamplerAddressMode)mode);
     dvz_sampler_create(sampler);
     return sampler;
 }

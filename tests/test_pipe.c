@@ -38,7 +38,7 @@ int test_pipe_1(TstSuite* suite)
     dvz_board_create(&board);
 
     // Vertex buffer.
-    VkDeviceSize size = 3 * sizeof(TestVertex);
+    DvzSize size = 3 * sizeof(TestVertex);
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
     TestVertex data[] = TRIANGLE_VERTICES;
     dvz_dat_upload(dat_vertex, 0, size, data, true);
