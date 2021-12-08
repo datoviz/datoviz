@@ -23,6 +23,7 @@
 #include "test_obj.h"
 #include "test_pipe.h"
 #include "test_pipelib.h"
+#include "test_request.h"
 #include "test_resources.h"
 #include "test_thread.h"
 #include "test_transfers.h"
@@ -81,6 +82,9 @@ int dvz_run_tests(const char* match)
 
     // Testing map.
     TEST(test_map_1)
+
+    // Testing request.
+    TEST(test_request_1)
 
     // Testing window.
     TEST(test_window_1)

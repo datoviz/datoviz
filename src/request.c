@@ -18,28 +18,38 @@ DvzRequest dvz_request()
 
 
 
-DvzId dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags)
+void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(req != NULL);
-    // TODO
+    ASSERT(id > 0);
+    req->id = id;
+    req->action = DVZ_REQUEST_ACTION_CREATE;
+    req->type = DVZ_OBJECT_TYPE_CANVAS;
     return 0;
 }
 
 
 
-DvzId dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize size, int flags)
+void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags)
 {
+    ASSERT(id > 0);
     ASSERT(req != NULL);
-    // TODO
+    req->id = id;
+    req->action = DVZ_REQUEST_ACTION_CREATE;
+    req->type = DVZ_OBJECT_TYPE_DAT;
     return 0;
 }
 
 
 
-DvzId dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
+void dvz_create_tex(
+    DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
+    ASSERT(id > 0);
     ASSERT(req != NULL);
-    // TODO
+    req->id = id;
+    req->action = DVZ_REQUEST_ACTION_CREATE;
+    req->type = DVZ_OBJECT_TYPE_TEX;
     return 0;
 }
 

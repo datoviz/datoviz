@@ -16,7 +16,6 @@
 #include "_macros.h"
 #include "_math.h"
 #include "_obj.h"
-#include "map.h"
 
 
 
@@ -57,6 +56,7 @@ typedef union DvzRequestContent DvzRequestContent;
 
 // Forward declarations.
 typedef struct DvzPipe DvzPipe;
+typedef uint64_t DvzId;
 
 
 
@@ -97,16 +97,18 @@ DVZ_EXPORT DvzRequest dvz_request();
 
 
 
-DVZ_EXPORT DvzId dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT void
+dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags);
 
 
 
-DVZ_EXPORT DvzId dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize size, int flags);
+DVZ_EXPORT void
+dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags);
 
 
 
-DVZ_EXPORT DvzId
-dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+DVZ_EXPORT void dvz_create_tex(
+    DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 
