@@ -68,8 +68,9 @@ union DvzRequestContent
 {
     struct
     {
-        int a;
-    } a;
+        uint32_t width, height;
+        int flags;
+    } canvas;
 };
 
 
@@ -94,6 +95,10 @@ EXTERN_C_ON
 // TODO: docstrings
 
 DVZ_EXPORT DvzRequest dvz_request();
+
+
+
+DVZ_EXPORT void dvz_request_print(DvzRequest* req);
 
 
 

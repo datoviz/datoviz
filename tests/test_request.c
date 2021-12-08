@@ -29,6 +29,8 @@ int test_request_1(TstSuite* suite)
     DvzRequest rq = dvz_request();
     dvz_create_canvas(&rq, dvz_map_id(map), 800, 600, 0);
 
+    dvz_request_print(&rq);
+
     dvz_map_destroy(map);
     return 0;
 }

@@ -7,6 +7,19 @@
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define CREATE_REQUEST(_action, _type)                                                            \
+    ASSERT(req != NULL);                                                                          \
+    ASSERT(id > 0);                                                                               \
+    req->id = id;                                                                                 \
+    req->action = DVZ_REQUEST_ACTION_##_action;                                                   \
+    req->type = DVZ_OBJECT_TYPE_##_type;
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -18,13 +31,20 @@ DvzRequest dvz_request()
 
 
 
-void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags)
+void dvz_request_print(DvzRequest* req)
 {
     ASSERT(req != NULL);
-    ASSERT(id > 0);
-    req->id = id;
-    req->action = DVZ_REQUEST_ACTION_CREATE;
-    req->type = DVZ_OBJECT_TYPE_CANVAS;
+    log_info("Request action %d <type %d> <id %d>", req->action, req->type, req->id);
+}
+
+
+
+void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags)
+{
+    CREATE_REQUEST(CREATE, CANVAS)
+    req->content.canvas.width = width;
+    req->content.canvas.height = height;
+    req->content.canvas.flags = flags;
     return 0;
 }
 
@@ -32,11 +52,7 @@ void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t heigh
 
 void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags)
 {
-    ASSERT(id > 0);
-    ASSERT(req != NULL);
-    req->id = id;
-    req->action = DVZ_REQUEST_ACTION_CREATE;
-    req->type = DVZ_OBJECT_TYPE_DAT;
+    CREATE_REQUEST(CREATE, DAT)
     return 0;
 }
 
@@ -45,11 +61,7 @@ void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size,
 void dvz_create_tex(
     DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
-    ASSERT(id > 0);
-    ASSERT(req != NULL);
-    req->id = id;
-    req->action = DVZ_REQUEST_ACTION_CREATE;
-    req->type = DVZ_OBJECT_TYPE_TEX;
+    CREATE_REQUEST(CREATE, TEX)
     return 0;
 }
 
