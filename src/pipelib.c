@@ -35,7 +35,7 @@ static DvzDat* _make_dat_mvp(DvzContext* ctx)
 
 
 
-static DvzDat* _make_dat_viewport(DvzContext* ctx, vec2 size)
+static DvzDat* _make_dat_viewport(DvzContext* ctx, uvec2 size)
 {
     ASSERT(ctx != NULL);
     ASSERT(size[0] > 0);
@@ -142,11 +142,12 @@ void dvz_pipelib_destroy(DvzPipelib* lib)
 {
     ASSERT(lib != NULL);
 
-    CONTAINER_DESTROY_ITEMS(DvzGraphics, lib->graphics, dvz_pipe_destroy)
-
+    CONTAINER_DESTROY_ITEMS(DvzPipe, lib->graphics, dvz_pipe_destroy)
     dvz_container_destroy(&lib->graphics);
-    dvz_container_destroy(&lib->computes);
-    dvz_obj_destroyed(&lib->obj);
 
+    CONTAINER_DESTROY_ITEMS(DvzPipe, lib->computes, dvz_pipe_destroy)
+    dvz_container_destroy(&lib->computes);
+
+    dvz_obj_destroyed(&lib->obj);
     FREE(lib);
 }

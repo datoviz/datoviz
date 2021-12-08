@@ -177,7 +177,7 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
     board.gpu = gpu;
     board.width = width;
     board.height = height;
-    board.size = width * height * sizeof(cvec4);
+    board.size = width * height * 4 * sizeof(uint8_t);
 
     dvz_board_format(&board, DVZ_BOARD_DEFAULT_FORMAT);
     dvz_board_clear_color(&board, DVZ_BOARD_DEFAULT_CLEAR_COLOR);
@@ -253,7 +253,7 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
     ASSERT(board != NULL);
     board->width = width;
     board->height = height;
-    board->size = width * height * sizeof(cvec4);
+    board->size = width * height * 4 * sizeof(uint8_t);
     // Realloc the RGBA CPU buffer storing the downloaded image.
     if (board->rgba != NULL)
     {
@@ -298,13 +298,13 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 
 
-cvec4* dvz_board_alloc(DvzBoard* board)
+uint8_t* dvz_board_alloc(DvzBoard* board)
 {
     ASSERT(board != NULL);
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
     if (board->rgba == NULL)
-        board->rgba = calloc(board->width * board->height, sizeof(cvec4));
+        board->rgba = calloc(board->width * board->height, 4 * sizeof(uint8_t));
     ASSERT(board->rgba != NULL);
     return board->rgba;
 }

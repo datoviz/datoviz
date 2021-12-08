@@ -11,6 +11,7 @@
 // #include "../include/datoviz/canvas.h"
 #include "transfers.h"
 #include "fifo.h"
+#include "host.h"
 #include "resources_utils.h"
 #include "transfers_utils.h"
 #include "window.h"
@@ -22,12 +23,12 @@
 /*************************************************************************************************/
 
 // Process for the deq proc #0, which encompasses the two queues UPLOAD and DOWNLOAD.
-static void* _thread_transfers(void* user_data)
+static int _thread_transfers(void* user_data)
 {
     DvzTransfers* transfers = (DvzTransfers*)user_data;
     ASSERT(transfers != NULL);
     dvz_deq_dequeue_loop(&transfers->deq, DVZ_TRANSFER_PROC_UD);
-    return NULL;
+    return 0;
 }
 
 

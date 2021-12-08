@@ -14,9 +14,9 @@
 /*  Forward declarations                                                                         */
 /*************************************************************************************************/
 
-void dvz_gpu_wait(DvzGpu* gpu);
+// void dvz_gpu_wait(DvzGpu* gpu);
 
-void dvz_gpu_destroy(DvzGpu* gpu);
+// void dvz_gpu_destroy(DvzGpu* gpu);
 
 
 

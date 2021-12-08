@@ -61,7 +61,11 @@ static inline int dvz_mutex_init(DvzMutex* mutex)
  */
 static inline DvzMutex dvz_mutex()
 {
+#ifdef LANG_CPP
+    DvzMutex mutex = {};
+#else
     DvzMutex mutex = {0};
+#endif
     dvz_mutex_init(&mutex);
     return mutex;
 }
@@ -131,7 +135,12 @@ static inline int dvz_cond_init(DvzCond* cond)
  */
 static inline DvzCond dvz_cond()
 {
+
+#ifdef LANG_CPP
+    DvzCond cond = {};
+#else
     DvzCond cond = {0};
+#endif
     dvz_cond_init(&cond);
     return cond;
 }

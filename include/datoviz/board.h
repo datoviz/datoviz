@@ -47,8 +47,8 @@ struct DvzBoard
     cvec4 clear_color;
     uint32_t width, height;
 
-    DvzSize size; // width*height*4
-    cvec4* rgba;  // GPU buffer storing the image
+    DvzSize size;  // width*height*4
+    uint8_t* rgba; // GPU buffer storing the image
 
     DvzImages images;
     DvzImages depth;
@@ -106,6 +106,15 @@ DVZ_EXPORT void dvz_board_create(DvzBoard* board);
 
 
 /**
+ * Recreate the board.
+ *
+ * @param board the board
+ */
+DVZ_EXPORT void dvz_board_recreate(DvzBoard* board);
+
+
+
+/**
  * Change the board width and height.
  *
  * @param board the board
@@ -154,7 +163,7 @@ DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
  *
  * @param board the board
  */
-DVZ_EXPORT cvec4* dvz_board_alloc(DvzBoard* board);
+DVZ_EXPORT uint8_t* dvz_board_alloc(DvzBoard* board);
 
 
 

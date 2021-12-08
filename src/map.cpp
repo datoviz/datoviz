@@ -29,12 +29,12 @@ extern "C" struct DvzMap
 // https://stackoverflow.com/a/21510202/1595060
 template <typename It> class Range
 {
-    It b, e;
+    It b_, e_;
 
 public:
-    Range(It b, It e) : b(b), e(e) {}
-    It begin() const { return b; }
-    It end() const { return e; }
+    Range(It b, It e) : b_(b), e_(e) {}
+    It begin() const { return b_; }
+    It end() const { return e_; }
 };
 
 template <

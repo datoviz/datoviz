@@ -23,10 +23,11 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzRequest dvz_request()
+DvzRequest dvz_request(void)
 {
     DvzRequest req = {0};
     req.version = DVZ_REQUEST_VERSION;
+    return req;
 }
 
 
@@ -45,7 +46,6 @@ void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t heigh
     req->content.canvas.width = width;
     req->content.canvas.height = height;
     req->content.canvas.flags = flags;
-    return 0;
 }
 
 
@@ -56,7 +56,6 @@ void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size,
     req->content.dat.type = type;
     req->content.dat.size = size;
     req->content.dat.flags = flags;
-    return 0;
 }
 
 
@@ -69,7 +68,6 @@ void dvz_create_tex(
     memcpy(req->content.tex.shape, shape, sizeof(uvec3));
     req->content.tex.format = format;
     req->content.tex.flags = flags;
-    return 0;
 }
 
 

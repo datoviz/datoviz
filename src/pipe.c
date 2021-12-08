@@ -199,6 +199,7 @@ void dvz_pipe_draw(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
 {
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    ASSERT(graphics != NULL);
     dvz_cmd_draw(cmds, idx, first_vertex, vertex_count);
 }
 
@@ -209,6 +210,7 @@ void dvz_pipe_draw_indexed(
     uint32_t index_count)
 {
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    ASSERT(graphics != NULL);
     dvz_cmd_draw_indexed(cmds, idx, first_index, vertex_offset, index_count);
 }
 
@@ -218,6 +220,7 @@ void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzD
 {
     ASSERT(dat_indirect != NULL);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    ASSERT(graphics != NULL);
     dvz_cmd_draw_indirect(cmds, idx, dat_indirect->br);
 }
 
@@ -228,6 +231,7 @@ void dvz_pipe_draw_indexed_indirect(
 {
     ASSERT(dat_indirect != NULL);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
+    ASSERT(graphics != NULL);
     dvz_cmd_draw_indexed_indirect(cmds, idx, dat_indirect->br);
 }
 

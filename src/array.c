@@ -192,6 +192,25 @@ static inline void _cast(DvzDataType target_dtype, void* dst, DvzDataType source
 
 
 
+// Fill the remaining of an array with the last non-empty value.
+static void
+_repeat_last(uint32_t old_item_count, DvzSize item_size, void* data, uint32_t item_count)
+{
+    // Repeat the last item of an array.
+    DvzSize old_size = old_item_count * item_size;
+    int64_t dst_offset = (int64_t)data + (int64_t)old_size;
+    int64_t src_offset = (int64_t)data + (int64_t)old_size - (int64_t)item_size;
+    ASSERT(item_count > old_item_count);
+    uint32_t repeat_count = item_count - old_item_count;
+    for (uint32_t i = 0; i < repeat_count; i++)
+    {
+        memcpy((void*)dst_offset, (void*)src_offset, item_size);
+        dst_offset += (int64_t)item_size;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -311,24 +330,6 @@ dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, Dv
     arr.shape[1] = height;
     arr.shape[2] = depth;
     return arr;
-}
-
-
-
-// Fill the remaining of an array with the last non-empty value.
-void _repeat_last(uint32_t old_item_count, DvzSize item_size, void* data, uint32_t item_count)
-{
-    // Repeat the last item of an array.
-    DvzSize old_size = old_item_count * item_size;
-    int64_t dst_offset = (int64_t)data + (int64_t)old_size;
-    int64_t src_offset = (int64_t)data + (int64_t)old_size - (int64_t)item_size;
-    ASSERT(item_count > old_item_count);
-    uint32_t repeat_count = item_count - old_item_count;
-    for (uint32_t i = 0; i < repeat_count; i++)
-    {
-        memcpy((void*)dst_offset, (void*)src_offset, item_size);
-        dst_offset += (int64_t)item_size;
-    }
 }
 
 

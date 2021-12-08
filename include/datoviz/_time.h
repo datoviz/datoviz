@@ -126,7 +126,11 @@ static inline void dvz_clock_reset(DvzClock* clock)
  */
 static inline DvzClock dvz_clock()
 {
+#ifdef LANG_CPP
+    DvzClock clock = {};
+#else
     DvzClock clock = {0};
+#endif
     dvz_clock_reset(&clock);
     return clock;
 }

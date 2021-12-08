@@ -109,7 +109,7 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzRequest dvz_request();
+DVZ_EXPORT DvzRequest dvz_request(void);
 
 
 

@@ -144,7 +144,11 @@ static inline DvzContainer dvz_container(uint32_t count, size_t item_size, DvzOb
     ASSERT(count > 0);
     ASSERT(item_size > 0);
     // log_trace("create container");
+#ifdef LANG_CPP
+    DvzContainer container = {};
+#else
     DvzContainer container = {0};
+#endif
     container.count = 0;
     container.item_size = item_size;
     container.type = type;
@@ -320,7 +324,12 @@ static inline void dvz_container_iter(DvzContainerIterator* iterator)
 static inline DvzContainerIterator dvz_container_iterator(DvzContainer* container)
 {
     ASSERT(container != NULL);
+
+#ifdef LANG_CPP
+    DvzContainerIterator iterator = {};
+#else
     DvzContainerIterator iterator = {0};
+#endif
     iterator.container = container;
     dvz_container_iter(&iterator);
     return iterator;

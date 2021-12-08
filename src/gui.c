@@ -82,7 +82,7 @@ static void _imgui_init(
 
 static void _imgui_setup()
 {
-    ImGuiIO* io = igGetIO();
+    // ImGuiIO* io = igGetIO();
     // int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
     //             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
     //             | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
