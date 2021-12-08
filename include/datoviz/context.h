@@ -62,6 +62,15 @@ DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu);
 
 
 /**
+ * Wait for all pending transfers to finish.
+ *
+ * @param ctx the Context
+ */
+DVZ_EXPORT void dvz_context_wait(DvzContext* ctx);
+
+
+
+/**
  * Destroy a context.
  *
  * @param context the context

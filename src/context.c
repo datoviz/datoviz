@@ -78,6 +78,16 @@ DvzContext* dvz_context(DvzGpu* gpu)
 
 
 
+void dvz_context_wait(DvzContext* ctx)
+{
+    ASSERT(ctx != NULL);
+    for (uint32_t i = 0; i < 4; i++)
+        dvz_deq_wait(&ctx->transfers.deq, i);
+    dvz_queue_wait(ctx->transfers.gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
 void dvz_context_destroy(DvzContext* ctx)
 {
     if (ctx == NULL)

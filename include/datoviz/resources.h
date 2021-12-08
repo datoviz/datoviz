@@ -122,14 +122,6 @@ EXTERN_C_ON
 DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
 
 
-/**
- * Wait for all pending transfers to finish.
- *
- * @param res the DvzResources pointer
- */
-DVZ_EXPORT void dvz_resources_wait(DvzResources* res);
-
-
 
 /**
  * Create a new GPU buffer.
