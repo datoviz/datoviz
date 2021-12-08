@@ -2,7 +2,7 @@
 # CMake build script
 # -------------------------------------------------------------------------------------------------
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_minimum_required(VERSION 3.10)
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -343,32 +343,51 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
 # ---- common compiler options --------------------------------------------------------------------
 # NOTE: need to remove -pg (gprof profiling) in RELEASE mode?
-set(COMMON_FLAGS "-g -m64 -pedantic -Wall -Wextra -Werror=vla \
-    -Wcast-align -Wcast-qual -Wredundant-decls -Wswitch-default -Wdisabled-optimization \
-    -Wformat=2 -Winit-self -Wno-missing-field-initializers -Wno-unused-result \
-    -Wmissing-declarations -Wmissing-include-dirs -Wno-format-nonliteral \
-    -Wshadow -Wsign-conversion -Wstrict-overflow=5 -Wundef -Wno-unused-parameter \
-    -Wno-unused-function -Wno-variadic-macros")
+set(COMMON_FLAGS "-g -m64 -pedantic \
+    -Wall \
+    -Wextra \
+    -Werror=vla \
+    -Wcast-align \
+    -Wcast-qual \
+    -Wredundant-decls \
+    -Wswitch-default \
+    -Wdisabled-optimization \
+    -Wmissing-declarations \
+    -Wmissing-include-dirs \
+    -Wshadow \
+    -Wsign-conversion \
+    -Wstrict-overflow=5 \
+    -Wundef \
+    -Wformat=2 -Winit-self \
+    -Wno-unused-function \
+    -Wno-unused-parameter \
+    ")
+    # -Wno-missing-field-initializers
+    # -Wno-unused-result \
+    # -Wno-format-nonliteral \
+    # -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
     # gcc
-    set(COMMON_FLAGS "${COMMON_FLAGS} -Wlogical-op -fdiagnostics-color=always")
+    set(COMMON_FLAGS "${COMMON_FLAGS} \
+        -Wlogical-op -fdiagnostics-color=always")
     if (NOT OS_WIN32)
         set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
     endif()
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=gnu11 -Wmissing-prototypes")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} \
+        -std=gnu11 -Wmissing-prototypes -Wimplicit-function-declaration")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
 
 elseif(CC_CLANG)
     # clang
-    set(COMMON_FLAGS "${COMMON_FLAGS} -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces -Wmissing-prototypes")
+    set(COMMON_FLAGS "${COMMON_FLAGS} \
+        -Wno-unused-parameter -fcolor-diagnostics -Wno-missing-braces -Wmissing-prototypes")
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
-    set(CMAKE_OBJC_FLAGS
-        "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
+    set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
         -Wno-partial-availability -Wno-unguarded-availability-new")
 
 elseif(CC_MSVC)
@@ -485,6 +504,21 @@ add_custom_command(
 # Source files
 # -------------------------------------------------------------------------------------------------
 
+# These files will be compiled with no warnings.
+set(external_sources
+    "external/tinycthread.c"
+    "external/vk_mem_alloc.cpp"
+
+    "external/cimgui/imgui/imgui.cpp"
+    "external/cimgui/imgui/imgui_demo.cpp"
+    "external/cimgui/imgui/imgui_draw.cpp"
+    "external/cimgui/imgui/imgui_tables.cpp"
+    "external/cimgui/imgui/imgui_widgets.cpp"
+    "external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
+    "external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
+    "external/cimgui/cimgui.cpp"
+)
+
 set(sources
     "src/_atomic.cpp"
     "src/log.c"
@@ -511,23 +545,9 @@ set(sources
     "src/map.cpp"
     "src/renderer.c"
 
-    "external/tinycthread.c"
-    "external/vk_mem_alloc.cpp"
-
-    "external/cimgui/imgui/imgui.cpp"
-    "external/cimgui/imgui/imgui_demo.cpp"
-    "external/cimgui/imgui/imgui_draw.cpp"
-    "external/cimgui/imgui/imgui_tables.cpp"
-    "external/cimgui/imgui/imgui_widgets.cpp"
-    "external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
-    "external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
-    "external/cimgui/cimgui.cpp"
+    ${external_sources}
 )
 
-
-set(cpp_sources
-    ${sources}
-)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -535,7 +555,7 @@ set(cpp_sources
 # -------------------------------------------------------------------------------------------------
 
 add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${path_fonts})
-set_source_files_properties(${cpp_sources} PROPERTIES COMPILE_FLAGS -w)
+set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 1

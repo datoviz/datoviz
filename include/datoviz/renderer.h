@@ -51,6 +51,7 @@ struct DvzRenderer
 {
     DvzObject obj;
     DvzGpu* gpu;
+
     DvzContext* ctx;         // data: the "what"
     DvzPipelib* pipelib;     // GLSL programs: the "how"
     DvzWorkspace* workspace; // boards and canvases: the "where"
