@@ -509,6 +509,7 @@ set(sources
     "src/workspace.c"
     "src/request.c"
     "src/map.cpp"
+    "src/renderer.c"
 
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
@@ -578,6 +579,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_workspace.c"
         "tests/test_map.c"
         "tests/test_request.c"
+        "tests/test_renderer.c"
         "tests/test.c"
     )
 
