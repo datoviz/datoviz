@@ -42,6 +42,9 @@ int test_map_1(TstSuite* suite)
     AT(dvz_map_first(map, type) == &data[0]);
     AT(dvz_map_last(map, type) == &data[1]);
 
+    dvz_map_remove(map, id);
+    AT(dvz_map_last(map, type) == &data[0]);
+
     dvz_map_destroy(map);
     return 0;
 }

@@ -76,6 +76,15 @@ void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 
 
 
+void dvz_map_remove(DvzMap* map, DvzId key)
+{
+
+    ASSERT(map != NULL);
+    map->_map.erase(key);
+}
+
+
+
 void* dvz_map_get(DvzMap* map, DvzId key)
 {
     ASSERT(map != NULL);

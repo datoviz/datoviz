@@ -66,6 +66,10 @@ DVZ_EXPORT void dvz_map_add(DvzMap* map, DvzId key, int type, void* value);
 
 
 
+DVZ_EXPORT void dvz_map_remove(DvzMap* map, DvzId key);
+
+
+
 DVZ_EXPORT void* dvz_map_get(DvzMap* map, DvzId key);
 
 
