@@ -19,6 +19,7 @@
 #include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_graphics.h"
+#include "test_map.h"
 #include "test_obj.h"
 #include "test_pipe.h"
 #include "test_pipelib.h"
@@ -73,20 +74,19 @@ int dvz_run_tests(const char* match)
     TEST(test_utils_array_mvp)
     TEST(test_utils_array_3D)
 
-
-
     // Testing alloc.
     TEST(test_utils_alloc_1)
     TEST(test_utils_alloc_2)
     TEST(test_utils_alloc_3)
+
+    // Testing map.
+    TEST(test_map_1)
 
     // Testing window.
     TEST(test_window_1)
 
     // Testing vklite.
     TEST(test_vklite_host)
-
-
 
     // Setup the host fixture.
     SETUP(setup_host)

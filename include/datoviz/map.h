@@ -54,7 +54,7 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzMap dvz_map(void);
+DVZ_EXPORT DvzMap* dvz_map(void);
 
 
 
@@ -79,6 +79,10 @@ DVZ_EXPORT void* dvz_map_first(DvzMap* map, int type);
 
 
 DVZ_EXPORT void* dvz_map_last(DvzMap* map, int type);
+
+
+
+DVZ_EXPORT void dvz_map_destroy(DvzMap* map);
 
 
 

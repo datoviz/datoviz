@@ -575,6 +575,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_pipe.c"
         "tests/test_pipelib.c"
         "tests/test_graphics.c"
+        "tests/test_map.c"
         "tests/test_workspace.c"
         "tests/test.c"
     )
