@@ -1364,7 +1364,8 @@ static void _images_create(DvzImages* img)
             img->usage, 0, &props);
         if (res != VK_SUCCESS)
         {
-            log_error("unable to create image, format not supported");
+            log_error("unable to create image, format %d not supported", img->format);
+            return;
         }
     }
 
