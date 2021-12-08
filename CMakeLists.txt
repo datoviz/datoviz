@@ -525,6 +525,7 @@ set(external_sources
 
 set(sources
     "src/_atomic.cpp"
+    "src/_prng.cpp"
     "src/log.c"
     "src/fileio.c"
     "src/fifo.c"
