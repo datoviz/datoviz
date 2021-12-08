@@ -93,7 +93,7 @@ void dvz_resources(DvzGpu* gpu, DvzResources* res)
     // Create the resources.
     res->gpu = gpu;
 
-    // Allocate memory for buffers, textures, and computes.
+    // Allocate memory for buffers, textures, samplers.
     _create_resources(res);
 
     dvz_obj_created(&res->obj);
@@ -137,17 +137,6 @@ DvzSampler* dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSample
 
 
 
-DvzCompute* dvz_resources_compute(DvzResources* res, const char* shader_path)
-{
-    ASSERT(res != NULL);
-    ASSERT(shader_path != NULL);
-    DvzCompute* compute = (DvzCompute*)dvz_container_alloc(&res->computes);
-    *compute = dvz_compute(res->gpu, shader_path);
-    return compute;
-}
-
-
-
 void dvz_resources_destroy(DvzResources* res)
 {
     if (res == NULL)
@@ -168,7 +157,6 @@ void dvz_resources_destroy(DvzResources* res)
     dvz_container_destroy(&res->dats);
     dvz_container_destroy(&res->texs);
     dvz_container_destroy(&res->samplers);
-    dvz_container_destroy(&res->computes);
 
     dvz_obj_destroyed(&res->obj);
 }

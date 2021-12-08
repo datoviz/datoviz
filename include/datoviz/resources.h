@@ -96,7 +96,6 @@ struct DvzResources
     DvzContainer dats;
     DvzContainer texs;
     DvzContainer samplers;
-    DvzContainer computes;
 };
 
 
@@ -161,16 +160,6 @@ dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat f
  */
 DVZ_EXPORT DvzSampler*
 dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode);
-
-
-
-/**
- * Create a new compute pipeloine.
- *
- * @param res the DvzResources pointer
- * @param shader_path the path to the compiled .spv compute shader
- */
-DVZ_EXPORT DvzCompute* dvz_resources_compute(DvzResources* res, const char* shader_path);
 
 
 

@@ -353,8 +353,6 @@ static void _create_resources(DvzResources* res)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzTex), DVZ_OBJECT_TYPE_TEX);
     res->samplers = //
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzSampler), DVZ_OBJECT_TYPE_SAMPLER);
-    res->computes = //
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCompute), DVZ_OBJECT_TYPE_COMPUTE);
 }
 
 
@@ -377,9 +375,6 @@ static void _destroy_resources(DvzResources* res)
 
     log_trace("context destroy samplers");
     CONTAINER_DESTROY_ITEMS(DvzSampler, res->samplers, dvz_sampler_destroy)
-
-    log_trace("context destroy computes");
-    CONTAINER_DESTROY_ITEMS(DvzCompute, res->computes, dvz_compute_destroy)
 }
 
 

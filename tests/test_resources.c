@@ -44,11 +44,6 @@ int test_resources_1(TstSuite* suite)
         dvz_resources_sampler(&res, VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
     ASSERT(sampler != NULL);
 
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
-    DvzCompute* compute = dvz_resources_compute(&res, path);
-    ASSERT(compute != NULL);
-
     dvz_resources_destroy(&res);
     return 0;
 }
