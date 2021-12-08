@@ -543,7 +543,7 @@ set(sources
     "src/workspace.c"
     "src/request.c"
     "src/map.cpp"
-    "src/renderer.c"
+    "src/renderer.cpp"
 
     ${external_sources}
 )

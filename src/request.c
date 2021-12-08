@@ -12,8 +12,7 @@
 
 #define CREATE_REQUEST(_action, _type)                                                            \
     ASSERT(req != NULL);                                                                          \
-    ASSERT(id > 0);                                                                               \
-    req->id = id;                                                                                 \
+    memset(req, 0, sizeof(DvzRequest));                                                           \
     req->action = DVZ_REQUEST_ACTION_##_action;                                                   \
     req->type = DVZ_OBJECT_TYPE_##_type;
 
@@ -40,7 +39,25 @@ void dvz_request_print(DvzRequest* req)
 
 
 
-void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags)
+/*************************************************************************************************/
+/*  Board                                                                                        */
+/*************************************************************************************************/
+
+void dvz_create_board(DvzRequest* req, uint32_t width, uint32_t height, int flags)
+{
+    CREATE_REQUEST(CREATE, BOARD)
+    req->content.board.width = width;
+    req->content.board.height = height;
+    req->content.board.flags = flags;
+}
+
+
+
+void dvz_delete_board(DvzRequest* req, DvzId id) { CREATE_REQUEST(DELETE, BOARD) }
+
+
+
+void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags)
 {
     CREATE_REQUEST(CREATE, CANVAS)
     req->content.canvas.width = width;
@@ -50,7 +67,11 @@ void dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t heigh
 
 
 
-void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags)
+/*************************************************************************************************/
+/*  Resources                                                                                    */
+/*************************************************************************************************/
+
+void dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize size, int flags)
 {
     CREATE_REQUEST(CREATE, DAT)
     req->content.dat.type = type;
@@ -60,8 +81,7 @@ void dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size,
 
 
 
-void dvz_create_tex(
-    DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
+void dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
     CREATE_REQUEST(CREATE, TEX)
     req->content.tex.dims = dims;
@@ -71,6 +91,10 @@ void dvz_create_tex(
 }
 
 
+
+/*************************************************************************************************/
+/*  Command buffer                                                                               */
+/*************************************************************************************************/
 
 void dvz_set_viewport(DvzRequest* req, vec2 offset, vec2 shape) { ASSERT(req != NULL); }
 

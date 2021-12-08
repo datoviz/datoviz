@@ -70,6 +70,12 @@ union DvzRequestContent
     {
         uint32_t width, height;
         int flags;
+    } board;
+
+    struct
+    {
+        uint32_t width, height;
+        int flags;
     } canvas;
 
     struct
@@ -117,20 +123,38 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
 
 
 
-DVZ_EXPORT void
-dvz_create_canvas(DvzRequest* req, DvzId id, uint32_t width, uint32_t height, int flags);
+/*************************************************************************************************/
+/*  Board                                                                                        */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_create_board(DvzRequest* req, uint32_t width, uint32_t height, int flags);
+
+
+
+DVZ_EXPORT void dvz_delete_board(DvzRequest* req, DvzId id);
+
+
+
+DVZ_EXPORT void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags);
+
+
+
+/*************************************************************************************************/
+/*  Resources                                                                                    */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize size, int flags);
 
 
 
 DVZ_EXPORT void
-dvz_create_dat(DvzRequest* req, DvzId id, DvzBufferType type, DvzSize size, int flags);
+dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 
-DVZ_EXPORT void dvz_create_tex(
-    DvzRequest* req, DvzId id, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
-
-
+/*************************************************************************************************/
+/*  Command buffer                                                                               */
+/*************************************************************************************************/
 
 DVZ_EXPORT void dvz_set_viewport(DvzRequest* req, vec2 offset, vec2 shape);
 

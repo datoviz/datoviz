@@ -34,6 +34,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzRenderer DvzRenderer;
+typedef struct DvzRouter DvzRouter;
 
 // Forward declarations.
 typedef struct DvzContext DvzContext;
@@ -56,6 +57,7 @@ struct DvzRenderer
     DvzPipelib* pipelib;     // GLSL programs: the "how"
     DvzWorkspace* workspace; // boards and canvases: the "where"
     DvzMap* map;             // mapping between uuid and <type, objects>
+    DvzRouter* router;       // mapping between pairs (action, obj_type) and functions
 };
 
 

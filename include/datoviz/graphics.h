@@ -430,7 +430,11 @@ struct DvzGraphicsMeshParams
 
 static DvzGraphicsMeshParams default_graphics_mesh_params(vec3 eye)
 {
+#ifdef LANG_CPP
+    DvzGraphicsMeshParams params = {};
+#else
     DvzGraphicsMeshParams params = {0};
+#endif
     params.lights_params_0[0][0] = 0.2;  // ambient coefficient
     params.lights_params_0[0][1] = 0.5;  // diffuse coefficient
     params.lights_params_0[0][2] = 0.3;  // specular coefficient
