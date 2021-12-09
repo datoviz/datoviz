@@ -21,7 +21,7 @@
 /*************************************************************************************************/
 
 #define ROUTE(action, type, function)                                                             \
-    rd->router->router[std::make_pair(DVZ_REQUEST_ACTION_##action, DVZ_OBJECT_TYPE_##type)] =     \
+    rd->router->router[std::make_pair(DVZ_REQUEST_ACTION_##action, DVZ_REQUEST_OBJECT_##type)] =  \
         function;
 
 
@@ -40,7 +40,7 @@ typedef void* (*DvzRouterCallback)(DvzRenderer*, DvzRequest);
 
 extern "C" struct DvzRouter
 {
-    std::map<std::pair<DvzRequestAction, DvzObjectType>, DvzRouterCallback> router;
+    std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRouterCallback> router;
 };
 
 
@@ -54,7 +54,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
     ASSERT(rd != NULL);
 
     DvzBoard* board = dvz_workspace_board(
-        rd->workspace, req.content.board.width, req.content.board.height, req.content.board.flags);
+        rd->workspace, req.content.board.width, req.content.board.height, req.flags);
     board->rgba = dvz_board_alloc(board);
     return (void*)board;
 }
@@ -85,7 +85,8 @@ static void _setup_router(DvzRenderer* rd)
     ASSERT(rd != NULL);
 
     rd->router = new DvzRouter();
-    rd->router->router = std::map<std::pair<DvzRequestAction, DvzObjectType>, DvzRouterCallback>();
+    rd->router->router =
+        std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRouterCallback>();
 
     // Board.
     ROUTE(CREATE, BOARD, _board_create)
@@ -109,7 +110,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         log_trace("adding object type %d id %d to mapping", req.type, req.id);
 
         // Register the id with the created object
-        dvz_map_add(rd->map, req.id, DVZ_OBJECT_TYPE_BOARD, obj);
+        dvz_map_add(rd->map, req.id, DVZ_REQUEST_OBJECT_BOARD, obj);
 
         break;
 

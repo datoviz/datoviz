@@ -32,19 +32,42 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Request action.
 typedef enum
 {
     DVZ_REQUEST_ACTION_NONE,
     DVZ_REQUEST_ACTION_CREATE,
+    DVZ_REQUEST_ACTION_DELETE,
     DVZ_REQUEST_ACTION_RESIZE,
-    DVZ_REQUEST_ACTION_SET,
     DVZ_REQUEST_ACTION_UPDATE,
     DVZ_REQUEST_ACTION_UPLOAD,
-    DVZ_REQUEST_ACTION_DOWNLOAD,
     DVZ_REQUEST_ACTION_UPFILL,
-    DVZ_REQUEST_ACTION_DELETE,
+    DVZ_REQUEST_ACTION_DOWNLOAD,
+    DVZ_REQUEST_ACTION_SET,
     DVZ_REQUEST_ACTION_GET,
 } DvzRequestAction;
+
+
+
+// Request object.
+typedef enum
+{
+    DVZ_REQUEST_OBJECT_NONE,
+    DVZ_REQUEST_OBJECT_BOARD,
+    DVZ_REQUEST_OBJECT_CANVAS,
+    DVZ_REQUEST_OBJECT_DAT,
+    DVZ_REQUEST_OBJECT_TEX,
+    DVZ_REQUEST_OBJECT_SAMPLER,
+    DVZ_REQUEST_OBJECT_COMPUTE,
+    DVZ_REQUEST_OBJECT_GRAPHICS,
+
+    DVZ_REQUEST_OBJECT_BEGIN,
+    DVZ_REQUEST_OBJECT_VIEWPORT,
+    DVZ_REQUEST_OBJECT_VERTEX,
+    DVZ_REQUEST_OBJECT_BARRIER,
+    DVZ_REQUEST_OBJECT_DRAW,
+    DVZ_REQUEST_OBJECT_END,
+} DvzRequestObject;
 
 
 
@@ -68,32 +91,38 @@ typedef uint64_t DvzId;
 
 union DvzRequestContent
 {
+    // Board.
     struct
     {
         uint32_t width, height;
-        int flags;
     } board;
 
+    // Canvas.
     struct
     {
         uint32_t width, height;
-        int flags;
     } canvas;
 
+    // Dat.
     struct
     {
         DvzBufferType type;
         DvzSize size;
-        int flags;
     } dat;
 
+    // Tex.
     struct
     {
         DvzTexDims dims;
         uvec3 shape;
         DvzFormat format;
-        int flags;
     } tex;
+
+    // Graphics.
+    struct
+    {
+        DvzGraphicsType type;
+    } graphics;
 };
 
 
@@ -102,9 +131,11 @@ struct DvzRequest
 {
     uint32_t version;          // request version
     DvzRequestAction action;   // type of action
-    DvzObjectType type;        // type of the object targetted by the action
+    DvzRequestObject type;     // type of the object targetted by the action
     DvzId id;                  // id of the object
     DvzRequestContent content; // details on the action
+    int tag;                   // optional tag
+    int flags;                 // custom flags
 };
 
 
@@ -171,10 +202,6 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
 
 
 
-// DVZ_EXPORT void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags);
-
-
-
 /*************************************************************************************************/
 /*  Resources                                                                                    */
 /*************************************************************************************************/
@@ -184,8 +211,25 @@ dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
 
 
 
-// DVZ_EXPORT void
-// dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+DVZ_EXPORT DvzRequest
+dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+
+
+
+/*************************************************************************************************/
+/*  Graphics                                                                                     */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags);
+
+
+
+/*************************************************************************************************/
+/*  Data                                                                                         */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzRequest
+dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data);
 
 
 
@@ -193,23 +237,24 @@ dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-// DVZ_EXPORT void dvz_set_viewport(DvzRequest* req, vec2 offset, vec2 shape);
+DVZ_EXPORT DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board);
 
 
 
-// DVZ_EXPORT void dvz_set_graphics(DvzRequest* req, DvzPipe* pipe);
+DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
 
 
 
-// DVZ_EXPORT void dvz_set_compute(DvzRequest* req, DvzPipe* pipe);
+DVZ_EXPORT DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape);
 
 
 
-// DVZ_EXPORT void dvz_set_push(DvzRequest* req, ...);
+DVZ_EXPORT DvzRequest
+dvz_set_draw(DvzRequester* rqr, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count);
 
 
 
-// DVZ_EXPORT void dvz_set_barrier(DvzRequest* req, ...);
+DVZ_EXPORT DvzRequest dvz_set_end(DvzRequester* rqr, DvzId board);
 
 
 

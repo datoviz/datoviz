@@ -31,7 +31,7 @@ DvzHost* dvz_host(DvzBackend backend)
 
     DvzHost* host = calloc(1, sizeof(DvzHost));
     dvz_obj_init(&host->obj);
-    host->obj.type = DVZ_OBJECT_TYPE_APP;
+    host->obj.type = DVZ_OBJECT_TYPE_HOST;
 
 #if SWIFTSHADER
     if (backend != DVZ_BACKEND_OFFSCREEN)
