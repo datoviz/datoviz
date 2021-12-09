@@ -118,11 +118,37 @@ union DvzRequestContent
         DvzFormat format;
     } tex;
 
+    // Dat upload.
+    struct
+    {
+        int upload_type; // 0=direct (data pointer), otherwise custom transfer method
+        DvzSize offset, size;
+        void* data;
+    } dat_upload;
+
     // Graphics.
     struct
     {
         DvzGraphicsType type;
     } graphics;
+
+    // Set vertex.
+    struct
+    {
+        DvzId dat;
+    } set_vertex;
+
+    // Set viewport.
+    struct
+    {
+        vec2 offset, shape; // in framebuffer pixels
+    } set_viewport;
+
+    // Set draw.
+    struct
+    {
+        uint32_t first_vertex, vertex_count;
+    } set_draw;
 };
 
 
