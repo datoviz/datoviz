@@ -35,6 +35,11 @@ DvzRequester dvz_requester(void)
 {
     DvzRequester rqr = {0};
     rqr.prng = dvz_prng();
+
+    // Initialize the list of requests for batchs.
+    rqr.capacity = DVZ_CONTAINER_DEFAULT_COUNT;
+    rqr.requests = (DvzRequest*)calloc(rqr.capacity, sizeof(DvzRequest));
+
     dvz_obj_init(&rqr.obj);
     return rqr;
 }
@@ -44,8 +49,48 @@ DvzRequester dvz_requester(void)
 void dvz_requester_destroy(DvzRequester* rqr)
 {
     ASSERT(rqr != NULL);
+    FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);
     dvz_obj_destroyed(&rqr->obj);
+}
+
+
+
+/*************************************************************************************************/
+/*  Request batch                                                                                */
+/*************************************************************************************************/
+
+void dvz_requester_begin(DvzRequester* rqr)
+{
+    ASSERT(rqr != NULL);
+    rqr->count = 0;
+}
+
+
+
+void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
+{
+    ASSERT(rqr != NULL);
+    // Resize the array if needed.
+    if (rqr->count == rqr->capacity)
+    {
+        rqr->capacity *= 2;
+        REALLOC(rqr->requests, rqr->capacity * sizeof(DvzRequest));
+    }
+    ASSERT(rqr->count < rqr->capacity);
+
+    // Append the request.
+    rqr->requests[rqr->count++] = req;
+}
+
+
+
+DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
+{
+    ASSERT(rqr != NULL);
+    ASSERT(count != NULL);
+    *count = rqr->count;
+    return rqr->requests;
 }
 
 
@@ -53,7 +98,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
 void dvz_request_print(DvzRequest* req)
 {
     ASSERT(req != NULL);
-    log_info("Request action %d <type %d> <id %" PRIu64 ">", req->action, req->type, req->id);
+    log_info("Request action %d <type %d> <id %" PRIx64 ">", req->action, req->type, req->id);
 }
 
 

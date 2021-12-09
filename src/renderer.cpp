@@ -185,6 +185,21 @@ void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 
 
 
+void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
+{
+    ASSERT(rd != NULL);
+    if (count == 0)
+        return;
+    ASSERT(count > 0);
+    ASSERT(reqs != NULL);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_renderer_request(rd, reqs[i]);
+    }
+}
+
+
+
 void dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize size, uint8_t* rgba)
 {
     ASSERT(rd != NULL);

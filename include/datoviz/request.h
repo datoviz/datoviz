@@ -113,6 +113,11 @@ struct DvzRequester
 {
     DvzObject obj;
     DvzPrng* prng;
+
+    // Used for creating batch requests.
+    uint32_t count;
+    uint32_t capacity;
+    DvzRequest* requests;
 };
 
 
@@ -120,7 +125,7 @@ struct DvzRequester
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Requester                                                                                    */
 /*************************************************************************************************/
 
 // TODO: docstrings
@@ -133,7 +138,19 @@ DVZ_EXPORT void dvz_requester_destroy(DvzRequester* rqr);
 
 
 
-// DVZ_EXPORT DvzRequest dvz_request(void);
+/*************************************************************************************************/
+/*  Request batch                                                                                */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_requester_begin(DvzRequester* rqr);
+
+
+
+DVZ_EXPORT void dvz_requester_add(DvzRequester* rqr, DvzRequest req);
+
+
+
+DVZ_EXPORT DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count);
 
 
 

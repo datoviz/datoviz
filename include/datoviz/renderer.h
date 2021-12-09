@@ -82,6 +82,10 @@ DVZ_EXPORT void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
 
 
 
+DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
+
+
+
 DVZ_EXPORT void dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize size, uint8_t* rgba);
 
 

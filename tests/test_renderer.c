@@ -28,14 +28,14 @@ int test_renderer_1(TstSuite* suite)
 
     DvzRenderer* rd = dvz_renderer_offscreen(gpu);
     DvzRequester rqr = dvz_requester();
-    DvzRequest rq = {0};
+    DvzRequest req = {0};
 
     // Create a board creation request.
-    rq = dvz_create_board(&rqr, WIDTH, HEIGHT, 0);
-    DvzId id = rq.id;
+    req = dvz_create_board(&rqr, WIDTH, HEIGHT, 0);
+    DvzId id = req.id;
 
     // Submit the request to the renderer.
-    dvz_renderer_request(rd, rq);
+    dvz_renderer_request(rd, req);
 
     // Create a board deletion request.
     dvz_delete_board(&rqr, id);
