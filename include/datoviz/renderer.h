@@ -78,7 +78,7 @@ DVZ_EXPORT DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu);
 
 
 
-DVZ_EXPORT DvzId dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
+DVZ_EXPORT void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
 
 
 

@@ -4,7 +4,7 @@
 
 #include "map.h"
 #include "_log.h"
-#include "_prng.h"
+// #include "_prng.h"
 
 #include <map>
 #include <numeric>
@@ -19,8 +19,8 @@
 extern "C" struct DvzMap
 {
     std::map<DvzId, std::pair<int, void*>> _map;
-    DvzPrng* prng;
-    DvzId last_id;
+    // DvzPrng* prng;
+    // DvzId last_id;
 };
 
 
@@ -58,17 +58,17 @@ DvzMap* dvz_map(void)
 {
     DvzMap* map = new DvzMap();
     map->_map = std::map<DvzId, std::pair<int, void*>>();
-    map->prng = dvz_prng();
+    // map->prng = dvz_prng();
     return map;
 }
 
 
 
-DvzId dvz_map_id(DvzMap* map)
-{
-    ASSERT(map != NULL);
-    return ++map->last_id;
-}
+// DvzId dvz_map_id(DvzMap* map)
+// {
+//     ASSERT(map != NULL);
+//     return ++map->last_id;
+// }
 
 
 
@@ -156,10 +156,10 @@ void* dvz_map_last(DvzMap* map, int type)
 
 void dvz_map_destroy(DvzMap* map)
 {
-    if (map->prng != NULL)
-    {
-        dvz_prng_destroy(map->prng);
-    }
+    // if (map->prng != NULL)
+    // {
+    //     dvz_prng_destroy(map->prng);
+    // }
     if (map != NULL)
     {
         delete map;

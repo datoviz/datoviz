@@ -39,6 +39,7 @@ DvzPrng* dvz_prng(void)
 }
 
 
+
 uint64_t dvz_prng_uuid(DvzPrng* prng)
 {
     ASSERT(prng != NULL);

@@ -94,12 +94,11 @@ static void _setup_router(DvzRenderer* rd)
 
 
 
-static DvzId _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
+static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 {
     ASSERT(rd != NULL);
 
     // Handle the id-object mapping.
-    DvzId id = 0;
     switch (req.action)
     {
         // Creation.
@@ -107,11 +106,10 @@ static DvzId _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         ASSERT(obj != NULL);
 
         // Generate a new id.
-        id = dvz_map_id(rd->map);
-        log_trace("adding object type %d id %d to mapping", req.type, id);
+        log_trace("adding object type %d id %d to mapping", req.type, req.id);
 
         // Register the id with the created object
-        dvz_map_add(rd->map, id, DVZ_OBJECT_TYPE_BOARD, obj);
+        dvz_map_add(rd->map, req.id, DVZ_OBJECT_TYPE_BOARD, obj);
 
         break;
 
@@ -119,7 +117,6 @@ static DvzId _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
     case DVZ_REQUEST_ACTION_DELETE:
 
         ASSERT(req.id != DVZ_ID_NONE);
-        id = req.id;
 
         // Remove the id from the mapping.
         log_trace("removing object type %d id %d from mapping", req.type, req.id);
@@ -130,8 +127,6 @@ static DvzId _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
     default:
         break;
     }
-
-    return id;
 }
 
 
@@ -169,7 +164,7 @@ DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu)
 
 
 
-DvzId dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
+void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
@@ -177,17 +172,15 @@ DvzId dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
     if (cb == NULL)
     {
         log_error("no router function registered for action %d and type %d", req.action, req.type);
-        return DVZ_ID_NONE;
+        return;
     }
     log_trace("processing renderer request");
 
     // Call the router callback.
     void* obj = cb(rd, req);
 
-    DvzId id = _update_mapping(rd, req, obj);
-
-    // Return the id.
-    return id;
+    // Register the pointer in the map table, associated with its id.
+    _update_mapping(rd, req, obj);
 }
 
 
@@ -195,6 +188,7 @@ DvzId dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 void dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize size, uint8_t* rgba)
 {
     ASSERT(rd != NULL);
+    // TODO
 }
 
 

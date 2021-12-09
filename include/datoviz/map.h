@@ -60,7 +60,7 @@ DVZ_EXPORT DvzMap* dvz_map(void);
 
 
 
-DVZ_EXPORT DvzId dvz_map_id(DvzMap* map);
+// DVZ_EXPORT DvzId dvz_map_id(DvzMap* map);
 
 
 

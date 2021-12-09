@@ -16,6 +16,7 @@
 #include "_macros.h"
 #include "_math.h"
 #include "_obj.h"
+#include "_prng.h"
 
 
 
@@ -53,6 +54,7 @@ typedef enum
 
 typedef struct DvzRequest DvzRequest;
 typedef union DvzRequestContent DvzRequestContent;
+typedef struct DvzRequester DvzRequester;
 
 // Forward declarations.
 typedef struct DvzPipe DvzPipe;
@@ -107,6 +109,14 @@ struct DvzRequest
 
 
 
+struct DvzRequester
+{
+    DvzObject obj;
+    DvzPrng* prng;
+};
+
+
+
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -115,7 +125,15 @@ EXTERN_C_ON
 
 // TODO: docstrings
 
-DVZ_EXPORT DvzRequest dvz_request(void);
+DVZ_EXPORT DvzRequester dvz_requester(void);
+
+
+
+DVZ_EXPORT void dvz_requester_destroy(DvzRequester* rqr);
+
+
+
+// DVZ_EXPORT DvzRequest dvz_request(void);
 
 
 
@@ -127,15 +145,16 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
 /*  Board                                                                                        */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_create_board(DvzRequest* req, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzRequest
+dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
 
 
 
-DVZ_EXPORT void dvz_delete_board(DvzRequest* req, DvzId id);
+DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
 
 
 
-DVZ_EXPORT void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags);
+// DVZ_EXPORT void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t height, int flags);
 
 
 
@@ -143,12 +162,13 @@ DVZ_EXPORT void dvz_create_canvas(DvzRequest* req, uint32_t width, uint32_t heig
 /*  Resources                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_create_dat(DvzRequest* req, DvzBufferType type, DvzSize size, int flags);
+DVZ_EXPORT DvzRequest
+dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
 
 
 
-DVZ_EXPORT void
-dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+// DVZ_EXPORT void
+// dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 
@@ -156,15 +176,15 @@ dvz_create_tex(DvzRequest* req, DvzTexDims dims, uvec3 shape, DvzFormat format, 
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_set_viewport(DvzRequest* req, vec2 offset, vec2 shape);
+// DVZ_EXPORT void dvz_set_viewport(DvzRequest* req, vec2 offset, vec2 shape);
 
 
 
-DVZ_EXPORT void dvz_set_graphics(DvzRequest* req, DvzPipe* pipe);
+// DVZ_EXPORT void dvz_set_graphics(DvzRequest* req, DvzPipe* pipe);
 
 
 
-DVZ_EXPORT void dvz_set_compute(DvzRequest* req, DvzPipe* pipe);
+// DVZ_EXPORT void dvz_set_compute(DvzRequest* req, DvzPipe* pipe);
 
 
 
