@@ -57,6 +57,8 @@ struct DvzBoard
     // TODO: overlay imgui support
     DvzRenderpass renderpass;
     DvzFramebuffers framebuffers;
+
+    DvzCommands cmds;
 };
 
 
@@ -135,6 +137,7 @@ DVZ_EXPORT void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t heigh
 DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
 
 
+
 /**
  * Set the viewport when filling a command buffer.
  *
@@ -148,6 +151,7 @@ DVZ_EXPORT void dvz_board_viewport( //
     DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size);
 
 
+
 /**
  * Stop rendering to the board in a command buffer.
  *
@@ -156,6 +160,7 @@ DVZ_EXPORT void dvz_board_viewport( //
  * @param idx the command buffer index with the commands instance
  */
 DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
+
 
 
 /**

@@ -233,21 +233,12 @@ DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 sh
 
 
 
-DvzRequest dvz_set_graphics(DvzRequester* rqr, DvzId board, DvzId graphics)
-{
-    CREATE_REQUEST(SET, GRAPHICS);
-    req.id = board;
-    req.content.set_graphics.graphics = graphics;
-    return req;
-}
-
-
-
-DvzRequest
-dvz_set_draw(DvzRequester* rqr, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
+DvzRequest dvz_set_draw(
+    DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
 {
     CREATE_REQUEST(SET, DRAW);
-    req.id = graphics;
+    req.id = board;
+    req.content.set_draw.graphics = graphics;
     req.content.set_draw.first_vertex = first_vertex;
     req.content.set_draw.vertex_count = vertex_count;
     return req;

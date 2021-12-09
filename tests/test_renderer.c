@@ -48,7 +48,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
-    // Bind the vertex buffer dat to the graphics.
+    // Bind the vertex buffer dat to the graphics pipe.
     req = dvz_set_vertex(&rqr, graphics_id, dat_id);
     dvz_renderer_request(rd, req);
 
@@ -66,8 +66,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_requester_add(&rqr, dvz_set_begin(&rqr, board_id));
     dvz_requester_add(
         &rqr, dvz_set_viewport(&rqr, board_id, DVZ_VIEWPORT_DEFAULT, DVZ_VIEWPORT_DEFAULT));
-    dvz_requester_add(&rqr, dvz_set_graphics(&rqr, board_id, graphics_id));
-    dvz_requester_add(&rqr, dvz_set_draw(&rqr, graphics_id, 0, 3));
+    dvz_requester_add(&rqr, dvz_set_draw(&rqr, board_id, graphics_id, 0, 3));
     dvz_requester_add(&rqr, dvz_set_end(&rqr, board_id));
     uint32_t count = 0;
     DvzRequest* reqs = dvz_requester_end(&rqr, &count);
@@ -85,7 +84,7 @@ int test_renderer_1(TstSuite* suite)
 
     // Save to a PNG.
     char imgpath[1024];
-    snprintf(imgpath, sizeof(imgpath), "%s/pipelib.png", ARTIFACTS_DIR);
+    snprintf(imgpath, sizeof(imgpath), "%s/renderer_1.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
 
     // Create a board deletion request.

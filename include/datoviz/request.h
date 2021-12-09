@@ -145,15 +145,10 @@ union DvzRequestContent
         vec2 offset, shape; // in framebuffer pixels
     } set_viewport;
 
-    // Set graphics.
-    struct
-    {
-        DvzId graphics;
-    } set_graphics;
-
     // Set draw.
     struct
     {
+        DvzId graphics;
         uint32_t first_vertex, vertex_count;
     } set_draw;
 };
@@ -287,12 +282,9 @@ DVZ_EXPORT DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offs
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_graphics(DvzRequester* rqr, DvzId board, DvzId graphics);
-
-
-
-DVZ_EXPORT DvzRequest
-dvz_set_draw(DvzRequester* rqr, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count);
+DVZ_EXPORT DvzRequest dvz_set_draw(
+    DvzRequester* rqr, DvzId board, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count);
 
 
 

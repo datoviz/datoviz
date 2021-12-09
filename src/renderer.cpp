@@ -62,6 +62,21 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _board_update(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
+    ASSERT(board != NULL);
+
+    dvz_cmd_submit_sync(&board->cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    return NULL;
+}
+
+
+
 static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -102,6 +117,27 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    // Get the graphics pipe.
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
+    ASSERT(pipe != NULL);
+
+    // Get the dat with the vertex data.
+    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.content.set_vertex.dat);
+    ASSERT(dat != NULL);
+
+    // Link the two.
+    pipe->dat_vertex = dat;
+
+    return NULL;
+}
+
+
+
 static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -132,6 +168,22 @@ static void* _dat_create(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.id);
+    ASSERT(dat != NULL);
+
+    dvz_dat_upload(
+        dat, req.content.dat_upload.offset, req.content.dat_upload.size,
+        req.content.dat_upload.data, true);
+    return NULL;
+}
+
+
+
 static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -141,6 +193,73 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(dat != NULL);
 
     dvz_dat_destroy(dat);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Command buffer setting                                                                       */
+/*************************************************************************************************/
+
+static void* _set_begin(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
+    ASSERT(board != NULL);
+
+    dvz_board_begin(board, &board->cmds, 0);
+
+    return NULL;
+}
+
+
+
+static void* _set_viewport(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
+    ASSERT(board != NULL);
+
+    dvz_board_viewport(
+        board, &board->cmds, 0, //
+        req.content.set_viewport.offset, req.content.set_viewport.shape);
+
+    return NULL;
+}
+
+
+
+static void* _set_draw(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
+    ASSERT(board != NULL);
+
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.content.set_draw.graphics);
+    ASSERT(pipe != NULL);
+
+    dvz_pipe_draw(
+        pipe, &board->cmds, 0, //
+        req.content.set_draw.first_vertex, req.content.set_draw.vertex_count);
+
+    return NULL;
+}
+
+
+
+static void* _set_end(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
+    ASSERT(board != NULL);
+
+    dvz_board_end(board, &board->cmds, 0);
+
     return NULL;
 }
 
@@ -160,15 +279,24 @@ static void _setup_router(DvzRenderer* rd)
 
     // Board.
     ROUTE(CREATE, BOARD, _board_create)
+    ROUTE(UPDATE, BOARD, _board_update)
     ROUTE(DELETE, BOARD, _board_delete)
 
     // Graphics.
     ROUTE(CREATE, GRAPHICS, _graphics_create)
+    ROUTE(SET, VERTEX, _graphics_vertex)
     ROUTE(DELETE, GRAPHICS, _graphics_delete)
 
     // Resources.
     ROUTE(CREATE, DAT, _dat_create)
+    ROUTE(UPLOAD, DAT, _dat_upload)
     ROUTE(DELETE, DAT, _dat_delete)
+
+    // Command buffer setting.
+    ROUTE(SET, BEGIN, _set_begin)
+    ROUTE(SET, VIEWPORT, _set_viewport)
+    ROUTE(SET, DRAW, _set_draw)
+    ROUTE(SET, END, _set_end)
 }
 
 

@@ -182,6 +182,9 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
     dvz_board_format(&board, DVZ_BOARD_DEFAULT_FORMAT);
     dvz_board_clear_color(&board, DVZ_BOARD_DEFAULT_CLEAR_COLOR);
 
+    // TODO: larger image count?
+    board.cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+
     dvz_obj_init(&board.obj);
     return board;
 }
