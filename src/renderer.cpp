@@ -177,8 +177,12 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     ASSERT(dat != NULL);
 
     dvz_dat_upload(
-        dat, req.content.dat_upload.offset, req.content.dat_upload.size,
-        req.content.dat_upload.data, true);
+        dat,                           //
+        req.content.dat_upload.offset, //
+        req.content.dat_upload.size,   //
+        req.content.dat_upload.data,   //
+        true);
+
     return NULL;
 }
 
@@ -209,6 +213,7 @@ static void* _set_begin(DvzRenderer* rd, DvzRequest req)
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
     ASSERT(board != NULL);
 
+    dvz_cmd_reset(&board->cmds, 0);
     dvz_board_begin(board, &board->cmds, 0);
 
     return NULL;
@@ -313,7 +318,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         ASSERT(obj != NULL);
 
         // Generate a new id.
-        log_trace("adding object type %d id %d to mapping", req.type, req.id);
+        log_trace("adding object type %d id %" PRIx64 " to mapping", req.type, req.id);
 
         // Register the id with the created object
         dvz_map_add(rd->map, req.id, DVZ_REQUEST_OBJECT_BOARD, obj);
@@ -326,7 +331,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         ASSERT(req.id != DVZ_ID_NONE);
 
         // Remove the id from the mapping.
-        log_trace("removing object type %d id %d from mapping", req.type, req.id);
+        log_trace("removing object type %d id %" PRIx64 " from mapping", req.type, req.id);
         dvz_map_remove(rd->map, req.id);
 
         break;
@@ -381,7 +386,7 @@ void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
         log_error("no router function registered for action %d and type %d", req.action, req.type);
         return;
     }
-    log_trace("processing renderer request");
+    log_trace("processing renderer request action %d and type %d", req.action, req.type);
 
     // Call the router callback.
     void* obj = cb(rd, req);
@@ -416,6 +421,7 @@ uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint
 
     // Find the pointer: either passed here, or the board-owned pointer.
     rgba = rgba != NULL ? rgba : board->rgba;
+    ASSERT(rgba != NULL);
 
     // Download the image to the buffer.
     dvz_board_download(board, board->size, rgba);

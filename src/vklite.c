@@ -612,7 +612,7 @@ void dvz_cmd_free(DvzCommands* cmds)
 
 void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
 {
-    log_debug("[SLOW] submit %d command buffer(s)", cmds->count);
+    log_debug("[SLOW] submit %d command buffer(s) to queue #%d", cmds->count, cmds->queue_idx);
 
     DvzQueues* q = &cmds->gpu->queues;
     VkQueue queue = q->queues[cmds->queue_idx];

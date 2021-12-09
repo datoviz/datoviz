@@ -58,7 +58,7 @@ int test_renderer_1(TstSuite* suite)
         {{+1, -1, 0}, {0, 255, 0, 255}},
         {{+0, +1, 0}, {0, 0, 255, 255}},
     };
-    dvz_upload_dat(&rqr, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(&rqr, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
     // Commands.
