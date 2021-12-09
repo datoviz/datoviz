@@ -96,13 +96,13 @@ DVZ_EXPORT DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader
 
 
 
-/**
- * Destroy a pipe created by the pipelib.
- *
- * @param lib the pipelib instance
- * @param pipe the pipe to destroy
- */
-DVZ_EXPORT void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe);
+// /**
+//  * Destroy a pipe created by the pipelib.
+//  *
+//  * @param lib the pipelib instance
+//  * @param pipe the pipe to destroy
+//  */
+// DVZ_EXPORT void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe);
 
 
 

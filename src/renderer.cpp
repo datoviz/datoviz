@@ -55,6 +55,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
 
     DvzBoard* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
+    ASSERT(board != NULL);
     board->rgba = dvz_board_alloc(board);
     return (void*)board;
 }
@@ -77,6 +78,75 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
+/*  Graphics                                                                                     */
+/*************************************************************************************************/
+
+static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    // Get the board.
+    DvzId board_id = req.content.graphics.board;
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, board_id);
+    ASSERT(board != NULL);
+
+    // Create the pipe.
+    uvec2 size = {board->width, board->height};
+    DvzPipe* pipe = dvz_pipelib_graphics(
+        rd->pipelib, rd->ctx, &board->renderpass, board->images.count, //
+        size, req.content.graphics.type, req.flags);
+    ASSERT(pipe != NULL);
+
+    return (void*)pipe;
+}
+
+
+
+static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
+    ASSERT(pipe != NULL);
+
+    dvz_pipe_destroy(pipe);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Resources                                                                                    */
+/*************************************************************************************************/
+
+static void* _dat_create(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
+    DvzDat* dat = dvz_dat(rd->ctx, req.content.dat.type, req.content.dat.size, req.flags);
+    ASSERT(dat != NULL);
+
+    return (void*)dat;
+}
+
+
+
+static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.id);
+    ASSERT(dat != NULL);
+
+    dvz_dat_destroy(dat);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
@@ -91,6 +161,14 @@ static void _setup_router(DvzRenderer* rd)
     // Board.
     ROUTE(CREATE, BOARD, _board_create)
     ROUTE(DELETE, BOARD, _board_delete)
+
+    // Graphics.
+    ROUTE(CREATE, GRAPHICS, _graphics_create)
+    ROUTE(DELETE, GRAPHICS, _graphics_delete)
+
+    // Resources.
+    ROUTE(CREATE, DAT, _dat_create)
+    ROUTE(DELETE, DAT, _dat_delete)
 }
 
 
@@ -201,10 +279,25 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 
 
 
-void dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize size, uint8_t* rgba)
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba)
 {
     ASSERT(rd != NULL);
-    // TODO
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, board_id);
+    ASSERT(board != NULL);
+
+    // Find the pointer: either passed here, or the board-owned pointer.
+    rgba = rgba != NULL ? rgba : board->rgba;
+
+    // Download the image to the buffer.
+    dvz_board_download(board, board->size, rgba);
+
+    // Set the size.
+    ASSERT(size != NULL);
+    *size = board->size;
+
+    // Return the pointer.
+    return rgba;
 }
 
 

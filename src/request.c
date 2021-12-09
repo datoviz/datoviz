@@ -119,6 +119,15 @@ DvzRequest dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, 
 
 
 
+DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
+{
+    CREATE_REQUEST(UPDATE, BOARD);
+    req.id = id;
+    return req;
+}
+
+
+
 DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 {
     CREATE_REQUEST(DELETE, BOARD);
@@ -162,12 +171,23 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
+DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzId board, DvzGraphicsType type, int flags)
 {
     CREATE_REQUEST(CREATE, GRAPHICS);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
+    req.content.graphics.board = board;
     req.content.graphics.type = type;
+    return req;
+}
+
+
+
+DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
+{
+    CREATE_REQUEST(SET, VERTEX);
+    req.id = graphics;
+    req.content.set_vertex.dat = dat;
     return req;
 }
 
@@ -202,22 +222,22 @@ DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board)
 
 
 
-DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
-{
-    CREATE_REQUEST(SET, VERTEX);
-    req.id = graphics;
-    req.content.set_vertex.dat = dat;
-    return req;
-}
-
-
-
 DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
 {
     CREATE_REQUEST(SET, VIEWPORT);
     req.id = board;
     memcpy(req.content.set_viewport.offset, offset, sizeof(vec2));
     memcpy(req.content.set_viewport.shape, shape, sizeof(vec2));
+    return req;
+}
+
+
+
+DvzRequest dvz_set_graphics(DvzRequester* rqr, DvzId board, DvzId graphics)
+{
+    CREATE_REQUEST(SET, GRAPHICS);
+    req.id = board;
+    req.content.set_graphics.graphics = graphics;
     return req;
 }
 

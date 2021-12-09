@@ -129,6 +129,7 @@ union DvzRequestContent
     // Graphics.
     struct
     {
+        DvzId board;
         DvzGraphicsType type;
     } graphics;
 
@@ -143,6 +144,12 @@ union DvzRequestContent
     {
         vec2 offset, shape; // in framebuffer pixels
     } set_viewport;
+
+    // Set graphics.
+    struct
+    {
+        DvzId graphics;
+    } set_graphics;
 
     // Set draw.
     struct
@@ -224,6 +231,10 @@ dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
 
 
 
+DVZ_EXPORT DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id);
+
+
+
 DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
 
 
@@ -246,7 +257,12 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags);
+DVZ_EXPORT DvzRequest
+dvz_create_graphics(DvzRequester* rqr, DvzId board, DvzGraphicsType type, int flags);
+
+
+
+DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
 
 
 
@@ -267,11 +283,11 @@ DVZ_EXPORT DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
-
-
-
 DVZ_EXPORT DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape);
+
+
+
+DVZ_EXPORT DvzRequest dvz_set_graphics(DvzRequester* rqr, DvzId board, DvzId graphics);
 
 
 

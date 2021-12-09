@@ -129,12 +129,12 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 
 
 
-void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe)
-{
-    ASSERT(lib != NULL);
-    ASSERT(pipe != NULL);
-    dvz_pipe_destroy(pipe);
-}
+// void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe)
+// {
+//     ASSERT(lib != NULL);
+//     ASSERT(pipe != NULL);
+//     dvz_pipe_destroy(pipe);
+// }
 
 
 

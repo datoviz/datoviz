@@ -324,6 +324,8 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba)
 {
     ASSERT(board != NULL);
     ASSERT(size > 0);
+    if (rgba == NULL)
+        rgba = board->rgba;
     ASSERT(rgba != NULL);
 
     DvzGpu* gpu = board->gpu;
