@@ -22,7 +22,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef cnd_t DvzCond;
+typedef tct_cnd_t DvzCond;
 
 
 
@@ -30,7 +30,7 @@ typedef cnd_t DvzCond;
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-typedef mtx_t DvzMutex;
+typedef tct_mtx_t DvzMutex;
 
 
 

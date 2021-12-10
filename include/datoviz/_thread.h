@@ -37,7 +37,7 @@ typedef int (*DvzThreadCallback)(void*);
 struct DvzThread
 {
     DvzObject obj;
-    thrd_t thread;
+    tct_thrd_t thread;
     DvzMutex lock;
     DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };
