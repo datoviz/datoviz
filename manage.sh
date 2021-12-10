@@ -36,9 +36,9 @@ function rmbuild {
 
 function build_cython {
     rm -rf datoviz/*.c datoviz/*.so datoviz/__pycache__ && \
-    python3 tools/generate_cython.py && \
-    python3 setup.py build_ext -i && \
-    python3 setup.py develop --user
+    python tools/generate_cython.py && \
+    python setup.py build_ext -i && \
+    python setup.py develop --user
 }
 
 
@@ -70,4 +70,7 @@ then
 elif [ $1 == "test" ]
 then
     test $2
+elif [ $1 == "pytest" ]
+then
+    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
 fi
