@@ -53,6 +53,8 @@ dkms.conf
 
 # Python
 __pycache__
+*.egg-info
+datoviz/request.c
 
 # Datoviz-specific
 build

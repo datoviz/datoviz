@@ -1,6 +1,6 @@
 # WARNING: parts of this file are auto-generated
 
-cdef extern from "<datoviz/datoviz.h>":
+cdef extern from "<datoviz/request.h>":
     # Numerical types:
 
     ctypedef long int32_t
@@ -34,134 +34,15 @@ cdef extern from "<datoviz/datoviz.h>":
     ctypedef float[4][4] mat4
 
     ctypedef uint64_t DvzSize
-
-    # Callbacks:
-
-    # ctypedef void (*DvzEventCallback)(DvzCanvas*, DvzEvent)
+    ctypedef uint64_t DvzId
 
     # Semi-opaque structs:
 
-    ctypedef struct DvzObject:
+    ctypedef struct DvzRequester:
         pass
 
-    ctypedef struct DvzContainer:
+    ctypedef struct DvzRequest:
         pass
-
-    ctypedef struct DvzHost:
-        bint is_running
-
-    ctypedef struct DvzContext:
-        DvzGpu * gpu
-
-    ctypedef struct DvzGpu:
-        DvzApp * app
-        DvzContext * context
-        uint32_t idx
-        const char * name
-
-    ctypedef struct DvzWindow:
-        pass
-
-    ctypedef struct DvzImages:
-        uint32_t width, height, depth
-        VkFormat format
-        VkDeviceSize size
-
-    # ctypedef struct DvzTexture:
-    #     DvzGpu* gpu
-    #     DvzImages* images
-
-    # ctypedef struct DvzCanvas:
-    #     DvzApp* app
-    #     DvzGpu* gpu
-
-    # ctypedef struct DvzGrid:
-    #     DvzCanvas* canvas
-
-    # ctypedef struct DvzScene:
-    #     DvzCanvas* canvas
-    #     DvzGrid grid
-
-    # ctypedef struct DvzDataCoords:
-    #     DvzTransformType transform;
-
-    # ctypedef struct DvzPanel:
-    #     DvzGrid* grid
-    #     DvzDataCoords data_coords
-    #     uint32_t row
-    #     uint32_t col
-
-    # ctypedef struct DvzProp:
-    #     DvzPropType prop_type
-    #     uint32_t prop_idx
-    #     DvzDataType dtype
-
-    # ctypedef struct DvzVisual:
-    #     DvzCanvas* canvas
-    #     DvzPanel* panel
-
-    ctypedef struct DvzArray:
-        void * data
-        uint32_t item_count
-
-    # ctypedef struct DvzMesh:
-    #     DvzArray vertices
-    #     DvzArray indices
-
-    # ctypedef struct DvzSubmit:
-    #     pass
-
-    # ctypedef struct DvzBufferRegions:
-    #     pass
-
-    ctypedef struct DvzCommands:
-        pass
-
-    ctypedef struct VkViewport:
-        float x
-        float y
-        float width
-        float height
-        float minDepth
-        float maxDepth
-
-    # ctypedef union VkClearColorValue:
-    #     float       float32[4]
-    #     int32_t     int32[4]
-    #     uint32_t    uint32[4]
-
-    # ctypedef struct ImTextureID:
-    #     pass
-
-    # ---------------------------------------------------------------------------------------------
-    # Vulkan enums:
-    # ---------------------------------------------------------------------------------------------
-
-    # HACK: manual copy for now
-    ctypedef enum DvzFormat:
-        DVZ_FORMAT_NONE = 0
-        DVZ_FORMAT_R8_UNORM = 9
-        DVZ_FORMAT_R8_SNORM = 10
-        DVZ_FORMAT_R8G8B8_UNORM = 23
-        DVZ_FORMAT_R8G8B8A8_UNORM = 37
-        DVZ_FORMAT_R8G8B8A8_UINT = 41
-        DVZ_FORMAT_B8G8R8A8_UNORM = 44
-        DVZ_FORMAT_R16_UNORM = 70
-        DVZ_FORMAT_R16_SNORM = 71
-        DVZ_FORMAT_R32_UINT = 98
-        DVZ_FORMAT_R32_SINT = 99
-        DVZ_FORMAT_R32_SFLOAT = 100
-
-    ctypedef enum DvzFilter:
-        DVZ_FILTER_NEAREST = 0
-        DVZ_FILTER_LINEAR = 1
-        # VK_FILTER_CUBIC_EXT = 1000015000  # requires VK_EXT_filter_cubic
-
-    # ctypedef struct VkPhysicalDeviceFeatures:
-    #     pass
-
-    # ctypedef struct VkSurfaceKHR:
-    #     pass
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------

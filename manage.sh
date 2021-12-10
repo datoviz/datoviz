@@ -30,6 +30,17 @@ function rmbuild {
 }
 
 
+# -------------------------------------------------------------------------------------------------
+# Cython
+# -------------------------------------------------------------------------------------------------
+
+function build_cython {
+    python3 tools/generate_cython.py && \
+    python3 setup.py build_ext -i && \
+    python3 setup.py develop --user
+}
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
@@ -52,6 +63,9 @@ elif [ $1 == "rebuild" ]
 then
     rmbuild
     build
+elif [ $1 == "cython" ]
+then
+    build_cython
 elif [ $1 == "test" ]
 then
     test $2
