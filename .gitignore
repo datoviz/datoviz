@@ -66,3 +66,4 @@ perf.*
 .DS_Store
 _old
 headers.json
+*.png

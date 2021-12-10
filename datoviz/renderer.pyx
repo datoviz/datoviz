@@ -11,6 +11,7 @@ import numpy as np
 
 from . cimport renderer as rd
 from . cimport request as rq
+from . cimport fileio
 
 
 logger = logging.getLogger('datoviz')
@@ -64,3 +65,31 @@ cdef class Renderer:
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
             &self._c_rqr, dat, offset, data.size, &data.data[0]);
         rd.dvz_renderer_request(self._c_rd, req);
+
+    def _set_begin(self, DvzId board):
+        cdef rq.DvzRequest req = rq.dvz_set_begin(&self._c_rqr, board);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def _set_viewport(self, DvzId board, float x, float y, float w, float h):
+        cdef vec2 offset = (x, y)
+        cdef vec2 shape = (w, h)
+        cdef rq.DvzRequest req = rq.dvz_set_viewport(&self._c_rqr, board, offset, shape);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def _set_draw(self, DvzId board, DvzId graphics, int first_vertex, int vertex_count):
+        cdef rq.DvzRequest req = rq.dvz_set_draw(&self._c_rqr, board, graphics, first_vertex, vertex_count);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def _set_end(self, DvzId board):
+        cdef rq.DvzRequest req = rq.dvz_set_end(&self._c_rqr, board);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def _update_board(self, DvzId board):
+        cdef rq.DvzRequest req = rq.dvz_update_board(&self._c_rqr, board);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def save_image(self, DvzId board, str path):
+        cdef DvzSize size = 0
+        cdef uint8_t* rgba = rd.dvz_renderer_image(self._c_rd, board, &size, NULL)
+        # TODO: size
+        fileio.dvz_write_png(path, 800, 600, rgba)
