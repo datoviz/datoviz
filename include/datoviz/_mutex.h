@@ -34,23 +34,18 @@ typedef mtx_t DvzMutex;
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
 /*  Mutex functions                                                                              */
 /*************************************************************************************************/
-
-EXTERN_C_ON
 
 /**
  * Initialize an mutex.
  *
  * @param mutex the mutex to initialize
  */
-static inline int dvz_mutex_init(DvzMutex* mutex)
-{
-    ASSERT(mutex != NULL);
-    // NOTE: thrd_success is 1, not 0 (!?)
-    return mtx_init(mutex, 0) != thrd_success;
-}
+DVZ_EXPORT int dvz_mutex_init(DvzMutex* mutex);
 
 
 
@@ -59,16 +54,7 @@ static inline int dvz_mutex_init(DvzMutex* mutex)
  *
  * @returns mutex
  */
-static inline DvzMutex dvz_mutex()
-{
-#ifdef LANG_CPP
-    DvzMutex mutex = {};
-#else
-    DvzMutex mutex = {0};
-#endif
-    dvz_mutex_init(&mutex);
-    return mutex;
-}
+DVZ_EXPORT DvzMutex dvz_mutex(void);
 
 
 
@@ -77,11 +63,7 @@ static inline DvzMutex dvz_mutex()
  *
  * @param mutex the mutex
  */
-static inline int dvz_mutex_lock(DvzMutex* mutex)
-{
-    ASSERT(mutex != NULL);
-    return mtx_lock(mutex) != thrd_success;
-}
+DVZ_EXPORT int dvz_mutex_lock(DvzMutex* mutex);
 
 
 
@@ -90,11 +72,7 @@ static inline int dvz_mutex_lock(DvzMutex* mutex)
  *
  * @param mutex the mutex
  */
-static inline int dvz_mutex_unlock(DvzMutex* mutex)
-{
-    ASSERT(mutex != NULL);
-    return mtx_unlock(mutex) != thrd_success;
-}
+DVZ_EXPORT int dvz_mutex_unlock(DvzMutex* mutex);
 
 
 
@@ -103,11 +81,7 @@ static inline int dvz_mutex_unlock(DvzMutex* mutex)
  *
  * @param mutex the mutex to destroy
  */
-static inline void dvz_mutex_destroy(DvzMutex* mutex)
-{
-    ASSERT(mutex != NULL);
-    mtx_destroy(mutex);
-}
+DVZ_EXPORT void dvz_mutex_destroy(DvzMutex* mutex);
 
 
 
@@ -120,11 +94,7 @@ static inline void dvz_mutex_destroy(DvzMutex* mutex)
  *
  * @param cond the cond to initialize
  */
-static inline int dvz_cond_init(DvzCond* cond)
-{
-    ASSERT(cond != NULL);
-    return cnd_init(cond);
-}
+DVZ_EXPORT int dvz_cond_init(DvzCond* cond);
 
 
 
@@ -133,18 +103,7 @@ static inline int dvz_cond_init(DvzCond* cond)
  *
  * @returns cond
  */
-static inline DvzCond dvz_cond()
-{
-
-#ifdef LANG_CPP
-    DvzCond cond = {};
-#else
-    DvzCond cond = {0};
-#endif
-    dvz_cond_init(&cond);
-    return cond;
-}
-
+DVZ_EXPORT DvzCond dvz_cond(void);
 
 
 /**
@@ -152,11 +111,7 @@ static inline DvzCond dvz_cond()
  *
  * @param cond the cond
  */
-static inline int dvz_cond_signal(DvzCond* cond)
-{
-    ASSERT(cond != NULL);
-    return cnd_signal(cond);
-}
+DVZ_EXPORT int dvz_cond_signal(DvzCond* cond);
 
 
 
@@ -165,11 +120,7 @@ static inline int dvz_cond_signal(DvzCond* cond)
  *
  * @param cond the cond
  */
-static inline int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
-{
-    ASSERT(cond != NULL);
-    return cnd_wait(cond, mutex);
-}
+DVZ_EXPORT int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex);
 
 
 
@@ -179,11 +130,7 @@ static inline int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex)
  * @param cond the cond
  * @param wait waiting limit
  */
-static inline int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait)
-{
-    ASSERT(cond != NULL);
-    return cnd_timedwait(cond, mutex, wait);
-}
+DVZ_EXPORT int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait);
 
 
 
@@ -192,11 +139,7 @@ static inline int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct time
  *
  * @param cond the cond
  */
-static inline void dvz_cond_destroy(DvzCond* cond)
-{
-    ASSERT(cond != NULL);
-    cnd_destroy(cond);
-}
+DVZ_EXPORT void dvz_cond_destroy(DvzCond* cond);
 
 
 
