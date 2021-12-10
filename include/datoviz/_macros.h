@@ -148,6 +148,11 @@
 #define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
 #define ASSERT(x)        assert((x))
 
+#ifdef LANG_CPP
+#define INIT(t, n) t n = {};
+#else
+#define INIT(t, n) t n = {0};
+#endif
 
 
 #endif

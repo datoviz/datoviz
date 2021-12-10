@@ -30,11 +30,7 @@ int dvz_mutex_init(DvzMutex* mutex)
 
 DvzMutex dvz_mutex()
 {
-#ifdef LANG_CPP
-    DvzMutex mutex = {};
-#else
-    DvzMutex mutex = {0};
-#endif
+    INIT(DvzMutex, mutex);
     dvz_mutex_init(&mutex);
     return mutex;
 }
@@ -80,11 +76,7 @@ int dvz_cond_init(DvzCond* cond)
 DvzCond dvz_cond()
 {
 
-#ifdef LANG_CPP
-    DvzCond cond = {};
-#else
-    DvzCond cond = {0};
-#endif
+    INIT(DvzCond, cond);
     dvz_cond_init(&cond);
     return cond;
 }
