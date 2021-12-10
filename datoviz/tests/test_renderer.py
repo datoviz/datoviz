@@ -6,7 +6,11 @@ import logging
 import os
 from pathlib import Path
 
-from datoviz import Requester
+import numpy as np
+from numpy.testing import assert_array_equal as ae
+import numpy.random as nr
+
+from datoviz import Renderer
 from .utils import ROOT_PATH
 
 
@@ -18,17 +22,8 @@ logger = logging.getLogger('datoviz')
 
 
 # -------------------------------------------------------------------------------------------------
-# CONSTANTS
-# -------------------------------------------------------------------------------------------------
-
-WIDTH = 800
-HEIGHT = 600
-
-
-# -------------------------------------------------------------------------------------------------
 # Tests
 # -------------------------------------------------------------------------------------------------
 
-def test_request_1():
-    r = Requester()
-    r.create_board(WIDTH, HEIGHT)
+def test_renderer_1():
+    r = Renderer()

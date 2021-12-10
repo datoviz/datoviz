@@ -4,7 +4,7 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from . cimport request as rq
+from . cimport renderer as rd
 import logging
 
 
@@ -12,22 +12,21 @@ logger = logging.getLogger('datoviz')
 
 
 # -------------------------------------------------------------------------------------------------
-# Requester
+# Renderer
 # -------------------------------------------------------------------------------------------------
 
-cdef class Requester:
-    cdef rq.DvzRequester _c_rqr
+cdef class Renderer:
+    cdef rd.DvzRenderer * _c_rd
+    cdef rd.DvzGpu * _c_gpu
 
     def __cinit__(self):
-        self._c_rqr = rq.dvz_requester()
+        self._c_gpu = rd.dvz_init_offscreen()
+        self._c_rd = rd.dvz_renderer_offscreen(self._c_gpu)
 
     def __dealloc__(self):
         self.destroy()
 
     def destroy(self):
-        """Destroy the requester."""
-        rq.dvz_requester_destroy(&self._c_rqr)
-
-    def create_board(self, int width, int height):
-        cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, 0)
-        rq.dvz_request_print(&req)
+        """Destroy the renderer."""
+        rd.dvz_renderer_destroy(self._c_rd)
+        rd.dvz_host_destroy(self._c_gpu.host)

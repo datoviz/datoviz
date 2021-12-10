@@ -11,7 +11,8 @@ from IPython import get_ipython
 from IPython.terminal.pt_inputhooks import register
 
 try:
-    from .pydatoviz import Requester
+    from .request import Requester
+    from .renderer import Renderer
 except ImportError:
     raise ImportError(
         "Unable to load the shared library, make sure to run in your terminal:\n"

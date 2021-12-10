@@ -22,90 +22,8 @@ from pyparsing import (
 from parse_headers import ROOT_DIR, iter_vars
 
 
-# Objects to wrap
-# -------------------------------------------------------------------------------------------------
-
-STRUCTS = (
-    # 'DvzAutorun',
-    # 'DvzEvent',
-    # 'DvzEventUnion',
-    # 'DvzFrameEvent',
-    # 'DvzGui',  # all structs that start with this
-    # 'DvzKeyEvent',
-    # 'DvzMouseButtonEvent',
-    # 'DvzMouseClickEvent',
-    # 'DvzMouseDragEvent',
-    # 'DvzMouseMoveEvent',
-    # 'DvzMouseWheelEvent',
-    # 'DvzRefillEvent',
-    # 'DvzResizeEvent',
-    # 'DvzScreencastEvent',
-    # 'DvzSubmitEvent',
-    # 'DvzTimerEvent',
-    # 'DvzViewport',
-)
-
-FUNCTIONS = (
-    'dvz_request',
-    'dvz_create',
-    'dvz_update',
-    'dvz_set',
-    'dvz_delete',
-    # 'dvz_app_destroy',
-    # 'dvz_app_run',
-    # 'dvz_app',
-    # 'dvz_autorun_setup',
-    # 'dvz_canvas_clear_color',
-    # 'dvz_canvas_frame',
-    # 'dvz_canvas_pause',
-    # 'dvz_canvas_pick',
-    # 'dvz_canvas_stop',
-    # 'dvz_canvas_to_close',
-    # 'dvz_canvas_video',
-    # 'dvz_canvas',
-    # 'dvz_colormap_array',
-    # 'dvz_colormap_custom',
-    # 'dvz_colormap_packuv',
-    # 'dvz_colorpal_array',
-    # 'dvz_context_colormap',
-    # 'dvz_context',
-    # 'dvz_copy_buffer',
-    # 'dvz_copy_texture',
-    # 'dvz_ctx_texture',
-    # 'dvz_demo',  # all dvz_demo_*() functions
-    # 'dvz_download_buffer',
-    # 'dvz_download_texture',
-    # 'dvz_event',  # all dvz_event_*() functions
-    # 'dvz_gpu_best',
-    # 'dvz_gpu_default',
-    # 'dvz_gpu',
-    # 'dvz_gui',  # all dvz_gui*() functions
-    # 'dvz_imgui_demo',
-    # 'dvz_mesh',
-    # 'dvz_panel',  # all dvz_panel_*() functions
-    # 'dvz_process_transfers',
-    # 'dvz_prop_get',
-    # 'dvz_scene_destroy',
-    # 'dvz_scene_panel',
-    # 'dvz_scene_visual',
-    # 'dvz_scene',
-    # 'dvz_screenshot_file',
-    # 'dvz_texture_filter',
-    # 'dvz_texture_resize',
-    # 'dvz_texture_upload',
-    # 'dvz_transform',
-    # 'dvz_upload_buffer',
-    # 'dvz_upload_texture',
-    # 'dvz_visual_data_source',
-    # 'dvz_visual_data',
-    # 'dvz_visual_texture',
-)
-
-
 # Constants
 # -------------------------------------------------------------------------------------------------
-
-CYTHON_OUTPUT = (ROOT_DIR / 'datoviz/cydatoviz.pxd').resolve()
 
 ENUM_START = '# ENUM START'
 ENUM_END = '# ENUM END'
@@ -237,29 +155,52 @@ def generate_enums():
     return out
 
 
-def generate_structs():
+def generate_structs(structs):
     out = ''
     defines = dict(iter_vars("defines"))
     for n, v in iter_vars('structs'):
-        if _keep(n, STRUCTS):
+        if _keep(n, structs):
             out += _generate_struct(v, defines=defines)
     return out
 
 
-def generate_functions():
+def generate_functions(functions):
     out = ''
     for n, v in iter_vars('functions'):
-        if _keep(n, FUNCTIONS):
+        if _keep(n, functions):
             out += _generate_function(v)
     return out
 
 
 def generate_cython():
-    insert_into_file(CYTHON_OUTPUT, ENUM_START, ENUM_END, generate_enums())
-    insert_into_file(CYTHON_OUTPUT, STRUCT_START,
-                     STRUCT_END, generate_structs())
-    insert_into_file(CYTHON_OUTPUT, FUNCTION_START,
-                     FUNCTION_END, generate_functions())
+
+    # _types.pxd
+    path = ROOT_DIR / 'datoviz/_types.pxd'
+    insert_into_file(path, ENUM_START, ENUM_END, generate_enums())
+
+    # request.h
+    functions = (
+        'dvz_request',
+        'dvz_create',
+        'dvz_update',
+        'dvz_set',
+        'dvz_delete',
+    )
+    path = ROOT_DIR / 'datoviz/request.pxd'
+    insert_into_file(path, FUNCTION_START, FUNCTION_END,
+                     generate_functions(functions))
+    # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
+
+    # renderer.h
+    functions = (
+        'dvz_init',
+        'dvz_host',
+        'dvz_renderer',
+    )
+    path = ROOT_DIR / 'datoviz/renderer.pxd'
+    insert_into_file(path, FUNCTION_START, FUNCTION_END,
+                     generate_functions(functions))
+    # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
 
 
 if __name__ == '__main__':
