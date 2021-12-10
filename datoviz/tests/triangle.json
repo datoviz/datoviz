@@ -16,7 +16,7 @@
             "id": 2,
             "content": {
                 "board": 1,
-                "type": "triangle"
+                "type": 4
             }
         },
         {
@@ -24,13 +24,14 @@
             "type": "dat",
             "id": 3,
             "content": {
-                "type": "vertex",
+                "type": 2,
                 "size": 48
             }
         },
         {
             "action": "set",
             "type": "vertex",
+            "id": 2,
             "content": {
                 "dat": 3
             }
@@ -40,6 +41,7 @@
             "type": "dat",
             "id": 3,
             "content": {
+                "offset": 0,
                 "size": 48,
                 "data": {
                     "mode": "base64",
@@ -49,11 +51,13 @@
         },
         {
             "action": "set",
-            "type": "begin"
+            "type": "begin",
+            "id": 1
         },
         {
             "action": "set",
             "type": "viewport",
+            "id": 1,
             "content": {
                 "offset": [
                     0,
@@ -66,8 +70,9 @@
             }
         },
         {
-            "action": "draw",
-            "type": "board",
+            "action": "set",
+            "type": "draw",
+            "id": 1,
             "content": {
                 "graphics": 2,
                 "first_vertex": 0,
@@ -76,7 +81,8 @@
         },
         {
             "action": "set",
-            "type": "end"
+            "type": "end",
+            "id": 1
         },
         {
             "action": "update",

@@ -42,18 +42,24 @@ cdef class Renderer:
         rd.dvz_renderer_destroy(self._c_rd)
         rd.dvz_host_destroy(self._c_gpu.host)
 
-    def _create_board(self, int width, int height):
+    def _create_board(self, int width, int height, int id=0):
         cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, 0)
+        if id != 0:
+            req.id = id
         rd.dvz_renderer_request(self._c_rd, req);
         return req.id
 
-    def _create_graphics(self, DvzId board_id, DvzGraphicsType type):
+    def _create_graphics(self, DvzId board_id, DvzGraphicsType type, int id=0):
         cdef rq.DvzRequest req = rq.dvz_create_graphics(&self._c_rqr, board_id, type, 0);
+        if id != 0:
+            req.id = id
         rd.dvz_renderer_request(self._c_rd, req);
         return req.id
 
-    def _create_dat(self, DvzBufferType type, DvzSize size):
+    def _create_dat(self, DvzBufferType type, DvzSize size, int id=0):
         cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, 0);
+        if id != 0:
+            req.id = id
         rd.dvz_renderer_request(self._c_rd, req);
         return req.id
 
