@@ -30,4 +30,4 @@ cdef class Renderer:
     def destroy(self):
         """Destroy the renderer."""
         rd.dvz_renderer_destroy(self._c_rd)
-        # rd.dvz_host_destroy(self._c_gpu.host)
+        rd.dvz_host_destroy(self._c_gpu.host)
