@@ -1,0 +1,1 @@
+FLASK_APP=server flask run -p 1234
