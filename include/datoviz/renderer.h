@@ -11,6 +11,7 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+#include "board.h"
 #include "common.h"
 #include "context.h"
 #include "host.h"
@@ -110,6 +111,17 @@ DVZ_EXPORT void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
  * @param reqs an array of requests
  */
 DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
+
+
+
+/**
+ * Return a board.
+ *
+ * @param rd the renderer
+ * @param id the board id
+ * @param board the board
+ */
+DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
 
 
 

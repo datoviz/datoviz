@@ -412,6 +412,17 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 
 
 
+DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
+{
+    ASSERT(rd != NULL);
+
+    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
+    ASSERT(board != NULL);
+    return board;
+}
+
+
+
 uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba)
 {
     ASSERT(rd != NULL);

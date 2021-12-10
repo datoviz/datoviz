@@ -18,7 +18,12 @@ cdef extern from "<datoviz/renderer.h>":
         pass
 
     ctypedef struct DvzGpu:
-        DvzHost * host
+        DvzHost* host
+
+    ctypedef struct DvzBoard:
+        uint32_t width
+        uint32_t height
+
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -56,6 +61,8 @@ cdef extern from "<datoviz/renderer.h>":
     void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 
     void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
+
+    DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 
     uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba)
 
