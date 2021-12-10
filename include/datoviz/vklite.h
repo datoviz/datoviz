@@ -2291,19 +2291,6 @@ DVZ_EXPORT void dvz_cmd_push(
 
 
 
-/*************************************************************************************************/
-/*  Context and transfers                                                                        */
-/*************************************************************************************************/
-
-/**
- * Destroy a context.
- *
- * @param context the context
- */
-// DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
-
-
-
 EXTERN_C_OFF
 
 #endif

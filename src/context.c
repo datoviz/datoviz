@@ -8,6 +8,7 @@
 
 #include "context.h"
 #include "datalloc_utils.h"
+#include "host.h"
 #include "resources_utils.h"
 #include "transfers_utils.h"
 #include "vklite_utils.h"
@@ -110,4 +111,35 @@ void dvz_context_destroy(DvzContext* ctx)
     // Free the context.
     FREE(ctx);
     // gpu->context = NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Default initializers                                                                         */
+/*************************************************************************************************/
+
+DvzGpu* dvz_init_offscreen(void)
+{
+    DvzHost* host = dvz_host(DVZ_BACKEND_OFFSCREEN);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    _default_queues(gpu, false);
+    dvz_gpu_create(gpu, 0);
+
+    return gpu;
+}
+
+
+
+DvzGpu* dvz_init_glfw(void)
+{
+    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    _default_queues(gpu, false);
+    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
+    dvz_gpu_create(gpu, 0);
+
+    return gpu;
 }
