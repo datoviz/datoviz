@@ -8,6 +8,7 @@ import json
 import io
 from pprint import pprint
 
+from imageio import v3 as iio
 import numpy as np
 from flask import Flask, request, send_file, session
 
@@ -79,11 +80,16 @@ def main():
 def get_image():
     # Save the image.
     # TODO: find board id?
-    RENDERER.save_image(1, "a.png")
 
-    with open("a.png", "rb") as f:
-        img = f.read()
+    # RENDERER.save_image(1, "a.png")
+    # with open("a.png", "rb") as f:
+    #     img = f.read()
+
+    img = RENDERER.get_image(1)
+    output = io.BytesIO()
+    iio.imwrite(output, img, plugin="pillow", format="PNG")
+    output.seek(0)
     return send_file(
-        io.BytesIO(img),
+        output,
         mimetype='image/png',
         as_attachment=False)

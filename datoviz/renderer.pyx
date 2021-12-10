@@ -96,6 +96,15 @@ cdef class Renderer:
 
     def save_image(self, DvzId board, str path):
         cdef DvzSize size = 0
-        cdef uint8_t* rgba = rd.dvz_renderer_image(self._c_rd, board, &size, NULL)
         cdef rd.DvzBoard* _board = rd.dvz_renderer_board(self._c_rd, board)
+        cdef uint8_t* rgba = rd.dvz_renderer_image(self._c_rd, board, &size, NULL)
         fileio.dvz_write_png(path, _board.width, _board.height, rgba)
+
+    def get_image(self, DvzId board):
+        cdef rd.DvzBoard* _board = rd.dvz_renderer_board(self._c_rd, board)
+
+        cdef DvzSize size = 0
+        cdef np.ndarray arr
+        arr = np.empty((_board.height, _board.width, 3), dtype=np.uint8)
+        rd.dvz_renderer_image(self._c_rd, board, &size, &arr.data[0])
+        return arr
