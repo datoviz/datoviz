@@ -51,6 +51,9 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# Python
+__pycache__
+
 # Datoviz-specific
 build
 screenshots
