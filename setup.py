@@ -53,7 +53,7 @@ setup(
                     str(BUILD_DIR / '_deps/cglm-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
-                extra_compile_args=['-w'],
+                # extra_compile_args=['-w'],
             ),
 
             # renderer
@@ -69,7 +69,7 @@ setup(
                     str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
-                extra_compile_args=['-w'],
+                # extra_compile_args=['-w'],
             )
         ],
         compiler_directives={'language_level': '3'}),

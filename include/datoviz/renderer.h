@@ -12,8 +12,12 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "context.h"
+#include "host.h"
 #include "pipe.h"
+#include "pipelib.h"
 #include "request.h"
+#include "vklite.h"
 
 
 

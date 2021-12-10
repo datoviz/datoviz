@@ -16,11 +16,12 @@ logger = logging.getLogger('datoviz')
 # -------------------------------------------------------------------------------------------------
 
 cdef class Renderer:
-    cdef rd.DvzRenderer * _c_rd
-    cdef rd.DvzGpu * _c_gpu
+    cdef rd.DvzRenderer* _c_rd
+    cdef rd.DvzGpu* _c_gpu
 
     def __cinit__(self):
         self._c_gpu = rd.dvz_init_offscreen()
+        assert self._c_gpu != NULL
         self._c_rd = rd.dvz_renderer_offscreen(self._c_gpu)
 
     def __dealloc__(self):
@@ -29,4 +30,4 @@ cdef class Renderer:
     def destroy(self):
         """Destroy the renderer."""
         rd.dvz_renderer_destroy(self._c_rd)
-        rd.dvz_host_destroy(self._c_gpu.host)
+        # rd.dvz_host_destroy(self._c_gpu.host)
