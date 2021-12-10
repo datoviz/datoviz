@@ -4,6 +4,7 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from . cimport cydatoviz as cv
 from libc.stdio cimport printf
 from libc.string cimport memcpy
 from cpython.ref cimport Py_INCREF
@@ -15,7 +16,6 @@ import sys
 
 cimport numpy as np
 
-cimport cydatoviz as cv
 
 logger = logging.getLogger('datoviz')
 
@@ -75,14 +75,18 @@ DEFAULT_HEIGHT = 600
 cdef class Requester:
     """Singleton object that gives access to the GPUs."""
 
-    cdef cv.DvzRequester _c_requester
+    cdef cv.DvzRequester _c_rqr
 
     def __cinit__(self):
-        self._c_requester = cv.dvz_requester()
+        self._c_rqr = cv.dvz_requester()
 
     def __dealloc__(self):
         self.destroy()
 
     def destroy(self):
         """Destroy the requester."""
-        cv.dvz_requester_destroy( & self._c_requester)
+        cv.dvz_requester_destroy(&self._c_rqr)
+
+    def create_board(self, int width, int height):
+        cdef cv.DvzRequest req = cv.dvz_create_board(&self._c_rqr, width, height, 0)
+        cv.dvz_request_print(&req)

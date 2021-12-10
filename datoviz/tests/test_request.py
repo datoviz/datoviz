@@ -19,6 +19,9 @@ logger = logging.getLogger('datoviz')
 
 CUR_DIR = Path(__file__).parent
 
+WIDTH = 800
+HEIGHT = 600
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
@@ -26,3 +29,4 @@ CUR_DIR = Path(__file__).parent
 
 def test_request_1():
     r = Requester()
+    r.create_board(WIDTH, HEIGHT)
