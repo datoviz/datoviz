@@ -53,6 +53,7 @@ setup(
                     str(BUILD_DIR / '_deps/cglm-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
+                undef_macros=['NDEBUG'],
                 # extra_compile_args=['-w'],
             ),
 
@@ -69,6 +70,7 @@ setup(
                     str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
+                undef_macros=['NDEBUG'],
                 # extra_compile_args=['-w'],
             )
         ],
