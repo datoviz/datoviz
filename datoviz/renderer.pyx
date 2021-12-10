@@ -63,7 +63,7 @@ cdef class Renderer:
 
     def _upload_dat(self, DvzId dat, DvzSize offset, np.ndarray data):
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
-            &self._c_rqr, dat, offset, data.size, &data.data[0]);
+            &self._c_rqr, dat, offset, data.size * data.itemsize, &data.data[0]);
         rd.dvz_renderer_request(self._c_rd, req);
 
     def _set_begin(self, DvzId board):
