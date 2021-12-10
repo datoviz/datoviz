@@ -56,6 +56,8 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
+    DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
+
     DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board)
 
     DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)

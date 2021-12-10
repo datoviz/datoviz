@@ -4,9 +4,13 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import logging
+
+cimport numpy as np
+import numpy as np
+
 from . cimport renderer as rd
 from . cimport request as rq
-import logging
 
 
 logger = logging.getLogger('datoviz')
@@ -44,4 +48,19 @@ cdef class Renderer:
 
     def _create_graphics(self, DvzId board_id, DvzGraphicsType type):
         cdef rq.DvzRequest req = rq.dvz_create_graphics(&self._c_rqr, board_id, type, 0);
+        rd.dvz_renderer_request(self._c_rd, req);
+        return req.id
+
+    def _create_dat(self, DvzBufferType type, DvzSize size):
+        cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, 0);
+        rd.dvz_renderer_request(self._c_rd, req);
+        return req.id
+
+    def _set_vertex(self, DvzId graphics, DvzId dat):
+        cdef rq.DvzRequest req = rq.dvz_set_vertex(&self._c_rqr, graphics, dat);
+        rd.dvz_renderer_request(self._c_rd, req);
+
+    def _upload_dat(self, DvzId dat, DvzSize offset, np.ndarray data):
+        cdef rq.DvzRequest req = rq.dvz_upload_dat(
+            &self._c_rqr, dat, offset, data.size, &data.data[0]);
         rd.dvz_renderer_request(self._c_rd, req);

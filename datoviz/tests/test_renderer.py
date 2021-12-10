@@ -35,5 +35,15 @@ HEIGHT = 600
 
 def test_renderer_1():
     r = Renderer()
-    id = r._create_board(WIDTH, HEIGHT)
-    r._create_graphics(id, 4)
+    board = r._create_board(WIDTH, HEIGHT)
+    graphics = r._create_graphics(board, 4)
+    dat = r._create_dat(2, 48)
+    r._set_vertex(graphics, dat)
+    arr = np.array([
+        (-1., -1., 0., -1,  0,  0, -1),
+        ( 1., -1., 0.,  0, -1,  0, -1),
+        ( 0.,  1., 0.,  0,  0, -1, -1)],
+      dtype=[
+        ('x', '<f4'), ('y', '<f4'), ('z', '<f4'),
+        ('r', 'i1'), ('g', 'i1'), ('b', 'i1'), ('a', 'i1')])
+    r._upload_dat(dat, 0, arr)
