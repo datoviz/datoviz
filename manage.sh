@@ -35,6 +35,7 @@ function rmbuild {
 # -------------------------------------------------------------------------------------------------
 
 function build_cython {
+    rm datoviz/*.c && \
     python3 tools/generate_cython.py && \
     python3 setup.py build_ext -i && \
     python3 setup.py develop --user

@@ -1,0 +1,87 @@
+{
+    "version": "1.0",
+    "requests": [
+        {
+            "action": "create",
+            "type": "board",
+            "id": 1,
+            "content": {
+                "width": 800,
+                "height": 600
+            }
+        },
+        {
+            "action": "create",
+            "type": "graphics",
+            "id": 2,
+            "content": {
+                "board": 1,
+                "type": "triangle"
+            }
+        },
+        {
+            "action": "create",
+            "type": "dat",
+            "id": 3,
+            "content": {
+                "type": "vertex",
+                "size": 48
+            }
+        },
+        {
+            "action": "set",
+            "type": "vertex",
+            "content": {
+                "dat": 3
+            }
+        },
+        {
+            "action": "upload",
+            "type": "dat",
+            "id": 3,
+            "content": {
+                "size": 48,
+                "data": {
+                    "mode": "base64",
+                    "buffer": "AACAvwAAgL8AAAAA/wAA/wAAgD8AAIC/AAAAAAD/AP8AAAAAAACAPwAAAAAAAP//"
+                }
+            }
+        },
+        {
+            "action": "set",
+            "type": "begin"
+        },
+        {
+            "action": "set",
+            "type": "viewport",
+            "content": {
+                "offset": [
+                    0,
+                    0
+                ],
+                "shape": [
+                    0,
+                    0
+                ]
+            }
+        },
+        {
+            "action": "draw",
+            "type": "board",
+            "content": {
+                "graphics": 2,
+                "first_vertex": 0,
+                "vertex_count": 3
+            }
+        },
+        {
+            "action": "set",
+            "type": "end"
+        },
+        {
+            "action": "update",
+            "type": "board",
+            "id": 1
+        }
+    ]
+}
