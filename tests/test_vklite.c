@@ -715,11 +715,11 @@ int test_vklite_offscreen(TstSuite* suite)
     empty_commands(&canvas, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
 
-    uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
+    uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
     for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
-        AT(rgba[i] >= 100);
+        AT(rgb[i] >= 100);
 
-    FREE(rgba);
+    FREE(rgb);
 
     test_canvas_destroy(&canvas);
 
@@ -795,9 +795,9 @@ int test_vklite_graphics(TstSuite* suite)
     log_debug("saving screenshot to %s", path);
     // Make a screenshot of the color attachment.
     DvzImages* images = visual.framebuffers->attachments[0];
-    uint8_t* rgba = (uint8_t*)screenshot(images, 1);
-    dvz_write_ppm(path, images->shape[0], images->shape[1], rgba);
-    FREE(rgba);
+    uint8_t* rgb = (uint8_t*)screenshot(images, 1);
+    dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
+    FREE(rgb);
 
     destroy_visual(&visual);
     test_canvas_destroy(&canvas);
@@ -843,12 +843,12 @@ int test_vklite_gui(TstSuite* suite)
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
 
-    uint8_t* rgba = screenshot(framebuffers->attachments[0], 1);
+    uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
     char path[1024];
     snprintf(path, sizeof(path), "%s/imgui.ppm", ARTIFACTS_DIR);
     log_debug("saving screenshot to %s", path);
-    dvz_write_ppm(path, WIDTH, HEIGHT, rgba);
-    FREE(rgba);
+    dvz_write_ppm(path, WIDTH, HEIGHT, rgb);
+    FREE(rgb);
 
     test_canvas_destroy(&canvas);
 

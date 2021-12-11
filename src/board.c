@@ -177,7 +177,7 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
     board.gpu = gpu;
     board.width = width;
     board.height = height;
-    board.size = width * height * 4 * sizeof(uint8_t);
+    board.size = width * height * 3 * sizeof(uint8_t);
 
     dvz_board_format(&board, DVZ_BOARD_DEFAULT_FORMAT);
     dvz_board_clear_color(&board, DVZ_BOARD_DEFAULT_CLEAR_COLOR);
@@ -256,9 +256,9 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
     ASSERT(board != NULL);
     board->width = width;
     board->height = height;
-    board->size = width * height * 4 * sizeof(uint8_t);
+    board->size = width * height * 3 * sizeof(uint8_t);
     // Realloc the RGBA CPU buffer storing the downloaded image.
-    if (board->rgba != NULL)
+    if (board->rgb != NULL)
     {
         dvz_board_free(board);
         dvz_board_alloc(board);
@@ -308,10 +308,10 @@ uint8_t* dvz_board_alloc(DvzBoard* board)
     ASSERT(board != NULL);
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
-    if (board->rgba == NULL)
-        board->rgba = calloc(board->width * board->height, 4 * sizeof(uint8_t));
-    ASSERT(board->rgba != NULL);
-    return board->rgba;
+    if (board->rgb == NULL)
+        board->rgb = calloc(board->width * board->height, 3 * sizeof(uint8_t));
+    ASSERT(board->rgb != NULL);
+    return board->rgb;
 }
 
 
@@ -319,19 +319,19 @@ uint8_t* dvz_board_alloc(DvzBoard* board)
 void dvz_board_free(DvzBoard* board)
 {
     ASSERT(board != NULL);
-    if (board->rgba != NULL)
-        FREE(board->rgba);
+    if (board->rgb != NULL)
+        FREE(board->rgb);
 }
 
 
 
-void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba)
+void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
 {
     ASSERT(board != NULL);
     ASSERT(size > 0);
-    if (rgba == NULL)
-        rgba = board->rgba;
-    ASSERT(rgba != NULL);
+    if (rgb == NULL)
+        rgb = board->rgb;
+    ASSERT(rgb != NULL);
 
     DvzGpu* gpu = board->gpu;
     ASSERT(gpu != NULL);
@@ -361,7 +361,7 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
-    dvz_images_download(&board->staging, 0, 1, true, false, rgba);
+    dvz_images_download(&board->staging, 0, 1, true, false, rgb);
 }
 
 

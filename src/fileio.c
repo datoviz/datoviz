@@ -203,7 +203,7 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 
 
 
-int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* image)
+int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb)
 {
 #if HAS_PNG
     // from https://fossies.org/linux/libpng/example.c
@@ -256,7 +256,7 @@ int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const u
         png_error(png_ptr, "Image is too tall to process in memory");
 
     for (uint32_t k = 0; k < height; k++)
-        row_pointers[k] = (png_bytep)((int64_t)image + k * width * bytes_per_pixel);
+        row_pointers[k] = (png_bytep)((int64_t)rgb + k * width * bytes_per_pixel);
     png_write_image(png_ptr, row_pointers);
     png_write_end(png_ptr, info_ptr);
     png_destroy_write_struct(&png_ptr, &info_ptr);

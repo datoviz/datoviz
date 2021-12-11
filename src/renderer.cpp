@@ -56,7 +56,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
     DvzBoard* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
     ASSERT(board != NULL);
-    board->rgba = dvz_board_alloc(board);
+    board->rgb = dvz_board_alloc(board);
     return (void*)board;
 }
 
@@ -423,7 +423,7 @@ DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 
 
 
-uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba)
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
 {
     ASSERT(rd != NULL);
 
@@ -431,18 +431,18 @@ uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint
     ASSERT(board != NULL);
 
     // Find the pointer: either passed here, or the board-owned pointer.
-    rgba = rgba != NULL ? rgba : board->rgba;
-    ASSERT(rgba != NULL);
+    rgb = rgb != NULL ? rgb : board->rgb;
+    ASSERT(rgb != NULL);
 
     // Download the image to the buffer.
-    dvz_board_download(board, board->size, rgba);
+    dvz_board_download(board, board->size, rgb);
 
     // Set the size.
     ASSERT(size != NULL);
     *size = board->size;
 
     // Return the pointer.
-    return rgba;
+    return rgb;
 }
 
 

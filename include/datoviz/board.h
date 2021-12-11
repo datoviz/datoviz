@@ -47,8 +47,8 @@ struct DvzBoard
     cvec4 clear_color;
     uint32_t width, height;
 
-    DvzSize size;  // width*height*4
-    uint8_t* rgba; // GPU buffer storing the image
+    DvzSize size; // width*height*3
+    uint8_t* rgb; // GPU buffer storing the image
 
     DvzImages images;
     DvzImages depth;
@@ -186,9 +186,9 @@ DVZ_EXPORT void dvz_board_free(DvzBoard* board);
  *
  * @param board the board
  * @param size the image buffer size (should always be equal to width*height*4)
- * @param rgba an alread-allocated buffer that will contain the downloaded image
+ * @param rgb an alread-allocated buffer that will contain the downloaded image
  */
-DVZ_EXPORT void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgba);
+DVZ_EXPORT void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb);
 
 
 

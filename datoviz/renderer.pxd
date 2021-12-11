@@ -64,7 +64,7 @@ cdef extern from "<datoviz/renderer.h>":
 
     DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 
-    uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba)
+    uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
 
     void dvz_renderer_destroy(DvzRenderer* rd)
 

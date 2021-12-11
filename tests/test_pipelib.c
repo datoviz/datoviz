@@ -69,11 +69,11 @@ int test_pipelib_1(TstSuite* suite)
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
     // Screenshot.
-    uint8_t* rgba = dvz_board_alloc(&board);
-    dvz_board_download(&board, board.size, rgba);
+    uint8_t* rgb = dvz_board_alloc(&board);
+    dvz_board_download(&board, board.size, rgb);
     char imgpath[1024];
     snprintf(imgpath, sizeof(imgpath), "%s/pipelib.png", ARTIFACTS_DIR);
-    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     dvz_board_free(&board);
 
     // Destruction.

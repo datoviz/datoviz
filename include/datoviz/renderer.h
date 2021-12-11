@@ -131,11 +131,11 @@ DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
  * @param rd the renderer
  * @param board_id the id of the board
  * @param size a pointer to a variable that will store the size, in bytes, of the downloaded image
- * @param rgba a pointer to the image, or NULL if this array should be handled by datoviz
+ * @param rgb a pointer to the image, or NULL if this array should be handled by datoviz
  * @returns a pointer to the image
  */
 DVZ_EXPORT uint8_t*
-dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgba);
+dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb);
 
 
 

@@ -40,15 +40,15 @@ int test_workspace_1(TstSuite* suite)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Retrieve the rendered image.
-    uint8_t* rgba = dvz_board_alloc(board);
-    dvz_board_download(board, board->size, rgba);
+    uint8_t* rgb = dvz_board_alloc(board);
+    dvz_board_download(board, board->size, rgb);
     char imgpath[1024];
     snprintf(imgpath, sizeof(imgpath), "%s/workspace.png", ARTIFACTS_DIR);
-    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 
     AT(board->clear_color[2] > 0);
     for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
-        AT(rgba[i] == board->clear_color[i % 3])
+        AT(rgb[i] == board->clear_color[i % 3])
     dvz_board_free(board);
 
     dvz_workspace_destroy(ws);

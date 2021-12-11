@@ -80,12 +80,12 @@ int test_renderer_1(TstSuite* suite)
     // Retrieve the image.
     DvzSize size = 0;
     // This pointer will be freed automatically by the renderer.
-    uint8_t* rgba = dvz_renderer_image(rd, board_id, &size, NULL);
+    uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
 
     // Save to a PNG.
     char imgpath[1024];
     snprintf(imgpath, sizeof(imgpath), "%s/renderer_1.png", ARTIFACTS_DIR);
-    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 
     // Create a board deletion request.
     req = dvz_delete_board(&rqr, board_id);
