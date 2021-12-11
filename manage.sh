@@ -34,6 +34,10 @@ function rmbuild {
 # Cython
 # -------------------------------------------------------------------------------------------------
 
+function parse_headers {
+    python tools/parse_headers.py
+}
+
 function build_cython {
     rm -rf datoviz/*.c datoviz/*.so datoviz/__pycache__ && \
     python tools/generate_cython.py && \
@@ -67,6 +71,9 @@ then
 elif [ $1 == "cython" ]
 then
     build_cython
+elif [ $1 == "parseheaders" ]
+then
+    parse_headers
 elif [ $1 == "test" ]
 then
     test $2
