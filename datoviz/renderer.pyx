@@ -8,6 +8,8 @@ import logging
 
 cimport numpy as np
 import numpy as np
+from cython.view cimport array
+from libc.stdlib cimport free
 
 from . cimport renderer as rd
 from . cimport request as rq
@@ -109,3 +111,21 @@ cdef class Renderer:
         cdef uint8_t* pointer = <uint8_t*>&arr.data[0]
         rd.dvz_renderer_image(self._c_rd, board, &size, pointer)
         return arr
+
+    def get_png(self, DvzId board):
+        cdef np.ndarray arr
+        arr = self.get_image(board)
+        height, width = arr.shape[:2]
+        cdef uint8_t* pointer = <uint8_t*>&arr.data[0]
+
+        cdef DvzSize size = 0;
+        cdef char* out = NULL;
+        fileio.dvz_make_png(width, height, pointer, &size, <void**>&out);
+        assert out != NULL
+        assert size > 0
+
+        ret = array(shape=(size,), itemsize=1, format='b', allocate_buffer=False)
+        ret.data = out
+        ret.callback_free_data = free
+
+        return ret

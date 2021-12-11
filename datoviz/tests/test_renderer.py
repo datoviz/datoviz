@@ -54,4 +54,6 @@ def test_renderer_1():
     r._set_end(board)
     r._update_board(board)
 
-    r.save_image(board, str(ROOT_PATH / "../build/artifacts/pyrenderer.png"))
+    # r.save_image(board, str(ROOT_PATH / "../build/artifacts/pyrenderer.png"))
+    arr = r.get_png(board)
+    print(arr)

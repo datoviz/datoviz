@@ -87,6 +87,15 @@ dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8
 
 
 
+/**
+ * Compress an image to PNG and write it to a memory buffer.
+ *
+ * @param width width of the image
+ * @param height height of the image
+ * @param rgb pointer to an array of 24-bit RGB values
+ * @param size pointer to a variable that will contain the size of the buffer
+ * @param out pointer to a variable that will contain a pointer to the recorded image
+ */
 DVZ_EXPORT int
 dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
 
