@@ -590,6 +590,7 @@ if (DATOVIZ_WITH_CLI)
         "cli/main.c"
         "tests/test_thread.c"
         "tests/test_obj.c"
+        "tests/test_fileio.c"
         "tests/test_fifo.c"
         "tests/test_array.c"
         "tests/test_window.c"

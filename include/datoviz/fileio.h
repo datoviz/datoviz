@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "_macros.h"
+#include "common.h"
 
 
 
@@ -74,11 +74,6 @@ dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8
 DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 
-
-/*************************************************************************************************/
-/*  Resources utils (files included in the shared dynamic library)                               */
-/*************************************************************************************************/
-
 /**
  * Save an image to a PNG file
  *
@@ -91,6 +86,15 @@ DVZ_EXPORT int
 dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb);
 
 
+
+DVZ_EXPORT int
+dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
+
+
+
+/*************************************************************************************************/
+/*  Resources utils (files included in the shared dynamic library)                               */
+/*************************************************************************************************/
 
 // Defined in cmake-generated file build/_shaders.c
 DVZ_EXPORT unsigned char* dvz_resource_shader(const char* name, unsigned long* size);

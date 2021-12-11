@@ -18,6 +18,7 @@
 #include "test_board.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
+#include "test_fileio.h"
 #include "test_graphics.h"
 #include "test_map.h"
 #include "test_obj.h"
@@ -53,6 +54,9 @@ int dvz_run_tests(const char* match)
 
     // Testing obj.
     TEST(test_utils_obj_1)
+
+    // Testing file IO.
+    TEST(test_utils_png_1)
 
     // Testing FIFO.
     TEST(test_utils_obj_1)

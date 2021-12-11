@@ -268,3 +268,119 @@ int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const u
     return 1;
 #endif
 }
+
+
+// from https://stackoverflow.com/a/1823604/1595060
+/* structure to store PNG image bytes */
+struct mem_encode
+{
+    char* buffer;
+    size_t size;
+};
+
+static void my_png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
+{
+    /* with libpng15 next line causes pointer deference error; use libpng12 */
+    struct mem_encode* p = (struct mem_encode*)png_get_io_ptr(png_ptr); /* was png_ptr->io_ptr */
+    size_t nsize = p->size + length;
+
+    /* allocate or grow buffer */
+    if (p->buffer)
+    {
+        p->buffer = realloc(p->buffer, nsize);
+    }
+    else
+        p->buffer = malloc(nsize);
+
+    if (!p->buffer)
+        png_error(png_ptr, "Write Error");
+
+    /* copy new bytes to end of buffer */
+    memcpy(p->buffer + p->size, data, length);
+    p->size += length;
+}
+
+/* This is optional but included to show how png_set_write_fn() is called */
+static void my_png_flush(png_structp png_ptr) {}
+
+int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out)
+{
+    // #if HAS_PNG
+    // from https://fossies.org/linux/libpng/example.c
+    // FILE* fp;
+    png_structp png_ptr;
+    png_infop info_ptr;
+
+    /* static */
+    struct mem_encode state;
+
+    /* initialise - put this before png_write_png() call */
+    state.buffer = NULL;
+    state.size = 0;
+
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (png_ptr == NULL)
+    {
+        // fclose(fp);
+        return 1;
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if (info_ptr == NULL)
+    {
+        // fclose(fp);
+        png_destroy_write_struct(&png_ptr, NULL);
+        return 1;
+    }
+
+    if (setjmp(png_jmpbuf(png_ptr)))
+    {
+        // fclose(fp);
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        return 1;
+    }
+
+    // png_init_io(png_ptr, fp);
+    // TODO: smaller buffer, increase dynamically. Here we just assume (hope) that the PNG will be
+    // smaller than the full size...
+    // *out = calloc(width * height, 3);
+
+    /* if my_png_flush() is not needed, change the arg to NULL */
+    png_set_write_fn(png_ptr, &state, my_png_write_data, my_png_flush);
+
+    // NOTE: only RGB U8 format is supported currently (swizzling is supposed to have been done
+    // already).
+    uint8_t bytes_per_pixel = 3;
+    int32_t bit_depth = 8;
+    png_set_IHDR(
+        png_ptr, info_ptr, width, height, bit_depth, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+    png_write_info(png_ptr, info_ptr);
+
+    if (height > PNG_SIZE_MAX / (width * bytes_per_pixel))
+        png_error(png_ptr, "Image data buffer would be too large");
+
+    png_bytep* row_pointers = calloc(height, sizeof(png_bytep));
+    if (height > PNG_UINT_32_MAX / (sizeof(png_bytep)))
+        png_error(png_ptr, "Image is too tall to process in memory");
+
+    for (uint32_t k = 0; k < height; k++)
+        row_pointers[k] = (png_bytep)((int64_t)rgb + k * width * bytes_per_pixel);
+    png_write_image(png_ptr, row_pointers);
+    png_write_end(png_ptr, info_ptr);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+    // fclose(fp);
+
+    // /* cleanup */
+    // if (state.buffer)
+    //     free(state.buffer);
+    *out = state.buffer;
+    *size = state.size;
+
+    FREE(row_pointers);
+    return 0;
+    // #else
+    //     log_error("datoviz was not build with PNG support, please install libpng-dev");
+    //     return 1;
+    // #endif
+}
