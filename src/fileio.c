@@ -270,12 +270,14 @@ int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const u
 }
 
 
+
 // from https://stackoverflow.com/a/1823604/1595060
 /* structure to store PNG image bytes */
 struct mem_encode
 {
     char* buffer;
     size_t size;
+    size_t buf_size;
 };
 
 static void my_png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
@@ -285,12 +287,18 @@ static void my_png_write_data(png_structp png_ptr, png_bytep data, png_size_t le
     size_t nsize = p->size + length;
 
     /* allocate or grow buffer */
-    if (p->buffer)
+    if (p->buffer == NULL)
     {
-        p->buffer = realloc(p->buffer, nsize);
-    }
-    else
         p->buffer = malloc(nsize);
+        p->buf_size = nsize;
+    }
+    else if (p->buf_size < nsize)
+    {
+        while (p->buf_size < nsize)
+            p->buf_size *= 2;
+        log_trace("while writing PNG, reallocating buffer to %d bytes", p->buf_size);
+        p->buffer = realloc(p->buffer, p->buf_size);
+    }
 
     if (!p->buffer)
         png_error(png_ptr, "Write Error");

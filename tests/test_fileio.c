@@ -23,7 +23,7 @@ int test_utils_png_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
 
-    int32_t width = 1600, height = 1200;
+    int32_t width = 256, height = 128;
     uint8_t* rgb = calloc((uint32_t)(width * height), 3);
     for (int32_t i = 0; i < width; i++)
     {
