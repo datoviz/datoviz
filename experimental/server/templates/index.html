@@ -1,11 +1,38 @@
+<!DOCTYPE html>
 <html>
 
 <head>
+    <style>
+        html {
+            background-color: black;
+        }
+    </style>
+    <script>
+        function loadJSON() {
+            var data = '{{ jsonfile | safe}}';
+            return data;
+        }
 
+        function submit() {
+            var data = loadJSON();
+            fetch("/request", {
+                method: "post",
+                headers: {
+                    'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                },
+                body: data
+            }).then(res => {
+                document.getElementById("img").setAttribute("src", "/render");
+            });
+        }
+    </script>
 </head>
 
 <body>
-    <img src="/render" />
+    <img width="800" height="600" id="img" />
+    <br>
+    <button onclick="submit();">Submit</button>
 </body>
 
 </html>

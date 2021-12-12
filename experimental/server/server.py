@@ -4,6 +4,7 @@
 
 import base64
 import sys
+from pathlib import Path
 import json
 import io
 from pprint import pprint
@@ -24,6 +25,7 @@ class Bunch(dict):
 # CONSTANTS
 # -------------------------------------------------------------------------------------------------
 
+CURDIR = Path(__file__).parent.resolve()
 WIDTH = 800
 HEIGHT = 600
 
@@ -69,14 +71,16 @@ def process(requests):
 
 app = Flask(__name__)
 
+
 @app.route('/', methods=['GET'])
 def main():
-    return render_template('index.html')
+    with open(CURDIR / '../../datoviz/tests/triangle.json', 'r') as f:
+        return render_template('index.html', jsonfile=f.read().replace('\n', ''))
 
 
 @app.route('/request', methods=['POST'])
 def post_request():
-    d = json.loads(request.form['json'])
+    d = request.get_json()
     process(d['requests'])
     return ''
 
