@@ -1,1 +1,1 @@
-`LASK_APP=server flask run -p 1234`
+`FLASK_APP=server flask run -p 1234`

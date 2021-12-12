@@ -9,7 +9,7 @@ import io
 from pprint import pprint
 
 import numpy as np
-from flask import Flask, request, send_file, session
+from flask import Flask, request, send_file, session, render_template
 
 from datoviz import Renderer
 
@@ -69,20 +69,26 @@ def process(requests):
 
 app = Flask(__name__)
 
-@app.route('/', methods=['POST'])
+@app.route('/', methods=['GET'])
 def main():
+    return render_template('index.html')
+
+
+@app.route('/request', methods=['POST'])
+def post_request():
     d = json.loads(request.form['json'])
     process(d['requests'])
     return ''
 
-@app.route('/', methods=['GET'])
-def get_image():
+
+@app.route('/render', methods=['GET'])
+def render():
     # Save the image.
     # TODO: find board id?
 
+    # Get the image.
     img = RENDERER.get_png(1)
+
+    # Return as PNG
     output = io.BytesIO(img)
-    return send_file(
-        output,
-        mimetype='image/png',
-        as_attachment=False)
+    return send_file(output, mimetype='image/png', as_attachment=False)
