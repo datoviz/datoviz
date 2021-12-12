@@ -75,7 +75,13 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def main():
     with open(CURDIR / '../../datoviz/tests/triangle.json', 'r') as f:
-        return render_template('index.html', jsonfile=f.read().replace('\n', ''))
+        data1 = f.read().replace('\n', '')
+    with open(CURDIR / '../../datoviz/tests/triangle2.json', 'r') as f:
+        data2 = f.read().replace('\n', '')
+    return render_template('index.html',
+        jsonfile1=data1,
+        jsonfile2=data2,
+    )
 
 
 @app.route('/request', methods=['POST'])

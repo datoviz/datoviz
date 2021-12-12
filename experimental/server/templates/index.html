@@ -8,13 +8,18 @@
         }
     </style>
     <script>
-        function loadJSON() {
-            var data = '{{ jsonfile | safe}}';
+        window.id = 1;
+        function loadJSON(id) {
+            var data;
+            if (id == 1)
+                data = '{{ jsonfile1 | safe}}';
+            else
+                data = '{{ jsonfile2 | safe}}';
             return data;
         }
 
-        function submit() {
-            var data = loadJSON();
+        function submit(id) {
+            var data = loadJSON(id);
             fetch("/request", {
                 method: "post",
                 headers: {
@@ -23,7 +28,7 @@
                 },
                 body: data
             }).then(res => {
-                document.getElementById("img").setAttribute("src", "/render");
+                document.getElementById("img").setAttribute("src", "/render?" + id);
             });
         }
     </script>
@@ -32,7 +37,7 @@
 <body>
     <img width="800" height="600" id="img" />
     <br>
-    <button onclick="submit();">Submit</button>
+    <button onclick="submit(id++ % 2);">Submit</button>
 </body>
 
 </html>
