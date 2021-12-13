@@ -6,10 +6,14 @@ cdef extern from "<datoviz/request.h>":
     # Semi-opaque structs:
 
     ctypedef struct DvzRequester:
-        pass
+        uint32_t count
+        uint32_t capacity
+        DvzRequest* requests
 
     ctypedef struct DvzRequest:
         DvzId id
+        DvzRequestAction action
+        DvzRequestObject type
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
