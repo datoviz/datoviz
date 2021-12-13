@@ -12,7 +12,7 @@ from pprint import pprint
 import numpy as np
 from flask import Flask, request, send_file, session, render_template
 
-from datoviz import Renderer
+from datoviz import Requester, Renderer
 
 
 class Bunch(dict):
@@ -44,25 +44,29 @@ RENDERER = Renderer()
 
 
 ROUTER = {
-    ('create', 'board'): lambda r, req: r._create_board(req.content.width, req.content.height, id=req.id),
-    ('create', 'graphics'): lambda r, req: r._create_graphics(req.content.board, req.content.type, id=req.id),
-    ('create', 'dat'): lambda r, req: r._create_dat(req.content.type, req.content.size, id=req.id),
-    ('set', 'vertex'): lambda r, req: r._set_vertex(req.id, req.content.dat),
-    ('upload', 'dat'): lambda r, req: r._upload_dat(req.id, req.content.offset, get_array(Bunch(req.content.data))),
-    ('set', 'begin'): lambda r, req: r._set_begin(req.id),
-    ('set', 'viewport'): lambda r, req: r._set_viewport(req.id, req.content.offset[0], req.content.offset[1], req.content.shape[0], req.content.shape[0]),
-    ('set', 'draw'): lambda r, req: r._set_draw(req.id, req.content.graphics, req.content.first_vertex, req.content.vertex_count),
-    ('set', 'end'): lambda r, req: r._set_end(req.id),
-    ('update', 'board'): lambda r, req: r._update_board(req.id),
+    ('create', 'board'): lambda r, req: r.create_board(req.content.width, req.content.height, id=req.id),
+    ('create', 'graphics'): lambda r, req: r.create_graphics(req.content.board, req.content.type, id=req.id),
+    ('create', 'dat'): lambda r, req: r.create_dat(req.content.type, req.content.size, id=req.id),
+    ('set', 'vertex'): lambda r, req: r.set_vertex(req.id, req.content.dat),
+    ('upload', 'dat'): lambda r, req: r.upload_dat(req.id, req.content.offset, get_array(Bunch(req.content.data))),
+    ('set', 'begin'): lambda r, req: r.set_begin(req.id),
+    ('set', 'viewport'): lambda r, req: r.set_viewport(req.id, req.content.offset[0], req.content.offset[1], req.content.shape[0], req.content.shape[0]),
+    ('set', 'draw'): lambda r, req: r.set_draw(req.id, req.content.graphics, req.content.first_vertex, req.content.vertex_count),
+    ('set', 'end'): lambda r, req: r.set_end(req.id),
+    ('update', 'board'): lambda r, req: r.update_board(req.id),
 }
 
+
 def process(requests):
-    # Process all requests.
-    for req in requests:
-        req = Bunch(req)
-        if 'content' in req:
-            req.content = Bunch(req.content)
-        ROUTER[req.action, req.type](RENDERER, req)
+    requester = Requester()
+    with requester.requests():
+        # Process all requests.
+        for req in requests:
+            req = Bunch(req)
+            if 'content' in req:
+                req.content = Bunch(req.content)
+            ROUTER[req.action, req.type](requester, req)
+    requester.submit(RENDERER)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -79,9 +83,9 @@ def main():
     with open(CURDIR / '../../datoviz/tests/triangle2.json', 'r') as f:
         data2 = f.read().replace('\n', '')
     return render_template('index.html',
-        jsonfile1=data1,
-        jsonfile2=data2,
-    )
+                           jsonfile1=data1,
+                           jsonfile2=data2,
+                           )
 
 
 @app.route('/request', methods=['POST'])
