@@ -331,6 +331,15 @@ DVZ_EXPORT void dvz_graphics_builtin(
 
 
 /**
+ * Return a default DvzMVP struct
+ *
+ * @returns the DvzMVP struct
+ */
+DVZ_EXPORT DvzMVP dvz_mvp_default(void);
+
+
+
+/**
  * Return a default viewport
  *
  * @param width the viewport width, in framebuffer pixels

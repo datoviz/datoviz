@@ -480,8 +480,19 @@ void dvz_graphics_builtin(
 
 
 /*************************************************************************************************/
-/*  Viewport functions                                                                           */
+/*  Default functions                                                                            */
 /*************************************************************************************************/
+
+DvzMVP dvz_mvp_default()
+{
+    DvzMVP mvp = {0};
+    glm_mat4_identity(mvp.model);
+    glm_mat4_identity(mvp.view);
+    glm_mat4_identity(mvp.proj);
+    return mvp;
+}
+
+
 
 DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
 {

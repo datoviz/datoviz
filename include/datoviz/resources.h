@@ -149,8 +149,6 @@ dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat f
 
 
 /**
- * NOTE: useless, to remove?
- *
  * Create a new GPU sampler, to be used along with an image to create a texture that can be bound
  * to a graphics pipeline.
  *
