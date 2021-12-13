@@ -22,10 +22,7 @@ static DvzDat* _make_dat_mvp(DvzContext* ctx)
     DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     ASSERT(dat_mvp != NULL);
 
-    DvzMVP mvp = {0};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
+    DvzMVP mvp = dvz_mvp_default();
     // TODO OPTIM: not wait here but later at the end of the pipelib graphics creation
     // will need dvz_resources_wait()
     dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);
@@ -96,22 +93,19 @@ DvzPipe* dvz_pipelib_graphics(
 
     // Initialize the pipe.
     *pipe = dvz_pipe(gpu);
+    pipe->flags = flags;
 
     // Initialize the graphics pipeline.
     DvzGraphics* graphics = dvz_pipe_graphics(pipe, img_count);
     dvz_graphics_builtin(renderpass, graphics, type, flags);
 
     // Create the first common uniform dat: MVP.
-    DvzDat* dat_mvp = _make_dat_mvp(ctx);
+    if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_MVP)
+        dvz_pipe_dat(pipe, 0, _make_dat_mvp(ctx));
 
     // Create the second common uniform dat: viewport.
-    DvzDat* dat_viewport = _make_dat_viewport(ctx, size);
-
-    // Create the bindings.
-    dvz_pipe_dat(pipe, 0, dat_mvp);
-    dvz_pipe_dat(pipe, 1, dat_viewport);
-
-    // TODO: graphics-specific dats and texs
+    if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
+        dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, size));
 
     dvz_pipe_create(pipe);
 

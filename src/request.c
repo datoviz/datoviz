@@ -167,6 +167,17 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
 
 
 
+DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
+{
+    CREATE_REQUEST(CREATE, SAMPLER);
+    req.id = dvz_prng_uuid(rqr->prng);
+    req.content.sampler.filter = filter;
+    req.content.sampler.mode = mode;
+    return req;
+}
+
+
+
 /*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
@@ -188,6 +199,33 @@ DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
     CREATE_REQUEST(SET, VERTEX);
     req.id = graphics;
     req.content.set_vertex.dat = dat;
+    return req;
+}
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
+DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat)
+{
+    CREATE_REQUEST(BIND, DAT);
+    req.id = pipe;
+    req.content.set_dat.slot_idx = slot_idx;
+    req.content.set_dat.dat = dat;
+    return req;
+}
+
+
+
+DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler)
+{
+    CREATE_REQUEST(BIND, TEX);
+    req.id = pipe;
+    req.content.set_tex.slot_idx = slot_idx;
+    req.content.set_tex.tex = tex;
+    req.content.set_tex.sampler = sampler;
     return req;
 }
 

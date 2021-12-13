@@ -138,7 +138,71 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
+/*************************************************************************************************/
+/*  Computes                                                                                     */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Pipes                                                                                        */
+/*************************************************************************************************/
+
+static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    // Get the graphics pipe.
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
+    ASSERT(pipe != NULL);
+
+    // Get the dat data.
+    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.content.set_dat.dat);
+    ASSERT(dat != NULL);
+
+    // Link the dat.
+    // pipe->dats[req.content.set_dat.slot_idx] = dat;
+
+    dvz_pipe_dat(pipe, req.content.set_dat.slot_idx, dat);
+    if (dvz_pipe_complete(pipe))
+        dvz_bindings_update(&pipe->bindings);
+
+    return NULL;
+}
+
+
+
+static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    // Get the graphics pipe.
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
+    ASSERT(pipe != NULL);
+
+    // Get the tex.
+    DvzTex* tex = (DvzTex*)dvz_map_get(rd->map, req.content.set_tex.tex);
+    ASSERT(tex != NULL);
+
+    // Get the sampler.
+    DvzSampler* sampler = (DvzSampler*)dvz_map_get(rd->map, req.content.set_tex.sampler);
+    ASSERT(tex != NULL);
+
+    // Link the tex.
+    // pipe->texs[req.content.set_binding.slot_idx] = tex;
+
+    dvz_pipe_tex(pipe, req.content.set_tex.slot_idx, tex, sampler);
+    if (dvz_pipe_complete(pipe))
+        dvz_bindings_update(&pipe->bindings);
+
+    return NULL;
+}
+
+
+
+static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
@@ -181,7 +245,7 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
         req.content.dat_upload.offset, //
         req.content.dat_upload.size,   //
         req.content.dat_upload.data,   //
-        true);
+        true);                         // TODO: do not wait? try false
 
     return NULL;
 }
@@ -197,6 +261,34 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(dat != NULL);
 
     dvz_dat_destroy(dat);
+    return NULL;
+}
+
+
+
+static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
+{
+
+    ASSERT(rd != NULL);
+
+    DvzSampler* sampler =
+        dvz_resources_sampler(&rd->ctx->res, req.content.sampler.filter, req.content.sampler.mode);
+    ASSERT(sampler != NULL);
+
+    return (void*)sampler;
+}
+
+
+
+static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    DvzSampler* sampler = (DvzSampler*)dvz_map_get(rd->map, req.id);
+    ASSERT(sampler != NULL);
+
+    dvz_sampler_destroy(sampler);
     return NULL;
 }
 
@@ -290,12 +382,19 @@ static void _setup_router(DvzRenderer* rd)
     // Graphics.
     ROUTE(CREATE, GRAPHICS, _graphics_create)
     ROUTE(SET, VERTEX, _graphics_vertex)
-    ROUTE(DELETE, GRAPHICS, _graphics_delete)
+    ROUTE(BIND, DAT, _pipe_dat)
+    ROUTE(BIND, TEX, _pipe_tex)
+    ROUTE(DELETE, GRAPHICS, _pipe_delete)
+
+    // TODO: computes.
 
     // Resources.
     ROUTE(CREATE, DAT, _dat_create)
     ROUTE(UPLOAD, DAT, _dat_upload)
     ROUTE(DELETE, DAT, _dat_delete)
+
+    ROUTE(CREATE, SAMPLER, _sampler_create)
+    ROUTE(DELETE, SAMPLER, _sampler_delete)
 
     // Command buffer setting.
     ROUTE(SET, BEGIN, _set_begin)

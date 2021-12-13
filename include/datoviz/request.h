@@ -40,6 +40,7 @@ typedef enum
     DVZ_REQUEST_ACTION_DELETE,
     DVZ_REQUEST_ACTION_RESIZE,
     DVZ_REQUEST_ACTION_UPDATE,
+    DVZ_REQUEST_ACTION_BIND,
     DVZ_REQUEST_ACTION_UPLOAD,
     DVZ_REQUEST_ACTION_UPFILL,
     DVZ_REQUEST_ACTION_DOWNLOAD,
@@ -118,6 +119,13 @@ union DvzRequestContent
         DvzFormat format;
     } tex;
 
+    // Sampler.
+    struct
+    {
+        DvzFilter filter;
+        DvzSamplerAddressMode mode;
+    } sampler;
+
     // Dat upload.
     struct
     {
@@ -138,6 +146,21 @@ union DvzRequestContent
     {
         DvzId dat;
     } set_vertex;
+
+    // Set pipe binding with dat.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzId dat;
+    } set_dat;
+
+    // Set pipe binding with tex.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzId tex;
+        DvzId sampler;
+    } set_tex;
 
     // Set viewport.
     struct
@@ -323,6 +346,19 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
 
 
 
+/**
+ * Create a request for a sampler creation.
+ *
+ * @param rqr the requester
+ * @param filter the sampler filter
+ * @param mode the sampler address mode
+ * @returns the request, containing a newly-generated id for the sampler to be created
+ */
+DVZ_EXPORT DvzRequest
+dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode);
+
+
+
 /*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
@@ -350,6 +386,38 @@ dvz_create_graphics(DvzRequester* rqr, DvzId board, DvzGraphicsType type, int fl
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
+/**
+ * Create a request for associating a dat to a pipe's slot.
+ *
+ * @param rqr the requester
+ * @param pipe the id of the pipe
+ * @param slot_idx the index of the binding slot
+ * @param dat the id of the dat to bind to the pipe
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat);
+
+
+
+/**
+ * Create a request for associating a tex to a pipe's slot.
+ *
+ * @param rqr the requester
+ * @param pipe the id of the pipe
+ * @param slot_idx the index of the binding slot
+ * @param tex the id of the tex to bind to the pipe
+ * @param tex the id of the sampler
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler);
 
 
 

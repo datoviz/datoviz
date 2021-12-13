@@ -40,6 +40,19 @@ static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
 
 
 
+static bool _all_set(uint32_t count, bool* vars)
+{
+    if (count == 0)
+        return true;
+    ASSERT(count > 0);
+    bool res = true;
+    for (uint32_t i = 0; i < count; i++)
+        res &= vars[i];
+    return res;
+}
+
+
+
 /*************************************************************************************************/
 /*  Pipe                                                                                         */
 /*************************************************************************************************/
@@ -72,6 +85,7 @@ DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
 DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 {
     ASSERT(pipe != NULL);
+    ASSERT(shader_path != NULL);
 
     pipe->type = DVZ_PIPE_COMPUTE;
 
@@ -86,6 +100,7 @@ DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex)
 {
     ASSERT(pipe != NULL);
+    ASSERT(dat_vertex != NULL);
     pipe->dat_vertex = dat_vertex;
 }
 
@@ -94,6 +109,7 @@ void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex)
 void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
 {
     ASSERT(pipe != NULL);
+    ASSERT(dat_index != NULL);
     pipe->dat_index = dat_index;
 }
 
@@ -103,7 +119,13 @@ void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 {
     ASSERT(pipe != NULL);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
-    pipe->dats[idx] = dat;
+
+    ASSERT(dat != NULL);
+    ASSERT(dat->br.buffer != NULL);
+    ASSERT(dat->br.size > 0);
+
+    pipe->bindings_set[idx] = true;
+    // pipe->dats[idx] = dat;
 
     // Create the bindings if needed.
     _ensure_bindings_created(pipe, dat->br.count);
@@ -117,13 +139,26 @@ void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 {
     ASSERT(pipe != NULL);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
-    pipe->texs[idx] = tex;
-    pipe->samplers[idx] = sampler;
+
+    ASSERT(tex != NULL);
+    ASSERT(sampler != NULL);
+    // pipe->texs[idx] = tex;
+    // pipe->samplers[idx] = sampler;
+
+    pipe->bindings_set[idx] = true;
 
     // Create the bindings if needed.
     _ensure_bindings_created(pipe, tex->img->count);
 
     dvz_bindings_texture(&pipe->bindings, idx, tex->img, sampler);
+}
+
+
+
+bool dvz_pipe_complete(DvzPipe* pipe)
+{
+    ASSERT(pipe != NULL);
+    return _all_set(pipe->bindings.slots->slot_count, pipe->bindings_set);
 }
 
 
@@ -141,8 +176,12 @@ void dvz_pipe_create(DvzPipe* pipe)
     else if (pipe->type == DVZ_PIPE_COMPUTE)
         dvz_compute_create(&pipe->u.compute);
 
-    if (dvz_obj_is_created(&pipe->bindings.obj))
+    // if (dvz_obj_is_created(&pipe->bindings.obj))
+    if (dvz_pipe_complete(pipe))
+    {
+        log_trace("update bindings upon pipe creation");
         dvz_bindings_update(&pipe->bindings);
+    }
 
     dvz_obj_created(&pipe->obj);
 }

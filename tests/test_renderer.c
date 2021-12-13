@@ -61,6 +61,30 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_upload_dat(&rqr, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
+    // Binding #0.
+    req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+    dvz_renderer_request(rd, req);
+    DvzId mvp_id = req.id;
+
+    req = dvz_bind_dat(&rqr, graphics_id, 0, mvp_id);
+    dvz_renderer_request(rd, req);
+
+    DvzMVP mvp = dvz_mvp_default();
+    req = dvz_upload_dat(&rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+    dvz_renderer_request(rd, req);
+
+    // Binding #1.
+    req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+    dvz_renderer_request(rd, req);
+    DvzId viewport_id = req.id;
+
+    req = dvz_bind_dat(&rqr, graphics_id, 1, viewport_id);
+    dvz_renderer_request(rd, req);
+
+    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    req = dvz_upload_dat(&rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+    dvz_renderer_request(rd, req);
+
     // Commands.
     dvz_requester_begin(&rqr);
     dvz_requester_add(&rqr, dvz_set_begin(&rqr, board_id));

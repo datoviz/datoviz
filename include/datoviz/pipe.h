@@ -61,6 +61,7 @@ struct DvzPipe
 
     DvzPipeType type;
     DvzPipeUnion u;
+    int flags;
 
     // Bindings.
     DvzBindings bindings;
@@ -70,16 +71,17 @@ struct DvzPipe
     DvzDat* dat_index;
 
     // Dat resources.
+    bool bindings_set[DVZ_MAX_BINDINGS_SIZE];
     // uint32_t dat_count;
-    DvzDat* dats[DVZ_MAX_BINDINGS_SIZE]; // uniforms, the first ones are mvp, viewport, params
+    // DvzDat* dats[DVZ_MAX_BINDINGS_SIZE]; // uniforms, the first ones are mvp, viewport, params
 
     // Texture resources.
     // uint32_t tex_count;
-    DvzTex* texs[DVZ_MAX_BINDINGS_SIZE];
+    // DvzTex* texs[DVZ_MAX_BINDINGS_SIZE];
 
     // Sampler resources.
     // uint32_t tex_count;
-    DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
+    // DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
 };
 
 
@@ -160,6 +162,16 @@ DVZ_EXPORT void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat);
  * @param sampler the sampler
  */
 DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler);
+
+
+
+/**
+ * Return whether all bindings have been set for a pipe.
+ *
+ * @param pipe the pipe
+ * @returns whether all bindings been set or not
+ */
+DVZ_EXPORT bool dvz_pipe_complete(DvzPipe* pipe);
 
 
 
