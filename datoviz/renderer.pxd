@@ -2,6 +2,10 @@
 
 from ._types cimport *
 
+cdef class Renderer:
+    cdef DvzRenderer* _c_rd
+    cdef DvzGpu* _c_gpu
+
 cdef extern from "<datoviz/renderer.h>":
     # Semi-opaque structs:
 

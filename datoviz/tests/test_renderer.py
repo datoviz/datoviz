@@ -10,7 +10,7 @@ import numpy as np
 from numpy.testing import assert_array_equal as ae
 import numpy.random as nr
 
-from datoviz import Renderer
+from datoviz import Requester, Renderer
 from .utils import ROOT_PATH
 
 
@@ -34,12 +34,12 @@ HEIGHT = 600
 # -------------------------------------------------------------------------------------------------
 
 def test_renderer_1():
-    r = Renderer()
-    with r.requests() as requests:
-        board = r._create_board(WIDTH, HEIGHT)
-        graphics = r._create_graphics(board, 4)
-        dat = r._create_dat(2, 48)
-        r._set_vertex(graphics, dat)
+    rq = Requester()
+    with rq.requests():
+        board = rq.create_board(WIDTH, HEIGHT)
+        graphics = rq.create_graphics(board, 4)
+        dat = rq.create_dat(2, 48)
+        rq.set_vertex(graphics, dat)
         arr = np.array([
             (-1., -1., 0., 255,  0,  0, 255),
             ( 1., -1., 0.,  0, 255,  0, 255),
@@ -47,13 +47,15 @@ def test_renderer_1():
         dtype=[
             ('x', '<f4'), ('y', '<f4'), ('z', '<f4'),
             ('r', 'i1'), ('g', 'i1'), ('b', 'i1'), ('a', 'i1')])
-        r._upload_dat(dat, 0, arr)
+        rq.upload_dat(dat, 0, arr)
 
-        r._set_begin(board)
-        r._set_viewport(board, 0, 0, WIDTH, HEIGHT)
-        r._set_draw(board, graphics, 0, 3)
-        r._set_end(board)
-        r._update_board(board)
-    print(requests)
+        rq.set_begin(board)
+        rq.set_viewport(board, 0, 0, WIDTH, HEIGHT)
+        rq.set_draw(board, graphics, 0, 3)
+        rq.set_end(board)
+        rq.update_board(board)
 
-    # r.save_image(board, str(ROOT_PATH / "../build/artifacts/pyrenderer.png"))
+    rd = Renderer()
+    rq.submit(rd)
+
+    rd.save_image(board, str(ROOT_PATH / "../build/artifacts/pyrenderer.png"))
