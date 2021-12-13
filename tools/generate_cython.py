@@ -184,6 +184,7 @@ def generate_cython():
         'dvz_create',
         'dvz_update',
         'dvz_upload_dat',
+        'dvz_bind_',
         'dvz_set',
         'dvz_delete',
     )

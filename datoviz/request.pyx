@@ -32,6 +32,7 @@ _ACTIONS = {
     DVZ_REQUEST_ACTION_DELETE: 'delete',
     DVZ_REQUEST_ACTION_RESIZE: 'resize',
     DVZ_REQUEST_ACTION_UPDATE: 'update',
+    DVZ_REQUEST_ACTION_BIND: 'bind',
     DVZ_REQUEST_ACTION_UPLOAD: 'upload',
     DVZ_REQUEST_ACTION_UPFILL: 'upfill',
     DVZ_REQUEST_ACTION_DOWNLOAD: 'download',
@@ -107,8 +108,8 @@ cdef class Requester:
         rq.dvz_requester_add(&self._c_rqr, req)
         return req.id
 
-    def create_graphics(self, DvzId board_id, DvzGraphicsType type, int id=0):
-        cdef rq.DvzRequest req = rq.dvz_create_graphics(&self._c_rqr, board_id, type, 0);
+    def create_graphics(self, DvzId board_id, DvzGraphicsType type, int id=0, int flags=0):
+        cdef rq.DvzRequest req = rq.dvz_create_graphics(&self._c_rqr, board_id, type, flags);
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)
@@ -123,6 +124,14 @@ cdef class Requester:
 
     def set_vertex(self, DvzId graphics, DvzId dat):
         cdef rq.DvzRequest req = rq.dvz_set_vertex(&self._c_rqr, graphics, dat);
+        rq.dvz_requester_add(&self._c_rqr, req)
+
+    def bind_dat(self, DvzId pipe, int slot_idx, DvzId dat):
+        cdef rq.DvzRequest req = rq.dvz_bind_dat(&self._c_rqr, pipe, slot_idx, dat);
+        rq.dvz_requester_add(&self._c_rqr, req)
+
+    def bind_tex(self, DvzId pipe, int slot_idx, DvzId tex, DvzId sampler):
+        cdef rq.DvzRequest req = rq.dvz_bind_tex(&self._c_rqr, pipe, slot_idx, tex, sampler);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def upload_dat(self, DvzId dat, DvzSize offset, np.ndarray data):

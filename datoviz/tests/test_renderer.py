@@ -37,14 +37,15 @@ def test_renderer_1():
     rq = Requester()
     with rq.requests():
         board = rq.create_board(WIDTH, HEIGHT)
-        graphics = rq.create_graphics(board, 4)
+        # HACK: create MVP and viewport dat
+        graphics = rq.create_graphics(board, 4, flags=3)
         dat = rq.create_dat(2, 48)
         rq.set_vertex(graphics, dat)
         arr = np.array([
             (-1., -1., 0., 255,  0,  0, 255),
-            ( 1., -1., 0.,  0, 255,  0, 255),
-            ( 0.,  1., 0.,  0,  0, 255, 255)],
-        dtype=[
+            (1., -1., 0.,  0, 255,  0, 255),
+            (0.,  1., 0.,  0,  0, 255, 255)],
+            dtype=[
             ('x', '<f4'), ('y', '<f4'), ('z', '<f4'),
             ('r', 'i1'), ('g', 'i1'), ('b', 'i1'), ('a', 'i1')])
         rq.upload_dat(dat, 0, arr)
