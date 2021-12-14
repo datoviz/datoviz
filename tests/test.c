@@ -98,6 +98,7 @@ int dvz_run_tests(const char* match)
 
     // Testing input.
     TEST(test_input_mouse_1)
+    TEST(test_input_drag_1)
 
     // Testing vklite.
     TEST(test_vklite_host)

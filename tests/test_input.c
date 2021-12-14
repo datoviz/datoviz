@@ -107,3 +107,62 @@ int test_input_mouse_1(TstSuite* suite)
     dvz_input_destroy(&input);
     return 0;
 }
+
+
+
+static void _on_mouse_drag_begin(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug("BEGIN mouse drag button %d, mods %d", ev.content.d.button, ev.mods);
+}
+
+static void _on_mouse_drag(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug(
+        "mouse drag button %d %.0fx%.0f, mods %d", //
+        ev.content.d.button, ev.content.d.pos[0], ev.content.d.pos[1], ev.mods);
+}
+
+static void _on_mouse_drag_end(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug("END mouse drag");
+    ASSERT(user_data != NULL);
+    *((bool*)user_data) = true;
+}
+
+int test_input_drag_1(TstSuite* suite)
+{
+    // Create an input and window.
+    DvzInput input = dvz_input();
+
+    bool dragged = false;
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG_BEGIN, _on_mouse_drag_begin, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG, _on_mouse_drag, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG_END, _on_mouse_drag_end, &dragged);
+
+    DvzEvent ev = {0};
+    ev.content.k.key_code = DVZ_KEY_LEFT_CONTROL;
+    dvz_input_event(&input, DVZ_EVENT_KEYBOARD_PRESS, ev, false);
+    ev.content.m.pos[0] = 10;
+    ev.content.m.pos[1] = 10;
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, false);
+    ev.content.b.button = DVZ_MOUSE_BUTTON_LEFT;
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_PRESS, ev, false);
+    ev.content.m.pos[0] = 50;
+    ev.content.m.pos[1] = 50;
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, true);
+    ev.content.m.pos[0] = 100;
+    ev.content.m.pos[1] = 100;
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, true);
+    ev.content.b.button = DVZ_MOUSE_BUTTON_LEFT;
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_RELEASE, ev, true);
+    // NOTE: wait for the background thread to process
+    dvz_deq_wait(&input.deq, 0);
+    AT(dragged);
+
+    // Destroy the resources.
+    dvz_input_destroy(&input);
+    return 0;
+}

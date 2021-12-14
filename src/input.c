@@ -72,6 +72,50 @@ static int _input_thread(void* user_data)
 
 
 
+static void
+_input_proc_pre_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+    if (item == NULL)
+        return;
+
+    DvzInput* input = (DvzInput*)user_data;
+    ASSERT(input != NULL);
+
+    // Update the mouse state after every mouse event.
+    if (deq_idx == DVZ_INPUT_DEQ_MOUSE)
+    {
+        dvz_mouse_update(input, (DvzEventType)type, (DvzEvent*)item);
+    }
+
+    else if (deq_idx == DVZ_INPUT_DEQ_KEYBOARD)
+    {
+        dvz_keyboard_update(input, (DvzEventType)type, (DvzEvent*)item);
+    }
+}
+
+
+
+static void
+_input_proc_post_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+    if (item == NULL)
+        return;
+
+    DvzInput* input = (DvzInput*)user_data;
+    ASSERT(input != NULL);
+
+    // Reset wheel event.
+    if (input->mouse.cur_state == DVZ_MOUSE_STATE_WHEEL)
+    {
+        // log_debug("reset wheel state %d", canvas->frame_idx);
+        input->mouse.cur_state = DVZ_MOUSE_STATE_INACTIVE;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Key util functions                                                                           */
 /*************************************************************************************************/
@@ -186,6 +230,14 @@ void dvz_input_callback(
     {
         log_trace("creating the input thread");
         input->thread = dvz_thread(_input_thread, input);
+
+        // Register a proc callback to update the mouse and keyboard state after every event.
+        dvz_deq_proc_callback(
+            &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_PRE, _input_proc_pre_callback, input);
+
+        // Register a proc callback to update the mouse and keyboard state after each dequeue.
+        dvz_deq_proc_callback(
+            &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_POST, _input_proc_post_callback, input);
     }
 
     DvzEventPayload* payload = &input->callbacks[input->callback_count++];

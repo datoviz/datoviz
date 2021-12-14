@@ -22,6 +22,8 @@
 
 int test_input_mouse_1(TstSuite*);
 
+int test_input_drag_1(TstSuite*);
+
 
 
 #endif
