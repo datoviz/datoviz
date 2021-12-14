@@ -277,3 +277,59 @@ int test_input_keyboard_1(TstSuite* suite)
     dvz_input_destroy(&input);
     return 0;
 }
+
+
+
+/*************************************************************************************************/
+/*  Timer tests                                                                                  */
+/*************************************************************************************************/
+
+static void _on_timer_tick(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug("timer tick #%d, interval %.6f s", ev.content.t.tick, ev.content.t.interval);
+    ASSERT(user_data != NULL);
+    *((uint64_t*)user_data) = ev.content.t.tick;
+}
+
+int test_input_timer_1(TstSuite* suite)
+{
+    // Create an input and window.
+    DvzInput input = dvz_input();
+
+    // Timer tick callback.
+    uint64_t tick = 0;
+    dvz_input_callback(&input, DVZ_EVENT_TIMER_TICK, _on_timer_tick, &tick);
+
+    // Add a timer.
+    DvzTimer* timer = dvz_timer(&input, 0, 0, 10);
+    dvz_sleep(50);
+    AT(tick >= 3);
+
+    // Pause.
+    log_debug("pause");
+    dvz_timer_toggle(timer, false);
+    dvz_deq_wait(&input.deq, 0);
+    uint64_t tick_checkpoint = tick;
+    dvz_sleep(50);
+    AT(tick == tick_checkpoint);
+
+    // Resume.
+    log_debug("resume");
+    dvz_timer_toggle(timer, true);
+    dvz_sleep(50);
+    dvz_deq_wait(&input.deq, 0);
+    AT((uint64_t)tick >= (uint64_t)tick_checkpoint + 3);
+    AT(tick <= 9);
+
+    // Remove timer.
+    dvz_timer_destroy(timer);
+    dvz_deq_wait(&input.deq, 0);
+    tick_checkpoint = tick;
+    dvz_sleep(50);
+    AT(tick == tick_checkpoint);
+
+    // Destroy the resources.
+    dvz_input_destroy(&input);
+    return 0;
+}

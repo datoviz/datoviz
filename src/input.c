@@ -188,8 +188,148 @@ static void _remove_key(DvzKeyboard* keyboard, DvzKeyCode key_code, uint32_t pos
 
 
 /*************************************************************************************************/
+/*  Timer                                                                                        */
+/*************************************************************************************************/
+
+static DvzTimer* _timer_get(DvzInput* input, uint32_t timer_id)
+{
+    ASSERT(input != NULL);
+
+    // Look for the timer with the passed timer idx, and mark it as destroyed.
+    DvzContainerIterator iter = dvz_container_iterator(&input->timers);
+    DvzTimer* timer = NULL;
+    while (iter.item != NULL)
+    {
+        timer = (DvzTimer*)iter.item;
+        ASSERT(timer != NULL);
+        if (timer->obj.id == timer_id)
+            return timer;
+        dvz_container_iter(&iter);
+    }
+    return NULL;
+}
+
+
+
+static bool _timer_should_tick(DvzTimer* timer)
+{
+    ASSERT(timer != NULL);
+    ASSERT(timer->input != NULL);
+
+    // Dead or paused timers should not tick.
+    if (!dvz_obj_is_created(&timer->obj) || !timer->is_running)
+        return false;
+
+    // If the numbers of ticks was exceeded, stop the timer.
+    if (timer->max_count > 0 && timer->tick >= timer->max_count)
+    {
+        timer->is_running = false;
+        return false;
+    }
+
+    // Go through all TIMER callbacks
+    double cur_time = dvz_clock_get(&timer->input->clock) - timer->start_time;
+
+    // Wait until "after" ms to start the timer.
+    if (timer->after > 0 && cur_time < timer->after / 1000.0)
+    {
+        return false;
+    }
+
+    // When is the next expected time?
+    ASSERT(timer->start_tick <= timer->tick + 1);
+    double expected_time =
+        ((timer->tick - timer->start_tick + 1) * timer->period - timer->after) / 1000.0;
+
+    // If we reached the expected time, we raise the TIMER event immediately.
+    if (cur_time >= expected_time)
+        return true;
+    else
+        return false;
+}
+
+
+
+static void _timer_tick(DvzTimer* timer)
+{
+    ASSERT(timer != NULL);
+    ASSERT(timer->input != NULL);
+
+    DvzEvent ev = {0};
+    ev.content.t.id = timer->obj.id;
+    // ev.content.t.period = timer->period;
+    // ev.content.t.after = timer->after;
+    // ev.content.t.max_count = timer->max_count;
+
+    double cur_time = dvz_clock_get(&timer->input->clock) - timer->start_time;
+    // At what time was the last TIMER event for this callback?
+    double last_time = ((timer->tick - timer->start_tick) * timer->period - timer->after) / 1000.0;
+
+    ev.content.t.time = cur_time;
+    ev.content.t.tick = timer->tick;
+    // NOTE: this is the time since the last *expected* time of the previous TIMER
+    // event, not the actual time.
+    ev.content.t.interval = cur_time - last_time;
+
+    // HACK: release the lock before enqueuing a TIMER event, because the lock is currently
+    // acquired. Here, we are in a proc wait callback, called while waiting for the queue to be
+    // non-empty. The waiting acquires the lock.
+    pthread_mutex_unlock(&timer->input->deq.procs[0].lock);
+    dvz_input_event(timer->input, DVZ_EVENT_TIMER_TICK, ev, false);
+    pthread_mutex_lock(&timer->input->deq.procs[0].lock);
+
+    timer->tick++;
+}
+
+
+
+static void _timer_ticks(DvzDeq* deq, void* user_data)
+{
+    ASSERT(deq != NULL);
+    DvzInput* input = (DvzInput*)user_data;
+    ASSERT(input != NULL);
+
+    // Update the clock struct every 1 ms (proc wait callback).
+    dvz_clock_tick(&input->clock);
+
+    DvzContainerIterator iter = dvz_container_iterator(&input->timers);
+    DvzTimer* timer = NULL;
+    while (iter.item != NULL)
+    {
+        timer = (DvzTimer*)iter.item;
+        ASSERT(timer != NULL);
+        if (_timer_should_tick(timer))
+            _timer_tick(timer);
+        dvz_container_iter(&iter);
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Input functions                                                                              */
 /*************************************************************************************************/
+
+static void _input_init(DvzInput* input)
+{
+    ASSERT(input != NULL);
+
+    log_trace("creating the input thread");
+    input->thread = dvz_thread(_input_thread, input);
+
+    // Register a proc callback to update the mouse and keyboard state after every event.
+    dvz_deq_proc_callback(
+        &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_PRE, _input_proc_pre_callback, input);
+
+    // Register a proc callback to update the mouse and keyboard state after each dequeue.
+    dvz_deq_proc_callback(
+        &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_POST, _input_proc_post_callback, input);
+
+    // In the input thread, while waiting for input events, every millisecond, check if there
+    // are active timers, and fire TIMER_TICK events if needed.
+    dvz_deq_proc_wait_delay(&input->deq, 0, 1);
+    dvz_deq_proc_wait_callback(&input->deq, 0, _timer_ticks, input);
+}
 
 DvzInput dvz_input(void)
 {
@@ -228,16 +368,7 @@ void dvz_input_callback(
     // HACK: create the thread here, because we need to pass a pointer to the thread function.
     if (!dvz_obj_is_created(&input->thread.obj))
     {
-        log_trace("creating the input thread");
-        input->thread = dvz_thread(_input_thread, input);
-
-        // Register a proc callback to update the mouse and keyboard state after every event.
-        dvz_deq_proc_callback(
-            &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_PRE, _input_proc_pre_callback, input);
-
-        // Register a proc callback to update the mouse and keyboard state after each dequeue.
-        dvz_deq_proc_callback(
-            &input->deq, 0, DVZ_DEQ_PROC_CALLBACK_POST, _input_proc_post_callback, input);
+        _input_init(input);
     }
 
     DvzEventPayload* payload = &input->callbacks[input->callback_count++];
@@ -619,7 +750,7 @@ void dvz_keyboard_update(DvzInput* input, DvzEventType type, DvzEvent* pev)
 /*  Timer functions                                                                              */
 /*************************************************************************************************/
 
-DvzTimer* dvz_timer(DvzInput* input, int64_t max_count, uint32_t after_ms, uint32_t period_ms)
+DvzTimer* dvz_timer(DvzInput* input, uint64_t max_count, uint32_t after_ms, uint32_t period_ms)
 {
     ASSERT(input != NULL);
 
@@ -645,7 +776,13 @@ DvzTimer* dvz_timer(DvzInput* input, int64_t max_count, uint32_t after_ms, uint3
 void dvz_timer_toggle(DvzTimer* timer, bool is_running)
 {
     ASSERT(timer != NULL);
+    ASSERT(timer->input != NULL);
     timer->is_running = is_running;
+    if (is_running)
+    {
+        timer->start_time = dvz_clock_get(&timer->input->clock);
+        timer->start_tick = timer->tick;
+    }
 }
 
 

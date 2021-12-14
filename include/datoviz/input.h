@@ -255,13 +255,13 @@ struct DvzTimer
     bool is_running; // whether the timer is running or paused
 
     // uint32_t timer_id; // unique ID of this timer among all timers registered in a given input
-    int64_t tick;      // current tick number
-    int64_t max_count; // specified maximum number of ticks for this timer
-    uint32_t after;    // number of milliseconds before the first tick
-    uint32_t period;   // expected number of milliseconds between ticks
+    uint64_t tick;      // current tick number
+    uint64_t max_count; // specified maximum number of ticks for this timer
+    uint32_t after;     // number of milliseconds before the first tick
+    uint32_t period;    // expected number of milliseconds between ticks
 
-    double start_time;  // the time of the last checkpoint
-    int64_t start_tick; // tick number at the last checkpoint
+    double start_time;   // the time of the last checkpoint
+    uint64_t start_tick; // tick number at the last checkpoint
 
     // DvzEventCallback callback;
 };
@@ -446,7 +446,7 @@ DVZ_EXPORT void dvz_keyboard_update(DvzInput* input, DvzEventType type, DvzEvent
  * @returns the timer
  */
 DVZ_EXPORT DvzTimer*
-dvz_timer(DvzInput* input, int64_t max_count, uint32_t after_ms, uint32_t period_ms);
+dvz_timer(DvzInput* input, uint64_t max_count, uint32_t after_ms, uint32_t period_ms);
 
 
 
