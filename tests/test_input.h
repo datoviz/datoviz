@@ -26,6 +26,8 @@ int test_input_drag_1(TstSuite*);
 
 int test_input_click_1(TstSuite*);
 
+int test_input_keyboard_1(TstSuite*);
+
 
 
 #endif

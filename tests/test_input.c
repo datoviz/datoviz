@@ -16,7 +16,7 @@
 
 
 /*************************************************************************************************/
-/*  Input tests                                                                                  */
+/*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
 static void _on_mouse_move(DvzInput* input, DvzEvent ev, void* user_data)
@@ -220,6 +220,58 @@ int test_input_click_1(TstSuite* suite)
 
     dvz_deq_wait(&input.deq, 0);
     AT(dbl_click);
+
+    // Destroy the resources.
+    dvz_input_destroy(&input);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Keyboard tests                                                                               */
+/*************************************************************************************************/
+
+static void _on_key_press(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug("key press %d, modifiers %d", ev.content.k.key_code, ev.mods);
+    DvzKeyCode* k = input->keyboard.keys;
+    log_debug("%d key(s) pressed: %d %d %d %d", input->keyboard.key_count, k[0], k[1], k[2], k[3]);
+    ASSERT(user_data != NULL);
+    *((int*)user_data) = ev.content.k.key_code;
+}
+
+static void _on_key_release(DvzInput* input, DvzEvent ev, void* user_data)
+{
+    ASSERT(input != NULL);
+    log_debug("key release %d", ev.content.k.key_code);
+    ASSERT(user_data != NULL);
+    *((int*)user_data) = DVZ_KEY_NONE;
+}
+
+int test_input_keyboard_1(TstSuite* suite)
+{
+    // Create an input and window.
+    DvzInput input = dvz_input();
+    DvzEvent ev = {0};
+
+    // Keyboard callbacks.
+    DvzKeyCode key = {0};
+    dvz_input_callback(&input, DVZ_EVENT_KEYBOARD_PRESS, _on_key_press, &key);
+    dvz_input_callback(&input, DVZ_EVENT_KEYBOARD_RELEASE, _on_key_release, &key);
+
+    // Simulate a key stroke.
+    ev.content.k.key_code = DVZ_KEY_A;
+    dvz_input_event(&input, DVZ_EVENT_KEYBOARD_PRESS, ev, false);
+    dvz_deq_wait(&input.deq, 0);
+    dvz_sleep(10);
+    AT(key == DVZ_KEY_A);
+
+    dvz_input_event(&input, DVZ_EVENT_KEYBOARD_RELEASE, ev, false);
+    dvz_deq_wait(&input.deq, 0);
+    dvz_sleep(10);
+    AT(key == DVZ_KEY_NONE);
 
     // Destroy the resources.
     dvz_input_destroy(&input);
