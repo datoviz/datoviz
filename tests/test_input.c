@@ -152,12 +152,12 @@ int test_input_drag_1(TstSuite* suite)
     dvz_input_event(&input, DVZ_EVENT_MOUSE_PRESS, ev, false);
     ev.content.m.pos[0] = 50;
     ev.content.m.pos[1] = 50;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, true);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, false);
     ev.content.m.pos[0] = 100;
     ev.content.m.pos[1] = 100;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, true);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, false);
     ev.content.b.button = DVZ_MOUSE_BUTTON_LEFT;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_RELEASE, ev, true);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_RELEASE, ev, false);
     // NOTE: wait for the background thread to process
     dvz_deq_wait(&input.deq, 0);
     AT(dragged);
