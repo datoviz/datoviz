@@ -65,7 +65,7 @@ typedef enum
 
 
 
-// Key modifiers
+// Key mods
 // NOTE: must match GLFW values! no mapping is done for now
 typedef enum
 {
@@ -150,24 +150,46 @@ struct DvzEventPayload
 
 union DvzEventContent
 {
+    // Mouse move.
     struct
     {
         vec2 pos;
-        int mods;
     } m;
 
+    // Mouse button.
     struct
     {
         DvzMouseButton button;
-        int mods;
     } b;
 
+    // Mouse wheel.
     struct
     {
-        vec2 dir;
-        int mods;
+        vec2 pos, dir;
     } w;
 
+    // Mouse drag.
+    struct
+    {
+        DvzMouseButton button;
+        vec2 pos;
+    } d;
+
+    // Mouse click.
+    struct
+    {
+        DvzMouseButton button;
+        vec2 pos;
+        bool double_click;
+    } c;
+
+    // Key.
+    struct
+    {
+        DvzKeyCode key_code;
+    } k;
+
+    // Timer.
     struct
     {
         uint64_t id;     // timer UUID
@@ -183,6 +205,7 @@ struct DvzEvent
 {
     DvzEventType type;
     DvzEventContent content;
+    int mods;
     void* event_data;
 };
 
@@ -200,7 +223,7 @@ struct DvzMouse
     vec2 cur_pos;
     vec2 wheel_delta;
     float shift_length;
-    int modifiers;
+    int mods;
 
     DvzMouseStateType prev_state;
     DvzMouseStateType cur_state;
@@ -217,7 +240,7 @@ struct DvzKeyboard
 {
     uint32_t key_count;                  // number of keys currently pressed
     DvzKeyCode keys[DVZ_INPUT_MAX_KEYS]; // which keys are currently pressed
-    int modifiers;
+    int mods;
 
     DvzKeyboardStateType prev_state;
     DvzKeyboardStateType cur_state;
@@ -312,8 +335,10 @@ dvz_input_callback(DvzInput* input, DvzEventType type, DvzEventCallback callback
  * @param input the input
  * @param type the event type
  * @param ev the event object
+ * @param enqueue_first whether to enqueue the event at the top or bottom of the queue
  */
-DVZ_EXPORT void dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev);
+DVZ_EXPORT void
+dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev, bool enqueue_first);
 
 
 
@@ -369,6 +394,17 @@ DVZ_EXPORT void dvz_mouse_reset(DvzMouse* mouse);
 
 
 
+/**
+ * Update the mouse state after every mouse event.
+ *
+ * @param mouse the input
+ * @param type the event type
+ * @param ev the mouse event
+ */
+DVZ_EXPORT void dvz_mouse_update(DvzInput* input, DvzEventType type, DvzEvent* ev);
+
+
+
 /*************************************************************************************************/
 /*  Keyboard functions                                                                           */
 /*************************************************************************************************/
@@ -389,6 +425,17 @@ DVZ_EXPORT DvzKeyboard* dvz_keyboard(DvzInput* input);
  * @param keyboard the keyboard
  */
 DVZ_EXPORT void dvz_keyboard_reset(DvzKeyboard* keyboard);
+
+
+
+/**
+ * Update the keyboard state after every mouse event.
+ *
+ * @param keyboard the input
+ * @param type the event type
+ * @param ev the keyboard event
+ */
+DVZ_EXPORT void dvz_keyboard_update(DvzInput* input, DvzEventType type, DvzEvent* ev);
 
 
 

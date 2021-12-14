@@ -97,7 +97,7 @@ int dvz_run_tests(const char* match)
     TEST(test_window_1)
 
     // Testing input.
-    TEST(test_input_1)
+    TEST(test_input_mouse_1)
 
     // Testing vklite.
     TEST(test_vklite_host)

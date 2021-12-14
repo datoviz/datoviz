@@ -51,7 +51,7 @@ static void _on_mouse_wheel(DvzInput* input, DvzEvent ev, void* user_data)
     dir[0][1] = ev.content.w.dir[1];
 }
 
-int test_input_1(TstSuite* suite)
+int test_input_mouse_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzInput input = dvz_input();
@@ -64,7 +64,7 @@ int test_input_1(TstSuite* suite)
 
     ev.content.m.pos[0] = .5;
     ev.content.m.pos[1] = -.5;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_MOVE, ev, false);
     dvz_sleep(10);
     AT(pos_exp[0] == .5);
     AT(pos_exp[1] == -.5);
@@ -75,7 +75,7 @@ int test_input_1(TstSuite* suite)
     dvz_input_callback(&input, DVZ_EVENT_MOUSE_PRESS, _on_mouse_button, &button);
 
     ev.content.b.button = DVZ_MOUSE_BUTTON_LEFT;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_PRESS, ev);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_PRESS, ev, false);
     // HACK: wait for the background thread to process the mouse press callback and modify the
     // button variable.
     dvz_sleep(10);
@@ -85,7 +85,7 @@ int test_input_1(TstSuite* suite)
     // Mouse button release.
     ev.content.b.button = DVZ_MOUSE_BUTTON_RIGHT;
     dvz_input_callback(&input, DVZ_EVENT_MOUSE_RELEASE, _on_mouse_button, &button);
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_RELEASE, ev);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_RELEASE, ev, false);
     // HACK: wait for the background thread to process the mouse press callback and modify the
     // button variable.
     dvz_sleep(10);
@@ -97,7 +97,7 @@ int test_input_1(TstSuite* suite)
     dvz_input_callback(&input, DVZ_EVENT_MOUSE_WHEEL, _on_mouse_wheel, dir);
     ev.content.w.dir[0] = 0;
     ev.content.w.dir[1] = 1;
-    dvz_input_event(&input, DVZ_EVENT_MOUSE_WHEEL, ev);
+    dvz_input_event(&input, DVZ_EVENT_MOUSE_WHEEL, ev, false);
     // HACK: wait for the background thread to process the mouse press callback and modify the
     // button variable.
     dvz_sleep(10);

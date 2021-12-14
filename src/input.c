@@ -11,6 +11,20 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_NEVER                        -1000000
+#define DVZ_MOUSE_CLICK_MAX_DELAY        .25
+#define DVZ_MOUSE_CLICK_MAX_SHIFT        5
+#define DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
+#define DVZ_MOUSE_MOVE_MAX_PENDING       16
+#define DVZ_MOUSE_MOVE_MIN_DELAY         .01
+#define DVZ_KEY_PRESS_DELAY              .05
+
+
+
+/*************************************************************************************************/
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
@@ -54,6 +68,77 @@ static int _input_thread(void* user_data)
     // Process all events in that thread.
     dvz_deq_dequeue_loop(&input->deq, 0);
     return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Key util functions                                                                           */
+/*************************************************************************************************/
+
+static bool _is_key_modifier(DvzKeyCode key)
+{
+    return (
+        key == DVZ_KEY_LEFT_SHIFT || key == DVZ_KEY_RIGHT_SHIFT || key == DVZ_KEY_LEFT_CONTROL ||
+        key == DVZ_KEY_RIGHT_CONTROL || key == DVZ_KEY_LEFT_ALT || key == DVZ_KEY_RIGHT_ALT ||
+        key == DVZ_KEY_LEFT_SUPER || key == DVZ_KEY_RIGHT_SUPER);
+}
+
+
+
+static int _key_modifiers(int key_code)
+{
+    int mods = 0;
+    if (key_code == DVZ_KEY_LEFT_CONTROL || key_code == DVZ_KEY_RIGHT_CONTROL)
+        mods |= DVZ_KEY_MODIFIER_CONTROL;
+    if (key_code == DVZ_KEY_LEFT_SHIFT || key_code == DVZ_KEY_RIGHT_SHIFT)
+        mods |= DVZ_KEY_MODIFIER_SHIFT;
+    if (key_code == DVZ_KEY_LEFT_ALT || key_code == DVZ_KEY_RIGHT_ALT)
+        mods |= DVZ_KEY_MODIFIER_ALT;
+    if (key_code == DVZ_KEY_LEFT_SUPER || key_code == DVZ_KEY_RIGHT_SUPER)
+        mods |= DVZ_KEY_MODIFIER_SUPER;
+    return mods;
+}
+
+
+
+// Return the position of the key pressed if it is pressed, otherwise return -1.
+static int _is_key_pressed(DvzKeyboard* keyboard, DvzKeyCode key_code)
+{
+    ASSERT(keyboard != NULL);
+    for (uint32_t i = 0; i < keyboard->key_count; i++)
+    {
+        if (keyboard->keys[i] == key_code)
+            return (int)i;
+    }
+    return -1;
+}
+
+
+
+static void _remove_key(DvzKeyboard* keyboard, DvzKeyCode key_code, uint32_t pos)
+{
+    ASSERT(keyboard != NULL);
+    // ASSERT(pos >= 0);
+    ASSERT(pos < DVZ_INPUT_MAX_KEYS);
+    ASSERT(keyboard->key_count > 0);
+    ASSERT(pos < keyboard->key_count);
+    ASSERT(keyboard->keys[pos] == key_code);
+
+    // When an element is removed, need to shift all keys after one position to the left.
+    for (uint32_t i = pos; i < (uint32_t)MIN((int)key_code, DVZ_INPUT_MAX_KEYS - 1); i++)
+    {
+        keyboard->keys[i] = keyboard->keys[i + 1];
+    }
+    keyboard->key_count--;
+
+    // Reset the unset positions in the array.
+    // log_trace(
+    //     "reset %d keys after pos %d", DVZ_INPUT_MAX_KEYS - keyboard->key_count,
+    //     keyboard->key_count);
+    memset(
+        &keyboard->keys[keyboard->key_count], 0,
+        (DVZ_INPUT_MAX_KEYS - keyboard->key_count) * sizeof(DvzKeyCode));
 }
 
 
@@ -112,7 +197,7 @@ void dvz_input_callback(
 
 
 
-void dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev)
+void dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev, bool enqueue_first)
 {
     ASSERT(input != NULL);
 
@@ -131,7 +216,10 @@ void dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev)
     DvzEvent* pev = calloc(1, sizeof(DvzEvent));
     *pev = ev;
     pev->type = type;
-    dvz_deq_enqueue(&input->deq, deq_idx, (int)type, pev);
+    if (enqueue_first)
+        dvz_deq_enqueue_first(&input->deq, deq_idx, (int)type, pev);
+    else
+        dvz_deq_enqueue(&input->deq, deq_idx, (int)type, pev);
 }
 
 
@@ -213,6 +301,173 @@ void dvz_mouse_reset(DvzMouse* mouse)
 
 
 
+// Called after every mouse callback.
+void dvz_mouse_update(DvzInput* input, DvzEventType type, DvzEvent* pev)
+{
+    ASSERT(input != NULL);
+
+    DvzMouse* mouse = &input->mouse;
+    ASSERT(mouse != NULL);
+
+    // Manually-set keyboard mods, if bypassing glfw.
+    int mods = input->keyboard.mods;
+    mouse->mods |= mods;
+
+    DvzEvent ev = {0};
+    ev = *pev;
+
+    // log_debug("mouse event %d", canvas->frame_idx);
+    mouse->prev_state = mouse->cur_state;
+
+    double time = dvz_clock_get(&input->clock);
+
+    // Update the last pos.
+    glm_vec2_copy(mouse->cur_pos, mouse->last_pos);
+
+    // Reset click events as soon as the next loop iteration after they were raised.
+    if (mouse->cur_state == DVZ_MOUSE_STATE_CLICK ||
+        mouse->cur_state == DVZ_MOUSE_STATE_DOUBLE_CLICK)
+    {
+        mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
+        mouse->button = DVZ_MOUSE_BUTTON_NONE;
+    }
+
+    // Net distance in pixels since the last press event.
+    vec2 shift = {0};
+
+    switch (type)
+    {
+
+    case DVZ_EVENT_MOUSE_PRESS:
+
+        // Press event.
+        if (mouse->press_time == DVZ_NEVER)
+        {
+            glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
+            mouse->press_time = time;
+            mouse->button = ev.content.b.button;
+            // Keep track of the mods used for the press event.
+            mouse->mods = mods | ev.mods;
+        }
+        mouse->shift_length = 0;
+        break;
+
+    case DVZ_EVENT_MOUSE_RELEASE:
+        // Release event.
+
+        // End drag.
+        if (mouse->cur_state == DVZ_MOUSE_STATE_DRAG)
+        {
+            log_trace("end drag event");
+            mouse->button = DVZ_MOUSE_BUTTON_NONE;
+            mouse->mods = 0; // Reset the mouse key mods
+
+            // dvz_event_mouse_drag_end(canvas, mouse->cur_pos, mouse->button, mouse->mods);
+            ev.mods = mouse->mods;
+            ev.content.d.button = mouse->button;
+            ev.content.d.pos[0] = mouse->cur_pos[0];
+            ev.content.d.pos[1] = mouse->cur_pos[1];
+            dvz_input_event(input, DVZ_EVENT_MOUSE_DRAG_END, ev, true);
+            mouse->cur_state = DVZ_MOUSE_STATE_INACTIVE;
+        }
+
+        // Double click event.
+        else if (time - mouse->click_time < DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY)
+        {
+            // NOTE: when releasing, current button is NONE so we must use the previously set
+            // button in mouse->button.
+            log_trace("double click event on button %d", mouse->button);
+            mouse->click_time = time;
+
+            ev.mods = mouse->mods;
+            ev.content.c.button = mouse->button;
+            ev.content.c.pos[0] = mouse->cur_pos[0];
+            ev.content.c.pos[1] = mouse->cur_pos[1];
+            dvz_input_event(input, DVZ_EVENT_MOUSE_DOUBLE_CLICK, ev, true);
+        }
+        // Click event.
+        else if (
+            time - mouse->press_time < DVZ_MOUSE_CLICK_MAX_DELAY &&
+            mouse->shift_length < DVZ_MOUSE_CLICK_MAX_SHIFT)
+        {
+            log_trace("click event on button %d", mouse->button);
+            mouse->cur_state = DVZ_MOUSE_STATE_CLICK;
+            mouse->click_time = time;
+
+            ev.mods = mouse->mods;
+            ev.content.c.button = mouse->button;
+            ev.content.c.pos[0] = mouse->cur_pos[0];
+            ev.content.c.pos[1] = mouse->cur_pos[1];
+            dvz_input_event(input, DVZ_EVENT_MOUSE_CLICK, ev, true);
+        }
+
+        else
+        {
+            // Reset the mouse button state.
+            mouse->button = DVZ_MOUSE_BUTTON_NONE;
+        }
+
+        mouse->press_time = DVZ_NEVER;
+        mouse->shift_length = 0;
+        break;
+
+
+    case DVZ_EVENT_MOUSE_MOVE:
+        glm_vec2_copy(ev.content.m.pos, mouse->cur_pos);
+
+        // Update the distance since the last press position.
+        if (mouse->button != DVZ_MOUSE_BUTTON_NONE)
+        {
+            glm_vec2_sub(mouse->cur_pos, mouse->press_pos, shift);
+            mouse->shift_length = glm_vec2_norm(shift);
+        }
+
+        // Mouse move: start drag.
+        // NOTE: do not DRAG if we are clicking, with short press time and shift length
+        if (mouse->cur_state == DVZ_MOUSE_STATE_INACTIVE &&
+            mouse->button != DVZ_MOUSE_BUTTON_NONE &&
+            !(time - mouse->press_time < DVZ_MOUSE_CLICK_MAX_DELAY &&
+              mouse->shift_length < DVZ_MOUSE_CLICK_MAX_SHIFT))
+        {
+
+            ev.mods = mouse->mods;
+            ev.content.d.button = mouse->button;
+            ev.content.d.pos[0] = mouse->cur_pos[0];
+            ev.content.d.pos[1] = mouse->cur_pos[1];
+            dvz_input_event(input, DVZ_EVENT_MOUSE_DRAG_BEGIN, ev, true);
+
+            mouse->cur_state = DVZ_MOUSE_STATE_DRAG;
+            break; // HACK: avoid enqueueing a DRAG event *after* the DRAG_BEGIN event.
+        }
+
+        // Mouse move: is dragging.
+        if (mouse->cur_state == DVZ_MOUSE_STATE_DRAG)
+        {
+            ev.content.d.pos[0] = mouse->cur_pos[0];
+            ev.content.d.pos[1] = mouse->cur_pos[1];
+            ev.content.d.button = mouse->button;
+            ev.mods = mouse->mods;
+            dvz_input_event(input, DVZ_EVENT_MOUSE_DRAG, ev, true);
+        }
+
+        // log_trace("mouse mouse %.1fx%.1f", mouse->cur_pos[0], mouse->cur_pos[1]);
+        break;
+
+
+    case DVZ_EVENT_MOUSE_WHEEL:
+        glm_vec2_copy(ev.content.w.pos, mouse->cur_pos);
+        glm_vec2_copy(ev.content.w.dir, mouse->wheel_delta);
+        mouse->cur_state = DVZ_MOUSE_STATE_WHEEL;
+        mouse->mods = ev.mods;
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Keyboard functions                                                                           */
 /*************************************************************************************************/
@@ -230,9 +485,80 @@ void dvz_keyboard_reset(DvzKeyboard* keyboard)
     ASSERT(keyboard != NULL);
     memset(keyboard, 0, sizeof(DvzKeyboard));
     keyboard->key_count = 0;
-    keyboard->modifiers = 0;
+    keyboard->mods = 0;
     keyboard->press_time = DVZ_NEVER;
     // keyboard->is_active = true;
+}
+
+
+
+void dvz_keyboard_update(DvzInput* input, DvzEventType type, DvzEvent* pev)
+{
+    ASSERT(input != NULL);
+
+    DvzKeyboard* keyboard = &input->keyboard;
+    ASSERT(keyboard != NULL);
+
+    // TODO?: if input capture, do nothing
+
+    DvzEvent ev = {0};
+    ev = *pev;
+
+    keyboard->prev_state = keyboard->cur_state;
+
+    double time = dvz_clock_get(&input->clock);
+    DvzKeyCode key = ev.content.k.key_code;
+    int is_pressed = 0;
+
+    if (type == DVZ_EVENT_KEYBOARD_PRESS && time - keyboard->press_time > .025)
+    {
+        // Find out if the key is already pressed.
+        is_pressed = _is_key_pressed(keyboard, key);
+        // Make sure we don't reach the max number of keys pressed simultaneously.
+        // Also, do not add mod keys in the list of keys pressed.
+        if (is_pressed < 0 && keyboard->key_count < DVZ_INPUT_MAX_KEYS && !_is_key_modifier(key))
+        {
+            // Need to register the key in the keyboard state.
+            keyboard->keys[keyboard->key_count++] = key;
+        }
+
+        // Register the key modifier in the keyboard state.
+        if (_is_key_modifier(key))
+        {
+            keyboard->mods |= _key_modifiers(key);
+        }
+
+        // Here, we've ensured that the keyboard state has been updated to register the key
+        // pressed, except if the maximum number of keys pressed simultaneously has been reached.
+        log_trace("key pressed %d mods %d", key, ev.mods);
+        keyboard->mods |= ev.mods;
+        keyboard->press_time = time;
+        if (keyboard->cur_state == DVZ_KEYBOARD_STATE_INACTIVE)
+            keyboard->cur_state = DVZ_KEYBOARD_STATE_ACTIVE;
+    }
+    else if (type == DVZ_EVENT_KEYBOARD_RELEASE)
+    {
+        // HACK
+        // keyboard->key_count = 0;
+
+        is_pressed = _is_key_pressed(keyboard, key);
+        // If the key released was pressed, remove it from the keyboard state.
+        // log_debug("is pressed %d", is_pressed);
+        if (is_pressed >= 0)
+        {
+            ASSERT(is_pressed < DVZ_INPUT_MAX_KEYS);
+            _remove_key(keyboard, key, (uint32_t)is_pressed);
+        }
+
+        // Remove the key modifier in the keyboard state.
+        if (_is_key_modifier(key))
+        {
+            keyboard->mods &= ~_key_modifiers(key);
+        }
+
+        if (keyboard->cur_state == DVZ_KEYBOARD_STATE_ACTIVE)
+            keyboard->cur_state = DVZ_KEYBOARD_STATE_INACTIVE;
+    }
 }
 
 
