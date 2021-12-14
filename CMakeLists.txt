@@ -551,6 +551,7 @@ set(sources
     "src/request.c"
     "src/map.cpp"
     "src/renderer.cpp"
+    "src/input.c"
 
     ${external_sources}
 )

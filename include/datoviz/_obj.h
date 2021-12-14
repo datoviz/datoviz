@@ -54,7 +54,7 @@ struct DvzObject
     int request;
 
     uint32_t group_id; // group identifier
-    uint32_t id;       // unique identifier among the objects of the same type and group
+    uint64_t id;       // unique identifier among the objects of the same type and group
 };
 
 
