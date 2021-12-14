@@ -20,6 +20,7 @@
 #include "test_fifo.h"
 #include "test_fileio.h"
 #include "test_graphics.h"
+#include "test_input.h"
 #include "test_map.h"
 #include "test_obj.h"
 #include "test_pipe.h"
@@ -94,6 +95,9 @@ int dvz_run_tests(const char* match)
 
     // Testing window.
     TEST(test_window_1)
+
+    // Testing input.
+    TEST(test_input_1)
 
     // Testing vklite.
     TEST(test_vklite_host)

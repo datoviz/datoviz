@@ -608,6 +608,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_map.c"
         "tests/test_request.c"
         "tests/test_renderer.c"
+        "tests/test_input.c"
         "tests/test.c"
     )
 

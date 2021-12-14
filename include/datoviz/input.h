@@ -154,7 +154,7 @@ union DvzEventContent
     {
         vec2 pos;
         int mods;
-    } mouse_move;
+    } m;
 
     struct
     {
@@ -162,7 +162,7 @@ union DvzEventContent
         uint64_t tick;   // tick idx
         double time;     // time of emission
         double interval; // interval since last event emission
-    } timer;
+    } t;
 };
 
 

@@ -29,17 +29,31 @@ static inline uint32_t _deq_from_input_type(DvzEventType type)
 static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 {
     ASSERT(deq != NULL);
-    ASSERT(item != NULL);
-    ASSERT(user_data != NULL);
 
     DvzEventPayload* payload = (DvzEventPayload*)user_data;
+    ASSERT(payload != NULL);
+
     DvzInput* input = payload->input;
+    ASSERT(input != NULL);
 
     DvzEvent* ev = (DvzEvent*)item;
+    ASSERT(ev != NULL);
 
     payload->callback(input, *ev, payload->user_data);
 
     return;
+}
+
+
+
+// Process the async events in a background thread.
+static int _input_thread(void* user_data)
+{
+    DvzInput* input = (DvzInput*)user_data;
+    ASSERT(input != NULL);
+    // Process all events in that thread.
+    dvz_deq_dequeue_loop(&input->deq, 0);
+    return 0;
 }
 
 
@@ -82,6 +96,13 @@ void dvz_input_callback(
     ASSERT(input != NULL);
     ASSERT(input->callback_count < DVZ_INPUT_MAX_CALLBACKS);
 
+    // HACK: create the thread here, because we need to pass a pointer to the thread function.
+    if (!dvz_obj_is_created(&input->thread.obj))
+    {
+        log_trace("creating the input thread");
+        input->thread = dvz_thread(_input_thread, input);
+    }
+
     DvzEventPayload* payload = &input->callbacks[input->callback_count++];
     payload->input = input;
     payload->user_data = user_data;
@@ -109,6 +130,7 @@ void dvz_input_event(DvzInput* input, DvzEventType type, DvzEvent ev)
 
     DvzEvent* pev = calloc(1, sizeof(DvzEvent));
     *pev = ev;
+    pev->type = type;
     dvz_deq_enqueue(&input->deq, deq_idx, (int)type, pev);
 }
 
@@ -140,7 +162,24 @@ void dvz_input_block(DvzInput* input, bool block)
 void dvz_input_destroy(DvzInput* input)
 {
     ASSERT(input != NULL);
+
+    // Destroy the PRNG.
     dvz_prng_destroy(input->prng);
+
+    // Stop the event thread.
+    if (dvz_obj_is_created(&input->thread.obj))
+    {
+        log_trace("stopping the thread");
+
+        // Enqueue a STOP task to stop the UL and DL threads.
+        dvz_deq_enqueue(&input->deq, DVZ_EVENT_NONE, 0, NULL);
+
+        // Join the thread.
+        dvz_thread_join(&input->thread);
+    }
+
+    // Destroy the Deq.
+    dvz_deq_destroy(&input->deq);
 }
 
 
