@@ -11,20 +11,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_NEVER                        -1000000
-#define DVZ_MOUSE_CLICK_MAX_DELAY        .25
-#define DVZ_MOUSE_CLICK_MAX_SHIFT        5
-#define DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
-#define DVZ_MOUSE_MOVE_MAX_PENDING       16
-#define DVZ_MOUSE_MOVE_MIN_DELAY         .01
-#define DVZ_KEY_PRESS_DELAY              .05
-
-
-
-/*************************************************************************************************/
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
@@ -413,6 +399,7 @@ void dvz_input_attach(DvzInput* input, DvzWindow* window)
     ASSERT(window != NULL);
 
 #if HAS_GLFW
+    backend_attach(input, window);
     backend_attach_mouse(&input->mouse, window);
     backend_attach_keyboard(&input->keyboard, window);
 #endif

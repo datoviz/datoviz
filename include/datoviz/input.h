@@ -30,6 +30,14 @@
 #define DVZ_INPUT_MAX_KEYS      8
 #define DVZ_INPUT_MAX_TIMERS    16
 
+#define DVZ_NEVER                        -1000000
+#define DVZ_MOUSE_CLICK_MAX_DELAY        .25
+#define DVZ_MOUSE_CLICK_MAX_SHIFT        5
+#define DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY .2
+#define DVZ_MOUSE_MOVE_MAX_PENDING       16
+#define DVZ_MOUSE_MOVE_MIN_DELAY         .01
+#define DVZ_KEY_PRESS_DELAY              .05
+
 
 
 /*************************************************************************************************/
