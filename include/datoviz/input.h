@@ -158,6 +158,12 @@ union DvzEventContent
 
     struct
     {
+        DvzMouseButton button;
+        int mods;
+    } b;
+
+    struct
+    {
         uint64_t id;     // timer UUID
         uint64_t tick;   // tick idx
         double time;     // time of emission
