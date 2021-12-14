@@ -45,7 +45,7 @@ RENDERER = Renderer()
 
 ROUTER = {
     ('create', 'board'): lambda r, req: r.create_board(req.content.width, req.content.height, id=req.id),
-    ('create', 'graphics'): lambda r, req: r.create_graphics(req.content.board, req.content.type, id=req.id),
+    ('create', 'graphics'): lambda r, req: r.create_graphics(req.content.board, req.content.type, id=req.id, flags=req.flags),
     ('create', 'dat'): lambda r, req: r.create_dat(req.content.type, req.content.size, id=req.id),
     ('set', 'vertex'): lambda r, req: r.set_vertex(req.id, req.content.dat),
     ('upload', 'dat'): lambda r, req: r.upload_dat(req.id, req.content.offset, get_array(Bunch(req.content.data))),
@@ -63,6 +63,8 @@ def process(requests):
         # Process all requests.
         for req in requests:
             req = Bunch(req)
+            if 'flags' not in req:
+                req.flags = 0
             if 'content' in req:
                 req.content = Bunch(req.content)
             ROUTER[req.action, req.type](requester, req)

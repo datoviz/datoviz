@@ -14,6 +14,7 @@
             "action": "create",
             "type": "graphics",
             "id": 2,
+            "flags": 3,
             "content": {
                 "board": 1,
                 "type": 4
