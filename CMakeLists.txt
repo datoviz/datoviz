@@ -552,6 +552,7 @@ set(sources
     "src/map.cpp"
     "src/renderer.cpp"
     "src/input.c"
+    "src/canvas.c"
 
     ${external_sources}
 )
@@ -609,6 +610,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_request.c"
         "tests/test_renderer.c"
         "tests/test_input.c"
+        "tests/test_canvas.c"
         "tests/test.c"
     )
 

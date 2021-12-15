@@ -16,6 +16,7 @@
 #include "test_alloc.h"
 #include "test_array.h"
 #include "test_board.h"
+#include "test_canvas.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_fileio.h"
@@ -176,6 +177,9 @@ int dvz_run_tests(const char* match)
 
     // Testing renderer.
     TEST(test_renderer_1)
+
+    // Testing canvas.
+    TEST(test_canvas_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
