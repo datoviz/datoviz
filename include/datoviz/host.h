@@ -53,7 +53,7 @@ struct DvzHost
     // Containers.
     DvzContainer gpus;
     DvzContainer windows;
-    // DvzContainer canvases; // to remove
+    DvzContainer canvases;
 
     // DvzRun* run;
 };
@@ -75,6 +75,8 @@ struct DvzHost
  */
 DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
 
+
+
 /**
  * Full synchronization on all GPUs.
  *
@@ -84,6 +86,8 @@ DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
  * @param host the host
  */
 DVZ_EXPORT void dvz_host_wait(DvzHost* host);
+
+
 
 /**
  * Destroy the host.

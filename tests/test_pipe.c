@@ -34,7 +34,7 @@ int test_pipe_1(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     // Create the board.
-    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
+    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Vertex buffer.

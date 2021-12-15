@@ -37,7 +37,7 @@ int test_pipelib_1(TstSuite* suite)
     uvec2 size = {WIDTH, HEIGHT};
 
     // Create the board.
-    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT);
+    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Create the pipelib.

@@ -4,6 +4,7 @@
 
 #include "workspace.h"
 #include "board.h"
+#include "canvas.h"
 #include "host.h"
 #include "vklite.h"
 #include "window.h"
@@ -21,9 +22,8 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu)
     ws->gpu = gpu;
     ws->boards =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBoard), DVZ_OBJECT_TYPE_BOARD);
-    // TODO
-    // ws->canvases =
-    //     dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
+    ws->canvases =
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
     dvz_obj_init(&ws->obj);
     return ws;
 }
@@ -36,7 +36,7 @@ DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t 
     ASSERT(workspace->gpu != NULL);
 
     DvzBoard* board = (DvzBoard*)dvz_container_alloc(&workspace->boards);
-    *board = dvz_board(workspace->gpu, width, height);
+    *board = dvz_board(workspace->gpu, width, height, flags);
     dvz_board_create(board);
 
     return board;
@@ -49,8 +49,8 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
 {
     ASSERT(workspace != NULL);
     DvzCanvas* canvas = (DvzCanvas*)dvz_container_alloc(&workspace->canvases);
-
-    // TODO: create canvas.
+    *canvas = dvz_canvas(workspace->gpu, width, height, flags);
+    dvz_canvas_create(canvas);
 
     return canvas;
 }
@@ -64,6 +64,7 @@ void dvz_workspace_destroy(DvzWorkspace* workspace)
     CONTAINER_DESTROY_ITEMS(DvzBoard, workspace->boards, dvz_board_destroy)
     dvz_container_destroy(&workspace->boards);
 
+    CONTAINER_DESTROY_ITEMS(DvzCanvas, workspace->canvases, dvz_canvas_destroy)
     dvz_container_destroy(&workspace->canvases);
 
     dvz_obj_destroyed(&workspace->obj);

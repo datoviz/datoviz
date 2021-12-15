@@ -42,6 +42,7 @@ struct DvzBoard
 {
     DvzObject obj;
     DvzGpu* gpu;
+    int flags;
 
     DvzFormat format;
     cvec4 clear_color;
@@ -74,7 +75,7 @@ EXTERN_C_ON
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 
 

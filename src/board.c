@@ -167,7 +167,7 @@ static void make_framebuffers(
 /*  Board                                                                                        */
 /*************************************************************************************************/
 
-DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
+DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
     ASSERT(width > 0);
@@ -175,6 +175,7 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height)
 
     DvzBoard board = {0};
     board.gpu = gpu;
+    board.flags = flags;
     board.width = width;
     board.height = height;
     board.size = width * height * 3 * sizeof(uint8_t);
