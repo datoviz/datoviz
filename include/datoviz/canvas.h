@@ -71,6 +71,8 @@ typedef struct DvzCanvas DvzCanvas;
 typedef struct DvzRender DvzRender;
 typedef struct DvzSync DvzSync;
 
+typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx, void* user_data);
+
 
 
 /*************************************************************************************************/
@@ -135,6 +137,7 @@ struct DvzCanvas
     uint8_t* rgb; // GPU buffer storing the image
 
     DvzCommands cmds;
+    DvzCanvasRefill refill; // refill callback, only used in conjunction with dvz_canvas_loop()
     DvzRender render;
     DvzSync sync;
 
@@ -187,6 +190,27 @@ DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
  * @param canvas a canvas
  */
 DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
+
+
+
+/**
+ * Register a refill callback.
+ *
+ * Only to be used in conjunction with dvz_canvas_loop().
+ *
+ * @param canvas a canvas
+ * @param refill refill callback
+ */
+DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill);
+
+
+/**
+ * Run a simple event loop for a single canvas.
+ *
+ * @param canvas a canvas
+ * @param n_frames maximum number of frames
+ */
+DVZ_EXPORT void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames);
 
 
 

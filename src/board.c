@@ -82,7 +82,8 @@ void dvz_board_create(DvzBoard* board)
 
     // Renderpass.
     make_renderpass(
-        board->gpu, &board->renderpass, board->format, get_clear_color(board->clear_color));
+        board->gpu, &board->renderpass, board->format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        get_clear_color(board->clear_color));
 
     // Make images.
     make_images(board->gpu, &board->images, board->format, board->width, board->height);

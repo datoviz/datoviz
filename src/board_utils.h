@@ -37,7 +37,8 @@ static inline VkClearColorValue get_clear_color(cvec4 color)
 /*************************************************************************************************/
 
 static void make_renderpass(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFormat format, VkClearColorValue clear_color)
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFormat format, VkImageLayout layout,
+    VkClearColorValue clear_color)
 {
     ASSERT(gpu != NULL);
     ASSERT(renderpass != NULL);
@@ -45,8 +46,6 @@ static void make_renderpass(
 
     log_trace("making renderpass");
     *renderpass = dvz_renderpass(gpu);
-
-    VkImageLayout layout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;

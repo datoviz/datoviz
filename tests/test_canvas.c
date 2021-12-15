@@ -53,6 +53,8 @@ int test_canvas_1(TstSuite* suite)
     DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_create(&canvas);
 
+    dvz_canvas_loop(&canvas, N_FRAMES);
+
     dvz_canvas_destroy(&canvas);
     // dvz_gpu_destroy(gpu);
     return 0;

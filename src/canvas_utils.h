@@ -87,7 +87,7 @@ static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
 
 
 
-static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx)
+static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
 {
     dvz_cmd_begin(cmds, cmd_idx);
     dvz_cmd_begin_renderpass(
@@ -121,7 +121,7 @@ static void canvas_render(DvzCanvas* canvas)
     {
         log_debug("empty command buffers, filling with blank color");
         for (uint32_t i = 0; i < canvas->render.swapchain.img_count; i++)
-            blank_commands(canvas, &canvas->cmds, i);
+            blank_commands(canvas, &canvas->cmds, i, NULL);
     }
 
     ASSERT(canvas->cmds.obj.status == DVZ_OBJECT_STATUS_CREATED);

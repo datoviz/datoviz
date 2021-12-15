@@ -27,6 +27,7 @@ DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     canvas.width = width;
     canvas.height = height;
     canvas.format = DVZ_DEFAULT_FORMAT;
+    canvas.refill = blank_commands;
 
     dvz_obj_init(&canvas.obj);
     return canvas;
@@ -49,7 +50,7 @@ void dvz_canvas_create(DvzCanvas* canvas)
 
     // Make the renderpass.
     make_renderpass(
-        gpu, &canvas->render.renderpass, DVZ_DEFAULT_FORMAT,
+        gpu, &canvas->render.renderpass, DVZ_DEFAULT_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
         get_clear_color(DVZ_DEFAULT_CLEAR_COLOR));
 
     // Make the swapchain.
@@ -72,6 +73,8 @@ void dvz_canvas_create(DvzCanvas* canvas)
     // Command buffer.
     canvas->cmds =
         dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, canvas->render.swapchain.img_count);
+    for (uint32_t i = 0; i < canvas->cmds.count; i++)
+        blank_commands(canvas, &canvas->cmds, i, NULL);
 
     // Default submit.
     canvas->render.submit = dvz_submit(canvas->gpu);
@@ -156,6 +159,131 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_semaphores_recreate(&canvas->sync.sem_img_available);
     dvz_semaphores_recreate(&canvas->sync.sem_render_finished);
     canvas->sync.present_semaphores = &canvas->sync.sem_render_finished;
+}
+
+
+
+void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(refill != NULL);
+    canvas->refill = refill;
+}
+
+
+
+void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
+{
+    ASSERT(canvas != NULL);
+
+    DvzWindow* window = canvas->window;
+    ASSERT(window != NULL);
+
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
+    // uint32_t width = window->width;
+    // uint32_t height = window->height;
+
+    DvzSwapchain* swapchain = &canvas->render.swapchain;
+    DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
+    DvzRenderpass* renderpass = &canvas->render.renderpass;
+    DvzFences* fences = &canvas->sync.fences_render_finished;
+    DvzFences* fences_bak = &canvas->sync.fences_flight;
+    DvzSemaphores* sem_img_available = &canvas->sync.sem_img_available;
+    DvzSemaphores* sem_render_finished = &canvas->sync.sem_render_finished;
+    DvzCommands* cmds = &canvas->cmds;
+    DvzSubmit* submit = &canvas->render.submit;
+
+    for (uint32_t frame = 0; n_frames == 0 || frame < n_frames; frame++)
+    {
+        log_debug("iteration %d", frame);
+
+        backend_poll_events(window);
+
+        if (backend_window_should_close(window) ||
+            window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+            break;
+
+        // Wait for fence.
+        dvz_fences_wait(fences, canvas->cur_frame);
+
+        // We acquire the next swapchain image.
+        dvz_swapchain_acquire(swapchain, sem_img_available, canvas->cur_frame, NULL, 0);
+        if (swapchain->obj.status == DVZ_OBJECT_STATUS_INVALID)
+        {
+            dvz_gpu_wait(gpu);
+            break;
+        }
+        // Handle resizing.
+        else if (swapchain->obj.status == DVZ_OBJECT_STATUS_NEED_RECREATE)
+        {
+            log_trace("recreating the swapchain");
+
+            // Wait until the device is ready and the window fully resized.
+            // Framebuffer new size.
+            uint32_t width, height;
+            backend_window_get_size(
+                window,                          //
+                &window->width, &window->height, //
+                &width, &height);
+            dvz_gpu_wait(gpu);
+
+            // Destroy swapchain resources.
+            dvz_framebuffers_destroy(framebuffers);
+            dvz_images_destroy(&canvas->render.depth);
+            dvz_images_destroy(canvas->render.swapchain.images);
+
+            // Recreate the swapchain. This will automatically set the swapchain->images new
+            // size.
+            dvz_swapchain_recreate(swapchain);
+            // Find the new framebuffer size as determined by the swapchain recreation.
+            width = swapchain->images->shape[0];
+            height = swapchain->images->shape[1];
+
+            // Need to recreate the depth image with the new size.
+            dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
+            dvz_images_create(&canvas->render.depth);
+
+            // Recreate the framebuffers with the new size.
+            ASSERT(framebuffers->attachments[0]->shape[0] == width);
+            ASSERT(framebuffers->attachments[0]->shape[1] == height);
+            dvz_framebuffers_create(framebuffers, renderpass);
+
+            // Need to refill the command buffers.
+            for (uint32_t i = 0; i < cmds->count; i++)
+            {
+                dvz_cmd_reset(cmds, i);
+                canvas->refill(canvas, cmds, i, NULL);
+            }
+        }
+        else
+        {
+            dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
+
+            // Reset the Submit instance before adding the command buffers.
+            dvz_submit_reset(submit);
+
+            // Then, we submit the cmds on that image
+            dvz_submit_commands(submit, cmds);
+            dvz_submit_wait_semaphores(
+                submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
+                canvas->cur_frame);
+            // Once the render is finished, we signal another semaphore.
+            dvz_submit_signal_semaphores(submit, sem_render_finished, canvas->cur_frame);
+            dvz_submit_send(submit, swapchain->img_idx, fences, canvas->cur_frame);
+
+            // Once the image is rendered, we present the swapchain image.
+            dvz_swapchain_present(swapchain, 1, sem_render_finished, canvas->cur_frame);
+
+            canvas->cur_frame = (canvas->cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT;
+        }
+
+        // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
+        // when waiting for fences (not sure why). The problem only arises when using different
+        // queues for command buffer submission and swapchain present.
+        dvz_queue_wait(gpu, 1);
+    }
 }
 
 
