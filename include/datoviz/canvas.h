@@ -71,7 +71,7 @@ typedef struct DvzCanvas DvzCanvas;
 typedef struct DvzRender DvzRender;
 typedef struct DvzSync DvzSync;
 
-typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx, void* user_data);
+typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx);
 
 
 

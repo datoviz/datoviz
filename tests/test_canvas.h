@@ -22,6 +22,8 @@
 
 int test_canvas_1(TstSuite*);
 
+int test_canvas_triangle(TstSuite*);
+
 
 
 #endif

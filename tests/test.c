@@ -135,6 +135,7 @@ int dvz_run_tests(const char* match)
 
     // Testing canvas.
     TEST(test_canvas_1)
+    TEST(test_canvas_triangle)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

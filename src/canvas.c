@@ -73,8 +73,8 @@ void dvz_canvas_create(DvzCanvas* canvas)
     // Command buffer.
     canvas->cmds =
         dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, canvas->render.swapchain.img_count);
-    for (uint32_t i = 0; i < canvas->cmds.count; i++)
-        blank_commands(canvas, &canvas->cmds, i, NULL);
+    // for (uint32_t i = 0; i < canvas->cmds.count; i++)
+    //     canvas->refill(canvas, &canvas->cmds, i);
 
     // Default submit.
     canvas->render.submit = dvz_submit(canvas->gpu);
@@ -182,9 +182,6 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
 
-    // uint32_t width = window->width;
-    // uint32_t height = window->height;
-
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
     DvzRenderpass* renderpass = &canvas->render.renderpass;
@@ -194,6 +191,13 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
     DvzSemaphores* sem_render_finished = &canvas->sync.sem_render_finished;
     DvzCommands* cmds = &canvas->cmds;
     DvzSubmit* submit = &canvas->render.submit;
+
+    // Need to fill the command buffers.
+    for (uint32_t i = 0; i < cmds->count; i++)
+    {
+        dvz_cmd_reset(cmds, i);
+        canvas->refill(canvas, cmds, i);
+    }
 
     for (uint32_t frame = 0; n_frames == 0 || frame < n_frames; frame++)
     {
@@ -254,7 +258,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
             for (uint32_t i = 0; i < cmds->count; i++)
             {
                 dvz_cmd_reset(cmds, i);
-                canvas->refill(canvas, cmds, i, NULL);
+                canvas->refill(canvas, cmds, i);
             }
         }
         else
@@ -282,8 +286,10 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
         // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
         // when waiting for fences (not sure why). The problem only arises when using different
         // queues for command buffer submission and swapchain present.
-        dvz_queue_wait(gpu, 1);
+        dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
     }
+
+    dvz_gpu_wait(gpu);
 }
 
 
