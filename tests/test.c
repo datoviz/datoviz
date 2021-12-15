@@ -108,6 +108,7 @@ int dvz_run_tests(const char* match)
     // Testing vklite.
     TEST(test_vklite_host)
 
+
     // Setup the host fixture.
     SETUP(setup_host)
 
@@ -131,6 +132,9 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
     TEST(test_vklite_canvas_gui)
+
+    // Testing canvas.
+    TEST(test_canvas_1)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
@@ -177,9 +181,6 @@ int dvz_run_tests(const char* match)
 
     // Testing renderer.
     TEST(test_renderer_1)
-
-    // Testing canvas.
-    TEST(test_canvas_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)

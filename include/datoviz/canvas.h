@@ -21,11 +21,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_CANVAS_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
-#define DVZ_CANVAS_DEFAULT_CLEAR_COLOR                                                            \
-    (cvec4) { 0, 8, 18, 255 }
-#define DVZ_PICK_IMAGE_FORMAT VK_FORMAT_R32G32B32A32_SINT
-#define DVZ_PICK_STAGING_SIZE 8
+// #define DVZ_PICK_IMAGE_FORMAT    VK_FORMAT_R32G32B32A32_SINT
+// #define DVZ_PICK_STAGING_SIZE    8
+
+#define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
+// #define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
 #define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
 #define DVZ_SEMAPHORE_IMG_AVAILABLE   0
@@ -81,13 +81,15 @@ typedef struct DvzSync DvzSync;
 struct DvzRender
 {
     DvzSwapchain swapchain;
-    DvzImages depth_image;
+    DvzImages depth;
+    DvzImages staging;
 
-    DvzImages pick_image;
-    DvzImages pick_staging;
+    // TODO
+    // DvzImages pick_image;
+    // DvzImages pick_staging;
 
-    DvzBuffer screencast_staging;
-    DvzImages* screencast_img;
+    // DvzBuffer screencast_staging;
+    // DvzImages* screencast_img;
 
     DvzFramebuffers framebuffers;
     DvzFramebuffers framebuffers_overlay; // used by the overlay renderpass
@@ -120,11 +122,18 @@ struct DvzCanvas
 {
     DvzObject obj;
     DvzGpu* gpu;
-    uvec2 size_init;
     int flags;
 
     DvzWindow* window;
     DvzInput input;
+
+    DvzFormat format;
+    cvec4 clear_color;
+    uint32_t width, height;
+
+    DvzSize size; // width*height*3
+    uint8_t* rgb; // GPU buffer storing the image
+
     DvzCommands cmds;
     DvzRender render;
     DvzSync sync;
@@ -160,6 +169,24 @@ DVZ_EXPORT DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, in
  * @param canvas a canvas
  */
 DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas);
+
+
+
+/**
+ * Reset a canvas
+ *
+ * @param canvas a canvas
+ */
+DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
+
+
+
+/**
+ * Recreate a canvas
+ *
+ * @param canvas a canvas
+ */
+DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 
 
 

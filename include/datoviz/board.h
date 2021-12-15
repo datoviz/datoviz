@@ -21,8 +21,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_VIEWPORT_DEFAULT                                                                      \
+#define DVZ_DEFAULT_VIEWPORT                                                                      \
     (vec2) { 0, 0 }
+#define DVZ_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
+#define DVZ_DEFAULT_CLEAR_COLOR                                                                   \
+    (cvec4) { 0, 8, 18, 255 }
 
 
 

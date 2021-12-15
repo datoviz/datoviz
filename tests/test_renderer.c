@@ -89,7 +89,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_requester_begin(&rqr);
     dvz_requester_add(&rqr, dvz_set_begin(&rqr, board_id));
     dvz_requester_add(
-        &rqr, dvz_set_viewport(&rqr, board_id, DVZ_VIEWPORT_DEFAULT, DVZ_VIEWPORT_DEFAULT));
+        &rqr, dvz_set_viewport(&rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
     dvz_requester_add(&rqr, dvz_set_draw(&rqr, board_id, graphics_id, 0, 3));
     dvz_requester_add(&rqr, dvz_set_end(&rqr, board_id));
     uint32_t count = 0;

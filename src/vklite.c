@@ -1352,8 +1352,13 @@ void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx)
 
 static void _images_create(DvzImages* img)
 {
+    ASSERT(img != NULL);
+
     DvzGpu* gpu = img->gpu;
+    ASSERT(gpu != NULL);
+
     VkDeviceSize size = 0;
+    ASSERT(img->format != 0);
 
     // Check whether the image format is supported.
     VkImageFormatProperties props = {0};

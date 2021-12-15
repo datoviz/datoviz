@@ -104,7 +104,7 @@ int test_graphics_triangle(TstSuite* suite)
     // Commands.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
-    dvz_board_viewport(&board, &cmds, 0, DVZ_VIEWPORT_DEFAULT, DVZ_VIEWPORT_DEFAULT);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_pipe_draw(&pipe, &cmds, 0, 0, 3);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
