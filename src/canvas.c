@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "canvas.h"
+#include "canvas_utils.h"
 #include "common.h"
 #include "vklite.h"
 #include "window.h"

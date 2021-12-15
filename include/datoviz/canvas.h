@@ -21,11 +21,45 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_CANVAS_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
+#define DVZ_CANVAS_DEFAULT_CLEAR_COLOR                                                            \
+    (cvec4) { 0, 8, 18, 255 }
+#define DVZ_PICK_IMAGE_FORMAT VK_FORMAT_R32G32B32A32_SINT
+#define DVZ_PICK_STAGING_SIZE 8
+
+#define DVZ_MIN_SWAPCHAIN_IMAGE_COUNT 3
+#define DVZ_SEMAPHORE_IMG_AVAILABLE   0
+#define DVZ_SEMAPHORE_RENDER_FINISHED 1
+#define DVZ_FENCE_RENDER_FINISHED     0
+#define DVZ_FENCES_FLIGHT             1
+#define DVZ_DEFAULT_COMMANDS_TRANSFER 0
+#define DVZ_DEFAULT_COMMANDS_RENDER   1
+#define DVZ_MAX_FRAMES_IN_FLIGHT      2
+
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
+
+
+// Canvas creation flags.
+typedef enum
+{
+    DVZ_CANVAS_FLAGS_NONE = 0x0000,
+    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_PICK = 0x0004,
+} DvzCanvasFlags;
+
+
+
+// Canvas size type
+typedef enum
+{
+    DVZ_CANVAS_SIZE_SCREEN,
+    DVZ_CANVAS_SIZE_FRAMEBUFFER,
+} DvzCanvasSizeType;
 
 
 
