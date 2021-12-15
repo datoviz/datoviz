@@ -343,4 +343,31 @@ static bool backend_window_should_close(DvzWindow* window)
 
 
 
+static void backend_loop(DvzWindow* window, uint64_t max_frames)
+{
+    ASSERT(window != NULL);
+    ASSERT(window->host != NULL);
+
+    DvzBackend backend = window->host->backend;
+    void* bwin = window->backend_window;
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:;
+#if HAS_GLFW
+        for (uint64_t i = 0; max_frames == 0 || i < max_frames; i++)
+        {
+            if (glfwWindowShouldClose(bwin))
+                break;
+            glfwPollEvents();
+        }
+#endif
+        break;
+    default:
+        break;
+    }
+}
+
+
+
 #endif

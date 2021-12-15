@@ -9,9 +9,12 @@
 /*************************************************************************************************/
 
 #include "test_input.h"
+#include "_glfw.h"
 #include "input.h"
 #include "test.h"
+#include "test_vklite.h"
 #include "testing.h"
+#include "window.h"
 
 
 
@@ -331,5 +334,24 @@ int test_input_timer_1(TstSuite* suite)
 
     // Destroy the resources.
     dvz_input_destroy(&input);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  GLFW bindings tests                                                                          */
+/*************************************************************************************************/
+
+int test_input_glfw_1(TstSuite* suite)
+{
+    DvzInput input = dvz_input();
+    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    DvzWindow* window = dvz_window(host, 800, 600);
+
+    backend_loop(window, N_FRAMES);
+
+    dvz_input_destroy(&input);
+    dvz_window_destroy(window);
     return 0;
 }

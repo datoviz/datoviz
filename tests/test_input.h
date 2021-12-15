@@ -30,6 +30,8 @@ int test_input_keyboard_1(TstSuite*);
 
 int test_input_timer_1(TstSuite*);
 
+int test_input_glfw_1(TstSuite*);
+
 
 
 #endif
