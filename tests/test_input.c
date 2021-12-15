@@ -27,10 +27,12 @@ static void _on_mouse_move(DvzInput* input, DvzEvent ev, void* user_data)
     ASSERT(input != NULL);
     log_debug("mouse position: %.0fx%.0f", ev.content.m.pos[0], ev.content.m.pos[1]);
 
-    ASSERT(user_data != NULL);
-    vec2* pos = (vec2*)user_data;
-    pos[0][0] = ev.content.m.pos[0];
-    pos[0][1] = ev.content.m.pos[1];
+    if (user_data != NULL)
+    {
+        vec2* pos = (vec2*)user_data;
+        pos[0][0] = ev.content.m.pos[0];
+        pos[0][1] = ev.content.m.pos[1];
+    }
 }
 
 static void _on_mouse_button(DvzInput* input, DvzEvent ev, void* user_data)
@@ -38,9 +40,11 @@ static void _on_mouse_button(DvzInput* input, DvzEvent ev, void* user_data)
     ASSERT(input != NULL);
     log_debug("mouse button: %d", ev.content.b.button);
 
-    ASSERT(user_data != NULL);
-    int* button = (int*)user_data;
-    *button = (int)ev.content.b.button;
+    if (user_data != NULL)
+    {
+        int* button = (int*)user_data;
+        *button = (int)ev.content.b.button;
+    }
 }
 
 static void _on_mouse_wheel(DvzInput* input, DvzEvent ev, void* user_data)
@@ -48,10 +52,12 @@ static void _on_mouse_wheel(DvzInput* input, DvzEvent ev, void* user_data)
     ASSERT(input != NULL);
     log_debug("mouse wheel: %.1fx%.1f", ev.content.w.dir[0], ev.content.w.dir[1]);
 
-    ASSERT(user_data != NULL);
-    vec2* dir = (vec2*)user_data;
-    dir[0][0] = ev.content.w.dir[0];
-    dir[0][1] = ev.content.w.dir[1];
+    if (user_data != NULL)
+    {
+        vec2* dir = (vec2*)user_data;
+        dir[0][0] = ev.content.w.dir[0];
+        dir[0][1] = ev.content.w.dir[1];
+    }
 }
 
 int test_input_mouse_1(TstSuite* suite)
@@ -131,8 +137,10 @@ static void _on_mouse_drag_end(DvzInput* input, DvzEvent ev, void* user_data)
 {
     ASSERT(input != NULL);
     log_debug("END mouse drag");
-    ASSERT(user_data != NULL);
-    *((bool*)user_data) = true;
+    if (user_data != NULL)
+    {
+        *((bool*)user_data) = true;
+    }
 }
 
 int test_input_drag_1(TstSuite* suite)
@@ -176,16 +184,20 @@ static void _on_mouse_click(DvzInput* input, DvzEvent ev, void* user_data)
 {
     ASSERT(input != NULL);
     log_debug("click");
-    ASSERT(user_data != NULL);
-    *((bool*)user_data) = true;
+    if (user_data != NULL)
+    {
+        *((bool*)user_data) = true;
+    }
 }
 
 static void _on_mouse_double_click(DvzInput* input, DvzEvent ev, void* user_data)
 {
     ASSERT(input != NULL);
     log_debug("double click");
-    ASSERT(user_data != NULL);
-    *((bool*)user_data) = true;
+    if (user_data != NULL)
+    {
+        *((bool*)user_data) = true;
+    }
 }
 
 int test_input_click_1(TstSuite* suite)
@@ -241,16 +253,20 @@ static void _on_key_press(DvzInput* input, DvzEvent ev, void* user_data)
     log_debug("key press %d, modifiers %d", ev.content.k.key_code, ev.mods);
     DvzKeyCode* k = input->keyboard.keys;
     log_debug("%d key(s) pressed: %d %d %d %d", input->keyboard.key_count, k[0], k[1], k[2], k[3]);
-    ASSERT(user_data != NULL);
-    *((int*)user_data) = ev.content.k.key_code;
+    if (user_data != NULL)
+    {
+        *((int*)user_data) = ev.content.k.key_code;
+    }
 }
 
 static void _on_key_release(DvzInput* input, DvzEvent ev, void* user_data)
 {
     ASSERT(input != NULL);
     log_debug("key release %d", ev.content.k.key_code);
-    ASSERT(user_data != NULL);
-    *((int*)user_data) = DVZ_KEY_NONE;
+    if (user_data != NULL)
+    {
+        *((int*)user_data) = DVZ_KEY_NONE;
+    }
 }
 
 int test_input_keyboard_1(TstSuite* suite)
@@ -345,12 +361,25 @@ int test_input_timer_1(TstSuite* suite)
 
 int test_input_glfw_1(TstSuite* suite)
 {
-    DvzInput input = dvz_input();
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     DvzWindow* window = dvz_window(host, 800, 600);
 
-    backend_loop(window, N_FRAMES);
+    DvzInput input = dvz_input();
+    dvz_input_attach(&input, window);
 
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_MOVE, _on_mouse_move, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_PRESS, _on_mouse_button, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_RELEASE, _on_mouse_button, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_WHEEL, _on_mouse_wheel, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG_BEGIN, _on_mouse_drag_begin, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG, _on_mouse_drag, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DRAG_END, _on_mouse_drag_end, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_CLICK, _on_mouse_click, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_MOUSE_DOUBLE_CLICK, _on_mouse_double_click, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_KEYBOARD_PRESS, _on_key_press, NULL);
+    dvz_input_callback(&input, DVZ_EVENT_KEYBOARD_RELEASE, _on_key_release, NULL);
+
+    backend_loop(window, N_FRAMES);
     dvz_input_destroy(&input);
     dvz_window_destroy(window);
     return 0;

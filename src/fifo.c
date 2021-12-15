@@ -754,18 +754,12 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
                 // iteration. But before that, we call the proc wait callbacks.
                 _proc_wait_callbacks(deq, proc_idx);
             }
-            else
-            {
-                // log_trace("proc #%d cond signaled!", proc_idx);
-                break; // NOTE: this is not necessary, because if the cond is signaled, it means
-                       // the queue is non empty, and the while() condition at the very next
-                       // iteration will fail, thereby ending the while loop.
-            }
         }
         // log_trace("proc #%d has an item", proc_idx);
     }
 
     // Here, we know there is at least one item to dequeue because one of the queues is non-empty.
+    log_trace("finished waiting dequeue");
 
     // Go through the passed queue indices.
     uint32_t deq_idx = 0;
