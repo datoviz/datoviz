@@ -320,10 +320,10 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
     canvas.gpu = gpu;
     canvas.window = window;
 
-    uint32_t framebuffer_width, framebuffer_height;
-    dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
-    ASSERT(framebuffer_width > 0);
-    ASSERT(framebuffer_height > 0);
+    // uint32_t framebuffer_width, framebuffer_height;
+    // dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
+    // ASSERT(framebuffer_width > 0);
+    // ASSERT(framebuffer_height > 0);
 
     DvzRenderpass renderpass =
         make_renderpass(gpu, BACKGROUND, FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);

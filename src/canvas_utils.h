@@ -56,7 +56,7 @@ make_swapchain(DvzGpu* gpu, DvzWindow* window, DvzSwapchain* swapchain, uint32_t
     log_trace("making swapchain");
 
     *swapchain = dvz_swapchain(gpu, window, img_count);
-    dvz_swapchain_format(swapchain, DVZ_DEFAULT_FORMAT);
+    dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
     dvz_swapchain_present_mode(swapchain, DVZ_DEFAULT_PRESENT_MODE);
     dvz_swapchain_create(swapchain);
 

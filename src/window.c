@@ -46,20 +46,25 @@ DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
         // return NULL;
     }
 
+    backend_window_get_size(
+        window,                          //
+        &window->width, &window->height, //
+        &window->framebuffer_width, &window->framebuffer_height);
+
     return window;
 }
 
 
 
-void dvz_window_get_size(
-    DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
+void dvz_window_poll_size(DvzWindow* window)
 {
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
+
     backend_window_get_size(
         window,                          //
         &window->width, &window->height, //
-        framebuffer_width, framebuffer_height);
+        &window->framebuffer_width, &window->framebuffer_height);
 }
 
 
@@ -69,6 +74,11 @@ void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
     backend_window_set_size(window, width, height);
+
+    backend_window_get_size(
+        window,                          //
+        &window->width, &window->height, //
+        &window->framebuffer_width, &window->framebuffer_height);
 }
 
 

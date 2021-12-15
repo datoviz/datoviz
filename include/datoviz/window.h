@@ -39,7 +39,8 @@ struct DvzWindow
     DvzHost* host;
 
     void* backend_window;
-    uint32_t width, height; // in screen coordinates
+    uint32_t width, height;                         // in screen coordinates
+    uint32_t framebuffer_width, framebuffer_height; // in framebuffer coordinates
 
     bool close_on_esc;
     VkSurfaceKHR surface;
@@ -66,14 +67,11 @@ struct DvzWindow
 DVZ_EXPORT DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height);
 
 /**
- * Get the window size, in pixels.
+ * Get the window size.
  *
  * @param window the window
- * @param[out] framebuffer_width the width, in pixels
- * @param[out] framebuffer_height the height, in pixels
  */
-DVZ_EXPORT void
-dvz_window_get_size(DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height);
+DVZ_EXPORT void dvz_window_poll_size(DvzWindow* window);
 
 /**
  * Set the window size, in pixels.
