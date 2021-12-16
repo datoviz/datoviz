@@ -32,15 +32,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// // Run state.
-// typedef enum
-// {
-//     DVZ_RUNNER_STATE_PAUSED,
-//     DVZ_RUNNER_STATE_RUNNING,
-// } DvzRunnerState;
-
-
-
 // Run canvas events.
 typedef enum
 {
@@ -85,8 +76,6 @@ typedef struct DvzRunner DvzRunner;
 // Event structs.
 typedef struct DvzCanvasEventFrame DvzCanvasEventFrame;
 typedef struct DvzCanvasEventRefill DvzCanvasEventRefill;
-// typedef struct DvzCanvasEventNew DvzCanvasEventNew;
-// typedef struct DvzCanvasEventClearColor DvzCanvasEventClearColor;
 typedef struct DvzCanvasEventUpfill DvzCanvasEventUpfill;
 typedef struct DvzCanvasEvent DvzCanvasEvent;
 
@@ -123,23 +112,6 @@ struct DvzCanvasEventRefill
 
 
 
-// struct DvzCanvasEventNew
-// {
-//     DvzGpu* gpu;
-//     uint32_t width, height;
-//     int flags;
-// };
-
-
-
-// struct DvzCanvasEventClearColor
-// {
-//     DvzCanvas* canvas;
-//     float r, g, b;
-// };
-
-
-
 struct DvzCanvasEventUpfill
 {
     DvzCanvas* canvas;
@@ -167,16 +139,10 @@ struct DvzAutorun
 
 struct DvzRunner
 {
-    // DvzHost* host;
-    // DvzRunnerState state; // to remove??
-
     DvzDeq deq;
     DvzRenderer* renderer;
 
     uint64_t global_frame_idx;
-
-    // bool destroying;   // true as soon as the canvas is being destroyed
-    // DvzAutorun autorun;
 };
 
 
@@ -226,57 +192,6 @@ DVZ_EXPORT int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count);
  * @param request the request
  */
 DVZ_EXPORT void dvz_runner_request(DvzRunner* runner, DvzRequest request);
-
-
-/**
- * Setup the autorun.
- *
- * @param runner the runner instance
- * @param frame_count the maximum number of frames
- * @param offscreen whether the canvases should runner offscreen
- * @param filepath save a screenshot or a video
- */
-// DVZ_EXPORT void
-// dvz_runner_setup(DvzRunner* runner, uint64_t frame_count, bool offscreen, char* filepath);
-
-
-
-/**
- * Setup the autorun using environment variables.
- *
- * @param the runner instance
- */
-// DVZ_EXPORT void dvz_runner_setupenv(DvzRunner* runner);
-
-
-
-/**
- * Start the runner, using the autorun if it was set, or an infinite loop by default.
- *
- * @param the runner instance
- */
-// DVZ_EXPORT int dvz_runner_auto(DvzRunner* runner);
-
-
-
-/**
- * Upload data to a Dat resource, immediately followed by a command buffer refill.
- *
- * Useful when modifying a vertex buffer with a different number of vertices which requires a
- * refill.
- *
- * !!! note
- *     May be called from a background thread.
- *
- * @param canvas the canvas
- * @param dat the dat
- * @param offset the offset
- * @param size the size
- * @param data the data to upload
- */
-// DVZ_EXPORT void dvz_dat_upfill(
-//     DvzCanvas* canvas, DvzDat* dat, //
-//     VkDeviceSize offset, VkDeviceSize size, void* data);
 
 
 

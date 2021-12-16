@@ -21,34 +21,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// static DvzRenderpass renderpass_overlay(DvzGpu* gpu, VkFormat format, VkImageLayout layout)
-// {
-//     DvzRenderpass renderpass = dvz_renderpass(gpu);
-
-//     // Color attachment.
-//     dvz_renderpass_attachment(
-//         &renderpass, 0, //
-//         DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-//     dvz_renderpass_attachment_layout(
-//         &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, layout);
-//     dvz_renderpass_attachment_ops(
-//         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
-
-//     // Subpass.
-//     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-//     // dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-//     // dvz_renderpass_subpass_dependency_stage(
-//     //     &renderpass, 0, //
-//     //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-//     //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-//     // dvz_renderpass_subpass_dependency_access(
-//     //     &renderpass, 0, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-//     return renderpass;
-// }
-
-
-
 static void
 make_swapchain(DvzGpu* gpu, DvzWindow* window, DvzSwapchain* swapchain, uint32_t img_count)
 {

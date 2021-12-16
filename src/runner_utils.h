@@ -150,31 +150,6 @@ static uint32_t _enqueue_frames(DvzRunner* runner)
 /*  Utils for the runner module */
 /*************************************************************************************************/
 
-// static bool _autorun_is_set(DvzAutorun* autorun)
-// {
-//     ASSERT(autorun != NULL);
-//     // Enable the autorun?
-//     DvzAutorun empty = {0};
-//     // Enable if and only if at least one of the autorun fields is not blank.
-//     return memcmp(autorun, &empty, sizeof(DvzAutorun)) != 0;
-// }
-
-
-
-// static void _autorun_launch(DvzRunner* runner)
-// {
-//     ASSERT(runner != NULL);
-//     ASSERT(runner->autorun.enable);
-//     DvzAutorun* ar = &runner->autorun;
-//     log_debug(
-//         "start autorun: offscreen %d, frames %d, save %s", //
-//         ar->frame_count, ar->frame_count, ar->filepath);
-
-//     // TODO: implement autorun.
-// }
-
-
-
 static void _run_flush(DvzRunner* runner)
 {
     ASSERT(runner != NULL);
@@ -455,52 +430,6 @@ static void _callback_recreate(DvzDeq* deq, void* item, void* user_data)
     // Enqueue a REFILL after the canvas recreation.
     _enqueue_to_refill(runner, canvas);
 }
-
-
-
-// static void _callback_delete(DvzDeq* deq, void* item, void* user_data)
-// {
-//     ASSERT(deq != NULL);
-
-//     DvzRunner* runner = (DvzRunner*)user_data;
-//     ASSERT(runner != NULL);
-
-//     DvzCanvasEvent* ev = (DvzCanvasEvent*)item;
-//     ASSERT(ev != NULL);
-//     DvzCanvas* canvas = ev->canvas;
-
-//     // if (!_canvas_check(canvas))
-//     //     return;
-//     log_debug("delete canvas");
-//     // canvas->destroying = true;
-//     // canvas->input.destroying = true;
-
-//     // Wait before destroying the canvas.
-//     _run_flush(runner);
-
-//     // Destroy the canvas.
-//     dvz_canvas_destroy(canvas);
-// }
-
-
-
-// static void _callback_clear_color(DvzDeq* deq, void* item, void* user_data)
-// {
-//     ASSERT(deq != NULL);
-
-//     DvzRunner* runner = (DvzRunner*)user_data;
-//     ASSERT(runner != NULL);
-
-//     DvzCanvasEventClearColor* ev = (DvzCanvasEventClearColor*)item;
-//     ASSERT(ev != NULL);
-//     DvzCanvas* canvas = ev->canvas;
-//     if (!_canvas_check(canvas))
-//         return;
-//     log_debug("change canvas clear color");
-
-//     canvas->render.renderpass.clear_values->color = (VkClearColorValue){{ev->r, ev->g, ev->b,
-//     1}}; _enqueue_to_refill(runner, canvas);
-// }
 
 
 

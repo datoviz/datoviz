@@ -76,27 +76,11 @@ DvzRunner* dvz_runner(DvzRenderer* renderer)
     dvz_deq_proc(&runner->deq, 3, 1, (uint32_t[]){DVZ_RUNNER_DEQ_PRESENT});
 
     // FRAME queue.
-
     dvz_deq_proc_batch_callback(
         &runner->deq, DVZ_RUNNER_DEQ_FRAME, (int)DVZ_RUNNER_CANVAS_FRAME, _callback_frame, runner);
 
 
-
     // MAIN callbacks.
-
-    // // New canvas.
-    // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_NEW, _callback_new, runner);
-
-    // // Delete canvas.
-    // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_DELETE, _callback_delete,
-    //     runner);
-
-    // // Clear color.
-    // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_CLEAR_COLOR,
-    //     _callback_clear_color, runner);
 
     // Recreate.
     dvz_deq_callback(
@@ -120,9 +104,7 @@ DvzRunner* dvz_runner(DvzRenderer* renderer)
         &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_REQUEST, _callback_request, runner);
 
 
-
     // REFILL queue.
-
     dvz_deq_callback(
         &runner->deq, DVZ_RUNNER_DEQ_REFILL, (int)DVZ_RUNNER_CANVAS_TO_REFILL, _callback_to_refill,
         runner);
@@ -140,15 +122,11 @@ DvzRunner* dvz_runner(DvzRenderer* renderer)
         runner);
 
 
-
     // PRESENT queue.
-
     // Present callbacks.
     dvz_deq_callback(
         &runner->deq, DVZ_RUNNER_DEQ_PRESENT, (int)DVZ_RUNNER_CANVAS_PRESENT, _callback_present,
         runner);
-
-    // runner->state = DVZ_RUNNER_STATE_PAUSED;
 
     return runner;
 }
@@ -167,9 +145,6 @@ int dvz_runner_frame(DvzRunner* runner)
     ASSERT(runner->renderer != NULL);
     ASSERT(runner->renderer->gpu != NULL);
     ASSERT(runner->renderer->gpu->host != NULL);
-
-    // DvzHost* host = runner->host;
-    // ASSERT(host != NULL);
 
     log_trace("frame #%06d", runner->global_frame_idx);
 
@@ -207,33 +182,12 @@ int dvz_runner_frame(DvzRunner* runner)
 
     _gpu_sync_hack(runner->renderer->gpu->host);
 
-    // DEBUG
-    // dvz_sleep(100);
-
     // If no canvas is running, stop the event loop.
     if (n_canvas_running == 0)
         return DVZ_RUNNER_FRAME_RETURN_STOP;
 
     return 0;
 }
-
-
-
-/*************************************************************************************************/
-/*  Dat upfill                                                                                   */
-/*************************************************************************************************/
-
-// void dvz_dat_upfill(
-//     DvzCanvas* canvas, DvzDat* dat, VkDeviceSize offset, VkDeviceSize size, void* data)
-// {
-//     ASSERT(canvas != NULL);
-//     ASSERT(canvas->gpu != NULL);
-//     ASSERT(dat != NULL);
-//     ASSERT(data != NULL);
-//     ASSERT(size > 0);
-
-//     _enqueue_upfill(canvas->host->runner, canvas, dat, offset, size, data);
-// }
 
 
 
@@ -291,79 +245,12 @@ int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 
 
 
-// void dvz_runner_setup(DvzRunner* runner, uint64_t frame_count, bool offscreen, char* filepath)
-// {
-//     ASSERT(runner != NULL);
-
-//     DvzAutorun* autorun = &runner->autorun;
-//     ASSERT(autorun != NULL);
-
-//     autorun->filepath = filepath;
-//     autorun->offscreen = offscreen;
-//     autorun->frame_count = frame_count;
-
-//     autorun->enable = _autorun_is_set(autorun);
-// }
-
-
-
-// void dvz_runner_setupenv(DvzRunner* runner)
-// {
-//     ASSERT(runner != NULL);
-
-//     DvzAutorun* autorun = &runner->autorun;
-//     ASSERT(autorun != NULL);
-
-//     char* s = NULL;
-
-//     // Offscreen?
-//     s = getenv("DVZ_RUNNER_OFFSCREEN");
-//     if (s)
-//         autorun->offscreen = true;
-
-//     // Number of frames.
-//     s = getenv("DVZ_RUNNER_FRAMES");
-//     if (s)
-//         autorun->frame_count = strtoull(s, NULL, 10);
-
-//     // Screenshot and video.
-//     s = getenv("DVZ_RUNNER_SAVE");
-//     if (s)
-//         strncpy(autorun->filepath, s, DVZ_PATH_MAX_LEN);
-
-//     // Enable the autorun if and only if at least one of the autorun fields is not blank.
-//     autorun->enable = _autorun_is_set(autorun);
-// }
-
-
-
-// int dvz_runner_auto(DvzRunner* runner)
-// {
-//     ASSERT(runner != NULL);
-
-//     dvz_runner_setupenv(runner);
-//     if (runner->autorun.enable)
-//     {
-//         _autorun_launch(runner);
-//     }
-//     else
-//     {
-//         dvz_runner_loop(runner, DVZ_RUNNER_DEFAULT_FRAME_COUNT);
-//     }
-
-//     return 0;
-// }
-
-
-
 void dvz_runner_destroy(DvzRunner* runner)
 {
     ASSERT(runner != NULL);
     ASSERT(runner->renderer != NULL);
     ASSERT(runner->renderer->workspace != NULL);
 
-    // DvzHost* host = runner->host;
-    // ASSERT(host != NULL);
     log_debug("destroy runner instance");
 
     // Wait.
@@ -389,5 +276,4 @@ void dvz_runner_destroy(DvzRunner* runner)
     dvz_deq_destroy(&runner->deq);
 
     FREE(runner);
-    // host->runner = NULL;
 }
