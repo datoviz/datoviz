@@ -105,3 +105,37 @@ int test_runner_2(TstSuite* suite)
     dvz_gpu_destroy(gpu);
     return 0;
 }
+
+
+
+int test_runner_triangle(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Renderer.
+    DvzRenderer* rd = dvz_renderer(gpu);
+
+    // Runner.
+    DvzRunner* runner = dvz_runner(rd);
+
+    // Requester.
+    DvzRequester* rqr = runner->requester;
+    DvzRequest req = {0};
+
+    // Create a canvas.
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    dvz_runner_request(runner, req);
+
+    dvz_runner_loop(runner, 5);
+
+
+    // Destruction
+    dvz_runner_destroy(runner);
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}

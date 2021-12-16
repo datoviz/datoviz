@@ -141,6 +141,7 @@ int dvz_run_tests(const char* match)
     // Testing runner.
     TEST(test_runner_1)
     TEST(test_runner_2)
+    TEST(test_runner_triangle)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
