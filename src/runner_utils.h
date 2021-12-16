@@ -289,7 +289,10 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
     // void* backend_window = canvas->window != NULL ? canvas->window->backend_window : NULL;
     if (backend_window_should_close(canvas->window))
     {
-        _enqueue_canvas_event(runner, canvas, DVZ_RUNNER_DEQ_MAIN, DVZ_RUNNER_CANVAS_DELETE);
+        log_trace("delete canvas %d", canvas->obj.id);
+        DvzRequest req = dvz_delete_canvas(runner->requester, canvas->obj.id);
+        dvz_runner_request(runner, req);
+
         return;
     }
 
@@ -559,7 +562,7 @@ static void _callback_request(DvzDeq* deq, void* item, void* user_data)
     ASSERT(req != NULL);
 
     // DEBUG
-    dvz_request_print(req);
+    // dvz_request_print(req);
 
     // Canvas destruction: wait before destroying the canvas.
     if (req->action == DVZ_REQUEST_ACTION_DELETE && req->type == DVZ_REQUEST_OBJECT_CANVAS)

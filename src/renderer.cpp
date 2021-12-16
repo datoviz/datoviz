@@ -25,6 +25,10 @@
     rd->router->router[std::make_pair(DVZ_REQUEST_ACTION_##action, DVZ_REQUEST_OBJECT_##type)] =  \
         function;
 
+#define SET_ID(x)                                                                                 \
+    ASSERT(req.id != DVZ_ID_NONE);                                                                \
+    (x)->obj.id = req.id;
+
 
 
 /*************************************************************************************************/
@@ -53,10 +57,12 @@ extern "C" struct DvzRouter
 static void* _board_create(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
+    log_trace("create board");
 
     DvzBoard* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
     ASSERT(board != NULL);
+    SET_ID(board)
     board->rgb = dvz_board_alloc(board);
     return (void*)board;
 }
@@ -67,6 +73,7 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
+    log_trace("update board");
 
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
     ASSERT(board != NULL);
@@ -82,6 +89,7 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
+    log_trace("delete board");
 
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
     ASSERT(board != NULL);
@@ -105,6 +113,7 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
     DvzCanvas* canvas = dvz_workspace_canvas(
         rd->workspace, req.content.canvas.width, req.content.canvas.height, req.flags);
     ASSERT(canvas != NULL);
+    SET_ID(canvas)
     return (void*)canvas;
 }
 
@@ -132,6 +141,7 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
+    log_trace("create graphics");
 
     // Get the board.
     DvzId board_id = req.content.graphics.board;
@@ -144,6 +154,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         rd->pipelib, rd->ctx, &board->renderpass, board->images.count, //
         size, req.content.graphics.type, req.flags);
     ASSERT(pipe != NULL);
+    SET_ID(pipe)
 
     return (void*)pipe;
 }
@@ -239,6 +250,7 @@ static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
+    log_trace("delete pipe");
 
     DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
     ASSERT(pipe != NULL);
@@ -256,9 +268,11 @@ static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 static void* _dat_create(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
+    log_trace("create dat");
 
     DvzDat* dat = dvz_dat(rd->ctx, req.content.dat.type, req.content.dat.size, req.flags);
     ASSERT(dat != NULL);
+    SET_ID(dat)
 
     return (void*)dat;
 }
@@ -289,6 +303,7 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
+    log_trace("delete dat");
 
     DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.id);
     ASSERT(dat != NULL);
@@ -303,10 +318,12 @@ static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
 {
 
     ASSERT(rd != NULL);
+    log_trace("create sampler");
 
     DvzSampler* sampler =
         dvz_resources_sampler(&rd->ctx->res, req.content.sampler.filter, req.content.sampler.mode);
     ASSERT(sampler != NULL);
+    SET_ID(sampler)
 
     return (void*)sampler;
 }
@@ -317,6 +334,7 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
+    log_trace("delete sampler");
 
     DvzSampler* sampler = (DvzSampler*)dvz_map_get(rd->map, req.id);
     ASSERT(sampler != NULL);
@@ -466,6 +484,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         // Creation.
     case DVZ_REQUEST_ACTION_CREATE:
         ASSERT(obj != NULL);
+        ASSERT(req.id != DVZ_ID_NONE);
 
         // Generate a new id.
         log_trace("adding object type %d id %" PRIx64 " to mapping", req.type, req.id);

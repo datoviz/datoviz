@@ -68,6 +68,10 @@ DvzRunner* dvz_runner(DvzRenderer* renderer)
     DvzRunner* runner = calloc(1, sizeof(DvzRunner)); // will be FREE-ed by dvz_runner_destroy();
     runner->renderer = renderer;
 
+    // Requester.
+    runner->requester = calloc(1, sizeof(DvzRequester));
+    *runner->requester = dvz_requester();
+
     // Deq with 4 queues: FRAME, MAIN, REFILL, PRESENT
     runner->deq = dvz_deq(4);
     dvz_deq_proc(&runner->deq, 0, 1, (uint32_t[]){DVZ_RUNNER_DEQ_FRAME});
@@ -274,6 +278,9 @@ void dvz_runner_destroy(DvzRunner* runner)
     }
 
     dvz_deq_destroy(&runner->deq);
+
+    dvz_requester_destroy(runner->requester);
+    FREE(runner->requester);
 
     FREE(runner);
 }

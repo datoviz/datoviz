@@ -127,19 +127,10 @@ struct DvzCanvasEventUpfill
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzAutorun
-{
-    bool enable;          // whether to enable autorun or not
-    uint64_t frame_count; // total number of frames to runner
-    bool offscreen;       // whether to runner the canvas offscreen or not
-    char* filepath;       // screenshot or video
-};
-
-
-
 struct DvzRunner
 {
     DvzDeq deq;
+    DvzRequester* requester;
     DvzRenderer* renderer;
 
     uint64_t global_frame_idx;

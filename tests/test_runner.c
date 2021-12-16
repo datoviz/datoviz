@@ -11,6 +11,7 @@
 #include "test_runner.h"
 #include "_glfw.h"
 #include "context.h"
+#include "map.h"
 #include "renderer.h"
 #include "request.h"
 #include "runner.h"
@@ -37,15 +38,16 @@ int test_runner_1(TstSuite* suite)
     // Renderer.
     DvzRenderer* rd = dvz_renderer(gpu);
 
-    // Requester.
-    DvzRequester rqr = dvz_requester();
-    DvzRequest req = {0};
-
     // Runner.
     DvzRunner* runner = dvz_runner(rd);
 
+    // Requester.
+    DvzRequester* rqr = runner->requester;
+    DvzRequest req = {0};
+
     // Create a request.
-    req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, 0);
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    ASSERT(req.id != DVZ_ID_NONE);
     dvz_runner_request(runner, req);
 
     // Runner loop.
@@ -53,7 +55,6 @@ int test_runner_1(TstSuite* suite)
 
     // Destruction
     dvz_runner_destroy(runner);
-    dvz_requester_destroy(&rqr);
     dvz_renderer_destroy(rd);
     return 0;
 }
