@@ -6,6 +6,7 @@
 
 #include "_log.h"
 #include "board.h"
+#include "canvas.h"
 #include "context.h"
 #include "graphics.h"
 #include "map.h"
@@ -87,6 +88,38 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 
     dvz_board_free(board);
     dvz_board_destroy(board);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
+
+static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    log_trace("create canvas");
+
+    DvzCanvas* canvas = dvz_workspace_canvas(
+        rd->workspace, req.content.canvas.width, req.content.canvas.height, req.flags);
+    ASSERT(canvas != NULL);
+    return (void*)canvas;
+}
+
+
+
+static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+    log_trace("delete canvas");
+
+    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, req.id);
+    ASSERT(canvas != NULL);
+
+    dvz_canvas_destroy(canvas);
     return NULL;
 }
 
@@ -392,6 +425,10 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(CREATE, BOARD, _board_create)
     ROUTE(UPDATE, BOARD, _board_update)
     ROUTE(DELETE, BOARD, _board_delete)
+
+    // Canvas.
+    ROUTE(CREATE, CANVAS, _canvas_create)
+    ROUTE(DELETE, CANVAS, _canvas_delete)
 
     // Graphics.
     ROUTE(CREATE, GRAPHICS, _graphics_create)

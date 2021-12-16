@@ -11,20 +11,20 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_RUN_DEFAULT_FRAME_COUNT 0
+#define DVZ_RUNNER_DEFAULT_FRAME_COUNT 0
 
 // Return codes for dvz_runner_frame()
 // 0: the frame ran successfully
 // -1: an error occurred, need to continue the loop as normally as possible
 // 1: need to stop the runner
-#define DVZ_RUN_FRAME_RETURN_OK    0
-#define DVZ_RUN_FRAME_RETURN_ERROR -1
-#define DVZ_RUN_FRAME_RETURN_STOP  1
+#define DVZ_RUNNER_FRAME_RETURN_OK    0
+#define DVZ_RUNNER_FRAME_RETURN_ERROR -1
+#define DVZ_RUNNER_FRAME_RETURN_STOP  1
 
 
 
 /*************************************************************************************************/
-/*  Run creation                                                                                 */
+/*  Runner utils                                                                                 */
 /*************************************************************************************************/
 
 static void _default_refill(DvzDeq* deq, void* item, void* user_data)
@@ -43,24 +43,42 @@ static void _default_refill(DvzDeq* deq, void* item, void* user_data)
     blank_commands(canvas, cmds, img_idx);
 }
 
-DvzRunner* dvz_runner(DvzHost* host)
+
+
+static int _deq_size(DvzRunner* runner)
 {
-    ASSERT(host != NULL); //
+    ASSERT(runner != NULL);
+    int size = 0;
+    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUNNER_DEQ_FRAME]);
+    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUNNER_DEQ_MAIN]);
+    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUNNER_DEQ_REFILL]);
+    return size;
+}
+
+
+
+/*************************************************************************************************/
+/*  Runner                                                                                       */
+/*************************************************************************************************/
+
+DvzRunner* dvz_runner(DvzRenderer* renderer)
+{
+    ASSERT(renderer != NULL);
 
     DvzRunner* runner = calloc(1, sizeof(DvzRunner)); // will be FREE-ed by dvz_runner_destroy();
-    runner->host = host;
+    runner->renderer = renderer;
 
     // Deq with 4 queues: FRAME, MAIN, REFILL, PRESENT
     runner->deq = dvz_deq(4);
-    dvz_deq_proc(&runner->deq, 0, 1, (uint32_t[]){DVZ_RUN_DEQ_FRAME});
-    dvz_deq_proc(&runner->deq, 1, 1, (uint32_t[]){DVZ_RUN_DEQ_MAIN});
-    dvz_deq_proc(&runner->deq, 2, 1, (uint32_t[]){DVZ_RUN_DEQ_REFILL});
-    dvz_deq_proc(&runner->deq, 3, 1, (uint32_t[]){DVZ_RUN_DEQ_PRESENT});
+    dvz_deq_proc(&runner->deq, 0, 1, (uint32_t[]){DVZ_RUNNER_DEQ_FRAME});
+    dvz_deq_proc(&runner->deq, 1, 1, (uint32_t[]){DVZ_RUNNER_DEQ_MAIN});
+    dvz_deq_proc(&runner->deq, 2, 1, (uint32_t[]){DVZ_RUNNER_DEQ_REFILL});
+    dvz_deq_proc(&runner->deq, 3, 1, (uint32_t[]){DVZ_RUNNER_DEQ_PRESENT});
 
     // FRAME queue.
 
     dvz_deq_proc_batch_callback(
-        &runner->deq, DVZ_RUN_DEQ_FRAME, (int)DVZ_RUN_CANVAS_FRAME, _callback_frame, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_FRAME, (int)DVZ_RUNNER_CANVAS_FRAME, _callback_frame, runner);
 
 
 
@@ -68,48 +86,58 @@ DvzRunner* dvz_runner(DvzHost* host)
 
     // // New canvas.
     // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_NEW, _callback_new, runner);
+    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_NEW, _callback_new, runner);
 
     // // Delete canvas.
     // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_DELETE, _callback_delete, runner);
+    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_DELETE, _callback_delete,
+    //     runner);
 
     // // Clear color.
     // dvz_deq_callback(
-    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_CLEAR_COLOR, _callback_clear_color,
-    //     runner);
+    //     &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_CLEAR_COLOR,
+    //     _callback_clear_color, runner);
 
     // Recreate.
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_RECREATE, _callback_recreate, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_RECREATE, _callback_recreate,
+        runner);
 
     // Upfill.
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_UPFILL, _callback_upfill, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_UPFILL, _callback_upfill,
+        runner);
 
     // Call dvz_transfers_frame() in the main thread, at every frame, with the current canvas
     // swapchain image index.
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_FRAME, _callback_transfers, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_FRAME, _callback_transfers,
+        runner);
+
+
+    // Process rendering requests.
+    dvz_deq_callback(
+        &runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_REQUEST, _callback_request, runner);
 
 
 
     // REFILL queue.
 
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_REFILL, (int)DVZ_RUN_CANVAS_TO_REFILL, _callback_to_refill,
+        &runner->deq, DVZ_RUNNER_DEQ_REFILL, (int)DVZ_RUNNER_CANVAS_TO_REFILL, _callback_to_refill,
         runner);
 
     // REFILL_WRAP, that calls the REFILL callback if the current cmd buf is not blocked.
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_REFILL, (int)DVZ_RUN_CANVAS_REFILL_WRAP, //
+        &runner->deq, DVZ_RUNNER_DEQ_REFILL, (int)DVZ_RUNNER_CANVAS_REFILL_WRAP, //
         _callback_refill_wrap, runner);
 
     // Default refill callback.
     // NOTE: this is a default callback: it will be discarded if the user registers other command
     // buffer refill callbacks.
     dvz_deq_callback_default(
-        &runner->deq, DVZ_RUN_DEQ_REFILL, (int)DVZ_RUN_CANVAS_REFILL, _default_refill, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_REFILL, (int)DVZ_RUNNER_CANVAS_REFILL, _default_refill,
+        runner);
 
 
 
@@ -117,9 +145,10 @@ DvzRunner* dvz_runner(DvzHost* host)
 
     // Present callbacks.
     dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_PRESENT, (int)DVZ_RUN_CANVAS_PRESENT, _callback_present, runner);
+        &runner->deq, DVZ_RUNNER_DEQ_PRESENT, (int)DVZ_RUNNER_CANVAS_PRESENT, _callback_present,
+        runner);
 
-    runner->state = DVZ_RUN_STATE_PAUSED;
+    // runner->state = DVZ_RUNNER_STATE_PAUSED;
 
     return runner;
 }
@@ -127,27 +156,20 @@ DvzRunner* dvz_runner(DvzHost* host)
 
 
 /*************************************************************************************************/
-/*  Run event loop                                                                               */
+/*  Runner event loop                                                                            */
 /*************************************************************************************************/
-
-static int _deq_size(DvzRunner* runner)
-{
-    ASSERT(runner != NULL);
-    int size = 0;
-    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUN_DEQ_FRAME]);
-    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUN_DEQ_MAIN]);
-    size += dvz_fifo_size(&runner->deq.queues[DVZ_RUN_DEQ_REFILL]);
-    return size;
-}
 
 // Run one frame for all active canvases, process all MAIN events, and perform all pending data
 // copies.
 int dvz_runner_frame(DvzRunner* runner)
 {
     ASSERT(runner != NULL);
+    ASSERT(runner->renderer != NULL);
+    ASSERT(runner->renderer->gpu != NULL);
+    ASSERT(runner->renderer->gpu->host != NULL);
 
-    DvzHost* host = runner->host;
-    ASSERT(host != NULL);
+    // DvzHost* host = runner->host;
+    // ASSERT(host != NULL);
 
     log_trace("frame #%06d", runner->global_frame_idx);
 
@@ -166,31 +188,31 @@ int dvz_runner_frame(DvzRunner* runner)
         // transfer thread. However, COPY transfers may be enqueued, to be handled separately later
         // in the run_frame().
         log_trace("dequeue batch frame");
-        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUN_DEQ_FRAME);
+        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUNNER_DEQ_FRAME);
 
         // Then, dequeue MAIN items. The ADD/VISIBLE/ACTIVE/RESIZE callbacks may be called.
         // NOTE: pending data transfers (copies and dup transfers) happen here, in a FRAME callback
         // in the MAIN queue (main thread).
         log_trace("dequeue batch main");
-        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUN_DEQ_MAIN);
+        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUNNER_DEQ_MAIN);
 
         // Refill canvases if needed.
         log_trace("dequeue batch refill");
-        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUN_DEQ_REFILL);
+        dvz_deq_dequeue_batch(&runner->deq, DVZ_RUNNER_DEQ_REFILL);
     }
 
     // Swapchain presentation.
     log_trace("dequeue batch present");
-    dvz_deq_dequeue_batch(&runner->deq, DVZ_RUN_DEQ_PRESENT);
+    dvz_deq_dequeue_batch(&runner->deq, DVZ_RUNNER_DEQ_PRESENT);
 
-    _gpu_sync_hack(host);
+    _gpu_sync_hack(runner->renderer->gpu->host);
 
     // DEBUG
     // dvz_sleep(100);
 
     // If no canvas is running, stop the event loop.
     if (n_canvas_running == 0)
-        return DVZ_RUN_FRAME_RETURN_STOP;
+        return DVZ_RUNNER_FRAME_RETURN_STOP;
 
     return 0;
 }
@@ -216,36 +238,50 @@ int dvz_runner_frame(DvzRunner* runner)
 
 
 /*************************************************************************************************/
-/*  Run functions                                                                                */
+/*  Runner functions                                                                             */
 /*************************************************************************************************/
+
+void dvz_runner_request(DvzRunner* runner, DvzRequest request)
+{
+    ASSERT(runner != NULL);
+
+    DvzRequest* req = (DvzRequest*)calloc(1, sizeof(DvzRequest));
+    *req = request;
+    dvz_deq_enqueue(&runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_REQUEST, req);
+}
+
+
 
 int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 {
     ASSERT(runner != NULL);
 
-    int ret = 0;
-    uint64_t n = frame_count > 0 ? frame_count : UINT64_MAX;
-
-    runner->state = DVZ_RUN_STATE_RUNNING;
+    int ret = 0, ret_prev = 0;
+    // runner->state = DVZ_RUNNER_STATE_RUNNING;
 
     log_debug("runner loop with %d frames", frame_count);
 
     // NOTE: there is the global frame index for the event loop, but every frame has its own local
     // frame index too.
-    for (runner->global_frame_idx = 0; runner->global_frame_idx < n; runner->global_frame_idx++)
+    for (runner->global_frame_idx = 0; frame_count == 0 || runner->global_frame_idx < frame_count;
+         runner->global_frame_idx++)
     {
         log_trace("event loop, global frame #%d", runner->global_frame_idx);
         ret = dvz_runner_frame(runner);
 
         // Stop the event loop if the return code of dvz_runner_frame() requires it.
-        if (ret == DVZ_RUN_FRAME_RETURN_STOP)
+        // HACK: requires the return code to be STOP for 2 consecutive frames, otherwise
+        // it is impossible to bootstrap a canvas when running the loop for the first time.
+        if (ret == DVZ_RUNNER_FRAME_RETURN_STOP && ret_prev == DVZ_RUNNER_FRAME_RETURN_STOP)
         {
             // log_debug("end event loop");
             break;
         }
+
+        ret_prev = ret;
     }
     log_debug("end event loop after %d frames", runner->global_frame_idx);
-    runner->state = DVZ_RUN_STATE_PAUSED;
+    // runner->state = DVZ_RUNNER_STATE_PAUSED;
 
     // Wait.
     _run_flush(runner);
@@ -281,17 +317,17 @@ int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 //     char* s = NULL;
 
 //     // Offscreen?
-//     s = getenv("DVZ_RUN_OFFSCREEN");
+//     s = getenv("DVZ_RUNNER_OFFSCREEN");
 //     if (s)
 //         autorun->offscreen = true;
 
 //     // Number of frames.
-//     s = getenv("DVZ_RUN_FRAMES");
+//     s = getenv("DVZ_RUNNER_FRAMES");
 //     if (s)
 //         autorun->frame_count = strtoull(s, NULL, 10);
 
 //     // Screenshot and video.
-//     s = getenv("DVZ_RUN_SAVE");
+//     s = getenv("DVZ_RUNNER_SAVE");
 //     if (s)
 //         strncpy(autorun->filepath, s, DVZ_PATH_MAX_LEN);
 
@@ -312,7 +348,7 @@ int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 //     }
 //     else
 //     {
-//         dvz_runner_loop(runner, DVZ_RUN_DEFAULT_FRAME_COUNT);
+//         dvz_runner_loop(runner, DVZ_RUNNER_DEFAULT_FRAME_COUNT);
 //     }
 
 //     return 0;

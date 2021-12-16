@@ -61,6 +61,7 @@ DvzPipe dvz_pipe(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     DvzPipe pipe = {0};
+    pipe.obj.type = DVZ_OBJECT_TYPE_PIPE;
     pipe.gpu = gpu;
     dvz_obj_init(&pipe.obj);
     return pipe;

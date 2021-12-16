@@ -138,6 +138,31 @@ DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 
 
 /*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
+
+DvzRequest dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+{
+    CREATE_REQUEST(CREATE, CANVAS);
+    req.id = dvz_prng_uuid(rqr->prng);
+    req.flags = flags;
+    req.content.board.width = width;
+    req.content.board.height = height;
+    return req;
+}
+
+
+
+DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
+{
+    CREATE_REQUEST(DELETE, CANVAS);
+    req.id = id;
+    return req;
+}
+
+
+
+/*************************************************************************************************/
 /*  Resources                                                                                    */
 /*************************************************************************************************/
 

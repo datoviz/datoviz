@@ -41,13 +41,13 @@ DvzHost* dvz_host(DvzBackend backend)
     }
 #endif
 
-    // Fill the host.autorun struct with DVZ_RUN_* environment variables.
+    // Fill the host.autorun struct with DVZ_RUNNER_* environment variables.
     // dvz_autorun_env(host);
 
-    // // Take env variable "DVZ_RUN_OFFSCREEN" into account, forcing offscreen backend in this
+    // // Take env variable "DVZ_RUNNER_OFFSCREEN" into account, forcing offscreen backend in this
     // case. if (host->autorun.enable && host->autorun.offscreen)
     // {
-    //     log_info("forcing offscreen backend because DVZ_RUN_OFFSCREEN env variable is set");
+    //     log_info("forcing offscreen backend because DVZ_RUNNER_OFFSCREEN env variable is set");
     //     backend = DVZ_BACKEND_OFFSCREEN;
     // }
 

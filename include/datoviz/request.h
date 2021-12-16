@@ -314,6 +314,37 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
 
 
 /*************************************************************************************************/
+/*  Canvas                                                                                       */
+/*************************************************************************************************/
+
+/**
+ * Create a request for canvas creation.
+ *
+ * A canvas is a live window on which to render.
+ *
+ * @param rqr the requester
+ * @param width the canvas width (in screen pixels)
+ * @param height the canvas height (in screen pixels)
+ * @param flags the canvas creation flags
+ * @returns the request, containing a newly-generated id for the canvas to be created
+ */
+DVZ_EXPORT DvzRequest
+dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
+
+
+
+/**
+ * Create a request for a canvas deletion.
+ *
+ * @param rqr the requester
+ * @param id the canvas id
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id);
+
+
+
+/*************************************************************************************************/
 /*  Resources                                                                                    */
 /*************************************************************************************************/
 

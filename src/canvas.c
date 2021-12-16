@@ -23,6 +23,7 @@ DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     ASSERT(height > 0);
 
     DvzCanvas canvas = {0};
+    canvas.obj.type = DVZ_OBJECT_TYPE_CANVAS;
     canvas.gpu = gpu;
     canvas.flags = flags;
     canvas.format = DVZ_DEFAULT_FORMAT;

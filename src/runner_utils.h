@@ -48,7 +48,7 @@ static void _enqueue_canvas_frame(DvzRunner* runner, DvzCanvas* canvas, uint32_t
     DvzCanvasEventFrame* ev = (DvzCanvasEventFrame*)calloc(1, sizeof(DvzCanvasEventFrame));
     ev->canvas = canvas;
     ev->frame_idx = ev->canvas->frame_idx;
-    dvz_deq_enqueue(&runner->deq, q_idx, (int)DVZ_RUN_CANVAS_FRAME, ev);
+    dvz_deq_enqueue(&runner->deq, q_idx, (int)DVZ_RUNNER_CANVAS_FRAME, ev);
 }
 
 
@@ -66,7 +66,7 @@ static void _enqueue_upfill(
     ev->offset = offset;
     ev->size = size;
     ev->data = data;
-    dvz_deq_enqueue(&runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_UPFILL, ev);
+    dvz_deq_enqueue(&runner->deq, DVZ_RUNNER_DEQ_MAIN, (int)DVZ_RUNNER_CANVAS_UPFILL, ev);
 }
 
 
@@ -78,7 +78,8 @@ static void _enqueue_to_refill(DvzRunner* runner, DvzCanvas* canvas)
 
     DvzCanvasEvent* ev = (DvzCanvasEvent*)calloc(1, sizeof(DvzCanvasEvent));
     ev->canvas = canvas;
-    dvz_deq_enqueue_first(&runner->deq, DVZ_RUN_DEQ_REFILL, (int)DVZ_RUN_CANVAS_TO_REFILL, ev);
+    dvz_deq_enqueue_first(
+        &runner->deq, DVZ_RUNNER_DEQ_REFILL, (int)DVZ_RUNNER_CANVAS_TO_REFILL, ev);
 }
 
 
@@ -95,8 +96,8 @@ static void _enqueue_refill(
     ev->cmds = cmds;
     ev->cmd_idx = cmd_idx;
     dvz_deq_enqueue(
-        &runner->deq, DVZ_RUN_DEQ_REFILL,
-        (int)(wrap ? DVZ_RUN_CANVAS_REFILL_WRAP : DVZ_RUN_CANVAS_REFILL), ev);
+        &runner->deq, DVZ_RUNNER_DEQ_REFILL,
+        (int)(wrap ? DVZ_RUNNER_CANVAS_REFILL_WRAP : DVZ_RUNNER_CANVAS_REFILL), ev);
 }
 
 
@@ -115,6 +116,7 @@ static uint32_t _enqueue_frames(DvzRunner* runner)
     uint32_t n_canvas_running = 0;
     DvzCanvas* canvas = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&workspace->canvases);
+    log_trace("iterate through canvases");
     while (iter.item != NULL)
     {
         canvas = (DvzCanvas*)iter.item;
@@ -125,7 +127,7 @@ static uint32_t _enqueue_frames(DvzRunner* runner)
         // In that case, enqueue a FRAME event for that canvas.
         if (dvz_obj_is_created(&canvas->obj)) // TODO: && canvas->running)
         {
-            _enqueue_canvas_frame(runner, canvas, DVZ_RUN_DEQ_FRAME);
+            _enqueue_canvas_frame(runner, canvas, DVZ_RUNNER_DEQ_FRAME);
             n_canvas_running++;
         }
 
@@ -176,11 +178,16 @@ static uint32_t _enqueue_frames(DvzRunner* runner)
 static void _run_flush(DvzRunner* runner)
 {
     ASSERT(runner != NULL);
-    ASSERT(runner->host != NULL);
+    ASSERT(runner->renderer != NULL);
+    ASSERT(runner->renderer->gpu != NULL);
+    ASSERT(runner->renderer->gpu->host != NULL);
+
+    DvzHost* host = runner->renderer->gpu->host;
+    ASSERT(host != NULL);
 
     log_debug("flush runner instance");
 
-    backend_poll_events(runner->host);
+    backend_poll_events(host);
 
     // Flush all queues.
     for (uint32_t i = 0; i < 4; i++)
@@ -191,7 +198,7 @@ static void _run_flush(DvzRunner* runner)
     // for (uint32_t i = 0; i < 4; i++)
     //     dvz_deq_wait(&runner->deq, i);
 
-    dvz_host_wait(runner->host);
+    dvz_host_wait(host);
 }
 
 
@@ -307,7 +314,7 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
     // void* backend_window = canvas->window != NULL ? canvas->window->backend_window : NULL;
     if (backend_window_should_close(canvas->window))
     {
-        _enqueue_canvas_event(runner, canvas, DVZ_RUN_DEQ_MAIN, DVZ_RUN_CANVAS_DELETE);
+        _enqueue_canvas_event(runner, canvas, DVZ_RUNNER_DEQ_MAIN, DVZ_RUNNER_CANVAS_DELETE);
         return;
     }
 
@@ -335,7 +342,7 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
     if (canvas->render.swapchain.obj.status == DVZ_OBJECT_STATUS_NEED_RECREATE)
     {
         log_trace("swapchain image acquisition failed, enqueing a RECREATE task");
-        _enqueue_canvas_event(runner, canvas, DVZ_RUN_DEQ_MAIN, DVZ_RUN_CANVAS_RECREATE);
+        _enqueue_canvas_event(runner, canvas, DVZ_RUNNER_DEQ_MAIN, DVZ_RUNNER_CANVAS_RECREATE);
         return;
     }
 
@@ -349,7 +356,7 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
     // If all good, enqueue a PRESENT task for that canvas. The PRESENT callback does the rendering
     // (cmd buf submission) and send the rendered image for presentation to the swapchain.
     // log_info("enqueue present");
-    _enqueue_canvas_event(runner, canvas, DVZ_RUN_DEQ_PRESENT, DVZ_RUN_CANVAS_PRESENT);
+    _enqueue_canvas_event(runner, canvas, DVZ_RUNNER_DEQ_PRESENT, DVZ_RUNNER_CANVAS_PRESENT);
 
     canvas->frame_idx++;
 }
@@ -359,32 +366,6 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
 /*************************************************************************************************/
 /*  Canvas callbacks                                                                             */
 /*************************************************************************************************/
-
-// static void _callback_new(DvzDeq* deq, void* item, void* user_data)
-// {
-//     ASSERT(deq != NULL);
-//     log_debug("create new canvas");
-
-//     ASSERT(deq != NULL);
-
-//     DvzRunner* runner = (DvzRunner*)user_data;
-//     ASSERT(runner != NULL);
-
-//     DvzRenderer* renderer = runner->renderer;
-//     ASSERT(renderer != NULL);
-
-//     DvzWorkspace* workspace = renderer->workspace;
-//     ASSERT(workspace != NULL);
-
-//     DvzCanvasEventNew* ev = (DvzCanvasEventNew*)item;
-//     ASSERT(ev != NULL);
-
-//     // Create the canvas.
-//     DvzCanvas* canvas = dvz_workspace_canvas(workspace, ev->width, ev->height, ev->flags);
-//     dvz_canvas_create(canvas);
-// }
-
-
 
 // Batch callback from the FRAME event in the FRAME queue.
 static void _callback_frame(
@@ -400,13 +381,13 @@ static void _callback_frame(
     DvzCanvasEventFrame* ev = NULL;
     for (uint32_t i = 0; i < item_count; i++)
     {
-        ASSERT(items[i].type == DVZ_RUN_CANVAS_FRAME);
+        ASSERT(items[i].type == DVZ_RUNNER_CANVAS_FRAME);
         ev = (DvzCanvasEventFrame*)items[i].item;
         ASSERT(ev != NULL);
 
         // We enqueue another FRAME event, but in the MAIN queue: this is the event the user
         // callbacks will subscribe to.
-        _enqueue_canvas_frame(runner, ev->canvas, DVZ_RUN_DEQ_MAIN);
+        _enqueue_canvas_frame(runner, ev->canvas, DVZ_RUNNER_DEQ_MAIN);
 
         // TODO: optim: if multiple FRAME events for 1 canvas, make sure we call it only once.
         // One frame for one canvas.
@@ -420,9 +401,6 @@ static void _callback_transfers(DvzDeq* deq, void* item, void* user_data)
 {
     DvzRunner* runner = (DvzRunner*)user_data;
     ASSERT(runner != NULL);
-
-    DvzHost* host = runner->host;
-    ASSERT(host != NULL);
 
     DvzRenderer* renderer = runner->renderer;
     ASSERT(renderer != NULL);
@@ -541,7 +519,7 @@ static void _callback_to_refill(DvzDeq* deq, void* item, void* user_data)
 
     // for (uint32_t i = 0; i < item_count; i++)
     // {
-    //     ASSERT(items[i].type == DVZ_RUN_CANVAS_TO_REFILL);
+    //     ASSERT(items[i].type == DVZ_RUNNER_CANVAS_TO_REFILL);
     //     ev = item;
     //     ASSERT(ev != NULL);
 
@@ -579,7 +557,7 @@ static void _callback_refill_wrap(DvzDeq* deq, void* item, void* user_data)
         // queue altogether/
         _enqueue_refill(runner, canvas, cmds, img_idx, false);
         // This will call the user callback for REFILL, for the current swapchain image.
-        dvz_deq_dequeue(&runner->deq, DVZ_RUN_DEQ_REFILL, true);
+        dvz_deq_dequeue(&runner->deq, DVZ_RUNNER_DEQ_REFILL, true);
 
         _refill_done(canvas);
     }
@@ -624,13 +602,10 @@ static void _callback_upfill(DvzDeq* deq, void* item, void* user_data)
 static void _callback_present(DvzDeq* deq, void* item, void* user_data)
 {
     ASSERT(deq != NULL);
-
     // frame submission for that canvas: submit cmd bufs, present swapchain
 
-    ASSERT(deq != NULL);
-
     DvzCanvasEvent* ev = (DvzCanvasEvent*)item;
-    ASSERT(item != NULL);
+    ASSERT(ev != NULL);
     DvzCanvas* canvas = ev->canvas;
 
     // Process only created canvas.
@@ -640,6 +615,29 @@ static void _callback_present(DvzDeq* deq, void* item, void* user_data)
 
     // Submit the command buffers and make the swapchain rendering.
     canvas_render(canvas);
+}
+
+
+
+static void _callback_request(DvzDeq* deq, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    DvzRunner* runner = (DvzRunner*)user_data;
+    ASSERT(runner != NULL);
+
+    DvzRequest* req = (DvzRequest*)item;
+    ASSERT(req != NULL);
+
+    // DEBUG
+    dvz_request_print(req);
+
+    // Canvas destruction: wait before destroying the canvas.
+    if (req->action == DVZ_REQUEST_ACTION_DELETE && req->type == DVZ_REQUEST_OBJECT_CANVAS)
+        _run_flush(runner);
+
+    // Submit the request to the renderer.
+    dvz_renderer_request(runner->renderer, *req);
 }
 
 

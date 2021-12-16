@@ -35,6 +35,7 @@ DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     ASSERT(height > 0);
 
     DvzBoard board = {0};
+    board.obj.type = DVZ_OBJECT_TYPE_BOARD;
     board.gpu = gpu;
     board.flags = flags;
     board.width = width;

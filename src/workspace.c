@@ -19,6 +19,7 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     DvzWorkspace* ws = calloc(1, sizeof(DvzWorkspace));
+    ws->obj.type = DVZ_OBJECT_TYPE_WORKSPACE;
     ws->gpu = gpu;
     ws->boards =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBoard), DVZ_OBJECT_TYPE_BOARD);
