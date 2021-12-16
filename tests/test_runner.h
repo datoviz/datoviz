@@ -21,6 +21,8 @@
 
 int test_runner_1(TstSuite*);
 
+int test_runner_2(TstSuite*);
+
 
 
 #endif

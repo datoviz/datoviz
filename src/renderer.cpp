@@ -126,9 +126,8 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
     log_trace("delete canvas");
 
     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, req.id);
-    ASSERT(canvas != NULL);
-
-    dvz_canvas_destroy(canvas);
+    if (canvas != NULL)
+        dvz_canvas_destroy(canvas);
     return NULL;
 }
 
