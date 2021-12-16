@@ -29,6 +29,7 @@
 #include "test_renderer.h"
 #include "test_request.h"
 #include "test_resources.h"
+#include "test_runner.h"
 #include "test_thread.h"
 #include "test_transfers.h"
 #include "test_vklite.h"
@@ -136,6 +137,9 @@ int dvz_run_tests(const char* match)
     // Testing canvas.
     TEST(test_canvas_1)
     TEST(test_canvas_triangle)
+
+    // Testing runner.
+    TEST(test_runner_1)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

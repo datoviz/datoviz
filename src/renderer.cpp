@@ -366,6 +366,20 @@ static void* _set_end(DvzRenderer* rd, DvzRequest req)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _init_renderer(DvzRenderer* rd)
+{
+    ASSERT(rd != NULL);
+    ASSERT(rd->gpu != NULL);
+    rd->ctx = dvz_context(rd->gpu);
+    rd->pipelib = dvz_pipelib(rd->ctx);
+    rd->workspace = dvz_workspace(rd->gpu);
+    rd->map = dvz_map();
+
+    dvz_obj_init(&rd->obj);
+}
+
+
+
 static void _setup_router(DvzRenderer* rd)
 {
     ASSERT(rd != NULL);
@@ -452,15 +466,8 @@ DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu)
     DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
     ASSERT(rd != NULL);
     rd->gpu = gpu;
-
-    rd->ctx = dvz_context(gpu);
-    rd->pipelib = dvz_pipelib(rd->ctx);
-    rd->workspace = dvz_workspace(gpu);
-    rd->map = dvz_map();
-
+    _init_renderer(rd);
     _setup_router(rd);
-
-    dvz_obj_init(&rd->obj);
     return rd;
 }
 
@@ -469,8 +476,11 @@ DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu)
 DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
-    // TODO
-    return NULL;
+    DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
+    ASSERT(rd != NULL);
+    rd->gpu = gpu;
+    _init_renderer(rd);
+    return rd;
 }
 
 

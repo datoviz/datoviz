@@ -45,24 +45,6 @@ struct TestCanvasStruct
 /*  Canvas tests                                                                                 */
 /*************************************************************************************************/
 
-static DvzGpu* make_gpu(DvzHost* host)
-{
-    ASSERT(host != NULL);
-
-    DvzGpu* gpu = dvz_gpu_best(host);
-    _default_queues(gpu, true);
-    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-
-    // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
-    // capabilities.
-    DvzWindow* window = dvz_window(host, 100, 100);
-    ASSERT(window->surface != VK_NULL_HANDLE);
-    dvz_gpu_create(gpu, window->surface);
-    dvz_window_destroy(window);
-
-    return gpu;
-}
-
 int test_canvas_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);

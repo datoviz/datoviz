@@ -612,6 +612,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_renderer.c"
         "tests/test_input.c"
         "tests/test_canvas.c"
+        "tests/test_runner.c"
         "tests/test.c"
     )
 

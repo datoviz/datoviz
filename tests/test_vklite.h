@@ -12,6 +12,7 @@
 /*************************************************************************************************/
 
 #include "_glfw.h"
+#include "test_resources.h"
 #include "testing.h"
 #include "vklite.h"
 #include "window.h"
@@ -253,6 +254,26 @@ static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
     dvz_images_destroy(staging);
     FREE(staging);
     return rgb;
+}
+
+
+
+static DvzGpu* make_gpu(DvzHost* host)
+{
+    ASSERT(host != NULL);
+
+    DvzGpu* gpu = dvz_gpu_best(host);
+    _default_queues(gpu, true);
+    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
+
+    // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
+    // capabilities.
+    DvzWindow* window = dvz_window(host, 100, 100);
+    ASSERT(window->surface != VK_NULL_HANDLE);
+    dvz_gpu_create(gpu, window->surface);
+    dvz_window_destroy(window);
+
+    return gpu;
 }
 
 
