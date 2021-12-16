@@ -53,6 +53,10 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 
+    DvzRequest dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+
+    DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
+
     DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags)
 
     DvzRequest dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
