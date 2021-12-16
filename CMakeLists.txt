@@ -553,6 +553,7 @@ set(sources
     "src/renderer.cpp"
     "src/input.c"
     "src/canvas.c"
+    "src/runner.c"
 
     ${external_sources}
 )

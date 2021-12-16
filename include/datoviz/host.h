@@ -53,9 +53,6 @@ struct DvzHost
     // Containers.
     DvzContainer gpus;
     DvzContainer windows;
-    DvzContainer canvases;
-
-    // DvzRun* run;
 };
 
 

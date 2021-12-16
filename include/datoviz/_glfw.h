@@ -159,12 +159,11 @@ static void* backend_window(
 
 
 
-static void backend_poll_events(DvzWindow* window)
+static void backend_poll_events(DvzHost* host)
 {
-    ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
+    ASSERT(host != NULL);
 
-    switch (window->host->backend)
+    switch (host->backend)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW

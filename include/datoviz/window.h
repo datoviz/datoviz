@@ -99,20 +99,6 @@ DVZ_EXPORT void dvz_window_poll_events(DvzWindow* window);
  */
 DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
 
-/**
- * Destroy a canvas.
- *
- * @param canvas the canvas
- */
-// DVZ_EXPORT void dvz_canvas_destroy(DvzCanvas* canvas);
-
-/**
- * Destroy all canvases.
- *
- * @param canvases the container with the canvases.
- */
-// DVZ_EXPORT void dvz_canvases_destroy(DvzContainer* canvases);
-
 
 
 #endif

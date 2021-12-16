@@ -87,7 +87,7 @@ void dvz_window_poll_events(DvzWindow* window)
 {
     ASSERT(window != NULL);
     ASSERT(window->host != NULL);
-    backend_poll_events(window);
+    backend_poll_events(window->host);
 }
 
 

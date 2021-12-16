@@ -210,7 +210,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
     {
         log_debug("iteration %d", frame);
 
-        backend_poll_events(window);
+        backend_poll_events(gpu->host);
 
         if (backend_window_should_close(window) ||
             window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
@@ -316,7 +316,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     ASSERT(host != NULL);
 
     // Wait until all pending events have been processed.
-    backend_poll_events(canvas->window);
+    backend_poll_events(host);
 
     // Wait on the GPU.
     dvz_gpu_wait(gpu);

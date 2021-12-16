@@ -132,10 +132,6 @@ int dvz_host_destroy(DvzHost* host)
     log_debug("destroy the host with backend %d", host->backend);
     dvz_host_wait(host);
 
-    // Destroy the canvases.
-    // TODO
-    // dvz_canvases_destroy(&host->canvases);
-
     // Destroy the GPUs.
     CONTAINER_DESTROY_ITEMS(DvzGpu, host->gpus, dvz_gpu_destroy)
     dvz_container_destroy(&host->gpus);

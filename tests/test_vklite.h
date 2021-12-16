@@ -387,7 +387,7 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
         log_debug("iteration %d", frame);
         ASSERT(swapchain->images == canvas->images);
 
-        backend_poll_events(window);
+        backend_poll_events(window->host);
 
         if (backend_window_should_close(window) ||
             window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
