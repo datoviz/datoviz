@@ -45,6 +45,7 @@ typedef struct DvzRouter DvzRouter;
 typedef struct DvzContext DvzContext;
 typedef struct DvzPipelib DvzPipelib;
 typedef struct DvzWorkspace DvzWorkspace;
+typedef struct DvzCanvas DvzCanvas;
 typedef struct DvzMap DvzMap;
 
 
@@ -74,22 +75,12 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Create an offscreen renderer.
+ * Create a renderer.
  *
  * @param gpu the GPU
  * @returns the renderer
  */
-DVZ_EXPORT DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu);
-
-
-
-/**
- * Create a live glfw renderer.
- *
- * @param gpu the GPU
- * @returns the renderer
- */
-DVZ_EXPORT DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu);
+DVZ_EXPORT DvzRenderer* dvz_renderer(DvzGpu* gpu);
 
 
 
@@ -122,6 +113,17 @@ DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzReques
  * @param board the board
  */
 DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
+
+
+
+/**
+ * Return a canvas.
+ *
+ * @param rd the renderer
+ * @param id the board id
+ * @param canvas the canvas
+ */
+DVZ_EXPORT DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);
 
 
 

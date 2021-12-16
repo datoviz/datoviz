@@ -66,18 +66,18 @@ DvzRunner* dvz_runner(DvzHost* host)
 
     // MAIN callbacks.
 
-    // New canvas.
-    dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_NEW, _callback_new, runner);
+    // // New canvas.
+    // dvz_deq_callback(
+    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_NEW, _callback_new, runner);
 
-    // Delete canvas.
-    dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_DELETE, _callback_delete, runner);
+    // // Delete canvas.
+    // dvz_deq_callback(
+    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_DELETE, _callback_delete, runner);
 
-    // Clear color.
-    dvz_deq_callback(
-        &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_CLEAR_COLOR, _callback_clear_color,
-        runner);
+    // // Clear color.
+    // dvz_deq_callback(
+    //     &runner->deq, DVZ_RUN_DEQ_MAIN, (int)DVZ_RUN_CANVAS_CLEAR_COLOR, _callback_clear_color,
+    //     runner);
 
     // Recreate.
     dvz_deq_callback(

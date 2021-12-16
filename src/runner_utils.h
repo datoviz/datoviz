@@ -360,29 +360,29 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
 /*  Canvas callbacks                                                                             */
 /*************************************************************************************************/
 
-static void _callback_new(DvzDeq* deq, void* item, void* user_data)
-{
-    ASSERT(deq != NULL);
-    log_debug("create new canvas");
+// static void _callback_new(DvzDeq* deq, void* item, void* user_data)
+// {
+//     ASSERT(deq != NULL);
+//     log_debug("create new canvas");
 
-    ASSERT(deq != NULL);
+//     ASSERT(deq != NULL);
 
-    DvzRunner* runner = (DvzRunner*)user_data;
-    ASSERT(runner != NULL);
+//     DvzRunner* runner = (DvzRunner*)user_data;
+//     ASSERT(runner != NULL);
 
-    DvzRenderer* renderer = runner->renderer;
-    ASSERT(renderer != NULL);
+//     DvzRenderer* renderer = runner->renderer;
+//     ASSERT(renderer != NULL);
 
-    DvzWorkspace* workspace = renderer->workspace;
-    ASSERT(workspace != NULL);
+//     DvzWorkspace* workspace = renderer->workspace;
+//     ASSERT(workspace != NULL);
 
-    DvzCanvasEventNew* ev = (DvzCanvasEventNew*)item;
-    ASSERT(ev != NULL);
+//     DvzCanvasEventNew* ev = (DvzCanvasEventNew*)item;
+//     ASSERT(ev != NULL);
 
-    // Create the canvas.
-    DvzCanvas* canvas = dvz_workspace_canvas(workspace, ev->width, ev->height, ev->flags);
-    dvz_canvas_create(canvas);
-}
+//     // Create the canvas.
+//     DvzCanvas* canvas = dvz_workspace_canvas(workspace, ev->width, ev->height, ev->flags);
+//     dvz_canvas_create(canvas);
+// }
 
 
 
@@ -480,49 +480,49 @@ static void _callback_recreate(DvzDeq* deq, void* item, void* user_data)
 
 
 
-static void _callback_delete(DvzDeq* deq, void* item, void* user_data)
-{
-    ASSERT(deq != NULL);
+// static void _callback_delete(DvzDeq* deq, void* item, void* user_data)
+// {
+//     ASSERT(deq != NULL);
 
-    DvzRunner* runner = (DvzRunner*)user_data;
-    ASSERT(runner != NULL);
+//     DvzRunner* runner = (DvzRunner*)user_data;
+//     ASSERT(runner != NULL);
 
-    DvzCanvasEvent* ev = (DvzCanvasEvent*)item;
-    ASSERT(ev != NULL);
-    DvzCanvas* canvas = ev->canvas;
+//     DvzCanvasEvent* ev = (DvzCanvasEvent*)item;
+//     ASSERT(ev != NULL);
+//     DvzCanvas* canvas = ev->canvas;
 
-    // if (!_canvas_check(canvas))
-    //     return;
-    log_debug("delete canvas");
-    // canvas->destroying = true;
-    // canvas->input.destroying = true;
+//     // if (!_canvas_check(canvas))
+//     //     return;
+//     log_debug("delete canvas");
+//     // canvas->destroying = true;
+//     // canvas->input.destroying = true;
 
-    // Wait before destroying the canvas.
-    _run_flush(runner);
+//     // Wait before destroying the canvas.
+//     _run_flush(runner);
 
-    // Destroy the canvas.
-    dvz_canvas_destroy(canvas);
-}
+//     // Destroy the canvas.
+//     dvz_canvas_destroy(canvas);
+// }
 
 
 
-static void _callback_clear_color(DvzDeq* deq, void* item, void* user_data)
-{
-    ASSERT(deq != NULL);
+// static void _callback_clear_color(DvzDeq* deq, void* item, void* user_data)
+// {
+//     ASSERT(deq != NULL);
 
-    DvzRunner* runner = (DvzRunner*)user_data;
-    ASSERT(runner != NULL);
+//     DvzRunner* runner = (DvzRunner*)user_data;
+//     ASSERT(runner != NULL);
 
-    DvzCanvasEventClearColor* ev = (DvzCanvasEventClearColor*)item;
-    ASSERT(ev != NULL);
-    DvzCanvas* canvas = ev->canvas;
-    if (!_canvas_check(canvas))
-        return;
-    log_debug("change canvas clear color");
+//     DvzCanvasEventClearColor* ev = (DvzCanvasEventClearColor*)item;
+//     ASSERT(ev != NULL);
+//     DvzCanvas* canvas = ev->canvas;
+//     if (!_canvas_check(canvas))
+//         return;
+//     log_debug("change canvas clear color");
 
-    canvas->render.renderpass.clear_values->color = (VkClearColorValue){{ev->r, ev->g, ev->b, 1}};
-    _enqueue_to_refill(runner, canvas);
-}
+//     canvas->render.renderpass.clear_values->color = (VkClearColorValue){{ev->r, ev->g, ev->b,
+//     1}}; _enqueue_to_refill(runner, canvas);
+// }
 
 
 

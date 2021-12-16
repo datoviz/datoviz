@@ -34,8 +34,7 @@ int test_runner_1(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Renderer.
-    DvzRenderer* rd = dvz_renderer_glfw(gpu);
-
+    DvzRenderer* rd = dvz_renderer(gpu);
 
     // Destroy the renderer.
     dvz_renderer_destroy(rd);

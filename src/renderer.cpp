@@ -460,7 +460,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu)
+DvzRenderer* dvz_renderer(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
@@ -468,18 +468,6 @@ DvzRenderer* dvz_renderer_offscreen(DvzGpu* gpu)
     rd->gpu = gpu;
     _init_renderer(rd);
     _setup_router(rd);
-    return rd;
-}
-
-
-
-DvzRenderer* dvz_renderer_glfw(DvzGpu* gpu)
-{
-    ASSERT(gpu != NULL);
-    DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
-    ASSERT(rd != NULL);
-    rd->gpu = gpu;
-    _init_renderer(rd);
     return rd;
 }
 
@@ -528,6 +516,17 @@ DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
     ASSERT(board != NULL);
     return board;
+}
+
+
+
+DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
+{
+    ASSERT(rd != NULL);
+
+    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
+    ASSERT(canvas != NULL);
+    return canvas;
 }
 
 
