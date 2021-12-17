@@ -2,42 +2,6 @@
     "version": "1.0",
     "requests": [
         {
-            "action": "create",
-            "type": "board",
-            "id": 1,
-            "content": {
-                "width": 800,
-                "height": 600
-            }
-        },
-        {
-            "action": "create",
-            "type": "graphics",
-            "id": 2,
-            "flags": 3,
-            "content": {
-                "board": 1,
-                "type": 4
-            }
-        },
-        {
-            "action": "create",
-            "type": "dat",
-            "id": 3,
-            "content": {
-                "type": 2,
-                "size": 48
-            }
-        },
-        {
-            "action": "set",
-            "type": "vertex",
-            "id": 2,
-            "content": {
-                "dat": 3
-            }
-        },
-        {
             "action": "upload",
             "type": "dat",
             "id": 3,
@@ -49,46 +13,6 @@
                     "buffer": "AAAAAAAAgL8AAAAA/wAA/wAAgD8AAIA/AAAAAAD/AP8AAIC/AACAPwAAAAAAAP//"
                 }
             }
-        },
-        {
-            "action": "set",
-            "type": "begin",
-            "id": 1
-        },
-        {
-            "action": "set",
-            "type": "viewport",
-            "id": 1,
-            "content": {
-                "offset": [
-                    0,
-                    0
-                ],
-                "shape": [
-                    0,
-                    0
-                ]
-            }
-        },
-        {
-            "action": "set",
-            "type": "draw",
-            "id": 1,
-            "content": {
-                "graphics": 2,
-                "first_vertex": 0,
-                "vertex_count": 3
-            }
-        },
-        {
-            "action": "set",
-            "type": "end",
-            "id": 1
-        },
-        {
-            "action": "update",
-            "type": "board",
-            "id": 1
         }
     ]
 }

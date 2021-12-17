@@ -67,6 +67,7 @@ def process(requests):
                 req.flags = 0
             if 'content' in req:
                 req.content = Bunch(req.content)
+            print(req, file=sys.stderr)
             ROUTER[req.action, req.type](requester, req)
     requester.submit(RENDERER)
 
@@ -81,18 +82,18 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def main():
     with open(CURDIR / '../../datoviz/tests/triangle.json', 'r') as f:
-        data1 = f.read().replace('\n', '')
+        json_contents = f.read().replace('\n', '')
     with open(CURDIR / '../../datoviz/tests/triangle2.json', 'r') as f:
-        data2 = f.read().replace('\n', '')
+        json_update = f.read().replace('\n', '')
     return render_template('index.html',
-                           jsonfile1=data1,
-                           jsonfile2=data2,
+                           json_contents=json_contents,
+                           json_update=json_update,
                            )
 
 
 @app.route('/request', methods=['POST'])
 def post_request():
-    d = request.get_json()
+    d = request.json
     process(d['requests'])
     return ''
 

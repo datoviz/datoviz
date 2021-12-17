@@ -8,36 +8,58 @@
         }
     </style>
     <script>
-        window.id = 1;
-        function loadJSON(id) {
-            var data;
-            if (id == 1)
-                data = '{{ jsonfile1 | safe}}';
-            else
-                data = '{{ jsonfile2 | safe}}';
-            return data;
+        window.i = 0;
+
+        function loadJSON() {
+            return JSON.parse('{{ json_contents | safe}}');
         }
 
-        function submit(id) {
-            var data = loadJSON(id);
+        function loadJSONUpdate() {
+            return JSON.parse('{{ json_update | safe}}');
+        }
+
+        function loadData(i) {
+            if (i % 2 == 0)
+                return "AAAAAAAAgL8AAAAA/wAA/wAAgD8AAIA/AAAAAAD/AP8AAIC/AACAPwAAAAAAAP//";
+            else
+                return "AACAvwAAgL8AAAAA/wAA/wAAgD8AAIC/AAAAAAD/AP8AAAAAAACAPwAAAAAAAP//";
+        }
+
+        function submit(i) {
+            var contents = {};
+            if (i == 0)
+                contents = loadJSON();
+            else
+                contents = loadJSONUpdate();
+            // console.log(contents);
+
+            var data = loadData(i);
+            // console.log(data);
+
+            // Replace the data.
+            if (i > 0) {
+                contents["requests"][0]["content"]["data"]["buffer"] = data;
+                console.log(contents);
+            }
+
             fetch("/request", {
                 method: "post",
                 headers: {
                     'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json'
                 },
-                body: data
+                body: JSON.stringify(contents)
             }).then(res => {
-                document.getElementById("img").setAttribute("src", "/render?" + id);
+                document.getElementById("img").setAttribute("src", "/render?" + i);
             });
         }
     </script>
 </head>
 
-<body>
+<body onload="submit(window.i++)">
     <img width="800" height="600" id="img" />
     <br>
-    <button onclick="submit(id++ % 2);">Submit</button>
+    <button onclick="submit(window.i++);">Submit</button>
 </body>
 
 </html>
