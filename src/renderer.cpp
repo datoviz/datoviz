@@ -29,6 +29,15 @@
     ASSERT(req.id != DVZ_ID_NONE);                                                                \
     (x)->obj.id = req.id;
 
+#define GET_ID(t, n, i)                                                                           \
+    t* n = (t*)dvz_map_get(rd->map, i);                                                           \
+    if (n == NULL)                                                                                \
+    {                                                                                             \
+        log_error("%s %" PRIx64 "doesn't exist", #n, i);                                          \
+        return NULL;                                                                              \
+    }                                                                                             \
+    ASSERT(n != NULL);
+
 
 
 /*************************************************************************************************/
@@ -75,13 +84,7 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("update board");
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    if (board == NULL)
-    {
-        log_error("board %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
     dvz_cmd_submit_sync(&board->cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -96,13 +99,7 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("delete board");
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    if (board == NULL)
-    {
-        log_error("board %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
     dvz_board_free(board);
     dvz_board_destroy(board);
@@ -135,14 +132,10 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("delete canvas");
 
-    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, req.id);
-    if (canvas == NULL)
-    {
-        log_error("canvas %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    if (canvas != NULL)
-        dvz_canvas_destroy(canvas);
+    GET_ID(DvzCanvas, canvas, req.id)
+
+    ASSERT(canvas != NULL);
+    dvz_canvas_destroy(canvas);
     return NULL;
 }
 
@@ -181,22 +174,10 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
-    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
-    if (pipe == NULL)
-    {
-        log_error("pipe %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(pipe != NULL);
+    GET_ID(DvzPipe, pipe, req.id)
 
     // Get the dat with the vertex data.
-    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.content.set_vertex.dat);
-    if (dat == NULL)
-    {
-        log_error("dat %" PRIx64 "doesn't exist", req.content.set_vertex.dat);
-        return NULL;
-    }
-    ASSERT(dat != NULL);
+    GET_ID(DvzDat, dat, req.content.set_vertex.dat);
 
     // Link the two.
     pipe->dat_vertex = dat;
@@ -222,22 +203,10 @@ static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
-    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
-    if (pipe == NULL)
-    {
-        log_error("pipe %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(pipe != NULL);
+    GET_ID(DvzPipe, pipe, req.id)
 
     // Get the dat data.
-    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.content.set_dat.dat);
-    if (dat == NULL)
-    {
-        log_error("dat %" PRIx64 "doesn't exist", req.content.set_dat.dat);
-        return NULL;
-    }
-    ASSERT(dat != NULL);
+    GET_ID(DvzDat, dat, req.content.set_dat.dat);
 
     // Link the dat.
     // pipe->dats[req.content.set_dat.slot_idx] = dat;
@@ -257,25 +226,13 @@ static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
-    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
-    if (pipe == NULL)
-    {
-        log_error("pipe %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(pipe != NULL);
+    GET_ID(DvzPipe, pipe, req.id)
 
     // Get the tex.
-    DvzTex* tex = (DvzTex*)dvz_map_get(rd->map, req.content.set_tex.tex);
-    if (tex == NULL)
-    {
-        log_error("tex %" PRIx64 "doesn't exist", req.content.set_tex.tex);
-        return NULL;
-    }
-    ASSERT(tex != NULL);
+    GET_ID(DvzTex, tex, req.content.set_tex.tex);
 
     // Get the sampler.
-    DvzSampler* sampler = (DvzSampler*)dvz_map_get(rd->map, req.content.set_tex.sampler);
+    GET_ID(DvzSampler, sampler, req.content.set_tex.sampler);
     ASSERT(tex != NULL);
 
     // Link the tex.
@@ -296,13 +253,7 @@ static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("delete pipe");
 
-    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.id);
-    if (pipe == NULL)
-    {
-        log_error("pipe %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(pipe != NULL);
+    GET_ID(DvzPipe, pipe, req.id)
 
     dvz_pipe_destroy(pipe);
     return NULL;
@@ -333,16 +284,10 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     ASSERT(rd != NULL);
     ASSERT(req.id != 0);
 
-    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.id);
-    if (dat == NULL)
-    {
-        log_error("dat %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(dat != NULL);
+    GET_ID(DvzDat, dat, req.id)
     ASSERT(dat->br.buffer != NULL);
 
-    log_error(
+    log_trace(
         "uploading %s to dat (buffer type %d region offset %d)",
         pretty_size(req.content.dat_upload.size), dat->br.buffer->type, dat->br.offsets[0]);
 
@@ -364,13 +309,7 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("delete dat");
 
-    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, req.id);
-    if (dat == NULL)
-    {
-        log_error("dat %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(dat != NULL);
+    GET_ID(DvzDat, dat, req.id)
 
     dvz_dat_destroy(dat);
     return NULL;
@@ -400,13 +339,7 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
     log_trace("delete sampler");
 
-    DvzSampler* sampler = (DvzSampler*)dvz_map_get(rd->map, req.id);
-    if (sampler == NULL)
-    {
-        log_error("sampler %" PRIx64 "doesn't exist", req.id);
-        return NULL;
-    }
-    ASSERT(sampler != NULL);
+    GET_ID(DvzSampler, sampler, req.id)
 
     dvz_sampler_destroy(sampler);
     return NULL;
@@ -422,8 +355,7 @@ static void* _set_begin(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
     dvz_cmd_reset(&board->cmds, 0);
     dvz_board_begin(board, &board->cmds, 0);
@@ -437,8 +369,7 @@ static void* _set_viewport(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
     dvz_board_viewport(
         board, &board->cmds, 0, //
@@ -453,11 +384,9 @@ static void* _set_draw(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
-    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, req.content.set_draw.graphics);
-    ASSERT(pipe != NULL);
+    GET_ID(DvzPipe, pipe, req.content.set_draw.graphics);
 
     dvz_pipe_draw(
         pipe, &board->cmds, 0, //
@@ -472,8 +401,7 @@ static void* _set_end(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, req.id);
-    ASSERT(board != NULL);
+    GET_ID(DvzBoard, board, req.id)
 
     dvz_board_end(board, &board->cmds, 0);
 
