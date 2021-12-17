@@ -13,6 +13,11 @@
                     "buffer": "AAAAAAAAgL8AAAAA/wAA/wAAgD8AAIA/AAAAAAD/AP8AAIC/AACAPwAAAAAAAP//"
                 }
             }
+        },
+        {
+            "action": "update",
+            "type": "board",
+            "id": 1
         }
     ]
 }
