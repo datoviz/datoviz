@@ -26,6 +26,7 @@ MUTE_OFF
 DvzThread dvz_thread(DvzThreadCallback callback, void* user_data)
 {
     INIT(DvzThread, thread);
+    log_trace("creating thread");
     if (tct_thrd_create(&thread.thread, callback, user_data) != tct_thrd_success)
         log_error("thread creation failed");
     if (dvz_mutex_init(&thread.lock) != 0)
@@ -81,6 +82,7 @@ void dvz_thread_unlock(DvzThread* thread)
 void dvz_thread_join(DvzThread* thread)
 {
     ASSERT(thread != NULL);
+    log_trace("joining thread");
     tct_thrd_join(thread->thread, NULL);
     dvz_mutex_destroy(&thread->lock);
     dvz_atomic_destroy(thread->lock_idx);
