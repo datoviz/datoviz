@@ -54,7 +54,7 @@ typedef enum
 typedef enum
 {
     DVZ_REQUEST_OBJECT_NONE,
-    DVZ_REQUEST_OBJECT_BOARD,
+    DVZ_REQUEST_OBJECT_BOARD = 100,
     DVZ_REQUEST_OBJECT_CANVAS,
     DVZ_REQUEST_OBJECT_DAT,
     DVZ_REQUEST_OBJECT_TEX,
@@ -137,7 +137,7 @@ union DvzRequestContent
     // Graphics.
     struct
     {
-        DvzId board;
+        DvzId parent; // either a board or canvas id
         DvzGraphicsType type;
     } graphics;
 
@@ -398,13 +398,13 @@ dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mo
  * Create a request for a builtin graphics pipe creation.
  *
  * @param rqr the requester
- * @param the board
+ * @param parent either the parent board or canvas id
  * @param type the graphics type
  * @param flags the graphics creation flags
  * @returns the request, containing a newly-generated id for the graphics pipe to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_graphics(DvzRequester* rqr, DvzId board, DvzGraphicsType type, int flags);
+dvz_create_graphics(DvzRequester* rqr, DvzId parent, DvzGraphicsType type, int flags);
 
 
 
