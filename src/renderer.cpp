@@ -148,20 +148,48 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
-    log_trace("create graphics");
 
     // Get the board.
-    DvzId board_id = req.content.graphics.board;
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, board_id);
-    ASSERT(board != NULL);
+    DvzId id = req.content.graphics.parent;
+    ASSERT(id != DVZ_ID_NONE);
 
-    // Create the pipe.
-    uvec2 size = {board->width, board->height};
-    DvzPipe* pipe = dvz_pipelib_graphics(
-        rd->pipelib, rd->ctx, &board->renderpass, board->images.count, //
-        size, req.content.graphics.type, req.flags);
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, id);
+    log_trace("create graphics for parent %" PRIx64 " with type %d", id, type);
+    ASSERT(type == DVZ_REQUEST_OBJECT_BOARD || type == DVZ_REQUEST_OBJECT_CANVAS);
+
+    DvzPipe* pipe = NULL;
+
+    if (type == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
+        ASSERT(board != NULL);
+
+        // Create the pipe.
+        uvec2 size = {board->width, board->height};
+        pipe = dvz_pipelib_graphics(
+            rd->pipelib, rd->ctx, &board->renderpass, board->images.count, //
+            size, req.content.graphics.type, req.flags);
+        ASSERT(pipe != NULL);
+        SET_ID(pipe)
+    }
+
+    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
+    {
+        DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
+        ASSERT(canvas != NULL);
+
+        // Get the canvas framebuffer size.
+        uvec2 size = {0};
+        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
+
+        // Create the pipe.
+        pipe = dvz_pipelib_graphics(
+            rd->pipelib, rd->ctx, &canvas->render.renderpass, canvas->render.swapchain.img_count,
+            size, req.content.graphics.type, req.flags);
+        ASSERT(pipe != NULL);
+        SET_ID(pipe)
+    }
     ASSERT(pipe != NULL);
-    SET_ID(pipe)
 
     return (void*)pipe;
 }
@@ -492,7 +520,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         }
 
         // Register the id with the created object
-        dvz_map_add(rd->map, req.id, DVZ_REQUEST_OBJECT_BOARD, obj);
+        dvz_map_add(rd->map, req.id, req.type, obj);
 
         break;
 

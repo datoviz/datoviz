@@ -128,10 +128,49 @@ int test_runner_triangle(TstSuite* suite)
 
     // Create a canvas.
     req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    DvzId canvas_id = req.id;
     dvz_runner_request(runner, req);
 
-    dvz_runner_loop(runner, 5);
+    // Create a graphics.
+    req = dvz_create_graphics(
+        rqr, canvas_id, DVZ_GRAPHICS_TRIANGLE,
+        DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
+    DvzId graphics_id = req.id;
+    dvz_runner_request(runner, req);
 
+    // Create the vertex buffer dat.
+    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+    DvzId dat_id = req.id;
+    dvz_runner_request(runner, req);
+
+    // Bind the vertex buffer dat to the graphics pipe.
+    req = dvz_set_vertex(rqr, graphics_id, dat_id);
+    dvz_runner_request(runner, req);
+
+    // Upload the triangle data.
+    DvzVertex data[] = {
+        {{-1, -1, 0}, {255, 0, 0, 255}},
+        {{+1, -1, 0}, {0, 255, 0, 255}},
+        {{+0, +1, 0}, {0, 0, 255, 255}},
+    };
+    req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+    dvz_runner_request(runner, req);
+
+    // Commands.
+    dvz_requester_begin(rqr);
+    dvz_requester_add(rqr, dvz_set_begin(rqr, canvas_id));
+    dvz_requester_add(
+        rqr, dvz_set_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
+    dvz_requester_add(rqr, dvz_set_draw(rqr, canvas_id, graphics_id, 0, 3));
+    dvz_requester_add(rqr, dvz_set_end(rqr, canvas_id));
+    uint32_t count = 0;
+    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    AT(reqs != NULL);
+    AT(count > 0);
+    dvz_runner_request(runner, req);
+
+    // Event loop.
+    dvz_runner_loop(runner, N_FRAMES);
 
     // Destruction
     dvz_runner_destroy(runner);
