@@ -97,6 +97,17 @@ DVZ_EXPORT void* dvz_map_get(DvzMap* map, DvzId key);
 
 
 /**
+ * Get the type of an item in the map.
+ *
+ * @param map the map
+ * @param key the key
+ * @returns the type
+ */
+DVZ_EXPORT int dvz_map_type(DvzMap* map, DvzId key);
+
+
+
+/**
  * Get the number of items in the map of a given type, or of any type (if using 0).
  *
  * @param map the map

@@ -4,7 +4,6 @@
 
 #include "map.h"
 #include "_log.h"
-// #include "_prng.h"
 
 #include <map>
 #include <numeric>
@@ -64,14 +63,6 @@ DvzMap* dvz_map(void)
 
 
 
-// DvzId dvz_map_id(DvzMap* map)
-// {
-//     ASSERT(map != NULL);
-//     return ++map->last_id;
-// }
-
-
-
 void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 {
     ASSERT(map != NULL);
@@ -79,6 +70,7 @@ void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
     ASSERT(type != 0);
     ASSERT(value != NULL);
 
+    log_trace("add key %" PRIx64 " with type %d", key, type);
     map->_map[key] = std::pair<int, void*>(type, value);
 }
 
@@ -101,6 +93,16 @@ void* dvz_map_get(DvzMap* map, DvzId key)
     ASSERT(key != DVZ_ID_NONE);
 
     return map->_map[key].second;
+}
+
+
+
+int dvz_map_type(DvzMap* map, DvzId key)
+{
+    ASSERT(map != NULL);
+    ASSERT(key != DVZ_ID_NONE);
+
+    return map->_map[key].first;
 }
 
 
