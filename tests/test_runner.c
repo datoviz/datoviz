@@ -158,11 +158,11 @@ int test_runner_triangle(TstSuite* suite)
 
     // Commands.
     dvz_requester_begin(rqr);
-    dvz_requester_add(rqr, dvz_set_begin(rqr, canvas_id));
+    dvz_requester_add(rqr, dvz_record_begin(rqr, canvas_id));
     dvz_requester_add(
-        rqr, dvz_set_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
-    dvz_requester_add(rqr, dvz_set_draw(rqr, canvas_id, graphics_id, 0, 3));
-    dvz_requester_add(rqr, dvz_set_end(rqr, canvas_id));
+        rqr, dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
+    dvz_requester_add(rqr, dvz_record_draw(rqr, canvas_id, graphics_id, 0, 3));
+    dvz_requester_add(rqr, dvz_record_end(rqr, canvas_id));
     uint32_t count = 0;
     DvzRequest* reqs = dvz_requester_end(rqr, &count);
     AT(reqs != NULL);

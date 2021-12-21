@@ -276,42 +276,42 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board)
+DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
 {
-    CREATE_REQUEST(SET, BEGIN);
+    CREATE_REQUEST(RECORD, BEGIN);
     req.id = board;
     return req;
 }
 
 
 
-DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
+DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
 {
-    CREATE_REQUEST(SET, VIEWPORT);
+    CREATE_REQUEST(RECORD, VIEWPORT);
     req.id = board;
-    memcpy(req.content.set_viewport.offset, offset, sizeof(vec2));
-    memcpy(req.content.set_viewport.shape, shape, sizeof(vec2));
+    memcpy(req.content.record_viewport.offset, offset, sizeof(vec2));
+    memcpy(req.content.record_viewport.shape, shape, sizeof(vec2));
     return req;
 }
 
 
 
-DvzRequest dvz_set_draw(
+DvzRequest dvz_record_draw(
     DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
 {
-    CREATE_REQUEST(SET, DRAW);
+    CREATE_REQUEST(RECORD, DRAW);
     req.id = board;
-    req.content.set_draw.graphics = graphics;
-    req.content.set_draw.first_vertex = first_vertex;
-    req.content.set_draw.vertex_count = vertex_count;
+    req.content.record_draw.graphics = graphics;
+    req.content.record_draw.first_vertex = first_vertex;
+    req.content.record_draw.vertex_count = vertex_count;
     return req;
 }
 
 
 
-DvzRequest dvz_set_end(DvzRequester* rqr, DvzId board)
+DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
 {
-    CREATE_REQUEST(SET, END);
+    CREATE_REQUEST(RECORD, END);
     req.id = board;
     return req;
 }

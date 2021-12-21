@@ -140,21 +140,21 @@ cdef class Requester:
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def set_begin(self, DvzId board):
-        cdef rq.DvzRequest req = rq.dvz_set_begin(&self._c_rqr, board);
+        cdef rq.DvzRequest req = rq.dvz_record_begin(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
 
-    def set_viewport(self, DvzId board, float x, float y, float w, float h):
+    def record_viewport(self, DvzId board, float x, float y, float w, float h):
         cdef vec2 offset = (x, y)
         cdef vec2 shape = (w, h)
-        cdef rq.DvzRequest req = rq.dvz_set_viewport(&self._c_rqr, board, offset, shape);
+        cdef rq.DvzRequest req = rq.dvz_record_viewport(&self._c_rqr, board, offset, shape);
         rq.dvz_requester_add(&self._c_rqr, req)
 
-    def set_draw(self, DvzId board, DvzId graphics, int first_vertex, int vertex_count):
-        cdef rq.DvzRequest req = rq.dvz_set_draw(&self._c_rqr, board, graphics, first_vertex, vertex_count);
+    def record_draw(self, DvzId board, DvzId graphics, int first_vertex, int vertex_count):
+        cdef rq.DvzRequest req = rq.dvz_record_draw(&self._c_rqr, board, graphics, first_vertex, vertex_count);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def set_end(self, DvzId board):
-        cdef rq.DvzRequest req = rq.dvz_set_end(&self._c_rqr, board);
+        cdef rq.DvzRequest req = rq.dvz_record_end(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def update_board(self, DvzId board):

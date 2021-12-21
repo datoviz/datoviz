@@ -63,7 +63,7 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
 
-    DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzId board, DvzGraphicsType type, int flags)
+    DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzId parent, DvzGraphicsType type, int flags)
 
     DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
@@ -73,13 +73,13 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
 
-    DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board)
+    DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
 
-    DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
+    DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
 
-    DvzRequest dvz_set_draw(DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
+    DvzRequest dvz_record_draw(DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
 
-    DvzRequest dvz_set_end(DvzRequester* rqr, DvzId board)
+    DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
 
 
     # FUNCTION END

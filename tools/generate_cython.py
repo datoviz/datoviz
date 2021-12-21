@@ -186,6 +186,7 @@ def generate_cython():
         'dvz_upload_dat',
         'dvz_bind_',
         'dvz_set',
+        'dvz_record',
         'dvz_delete',
     )
     path = ROOT_DIR / 'datoviz/request.pxd'

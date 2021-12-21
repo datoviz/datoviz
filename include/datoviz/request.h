@@ -41,6 +41,7 @@ typedef enum
     DVZ_REQUEST_ACTION_RESIZE,
     DVZ_REQUEST_ACTION_UPDATE,
     DVZ_REQUEST_ACTION_BIND,
+    DVZ_REQUEST_ACTION_RECORD,
     DVZ_REQUEST_ACTION_UPLOAD,
     DVZ_REQUEST_ACTION_UPFILL,
     DVZ_REQUEST_ACTION_DOWNLOAD,
@@ -166,14 +167,14 @@ union DvzRequestContent
     struct
     {
         vec2 offset, shape; // in framebuffer pixels
-    } set_viewport;
+    } record_viewport;
 
     // Set draw.
     struct
     {
         DvzId graphics;
         uint32_t first_vertex, vertex_count;
-    } set_draw;
+    } record_draw;
 };
 
 
@@ -482,7 +483,7 @@ dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void*
  * @param board the id of the board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board);
+DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board);
 
 
 
@@ -495,7 +496,7 @@ DVZ_EXPORT DvzRequest dvz_set_begin(DvzRequester* rqr, DvzId board);
  * @param shape the viewport size, in framebuffer pixels
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape);
+DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape);
 
 
 
@@ -509,7 +510,7 @@ DVZ_EXPORT DvzRequest dvz_set_viewport(DvzRequester* rqr, DvzId board, vec2 offs
  * @param vertex_count the number of vertices to draw
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_draw(
+DVZ_EXPORT DvzRequest dvz_record_draw(
     DvzRequester* rqr, DvzId board, DvzId graphics, //
     uint32_t first_vertex, uint32_t vertex_count);
 
@@ -522,7 +523,7 @@ DVZ_EXPORT DvzRequest dvz_set_draw(
  * @param board the id of the board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_end(DvzRequester* rqr, DvzId board);
+DVZ_EXPORT DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board);
 
 
 

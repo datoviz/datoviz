@@ -376,10 +376,10 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
-/*  Command buffer setting                                                                       */
+/*  Command buffer recording                                                                     */
 /*************************************************************************************************/
 
-static void* _set_begin(DvzRenderer* rd, DvzRequest req)
+static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
@@ -393,7 +393,7 @@ static void* _set_begin(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _set_viewport(DvzRenderer* rd, DvzRequest req)
+static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
@@ -401,31 +401,31 @@ static void* _set_viewport(DvzRenderer* rd, DvzRequest req)
 
     dvz_board_viewport(
         board, &board->cmds, 0, //
-        req.content.set_viewport.offset, req.content.set_viewport.shape);
+        req.content.record_viewport.offset, req.content.record_viewport.shape);
 
     return NULL;
 }
 
 
 
-static void* _set_draw(DvzRenderer* rd, DvzRequest req)
+static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
     GET_ID(DvzBoard, board, req.id)
 
-    GET_ID(DvzPipe, pipe, req.content.set_draw.graphics);
+    GET_ID(DvzPipe, pipe, req.content.record_draw.graphics);
 
     dvz_pipe_draw(
         pipe, &board->cmds, 0, //
-        req.content.set_draw.first_vertex, req.content.set_draw.vertex_count);
+        req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
 
     return NULL;
 }
 
 
 
-static void* _set_end(DvzRenderer* rd, DvzRequest req)
+static void* _record_end(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
@@ -490,11 +490,11 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(CREATE, SAMPLER, _sampler_create)
     ROUTE(DELETE, SAMPLER, _sampler_delete)
 
-    // Command buffer setting.
-    ROUTE(SET, BEGIN, _set_begin)
-    ROUTE(SET, VIEWPORT, _set_viewport)
-    ROUTE(SET, DRAW, _set_draw)
-    ROUTE(SET, END, _set_end)
+    // Command buffer recording.
+    ROUTE(RECORD, BEGIN, _record_begin)
+    ROUTE(RECORD, VIEWPORT, _record_viewport)
+    ROUTE(RECORD, DRAW, _record_draw)
+    ROUTE(RECORD, END, _record_end)
 }
 
 

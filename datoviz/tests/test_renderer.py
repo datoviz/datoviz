@@ -51,8 +51,8 @@ def test_renderer_1():
         rq.upload_dat(dat, 0, arr)
 
         rq.set_begin(board)
-        rq.set_viewport(board, 0, 0, WIDTH, HEIGHT)
-        rq.set_draw(board, graphics, 0, 3)
+        rq.record_viewport(board, 0, 0, WIDTH, HEIGHT)
+        rq.record_draw(board, graphics, 0, 3)
         rq.set_end(board)
         rq.update_board(board)
 
