@@ -174,6 +174,17 @@ DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas);
 
 
 /**
+ * Get the canvas size.
+ *
+ * @param canvas the canvas
+ * @param type the unit of the requested screen size
+ * @param[out] size the size vector filled by this function
+ */
+DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
+
+
+
+/**
  * Reset a canvas
  *
  * @param canvas a canvas
@@ -200,6 +211,7 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
  * @param refill refill callback
  */
 DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill);
+
 
 
 /**

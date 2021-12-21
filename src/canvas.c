@@ -180,6 +180,29 @@ void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill)
 
 
 
+void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
+{
+    ASSERT(canvas != NULL);
+
+    switch (type)
+    {
+    case DVZ_CANVAS_SIZE_SCREEN:
+        ASSERT(canvas->window != NULL);
+        size[0] = canvas->window->width;
+        size[1] = canvas->window->height;
+        break;
+    case DVZ_CANVAS_SIZE_FRAMEBUFFER:
+        size[0] = canvas->render.framebuffers.attachments[0]->shape[0];
+        size[1] = canvas->render.framebuffers.attachments[0]->shape[1];
+        break;
+    default:
+        log_warn("unknown size type %d", type);
+        break;
+    }
+}
+
+
+
 void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
 {
     ASSERT(canvas != NULL);
