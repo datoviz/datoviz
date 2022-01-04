@@ -42,6 +42,19 @@
 
 #define TEARDOWN(x) tst_suite_teardown(&suite, x, NULL);
 
+#define PROF_START(num)                                                                           \
+    {                                                                                             \
+        uint32_t N = num;                                                                         \
+        DvzClock clock = dvz_clock();                                                             \
+        for (uint32_t i = 0; i < N; i++)                                                          \
+        {
+
+#define PROF_END                                                                                  \
+    }                                                                                             \
+    double elapsed = dvz_clock_get(&clock);                                                       \
+    log_info("profiling: %.6f ms per run", 1000 * elapsed / N);                                   \
+    }
+
 
 
 /*************************************************************************************************/
