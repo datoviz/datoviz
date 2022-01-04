@@ -24,7 +24,6 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
-option(DATOVIZ_WITH_PNG "Build Datoviz with PNG support" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
@@ -136,58 +135,6 @@ FetchContent_Declare(
     GIT_TAG         v0.8.3
 )
 FetchContent_MakeAvailable(cglm)
-
-# ---- libpng -------------------------------------------------------------------------------------
-set(HAS_PNG 0)
-if(DATOVIZ_WITH_PNG)
-
-    if (NOT(OS_WIN32))
-        find_package(PNG)
-    endif()
-    if (PNG_FOUND)
-        set(INCL_DIRS ${INCL_DIRS} ${PNG_INCLUDE_DIRS})
-        set(LINK_LIBS ${LINK_LIBS} ${PNG_LIBRARIES})
-        set(HAS_PNG 1)
-    else()
-        set(PNG_ARM_NEON off CACHE INTERNAL "")
-        set(PNG_ARM_NEON_OPT off CACHE INTERNAL "")
-        set(PNG_BUILD_ZLIB ON CACHE BOOL "" FORCE)
-        set(PNG_TESTS OFF)
-        set(PNG_EXECUTABLES OFF)
-        set(PNG_SHARED ON)
-        set(SKIP_INSTALL_ALL ON)
-        #set(ZLIB_LIBRARY ZLIB::ZLIB)
-        #set(AWK "AWK-NOTFOUND")
-
-        # Windows: need to download zlib
-        if(OS_WIN32)
-            FetchContent_Declare(
-                zlib
-                GIT_REPOSITORY  https://github.com/datoviz/zlib
-                GIT_TAG         master
-            )
-            FetchContent_MakeAvailable(zlib)
-            set(INCL_DIRS ${INCL_DIRS} ${zlib_SOURCE_DIR})
-            set(LINK_LIBS ${LINK_LIBS} zlib)
-
-            set(ZLIB_INCLUDE_DIRS ${zlib_SOURCE_DIR})
-            set(ZLIB_ROOT ${zlib_SOURCE_DIR})
-            set(ZLIB_LIBRARY zlib)
-            set(ZLIB_LIBRARIES zlib)
-        endif()
-
-        FetchContent_Declare(
-            libpng
-            GIT_REPOSITORY  https://github.com/datoviz/libpng
-            GIT_TAG         libpng16
-        )
-        FetchContent_MakeAvailable(libpng)
-
-        set(INCL_DIRS ${INCL_DIRS} ${libpng_SOURCE_DIR})
-        set(LINK_LIBS ${LINK_LIBS} "${libpng_BINARY_DIR}/libpng16d.lib")
-        set(HAS_PNG 1)
-    endif()
-endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(HAS_GLFW 0)
@@ -333,7 +280,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
     HAS_GLSLANG=${HAS_GLSLANG}
-    HAS_PNG=${HAS_PNG}
+    # HAS_PNG=${HAS_PNG}
 )
 
 
@@ -370,8 +317,21 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
     # gcc
+
+    # for fpng
+    set(GCC_COMPILE_FLAGS "\
+        -fvisibility=hidden
+        -fPIC \
+        -fno-strict-aliasing \
+        -D_LARGEFILE64_SOURCE=1 \
+        -D_FILE_OFFSET_BITS=64 \
+        -Wall \
+        -Wextra \
+        -Isrc")
+
     set(COMMON_FLAGS "${COMMON_FLAGS} \
-        -Wlogical-op -fdiagnostics-color=always")
+        -Wlogical-op -fdiagnostics-color=always \
+        -DFPNG_NO_SSE=0 -msse4.1 -mpclmul")  # for fpng
     if (NOT OS_WIN32)
         set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
     endif()
@@ -512,6 +472,7 @@ add_custom_command(
 set(external_sources
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
+    "external/fpng.cpp"
 
     "external/cimgui/imgui/imgui.cpp"
     "external/cimgui/imgui/imgui_demo.cpp"
@@ -529,7 +490,7 @@ set(sources
     "src/_atomic.cpp"
     "src/_prng.cpp"
     "src/log.c"
-    "src/fileio.c"
+    "src/fileio.cpp"
     "src/fifo.c"
     "src/array.c"
     "src/host.c"
