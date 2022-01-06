@@ -44,9 +44,9 @@ RENDERER = Renderer()
 
 
 ROUTER = {
-    ('create', 'board'): lambda r, req: r.create_board(req.content.width, req.content.height, id=req.id),
+    ('create', 'board'): lambda r, req: r.create_board(req.content.width, req.content.height, id=req.id, flags=req.flags),
     ('create', 'graphics'): lambda r, req: r.create_graphics(req.content.board, req.content.type, id=req.id, flags=req.flags),
-    ('create', 'dat'): lambda r, req: r.create_dat(req.content.type, req.content.size, id=req.id),
+    ('create', 'dat'): lambda r, req: r.create_dat(req.content.type, req.content.size, id=req.id, flags=req.flags),
     ('set', 'vertex'): lambda r, req: r.set_vertex(req.id, req.content.dat),
     ('upload', 'dat'): lambda r, req: r.upload_dat(req.id, req.content.offset, get_array(Bunch(req.content.data))),
     ('set', 'begin'): lambda r, req: r.set_begin(req.id),
@@ -83,12 +83,10 @@ app = Flask(__name__)
 def main():
     with open(CURDIR / '../../datoviz/tests/triangle.json', 'r') as f:
         json_contents = f.read().replace('\n', '')
-    with open(CURDIR / '../../datoviz/tests/triangle2.json', 'r') as f:
-        json_update = f.read().replace('\n', '')
-    return render_template('index.html',
-                           json_contents=json_contents,
-                           json_update=json_update,
-                           )
+    return render_template(
+        'index.html',
+        json_contents=json_contents,
+    )
 
 
 @app.route('/request', methods=['POST'])

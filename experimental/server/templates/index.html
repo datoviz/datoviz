@@ -10,38 +10,28 @@
     <script>
         window.i = 0;
 
+        function tob64(buffer) {
+            var binary = '';
+            var bytes = new Uint8Array(buffer);
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
         function loadJSON() {
             return JSON.parse('{{ json_contents | safe}}');
         }
 
-        function loadJSONUpdate() {
-            return JSON.parse('{{ json_update | safe}}');
+        function updateRequest(buffer) {
+            var contents = loadJSON();
+            contents.requests = [contents.requests[4], contents.requests.at(-1)];
+            contents.requests[0].content.data.buffer = tob64(buffer);
+            return contents;
         }
 
-        function loadData(i) {
-            if (i % 2 == 0)
-                return "AACAvwAAgL8AAAAA/wAA/wAAgD8AAIC/AAAAAAD/AP8AAAAAAACAPwAAAAAAAP//";
-            else
-                return "AAAAAAAAgL8AAAAA/wAA/wAAgD8AAIA/AAAAAAD/AP8AAIC/AACAPwAAAAAAAP//";
-        }
-
-        function submit(i) {
-            var contents = {};
-            if (i == 0)
-                contents = loadJSON();
-            else
-                contents = loadJSONUpdate();
-            // console.log(contents);
-
-            var data = loadData(i);
-            // console.log(data);
-
-            // Replace the data.
-            if (i > 0) {
-                contents["requests"][0]["content"]["data"]["buffer"] = data;
-                console.log(contents);
-            }
-
+        function submit(contents) {
             fetch("/request", {
                 method: "post",
                 headers: {
@@ -50,16 +40,63 @@
                 },
                 body: JSON.stringify(contents)
             }).then(res => {
-                document.getElementById("img").setAttribute("src", "/render?" + i);
+                document.getElementById("img").setAttribute("src", "/render?" + window.i++);
             });
+        }
+
+        function load() {
+            var contents = loadJSON();
+            submit(contents);
+        }
+
+        function getBuffer() {
+            let buffer = new ArrayBuffer(3 * (3 * 4 + 4 * 1));
+
+            let pos = new Float32Array(buffer, 0, 3);
+            let col = new Uint8Array(buffer, 3 * 4, 4);
+
+            pos[0] = -1;
+            pos[1] = -1;
+
+            col[0] = 255;
+            col[3] = 255;
+
+
+            pos = new Float32Array(buffer, 16 + 0, 3);
+            col = new Uint8Array(buffer, 16 + 3 * 4, 4);
+
+            pos[0] = +1;
+            pos[1] = -1;
+
+            col[1] = 255;
+            col[3] = 255;
+
+
+            pos = new Float32Array(buffer, 32 + 0, 3);
+            col = new Uint8Array(buffer, 32 + 3 * 4, 4);
+
+            pos[0] = 0;
+            pos[1] = +1;
+
+            col[1] = 255;
+            col[2] = 255;
+            col[3] = 255;
+
+            return buffer;
+        }
+
+        function update() {
+            var buffer = getBuffer();
+            var contents = updateRequest(buffer);
+            submit(contents);
         }
     </script>
 </head>
 
-<body onload="submit(window.i++)">
+<body onload="load();">
     <img width="800" height="600" id="img" />
     <br>
-    <button onclick="submit(window.i++);">Submit</button>
+    <button onclick="update();">Submit</button>
 </body>
 
 </html>
