@@ -10,6 +10,56 @@
     <script>
         window.i = 0;
 
+
+
+        _DTYPE_MAPPING = {
+            "uint8": [Uint8Array, 1],
+
+            "uint16": [Uint16Array, 2],
+            "int16": [Int16Array, 2],
+
+            "uint32": [Uint32Array, 4],
+            "int32": [Int32Array, 4],
+
+            "float32": [Float32Array, 4],
+            "float64": [Float64Array, 8],
+        };
+
+        function StructArray(count, dtype) {
+            this.count = count;
+            this.dtype = dtype;
+            this.fields = {};
+            this.itemsize = 0;
+            for (let i = 0; i < dtype.length; i++) {
+
+                let name = dtype[i][0];
+                let dt = dtype[i][1];
+                let count = dtype[i][2];
+                let size = _DTYPE_MAPPING[dt][1];
+
+                this.fields[name] = {
+                    type: dt,
+                    count: count,
+                    itemsize: size,
+                    offset: this.itemsize
+                };
+                console.log(this.fields[name]);
+                this.itemsize += count * size;
+            }
+            this.buffer = new ArrayBuffer(count * this.itemsize);
+        };
+
+        StructArray.prototype.set = function (idx, name, values) {
+            let field = this.fields[name];
+            let vt = _DTYPE_MAPPING[field.type][0];
+            let view = new vt(this.buffer, this.itemsize * idx + field.offset, field.count);
+            for (let i = 0; i < field.count; i++) {
+                view[i] = values[i];
+            }
+        };
+
+
+
         function tob64(buffer) {
             var binary = '';
             var bytes = new Uint8Array(buffer);
@@ -50,39 +100,19 @@
         }
 
         function getBuffer() {
-            let buffer = new ArrayBuffer(3 * (3 * 4 + 4 * 1));
 
-            let pos = new Float32Array(buffer, 0, 3);
-            let col = new Uint8Array(buffer, 3 * 4, 4);
+            var arr = new StructArray(3, [["pos", "float32", 3], ["color", "uint8", 4]]);
 
-            pos[0] = -1;
-            pos[1] = -1;
+            arr.set(0, "pos", [-1, -1, 0]);
+            arr.set(0, "color", [255, 0, 0, 255]);
 
-            col[0] = 255;
-            col[3] = 255;
+            arr.set(1, "pos", [+1, -1, 0]);
+            arr.set(1, "color", [0, 255, 0, 255]);
 
+            arr.set(2, "pos", [0, +1, 0]);
+            arr.set(2, "color", [0, 255, 255, 255]);
 
-            pos = new Float32Array(buffer, 16 + 0, 3);
-            col = new Uint8Array(buffer, 16 + 3 * 4, 4);
-
-            pos[0] = +1;
-            pos[1] = -1;
-
-            col[1] = 255;
-            col[3] = 255;
-
-
-            pos = new Float32Array(buffer, 32 + 0, 3);
-            col = new Uint8Array(buffer, 32 + 3 * 4, 4);
-
-            pos[0] = 0;
-            pos[1] = +1;
-
-            col[1] = 255;
-            col[2] = 255;
-            col[3] = 255;
-
-            return buffer;
+            return arr.buffer;
         }
 
         function update() {
