@@ -43,7 +43,6 @@
                     itemsize: size,
                     offset: this.itemsize
                 };
-                console.log(this.fields[name]);
                 this.itemsize += count * size;
             }
             this.buffer = new ArrayBuffer(count * this.itemsize);
@@ -94,12 +93,7 @@
             });
         }
 
-        function load() {
-            var contents = loadJSON();
-            submit(contents);
-        }
-
-        function getBuffer() {
+        function getArray() {
 
             var arr = new StructArray(3, [["pos", "float32", 3], ["color", "uint8", 4]]);
 
@@ -110,14 +104,28 @@
             arr.set(1, "color", [0, 255, 0, 255]);
 
             arr.set(2, "pos", [0, +1, 0]);
-            arr.set(2, "color", [0, 255, 255, 255]);
+            arr.set(2, "color", [0, 0, 255, 255]);
 
-            return arr.buffer;
+            return arr;
+        }
+
+        function load() {
+            var contents = loadJSON();
+            submit(contents);
+
+            window.arr = getArray();
+
+            document.getElementById("img").addEventListener("click", e => {
+                let x = -1 + 2 * e.offsetX / e.srcElement.width;
+                let y = 1 - 2 * e.offsetY / e.srcElement.height;
+                console.log([x, y, 0]);
+                window.arr.set(2, "pos", [x, y, 0]);
+                update();
+            });
         }
 
         function update() {
-            var buffer = getBuffer();
-            var contents = updateRequest(buffer);
+            var contents = updateRequest(window.arr.buffer);
             submit(contents);
         }
     </script>
