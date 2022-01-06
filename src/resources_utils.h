@@ -490,8 +490,11 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
         ASSERT(offset % alignment == 0);
 
     log_debug(
-        "allocate dat, buffer type %d, offset %d, %s%ssize %s", //
-        type, offset, shared ? "shared, " : "", mappable ? "mappable, " : "", pretty_size(size));
+        "allocate dat, buffer type %d, flags %d, offset %d, %s%ssize %s", //
+        type, dat->flags, offset,                                         //
+        shared ? "shared, " : "standalone, ",                             //
+        mappable ? "mappable, " : "unmappable, ",                         //
+        pretty_size(size));
 
     // Set the buffer region.
     dat->br = dvz_buffer_regions(buffer, count, offset, size, alignment);

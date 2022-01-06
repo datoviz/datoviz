@@ -101,8 +101,8 @@ cdef class Requester:
     def submit(self, Renderer renderer):
         rd.dvz_renderer_requests(renderer._c_rd, self._c_count, self._c_rqs)
 
-    def create_board(self, int width, int height, int id=0):
-        cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, 0)
+    def create_board(self, int width, int height, int id=0, int flags=0):
+        cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, flags)
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)
@@ -115,8 +115,8 @@ cdef class Requester:
         rq.dvz_requester_add(&self._c_rqr, req)
         return req.id
 
-    def create_dat(self, DvzBufferType type, DvzSize size, int id=0):
-        cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, 0);
+    def create_dat(self, DvzBufferType type, DvzSize size, int id=0, int flags=0):
+        cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, flags);
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)

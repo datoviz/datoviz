@@ -977,6 +977,7 @@ void dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
     }
 
     ASSERT(mapped != NULL);
+    log_trace("memcpy %s from %d to %d", pretty_size(size), data, mapped);
     memcpy(mapped, data, size);
 
     if (need_unmap)
@@ -1123,6 +1124,7 @@ void dvz_buffer_regions_upload(
     }
     ASSERT(mapped != NULL);
 
+    log_trace("memcpy %s from %u to %u", pretty_size(size), data, mapped);
     memcpy(mapped, data, size);
 
     if (need_unmap)
