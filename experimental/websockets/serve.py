@@ -97,11 +97,15 @@ async def process_requests(websocket):
         try:
             msg = await websocket.recv()
             msg = json.loads(msg)
-            if 'render' in msg:
-                img = render(rnd, msg['render'])
-                await websocket.send(img)
-            else:
-                process(rnd, msg['requests'])
+            process(rnd, msg['requests'])
+            # if 'render' in msg:
+            #     img = render(rnd, msg['render'])
+            #     await websocket.send(img)
+            # else:
+            #     process(rnd, msg['requests'])
+            # TODO: board id
+            img = render(rnd, 1)  # msg['render'])
+            await websocket.send(img)
         except websockets.ConnectionClosedOK:
             break
 

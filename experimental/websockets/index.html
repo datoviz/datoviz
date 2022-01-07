@@ -202,7 +202,7 @@
                 var contents = loadJSON();
                 submit(contents);
 
-                window.websocket.send(JSON.stringify({ render: 1 }));
+                // window.websocket.send(JSON.stringify({ render: 1 }));
             };
 
 
@@ -234,7 +234,7 @@
                 var contents = updateRequest(window.arr.buffer);
                 submit(contents);
 
-                window.websocket.send(JSON.stringify({ render: 1 }));
+                // window.websocket.send(JSON.stringify({ render: 1 }));
             });
         }
 
