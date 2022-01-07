@@ -85,11 +85,6 @@
             "action": "set",
             "type": "end",
             "id": 1
-        },
-        {
-            "action": "update",
-            "type": "board",
-            "id": 1
         }
     ]
 }

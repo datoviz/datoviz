@@ -75,7 +75,7 @@
 
         function updateRequest(buffer) {
             var contents = loadJSON();
-            contents.requests = [contents.requests[4], contents.requests.at(-1)];
+            contents.requests = [contents.requests[4]];
             contents.requests[0].content.data.buffer = tob64(buffer);
             return contents;
         }

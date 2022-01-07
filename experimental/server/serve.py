@@ -98,8 +98,14 @@ def post_request():
 
 @app.route('/render', methods=['GET'])
 def render():
-    # Save the image.
     # TODO: find board id?
+    board_id = 1
+
+    # Trigger a redraw.
+    requester = Requester()
+    with requester.requests():
+        requester.update_board(board_id)
+    requester.submit(RENDERER)
 
     # Get the image.
     img = RENDERER.get_png(1)
