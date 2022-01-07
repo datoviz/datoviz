@@ -319,12 +319,24 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
         "uploading %s to dat (buffer type %d region offset %d)",
         pretty_size(req.content.dat_upload.size), dat->br.buffer->type, dat->br.offsets[0]);
 
-    dvz_dat_upload(
-        dat,                           //
-        req.content.dat_upload.offset, //
-        req.content.dat_upload.size,   //
-        req.content.dat_upload.data,   //
-        true);                         // TODO: do not wait? try false
+    if ((dat->flags & DVZ_DAT_OPTIONS_MAPPABLE) != 0)
+    {
+        dvz_buffer_regions_upload(
+            &dat->br, 0,
+            req.content.dat_upload.offset, //
+            req.content.dat_upload.size,   //
+            req.content.dat_upload.data    //
+        );
+    }
+    else
+    {
+        dvz_dat_upload(
+            dat,                           //
+            req.content.dat_upload.offset, //
+            req.content.dat_upload.size,   //
+            req.content.dat_upload.data,   //
+            true);                         // TODO: do not wait? try false
+    }
 
     return NULL;
 }
