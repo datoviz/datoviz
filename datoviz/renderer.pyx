@@ -33,7 +33,7 @@ cdef class Renderer:
     def __cinit__(self):
         self._c_gpu = rd.dvz_init_offscreen()
         assert self._c_gpu != NULL
-        self._c_rd = rd.dvz_renderer(self._c_gpu)
+        self._c_rd = rd.dvz_renderer(self._c_gpu, 0)
 
     def __dealloc__(self):
         self.destroy()

@@ -36,7 +36,7 @@ int test_runner_1(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Renderer.
-    DvzRenderer* rd = dvz_renderer(gpu);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Runner.
     DvzRunner* runner = dvz_runner(rd);
@@ -71,7 +71,7 @@ int test_runner_2(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Renderer.
-    DvzRenderer* rd = dvz_renderer(gpu);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Runner.
     DvzRunner* runner = dvz_runner(rd);
@@ -117,7 +117,7 @@ int test_runner_triangle(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Renderer.
-    DvzRenderer* rd = dvz_renderer(gpu);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Runner.
     DvzRunner* runner = dvz_runner(rd);

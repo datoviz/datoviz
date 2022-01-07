@@ -29,7 +29,7 @@ int test_renderer_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    DvzRenderer* rd = dvz_renderer(gpu);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzRequester rqr = dvz_requester();
     DvzRequest req = {0};
 

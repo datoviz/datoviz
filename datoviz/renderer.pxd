@@ -62,7 +62,7 @@ cdef extern from "<datoviz/renderer.h>":
 
     int dvz_host_destroy(DvzHost* host)
 
-    DvzRenderer* dvz_renderer(DvzGpu* gpu)
+    DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags)
 
     void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 

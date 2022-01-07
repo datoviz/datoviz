@@ -553,12 +553,13 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzRenderer* dvz_renderer(DvzGpu* gpu)
+DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags)
 {
     ASSERT(gpu != NULL);
     DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
     ASSERT(rd != NULL);
     rd->gpu = gpu;
+    rd->flags = flags;
     _init_renderer(rd);
     _setup_router(rd);
     return rd;

@@ -58,6 +58,7 @@ struct DvzRenderer
 {
     DvzObject obj;
     DvzGpu* gpu;
+    int flags;
 
     DvzContext* ctx;         // data: the "what"
     DvzPipelib* pipelib;     // GLSL programs: the "how"
@@ -78,9 +79,10 @@ EXTERN_C_ON
  * Create a renderer.
  *
  * @param gpu the GPU
+ * @param flags renderer creation flags
  * @returns the renderer
  */
-DVZ_EXPORT DvzRenderer* dvz_renderer(DvzGpu* gpu);
+DVZ_EXPORT DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags);
 
 
 

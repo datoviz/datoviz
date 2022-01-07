@@ -330,4 +330,17 @@ typedef enum
 
 
 
+/*************************************************************************************************/
+/*  Renderer                                                                                     */
+/*************************************************************************************************/
+
+// Renderer flags.
+typedef enum
+{
+    DVZ_RENDERER_FLAGS_NONE = 0,
+    // DVZ_RENDERER_FLAGS_SYNC_TRANSFERS = 1,
+} DvzRendererFlags;
+
+
+
 #endif
