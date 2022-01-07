@@ -319,7 +319,7 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
         "uploading %s to dat (buffer type %d region offset %d)",
         pretty_size(req.content.dat_upload.size), dat->br.buffer->type, dat->br.offsets[0]);
 
-    if ((dat->flags & DVZ_DAT_OPTIONS_MAPPABLE) != 0)
+    if ((dat->flags & DVZ_DAT_FLAGS_MAPPABLE) != 0)
     {
         dvz_buffer_regions_upload(
             &dat->br, 0,

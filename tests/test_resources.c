@@ -117,15 +117,15 @@ int test_resources_dat_transfers(TstSuite* suite)
     DvzDat* dat = NULL;
 
     int flags_tests[] = {
-        DVZ_DAT_OPTIONS_NONE,       //
-        DVZ_DAT_OPTIONS_STANDALONE, //
-        DVZ_DAT_OPTIONS_MAPPABLE,   //
-        DVZ_DAT_OPTIONS_DUP,
+        DVZ_DAT_FLAGS_NONE,       //
+        DVZ_DAT_FLAGS_STANDALONE, //
+        DVZ_DAT_FLAGS_MAPPABLE,   //
+        DVZ_DAT_FLAGS_DUP,
     };
 
     for (uint32_t i = 0; i < sizeof(flags_tests) / sizeof(int); i++)
     {
-        // dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_OPTIONS_MAPPABLE);
+        // dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_FLAGS_MAPPABLE);
         dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, flags_tests[i]);
         ASSERT(dat != NULL);
 

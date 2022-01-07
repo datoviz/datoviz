@@ -386,7 +386,7 @@ static void _destroy_resources(DvzResources* res)
 static inline bool _dat_is_standalone(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    return (dat->flags & DVZ_DAT_OPTIONS_STANDALONE) != 0;
+    return (dat->flags & DVZ_DAT_FLAGS_STANDALONE) != 0;
 }
 
 
@@ -394,7 +394,7 @@ static inline bool _dat_is_standalone(DvzDat* dat)
 static inline bool _dat_has_staging(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    return (dat->flags & DVZ_DAT_OPTIONS_MAPPABLE) == 0;
+    return (dat->flags & DVZ_DAT_FLAGS_MAPPABLE) == 0;
 }
 
 
@@ -402,7 +402,7 @@ static inline bool _dat_has_staging(DvzDat* dat)
 static inline bool _dat_is_dup(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    return (dat->flags & DVZ_DAT_OPTIONS_DUP) != 0;
+    return (dat->flags & DVZ_DAT_FLAGS_DUP) != 0;
 }
 
 
@@ -410,7 +410,7 @@ static inline bool _dat_is_dup(DvzDat* dat)
 static inline bool _dat_keep_on_resize(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    return (dat->flags & DVZ_DAT_OPTIONS_KEEP_ON_RESIZE) != 0;
+    return (dat->flags & DVZ_DAT_FLAGS_KEEP_ON_RESIZE) != 0;
 }
 
 
@@ -418,7 +418,7 @@ static inline bool _dat_keep_on_resize(DvzDat* dat)
 static inline bool _dat_persistent_staging(DvzDat* dat)
 {
     ASSERT(dat != NULL);
-    return (dat->flags & DVZ_DAT_OPTIONS_PERSISTENT_STAGING) != 0;
+    return (dat->flags & DVZ_DAT_FLAGS_PERSISTENT_STAGING) != 0;
 }
 
 
@@ -531,7 +531,7 @@ static void _dat_dealloc(DvzDat* dat)
 static inline bool _tex_persistent_staging(DvzTex* tex)
 {
     ASSERT(tex != NULL);
-    return (tex->flags & DVZ_TEX_OPTIONS_PERSISTENT_STAGING) != 0;
+    return (tex->flags & DVZ_TEX_FLAGS_PERSISTENT_STAGING) != 0;
 }
 
 

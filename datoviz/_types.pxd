@@ -146,13 +146,13 @@ cdef extern from "<datoviz/common.h>":
         DVZ_DAT_USAGE_FREQUENT_DOWNLOAD = 0x0002
         DVZ_DAT_USAGE_FREQUENT_RESIZE = 0x0004
 
-    ctypedef enum DvzDatOptions:
-        DVZ_DAT_OPTIONS_NONE = 0x0000
-        DVZ_DAT_OPTIONS_STANDALONE = 0x0100
-        DVZ_DAT_OPTIONS_MAPPABLE = 0x0200
-        DVZ_DAT_OPTIONS_DUP = 0x0400
-        DVZ_DAT_OPTIONS_KEEP_ON_RESIZE = 0x1000
-        DVZ_DAT_OPTIONS_PERSISTENT_STAGING = 0x2000
+    ctypedef enum DvzDatFlags:
+        DVZ_DAT_FLAGS_NONE = 0x0000
+        DVZ_DAT_FLAGS_STANDALONE = 0x0100
+        DVZ_DAT_FLAGS_MAPPABLE = 0x0200
+        DVZ_DAT_FLAGS_DUP = 0x0400
+        DVZ_DAT_FLAGS_KEEP_ON_RESIZE = 0x1000
+        DVZ_DAT_FLAGS_PERSISTENT_STAGING = 0x2000
 
     ctypedef enum DvzTexDims:
         DVZ_TEX_NONE = 0
@@ -160,9 +160,9 @@ cdef extern from "<datoviz/common.h>":
         DVZ_TEX_2D = 2
         DVZ_TEX_3D = 3
 
-    ctypedef enum DvzTexOptions:
-        DVZ_TEX_OPTIONS_NONE = 0x0000
-        DVZ_TEX_OPTIONS_PERSISTENT_STAGING = 0x2000
+    ctypedef enum DvzTexFlags:
+        DVZ_TEX_FLAGS_NONE = 0x0000
+        DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000
 
     ctypedef enum DvzViewportClip:
         DVZ_VIEWPORT_FULL = 0
@@ -235,6 +235,9 @@ cdef extern from "<datoviz/common.h>":
     ctypedef enum DvzPathTopology:
         DVZ_PATH_OPEN = 0
         DVZ_PATH_CLOSED = 1
+
+    ctypedef enum DvzRendererFlags:
+        DVZ_RENDERER_FLAGS_NONE = 0
 
     ctypedef enum DvzDataType:
         DVZ_DTYPE_NONE = 0

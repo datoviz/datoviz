@@ -166,7 +166,7 @@ typedef enum
 
 
 // Dat usage.
-// TODO: not implemented yet, going from these flags to DvzDatOptions
+// TODO: not implemented yet, going from these flags to DvzDatFlags
 typedef enum
 {
     DVZ_DAT_USAGE_FREQUENT_NONE,
@@ -177,16 +177,16 @@ typedef enum
 
 
 
-// Dat options.
+// Dat flags.
 typedef enum
 {
-    DVZ_DAT_OPTIONS_NONE = 0x0000,               // default: shared, with staging, single copy
-    DVZ_DAT_OPTIONS_STANDALONE = 0x0100,         // (or shared)
-    DVZ_DAT_OPTIONS_MAPPABLE = 0x0200,           // (or non-mappable = need staging buffer)
-    DVZ_DAT_OPTIONS_DUP = 0x0400,                // (or single copy)
-    DVZ_DAT_OPTIONS_KEEP_ON_RESIZE = 0x1000,     // (or loose the data when resizing the buffer)
-    DVZ_DAT_OPTIONS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzDatOptions;
+    DVZ_DAT_FLAGS_NONE = 0x0000,               // default: shared, with staging, single copy
+    DVZ_DAT_FLAGS_STANDALONE = 0x0100,         // (or shared)
+    DVZ_DAT_FLAGS_MAPPABLE = 0x0200,           // (or non-mappable = need staging buffer)
+    DVZ_DAT_FLAGS_DUP = 0x0400,                // (or single copy)
+    DVZ_DAT_FLAGS_KEEP_ON_RESIZE = 0x1000,     // (or loose the data when resizing the buffer)
+    DVZ_DAT_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
+} DvzDatFlags;
 
 
 
@@ -201,12 +201,12 @@ typedef enum
 
 
 
-// Tex options.
+// Tex flags.
 typedef enum
 {
-    DVZ_TEX_OPTIONS_NONE = 0x0000,               // default
-    DVZ_TEX_OPTIONS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
-} DvzTexOptions;
+    DVZ_TEX_FLAGS_NONE = 0x0000,               // default
+    DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
+} DvzTexFlags;
 
 
 
