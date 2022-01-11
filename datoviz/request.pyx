@@ -102,6 +102,7 @@ cdef class Requester:
         rd.dvz_renderer_requests(renderer._c_rd, self._c_count, self._c_rqs)
 
     def create_board(self, int width, int height, int id=0, int flags=0):
+        logger.debug(f"create board {width}x{height}, id={id}, flags={flags}")
         cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, flags)
         if id != 0:
             req.id = id
@@ -109,6 +110,7 @@ cdef class Requester:
         return req.id
 
     def create_graphics(self, DvzId board_id, DvzGraphicsType type, int id=0, int flags=0):
+        logger.debug(f"create graphics, type={type}, board={board_id}, id={id}, flags={flags}")
         cdef rq.DvzRequest req = rq.dvz_create_graphics(&self._c_rqr, board_id, type, flags);
         if id != 0:
             req.id = id
@@ -116,6 +118,7 @@ cdef class Requester:
         return req.id
 
     def create_dat(self, DvzBufferType type, DvzSize size, int id=0, int flags=0):
+        logger.debug(f"create dat, type={type}, size={size}, id={id}, flags={flags}")
         cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, flags);
         if id != 0:
             req.id = id
@@ -123,40 +126,49 @@ cdef class Requester:
         return req.id
 
     def set_vertex(self, DvzId graphics, DvzId dat):
+        logger.debug(f"set vertex, graphics={graphics}, dat={dat}")
         cdef rq.DvzRequest req = rq.dvz_set_vertex(&self._c_rqr, graphics, dat);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def bind_dat(self, DvzId pipe, int slot_idx, DvzId dat):
+        logger.debug(f"bind dat, pipe={pipe}, slot_idx={slot_idx}, dat={dat}")
         cdef rq.DvzRequest req = rq.dvz_bind_dat(&self._c_rqr, pipe, slot_idx, dat);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def bind_tex(self, DvzId pipe, int slot_idx, DvzId tex, DvzId sampler):
+        logger.debug(f"bind tex, pipe={pipe}, slot_idx={slot_idx}, tex={tex}, sampler={sampler}")
         cdef rq.DvzRequest req = rq.dvz_bind_tex(&self._c_rqr, pipe, slot_idx, tex, sampler);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def upload_dat(self, DvzId dat, DvzSize offset, np.ndarray data):
+        logger.debug(f"upload dat, dat={dat}, offset={offset}, data={data}")
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
             &self._c_rqr, dat, offset, data.size * data.itemsize, &data.data[0]);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def set_begin(self, DvzId board):
+        logger.debug(f"set begin, board={board}")
         cdef rq.DvzRequest req = rq.dvz_record_begin(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
 
-    def record_viewport(self, DvzId board, float x, float y, float w, float h):
+    def record_viewport(self, DvzId board, int x, int y, int w, int h):
+        logger.debug(f"record viewport, board={board}, x={x}, y={y}, w={w}, h={h}")
         cdef vec2 offset = (x, y)
         cdef vec2 shape = (w, h)
         cdef rq.DvzRequest req = rq.dvz_record_viewport(&self._c_rqr, board, offset, shape);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def record_draw(self, DvzId board, DvzId graphics, int first_vertex, int vertex_count):
+        logger.debug(f"record draw, board={board}, graphics={graphics}, first_vertex={first_vertex}, vertex_count={vertex_count}")
         cdef rq.DvzRequest req = rq.dvz_record_draw(&self._c_rqr, board, graphics, first_vertex, vertex_count);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def set_end(self, DvzId board):
+        logger.debug(f"set end, board={board}")
         cdef rq.DvzRequest req = rq.dvz_record_end(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def update_board(self, DvzId board):
+        logger.debug(f"update board, board={board}")
         cdef rq.DvzRequest req = rq.dvz_update_board(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)

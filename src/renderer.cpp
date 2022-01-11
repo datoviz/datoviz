@@ -33,7 +33,7 @@
     t* n = (t*)dvz_map_get(rd->map, i);                                                           \
     if (n == NULL)                                                                                \
     {                                                                                             \
-        log_error("%s %" PRIx64 "doesn't exist", #n, i);                                          \
+        log_error("%s %" PRIx64 " doesn't exist", #n, i);                                         \
         return NULL;                                                                              \
     }                                                                                             \
     ASSERT(n != NULL);
