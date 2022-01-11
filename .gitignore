@@ -67,3 +67,4 @@ perf.*
 _old
 headers.json
 *.png
+joblib

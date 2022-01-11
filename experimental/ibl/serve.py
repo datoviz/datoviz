@@ -9,9 +9,11 @@ from pathlib import Path
 import json
 import io
 from pprint import pprint
+import urllib.request
 
 import websockets
 
+from joblib import Memory
 import numpy as np
 
 from datoviz import Requester, Renderer
@@ -36,6 +38,22 @@ HEIGHT = 600
 # Renderer
 # -------------------------------------------------------------------------------------------------
 
+
+MEMORY = Memory(".")
+
+
+@MEMORY.cache
+def download(url):
+    with urllib.request.urlopen(url) as f:
+        return io.BytesIO(f.read())
+
+
+def normalize(x):
+    m = x.min()
+    M = x.max()
+    return -1 + 2 * (x - m) / (M - m)
+
+
 def get_array(data):
     if data.mode == 'base64':
         r = base64.decodebytes(data.buffer.encode('ascii'))
@@ -58,6 +76,27 @@ def get_array(data):
         arr['color'][:, :3] = color
         arr['color'][:, 3] = 128
         return arr
+    elif data.mode == 'ibl_ephys':
+
+        spike_times = np.load(download(data.spike_times))
+        # spike_clusters = np.load(download(data.spike_clusters))
+        spike_depths = np.load(download(data.spike_depths))
+
+        n = 1000
+        arr = np.zeros(
+            n, dtype=[('pos', np.float32, 3), ('color', np.uint8, 4)])
+
+        x = normalize(spike_times[:n])
+        y = normalize(spike_depths[:n])
+
+        arr["pos"][:, 0] = x
+        arr["pos"][:, 1] = y
+
+        arr['color'][:, 0] = 255
+        arr['color'][:, 3] = 255
+
+        return arr
+
     raise Exception(f"Data upload mode '{data.mode}' unsupported")
 
 
