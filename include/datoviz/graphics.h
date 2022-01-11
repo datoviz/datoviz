@@ -39,7 +39,9 @@ typedef struct DvzVertex DvzVertex;
 typedef struct DvzMVP DvzMVP;
 typedef struct DvzViewport DvzViewport;
 
-typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
+// typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
+
+typedef struct DvzGraphicsPointVertex DvzGraphicsPointVertex;
 
 typedef struct DvzGraphicsMarkerVertex DvzGraphicsMarkerVertex;
 typedef struct DvzGraphicsMarkerParams DvzGraphicsMarkerParams;
@@ -124,9 +126,11 @@ struct DvzViewport
 /*  Graphics point                                                                               */
 /*************************************************************************************************/
 
-struct DvzGraphicsPointParams
+struct DvzGraphicsPointVertex
 {
-    float point_size; /* point size, in pixels */
+    vec3 pos;    /* position */
+    cvec4 color; /* color */
+    float size;  /* marker size, in pixels */
 };
 
 

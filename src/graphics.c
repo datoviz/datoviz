@@ -90,12 +90,13 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
     if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
         dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
 
-    ATTR_BEGIN(DvzVertex)
-    ATTR_POS(DvzVertex, pos)
-    ATTR_COL(DvzVertex, color)
+    ATTR_BEGIN(DvzGraphicsPointVertex)
+    ATTR_POS(DvzGraphicsPointVertex, pos)
+    ATTR_COL(DvzGraphicsPointVertex, color)
+    ATTR(DvzGraphicsPointVertex, VK_FORMAT_R32_SFLOAT, size)
 
     _common_slots(graphics);
-    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    // dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
     CREATE
 }
