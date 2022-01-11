@@ -77,7 +77,7 @@ static void _common_slots(DvzGraphics* graphics)
 
 
 /*************************************************************************************************/
-/*  Basic graphics                                                                               */
+/*  Point graphics                                                                               */
 /*************************************************************************************************/
 
 static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
@@ -102,6 +102,10 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
 }
 
 
+
+/*************************************************************************************************/
+/*  Basic graphics                                                                               */
+/*************************************************************************************************/
 
 static void
 _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTopology topology)

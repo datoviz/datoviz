@@ -194,6 +194,7 @@ int dvz_run_tests(const char* match)
 
 
     // Testing builtin graphics.
+    TEST(test_graphics_point)
     TEST(test_graphics_triangle)
 
 
