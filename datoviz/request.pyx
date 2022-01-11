@@ -82,8 +82,16 @@ cdef class Requester:
     cdef uint32_t _c_count
     cdef rq.DvzRequest* _c_rqs
 
+    # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
+    # collected by the garbage collector until they are effectively transferred to the GPU.
+    cdef object _np_cache
+
     def __cinit__(self):
         self._c_rqr = rq.dvz_requester()
+
+    def __init__(self):
+        super(Requester, self).__init__()
+        self._np_cache = []
 
     def __dealloc__(self):
         self.destroy()
@@ -100,6 +108,9 @@ cdef class Requester:
 
     def submit(self, Renderer renderer):
         rd.dvz_renderer_requests(renderer._c_rd, self._c_count, self._c_rqs)
+
+        # HACK: we can clear the NumPy cache now that all pending requests have been processed.
+        self._np_cache.clear()
 
     def create_board(self, int width, int height, int id=0, int flags=0):
         logger.debug(f"create board {width}x{height}, id={id}, flags={flags}")
@@ -141,7 +152,11 @@ cdef class Requester:
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def upload_dat(self, DvzId dat, DvzSize offset, np.ndarray data):
-        logger.debug(f"upload dat, dat={dat}, offset={offset}, data={data}")
+        logger.debug(f"upload dat, dat={dat}, offset={offset}, data=<array {data.dtype} with {str(data.size)} items>")
+
+        # HACK: keep a reference of the NumPy array to prevent it from being collected
+        self._np_cache.append(data)
+
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
             &self._c_rqr, dat, offset, data.size * data.itemsize, &data.data[0]);
         rq.dvz_requester_add(&self._c_rqr, req)
