@@ -71,7 +71,7 @@
         }
 
         function loadJSON() {
-            var count = 1024;
+            var count = 100000;
             return {
                 "version": "1.0",
                 "requests": [
@@ -91,7 +91,7 @@
                         "flags": 3,
                         "content": {
                             "board": 1,
-                            "type": 4
+                            "type": 1
                         }
                     },
                     {
@@ -100,7 +100,7 @@
                         "id": 3,
                         "content": {
                             "type": 2,
-                            "size": 16 * count
+                            "size": 20 * count
                         }
                     },
                     {
@@ -119,6 +119,7 @@
                             "offset": 0,
                             "data": {
                                 "mode": "ibl_ephys",
+                                "count": count,
                                 "spike_times": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.times.99ed1a2d-bb18-4f86-92f3-23a15b7d9972.npy",
                                 "spike_clusters": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.clusters.2e3a207d-6b7a-41b3-80b9-d759a6557b55.npy",
                                 "spike_depths": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.depths.9cbed712-3d4e-44d4-8ec8-f915a884e667.npy"

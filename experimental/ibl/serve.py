@@ -82,15 +82,20 @@ def get_array(data):
         # spike_clusters = np.load(download(data.spike_clusters))
         spike_depths = np.load(download(data.spike_depths))
 
-        n = 1000
+        n = data.count
+        assert n > 0
+        assert n <= spike_times.size
+
         arr = np.zeros(
-            n, dtype=[('pos', np.float32, 3), ('color', np.uint8, 4)])
+            n, dtype=[('pos', np.float32, 3), ('color', np.uint8, 4), ('size', np.float32)])
 
         x = normalize(spike_times[:n])
         y = normalize(spike_depths[:n])
 
         arr["pos"][:, 0] = x
         arr["pos"][:, 1] = y
+
+        arr["size"][:] = 2
 
         arr['color'][:, 0] = 255
         arr['color'][:, 3] = 255
