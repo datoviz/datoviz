@@ -58,8 +58,6 @@
             }
         };
 
-
-
         function tob64(buffer) {
             var binary = '';
             var bytes = new Uint8Array(buffer);
@@ -69,6 +67,8 @@
             }
             return window.btoa(binary);
         }
+
+
 
         function loadJSON() {
             // return JSON.parse('{{ json_contents | safe}}');

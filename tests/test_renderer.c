@@ -65,7 +65,7 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_upload_dat(&rqr, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
-    // Binding #0.
+    // Binding #0: MVP.
     req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     dvz_renderer_request(rd, req);
     DvzId mvp_id = req.id;
@@ -78,7 +78,7 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_upload_dat(&rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
     dvz_renderer_request(rd, req);
 
-    // Binding #1.
+    // Binding #1: viewport.
     req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
     dvz_renderer_request(rd, req);
     DvzId viewport_id = req.id;

@@ -9,6 +9,67 @@
         }
     </style>
     <script>
+        _DTYPE_MAPPING = {
+            "uint8": [Uint8Array, 1],
+
+            "uint16": [Uint16Array, 2],
+            "int16": [Int16Array, 2],
+
+            "uint32": [Uint32Array, 4],
+            "int32": [Int32Array, 4],
+
+            "float32": [Float32Array, 4],
+            "float64": [Float64Array, 8],
+        };
+
+        function tob64(buffer) {
+            var binary = '';
+            var bytes = new Uint8Array(buffer);
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function StructArray(count, dtype) {
+            this.count = count;
+            this.dtype = dtype;
+            this.fields = {};
+            this.itemsize = 0;
+            for (let i = 0; i < dtype.length; i++) {
+
+                let name = dtype[i][0];
+                let dt = dtype[i][1];
+                let count = dtype[i][2];
+                let size = _DTYPE_MAPPING[dt][1];
+
+                this.fields[name] = {
+                    type: dt,
+                    count: count,
+                    itemsize: size,
+                    offset: this.itemsize
+                };
+                this.itemsize += count * size;
+            }
+            this.buffer = new ArrayBuffer(count * this.itemsize);
+        };
+
+        StructArray.prototype.set = function (idx, name, values) {
+            let field = this.fields[name];
+            let vt = _DTYPE_MAPPING[field.type][0];
+            let view = new vt(this.buffer, this.itemsize * idx + field.offset, field.count);
+            for (let i = 0; i < field.count; i++) {
+                view[i] = values[i];
+            }
+        };
+
+        StructArray.prototype.b64 = function () {
+            return tob64(this.buffer);
+        }
+
+    </script>
+    <script>
         const DEFAULT_URI = "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/";
         const COUNT = 2000000; // max number of spikes
 
@@ -282,10 +343,26 @@
                 console.log('closing socket');
             };
 
+
+
             // Create the session list.
             for (uri in SESSIONS) {
                 appendSession(uri);
             }
+
+            const img = document.getElementById('img');
+            img.onclick = function (e) {
+                let x = e.x;
+                let y = e.y;
+                let w = e.srcElement.width;
+                let h = e.srcElement.height;
+
+                let time = 1 - 2 * x / w;
+                console.log(time);
+                let zoom = 8;
+
+                updateMVP(time, zoom);
+            };
         }
 
         // Select another session.
@@ -294,12 +371,73 @@
             submit(contents);
         }
 
+
+
+        function mvp(px, py, zx, zy) {
+            console.log(px, py, zx, zy);
+            // 3 matrices 4x4: model, view, proj, and finally time
+            var arr = new StructArray(1, [
+                ["model", "float32", 16],
+                ["view", "float32", 16],
+                ["proj", "float32", 16],
+                ["time", "float32", 1],
+            ]);
+
+            arr.set(0, "model", [
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1]);
+            arr.set(0, "view", [
+                1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                px, py, -2, 1]);
+            arr.set(0, "proj", [
+                zx, 0, 0, 0,
+                0, zy, 0, 0,
+                0, 0, -0.1, 0,
+                0, 0, 0, 1]);
+            arr.set(0, "time", [0]);
+
+            return arr;
+        }
+
+        function updateMVP(time, zoom) {
+            arr = mvp(time, 0, zoom, 1);
+
+            const req = {
+                "version": "1.0",
+                "requests": [
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 10,
+                        "content": {
+                            "offset": 0,
+                            "data": {
+                                "mode": "base64",
+                                "buffer": arr.b64()
+                            }
+                        }
+                    },
+                ]
+            };
+
+            submit(req);
+        }
+
+
+
     </script>
 </head>
 
 <body onload="load();">
-    <img width="800" height="600" id="img" />
-    <br>
+    <div style="width: 800px;">
+        <img width="800" height="600" id="img" style="width: 800px;" />
+        <br>
+        <button onclick="updateMVP(0, 1);" style="width: 100%; height: 30px;">Reset</button>
+    </div>
     <ul id="ul">
     </ul>
 </body>
