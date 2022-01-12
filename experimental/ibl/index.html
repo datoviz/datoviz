@@ -350,19 +350,33 @@
                 appendSession(uri);
             }
 
+
+
+            window.zoom = 1;
+            window.shift = 0;
+
             const img = document.getElementById('img');
-            img.onclick = function (e) {
-                let x = e.x;
-                let y = e.y;
+            // img.onclick = function (e) {
+            //     updateMVP(time, zoom);
+            // };
+
+            img.onwheel = function (e) {
+                e.preventDefault();
+                let d = -e.deltaY / Math.abs(e.deltaY);
+                let z = window.zoom;
+                let x = e.clientX;
+                let y = e.clientY;
                 let w = e.srcElement.width;
-                let h = e.srcElement.height;
 
-                let time = 1 - 2 * x / w;
-                console.log(time);
-                let zoom = 8;
+                window.zoom *= (1 + .5 * d);
+                window.zoom = Math.max(1, window.zoom);
 
-                updateMVP(time, zoom);
-            };
+                let center = -1 + 2 * x / w;
+                window.shift -= center * (1 / z - 1 / window.zoom);
+
+                if (window.zoom != z)
+                    updateMVP();
+            }
         }
 
         // Select another session.
@@ -374,7 +388,6 @@
 
 
         function mvp(px, py, zx, zy) {
-            console.log(px, py, zx, zy);
             // 3 matrices 4x4: model, view, proj, and finally time
             var arr = new StructArray(1, [
                 ["model", "float32", 16],
@@ -403,8 +416,8 @@
             return arr;
         }
 
-        function updateMVP(time, zoom) {
-            arr = mvp(time, 0, zoom, 1);
+        function updateMVP() {
+            arr = mvp(window.shift, 0, window.zoom, 1);
 
             const req = {
                 "version": "1.0",
@@ -427,16 +440,22 @@
             submit(req);
         }
 
+        function reset() {
+            window.zoom = 1;
+            window.shift = 0;
+
+            updateMVP();
+        }
 
 
     </script>
 </head>
 
 <body onload="load();">
-    <div style="width: 800px;">
-        <img width="800" height="600" id="img" style="width: 800px;" />
+    <div style="width: 800px; padding: 0;">
+        <img width="800" height="600" id="img" style="width: 800px; margin: 0; border: 1px solid #aaa;" />
         <br>
-        <button onclick="updateMVP(0, 1);" style="width: 100%; height: 30px;">Reset</button>
+        <button onclick="reset();" style="width: 100%; height: 30px; margin: 1px;">Reset</button>
     </div>
     <ul id="ul">
     </ul>

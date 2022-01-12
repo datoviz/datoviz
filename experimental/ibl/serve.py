@@ -107,7 +107,7 @@ def get_array(data):
         arr["size"][:] = 1
 
         v = 64
-        a = 32
+        a = 64
         arr['color'][:, 0] = v
         arr['color'][:, 1] = v
         arr['color'][:, 2] = v
