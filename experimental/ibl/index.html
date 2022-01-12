@@ -10,7 +10,7 @@
     </style>
     <script>
         const DEFAULT_URI = "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/";
-        const COUNT = 500000; // max number of spikes
+        const COUNT = 2000000; // max number of spikes
 
         const SESSIONS = {
 
@@ -25,6 +25,12 @@
                 "clusters": "spikes.clusters.a44513ba-069e-443a-bcb6-1de2a5071615.npy",
                 "depths": "spikes.depths.879aedc4-227d-4234-828e-9d9f78b7323e.npy",
             },
+
+            "https://ibl.flatironinstitute.org/public/mainenlab/Subjects/ZM_2240/2020-01-21/001/alf/probe00/": {
+                "times": "spikes.times.be8c4562-f83d-45c3-ba4d-7ac9eec94b85.npy",
+                "clusters": "spikes.clusters.33e2b747-8cf9-48d7-9814-69c6aa30cd59.npy",
+                "depths": "spikes.depths.7ba042a8-cc40-416f-8390-12b0c8f4009f.npy",
+            }
         };
 
         function sessionJSON(uri) {
