@@ -112,9 +112,24 @@ cdef class Requester:
         # HACK: we can clear the NumPy cache now that all pending requests have been processed.
         self._np_cache.clear()
 
-    def create_board(self, int width, int height, int id=0, int flags=0):
+    def create_board(self, int width, int height, int id=0, background=None, int flags=0):
         logger.debug(f"create board {width}x{height}, id={id}, flags={flags}")
-        cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, flags)
+
+        # Background color
+        cdef cvec4 c_background
+        if background is None:
+            c_background[0] = 0
+            c_background[1] = 8
+            c_background[2] = 18
+            c_background[3] = 255
+        else:
+            assert len(background) == 3
+            c_background[0] = <uint8_t>int(background[0])
+            c_background[1] = <uint8_t>int(background[1])
+            c_background[2] = <uint8_t>int(background[2])
+            c_background[3] = 255
+
+        cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, c_background, flags)
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)

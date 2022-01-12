@@ -47,13 +47,15 @@ cdef extern from "<datoviz/request.h>":
 
     void dvz_request_print(DvzRequest* req)
 
-    DvzRequest dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+    DvzRequest dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
+
+    DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background)
 
     DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
 
     DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 
-    DvzRequest dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+    DvzRequest dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
 
     DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
 
