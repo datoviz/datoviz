@@ -34,7 +34,7 @@ int test_renderer_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create a boards.
-    req = dvz_create_board(&rqr, WIDTH, HEIGHT, 0);
+    req = dvz_create_board(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 

@@ -29,7 +29,7 @@ int test_workspace_1(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     DvzWorkspace* ws = dvz_workspace(gpu);
-    DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
+    DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     ASSERT(board != NULL);
 
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);

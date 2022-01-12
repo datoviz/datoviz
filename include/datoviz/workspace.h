@@ -70,10 +70,11 @@ DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu);
  * @param workspace the workspace
  * @param width the board width
  * @param height the board height
+ * @param background the background color
  * @param flags the board creation flags
  */
-DVZ_EXPORT DvzBoard*
-dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzBoard* dvz_workspace_board(
+    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 
@@ -83,10 +84,11 @@ dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, in
  * @param workspace the workspace
  * @param width the canvas width
  * @param height the canvas height
+ * @param background the background color
  * @param flags the canvas creation flags
  */
-DVZ_EXPORT DvzCanvas*
-dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzCanvas* dvz_workspace_canvas(
+    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 

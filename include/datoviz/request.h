@@ -105,6 +105,7 @@ union DvzRequestContent
     struct
     {
         uint32_t width, height;
+        cvec4 background;
     } canvas;
 
     // Dat.
@@ -286,16 +287,17 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
  * @param rqr the requester
  * @param width the board width
  * @param height the board height
+ * @param background the background color
  * @param flags the board creation flags
  * @returns the request, containing a newly-generated id for the board to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
+dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 
 /**
- * Set the background color of the board.
+ * Change the background color of the board.
  *
  * @param rqr the requester
  * @param id the board id
@@ -340,11 +342,12 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
  * @param rqr the requester
  * @param width the canvas width (in screen pixels)
  * @param height the canvas height (in screen pixels)
+ * @param background the background color
  * @param flags the canvas creation flags
  * @returns the request, containing a newly-generated id for the canvas to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
+dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 

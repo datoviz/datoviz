@@ -31,13 +31,15 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu)
 
 
 
-DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
+DvzBoard* dvz_workspace_board(
+    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     ASSERT(workspace != NULL);
     ASSERT(workspace->gpu != NULL);
 
     DvzBoard* board = (DvzBoard*)dvz_container_alloc(&workspace->boards);
     *board = dvz_board(workspace->gpu, width, height, flags);
+    dvz_board_clear_color(board, background);
     dvz_board_create(board);
 
     return board;
@@ -45,12 +47,16 @@ DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t 
 
 
 
-DvzCanvas*
-dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
+DvzCanvas* dvz_workspace_canvas(
+    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     ASSERT(workspace != NULL);
     DvzCanvas* canvas = (DvzCanvas*)dvz_container_alloc(&workspace->canvases);
     *canvas = dvz_canvas(workspace->gpu, width, height, flags);
+
+    // TODO: wrap the following line in a new function dvz_canvas_clear_color()?
+    memcpy(canvas->clear_color, background, sizeof(cvec4));
+
     dvz_canvas_create(canvas);
 
     return canvas;

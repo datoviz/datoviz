@@ -46,7 +46,7 @@ int test_runner_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create a request.
-    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     ASSERT(req.id != DVZ_ID_NONE);
     dvz_runner_request(runner, req);
 
@@ -81,14 +81,14 @@ int test_runner_2(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create a canvas.
-    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_0 = req.id;
     dvz_runner_request(runner, req);
 
     dvz_runner_loop(runner, 5);
 
     // Create another canvas.
-    req = dvz_create_canvas(rqr, WIDTH / 2, HEIGHT / 2, 0);
+    req = dvz_create_canvas(rqr, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_runner_request(runner, req);
 
     dvz_runner_loop(runner, 5);
@@ -127,7 +127,7 @@ int test_runner_triangle(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create a canvas.
-    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, 0);
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_id = req.id;
     dvz_runner_request(runner, req);
 

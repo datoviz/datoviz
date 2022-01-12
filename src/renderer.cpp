@@ -69,7 +69,8 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
     log_trace("create board");
 
     DvzBoard* board = dvz_workspace_board(
-        rd->workspace, req.content.board.width, req.content.board.height, req.flags);
+        rd->workspace, req.content.board.width, req.content.board.height,
+        req.content.board.background, req.flags);
     ASSERT(board != NULL);
     SET_ID(board)
     board->rgb = dvz_board_alloc(board);
@@ -133,7 +134,8 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
     log_trace("create canvas");
 
     DvzCanvas* canvas = dvz_workspace_canvas(
-        rd->workspace, req.content.canvas.width, req.content.canvas.height, req.flags);
+        rd->workspace, req.content.canvas.width, req.content.canvas.height,
+        req.content.canvas.background, req.flags);
     ASSERT(canvas != NULL);
     SET_ID(canvas)
     return (void*)canvas;

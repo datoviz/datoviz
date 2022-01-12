@@ -107,13 +107,15 @@ void dvz_request_print(DvzRequest* req)
 /*  Board                                                                                        */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+DvzRequest
+dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     CREATE_REQUEST(CREATE, BOARD);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
     req.content.board.width = width;
     req.content.board.height = height;
+    memcpy(req.content.board.background, background, sizeof(cvec4));
     return req;
 }
 
@@ -151,13 +153,15 @@ DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, int flags)
+DvzRequest
+dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     CREATE_REQUEST(CREATE, CANVAS);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
-    req.content.board.width = width;
-    req.content.board.height = height;
+    req.content.canvas.width = width;
+    req.content.canvas.height = height;
+    memcpy(req.content.canvas.background, background, sizeof(cvec4));
     return req;
 }
 
