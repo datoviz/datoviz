@@ -74,6 +74,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
 
     DvzMVP mvp = dvz_mvp_default();
+    // dvz_show_base64(sizeof(mvp), &mvp);
     req = dvz_upload_dat(&rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
     dvz_renderer_request(rd, req);
 
@@ -86,6 +87,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    // dvz_show_base64(sizeof(viewport), &viewport);
     req = dvz_upload_dat(&rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
     dvz_renderer_request(rd, req);
 

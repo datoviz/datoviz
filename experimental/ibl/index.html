@@ -33,6 +33,7 @@
             }
         };
 
+        // Data payload for a given session.
         function sessionJSON(uri) {
             return {
                 "uri": uri,
@@ -60,12 +61,83 @@
                         "action": "create",
                         "type": "graphics",
                         "id": 2,
-                        "flags": 3,
+                        "flags": 0,
                         "content": {
                             "board": 1,
                             "type": 1
                         }
                     },
+
+
+
+                    {
+                        "action": "create",
+                        "type": "dat",
+                        "id": 10,
+                        "content": {
+                            "type": 5,
+                            "size": 200
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "dat",
+                        "id": 2,
+                        "content": {
+                            "dat": 10,
+                            "slot_idx": 0,
+                        }
+                    },
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 10,
+                        "content": {
+                            "offset": 0,
+                            "size": 200,
+                            "data": {
+                                "mode": "base64",
+                                "buffer": "AACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAAAAAAAAAAAAgD8AAAAAAAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAA=="
+                            }
+                        }
+                    },
+
+
+
+                    {
+                        "action": "create",
+                        "type": "dat",
+                        "id": 11,
+                        "content": {
+                            "type": 5,
+                            "size": 80
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "dat",
+                        "id": 2,
+                        "content": {
+                            "dat": 11,
+                            "slot_idx": 1,
+                        }
+                    },
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 11,
+                        "content": {
+                            "offset": 0,
+                            "size": 80,
+                            "data": {
+                                "mode": "base64",
+                                "buffer": "AAAAAAAAAAAAAEhEAAAWRAAAAAAAAIA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAwAAWAIAAAAAAAAAAAAAIAMAAFgCAAAAAAAAAAAAAAAAAAAAAAAA"
+                            }
+                        }
+                    },
+
+
+
                     {
                         "action": "create",
                         "type": "dat",
@@ -96,6 +168,9 @@
                             }
                         }
                     },
+
+
+
                     {
                         "action": "set",
                         "type": "begin",
