@@ -50,10 +50,10 @@ def test_renderer_1():
             ('r', 'i1'), ('g', 'i1'), ('b', 'i1'), ('a', 'i1')])
         rq.upload_dat(dat, 0, arr)
 
-        rq.set_begin(board)
+        rq.record_begin(board)
         rq.record_viewport(board, 0, 0, WIDTH, HEIGHT)
         rq.record_draw(board, graphics, 0, 3)
-        rq.set_end(board)
+        rq.record_end(board)
         rq.update_board(board)
 
     rd = Renderer()

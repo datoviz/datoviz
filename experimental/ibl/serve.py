@@ -129,10 +129,10 @@ ROUTER = {
     ('bind', 'dat'): lambda r, req: r.bind_dat(int(req.id), int(req.content.slot_idx), int(req.content.dat)),
     ('set', 'vertex'): lambda r, req: r.set_vertex(int(req.id), int(req.content.dat)),
     ('upload', 'dat'): lambda r, req: r.upload_dat(int(req.id), int(req.content.offset), get_array(Bunch(req.content.data))),
-    ('set', 'begin'): lambda r, req: r.set_begin(int(req.id)),
-    ('set', 'viewport'): lambda r, req: r.record_viewport(int(req.id), int(req.content.offset[0]), int(req.content.offset[1]), int(req.content.shape[0]), int(req.content.shape[0])),
-    ('set', 'draw'): lambda r, req: r.record_draw(int(req.id), int(req.content.graphics), int(req.content.first_vertex), int(req.content.vertex_count)),
-    ('set', 'end'): lambda r, req: r.set_end(int(req.id)),
+    ('record', 'begin'): lambda r, req: r.record_begin(int(req.id)),
+    ('record', 'viewport'): lambda r, req: r.record_viewport(int(req.id), int(req.content.offset[0]), int(req.content.offset[1]), int(req.content.shape[0]), int(req.content.shape[0])),
+    ('record', 'draw'): lambda r, req: r.record_draw(int(req.id), int(req.content.graphics), int(req.content.first_vertex), int(req.content.vertex_count)),
+    ('record', 'end'): lambda r, req: r.record_end(int(req.id)),
     ('update', 'board'): lambda r, req: r.update_board(int(req.id)),
 }
 

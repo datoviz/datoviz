@@ -176,7 +176,7 @@ cdef class Requester:
             &self._c_rqr, dat, offset, data.size * data.itemsize, &data.data[0]);
         rq.dvz_requester_add(&self._c_rqr, req)
 
-    def set_begin(self, DvzId board):
+    def record_begin(self, DvzId board):
         logger.debug(f"set begin, board={board}")
         cdef rq.DvzRequest req = rq.dvz_record_begin(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
@@ -193,7 +193,7 @@ cdef class Requester:
         cdef rq.DvzRequest req = rq.dvz_record_draw(&self._c_rqr, board, graphics, first_vertex, vertex_count);
         rq.dvz_requester_add(&self._c_rqr, req)
 
-    def set_end(self, DvzId board):
+    def record_end(self, DvzId board):
         logger.debug(f"set end, board={board}")
         cdef rq.DvzRequest req = rq.dvz_record_end(&self._c_rqr, board);
         rq.dvz_requester_add(&self._c_rqr, req)
