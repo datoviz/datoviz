@@ -97,8 +97,12 @@ def get_array(data):
 
         arr["size"][:] = 1
 
-        arr['color'][:, 0] = 255
-        arr['color'][:, 3] = 255
+        v = 64
+        a = 32
+        arr['color'][:, 0] = v
+        arr['color'][:, 1] = v
+        arr['color'][:, 2] = v
+        arr['color'][:, 3] = a
 
         return arr
 
@@ -106,7 +110,7 @@ def get_array(data):
 
 
 ROUTER = {
-    ('create', 'board'): lambda r, req: r.create_board(int(req.content.width), int(req.content.height), id=int(req.id), flags=int(req.flags)),
+    ('create', 'board'): lambda r, req: r.create_board(int(req.content.width), int(req.content.height), id=int(req.id), background=req.content.background, flags=int(req.flags)),
     ('create', 'graphics'): lambda r, req: r.create_graphics(int(req.content.board), int(req.content.type), id=int(req.id), flags=int(req.flags)),
     ('create', 'dat'): lambda r, req: r.create_dat(int(req.content.type), int(req.content.size), id=int(req.id), flags=int(req.flags)),
     ('set', 'vertex'): lambda r, req: r.set_vertex(int(req.id), int(req.content.dat)),
