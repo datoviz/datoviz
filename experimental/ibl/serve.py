@@ -7,16 +7,19 @@ import base64
 import sys
 from pathlib import Path
 import json
+import logging
 import io
 from pprint import pprint
 import urllib.request
 
-import websockets
-
 from joblib import Memory
 import numpy as np
+import websockets
 
 from datoviz import Requester, Renderer
+
+
+logger = logging.getLogger('datoviz')
 
 
 class Bunch(dict):
@@ -38,7 +41,6 @@ HEIGHT = 600
 # Renderer
 # -------------------------------------------------------------------------------------------------
 
-
 MEMORY = Memory(".")
 
 
@@ -51,6 +53,9 @@ def download(url):
 def normalize(x):
     m = x.min()
     M = x.max()
+    if m == M:
+        logger.warning("degenerate values")
+        M = m + 1
     return -1 + 2 * (x - m) / (M - m)
 
 
@@ -78,9 +83,13 @@ def get_array(data):
         return arr
     elif data.mode == 'ibl_ephys':
 
-        spike_times = np.load(download(data.spike_times))
-        # spike_clusters = np.load(download(data.spike_clusters))
-        spike_depths = np.load(download(data.spike_depths))
+        spike_times = np.load(
+            download(data.session['uri'] + data.session['spikes']['times']))
+        spike_depths = np.load(
+            download(data.session['uri'] + data.session['spikes']['depths']))
+        spike_depths[np.isnan(spike_depths)] = 0
+
+        logger.debug(f"downloaded {len(spike_times)} spikes")
 
         n = data.count
         assert n > 0

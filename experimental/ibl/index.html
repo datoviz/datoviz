@@ -5,73 +5,38 @@
     <title>Datoviz IBL test</title>
     <style>
         html {
-            background-color: black;
+            background-color: white;
         }
     </style>
     <script>
-        window.i = 0;
+        const DEFAULT_URI = "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/";
+        const COUNT = 500000; // max number of spikes
 
+        const SESSIONS = {
 
+            "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/": {
+                "times": "spikes.times.99ed1a2d-bb18-4f86-92f3-23a15b7d9972.npy",
+                "clusters": "spikes.clusters.2e3a207d-6b7a-41b3-80b9-d759a6557b55.npy",
+                "depths": "spikes.depths.9cbed712-3d4e-44d4-8ec8-f915a884e667.npy"
+            },
 
-        _DTYPE_MAPPING = {
-            "uint8": [Uint8Array, 1],
-
-            "uint16": [Uint16Array, 2],
-            "int16": [Int16Array, 2],
-
-            "uint32": [Uint32Array, 4],
-            "int32": [Int32Array, 4],
-
-            "float32": [Float32Array, 4],
-            "float64": [Float64Array, 8],
+            "https://ibl.flatironinstitute.org/public/churchlandlab/Subjects/CSHL047/2020-01-20/001/alf/probe00/": {
+                "times": "spikes.times.32609666-84f6-4b20-8450-afc311b3e64e.npy",
+                "clusters": "spikes.clusters.a44513ba-069e-443a-bcb6-1de2a5071615.npy",
+                "depths": "spikes.depths.879aedc4-227d-4234-828e-9d9f78b7323e.npy",
+            },
         };
 
-        function StructArray(count, dtype) {
-            this.count = count;
-            this.dtype = dtype;
-            this.fields = {};
-            this.itemsize = 0;
-            for (let i = 0; i < dtype.length; i++) {
-
-                let name = dtype[i][0];
-                let dt = dtype[i][1];
-                let count = dtype[i][2];
-                let size = _DTYPE_MAPPING[dt][1];
-
-                this.fields[name] = {
-                    type: dt,
-                    count: count,
-                    itemsize: size,
-                    offset: this.itemsize
-                };
-                this.itemsize += count * size;
-            }
-            this.buffer = new ArrayBuffer(count * this.itemsize);
-        };
-
-        StructArray.prototype.set = function (idx, name, values) {
-            let field = this.fields[name];
-            let vt = _DTYPE_MAPPING[field.type][0];
-            let view = new vt(this.buffer, this.itemsize * idx + field.offset, field.count);
-            for (let i = 0; i < field.count; i++) {
-                view[i] = values[i];
-            }
-        };
-
-
-
-        function tob64(buffer) {
-            var binary = '';
-            var bytes = new Uint8Array(buffer);
-            var len = bytes.byteLength;
-            for (var i = 0; i < len; i++) {
-                binary += String.fromCharCode(bytes[i]);
-            }
-            return window.btoa(binary);
+        function sessionJSON(uri) {
+            return {
+                "uri": uri,
+                "spikes": SESSIONS[uri]
+            };
         }
 
+        // Load the initial JSON.
         function loadJSON() {
-            var count = 400000;
+            var count = COUNT;
             return {
                 "version": "1.0",
                 "requests": [
@@ -121,9 +86,7 @@
                             "data": {
                                 "mode": "ibl_ephys",
                                 "count": count,
-                                "spike_times": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.times.99ed1a2d-bb18-4f86-92f3-23a15b7d9972.npy",
-                                "spike_clusters": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.clusters.2e3a207d-6b7a-41b3-80b9-d759a6557b55.npy",
-                                "spike_depths": "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/spikes.depths.9cbed712-3d4e-44d4-8ec8-f915a884e667.npy"
+                                "session": sessionJSON(DEFAULT_URI)
                             }
                         }
                     },
@@ -166,21 +129,58 @@
             };
         }
 
-        function updateRequest(buffer) {
-            var contents = loadJSON();
-            contents.requests = [contents.requests[4]];
-            contents.requests[0].content.data.buffer = tob64(buffer);
-            return contents;
+        // Generate a JSON request to update to a new URI.
+        function updateRequest(uri) {
+            const req = {
+                "version": "1.0",
+                "requests": [
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 3,
+                        "content": {
+                            "offset": 0,
+                            "data": {
+                                "mode": "ibl_ephys",
+                                "count": COUNT,
+                                "session": sessionJSON(uri)
+                            }
+                        }
+                    },
+                ]
+            };
+
+            return req;
         }
 
+        // Send requests to the server.
         function submit(contents) {
             window.websocket.send(JSON.stringify(contents));
         }
 
+        // Display an array buffer.
+        function show(arrbuf) {
+            const blob = new Blob([arrbuf]);
+            const url = URL.createObjectURL(blob);
+            const img = document.getElementById('img');
+            img.src = url;
+        }
+
+        // Append a list item for a session.
+        function appendSession(uri) {
+            const ul = document.getElementById('ul');
+            const li = document.createElement('li');
+            const button = document.createElement('button');
+            button.setAttribute('onclick', "select(\"" + uri + "\");");
+            button.textContent = uri;
+            li.appendChild(button);
+            ul.appendChild(li);
+        }
+
+        // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
         function load() {
             window.websocket = new WebSocket("ws://localhost:1234/");
             window.websocket.binaryType = "arraybuffer";
-
 
             window.websocket.onopen = function () {
                 console.log('socket open');
@@ -189,23 +189,28 @@
                 submit(contents);
             };
 
-
             window.websocket.onmessage = ({ data }) => {
                 // display the received image
                 if (data instanceof ArrayBuffer) {
                     console.log("received image");
-
-                    const blob = new Blob([data]);
-                    const url = URL.createObjectURL(blob);
-                    const img = document.getElementById('img');
-                    img.src = url;
+                    show(data);
                 }
             };
-
 
             window.websocket.onclose = function () {
                 console.log('closing socket');
             };
+
+            // Create the session list.
+            for (uri in SESSIONS) {
+                appendSession(uri);
+            }
+        }
+
+        // Select another session.
+        function select(uri) {
+            var contents = updateRequest(uri);
+            submit(contents);
         }
 
     </script>
@@ -213,6 +218,9 @@
 
 <body onload="load();">
     <img width="800" height="600" id="img" />
+    <br>
+    <ul id="ul">
+    </ul>
 </body>
 
 </html>
