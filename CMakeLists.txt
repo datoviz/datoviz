@@ -474,6 +474,10 @@ set(external_sources
     "external/vk_mem_alloc.cpp"
     "external/fpng.cpp"
 
+    "external/b64/buffer.c"
+    "external/b64/encode.c"
+    "external/b64/decode.c"
+
     "external/cimgui/imgui/imgui.cpp"
     "external/cimgui/imgui/imgui_demo.cpp"
     "external/cimgui/imgui/imgui_draw.cpp"

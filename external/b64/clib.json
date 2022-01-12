@@ -1,0 +1,9 @@
+{
+  "name": "b64",
+  "repo": "littlstar/b64.c",
+  "version": "0.0.2",
+  "description": "Base64 encode/decode",
+  "keywords": ["base", "64", "crypto"],
+  "src": ["b64.h", "encode.c", "decode.c", "buffer.c"],
+  "development": { "jwerle/libok": "*" }
+}
