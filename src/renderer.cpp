@@ -93,6 +93,21 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _board_background(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    GET_ID(DvzBoard, board, req.id)
+
+    dvz_board_clear_color(board, req.content.board.background);
+    dvz_board_recreate(board);
+
+    return NULL;
+}
+
+
+
 static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -479,6 +494,7 @@ static void _setup_router(DvzRenderer* rd)
     // Board.
     ROUTE(CREATE, BOARD, _board_create)
     ROUTE(UPDATE, BOARD, _board_update)
+    ROUTE(SET, BACKGROUND, _board_background)
     ROUTE(DELETE, BOARD, _board_delete)
 
     // Canvas.

@@ -95,7 +95,7 @@ def get_array(data):
         arr["pos"][:, 0] = x
         arr["pos"][:, 1] = y
 
-        arr["size"][:] = 2
+        arr["size"][:] = 1
 
         arr['color'][:, 0] = 255
         arr['color'][:, 3] = 255

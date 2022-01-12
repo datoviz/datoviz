@@ -38,6 +38,10 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 
+    // Board clear color.
+    req = dvz_set_background(&rqr, board_id, (cvec4){64, 128, 255, 255});
+    dvz_renderer_request(rd, req);
+
     // Create a graphics.
     req = dvz_create_graphics(&rqr, board_id, DVZ_GRAPHICS_TRIANGLE, 0);
     dvz_renderer_request(rd, req);

@@ -64,6 +64,7 @@ typedef enum
     DVZ_REQUEST_OBJECT_GRAPHICS,
 
     DVZ_REQUEST_OBJECT_BEGIN,
+    DVZ_REQUEST_OBJECT_BACKGROUND,
     DVZ_REQUEST_OBJECT_VIEWPORT,
     DVZ_REQUEST_OBJECT_VERTEX,
     DVZ_REQUEST_OBJECT_BARRIER,
@@ -97,6 +98,7 @@ union DvzRequestContent
     struct
     {
         uint32_t width, height;
+        cvec4 background;
     } board;
 
     // Canvas.
@@ -289,6 +291,18 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
  */
 DVZ_EXPORT DvzRequest
 dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, int flags);
+
+
+
+/**
+ * Set the background color of the board.
+ *
+ * @param rqr the requester
+ * @param id the board id
+ * @param background the background color
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background);
 
 
 

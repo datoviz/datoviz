@@ -128,6 +128,16 @@ DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
 
 
 
+DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 color)
+{
+    CREATE_REQUEST(SET, BACKGROUND);
+    req.id = id;
+    memcpy(req.content.board.background, color, sizeof(cvec4));
+    return req;
+}
+
+
+
 DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 {
     CREATE_REQUEST(DELETE, BOARD);
