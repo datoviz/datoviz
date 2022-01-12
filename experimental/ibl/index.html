@@ -3,11 +3,15 @@
 
 <head>
     <title>Datoviz IBL test</title>
+
+    <!-- CSS styles -->
     <style>
         html {
             background-color: white;
         }
     </style>
+
+    <!-- Array class -->
     <script>
         _DTYPE_MAPPING = {
             "uint8": [Uint8Array, 1],
@@ -69,6 +73,8 @@
         }
 
     </script>
+
+    <!-- Visualization client -->
     <script>
         const DEFAULT_URI = "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/";
         const COUNT = 2000000; // max number of spikes
@@ -377,6 +383,10 @@
                 if (window.zoom != z)
                     updateMVP();
             }
+
+            img.ondblclick = function (e) {
+                reset();
+            }
         }
 
         // Select another session.
@@ -387,6 +397,7 @@
 
 
 
+        // Return a MVP structure for a given pan and zoom.
         function mvp(px, py, zx, zy) {
             // 3 matrices 4x4: model, view, proj, and finally time
             var arr = new StructArray(1, [
@@ -416,6 +427,7 @@
             return arr;
         }
 
+        // Send the updated MVP struct to the server.
         function updateMVP() {
             arr = mvp(window.shift, 0, window.zoom, 1);
 
@@ -440,6 +452,7 @@
             submit(req);
         }
 
+        // Reset the view.
         function reset() {
             window.zoom = 1;
             window.shift = 0;

@@ -38,7 +38,7 @@ HEIGHT = 600
 
 
 # -------------------------------------------------------------------------------------------------
-# Renderer
+# Data access
 # -------------------------------------------------------------------------------------------------
 
 MEMORY = Memory(".")
@@ -117,6 +117,10 @@ def get_array(data):
 
     raise Exception(f"Data upload mode '{data.mode}' unsupported")
 
+
+# -------------------------------------------------------------------------------------------------
+# Renderer
+# -------------------------------------------------------------------------------------------------
 
 ROUTER = {
     ('create', 'board'): lambda r, req: r.create_board(int(req.content.width), int(req.content.height), id=int(req.id), background=req.content.background, flags=int(req.flags)),
