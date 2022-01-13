@@ -81,6 +81,8 @@ typedef enum
     DVZ_BUFFER_TYPE_UNIFORM, // 5
 } DvzBufferType;
 
+#define DVZ_BUFFER_TYPE_COUNT 5
+
 
 
 // Texture axis.

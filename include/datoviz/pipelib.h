@@ -121,7 +121,6 @@ DVZ_EXPORT DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader
 DVZ_EXPORT void dvz_pipelib_destroy(DvzPipelib* lib);
 
 
-
 EXTERN_C_OFF
 
 #endif
