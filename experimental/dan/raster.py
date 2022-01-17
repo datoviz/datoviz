@@ -37,8 +37,10 @@ class Bunch(dict):
 CURDIR = Path(__file__).parent.resolve()
 WIDTH = 800
 HEIGHT = 600
-COUNT = 2000000
-ALPHA = 32
+MAX_COUNT = 10_000_000
+ALPHA = 128
+SIZE = 5
+COLOR = 128
 
 DEFAULT_URI = "https://ibl.flatironinstitute.org/public/cortexlab/Subjects/KS023/2019-12-10/001/alf/probe01/"
 SESSIONS = {
@@ -108,33 +110,37 @@ def get_data(uri, st_name, sd_name, t0=0, t1=1):
     spike_depths = np.load(download(uri + sd_name))
     spike_depths[np.isnan(spike_depths)] = 0
 
-    logger.debug(f"downloaded {len(spike_times)} spikes, keep {COUNT}")
-
     assert 0 <= t0 and t0 < t1
 
-    # DEBUG
-    spike_times = spike_times[:COUNT]
-    spike_depths = spike_depths[:COUNT]
+    # HACK: will need resize_dat request to lift this limitation
+    assert spike_times.shape[0] <= MAX_COUNT
+
+    # # DEBUG
+    # spike_times = spike_times[:MAX_COUNT]
+    # spike_depths = spike_depths[:MAX_COUNT]
 
     # Select spikes in the time range.
-    # imin = np.searchsorted(spike_times, t0)
-    # imax = np.searchsorted(spike_times, t1)
-    # spike_times = spike_times[imin:imax]
-    # spike_depths = spike_depths[imin:imax]
+    imin = np.searchsorted(spike_times, t0)
+    imax = np.searchsorted(spike_times, t1)
+
+    logger.debug(f"downloaded {len(spike_times)} spikes, keep {imax - imin}")
+
+    spike_times = spike_times[imin:imax]
+    spike_depths = spike_depths[imin:imax]
+
+    x = normalize(spike_times)
+    y = normalize(spike_depths)
 
     n = spike_times.shape[0]
     arr = np.zeros(
         n, dtype=[('pos', np.float32, 3), ('color', np.uint8, 4), ('size', np.float32)])
 
-    x = normalize(spike_times)
-    y = normalize(spike_depths)
-
     arr["pos"][:, 0] = x
     arr["pos"][:, 1] = y
 
-    arr["size"][:] = 1
+    arr["size"][:] = SIZE
 
-    v = 64
+    v = COLOR
     a = ALPHA
     arr['color'][:, 0] = v
     arr['color'][:, 1] = v
@@ -142,6 +148,15 @@ def get_data(uri, st_name, sd_name, t0=0, t1=1):
     arr['color'][:, 3] = a
 
     return arr
+
+
+def record(rqr, count):
+    logger.debug(f"draw {count} spikes")
+
+    rqr.record_begin(board_id)
+    rqr.record_viewport(board_id, 0, 0, 0, 0)
+    rqr.record_draw(board_id, graphics_id, 0, count)
+    rqr.record_end(board_id)
 
 
 def create(rqr, rnd, uri, st_name, sd_name, t0=0, t1=1):
@@ -158,22 +173,21 @@ def create(rqr, rnd, uri, st_name, sd_name, t0=0, t1=1):
         rqr.bind_dat(graphics_id, 1, viewport_id)
         rqr.upload_dat(viewport_id, 0, from_base64(VIEWPORT_BUFFER))
 
-        rqr.create_dat(2, 20 * COUNT, id=vertex_id)
+        rqr.create_dat(2, 20 * MAX_COUNT, id=vertex_id)
         rqr.set_vertex(graphics_id, vertex_id)
-        rqr.upload_dat(vertex_id, 0, get_data(
-            uri, st_name, sd_name, t0=t0, t1=t1))
+        data = get_data(uri, st_name, sd_name, t0=t0, t1=t1)
+        rqr.upload_dat(vertex_id, 0, data)
 
-        rqr.record_begin(board_id)
-        rqr.record_viewport(board_id, 0, 0, 0, 0)
-        rqr.record_draw(board_id, graphics_id, 0, COUNT)
-        rqr.record_end(board_id)
+        record(rqr, data.shape[0])
+
     rqr.submit(rnd)
 
 
 def update(rqr, rnd, uri, st_name, sd_name, t0=0, t1=1):
     with rqr.requests():
-        rqr.upload_dat(
-            vertex_id, 0, get_data(uri, st_name, sd_name, t0=t0, t1=t1))
+        data = get_data(uri, st_name, sd_name, t0=t0, t1=t1)
+        rqr.upload_dat(vertex_id, 0, data)
+        record(rqr, data.shape[0])
     rqr.submit(rnd)
 
 
@@ -185,7 +199,7 @@ def render(rqr, rnd, board_id=1):
 
     # Get the image.
     img = rnd.get_png(board_id)
-    logger.debug(f"Retrieved the PNG image with {len(img)} bytes")
+    logger.debug(f"retrieved the PNG image with {len(img)} bytes")
 
     # Return as PNG
     output = io.BytesIO(img)
@@ -206,22 +220,28 @@ async def process_requests(websocket):
             msg = await websocket.recv()
             logger.debug("new message")
             msg = json.loads(msg)
-            if not created:
-                uri = msg['uri']
-                st_name = msg['spike_times']
-                sd_name = msg['spike_depths']
-                t0 = msg.get('start_time', 0)
-                t1 = msg.get('stop_time', 1)
+            if 'set_session' in msg:
+                uri = msg['set_session']['uri']
+                st_name = msg['set_session']['spike_times']
+                sd_name = msg['set_session']['spike_depths']
+                t0 = msg['set_session'].get('start_time', 0)
+                t1 = msg['set_session'].get('stop_time', 1)
+
                 create(rqr, rnd, uri, st_name, sd_name, t0=t0, t1=t1)
-            else:
+
+            elif 'update_time' in msg:
+                t0 = msg['update_time'].get('start_time', 0)
+                t1 = msg['update_time'].get('stop_time', 1)
+
                 update(rqr, rnd, uri, st_name, sd_name, t0=t0, t1=t1)
+
             img = render(rqr, rnd, 1)
             logger.debug(
-                f"Sending back the image with {img.getbuffer().nbytes} bytes...")
+                f"sending back the image with {img.getbuffer().nbytes} bytes...")
             img.seek(0)
             await websocket.send(img)
         except (websockets.ConnectionClosedOK, websockets.ConnectionClosedError):
-            logger.debug("Server connection closed")
+            logger.debug("server connection closed")
             break
         except Exception as e:
             logger.error(traceback.format_exc())
@@ -239,21 +259,50 @@ async def server():
 # Client
 # -------------------------------------------------------------------------------------------------
 
+async def set_session(websocket, uri, t0=0, t1=1):
+    msg = {
+        'set_session': {
+            'uri': uri,
+            'spike_times': SESSIONS[uri]['times'],
+            'spike_depths': SESSIONS[uri]['depths'],
+            'start_time': t0,
+            'stop_time': t1,
+        },
+    }
+    await websocket.send(json.dumps(msg))
+
+
+async def update_time(websocket, t0=0, t1=1):
+    msg = {
+        'update_time': {
+            'start_time': t0,
+            'stop_time': t1,
+        },
+    }
+    await websocket.send(json.dumps(msg))
+
+
+async def recv_img(websocket, filename):
+    logger.debug("client waiting for an incoming message...")
+    buf = await websocket.recv()
+    logger.info(f"received buffer with {len(buf)} bytes")
+    with open(filename, 'wb') as f:
+        f.write(buf)
+
+
 async def client():
     async with websockets.connect("ws://localhost:1234", max_size=None) as websocket:
         try:
-            logger.info("Starting the websockets client")
-            msg = {
-                'uri': DEFAULT_URI,
-                'spike_times': SESSIONS[DEFAULT_URI]['times'],
-                'spike_depths': SESSIONS[DEFAULT_URI]['depths'],
-            }
-            await websocket.send(json.dumps(msg))
-            logger.debug("Client waiting for an incoming message...")
-            buf = await websocket.recv()
-            logger.info(f"Received buffer with {len(buf)} bytes")
-            with open('a.png', 'wb') as f:
-                f.write(buf)
+            logger.info("starting the websockets client")
+
+            await set_session(websocket, DEFAULT_URI, t0=0, t1=100)
+            await recv_img(websocket, 'img0.png')
+
+            await update_time(websocket, t0=1000, t1=1010)
+            await recv_img(websocket, 'img1.png')
+
+            logger.info("stopping the websockets client")
+
         except Exception as e:
             logger.error(traceback.format_exc())
 
