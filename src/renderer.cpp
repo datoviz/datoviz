@@ -33,7 +33,7 @@
     t* n = (t*)dvz_map_get(rd->map, i);                                                           \
     if (n == NULL)                                                                                \
     {                                                                                             \
-        log_error("%s %" PRIx64 " doesn't exist", #n, i);                                         \
+        log_error("%s Ox%" PRIx64 " doesn't exist", #n, i);                                       \
         return NULL;                                                                              \
     }                                                                                             \
     ASSERT(n != NULL);
@@ -171,7 +171,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
     ASSERT(id != DVZ_ID_NONE);
 
     DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, id);
-    log_trace("create graphics for parent %" PRIx64 " with type %d", id, type);
+    log_trace("create graphics for parent 0x%" PRIx64 " with type %d", id, type);
     ASSERT(type == DVZ_REQUEST_OBJECT_BOARD || type == DVZ_REQUEST_OBJECT_CANVAS);
 
     DvzPipe* pipe = NULL;
@@ -331,6 +331,16 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
 
     GET_ID(DvzDat, dat, req.id)
     ASSERT(dat->br.buffer != NULL);
+    ASSERT(dat->br.size > 0);
+    ASSERT(req.content.dat_upload.size > 0);
+
+    if (req.content.dat_upload.size > dat->br.aligned_size)
+    {
+        log_error(
+            "data to upload is larger (%s) than the dat size (%s)",
+            pretty_size(req.content.dat_upload.size), pretty_size(dat->br.aligned_size));
+        return NULL;
+    }
 
     log_trace(
         "uploading %s to dat (buffer type %d region offset %d)",
@@ -541,7 +551,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
         ASSERT(obj != NULL);
         ASSERT(req.id != DVZ_ID_NONE);
 
-        log_trace("adding object type %d id %" PRIx64 " to mapping", req.type, req.id);
+        log_trace("adding object type %d id 0x%" PRIx64 " to mapping", req.type, req.id);
 
         if (dvz_map_get(rd->map, req.id) != NULL)
         {
@@ -559,7 +569,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 
         ASSERT(req.id != DVZ_ID_NONE);
 
-        log_trace("removing object type %d id %" PRIx64 " from mapping", req.type, req.id);
+        log_trace("removing object type %d id 0x%" PRIx64 " from mapping", req.type, req.id);
 
         if (dvz_map_get(rd->map, req.id) == NULL)
         {

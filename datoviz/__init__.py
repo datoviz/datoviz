@@ -27,7 +27,7 @@ except ImportError:
 logger = logging.getLogger('datoviz')
 logger.setLevel('DEBUG')
 
-_logger_fmt = '%(asctime)s.%(msecs)03d %(levelname)s %(caller)s %(message)s'
+_logger_fmt = '%(asctime)s.%(msecs)03d py %(levelname)s %(caller)s %(message)s'
 _logger_date_fmt = '%H:%M:%S'
 
 

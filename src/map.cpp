@@ -70,7 +70,7 @@ void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
     ASSERT(type != 0);
     ASSERT(value != NULL);
 
-    log_trace("add key %" PRIx64 " with type %d", key, type);
+    log_trace("add key 0x%" PRIx64 " with type %d", key, type);
     map->_map[key] = std::pair<int, void*>(type, value);
 }
 
