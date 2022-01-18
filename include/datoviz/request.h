@@ -320,6 +320,20 @@ DVZ_EXPORT DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id);
 
 
 /**
+ * Create a request to resize a board.
+ *
+ * @param rqr the requester
+ * @param board the board id
+ * @param width the new board width
+ * @param height the new board height
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint32_t height);
+
+
+
+/**
  * Create a request for a board deletion.
  *
  * @param rqr the requester
@@ -381,6 +395,18 @@ dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
 
 
 /**
+ * Create a request to resize a dat.
+ *
+ * @param rqr the requester
+ * @param dat the dat id
+ * @param size the new dat size, in bytes
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size);
+
+
+
+/**
  * Create a request for a tex creation.
  *
  * @param rqr the requester
@@ -392,6 +418,18 @@ dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
  */
 DVZ_EXPORT DvzRequest
 dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+
+
+
+/**
+ * Create a request to resize a tex.
+ *
+ * @param rqr the requester
+ * @param tex the tex id
+ * @param size the new tex shape
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape);
 
 
 

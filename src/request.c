@@ -130,6 +130,17 @@ DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
 
 
 
+DvzRequest dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint32_t height)
+{
+    CREATE_REQUEST(RESIZE, BOARD);
+    req.id = board;
+    req.content.board.width = width;
+    req.content.board.height = height;
+    return req;
+}
+
+
+
 DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 color)
 {
     CREATE_REQUEST(SET, BACKGROUND);
@@ -192,6 +203,16 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
 
 
 
+DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
+{
+    CREATE_REQUEST(RESIZE, DAT);
+    req.id = dat;
+    req.content.dat.size = size;
+    return req;
+}
+
+
+
 DvzRequest
 dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
@@ -201,6 +222,16 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
     req.content.tex.dims = dims;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     req.content.tex.format = format;
+    return req;
+}
+
+
+
+DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
+{
+    CREATE_REQUEST(RESIZE, TEX);
+    req.id = tex;
+    memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     return req;
 }
 
