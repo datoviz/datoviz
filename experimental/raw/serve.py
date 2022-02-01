@@ -333,11 +333,8 @@ def get_array(data):
         arr['color'][:, 3] = 128
         return arr
     elif data.mode == 'raw_ephys':
-        data.session
-
-        # TODO
-        arr = 0
-
+        m = Model(data.eid, data.probe_id, probe_idx=data.probe_idx)
+        arr = m.get_data(data.t0, data.t1)
         return arr
 
     raise Exception(f"Data upload mode '{data.mode}' unsupported")
@@ -473,8 +470,10 @@ def plot_brain_regions(panel, regions):
 
 
 if __name__ == '__main__':
-    eid, probe_id = get_eid_argv()
-    m = Model(eid, probe_id, probe_idx=0)
-    arr = m.get_data(0, 1)
-    print(arr.dtype, arr.shape)
-    # asyncio.run(main())
+    # eid, probe_id = get_eid_argv()
+    # print(eid)
+    # print(probe_id)
+    # m = Model(eid, probe_id, probe_idx=0)
+    # arr = m.get_data(0, 1)
+    # print(arr.dtype, arr.shape)
+    asyncio.run(main())
