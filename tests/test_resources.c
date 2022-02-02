@@ -215,8 +215,7 @@ int test_resources_tex_transfers(TstSuite* suite)
 
     // Resize.
     uvec3 new_shape = {4, 8, 1};
-    DvzSize new_size = size * 4;
-    dvz_tex_resize(tex, new_shape, new_size);
+    dvz_tex_resize(tex, new_shape);
 
     // Download back the data.
     dvz_tex_download(tex, DVZ_ZERO_OFFSET, shape, size, data1, true);
@@ -262,8 +261,7 @@ int test_resources_tex_resize(TstSuite* suite)
 
     // Resize.
     uvec3 new_shape = {4, 8, 1};
-    DvzSize new_size = size * 4;
-    dvz_tex_resize(tex, new_shape, new_size);
+    dvz_tex_resize(tex, new_shape);
 
     // Download back the data.
     dvz_tex_download(tex, DVZ_ZERO_OFFSET, shape, size, data1, true);

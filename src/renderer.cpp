@@ -474,7 +474,7 @@ static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
 
     GET_ID(DvzTex, tex, req.id)
 
-    dvz_tex_resize(tex, req.content.tex.shape, req.content.tex.size);
+    dvz_tex_resize(tex, req.content.tex.shape);
 
     return NULL;
 }

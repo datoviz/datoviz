@@ -121,7 +121,6 @@ union DvzRequestContent
         DvzTexDims dims;
         uvec3 shape;
         DvzFormat format;
-        DvzSize size;
     } tex;
 
     // Sampler.
@@ -387,7 +386,7 @@ DVZ_EXPORT DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id);
 
 
 /*************************************************************************************************/
-/*  Resources                                                                                    */
+/*  Dat                                                                                          */
 /*************************************************************************************************/
 
 /**
@@ -417,6 +416,25 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 
 
 /**
+ * Create a request for dat upload.
+ *
+ * @param rqr the requester
+ * @param dat the id of the dat to upload to
+ * @param offset the byte offset of the upload transfer
+ * @param size the number of bytes in data to transfer
+ * @param data a pointer to the data to upload
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data);
+
+
+
+/*************************************************************************************************/
+/*  Tex                                                                                          */
+/*************************************************************************************************/
+
+/**
  * Create a request for a tex creation.
  *
  * @param rqr the requester
@@ -426,8 +444,8 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
  * @param flags the dat creation flags
  * @returns the request, containing a newly-generated id for the tex to be created
  */
-DVZ_EXPORT DvzRequest dvz_create_tex(
-    DvzRequester* rqr, DvzTexDims dims, DvzFormat format, DvzSize size, uvec3 shape, int flags);
+DVZ_EXPORT DvzRequest
+dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags);
 
 
 
@@ -436,13 +454,32 @@ DVZ_EXPORT DvzRequest dvz_create_tex(
  *
  * @param rqr the requester
  * @param tex the tex id
- * @param size the new tex size
  * @param shape the new tex shape
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, DvzSize size, uvec3 shape);
+DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape);
 
 
+
+/**
+ * Create a request for tex upload.
+ *
+ * @param rqr the requester
+ * @param tex the id of the tex to upload to
+ * @param offset the offset
+ * @param shape the shape
+ * @param size the number of bytes in data to transfer
+ * @param data a pointer to the data to upload
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data);
+
+
+
+/*************************************************************************************************/
+/*  Sampler                                                                                      */
+/*************************************************************************************************/
 
 /**
  * Create a request for a sampler creation.
@@ -516,41 +553,6 @@ DVZ_EXPORT DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_
  */
 DVZ_EXPORT DvzRequest
 dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler);
-
-
-
-/*************************************************************************************************/
-/*  Data                                                                                         */
-/*************************************************************************************************/
-
-/**
- * Create a request for dat upload.
- *
- * @param rqr the requester
- * @param dat the id of the dat to upload to
- * @param offset the byte offset of the upload transfer
- * @param size the number of bytes in data to transfer
- * @param data a pointer to the data to upload
- * @returns the request
- */
-DVZ_EXPORT DvzRequest
-dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data);
-
-
-
-/**
- * Create a request for tex upload.
- *
- * @param rqr the requester
- * @param tex the id of the tex to upload to
- * @param offset the offset
- * @param shape the shape
- * @param size the number of bytes in data to transfer
- * @param data a pointer to the data to upload
- * @returns the request
- */
-DVZ_EXPORT DvzRequest
-dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
 
 

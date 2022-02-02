@@ -363,7 +363,7 @@ DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format,
 
     // Allocate the tex.
     // TODO: GPU sync before?
-    _tex_alloc(res, tex, dims, shape, format);
+    _tex_alloc(res, tex, dims, format, shape);
 
     dvz_obj_created(&tex->obj);
     return tex;
@@ -371,13 +371,16 @@ DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format,
 
 
 
-void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size)
+void dvz_tex_resize(DvzTex* tex, uvec3 new_shape)
 {
     ASSERT(tex != NULL);
     ASSERT(tex->img != NULL);
 
     // TODO: GPU sync before?
     dvz_images_resize(tex->img, new_shape);
+
+    // Compute the new buffer size.
+    DvzSize new_size = _tex_size(tex->img->format, new_shape);
 
     // Resize the persistent staging tex if there is one.
     if (tex->stg != NULL)

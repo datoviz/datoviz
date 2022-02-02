@@ -171,13 +171,12 @@ int test_renderer_resize(TstSuite* suite)
 
 
     // Create a tex.
-    req =
-        dvz_create_tex(&rqr, DVZ_TEX_3D, DVZ_FORMAT_R32_UINT, 2 * 3 * 4 * 4, (uvec3){2, 3, 4}, 0);
+    req = dvz_create_tex(&rqr, DVZ_TEX_3D, DVZ_FORMAT_R32_UINT, (uvec3){2, 3, 4}, 0);
     dvz_renderer_request(rd, req);
     DvzId tex_id = req.id;
 
     // Resize the tex.
-    req = dvz_resize_tex(&rqr, tex_id, 20 * 30 * 40 * 4, (uvec3){20, 30, 40});
+    req = dvz_resize_tex(&rqr, tex_id, (uvec3){20, 30, 40});
     dvz_renderer_request(rd, req);
 
     // Check tex resizing.

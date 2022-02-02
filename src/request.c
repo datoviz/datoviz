@@ -229,14 +229,13 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
 /*  Tex                                                                                          */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_tex(
-    DvzRequester* rqr, DvzTexDims dims, DvzFormat format, DvzSize size, uvec3 shape, int flags)
+DvzRequest
+dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags)
 {
     CREATE_REQUEST(CREATE, TEX);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
     req.content.tex.dims = dims;
-    req.content.tex.size = size;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     req.content.tex.format = format;
     return req;
@@ -244,11 +243,10 @@ DvzRequest dvz_create_tex(
 
 
 
-DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, DvzSize size, uvec3 shape)
+DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
 {
     CREATE_REQUEST(RESIZE, TEX);
     req.id = tex;
-    req.content.tex.size = size;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     return req;
 }

@@ -558,13 +558,61 @@ static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
 
 
 static void
-_tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, uvec3 shape, DvzFormat format)
+_tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, DvzFormat format, uvec3 shape)
 {
     ASSERT(res != NULL);
     ASSERT(tex != NULL);
 
     // Create a new image for the tex.
     tex->img = dvz_resources_image(res, dims, shape, format);
+}
+
+
+
+static inline DvzSize _format_size(DvzFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FORMAT_R8_UNORM:
+    case DVZ_FORMAT_R8_SNORM:
+        return 1;
+        break;
+
+    case DVZ_FORMAT_R16_UNORM:
+    case DVZ_FORMAT_R16_SNORM:
+        return 2;
+        break;
+
+    case DVZ_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_SINT:
+    case DVZ_FORMAT_R32_SFLOAT:
+        return 4;
+        break;
+
+    case DVZ_FORMAT_R8G8B8_UNORM:
+        return 3;
+        break;
+
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_B8G8R8A8_UNORM:
+        return 4;
+        break;
+
+    default:
+        break;
+    }
+    log_error("unknown DvzFormat %d", format);
+    return 0;
+}
+
+
+
+static inline DvzSize _tex_size(DvzFormat format, uvec3 shape)
+{
+    DvzSize size = _format_size(format) * shape[0] * shape[1] * shape[2];
+    ASSERT(size > 0);
+    return size;
 }
 
 

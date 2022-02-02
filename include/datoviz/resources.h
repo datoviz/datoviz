@@ -296,9 +296,8 @@ dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int fla
  *
  * @param tex the Tex
  * @param new_shape the new width, height, depth
- * @param new_size the number of bytes corresponding to the new image shape
  */
-DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size);
+DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape);
 
 
 
