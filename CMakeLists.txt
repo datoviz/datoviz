@@ -438,7 +438,7 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 # -------------------------------------------------------------------------------------------------
 
 # Color texture.
-set(path_colortex "${CMAKE_BINARY_DIR}/_colortex.c")
+set(path_colortex "${CMAKE_BINARY_DIR}/_textures.c")
 add_custom_command(
     OUTPUT ${path_colortex}
     COMMAND ${CMAKE_COMMAND}
@@ -572,6 +572,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_pipelib.c"
         "tests/test_graphics.c"
         "tests/test_workspace.c"
+        "tests/test_colormaps.c"
         "tests/test_map.c"
         "tests/test_request.c"
         "tests/test_renderer.c"

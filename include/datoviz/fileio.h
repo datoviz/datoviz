@@ -110,7 +110,7 @@ DVZ_EXPORT unsigned char* dvz_resource_shader(const char* name, unsigned long* s
 
 
 
-// Defined in cmake-generated file build/_colortex.c
+// Defined in cmake-generated file build/_textures.c
 DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
 
 

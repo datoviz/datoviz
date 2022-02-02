@@ -17,6 +17,7 @@
 #include "test_array.h"
 #include "test_board.h"
 #include "test_canvas.h"
+#include "test_colormaps.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
 #include "test_fileio.h"
@@ -87,6 +88,15 @@ int dvz_run_tests(const char* match)
     TEST(test_utils_alloc_1)
     TEST(test_utils_alloc_2)
     TEST(test_utils_alloc_3)
+
+    // Testing colormaps.
+    TEST(test_colormaps_idx)
+    TEST(test_colormaps_uv)
+    TEST(test_colormaps_extent)
+    TEST(test_colormaps_default)
+    TEST(test_colormaps_scale)
+    TEST(test_colormaps_packuv)
+    TEST(test_colormaps_array)
 
     // Testing map.
     TEST(test_map_1)
