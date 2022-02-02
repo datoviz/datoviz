@@ -112,7 +112,7 @@ DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzReques
  *
  * @param rd the renderer
  * @param id the board id
- * @param board the board
+ * @returns the board
  */
 DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
 
@@ -123,9 +123,31 @@ DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
  *
  * @param rd the renderer
  * @param id the board id
- * @param canvas the canvas
+ * @returns the canvas
  */
 DVZ_EXPORT DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);
+
+
+
+/**
+ * Return a dat.
+ *
+ * @param rd the renderer
+ * @param id the dat id
+ * @returns the dat
+ */
+DVZ_EXPORT DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id);
+
+
+
+/**
+ * Return a tex.
+ *
+ * @param rd the renderer
+ * @param id the tex id
+ * @returns the tex
+ */
+DVZ_EXPORT DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id);
 
 
 

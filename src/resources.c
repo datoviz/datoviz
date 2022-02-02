@@ -12,7 +12,7 @@
 #include "resources_utils.h"
 #include "transfers.h"
 #include "transfers_utils.h"
-#include "vklite_utils.h"
+// #include "vklite_utils.h"
 #include <stdlib.h>
 
 
@@ -359,7 +359,7 @@ DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format,
     tex->res = res;
     tex->flags = flags;
     tex->dims = dims;
-    _copy_shape(shape, tex->shape);
+    memcpy(tex->shape, shape, sizeof(uvec3));
 
     // Allocate the tex.
     // TODO: GPU sync before?
@@ -382,6 +382,8 @@ void dvz_tex_resize(DvzTex* tex, uvec3 new_shape, DvzSize new_size)
     // Resize the persistent staging tex if there is one.
     if (tex->stg != NULL)
         dvz_dat_resize(tex->stg, new_size);
+
+    memcpy(tex->shape, new_shape, sizeof(uvec3));
 }
 
 

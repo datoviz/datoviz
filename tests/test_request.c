@@ -31,7 +31,8 @@ int test_request_1(TstSuite* suite)
     dvz_request_print(&req);
 
     req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
-    // req = dvz_create_tex(&rqr, 2, (uvec3){2, 4, 3}, DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    req = dvz_create_tex(
+        &rqr, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, 2 * 4 * 4, (uvec3){2, 4, 1}, 0);
 
     dvz_requester_destroy(&rqr);
     return 0;

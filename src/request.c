@@ -188,7 +188,7 @@ DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
 
 
 /*************************************************************************************************/
-/*  Resources                                                                                    */
+/*  Dat                                                                                          */
 /*************************************************************************************************/
 
 DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags)
@@ -213,13 +213,30 @@ DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 
 
 
-DvzRequest
-dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
+DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
+{
+    CREATE_REQUEST(UPLOAD, DAT);
+    req.id = dat;
+    req.content.dat_upload.offset = offset;
+    req.content.dat_upload.size = size;
+    req.content.dat_upload.data = data;
+    return req;
+}
+
+
+
+/*************************************************************************************************/
+/*  Tex                                                                                          */
+/*************************************************************************************************/
+
+DvzRequest dvz_create_tex(
+    DvzRequester* rqr, DvzTexDims dims, DvzFormat format, DvzSize size, uvec3 shape, int flags)
 {
     CREATE_REQUEST(CREATE, TEX);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
     req.content.tex.dims = dims;
+    req.content.tex.size = size;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     req.content.tex.format = format;
     return req;
@@ -227,15 +244,35 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, uvec3 shape, DvzFormat format
 
 
 
-DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
+DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, DvzSize size, uvec3 shape)
 {
     CREATE_REQUEST(RESIZE, TEX);
     req.id = tex;
+    req.content.tex.size = size;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     return req;
 }
 
 
+
+DvzRequest
+dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
+{
+    CREATE_REQUEST(UPLOAD, TEX);
+    req.id = tex;
+
+    memcpy(req.content.tex_upload.offset, offset, sizeof(uvec3));
+    memcpy(req.content.tex_upload.shape, shape, sizeof(uvec3));
+    req.content.tex_upload.size = size;
+    req.content.tex_upload.data = data;
+    return req;
+}
+
+
+
+/*************************************************************************************************/
+/*  Sampler                                                                                      */
+/*************************************************************************************************/
 
 DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
 {
@@ -296,22 +333,6 @@ DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
     req.content.set_tex.slot_idx = slot_idx;
     req.content.set_tex.tex = tex;
     req.content.set_tex.sampler = sampler;
-    return req;
-}
-
-
-
-/*************************************************************************************************/
-/*  Data                                                                                         */
-/*************************************************************************************************/
-
-DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
-{
-    CREATE_REQUEST(UPLOAD, DAT);
-    req.id = dat;
-    req.content.dat_upload.offset = offset;
-    req.content.dat_upload.size = size;
-    req.content.dat_upload.data = data;
     return req;
 }
 

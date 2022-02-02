@@ -94,6 +94,21 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _board_resize(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+    log_trace("resize board");
+
+    GET_ID(DvzBoard, board, req.id)
+
+    dvz_board_resize(board, req.content.board.width, req.content.board.height);
+
+    return NULL;
+}
+
+
+
 static void* _board_background(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -307,7 +322,7 @@ static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
-/*  Resources                                                                                    */
+/*  Dat                                                                                          */
 /*************************************************************************************************/
 
 static void* _dat_create(DvzRenderer* rd, DvzRequest req)
@@ -370,6 +385,21 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+    log_trace("resize dat");
+
+    GET_ID(DvzDat, dat, req.id)
+
+    dvz_dat_resize(dat, req.content.dat.size);
+
+    return NULL;
+}
+
+
+
 static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -383,6 +413,91 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 }
 
 
+
+/*************************************************************************************************/
+/*  Dat                                                                                          */
+/*************************************************************************************************/
+
+static void* _tex_create(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    log_trace("create tex");
+
+    DvzTex* tex = dvz_tex(
+        rd->ctx, req.content.tex.dims, req.content.tex.shape, req.content.tex.format, req.flags);
+    ASSERT(tex != NULL);
+    SET_ID(tex)
+
+    return (void*)tex;
+}
+
+
+
+static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+
+    GET_ID(DvzTex, tex, req.id)
+    ASSERT(tex->img != NULL);
+    ASSERT(req.content.tex_upload.size > 0);
+
+    if ( //
+        (req.content.tex_upload.offset[0] + req.content.tex_upload.shape[0] > tex->shape[0]) ||
+        (req.content.tex_upload.offset[1] + req.content.tex_upload.shape[1] > tex->shape[1]) ||
+        (req.content.tex_upload.offset[2] + req.content.tex_upload.shape[2] > tex->shape[2]))
+    {
+        log_error("tex to upload is larger than the tex shape");
+        return NULL;
+    }
+
+    log_trace("uploading %s to tex", pretty_size(req.content.tex_upload.size));
+
+    dvz_tex_upload(
+        tex,                           //
+        req.content.tex_upload.offset, //
+        req.content.tex_upload.shape,  //
+        req.content.tex_upload.size,   //
+        req.content.tex_upload.data,   //
+        true);                         // TODO: do not wait? try false
+
+    return NULL;
+}
+
+
+
+static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+    log_trace("resize tex");
+
+    GET_ID(DvzTex, tex, req.id)
+
+    dvz_tex_resize(tex, req.content.tex.shape, req.content.tex.size);
+
+    return NULL;
+}
+
+
+
+static void* _tex_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(req.id != 0);
+    log_trace("delete tex");
+
+    GET_ID(DvzTex, tex, req.id)
+
+    dvz_tex_destroy(tex);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Sampler                                                                                      */
+/*************************************************************************************************/
 
 static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
 {
@@ -506,6 +621,7 @@ static void _setup_router(DvzRenderer* rd)
     // Board.
     ROUTE(CREATE, BOARD, _board_create)
     ROUTE(UPDATE, BOARD, _board_update)
+    ROUTE(RESIZE, BOARD, _board_resize)
     ROUTE(SET, BACKGROUND, _board_background)
     ROUTE(DELETE, BOARD, _board_delete)
 
@@ -522,11 +638,19 @@ static void _setup_router(DvzRenderer* rd)
 
     // TODO: computes.
 
-    // Resources.
+    // Dat.
     ROUTE(CREATE, DAT, _dat_create)
     ROUTE(UPLOAD, DAT, _dat_upload)
+    ROUTE(RESIZE, DAT, _dat_resize)
     ROUTE(DELETE, DAT, _dat_delete)
 
+    // Tex.
+    ROUTE(CREATE, TEX, _tex_create)
+    ROUTE(UPLOAD, TEX, _tex_upload)
+    ROUTE(RESIZE, TEX, _tex_resize)
+    ROUTE(DELETE, TEX, _tex_delete)
+
+    // Sampler.
     ROUTE(CREATE, SAMPLER, _sampler_create)
     ROUTE(DELETE, SAMPLER, _sampler_delete)
 
@@ -661,6 +785,28 @@ DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
     ASSERT(canvas != NULL);
     return canvas;
+}
+
+
+
+DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id)
+{
+    ASSERT(rd != NULL);
+
+    DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, id);
+    ASSERT(dat != NULL);
+    return dat;
+}
+
+
+
+DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
+{
+    ASSERT(rd != NULL);
+
+    DvzTex* tex = (DvzTex*)dvz_map_get(rd->map, id);
+    ASSERT(tex != NULL);
+    return tex;
 }
 
 
