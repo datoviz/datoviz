@@ -340,7 +340,104 @@ int test_graphics_text(TstSuite* suite)
 
 int test_graphics_image_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    // Create the board and context
+    GRAPHICS_BEGIN
+
+    // Create the graphics.
+    DvzPipe pipe = dvz_pipe(gpu);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    dvz_graphics_builtin(&board.renderpass, graphics, DVZ_GRAPHICS_IMAGE, 0);
+
+
+    // Create the dats.
+    DvzDat* dat_vertex =
+        dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 6 * sizeof(DvzGraphicsImageVertex), 0);
+    ASSERT(dat_vertex != NULL);
+
+    // Slots 0 and 1.
+    GRAPHICS_MVP
+    GRAPHICS_VIEWPORT
+
+    // Slot 2: params.
+    DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
+    ASSERT(dat_params != NULL);
+    DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
+    dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
+
+    // Slot 3: tex.
+    const uint32_t width = 16;
+    const uint32_t height = 8;
+    cvec4* img = calloc(width * height, 4);
+    for (uint32_t i = 0; i < width * height; i++)
+        dvz_colormap(DVZ_CMAP_HSV, i * 256 / (width * height), img[i]);
+    DvzTex* tex =
+        dvz_tex(ctx, DVZ_TEX_2D, (uvec3){width, height, 1}, DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_tex_upload(
+        tex, DVZ_ZERO_OFFSET, (uvec3){width, height, 1}, width * height * sizeof(cvec4), img,
+        true);
+    FREE(img);
+
+    // Sampler.
+    DvzSampler* sampler =
+        dvz_resources_sampler(&ctx->res, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+
+    // Create the bindings.
+    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_dat(&pipe, 0, dat_mvp);
+    dvz_pipe_dat(&pipe, 1, dat_viewport);
+    dvz_pipe_dat(&pipe, 2, dat_params);
+    for (uint32_t i = 3; i < 3 + 4; i++)
+        dvz_pipe_tex(&pipe, i, tex, sampler);
+    dvz_pipe_create(&pipe);
+
+    // Upload the triangle data.
+    DvzGraphicsImageVertex data[6] = {0};
+    {
+        data[0].pos[0] = -1;
+        data[0].pos[1] = -1;
+        data[0].uv[0] = 0;
+        data[0].uv[1] = 1;
+
+        data[1].pos[0] = +1;
+        data[1].pos[1] = -1;
+        data[1].uv[0] = 1;
+        data[1].uv[1] = 1;
+
+        data[2].pos[0] = +1;
+        data[2].pos[1] = +1;
+        data[2].uv[0] = 1;
+        data[2].uv[1] = 0;
+
+        data[3].pos[0] = +1;
+        data[3].pos[1] = +1;
+        data[3].uv[0] = 1;
+        data[3].uv[1] = 0;
+
+        data[4].pos[0] = -1;
+        data[4].pos[1] = +1;
+        data[4].uv[0] = 0;
+        data[4].uv[1] = 0;
+
+        data[5].pos[0] = -1;
+        data[5].pos[1] = -1;
+        data[5].uv[0] = 0;
+        data[5].uv[1] = 1;
+    }
+    dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
+
+    // Commands.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    dvz_board_begin(&board, &cmds, 0);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, 6);
+    dvz_board_end(&board, &cmds, 0);
+    dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Screenshot.
+    GRAPHICS_SCREENSHOT("image")
+
+    // Destruction
+    GRAPHICS_END
 
     return 0;
 }
