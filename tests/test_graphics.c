@@ -10,6 +10,7 @@
 
 #include "test_graphics.h"
 #include "board.h"
+#include "colormaps.h"
 #include "context.h"
 #include "fileio.h"
 #include "graphics.h"
@@ -121,9 +122,7 @@ int test_graphics_point(TstSuite* suite)
 
         data[i].size = 50;
 
-        // TODO
-        // dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), vertices[i].color);
-        data[i].color[0] = 255;
+        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
         data[i].color[3] = 128;
     }
     dvz_dat_upload(dat_vertex, 0, n * sizeof(DvzGraphicsPointVertex), data, true);
@@ -193,6 +192,191 @@ int test_graphics_triangle(TstSuite* suite)
 
     // Destruction
     GRAPHICS_END
+
+    return 0;
+}
+
+
+
+int test_graphics_line_list(TstSuite* suite)
+{
+    // Create the board and context
+    GRAPHICS_BEGIN
+
+    // Create the graphics.
+    DvzPipe pipe = dvz_pipe(gpu);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    dvz_graphics_builtin(&board.renderpass, graphics, DVZ_GRAPHICS_LINE, 0);
+
+    // Vertex count and params.
+    uint32_t n = 4 * 16;
+    DvzSize size = 2 * n * sizeof(DvzVertex);
+    ASSERT(n > 0);
+
+    // Create the dats.
+    DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    ASSERT(dat_vertex != NULL);
+
+    // Slots 0 and 1.
+    GRAPHICS_MVP
+    GRAPHICS_VIEWPORT
+
+    // Create the bindings.
+    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_dat(&pipe, 0, dat_mvp);
+    dvz_pipe_dat(&pipe, 1, dat_viewport);
+    dvz_pipe_create(&pipe);
+
+    // Upload the triangle data.
+    DvzVertex* data = (DvzVertex*)calloc(size, 1);
+    double t = 0, r = .75;
+    double aspect = board.width / (float)board.height;
+    AT(aspect > 0);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = .5 * i / (double)n;
+        data[2 * i].pos[0] = r * cos(M_2PI * t);
+        data[2 * i].pos[1] = aspect * r * sin(M_2PI * t);
+
+        data[2 * i + 1].pos[0] = -data[2 * i].pos[0];
+        data[2 * i + 1].pos[1] = -data[2 * i].pos[1];
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, data[2 * i].color);
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, data[2 * i + 1].color);
+    }
+    dvz_dat_upload(dat_vertex, 0, size, data, true);
+
+    // Commands.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    dvz_board_begin(&board, &cmds, 0);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, 2 * n);
+    dvz_board_end(&board, &cmds, 0);
+    dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Screenshot.
+    GRAPHICS_SCREENSHOT("line_list")
+
+    // Destruction
+    GRAPHICS_END
+
+    FREE(data);
+    return 0;
+}
+
+
+
+int test_graphics_line_strip(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_triangle_list(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_triangle_strip(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_triangle_fan(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_marker(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_segment(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_path(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_text(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_image_1(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_image_cmap(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_volume_slice(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_volume_1(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    return 0;
+}
+
+
+
+int test_graphics_mesh(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
 
     return 0;
 }
