@@ -180,6 +180,7 @@ DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
     dat->res = res;
     dat->datalloc = &ctx->datalloc;
     dat->transfers = &ctx->transfers;
+    dat->size = size;
     dat->flags = flags;
     log_debug("create dat with size %s", pretty_size(size));
 
@@ -226,6 +227,7 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
         dvz_dat_resize(dat->stg, new_size);
 
     _dat_alloc(dat->res, dat, dat->br.buffer->type, dat->br.count, new_size);
+    dat->size = new_size;
 }
 
 
@@ -359,6 +361,7 @@ DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format,
     tex->res = res;
     tex->flags = flags;
     tex->dims = dims;
+    tex->format = format;
     memcpy(tex->shape, shape, sizeof(uvec3));
 
     // Allocate the tex.
@@ -380,7 +383,7 @@ void dvz_tex_resize(DvzTex* tex, uvec3 new_shape)
     dvz_images_resize(tex->img, new_shape);
 
     // Compute the new buffer size.
-    DvzSize new_size = _tex_size(tex->img->format, new_shape);
+    DvzSize new_size = _tex_size(tex->format, new_shape);
 
     // Resize the persistent staging tex if there is one.
     if (tex->stg != NULL)

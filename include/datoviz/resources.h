@@ -57,6 +57,7 @@ struct DvzDat
 
     int flags;
     DvzBufferRegions br;
+    DvzSize size;
 
     DvzDat* stg; // used for persistent staging, resized when the dat is resized
 };
@@ -72,6 +73,7 @@ struct DvzTex
 
     DvzTexDims dims;
     uvec3 shape;
+    DvzFormat format;
 
     int flags;
     DvzImages* img;
