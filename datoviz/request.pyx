@@ -143,9 +143,31 @@ cdef class Requester:
         rq.dvz_requester_add(&self._c_rqr, req)
         return req.id
 
+    def create_sampler(self, DvzFilter filter, DvzSamplerAddressMode mode, int id=0):
+        logger.debug(f"create sampler, filter={filter}, mode={mode}, id={id}")
+        cdef rq.DvzRequest req = rq.dvz_create_sampler(&self._c_rqr, filter, mode)
+        if id != 0:
+            req.id = id
+        rq.dvz_requester_add(&self._c_rqr, req)
+        return req.id
+
     def create_dat(self, DvzBufferType type, DvzSize size, int id=0, int flags=0):
         logger.debug(f"create dat, type={type}, size={size}, id={id}, flags={flags}")
         cdef rq.DvzRequest req = rq.dvz_create_dat(&self._c_rqr, type, size, flags);
+        if id != 0:
+            req.id = id
+        rq.dvz_requester_add(&self._c_rqr, req)
+        return req.id
+
+    def create_tex(
+            self, DvzTexDims dims, DvzFormat format, int width=1, int height=1, int depth=1,
+            int id=0, int flags=0):
+        logger.debug(f"create tex, dims={dims}, id={id}, flags={flags}")
+        cdef uvec3 shape
+        shape[0] = width
+        shape[1] = height
+        shape[2] = depth
+        cdef rq.DvzRequest req = rq.dvz_create_tex(&self._c_rqr, dims, format, shape, flags);
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)
@@ -174,6 +196,27 @@ cdef class Requester:
 
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
             &self._c_rqr, dat, offset, data.size * data.itemsize, &data.data[0]);
+        rq.dvz_requester_add(&self._c_rqr, req)
+
+    def upload_tex(self, DvzId tex, np.ndarray data, int i=0, int j=0, int k=0, int w=1, int h=1, int d=1):
+        logger.debug(f"upload tex, tex={tex}")
+
+        # HACK: keep a reference of the NumPy array to prevent it from being collected
+        self._np_cache.append(data)
+
+        cdef uvec3 offset
+        offset[0] = i
+        offset[1] = j
+        offset[2] = k
+
+        data = np.atleast_3d(data)
+        cdef uvec3 shape
+        shape[0] = w
+        shape[1] = h
+        shape[2] = d
+
+        cdef rq.DvzRequest req = rq.dvz_upload_tex(
+            &self._c_rqr, tex, offset, shape, data.size * data.itemsize, &data.data[0]);
         rq.dvz_requester_add(&self._c_rqr, req)
 
     def record_begin(self, DvzId board):

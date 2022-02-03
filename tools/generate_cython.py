@@ -34,6 +34,25 @@ UNION_END = '# UNION END'
 FUNCTION_START = '# FUNCTION START'
 FUNCTION_END = '# FUNCTION END'
 
+REQUEST_FUNCTIONS = (
+    'dvz_request',
+    'dvz_create',
+    'dvz_update',
+    'dvz_upload_dat',
+    'dvz_upload_tex',
+    'dvz_bind_',
+    'dvz_set',
+    'dvz_record',
+    'dvz_delete',
+)
+
+RENDERER_FUNCTIONS = (
+    'dvz_init',
+    'dvz_host',
+    'dvz_renderer',
+)
+
+
 
 # Cython generation utils
 # -------------------------------------------------------------------------------------------------
@@ -179,30 +198,15 @@ def generate_cython():
     insert_into_file(path, ENUM_START, ENUM_END, generate_enums())
 
     # request.h
-    functions = (
-        'dvz_request',
-        'dvz_create',
-        'dvz_update',
-        'dvz_upload_dat',
-        'dvz_bind_',
-        'dvz_set',
-        'dvz_record',
-        'dvz_delete',
-    )
     path = ROOT_DIR / 'datoviz/request.pxd'
     insert_into_file(path, FUNCTION_START, FUNCTION_END,
-                     generate_functions(functions))
+                     generate_functions(REQUEST_FUNCTIONS))
     # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
 
     # renderer.h
-    functions = (
-        'dvz_init',
-        'dvz_host',
-        'dvz_renderer',
-    )
     path = ROOT_DIR / 'datoviz/renderer.pxd'
     insert_into_file(path, FUNCTION_START, FUNCTION_END,
-                     generate_functions(functions))
+                     generate_functions(RENDERER_FUNCTIONS))
     # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
 
 

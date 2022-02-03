@@ -32,6 +32,12 @@ cdef extern from "<datoviz/renderer.h>":
         uint32_t width
         uint32_t height
 
+    ctypedef struct DvzDat:
+        pass
+
+    ctypedef struct DvzTex:
+        pass
+
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -71,6 +77,10 @@ cdef extern from "<datoviz/renderer.h>":
     DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 
     DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
+
+    DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id)
+
+    DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
 
     uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
 
