@@ -23,6 +23,8 @@ int test_renderer_1(TstSuite*);
 
 int test_renderer_resize(TstSuite*);
 
+int test_renderer_image(TstSuite*);
+
 
 
 #endif

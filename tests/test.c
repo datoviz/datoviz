@@ -199,6 +199,7 @@ int dvz_run_tests(const char* match)
     // Testing renderer.
     TEST(test_renderer_1)
     TEST(test_renderer_resize)
+    TEST(test_renderer_image)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
