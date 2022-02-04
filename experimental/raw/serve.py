@@ -29,6 +29,7 @@ from datoviz import Requester, Renderer
 
 
 logger = logging.getLogger('datoviz')
+logger.setLevel("DEBUG")
 
 
 # -------------------------------------------------------------------------------------------------
@@ -194,6 +195,9 @@ def _download_chunk(probe_id, chunk_idx):
 # -------------------------------------------------------------------------------------------------
 
 class Model:
+    vmin = None
+    vmax = None
+
     def __init__(self, eid, probe_id, probe_idx=0):
         self.eid = eid
         self.probe_id = probe_id
@@ -277,6 +281,29 @@ class Model:
         out[:, -1] = out[:, -2]
         return out
 
+    def to_image(self, data):
+        # CAR
+        data -= data.mean(axis=0)
+
+        # Vrange
+        # self.vmin = data.min() if self.vmin is None else self.vmin
+        # self.vmax = data.max() if self.vmax is None else self.vmax
+        self.vmin = CMIN if self.vmin is None else self.vmin
+        self.vmax = CMAX if self.vmax is None else self.vmax
+
+        data = 255 * np.clip((data - self.vmin) /
+                             (self.vmax - self.vmin), 0, 1)
+
+        img = np.dstack(
+            (data, data, data, 255 * np.ones_like(data))).astype(np.uint8)
+        # # Colormap
+        # img = colormap(data.ravel().astype(np.double),
+        #                vmin=self.vmin, vmax=self.vmax, cmap='gray')
+        # img = img.reshape(data.shape + (-1,))
+        # assert img.shape == data.shape[:2] + (4,)
+
+        return img
+
     def spikes_in_range(self, t0, t1):
         imin = np.searchsorted(self.d.spike_times, t0)
         imax = np.searchsorted(self.d.spike_times, t1)
@@ -314,28 +341,11 @@ def get_array(data):
     if data.mode == 'base64':
         r = base64.decodebytes(data.buffer.encode('ascii'))
         return np.frombuffer(r, dtype=np.uint8)
-    elif data.mode == 'random':
-        n = data.count
-        assert n > 0
-        arr = np.zeros(
-            n, dtype=[('pos', np.float32, 3), ('color', np.uint8, 4)])
-        assert arr.itemsize == 16
-
-        if data.dist == 'uniform2D':
-            pos = np.random.uniform(size=(n, 2))
-        elif data.dist == 'normal2D':
-            pos = .25 * np.random.normal(size=(n, 2))
-
-        arr['pos'][:, :2] = pos
-
-        color = np.random.uniform(size=(n, 3), low=128, high=240)
-        arr['color'][:, :3] = color
-        arr['color'][:, 3] = 128
-        return arr
-    elif data.mode == 'raw_ephys':
+    elif data.mode == 'ibl_raw_ephys':
         m = Model(data.eid, data.probe_id, probe_idx=data.probe_idx)
         arr = m.get_data(data.t0, data.t1)
-        return arr
+        img = m.to_image(arr)
+        return img
 
     raise Exception(f"Data upload mode '{data.mode}' unsupported")
 
@@ -348,9 +358,13 @@ ROUTER = {
     ('create', 'board'): lambda r, req: r.create_board(int(req.content.width), int(req.content.height), id=int(req.id), background=req.content.background, flags=int(req.flags)),
     ('create', 'graphics'): lambda r, req: r.create_graphics(int(req.content.board), int(req.content.type), id=int(req.id), flags=int(req.flags)),
     ('create', 'dat'): lambda r, req: r.create_dat(int(req.content.type), int(req.content.size), id=int(req.id), flags=int(req.flags)),
+    ('create', 'tex'): lambda r, req: r.create_tex(int(req.content.dims), int(req.content.format), width=int(req.content.shape[0]), height=int(req.content.shape[1]), depth=int(req.content.shape[2]), id=int(req.id), flags=int(req.flags)),
+    ('create', 'sampler'): lambda r, req: r.create_sampler(int(req.content.filter), int(req.content.address_mode), id=int(req.id)),
     ('bind', 'dat'): lambda r, req: r.bind_dat(int(req.id), int(req.content.slot_idx), int(req.content.dat)),
+    ('bind', 'tex'): lambda r, req: r.bind_tex(int(req.id), int(req.content.slot_idx), int(req.content.tex), int(req.content.sampler)),
     ('set', 'vertex'): lambda r, req: r.set_vertex(int(req.id), int(req.content.dat)),
     ('upload', 'dat'): lambda r, req: r.upload_dat(int(req.id), int(req.content.offset), get_array(Bunch(req.content.data))),
+    ('upload', 'tex'): lambda r, req: r.upload_tex(int(req.id), get_array(Bunch(req.content.data)), w=int(req.content.shape[0]), h=int(req.content.shape[1]), d=int(req.content.shape[2])),
     ('record', 'begin'): lambda r, req: r.record_begin(int(req.id)),
     ('record', 'viewport'): lambda r, req: r.record_viewport(int(req.id), int(req.content.offset[0]), int(req.content.offset[1]), int(req.content.shape[0]), int(req.content.shape[0])),
     ('record', 'draw'): lambda r, req: r.record_draw(int(req.id), int(req.content.graphics), int(req.content.first_vertex), int(req.content.vertex_count)),
@@ -470,10 +484,12 @@ def plot_brain_regions(panel, regions):
 
 
 if __name__ == '__main__':
-    # eid, probe_id = get_eid_argv()
-    # print(eid)
-    # print(probe_id)
+    # eid, probe_id = get_eid_default()
+    # # print(eid)
+    # # print(probe_id)
     # m = Model(eid, probe_id, probe_idx=0)
     # arr = m.get_data(0, 1)
-    # print(arr.dtype, arr.shape)
+    # img = m.to_image(arr)
+    # print(img)
+
     asyncio.run(main())

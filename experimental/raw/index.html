@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Datoviz IBL test</title>
+
+    <!-- CSS styles -->
+    <style>
+        html {
+            background-color: white;
+        }
+    </style>
+
+    <!-- Array class -->
+    <script>
+        _DTYPE_MAPPING = {
+            "uint8": [Uint8Array, 1],
+
+            "uint16": [Uint16Array, 2],
+            "int16": [Int16Array, 2],
+
+            "uint32": [Uint32Array, 4],
+            "int32": [Int32Array, 4],
+
+            "float32": [Float32Array, 4],
+            "float64": [Float64Array, 8],
+        };
+
+        function tob64(buffer) {
+            var binary = '';
+            var bytes = new Uint8Array(buffer);
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        function StructArray(count, dtype) {
+            this.count = count;
+            this.dtype = dtype;
+            this.fields = {};
+            this.itemsize = 0;
+            for (let i = 0; i < dtype.length; i++) {
+
+                let name = dtype[i][0];
+                let dt = dtype[i][1];
+                let count = dtype[i][2];
+                let size = _DTYPE_MAPPING[dt][1];
+
+                this.fields[name] = {
+                    type: dt,
+                    count: count,
+                    itemsize: size,
+                    offset: this.itemsize
+                };
+                this.itemsize += count * size;
+            }
+            this.buffer = new ArrayBuffer(count * this.itemsize);
+        };
+
+        StructArray.prototype.set = function (idx, name, values) {
+            let field = this.fields[name];
+            let vt = _DTYPE_MAPPING[field.type][0];
+            let view = new vt(this.buffer, this.itemsize * idx + field.offset, field.count);
+            for (let i = 0; i < field.count; i++) {
+                view[i] = values[i];
+            }
+        };
+
+        StructArray.prototype.b64 = function () {
+            return tob64(this.buffer);
+        }
+
+    </script>
+
+    <!-- Visualization client -->
+    <script>
+        const DEFAULT_EID = "41872d7f-75cb-4445-bb1a-132b354c44f0";
+        const DEFAULT_PROBE_ID = "8b7c808f-763b-44c8-b273-63c6afbc6aae";
+
+        // Load the initial JSON.
+        function loadJSON() {
+            return {
+                "version": "1.0",
+                "requests": [
+                    {
+                        "action": "create",
+                        "type": "board",
+                        "id": 1,
+                        "content": {
+                            "width": 800,
+                            "height": 600,
+                            "background": [255, 255, 255]
+                        }
+                    },
+                    {
+                        "action": "create",
+                        "type": "graphics",
+                        "id": 2,
+                        "flags": 3,
+                        "content": {
+                            "board": 1,
+                            "type": 12
+                        }
+                    },
+
+
+
+                    {
+                        "action": "create",
+                        "type": "dat",
+                        "id": 3,
+                        "content": {
+                            "type": 2,
+                            "size": 120
+                        }
+                    },
+                    {
+                        "action": "set",
+                        "type": "vertex",
+                        "id": 2,
+                        "content": {
+                            "dat": 3
+                        }
+                    },
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 3,
+                        "content": {
+                            "offset": 0,
+                            "data": {
+                                "mode": "base64",
+                                "buffer": "AACAvwAAgL8AAAAAAAAAAAAAgD8AAIA/AACAvwAAAAAAAIA/AACAPwAAgD8AAIA/AAAAAAAAgD8AAAAAAACAPwAAgD8AAAAAAACAPwAAAAAAAIC/AACAPwAAAAAAAAAAAAAAAAAAgL8AAIC/AAAAAAAAAAAAAIA/"
+                            }
+                        }
+                    },
+
+
+
+
+                    {
+                        "action": "create",
+                        "type": "dat",
+                        "id": 4,
+                        "content": {
+                            "type": 5,
+                            "size": 16
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "dat",
+                        "id": 2,
+                        "content": {
+                            "dat": 4,
+                            "slot_idx": 2
+                        }
+                    },
+                    {
+                        "action": "upload",
+                        "type": "dat",
+                        "id": 4,
+                        "content": {
+                            "offset": 0,
+                            "data": {
+                                "mode": "base64",
+                                "buffer": "AACAPwAAAAAAAAAAAAAAAA=="
+                            }
+                        }
+                    },
+
+
+
+
+
+                    {
+                        "action": "create",
+                        "type": "tex",
+                        "id": 5,
+                        "content": {
+                            "dims": 2,
+                            "format": 37,
+                            "shape": [384, 3000, 1]
+                        }
+                    },
+                    {
+                        "action": "create",
+                        "type": "sampler",
+                        "id": 6,
+                        "content": {
+                            "filter": 0,
+                            "address_mode": 0,
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "tex",
+                        "id": 2,
+                        "content": {
+                            "tex": 5,
+                            "sampler": 6,
+                            "slot_idx": 3
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "tex",
+                        "id": 2,
+                        "content": {
+                            "tex": 5,
+                            "sampler": 6,
+                            "slot_idx": 4
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "tex",
+                        "id": 2,
+                        "content": {
+                            "tex": 5,
+                            "sampler": 6,
+                            "slot_idx": 5
+                        }
+                    },
+                    {
+                        "action": "bind",
+                        "type": "tex",
+                        "id": 2,
+                        "content": {
+                            "tex": 5,
+                            "sampler": 6,
+                            "slot_idx": 6
+                        }
+                    },
+                    {
+                        "action": "upload",
+                        "type": "tex",
+                        "id": 5,
+                        "content": {
+                            "offset": [0, 0, 0],
+                            "shape": [384, 3000, 1],
+                            "data": {
+                                "mode": "ibl_raw_ephys",
+                                "eid": DEFAULT_EID,
+                                "probe_id": DEFAULT_PROBE_ID,
+                                "probe_idx": 0,
+                                "t0": 0,
+                                "t1": 0.1
+                            }
+                        }
+                    },
+
+
+
+
+
+
+
+                    {
+                        "action": "record",
+                        "type": "begin",
+                        "id": 1
+                    },
+                    {
+                        "action": "record",
+                        "type": "viewport",
+                        "id": 1,
+                        "content": {
+                            "offset": [
+                                0,
+                                0
+                            ],
+                            "shape": [
+                                0,
+                                0
+                            ]
+                        }
+                    },
+                    {
+                        "action": "record",
+                        "type": "draw",
+                        "id": 1,
+                        "content": {
+                            "graphics": 2,
+                            "first_vertex": 0,
+                            "vertex_count": 6
+                        }
+                    },
+                    {
+                        "action": "record",
+                        "type": "end",
+                        "id": 1
+                    }
+                ]
+            };
+        }
+
+        // Generate a JSON request to update to a new URI.
+        function updateRequest(eid, probe_id, t0, t1) {
+            const req = {
+                "version": "1.0",
+                "requests": [
+                    {
+                        "action": "upload",
+                        "type": "tex",
+                        "id": 5,
+                        "content": {
+                            "offset": [0, 0, 0],
+                            "shape": [384, 3000, 1],
+                            "data": {
+                                "mode": "ibl_raw_ephys",
+                                "eid": eid,
+                                "probe_id": probe_id,
+                                "probe_idx": 0, // TODO
+                                "t0": t0,
+                                "t1": t1
+                            }
+                        }
+                    },
+                ]
+            };
+
+            return req;
+        }
+
+        // Send requests to the server.
+        function submit(contents) {
+            window.websocket.send(JSON.stringify(contents));
+        }
+
+        // Display an array buffer.
+        function show(arrbuf) {
+            const blob = new Blob([arrbuf]);
+            const url = URL.createObjectURL(blob);
+            const img = document.getElementById('img');
+            img.src = url;
+        }
+
+        // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
+        function load() {
+            window.websocket = new WebSocket("ws://localhost:1234/");
+            window.websocket.binaryType = "arraybuffer";
+
+            window.websocket.onopen = function () {
+                console.log('socket open');
+
+                var contents = loadJSON();
+                submit(contents);
+            };
+
+            window.websocket.onmessage = ({ data }) => {
+                // display the received image
+                if (data instanceof ArrayBuffer) {
+                    console.log("received image");
+                    show(data);
+                }
+            };
+
+            window.websocket.onclose = function () {
+                console.log('closing socket');
+            };
+
+            const slider = document.getElementById('time');
+            slider.addEventListener('change', function (e) {
+                var t0 = 100.0 * e.target.value / 100.0;
+                var t1 = t0 + .1;
+                console.log(t0, t1);
+
+                select(DEFAULT_EID, DEFAULT_PROBE_ID, t0, t1);
+            });
+
+            // window.zoom = 1;
+            // window.shift = 0;
+
+            // const img = document.getElementById('img');
+
+            // img.onwheel = function (e) {
+            //     e.preventDefault();
+            //     let d = -e.deltaY / Math.abs(e.deltaY);
+            //     let z = window.zoom;
+            //     let x = e.clientX;
+            //     let y = e.clientY;
+            //     let w = e.srcElement.width;
+
+            //     window.zoom *= (1 + .5 * d);
+            //     window.zoom = Math.max(1, window.zoom);
+
+            //     let center = -1 + 2 * x / w;
+            //     window.shift -= center * (1 / z - 1 / window.zoom);
+
+            //     if (window.zoom != z)
+            //         updateMVP();
+            // }
+
+            // img.ondblclick = function (e) {
+            //     reset();
+            // }
+        }
+
+        // Select another session.
+        function select(eid, probe_id, t0, t1) {
+            var contents = updateRequest(eid, probe_id, t0, t1);
+            submit(contents);
+        }
+
+
+        {
+            // // Return a MVP structure for a given pan and zoom.
+            // function mvp(px, py, zx, zy) {
+            //     // 3 matrices 4x4: model, view, proj, and finally time
+            //     var arr = new StructArray(1, [
+            //         ["model", "float32", 16],
+            //         ["view", "float32", 16],
+            //         ["proj", "float32", 16],
+            //         ["time", "float32", 1],
+            //     ]);
+
+            //     arr.set(0, "model", [
+            //         1, 0, 0, 0,
+            //         0, 1, 0, 0,
+            //         0, 0, 1, 0,
+            //         0, 0, 0, 1]);
+            //     arr.set(0, "view", [
+            //         1, 0, 0, 0,
+            //         0, 1, 0, 0,
+            //         0, 0, 1, 0,
+            //         px, py, -2, 1]);
+            //     arr.set(0, "proj", [
+            //         zx, 0, 0, 0,
+            //         0, zy, 0, 0,
+            //         0, 0, -0.1, 0,
+            //         0, 0, 0, 1]);
+            //     arr.set(0, "time", [0]);
+
+            //     return arr;
+            // }
+
+            // // Send the updated MVP struct to the server.
+            // function updateMVP() {
+            //     arr = mvp(window.shift, 0, window.zoom, 1);
+
+            //     const req = {
+            //         "version": "1.0",
+            //         "requests": [
+            //             {
+            //                 "action": "upload",
+            //                 "type": "dat",
+            //                 "id": 10,
+            //                 "content": {
+            //                     "offset": 0,
+            //                     "data": {
+            //                         "mode": "base64",
+            //                         "buffer": arr.b64()
+            //                     }
+            //                 }
+            //             },
+            //         ]
+            //     };
+
+            //     submit(req);
+            // }
+
+            // // Reset the view.
+            // function reset() {
+            //     window.zoom = 1;
+            //     window.shift = 0;
+
+            //     updateMVP();
+            // }
+        }
+
+    </script>
+</head>
+
+<body onload="load();">
+    <div style="width: 800px; padding: 0;">
+        <img width="800" height="600" id="img" style="width: 800px; margin: 0; border: 1px solid #aaa;" />
+        <div>
+            <label for="time">Time</label>
+            <input type="range" id="time" name="time" min="0" max="100" value="0" style="width: 100%">
+        </div>
+    </div>
+</body>
+
+</html>
