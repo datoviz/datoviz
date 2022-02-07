@@ -261,6 +261,22 @@ DVZ_EXPORT void dvz_panel_cell(DvzPanel* panel, uint32_t row, uint32_t col);
 DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform);
 
 /**
+ * Get the lim of the current view (only panzoom 2D for now).
+ *
+ * @param panel the panel
+ * @param[out] lim the panel limits, in data coordinates (x0, y0, x1, y1)
+ */
+DVZ_EXPORT void dvz_panel_lim_get(DvzPanel* panel, vec4 out);
+
+/**
+ * Set the lim of the current view (only panzoom 2D for now).
+ *
+ * @param panel the panel
+ * @param lim the panel limits, in data coordinates (x0, y0, x1, y1)
+ */
+DVZ_EXPORT void dvz_panel_lim_set(DvzPanel* panel, vec4 lim);
+
+/**
  * Set the coordinate system transposition (order and direction of the 3 xyz axes).
  *
  * @param panel the panel

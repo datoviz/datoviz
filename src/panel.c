@@ -1,4 +1,6 @@
 #include "../include/datoviz/panel.h"
+#include "../src/interact_utils.h"
+#include "../src/transforms_utils.h"
 
 
 
@@ -427,6 +429,53 @@ void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform)
     ASSERT(panel != NULL);
     panel->data_coords.transform = transform;
     log_warn("panel transform not yet implemented");
+}
+
+
+
+void dvz_panel_lim_get(DvzPanel* panel, vec4 out)
+{
+
+    ASSERT(panel != NULL);
+
+    dvec3 in_bl = {-1, +1, .5}, out_bl;
+    dvec3 in_tr = {+1, -1, .5}, out_tr;
+
+    DvzTransformChain tc = _transforms_cds(panel, DVZ_CDS_VULKAN, DVZ_CDS_DATA);
+    _transforms_apply(&tc, in_bl, out_bl);
+    _transforms_apply(&tc, in_tr, out_tr);
+
+    out[0] = out_bl[0];
+    out[1] = out_bl[1];
+    out[2] = out_tr[0];
+    out[3] = out_tr[1];
+}
+
+
+
+void dvz_panel_lim_set(DvzPanel* panel, vec4 lim)
+{
+    ASSERT(panel != NULL);
+
+    dvec3 in_bl, out_bl;
+    dvec3 in_tr, out_tr;
+
+    in_bl[0] = lim[0];
+    in_bl[1] = lim[1];
+    in_tr[0] = lim[2];
+    in_tr[1] = lim[3];
+
+    DvzTransformChain tc = _transforms_cds(panel, DVZ_CDS_DATA, DVZ_CDS_SCENE);
+    _transforms_apply(&tc, in_bl, out_bl);
+    _transforms_apply(&tc, in_tr, out_tr);
+
+    DvzPanzoom* p = &panel->controller->interacts[0].u.p;
+    _panzoom_reset(p);
+    p->camera_pos[0] = .5 * (out_bl[0] + out_tr[0]);
+    p->camera_pos[1] = .5 * (out_bl[1] + out_tr[1]);
+    p->zoom[0] = 2.0 / (out_tr[0] - out_bl[0]);
+    p->zoom[1] = 2.0 / (out_tr[1] - out_bl[1]);
+    _panzoom_update_mvp(panel->viewport, p, &panel->controller->interacts[0].mvp);
 }
 
 
