@@ -54,6 +54,11 @@ def on_mouse_click(x, y, button, modifiers=()):
     #   target_cds='data' / 'scene' / 'vulkan' / 'framebuffer' / 'window'
     xd, yd = p.pick(x, y)
     print(f"Pick at ({xd:.4f}, {yd:.4f}), {'+'.join(modifiers)} {button} click")
+    # We can also retrieve the panel limits in data coordinates (only for
+    # panzoom/axes2d controllers).
+    x0, y0, x1, y1 = p.get_lim()
+    print(f"panel limits: {x0:.3f}, {y0:.3f}, {x1:.3f}, {y1:.3f}")
+    p.set_lim((x0, y0, x1, y1))
 
 # We create a new GUI
 gui = c.gui("Test GUI")

@@ -1401,6 +1401,10 @@ cdef extern from "<datoviz/datoviz.h>":
 
     void dvz_panel_transform(DvzPanel* panel, DvzTransformType transform)
 
+    void dvz_panel_lim_get(DvzPanel* panel, vec4 out)
+
+    void dvz_panel_lim_set(DvzPanel* panel, vec4 lim)
+
     void dvz_panel_transpose(DvzPanel* panel, DvzCDSTranspose transpose)
 
     bint dvz_panel_contains(DvzPanel* panel, vec2 screen_pos)

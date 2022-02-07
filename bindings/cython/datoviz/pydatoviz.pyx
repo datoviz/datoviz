@@ -1292,6 +1292,19 @@ cdef class Panel:
         cv.dvz_transform(self._c_panel, source, pos_in, target, pos_out)
         return pos_out[0], pos_out[1]
 
+    def get_lim(self):
+        cdef cv.vec4 out
+        cv.dvz_panel_lim_get(self._c_panel, out);
+        return (out[0], out[1], out[2], out[3])
+
+    def set_lim(self, lim):
+        cdef cv.vec4 clim
+        clim[0] = lim[0]
+        clim[1] = lim[1]
+        clim[2] = lim[2]
+        clim[3] = lim[3]
+        cv.dvz_panel_lim_set(self._c_panel, clim);
+
     def link_to(self, Panel panel):
         cv.dvz_panel_link(&self._c_scene.grid, self._c_panel, panel._c_panel)
 
