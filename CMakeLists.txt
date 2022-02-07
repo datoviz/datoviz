@@ -349,6 +349,10 @@ elseif(CC_CLANG)
         -Wmissing-prototypes \
         ")
 
+    set(COMMON_FLAGS "${COMMON_FLAGS} \
+        -fdiagnostics-color=always \
+        -DFPNG_NO_SSE=0 -msse4.1 -mpclmul")  # for fpng
+
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
     set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
