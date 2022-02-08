@@ -350,7 +350,7 @@ elseif(CC_CLANG)
         ")
 
     # for fpng
-    if (CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
+    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
         set(COMMON_FLAGS "${COMMON_FLAGS} \
             -fdiagnostics-color=always \
             -DFPNG_NO_SSE=0 -msse4.1 -mpclmul")
