@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Datoviz IBL test</title>
+
+    <!-- CSS styles -->
+    <style>
+        html {
+            background-color: white;
+        }
+    </style>
+
+    <!-- Visualization client -->
+    <script>
+        const DEFAULT_EID = "41872d7f-75cb-4445-bb1a-132b354c44f0";
+
+        // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
+        function load() {
+
+            const slider = document.getElementById('time');
+            slider.addEventListener('change', function (e) {
+                var t0 = 100.0 * e.target.value / 100.0;
+                var t1 = t0 + .1;
+                console.log(t0, t1);
+
+                select(DEFAULT_EID, DEFAULT_PROBE_ID, t0, t1);
+            });
+
+        }
+
+    </script>
+</head>
+
+<body onload="load();">
+    <div style="width: 800px; padding: 0;">
+        <img width="800" height="600" id="img" style="width: 800px; margin: 0; border: 1px solid #aaa;" />
+        <div>
+            <label for="time">Time</label>
+            <input type="range" id="time" name="time" min="0" max="100" value="0" style="width: 100%">
+        </div>
+    </div>
+</body>
+
+</html>

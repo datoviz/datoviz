@@ -68,3 +68,6 @@ _old
 headers.json
 *.png
 joblib
+*.ipynb*
+*.npy
+*.npz
