@@ -36,8 +36,9 @@ def get_img(eid, time=0):
     t = float(time)
     t = np.clip(t, dt, duration - dt)
 
-    lossy8, _ = to_uint8(lossy.get(t - dt, t + dt))
-    return lossy8.T
+    arr = lossy.get(t - dt, t + dt).T
+    lossy8, _ = to_uint8(arr)
+    return lossy8
 
 
 @app.route('/<eid>/')

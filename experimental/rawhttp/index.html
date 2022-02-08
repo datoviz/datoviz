@@ -14,17 +14,33 @@
     <!-- Visualization client -->
     <script>
         const DEFAULT_EID = "41872d7f-75cb-4445-bb1a-132b354c44f0";
+        const RAW_URL = "http://localhost:1234/"
+
+        function makeURL(eid, t) {
+            return RAW_URL + eid + "/" + t.toFixed(2);
+        }
+
+        function goTo(t) {
+            t = t * 1.0;
+            console.log("Go to " + t + " seconds.");
+            img.src = makeURL(DEFAULT_EID, t);
+        }
 
         // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
         function load() {
 
             const slider = document.getElementById('time');
-            slider.addEventListener('change', function (e) {
-                var t0 = 100.0 * e.target.value / 100.0;
-                var t1 = t0 + .1;
-                console.log(t0, t1);
+            const number = document.getElementById('number');
+            const img = document.getElementById('img');
 
-                select(DEFAULT_EID, DEFAULT_PROBE_ID, t0, t1);
+            img.src = makeURL(DEFAULT_EID, 0);
+
+            slider.addEventListener('change', function (e) {
+                goTo(e.target.value);
+            });
+
+            number.addEventListener('change', function (e) {
+                goTo(e.target.value);
             });
 
         }
@@ -34,10 +50,13 @@
 
 <body onload="load();">
     <div style="width: 800px; padding: 0;">
-        <img width="800" height="600" id="img" style="width: 800px; margin: 0; border: 1px solid #aaa;" />
+        <img id="img" style="width: 1024px; height: 480px; margin: 0; border: 0px solid #000;" />
         <div>
             <label for="time">Time</label>
-            <input type="range" id="time" name="time" min="0" max="100" value="0" style="width: 100%">
+            <input type="range" id="time" name="time" min="0" max="60" value="0" step="0.01" style="width: 800px;"
+                oninput="this.nextElementSibling.value=this.value">
+            <input type="number" id="number" name="number" min="0" max="60" value="0" step="0.01" style="width: 100px;"
+                oninput="this.previousElementSibling.value=this.value">
         </div>
     </div>
 </body>
