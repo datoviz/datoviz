@@ -5,7 +5,7 @@ import numpy as np
 import png
 from flask import Flask, send_file
 
-from mtscomp.lossy import decompress_lossy, to_uint8
+from mtscomp.lossy import decompress_lossy
 
 
 app = Flask(__name__)
@@ -36,9 +36,8 @@ def get_img(eid, time=0):
     t = float(time)
     t = np.clip(t, dt, duration - dt)
 
-    arr = lossy.get(t - dt, t + dt).T
-    lossy8, _ = to_uint8(arr)
-    return lossy8
+    arr = lossy.get(t - dt, t + dt, cast_to_uint8=True).T
+    return arr
 
 
 @app.route('/<eid>/')

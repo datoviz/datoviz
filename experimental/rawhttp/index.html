@@ -13,6 +13,21 @@
 
     <!-- Visualization client -->
     <script>
+
+        // https://stackoverflow.com/a/27078401/1595060
+        function throttle(callback, limit) {
+            var waiting = false;                      // Initially, we're not waiting
+            return function () {                      // We return a throttled function
+                if (!waiting) {                       // If we're not waiting
+                    callback.apply(this, arguments);  // Execute users function
+                    waiting = true;                   // Prevent future invocations
+                    setTimeout(function () {          // After a period of time
+                        waiting = false;              // And allow future invocations
+                    }, limit);
+                }
+            }
+        }
+
         const DEFAULT_EID = "41872d7f-75cb-4445-bb1a-132b354c44f0";
         const RAW_URL = "http://localhost:1234/"
 
@@ -26,6 +41,8 @@
             img.src = makeURL(DEFAULT_EID, t);
         }
 
+        goToThrottled = throttle(goTo, 500);
+
         // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
         function load() {
 
@@ -35,12 +52,12 @@
 
             img.src = makeURL(DEFAULT_EID, 0);
 
-            slider.addEventListener('change', function (e) {
-                goTo(e.target.value);
+            slider.addEventListener('input', function (e) {
+                goToThrottled(e.target.value);
             });
 
-            number.addEventListener('change', function (e) {
-                goTo(e.target.value);
+            number.addEventListener('input', function (e) {
+                goToThrottled(e.target.value);
             });
 
         }
