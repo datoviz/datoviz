@@ -3,6 +3,7 @@
 
 <head>
     <title>Datoviz IBL test</title>
+    <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script>
 
     <!-- CSS styles -->
     <style>
@@ -38,19 +39,49 @@
         function goTo(t) {
             t = t * 1.0;
             console.log("Go to " + t + " seconds.");
-            img.src = makeURL(DEFAULT_EID, t);
+            // img.src = makeURL(DEFAULT_EID, t);
+            Plotly.update('myDiv', [], {
+                "images[0].source": makeURL(DEFAULT_EID, t),
+                "xaxis.ticktext": [(t - 0.1).toFixed(3), t.toFixed(3), (t + 0.1).toFixed(3)]
+            });
         }
 
-        goToThrottled = throttle(goTo, 500);
+        goToThrottled = throttle(goTo, 200);
 
         // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
         function load() {
+            Plotly.newPlot('myDiv', [], {
+                images: [
+                    {
+                        "source": makeURL(DEFAULT_EID, 0),
+                        "xref": "x",
+                        "yref": "y",
+                        "x": 0,
+                        "y": 0,
+                        "sizex": 0.2,
+                        "sizey": 385,
+                        "opacity": 1,
+                        "xanchor": "left",
+                        "yanchor": "bottom",
+                        "sizing": "stretch"
+                    },
+                ],
+                xaxis: {
+                    range: [0, 0.2],
+                    tickmode: "array",
+                    tickvals: [0, 0.1, 0.2],
+                    ticktext: ['0.000', '0.100', '0.200']
+                },
+                yaxis: {
+                    range: [0, 385]
+                }
+            }, { scrollZoom: true })
 
             const slider = document.getElementById('time');
             const number = document.getElementById('number');
             const img = document.getElementById('img');
 
-            img.src = makeURL(DEFAULT_EID, 0);
+            // img.src = makeURL(DEFAULT_EID, 0);
 
             slider.addEventListener('input', function (e) {
                 goToThrottled(e.target.value);
@@ -66,16 +97,20 @@
 </head>
 
 <body onload="load();">
-    <div style="width: 800px; padding: 0;">
-        <img id="img" style="width: 1024px; height: 480px; margin: 0; border: 0px solid #000;" />
-        <div>
-            <label for="time">Time</label>
-            <input type="range" id="time" name="time" min="0" max="60" value="0" step="0.01" style="width: 800px;"
-                oninput="this.nextElementSibling.value=this.value">
-            <input type="number" id="number" name="number" min="0" max="60" value="0" step="0.01" style="width: 100px;"
-                oninput="this.previousElementSibling.value=this.value">
-        </div>
+
+    <!-- Image -->
+    <!-- <img id="img" style="width: 1024px; height: 480px; margin: 0; border: 0px solid #000;" /> -->
+    <div id="myDiv"></div>
+
+    <!-- Slider -->
+    <div>
+        <label for="time">Time</label>
+        <input type="range" id="time" name="time" min="0" max="60" value="0" step="0.01" style="width: 800px;"
+            oninput="this.nextElementSibling.value=this.value">
+        <input type="number" id="number" name="number" min="0" max="60" value="0" step="0.01" style="width: 100px;"
+            oninput="this.previousElementSibling.value=this.value">
     </div>
+
 </body>
 
 </html>

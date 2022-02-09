@@ -4,11 +4,13 @@ from pathlib import Path
 import numpy as np
 import png
 from flask import Flask, send_file
+from flask_cors import CORS, cross_origin
 
 from mtscomp.lossy import decompress_lossy
 
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 
 
 TIME_HALF_WINDOW = 0.1  # in seconds
@@ -41,18 +43,21 @@ def get_img(eid, time=0):
 
 
 @app.route('/<eid>/')
+@cross_origin(supports_credentials=True)
 def serve_default(eid):
     img = get_img(eid)
     return send_image(img)
 
 
 @app.route('/<eid>/<float:time>')
+@cross_origin(supports_credentials=True)
 def serve_time_float(eid, time=0):
     img = get_img(eid, time=time)
     return send_image(img)
 
 
 @app.route('/<eid>/<int:time>')
+@cross_origin(supports_credentials=True)
 def serve_time_int(eid, time=0):
     img = get_img(eid, time=time)
     return send_image(img)
