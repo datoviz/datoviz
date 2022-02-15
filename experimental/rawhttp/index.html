@@ -15,19 +15,37 @@
     <!-- Visualization client -->
     <script>
 
-        // https://stackoverflow.com/a/27078401/1595060
-        function throttle(callback, limit) {
-            var waiting = false;                      // Initially, we're not waiting
-            return function () {                      // We return a throttled function
-                if (!waiting) {                       // If we're not waiting
-                    callback.apply(this, arguments);  // Execute users function
-                    waiting = true;                   // Prevent future invocations
-                    setTimeout(function () {          // After a period of time
-                        waiting = false;              // And allow future invocations
-                    }, limit);
+        function throttle(func, wait, options) {
+            var context, args, result;
+            var timeout = null;
+            var previous = 0;
+            if (!options) options = {};
+            var later = function () {
+                previous = options.leading === false ? 0 : Date.now();
+                timeout = null;
+                result = func.apply(context, args);
+                if (!timeout) context = args = null;
+            };
+            return function () {
+                var now = Date.now();
+                if (!previous && options.leading === false) previous = now;
+                var remaining = wait - (now - previous);
+                context = this;
+                args = arguments;
+                if (remaining <= 0 || remaining > wait) {
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        timeout = null;
+                    }
+                    previous = now;
+                    result = func.apply(context, args);
+                    if (!timeout) context = args = null;
+                } else if (!timeout && options.trailing !== false) {
+                    timeout = setTimeout(later, remaining);
                 }
-            }
-        }
+                return result;
+            };
+        };
 
         const DEFAULT_EID = "41872d7f-75cb-4445-bb1a-132b354c44f0";
         const RAW_URL = "http://localhost:1234/"
@@ -46,7 +64,7 @@
             });
         }
 
-        goToThrottled = throttle(goTo, 200);
+        goToThrottled = throttle(goTo, 100);
 
         // On load, create the websocket and set the onnopen, onmessage, and onclose callbacks.
         function load() {

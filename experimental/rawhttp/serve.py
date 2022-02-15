@@ -49,15 +49,8 @@ def serve_default(eid):
     return send_image(img)
 
 
-@app.route('/<eid>/<float:time>')
+@app.route('/<eid>/<time>')
 @cross_origin(supports_credentials=True)
 def serve_time_float(eid, time=0):
-    img = get_img(eid, time=time)
-    return send_image(img)
-
-
-@app.route('/<eid>/<int:time>')
-@cross_origin(supports_credentials=True)
-def serve_time_int(eid, time=0):
-    img = get_img(eid, time=time)
+    img = get_img(eid, time=float(time))
     return send_image(img)
