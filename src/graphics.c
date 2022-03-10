@@ -136,6 +136,35 @@ _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTop
 
 
 /*************************************************************************************************/
+/*  Raster graphics                                                                              */
+/*************************************************************************************************/
+
+static void _graphics_raster(DvzRenderpass* renderpass, DvzGraphics* graphics)
+{
+    SHADER(VERTEX, "graphics_raster_vert")
+    SHADER(FRAGMENT, "graphics_raster_frag")
+    PRIMITIVE(POINT_LIST)
+
+    // Depth test flag.
+    if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+        dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
+
+    ATTR_BEGIN(DvzGraphicsRasterVertex)
+    ATTR_POS(DvzGraphicsRasterVertex, pos)
+    ATTR(DvzGraphicsRasterVertex, VK_FORMAT_R8_SNORM, depth)
+    ATTR(DvzGraphicsRasterVertex, VK_FORMAT_R8_UNORM, cmap_val)
+    ATTR(DvzGraphicsRasterVertex, VK_FORMAT_R8_UNORM, alpha)
+    ATTR(DvzGraphicsRasterVertex, VK_FORMAT_R8_UNORM, size)
+
+    _common_slots(graphics);
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    CREATE
+}
+
+
+
+/*************************************************************************************************/
 /*  Agg marker graphics                                                                          */
 /*************************************************************************************************/
 
@@ -426,6 +455,11 @@ void dvz_graphics_builtin(
 
     case DVZ_GRAPHICS_TRIANGLE_FAN:
         _graphics_basic(renderpass, graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN);
+        break;
+
+
+    case DVZ_GRAPHICS_RASTER:
+        _graphics_raster(renderpass, graphics);
         break;
 
 

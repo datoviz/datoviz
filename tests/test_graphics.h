@@ -33,6 +33,8 @@ int test_graphics_triangle_strip(TstSuite*);
 
 int test_graphics_triangle_fan(TstSuite*);
 
+int test_graphics_raster(TstSuite*);
+
 int test_graphics_marker(TstSuite*);
 
 int test_graphics_segment(TstSuite*);

@@ -302,6 +302,80 @@ int test_graphics_triangle_fan(TstSuite* suite)
 
 
 
+int test_graphics_raster(TstSuite* suite)
+{
+    // Create the board and context
+    GRAPHICS_BEGIN
+
+    // Create the graphics.
+    DvzPipe pipe = dvz_pipe(gpu);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    dvz_graphics_builtin(&board.renderpass, graphics, DVZ_GRAPHICS_RASTER, 0);
+
+    // Vertex count and params.
+    uint32_t n = 16;
+    DvzSize size = n * n * sizeof(DvzGraphicsRasterVertex);
+    ASSERT(n > 0);
+
+    // Create the dats.
+    DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+    ASSERT(dat_vertex != NULL);
+
+    // Slots 0 and 1.
+    GRAPHICS_MVP
+    GRAPHICS_VIEWPORT
+
+    // Slot 2: params.
+    DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsRasterParams), 0);
+    ASSERT(dat_params != NULL);
+    DvzGraphicsRasterParams params = {.alpha_max = 1.0, .cmap_id = DVZ_CMAP_HSV, .size_max = 30.0};
+    dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
+
+    // Create the bindings.
+    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_dat(&pipe, 0, dat_mvp);
+    dvz_pipe_dat(&pipe, 1, dat_viewport);
+    dvz_pipe_dat(&pipe, 2, dat_params);
+    dvz_pipe_create(&pipe);
+
+    // Upload the triangle data.
+    DvzGraphicsRasterVertex* data = (DvzGraphicsRasterVertex*)calloc(size, 1);
+    uint32_t k = 0;
+    DvzGraphicsRasterVertex* vertex = data;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        for (uint32_t j = 0; j < n; j++)
+        {
+            vertex->pos[0] = .90 * (-1 + 2 * (float)j / (n - 1));
+            vertex->pos[1] = .90 * (1 - 2 * (float)i / (n - 1));
+            vertex->cmap_val = i * 256 / n;
+            vertex->alpha = 128 + j * 128 / n;
+            vertex->size = 128 + j * 128 / n;
+            vertex = &data[++k];
+        }
+    }
+    dvz_dat_upload(dat_vertex, 0, size, data, true);
+
+    // Commands.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    dvz_board_begin(&board, &cmds, 0);
+    dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, n * n);
+    dvz_board_end(&board, &cmds, 0);
+    dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Screenshot.
+    GRAPHICS_SCREENSHOT("raster")
+
+    // Destruction
+    GRAPHICS_END
+
+    FREE(data);
+    return 0;
+}
+
+
+
 int test_graphics_marker(TstSuite* suite)
 {
     ASSERT(suite != NULL);

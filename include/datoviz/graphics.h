@@ -43,6 +43,9 @@ typedef struct DvzViewport DvzViewport;
 
 typedef struct DvzGraphicsPointVertex DvzGraphicsPointVertex;
 
+typedef struct DvzGraphicsRasterVertex DvzGraphicsRasterVertex;
+typedef struct DvzGraphicsRasterParams DvzGraphicsRasterParams;
+
 typedef struct DvzGraphicsMarkerVertex DvzGraphicsMarkerVertex;
 typedef struct DvzGraphicsMarkerParams DvzGraphicsMarkerParams;
 
@@ -131,6 +134,28 @@ struct DvzGraphicsPointVertex
     vec3 pos;    /* position */
     cvec4 color; /* color */
     float size;  /* marker size, in pixels */
+};
+
+
+
+/*************************************************************************************************/
+/*  Graphics raster                                                                              */
+/*************************************************************************************************/
+
+struct DvzGraphicsRasterVertex
+{
+    vec2 pos;         /* position */
+    uint8_t depth;    /* depth */
+    uint8_t cmap_val; /* colormap value */
+    uint8_t alpha;    /* rescaled alpha value (255 = alpha_max) */
+    uint8_t size;     /* rescale marker size (255 = size_max) */
+};
+
+struct DvzGraphicsRasterParams
+{
+    float alpha_max;  /* alpha value corresponding to vertex.alpha = 255 */
+    float size_max;   /* marker size (px) corresponding to vertex.size = 255 */
+    uint32_t cmap_id; /* id of the colormap */
 };
 
 
