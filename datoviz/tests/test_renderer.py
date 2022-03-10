@@ -68,7 +68,7 @@ def test_renderer_image():
     with rq.requests():
         board = rq.create_board(WIDTH, HEIGHT)
         # HACK: create MVP and viewport dat
-        graphics = rq.create_graphics(board, 12, flags=3)
+        graphics = rq.create_graphics(board, 13, flags=3)
 
         # Vertex buffer
         dat = rq.create_dat(2, 6 * 20)
