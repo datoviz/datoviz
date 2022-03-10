@@ -153,8 +153,8 @@ struct DvzGraphicsRasterVertex
 
 struct DvzGraphicsRasterParams
 {
-    float alpha_max;  /* alpha value corresponding to vertex.alpha = 255 */
-    float size_max;   /* marker size (px) corresponding to vertex.size = 255 */
+    vec2 alpha_range; /* alpha range for rescaling of vertex.alpha */
+    vec2 size_range;  /* marker size (px) range for rescaling of vertex.size */
     uint32_t cmap_id; /* id of the colormap */
 };
 

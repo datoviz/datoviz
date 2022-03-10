@@ -13,8 +13,8 @@ layout (location = 0) out vec4 out_color;
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    float alpha_max;
-    float size_max;
+    vec2 alpha_range;
+    vec2 size_range;
     int cmap_id;
 } params;
 
@@ -25,9 +25,9 @@ void main() {
 
     // Marker color.
     out_color = colormap(params.cmap_id, cmap_val);
-    out_color.a = alpha * params.alpha_max;
+    out_color.a = mix(params.alpha_range.x, params.alpha_range.y, alpha);
 
     // Marker size.
-    float out_size = size * params.size_max;
+    float out_size = mix(params.size_range.x, params.size_range.y, size);
     gl_PointSize = out_size;
 }

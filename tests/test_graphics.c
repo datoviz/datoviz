@@ -328,7 +328,8 @@ int test_graphics_raster(TstSuite* suite)
     // Slot 2: params.
     DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsRasterParams), 0);
     ASSERT(dat_params != NULL);
-    DvzGraphicsRasterParams params = {.alpha_max = 1.0, .cmap_id = DVZ_CMAP_HSV, .size_max = 30.0};
+    DvzGraphicsRasterParams params = {
+        .alpha_range = {0.5, 1.0}, .cmap_id = DVZ_CMAP_HSV, .size_range = {10.0, 30.0}};
     dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
 
     // Create the bindings.
@@ -349,8 +350,8 @@ int test_graphics_raster(TstSuite* suite)
             vertex->pos[0] = .90 * (-1 + 2 * (float)j / (n - 1));
             vertex->pos[1] = .90 * (1 - 2 * (float)i / (n - 1));
             vertex->cmap_val = i * 256 / n;
-            vertex->alpha = 128 + j * 128 / n;
-            vertex->size = 128 + j * 128 / n;
+            vertex->alpha = j * 256 / n;
+            vertex->size = j * 256 / n;
             vertex = &data[++k];
         }
     }
