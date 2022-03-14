@@ -38,6 +38,13 @@ vec4 hsv2rgb(vec4 c)
 }
 
 
+
+vec4 binary(float x) {
+    float u = 1 - x;
+    return vec4(u, u, u, 1);
+}
+
+
 // The following colormaps come from (quintic approximation):
 // https://www.shadertoy.com/view/XtGGzG
 vec4 viridis(float x)
@@ -208,7 +215,8 @@ vec4 jet(float x) {
 
 vec4 colormap(int cmap, float x) {
     CLAMP
-    if (cmap == DVZ_CMAP_HSV) return hsv(x);
+    if (cmap == DVZ_CMAP_BINARY) return binary(x);
+    else if (cmap == DVZ_CMAP_HSV) return hsv(x);
     else if (cmap == DVZ_CMAP_INFERNO) return inferno(x);
     else if (cmap == DVZ_CMAP_MAGMA) return magma(x);
     else if (cmap == DVZ_CMAP_PLASMA) return plasma(x);
@@ -222,5 +230,5 @@ vec4 colormap(int cmap, float x) {
     else if (cmap == DVZ_CMAP_SUMMER) return summer(x);
     else if (cmap == DVZ_CMAP_WINTER) return winter(x);
     else if (cmap == DVZ_CMAP_JET) return jet(x);
-    else vec4(x, x, x, 1);
+    else return vec4(x, x, x, 1);
 }
