@@ -329,7 +329,10 @@ int test_graphics_raster(TstSuite* suite)
     DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsRasterParams), 0);
     ASSERT(dat_params != NULL);
     DvzGraphicsRasterParams params = {
-        .alpha_range = {0.5, 1.0}, .cmap_id = DVZ_CMAP_HSV, .size_range = {10.0, 30.0}};
+        .alpha_range = {0.5, 1.0},
+        .cmap_range = {0, 1},
+        .size_range = {10.0, 30.0},
+        .cmap_id = DVZ_CMAP_HSV};
     dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
 
     // Create the bindings.

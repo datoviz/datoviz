@@ -155,6 +155,7 @@ struct DvzGraphicsRasterParams
 {
     vec2 alpha_range; /* alpha range for rescaling of vertex.alpha */
     vec2 size_range;  /* marker size (px) range for rescaling of vertex.size */
+    vec2 cmap_range;  /* cmap range for rescaling of vertex.cmap_val */
     uint32_t cmap_id; /* id of the colormap */
 };
 

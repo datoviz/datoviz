@@ -15,6 +15,7 @@ layout(std140, binding = USER_BINDING) uniform Params
 {
     vec2 alpha_range;
     vec2 size_range;
+    vec2 cmap_range;
     int cmap_id;
 } params;
 
@@ -24,7 +25,8 @@ void main() {
     gl_Position = transform(vec3(pos, depth));
 
     // Marker color.
-    out_color = colormap(params.cmap_id, cmap_val);
+    float c = mix(params.cmap_range.x, params.cmap_range.y, cmap_val);
+    out_color = colormap(params.cmap_id, c);
     out_color.a = mix(params.alpha_range.x, params.alpha_range.y, alpha);
 
     // Marker size.
