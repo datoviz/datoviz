@@ -679,7 +679,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 
         if (dvz_map_get(rd->map, req.id) != NULL)
         {
-            log_error("error while creating the object, this ID already exists");
+            log_error("error while creating the object, id Ox%" PRIx64 " already exists", req.id);
             break;
         }
 
