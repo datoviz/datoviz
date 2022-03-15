@@ -349,12 +349,14 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     ASSERT(dat->br.size > 0);
     ASSERT(req.content.dat_upload.size > 0);
 
+    // Make sure the target dat is large enough to hold the uploaded data.
     if (req.content.dat_upload.size > dat->br.aligned_size)
     {
-        log_error(
-            "data to upload is larger (%s) than the dat size (%s)",
+        log_debug(
+            "data to upload is larger (%s) than the dat size (%s), resizing it",
             pretty_size(req.content.dat_upload.size), pretty_size(dat->br.aligned_size));
-        return NULL;
+        dvz_dat_resize(dat, req.content.dat_upload.size);
+        ASSERT(req.content.dat_upload.size <= dat->br.aligned_size);
     }
 
     log_trace(

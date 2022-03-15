@@ -161,13 +161,27 @@ int test_renderer_resize(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
-    // Resize the dat.
-    req = dvz_resize_dat(&rqr, dat_id, 32);
+    DvzSize size = 1024;
+    uint8_t* data = (uint8_t*)calloc(size, 1);
+    for (uint32_t i = 0; i < size; i++)
+        data[i] = i % 256;
+    // NOTE: upload a buffer larger than the dat, checking that automatic resize will work.
+    req = dvz_upload_dat(&rqr, dat_id, 0, size, data);
     dvz_renderer_request(rd, req);
+    FREE(data);
 
     // Check dat resizing.
     DvzDat* dat = dvz_renderer_dat(rd, dat_id);
-    AT(dat->br.size == 32);
+    AT(dat->br.size == size);
+
+
+
+    // Resize the dat.
+    req = dvz_resize_dat(&rqr, dat_id, 2 * size);
+    dvz_renderer_request(rd, req);
+
+    // Check dat resizing.
+    AT(dat->br.size == 2 * size);
 
 
 
