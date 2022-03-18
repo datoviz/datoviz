@@ -1016,6 +1016,9 @@ int test_graphics_volume_slice(TestContext* tc)
 
 int test_graphics_volume_1(TestContext* tc)
 {
+    // Disable for now, not tested.
+    return 0;
+
     DvzCanvas* canvas = tc->canvas;
     DvzContext* context = tc->context;
 

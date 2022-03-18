@@ -104,7 +104,10 @@ static void _graphics_basic(DvzCanvas* canvas, DvzGraphics* graphics, VkPrimitiv
 
     // Depth test flag.
     if ((graphics->flags & DVZ_GRAPHICS_FLAGS_DEPTH_TEST) != 0)
+    {
+        log_trace("enable depth test");
         dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
+    }
 
     ATTR_BEGIN(DvzVertex)
     ATTR_POS(DvzVertex, pos)

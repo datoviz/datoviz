@@ -76,7 +76,7 @@ static void _visual_line(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -207,7 +207,8 @@ static void _visual_line_strip(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE_STRIP, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_LINE_STRIP, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -249,7 +250,8 @@ static void _visual_triangle(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -290,7 +292,8 @@ static void _visual_triangle_strip(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_STRIP, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_STRIP, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -326,7 +329,8 @@ static void _visual_triangle_fan(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_FAN, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE_FAN, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -434,7 +438,8 @@ static void _visual_rectangle(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -674,7 +679,8 @@ static void _visual_polygon(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TRIANGLE, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -875,7 +881,7 @@ static void _visual_path(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_PATH, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_PATH, visual->flags));
 
     // Sources
     dvz_visual_source(
@@ -1082,7 +1088,7 @@ static void _visual_text(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, visual->flags));
 
     // Sources.
 
@@ -1236,7 +1242,7 @@ static void _visual_image(DvzVisual* visual)
     // TODO: customizable dtype for the image
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE, visual->flags));
 
     // Sources
     dvz_visual_source(                                               // vertex buffer
@@ -1294,7 +1300,8 @@ static void _visual_image_cmap(DvzVisual* visual)
     // TODO: customizable dtype for the image
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE_CMAP, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_IMAGE_CMAP, visual->flags));
 
     // Sources
     dvz_visual_source(                                               // vertex buffer
@@ -1657,8 +1664,8 @@ static void _visual_axes_2D(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_SEGMENT, 0));
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_SEGMENT, visual->flags));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_TEXT, visual->flags));
 
     // Segment graphics: sources.
     {
@@ -1860,7 +1867,7 @@ static void _visual_mesh(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MESH, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_MESH, visual->flags));
 
     // Sources
     dvz_visual_source(                                               // vertex buffer
@@ -2001,7 +2008,7 @@ static void _visual_volume(DvzVisual* visual)
     DvzProp* prop = NULL;
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, 0));
+    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME, visual->flags));
 
     // Sources
     dvz_visual_source(                                               // vertex buffer
@@ -2174,7 +2181,8 @@ static void _visual_volume_slice(DvzVisual* visual)
     // TODO: customizable dtype for the image
 
     // Graphics.
-    dvz_visual_graphics(visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME_SLICE, 0));
+    dvz_visual_graphics(
+        visual, dvz_graphics_builtin(canvas, DVZ_GRAPHICS_VOLUME_SLICE, visual->flags));
 
     // Sources
     dvz_visual_source(                                               // vertex buffer
