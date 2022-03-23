@@ -387,7 +387,7 @@ vec4 qualmap(float x) {
 
 vec4 random_colormap(float x) {
     vec3 rgb = vec3(random(x), random(x*2), random(x*3));
-    return vec4(.5 + .5 * rgb, 1);
+    return vec4(.25 + .75 * rgb, 1);
 }
 
 
