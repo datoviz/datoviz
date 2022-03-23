@@ -1,4 +1,22 @@
+/*************************************************************************************************/
+/*  Colormaps                                                                                    */
+/*************************************************************************************************/
+
+#include "random.glsl"
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
 #define CLAMP x = clamp(x, 0, 1);
+
+
+
+/*************************************************************************************************/
+/*  Colormap constants                                                                           */
+/*************************************************************************************************/
 
 #define DVZ_CMAP_BINARY 0
 #define DVZ_CMAP_HSV 1
@@ -16,8 +34,16 @@
 #define DVZ_CMAP_SUMMER 34
 #define DVZ_CMAP_WINTER 35
 #define DVZ_CMAP_JET 61
-#define DVZ_CMAP_QUALMAP 124 // custom red-green gradient with fixed perceived luminance
 
+// Custom colormap constants.
+#define DVZ_CMAP_QUALMAP 124 // custom red-green gradient with fixed perceived luminance
+#define DVZ_CMAP_RANDOM 239
+
+
+
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
 
 vec4 rgb2hsv(vec4 c)
 {
@@ -39,6 +65,10 @@ vec4 hsv2rgb(vec4 c)
 }
 
 
+
+/*************************************************************************************************/
+/*  Built-in colormaps                                                                           */
+/*************************************************************************************************/
 
 vec4 binary(float x) {
     float u = 1 - x;
@@ -147,8 +177,79 @@ vec4 cool(float x) {
 
 
 
+float _hsv_red(float x) {
+    if (x < 0.5) return -6.0 * x + 67.0 / 32.0;
+    else return 6.0 * x - 79.0 / 16.0;
+}
+float _hsv_green(float x) {
+    if (x < 0.4) return 6.0 * x - 3.0 / 32.0;
+    else return -6.0 * x + 79.0 / 16.0;
+}
+float _hsv_blue(float x) {
+    if (x < 0.7) return 6.0 * x - 67.0 / 32.0;
+    else return -6.0 * x + 195.0 / 32.0;
+}
+vec4 hsv(float x) {
+    CLAMP
+    float r = clamp(_hsv_red(x), 0.0, 1.0);
+    float g = clamp(_hsv_green(x), 0.0, 1.0);
+    float b = clamp(_hsv_blue(x), 0.0, 1.0);
+    return vec4(r, g, b, 1.0);
+}
+
+
+
+float _bone_red(float x) {
+    if (x < 0.75) return 8.0 / 9.0 * x - (13.0 + 8.0 / 9.0) / 1000.0;
+    else return (13.0 + 8.0 / 9.0) / 10.0 * x - (3.0 + 8.0 / 9.0) / 10.0;
+}
+float _bone_green(float x) {
+    if (x <= 0.375) return 8.0 / 9.0 * x - (13.0 + 8.0 / 9.0) / 1000.0;
+    else if (x <= 0.75) return (1.0 + 2.0 / 9.0) * x - (13.0 + 8.0 / 9.0) / 100.0;
+    else return 8.0 / 9.0 * x + 1.0 / 9.0;
+}
+float _bone_blue(float x) {
+    if (x <= 0.375) return (1.0 + 2.0 / 9.0) * x - (13.0 + 8.0 / 9.0) / 1000.0;
+    else return 8.0 / 9.0 * x + 1.0 / 9.0;
+}
+vec4 bone(float x) {
+    CLAMP
+    float r = clamp(_bone_red(x), 0.0, 1.0);
+    float g = clamp(_bone_green(x), 0.0, 1.0);
+    float b = clamp(_bone_blue(x), 0.0, 1.0);
+    return vec4(r, g, b, 1.0);
+}
+
+
+
+float _jet_red(float x) {
+    if (x < 0.7) return 4.0 * x - 1.5;
+    else return -4.0 * x + 4.5;
+}
+float _jet_green(float x) {
+    if (x < 0.5) return 4.0 * x - 0.5;
+    else return -4.0 * x + 3.5;
+}
+float _jet_blue(float x) {
+    if (x < 0.3) return 4.0 * x + 0.5;
+    else return -4.0 * x + 2.5;
+}
+vec4 jet(float x) {
+    CLAMP
+    float r = clamp(_jet_red(x), 0.0, 1.0);
+    float g = clamp(_jet_green(x), 0.0, 1.0);
+    float b = clamp(_jet_blue(x), 0.0, 1.0);
+    return vec4(r, g, b, 1.0);
+}
+
+
+
+/*************************************************************************************************/
+/*  Custom colormaps                                                                             */
+/*************************************************************************************************/
+
 vec4 qualmap(float x) {
-if (x < 0.008) return vec4(1.000, 0.227, 0.142, 1);
+    if (x < 0.008) return vec4(1.000, 0.227, 0.142, 1);
     else if (x < 0.016) return vec4(1.000, 0.229, 0.135, 1);
     else if (x < 0.023) return vec4(1.000, 0.230, 0.129, 1);
     else if (x < 0.031) return vec4(1.000, 0.232, 0.122, 1);
@@ -280,69 +381,13 @@ if (x < 0.008) return vec4(1.000, 0.227, 0.142, 1);
 
 
 
-float _hsv_red(float x) {
-    if (x < 0.5) return -6.0 * x + 67.0 / 32.0;
-    else return 6.0 * x - 79.0 / 16.0;
-}
-float _hsv_green(float x) {
-    if (x < 0.4) return 6.0 * x - 3.0 / 32.0;
-    else return -6.0 * x + 79.0 / 16.0;
-}
-float _hsv_blue(float x) {
-    if (x < 0.7) return 6.0 * x - 67.0 / 32.0;
-    else return -6.0 * x + 195.0 / 32.0;
-}
-vec4 hsv(float x) {
-    CLAMP
-    float r = clamp(_hsv_red(x), 0.0, 1.0);
-    float g = clamp(_hsv_green(x), 0.0, 1.0);
-    float b = clamp(_hsv_blue(x), 0.0, 1.0);
-    return vec4(r, g, b, 1.0);
-}
+/*************************************************************************************************/
+/*  Random colormap                                                                              */
+/*************************************************************************************************/
 
-
-
-float _bone_red(float x) {
-    if (x < 0.75) return 8.0 / 9.0 * x - (13.0 + 8.0 / 9.0) / 1000.0;
-    else return (13.0 + 8.0 / 9.0) / 10.0 * x - (3.0 + 8.0 / 9.0) / 10.0;
-}
-float _bone_green(float x) {
-    if (x <= 0.375) return 8.0 / 9.0 * x - (13.0 + 8.0 / 9.0) / 1000.0;
-    else if (x <= 0.75) return (1.0 + 2.0 / 9.0) * x - (13.0 + 8.0 / 9.0) / 100.0;
-    else return 8.0 / 9.0 * x + 1.0 / 9.0;
-}
-float _bone_blue(float x) {
-    if (x <= 0.375) return (1.0 + 2.0 / 9.0) * x - (13.0 + 8.0 / 9.0) / 1000.0;
-    else return 8.0 / 9.0 * x + 1.0 / 9.0;
-}
-vec4 bone(float x) {
-    CLAMP
-    float r = clamp(_bone_red(x), 0.0, 1.0);
-    float g = clamp(_bone_green(x), 0.0, 1.0);
-    float b = clamp(_bone_blue(x), 0.0, 1.0);
-    return vec4(r, g, b, 1.0);
-}
-
-
-
-float _jet_red(float x) {
-    if (x < 0.7) return 4.0 * x - 1.5;
-    else return -4.0 * x + 4.5;
-}
-float _jet_green(float x) {
-    if (x < 0.5) return 4.0 * x - 0.5;
-    else return -4.0 * x + 3.5;
-}
-float _jet_blue(float x) {
-    if (x < 0.3) return 4.0 * x + 0.5;
-    else return -4.0 * x + 2.5;
-}
-vec4 jet(float x) {
-    CLAMP
-    float r = clamp(_jet_red(x), 0.0, 1.0);
-    float g = clamp(_jet_green(x), 0.0, 1.0);
-    float b = clamp(_jet_blue(x), 0.0, 1.0);
-    return vec4(r, g, b, 1.0);
+vec4 random_colormap(float x) {
+    vec3 rgb = vec3(random(x), random(x*2), random(x*3));
+    return vec4(.5 + .5 * rgb, 1);
 }
 
 
@@ -364,6 +409,9 @@ vec4 colormap(int cmap, float x) {
     else if (cmap == DVZ_CMAP_SUMMER) return summer(x);
     else if (cmap == DVZ_CMAP_WINTER) return winter(x);
     else if (cmap == DVZ_CMAP_JET) return jet(x);
+
+    // Custom colormaps.
     else if (cmap == DVZ_CMAP_QUALMAP) return qualmap(x);
+    else if (cmap == DVZ_CMAP_RANDOM) return random_colormap(x);
     else return vec4(x, x, x, 1);
 }

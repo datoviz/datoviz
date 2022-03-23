@@ -264,6 +264,8 @@ typedef enum
     DVZ_CPAL032_CATEGORY20C_20,
 
     // (new row in the texture after 8 palettes)
+
+    // BUG: this is 256, =0 with uint8, so this colormap is not working atm
     DVZ_CPAL032_COLORBLIND8,
 
     // OS palettes
