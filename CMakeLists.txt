@@ -27,7 +27,7 @@ if(DATOVIZ_WITH_SWIFTSHADER)
 endif()
 
 # Define the project
-set(DATOVIZ_VERSION 0.0.1)
+set(DATOVIZ_VERSION 0.1.0)
 project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 
 # DEBUG/RELEASE
