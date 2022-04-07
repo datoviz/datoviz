@@ -540,7 +540,7 @@ add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${pat
 set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
-    SOVERSION 1
+    SOVERSION 2
     # PUBLIC_HEADER include/datoviz/datoviz.h
     OUTPUT_NAME "datoviz"
     )
