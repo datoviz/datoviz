@@ -128,7 +128,8 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
         ./manage.sh demo scatter
         ```
 
-    11. Once the C library is compiled, you need to compile the Cython module:
+    11. Once the C library is compiled, you need to compile the Cython module.
+        This needs to be compiled against your Python environment for datoviz, so you need to activate it.
 
         ```bash
         pip install -r requirements-build.txt
