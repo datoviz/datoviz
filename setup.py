@@ -83,7 +83,7 @@ setup(
                     str(INCLUDE_DIR),
                     str(ROOT_DIR / 'external/'),
                     # str(VULKAN_DIR / 'include'),
-                    # str(BUILD_DIR / '_deps/cglm-src/include'),
+                    str(BUILD_DIR / '_deps/cglm-src/include'),
                     str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
