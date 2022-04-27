@@ -270,6 +270,21 @@ void dvz_runner_request(DvzRunner* runner, DvzRequest request)
 
 
 
+void dvz_runner_requests(DvzRunner* runner, uint32_t count, DvzRequest* requests)
+{
+    ASSERT(runner != NULL);
+    if (count > 0)
+        ASSERT(requests != NULL);
+
+    // Submit the recording requests.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_runner_request(runner, requests[i]);
+    }
+}
+
+
+
 int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 {
     ASSERT(runner != NULL);

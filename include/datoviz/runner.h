@@ -187,6 +187,20 @@ DVZ_EXPORT void dvz_runner_request(DvzRunner* runner, DvzRequest request);
 
 
 /**
+ * Submit a request to the runner.
+ *
+ * The request will be enqueued in the runner's queue, and then processed by the underlying
+ * renderer.
+ *
+ * @param runner the runner instance
+ * @param count the number of requests
+ * @param requests the requests
+ */
+DVZ_EXPORT void dvz_runner_requests(DvzRunner* runner, uint32_t count, DvzRequest* requests);
+
+
+
+/**
  * Destroy a runner.
  *
  * @param runner the runner instance
