@@ -223,17 +223,16 @@ void dvz_canvas_viewport(
     {
         dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, csize);
     }
-    if (size[0] == 0)
-        size[0] = csize[0];
-    if (size[1] == 0)
-        size[1] = csize[1];
 
-    ASSERT(size[0] > 0);
-    ASSERT(size[1] > 0);
+    float width = size[0], height = size[1];
+    width = width > 0 ? width : csize[0];
+    height = height > 0 ? height : csize[1];
+
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     dvz_cmd_viewport(
-        cmds, idx,
-        (VkViewport){.x = offset[0], .y = offset[1], .width = size[0], .height = size[1]});
+        cmds, idx, (VkViewport){.x = offset[0], .y = offset[1], .width = width, .height = height});
 }
 
 
