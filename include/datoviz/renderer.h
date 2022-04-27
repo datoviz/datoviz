@@ -65,6 +65,11 @@ struct DvzRenderer
     DvzWorkspace* workspace; // boards and canvases: the "where"
     DvzMap* map;             // mapping between uuid and <type, objects>
     DvzRouter* router;       // mapping between pairs (action, obj_type) and functions
+
+    // Recording commands buffer.
+    uint32_t req_count;
+    uint32_t req_capacity;
+    DvzRequest* reqs;
 };
 
 

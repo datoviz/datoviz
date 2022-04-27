@@ -535,6 +535,30 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 /*  Command buffer recording                                                                     */
 /*************************************************************************************************/
 
+static void _record_append(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+    ASSERT(rd->req_capacity > 0);
+    ASSERT(rd->reqs != NULL);
+
+    // Reallocate the buffer if needed.
+    if (rd->req_count == rd->req_capacity)
+    {
+        rd->req_capacity *= 2;
+        DvzRequest* _new = (DvzRequest*)realloc(rd->reqs, rd->req_capacity * sizeof(DvzRequest));
+        if (_new == NULL)
+            exit(1);
+        else
+            rd->reqs = _new;
+    }
+    ASSERT(rd->req_count < rd->req_capacity);
+
+    log_trace("append record request with action %d", req.action);
+    rd->reqs[rd->req_count++] = req;
+}
+
+
+
 static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
@@ -550,9 +574,10 @@ static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
     {
-        GET_ID(DvzCanvas, canvas, req.id)
-        dvz_cmd_reset(&canvas->cmds, 0);
-        dvz_canvas_begin(canvas, &canvas->cmds, 0);
+        // NOTE: reset the buffer when beginning a new record.
+        rd->req_count = 0;
+
+        _record_append(rd, req);
     }
 
     return NULL;
@@ -576,10 +601,7 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
     {
-        GET_ID(DvzCanvas, canvas, req.id)
-        dvz_canvas_viewport(
-            canvas, &canvas->cmds, 0, //
-            req.content.record_viewport.offset, req.content.record_viewport.shape);
+        _record_append(rd, req);
     }
 
     return NULL;
@@ -604,10 +626,7 @@ static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
     {
-        GET_ID(DvzCanvas, canvas, req.id)
-        dvz_pipe_draw(
-            pipe, &canvas->cmds, 0, //
-            req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
+        _record_append(rd, req);
     }
 
     return NULL;
@@ -629,8 +648,7 @@ static void* _record_end(DvzRenderer* rd, DvzRequest req)
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
     {
-        GET_ID(DvzCanvas, canvas, req.id)
-        dvz_canvas_end(canvas, &canvas->cmds, 0);
+        _record_append(rd, req);
     }
 
     return NULL;
@@ -650,6 +668,10 @@ static void _init_renderer(DvzRenderer* rd)
     rd->pipelib = dvz_pipelib(rd->ctx);
     rd->workspace = dvz_workspace(rd->gpu);
     rd->map = dvz_map();
+
+    // Command buffer recording buffer.
+    rd->req_capacity = 16;
+    rd->reqs = (DvzRequest*)calloc(rd->req_capacity, sizeof(DvzRequest));
 
     dvz_obj_init(&rd->obj);
 }

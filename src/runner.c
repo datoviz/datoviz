@@ -1,5 +1,6 @@
 #include "../include/datoviz/runner.h"
 #include "../include/datoviz/canvas.h"
+#include "../include/datoviz/map.h"
 #include "../include/datoviz/vklite.h"
 #include "canvas_utils.h"
 #include "runner_utils.h"
@@ -27,20 +28,79 @@
 /*  Runner utils                                                                                 */
 /*************************************************************************************************/
 
+static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
+{
+    ASSERT(rd != NULL);
+    ASSERT(canvas != NULL);
+
+
+    // Blank canvas by default.
+    if (rd->req_count == 0)
+    {
+        log_debug("default command buffer refill with blank canvas for image #%d", img_idx);
+        blank_commands(canvas, &canvas->cmds, img_idx);
+        return;
+    }
+
+    // Otherwise, process all buffered commands.
+    DvzRequest* rq = NULL;
+    DvzPipe* pipe = NULL;
+    for (uint32_t i = 0; i < rd->req_count; i++)
+    {
+        rq = &rd->reqs[i];
+        ASSERT(rq != NULL);
+        switch (rq->type)
+        {
+
+        case DVZ_REQUEST_OBJECT_BEGIN:
+            dvz_cmd_reset(&canvas->cmds, img_idx);
+            dvz_canvas_begin(canvas, &canvas->cmds, img_idx);
+            break;
+
+        case DVZ_REQUEST_OBJECT_VIEWPORT:
+            dvz_canvas_viewport(
+                canvas, &canvas->cmds, img_idx, //
+                rq->content.record_viewport.offset, rq->content.record_viewport.shape);
+            break;
+
+        case DVZ_REQUEST_OBJECT_DRAW:
+
+            pipe = (DvzPipe*)dvz_map_get(rd->map, rq->content.record_draw.graphics);
+            ASSERT(pipe != NULL);
+
+            dvz_pipe_draw(
+                pipe, &canvas->cmds, img_idx, //
+                rq->content.record_draw.first_vertex, rq->content.record_draw.vertex_count);
+            break;
+
+        case DVZ_REQUEST_OBJECT_END:
+            dvz_canvas_end(canvas, &canvas->cmds, img_idx);
+            break;
+
+        default:
+            log_error("unknown record request #%d with type %d", i, rq->type);
+            break;
+        }
+    }
+}
+
+
+
 static void _default_refill(DvzDeq* deq, void* item, void* user_data)
 {
     ASSERT(item != NULL);
     ASSERT(user_data != NULL);
     DvzCanvasEventRefill* ev = (DvzCanvasEventRefill*)item;
 
+    DvzRunner* runner = (DvzRunner*)user_data;
+    DvzRenderer* rd = runner->renderer;
+
     DvzCanvas* canvas = ev->canvas;
     ASSERT(canvas != NULL);
 
-    // Blank canvas by default.
+    // Process the buffered record requests.
     uint32_t img_idx = canvas->render.swapchain.img_idx;
-    log_debug("default command buffer refill with blank canvas for image #%d", img_idx);
-    DvzCommands* cmds = &canvas->cmds;
-    blank_commands(canvas, cmds, img_idx);
+    _process_record_requests(rd, canvas, img_idx);
 }
 
 
