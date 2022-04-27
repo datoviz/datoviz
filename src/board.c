@@ -144,12 +144,16 @@ void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
     ASSERT(board != NULL);
+
+    // A value of 0 = full canvas.
     if (size[0] == 0)
         size[0] = board->width;
     if (size[1] == 0)
         size[1] = board->height;
+
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
+
     dvz_cmd_viewport(
         cmds, idx,
         (VkViewport){.x = offset[0], .y = offset[1], .width = size[0], .height = size[1]});

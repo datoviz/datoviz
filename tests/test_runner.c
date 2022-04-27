@@ -167,7 +167,12 @@ int test_runner_triangle(TstSuite* suite)
     DvzRequest* reqs = dvz_requester_end(rqr, &count);
     AT(reqs != NULL);
     AT(count > 0);
-    dvz_runner_request(runner, req);
+
+    // Submit the recording requests.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_runner_request(runner, reqs[i]);
+    }
 
     // Event loop.
     dvz_runner_loop(runner, N_FRAMES);

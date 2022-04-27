@@ -215,6 +215,42 @@ DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill);
 
 
 /**
+ * Start rendering to the canvas in a command buffer.
+ *
+ * @param canvas the canvas
+ * @param cmds the commands instance
+ * @param idx the command buffer index with the commands instance
+ */
+DVZ_EXPORT void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
+
+
+
+/**
+ * Set the viewport when filling a command buffer.
+ *
+ * @param canvas the canvas
+ * @param cmds the commands instance
+ * @param idx the command buffer index with the commands instance
+ * @param offset the viewport offset (x, y)
+ * @param size the viewport size (w, h)
+ */
+DVZ_EXPORT void dvz_canvas_viewport( //
+    DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size);
+
+
+
+/**
+ * Stop rendering to the canvas in a command buffer.
+ *
+ * @param canvas the canvas
+ * @param cmds the commands instance
+ * @param idx the command buffer index with the commands instance
+ */
+DVZ_EXPORT void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
+
+
+
+/**
  * Run a simple event loop for a single canvas.
  *
  * @param canvas a canvas

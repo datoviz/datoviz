@@ -203,6 +203,51 @@ void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
 
 
 
+void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &canvas->render.renderpass, &canvas->render.framebuffers);
+}
+
+
+
+void dvz_canvas_viewport(
+    DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
+{
+    ASSERT(canvas != NULL);
+
+    // A value of 0 = full canvas.
+    uvec2 csize = {0};
+    if ((size[0] == 0) || (size[1] == 0))
+    {
+        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, csize);
+    }
+    if (size[0] == 0)
+        size[0] = csize[0];
+    if (size[1] == 0)
+        size[1] = csize[1];
+
+    ASSERT(size[0] > 0);
+    ASSERT(size[1] > 0);
+
+    dvz_cmd_viewport(
+        cmds, idx,
+        (VkViewport){.x = offset[0], .y = offset[1], .width = size[0], .height = size[1]});
+}
+
+
+
+void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(cmds != NULL);
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
+}
+
+
+
 void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
 {
     ASSERT(canvas != NULL);

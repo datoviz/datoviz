@@ -539,10 +539,21 @@ static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    GET_ID(DvzBoard, board, req.id)
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    dvz_cmd_reset(&board->cmds, 0);
-    dvz_board_begin(board, &board->cmds, 0);
+    if (type == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        GET_ID(DvzBoard, board, req.id)
+        dvz_cmd_reset(&board->cmds, 0);
+        dvz_board_begin(board, &board->cmds, 0);
+    }
+
+    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
+    {
+        GET_ID(DvzCanvas, canvas, req.id)
+        dvz_cmd_reset(&canvas->cmds, 0);
+        dvz_canvas_begin(canvas, &canvas->cmds, 0);
+    }
 
     return NULL;
 }
@@ -553,11 +564,23 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    GET_ID(DvzBoard, board, req.id)
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    dvz_board_viewport(
-        board, &board->cmds, 0, //
-        req.content.record_viewport.offset, req.content.record_viewport.shape);
+    if (type == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        GET_ID(DvzBoard, board, req.id)
+        dvz_board_viewport(
+            board, &board->cmds, 0, //
+            req.content.record_viewport.offset, req.content.record_viewport.shape);
+    }
+
+    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
+    {
+        GET_ID(DvzCanvas, canvas, req.id)
+        dvz_canvas_viewport(
+            canvas, &canvas->cmds, 0, //
+            req.content.record_viewport.offset, req.content.record_viewport.shape);
+    }
 
     return NULL;
 }
@@ -567,14 +590,25 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
-
-    GET_ID(DvzBoard, board, req.id)
-
     GET_ID(DvzPipe, pipe, req.content.record_draw.graphics);
 
-    dvz_pipe_draw(
-        pipe, &board->cmds, 0, //
-        req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
+
+    if (type == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        GET_ID(DvzBoard, board, req.id)
+        dvz_pipe_draw(
+            pipe, &board->cmds, 0, //
+            req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
+    }
+
+    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
+    {
+        GET_ID(DvzCanvas, canvas, req.id)
+        dvz_pipe_draw(
+            pipe, &canvas->cmds, 0, //
+            req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
+    }
 
     return NULL;
 }
@@ -585,9 +619,19 @@ static void* _record_end(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    GET_ID(DvzBoard, board, req.id)
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    dvz_board_end(board, &board->cmds, 0);
+    if (type == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        GET_ID(DvzBoard, board, req.id)
+        dvz_board_end(board, &board->cmds, 0);
+    }
+
+    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
+    {
+        GET_ID(DvzCanvas, canvas, req.id)
+        dvz_canvas_end(canvas, &canvas->cmds, 0);
+    }
 
     return NULL;
 }
