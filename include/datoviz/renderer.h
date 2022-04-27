@@ -122,7 +122,7 @@ DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
  * Return a canvas.
  *
  * @param rd the renderer
- * @param id the board id
+ * @param id the canvas id
  * @returns the canvas
  */
 DVZ_EXPORT DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);

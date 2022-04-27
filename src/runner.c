@@ -221,9 +221,12 @@ int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 
     // NOTE: there is the global frame index for the event loop, but every frame has its own local
     // frame index too.
-    for (runner->global_frame_idx = 0; frame_count == 0 || runner->global_frame_idx < frame_count;
-         runner->global_frame_idx++)
+    for (                                                           //
+        runner->global_frame_idx = 0;                               //
+        frame_count == 0 || runner->global_frame_idx < frame_count; //
+        runner->global_frame_idx++)                                 //
     {
+
         log_trace("event loop, global frame #%d", runner->global_frame_idx);
         ret = dvz_runner_frame(runner);
 
