@@ -88,8 +88,8 @@ void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 {
     ASSERT(rqr != NULL);
-    ASSERT(count != NULL);
-    *count = rqr->count;
+    if (count != NULL)
+        *count = rqr->count;
     return rqr->requests;
 }
 

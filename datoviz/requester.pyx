@@ -12,7 +12,7 @@ import numpy as np
 from cython.view cimport array
 from libc.stdlib cimport free
 
-from . cimport request as rq
+from . cimport requester as rq
 from . cimport renderer as rd
 from . cimport fileio
 from . cimport _types as tp
@@ -62,7 +62,7 @@ _OBJECTS = {
 # -------------------------------------------------------------------------------------------------
 
 cdef class Request:
-    cdef rq.DvzRequest _c_req
+    # cdef rq.DvzRequest _c_req
 
     def __cinit__(self, rq.DvzRequest req):
         self._c_req = req
@@ -78,13 +78,9 @@ cdef class Request:
 # -------------------------------------------------------------------------------------------------
 
 cdef class Requester:
-    cdef rq.DvzRequester _c_rqr
-    cdef uint32_t _c_count
-    cdef rq.DvzRequest* _c_rqs
-
-    # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
-    # collected by the garbage collector until they are effectively transferred to the GPU.
-    cdef object _np_cache
+    # cdef rq.DvzRequester _c_rqr
+    # cdef uint32_t _c_count
+    # cdef rq.DvzRequest* _c_rqs
 
     def __cinit__(self):
         self._c_rqr = rq.dvz_requester()
@@ -100,11 +96,17 @@ cdef class Requester:
         """Destroy the requester."""
         rq.dvz_requester_destroy(&self._c_rqr)
 
+    def begin(self):
+        rq.dvz_requester_begin(&self._c_rqr)
+
+    def end(self):
+        self._c_rqs = rq.dvz_requester_end(&self._c_rqr, &self._c_count)
+
     @contextmanager
     def requests(self):
-        rq.dvz_requester_begin(&self._c_rqr)
+        self.begin()
         yield
-        self._c_rqs = rq.dvz_requester_end(&self._c_rqr, &self._c_count)
+        self.end()
 
     def submit(self, Renderer renderer):
         rd.dvz_renderer_requests(renderer._c_rd, self._c_count, self._c_rqs)
@@ -130,6 +132,29 @@ cdef class Requester:
             c_background[3] = 255
 
         cdef rq.DvzRequest req = rq.dvz_create_board(&self._c_rqr, width, height, c_background, flags)
+        if id != 0:
+            req.id = id
+        rq.dvz_requester_add(&self._c_rqr, req)
+        return req.id
+
+    def create_canvas(self, int width, int height, int id=0, background=None, int flags=0):
+        logger.debug(f"create canvas {width}x{height}, id={id}, flags={flags}")
+
+        # Background color
+        cdef cvec4 c_background
+        if background is None:
+            c_background[0] = 0
+            c_background[1] = 8
+            c_background[2] = 18
+            c_background[3] = 255
+        else:
+            assert len(background) == 3
+            c_background[0] = <uint8_t>int(background[0])
+            c_background[1] = <uint8_t>int(background[1])
+            c_background[2] = <uint8_t>int(background[2])
+            c_background[3] = 255
+
+        cdef rq.DvzRequest req = rq.dvz_create_canvas(&self._c_rqr, width, height, c_background, flags)
         if id != 0:
             req.id = id
         rq.dvz_requester_add(&self._c_rqr, req)

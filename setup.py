@@ -42,9 +42,9 @@ setup(
     install_requires=require,
     ext_modules=cythonize(
         [
-            # request
+            # requester
             Extension(
-                'datoviz.request', ['datoviz/request.pyx'],
+                'datoviz.requester', ['datoviz/requester.pyx'],
                 libraries=['datoviz'],
                 include_dirs=[
                     np.get_include(),
@@ -67,6 +67,23 @@ setup(
                     str(ROOT_DIR / 'external/'),
                     str(VULKAN_DIR / 'include'),
                     str(BUILD_DIR / '_deps/cglm-src/include'),
+                    str(BUILD_DIR / '_deps/glfw-src/include'),
+                ],
+                library_dirs=[str(BUILD_DIR)],
+                undef_macros=['NDEBUG'],
+                # extra_compile_args=['-w'],
+            ),
+
+            # runner
+            Extension(
+                'datoviz.runner', ['datoviz/runner.pyx'],
+                libraries=['datoviz'],
+                include_dirs=[
+                    np.get_include(),
+                    str(INCLUDE_DIR),
+                    str(ROOT_DIR / 'external/'),
+                    # str(VULKAN_DIR / 'include'),
+                    # str(BUILD_DIR / '_deps/cglm-src/include'),
                     str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],

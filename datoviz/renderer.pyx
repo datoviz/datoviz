@@ -14,7 +14,7 @@ from libc.stdlib cimport free
 
 from . cimport renderer as rd
 from .renderer cimport Renderer
-from . cimport request as rq
+from . cimport requester as rq
 from . cimport fileio
 from . cimport _types as tp
 
@@ -27,11 +27,11 @@ logger = logging.getLogger('datoviz')
 # -------------------------------------------------------------------------------------------------
 
 cdef class Renderer:
-    # cdef rd.DvzRenderer* _c_rd
-    # cdef rd.DvzGpu* _c_gpu
-
-    def __cinit__(self):
-        self._c_gpu = rd.dvz_init_offscreen()
+    def __cinit__(self, offscreen=True):
+        if offscreen:
+            self._c_gpu = rd.dvz_init_offscreen()
+        else:
+            self._c_gpu = rd.dvz_init_glfw()
         assert self._c_gpu != NULL
         self._c_rd = rd.dvz_renderer(self._c_gpu, 0)
 

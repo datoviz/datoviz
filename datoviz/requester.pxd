@@ -2,19 +2,21 @@
 
 from ._types cimport *
 
+
+
 cdef extern from "<datoviz/request.h>":
     # Semi-opaque structs:
-
-    ctypedef struct DvzRequester:
-        uint32_t count
-        uint32_t capacity
-        DvzRequest* requests
 
     ctypedef struct DvzRequest:
         DvzId id
         DvzRequestAction action
         DvzRequestObject type
         int flags
+
+    ctypedef struct DvzRequester:
+        uint32_t count
+        uint32_t capacity
+        DvzRequest* requests
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -87,3 +89,17 @@ cdef extern from "<datoviz/request.h>":
 
 
     # FUNCTION END
+
+
+cdef class Request:
+    cdef DvzRequest _c_req
+
+
+cdef class Requester:
+    cdef DvzRequest* _c_rqs
+    cdef uint32_t _c_count
+    cdef DvzRequester _c_rqr
+
+    # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
+    # collected by the garbage collector until they are effectively transferred to the GPU.
+    cdef object _np_cache

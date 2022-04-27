@@ -163,11 +163,8 @@ int test_runner_triangle(TstSuite* suite)
         rqr, dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
     dvz_requester_add(rqr, dvz_record_draw(rqr, canvas_id, graphics_id, 0, 3));
     dvz_requester_add(rqr, dvz_record_end(rqr, canvas_id));
-    uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
-    AT(reqs != NULL);
-    AT(count > 0);
-    dvz_runner_requests(runner, count, reqs);
+    dvz_requester_end(rqr, NULL);
+    dvz_runner_requester(runner, rqr);
 
     // Event loop.
     dvz_runner_loop(runner, N_FRAMES);

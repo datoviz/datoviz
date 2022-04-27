@@ -137,9 +137,15 @@ DvzGpu* dvz_init_glfw(void)
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
 
     DvzGpu* gpu = dvz_gpu_best(host);
-    _default_queues(gpu, false);
+    _default_queues(gpu, true);
     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-    dvz_gpu_create(gpu, 0);
+
+    // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
+    // capabilities.
+    DvzWindow* window = dvz_window(host, 10, 10);
+    ASSERT(window->surface != VK_NULL_HANDLE);
+    dvz_gpu_create(gpu, window->surface);
+    dvz_window_destroy(window);
 
     return gpu;
 }

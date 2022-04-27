@@ -285,6 +285,14 @@ void dvz_runner_requests(DvzRunner* runner, uint32_t count, DvzRequest* requests
 
 
 
+void dvz_runner_requester(DvzRunner* runner, DvzRequester* requester)
+{
+    ASSERT(runner != NULL);
+    dvz_runner_requests(runner, requester->count, requester->requests);
+}
+
+
+
 int dvz_runner_loop(DvzRunner* runner, uint64_t frame_count)
 {
     ASSERT(runner != NULL);
