@@ -49,6 +49,7 @@ setup(
                 include_dirs=[
                     np.get_include(),
                     str(INCLUDE_DIR),
+                    str(VULKAN_DIR / 'include'),
                     str(ROOT_DIR / 'external/'),
                     str(BUILD_DIR / '_deps/cglm-src/include'),
                 ],
@@ -82,7 +83,7 @@ setup(
                     np.get_include(),
                     str(INCLUDE_DIR),
                     str(ROOT_DIR / 'external/'),
-                    # str(VULKAN_DIR / 'include'),
+                    str(VULKAN_DIR / 'include'),
                     str(BUILD_DIR / '_deps/cglm-src/include'),
                     str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],

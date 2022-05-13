@@ -564,13 +564,17 @@ int test_vklite_barrier_image(TstSuite* suite)
     dvz_barrier_images(&barrier, &images);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
 
     // Transfer the data from the staging buffer to the image.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
     dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    // NOTE: raise warning
     dvz_cmd_copy_buffer_to_image(
         &cmds, 0, &buffer, 0, &images, (uvec3){0}, (uvec3){img_size, img_size, 1});
+
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
 
