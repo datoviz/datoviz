@@ -8,8 +8,22 @@
 
 
 /*************************************************************************************************/
-/*  Util functions                                                                               */
+/*  Callback functions                                                                           */
 /*************************************************************************************************/
+
+static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(item != NULL);
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
+    uint32_t width = ev->content.w.width;
+    uint32_t height = ev->content.w.height;
+
+    log_debug("window create (%dx%d)", width, height);
+}
 
 
 
@@ -21,8 +35,17 @@ DvzClient* dvz_client(void)
 {
     DvzClient* client = calloc(1, sizeof(DvzClient));
 
+    // Create queue.
     client->deq = dvz_deq(1);
-    // create queue
+
+    // A single proc handling all events.
+    dvz_deq_proc(&client->deq, 0, 1, (uint32_t[]){0});
+
+    // Register a proc callback.
+    dvz_deq_callback(
+        &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
+
+
     // create async queue
     // start background thread
     // default callbacks
@@ -34,18 +57,15 @@ DvzClient* dvz_client(void)
 
 
 
-void dvz_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t height, int flags)
-{
-    // async, enqueue
-    ASSERT(client != NULL);
-}
-
-
-
 void dvz_client_event(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
-    // enqueue event
+
+    // Enqueue event.
+    DvzClientEvent* pev = calloc(1, sizeof(DvzClientEvent));
+    *pev = ev;
+
+    dvz_deq_enqueue(&client->deq, 0, (int)ev.type, pev);
 }
 
 
@@ -55,6 +75,14 @@ void dvz_client_callback(
     DvzClientCallback callback, const void* user_data)
 {
     ASSERT(client != NULL);
+}
+
+
+
+void dvz_client_process(DvzClient* client)
+{
+    ASSERT(client != NULL);
+    dvz_deq_dequeue_batch(&client->deq, 0);
 }
 
 

@@ -31,13 +31,13 @@
 typedef enum
 {
     DVZ_CLIENT_EVENT_NONE,
-    DVZ_CLIENT_EVENT_CANVAS_CREATE,
-    DVZ_CLIENT_EVENT_CANVAS_RESIZE,
-    DVZ_CLIENT_EVENT_CANVAS_DELETE,
-    DVZ_CLIENT_EVENT_FRAME,
-    DVZ_CLIENT_EVENT_MOUSE,
-    DVZ_CLIENT_EVENT_KEYBOARD,
-    DVZ_CLIENT_EVENT_TIMER,
+    DVZ_CLIENT_EVENT_WINDOW_CREATE, // w
+    DVZ_CLIENT_EVENT_WINDOW_RESIZE, // w
+    DVZ_CLIENT_EVENT_WINDOW_DELETE, // w
+    DVZ_CLIENT_EVENT_FRAME,         // f
+    DVZ_CLIENT_EVENT_MOUSE,         // m
+    DVZ_CLIENT_EVENT_KEYBOARD,      // k
+    DVZ_CLIENT_EVENT_TIMER,         // t
 } DvzClientEventType;
 
 
@@ -61,7 +61,7 @@ typedef struct DvzClientEvent DvzClientEvent;
 typedef uint64_t DvzId;
 
 // Callback types.
-typedef void (*DvzClientCallback)(DvzClient*, DvzClientEvent, void*);
+typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev, void* user_data);
 
 
 
@@ -77,9 +77,11 @@ struct DvzClientEvent
     {
         struct
         {
-            DvzId id;
-        } c;
-    } u;
+            uint32_t width;
+            uint32_t height;
+            int flags;
+        } w;
+    } content;
 };
 
 
@@ -122,10 +124,6 @@ DVZ_EXPORT DvzClient* dvz_client(void);
 
 
 
-void dvz_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t height, int flags);
-
-
-
 void dvz_client_event(DvzClient* client, DvzClientEvent ev);
 
 
@@ -133,6 +131,10 @@ void dvz_client_event(DvzClient* client, DvzClientEvent ev);
 void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
     DvzClientCallback callback, const void* user_data);
+
+
+
+void dvz_client_process(DvzClient* client);
 
 
 
