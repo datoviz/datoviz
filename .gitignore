@@ -71,3 +71,4 @@ joblib
 *.ipynb*
 *.npy
 *.npz
+experimental

@@ -17,6 +17,7 @@
 #include "test_array.h"
 #include "test_board.h"
 #include "test_canvas.h"
+#include "test_client.h"
 #include "test_colormaps.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
@@ -115,6 +116,9 @@ int dvz_run_tests(const char* match)
     TEST(test_input_keyboard_1)
     TEST(test_input_timer_1)
     TEST(test_input_glfw_1)
+
+    // Testing input.
+    TEST(test_client_1)
 
     // Testing vklite.
     TEST(test_vklite_host)
