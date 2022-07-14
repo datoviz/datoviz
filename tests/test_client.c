@@ -23,5 +23,6 @@
 int test_client_1(TstSuite* suite)
 {
     DvzClient* client = dvz_client();
+    dvz_client_destroy(client);
     return 0;
 }
