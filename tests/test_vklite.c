@@ -918,8 +918,8 @@ int test_vklite_swapchain(TstSuite* suite)
     dvz_swapchain_present_mode(&swapchain, VK_PRESENT_MODE_FIFO_KHR);
     dvz_swapchain_create(&swapchain);
     dvz_swapchain_destroy(&swapchain);
-    dvz_window_destroy(surface);
-    destroy_surface(host->instance, surface);
+    dvz_window_destroy(&window);
+    dvz_surface_destroy(host, surface);
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);
@@ -936,15 +936,18 @@ int test_vklite_canvas_blank(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
+    ASSERT(host->backend == DVZ_BACKEND_GLFW);
 
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+    AT(surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
-    dvz_gpu_create(gpu, dvz_window_surface(host, &window));
+    dvz_gpu_create(gpu, surface);
 
-    TestCanvas canvas = test_canvas_create(gpu, &window);
+    TestCanvas canvas = test_canvas_create(gpu, &window, surface);
 
     test_canvas_show(&canvas, empty_commands, N_FRAMES);
 
@@ -972,13 +975,14 @@ int test_vklite_canvas_triangle(TstSuite* suite)
 
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
     VkSurfaceKHR surface = dvz_window_surface(host, &window);
+    AT(surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, surface);
 
-    TestCanvas canvas = test_canvas_create(gpu, &window);
+    TestCanvas canvas = test_canvas_create(gpu, &window, surface);
     TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
     canvas.surface = surface;
     visual.br.buffer = &visual.buffer;
@@ -1042,7 +1046,7 @@ int test_vklite_canvas_gui(TstSuite* suite)
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, surface);
 
-    TestCanvas canvas = test_canvas_create(gpu, &window);
+    TestCanvas canvas = test_canvas_create(gpu, &window, surface);
     DvzGui gui = dvz_gui(gpu, &canvas.renderpass, &window, 0, WIDTH, HEIGHT);
     canvas.always_refill = true;
     canvas.data = &gui;

@@ -141,12 +141,17 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
 static void _imgui_set_window(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    if (window->host->backend == DVZ_BACKEND_GLFW)
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
+    switch (backend)
     {
-        if (window->backend_window != NULL)
+    case DVZ_BACKEND_GLFW:
+        if (window->backend_window)
             ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->backend_window, true);
+        break;
+    default:
+        break;
     }
 }
 

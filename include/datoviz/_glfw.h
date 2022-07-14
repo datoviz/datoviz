@@ -24,7 +24,7 @@
 
 
 /*************************************************************************************************/
-/*  Backend-specific initialization                                                              */
+/*  Backend-specific initialization */
 /*************************************************************************************************/
 
 static void _glfw_error(int error_code, const char* description)
@@ -36,6 +36,8 @@ static void _glfw_error(int error_code, const char* description)
 
 static void backend_init(DvzBackend backend)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
@@ -57,6 +59,8 @@ static void backend_init(DvzBackend backend)
 
 static void backend_terminate(DvzBackend backend)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
@@ -96,6 +100,8 @@ static void backend_terminate(DvzBackend backend)
 
 static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height, int flags)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     log_trace("create window with size %dx%d", width, height);
 
     switch (backend)
@@ -144,6 +150,8 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
 
 static void backend_poll_events(DvzBackend backend)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
@@ -160,6 +168,8 @@ static void backend_poll_events(DvzBackend backend)
 
 static void backend_wait(DvzBackend backend)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
@@ -176,6 +186,7 @@ static void backend_wait(DvzBackend backend)
 
 static void backend_window_destroy(DvzBackend backend, void* bwin)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
     ASSERT(bwin != NULL);
 
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
@@ -205,12 +216,13 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
 
 static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
-    ASSERT(window != NULL);
+    log_trace("setting the size of backend window...");
 
-    DvzBackend backend = window->backend;
+    ASSERT(window != NULL);
     void* bwin = window->backend_window;
 
-    log_trace("setting the size of backend window...");
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
 
     switch (backend)
     {
@@ -230,17 +242,16 @@ static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t 
 
 
 
-static void backend_get_window_size(
-    DvzWindow* window,                              //
-    uint32_t* window_width, uint32_t* window_height //
-)
+static void
+backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* window_height)
 {
-    ASSERT(window != NULL);
+    log_trace("determining the size of backend window...");
 
-    DvzBackend backend = window->backend;
+    ASSERT(window != NULL);
     void* bwin = window->backend_window;
 
-    log_trace("determining the size of backend window...");
+    DvzBackend backend = window->backend;
+    ASSERT(backend != DVZ_BACKEND_NONE);
 
     switch (backend)
     {
@@ -275,11 +286,12 @@ static void backend_get_window_size(
 static void backend_get_framebuffer_size(
     DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
+    log_trace("determining the size of backend window...");
+
     ASSERT(window != NULL);
 
     DvzBackend backend = window->backend;
-
-    log_trace("determining the size of backend window...");
+    ASSERT(backend != DVZ_BACKEND_NONE);
 
     switch (backend)
     {
@@ -316,9 +328,10 @@ static void backend_get_framebuffer_size(
 static bool backend_should_close(DvzWindow* window)
 {
     ASSERT(window != NULL);
+    void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;
-    void* bwin = window->backend_window;
+    ASSERT(backend != DVZ_BACKEND_NONE);
 
     switch (backend)
     {
@@ -339,9 +352,10 @@ static bool backend_should_close(DvzWindow* window)
 static void backend_loop(DvzWindow* window, uint64_t max_frames)
 {
     ASSERT(window != NULL);
+    void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;
-    void* bwin = window->backend_window;
+    ASSERT(backend != DVZ_BACKEND_NONE);
 
     switch (backend)
     {

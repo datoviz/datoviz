@@ -331,7 +331,7 @@ static TestCanvas offscreen(DvzGpu* gpu)
 /*  Test canvas                                                                                  */
 /*************************************************************************************************/
 
-static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
+static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
 {
     ASSERT(gpu != NULL);
     ASSERT(window != NULL);
@@ -343,9 +343,10 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
     canvas.gpu = gpu;
     canvas.window = window;
 
-    canvas.surface = dvz_window_surface(host, window);
+    canvas.surface = surface;
+    ASSERT(canvas.surface != VK_NULL_HANDLE);
 
-    uint32_t framebuffer_width, framebuffer_height;
+    uint32_t framebuffer_width = 0, framebuffer_height = 0;
     backend_get_framebuffer_size(window, &framebuffer_width, &framebuffer_height);
     ASSERT(framebuffer_width > 0);
     ASSERT(framebuffer_height > 0);

@@ -20,7 +20,7 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
 
     window.width = width;
     window.height = height;
-    // window.close_on_esc = true;
+    window.backend = backend;
 
     // Create the window, depending on the backend.
     window.backend_window = backend_window(backend, width, height, flags);

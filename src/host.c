@@ -18,6 +18,8 @@
 
 static const char** backend_extensions(DvzBackend backend, uint32_t* required_extension_count)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
     const char** required_extensions = NULL;
 
     // Backend initialization and required extensions.
