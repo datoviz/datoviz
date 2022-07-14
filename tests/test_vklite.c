@@ -13,6 +13,7 @@
 #include "fileio.h"
 #include "gui.h"
 #include "resources.h"
+#include "surface.h"
 #include "test.h"
 #include "testing.h"
 #include "vklite.h"
@@ -879,40 +880,20 @@ int test_vklite_surface(TstSuite* suite)
 
     // Create a GLFW window and surface.
     VkSurfaceKHR surface = 0;
-    DvzWindow w = {0};
+    void* window = NULL;
 #if HAS_GLFW
-    GLFWwindow* window =
-        // (GLFWwindow*)backend_window(host->instance, DVZ_BACKEND_GLFW, 100, 100, &w, &surface);
-        (GLFWwindow*)backend_window(host->backend, 100, 100, 0);
-    make_surface(host->instance, window, &surface);
-    ASSERT(window != NULL);
-    ASSERT(surface != NULL);
+    GLFWwindow* bwin = (GLFWwindow*)backend_window(host->backend, 100, 100, 0);
+    glfwCreateWindowSurface(host->instance, bwin, NULL, &surface);
+    ASSERT(bwin != NULL);
+    ASSERT(surface != VK_NULL_HANDLE);
+    window = (void*)bwin;
 #endif
     dvz_gpu_create(gpu, surface);
 
-    backend_window_destroy(host->backend, &w.backend_window);
+    if (window)
+        backend_window_destroy(host->backend, (void*)window);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
-    return 0;
-}
-
-
-
-int test_vklite_window(TstSuite* suite)
-{
-    ASSERT(suite != NULL);
-    DvzHost* host = get_host(suite);
-    // OFFSCREEN_SKIP
-    DvzWindow window = dvz_window(host->backend, 100, 100, 0);
-    // AT(window != NULL);
-    // AT(window.host != NULL);
-
-    DvzWindow window2 = dvz_window(host->backend, 100, 100, 0);
-    // AT(window2 != NULL);
-    // AT(window2.host != NULL);
-
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -924,9 +905,8 @@ int test_vklite_swapchain(TstSuite* suite)
     DvzHost* host = get_host(suite);
     // OFFSCREEN_SKIP
     DvzWindow window = dvz_window(host->backend, 100, 100, 0);
-    VkSurfaceKHR surface = {0};
-    make_surface(host->instance, &window, surface);
-    AT(surface != NULL);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+    AT(surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -957,16 +937,14 @@ int test_vklite_canvas_blank(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
 
-    DvzWindow* window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
-    AT(window != NULL);
-    AT(window->surface != VK_NULL_HANDLE);
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
-    dvz_gpu_create(gpu, window->surface);
+    dvz_gpu_create(gpu, dvz_window_surface(host, &window));
 
-    TestCanvas canvas = test_canvas_create(gpu, window);
+    TestCanvas canvas = test_canvas_create(gpu, &window);
 
     test_canvas_show(&canvas, empty_commands, N_FRAMES);
 
@@ -992,16 +970,17 @@ int test_vklite_canvas_triangle(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
 
-    DvzWindow* window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
-    AT(window != NULL);
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
-    dvz_gpu_create(gpu, window->surface);
+    dvz_gpu_create(gpu, surface);
 
-    TestCanvas canvas = test_canvas_create(gpu, window);
+    TestCanvas canvas = test_canvas_create(gpu, &window);
     TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
+    canvas.surface = surface;
     visual.br.buffer = &visual.buffer;
     visual.br.size = visual.buffer.size;
     visual.br.count = 1;
@@ -1054,17 +1033,17 @@ int test_vklite_canvas_gui(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
 
-    DvzWindow* window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
-    AT(window != NULL);
-    AT(window->surface != VK_NULL_HANDLE);
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+    AT(surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
-    dvz_gpu_create(gpu, window->surface);
+    dvz_gpu_create(gpu, surface);
 
-    TestCanvas canvas = test_canvas_create(gpu, window);
-    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, window, 0, WIDTH, HEIGHT);
+    TestCanvas canvas = test_canvas_create(gpu, &window);
+    DvzGui gui = dvz_gui(gpu, &canvas.renderpass, &window, 0, WIDTH, HEIGHT);
     canvas.always_refill = true;
     canvas.data = &gui;
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);

@@ -119,27 +119,27 @@ void dvz_context_destroy(DvzContext* ctx)
 /*  Default initializers                                                                         */
 /*************************************************************************************************/
 
-DvzGpu* dvz_init_offscreen(void)
-{
-    DvzHost* host = dvz_host(DVZ_BACKEND_OFFSCREEN);
+// DvzGpu* dvz_init_offscreen(void)
+// {
+//     DvzHost* host = dvz_host(DVZ_BACKEND_OFFSCREEN);
 
-    DvzGpu* gpu = dvz_gpu_best(host);
-    _default_queues(gpu, false);
-    dvz_gpu_create(gpu, 0);
+//     DvzGpu* gpu = dvz_gpu_best(host);
+//     _default_queues(gpu, false);
+//     dvz_gpu_create(gpu, 0);
 
-    return gpu;
-}
+//     return gpu;
+// }
 
 
 
-DvzGpu* dvz_init_glfw(void)
-{
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+// DvzGpu* dvz_init_glfw(void)
+// {
+//     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
 
-    DvzGpu* gpu = dvz_gpu_best(host);
-    _default_queues(gpu, true);
-    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-    create_gpu_with_surface(gpu);
+//     DvzGpu* gpu = dvz_gpu_best(host);
+//     _default_queues(gpu, true);
+//     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
+//     dvz_gpu_create_with_surface(gpu);
 
-    return gpu;
-}
+//     return gpu;
+// }

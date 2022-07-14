@@ -83,21 +83,21 @@ DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
 /*  Default initializers                                                                         */
 /*************************************************************************************************/
 
-/**
- * Initialize a default GPU for offscreen rendering.
- *
- * @param returns the GPU
- */
-DVZ_EXPORT DvzGpu* dvz_init_offscreen(void);
+// /**
+//  * Initialize a default GPU for offscreen rendering.
+//  *
+//  * @param returns the GPU
+//  */
+// DVZ_EXPORT DvzGpu* dvz_init_offscreen(void);
 
 
 
-/**
- * Initialize a default GPU for GLFW rendering.
- *
- * @param returns the GPU
- */
-DVZ_EXPORT DvzGpu* dvz_init_glfw(void);
+// /**
+//  * Initialize a default GPU for GLFW rendering.
+//  *
+//  * @param returns the GPU
+//  */
+// DVZ_EXPORT DvzGpu* dvz_init_glfw(void);
 
 
 

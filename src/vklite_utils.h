@@ -193,11 +193,11 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     ASSERT(gpu != NULL);
     ASSERT(gpu->host != NULL);
 
-    bool has_surface = surface != NULL;
+    bool has_surface = surface != VK_NULL_HANDLE;
     // bool has_validation = gpu->app->debug_messenger != NULL;
 
     // Find the supported present modes.
-    if (surface != NULL)
+    if (surface != VK_NULL_HANDLE)
     {
         vkGetPhysicalDeviceSurfacePresentModesKHR(
             gpu->physical_device, surface, &gpu->present_mode_count, NULL);
@@ -435,45 +435,6 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     log_trace("device created");
 }
 
-
-
-/*************************************************************************************************/
-/*  Surfaces                                                                                     */
-/*************************************************************************************************/
-
-static void make_surface(VkInstance instance, GLFWwindow* bwin, VkSurfaceKHR* surface)
-{
-    VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
-    if (res != VK_SUCCESS)
-        log_error("error creating the GLFW surface, result was %d", res);
-}
-
-
-
-static void destroy_surface(VkInstance instance, VkSurfaceKHR surface)
-{
-    log_trace("destroy surface");
-    vkDestroySurfaceKHR(instance, surface, NULL);
-}
-
-
-
-static void create_gpu_with_surface(DvzGpu* gpu)
-{
-    ASSERT(gpu != NULL);
-    DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
-
-    // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
-    // capabilities.
-    DvzWindow window = dvz_window(host->backend, 10, 10, DVZ_WINDOW_FLAGS_HIDDEN);
-    VkSurfaceKHR surface = {0};
-    make_surface(host->instance, window.backend_window, &surface);
-    ASSERT(surface != VK_NULL_HANDLE);
-    dvz_gpu_create(gpu, surface);
-    dvz_window_destroy(&window);
-    destroy_surface(host->instance, surface);
-}
 
 
 /*************************************************************************************************/

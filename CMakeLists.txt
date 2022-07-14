@@ -507,6 +507,7 @@ set(sources
     "src/host.c"
     "src/window.c"
     "src/vklite.c"
+    "src/surface.c"
     "src/spirv.c"
     "src/alloc.cpp"
     "src/resources.c"

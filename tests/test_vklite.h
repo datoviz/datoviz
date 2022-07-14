@@ -13,6 +13,7 @@
 
 #include "../src/vklite_utils.h"
 #include "_glfw.h"
+#include "surface.h"
 #include "test_resources.h"
 #include "testing.h"
 #include "vklite.h"
@@ -267,7 +268,7 @@ static DvzGpu* make_gpu(DvzHost* host)
     DvzGpu* gpu = dvz_gpu_best(host);
     _default_queues(gpu, true);
     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-    create_gpu_with_surface(gpu);
+    dvz_gpu_create_with_surface(gpu);
 
     return gpu;
 }
@@ -330,24 +331,30 @@ static TestCanvas offscreen(DvzGpu* gpu)
 /*  Test canvas                                                                                  */
 /*************************************************************************************************/
 
-static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
+static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
 {
+    ASSERT(gpu != NULL);
+    ASSERT(window != NULL);
+    DvzHost* host = gpu->host;
+    ASSERT(host != NULL);
+
     TestCanvas canvas = {0};
     canvas.is_offscreen = false;
     canvas.gpu = gpu;
     canvas.window = window;
-    canvas.surface = surface;
 
-    // uint32_t framebuffer_width, framebuffer_height;
-    // dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
-    // ASSERT(framebuffer_width > 0);
-    // ASSERT(framebuffer_height > 0);
+    canvas.surface = dvz_window_surface(host, window);
+
+    uint32_t framebuffer_width, framebuffer_height;
+    backend_get_framebuffer_size(window, &framebuffer_width, &framebuffer_height);
+    ASSERT(framebuffer_width > 0);
+    ASSERT(framebuffer_height > 0);
 
     DvzRenderpass renderpass =
         make_renderpass(gpu, BACKGROUND, FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
-    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, surface, 3);
+    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface, 3);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     dvz_swapchain_present_mode(&canvas.swapchain, PRESENT_MODE);
     dvz_swapchain_create(&canvas.swapchain);
@@ -684,7 +691,6 @@ int test_vklite_submit(TstSuite*);
 int test_vklite_offscreen(TstSuite*);
 int test_vklite_shader(TstSuite*);
 int test_vklite_surface(TstSuite*);
-int test_vklite_window(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
 int test_vklite_gui(TstSuite*);
