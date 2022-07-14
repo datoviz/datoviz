@@ -410,8 +410,7 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
 
         backend_poll_events(backend);
 
-        if (backend_window_should_close(window) ||
-            window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
             break;
 
         // Wait for fence.

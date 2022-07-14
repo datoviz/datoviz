@@ -890,7 +890,7 @@ int test_vklite_surface(TstSuite* suite)
 #endif
     dvz_gpu_create(gpu, surface);
 
-    backend_window_destroy(&w);
+    backend_window_destroy(host->backend, &w.backend_window);
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);

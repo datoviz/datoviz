@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "_glfw.h"
 #include "host.h"
 #include "test_window.h"
 #include "testing.h"
@@ -24,18 +25,14 @@
 int test_window_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
+    DvzBackend backend = DVZ_BACKEND_GLFW;
 
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
-    DvzWindow* window = dvz_window(host, 100, 100);
-    AT(window != NULL);
-    if (window->host != NULL)
-        AT(window->host == host);
+    DvzWindow window = dvz_window(backend, 100, 100, 0);
+    DvzWindow window2 = dvz_window(backend, 100, 100, 0);
 
-    DvzWindow* window2 = dvz_window(host, 100, 100);
-    AT(window2 != NULL);
-    if (window2->host != NULL)
-        AT(window2->host == host);
+    dvz_window_destroy(&window);
+    dvz_window_destroy(&window2);
 
-    dvz_host_destroy(host);
+    glfwTerminate();
     return 0;
 }

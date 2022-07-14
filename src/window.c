@@ -26,7 +26,7 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     window.backend_window = backend_window(backend, width, height, flags);
 
     // Set initialize size.
-    dvz_window_poll_size(&window);
+    backend_get_window_size(&window, &window.width, &window.height);
 
     dvz_obj_created(&window.obj);
     return window;
@@ -59,6 +59,6 @@ void dvz_window_destroy(DvzWindow* window)
         return;
     }
     ASSERT(window != NULL);
-    backend_window_destroy(window);
+    backend_window_destroy(window->backend, window->backend_window);
     dvz_obj_destroyed(&window->obj);
 }

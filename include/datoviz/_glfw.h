@@ -11,17 +11,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-// #ifndef HAS_GLFW
-// #define HAS_GLFW 0
-// #endif
-
-// #if HAS_GLFW
-// #define GLFW_INCLUDE_VULKAN
+#ifndef HAS_GLFW
+#define HAS_GLFW 0
+#endif
+#if HAS_GLFW
 #include <GLFW/glfw3.h>
-// #else
-// typedef struct GLFWwindow GLFWwindow;
-// #include <vulkan/vulkan.h>
-// #endif
+#endif
 
 #include "common.h"
 #include "window.h"
@@ -107,6 +102,8 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
+        glfwInit();
+
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         ASSERT(width > 0);
         ASSERT(height > 0);
@@ -177,15 +174,13 @@ static void backend_wait(DvzBackend backend)
 
 
 
-static void backend_window_destroy(DvzWindow* window)
+static void backend_window_destroy(DvzBackend backend, void* bwin)
 {
-    ASSERT(window != NULL);
-
-    void* bwin = window->backend_window;
+    ASSERT(bwin != NULL);
 
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
     log_trace("starting destruction of backend window...");
-    switch (window->backend)
+    switch (backend)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
@@ -200,6 +195,37 @@ static void backend_window_destroy(DvzWindow* window)
     }
 
     log_trace("backend window destroyed");
+}
+
+
+
+/*************************************************************************************************/
+/*  DvzWindow helpers                                                                            */
+/*************************************************************************************************/
+
+static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t height)
+{
+    ASSERT(window != NULL);
+
+    DvzBackend backend = window->backend;
+    void* bwin = window->backend_window;
+
+    log_trace("setting the size of backend window...");
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:;
+#if HAS_GLFW
+        ASSERT(bwin != NULL);
+        int w = (int)width, h = (int)height;
+        log_trace("set window size to %dx%d", w, h);
+        glfwSetWindowSize((GLFWwindow*)bwin, w, h);
+#endif
+        break;
+
+    default:
+        break;
+    }
 }
 
 
@@ -287,34 +313,7 @@ static void backend_get_framebuffer_size(
 
 
 
-static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t height)
-{
-    ASSERT(window != NULL);
-
-    DvzBackend backend = window->backend;
-    void* bwin = window->backend_window;
-
-    log_trace("setting the size of backend window...");
-
-    switch (backend)
-    {
-    case DVZ_BACKEND_GLFW:;
-#if HAS_GLFW
-        ASSERT(bwin != NULL);
-        int w = (int)width, h = (int)height;
-        log_trace("set window size to %dx%d", w, h);
-        glfwSetWindowSize((GLFWwindow*)bwin, w, h);
-#endif
-        break;
-
-    default:
-        break;
-    }
-}
-
-
-
-static bool backend_window_should_close(DvzWindow* window)
+static bool backend_should_close(DvzWindow* window)
 {
     ASSERT(window != NULL);
 

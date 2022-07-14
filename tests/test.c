@@ -107,7 +107,7 @@ int dvz_run_tests(const char* match)
     TEST(test_request_2)
 
     // Testing window.
-    // TEST(test_window_1)
+    TEST(test_window_1)
 
     // // Testing input.
     // TEST(test_input_mouse_1)

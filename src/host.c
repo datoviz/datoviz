@@ -79,8 +79,6 @@ DvzHost* dvz_host(DvzBackend backend)
     host->clock = dvz_clock();
 
     host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
-    // host->windows =
-    //     dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -155,10 +153,6 @@ int dvz_host_destroy(DvzHost* host)
     // Destroy the GPUs.
     CONTAINER_DESTROY_ITEMS(DvzGpu, host->gpus, dvz_gpu_destroy)
     dvz_container_destroy(&host->gpus);
-
-    // // Destroy the windows.
-    // CONTAINER_DESTROY_ITEMS(DvzWindow, host->windows, dvz_window_destroy)
-    // dvz_container_destroy(&host->windows);
 
     // Destroy the debug messenger.
     if (host->debug_messenger)

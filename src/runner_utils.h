@@ -287,7 +287,7 @@ static void _canvas_frame(DvzRunner* runner, DvzCanvas* canvas)
 
     // Raise TO_CLOSE if needed.
     // void* backend_window = canvas->window != NULL ? canvas->window->backend_window : NULL;
-    if (backend_window_should_close(canvas->window))
+    if (backend_should_close(canvas->window))
     {
         log_trace("delete canvas %d", canvas->obj.id);
         DvzRequest req = dvz_delete_canvas(runner->requester, canvas->obj.id);
