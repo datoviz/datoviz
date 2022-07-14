@@ -31,7 +31,7 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
     // HACK: improve this
     DvzWindow* window = dvz_container_alloc(&client->windows);
-    dvz_window_create(NULL, window, width, height);
+    *window = dvz_window(DVZ_BACKEND_GLFW, width, height, 0);
 
     dvz_map_add(client->map, ev->window_id, DVZ_OBJECT_TYPE_WINDOW, window);
 }

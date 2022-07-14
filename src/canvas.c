@@ -6,8 +6,9 @@
 #include "_glfw.h"
 #include "canvas_utils.h"
 #include "common.h"
+#include "host.h"
 #include "vklite.h"
-#include "window.h"
+// #include "window.h"
 
 
 
@@ -29,8 +30,11 @@ DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     canvas.format = DVZ_DEFAULT_FORMAT;
     canvas.refill = blank_commands;
 
+    canvas.width = width;
+    canvas.height = height;
+
     // Make the window.
-    canvas.window = dvz_window(gpu->host, width, height);
+    // canvas.window = dvz_window(gpu->host, width, height);
 
     dvz_obj_init(&canvas.obj);
     return canvas;
@@ -48,13 +52,13 @@ void dvz_canvas_create(DvzCanvas* canvas)
     DvzHost* host = gpu->host;
     ASSERT(host != NULL);
 
-    DvzWindow* window = canvas->window;
-    ASSERT(window != NULL);
+    // DvzWindow* window = canvas->window;
+    // ASSERT(window != NULL);
 
     log_trace("creating the canvas");
 
-    uint32_t framebuffer_width = window->framebuffer_width;
-    uint32_t framebuffer_height = window->framebuffer_height;
+    uint32_t framebuffer_width = canvas->width;
+    uint32_t framebuffer_height = canvas->height;
 
     // Make the renderpass.
     make_renderpass(
@@ -62,7 +66,7 @@ void dvz_canvas_create(DvzCanvas* canvas)
         get_clear_color(DVZ_DEFAULT_CLEAR_COLOR));
 
     // Make the swapchain.
-    make_swapchain(gpu, canvas->window, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT);
+    make_swapchain(gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT);
 
     // Make depth buffer image.
     make_depth(gpu, &canvas->render.depth, framebuffer_width, framebuffer_height);
@@ -90,13 +94,11 @@ void dvz_canvas_create(DvzCanvas* canvas)
 
     // Input.
     log_trace("creating canvas input");
-    canvas->input = dvz_input();
-    dvz_input_attach(&canvas->input, canvas->window);
+    // canvas->input = dvz_input();
+    // dvz_input_attach(&canvas->input, canvas->window);
 
     dvz_obj_created(&canvas->obj);
-    log_trace(
-        "canvas created with size %dx%d (framebuffer %dx%d)", //
-        window->width, window->height, framebuffer_width, framebuffer_height);
+    log_trace("canvas created with size %dx%d)", framebuffer_width, framebuffer_height);
 }
 
 
@@ -115,13 +117,13 @@ void dvz_canvas_reset(DvzCanvas* canvas)
 void dvz_canvas_recreate(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    DvzWindow* window = canvas->window;
+    // DvzWindow* window = canvas->window;
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
     DvzRenderpass* renderpass = &canvas->render.renderpass;
 
-    ASSERT(window != NULL);
+    // ASSERT(window != NULL);
     ASSERT(gpu != NULL);
     ASSERT(swapchain != NULL);
     ASSERT(framebuffers != NULL);
@@ -133,7 +135,8 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
     // Wait until the device is ready and the window fully resized.
     dvz_gpu_wait(gpu);
-    dvz_window_poll_size(window);
+    // TODO: find size
+    // dvz_window_poll_size(window);
 
     // Destroy swapchain resources.
     dvz_framebuffers_destroy(&canvas->render.framebuffers);
@@ -187,9 +190,10 @@ void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
     switch (type)
     {
     case DVZ_CANVAS_SIZE_SCREEN:
-        ASSERT(canvas->window != NULL);
-        size[0] = canvas->window->width;
-        size[1] = canvas->window->height;
+        // TODO
+        // ASSERT(canvas->window != NULL);
+        // size[0] = canvas->window->width;
+        // size[1] = canvas->window->height;
         break;
     case DVZ_CANVAS_SIZE_FRAMEBUFFER:
         size[0] = canvas->render.framebuffers.attachments[0]->shape[0];
@@ -251,8 +255,8 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
 {
     ASSERT(canvas != NULL);
 
-    DvzWindow* window = canvas->window;
-    ASSERT(window != NULL);
+    // DvzWindow* window = canvas->window;
+    // ASSERT(window != NULL);
 
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
@@ -278,11 +282,11 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
     {
         log_debug("iteration %d", frame);
 
-        backend_poll_events(gpu->host);
+        backend_poll_events(gpu->host->backend);
 
-        if (backend_window_should_close(window) ||
-            window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-            break;
+        // if (backend_window_should_close(window) ||
+        //     window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        //     break;
 
         // Wait for fence.
         dvz_fences_wait(fences, canvas->cur_frame);
@@ -302,7 +306,8 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
             // Wait until the device is ready and the window fully resized.
             // Framebuffer new size.
             dvz_gpu_wait(gpu);
-            dvz_window_poll_size(window);
+            // TODO
+            // dvz_window_poll_size(window);
 
             // Destroy swapchain resources.
             dvz_framebuffers_destroy(framebuffers);
@@ -384,7 +389,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     ASSERT(host != NULL);
 
     // Wait until all pending events have been processed.
-    backend_poll_events(host);
+    backend_poll_events(host->backend);
 
     // Wait on the GPU.
     dvz_gpu_wait(gpu);
@@ -417,12 +422,12 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     // if (canvas->app->backend != DVZ_BACKEND_OFFSCREEN)
     //     dvz_imgui_destroy();
 
-    // Destroy the window.
-    log_trace("canvas destroy window");
-    if (canvas->window != NULL)
-    {
-        dvz_window_destroy(canvas->window);
-    }
+    // // Destroy the window.
+    // log_trace("canvas destroy window");
+    // if (canvas->window != NULL)
+    // {
+    //     dvz_window_destroy(canvas->window);
+    // }
 
     // Destroy the semaphores.
     log_trace("canvas destroy semaphores");
@@ -437,7 +442,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
 
     // NOTE: the Input destruction must occur AFTER the window destruction, otherwise the window
     // glfw callbacks might enqueue input events to a destroyed deq, causing a segfault.
-    dvz_input_destroy(&canvas->input);
+    // dvz_input_destroy(&canvas->input);
 
     dvz_obj_destroyed(&canvas->obj);
 }

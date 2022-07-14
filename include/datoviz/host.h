@@ -22,7 +22,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzHost DvzHost;
-typedef struct DvzWindow DvzWindow;
 typedef struct DvzGpu DvzGpu;
 
 // Forward declaration.
@@ -52,7 +51,6 @@ struct DvzHost
 
     // Containers.
     DvzContainer gpus;
-    DvzContainer windows;
 };
 
 

@@ -265,7 +265,7 @@ static void _swapchain_create(DvzSwapchain* swapchain)
 {
     uint32_t width, height;
     create_swapchain(
-        swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->window->surface,
+        swapchain->gpu->device, swapchain->gpu->physical_device, swapchain->surface,
         swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
         swapchain->requested_width, swapchain->requested_height, //
         &swapchain->caps, &swapchain->swapchain, &width, &height);
@@ -313,7 +313,7 @@ static void _swapchain_destroy(DvzSwapchain* swapchain)
 
 
 
-DvzSwapchain dvz_swapchain(DvzGpu* gpu, DvzWindow* window, uint32_t min_img_count)
+DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_count)
 {
     ASSERT(gpu != NULL);
     ASSERT(dvz_obj_is_created(&gpu->obj));
@@ -321,7 +321,7 @@ DvzSwapchain dvz_swapchain(DvzGpu* gpu, DvzWindow* window, uint32_t min_img_coun
     DvzSwapchain swapchain = {0};
 
     swapchain.gpu = gpu;
-    swapchain.window = window;
+    swapchain.surface = surface;
     swapchain.img_count = min_img_count;
     return swapchain;
 }

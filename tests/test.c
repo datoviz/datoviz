@@ -107,55 +107,55 @@ int dvz_run_tests(const char* match)
     TEST(test_request_2)
 
     // Testing window.
-    TEST(test_window_1)
+    // TEST(test_window_1)
 
-    // Testing input.
-    TEST(test_input_mouse_1)
-    TEST(test_input_drag_1)
-    TEST(test_input_click_1)
-    TEST(test_input_keyboard_1)
-    TEST(test_input_timer_1)
-    TEST(test_input_glfw_1)
+    // // Testing input.
+    // TEST(test_input_mouse_1)
+    // TEST(test_input_drag_1)
+    // TEST(test_input_click_1)
+    // TEST(test_input_keyboard_1)
+    // TEST(test_input_timer_1)
+    // TEST(test_input_glfw_1)
 
     // Testing input.
     TEST(test_client_1)
 
     // Testing vklite.
-    TEST(test_vklite_host)
+    // TEST(test_vklite_host)
 
 
     // Setup the host fixture.
     SETUP(setup_host)
 
-    TEST(test_vklite_commands)
-    TEST(test_vklite_buffer_1)
-    TEST(test_vklite_buffer_resize)
-    TEST(test_vklite_load_shader)
-    TEST(test_vklite_compute)
-    TEST(test_vklite_push)
-    TEST(test_vklite_images)
-    TEST(test_vklite_sampler)
-    TEST(test_vklite_barrier_buffer)
-    TEST(test_vklite_barrier_image)
-    TEST(test_vklite_submit)
-    TEST(test_vklite_offscreen)
-    TEST(test_vklite_shader)
-    TEST(test_vklite_window)
-    TEST(test_vklite_swapchain)
-    TEST(test_vklite_graphics)
-    TEST(test_vklite_gui)
-    TEST(test_vklite_canvas_blank)
-    TEST(test_vklite_canvas_triangle)
-    TEST(test_vklite_canvas_gui)
+    // TEST(test_vklite_commands)
+    // TEST(test_vklite_buffer_1)
+    // TEST(test_vklite_buffer_resize)
+    // TEST(test_vklite_load_shader)
+    // TEST(test_vklite_compute)
+    // TEST(test_vklite_push)
+    // TEST(test_vklite_images)
+    // TEST(test_vklite_sampler)
+    // TEST(test_vklite_barrier_buffer)
+    // TEST(test_vklite_barrier_image)
+    // TEST(test_vklite_submit)
+    // TEST(test_vklite_offscreen)
+    // TEST(test_vklite_shader)
+    // // TEST(test_vklite_window)
+    // TEST(test_vklite_swapchain)
+    // TEST(test_vklite_graphics)
+    // TEST(test_vklite_gui)
+    // TEST(test_vklite_canvas_blank)
+    // TEST(test_vklite_canvas_triangle)
+    // TEST(test_vklite_canvas_gui)
 
     // Testing canvas.
-    TEST(test_canvas_1)
-    TEST(test_canvas_triangle)
+    // TEST(test_canvas_1)
+    // TEST(test_canvas_triangle)
 
     // Testing runner.
-    TEST(test_runner_1)
-    TEST(test_runner_2)
-    TEST(test_runner_triangle)
+    // TEST(test_runner_1)
+    // TEST(test_runner_2)
+    // TEST(test_runner_triangle)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

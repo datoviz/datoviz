@@ -3,7 +3,10 @@
 /*************************************************************************************************/
 
 #include "host.h"
+
+// NOTE: glfw is required because it exposes the Vulkan extensions used by the instance
 #include "_glfw.h"
+
 #include "common.h"
 #include "vklite.h"
 #include "vkutils.h"
@@ -11,12 +14,29 @@
 
 
 /*************************************************************************************************/
-/*  Forward declarations                                                                         */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// void dvz_gpu_wait(DvzGpu* gpu);
+static const char** backend_extensions(DvzBackend backend, uint32_t* required_extension_count)
+{
+    const char** required_extensions = NULL;
 
-// void dvz_gpu_destroy(DvzGpu* gpu);
+    // Backend initialization and required extensions.
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+#if HAS_GLFW
+        // ASSERT(glfwVulkanSupported() != 0);
+        required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
+        log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
+#endif
+        break;
+    default:
+        break;
+    }
+
+    return required_extensions;
+}
 
 
 
@@ -59,8 +79,8 @@ DvzHost* dvz_host(DvzBackend backend)
     host->clock = dvz_clock();
 
     host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
-    host->windows =
-        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
+    // host->windows =
+    //     dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
 
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
@@ -136,9 +156,9 @@ int dvz_host_destroy(DvzHost* host)
     CONTAINER_DESTROY_ITEMS(DvzGpu, host->gpus, dvz_gpu_destroy)
     dvz_container_destroy(&host->gpus);
 
-    // Destroy the windows.
-    CONTAINER_DESTROY_ITEMS(DvzWindow, host->windows, dvz_window_destroy)
-    dvz_container_destroy(&host->windows);
+    // // Destroy the windows.
+    // CONTAINER_DESTROY_ITEMS(DvzWindow, host->windows, dvz_window_destroy)
+    // dvz_container_destroy(&host->windows);
 
     // Destroy the debug messenger.
     if (host->debug_messenger)

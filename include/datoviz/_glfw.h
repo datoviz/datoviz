@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Vklite utils                                                                                 */
+/*  GLFW utils                                                                                 */
 /*************************************************************************************************/
 
 #ifndef DVZ_HEADER_GLFW
@@ -11,20 +11,19 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#ifndef HAS_GLFW
-#define HAS_GLFW 0
-#endif
+// #ifndef HAS_GLFW
+// #define HAS_GLFW 0
+// #endif
 
-#if HAS_GLFW
-#define GLFW_INCLUDE_VULKAN
+// #if HAS_GLFW
+// #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#else
-typedef struct GLFWwindow GLFWwindow;
-#include <vulkan/vulkan.h>
-#endif
+// #else
+// typedef struct GLFWwindow GLFWwindow;
+// #include <vulkan/vulkan.h>
+// #endif
 
 #include "common.h"
-#include "host.h"
 #include "window.h"
 
 
@@ -82,49 +81,25 @@ static void backend_terminate(DvzBackend backend)
 /*  Backend-specific code                                                                        */
 /*************************************************************************************************/
 
-static const char** backend_extensions(DvzBackend backend, uint32_t* required_extension_count)
-{
-    const char** required_extensions = NULL;
-
-    // Backend initialization and required extensions.
-    switch (backend)
-    {
-    case DVZ_BACKEND_GLFW:
-#if HAS_GLFW
-        // ASSERT(glfwVulkanSupported() != 0);
-        required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
-        log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
-#endif
-        break;
-    default:
-        break;
-    }
-
-    return required_extensions;
-}
+// static void
+// _glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
+// {
+// #if HAS_GLFW
+//     // WARNING: this callback is only valid for DvzWindows that are not wrapped inside a
+//     DvzCanvas
+//     // This is because the DvzCanvas has its own glfw keyboard callback, and there can be
+//     only 1. DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
+//     ASSERT(window != NULL);
+//     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
+//     {
+//         window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+//     }
+// #endif
+// }
 
 
 
-static void
-_glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
-{
-#if HAS_GLFW
-    // WARNING: this callback is only valid for DvzWindows that are not wrapped inside a DvzCanvas
-    // This is because the DvzCanvas has its own glfw keyboard callback, and there can be only 1.
-    DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
-    ASSERT(window != NULL);
-    if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
-    {
-        window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-    }
-#endif
-}
-
-
-
-static void* backend_window(
-    VkInstance instance, DvzBackend backend, uint32_t width, uint32_t height, //
-    DvzWindow* window, VkSurfaceKHR* surface)
+static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height, int flags)
 {
     log_trace("create window with size %dx%d", width, height);
 
@@ -135,21 +110,28 @@ static void* backend_window(
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         ASSERT(width > 0);
         ASSERT(height > 0);
+
+        // Invisible window.
+        if ((flags & DVZ_WINDOW_FLAGS_HIDDEN))
+        {
+            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        }
+
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
         ASSERT(bwin != NULL);
 
-        if (instance != VK_NULL_HANDLE)
+        // Visible window.
+        if ((flags & DVZ_WINDOW_FLAGS_HIDDEN))
         {
-            VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
-            if (res != VK_SUCCESS)
-                log_error("error creating the GLFW surface, result was %d", res);
+            glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         }
 
-        glfwSetWindowUserPointer(bwin, window);
+        // TODO!
+        // glfwSetWindowUserPointer(bwin, window);
 
         // Callback that marks the window to close if ESC is pressed, but only if
         // DvzWindow.close_on_esc=true
-        glfwSetKeyCallback(bwin, _glfw_esc_callback);
+        // glfwSetKeyCallback(bwin, _glfw_esc_callback);
 
         return bwin;
 #endif
@@ -163,11 +145,9 @@ static void* backend_window(
 
 
 
-static void backend_poll_events(DvzHost* host)
+static void backend_poll_events(DvzBackend backend)
 {
-    ASSERT(host != NULL);
-
-    switch (host->backend)
+    switch (backend)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
@@ -181,11 +161,9 @@ static void backend_poll_events(DvzHost* host)
 
 
 
-static void backend_wait(DvzWindow* window)
+static void backend_wait(DvzBackend backend)
 {
-    ASSERT(window != NULL);
-
-    switch (window->host ? window->host->backend : DVZ_BACKEND_GLFW)
+    switch (backend)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
@@ -202,16 +180,12 @@ static void backend_wait(DvzWindow* window)
 static void backend_window_destroy(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    // ASSERT(window->host != NULL);
 
-    VkInstance instance = window->host ? window->host->instance : VK_NULL_HANDLE;
-    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
-    VkSurfaceKHR surface = window->surface;
 
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
     log_trace("starting destruction of backend window...");
-    switch (backend)
+    switch (window->backend)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
@@ -225,25 +199,19 @@ static void backend_window_destroy(DvzWindow* window)
         break;
     }
 
-    if (surface != VK_NULL_HANDLE)
-    {
-        log_trace("destroy surface");
-        vkDestroySurfaceKHR(instance, surface, NULL);
-    }
-
     log_trace("backend window destroyed");
 }
 
 
 
-static void backend_window_get_size(
-    DvzWindow* window,                               //
-    uint32_t* window_width, uint32_t* window_height, //
-    uint32_t* framebuffer_width, uint32_t* framebuffer_height)
+static void backend_get_window_size(
+    DvzWindow* window,                              //
+    uint32_t* window_width, uint32_t* window_height //
+)
 {
     ASSERT(window != NULL);
 
-    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
+    DvzBackend backend = window->backend;
     void* bwin = window->backend_window;
 
     log_trace("determining the size of backend window...");
@@ -268,6 +236,33 @@ static void backend_window_get_size(
         *window_width = (uint32_t)w;
         *window_height = (uint32_t)h;
         log_trace("window size is %dx%d", w, h);
+#endif
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
+static void backend_get_framebuffer_size(
+    DvzWindow* window, uint32_t* framebuffer_width, uint32_t* framebuffer_height)
+{
+    ASSERT(window != NULL);
+
+    DvzBackend backend = window->backend;
+
+    log_trace("determining the size of backend window...");
+
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:;
+
+#if HAS_GLFW
+        int w, h;
+        void* bwin = window->backend_window;
+        ASSERT(bwin != NULL);
 
         // Get framebuffer size.
         glfwGetFramebufferSize((GLFWwindow*)bwin, &w, &h);
@@ -292,11 +287,11 @@ static void backend_window_get_size(
 
 
 
-static void backend_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
+static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
     ASSERT(window != NULL);
 
-    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
+    DvzBackend backend = window->backend;
     void* bwin = window->backend_window;
 
     log_trace("setting the size of backend window...");
@@ -323,7 +318,7 @@ static bool backend_window_should_close(DvzWindow* window)
 {
     ASSERT(window != NULL);
 
-    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
+    DvzBackend backend = window->backend;
     void* bwin = window->backend_window;
 
     switch (backend)
@@ -346,7 +341,7 @@ static void backend_loop(DvzWindow* window, uint64_t max_frames)
 {
     ASSERT(window != NULL);
 
-    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
+    DvzBackend backend = window->backend;
     void* bwin = window->backend_window;
 
     switch (backend)

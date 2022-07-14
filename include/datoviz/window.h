@@ -11,9 +11,19 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <vulkan/vulkan.h>
-
 #include "common.h"
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_WINDOW_FLAGS_NONE,
+    DVZ_WINDOW_FLAGS_HIDDEN,
+} DvzWindowFlags;
 
 
 
@@ -22,10 +32,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzWindow DvzWindow;
-typedef struct DvzGpu DvzGpu;
-
-// Forward declaration.
-typedef struct DvzHost DvzHost;
 
 
 
@@ -36,14 +42,14 @@ typedef struct DvzHost DvzHost;
 struct DvzWindow
 {
     DvzObject obj;
-    DvzHost* host;
 
+    DvzBackend backend;
     void* backend_window;
-    uint32_t width, height;                         // in screen coordinates
-    uint32_t framebuffer_width, framebuffer_height; // in framebuffer coordinates
+    uint32_t width, height; // in screen coordinates
+    // uint32_t framebuffer_width, framebuffer_height; // in framebuffer coordinates
 
-    bool close_on_esc;
-    VkSurfaceKHR surface;
+    // bool close_on_esc;
+    // VkSurfaceKHR surface;
 };
 
 
@@ -64,10 +70,9 @@ struct DvzWindow
  * @param height the window height, in pixels
  * @returns the window
  */
-DVZ_EXPORT DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int flags);
 
-DVZ_EXPORT void
-dvz_window_create(DvzHost* host, DvzWindow* window, uint32_t width, uint32_t height);
+
 
 /**
  * Get the window size.
@@ -75,6 +80,8 @@ dvz_window_create(DvzHost* host, DvzWindow* window, uint32_t width, uint32_t hei
  * @param window the window
  */
 DVZ_EXPORT void dvz_window_poll_size(DvzWindow* window);
+
+
 
 /**
  * Set the window size, in pixels.
@@ -85,12 +92,7 @@ DVZ_EXPORT void dvz_window_poll_size(DvzWindow* window);
  */
 DVZ_EXPORT void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
 
-/**
- * Process the pending windowing events by the backend (glfw by default).
- *
- * @param window the window
- */
-DVZ_EXPORT void dvz_window_poll_events(DvzWindow* window);
+
 
 /**
  * Destroy a window.

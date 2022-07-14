@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "../src/vklite_utils.h"
 #include "_glfw.h"
 #include "test_resources.h"
 #include "testing.h"
@@ -63,6 +64,7 @@ struct TestCanvas
     bool is_offscreen;
 
     DvzWindow* window;
+    VkSurfaceKHR surface;
 
     DvzRenderpass renderpass;
     DvzFramebuffers framebuffers;
@@ -265,13 +267,7 @@ static DvzGpu* make_gpu(DvzHost* host)
     DvzGpu* gpu = dvz_gpu_best(host);
     _default_queues(gpu, true);
     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-
-    // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
-    // capabilities.
-    DvzWindow* window = dvz_window(host, 100, 100);
-    ASSERT(window->surface != VK_NULL_HANDLE);
-    dvz_gpu_create(gpu, window->surface);
-    dvz_window_destroy(window);
+    create_gpu_with_surface(gpu);
 
     return gpu;
 }
@@ -334,12 +330,13 @@ static TestCanvas offscreen(DvzGpu* gpu)
 /*  Test canvas                                                                                  */
 /*************************************************************************************************/
 
-static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
+static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
 {
     TestCanvas canvas = {0};
     canvas.is_offscreen = false;
     canvas.gpu = gpu;
     canvas.window = window;
+    canvas.surface = surface;
 
     // uint32_t framebuffer_width, framebuffer_height;
     // dvz_window_get_size(window, &framebuffer_width, &framebuffer_height);
@@ -350,7 +347,7 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window)
         make_renderpass(gpu, BACKGROUND, FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     canvas.renderpass = renderpass;
 
-    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, window, 3);
+    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, surface, 3);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     dvz_swapchain_present_mode(&canvas.swapchain, PRESENT_MODE);
     dvz_swapchain_create(&canvas.swapchain);
@@ -385,6 +382,9 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
     DvzRenderpass* renderpass = &canvas->renderpass;
     DvzFramebuffers* framebuffers = &canvas->framebuffers;
     DvzSwapchain* swapchain = &canvas->swapchain;
+    DvzHost* host = gpu->host;
+    ASSERT(host != NULL);
+    DvzBackend backend = host->backend;
 
     ASSERT(swapchain != NULL);
     ASSERT(swapchain->img_count > 0);
@@ -408,7 +408,7 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
         log_debug("iteration %d", frame);
         ASSERT(swapchain->images == canvas->images);
 
-        backend_poll_events(window->host);
+        backend_poll_events(backend);
 
         if (backend_window_should_close(window) ||
             window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
@@ -432,10 +432,8 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
             // Wait until the device is ready and the window fully resized.
             // Framebuffer new size.
             uint32_t width, height;
-            backend_window_get_size(
-                window,                          //
-                &window->width, &window->height, //
-                &width, &height);
+            backend_get_window_size(window, &window->width, &window->height);
+            backend_get_framebuffer_size(window, &width, &height);
             dvz_gpu_wait(gpu);
 
             // Destroy swapchain resources.

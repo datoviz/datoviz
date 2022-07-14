@@ -86,8 +86,6 @@ typedef struct DvzSubmit DvzSubmit;
 
 // Forward declarations.
 typedef struct DvzHost DvzHost;
-typedef struct DvzWindow DvzWindow;
-// typedef struct DvzContext DvzContext;
 
 
 
@@ -229,7 +227,7 @@ struct DvzSwapchain
 {
     DvzObject obj;
     DvzGpu* gpu;
-    DvzWindow* window;
+    VkSurfaceKHR surface;
 
     VkFormat format;
     VkPresentModeKHR present_mode;
@@ -722,11 +720,11 @@ DVZ_EXPORT void dvz_gpu_destroy(DvzGpu* gpu);
  * Initialize a swapchain.
  *
  * @param gpu the GPU
- * @param window the window
+ * @param surface the surface
  * @param min_img_count the minimum acceptable number of images in the swapchain
  * @returns the swapchain
  */
-DVZ_EXPORT DvzSwapchain dvz_swapchain(DvzGpu* gpu, DvzWindow* window, uint32_t min_img_count);
+DVZ_EXPORT DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_count);
 
 /**
  * Set the swapchain image format.
@@ -797,7 +795,7 @@ DVZ_EXPORT void dvz_swapchain_present(
  * Destroy a swapchain
  *
  * !!! warning
- *     This function must imperatively be called *before* `dvz_window_destroy()`.
+ *     This function must imperatively be called *before* destroying the swapchain's surface.
  *
  * @param swapchain the swapchain
  */

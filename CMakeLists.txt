@@ -518,15 +518,15 @@ set(sources
     "src/pipelib.c"
     "src/graphics.c"
     "src/graphics_data.c"
-    "src/gui.c"
+    # "src/gui.c"
     "src/workspace.c"
     "src/request.c"
     "src/map.cpp"
     "src/renderer.cpp"
     "src/client.c"
-    "src/input.c"
+    # "src/input.c"
     "src/canvas.c"
-    "src/runner.c"
+    # "src/runner.c"
 
     ${external_sources}
 )
@@ -569,8 +569,8 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_fileio.c"
         "tests/test_fifo.c"
         "tests/test_array.c"
-        "tests/test_window.c"
-        "tests/test_vklite.c"
+        # "tests/test_window.c"
+        # "tests/test_vklite.c"
         "tests/test_alloc.c"
         "tests/test_resources.c"
         "tests/test_datalloc.c"
@@ -585,9 +585,9 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_request.c"
         "tests/test_renderer.c"
         "tests/test_client.c"
-        "tests/test_input.c"
-        "tests/test_canvas.c"
-        "tests/test_runner.c"
+        # "tests/test_input.c"
+        # "tests/test_canvas.c"
+        # "tests/test_runner.c"
         "tests/test.c"
     )
 
