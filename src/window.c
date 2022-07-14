@@ -15,29 +15,21 @@
 /*  Window                                                                                       */
 /*************************************************************************************************/
 
-DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
+void dvz_window_create(DvzHost* host, DvzWindow* window, uint32_t width, uint32_t height)
 {
-    // *** Comment below obsolete?? ***
-    // NOTE: an offscreen canvas has NO DvzWindow, so this function should NEVER be called with an
-    // offscreen backend, or for an offscreen canvas.
-
-    ASSERT(host != NULL);
-
-    DvzWindow* window = dvz_container_alloc(&host->windows);
     ASSERT(window != NULL);
 
     ASSERT(window->obj.type == DVZ_OBJECT_TYPE_WINDOW);
     ASSERT(window->obj.status == DVZ_OBJECT_STATUS_ALLOC);
-    window->host = host;
-    // ASSERT(host->backend != DVZ_BACKEND_NONE && host->backend != DVZ_BACKEND_OFFSCREEN);
 
     window->width = width;
     window->height = height;
     window->close_on_esc = true;
 
     // Create the window, depending on the backend.
-    window->backend_window =
-        backend_window(host->instance, host->backend, width, height, window, &window->surface);
+    window->backend_window = backend_window(
+        host ? host->instance : 0, host ? host->backend : DVZ_BACKEND_GLFW, width, height, window,
+        &window->surface);
 
     if (window->surface == NULL)
     {
@@ -50,7 +42,20 @@ DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
         window,                          //
         &window->width, &window->height, //
         &window->framebuffer_width, &window->framebuffer_height);
+}
 
+
+
+DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
+{
+    DvzWindow* window = NULL;
+    if (host != NULL)
+        window = dvz_container_alloc(&host->windows);
+    else
+        window = calloc(1, sizeof(DvzWindow));
+    ASSERT(window != NULL);
+    dvz_window_create(host, window, width, height);
+    window->host = host;
     return window;
 }
 
@@ -59,7 +64,7 @@ DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height)
 void dvz_window_poll_size(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
+    // ASSERT(window->host != NULL);
 
     backend_window_get_size(
         window,                          //
@@ -72,7 +77,7 @@ void dvz_window_poll_size(DvzWindow* window)
 void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
+    // ASSERT(window->host != NULL);
     backend_window_set_size(window, width, height);
 
     backend_window_get_size(
@@ -86,8 +91,9 @@ void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 void dvz_window_poll_events(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
-    backend_poll_events(window->host);
+    // ASSERT(window->host != NULL);
+    if (window->host)
+        backend_poll_events(window->host);
 }
 
 
@@ -100,7 +106,7 @@ void dvz_window_destroy(DvzWindow* window)
         return;
     }
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
+    // ASSERT(window->host != NULL);
     backend_window_destroy(window);
     dvz_obj_destroyed(&window->obj);
 }

@@ -3,7 +3,9 @@
 /*************************************************************************************************/
 
 #include "client.h"
+#include "_glfw.h"
 #include "common.h"
+#include "window.h"
 
 
 
@@ -15,14 +17,49 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 {
     ASSERT(deq != NULL);
 
+    ASSERT(user_data != NULL);
+    DvzClient* client = (DvzClient*)user_data;
+
     ASSERT(item != NULL);
     DvzClientEvent* ev = (DvzClientEvent*)item;
-
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
+
     uint32_t width = ev->content.w.width;
     uint32_t height = ev->content.w.height;
 
-    log_debug("window create (%dx%d)", width, height);
+    log_debug("client: create window #%d (%dx%d)", ev->window_id, width, height);
+
+    // HACK: improve this
+    DvzWindow* window = dvz_container_alloc(&client->windows);
+    dvz_window_create(NULL, window, width, height);
+
+    dvz_map_add(client->map, ev->window_id, DVZ_OBJECT_TYPE_WINDOW, window);
+}
+
+
+
+static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    ASSERT(user_data != NULL);
+    DvzClient* client = (DvzClient*)user_data;
+
+    ASSERT(item != NULL);
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
+
+    log_debug("client: delete window #%d", ev->window_id);
+
+    DvzWindow* window = dvz_map_get(client->map, ev->window_id);
+    if (window == NULL)
+    {
+        log_warn("window #%d not found", ev->window_id);
+    }
+    else
+    {
+        dvz_window_destroy(window);
+    }
 }
 
 
@@ -33,7 +70,15 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
 DvzClient* dvz_client(void)
 {
+    backend_init(DVZ_BACKEND_GLFW);
+
     DvzClient* client = calloc(1, sizeof(DvzClient));
+
+    client->map = dvz_map();
+
+    // Create the window container.
+    client->windows =
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
 
     // Create queue.
     client->deq = dvz_deq(1);
@@ -44,7 +89,6 @@ DvzClient* dvz_client(void)
     // Register a proc callback.
     dvz_deq_callback(
         &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
-
 
     // create async queue
     // start background thread
@@ -110,7 +154,17 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames) { ASSERT(client != NUL
 void dvz_client_destroy(DvzClient* client)
 {
     ASSERT(client != NULL);
+
     dvz_deq_destroy(&client->deq);
-    FREE(client);
+
+    CONTAINER_DESTROY_ITEMS(DvzWindow, client->windows, dvz_window_destroy)
+    dvz_container_destroy(&client->windows);
+
+    dvz_map_destroy(client->map);
+
     // stop background thread
+
+    backend_terminate(DVZ_BACKEND_GLFW);
+
+    FREE(client);
 }

@@ -137,9 +137,13 @@ static void* backend_window(
         ASSERT(height > 0);
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
         ASSERT(bwin != NULL);
-        VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
-        if (res != VK_SUCCESS)
-            log_error("error creating the GLFW surface, result was %d", res);
+
+        if (instance != VK_NULL_HANDLE)
+        {
+            VkResult res = glfwCreateWindowSurface(instance, bwin, NULL, surface);
+            if (res != VK_SUCCESS)
+                log_error("error creating the GLFW surface, result was %d", res);
+        }
 
         glfwSetWindowUserPointer(bwin, window);
 
@@ -180,9 +184,8 @@ static void backend_poll_events(DvzHost* host)
 static void backend_wait(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    switch (window->host->backend)
+    switch (window->host ? window->host->backend : DVZ_BACKEND_GLFW)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
@@ -199,10 +202,10 @@ static void backend_wait(DvzWindow* window)
 static void backend_window_destroy(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
+    // ASSERT(window->host != NULL);
 
-    VkInstance instance = window->host->instance;
-    DvzBackend backend = window->host->backend;
+    VkInstance instance = window->host ? window->host->instance : VK_NULL_HANDLE;
+    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
     VkSurfaceKHR surface = window->surface;
 
@@ -239,9 +242,8 @@ static void backend_window_get_size(
     uint32_t* framebuffer_width, uint32_t* framebuffer_height)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    DvzBackend backend = window->host->backend;
+    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
 
     log_trace("determining the size of backend window...");
@@ -293,9 +295,8 @@ static void backend_window_get_size(
 static void backend_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    DvzBackend backend = window->host->backend;
+    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
 
     log_trace("setting the size of backend window...");
@@ -321,9 +322,8 @@ static void backend_window_set_size(DvzWindow* window, uint32_t width, uint32_t 
 static bool backend_window_should_close(DvzWindow* window)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    DvzBackend backend = window->host->backend;
+    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
 
     switch (backend)
@@ -345,9 +345,8 @@ static bool backend_window_should_close(DvzWindow* window)
 static void backend_loop(DvzWindow* window, uint64_t max_frames)
 {
     ASSERT(window != NULL);
-    ASSERT(window->host != NULL);
 
-    DvzBackend backend = window->host->backend;
+    DvzBackend backend = window->host ? window->host->backend : DVZ_BACKEND_GLFW;
     void* bwin = window->backend_window;
 
     switch (backend)

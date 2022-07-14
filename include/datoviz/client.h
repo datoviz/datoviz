@@ -13,6 +13,7 @@
 
 #include "common.h"
 #include "fifo.h"
+#include "map.h"
 
 
 
@@ -101,6 +102,10 @@ struct DvzClientPayload
 struct DvzClient
 {
     DvzDeq deq;
+
+    // Windows.
+    DvzContainer windows;
+    DvzMap* map;
 
     // Callbacks.
     uint32_t callback_count;

@@ -66,6 +66,9 @@ struct DvzWindow
  */
 DVZ_EXPORT DvzWindow* dvz_window(DvzHost* host, uint32_t width, uint32_t height);
 
+DVZ_EXPORT void
+dvz_window_create(DvzHost* host, DvzWindow* window, uint32_t width, uint32_t height);
+
 /**
  * Get the window size.
  *
