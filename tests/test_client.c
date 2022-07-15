@@ -9,6 +9,7 @@
 #include "test_client.h"
 #include "_glfw.h"
 #include "client.h"
+#include "presenter.h"
 #include "test.h"
 #include "test_vklite.h"
 #include "testing.h"
@@ -64,28 +65,36 @@ int test_client_1(TstSuite* suite)
 
 
 
-static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_data)
-{
-    ASSERT(client != NULL);
-    uint64_t frame_idx = ev.content.f.frame_idx;
-    log_debug("frame %d", frame_idx);
-}
-
 int test_client_2(TstSuite* suite)
 {
+    // GPU-side.
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    DvzGpu* gpu = make_gpu(host);
+    DvzRenderer* rnd = dvz_renderer(gpu, 0);
+
+    // Client-side.
     DvzClient* client = dvz_client(BACKEND);
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rnd);
+    dvz_presenter_client(prt, client);
+
+
+    // Start.
 
     // Create a window.
     _create_window(client, WID);
 
-    dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, NULL);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
 
+    // Destroying all objects.
     dvz_client_destroy(client);
+    dvz_renderer_destroy(rnd);
+    dvz_presenter_destroy(prt);
+    dvz_gpu_destroy(gpu);
     dvz_host_destroy(host);
+
     return 0;
 }

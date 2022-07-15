@@ -526,6 +526,7 @@ set(sources
     "src/renderer.cpp"
     "src/client.c"
     "src/canvas.c"
+    "src/presenter.c"
     "src/canvas_window.c"
     # "src/input.c"
     # "src/runner.c"
