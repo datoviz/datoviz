@@ -33,6 +33,10 @@ typedef enum
 
 typedef struct DvzWindow DvzWindow;
 
+// Forward declarations.
+typedef struct DvzMouse DvzMouse;
+typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzCanvas DvzCanvas;
 
 
 /*************************************************************************************************/
@@ -50,6 +54,11 @@ struct DvzWindow
 
     // bool close_on_esc;
     // VkSurfaceKHR surface;
+
+    // Forward pointers.
+    DvzMouse* mouse;
+    DvzKeyboard* keyboard;
+    DvzCanvas* canvas;
 };
 
 
