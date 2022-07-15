@@ -45,9 +45,15 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_da
 
 int test_presenter_1(TstSuite* suite)
 {
+    ASSERT(suite != NULL);
+
     // GPU-side.
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Create a renderer.
     DvzRenderer* rnd = dvz_renderer(gpu, 0);
 
     // Client-side.
@@ -88,7 +94,6 @@ int test_presenter_1(TstSuite* suite)
     dvz_renderer_destroy(rnd);
     dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
-    dvz_host_destroy(host);
 
     return 0;
 }
@@ -97,9 +102,15 @@ int test_presenter_1(TstSuite* suite)
 
 int test_presenter_2(TstSuite* suite)
 {
+    ASSERT(suite != NULL);
+
     // GPU-side.
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    DvzHost* host = get_host(suite);
+
     DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Create a renderer.
     DvzRenderer* rnd = dvz_renderer(gpu, 0);
 
     // Client-side.
@@ -140,7 +151,6 @@ int test_presenter_2(TstSuite* suite)
     dvz_renderer_destroy(rnd);
     dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
-    dvz_host_destroy(host);
 
     return 0;
 }

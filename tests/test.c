@@ -153,10 +153,9 @@ int dvz_run_tests(const char* match)
     TEST(test_canvas_1)
     TEST(test_canvas_triangle)
 
-    // Testing runner.
-    // TEST(test_runner_1)
-    // TEST(test_runner_2)
-    // TEST(test_runner_triangle)
+    // Testing presenter.
+    TEST(test_presenter_1)
+    TEST(test_presenter_2)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
@@ -208,9 +207,6 @@ int dvz_run_tests(const char* match)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
-
-    TEST(test_presenter_1)
-    // TEST(test_presenter_2)
 
 
     // Testing builtin graphics.
