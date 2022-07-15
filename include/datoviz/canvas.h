@@ -64,6 +64,7 @@ typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx, voi
 
 // Forward declarations.
 typedef struct DvzWindow DvzWindow;
+typedef struct DvzRecorder DvzRecorder;
 
 
 
@@ -136,6 +137,7 @@ struct DvzCanvas
     uint64_t frame_idx;
     bool resized;
 
+    DvzRecorder* recorder; // used to record command buffer when using the presenter
     void* user_data;
 };
 

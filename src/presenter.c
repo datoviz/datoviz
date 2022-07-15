@@ -28,8 +28,10 @@ static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_
     ASSERT(rd != NULL);
     ASSERT(canvas != NULL);
 
+    DvzRecorder* recorder = canvas->recorder;
+
     // Blank canvas by default.
-    if (rd->req_count == 0)
+    if (recorder == NULL || dvz_recorder_size(recorder) == 0)
     {
         log_info("default command buffer refill with blank canvas for image #%d", img_idx);
         blank_commands(canvas, &canvas->cmds, img_idx, canvas->refill_user_data);
@@ -38,46 +40,8 @@ static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_
 
     log_info("fill command buffer from the saved record requests for image #%d", img_idx);
 
-    // Otherwise, process all buffered commands.
-    DvzRequest* rq = NULL;
-    DvzPipe* pipe = NULL;
-    for (uint32_t i = 0; i < rd->req_count; i++)
-    {
-        rq = &rd->reqs[i];
-        ASSERT(rq != NULL);
-        switch (rq->type)
-        {
-
-        case DVZ_REQUEST_OBJECT_BEGIN:
-            dvz_cmd_reset(&canvas->cmds, img_idx);
-            dvz_canvas_begin(canvas, &canvas->cmds, img_idx);
-            break;
-
-        case DVZ_REQUEST_OBJECT_VIEWPORT:
-            dvz_canvas_viewport(
-                canvas, &canvas->cmds, img_idx, //
-                rq->content.record_viewport.offset, rq->content.record_viewport.shape);
-            break;
-
-        case DVZ_REQUEST_OBJECT_DRAW:
-
-            pipe = (DvzPipe*)dvz_map_get(rd->map, rq->content.record_draw.graphics);
-            ASSERT(pipe != NULL);
-
-            dvz_pipe_draw(
-                pipe, &canvas->cmds, img_idx, //
-                rq->content.record_draw.first_vertex, rq->content.record_draw.vertex_count);
-            break;
-
-        case DVZ_REQUEST_OBJECT_END:
-            dvz_canvas_end(canvas, &canvas->cmds, img_idx);
-            break;
-
-        default:
-            log_error("unknown record request #%d with type %d", i, rq->type);
-            break;
-        }
-    }
+    // Fill the command buffer with the recorder.
+    dvz_recorder_set(recorder, rd, &canvas->cmds, img_idx);
 }
 
 
@@ -326,6 +290,15 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     else
     {
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
+
+        // At every frame, we submit the command buffer, unless it was already submitted previously
+        // (cache).
+        // NOTE: might not need the refill system?
+        if (canvas->recorder && dvz_recorder_is_dirty(canvas->recorder, swapchain->img_idx))
+        {
+            dvz_cmd_reset(cmds, swapchain->img_idx);
+            dvz_recorder_set(canvas->recorder, rnd, &canvas->cmds, swapchain->img_idx);
+        }
 
         // Reset the Submit instance before adding the command buffers.
         dvz_submit_reset(submit);

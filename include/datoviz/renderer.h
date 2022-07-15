@@ -65,11 +65,6 @@ struct DvzRenderer
     DvzWorkspace* workspace; // boards and canvases: the "where"
     DvzMap* map;             // mapping between uuid and <type, objects>
     DvzRouter* router;       // mapping between pairs (action, obj_type) and functions
-
-    // Recording commands buffer.
-    uint32_t req_count;
-    uint32_t req_capacity;
-    DvzRequest* reqs;
 };
 
 
@@ -153,6 +148,17 @@ DVZ_EXPORT DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id);
  * @returns the tex
  */
 DVZ_EXPORT DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id);
+
+
+
+/**
+ * Return a pipe.
+ *
+ * @param rd the renderer
+ * @param id the pipe id
+ * @returns the pipe
+ */
+DVZ_EXPORT DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
 
 
 

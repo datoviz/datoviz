@@ -12,6 +12,7 @@
 #include "map.h"
 #include "pipe.h"
 #include "pipelib.h"
+#include "recorder.h"
 #include "renderer.h"
 #include "workspace.h"
 
@@ -167,6 +168,8 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzCanvas, canvas, req.id)
 
     ASSERT(canvas != NULL);
+    if (canvas->recorder)
+        dvz_recorder_destroy(canvas->recorder);
     dvz_canvas_destroy(canvas);
     return NULL;
 }
@@ -545,26 +548,30 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 /*  Command buffer recording                                                                     */
 /*************************************************************************************************/
 
-static void _record_append(DvzRenderer* rd, DvzRequest req)
+static void* _record_append(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
-    ASSERT(rd->req_capacity > 0);
-    ASSERT(rd->reqs != NULL);
+    ASSERT(req.id != 0);
 
-    // Reallocate the buffer if needed.
-    if (rd->req_count == rd->req_capacity)
-    {
-        rd->req_capacity *= 2;
-        DvzRequest* _new = (DvzRequest*)realloc(rd->reqs, rd->req_capacity * sizeof(DvzRequest));
-        if (_new == NULL)
-            exit(1);
-        else
-            rd->reqs = _new;
-    }
-    ASSERT(rd->req_count < rd->req_capacity);
+    // Get the canvas.
+    GET_ID(DvzCanvas, canvas, req.id)
 
-    log_trace("append record request with action %d", req.action);
-    rd->reqs[rd->req_count++] = req;
+    // Ensure the canvas Recorder exists.
+    if (!canvas->recorder)
+        canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count);
+
+    // Get the recorder command.
+    DvzRecorderCommand* cmd = &req.content.record.command;
+    cmd->canvas_id = req.id;
+
+    // Reset the buffer when beginning a new record.
+    if (cmd->type == DVZ_RECORDER_BEGIN)
+        dvz_recorder_clear(canvas->recorder);
+
+    // Directly append the record command, set in the request, into the recorder.
+    dvz_recorder_append(canvas->recorder, *cmd);
+
+    return NULL;
 }
 
 
@@ -573,22 +580,11 @@ static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
+    // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    if (type == DVZ_REQUEST_OBJECT_BOARD)
-    {
-        GET_ID(DvzBoard, board, req.id)
-        dvz_cmd_reset(&board->cmds, 0);
-        dvz_board_begin(board, &board->cmds, 0);
-    }
-
-    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
-    {
-        // NOTE: reset the buffer when beginning a new record.
-        rd->req_count = 0;
-
-        _record_append(rd, req);
-    }
+    GET_ID(DvzBoard, board, req.id)
+    dvz_cmd_reset(&board->cmds, 0);
+    dvz_board_begin(board, &board->cmds, 0);
 
     return NULL;
 }
@@ -599,20 +595,12 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
+    // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    if (type == DVZ_REQUEST_OBJECT_BOARD)
-    {
-        GET_ID(DvzBoard, board, req.id)
-        dvz_board_viewport(
-            board, &board->cmds, 0, //
-            req.content.record_viewport.offset, req.content.record_viewport.shape);
-    }
-
-    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
-    {
-        _record_append(rd, req);
-    }
+    GET_ID(DvzBoard, board, req.id)
+    dvz_board_viewport(
+        board, &board->cmds, 0, //
+        req.content.record.command.contents.v.offset, req.content.record.command.contents.v.shape);
 
     return NULL;
 }
@@ -622,22 +610,15 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
-    GET_ID(DvzPipe, pipe, req.content.record_draw.graphics);
+    GET_ID(DvzPipe, pipe, req.content.record.command.contents.draw_direct.pipe_id);
 
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
+    // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
-    if (type == DVZ_REQUEST_OBJECT_BOARD)
-    {
-        GET_ID(DvzBoard, board, req.id)
-        dvz_pipe_draw(
-            pipe, &board->cmds, 0, //
-            req.content.record_draw.first_vertex, req.content.record_draw.vertex_count);
-    }
-
-    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
-    {
-        _record_append(rd, req);
-    }
+    GET_ID(DvzBoard, board, req.id)
+    dvz_pipe_draw(
+        pipe, &board->cmds, 0, //
+        req.content.record.command.contents.draw_direct.first_vertex,
+        req.content.record.command.contents.draw_direct.vertex_count);
 
     return NULL;
 }
@@ -648,12 +629,45 @@ static void* _record_end(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
+    // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
+
+    GET_ID(DvzBoard, board, req.id)
+    dvz_board_end(board, &board->cmds, 0);
+
+    return NULL;
+}
+
+
+
+static void* _record(DvzRenderer* rd, DvzRequest req)
+{
+    ASSERT(rd != NULL);
+
     DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
     if (type == DVZ_REQUEST_OBJECT_BOARD)
     {
-        GET_ID(DvzBoard, board, req.id)
-        dvz_board_end(board, &board->cmds, 0);
+        switch (req.content.record.command.type)
+        {
+        case DVZ_RECORDER_BEGIN:
+            _record_begin(rd, req);
+            break;
+
+        case DVZ_RECORDER_VIEWPORT:
+            _record_viewport(rd, req);
+            break;
+
+        case DVZ_RECORDER_DRAW_DIRECT:
+            _record_draw(rd, req);
+            break;
+
+        case DVZ_RECORDER_END:
+            _record_end(rd, req);
+            break;
+
+        default:
+            break;
+        }
     }
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
@@ -678,10 +692,6 @@ static void _init_renderer(DvzRenderer* rd)
     rd->pipelib = dvz_pipelib(rd->ctx);
     rd->workspace = dvz_workspace(rd->gpu);
     rd->map = dvz_map();
-
-    // Command buffer recording buffer.
-    rd->req_capacity = 16;
-    rd->reqs = (DvzRequest*)calloc(rd->req_capacity, sizeof(DvzRequest));
 
     dvz_obj_init(&rd->obj);
 }
@@ -733,10 +743,7 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(DELETE, SAMPLER, _sampler_delete)
 
     // Command buffer recording.
-    ROUTE(RECORD, BEGIN, _record_begin)
-    ROUTE(RECORD, VIEWPORT, _record_viewport)
-    ROUTE(RECORD, DRAW, _record_draw)
-    ROUTE(RECORD, END, _record_end)
+    ROUTE(RECORD, RECORD, _record)
 }
 
 
@@ -885,6 +892,17 @@ DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
     DvzTex* tex = (DvzTex*)dvz_map_get(rd->map, id);
     ASSERT(tex != NULL);
     return tex;
+}
+
+
+
+DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
+{
+    ASSERT(rd != NULL);
+
+    DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, id);
+    ASSERT(pipe != NULL);
+    return pipe;
 }
 
 

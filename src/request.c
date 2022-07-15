@@ -342,8 +342,9 @@ DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
 
 DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
 {
-    CREATE_REQUEST(RECORD, BEGIN);
+    CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
+    req.content.record.command.type = DVZ_RECORDER_BEGIN;
     return req;
 }
 
@@ -351,10 +352,11 @@ DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
 
 DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
 {
-    CREATE_REQUEST(RECORD, VIEWPORT);
+    CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
-    memcpy(req.content.record_viewport.offset, offset, sizeof(vec2));
-    memcpy(req.content.record_viewport.shape, shape, sizeof(vec2));
+    req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
+    memcpy(req.content.record.command.contents.v.offset, offset, sizeof(vec2));
+    memcpy(req.content.record.command.contents.v.shape, shape, sizeof(vec2));
     return req;
 }
 
@@ -363,11 +365,12 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
 DvzRequest dvz_record_draw(
     DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
 {
-    CREATE_REQUEST(RECORD, DRAW);
+    CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
-    req.content.record_draw.graphics = graphics;
-    req.content.record_draw.first_vertex = first_vertex;
-    req.content.record_draw.vertex_count = vertex_count;
+    req.content.record.command.type = DVZ_RECORDER_DRAW_DIRECT;
+    req.content.record.command.contents.draw_direct.pipe_id = graphics;
+    req.content.record.command.contents.draw_direct.first_vertex = first_vertex;
+    req.content.record.command.contents.draw_direct.vertex_count = vertex_count;
     return req;
 }
 
@@ -375,7 +378,8 @@ DvzRequest dvz_record_draw(
 
 DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
 {
-    CREATE_REQUEST(RECORD, END);
+    CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
+    req.content.record.command.type = DVZ_RECORDER_END;
     return req;
 }

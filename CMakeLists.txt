@@ -525,6 +525,7 @@ set(sources
     "src/map.cpp"
     "src/renderer.cpp"
     "src/client.c"
+    "src/recorder.c"
     "src/canvas.c"
     "src/presenter.c"
     "src/canvas_window.c"

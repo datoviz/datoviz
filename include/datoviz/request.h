@@ -17,6 +17,7 @@
 #include "_math.h"
 #include "_obj.h"
 #include "_prng.h"
+#include "recorder.h"
 
 
 
@@ -62,14 +63,15 @@ typedef enum
     DVZ_REQUEST_OBJECT_SAMPLER,
     DVZ_REQUEST_OBJECT_COMPUTE,
     DVZ_REQUEST_OBJECT_GRAPHICS,
-
-    DVZ_REQUEST_OBJECT_BEGIN,
     DVZ_REQUEST_OBJECT_BACKGROUND,
-    DVZ_REQUEST_OBJECT_VIEWPORT,
     DVZ_REQUEST_OBJECT_VERTEX,
-    DVZ_REQUEST_OBJECT_BARRIER,
-    DVZ_REQUEST_OBJECT_DRAW,
-    DVZ_REQUEST_OBJECT_END,
+
+    DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
+    // DVZ_REQUEST_OBJECT_BEGIN,
+    // DVZ_REQUEST_OBJECT_VIEWPORT,
+    // DVZ_REQUEST_OBJECT_BARRIER,
+    // DVZ_REQUEST_OBJECT_DRAW,
+    // DVZ_REQUEST_OBJECT_END,
 } DvzRequestObject;
 
 
@@ -175,18 +177,23 @@ union DvzRequestContent
         DvzId sampler;
     } set_tex;
 
-    // Set viewport.
     struct
     {
-        vec2 offset, shape; // in framebuffer pixels
-    } record_viewport;
+        DvzRecorderCommand command;
+    } record;
 
-    // Set draw.
-    struct
-    {
-        DvzId graphics;
-        uint32_t first_vertex, vertex_count;
-    } record_draw;
+    // // Set viewport.
+    // struct
+    // {
+    //     vec2 offset, shape; // in framebuffer pixels
+    // } record_viewport;
+
+    // // Set draw.
+    // struct
+    // {
+    //     DvzId graphics;
+    //     uint32_t first_vertex, vertex_count;
+    // } record_draw;
 };
 
 
