@@ -12,7 +12,6 @@
 /*************************************************************************************************/
 
 #include "common.h"
-#include "input.h"
 #include "vklite.h"
 
 
@@ -53,12 +52,12 @@ typedef enum
 
 
 
-// Canvas size type
-typedef enum
-{
-    DVZ_CANVAS_SIZE_SCREEN,
-    DVZ_CANVAS_SIZE_FRAMEBUFFER,
-} DvzCanvasSizeType;
+// // Canvas size type
+// typedef enum
+// {
+//     DVZ_CANVAS_SIZE_SCREEN,
+//     DVZ_CANVAS_SIZE_FRAMEBUFFER,
+// } DvzCanvasSizeType;
 
 
 
@@ -71,6 +70,9 @@ typedef struct DvzRender DvzRender;
 typedef struct DvzSync DvzSync;
 
 typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx);
+
+// Forward declarations.
+typedef struct DvzWindow DvzWindow;
 
 
 
@@ -124,11 +126,7 @@ struct DvzCanvas
     DvzGpu* gpu;
     int flags;
 
-    // DvzWindow* window;
-    // DvzInput input;
-
     VkSurfaceKHR surface;
-
     DvzFormat format;
     cvec4 clear_color;
     uint32_t width, height;
@@ -171,18 +169,18 @@ DVZ_EXPORT DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, in
  *
  * @param canvas a canvas
  */
-DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas);
+DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface);
 
 
 
-/**
- * Get the canvas size.
- *
- * @param canvas the canvas
- * @param type the unit of the requested screen size
- * @param[out] size the size vector filled by this function
- */
-DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
+// /**
+//  * Get the canvas size.
+//  *
+//  * @param canvas the canvas
+//  * @param type the unit of the requested screen size
+//  * @param[out] size the size vector filled by this function
+//  */
+// DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
 
 
 
@@ -255,10 +253,13 @@ DVZ_EXPORT void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t id
 /**
  * Run a simple event loop for a single canvas.
  *
+ * The window must be created beforehand.
+ *
  * @param canvas a canvas
+ * @param window a window
  * @param n_frames maximum number of frames
  */
-DVZ_EXPORT void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames);
+DVZ_EXPORT void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames);
 
 
 

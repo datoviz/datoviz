@@ -755,6 +755,9 @@ dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t h
 /**
  * Create the swapchain once it has been set up.
  *
+ * The swapchain's size is automatically determined from the surface's size, which is queried via
+ * Vulkan.
+ *
  * @param swapchain the swapchain
  */
 DVZ_EXPORT void dvz_swapchain_create(DvzSwapchain* swapchain);

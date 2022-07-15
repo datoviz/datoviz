@@ -3,12 +3,13 @@
 /*************************************************************************************************/
 
 #include "canvas.h"
-#include "_glfw.h"
 #include "canvas_utils.h"
 #include "common.h"
 #include "host.h"
 #include "vklite.h"
-// #include "window.h"
+
+#include "_glfw.h"
+#include "window.h"
 
 
 
@@ -19,7 +20,6 @@
 DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
-    // size is in pixels. The framebuffer size will be obtained from the backend via the OS.
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -33,16 +33,13 @@ DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     canvas.width = width;
     canvas.height = height;
 
-    // Make the window.
-    // canvas.window = dvz_window(gpu->host, width, height);
-
     dvz_obj_init(&canvas.obj);
     return canvas;
 }
 
 
 
-void dvz_canvas_create(DvzCanvas* canvas)
+void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
 {
     ASSERT(canvas != NULL);
 
@@ -52,13 +49,13 @@ void dvz_canvas_create(DvzCanvas* canvas)
     DvzHost* host = gpu->host;
     ASSERT(host != NULL);
 
-    // DvzWindow* window = canvas->window;
-    // ASSERT(window != NULL);
-
     log_trace("creating the canvas");
 
-    uint32_t framebuffer_width = canvas->width;
-    uint32_t framebuffer_height = canvas->height;
+    uint32_t width = canvas->width;
+    uint32_t height = canvas->height;
+
+    ASSERT(surface != VK_NULL_HANDLE);
+    canvas->surface = surface;
 
     // Make the renderpass.
     make_renderpass(
@@ -69,11 +66,10 @@ void dvz_canvas_create(DvzCanvas* canvas)
     make_swapchain(gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT);
 
     // Make depth buffer image.
-    make_depth(gpu, &canvas->render.depth, framebuffer_width, framebuffer_height);
+    make_depth(gpu, &canvas->render.depth, width, height);
 
     // Make staging image.
-    make_staging(
-        gpu, &canvas->render.staging, canvas->format, framebuffer_width, framebuffer_height);
+    make_staging(gpu, &canvas->render.staging, canvas->format, width, height);
 
     // Make framebuffers.
     make_framebuffers(
@@ -89,16 +85,11 @@ void dvz_canvas_create(DvzCanvas* canvas)
     // for (uint32_t i = 0; i < canvas->cmds.count; i++)
     //     canvas->refill(canvas, &canvas->cmds, i);
 
-    // Default submit.
+    // Default submit object.
     canvas->render.submit = dvz_submit(canvas->gpu);
 
-    // Input.
-    log_trace("creating canvas input");
-    // canvas->input = dvz_input();
-    // dvz_input_attach(&canvas->input, canvas->window);
-
     dvz_obj_created(&canvas->obj);
-    log_trace("canvas created with size %dx%d)", framebuffer_width, framebuffer_height);
+    log_trace("canvas created with size %dx%d)", width, height);
 }
 
 
@@ -117,13 +108,11 @@ void dvz_canvas_reset(DvzCanvas* canvas)
 void dvz_canvas_recreate(DvzCanvas* canvas)
 {
     ASSERT(canvas != NULL);
-    // DvzWindow* window = canvas->window;
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
     DvzRenderpass* renderpass = &canvas->render.renderpass;
 
-    // ASSERT(window != NULL);
     ASSERT(gpu != NULL);
     ASSERT(swapchain != NULL);
     ASSERT(framebuffers != NULL);
@@ -135,8 +124,6 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
     // Wait until the device is ready and the window fully resized.
     dvz_gpu_wait(gpu);
-    // TODO: find size
-    // dvz_window_poll_size(window);
 
     // Destroy swapchain resources.
     dvz_framebuffers_destroy(&canvas->render.framebuffers);
@@ -144,11 +131,15 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     dvz_images_destroy(canvas->render.swapchain.images);
 
     // Recreate the swapchain. This will automatically set the swapchain->images new size.
+    // The new swpachain's size is determined by the surface's size, which is queried via Vulkan.
     dvz_swapchain_recreate(swapchain);
 
     // Find the new framebuffer size as determined by the swapchain recreation.
     uint32_t width = swapchain->images->shape[0];
     uint32_t height = swapchain->images->shape[1];
+
+    canvas->width = width;
+    canvas->height = height;
 
     // Check that we use the same DvzImages struct here.
     ASSERT(swapchain->images == framebuffers->attachments[0]);
@@ -183,30 +174,6 @@ void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill)
 
 
 
-void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size)
-{
-    ASSERT(canvas != NULL);
-
-    switch (type)
-    {
-    case DVZ_CANVAS_SIZE_SCREEN:
-        // TODO
-        // ASSERT(canvas->window != NULL);
-        // size[0] = canvas->window->width;
-        // size[1] = canvas->window->height;
-        break;
-    case DVZ_CANVAS_SIZE_FRAMEBUFFER:
-        size[0] = canvas->render.framebuffers.attachments[0]->shape[0];
-        size[1] = canvas->render.framebuffers.attachments[0]->shape[1];
-        break;
-    default:
-        log_warn("unknown size type %d", type);
-        break;
-    }
-}
-
-
-
 void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(canvas != NULL);
@@ -222,15 +189,9 @@ void dvz_canvas_viewport(
     ASSERT(canvas != NULL);
 
     // A value of 0 = full canvas.
-    uvec2 csize = {0};
-    if ((size[0] == 0) || (size[1] == 0))
-    {
-        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, csize);
-    }
-
     float width = size[0], height = size[1];
-    width = width > 0 ? width : csize[0];
-    height = height > 0 ? height : csize[1];
+    width = width > 0 ? width : (float)canvas->width;
+    height = height > 0 ? height : (float)canvas->height;
 
     ASSERT(width > 0);
     ASSERT(height > 0);
@@ -251,12 +212,10 @@ void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 
 
 
-void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
+void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
 {
     ASSERT(canvas != NULL);
-
-    // DvzWindow* window = canvas->window;
-    // ASSERT(window != NULL);
+    ASSERT(window != NULL);
 
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
@@ -284,9 +243,8 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
 
         backend_poll_events(gpu->host->backend);
 
-        // if (backend_window_should_close(window) ||
-        //     window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
-        //     break;
+        if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+            break;
 
         // Wait for fence.
         dvz_fences_wait(fences, canvas->cur_frame);
@@ -306,8 +264,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, uint64_t n_frames)
             // Wait until the device is ready and the window fully resized.
             // Framebuffer new size.
             dvz_gpu_wait(gpu);
-            // TODO
-            // dvz_window_poll_size(window);
+            dvz_window_poll_size(window);
 
             // Destroy swapchain resources.
             dvz_framebuffers_destroy(framebuffers);
@@ -421,13 +378,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     // offscreen backend (which does not support Dear ImGui at the moment anyway).
     // if (canvas->app->backend != DVZ_BACKEND_OFFSCREEN)
     //     dvz_imgui_destroy();
-
-    // // Destroy the window.
-    // log_trace("canvas destroy window");
-    // if (canvas->window != NULL)
-    // {
-    //     dvz_window_destroy(canvas->window);
-    // }
 
     // Destroy the semaphores.
     log_trace("canvas destroy semaphores");

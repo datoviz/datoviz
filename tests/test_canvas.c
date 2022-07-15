@@ -49,16 +49,24 @@ int test_canvas_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
+    ASSERT(host != NULL);
 
     DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Create the window and surface.
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
 
     // Create the board.
     DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
-    dvz_canvas_create(&canvas);
+    dvz_canvas_create(&canvas, surface);
 
-    dvz_canvas_loop(&canvas, N_FRAMES);
+    dvz_canvas_loop(&canvas, &window, N_FRAMES);
 
     dvz_canvas_destroy(&canvas);
+    dvz_window_destroy(&window);
+    dvz_surface_destroy(host, surface);
     dvz_gpu_destroy(gpu);
     return 0;
 }
@@ -80,8 +88,10 @@ int test_canvas_triangle(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
+    ASSERT(host != NULL);
 
     DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
@@ -90,10 +100,14 @@ int test_canvas_triangle(TstSuite* suite)
     // Create the pipelib.
     DvzPipelib* lib = dvz_pipelib(ctx);
 
-    // Create the board.
+    // Create the window and surface.
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+
+    // Create the canvas.
     DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_refill(&canvas, _fill_triangle);
-    dvz_canvas_create(&canvas);
+    dvz_canvas_create(&canvas, surface);
 
     // Create a graphics pipe.
     uvec2 size = {WIDTH, HEIGHT};
@@ -118,12 +132,14 @@ int test_canvas_triangle(TstSuite* suite)
     TestCanvasStruct s = {.pipe = pipe, .br = dat_vertex->br};
     canvas.user_data = &s;
 
-    dvz_canvas_loop(&canvas, N_FRAMES);
+    dvz_canvas_loop(&canvas, &window, N_FRAMES);
 
     // Destruction.
     dvz_pipe_destroy(pipe);
     dvz_dat_destroy(dat_vertex);
     dvz_canvas_destroy(&canvas);
+    dvz_window_destroy(&window);
+    dvz_surface_destroy(host, surface);
     dvz_pipelib_destroy(lib);
     dvz_context_destroy(ctx);
     dvz_gpu_destroy(gpu);

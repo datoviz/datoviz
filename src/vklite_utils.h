@@ -473,6 +473,9 @@ static void create_swapchain(
     VkSurfaceCapabilitiesKHR* caps, VkSwapchainKHR* swapchain,              //
     uint32_t* width, uint32_t* height) // final actual swapchain size in pixels
 {
+    // The output width and height values are determined by the surface itself, as queried by
+    // the Vulkan function vkGetPhysicalDeviceSurfaceCapabilitiesKHR().
+
     ASSERT(surface != VK_NULL_HANDLE);
     ASSERT(format != 0);
     ASSERT(image_count > 0);

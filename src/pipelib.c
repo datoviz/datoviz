@@ -76,7 +76,7 @@ DvzPipelib* dvz_pipelib(DvzContext* ctx)
 
 DvzPipe* dvz_pipelib_graphics(
     DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
-    uint32_t img_count, uvec2 size, DvzGraphicsType type, int flags)
+    uint32_t img_count, uvec2 viewport_size, DvzGraphicsType type, int flags)
 {
     ASSERT(lib != NULL);
     ASSERT(renderpass != NULL);
@@ -105,7 +105,7 @@ DvzPipe* dvz_pipelib_graphics(
 
     // Create the second common uniform dat: viewport.
     if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
-        dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, size));
+        dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, viewport_size));
 
     dvz_pipe_create(pipe);
 

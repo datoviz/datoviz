@@ -211,13 +211,21 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         ASSERT(canvas != NULL);
 
         // Get the canvas framebuffer size.
-        uvec2 size = {0};
-        dvz_canvas_size(canvas, DVZ_CANVAS_SIZE_FRAMEBUFFER, size);
+        uvec2 viewport_size = {0};
+
+        if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
+        {
+            log_warn("automatic viewport dat creation is poorly supported for now, may be "
+                     "disabled soon. We need the viewport size, so as a temporary hack we take "
+                     "the canvas size.");
+            viewport_size[0] = canvas->width;
+            viewport_size[1] = canvas->height;
+        }
 
         // Create the pipe.
         pipe = dvz_pipelib_graphics(
             rd->pipelib, rd->ctx, &canvas->render.renderpass, canvas->render.swapchain.img_count,
-            size, req.content.graphics.type, req.flags);
+            viewport_size, req.content.graphics.type, req.flags);
         ASSERT(pipe != NULL);
         SET_ID(pipe)
     }

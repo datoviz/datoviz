@@ -261,6 +261,10 @@ void dvz_gpu_destroy(DvzGpu* gpu)
 /*  Swapchain                                                                                    */
 /*************************************************************************************************/
 
+/*
+This function creates a swapchain for a given surface, and determines the current surface's size
+using vkGetPhysicalDeviceSurfaceCapabilitiesKHR().
+*/
 static void _swapchain_create(DvzSwapchain* swapchain)
 {
     uint32_t width, height;
@@ -269,7 +273,9 @@ static void _swapchain_create(DvzSwapchain* swapchain)
         swapchain->img_count, swapchain->format, swapchain->present_mode, &swapchain->gpu->queues,
         swapchain->requested_width, swapchain->requested_height, //
         &swapchain->caps, &swapchain->swapchain, &width, &height);
-    log_trace("created swapchain %d", swapchain->swapchain);
+    log_trace(
+        "created swapchain %d, requested size %dx%d, actual size %dx%d", swapchain->swapchain,
+        swapchain->requested_width, swapchain->requested_height, width, height);
 
     swapchain->support_transfer =
         (swapchain->caps.supportedUsageFlags & VK_IMAGE_USAGE_TRANSFER_SRC_BIT) != 0;

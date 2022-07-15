@@ -148,8 +148,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_gui)
 
     // Testing canvas.
-    // TEST(test_canvas_1)
-    // TEST(test_canvas_triangle)
+    TEST(test_canvas_1)
+    TEST(test_canvas_triangle)
 
     // Testing runner.
     // TEST(test_runner_1)
