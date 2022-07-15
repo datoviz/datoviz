@@ -45,6 +45,15 @@ static void _create_window(DvzClient* client, DvzId id)
 
 
 
+static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_data)
+{
+    uint32_t width = ev.content.w.width;
+    uint32_t height = ev.content.w.height;
+    log_info("window %x resized to %dx%d", ev.window_id, width, height);
+}
+
+
+
 /*************************************************************************************************/
 /*  Client tests                                                                                 */
 /*************************************************************************************************/
@@ -81,6 +90,8 @@ int test_client_2(TstSuite* suite)
     DvzPresenter* prt = dvz_presenter(rnd);
     dvz_presenter_client(prt, client);
 
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, NULL);
 
     // Start.
 
