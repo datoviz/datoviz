@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "_glfw.h"
+#include "client_utils.h"
 #include "common.h"
 #include "window.h"
 
@@ -28,23 +29,6 @@ static uint64_t count_windows(DvzClient* client)
         dvz_container_iter(&iter);
     }
     return count;
-}
-
-
-
-static DvzWindow* id2window(DvzClient* client, DvzId id)
-{
-    ASSERT(client != NULL);
-    DvzWindow* window = dvz_map_get(client->map, id);
-    return window;
-}
-
-
-
-static DvzId window2id(DvzWindow* window)
-{
-    ASSERT(window != NULL);
-    return (DvzId)window->obj.id;
 }
 
 

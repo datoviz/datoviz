@@ -7,6 +7,7 @@
 #include "../include/datoviz/map.h"
 #include "../include/datoviz/vklite.h"
 #include "canvas_utils.h"
+#include "client_utils.h"
 #include "vklite_utils.h"
 
 
@@ -26,7 +27,8 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
     ASSERT(client != NULL);
     ASSERT(user_data != NULL);
     DvzPresenter* prt = (DvzPresenter*)user_data;
-    dvz_presenter_frame(prt);
+
+    dvz_presenter_frame(prt, ev.window_id);
 }
 
 
@@ -45,15 +47,21 @@ DvzPresenter* dvz_presenter(DvzRenderer* rnd)
 
 
 
-void dvz_presenter_frame(DvzPresenter* prt)
+void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 {
     ASSERT(prt != NULL);
 
     DvzClient* client = prt->client;
     ASSERT(client != NULL);
 
+    DvzRenderer* rnd = prt->rnd;
+    ASSERT(rnd != NULL);
+
+    DvzWindow* window = id2window(client, window_id);
+    ASSERT(window != NULL);
+
     uint64_t frame_idx = client->frame_idx;
-    log_debug("frame %d", frame_idx);
+    log_debug("frame %d, window #%x", frame_idx, window_id);
 
     // flush the renderer queue, process the rendering commands, swapchain logic, submit the
     // command buffer

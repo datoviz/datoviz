@@ -67,7 +67,7 @@ DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rnd);
 
 
 
-DVZ_EXPORT void dvz_presenter_frame(DvzPresenter* prt);
+DVZ_EXPORT void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id);
 
 
 
