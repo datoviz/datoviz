@@ -82,6 +82,11 @@ struct DvzClientEvent
             uint32_t height;
             int flags;
         } w;
+
+        struct
+        {
+            uint64_t frame_idx;
+        } f;
     } content;
 };
 
@@ -106,6 +111,7 @@ struct DvzClient
     DvzBackend backend;
 
     DvzDeq deq;
+    uint64_t frame_idx;
 
     // Windows.
     DvzContainer windows;

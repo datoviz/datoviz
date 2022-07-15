@@ -229,8 +229,10 @@ int dvz_client_frame(DvzClient* client)
     DvzContainerIterator iter = dvz_container_iterator(&client->windows);
     DvzWindow* window = NULL;
     uint64_t count = 0;
+
     DvzClientEvent frame_ev = {0};
     frame_ev.type = DVZ_CLIENT_EVENT_FRAME;
+
     while (iter.item != NULL)
     {
         window = (DvzWindow*)iter.item;
@@ -257,6 +259,7 @@ int dvz_client_frame(DvzClient* client)
 
         // Enqueue a FRAME event on active windows.
         frame_ev.window_id = window2id(window);
+        frame_ev.content.f.frame_idx = client->frame_idx;
         dvz_client_event(client, frame_ev);
 
         // Count the number of active windows.
@@ -276,17 +279,18 @@ int dvz_client_frame(DvzClient* client)
 void dvz_client_run(DvzClient* client, uint64_t n_frames)
 {
     ASSERT(client != NULL);
-    uint64_t frame_idx = 0;
     log_trace("start client event loop with %d frames", n_frames);
     int window_count = 0;
-    for (frame_idx = 0; frame_idx < (n_frames > 0 ? n_frames : INFINITY); frame_idx++)
+    uint64_t n = (n_frames > 0 ? n_frames : INFINITY);
+    for (client->frame_idx = 0; client->frame_idx < n; client->frame_idx++)
     {
         window_count = dvz_client_frame(client);
-        log_trace("running client frame #%d with %d active windows", frame_idx, window_count);
+        log_trace(
+            "running client frame #%d with %d active windows", client->frame_idx, window_count);
         if (window_count == 0)
             break;
     }
-    log_trace("stop client event loop after %d/%d frames", frame_idx + 1, n_frames);
+    log_trace("stop client event loop after %d/%d frames", client->frame_idx + 1, n);
 }
 
 
