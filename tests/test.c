@@ -119,6 +119,7 @@ int dvz_run_tests(const char* match)
 
     // Testing input.
     TEST(test_client_1)
+    TEST(test_client_2)
 
     // Testing vklite.
     TEST(test_vklite_host)

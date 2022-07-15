@@ -10,6 +10,73 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static uint64_t count_windows(DvzClient* client)
+{
+    ASSERT(client != NULL);
+    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+    DvzWindow* window = NULL;
+    uint64_t count = 0;
+    while (iter.item != NULL)
+    {
+        window = (DvzWindow*)iter.item;
+        ASSERT(window != NULL);
+        if (dvz_obj_is_created(&window->obj))
+            count++;
+        dvz_container_iter(&iter);
+    }
+    return count;
+}
+
+
+
+static DvzWindow* id2window(DvzClient* client, DvzId id)
+{
+    ASSERT(client != NULL);
+    DvzWindow* window = dvz_map_get(client->map, id);
+    return window;
+}
+
+
+
+static DvzId window2id(DvzWindow* window)
+{
+    ASSERT(window != NULL);
+    return (DvzId)window->obj.id;
+}
+
+
+
+static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
+{
+    ASSERT(deq != NULL);
+
+    DvzClientPayload* payload = (DvzClientPayload*)user_data;
+    ASSERT(payload != NULL);
+
+    DvzClient* client = payload->client;
+    ASSERT(client != NULL);
+
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+    ASSERT(ev != NULL);
+
+    if (payload->mode == DVZ_CLIENT_CALLBACK_SYNC)
+    {
+        payload->callback(client, *ev, payload->user_data);
+    }
+    else if (payload->mode == DVZ_CLIENT_CALLBACK_ASYNC)
+    {
+        // TODO: enqueue callback to async queue
+    }
+
+    return;
+}
+
+
+
+/*************************************************************************************************/
 /*  Callback functions                                                                           */
 /*************************************************************************************************/
 
@@ -31,8 +98,10 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
     // HACK: improve this
     DvzWindow* window = dvz_container_alloc(&client->windows);
-    *window = dvz_window(DVZ_BACKEND_GLFW, width, height, 0);
+    *window = dvz_window(client->backend, width, height, 0);
 
+    // Register the window id.
+    window->obj.id = (uint64_t)ev->window_id;
     dvz_map_add(client->map, ev->window_id, DVZ_OBJECT_TYPE_WINDOW, window);
 }
 
@@ -51,7 +120,7 @@ static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
 
     log_debug("client: delete window #%d", ev->window_id);
 
-    DvzWindow* window = dvz_map_get(client->map, ev->window_id);
+    DvzWindow* window = id2window(client, ev->window_id);
     if (window == NULL)
     {
         log_warn("window #%d not found", ev->window_id);
@@ -68,12 +137,12 @@ static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
 /*  Client functions                                                                             */
 /*************************************************************************************************/
 
-DvzClient* dvz_client(void)
+DvzClient* dvz_client(DvzBackend backend)
 {
-    backend_init(DVZ_BACKEND_GLFW);
+    backend_init(backend);
 
     DvzClient* client = calloc(1, sizeof(DvzClient));
-
+    client->backend = backend;
     client->map = dvz_map();
 
     // Create the window container.
@@ -90,7 +159,7 @@ DvzClient* dvz_client(void)
     dvz_deq_callback(
         &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
 
-    // create async queue
+    // TODO: create async queue
     // start background thread
     // default callbacks
     //     create window
@@ -116,9 +185,23 @@ void dvz_client_event(DvzClient* client, DvzClientEvent ev)
 
 void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
-    DvzClientCallback callback, const void* user_data)
+    DvzClientCallback callback, void* user_data)
 {
     ASSERT(client != NULL);
+
+    // TODO
+    if (mode == DVZ_CLIENT_CALLBACK_ASYNC)
+    {
+        log_error("async callbacks are not yet implemented, falling back to sync callbacks");
+        mode = DVZ_CLIENT_CALLBACK_SYNC;
+    }
+
+    DvzClientPayload* payload = &client->callbacks[client->callback_count++];
+    payload->client = client;
+    payload->callback = callback;
+    payload->user_data = user_data;
+    payload->mode = mode;
+    dvz_deq_callback(&client->deq, 0, (int)type, _deq_callback, payload);
 }
 
 
@@ -131,23 +214,80 @@ void dvz_client_process(DvzClient* client)
 
 
 
-void dvz_client_frame(DvzClient* client)
+int dvz_client_frame(DvzClient* client)
 {
     ASSERT(client != NULL);
-    // for each window
-    //     process glfw events
-    //     detect mouse and keyboard events
-    //     enqueue mouse and keyboard events
-    // dequeue events
-    // for each event
-    //     for each callback registered for that event type
-    //         if sync: call it
-    //         if async: enqueue the event to the async queue
+
+    // Poll backend events (mouse, keyboard...).
+    // TODO: enqueue mouse and keyboard events
+    backend_poll_events(client->backend);
+
+    // Dequeue and process events.
+    dvz_client_process(client);
+
+    // Loop over the windows.
+    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+    DvzWindow* window = NULL;
+    uint64_t count = 0;
+    DvzClientEvent frame_ev = {0};
+    frame_ev.type = DVZ_CLIENT_EVENT_FRAME;
+    while (iter.item != NULL)
+    {
+        window = (DvzWindow*)iter.item;
+        ASSERT(window != NULL);
+
+        // Skip non-created windows.
+        if (!dvz_obj_is_created(&window->obj))
+        {
+            dvz_container_iter(&iter);
+            continue;
+        }
+        // Skip windows that should be closed.
+        if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        {
+            dvz_container_iter(&iter);
+            continue;
+        }
+        // Skip inactive windows.
+        if (window->obj.status == DVZ_OBJECT_STATUS_INACTIVE)
+        {
+            dvz_container_iter(&iter);
+            continue;
+        }
+
+        // Enqueue a FRAME event on active windows.
+        frame_ev.window_id = window2id(window);
+        dvz_client_event(client, frame_ev);
+
+        // Count the number of active windows.
+        count++;
+        dvz_container_iter(&iter);
+    }
+
+    // Dequeue and process events, again (after sending the FRAME event to the active windows).
+    dvz_client_process(client);
+
+    // Return the number of active windows.
+    return count;
 }
 
 
 
-void dvz_client_run(DvzClient* client, uint64_t n_frames) { ASSERT(client != NULL); }
+void dvz_client_run(DvzClient* client, uint64_t n_frames)
+{
+    ASSERT(client != NULL);
+    uint64_t frame_idx = 0;
+    log_trace("start client event loop with %d frames", n_frames);
+    int window_count = 0;
+    for (frame_idx = 0; frame_idx < (n_frames > 0 ? n_frames : INFINITY); frame_idx++)
+    {
+        window_count = dvz_client_frame(client);
+        log_trace("running client frame #%d with %d active windows", frame_idx, window_count);
+        if (window_count == 0)
+            break;
+    }
+    log_trace("stop client event loop after %d/%d frames", frame_idx + 1, n_frames);
+}
 
 
 
@@ -162,9 +302,9 @@ void dvz_client_destroy(DvzClient* client)
 
     dvz_map_destroy(client->map);
 
-    // stop background thread
+    // TODO: stop background thread
 
-    backend_terminate(DVZ_BACKEND_GLFW);
+    backend_terminate(client->backend);
 
     FREE(client);
 }

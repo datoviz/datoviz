@@ -22,6 +22,8 @@
 
 int test_client_1(TstSuite*);
 
+int test_client_2(TstSuite*);
+
 
 
 #endif

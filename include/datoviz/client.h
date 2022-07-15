@@ -93,7 +93,9 @@ struct DvzClientEvent
 
 struct DvzClientPayload
 {
+    DvzClient* client;
     DvzClientCallback callback;
+    DvzClientCallbackMode mode;
     void* user_data;
 };
 
@@ -101,6 +103,8 @@ struct DvzClientPayload
 
 struct DvzClient
 {
+    DvzBackend backend;
+
     DvzDeq deq;
 
     // Windows.
@@ -125,7 +129,7 @@ EXTERN_C_ON
  *
  * @returns a client pointer
  */
-DVZ_EXPORT DvzClient* dvz_client(void);
+DVZ_EXPORT DvzClient* dvz_client(DvzBackend backend);
 
 
 
@@ -135,7 +139,7 @@ void dvz_client_event(DvzClient* client, DvzClientEvent ev);
 
 void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
-    DvzClientCallback callback, const void* user_data);
+    DvzClientCallback callback, void* user_data);
 
 
 
@@ -143,7 +147,7 @@ void dvz_client_process(DvzClient* client);
 
 
 
-void dvz_client_frame(DvzClient* client);
+int dvz_client_frame(DvzClient* client);
 
 
 
