@@ -59,7 +59,7 @@ int test_canvas_1(TstSuite* suite)
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
     VkSurfaceKHR surface = dvz_window_surface(host, &window);
 
-    // Create the board.
+    // Create the canvas.
     DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
     dvz_canvas_create(&canvas, surface);
 

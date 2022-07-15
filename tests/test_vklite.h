@@ -346,10 +346,10 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKH
     canvas.surface = surface;
     ASSERT(canvas.surface != VK_NULL_HANDLE);
 
-    uint32_t framebuffer_width = 0, framebuffer_height = 0;
-    backend_get_framebuffer_size(window, &framebuffer_width, &framebuffer_height);
-    ASSERT(framebuffer_width > 0);
-    ASSERT(framebuffer_height > 0);
+    // uint32_t framebuffer_width = 0, framebuffer_height = 0;
+    // backend_get_framebuffer_size(window, &framebuffer_width, &framebuffer_height);
+    // ASSERT(framebuffer_width > 0);
+    // ASSERT(framebuffer_height > 0);
 
     DvzRenderpass renderpass =
         make_renderpass(gpu, BACKGROUND, FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
@@ -438,9 +438,8 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
 
             // Wait until the device is ready and the window fully resized.
             // Framebuffer new size.
-            uint32_t width, height;
             backend_get_window_size(window, &window->width, &window->height);
-            backend_get_framebuffer_size(window, &width, &height);
+            // backend_get_framebuffer_size(window, &width, &height);
             dvz_gpu_wait(gpu);
 
             // Destroy swapchain resources.
@@ -452,7 +451,9 @@ static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uin
             // Recreate the swapchain. This will automatically set the swapchain->images new
             // size.
             dvz_swapchain_recreate(swapchain);
+
             // Find the new framebuffer size as determined by the swapchain recreation.
+            uint32_t width, height;
             width = swapchain->images->shape[0];
             height = swapchain->images->shape[1];
 
