@@ -28,6 +28,7 @@
 #include "test_obj.h"
 #include "test_pipe.h"
 #include "test_pipelib.h"
+#include "test_presenter.h"
 #include "test_renderer.h"
 #include "test_request.h"
 #include "test_resources.h"
@@ -207,6 +208,9 @@ int dvz_run_tests(const char* match)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
+
+    TEST(test_presenter_1)
+    // TEST(test_presenter_2)
 
 
     // Testing builtin graphics.

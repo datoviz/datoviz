@@ -528,8 +528,6 @@ set(sources
     "src/canvas.c"
     "src/presenter.c"
     "src/canvas_window.c"
-    # "src/input.c"
-    # "src/runner.c"
 
     ${external_sources}
 )
@@ -589,8 +587,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_renderer.c"
         "tests/test_client.c"
         "tests/test_canvas.c"
-        # "tests/test_input.c"
-        # "tests/test_runner.c"
+        "tests/test_presenter.c"
         "tests/test.c"
     )
 
