@@ -57,9 +57,8 @@ DvzCanvas* dvz_workspace_canvas(
     // TODO: wrap the following line in a new function dvz_canvas_clear_color()?
     memcpy(canvas->clear_color, background, sizeof(cvec4));
 
-    // TODO: the canvas cannot be created until a window and a surface are created, and this
-    // requires a desktop client.
-    // dvz_canvas_create(canvas);
+    // NOTE: dvz_canvas_create() must be called, but only after a window and a surface have been
+    // created, and this requires a Client. This is done by the Presenter.
 
     return canvas;
 }

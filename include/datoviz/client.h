@@ -39,6 +39,7 @@ typedef enum
     DVZ_CLIENT_EVENT_MOUSE,         // m
     DVZ_CLIENT_EVENT_KEYBOARD,      // k
     DVZ_CLIENT_EVENT_TIMER,         // t
+    DVZ_CLIENT_EVENT_REQUESTS,      // r
 } DvzClientEventType;
 
 
@@ -87,6 +88,11 @@ struct DvzClientEvent
         {
             uint64_t frame_idx;
         } f;
+
+        struct
+        {
+            void* requests;
+        } r;
     } content;
 };
 

@@ -80,13 +80,7 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
     log_debug("client: create window #%d (%dx%d)", ev->window_id, width, height);
 
-    // HACK: improve this
-    DvzWindow* window = dvz_container_alloc(&client->windows);
-    *window = dvz_window(client->backend, width, height, 0);
-
-    // Register the window id.
-    window->obj.id = (uint64_t)ev->window_id;
-    dvz_map_add(client->map, ev->window_id, DVZ_OBJECT_TYPE_WINDOW, window);
+    create_client_window(client, ev->window_id, width, height, ev->content.w.flags);
 }
 
 
