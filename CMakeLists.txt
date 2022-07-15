@@ -525,8 +525,9 @@ set(sources
     "src/map.cpp"
     "src/renderer.cpp"
     "src/client.c"
-    # "src/input.c"
     "src/canvas.c"
+    "src/canvas_window.c"
+    # "src/input.c"
     # "src/runner.c"
 
     ${external_sources}

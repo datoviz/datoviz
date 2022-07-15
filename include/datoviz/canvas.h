@@ -52,15 +52,6 @@ typedef enum
 
 
 
-// // Canvas size type
-// typedef enum
-// {
-//     DVZ_CANVAS_SIZE_SCREEN,
-//     DVZ_CANVAS_SIZE_FRAMEBUFFER,
-// } DvzCanvasSizeType;
-
-
-
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -173,17 +164,6 @@ DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface);
 
 
 
-// /**
-//  * Get the canvas size.
-//  *
-//  * @param canvas the canvas
-//  * @param type the unit of the requested screen size
-//  * @param[out] size the size vector filled by this function
-//  */
-// DVZ_EXPORT void dvz_canvas_size(DvzCanvas* canvas, DvzCanvasSizeType type, uvec2 size);
-
-
-
 /**
  * Reset a canvas
  *
@@ -247,19 +227,6 @@ DVZ_EXPORT void dvz_canvas_viewport( //
  * @param idx the command buffer index with the commands instance
  */
 DVZ_EXPORT void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
-
-
-
-/**
- * Run a simple event loop for a single canvas.
- *
- * The window must be created beforehand.
- *
- * @param canvas a canvas
- * @param window a window
- * @param n_frames maximum number of frames
- */
-DVZ_EXPORT void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames);
 
 
 

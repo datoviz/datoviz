@@ -11,6 +11,7 @@
 #include "test_canvas.h"
 #include "_glfw.h"
 #include "canvas.h"
+#include "canvas_window.h"
 #include "context.h"
 #include "pipelib.h"
 #include "test.h"
