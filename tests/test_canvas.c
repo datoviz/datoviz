@@ -74,7 +74,7 @@ int test_canvas_1(TstSuite* suite)
 
 
 
-static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
+static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data)
 {
     ASSERT(canvas != NULL);
     TestCanvasStruct* s = (TestCanvasStruct*)canvas->user_data;
@@ -107,7 +107,7 @@ int test_canvas_triangle(TstSuite* suite)
 
     // Create the canvas.
     DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
-    dvz_canvas_refill(&canvas, _fill_triangle);
+    dvz_canvas_refill(&canvas, _fill_triangle, canvas.refill_user_data);
     dvz_canvas_create(&canvas, surface);
 
     // Create a graphics pipe.

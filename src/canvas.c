@@ -162,11 +162,12 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
 
 
-void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill)
+void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data)
 {
     ASSERT(canvas != NULL);
     ASSERT(refill != NULL);
     canvas->refill = refill;
+    canvas->refill_user_data = user_data;
 }
 
 

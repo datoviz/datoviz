@@ -23,10 +23,88 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
+{
+    ASSERT(rd != NULL);
+    ASSERT(canvas != NULL);
+
+    // Blank canvas by default.
+    if (rd->req_count == 0)
+    {
+        log_info("default command buffer refill with blank canvas for image #%d", img_idx);
+        blank_commands(canvas, &canvas->cmds, img_idx, canvas->refill_user_data);
+        return;
+    }
+
+    log_info("fill command buffer from the saved record requests for image #%d", img_idx);
+
+    // Otherwise, process all buffered commands.
+    DvzRequest* rq = NULL;
+    DvzPipe* pipe = NULL;
+    for (uint32_t i = 0; i < rd->req_count; i++)
+    {
+        rq = &rd->reqs[i];
+        ASSERT(rq != NULL);
+        switch (rq->type)
+        {
+
+        case DVZ_REQUEST_OBJECT_BEGIN:
+            dvz_cmd_reset(&canvas->cmds, img_idx);
+            dvz_canvas_begin(canvas, &canvas->cmds, img_idx);
+            break;
+
+        case DVZ_REQUEST_OBJECT_VIEWPORT:
+            dvz_canvas_viewport(
+                canvas, &canvas->cmds, img_idx, //
+                rq->content.record_viewport.offset, rq->content.record_viewport.shape);
+            break;
+
+        case DVZ_REQUEST_OBJECT_DRAW:
+
+            pipe = (DvzPipe*)dvz_map_get(rd->map, rq->content.record_draw.graphics);
+            ASSERT(pipe != NULL);
+
+            dvz_pipe_draw(
+                pipe, &canvas->cmds, img_idx, //
+                rq->content.record_draw.first_vertex, rq->content.record_draw.vertex_count);
+            break;
+
+        case DVZ_REQUEST_OBJECT_END:
+            dvz_canvas_end(canvas, &canvas->cmds, img_idx);
+            break;
+
+        default:
+            log_error("unknown record request #%d with type %d", i, rq->type);
+            break;
+        }
+    }
+}
+
+
+
+static void _fill_canvas(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(cmds != NULL);
+
+    DvzPresenter* prt = (DvzPresenter*)user_data;
+    ASSERT(prt != NULL);
+
+    DvzRenderer* rnd = prt->rnd;
+    ASSERT(rnd != NULL);
+
+    // Process the buffered record requests.
+    uint32_t img_idx = canvas->render.swapchain.img_idx;
+    _process_record_requests(rnd, canvas, img_idx);
+}
+
+
+
 // This function is called when a CANVAS creation request is received. The renderer independently
 // receives the request and creates the object, but the presenter needs to tell the client to
 // create an associated window with a surface.
-static void _presenter_request(DvzPresenter* prt, DvzRequest rq)
+// NOTE: this function must be called AFTER the request has been processed by the renderer.
+static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 {
     ASSERT(prt != NULL);
 
@@ -68,6 +146,9 @@ static void _presenter_request(DvzPresenter* prt, DvzRequest rq)
         // Finally, associate the canvas with the created window surface.
         dvz_canvas_create(canvas, surface);
 
+        // Refill function for the canvas.
+        dvz_canvas_refill(canvas, _fill_canvas, (void*)prt);
+
         break;
     default:
         break;
@@ -98,18 +179,22 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user
     ASSERT(rnd != NULL);
 
     // Submit the pending requests to the renderer.
-    log_trace("renderer processes %d requests", rqr->count);
-    // CANVAS creation requests should be immediately processed here.
-    dvz_renderer_requests(rnd, rqr->count, rqr->requests);
+    log_debug("renderer processes %d requests", rqr->count);
 
-    // Some rendering requests need to be processed by the presenter/client, such as canvas
-    // creation, deletion, etc.
+    // Go through all pending requests.
     for (uint32_t i = 0; i < rqr->count; i++)
     {
+        log_trace("renderer processes request #%d", i);
+        // Process each request immediately in the renderer.
+        dvz_renderer_request(rnd, rqr->requests[i]);
+
+        // CANVAS requests need special care, as the client may need to manage corresponding
+        // windows.
         if (rqr->requests[i].type == DVZ_REQUEST_OBJECT_CANVAS)
         {
-            _presenter_request(prt, rqr->requests[i]);
+            _canvas_request(prt, rqr->requests[i]);
         }
+        // Here, new canvases have been properly created with an underlying window and surface.
     }
 }
 
@@ -155,6 +240,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
     DvzHost* host = gpu->host;
     ASSERT(host != NULL);
+
+    DvzContext* ctx = rnd->ctx;
+    ASSERT(ctx != NULL);
 
     // Retrieve the window from its id.
     DvzWindow* window = id2window(client, window_id);
@@ -232,7 +320,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         for (uint32_t i = 0; i < cmds->count; i++)
         {
             dvz_cmd_reset(cmds, i);
-            canvas->refill(canvas, cmds, i);
+            canvas->refill(canvas, cmds, i, canvas->refill_user_data);
         }
     }
     else
@@ -262,10 +350,14 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     // queues for command buffer submission and swapchain present.
     dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
 
+    // HACK: improve this: img_idx depends on the canvas, but this function does not...
+    // DUP transfers must be refactored.
+    dvz_transfers_frame(&ctx->transfers, 0);
 
-
+    // TODO:
     // need to go through the pending requests again in the requester (eg those raise in the RESIZE
-    // callbacks)
+    // callbacks)?
+
     // UPFILL: when there is a command refill + data uploads in the same batch, register
     // the cmd buf at the moment when the GPU-blocking upload really occurs
 }

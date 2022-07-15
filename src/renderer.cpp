@@ -207,13 +207,14 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
     else if (type == DVZ_REQUEST_OBJECT_CANVAS)
     {
+        log_trace("get canvas 0x%" PRIx64 "", id);
         DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
         ASSERT(canvas != NULL);
 
         // Get the canvas framebuffer size.
         uvec2 viewport_size = {0};
 
-        if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
+        if (req.flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
         {
             log_warn("automatic viewport dat creation is poorly supported for now, may be "
                      "disabled soon. We need the viewport size, so as a temporary hack we take "
@@ -223,6 +224,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         }
 
         // Create the pipe.
+        log_trace("create pipelib graphics");
         pipe = dvz_pipelib_graphics(
             rd->pipelib, rd->ctx, &canvas->render.renderpass, canvas->render.swapchain.img_count,
             viewport_size, req.content.graphics.type, req.flags);

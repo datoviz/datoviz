@@ -274,7 +274,7 @@ static void _swapchain_create(DvzSwapchain* swapchain)
         swapchain->requested_width, swapchain->requested_height, //
         &swapchain->caps, &swapchain->swapchain, &width, &height);
     log_trace(
-        "created swapchain %d, requested size %dx%d, actual size %dx%d", swapchain->swapchain,
+        "created swapchain %u, requested size %dx%d, actual size %dx%d", swapchain->swapchain,
         swapchain->requested_width, swapchain->requested_height, width, height);
 
     swapchain->support_transfer =

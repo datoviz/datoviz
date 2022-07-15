@@ -60,7 +60,7 @@ typedef struct DvzCanvas DvzCanvas;
 typedef struct DvzRender DvzRender;
 typedef struct DvzSync DvzSync;
 
-typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx);
+typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx, void* user_data);
 
 // Forward declarations.
 typedef struct DvzWindow DvzWindow;
@@ -127,6 +127,7 @@ struct DvzCanvas
 
     DvzCommands cmds;
     DvzCanvasRefill refill; // refill callback, only used in conjunction with dvz_canvas_loop()
+    void* refill_user_data;
     DvzRender render;
     DvzSync sync;
 
@@ -190,7 +191,7 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
  * @param canvas a canvas
  * @param refill refill callback
  */
-DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill);
+DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data);
 
 
 

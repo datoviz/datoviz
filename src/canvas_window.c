@@ -38,7 +38,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
     for (uint32_t i = 0; i < cmds->count; i++)
     {
         dvz_cmd_reset(cmds, i);
-        canvas->refill(canvas, cmds, i);
+        canvas->refill(canvas, cmds, i, canvas->refill_user_data);
     }
 
     for (uint32_t frame = 0; n_frames == 0 || frame < n_frames; frame++)
@@ -95,7 +95,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
             for (uint32_t i = 0; i < cmds->count; i++)
             {
                 dvz_cmd_reset(cmds, i);
-                canvas->refill(canvas, cmds, i);
+                canvas->refill(canvas, cmds, i, canvas->refill_user_data);
             }
         }
         else
