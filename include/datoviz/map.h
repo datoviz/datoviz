@@ -11,6 +11,7 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "_macros.h"
@@ -60,6 +61,18 @@ EXTERN_C_ON
  * @returns a map
  */
 DVZ_EXPORT DvzMap* dvz_map(void);
+
+
+
+/**
+ * Return whether a key exists in the map.
+ *
+ * @param map the map
+ * @param key the key
+ * @returns a boolean
+ */
+
+DVZ_EXPORT bool dvz_map_exists(DvzMap* map, DvzId key);
 
 
 

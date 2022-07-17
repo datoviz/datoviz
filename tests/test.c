@@ -102,6 +102,7 @@ int dvz_run_tests(const char* match)
 
     // Testing map.
     TEST(test_map_1)
+    TEST(test_map_2)
 
     // Testing request.
     TEST(test_request_1)

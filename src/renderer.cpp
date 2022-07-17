@@ -762,7 +762,7 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 
         log_trace("adding object type %d id 0x%" PRIx64 " to mapping", req.type, req.id);
 
-        if (dvz_map_get(rd->map, req.id) != NULL)
+        if (dvz_map_exists(rd->map, req.id))
         {
             log_error("error while creating the object, id Ox%" PRIx64 " already exists", req.id);
             break;

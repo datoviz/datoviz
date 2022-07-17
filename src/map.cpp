@@ -63,12 +63,27 @@ DvzMap* dvz_map(void)
 
 
 
+bool dvz_map_exists(DvzMap* map, DvzId key)
+{
+    ASSERT(map != NULL);
+    ASSERT(key != DVZ_ID_NONE);
+
+    return map->_map.count(key) > 0;
+}
+
+
+
 void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 {
     ASSERT(map != NULL);
     ASSERT(key > 0);
-    ASSERT(type != 0);
     ASSERT(value != NULL);
+
+    if (map->_map.count(key) > 0)
+    {
+        log_warn("key 0x%" PRIx64 " already exists (type %d)", key, type);
+        return;
+    }
 
     log_trace("add key 0x%" PRIx64 " with type %d", key, type);
     map->_map[key] = std::pair<int, void*>(type, value);

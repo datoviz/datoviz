@@ -26,6 +26,44 @@ int test_map_1(TstSuite* suite)
 
     DvzMap* map = dvz_map();
 
+    DvzId id = 1;
+
+    int data = 123;
+
+    // Add one element.
+    AT(!dvz_map_exists(map, id));
+    AT(dvz_map_count(map, id) == 0);
+    dvz_map_add(map, id, 0, &data);
+    AT(dvz_map_exists(map, id));
+    AT(dvz_map_count(map, 0) == 1);
+
+    AT(dvz_map_get(map, id) == &data);
+
+    // Try to add the same element.
+    int data2 = 456;
+    dvz_map_add(map, id, 0, &data2);
+    AT(dvz_map_exists(map, id));
+    // The call below should have failed and the data should not have been updated.
+    AT(*(int*)dvz_map_get(map, id) == 123);
+
+    // Try again by removing the existing object first.
+    dvz_map_remove(map, id);
+    dvz_map_add(map, id, 0, &data2);
+    AT(dvz_map_exists(map, id));
+    AT(*(int*)dvz_map_get(map, id) == 456);
+
+    // Destroy the map.
+    dvz_map_destroy(map);
+    return 0;
+}
+
+
+
+int test_map_2(TstSuite* suite)
+{
+
+    DvzMap* map = dvz_map();
+
     // Empty map.
     DvzId id = 1; // dvz_map_id(map);
     AT(id == 1);

@@ -21,6 +21,8 @@
 
 int test_map_1(TstSuite*);
 
+int test_map_2(TstSuite*);
+
 
 
 #endif
