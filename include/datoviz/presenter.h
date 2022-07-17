@@ -37,6 +37,12 @@
 
 typedef struct DvzPresenter DvzPresenter;
 
+// Forward declarations.
+typedef struct DvzWindow DvzWindow;
+
+// Callback types.
+typedef void (*DvzGuiCallback)(DvzWindow* window, void* user_data);
+
 
 
 /*************************************************************************************************/

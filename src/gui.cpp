@@ -45,6 +45,13 @@ static inline bool _check_imgui_context()
 
 
 
+static bool _check_imgui_glfw()
+{
+    return ImGui::GetCurrentContext() && ImGui::GetIO().BackendPlatformUserData != NULL;
+}
+
+
+
 static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
@@ -160,10 +167,10 @@ static void _imgui_set_window(DvzWindow* window)
 
 
 
-static void _imgui_destroy(bool use_glfw)
+static void _imgui_destroy()
 {
     ImGui_ImplVulkan_Shutdown();
-    if (use_glfw)
+    if (_check_imgui_glfw())
         ImGui_ImplGlfw_Shutdown();
     ASSERT(ImGui::GetCurrentContext() != NULL);
     ImGui::DestroyContext(ImGui::GetCurrentContext());
@@ -176,26 +183,19 @@ static void _imgui_destroy(bool use_glfw)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzGui dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
+void dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
 
     _imgui_init(gpu, queue_idx);
     _imgui_setup();
     _imgui_fonts_upload(gpu);
-
-
-    INIT(DvzGui, gui)
-    gui.gpu = gpu;
-    return gui;
 }
 
 
 
-void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height)
+void dvz_gui_frame_offscreen(uint32_t width, uint32_t height)
 {
-    ASSERT(gui != NULL);
-
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize.x = width;
     io.DisplaySize.y = height;
@@ -205,14 +205,11 @@ void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height)
 }
 
 
-void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window)
+void dvz_gui_frame_begin(DvzWindow* window)
 {
-    ASSERT(gui != NULL);
-
     // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
     if (window != NULL && !window->has_gui)
     {
-        gui->use_glfw = true;
         _imgui_set_window(window);
         window->has_gui = true;
     }
@@ -225,10 +222,8 @@ void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window)
 
 
 
-void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size)
+void dvz_gui_dialog_begin(vec2 pos, vec2 size)
 {
-    ASSERT(gui != NULL);
-
     // const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_FirstUseEver, ImVec2(0, 0));
     // (ImVec2){main_viewport->WorkPos.x, main_viewport->WorkPos.y},
@@ -241,34 +236,24 @@ void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size)
 
 
 
-void dvz_gui_text(DvzGui* gui, const char* str)
+void dvz_gui_text(const char* str) { ImGui::Text(str); }
+
+
+
+void dvz_gui_dialog_end() { ImGui::End(); }
+
+
+
+void dvz_gui_demo()
 {
-    ASSERT(gui != NULL);
-    ImGui::Text(str);
-}
-
-
-
-void dvz_gui_dialog_end(DvzGui* gui)
-{
-    ASSERT(gui != NULL);
-    ImGui::End();
-}
-
-
-
-void dvz_gui_demo(DvzGui* gui)
-{
-    ASSERT(gui != NULL);
     bool open = true;
     ImGui::ShowDemoWindow(&open);
 }
 
 
 
-void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx)
+void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(gui != NULL);
     ASSERT(cmds != NULL);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx], VK_NULL_HANDLE);
@@ -276,8 +261,4 @@ void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx)
 
 
 
-void dvz_gui_destroy(DvzGui* gui)
-{
-    ASSERT(gui != NULL);
-    _imgui_destroy(gui->use_glfw);
-}
+void dvz_gui_destroy() { _imgui_destroy(); }

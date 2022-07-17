@@ -829,7 +829,7 @@ int test_vklite_gui(TstSuite* suite)
     TestCanvas canvas = offscreen(gpu);
 
     // Need to init the GUI engine.
-    DvzGui gui = dvz_gui(gpu, 0);
+    dvz_gui(gpu, 0);
 
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
@@ -838,15 +838,15 @@ int test_vklite_gui(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, &canvas.renderpass, &canvas.framebuffers);
 
     // Mark the beginning and end of the frame.
-    dvz_gui_frame_offscreen(&gui, WIDTH, HEIGHT);
+    dvz_gui_frame_offscreen(WIDTH, HEIGHT);
     // The GUI code goes here.
 
-    dvz_gui_dialog_begin(&gui, (vec2){100, 100}, (vec2){200, 200});
-    dvz_gui_text(&gui, "Hello world");
-    dvz_gui_dialog_end(&gui);
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("Hello world");
+    dvz_gui_dialog_end();
     // dvz_gui_demo();
 
-    dvz_gui_frame_end(&gui, &cmds, 0);
+    dvz_gui_frame_end(&cmds, 0);
 
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -862,7 +862,7 @@ int test_vklite_gui(TstSuite* suite)
     test_canvas_destroy(&canvas);
 
     // Destroy the GUI engine.
-    dvz_gui_destroy(&gui);
+    dvz_gui_destroy();
 
     dvz_gpu_destroy(gpu);
     return 0;
@@ -1019,23 +1019,21 @@ static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(canvas != NULL);
     ASSERT(cmds != NULL);
-    DvzGui* gui = (DvzGui*)canvas->data;
-    ASSERT(gui != NULL);
 
     // Begin the command buffer and renderpass.
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
 
     // Begin the GUI frame.
-    dvz_gui_frame_begin(gui, canvas->window);
+    dvz_gui_frame_begin(canvas->window);
 
     // GUI code.
-    dvz_gui_dialog_begin(gui, (vec2){100, 100}, (vec2){200, 200});
-    dvz_gui_text(gui, "Hello world");
-    dvz_gui_dialog_end(gui);
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("Hello world");
+    dvz_gui_dialog_end();
 
     // End the GUI frame.
-    dvz_gui_frame_end(gui, cmds, idx);
+    dvz_gui_frame_end(cmds, idx);
 
     // End the renderpass and command buffer.
     dvz_cmd_end_renderpass(cmds, idx);
@@ -1061,12 +1059,11 @@ int test_vklite_canvas_gui(TstSuite* suite)
         dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     TestCanvas canvas = test_canvas_create(gpu, &window, surface);
-    DvzGui gui = dvz_gui(gpu, 0);
+    dvz_gui(gpu, 0);
     canvas.always_refill = true;
-    canvas.data = &gui;
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);
     test_canvas_destroy(&canvas);
-    dvz_gui_destroy(&gui);
+    dvz_gui_destroy();
     dvz_gpu_destroy(gpu);
     return 0;
 }

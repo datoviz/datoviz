@@ -25,8 +25,6 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzGui DvzGui;
-
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderpass DvzRenderpass;
@@ -39,13 +37,6 @@ typedef struct ImGuiIO ImGuiIO;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzGui
-{
-    DvzGpu* gpu;
-    bool use_glfw;
-    ImGuiIO* io;
-};
 
 
 
@@ -61,7 +52,7 @@ EXTERN_C_ON
  * @param gpu the GPU
  * @param queue_idx the render queue
  */
-DVZ_EXPORT DvzGui dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
+DVZ_EXPORT void dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
 
 
 
@@ -71,7 +62,7 @@ DVZ_EXPORT DvzGui dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
  * @param gui the GUI
  * @param window the window
  */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window);
+DVZ_EXPORT void dvz_gui_frame_begin(DvzWindow* window);
 
 
 
@@ -83,7 +74,8 @@ DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window);
  * @param height the viewport height
  */
 DVZ_EXPORT
-void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height);
+void dvz_gui_frame_offscreen(uint32_t width, uint32_t height);
+
 
 
 /**
@@ -93,7 +85,7 @@ void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height);
  * @param pos the dialog position
  * @param size the dialog size
  */
-DVZ_EXPORT void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size);
+DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size);
 
 
 
@@ -103,7 +95,7 @@ DVZ_EXPORT void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size);
  * @param gui the GUI
  * @param str the string
  */
-DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* str);
+DVZ_EXPORT void dvz_gui_text(const char* str);
 
 
 
@@ -112,7 +104,7 @@ DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* str);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_dialog_end(DvzGui* gui);
+DVZ_EXPORT void dvz_gui_dialog_end();
 
 
 
@@ -121,7 +113,7 @@ DVZ_EXPORT void dvz_gui_dialog_end(DvzGui* gui);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
+DVZ_EXPORT void dvz_gui_demo();
 
 
 
@@ -132,7 +124,7 @@ DVZ_EXPORT void dvz_gui_demo(DvzGui* gui);
  * @param cmds the command buffer set
  * @param idx the command buffer index within the set
  */
-DVZ_EXPORT void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx);
+DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
 
 
 
@@ -141,7 +133,7 @@ DVZ_EXPORT void dvz_gui_frame_end(DvzGui* gui, DvzCommands* cmds, uint32_t idx);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
+DVZ_EXPORT void dvz_gui_destroy();
 
 
 
