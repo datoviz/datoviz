@@ -184,6 +184,7 @@ int test_presenter_2(TstSuite* suite)
         req = dvz_upload_dat(&rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
         dvz_requester_add(&rqr, req);
 
+
         // Command buffer.
         req = dvz_record_begin(&rqr, canvas_id);
         dvz_requester_add(&rqr, req);
@@ -192,7 +193,10 @@ int test_presenter_2(TstSuite* suite)
         dvz_requester_add(&rqr, req);
 
         req = dvz_record_draw(&rqr, canvas_id, graphics_id, 0, 3);
-        dvz_requester_add(&rqr, dvz_record_end(&rqr, canvas_id));
+        dvz_requester_add(&rqr, req);
+
+        req = dvz_record_end(&rqr, canvas_id);
+        dvz_requester_add(&rqr, req);
     }
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
