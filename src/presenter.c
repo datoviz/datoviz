@@ -2,14 +2,15 @@
 /*  Presenter                                                                                    */
 /*************************************************************************************************/
 
-#include "../include/datoviz/presenter.h"
-#include "../include/datoviz/canvas.h"
-#include "../include/datoviz/map.h"
-#include "../include/datoviz/request.h"
-#include "../include/datoviz/surface.h"
-#include "../include/datoviz/vklite.h"
+#include "presenter.h"
+#include "canvas.h"
 #include "canvas_utils.h"
 #include "client_utils.h"
+#include "gui.h"
+#include "map.h"
+#include "request.h"
+#include "surface.h"
+#include "vklite.h"
 #include "vklite_utils.h"
 
 
@@ -70,8 +71,9 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         // Finally, associate the canvas with the created window surface.
         dvz_canvas_create(canvas, surface);
 
-        // Refill function for the canvas.
-        // dvz_canvas_refill(canvas, _fill_canvas, (void*)prt);
+        // Create the canvas recorder.
+        ASSERT(dvz_obj_is_created(&canvas->render.swapchain.obj));
+        canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
 
         break;
     default:
@@ -85,7 +87,8 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
 {
     ASSERT(rd != NULL);
     ASSERT(canvas != NULL);
-    if (canvas->recorder != NULL)
+    ASSERT(canvas->recorder != NULL);
+    if (canvas->recorder->count > 0)
     {
         dvz_cmd_reset(&canvas->cmds, img_idx);
         dvz_recorder_set(canvas->recorder, rd, &canvas->cmds, img_idx);
@@ -99,12 +102,12 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
 
 
 /*************************************************************************************************/
-/*  Callbacks                                                                                    */
+/*  Callbacks */
 /*************************************************************************************************/
 
-// This function is called when the Client receives a REQUESTS event. It will route the requests to
-// the underlying renderer, and also create associated Client objects such as windows associated to
-// canvases.
+// This function is called when the Client receives a REQUESTS event. It will route the
+// requests to the underlying renderer, and also create associated Client objects such as
+// windows associated to canvases.
 static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user_data)
 {
     ASSERT(client != NULL);
@@ -158,8 +161,42 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
 
 
 
+static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* window)
+{
+    ASSERT(prt != NULL);
+    ASSERT(canvas != NULL);
+    ASSERT(window != NULL);
+    ASSERT(canvas->recorder != NULL);
+
+    if (!prt->gui_initialized)
+    {
+        // Initialize the GUI.
+        dvz_gui(prt->rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
+
+        // Mark the GUI as initialized.
+        prt->gui_initialized = true;
+
+        // Disable the recorder cache as the command buffer will have to be recreated
+        dvz_recorder_cache(canvas->recorder, false);
+    }
+
+    // Begin the GUI frame.
+    dvz_gui_frame_begin(window);
+
+    // GUI callbacks.
+    for (uint32_t i = 0; i < prt->callback_count; i++)
+    {
+        prt->callbacks[i].callback(window, prt->callbacks[i].user_data);
+    }
+
+    // End the GUI frame.
+    dvz_gui_frame_end(&canvas->cmds, canvas->render.swapchain.img_idx);
+}
+
+
+
 /*************************************************************************************************/
-/*  Presenter                                                                                    */
+/*  Presenter */
 /*************************************************************************************************/
 
 DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
@@ -182,6 +219,24 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
         client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
 
     return prt;
+}
+
+
+
+void dvz_presenter_gui(
+    DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data)
+{
+    ASSERT(prt != NULL);
+    ASSERT(window_id != 0);
+    ASSERT(callback != NULL);
+
+    log_debug("add GUI callback to window 0x%" PRIx64 "");
+    DvzGuiCallbackPayload payload = {
+        .window_id = window_id,
+        .callback = callback,
+        .user_data = user_data,
+    };
+    prt->callbacks[prt->callback_count++] = payload;
 }
 
 
@@ -212,6 +267,10 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     // Retrieve the canvas from its id.
     DvzCanvas* canvas = dvz_renderer_canvas(rd, window_id);
     ASSERT(canvas != NULL);
+
+    // Retrieve the canvas' recorder.
+    DvzRecorder* recorder = canvas->recorder;
+    ASSERT(recorder != NULL);
 
     uint64_t frame_idx = client->frame_idx;
     log_trace("frame %d, window #%x", frame_idx, window_id);
@@ -282,9 +341,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
                         .content.w.height = height});
 
         // Need to refill the command buffers.
-        if (canvas->recorder)
-            // Ensure we reset the refill flag to force reloading.
-            dvz_recorder_set_dirty(canvas->recorder);
+        // if (canvas->recorder)
+        // Ensure we reset the refill flag to force reloading.
+        dvz_recorder_set_dirty(recorder);
         for (uint32_t i = 0; i < cmds->count; i++)
         {
             _record_command(rd, canvas, i);
@@ -294,11 +353,17 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     {
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
 
-        // At every frame, we submit the command buffer, unless it was already submitted previously
-        // (caching system built into the recorder).
-        if (canvas->recorder && dvz_recorder_is_dirty(canvas->recorder, swapchain->img_idx))
+        // At every frame, we refill the command buffer, unless it was already refilled
+        // previously (caching system built into the recorder).
+        if (dvz_recorder_is_dirty(recorder, swapchain->img_idx))
         {
             _record_command(rd, canvas, swapchain->img_idx);
+        }
+
+        // GUI callbacks.
+        if (prt->callback_count > 0)
+        {
+            _gui_callback(prt, canvas, window);
         }
 
         // Reset the Submit instance before adding the command buffers.
@@ -329,8 +394,8 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     dvz_transfers_frame(&ctx->transfers, 0);
 
     // TODO:
-    // need to go through the pending requests again in the requester (eg those raise in the RESIZE
-    // callbacks)?
+    // need to go through the pending requests again in the requester (eg those raise in the
+    // RESIZE callbacks)?
 
     // UPFILL: when there is a command refill + data uploads in the same batch, register
     // the cmd buf at the moment when the GPU-blocking upload really occurs
@@ -351,8 +416,8 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
     ASSERT(count > 0);
     ASSERT(requests != NULL);
 
-    // Submit the requests to the client's event loop. Will be processed by _requester_callback(),
-    // which will also free the requests array.
+    // Submit the requests to the client's event loop. Will be processed by
+    // _requester_callback(), which will also free the requests array.
     dvz_client_event(
         prt->client, (DvzClientEvent){
                          .type = DVZ_CLIENT_EVENT_REQUESTS,

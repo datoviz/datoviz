@@ -9,6 +9,7 @@
 #include "test_presenter.h"
 #include "_glfw.h"
 #include "client.h"
+#include "gui.h"
 #include "presenter.h"
 #include "test.h"
 #include "test_vklite.h"
@@ -47,6 +48,16 @@ struct CallbackStruct
 /*  Presenter tests                                                                              */
 /*************************************************************************************************/
 
+static inline void _gui_callback_1(DvzWindow* window, void* user_data)
+{
+    log_debug("GUI callback");
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("Hello world");
+    // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along the
+    // executable.
+    dvz_gui_dialog_end();
+}
+
 int test_presenter_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
@@ -78,6 +89,9 @@ int test_presenter_1(TstSuite* suite)
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
     dvz_presenter_submit(prt, &rqr);
+
+    // GUI callback.
+    dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);

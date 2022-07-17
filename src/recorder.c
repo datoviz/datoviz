@@ -172,6 +172,21 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
 
 
 
+void dvz_recorder_cache(DvzRecorder* recorder, bool activate)
+{
+    ASSERT(recorder != NULL);
+    if (activate)
+        // Clear DISABLE_CACHE flag
+        recorder->flags &= ~(DVZ_RECORDER_FLAGS_DISABLE_CACHE << 0);
+    else
+        // Set DISABLE_CACHE flag
+        recorder->flags |= (DVZ_RECORDER_FLAGS_DISABLE_CACHE << 0);
+    ASSERT(_has_cache(recorder) == activate);
+    log_debug("set recorder cache to %d", activate);
+}
+
+
+
 bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx)
 {
     ASSERT(recorder != NULL);

@@ -154,6 +154,11 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
         req.content.canvas.background, req.flags);
     ASSERT(canvas != NULL);
     SET_ID(canvas)
+
+    // NOTE: we cannot create the canvas recorder yet, as we need the swapchain image count, and
+    // this requires the canvas to be actually created. This is done by the presenter, after a
+    // window and surface have been created. Create the recorder.
+
     return (void*)canvas;
 }
 
@@ -561,7 +566,10 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
 
     // Ensure the canvas Recorder exists.
     if (!canvas->recorder)
+    {
+        log_debug("renderer automatically creates recorder for canvas 0x%" PRIx64, req.id);
         canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
+    }
 
     // Get the recorder command.
     DvzRecorderCommand* cmd = &req.content.record.command;

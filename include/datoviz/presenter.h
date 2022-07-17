@@ -23,6 +23,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_GUI_MAX_CALLBACKS 16
+
 
 
 /*************************************************************************************************/
@@ -36,6 +38,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzPresenter DvzPresenter;
+typedef struct DvzGuiCallbackPayload DvzGuiCallbackPayload;
 
 // Forward declarations.
 typedef struct DvzWindow DvzWindow;
@@ -55,10 +58,24 @@ typedef void (*DvzGuiCallback)(DvzWindow* window, void* user_data);
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzGuiCallbackPayload
+{
+    DvzId window_id;
+    DvzGuiCallback callback;
+    void* user_data;
+};
+
+
+
 struct DvzPresenter
 {
     DvzRenderer* rd;
     DvzClient* client;
+
+    // Callbacks.
+    bool gui_initialized;
+    uint32_t callback_count;
+    DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
 };
 
 
@@ -74,6 +91,11 @@ DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client);
 
 
 DVZ_EXPORT void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id);
+
+
+
+DVZ_EXPORT void
+dvz_presenter_gui(DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data);
 
 
 

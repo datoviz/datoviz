@@ -143,6 +143,8 @@ DVZ_EXPORT uint32_t dvz_recorder_size(DvzRecorder* recorder);
 DVZ_EXPORT void
 dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx);
 
+DVZ_EXPORT void dvz_recorder_cache(DvzRecorder* recorder, bool activate);
+
 DVZ_EXPORT bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx);
 
 DVZ_EXPORT void dvz_recorder_set_dirty(DvzRecorder* recorder);

@@ -24,7 +24,7 @@
 /*  Utils functions                                                                              */
 /*************************************************************************************************/
 
-static void _imgui_check_vk_result(VkResult err)
+static inline void _imgui_check_vk_result(VkResult err)
 {
     if (err == 0)
         return;
@@ -33,19 +33,13 @@ static void _imgui_check_vk_result(VkResult err)
         abort();
 }
 
-static inline bool _check_imgui_context()
-{
-    if (ImGui::GetCurrentContext() == NULL)
-    {
-        log_error("no more ImGui context, skipping Dear ImGui callback");
-        return false;
-    }
-    return true;
-}
+
+
+static inline bool _imgui_has_context() { return ImGui::GetCurrentContext() != NULL; }
 
 
 
-static bool _check_imgui_glfw()
+static inline bool _imgui_has_glfw()
 {
     return ImGui::GetCurrentContext() && ImGui::GetIO().BackendPlatformUserData != NULL;
 }
@@ -54,6 +48,8 @@ static bool _check_imgui_glfw()
 
 static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx)
 {
+    ASSERT(!_imgui_has_context());
+
     ASSERT(gpu != NULL);
 
     ImGui::DebugCheckVersionAndDataLayout(
@@ -170,7 +166,7 @@ static void _imgui_set_window(DvzWindow* window)
 static void _imgui_destroy()
 {
     ImGui_ImplVulkan_Shutdown();
-    if (_check_imgui_glfw())
+    if (_imgui_has_glfw())
         ImGui_ImplGlfw_Shutdown();
     ASSERT(ImGui::GetCurrentContext() != NULL);
     ImGui::DestroyContext(ImGui::GetCurrentContext());
@@ -187,6 +183,12 @@ void dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
 
+    if (_imgui_has_context())
+    {
+        log_warn("GUI context already created, skipping");
+        return;
+    }
+    log_debug("initialize the Dear ImGui context");
     _imgui_init(gpu, queue_idx);
     _imgui_setup();
     _imgui_fonts_upload(gpu);
@@ -203,6 +205,7 @@ void dvz_gui_frame_offscreen(uint32_t width, uint32_t height)
     ImGui_ImplVulkan_NewFrame();
     ImGui::NewFrame();
 }
+
 
 
 void dvz_gui_frame_begin(DvzWindow* window)
@@ -231,7 +234,7 @@ void dvz_gui_dialog_begin(vec2 pos, vec2 size)
 
     bool open = true;
     // ImGui::PushFont(font);
-    ImGui::Begin("Hello", &open, ImGuiWindowFlags_NoSavedSettings);
+    ImGui::Begin("Dialog", &open, ImGuiWindowFlags_NoSavedSettings);
 }
 
 
