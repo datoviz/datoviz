@@ -66,8 +66,7 @@ int test_presenter_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rnd);
-    dvz_presenter_client(prt, client);
+    DvzPresenter* prt = dvz_presenter(rnd, client);
 
     // Start.
 
@@ -149,8 +148,7 @@ int test_presenter_2(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rnd);
-    dvz_presenter_client(prt, client);
+    DvzPresenter* prt = dvz_presenter(rnd, client);
 
     // Make rendering requests.
 

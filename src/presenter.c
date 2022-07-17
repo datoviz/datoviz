@@ -162,11 +162,25 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
 /*  Presenter                                                                                    */
 /*************************************************************************************************/
 
-DvzPresenter* dvz_presenter(DvzRenderer* rnd)
+DvzPresenter* dvz_presenter(DvzRenderer* rnd, DvzClient* client)
 {
     ASSERT(rnd != NULL);
+    ASSERT(client != NULL);
+
     DvzPresenter* prt = calloc(1, sizeof(DvzPresenter));
+    ASSERT(prt != NULL);
+
     prt->rnd = rnd;
+    prt->client = client;
+
+    // Register a REQUESTS callback which submits pending requests to the renderer.
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_REQUESTS, DVZ_CLIENT_CALLBACK_SYNC, _requester_callback, prt);
+
+    // Register a FRAME callback which calls dvz_presenter_frame().
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
+
     return prt;
 }
 
@@ -320,24 +334,6 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
     // UPFILL: when there is a command refill + data uploads in the same batch, register
     // the cmd buf at the moment when the GPU-blocking upload really occurs
-}
-
-
-
-void dvz_presenter_client(DvzPresenter* prt, DvzClient* client)
-{
-    ASSERT(prt != NULL);
-    ASSERT(client != NULL);
-
-    prt->client = client;
-
-    // Register a REQUESTS callback which submits pending requests to the renderer.
-    dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_REQUESTS, DVZ_CLIENT_CALLBACK_SYNC, _requester_callback, prt);
-
-    // Register a FRAME callback which calls dvz_presenter_frame().
-    dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
 }
 
 
