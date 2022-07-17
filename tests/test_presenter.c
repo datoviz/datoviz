@@ -32,6 +32,7 @@
 typedef struct CallbackStruct CallbackStruct;
 struct CallbackStruct
 {
+    DvzPresenter* prt;
     DvzRequester* rqr;
     DvzId canvas_id;
     DvzId mvp_id;
@@ -77,9 +78,7 @@ int test_presenter_1(TstSuite* suite)
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    // TODO: improve this, pass an array of requests instead of a pointer to the Requester?
-    dvz_client_event(
-        client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_REQUESTS, .content.r.requests = &rqr});
+    dvz_presenter_submit(prt, &rqr);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -128,8 +127,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_da
     req = dvz_record_end(rqr, s->canvas_id);
     dvz_requester_add(rqr, req);
 
-    dvz_client_event(
-        client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_REQUESTS, .content.r.requests = rqr});
+    dvz_presenter_submit(s->prt, rqr);
 }
 
 int test_presenter_2(TstSuite* suite)
@@ -229,24 +227,22 @@ int test_presenter_2(TstSuite* suite)
         dvz_requester_add(&rqr, req);
     }
 
-    // TODO
-    // // Resize callback.
-    // CallbackStruct s = {
-    //     .rqr = &rqr,
-    //     .canvas_id = canvas_id,
-    //     .graphics_id = graphics_id,
-    //     .mvp_id = mvp_id,
-    //     .viewport_id = viewport_id,
-    //     .dat_id = dat_id};
-    // dvz_client_callback(
-    //     client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, &s);
+    // Resize callback.
+    CallbackStruct s = {
+        .prt = prt,
+        .rqr = &rqr,
+        .canvas_id = canvas_id,
+        .graphics_id = graphics_id,
+        .mvp_id = mvp_id,
+        .viewport_id = viewport_id,
+        .dat_id = dat_id};
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, &s);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    // TODO: improve this, pass an array of requests instead of a pointer to the Requester?
-    dvz_client_event(
-        client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_REQUESTS, .content.r.requests = &rqr});
+    dvz_presenter_submit(prt, &rqr);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);

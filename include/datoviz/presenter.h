@@ -75,6 +75,10 @@ DVZ_EXPORT void dvz_presenter_client(DvzPresenter* prt, DvzClient* client);
 
 
 
+DVZ_EXPORT void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr);
+
+
+
 DVZ_EXPORT void dvz_presenter_destroy(DvzPresenter* prt);
 
 

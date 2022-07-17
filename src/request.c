@@ -95,6 +95,27 @@ DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 
 
 
+DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
+{
+    ASSERT(rqr != NULL);
+    ASSERT(count != NULL);
+    uint32_t n = rqr->count;
+
+    // Modify the count pointer to the number of returned requests.
+    *count = n;
+
+    // Make a copy of the pending requests.
+    DvzRequest* requests = calloc(n, sizeof(DvzRequest));
+    memcpy(requests, rqr->requests, n * sizeof(DvzRequest));
+
+    // Flush the requests.
+    rqr->count = 0;
+
+    return requests;
+}
+
+
+
 void dvz_request_print(DvzRequest* req)
 {
     ASSERT(req != NULL);

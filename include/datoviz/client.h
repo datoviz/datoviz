@@ -91,6 +91,7 @@ struct DvzClientEvent
 
         struct
         {
+            uint32_t request_count;
             void* requests;
         } r;
     } content;

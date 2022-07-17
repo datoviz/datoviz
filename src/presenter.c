@@ -5,6 +5,7 @@
 #include "../include/datoviz/presenter.h"
 #include "../include/datoviz/canvas.h"
 #include "../include/datoviz/map.h"
+#include "../include/datoviz/request.h"
 #include "../include/datoviz/surface.h"
 #include "../include/datoviz/vklite.h"
 #include "canvas_utils.h"
@@ -110,32 +111,38 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user
     ASSERT(user_data != NULL);
     DvzPresenter* prt = (DvzPresenter*)user_data;
 
-    ASSERT(ev.type == DVZ_CLIENT_EVENT_REQUESTS);
-
-    DvzRequester* rqr = (DvzRequester*)ev.content.r.requests;
-    ASSERT(rqr != NULL);
-
     DvzRenderer* rnd = prt->rnd;
     ASSERT(rnd != NULL);
 
+    ASSERT(ev.type == DVZ_CLIENT_EVENT_REQUESTS);
+
+    // Get the array of requests.
+    uint32_t count = ev.content.r.request_count;
+    ASSERT(count > 0);
+
+    DvzRequest* requests = (DvzRequest*)ev.content.r.requests;
+    ASSERT(requests != NULL);
+
     // Submit the pending requests to the renderer.
-    log_debug("renderer processes %d requests", rqr->count);
+    log_debug("renderer processes %d requests", count);
 
     // Go through all pending requests.
-    for (uint32_t i = 0; i < rqr->count; i++)
+    for (uint32_t i = 0; i < count; i++)
     {
-        log_trace("renderer processes request #%d", i);
         // Process each request immediately in the renderer.
-        dvz_renderer_request(rnd, rqr->requests[i]);
+        dvz_renderer_request(rnd, requests[i]);
 
         // CANVAS requests need special care, as the client may need to manage corresponding
         // windows.
-        if (rqr->requests[i].type == DVZ_REQUEST_OBJECT_CANVAS)
+        if (requests[i].type == DVZ_REQUEST_OBJECT_CANVAS)
         {
-            _canvas_request(prt, rqr->requests[i]);
+            _canvas_request(prt, requests[i]);
         }
         // Here, new canvases have been properly created with an underlying window and surface.
     }
+
+    // Finally, we can FREE the requests pointer.
+    FREE(requests);
 }
 
 
@@ -274,7 +281,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
 
         // At every frame, we submit the command buffer, unless it was already submitted previously
-        // (cache).
+        // (caching system built into the recorder).
         if (canvas->recorder && dvz_recorder_is_dirty(canvas->recorder, swapchain->img_idx))
         {
             _record_command(rnd, canvas, swapchain->img_idx);
@@ -331,6 +338,30 @@ void dvz_presenter_client(DvzPresenter* prt, DvzClient* client)
     // Register a FRAME callback which calls dvz_presenter_frame().
     dvz_client_callback(
         client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
+}
+
+
+
+void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
+{
+    ASSERT(prt != NULL);
+    ASSERT(rqr != NULL);
+    ASSERT(prt->client != NULL);
+
+    uint32_t count = 0;
+    DvzRequest* requests = dvz_requester_flush(rqr, &count);
+    // NOTE: the presenter will need to FREE the requests array.
+
+    ASSERT(count > 0);
+    ASSERT(requests != NULL);
+
+    // Submit the requests to the client's event loop. Will be processed by _requester_callback(),
+    // which will also free the requests array.
+    dvz_client_event(
+        prt->client, (DvzClientEvent){
+                         .type = DVZ_CLIENT_EVENT_REQUESTS,
+                         .content.r.request_count = count,
+                         .content.r.requests = requests});
 }
 
 

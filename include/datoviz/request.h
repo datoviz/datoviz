@@ -271,6 +271,17 @@ DVZ_EXPORT DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count);
 
 
 /**
+ * Return all pending requests and flush the requester.
+ *
+ * @param rqr the requester
+ * @param[out] count the number of requests
+ * @returns a pointer to an array of requests (NOTE: must be free-ed by the caller)
+ */
+DVZ_EXPORT DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
+
+
+
+/**
  * Show information about a request.
  *
  * @param req the request
