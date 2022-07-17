@@ -46,6 +46,14 @@ typedef enum
 
 
 
+typedef enum
+{
+    DVZ_RECORDER_FLAGS_NONE = 0x00,
+    DVZ_RECORDER_FLAGS_DISABLE_CACHE = 0x01,
+} DvzRecorderFlags;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
@@ -108,6 +116,7 @@ struct DvzRecorderCommand
 
 struct DvzRecorder
 {
+    int flags;
     uint32_t img_count;
     uint32_t capacity;
     uint32_t count; // number of commands
@@ -123,7 +132,7 @@ EXTERN_C_ON
 /*  Recorder functions                                                                           */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzRecorder* dvz_recorder(uint32_t img_count);
+DVZ_EXPORT DvzRecorder* dvz_recorder(uint32_t img_count, int flags);
 
 DVZ_EXPORT void dvz_recorder_clear(DvzRecorder* recorder);
 
@@ -136,7 +145,7 @@ dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint
 
 DVZ_EXPORT bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx);
 
-DVZ_EXPORT void dvz_recorder_need_refill(DvzRecorder* recorder);
+DVZ_EXPORT void dvz_recorder_set_dirty(DvzRecorder* recorder);
 
 DVZ_EXPORT void dvz_recorder_destroy(DvzRecorder* recorder);
 

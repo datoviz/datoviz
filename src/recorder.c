@@ -101,14 +101,23 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
 
 
+static inline bool _has_cache(DvzRecorder* recorder)
+{
+    ASSERT(recorder != NULL);
+    return !(recorder->flags & DVZ_RECORDER_FLAGS_DISABLE_CACHE);
+}
+
+
+
 /*************************************************************************************************/
 /*  Recorder functions                                                                           */
 /*************************************************************************************************/
 
-DvzRecorder* dvz_recorder(uint32_t img_count)
+DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
 {
     ASSERT(img_count > 0);
     DvzRecorder* recorder = calloc(1, sizeof(DvzRecorder));
+    recorder->flags = flags;
     recorder->img_count = img_count;
     recorder->capacity = DVZ_RECORDER_COMMAND_COUNT;
     recorder->commands = calloc(recorder->capacity, sizeof(DvzRecorderCommand));
@@ -122,7 +131,7 @@ void dvz_recorder_clear(DvzRecorder* recorder)
     ASSERT(recorder != NULL);
     log_debug("clear recorder commands");
     recorder->count = 0;
-    dvz_recorder_need_refill(recorder);
+    dvz_recorder_set_dirty(recorder);
 }
 
 
@@ -149,7 +158,7 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
     ASSERT(recorder != NULL);
 
     // this function updates the command buffer for the given swapchain image index, only if needed
-    if (!recorder->dirty[img_idx])
+    if (_has_cache(recorder) && !recorder->dirty[img_idx])
         return;
 
     // Go through all record commands and update the command buffer
@@ -166,17 +175,18 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
 bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx)
 {
     ASSERT(recorder != NULL);
-    return recorder->dirty[img_idx];
+    return !_has_cache(recorder) || recorder->dirty[img_idx];
 }
 
 
 
-void dvz_recorder_need_refill(DvzRecorder* recorder)
+void dvz_recorder_set_dirty(DvzRecorder* recorder)
 {
     ASSERT(recorder != NULL);
 
     // Reset dirty to true for all swapchain image indices.
-    memset(recorder->dirty, 1, sizeof(recorder->dirty));
+    if (_has_cache(recorder))
+        memset(recorder->dirty, 1, sizeof(recorder->dirty));
 }
 
 

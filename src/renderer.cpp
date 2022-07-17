@@ -561,7 +561,7 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
 
     // Ensure the canvas Recorder exists.
     if (!canvas->recorder)
-        canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count);
+        canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
 
     // Get the recorder command.
     DvzRecorderCommand* cmd = &req.content.record.command;

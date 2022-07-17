@@ -284,7 +284,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         // Need to refill the command buffers.
         if (canvas->recorder)
             // Ensure we reset the refill flag to force reloading.
-            dvz_recorder_need_refill(canvas->recorder);
+            dvz_recorder_set_dirty(canvas->recorder);
         for (uint32_t i = 0; i < cmds->count; i++)
         {
             _record_command(rd, canvas, i);
