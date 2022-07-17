@@ -45,15 +45,15 @@ static inline bool _check_imgui_context()
 
 
 
-static void _imgui_init(
-    DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t queue_idx, uint32_t width, uint32_t height)
+static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx)
 {
+    ASSERT(gpu != NULL);
+
     ImGui::DebugCheckVersionAndDataLayout(
         IMGUI_VERSION, sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4),
         sizeof(ImDrawVert), sizeof(ImDrawIdx));
     ImGui::CreateContext(NULL);
     ImGuiIO& io = ImGui::GetIO();
-
     io.IniFilename = NULL;
 
     INIT(ImGui_ImplVulkan_InitInfo, init_info)
@@ -73,10 +73,8 @@ static void _imgui_init(
 
     init_info.CheckVkResultFn = _imgui_check_vk_result;
 
-    ImGui_ImplVulkan_Init(&init_info, renderpass->renderpass);
-
-    io.DisplaySize.x = width;
-    io.DisplaySize.y = height;
+    ASSERT(gpu->renderpass.renderpass != VK_NULL_HANDLE);
+    ImGui_ImplVulkan_Init(&init_info, gpu->renderpass.renderpass);
 }
 
 
@@ -154,6 +152,10 @@ static void _imgui_set_window(DvzWindow* window)
     default:
         break;
     }
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize.x = window->width;
+    io.DisplaySize.y = window->height;
 }
 
 
@@ -174,33 +176,49 @@ static void _imgui_destroy(bool use_glfw)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzGui dvz_gui(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, //
-    uint32_t queue_idx, uint32_t width, uint32_t height)
+DvzGui dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
-    ASSERT(renderpass != NULL);
-    _imgui_init(gpu, renderpass, queue_idx, width, height);
+
+    _imgui_init(gpu, queue_idx);
     _imgui_setup();
     _imgui_fonts_upload(gpu);
-    if (window)
-        _imgui_set_window(window);
+
 
     INIT(DvzGui, gui)
     gui.gpu = gpu;
-    // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
-    gui.use_glfw = window != NULL && window->backend_window != NULL;
     return gui;
 }
 
 
 
-void dvz_gui_frame_begin(DvzGui* gui)
+void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height)
 {
     ASSERT(gui != NULL);
 
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize.x = width;
+    io.DisplaySize.y = height;
+
     ImGui_ImplVulkan_NewFrame();
-    if (gui->use_glfw)
+    ImGui::NewFrame();
+}
+
+
+void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window)
+{
+    ASSERT(gui != NULL);
+
+    // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
+    if (window != NULL && !window->has_gui)
+    {
+        gui->use_glfw = true;
+        _imgui_set_window(window);
+        window->has_gui = true;
+    }
+
+    ImGui_ImplVulkan_NewFrame();
+    if (window != NULL)
         ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
@@ -220,6 +238,7 @@ void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size)
     // ImGui::PushFont(font);
     ImGui::Begin("Hello", &open, ImGuiWindowFlags_NoSavedSettings);
 }
+
 
 
 void dvz_gui_text(DvzGui* gui, const char* str)

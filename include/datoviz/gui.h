@@ -59,15 +59,9 @@ EXTERN_C_ON
  * Initialize the GUI renderer.
  *
  * @param gpu the GPU
- * @param renderpass the renderpass
- * @param window the window, or NULL if using an offscreen renderer
  * @param queue_idx the render queue
- * @param width the viewport width
- * @param height the viewport height
  */
-DVZ_EXPORT DvzGui dvz_gui(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, //
-    uint32_t queue_idx, uint32_t width, uint32_t height);
+DVZ_EXPORT DvzGui dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
 
 
 
@@ -75,9 +69,21 @@ DVZ_EXPORT DvzGui dvz_gui(
  * To be called at the beginning of the command buffer recording.
  *
  * @param gui the GUI
+ * @param window the window
  */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui);
+DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window);
 
+
+
+/**
+ * To be called at the beginning of the command buffer recording (offscreen version).
+ *
+ * @param gui the GUI
+ * @param width the viewport width
+ * @param height the viewport height
+ */
+DVZ_EXPORT
+void dvz_gui_frame_offscreen(DvzGui* gui, uint32_t width, uint32_t height);
 
 
 /**

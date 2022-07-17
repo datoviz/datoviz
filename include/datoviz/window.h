@@ -49,6 +49,7 @@ struct DvzWindow
     DvzBackend backend;
     void* backend_window;
     uint32_t width, height; // in screen coordinates
+    bool has_gui;
 
     // Forward pointers.
     DvzMouse* mouse;
