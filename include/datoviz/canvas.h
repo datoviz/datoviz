@@ -63,7 +63,6 @@ typedef struct DvzSync DvzSync;
 typedef void (*DvzCanvasRefill)(DvzCanvas*, DvzCommands* cmds, uint32_t idx, void* user_data);
 
 // Forward declarations.
-typedef struct DvzWindow DvzWindow;
 typedef struct DvzRecorder DvzRecorder;
 
 

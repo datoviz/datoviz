@@ -32,7 +32,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
     {
 
     case DVZ_RECORDER_BEGIN:
-        log_info("recorder: begin (#%d)", img_idx);
+        log_debug("recorder: begin (#%d)", img_idx);
         dvz_cmd_reset(cmds, img_idx);
         dvz_canvas_begin(canvas, cmds, img_idx);
         break;
@@ -42,7 +42,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
         float y = record->contents.v.offset[1];
         float w = record->contents.v.shape[0];
         float h = record->contents.v.shape[1];
-        log_info("recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d)", x, y, w, h, img_idx);
+        log_debug("recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d)", x, y, w, h, img_idx);
         dvz_canvas_viewport(
             canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
         break;
@@ -50,7 +50,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
     case DVZ_RECORDER_DRAW_DIRECT:;
         uint32_t first_vertex = record->contents.draw_direct.first_vertex;
         uint32_t vertex_count = record->contents.draw_direct.vertex_count;
-        log_info(
+        log_debug(
             "recorder: draw direct from vertex #%d for %d vertices (#%d)", //
             first_vertex, vertex_count, img_idx);
         pipe = dvz_renderer_pipe(rnd, record->contents.draw_direct.pipe_id);
@@ -89,7 +89,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
         break;
 
     case DVZ_RECORDER_END:
-        log_info("recorder: end (#%d)", img_idx);
+        log_debug("recorder: end (#%d)", img_idx);
         dvz_canvas_end(canvas, cmds, img_idx);
         break;
 
@@ -120,7 +120,7 @@ DvzRecorder* dvz_recorder(uint32_t img_count)
 void dvz_recorder_clear(DvzRecorder* recorder)
 {
     ASSERT(recorder != NULL);
-    log_info("clear recorder commands");
+    log_debug("clear recorder commands");
     recorder->count = 0;
     dvz_recorder_need_refill(recorder);
 }
@@ -131,7 +131,7 @@ void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 {
     ASSERT(recorder != NULL);
     ASSERT(rc.canvas_id != 0);
-    log_info("append recorder command");
+    log_debug("append recorder command");
 
     if (recorder->count >= recorder->capacity)
     {

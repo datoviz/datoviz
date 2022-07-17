@@ -36,7 +36,6 @@ typedef struct DvzWindow DvzWindow;
 // Forward declarations.
 typedef struct DvzMouse DvzMouse;
 typedef struct DvzKeyboard DvzKeyboard;
-typedef struct DvzCanvas DvzCanvas;
 
 
 /*************************************************************************************************/
@@ -50,15 +49,10 @@ struct DvzWindow
     DvzBackend backend;
     void* backend_window;
     uint32_t width, height; // in screen coordinates
-    // uint32_t framebuffer_width, framebuffer_height; // in framebuffer coordinates
-
-    // bool close_on_esc;
-    // VkSurfaceKHR surface;
 
     // Forward pointers.
     DvzMouse* mouse;
     DvzKeyboard* keyboard;
-    DvzCanvas* canvas;
 };
 
 
