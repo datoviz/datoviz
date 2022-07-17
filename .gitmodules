@@ -1,9 +1,9 @@
-[submodule "external/imgui"]
-	path = external/imgui
-	url = https://github.com/ocornut/imgui.git
+#[submodule "external/imgui"]
+#	path = external/imgui
+#	url = https://github.com/ocornut/imgui.git
 [submodule "data"]
 	path = data
 	url = https://github.com/datoviz/data
-[submodule "external/cimgui"]
-	path = external/cimgui
-	url = https://github.com/cimgui/cimgui.git
+#[submodule "external/cimgui"]
+#	path = external/cimgui
+#	url = https://github.com/cimgui/cimgui.git
