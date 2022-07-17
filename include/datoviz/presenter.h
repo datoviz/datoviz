@@ -51,7 +51,7 @@ typedef struct DvzPresenter DvzPresenter;
 
 struct DvzPresenter
 {
-    DvzRenderer* rnd;
+    DvzRenderer* rd;
     DvzClient* client;
 };
 
@@ -63,7 +63,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rnd, DvzClient* client);
+DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client);
 
 
 

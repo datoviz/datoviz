@@ -58,7 +58,7 @@ int test_presenter_1(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Create a renderer.
-    DvzRenderer* rnd = dvz_renderer(gpu, 0);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
@@ -66,7 +66,7 @@ int test_presenter_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rnd, client);
+    DvzPresenter* prt = dvz_presenter(rd, client);
 
     // Start.
 
@@ -89,7 +89,7 @@ int test_presenter_1(TstSuite* suite)
     dvz_client_destroy(client);
     dvz_requester_destroy(&rqr);
 
-    dvz_renderer_destroy(rnd);
+    dvz_renderer_destroy(rd);
     dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 
@@ -140,7 +140,7 @@ int test_presenter_2(TstSuite* suite)
     ASSERT(gpu != NULL);
 
     // Create a renderer.
-    DvzRenderer* rnd = dvz_renderer(gpu, 0);
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
@@ -148,7 +148,7 @@ int test_presenter_2(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rnd, client);
+    DvzPresenter* prt = dvz_presenter(rd, client);
 
     // Make rendering requests.
 
@@ -252,7 +252,7 @@ int test_presenter_2(TstSuite* suite)
     dvz_client_destroy(client);
     dvz_requester_destroy(&rqr);
 
-    dvz_renderer_destroy(rnd);
+    dvz_renderer_destroy(rd);
     dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 

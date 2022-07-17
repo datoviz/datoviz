@@ -15,14 +15,14 @@
 /*************************************************************************************************/
 
 static void
-_process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds, uint32_t img_idx)
+_process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
     ASSERT(record != NULL);
-    ASSERT(rnd != NULL);
+    ASSERT(rd != NULL);
     ASSERT(cmds != NULL);
     ASSERT(img_idx < cmds->count);
 
-    DvzCanvas* canvas = dvz_renderer_canvas(rnd, record->canvas_id);
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);
     ASSERT(canvas != NULL);
 
     DvzPipe* pipe = NULL;
@@ -53,13 +53,13 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
         log_debug(
             "recorder: draw direct from vertex #%d for %d vertices (#%d)", //
             first_vertex, vertex_count, img_idx);
-        pipe = dvz_renderer_pipe(rnd, record->contents.draw_direct.pipe_id);
+        pipe = dvz_renderer_pipe(rd, record->contents.draw_direct.pipe_id);
         ASSERT(pipe != NULL);
         dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count);
         break;
 
     case DVZ_RECORDER_DRAW_DIRECT_INDEXED:;
-        pipe = dvz_renderer_pipe(rnd, record->contents.draw_direct_indexed.pipe_id);
+        pipe = dvz_renderer_pipe(rd, record->contents.draw_direct_indexed.pipe_id);
         ASSERT(pipe != NULL);
         dvz_pipe_draw_indexed(
             pipe, cmds, img_idx,                                //
@@ -69,20 +69,20 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
         break;
 
     case DVZ_RECORDER_DRAW_INDIRECT:
-        pipe = dvz_renderer_pipe(rnd, record->contents.draw_indirect.pipe_id);
+        pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ASSERT(pipe != NULL);
 
-        dat_indirect = dvz_renderer_dat(rnd, record->contents.draw_indirect.dat_indirect_id);
+        dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ASSERT(dat_indirect != NULL);
 
         dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect);
         break;
 
     case DVZ_RECORDER_DRAW_INDIRECT_INDEXED:
-        pipe = dvz_renderer_pipe(rnd, record->contents.draw_indirect.pipe_id);
+        pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ASSERT(pipe != NULL);
 
-        dat_indirect = dvz_renderer_dat(rnd, record->contents.draw_indirect.dat_indirect_id);
+        dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ASSERT(dat_indirect != NULL);
 
         dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect);
@@ -144,7 +144,7 @@ void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 
 
 
-void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rnd, DvzCommands* cmds, uint32_t img_idx)
+void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
     ASSERT(recorder != NULL);
 
@@ -155,7 +155,7 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rnd, DvzCommands* cmds
     // Go through all record commands and update the command buffer
     for (uint32_t i = 0; i < recorder->count; i++)
     {
-        _process_command(&recorder->commands[i], rnd, cmds, img_idx);
+        _process_command(&recorder->commands[i], rd, cmds, img_idx);
     }
 
     recorder->dirty[img_idx] = false;

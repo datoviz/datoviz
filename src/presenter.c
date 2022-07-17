@@ -35,10 +35,10 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
     DvzClient* client = prt->client;
     ASSERT(client != NULL);
 
-    DvzRenderer* rnd = prt->rnd;
-    ASSERT(rnd != NULL);
+    DvzRenderer* rd = prt->rd;
+    ASSERT(rd != NULL);
 
-    DvzGpu* gpu = rnd->gpu;
+    DvzGpu* gpu = rd->gpu;
     ASSERT(gpu != NULL);
 
     DvzHost* host = gpu->host;
@@ -53,7 +53,7 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         // linked together via a surface.
 
         // Retrieve the canvas that was just created by the renderer in _requester_callback().
-        DvzCanvas* canvas = dvz_renderer_canvas(rnd, rq.id);
+        DvzCanvas* canvas = dvz_renderer_canvas(rd, rq.id);
 
         // TODO: canvas.screen_width/height because this is the window size, not the framebuffer
         // size
@@ -81,14 +81,14 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 
 
 
-static void _record_command(DvzRenderer* rnd, DvzCanvas* canvas, uint32_t img_idx)
+static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
 {
-    ASSERT(rnd != NULL);
+    ASSERT(rd != NULL);
     ASSERT(canvas != NULL);
     if (canvas->recorder != NULL)
     {
         dvz_cmd_reset(&canvas->cmds, img_idx);
-        dvz_recorder_set(canvas->recorder, rnd, &canvas->cmds, img_idx);
+        dvz_recorder_set(canvas->recorder, rd, &canvas->cmds, img_idx);
     }
     else
     {
@@ -111,8 +111,8 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user
     ASSERT(user_data != NULL);
     DvzPresenter* prt = (DvzPresenter*)user_data;
 
-    DvzRenderer* rnd = prt->rnd;
-    ASSERT(rnd != NULL);
+    DvzRenderer* rd = prt->rd;
+    ASSERT(rd != NULL);
 
     ASSERT(ev.type == DVZ_CLIENT_EVENT_REQUESTS);
 
@@ -130,7 +130,7 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user
     for (uint32_t i = 0; i < count; i++)
     {
         // Process each request immediately in the renderer.
-        dvz_renderer_request(rnd, requests[i]);
+        dvz_renderer_request(rd, requests[i]);
 
         // CANVAS requests need special care, as the client may need to manage corresponding
         // windows.
@@ -162,15 +162,15 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
 /*  Presenter                                                                                    */
 /*************************************************************************************************/
 
-DvzPresenter* dvz_presenter(DvzRenderer* rnd, DvzClient* client)
+DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
 {
-    ASSERT(rnd != NULL);
+    ASSERT(rd != NULL);
     ASSERT(client != NULL);
 
     DvzPresenter* prt = calloc(1, sizeof(DvzPresenter));
     ASSERT(prt != NULL);
 
-    prt->rnd = rnd;
+    prt->rd = rd;
     prt->client = client;
 
     // Register a REQUESTS callback which submits pending requests to the renderer.
@@ -193,16 +193,16 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     DvzClient* client = prt->client;
     ASSERT(client != NULL);
 
-    DvzRenderer* rnd = prt->rnd;
-    ASSERT(rnd != NULL);
+    DvzRenderer* rd = prt->rd;
+    ASSERT(rd != NULL);
 
-    DvzGpu* gpu = rnd->gpu;
+    DvzGpu* gpu = rd->gpu;
     ASSERT(gpu != NULL);
 
     DvzHost* host = gpu->host;
     ASSERT(host != NULL);
 
-    DvzContext* ctx = rnd->ctx;
+    DvzContext* ctx = rd->ctx;
     ASSERT(ctx != NULL);
 
     // Retrieve the window from its id.
@@ -210,7 +210,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     ASSERT(window != NULL);
 
     // Retrieve the canvas from its id.
-    DvzCanvas* canvas = dvz_renderer_canvas(rnd, window_id);
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, window_id);
     ASSERT(canvas != NULL);
 
     uint64_t frame_idx = client->frame_idx;
@@ -287,7 +287,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
             dvz_recorder_need_refill(canvas->recorder);
         for (uint32_t i = 0; i < cmds->count; i++)
         {
-            _record_command(rnd, canvas, i);
+            _record_command(rd, canvas, i);
         }
     }
     else
@@ -298,7 +298,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         // (caching system built into the recorder).
         if (canvas->recorder && dvz_recorder_is_dirty(canvas->recorder, swapchain->img_idx))
         {
-            _record_command(rnd, canvas, swapchain->img_idx);
+            _record_command(rd, canvas, swapchain->img_idx);
         }
 
         // Reset the Submit instance before adding the command buffers.
