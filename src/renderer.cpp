@@ -184,6 +184,9 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 {
     ASSERT(rd != NULL);
 
+    DvzGpu* gpu = rd->gpu;
+    ASSERT(gpu != NULL);
+
     // Get the board.
     DvzId id = req.content.graphics.parent;
     ASSERT(id != DVZ_ID_NONE);
@@ -202,7 +205,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         // Create the pipe.
         uvec2 size = {board->width, board->height};
         pipe = dvz_pipelib_graphics(
-            rd->pipelib, rd->ctx, &board->renderpass, board->images.count, //
+            rd->pipelib, rd->ctx, &gpu->renderpass, board->images.count, //
             size, req.content.graphics.type, req.flags);
         ASSERT(pipe != NULL);
         SET_ID(pipe)
@@ -229,7 +232,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         // Create the pipe.
         log_trace("create pipelib graphics");
         pipe = dvz_pipelib_graphics(
-            rd->pipelib, rd->ctx, &canvas->render.renderpass, canvas->render.swapchain.img_count,
+            rd->pipelib, rd->ctx, &gpu->renderpass, canvas->render.swapchain.img_count,
             viewport_size, req.content.graphics.type, req.flags);
         ASSERT(pipe != NULL);
         SET_ID(pipe)

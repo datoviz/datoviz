@@ -188,7 +188,7 @@ DvzGui dvz_gui(
 
     INIT(DvzGui, gui)
     gui.gpu = gpu;
-    // gui.io = ImGui::GetIO();
+    // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
     gui.use_glfw = window != NULL && window->backend_window != NULL;
     return gui;
 }

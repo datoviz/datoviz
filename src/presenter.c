@@ -220,7 +220,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
-    DvzRenderpass* renderpass = &canvas->render.renderpass;
+    DvzRenderpass* renderpass = &gpu->renderpass;
     DvzFences* fences = &canvas->sync.fences_render_finished;
     DvzFences* fences_bak = &canvas->sync.fences_flight;
     DvzSemaphores* sem_img_available = &canvas->sync.sem_img_available;

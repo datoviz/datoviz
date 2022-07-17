@@ -45,12 +45,10 @@ struct DvzBoard
     DvzImages images;
     DvzImages depth;
     DvzImages staging;
-    // TODO: picking
-    // TODO: overlay imgui support
-    DvzRenderpass renderpass;
     DvzFramebuffers framebuffers;
 
     DvzCommands cmds;
+    // TODO: picking
 };
 
 

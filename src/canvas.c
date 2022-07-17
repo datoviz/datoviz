@@ -54,11 +54,6 @@ void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
     ASSERT(surface != VK_NULL_HANDLE);
     canvas->surface = surface;
 
-    // Make the renderpass.
-    make_renderpass(
-        gpu, &canvas->render.renderpass, DVZ_DEFAULT_FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        get_clear_color(DVZ_DEFAULT_CLEAR_COLOR));
-
     // Make the swapchain.
     make_swapchain(gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT);
 
@@ -68,9 +63,17 @@ void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
     // Make staging image.
     make_staging(gpu, &canvas->render.staging, canvas->format, width, height);
 
+    // HACK: automatically create the renderpass for now
+    if (!dvz_obj_is_created(&gpu->renderpass.obj))
+    {
+        log_debug("automatic renderpass creation when creating a canvas");
+        gpu->renderpass =
+            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    }
+
     // Make framebuffers.
     make_framebuffers(
-        gpu, &canvas->render.framebuffers, &canvas->render.renderpass,
+        gpu, &canvas->render.framebuffers, &gpu->renderpass, //
         canvas->render.swapchain.images, &canvas->render.depth);
 
     // Make synchronization objects.
@@ -108,7 +111,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
-    DvzRenderpass* renderpass = &canvas->render.renderpass;
+    DvzRenderpass* renderpass = &gpu->renderpass;
 
     ASSERT(gpu != NULL);
     ASSERT(swapchain != NULL);
@@ -175,8 +178,10 @@ void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_dat
 void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(canvas != NULL);
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
     dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, &canvas->render.renderpass, &canvas->render.framebuffers);
+    dvz_cmd_begin_renderpass(cmds, idx, &gpu->renderpass, &canvas->render.framebuffers);
 }
 
 
@@ -241,10 +246,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_images_destroy(canvas->render.swapchain.images);
     dvz_images_destroy(&canvas->render.depth);
     dvz_images_destroy(&canvas->render.staging);
-
-    // Destroy the renderpasses.
-    log_trace("canvas destroy renderpass");
-    dvz_renderpass_destroy(&canvas->render.renderpass);
 
     // Destroy the swapchain.
     log_trace("canvas destroy swapchain");

@@ -9,6 +9,7 @@
 #include "board.h"
 #include "board_utils.h"
 #include "resources.h"
+#include "vklite_utils.h"
 
 
 
@@ -79,25 +80,31 @@ void dvz_board_create(DvzBoard* board)
 {
     ASSERT(board != NULL);
 
+    DvzGpu* gpu = board->gpu;
+    ASSERT(gpu != NULL);
+
     log_trace("creating the board");
 
-    // Renderpass.
-    make_renderpass(
-        board->gpu, &board->renderpass, board->format, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        get_clear_color(board->clear_color));
-
     // Make images.
-    make_images(board->gpu, &board->images, board->format, board->width, board->height);
+    make_images(gpu, &board->images, board->format, board->width, board->height);
 
     // Make depth buffer image.
-    make_depth(board->gpu, &board->depth, board->width, board->height);
+    make_depth(gpu, &board->depth, board->width, board->height);
 
     // Make staging image.
-    make_staging(board->gpu, &board->staging, board->format, board->width, board->height);
+    make_staging(gpu, &board->staging, board->format, board->width, board->height);
+
+    // HACK: automatically create the renderpass for now
+    if (!dvz_obj_is_created(&gpu->renderpass.obj))
+    {
+        log_debug("automatic renderpass creation when creating a board");
+        gpu->renderpass =
+            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    }
+    ASSERT(dvz_obj_is_created(&gpu->renderpass.obj));
 
     // Make framebuffers.
-    make_framebuffers(
-        board->gpu, &board->framebuffers, &board->renderpass, &board->images, &board->depth);
+    make_framebuffers(gpu, &board->framebuffers, &gpu->renderpass, &board->images, &board->depth);
 
     dvz_obj_created(&board->obj);
     log_trace("board created");
@@ -135,8 +142,10 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
 void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(board != NULL);
+    DvzGpu* gpu = board->gpu;
+    ASSERT(gpu != NULL);
     dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, &board->renderpass, &board->framebuffers);
+    dvz_cmd_begin_renderpass(cmds, idx, &gpu->renderpass, &board->framebuffers);
 }
 
 
@@ -241,7 +250,6 @@ void dvz_board_destroy(DvzBoard* board)
     dvz_images_destroy(&board->images);
     dvz_images_destroy(&board->depth);
     dvz_images_destroy(&board->staging);
-    dvz_renderpass_destroy(&board->renderpass);
     dvz_framebuffers_destroy(&board->framebuffers);
 
     dvz_obj_destroyed(&board->obj);

@@ -34,7 +34,7 @@ int test_workspace_1(TstSuite* suite)
 
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_cmd_begin(&cmds, 0);
-    dvz_cmd_begin_renderpass(&cmds, 0, &board->renderpass, &board->framebuffers);
+    dvz_cmd_begin_renderpass(&cmds, 0, &gpu->renderpass, &board->framebuffers);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);

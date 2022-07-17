@@ -158,9 +158,71 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Structs                                                                                      */
+/*  Renderpass structs                                                                           */
 /*************************************************************************************************/
 
+
+struct DvzRenderpassAttachment
+{
+    VkImageLayout ref_layout;
+    DvzRenderpassAttachmentType type;
+    VkFormat format;
+
+    VkImageLayout src_layout;
+    VkImageLayout dst_layout;
+
+    VkAttachmentLoadOp load_op;
+    VkAttachmentStoreOp store_op;
+};
+
+
+
+struct DvzRenderpassSubpass
+{
+    uint32_t attachment_count;
+    uint32_t attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
+};
+
+
+
+struct DvzRenderpassDependency
+{
+    uint32_t src_subpass;
+    VkPipelineStageFlags src_stage;
+    VkAccessFlags src_access;
+
+    uint32_t dst_subpass;
+    VkPipelineStageFlags dst_stage;
+    VkAccessFlags dst_access;
+};
+
+
+
+struct DvzRenderpass
+{
+    DvzObject obj;
+    DvzGpu* gpu;
+
+    uint32_t attachment_count;
+    DvzRenderpassAttachment attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
+
+    uint32_t clear_count;
+    VkClearValue clear_values[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
+
+    uint32_t subpass_count;
+    DvzRenderpassSubpass subpasses[DVZ_MAX_SUBPASSES_PER_RENDERPASS];
+
+    uint32_t dependency_count;
+    DvzRenderpassDependency dependencies[DVZ_MAX_DEPENDENCIES_PER_RENDERPASS];
+
+    VkRenderPass renderpass;
+};
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
 struct DvzQueues
 {
@@ -218,7 +280,9 @@ struct DvzGpu
 
     VmaAllocator allocator;
 
-    // DvzContext* context;
+    // Renderpasses.
+    DvzRenderpass renderpass;     // default renderpass
+    DvzRenderpass renderpass_gui; // GUI overlay renderpass
 };
 
 
@@ -534,42 +598,6 @@ struct DvzSemaphores
 
 
 
-struct DvzRenderpassAttachment
-{
-    VkImageLayout ref_layout;
-    DvzRenderpassAttachmentType type;
-    VkFormat format;
-
-    VkImageLayout src_layout;
-    VkImageLayout dst_layout;
-
-    VkAttachmentLoadOp load_op;
-    VkAttachmentStoreOp store_op;
-};
-
-
-
-struct DvzRenderpassSubpass
-{
-    uint32_t attachment_count;
-    uint32_t attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
-};
-
-
-
-struct DvzRenderpassDependency
-{
-    uint32_t src_subpass;
-    VkPipelineStageFlags src_stage;
-    VkAccessFlags src_access;
-
-    uint32_t dst_subpass;
-    VkPipelineStageFlags dst_stage;
-    VkAccessFlags dst_access;
-};
-
-
-
 struct DvzFramebuffers
 {
     DvzObject obj;
@@ -582,28 +610,6 @@ struct DvzFramebuffers
 
     uint32_t framebuffer_count;
     VkFramebuffer framebuffers[DVZ_MAX_SWAPCHAIN_IMAGES];
-};
-
-
-
-struct DvzRenderpass
-{
-    DvzObject obj;
-    DvzGpu* gpu;
-
-    uint32_t attachment_count;
-    DvzRenderpassAttachment attachments[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
-
-    uint32_t clear_count;
-    VkClearValue clear_values[DVZ_MAX_ATTACHMENTS_PER_RENDERPASS];
-
-    uint32_t subpass_count;
-    DvzRenderpassSubpass subpasses[DVZ_MAX_SUBPASSES_PER_RENDERPASS];
-
-    uint32_t dependency_count;
-    DvzRenderpassDependency dependencies[DVZ_MAX_DEPENDENCIES_PER_RENDERPASS];
-
-    VkRenderPass renderpass;
 };
 
 
@@ -655,6 +661,19 @@ DVZ_EXPORT DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx);
  * @returns a pointer to the best GPU object
  */
 DVZ_EXPORT DvzGpu* dvz_gpu_best(DvzHost* host);
+
+/**
+ * Make a renderpass for a GPU.
+ *
+ * Typically, the image layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL for offscreen rendering,
+ * VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for desktop applications.
+ *
+ * @param gpu the GPU
+ * @param clear_color the clear color
+ * @param layout the Vulkan image layout
+ * @returns a renderpass structure
+ */
+DVZ_EXPORT DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout layout);
 
 /**
  * Request some features before creating the GPU instance.

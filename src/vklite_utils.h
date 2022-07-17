@@ -152,6 +152,18 @@ aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize
 
 
 
+static inline VkClearColorValue get_clear_color(cvec4 color)
+{
+    VkClearColorValue value = {0};
+    value.float32[0] = color[0] * M_INV_255;
+    value.float32[1] = color[1] * M_INV_255;
+    value.float32[2] = color[2] * M_INV_255;
+    value.float32[3] = color[3] * M_INV_255;
+    return value;
+}
+
+
+
 /*************************************************************************************************/
 /*  Instance and devices                                                                         */
 /*************************************************************************************************/
@@ -1194,6 +1206,52 @@ static void begin_render_pass(
     info.clearValueCount = clear_count;
     info.pClearValues = clear_colors;
     vkCmdBeginRenderPass(cmd_buf, &info, VK_SUBPASS_CONTENTS_INLINE);
+}
+
+
+
+static void make_renderpass(
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFormat format, VkImageLayout layout,
+    VkClearColorValue clear_color)
+{
+    ASSERT(gpu != NULL);
+    ASSERT(renderpass != NULL);
+    ASSERT(format != 0);
+
+    log_trace("making renderpass");
+    *renderpass = dvz_renderpass(gpu);
+
+    VkClearValue clear_depth = {0};
+    clear_depth.depthStencil.depth = 1.0f;
+    dvz_renderpass_clear(renderpass, (VkClearValue){.color = clear_color});
+    dvz_renderpass_clear(renderpass, clear_depth);
+
+    // Color attachment.
+    dvz_renderpass_attachment(
+        renderpass, 0, //
+        DVZ_RENDERPASS_ATTACHMENT_COLOR, (VkFormat)format,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
+    dvz_renderpass_attachment_ops(
+        renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Depth attachment.
+    dvz_renderpass_attachment(
+        renderpass, 1, //
+        DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
+        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        renderpass, 1, //
+        VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_ops(
+        renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
+
+    // Subpass.
+    dvz_renderpass_subpass_attachment(renderpass, 0, 0);
+    dvz_renderpass_subpass_attachment(renderpass, 0, 1);
+
+    // Create renderpass.
+    dvz_renderpass_create(renderpass);
 }
 
 

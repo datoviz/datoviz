@@ -112,6 +112,16 @@ DvzGpu* dvz_gpu_best(DvzHost* host)
 
 
 
+DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout layout)
+{
+    ASSERT(gpu != NULL);
+    DvzRenderpass renderpass = {0};
+    make_renderpass(gpu, &renderpass, DVZ_DEFAULT_FORMAT, layout, get_clear_color(clear_color));
+    return renderpass;
+}
+
+
+
 void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features)
 {
     ASSERT(gpu != NULL);
@@ -215,8 +225,11 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
-    // The context must be destroyed separately.
-    // ASSERT(gpu->context == NULL);
+    // Destroy the renderpasses.
+    if (dvz_obj_is_created(&gpu->renderpass.obj))
+        dvz_renderpass_destroy(&gpu->renderpass);
+    if (dvz_obj_is_created(&gpu->renderpass_gui.obj))
+        dvz_renderpass_destroy(&gpu->renderpass_gui);
 
     // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);

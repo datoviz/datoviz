@@ -85,11 +85,7 @@ struct DvzRender
     // DvzImages* screencast_img;
 
     DvzFramebuffers framebuffers;
-    DvzFramebuffers framebuffers_overlay; // used by the overlay renderpass
-
-    // Renderpasses.
-    DvzRenderpass renderpass;         // default renderpass
-    DvzRenderpass renderpass_overlay; // GUI overlay renderpass
+    DvzFramebuffers framebuffers_gui; // used by the GUI renderpass
 
     DvzSubmit submit;
 };

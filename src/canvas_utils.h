@@ -61,9 +61,14 @@ static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
 
 static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
 {
+    ASSERT(canvas != NULL);
+    ASSERT(cmds != NULL);
+
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
     dvz_cmd_begin(cmds, cmd_idx);
-    dvz_cmd_begin_renderpass(
-        cmds, cmd_idx, &canvas->render.renderpass, &canvas->render.framebuffers);
+    dvz_cmd_begin_renderpass(cmds, cmd_idx, &gpu->renderpass, &canvas->render.framebuffers);
     dvz_cmd_end_renderpass(cmds, cmd_idx);
     dvz_cmd_end(cmds, cmd_idx);
 }
