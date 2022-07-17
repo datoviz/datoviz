@@ -23,47 +23,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
-{
-    ASSERT(rd != NULL);
-    ASSERT(canvas != NULL);
-
-    DvzRecorder* recorder = canvas->recorder;
-
-    // Blank canvas by default.
-    if (recorder == NULL || dvz_recorder_size(recorder) == 0)
-    {
-        log_info("default command buffer refill with blank canvas for image #%d", img_idx);
-        blank_commands(canvas, &canvas->cmds, img_idx, canvas->refill_user_data);
-        return;
-    }
-
-    log_info("fill command buffer from the saved record requests for image #%d", img_idx);
-
-    // Fill the command buffer with the recorder.
-    dvz_recorder_set(recorder, rd, &canvas->cmds, img_idx);
-}
-
-
-
-static void _fill_canvas(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data)
-{
-    ASSERT(canvas != NULL);
-    ASSERT(cmds != NULL);
-
-    DvzPresenter* prt = (DvzPresenter*)user_data;
-    ASSERT(prt != NULL);
-
-    DvzRenderer* rnd = prt->rnd;
-    ASSERT(rnd != NULL);
-
-    // Process the buffered record requests.
-    uint32_t img_idx = canvas->render.swapchain.img_idx;
-    _process_record_requests(rnd, canvas, img_idx);
-}
-
-
-
 // This function is called when a CANVAS creation request is received. The renderer independently
 // receives the request and creates the object, but the presenter needs to tell the client to
 // create an associated window with a surface.
@@ -111,11 +70,28 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         dvz_canvas_create(canvas, surface);
 
         // Refill function for the canvas.
-        dvz_canvas_refill(canvas, _fill_canvas, (void*)prt);
+        // dvz_canvas_refill(canvas, _fill_canvas, (void*)prt);
 
         break;
     default:
         break;
+    }
+}
+
+
+
+static void _record_command(DvzRenderer* rnd, DvzCanvas* canvas, uint32_t img_idx)
+{
+    ASSERT(rnd != NULL);
+    ASSERT(canvas != NULL);
+    if (canvas->recorder != NULL)
+    {
+        dvz_cmd_reset(&canvas->cmds, img_idx);
+        dvz_recorder_set(canvas->recorder, rnd, &canvas->cmds, img_idx);
+    }
+    else
+    {
+        blank_commands(canvas, &canvas->cmds, img_idx, NULL);
     }
 }
 
@@ -263,6 +239,10 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         uint32_t width = swapchain->images->shape[0];
         uint32_t height = swapchain->images->shape[1];
 
+        // Ensure the canvas size is updated as well.
+        canvas->width = width;
+        canvas->height = height;
+
         // Need to recreate the depth image with the new size.
         dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
         dvz_images_create(&canvas->render.depth);
@@ -281,10 +261,12 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
                         .content.w.height = height});
 
         // Need to refill the command buffers.
+        if (canvas->recorder)
+            // Ensure we reset the refill flag to force reloading.
+            dvz_recorder_need_refill(canvas->recorder);
         for (uint32_t i = 0; i < cmds->count; i++)
         {
-            dvz_cmd_reset(cmds, i);
-            canvas->refill(canvas, cmds, i, canvas->refill_user_data);
+            _record_command(rnd, canvas, i);
         }
     }
     else
@@ -293,11 +275,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
         // At every frame, we submit the command buffer, unless it was already submitted previously
         // (cache).
-        // NOTE: might not need the refill system?
         if (canvas->recorder && dvz_recorder_is_dirty(canvas->recorder, swapchain->img_idx))
         {
-            dvz_cmd_reset(cmds, swapchain->img_idx);
-            dvz_recorder_set(canvas->recorder, rnd, &canvas->cmds, swapchain->img_idx);
+            _record_command(rnd, canvas, swapchain->img_idx);
         }
 
         // Reset the Submit instance before adding the command buffers.

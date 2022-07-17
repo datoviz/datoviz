@@ -22,7 +22,6 @@
 #define BACKEND DVZ_BACKEND_GLFW
 #define WIDTH   800
 #define HEIGHT  600
-#define WID     10
 
 
 
@@ -30,12 +29,16 @@
 /*  Test utils                                                                                   */
 /*************************************************************************************************/
 
-static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_data)
+typedef struct CallbackStruct CallbackStruct;
+struct CallbackStruct
 {
-    uint32_t width = ev.content.w.width;
-    uint32_t height = ev.content.w.height;
-    log_info("window %x resized to %dx%d", ev.window_id, width, height);
-}
+    DvzRequester* rqr;
+    DvzId canvas_id;
+    DvzId mvp_id;
+    DvzId viewport_id;
+    DvzId dat_id;
+    DvzId graphics_id;
+};
 
 
 
@@ -64,9 +67,6 @@ int test_presenter_1(TstSuite* suite)
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rnd);
     dvz_presenter_client(prt, client);
-
-    dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, NULL);
 
     // Start.
 
@@ -100,6 +100,38 @@ int test_presenter_1(TstSuite* suite)
 
 
 
+static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_data)
+{
+    ASSERT(client != NULL);
+
+    uint32_t width = ev.content.w.width;
+    uint32_t height = ev.content.w.height;
+    log_info("window %x resized to %dx%d", ev.window_id, width, height);
+
+    CallbackStruct* s = (CallbackStruct*)user_data;
+    ASSERT(s != NULL);
+
+    DvzRequester* rqr = s->rqr;
+    ASSERT(rqr != NULL);
+
+    // Submit new recording commands to the client.
+    DvzRequest req = {0};
+    req = dvz_record_begin(rqr, s->canvas_id);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_viewport(rqr, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_draw(rqr, s->canvas_id, s->graphics_id, 0, 3);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_end(rqr, s->canvas_id);
+    dvz_requester_add(rqr, req);
+
+    dvz_client_event(
+        client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_REQUESTS, .content.r.requests = rqr});
+}
+
 int test_presenter_2(TstSuite* suite)
 {
     ASSERT(suite != NULL);
@@ -122,28 +154,26 @@ int test_presenter_2(TstSuite* suite)
     DvzPresenter* prt = dvz_presenter(rnd);
     dvz_presenter_client(prt, client);
 
-    dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, NULL);
-
     // Make rendering requests.
 
+    DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
     {
         // Make a canvas creation request.
         req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
         dvz_requester_add(&rqr, req);
 
         // Canvas id.
-        DvzId canvas_id = req.id;
+        canvas_id = req.id;
 
         // Create a graphics.
         req = dvz_create_graphics(&rqr, canvas_id, DVZ_GRAPHICS_TRIANGLE, 0);
         dvz_requester_add(&rqr, req);
-        DvzId graphics_id = req.id;
+        graphics_id = req.id;
 
         // Create the vertex buffer dat.
         req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
         dvz_requester_add(&rqr, req);
-        DvzId dat_id = req.id;
+        dat_id = req.id;
 
         // Bind the vertex buffer dat to the graphics pipe.
         req = dvz_set_vertex(&rqr, graphics_id, dat_id);
@@ -161,7 +191,7 @@ int test_presenter_2(TstSuite* suite)
         // Binding #0: MVP.
         req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
         dvz_requester_add(&rqr, req);
-        DvzId mvp_id = req.id;
+        mvp_id = req.id;
 
         req = dvz_bind_dat(&rqr, graphics_id, 0, mvp_id);
         dvz_requester_add(&rqr, req);
@@ -174,7 +204,7 @@ int test_presenter_2(TstSuite* suite)
         // Binding #1: viewport.
         req = dvz_create_dat(&rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         dvz_requester_add(&rqr, req);
-        DvzId viewport_id = req.id;
+        viewport_id = req.id;
 
         req = dvz_bind_dat(&rqr, graphics_id, 1, viewport_id);
         dvz_requester_add(&rqr, req);
@@ -198,6 +228,18 @@ int test_presenter_2(TstSuite* suite)
         req = dvz_record_end(&rqr, canvas_id);
         dvz_requester_add(&rqr, req);
     }
+
+    // TODO
+    // // Resize callback.
+    // CallbackStruct s = {
+    //     .rqr = &rqr,
+    //     .canvas_id = canvas_id,
+    //     .graphics_id = graphics_id,
+    //     .mvp_id = mvp_id,
+    //     .viewport_id = viewport_id,
+    //     .dat_id = dat_id};
+    // dvz_client_callback(
+    //     client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _callback_resize, &s);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying

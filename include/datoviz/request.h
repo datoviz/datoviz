@@ -177,23 +177,11 @@ union DvzRequestContent
         DvzId sampler;
     } set_tex;
 
+    // Record a command.
     struct
     {
         DvzRecorderCommand command;
     } record;
-
-    // // Set viewport.
-    // struct
-    // {
-    //     vec2 offset, shape; // in framebuffer pixels
-    // } record_viewport;
-
-    // // Set draw.
-    // struct
-    // {
-    //     DvzId graphics;
-    //     uint32_t first_vertex, vertex_count;
-    // } record_draw;
 };
 
 

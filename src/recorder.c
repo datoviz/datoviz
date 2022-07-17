@@ -22,8 +22,6 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
     ASSERT(cmds != NULL);
     ASSERT(img_idx < cmds->count);
 
-    log_info("processing recorder command for img #%d with type %d", img_idx, record->type);
-
     DvzCanvas* canvas = dvz_renderer_canvas(rnd, record->canvas_id);
     ASSERT(canvas != NULL);
 
@@ -34,23 +32,30 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
     {
 
     case DVZ_RECORDER_BEGIN:
+        log_info("recorder: begin (#%d)", img_idx);
         dvz_cmd_reset(cmds, img_idx);
         dvz_canvas_begin(canvas, cmds, img_idx);
         break;
 
-    case DVZ_RECORDER_VIEWPORT:
+    case DVZ_RECORDER_VIEWPORT:;
+        float x = record->contents.v.offset[0];
+        float y = record->contents.v.offset[1];
+        float w = record->contents.v.shape[0];
+        float h = record->contents.v.shape[1];
+        log_info("recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d)", x, y, w, h, img_idx);
         dvz_canvas_viewport(
-            canvas, cmds, img_idx, //
-            record->contents.v.offset, record->contents.v.shape);
+            canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
         break;
 
     case DVZ_RECORDER_DRAW_DIRECT:;
+        uint32_t first_vertex = record->contents.draw_direct.first_vertex;
+        uint32_t vertex_count = record->contents.draw_direct.vertex_count;
+        log_info(
+            "recorder: draw direct from vertex #%d for %d vertices (#%d)", //
+            first_vertex, vertex_count, img_idx);
         pipe = dvz_renderer_pipe(rnd, record->contents.draw_direct.pipe_id);
         ASSERT(pipe != NULL);
-        dvz_pipe_draw(
-            pipe, cmds, img_idx,                       //
-            record->contents.draw_direct.first_vertex, //
-            record->contents.draw_direct.vertex_count);
+        dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count);
         break;
 
     case DVZ_RECORDER_DRAW_DIRECT_INDEXED:;
@@ -84,6 +89,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rnd, DvzCommands* cmds
         break;
 
     case DVZ_RECORDER_END:
+        log_info("recorder: end (#%d)", img_idx);
         dvz_canvas_end(canvas, cmds, img_idx);
         break;
 
