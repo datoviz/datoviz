@@ -11,8 +11,6 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui/cimgui.h"
 #include "common.h"
 
 
@@ -34,6 +32,7 @@ typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderpass DvzRenderpass;
 typedef struct DvzCommands DvzCommands;
 typedef struct DvzWindow DvzWindow;
+typedef struct ImGuiIO ImGuiIO;
 
 
 
@@ -89,6 +88,16 @@ DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui);
  * @param size the dialog size
  */
 DVZ_EXPORT void dvz_gui_dialog_begin(DvzGui* gui, vec2 pos, vec2 size);
+
+
+
+/**
+ * Add a text item in a dialog.
+ *
+ * @param gui the GUI
+ * @param str the string
+ */
+DVZ_EXPORT void dvz_gui_text(DvzGui* gui, const char* str);
 
 
 

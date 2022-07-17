@@ -838,7 +838,7 @@ int test_vklite_gui(TstSuite* suite)
     // The GUI code goes here.
 
     dvz_gui_dialog_begin(&gui, (vec2){100, 100}, (vec2){200, 200});
-    igText("Hello world");
+    dvz_gui_text(&gui, "Hello world");
     dvz_gui_dialog_end(&gui);
     // dvz_gui_demo();
 
@@ -1021,7 +1021,7 @@ static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 
     // GUI code.
     dvz_gui_dialog_begin(gui, (vec2){100, 100}, (vec2){200, 200});
-    igText("Hello world");
+    dvz_gui_text(gui, "Hello world");
     dvz_gui_dialog_end(gui);
 
     // End the GUI frame.

@@ -92,8 +92,7 @@ file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/include/datoviz
     ${CMAKE_SOURCE_DIR}/external
-    ${CMAKE_SOURCE_DIR}/external/cimgui
-    ${CMAKE_SOURCE_DIR}/external/cimgui/imgui
+    ${CMAKE_SOURCE_DIR}/external/imgui
 )
 
 # ---- OS-specific directories --------------------------------------------------------------------
@@ -485,14 +484,13 @@ set(external_sources
     "external/b64/encode.c"
     "external/b64/decode.c"
 
-    "external/cimgui/imgui/imgui.cpp"
-    "external/cimgui/imgui/imgui_demo.cpp"
-    "external/cimgui/imgui/imgui_draw.cpp"
-    "external/cimgui/imgui/imgui_tables.cpp"
-    "external/cimgui/imgui/imgui_widgets.cpp"
-    "external/cimgui/imgui/backends/imgui_impl_glfw.cpp"
-    "external/cimgui/imgui/backends/imgui_impl_vulkan.cpp"
-    "external/cimgui/cimgui.cpp"
+    "external/imgui/imgui.cpp"
+    "external/imgui/imgui_demo.cpp"
+    "external/imgui/imgui_draw.cpp"
+    "external/imgui/imgui_tables.cpp"
+    "external/imgui/imgui_widgets.cpp"
+    "external/imgui/backends/imgui_impl_glfw.cpp"
+    "external/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
 set(sources
@@ -519,7 +517,7 @@ set(sources
     "src/pipelib.c"
     "src/graphics.c"
     "src/graphics_data.c"
-    "src/gui.c"
+    "src/gui.cpp"
     "src/workspace.c"
     "src/request.c"
     "src/map.cpp"
