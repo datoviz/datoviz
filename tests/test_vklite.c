@@ -896,10 +896,10 @@ int test_vklite_canvas_blank(TstSuite* suite)
     dvz_gpu_create(gpu, surface);
 
     // Create the renderpass.
-    DvzRenderpass renderpass =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    // DvzRenderpass renderpass =
+    //     dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-    TestCanvas canvas = desktop_canvas(gpu, &renderpass, &window, surface);
+    TestCanvas canvas = desktop_canvas(gpu, &window, surface);
     test_canvas_show(&canvas, empty_commands, N_FRAMES);
 
     test_canvas_destroy(&canvas);
@@ -933,10 +933,10 @@ int test_vklite_canvas_triangle(TstSuite* suite)
     dvz_gpu_create(gpu, surface);
 
     // Create the renderpass.
-    DvzRenderpass renderpass =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    // DvzRenderpass renderpass =
+    //     dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-    TestCanvas canvas = desktop_canvas(gpu, &renderpass, &window, surface);
+    TestCanvas canvas = desktop_canvas(gpu, &window, surface);
     TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
     canvas.surface = surface;
     visual.br.buffer = &visual.buffer;

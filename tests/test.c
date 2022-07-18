@@ -23,6 +23,7 @@
 #include "test_fifo.h"
 #include "test_fileio.h"
 #include "test_graphics.h"
+#include "test_gui.h"
 #include "test_input.h"
 #include "test_list.h"
 #include "test_map.h"
@@ -138,8 +139,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
 
-    // TEST(test_vklite_gui)
-    // TEST(test_vklite_canvas_gui)
+    TEST(test_vklite_gui)
+    TEST(test_vklite_canvas_gui)
 
     // Testing canvas.
     TEST(test_canvas_1)

@@ -66,7 +66,7 @@ struct DvzGuiWindow
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions */
+/*  GUI functions                                                                                */
 /*************************************************************************************************/
 
 /**
@@ -76,27 +76,6 @@ EXTERN_C_ON
  * @param queue_idx the render queue
  */
 DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
-
-
-
-/**
- * Initialize the GUI for a window .
- *
- * @param gui the GUI
- * @param window the window
- * @returns gui_window
- */
-DVZ_EXPORT DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images);
-
-
-
-/**
- * To be called at the beginning of the command buffer recording.
- *
- * @param gui the GUI
- * @param window the window
- */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGuiWindow* gui_window);
 
 
 
@@ -111,6 +90,65 @@ DVZ_EXPORT
 void dvz_gui_frame_offscreen(uint32_t width, uint32_t height);
 
 
+
+/**
+ * To be called at the beginning of the command buffer recording.
+ *
+ * @param gui the GUI
+ * @param window the window
+ */
+DVZ_EXPORT void dvz_gui_frame_begin(DvzWindow* window);
+
+
+
+/**
+ * To be called at the end of the command buffer recording.
+ *
+ * @param gui the GUI
+ * @param cmds the command buffer set
+ * @param idx the command buffer index within the set
+ */
+DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
+
+
+
+/**
+ * Destroy the GUI renderer.
+ *
+ * @param gui the GUI
+ */
+DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
+
+
+
+/*************************************************************************************************/
+/*  GUI window                                                                                   */
+/*************************************************************************************************/
+
+/**
+ * Initialize the GUI for a window .
+ *
+ * @param gui the GUI
+ * @param window the window
+ * @returns gui_window
+ */
+DVZ_EXPORT DvzGuiWindow*
+dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, uint32_t queue_idx);
+
+
+
+/**
+ * Destroy a GUI window.
+ *
+ * @param gui the GUI window
+ */
+DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
+
+
+
+/*************************************************************************************************/
+/*  DearImGui Wrappers                                                                           */
+/*************************************************************************************************/
 
 /**
  * Start a new dialog.
@@ -134,15 +172,6 @@ DVZ_EXPORT void dvz_gui_text(const char* str);
 
 
 /**
- * Stop the creation of the dialog.
- *
- * @param gui the GUI
- */
-DVZ_EXPORT void dvz_gui_dialog_end();
-
-
-
-/**
  * Show the demo GUI.
  *
  * @param gui the GUI
@@ -152,31 +181,11 @@ DVZ_EXPORT void dvz_gui_demo();
 
 
 /**
- * To be called at the end of the command buffer recording.
- *
- * @param gui the GUI
- * @param cmds the command buffer set
- * @param idx the command buffer index within the set
- */
-DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
-
-
-
-/**
- * Destroy a GUI window.
- *
- * @param gui the GUI window
- */
-DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
-
-
-
-/**
- * Destroy the GUI renderer.
+ * Stop the creation of the dialog.
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
+DVZ_EXPORT void dvz_gui_dialog_end();
 
 
 

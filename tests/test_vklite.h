@@ -292,8 +292,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
 
 
 
-static TestCanvas
-desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurfaceKHR surface)
+static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
 {
     ASSERT(gpu != NULL);
     ASSERT(window != NULL);
@@ -327,7 +326,7 @@ desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurf
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     ASSERT(depth != NULL);
     *depth = depth_struct;
-    depth_image(depth, renderpass, canvas.images->shape[0], canvas.images->shape[1]);
+    depth_image(depth, &canvas.renderpass, canvas.images->shape[0], canvas.images->shape[1]);
     canvas.depth = depth;
 
     // Create renderpass.
@@ -337,7 +336,7 @@ desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurf
     canvas.framebuffers = dvz_framebuffers(canvas.renderpass.gpu);
     dvz_framebuffers_attachment(&canvas.framebuffers, 0, canvas.swapchain.images);
     dvz_framebuffers_attachment(&canvas.framebuffers, 1, depth);
-    dvz_framebuffers_create(&canvas.framebuffers, renderpass);
+    dvz_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
 
     return canvas;
 }

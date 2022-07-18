@@ -15,6 +15,7 @@
 #include "resources.h"
 #include "surface.h"
 #include "test.h"
+#include "test_vklite.h"
 #include "testing.h"
 #include "vklite.h"
 #include "window.h"
@@ -34,13 +35,13 @@ int test_vklite_gui(TstSuite* suite)
     dvz_gpu_create(gpu, 0);
 
     // Create the renderpass.
-    gpu->renderpass =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    // DvzRenderpass renderpass =
+    //     dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     TestCanvas canvas = offscreen_canvas(gpu);
 
     // Need to init the GUI engine.
-    dvz_gui(gpu, 0);
+    DvzGui* gui = dvz_gui(gpu, 0);
 
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
@@ -73,7 +74,7 @@ int test_vklite_gui(TstSuite* suite)
     test_canvas_destroy(&canvas);
 
     // Destroy the GUI engine.
-    dvz_gui_destroy();
+    dvz_gui_destroy(gui);
 
     dvz_gpu_destroy(gpu);
     return 0;
@@ -120,16 +121,17 @@ int test_vklite_canvas_gui(TstSuite* suite)
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, surface);
 
-    // Create the renderpass.
-    gpu->renderpass =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    DvzGui* gui = dvz_gui(gpu, 0);
 
     TestCanvas canvas = desktop_canvas(gpu, &window, surface);
-    dvz_gui(gpu, 0);
     canvas.always_refill = true;
+
+    dvz_gui_window(gui, &window, canvas.swapchain.images, 0);
+
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);
+
     test_canvas_destroy(&canvas);
-    dvz_gui_destroy();
+    // dvz_gui_destroy(gui);
     dvz_gpu_destroy(gpu);
     return 0;
 }
