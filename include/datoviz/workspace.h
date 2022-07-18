@@ -20,6 +20,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_WORKSPACE_FLAGS_NONE = 0x00,
+    DVZ_WORKSPACE_FLAGS_OVERLAY = 0x01,
+} DvzWorkspaceFlags;
+
 
 
 /*************************************************************************************************/
@@ -43,6 +49,8 @@ struct DvzWorkspace
 {
     DvzObject obj;
     DvzGpu* gpu;
+    int flags;
+
     DvzContainer boards;
     DvzContainer canvases;
 
@@ -62,9 +70,10 @@ EXTERN_C_ON
  * Create a workspace, handling a number of boards and canvases.
  *
  * @param gpu the GPU
+ * @param flags the flags
  * @returns the workspace
  */
-DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu);
+DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
 
 
 

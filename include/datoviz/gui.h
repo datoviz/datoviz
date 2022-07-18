@@ -32,6 +32,7 @@ typedef struct DvzGuiWindow DvzGuiWindow;
 
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
+typedef struct DvzGui DvzGui;
 typedef struct DvzRenderpass DvzRenderpass;
 typedef struct DvzCommands DvzCommands;
 typedef struct DvzWindow DvzWindow;
@@ -52,6 +53,8 @@ struct DvzGui
 
 struct DvzGuiWindow
 {
+    DvzGui* gui;
+    DvzWindow* window;
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
     DvzList* callbacks;
@@ -72,6 +75,16 @@ EXTERN_C_ON
  * @param queue_idx the render queue
  */
 DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
+
+
+
+/**
+ * Initialize the GUI for a window .
+ *
+ * @param gui the GUI
+ * @param window the window
+ */
+DVZ_EXPORT void dvz_gui_window(DvzGui* gui, DvzWindow* window);
 
 
 

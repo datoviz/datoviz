@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "gui.h"
+#include "canvas.h"
 #include "host.h"
 #include "vklite.h"
 #include "window.h"
@@ -46,7 +47,7 @@ static inline bool _imgui_has_glfw()
 
 
 
-static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx)
+static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpass)
 {
     ASSERT(!_imgui_has_context());
 
@@ -76,8 +77,8 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx)
 
     init_info.CheckVkResultFn = _imgui_check_vk_result;
 
-    ASSERT(gpu->renderpass.renderpass != VK_NULL_HANDLE);
-    ImGui_ImplVulkan_Init(&init_info, gpu->renderpass.renderpass);
+    ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
+    ImGui_ImplVulkan_Init(&init_info, renderpass->renderpass);
 }
 
 
@@ -163,6 +164,43 @@ static void _imgui_set_window(DvzWindow* window)
 
 
 
+static DvzRenderpass _imgui_renderpass_overlay(DvzGpu* gpu)
+{
+    ASSERT(gpu != NULL);
+    INIT(DvzRenderpass, renderpass)
+
+    // Color attachment.
+    dvz_renderpass_attachment(
+        &renderpass, 0, //
+        DVZ_RENDERPASS_ATTACHMENT_COLOR, (VkFormat)DVZ_DEFAULT_FORMAT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_renderpass_attachment_layout(
+        &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    dvz_renderpass_attachment_ops(
+        &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
+
+    // Subpass.
+    dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
+
+    return renderpass;
+}
+
+
+
+static DvzFramebuffers _imgui_renderpass_framebuffers(DvzGpu* gpu, DvzCanvas* canvas)
+{
+    ASSERT(gpu != NULL);
+    INIT(DvzFramebuffers, framebuffers)
+
+    framebuffers = dvz_framebuffers(gpu);
+    dvz_framebuffers_attachment(&framebuffers, 0, canvas->swapchain.images);
+    dvz_framebuffers_create(&framebuffers, &canvas->renderpass_overlay);
+
+    return framebuffers;
+}
+
+
+
 static void _imgui_destroy()
 {
     ImGui_ImplVulkan_Shutdown();
@@ -189,12 +227,13 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
         return NULL;
     }
     log_debug("initialize the Dear ImGui context");
-    _imgui_init(gpu, queue_idx);
-    _imgui_setup();
-    _imgui_fonts_upload(gpu);
 
     DvzGui* gui = (DvzGui*)calloc(1, sizeof(DvzGui));
-    // gui->renderpass;
+    gui->renderpass = _imgui_renderpass(gpu);
+
+    _imgui_init(gpu, queue_idx, &gui->renderpass);
+    _imgui_setup();
+    _imgui_fonts_upload(gpu);
     return gui;
 }
 

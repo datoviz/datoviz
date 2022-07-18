@@ -28,7 +28,7 @@ int test_workspace_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ASSERT(gpu != NULL);
 
-    DvzWorkspace* ws = dvz_workspace(gpu);
+    DvzWorkspace* ws = dvz_workspace(gpu, 0);
     DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
     ASSERT(board != NULL);
 
