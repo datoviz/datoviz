@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Testing vklite                                                                               */
+/*  Testing GUI                                                                                  */
 /*************************************************************************************************/
 
 
@@ -10,6 +10,8 @@
 
 #include "test_gui.h"
 #include "../src/vklite_utils.h"
+#include "canvas.h"
+#include "canvas_window.h"
 #include "fileio.h"
 #include "gui.h"
 #include "resources.h"
@@ -23,7 +25,7 @@
 
 
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Tests with vklite                                                                            */
 /*************************************************************************************************/
 
 int test_vklite_gui(TstSuite* suite)
@@ -140,6 +142,114 @@ int test_vklite_canvas_gui(TstSuite* suite)
 
     // Destroy objects.
     test_canvas_destroy(&canvas);
+    dvz_gui_destroy(gui);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Tests GUI                                                                                    */
+/*************************************************************************************************/
+
+static void _refill(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
+{
+    ASSERT(canvas != NULL);
+
+    DvzGpu* gpu = canvas->gpu;
+    ASSERT(gpu != NULL);
+
+    dvz_cmd_begin(cmds, cmd_idx);
+    dvz_cmd_begin_renderpass(
+        cmds, cmd_idx, canvas->render.renderpass, &canvas->render.framebuffers);
+    dvz_cmd_end_renderpass(cmds, cmd_idx);
+    dvz_cmd_end(cmds, cmd_idx);
+}
+
+static void _fill_overlay(DvzCanvas* canvas, void* user_data)
+{
+    ASSERT(canvas != NULL);
+
+    DvzGuiWindow* gui_window = (DvzGuiWindow*)user_data;
+    ASSERT(gui_window != NULL);
+
+    DvzCommands* cmds = &gui_window->cmds;
+    ASSERT(cmds != NULL);
+
+    uint32_t img_idx = canvas->render.swapchain.img_idx;
+
+    // Overlay renderpass.
+    DvzRenderpass* renderpass = &gui_window->gui->renderpass;
+    ASSERT(renderpass != NULL);
+
+    // Overlay framebuffers.
+    DvzFramebuffers* framebuffers = &gui_window->framebuffers;
+    ASSERT(framebuffers != NULL);
+
+    // Begin recording the command buffer.
+    dvz_cmd_begin(cmds, img_idx);
+    dvz_cmd_begin_renderpass(cmds, img_idx, renderpass, framebuffers);
+
+    // Make a GUI.
+    dvz_gui_frame_begin(gui_window->window);
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("Hello world");
+    dvz_gui_dialog_end();
+    dvz_gui_frame_end(cmds, img_idx);
+
+    // Stop recording the command buffer.
+    dvz_cmd_end_renderpass(cmds, img_idx);
+    dvz_cmd_end(cmds, img_idx);
+
+    // Add the command buffer to the current submission.
+    DvzSubmit* submit = &canvas->render.submit;
+    dvz_submit_commands(submit, &gui_window->cmds);
+}
+
+int test_gui_1(TstSuite* suite)
+{
+    // Test the GUI renderpass integration.
+    // WARNING: resizing is not expected to work here because we need to recreate the overlay
+    // framebuffers. Proper GUI integration is done in the presenter part.
+
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    ASSERT(host != NULL);
+
+    DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Create the window and surface.
+    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+
+    // Create the renderpass.
+    DvzRenderpass renderpass = desktop_renderpass(gpu);
+
+    // Need to init the GUI engine.
+    DvzGui* gui = dvz_gui(gpu, 0);
+
+    // Create the canvas.
+    DvzCanvas canvas = dvz_canvas(gpu, &renderpass, WIDTH, HEIGHT, 0);
+    dvz_canvas_refill(&canvas, _refill, NULL);
+    dvz_canvas_create(&canvas, surface);
+
+    // Prepare the window for the GUI.
+    DvzGuiWindow* gui_window =
+        dvz_gui_window(gui, &window, canvas.render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
+
+    dvz_canvas_fill_overlay(&canvas, _fill_overlay, gui_window);
+
+    // Basic event loop.
+    dvz_canvas_loop(&canvas, &window, N_FRAMES);
+
+    // Destroy objects.
+    dvz_canvas_destroy(&canvas);
+    dvz_window_destroy(&window);
+    dvz_surface_destroy(host, surface);
+    dvz_renderpass_destroy(&renderpass);
+    dvz_gui_window_destroy(gui_window);
     dvz_gui_destroy(gui);
     dvz_gpu_destroy(gpu);
     return 0;

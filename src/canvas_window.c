@@ -41,6 +41,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
         canvas->refill(canvas, cmds, i, canvas->refill_user_data);
     }
 
+    // Main loop.
     for (uint32_t frame = 0; n_frames == 0 || frame < n_frames; frame++)
     {
         log_debug("iteration %d", frame);
@@ -107,6 +108,13 @@ void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
 
             // Then, we submit the cmds on that image
             dvz_submit_commands(submit, cmds);
+
+            // Custom callback for overlay filling.
+            if (canvas->fill_overlay)
+            {
+                canvas->fill_overlay(canvas, canvas->fill_overlay_user_data);
+            }
+
             dvz_submit_wait_semaphores(
                 submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
                 canvas->cur_frame);

@@ -171,6 +171,16 @@ void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_dat
 
 
 
+void dvz_canvas_fill_overlay(DvzCanvas* canvas, DvzCanvasFillOverlay fill_overlay, void* user_data)
+{
+    ASSERT(canvas != NULL);
+    ASSERT(fill_overlay != NULL);
+    canvas->fill_overlay = fill_overlay;
+    canvas->fill_overlay_user_data = user_data;
+}
+
+
+
 void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(canvas != NULL);

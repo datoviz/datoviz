@@ -311,9 +311,6 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
     gui_window->gui = gui;
     gui_window->window = window;
 
-    // Initialize the list of callbacks.
-    gui_window->callbacks = dvz_list();
-
     // Create the command buffers.
     gui_window->cmds = dvz_commands(gpu, queue_idx, images->count);
 
@@ -331,7 +328,7 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
 void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 {
     ASSERT(gui_window != NULL);
-    dvz_list_destroy(gui_window->callbacks);
+    // dvz_list_destroy(gui_window->callbacks);
     dvz_framebuffers_destroy(&gui_window->framebuffers);
     FREE(gui_window);
 }

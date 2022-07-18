@@ -29,7 +29,9 @@ make_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, DvzSwapchain* swapchain, uint3
 
     *swapchain = dvz_swapchain(gpu, surface, img_count);
     dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
+    // TODO: activate/deactivate vsync
     dvz_swapchain_present_mode(swapchain, DVZ_DEFAULT_PRESENT_MODE);
+    // dvz_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
     dvz_swapchain_create(swapchain);
 
     ASSERT(swapchain->images != NULL);

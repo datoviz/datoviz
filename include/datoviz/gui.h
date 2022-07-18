@@ -11,8 +11,8 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+// #include "list.h"
 #include "common.h"
-#include "list.h"
 #include "vklite.h"
 
 
@@ -58,7 +58,7 @@ struct DvzGuiWindow
     DvzWindow* window;
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
-    DvzList* callbacks;
+    // DvzList* callbacks;
 };
 
 

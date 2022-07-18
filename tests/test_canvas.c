@@ -141,7 +141,7 @@ int test_canvas_triangle(TstSuite* suite)
     };
     dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
 
-    // Run the lop.
+    // Run the loop.
     TestCanvasStruct s = {.pipe = pipe, .br = dat_vertex->br};
     canvas.user_data = &s;
 

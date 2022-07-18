@@ -139,8 +139,10 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
 
+    // Testing GUI.
     TEST(test_vklite_gui)
     TEST(test_vklite_canvas_gui)
+    TEST(test_gui_1)
 
     // Testing canvas.
     TEST(test_canvas_1)
