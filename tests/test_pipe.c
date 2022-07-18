@@ -33,8 +33,11 @@ int test_pipe_1(TstSuite* suite)
     DvzContext* ctx = dvz_context(gpu);
     ASSERT(ctx != NULL);
 
+    // Create the renderpass.
+    DvzRenderpass renderpass = offscreen_renderpass(gpu);
+
     // Create the board.
-    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT, 0);
+    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Vertex buffer.
@@ -46,7 +49,7 @@ int test_pipe_1(TstSuite* suite)
     // Create the graphics pipe.
     DvzPipe pipe = dvz_pipe(gpu);
     DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
-    dvz_graphics_renderpass(graphics, &gpu->renderpass, 0);
+    dvz_graphics_renderpass(graphics, &renderpass, 0);
     dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
@@ -85,8 +88,8 @@ int test_pipe_1(TstSuite* suite)
     // Destruction.
     dvz_pipe_destroy(&pipe);
     dvz_dat_destroy(dat_vertex);
-
     dvz_board_destroy(&board);
+    dvz_renderpass_destroy(&renderpass);
     dvz_context_destroy(ctx);
     return 0;
 }

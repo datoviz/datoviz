@@ -183,11 +183,11 @@ int dvz_run_tests(const char* match)
     // Testing board.
     TEST(test_board_1)
 
-    // // Testing pipe.
-    // TEST(test_pipe_1)
+    // Testing pipe.
+    TEST(test_pipe_1)
 
-    // // Testing pipelib.
-    // TEST(test_pipelib_1)
+    // Testing pipelib.
+    TEST(test_pipelib_1)
 
     // // Testing workspace.
     // TEST(test_workspace_1)
@@ -201,12 +201,12 @@ int dvz_run_tests(const char* match)
     TEARDOWN(teardown_gpu)
 
 
-    // // Testing builtin graphics.
-    // TEST(test_graphics_point)
-    // TEST(test_graphics_triangle)
-    // TEST(test_graphics_line_list)
-    // TEST(test_graphics_raster)
-    // TEST(test_graphics_image_1)
+    // Testing builtin graphics.
+    TEST(test_graphics_point)
+    TEST(test_graphics_triangle)
+    TEST(test_graphics_line_list)
+    TEST(test_graphics_raster)
+    TEST(test_graphics_image_1)
 
 
     /*********************************************************************************************/

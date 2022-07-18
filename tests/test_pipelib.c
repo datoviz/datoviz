@@ -36,8 +36,11 @@ int test_pipelib_1(TstSuite* suite)
 
     uvec2 size = {WIDTH, HEIGHT};
 
+    // Create the renderpass.
+    DvzRenderpass renderpass = offscreen_renderpass(gpu);
+
     // Create the board.
-    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT, 0);
+    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Create the pipelib.
@@ -45,7 +48,7 @@ int test_pipelib_1(TstSuite* suite)
 
     // Create a graphics pipe.
     DvzPipe* pipe = dvz_pipelib_graphics(
-        lib, ctx, &gpu->renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE,
+        lib, ctx, &renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
 
     // Create the vertex buffer dat.
@@ -80,6 +83,7 @@ int test_pipelib_1(TstSuite* suite)
     // Destruction.
     dvz_pipelib_destroy(lib);
     dvz_board_destroy(&board);
+    dvz_renderpass_destroy(&renderpass);
     dvz_context_destroy(ctx);
     return 0;
 }

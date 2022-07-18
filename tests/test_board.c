@@ -82,8 +82,8 @@ int test_board_1(TstSuite* suite)
     dvz_graphics_destroy(&graphics);
     dvz_bindings_destroy(&bindings);
     dvz_buffer_destroy(&buffer);
-
     dvz_board_destroy(&board);
+    dvz_renderpass_destroy(&renderpass);
     dvz_context_destroy(ctx);
 
     return 0;
