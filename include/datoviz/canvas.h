@@ -85,7 +85,7 @@ struct DvzRender
     // DvzImages* screencast_img;
 
     DvzFramebuffers framebuffers;
-    // DvzFramebuffers framebuffers_gui; // used by the GUI renderpass
+    DvzRenderpass* renderpass;
 
     DvzSubmit submit;
 };
@@ -149,7 +149,8 @@ EXTERN_C_ON
  *
  * @returns a canvas
  */
-DVZ_EXPORT DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzCanvas
+dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags);
 
 
 

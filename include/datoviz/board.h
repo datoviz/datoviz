@@ -46,6 +46,7 @@ struct DvzBoard
     DvzImages depth;
     DvzImages staging;
     DvzFramebuffers framebuffers;
+    DvzRenderpass* renderpass;
 
     DvzCommands cmds;
     // TODO: picking
@@ -64,7 +65,8 @@ EXTERN_C_ON
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzBoard dvz_board(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
+DVZ_EXPORT DvzBoard
+dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags);
 
 
 

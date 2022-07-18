@@ -494,6 +494,7 @@ set(external_sources
 )
 
 set(sources
+    # Utils
     "src/_thread.c"
     "src/_mutex.c"
     "src/_atomic.cpp"
@@ -502,9 +503,12 @@ set(sources
     "src/fileio.cpp"
     "src/fifo.c"
     "src/array.c"
-    "src/host.c"
-    "src/window.c"
+    "src/map.cpp"
+    "src/list.cpp"
+
+    # Renderer
     "src/vklite.c"
+    "src/host.c"
     "src/surface.c"
     "src/spirv.c"
     "src/alloc.cpp"
@@ -512,22 +516,23 @@ set(sources
     "src/datalloc.c"
     "src/transfers.c"
     "src/context.c"
-    "src/board.c"
-    "src/pipe.c"
-    "src/pipelib.c"
-    "src/graphics.c"
-    "src/graphics_data.c"
-    "src/gui.cpp"
-    "src/workspace.c"
+    # "src/board.c"
+    # "src/pipe.c"
+    # "src/pipelib.c"
+    # "src/graphics.c"
+    # "src/graphics_data.c"
+    # "src/workspace.c"
+    # "src/renderer.cpp"
+    # "src/recorder.c"
+    # "src/canvas.c"
+
+    # Client
     "src/request.c"
-    "src/map.cpp"
-    "src/list.cpp"
-    "src/renderer.cpp"
+    "src/window.c"
     "src/client.c"
-    "src/recorder.c"
-    "src/canvas.c"
-    "src/presenter.c"
-    "src/canvas_window.c"
+    # "src/canvas_window.c"
+    # "src/gui.cpp"
+    # "src/presenter.c"
 
     ${external_sources}
 )
@@ -565,30 +570,36 @@ target_link_libraries(libdatoviz ${LINK_LIBS})
 if (DATOVIZ_WITH_CLI)
     set(cli
         "cli/main.c"
+
+        # Utils
         "tests/test_thread.c"
         "tests/test_obj.c"
         "tests/test_fileio.c"
         "tests/test_fifo.c"
         "tests/test_array.c"
-        "tests/test_window.c"
-        "tests/test_vklite.c"
         "tests/test_alloc.c"
-        "tests/test_resources.c"
-        "tests/test_datalloc.c"
-        "tests/test_transfers.c"
-        "tests/test_board.c"
-        "tests/test_pipe.c"
-        "tests/test_pipelib.c"
-        "tests/test_graphics.c"
-        "tests/test_workspace.c"
         "tests/test_colormaps.c"
         "tests/test_map.c"
         "tests/test_list.c"
-        "tests/test_request.c"
-        "tests/test_renderer.c"
+
+        # Renderer
+        "tests/test_vklite.c"
+        "tests/test_resources.c"
+        "tests/test_datalloc.c"
+        "tests/test_transfers.c"
+        # "tests/test_board.c"
+        # "tests/test_pipe.c"
+        # "tests/test_pipelib.c"
+        # "tests/test_graphics.c"
+        # "tests/test_workspace.c"
+        # "tests/test_canvas.c"
+        # "tests/test_renderer.c"
+
+        # Client
+        "tests/test_window.c"
         "tests/test_client.c"
-        "tests/test_canvas.c"
-        "tests/test_presenter.c"
+        "tests/test_request.c"
+        # "tests/test_presenter.c"
         "tests/test.c"
     )
 

@@ -225,11 +225,9 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
-    // Destroy the renderpasses.
-    if (dvz_obj_is_created(&gpu->renderpass.obj))
-        dvz_renderpass_destroy(&gpu->renderpass);
-    // if (dvz_obj_is_created(&gpu->renderpass_gui.obj))
-    //     dvz_renderpass_destroy(&gpu->renderpass_gui);
+    // // Destroy the renderpass.
+    // if (dvz_obj_is_created(&gpu->renderpass.obj))
+    //     dvz_renderpass_destroy(&gpu->renderpass);
 
     // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);

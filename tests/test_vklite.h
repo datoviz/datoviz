@@ -30,7 +30,8 @@
 #define PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
 #define FORMAT       VK_FORMAT_B8G8R8A8_UNORM
 
-static const VkClearColorValue BACKGROUND = {{.4f, .6f, .8f, 1.0f}};
+#define BACKGROUND                                                                                \
+    (cvec4) { 102, 153, 204, 255 }
 
 #define DEBUG_TEST (getenv("DVZ_DEBUG") != NULL)
 
@@ -138,56 +139,6 @@ static void empty_commands(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 
 
 
-// static DvzRenderpass make_renderpass(
-//     DvzGpu* gpu, VkClearColorValue clear_color_value, VkFormat format, VkImageLayout layout)
-// {
-//     DvzRenderpass renderpass = dvz_renderpass(gpu);
-
-//     VkClearValue clear_color = {0};
-//     clear_color.color = clear_color_value;
-
-//     VkClearValue clear_depth = {0};
-//     clear_depth.depthStencil.depth = 1.0f;
-
-//     dvz_renderpass_clear(&renderpass, clear_color);
-//     dvz_renderpass_clear(&renderpass, clear_depth);
-
-//     // Color attachment.
-//     dvz_renderpass_attachment(
-//         &renderpass, 0, //
-//         DVZ_RENDERPASS_ATTACHMENT_COLOR, format, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-//     dvz_renderpass_attachment_layout(&renderpass, 0, VK_IMAGE_LAYOUT_UNDEFINED, layout);
-//     dvz_renderpass_attachment_ops(
-//         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE);
-
-//     // Depth attachment.
-//     dvz_renderpass_attachment(
-//         &renderpass, 1, //
-//         DVZ_RENDERPASS_ATTACHMENT_DEPTH, VK_FORMAT_D32_SFLOAT,
-//         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-//     dvz_renderpass_attachment_layout(
-//         &renderpass, 1, //
-//         VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-//     dvz_renderpass_attachment_ops(
-//         &renderpass, 1, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE);
-
-//     // Subpass.
-//     dvz_renderpass_subpass_attachment(&renderpass, 0, 0);
-//     dvz_renderpass_subpass_attachment(&renderpass, 0, 1);
-//     // dvz_renderpass_subpass_dependency(&renderpass, 0, VK_SUBPASS_EXTERNAL, 0);
-//     // dvz_renderpass_subpass_dependency_stage(
-//     //     &renderpass, 0, //
-//     //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-//     //     VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-//     // dvz_renderpass_subpass_dependency_access(
-//     //     &renderpass, 0, 0,
-//     //     VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
-
-//     return renderpass;
-// }
-
-
-
 static void
 depth_image(DvzImages* depth_images, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
 {
@@ -279,14 +230,14 @@ static DvzGpu* make_gpu(DvzHost* host)
 /*  Test offscreen canvas                                                                        */
 /*************************************************************************************************/
 
-static TestCanvas offscreen(DvzGpu* gpu)
+static TestCanvas offscreen_canvas(DvzGpu* gpu)
 {
     TestCanvas canvas = {0};
     canvas.gpu = gpu;
     canvas.is_offscreen = true;
 
-    make_renderpass(
-        gpu, &canvas.renderpass, FORMAT, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, BACKGROUND);
+    // Make the renderpass.
+    canvas.renderpass = dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     // Color attachment
     DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
@@ -314,7 +265,7 @@ static TestCanvas offscreen(DvzGpu* gpu)
     canvas.depth = depth;
 
     // Create renderpass.
-    dvz_renderpass_create(&canvas.renderpass);
+    // dvz_renderpass_create(&canvas.renderpass);
 
     // Create framebuffers.
     canvas.framebuffers = dvz_framebuffers(canvas.renderpass.gpu);
@@ -331,7 +282,8 @@ static TestCanvas offscreen(DvzGpu* gpu)
 /*  Test canvas                                                                                  */
 /*************************************************************************************************/
 
-static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
+static TestCanvas
+desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurfaceKHR surface)
 {
     ASSERT(gpu != NULL);
     ASSERT(window != NULL);
@@ -351,7 +303,8 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKH
     // ASSERT(framebuffer_width > 0);
     // ASSERT(framebuffer_height > 0);
 
-    make_renderpass(gpu, &canvas.renderpass, FORMAT, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, BACKGROUND);
+    // Make the renderpass.
+    canvas.renderpass = dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface, 3);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
@@ -364,17 +317,17 @@ static TestCanvas test_canvas_create(DvzGpu* gpu, DvzWindow* window, VkSurfaceKH
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     ASSERT(depth != NULL);
     *depth = depth_struct;
-    depth_image(depth, &canvas.renderpass, canvas.images->shape[0], canvas.images->shape[1]);
+    depth_image(depth, renderpass, canvas.images->shape[0], canvas.images->shape[1]);
     canvas.depth = depth;
 
     // Create renderpass.
-    dvz_renderpass_create(&canvas.renderpass);
+    // dvz_renderpass_create(renderpass);
 
     // Create framebuffers.
     canvas.framebuffers = dvz_framebuffers(canvas.renderpass.gpu);
     dvz_framebuffers_attachment(&canvas.framebuffers, 0, canvas.swapchain.images);
     dvz_framebuffers_attachment(&canvas.framebuffers, 1, depth);
-    dvz_framebuffers_create(&canvas.framebuffers, &canvas.renderpass);
+    dvz_framebuffers_create(&canvas.framebuffers, renderpass);
 
     return canvas;
 }

@@ -30,7 +30,7 @@ int test_board_1(TstSuite* suite)
     ASSERT(ctx != NULL);
 
     // Create the board.
-    DvzBoard board = dvz_board(gpu, WIDTH, HEIGHT, 0);
+    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Create the graphics.

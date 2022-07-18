@@ -37,7 +37,7 @@ int test_vklite_gui(TstSuite* suite)
     gpu->renderpass =
         dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
-    TestCanvas canvas = offscreen(gpu);
+    TestCanvas canvas = offscreen_canvas(gpu);
 
     // Need to init the GUI engine.
     dvz_gui(gpu, 0);
@@ -124,7 +124,7 @@ int test_vklite_canvas_gui(TstSuite* suite)
     gpu->renderpass =
         dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-    TestCanvas canvas = test_canvas_create(gpu, &window, surface);
+    TestCanvas canvas = desktop_canvas(gpu, &window, surface);
     dvz_gui(gpu, 0);
     canvas.always_refill = true;
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);

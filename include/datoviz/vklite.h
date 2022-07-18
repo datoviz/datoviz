@@ -281,8 +281,7 @@ struct DvzGpu
     VmaAllocator allocator;
 
     // Renderpasses.
-    DvzRenderpass renderpass; // default renderpass
-    // DvzRenderpass renderpass_gui; // GUI overlay renderpass
+    // DvzRenderpass renderpass; // default renderpass
 };
 
 

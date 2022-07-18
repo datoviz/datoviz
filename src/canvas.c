@@ -14,7 +14,8 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
+DvzCanvas
+dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(gpu != NULL);
     ASSERT(width > 0);
@@ -29,6 +30,9 @@ DvzCanvas dvz_canvas(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 
     canvas.width = width;
     canvas.height = height;
+
+    canvas.render.renderpass = renderpass;
+    ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     dvz_obj_init(&canvas.obj);
     return canvas;
@@ -62,14 +66,6 @@ void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
 
     // Make staging image.
     make_staging(gpu, &canvas->render.staging, canvas->format, width, height);
-
-    // HACK: automatically create the renderpass for now
-    if (!dvz_obj_is_created(&gpu->renderpass.obj))
-    {
-        log_debug("automatic renderpass creation when creating a canvas");
-        gpu->renderpass =
-            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    }
 
     // Make framebuffers.
     make_framebuffers(

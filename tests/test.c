@@ -53,6 +53,10 @@ int dvz_run_tests(const char* match)
     DvzTestCtx ctx = {0};
     suite.context = &ctx;
 
+    /*********************************************************************************************/
+    /*  Utils                                                                                    */
+    /*********************************************************************************************/
+
     // Testing thread utils.
     TEST(test_utils_thread_1)
     TEST(test_utils_mutex_1)
@@ -108,28 +112,10 @@ int dvz_run_tests(const char* match)
     // Testing list.
     TEST(test_list_1)
 
-    // Testing request.
-    TEST(test_request_1)
-    TEST(test_request_2)
 
-    // Testing window.
-    TEST(test_window_1)
-
-    // // Testing input.
-    // TEST(test_input_mouse_1)
-    // TEST(test_input_drag_1)
-    // TEST(test_input_click_1)
-    // TEST(test_input_keyboard_1)
-    // TEST(test_input_timer_1)
-    // TEST(test_input_glfw_1)
-
-    // Testing input.
-    TEST(test_client_1)
-    TEST(test_client_2)
-
-    // Testing vklite.
-    TEST(test_vklite_host)
-
+    /*********************************************************************************************/
+    /*  Renderer                                                                                 */
+    /*********************************************************************************************/
 
     // Setup the host fixture.
     SETUP(setup_host)
@@ -155,18 +141,18 @@ int dvz_run_tests(const char* match)
     // TEST(test_vklite_gui)
     // TEST(test_vklite_canvas_gui)
 
-    // Testing canvas.
-    TEST(test_canvas_1)
-    TEST(test_canvas_triangle)
+    // // Testing canvas.
+    // TEST(test_canvas_1)
+    // TEST(test_canvas_triangle)
 
-    // Testing presenter.
-    TEST(test_presenter_1)
-    TEST(test_presenter_2)
+    // // Testing presenter.
+    // TEST(test_presenter_1)
+    // TEST(test_presenter_2)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
 
-
+    //
 
     // Setup the gpu fixture.
     SETUP(setup_gpu)
@@ -194,34 +180,62 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_tex_transfers)
     TEST(test_resources_tex_resize)
 
-    // Testing board.
-    TEST(test_board_1)
+    // // Testing board.
+    // TEST(test_board_1)
 
-    // Testing pipe.
-    TEST(test_pipe_1)
+    // // Testing pipe.
+    // TEST(test_pipe_1)
 
-    // Testing pipelib.
-    TEST(test_pipelib_1)
+    // // Testing pipelib.
+    // TEST(test_pipelib_1)
 
-    // Testing workspace.
-    TEST(test_workspace_1)
+    // // Testing workspace.
+    // TEST(test_workspace_1)
 
-    // Testing renderer.
-    TEST(test_renderer_1)
-    TEST(test_renderer_resize)
-    TEST(test_renderer_image)
+    // // Testing renderer.
+    // TEST(test_renderer_1)
+    // TEST(test_renderer_resize)
+    // TEST(test_renderer_image)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
 
 
-    // Testing builtin graphics.
-    TEST(test_graphics_point)
-    TEST(test_graphics_triangle)
-    TEST(test_graphics_line_list)
-    TEST(test_graphics_raster)
-    TEST(test_graphics_image_1)
+    // // Testing builtin graphics.
+    // TEST(test_graphics_point)
+    // TEST(test_graphics_triangle)
+    // TEST(test_graphics_line_list)
+    // TEST(test_graphics_raster)
+    // TEST(test_graphics_image_1)
 
+
+    /*********************************************************************************************/
+    /*  Client                                                                                   */
+    /*********************************************************************************************/
+
+    // Testing window.
+    TEST(test_window_1)
+
+    // // Testing input.
+    // TEST(test_input_mouse_1)
+    // TEST(test_input_drag_1)
+    // TEST(test_input_click_1)
+    // TEST(test_input_keyboard_1)
+    // TEST(test_input_timer_1)
+    // TEST(test_input_glfw_1)
+
+    // Testing input.
+    TEST(test_client_1)
+    TEST(test_client_2)
+
+    // Testing request.
+    TEST(test_request_1)
+    TEST(test_request_2)
+
+    // Testing vklite.
+    TEST(test_vklite_host)
+
+    //
 
     tst_suite_run(&suite, match);
     tst_suite_destroy(&suite);
