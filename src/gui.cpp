@@ -164,7 +164,7 @@ static void _imgui_set_window(DvzWindow* window)
 
 
 
-static DvzRenderpass _imgui_renderpass_overlay(DvzGpu* gpu)
+static DvzRenderpass _imgui_renderpass(DvzGpu* gpu)
 {
     ASSERT(gpu != NULL);
     INIT(DvzRenderpass, renderpass)
@@ -187,14 +187,15 @@ static DvzRenderpass _imgui_renderpass_overlay(DvzGpu* gpu)
 
 
 
-static DvzFramebuffers _imgui_renderpass_framebuffers(DvzGpu* gpu, DvzCanvas* canvas)
+static DvzFramebuffers
+_imgui_framebuffers(DvzGpu* gpu, DvzRenderpass* renderpass, DvzImages* images)
 {
     ASSERT(gpu != NULL);
     INIT(DvzFramebuffers, framebuffers)
 
     framebuffers = dvz_framebuffers(gpu);
-    dvz_framebuffers_attachment(&framebuffers, 0, canvas->swapchain.images);
-    dvz_framebuffers_create(&framebuffers, &canvas->renderpass_overlay);
+    dvz_framebuffers_attachment(&framebuffers, 0, images);
+    dvz_framebuffers_create(&framebuffers, renderpass);
 
     return framebuffers;
 }
@@ -229,6 +230,7 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
     log_debug("initialize the Dear ImGui context");
 
     DvzGui* gui = (DvzGui*)calloc(1, sizeof(DvzGui));
+    gui->gpu = gpu;
     gui->renderpass = _imgui_renderpass(gpu);
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);
@@ -251,19 +253,46 @@ void dvz_gui_frame_offscreen(uint32_t width, uint32_t height)
 
 
 
+DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images)
+{
+    // NOTE: window is optional (offscreen tests)
+    // NOTE: glfw is the only supported backend for now
+
+    ASSERT(gui != NULL);
+    ASSERT(window != NULL);
+    ASSERT(!window || window->gui_window == NULL); // Only set it once.
+
+    DvzGpu* gpu = gui->gpu;
+    ASSERT(gpu != NULL);
+
+    DvzGuiWindow* gui_window = (DvzGuiWindow*)calloc(1, sizeof(DvzGuiWindow));
+    gui_window->gui = gui;
+    gui_window->window = window;
+
+    // Initialize the list of callbacks.
+    gui_window->callbacks = dvz_list();
+
+    // Create the command buffers.
+    gui_window->cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, images->count);
+
+    // Create the framebuffers.
+    gui_window->framebuffers = _imgui_framebuffers(gpu, &gui->renderpass, images);
+
+    // window->gui_window = gui_window;
+    if (window != NULL)
+        _imgui_set_window(window);
+    return gui_window;
+}
+
+
+
 void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window)
 {
     ASSERT(gui != NULL);
-
-    // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
-    if (window != NULL && !window->gui_window)
-    {
-        _imgui_set_window(window);
-        window->gui_window = NULL; // TODO: set the gui window, not NULL here!
-    }
+    ASSERT(!window || window->gui_window != NULL);
 
     ImGui_ImplVulkan_NewFrame();
-    if (window != NULL)
+    if (window)
         ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 }
@@ -305,6 +334,16 @@ void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx)
     ASSERT(cmds != NULL);
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx], VK_NULL_HANDLE);
+}
+
+
+
+void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
+{
+    ASSERT(gui_window != NULL);
+    dvz_list_destroy(gui_window->callbacks);
+    dvz_framebuffers_destroy(&gui_window->framebuffers);
+    FREE(gui_window);
 }
 
 

@@ -12,6 +12,14 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static bool _has_overlay(int flags) { return (flags & DVZ_WORKSPACE_FLAGS_OVERLAY); }
+
+
+
+/*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
@@ -28,20 +36,12 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
 
     // Create the renderpasses.
-    if ((flags & DVZ_WORKSPACE_FLAGS_OVERLAY))
-    {
-        ws->renderpass_offscreen = dvz_gpu_renderpass(
-            gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-        ws->renderpass_desktop = dvz_gpu_renderpass(
-            gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    }
-    else
-    {
-        ws->renderpass_offscreen =
-            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-        ws->renderpass_desktop =
-            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    }
+    ws->renderpass_overlay =
+        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    ws->renderpass_offscreen =
+        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    ws->renderpass_desktop =
+        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
     dvz_obj_init(&ws->obj);
     return ws;
@@ -55,7 +55,11 @@ DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t 
     ASSERT(workspace->gpu != NULL);
 
     DvzBoard* board = (DvzBoard*)dvz_container_alloc(&workspace->boards);
-    *board = dvz_board(workspace->gpu, &workspace->renderpass_offscreen, width, height, flags);
+
+    DvzRenderpass* renderpass =
+        _has_overlay(flags) ? &workspace->renderpass_overlay : &workspace->renderpass_offscreen;
+
+    *board = dvz_board(workspace->gpu, renderpass, width, height, flags);
     // dvz_board_clear_color(board, background);
     dvz_board_create(board);
 
@@ -69,7 +73,11 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
 {
     ASSERT(workspace != NULL);
     DvzCanvas* canvas = (DvzCanvas*)dvz_container_alloc(&workspace->canvases);
-    *canvas = dvz_canvas(workspace->gpu, &workspace->renderpass_desktop, width, height, flags);
+
+    DvzRenderpass* renderpass =
+        _has_overlay(flags) ? &workspace->renderpass_overlay : &workspace->renderpass_desktop;
+
+    *canvas = dvz_canvas(workspace->gpu, renderpass, width, height, flags);
 
     // TODO: wrap the following line in a new function dvz_canvas_clear_color()?
     // memcpy(canvas->clear_color, background, sizeof(cvec4));

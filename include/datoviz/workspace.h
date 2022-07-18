@@ -56,6 +56,7 @@ struct DvzWorkspace
 
     DvzRenderpass renderpass_offscreen;
     DvzRenderpass renderpass_desktop;
+    DvzRenderpass renderpass_overlay; // if overlay, same renderpass between offscreen and desktop
 };
 
 

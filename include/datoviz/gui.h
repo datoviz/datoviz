@@ -46,6 +46,7 @@ typedef struct ImGuiIO ImGuiIO;
 
 struct DvzGui
 {
+    DvzGpu* gpu;
     DvzRenderpass renderpass;
 };
 
@@ -83,8 +84,9 @@ DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
  *
  * @param gui the GUI
  * @param window the window
+ * @returns gui_window
  */
-DVZ_EXPORT void dvz_gui_window(DvzGui* gui, DvzWindow* window);
+DVZ_EXPORT DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images);
 
 
 
@@ -94,7 +96,7 @@ DVZ_EXPORT void dvz_gui_window(DvzGui* gui, DvzWindow* window);
  * @param gui the GUI
  * @param window the window
  */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window);
+DVZ_EXPORT void dvz_gui_frame_begin(DvzGuiWindow* gui_window);
 
 
 
@@ -157,6 +159,15 @@ DVZ_EXPORT void dvz_gui_demo();
  * @param idx the command buffer index within the set
  */
 DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
+
+
+
+/**
+ * Destroy a GUI window.
+ *
+ * @param gui the GUI window
+ */
+DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
 
 
 
