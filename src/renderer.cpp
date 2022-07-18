@@ -155,7 +155,7 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 
     // NOTE: we cannot create the canvas recorder yet, as we need the swapchain image count, and
     // this requires the canvas to be actually created. This is done by the presenter, after a
-    // window and surface have been created. Create the recorder.
+    // window and surface have been created.
 
     return (void*)canvas;
 }

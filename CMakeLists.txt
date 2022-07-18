@@ -532,7 +532,7 @@ set(sources
     "src/window.c"
     "src/client.c"
     "src/gui.cpp"
-    # "src/presenter.c"
+    "src/presenter.c"
 
     ${external_sources}
 )
@@ -600,7 +600,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_window.c"
         "tests/test_client.c"
         "tests/test_request.c"
-        # "tests/test_presenter.c"
+        "tests/test_presenter.c"
         "tests/test.c"
     )
 

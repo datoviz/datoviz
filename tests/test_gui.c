@@ -112,26 +112,35 @@ int test_vklite_canvas_gui(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
 
+    // Create a window.
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+
+    // Create a surface.
     VkSurfaceKHR surface = dvz_window_surface(host, &window);
     AT(surface != VK_NULL_HANDLE);
 
+    // Create a GPU with surface support.
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
     dvz_gpu_create(gpu, surface);
 
+    // Create the GUI interface on queue #0.
     DvzGui* gui = dvz_gui(gpu, 0);
 
+    // Create a canvas.
     TestCanvas canvas = desktop_canvas(gpu, &window, surface);
     canvas.always_refill = true;
 
+    // Prepare the window for the GUI.
     dvz_gui_window(gui, &window, canvas.swapchain.images, 0);
 
+    // Simple event loop with GUI callback.
     test_canvas_show(&canvas, _fill_gui, N_FRAMES);
 
+    // Destroy objects.
     test_canvas_destroy(&canvas);
-    // dvz_gui_destroy(gui);
+    dvz_gui_destroy(gui);
     dvz_gpu_destroy(gpu);
     return 0;
 }
