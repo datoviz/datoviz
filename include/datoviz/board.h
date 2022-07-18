@@ -36,7 +36,7 @@ struct DvzBoard
     int flags;
 
     DvzFormat format;
-    cvec4 clear_color;
+    // cvec4 clear_color;
     uint32_t width, height;
 
     DvzSize size; // width*height*3
@@ -80,13 +80,13 @@ DVZ_EXPORT void dvz_board_format(DvzBoard* board, DvzFormat format);
 
 
 
-/**
- * Set the board clear color.
- *
- * @param board the board
- * @param color the color as an array of 4 bytes
- */
-DVZ_EXPORT void dvz_board_clear_color(DvzBoard* board, cvec4 color);
+// /**
+//  * Set the board clear color.
+//  *
+//  * @param board the board
+//  * @param color the color as an array of 4 bytes
+//  */
+// DVZ_EXPORT void dvz_board_clear_color(DvzBoard* board, cvec4 color);
 
 
 

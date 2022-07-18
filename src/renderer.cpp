@@ -117,7 +117,7 @@ static void* _board_background(DvzRenderer* rd, DvzRequest req)
 
     GET_ID(DvzBoard, board, req.id)
 
-    dvz_board_clear_color(board, req.content.board.background);
+    // dvz_board_clear_color(board, req.content.board.background);
     dvz_board_recreate(board);
 
     return NULL;

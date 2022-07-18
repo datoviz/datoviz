@@ -115,7 +115,7 @@ struct DvzCanvas
 
     VkSurfaceKHR surface;
     DvzFormat format;
-    cvec4 clear_color;
+    // cvec4 clear_color;
     uint32_t width, height;
 
     DvzSize size; // width*height*3

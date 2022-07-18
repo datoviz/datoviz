@@ -25,21 +25,27 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBoard), DVZ_OBJECT_TYPE_BOARD);
     ws->canvases =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
+
+    // Create the renderpasses.
+    ws->renderpass_offscreen =
+        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    ws->renderpass_desktop =
+        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
     dvz_obj_init(&ws->obj);
     return ws;
 }
 
 
 
-DvzBoard* dvz_workspace_board(
-    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags)
+DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(workspace != NULL);
     ASSERT(workspace->gpu != NULL);
 
     DvzBoard* board = (DvzBoard*)dvz_container_alloc(&workspace->boards);
-    *board = dvz_board(workspace->gpu, width, height, flags);
-    dvz_board_clear_color(board, background);
+    *board = dvz_board(workspace->gpu, &workspace->renderpass_offscreen, width, height, flags);
+    // dvz_board_clear_color(board, background);
     dvz_board_create(board);
 
     return board;
@@ -47,15 +53,15 @@ DvzBoard* dvz_workspace_board(
 
 
 
-DvzCanvas* dvz_workspace_canvas(
-    DvzWorkspace* workspace, uint32_t width, uint32_t height, cvec4 background, int flags)
+DvzCanvas*
+dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
 {
     ASSERT(workspace != NULL);
     DvzCanvas* canvas = (DvzCanvas*)dvz_container_alloc(&workspace->canvases);
-    *canvas = dvz_canvas(workspace->gpu, width, height, flags);
+    *canvas = dvz_canvas(workspace->gpu, &workspace->renderpass_desktop, width, height, flags);
 
     // TODO: wrap the following line in a new function dvz_canvas_clear_color()?
-    memcpy(canvas->clear_color, background, sizeof(cvec4));
+    // memcpy(canvas->clear_color, background, sizeof(cvec4));
 
     // NOTE: dvz_canvas_create() must be called, but only AFTER a window and a surface have been
     // created, and this requires a Client. This is done by the Presenter.
@@ -74,6 +80,9 @@ void dvz_workspace_destroy(DvzWorkspace* workspace)
 
     CONTAINER_DESTROY_ITEMS(DvzCanvas, workspace->canvases, dvz_canvas_destroy)
     dvz_container_destroy(&workspace->canvases);
+
+    dvz_renderpass_destroy(&workspace->renderpass_offscreen);
+    dvz_renderpass_destroy(&workspace->renderpass_desktop);
 
     dvz_obj_destroyed(&workspace->obj);
     FREE(workspace);

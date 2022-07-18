@@ -75,6 +75,7 @@
     dvz_dat_destroy(dat_viewport);                                                                \
     dvz_pipe_destroy(&pipe);                                                                      \
     dvz_board_destroy(&board);                                                                    \
+    dvz_renderpass_destroy(&renderpass);                                                          \
     dvz_context_destroy(ctx);                                                                     \
     dvz_gpu_destroy(gpu);                                                                         \
     dvz_host_destroy(host);

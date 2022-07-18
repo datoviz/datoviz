@@ -71,6 +71,7 @@ int test_canvas_1(TstSuite* suite)
     dvz_canvas_destroy(&canvas);
     dvz_window_destroy(&window);
     dvz_surface_destroy(host, surface);
+    dvz_renderpass_destroy(&renderpass);
     dvz_gpu_destroy(gpu);
     return 0;
 }
@@ -154,6 +155,7 @@ int test_canvas_triangle(TstSuite* suite)
     dvz_surface_destroy(host, surface);
     dvz_pipelib_destroy(lib);
     dvz_context_destroy(ctx);
+    dvz_renderpass_destroy(&renderpass);
     dvz_gpu_destroy(gpu);
     return 0;
 }

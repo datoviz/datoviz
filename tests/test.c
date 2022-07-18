@@ -189,8 +189,8 @@ int dvz_run_tests(const char* match)
     // Testing pipelib.
     TEST(test_pipelib_1)
 
-    // // Testing workspace.
-    // TEST(test_workspace_1)
+    // Testing workspace.
+    TEST(test_workspace_1)
 
     // // Testing renderer.
     // TEST(test_renderer_1)

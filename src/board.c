@@ -47,7 +47,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
     ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     dvz_board_format(&board, DVZ_DEFAULT_FORMAT);
-    dvz_board_clear_color(&board, DVZ_DEFAULT_CLEAR_COLOR);
+    // dvz_board_clear_color(&board, DVZ_DEFAULT_CLEAR_COLOR);
 
     // TODO: larger image count?
     board.cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
@@ -69,13 +69,13 @@ void dvz_board_format(DvzBoard* board, DvzFormat format)
 
 
 
-void dvz_board_clear_color(DvzBoard* board, cvec4 color)
-{
-    ASSERT(board != NULL);
-    ASSERT(sizeof(cvec4) == 4);
-    memcpy(board->clear_color, color, sizeof(cvec4));
-    log_trace("changing board clear color, need to recreate the board");
-}
+// void dvz_board_clear_color(DvzBoard* board, cvec4 color)
+// {
+//     ASSERT(board != NULL);
+//     ASSERT(sizeof(cvec4) == 4);
+//     memcpy(board->clear_color, color, sizeof(cvec4));
+//     log_trace("changing board clear color, need to recreate the board");
+// }
 
 
 
