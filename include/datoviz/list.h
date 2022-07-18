@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/*  Map                                                                                          */
+/*  List */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_MAP
-#define DVZ_HEADER_MAP
+#ifndef DVZ_HEADER_LIST
+#define DVZ_HEADER_LIST
 
 
 
@@ -36,7 +36,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzMap DvzMap;
+typedef struct DvzList DvzList;
 typedef uint64_t DvzId;
 
 // Forward declarations.
@@ -56,108 +56,60 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Create a map, storing key-values pairs.
+ * Create a list storing pointers.
  *
- * @returns a map
+ * @returns a list
  */
-DVZ_EXPORT DvzMap* dvz_map(void);
+DVZ_EXPORT DvzList* dvz_list(void);
 
 
 
 /**
- * Return whether a key exists in the map.
+ * Append an item to a list.
  *
- * @param map the map
- * @param key the key
- * @returns a boolean
- */
-DVZ_EXPORT bool dvz_map_exists(DvzMap* map, DvzId key);
-
-
-
-/**
- * Add an item to a map.
- *
- * @param map the map
- * @param key the key
- * @param type the type of the item
+ * @param list the list
  * @param value an pointer to the item (memory exlusively managed by the user)
  */
-DVZ_EXPORT void dvz_map_add(DvzMap* map, DvzId key, int type, void* value);
+DVZ_EXPORT void dvz_list_append(DvzList* list, void* value);
 
 
 
 /**
- * Remove an item from a map.
+ * Remove an item from a list.
  *
- * @param map the map
- * @param key the key
+ * @param list the list
+ * @param value the value to remove, if it exists
  */
-DVZ_EXPORT void dvz_map_remove(DvzMap* map, DvzId key);
+DVZ_EXPORT void dvz_list_remove(DvzList* list, void* value);
 
 
 
 /**
- * Get an item in the map.
+ * Go through all items in a list. To use in a while loop.
  *
- * @param map the map
- * @param key the key
- * @returns a pointer to the item associated to the key (memory exlusively managed by the user)
+ * @param list the list
+ * @returns a pointer to the current item in the iteration, or NULL if the iteration is finished
  */
-DVZ_EXPORT void* dvz_map_get(DvzMap* map, DvzId key);
+DVZ_EXPORT void* dvz_list_iter(DvzList* list);
 
 
 
 /**
- * Get the type of an item in the map.
+ * Return the number of items in a list.
  *
- * @param map the map
- * @param key the key
- * @returns the type
- */
-DVZ_EXPORT int dvz_map_type(DvzMap* map, DvzId key);
-
-
-
-/**
- * Get the number of items in the map of a given type, or of any type (if using 0).
- *
- * @param map the map
- * @param type the type of the item, or 0 (count all items)
+ * @param list the list
  * @returns the number of items
  */
-DVZ_EXPORT uint64_t dvz_map_count(DvzMap* map, int type);
+DVZ_EXPORT uint64_t dvz_list_count(DvzList* list);
 
 
 
 /**
- * Get the first element of a given type.
+ * Destroy a list.
  *
- * @param map the map
- * @param type the type of the item
- * @returns a pointer to the item (memory exlusively managed by the user)
+ * @param list the list
  */
-DVZ_EXPORT void* dvz_map_first(DvzMap* map, int type);
-
-
-
-/**
- * Get the last element of a given type.
- *
- * @param map the map
- * @param type the type of the item
- * @returns a pointer to the item (memory exlusively managed by the user)
- */
-DVZ_EXPORT void* dvz_map_last(DvzMap* map, int type);
-
-
-
-/**
- * Destroy a map.
- *
- * @param map the map
- */
-DVZ_EXPORT void dvz_map_destroy(DvzMap* map);
+DVZ_EXPORT void dvz_list_destroy(DvzList* list);
 
 
 

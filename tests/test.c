@@ -24,6 +24,7 @@
 #include "test_fileio.h"
 #include "test_graphics.h"
 #include "test_input.h"
+#include "test_list.h"
 #include "test_map.h"
 #include "test_obj.h"
 #include "test_pipe.h"
@@ -103,6 +104,9 @@ int dvz_run_tests(const char* match)
     // Testing map.
     TEST(test_map_1)
     TEST(test_map_2)
+
+    // Testing list.
+    TEST(test_list_1)
 
     // Testing request.
     TEST(test_request_1)
