@@ -69,7 +69,7 @@ void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
 
     // Make framebuffers.
     make_framebuffers(
-        gpu, &canvas->render.framebuffers, &gpu->renderpass, //
+        gpu, &canvas->render.framebuffers, canvas->render.renderpass, //
         canvas->render.swapchain.images, &canvas->render.depth);
 
     // Make synchronization objects.
@@ -107,7 +107,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
-    DvzRenderpass* renderpass = &gpu->renderpass;
+    DvzRenderpass* renderpass = canvas->render.renderpass;
 
     ASSERT(gpu != NULL);
     ASSERT(swapchain != NULL);
@@ -177,7 +177,7 @@ void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
     dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, &gpu->renderpass, &canvas->render.framebuffers);
+    dvz_cmd_begin_renderpass(cmds, idx, canvas->render.renderpass, &canvas->render.framebuffers);
 }
 
 

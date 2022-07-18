@@ -26,7 +26,7 @@ void dvz_canvas_loop(DvzCanvas* canvas, DvzWindow* window, uint64_t n_frames)
 
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
-    DvzRenderpass* renderpass = &gpu->renderpass;
+    DvzRenderpass* renderpass = canvas->render.renderpass;
     DvzFences* fences = &canvas->sync.fences_render_finished;
     DvzFences* fences_bak = &canvas->sync.fences_flight;
     DvzSemaphores* sem_img_available = &canvas->sync.sem_img_available;

@@ -59,8 +59,11 @@ int test_canvas_1(TstSuite* suite)
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
     VkSurfaceKHR surface = dvz_window_surface(host, &window);
 
+    // Create the renderpass.
+    DvzRenderpass renderpass = desktop_renderpass(gpu);
+
     // Create the canvas.
-    DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas canvas = dvz_canvas(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_canvas_create(&canvas, surface);
 
     dvz_canvas_loop(&canvas, &window, N_FRAMES);
@@ -86,7 +89,7 @@ static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, v
 
     DvzPipe* pipe = s->pipe;
     triangle_commands(
-        cmds, idx, &gpu->renderpass, &canvas->render.framebuffers, //
+        cmds, idx, canvas->render.renderpass, &canvas->render.framebuffers, //
         &pipe->u.graphics, &pipe->bindings, s->br);
 }
 
@@ -110,15 +113,18 @@ int test_canvas_triangle(TstSuite* suite)
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
     VkSurfaceKHR surface = dvz_window_surface(host, &window);
 
+    // Create the renderpass.
+    DvzRenderpass renderpass = desktop_renderpass(gpu);
+
     // Create the canvas.
-    DvzCanvas canvas = dvz_canvas(gpu, WIDTH, HEIGHT, 0);
+    DvzCanvas canvas = dvz_canvas(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_canvas_refill(&canvas, _fill_triangle, canvas.refill_user_data);
     dvz_canvas_create(&canvas, surface);
 
     // Create a graphics pipe.
     uvec2 size = {WIDTH, HEIGHT};
     DvzPipe* pipe = dvz_pipelib_graphics(
-        lib, ctx, &gpu->renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE,
+        lib, ctx, &renderpass, 1, size, DVZ_GRAPHICS_TRIANGLE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
 
     // Create the vertex buffer dat.
