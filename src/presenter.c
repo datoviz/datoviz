@@ -163,34 +163,34 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
 
 static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* window)
 {
-    ASSERT(prt != NULL);
-    ASSERT(canvas != NULL);
-    ASSERT(window != NULL);
-    ASSERT(canvas->recorder != NULL);
+    // ASSERT(prt != NULL);
+    // ASSERT(canvas != NULL);
+    // ASSERT(window != NULL);
+    // ASSERT(canvas->recorder != NULL);
 
-    if (!prt->gui_initialized)
-    {
-        // Initialize the GUI.
-        dvz_gui(prt->rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
+    // if (!prt->gui_initialized)
+    // {
+    //     // Initialize the GUI.
+    //     dvz_gui(prt->rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
 
-        // Mark the GUI as initialized.
-        prt->gui_initialized = true;
+    //     // Mark the GUI as initialized.
+    //     prt->gui_initialized = true;
 
-        // Disable the recorder cache as the command buffer will have to be recreated
-        dvz_recorder_cache(canvas->recorder, false);
-    }
+    //     // Disable the recorder cache as the command buffer will have to be recreated
+    //     dvz_recorder_cache(canvas->recorder, false);
+    // }
 
-    // Begin the GUI frame.
-    dvz_gui_frame_begin(window);
+    // // Begin the GUI frame.
+    // dvz_gui_frame_begin(prt->gui, window);
 
-    // GUI callbacks.
-    for (uint32_t i = 0; i < prt->callback_count; i++)
-    {
-        prt->callbacks[i].callback(window, prt->callbacks[i].user_data);
-    }
+    // // GUI callbacks.
+    // for (uint32_t i = 0; i < prt->callback_count; i++)
+    // {
+    //     prt->callbacks[i].callback(window, prt->callbacks[i].user_data);
+    // }
 
-    // End the GUI frame.
-    dvz_gui_frame_end(&canvas->cmds, canvas->render.swapchain.img_idx);
+    // // End the GUI frame.
+    // dvz_gui_frame_end(&canvas->cmds, canvas->render.swapchain.img_idx);
 }
 
 
@@ -226,17 +226,17 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
 void dvz_presenter_gui(
     DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data)
 {
-    ASSERT(prt != NULL);
-    ASSERT(window_id != 0);
-    ASSERT(callback != NULL);
+    // ASSERT(prt != NULL);
+    // ASSERT(window_id != 0);
+    // ASSERT(callback != NULL);
 
-    log_debug("add GUI callback to window 0x%" PRIx64 "");
-    DvzGuiCallbackPayload payload = {
-        .window_id = window_id,
-        .callback = callback,
-        .user_data = user_data,
-    };
-    prt->callbacks[prt->callback_count++] = payload;
+    // log_debug("add GUI callback to window 0x%" PRIx64 "");
+    // DvzGuiCallbackPayload payload = {
+    //     .window_id = window_id,
+    //     .callback = callback,
+    //     .user_data = user_data,
+    // };
+    // prt->callbacks[prt->callback_count++] = payload;
 }
 
 
@@ -360,11 +360,11 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
             _record_command(rd, canvas, swapchain->img_idx);
         }
 
-        // GUI callbacks.
-        if (prt->callback_count > 0)
-        {
-            _gui_callback(prt, canvas, window);
-        }
+        // // GUI callbacks.
+        // if (prt->callback_count > 0)
+        // {
+        //     _gui_callback(prt, canvas, window);
+        // }
 
         // Reset the Submit instance before adding the command buffers.
         dvz_submit_reset(submit);

@@ -694,11 +694,9 @@ int test_vklite_shader(TstSuite*);
 int test_vklite_surface(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
-int test_vklite_gui(TstSuite*);
 
 int test_vklite_canvas_blank(TstSuite*);
 int test_vklite_canvas_triangle(TstSuite*);
-int test_vklite_canvas_gui(TstSuite*);
 
 
 #endif

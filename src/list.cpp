@@ -19,7 +19,6 @@ extern "C" struct DvzList
 {
     std::list<void*> _list;
     std::list<void*>::iterator _iter;
-    // bool _iter_running;
     int64_t _iter_idx;
 };
 

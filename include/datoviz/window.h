@@ -36,6 +36,7 @@ typedef struct DvzWindow DvzWindow;
 // Forward declarations.
 typedef struct DvzMouse DvzMouse;
 typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzGuiWindow DvzGuiWindow;
 
 
 /*************************************************************************************************/
@@ -49,7 +50,7 @@ struct DvzWindow
     DvzBackend backend;
     void* backend_window;
     uint32_t width, height; // in screen coordinates
-    bool has_gui;
+    DvzGuiWindow* gui_window;
 
     // Forward pointers.
     DvzMouse* mouse;

@@ -228,8 +228,8 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     // Destroy the renderpasses.
     if (dvz_obj_is_created(&gpu->renderpass.obj))
         dvz_renderpass_destroy(&gpu->renderpass);
-    if (dvz_obj_is_created(&gpu->renderpass_gui.obj))
-        dvz_renderpass_destroy(&gpu->renderpass_gui);
+    // if (dvz_obj_is_created(&gpu->renderpass_gui.obj))
+    //     dvz_renderpass_destroy(&gpu->renderpass_gui);
 
     // Destroy the command pools.
     log_trace("GPU destroy %d command pool(s)", gpu->queues.queue_family_count);

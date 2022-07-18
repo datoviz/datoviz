@@ -12,6 +12,8 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "list.h"
+#include "vklite.h"
 
 
 
@@ -24,6 +26,9 @@
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
+
+typedef struct DvzGui DvzGui;
+typedef struct DvzGuiWindow DvzGuiWindow;
 
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
@@ -38,12 +43,26 @@ typedef struct ImGuiIO ImGuiIO;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzGui
+{
+    DvzRenderpass renderpass;
+};
+
+
+
+struct DvzGuiWindow
+{
+    DvzFramebuffers framebuffers;
+    DvzCommands cmds;
+    DvzList* callbacks;
+};
+
 
 
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Functions */
 /*************************************************************************************************/
 
 /**
@@ -52,7 +71,7 @@ EXTERN_C_ON
  * @param gpu the GPU
  * @param queue_idx the render queue
  */
-DVZ_EXPORT void dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
+DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
 
 
 
@@ -62,7 +81,7 @@ DVZ_EXPORT void dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
  * @param gui the GUI
  * @param window the window
  */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzWindow* window);
+DVZ_EXPORT void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window);
 
 
 
@@ -133,7 +152,7 @@ DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_destroy();
+DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
 
 
 

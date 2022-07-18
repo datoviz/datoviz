@@ -179,19 +179,23 @@ static void _imgui_destroy()
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
+DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
 {
     ASSERT(gpu != NULL);
 
     if (_imgui_has_context())
     {
         log_warn("GUI context already created, skipping");
-        return;
+        return NULL;
     }
     log_debug("initialize the Dear ImGui context");
     _imgui_init(gpu, queue_idx);
     _imgui_setup();
     _imgui_fonts_upload(gpu);
+
+    DvzGui* gui = (DvzGui*)calloc(1, sizeof(DvzGui));
+    // gui->renderpass;
+    return gui;
 }
 
 
@@ -208,13 +212,15 @@ void dvz_gui_frame_offscreen(uint32_t width, uint32_t height)
 
 
 
-void dvz_gui_frame_begin(DvzWindow* window)
+void dvz_gui_frame_begin(DvzGui* gui, DvzWindow* window)
 {
+    ASSERT(gui != NULL);
+
     // NOTE HACK TODO: glfw is hard-coded here, no other backend supported
-    if (window != NULL && !window->has_gui)
+    if (window != NULL && !window->gui_window)
     {
         _imgui_set_window(window);
-        window->has_gui = true;
+        window->gui_window = NULL; // TODO: set the gui window, not NULL here!
     }
 
     ImGui_ImplVulkan_NewFrame();
@@ -264,4 +270,9 @@ void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx)
 
 
 
-void dvz_gui_destroy() { _imgui_destroy(); }
+void dvz_gui_destroy(DvzGui* gui)
+{
+    ASSERT(gui != NULL);
+    _imgui_destroy();
+    FREE(gui);
+}

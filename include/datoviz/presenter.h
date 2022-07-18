@@ -42,6 +42,7 @@ typedef struct DvzGuiCallbackPayload DvzGuiCallbackPayload;
 
 // Forward declarations.
 typedef struct DvzWindow DvzWindow;
+typedef struct DvzGui DvzGui;
 
 // Callback types.
 typedef void (*DvzGuiCallback)(DvzWindow* window, void* user_data);
@@ -73,9 +74,11 @@ struct DvzPresenter
     DvzClient* client;
 
     // Callbacks.
-    bool gui_initialized;
+    // bool gui_initialized;
     uint32_t callback_count;
     DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
+
+    DvzGui* gui;
 };
 
 

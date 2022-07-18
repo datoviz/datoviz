@@ -85,7 +85,7 @@ struct DvzRender
     // DvzImages* screencast_img;
 
     DvzFramebuffers framebuffers;
-    DvzFramebuffers framebuffers_gui; // used by the GUI renderpass
+    // DvzFramebuffers framebuffers_gui; // used by the GUI renderpass
 
     DvzSubmit submit;
 };
