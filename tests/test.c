@@ -154,7 +154,7 @@ int dvz_run_tests(const char* match)
 
     //
 
-    // Setup the gpu fixture.
+    // Setup the gpu fixture (offscreen only).
     SETUP(setup_gpu)
 
     // Testing resources.
@@ -180,8 +180,8 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_tex_transfers)
     TEST(test_resources_tex_resize)
 
-    // // Testing board.
-    // TEST(test_board_1)
+    // Testing board.
+    TEST(test_board_1)
 
     // // Testing pipe.
     // TEST(test_pipe_1)

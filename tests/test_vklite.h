@@ -226,8 +226,22 @@ static DvzGpu* make_gpu(DvzHost* host)
 
 
 
+static DvzRenderpass offscreen_renderpass(DvzGpu* gpu)
+{
+    return dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+}
+
+
+
+static DvzRenderpass desktop_renderpass(DvzGpu* gpu)
+{
+    return dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+}
+
+
+
 /*************************************************************************************************/
-/*  Test offscreen canvas                                                                        */
+/*  Mock canvases                                                                                */
 /*************************************************************************************************/
 
 static TestCanvas offscreen_canvas(DvzGpu* gpu)
@@ -237,7 +251,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
     canvas.is_offscreen = true;
 
     // Make the renderpass.
-    canvas.renderpass = dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    canvas.renderpass = offscreen_renderpass(gpu);
 
     // Color attachment
     DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
@@ -278,10 +292,6 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
 
 
 
-/*************************************************************************************************/
-/*  Test canvas                                                                                  */
-/*************************************************************************************************/
-
 static TestCanvas
 desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurfaceKHR surface)
 {
@@ -304,7 +314,7 @@ desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurf
     // ASSERT(framebuffer_height > 0);
 
     // Make the renderpass.
-    canvas.renderpass = dvz_gpu_renderpass(gpu, BACKGROUND, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    canvas.renderpass = desktop_renderpass(gpu);
 
     canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface, 3);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
@@ -332,6 +342,11 @@ desktop_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, DvzWindow* window, VkSurf
     return canvas;
 }
 
+
+
+/*************************************************************************************************/
+/*  Test canvas                                                                                  */
+/*************************************************************************************************/
 
 
 static void test_canvas_show(TestCanvas* canvas, FillCallback fill_commands, uint32_t n_frames)

@@ -29,12 +29,14 @@ int test_board_1(TstSuite* suite)
     DvzContext* ctx = dvz_context(gpu);
     ASSERT(ctx != NULL);
 
+    DvzRenderpass renderpass = offscreen_renderpass(gpu);
+
     // Create the board.
     DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Create the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, &gpu->renderpass, "");
+    DvzGraphics graphics = triangle_graphics(gpu, &renderpass, "");
 
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
@@ -62,7 +64,7 @@ int test_board_1(TstSuite* suite)
 
     // Command buffer.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
-    triangle_commands(&cmds, 0, &gpu->renderpass, &board.framebuffers, &graphics, &bindings, br);
+    triangle_commands(&cmds, 0, &renderpass, &board.framebuffers, &graphics, &bindings, br);
 
     // Render.
     dvz_cmd_submit_sync(&cmds, 0);
