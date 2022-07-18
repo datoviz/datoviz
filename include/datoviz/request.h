@@ -299,6 +299,8 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
  *
  * A board is an offscreen rectangular area on which to render.
  *
+ * NOTE: background color not implemented yet
+ *
  * @param rqr the requester
  * @param width the board width
  * @param height the board height
@@ -367,6 +369,8 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
  * Create a request for canvas creation.
  *
  * A canvas is a live window on which to render.
+ *
+ * NOTE: background color not implemented yet
  *
  * @param rqr the requester
  * @param width the canvas width (in screen pixels)

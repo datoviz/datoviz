@@ -524,8 +524,8 @@ set(sources
     "src/canvas.c"
     "src/canvas_window.c"
     "src/workspace.c"
-    # "src/renderer.cpp"
-    # "src/recorder.c"
+    "src/renderer.cpp"
+    "src/recorder.c"
 
     # Client
     "src/request.c"
@@ -593,7 +593,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_graphics.c"
         "tests/test_canvas.c"
         "tests/test_workspace.c"
-        # "tests/test_renderer.c"
+        "tests/test_renderer.c"
 
         # Client
         "tests/test_window.c"

@@ -192,10 +192,10 @@ int dvz_run_tests(const char* match)
     // Testing workspace.
     TEST(test_workspace_1)
 
-    // // Testing renderer.
-    // TEST(test_renderer_1)
-    // TEST(test_renderer_resize)
-    // TEST(test_renderer_image)
+    // Testing renderer.
+    TEST(test_renderer_1)
+    TEST(test_renderer_resize)
+    TEST(test_renderer_image)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
@@ -215,14 +215,6 @@ int dvz_run_tests(const char* match)
 
     // Testing window.
     TEST(test_window_1)
-
-    // // Testing input.
-    // TEST(test_input_mouse_1)
-    // TEST(test_input_drag_1)
-    // TEST(test_input_click_1)
-    // TEST(test_input_keyboard_1)
-    // TEST(test_input_timer_1)
-    // TEST(test_input_glfw_1)
 
     // Testing input.
     TEST(test_client_1)
