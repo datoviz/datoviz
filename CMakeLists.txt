@@ -522,7 +522,6 @@ set(sources
     "src/graphics.c"
     "src/graphics_data.c"
     "src/canvas.c"
-    "src/canvas_window.c"
     "src/loop.c"
     "src/workspace.c"
     "src/renderer.cpp"

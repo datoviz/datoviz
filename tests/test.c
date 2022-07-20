@@ -142,7 +142,6 @@ int dvz_run_tests(const char* match)
 
     // Testing canvas.
     TEST(test_canvas_1)
-    TEST(test_canvas_triangle)
 
     // Testing simple loop.
     TEST(test_loop_1)

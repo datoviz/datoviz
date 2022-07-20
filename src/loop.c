@@ -5,7 +5,6 @@
 #include "loop.h"
 #include "_glfw.h"
 #include "canvas.h"
-#include "canvas_window.h"
 #include "common.h"
 #include "gui.h"
 #include "host.h"

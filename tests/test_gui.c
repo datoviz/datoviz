@@ -11,7 +11,6 @@
 #include "test_gui.h"
 #include "../src/vklite_utils.h"
 #include "canvas.h"
-#include "canvas_window.h"
 #include "fileio.h"
 #include "gui.h"
 #include "resources.h"
@@ -242,7 +241,7 @@ int test_gui_1(TstSuite* suite)
     dvz_canvas_fill_overlay(&canvas, _fill_overlay, gui_window);
 
     // Basic event loop.
-    dvz_canvas_loop(&canvas, &window, N_FRAMES);
+    // TODO: use dvz_loop()
 
     // Destroy objects.
     dvz_canvas_destroy(&canvas);

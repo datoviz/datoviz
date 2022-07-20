@@ -60,7 +60,8 @@ typedef struct DvzCanvas DvzCanvas;
 typedef struct DvzRender DvzRender;
 typedef struct DvzSync DvzSync;
 
-typedef void (*DvzCanvasRefill)(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data);
+typedef void (*DvzCanvasRefill)(
+    DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data);
 typedef void (*DvzCanvasFillOverlay)(DvzCanvas* canvas, void* user_data);
 
 // Forward declarations.
@@ -123,7 +124,7 @@ struct DvzCanvas
     uint8_t* rgb; // GPU buffer storing the image
 
     DvzCommands cmds;
-    DvzCanvasRefill refill; // refill callback, only used in conjunction with dvz_canvas_loop()
+    DvzCanvasRefill refill; // refill callback, only used in conjunction with dvz_loop()
     DvzCanvasFillOverlay fill_overlay;
     void *refill_user_data, *fill_overlay_user_data;
     DvzRender render;
@@ -186,7 +187,7 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
 /**
  * Register a refill callback.
  *
- * Only to be used in conjunction with dvz_canvas_loop().
+ * Only to be used in conjunction with dvz_loop().
  *
  * @param canvas a canvas
  * @param refill refill callback
@@ -198,7 +199,7 @@ DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, voi
 /**
  * Register a fill overlay callback.
  *
- * Only to be used in conjunction with dvz_canvas_loop().
+ * Only to be used in conjunction with dvz_loop().
  *
  * @param canvas a canvas
  * @param refill refill callback
