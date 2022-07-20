@@ -231,6 +231,8 @@ void dvz_loop_run(DvzLoop* loop, uint64_t n_frames)
 void dvz_loop_destroy(DvzLoop* loop)
 {
     ASSERT(loop != NULL);
+    dvz_renderpass_destroy(&loop->renderpass);
+    dvz_surface_destroy(loop->gpu->host, loop->surface);
     dvz_canvas_destroy(&loop->canvas);
     dvz_window_destroy(&loop->window);
     if (loop->gui != NULL)

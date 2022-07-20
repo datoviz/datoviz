@@ -24,6 +24,8 @@
 
 int test_loop_1(TstSuite*);
 
+int test_loop_2(TstSuite*);
+
 
 
 #endif
