@@ -37,6 +37,23 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
 
+# NOTE: -one-off script to remove unnecessary #includes
+# need to install llvm, llvm-dev, clang from the same version of iwyu
+# fix the source files with:
+#
+# 1. In the build/ subfolder of datoviz:
+# cmake ..
+# make C=include-what-you-use CFLAGS="-Xiwyu --error_always" 2>iwyu.out
+#
+# 2. In the iwyu git cloned directory:
+# python fix_includes.py -n --nosafe_headers
+#     --ignore_re="_deps|_shaders.c|_textures.c|_fonts.c"
+#     < ~/git/datoviz-distributed/build/iwyu.out
+#
+find_program(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
+set(CMAKE_C_INCLUDE_WHAT_YOU_USE iwyu -Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;args)
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Detect the OS
