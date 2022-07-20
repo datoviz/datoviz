@@ -97,7 +97,7 @@ void dvz_gui_frame_offscreen(uint32_t width, uint32_t height);
  * @param gui the GUI
  * @param window the window
  */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzWindow* window);
+DVZ_EXPORT void dvz_gui_frame_begin(DvzGuiWindow* gui_window, DvzCommands* cmds, uint32_t idx);
 
 
 

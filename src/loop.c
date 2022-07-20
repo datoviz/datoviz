@@ -27,6 +27,10 @@ DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 
     // Create the window and surface.
     // NOTE: glfw hard-coded for now
+
+    // WARNING: the flags are passed to both the window and the loop. Need to make sure there are
+    // no conflicts.
+
     loop->window = dvz_window(DVZ_BACKEND_GLFW, width, height, flags);
     loop->surface = dvz_window_surface(gpu->host, &loop->window);
 
@@ -104,6 +108,9 @@ int dvz_loop_frame(DvzLoop* loop)
     ASSERT(cmds != NULL);
     ASSERT(submit != NULL);
 
+    DvzGui* gui = loop->gui;
+    DvzGuiWindow* gui_window = loop->gui_window;
+
     // At the beginning, fill the command buffer.
     if (loop->frame_idx == 0)
     {
@@ -114,11 +121,9 @@ int dvz_loop_frame(DvzLoop* loop)
         }
     }
 
-    // Main loop->
-    // log_debug("iteration %d", frame);
-
     backend_poll_events(gpu->host->backend);
 
+    // Return with an exit code if the window is closed, so the main loop will stop.
     if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
         return -1;
 
@@ -158,13 +163,20 @@ int dvz_loop_frame(DvzLoop* loop)
         dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
         dvz_images_create(&canvas->render.depth);
 
+        // TODO: refactor with canvas_recreate??
+
         // Recreate the framebuffers with the new size.
         ASSERT(framebuffers->attachments[0]->shape[0] == width);
         ASSERT(framebuffers->attachments[0]->shape[1] == height);
         dvz_framebuffers_create(framebuffers, renderpass);
 
-        // TODO: canvas_recreate??
-        // TODO: recreate gui framebuffers if any
+        // Recreate the overlay framebuffers.
+        if (gui_window != NULL)
+        {
+            dvz_framebuffers_destroy(&gui_window->framebuffers);
+            ASSERT(gui != NULL);
+            dvz_framebuffers_create(&gui_window->framebuffers, &gui->renderpass);
+        }
 
         // Need to refill the command buffers.
         for (uint32_t i = 0; i < cmds->count; i++)
@@ -184,9 +196,15 @@ int dvz_loop_frame(DvzLoop* loop)
         dvz_submit_commands(submit, cmds);
 
         // Custom callback for overlay filling.
-        if (canvas->fill_overlay)
+        if (loop->overlay != NULL)
         {
-            canvas->fill_overlay(canvas, canvas->fill_overlay_user_data);
+            ASSERT(gui != NULL);
+            ASSERT(gui_window != NULL);
+
+            dvz_gui_frame_begin(gui_window, &gui_window->cmds, swapchain->img_idx);
+            loop->overlay(loop, loop->overlay_data);
+            dvz_gui_frame_end(&gui_window->cmds, swapchain->img_idx);
+            dvz_submit_commands(submit, &gui_window->cmds);
         }
 
         dvz_submit_wait_semaphores(

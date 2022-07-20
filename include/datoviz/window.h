@@ -21,8 +21,8 @@
 
 typedef enum
 {
-    DVZ_WINDOW_FLAGS_NONE,
-    DVZ_WINDOW_FLAGS_HIDDEN,
+    DVZ_WINDOW_FLAGS_NONE = 0x0000,
+    DVZ_WINDOW_FLAGS_HIDDEN = 0x1000,
 } DvzWindowFlags;
 
 

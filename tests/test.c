@@ -141,20 +141,21 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_triangle)
 
     // Testing canvas.
-    TEST(test_canvas_1)
+    // TEST(test_canvas_1)
 
     // Testing simple loop.
     TEST(test_loop_1)
     TEST(test_loop_2)
+    TEST(test_loop_gui)
 
-    // Testing GUI.
-    TEST(test_vklite_gui)
-    TEST(test_vklite_canvas_gui)
-    TEST(test_gui_1)
+    // // Testing GUI.
+    // TEST(test_vklite_gui)
+    // TEST(test_vklite_canvas_gui)
+    // TEST(test_gui_1)
 
-    // Testing presenter.
-    TEST(test_presenter_1)
-    TEST(test_presenter_2)
+    // // Testing presenter.
+    // TEST(test_presenter_1)
+    // TEST(test_presenter_2)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

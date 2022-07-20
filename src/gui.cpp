@@ -256,9 +256,16 @@ void dvz_gui_frame_offscreen(uint32_t width, uint32_t height)
 
 
 
-void dvz_gui_frame_begin(DvzWindow* window)
+void dvz_gui_frame_begin(DvzGuiWindow* gui_window, DvzCommands* cmds, uint32_t idx)
 {
+    ASSERT(gui_window != NULL);
+    ASSERT(cmds != NULL);
+
+    DvzWindow* window = gui_window->window;
     ASSERT(window != NULL);
+
+    DvzGui* gui = gui_window->gui;
+    ASSERT(gui != NULL);
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize.x = window->width;
@@ -267,6 +274,9 @@ void dvz_gui_frame_begin(DvzWindow* window)
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    dvz_cmd_begin(cmds, idx);
+    dvz_cmd_begin_renderpass(cmds, idx, &gui->renderpass, &gui_window->framebuffers);
 }
 
 
@@ -274,8 +284,12 @@ void dvz_gui_frame_begin(DvzWindow* window)
 void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx)
 {
     ASSERT(cmds != NULL);
+
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx], VK_NULL_HANDLE);
+
+    dvz_cmd_end_renderpass(cmds, idx);
+    dvz_cmd_end(cmds, idx);
 }
 
 

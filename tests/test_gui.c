@@ -9,17 +9,11 @@
 /*************************************************************************************************/
 
 #include "test_gui.h"
-#include "../src/vklite_utils.h"
 #include "canvas.h"
-#include "fileio.h"
 #include "gui.h"
-#include "resources.h"
-#include "surface.h"
 #include "test.h"
 #include "test_vklite.h"
 #include "testing.h"
-#include "vklite.h"
-#include "window.h"
 
 
 
@@ -92,16 +86,16 @@ static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
 
-    // Begin the GUI frame.
-    dvz_gui_frame_begin(canvas->window);
+    // // Begin the GUI frame.
+    // dvz_gui_frame_begin(canvas->, cmds, idx);
 
-    // GUI code.
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
-    dvz_gui_text("Hello world");
-    dvz_gui_dialog_end();
+    // // GUI code.
+    // dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    // dvz_gui_text("Hello world");
+    // dvz_gui_dialog_end();
 
-    // End the GUI frame.
-    dvz_gui_frame_end(cmds, idx);
+    // // End the GUI frame.
+    // dvz_gui_frame_end(cmds, idx);
 
     // End the renderpass and command buffer.
     dvz_cmd_end_renderpass(cmds, idx);
@@ -191,7 +185,7 @@ static void _fill_overlay(DvzCanvas* canvas, void* user_data)
     dvz_cmd_begin_renderpass(cmds, img_idx, renderpass, framebuffers);
 
     // Make a GUI.
-    dvz_gui_frame_begin(gui_window->window);
+    dvz_gui_frame_begin(gui_window, cmds, img_idx);
     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
     dvz_gui_text("Hello world");
     dvz_gui_dialog_end();

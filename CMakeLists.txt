@@ -50,8 +50,8 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 #     --ignore_re="_deps|_shaders.c|_textures.c|_fonts.c"
 #     < ~/git/datoviz-distributed/build/iwyu.out
 #
-find_program(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
-set(CMAKE_C_INCLUDE_WHAT_YOU_USE iwyu -Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;args)
+# find_program(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
+# set(CMAKE_C_INCLUDE_WHAT_YOU_USE iwyu -Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;args)
 
 
 

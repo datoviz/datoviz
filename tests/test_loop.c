@@ -9,8 +9,9 @@
 /*************************************************************************************************/
 
 #include "test_loop.h"
-#include "../src/vklite_utils.h"
+// #include "../src/vklite_utils.h"
 #include "canvas.h"
+#include "gui.h"
 #include "loop.h"
 #include "pipe.h"
 #include "pipelib.h"
@@ -130,6 +131,37 @@ int test_loop_2(TstSuite* suite)
     dvz_dat_destroy(dat_vertex);
     dvz_pipelib_destroy(lib);
     dvz_context_destroy(ctx);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
+static void _gui_callback(DvzLoop* loop, void* user_data)
+{
+    ASSERT(loop != NULL);
+
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){400, 400});
+    dvz_gui_text("Hello");
+    dvz_gui_dialog_end();
+}
+
+int test_loop_gui(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+    DvzHost* host = get_host(suite);
+    ASSERT(host != NULL);
+
+    DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+
+    dvz_loop_overlay(loop, _gui_callback, NULL);
+
+    dvz_loop_run(loop, N_FRAMES);
+
+    dvz_loop_destroy(loop);
     dvz_gpu_destroy(gpu);
     return 0;
 }
