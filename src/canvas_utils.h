@@ -66,6 +66,7 @@ static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_id
     ASSERT(canvas != NULL);
     ASSERT(cmds != NULL);
 
+
     DvzGpu* gpu = canvas->gpu;
     ASSERT(gpu != NULL);
 

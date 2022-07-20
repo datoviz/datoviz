@@ -26,6 +26,7 @@
 #include "test_gui.h"
 #include "test_input.h"
 #include "test_list.h"
+#include "test_loop.h"
 #include "test_map.h"
 #include "test_obj.h"
 #include "test_pipe.h"
@@ -139,14 +140,17 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_canvas_blank)
     TEST(test_vklite_canvas_triangle)
 
+    // Testing canvas.
+    TEST(test_canvas_1)
+    TEST(test_canvas_triangle)
+
+    // Testing simple loop.
+    TEST(test_loop_1)
+
     // Testing GUI.
     TEST(test_vklite_gui)
     TEST(test_vklite_canvas_gui)
     TEST(test_gui_1)
-
-    // Testing canvas.
-    TEST(test_canvas_1)
-    TEST(test_canvas_triangle)
 
     // Testing presenter.
     TEST(test_presenter_1)

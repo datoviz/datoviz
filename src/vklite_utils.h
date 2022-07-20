@@ -1196,6 +1196,8 @@ static void begin_render_pass(
     ASSERT(framebuffer != VK_NULL_HANDLE);
     ASSERT(width > 0);
     ASSERT(height > 0);
+    // ASSERT(clear_count > 0);
+    // ASSERT(clear_colors != NULL);
 
     VkRenderPassBeginInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

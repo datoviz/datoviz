@@ -17,6 +17,10 @@
 DvzCanvas
 dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags)
 {
+    // WARNING: ensure that the pointer renderpass will live through the duration of the canvas
+    // lifecycle. If a pointer to a structure, that structure should not be returned as a function,
+    // otherwise it will be copied and the pointer will be invalid.
+
     ASSERT(gpu != NULL);
     ASSERT(width > 0);
     ASSERT(height > 0);
