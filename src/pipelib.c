@@ -89,7 +89,7 @@ DvzPipe* dvz_pipelib_graphics(
     ASSERT(dvz_obj_is_created(&ctx->obj));
 
     // Allocate a DvzPipe pointer.
-    DvzPipe* pipe = dvz_container_alloc(&lib->graphics);
+    DvzPipe* pipe = (DvzPipe*)dvz_container_alloc(&lib->graphics);
 
     // Initialize the pipe.
     *pipe = dvz_pipe(gpu);

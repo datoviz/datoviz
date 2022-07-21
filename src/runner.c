@@ -46,7 +46,7 @@ static void _process_record_requests(DvzRenderer* rd, DvzCanvas* canvas, uint32_
     if (rd->req_count == 0)
     {
         log_debug("default command buffer refill with blank canvas for image #%d", img_idx);
-        blank_commands(canvas, &canvas->cmds, img_idx, canvas->refill_user_data);
+        blank_commands(canvas, &canvas->cmds, img_idx, canvas->refill_data);
         return;
     }
 

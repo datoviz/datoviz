@@ -117,7 +117,7 @@ int dvz_loop_frame(DvzLoop* loop)
         for (uint32_t i = 0; i < cmds->count; i++)
         {
             dvz_cmd_reset(cmds, i);
-            canvas->refill(canvas, cmds, i, canvas->refill_user_data);
+            canvas->refill(canvas, cmds, i, canvas->refill_data);
         }
     }
 
@@ -182,7 +182,7 @@ int dvz_loop_frame(DvzLoop* loop)
         for (uint32_t i = 0; i < cmds->count; i++)
         {
             dvz_cmd_reset(cmds, i);
-            canvas->refill(canvas, cmds, i, canvas->refill_user_data);
+            canvas->refill(canvas, cmds, i, canvas->refill_data);
         }
     }
     else
@@ -201,9 +201,9 @@ int dvz_loop_frame(DvzLoop* loop)
             ASSERT(gui != NULL);
             ASSERT(gui_window != NULL);
 
-            dvz_gui_frame_begin(gui_window, &gui_window->cmds, swapchain->img_idx);
+            dvz_gui_window_begin(gui_window, swapchain->img_idx);
             loop->overlay(loop, loop->overlay_data);
-            dvz_gui_frame_end(&gui_window->cmds, swapchain->img_idx);
+            dvz_gui_window_end(gui_window, swapchain->img_idx);
             dvz_submit_commands(submit, &gui_window->cmds);
         }
 

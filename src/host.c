@@ -112,7 +112,7 @@ DvzHost* dvz_host(DvzBackend backend)
         DvzGpu* gpu = NULL;
         for (uint32_t i = 0; i < gpu_count; i++)
         {
-            gpu = dvz_container_alloc(&host->gpus);
+            gpu = (DvzGpu*)dvz_container_alloc(&host->gpus);
             dvz_obj_init(&gpu->obj);
             gpu->host = host;
             gpu->idx = i;

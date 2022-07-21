@@ -48,17 +48,18 @@ struct DvzGui
 {
     DvzGpu* gpu;
     DvzRenderpass renderpass;
+    DvzContainer gui_windows;
 };
 
 
 
 struct DvzGuiWindow
 {
+    DvzObject obj;
     DvzGui* gui;
-    DvzWindow* window;
+    uint32_t width, height;
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
-    // DvzList* callbacks;
 };
 
 
@@ -76,39 +77,6 @@ EXTERN_C_ON
  * @param queue_idx the render queue
  */
 DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
-
-
-
-/**
- * To be called at the beginning of the command buffer recording (offscreen version).
- *
- * @param gui the GUI
- * @param width the viewport width
- * @param height the viewport height
- */
-DVZ_EXPORT
-void dvz_gui_frame_offscreen(uint32_t width, uint32_t height);
-
-
-
-/**
- * To be called at the beginning of the command buffer recording.
- *
- * @param gui the GUI
- * @param window the window
- */
-DVZ_EXPORT void dvz_gui_frame_begin(DvzGuiWindow* gui_window, DvzCommands* cmds, uint32_t idx);
-
-
-
-/**
- * To be called at the end of the command buffer recording.
- *
- * @param gui the GUI
- * @param cmds the command buffer set
- * @param idx the command buffer index within the set
- */
-DVZ_EXPORT void dvz_gui_frame_end(DvzCommands* cmds, uint32_t idx);
 
 
 
@@ -134,6 +102,38 @@ DVZ_EXPORT void dvz_gui_destroy(DvzGui* gui);
  */
 DVZ_EXPORT DvzGuiWindow*
 dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, uint32_t queue_idx);
+
+
+
+/**
+ * Initialize an offscreen GUI.
+ *
+ * @param gui the GUI
+ * @returns gui_window
+ */
+DVZ_EXPORT DvzGuiWindow*
+dvz_gui_offscreen(DvzGui* gui, uint32_t width, uint32_t height, uint32_t queue_idx);
+
+
+
+/**
+ * To be called at the beginning of the command buffer recording.
+ *
+ * @param gui the GUI
+ * @param window the window
+ */
+DVZ_EXPORT void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx);
+
+
+
+/**
+ * To be called at the end of the command buffer recording.
+ *
+ * @param gui the GUI
+ * @param cmds the command buffer set
+ * @param idx the command buffer index within the set
+ */
+DVZ_EXPORT void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx);
 
 
 

@@ -62,7 +62,6 @@ typedef struct DvzSync DvzSync;
 
 typedef void (*DvzCanvasRefill)(
     DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data);
-typedef void (*DvzCanvasFillOverlay)(DvzCanvas* canvas, void* user_data);
 
 // Forward declarations.
 typedef struct DvzRecorder DvzRecorder;
@@ -125,8 +124,8 @@ struct DvzCanvas
 
     DvzCommands cmds;
     DvzCanvasRefill refill; // refill callback, only used in conjunction with dvz_loop()
-    DvzCanvasFillOverlay fill_overlay;
-    void *refill_user_data, *fill_overlay_user_data;
+    void* refill_data;
+
     DvzRender render;
     DvzSync sync;
 
@@ -193,19 +192,6 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
  * @param refill refill callback
  */
 DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data);
-
-
-
-/**
- * Register a fill overlay callback.
- *
- * Only to be used in conjunction with dvz_loop().
- *
- * @param canvas a canvas
- * @param refill refill callback
- */
-DVZ_EXPORT void
-dvz_canvas_fill_overlay(DvzCanvas* canvas, DvzCanvasFillOverlay fill_overlay, void* user_data);
 
 
 

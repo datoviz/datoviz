@@ -34,31 +34,28 @@ int test_vklite_gui(TstSuite* suite)
     //     dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     TestCanvas canvas = offscreen_canvas(gpu);
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     // Need to init the GUI engine.
     DvzGui* gui = dvz_gui(gpu, 0);
 
-    DvzFramebuffers* framebuffers = &canvas.framebuffers;
-
-    DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    dvz_cmd_begin(&cmds, 0);
-    dvz_cmd_begin_renderpass(&cmds, 0, &canvas.renderpass, &canvas.framebuffers);
-
     // Mark the beginning and end of the frame.
-    dvz_gui_frame_offscreen(WIDTH, HEIGHT);
-    // The GUI code goes here.
+    DvzGuiWindow* gui_window = dvz_gui_offscreen(gui, WIDTH, HEIGHT, 0);
 
+    // Start the recording of the GUI code.
+    dvz_gui_window_begin(gui_window, 0);
+
+    // The GUI code goes here.
     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
     dvz_gui_text("Hello world");
     dvz_gui_dialog_end();
     // dvz_gui_demo();
 
-    dvz_gui_frame_end(&cmds, 0);
+    // Stop the recording of the GUI code.
+    dvz_gui_window_end(gui_window, 0);
+    dvz_cmd_submit_sync(&gui_window->cmds, 0);
 
-    dvz_cmd_end_renderpass(&cmds, 0);
-    dvz_cmd_end(&cmds, 0);
-    dvz_cmd_submit_sync(&cmds, 0);
-
+    // Save a screenshot.
     uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
     char path[1024];
     snprintf(path, sizeof(path), "%s/imgui.ppm", ARTIFACTS_DIR);
@@ -87,7 +84,7 @@ static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
     dvz_cmd_begin_renderpass(cmds, idx, &canvas->renderpass, &canvas->framebuffers);
 
     // // Begin the GUI frame.
-    // dvz_gui_frame_begin(canvas->, cmds, idx);
+    // dvz_gui_window_begin(canvas->, cmds, idx);
 
     // // GUI code.
     // dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
@@ -95,7 +92,7 @@ static void _fill_gui(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
     // dvz_gui_dialog_end();
 
     // // End the GUI frame.
-    // dvz_gui_frame_end(cmds, idx);
+    // dvz_gui_window_end(cmds, idx);
 
     // End the renderpass and command buffer.
     dvz_cmd_end_renderpass(cmds, idx);
@@ -185,11 +182,11 @@ static void _fill_overlay(DvzCanvas* canvas, void* user_data)
     dvz_cmd_begin_renderpass(cmds, img_idx, renderpass, framebuffers);
 
     // Make a GUI.
-    dvz_gui_frame_begin(gui_window, cmds, img_idx);
+    dvz_gui_window_begin(gui_window, img_idx);
     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
     dvz_gui_text("Hello world");
     dvz_gui_dialog_end();
-    dvz_gui_frame_end(cmds, img_idx);
+    dvz_gui_window_end(gui_window, img_idx);
 
     // Stop recording the command buffer.
     dvz_cmd_end_renderpass(cmds, img_idx);
@@ -232,7 +229,7 @@ int test_gui_1(TstSuite* suite)
     DvzGuiWindow* gui_window =
         dvz_gui_window(gui, &window, canvas.render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
 
-    dvz_canvas_fill_overlay(&canvas, _fill_overlay, gui_window);
+    // dvz_canvas_fill_overlay(&canvas, _fill_overlay, gui_window);
 
     // Basic event loop.
     // TODO: use dvz_loop()

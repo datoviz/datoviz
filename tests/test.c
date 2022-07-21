@@ -146,7 +146,7 @@ int dvz_run_tests(const char* match)
     // Testing simple loop.
     TEST(test_loop_1)
     TEST(test_loop_2)
-    TEST(test_loop_gui)
+    // TEST(test_loop_gui)
 
     // // Testing GUI.
     // TEST(test_vklite_gui)

@@ -53,7 +53,7 @@ int test_utils_obj_1(TstSuite* suite)
     AT(container.count == 0);
 
     // Allocate one object.
-    TestObject* a = dvz_container_alloc(&container);
+    TestObject* a = (TestObject*)dvz_container_alloc(&container);
     AT(a != NULL);
     a->x = 1;
     dvz_obj_created(&a->obj);
@@ -64,7 +64,7 @@ int test_utils_obj_1(TstSuite* suite)
     AT(container.count == 1);
 
     // Allocate another one.
-    TestObject* b = dvz_container_alloc(&container);
+    TestObject* b = (TestObject*)dvz_container_alloc(&container);
     AT(b != NULL);
     b->x = 2;
     dvz_obj_created(&b->obj);
@@ -77,7 +77,7 @@ int test_utils_obj_1(TstSuite* suite)
     dvz_obj_destroyed(&a->obj);
 
     // Allocate another one.
-    TestObject* c = dvz_container_alloc(&container);
+    TestObject* c = (TestObject*)dvz_container_alloc(&container);
     AT(c != NULL);
     c->x = 3;
     dvz_obj_created(&c->obj);
@@ -88,7 +88,7 @@ int test_utils_obj_1(TstSuite* suite)
 
     // Allocate another one.
     // Container will be reallocated.
-    TestObject* d = dvz_container_alloc(&container);
+    TestObject* d = (TestObject*)dvz_container_alloc(&container);
     AT(d != NULL);
     d->x = 4;
     dvz_obj_created(&d->obj);

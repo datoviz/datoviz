@@ -181,7 +181,7 @@ static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* windo
     // }
 
     // // Begin the GUI frame.
-    // dvz_gui_frame_begin(prt->gui, window);
+    // dvz_gui_window_begin(prt->gui, window);
 
     // // GUI callbacks.
     // for (uint32_t i = 0; i < prt->callback_count; i++)
@@ -190,7 +190,7 @@ static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* windo
     // }
 
     // // End the GUI frame.
-    // dvz_gui_frame_end(&canvas->cmds, canvas->render.swapchain.img_idx);
+    // dvz_gui_window_end(&canvas->cmds, canvas->render.swapchain.img_idx);
 }
 
 
