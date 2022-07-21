@@ -25,7 +25,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_gui(TstSuite*);
+int test_gui_offscreen(TstSuite*);
 
 int test_vklite_canvas_gui(TstSuite*);
 

@@ -21,7 +21,7 @@
 /*  Tests with vklite                                                                            */
 /*************************************************************************************************/
 
-int test_vklite_gui(TstSuite* suite)
+int test_gui_offscreen(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     DvzHost* host = get_host(suite);
@@ -40,7 +40,7 @@ int test_vklite_gui(TstSuite* suite)
     DvzGui* gui = dvz_gui(gpu, 0);
 
     // Mark the beginning and end of the frame.
-    DvzGuiWindow* gui_window = dvz_gui_offscreen(gui, WIDTH, HEIGHT, 0);
+    DvzGuiWindow* gui_window = dvz_gui_offscreen(gui, canvas.images, 0);
 
     // Start the recording of the GUI code.
     dvz_gui_window_begin(gui_window, 0);

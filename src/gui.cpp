@@ -281,6 +281,8 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
     gui_window->width = images->shape[0];
     gui_window->height = images->shape[1];
 
+    gui_window->is_offscreen = false;
+
     // Create the command buffers.
     gui_window->cmds = dvz_commands(gpu, queue_idx, images->count);
 
@@ -296,11 +298,10 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
 
 
 
-DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, uint32_t width, uint32_t height, uint32_t queue_idx)
+DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_idx)
 {
     ASSERT(gui != NULL);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
+    ASSERT(images != NULL);
 
     DvzGpu* gpu = gui->gpu;
     ASSERT(gpu != NULL);
@@ -309,11 +310,16 @@ DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, uint32_t width, uint32_t height, ui
     gui_window->gui = gui;
 
     // GUI window width and height relate to the framebuffer, not the window size.
-    gui_window->width = width;
-    gui_window->height = height;
+    gui_window->width = images->shape[0];
+    gui_window->height = images->shape[1];
+
+    gui_window->is_offscreen = true;
 
     // Create the command buffers.
     gui_window->cmds = dvz_commands(gpu, queue_idx, 1);
+
+    // Create the framebuffers.
+    gui_window->framebuffers = _imgui_framebuffers(gpu, &gui->renderpass, images);
 
     dvz_obj_created(&gui_window->obj);
     return gui_window;
@@ -337,8 +343,7 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx)
 
     ImGui_ImplVulkan_NewFrame();
 
-    // HACK: detect whether the GUI window is offscreen or not.
-    if (!dvz_obj_is_created(&gui_window->framebuffers.obj))
+    if (!gui_window->is_offscreen)
         ImGui_ImplGlfw_NewFrame();
 
     ImGui::NewFrame();
@@ -375,11 +380,8 @@ void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t he
     ASSERT(gui != NULL);
 
     // Recreate the framebuffers.
-    if (dvz_obj_is_created(&gui_window->framebuffers.obj))
-    {
-        dvz_framebuffers_destroy(&gui_window->framebuffers);
-        dvz_framebuffers_create(&gui_window->framebuffers, &gui->renderpass);
-    }
+    dvz_framebuffers_destroy(&gui_window->framebuffers);
+    dvz_framebuffers_create(&gui_window->framebuffers, &gui->renderpass);
 }
 
 
@@ -387,8 +389,7 @@ void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t he
 void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 {
     ASSERT(gui_window != NULL);
-    if (!dvz_obj_is_created(&gui_window->framebuffers.obj))
-        dvz_framebuffers_destroy(&gui_window->framebuffers);
+    dvz_framebuffers_destroy(&gui_window->framebuffers);
     dvz_obj_destroyed(&gui_window->obj);
 }
 

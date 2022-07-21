@@ -58,6 +58,7 @@ struct DvzGuiWindow
     DvzObject obj;
     DvzGui* gui;
     uint32_t width, height;
+    bool is_offscreen;
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
 };
@@ -111,8 +112,7 @@ dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, uint32_t queue
  * @param gui the GUI
  * @returns gui_window
  */
-DVZ_EXPORT DvzGuiWindow*
-dvz_gui_offscreen(DvzGui* gui, uint32_t width, uint32_t height, uint32_t queue_idx);
+DVZ_EXPORT DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_idx);
 
 
 
