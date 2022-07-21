@@ -297,6 +297,7 @@ int test_presenter_gui(TstSuite* suite)
     // Make a canvas creation request.
     req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
     dvz_requester_add(&rqr, req);
+    // DvzId canvas_id = req.id;
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying

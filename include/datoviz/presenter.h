@@ -76,11 +76,15 @@ struct DvzPresenter
     int flags;
 
     // GUI callbacks.
+    DvzGui* gui;
     uint32_t callback_count;
     DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
 
-    DvzGui* gui;
-    DvzMap* gui_map;
+    // Mappings.
+    struct
+    {
+        DvzMap* guis;
+    } maps;
 };
 
 

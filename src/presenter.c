@@ -45,16 +45,30 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
     DvzHost* host = gpu->host;
     ASSERT(host != NULL);
 
+    DvzId id = rq.id;
+
+    DvzCanvas* canvas = NULL;
+    DvzWindow* window = NULL;
+    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    DvzGuiWindow* gui_window = NULL;
+    bool has_gui = false;
+
     switch (rq.action)
     {
+
+        // Create a canvas.
     case DVZ_REQUEST_ACTION_CREATE:;
+
+        log_debug("process canvas creation request");
+
+        // TODO: refactor in standalone static function.
 
         // When the client receives a REQUEST event with a canvas creation command, it will *also*
         // create a window in the client with the same id and size. The canvas and window will be
         // linked together via a surface.
 
         // Retrieve the canvas that was just created by the renderer in _requester_callback().
-        DvzCanvas* canvas = dvz_renderer_canvas(rd, rq.id);
+        canvas = dvz_renderer_canvas(rd, id);
 
         // TODO: canvas.screen_width/height because this is the window size, not the framebuffer
         // size
@@ -63,10 +77,10 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 
         // Create a client window.
         // NOTE: the window's id in the Client matches the canvas's id in the Renderer.
-        DvzWindow* window = create_client_window(client, rq.id, width, height, 0);
+        window = create_client_window(client, id, width, height, 0);
 
         // Create a surface (requires the renderer's GPU).
-        VkSurfaceKHR surface = dvz_window_surface(host, window);
+        surface = dvz_window_surface(host, window);
 
         // Finally, associate the canvas with the created window surface.
         dvz_canvas_create(canvas, surface);
@@ -76,25 +90,52 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
 
         // Create the associated GUI window if requested.
-        bool has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
+        has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
         if (has_gui)
         {
             ASSERT(prt->gui != NULL);
 
             // Create the GUI window.
-            DvzGuiWindow* gui_window = dvz_gui_window(
+            gui_window = dvz_gui_window(
                 prt->gui, window, canvas->render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
             // NOTE: save the ID in the GUI window so that we can retrieve it in the GUI callback
             // helper.
-            gui_window->obj.id = rq.id;
+            gui_window->obj.id = id;
 
             // Associate it to the ID.
-            dvz_map_add(prt->gui_map, rq.id, 0, (void*)gui_window);
+            dvz_map_add(prt->maps.guis, id, 0, (void*)gui_window);
         }
         break;
 
-        // TODO: canvas destruction. Do not forget to destroy the GUI window to be retrieved in the
-        // GUI map from its ID.
+        // Delete a canvas.
+    case DVZ_REQUEST_ACTION_DELETE:;
+
+        log_debug("process canvas deletion request");
+
+        // Destroy the window.
+        window = id2window(client, id);
+        ASSERT(window != NULL);
+        dvz_window_destroy(window);
+
+        // Destroy the canvas.
+        canvas = dvz_renderer_canvas(rd, id);
+        ASSERT(canvas != NULL);
+        dvz_canvas_destroy(canvas);
+
+        // Destroy the surface.
+        ASSERT(surface != VK_NULL_HANDLE);
+        dvz_surface_destroy(host, canvas->surface);
+
+        // Destroy the GUI window if it exists.
+        has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
+        if (has_gui)
+        {
+            gui_window = dvz_map_get(prt->maps.guis, id);
+            ASSERT(gui_window != NULL);
+            dvz_gui_window_destroy(gui_window);
+        }
+
+        break;
 
     default:
         break;
@@ -236,11 +277,13 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 
     // Create the GUI instance if needed.
     bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
-    prt->gui_map = dvz_map();
     if (has_gui)
     {
         prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
     }
+
+    // Mappings.
+    prt->maps.guis = dvz_map();
 
     return prt;
 }
@@ -310,7 +353,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     DvzSemaphores* sem_render_finished = &canvas->sync.sem_render_finished;
     DvzCommands* cmds = &canvas->cmds;
     DvzSubmit* submit = &canvas->render.submit;
-    DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_map_get(prt->gui_map, window_id);
+    DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_map_get(prt->maps.guis, window_id);
 
     // Wait for fence.
     dvz_fences_wait(fences, canvas->cur_frame);
@@ -464,7 +507,7 @@ void dvz_presenter_destroy(DvzPresenter* prt)
 {
     ASSERT(prt != NULL);
 
-    dvz_map_destroy(prt->gui_map);
+    dvz_map_destroy(prt->maps.guis);
 
     if (prt->gui != NULL)
         dvz_gui_destroy(prt->gui);
