@@ -97,7 +97,8 @@ void dvz_map_remove(DvzMap* map, DvzId key)
     ASSERT(map != NULL);
     ASSERT(key != DVZ_ID_NONE);
 
-    map->_map.erase(key);
+    if (dvz_map_exists(map, key))
+        map->_map.erase(key);
 }
 
 
@@ -107,7 +108,10 @@ void* dvz_map_get(DvzMap* map, DvzId key)
     ASSERT(map != NULL);
     ASSERT(key != DVZ_ID_NONE);
 
-    return map->_map[key].second;
+    if (dvz_map_exists(map, key))
+        return map->_map[key].second;
+    else
+        return NULL;
 }
 
 
@@ -117,7 +121,10 @@ int dvz_map_type(DvzMap* map, DvzId key)
     ASSERT(map != NULL);
     ASSERT(key != DVZ_ID_NONE);
 
-    return map->_map[key].first;
+    if (dvz_map_exists(map, key))
+        return map->_map[key].first;
+    else
+        return NULL;
 }
 
 

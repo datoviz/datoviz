@@ -13,6 +13,7 @@
 
 #include "canvas.h"
 #include "client.h"
+#include "gui.h"
 #include "map.h"
 #include "renderer.h"
 #include "request.h"
@@ -42,11 +43,10 @@ typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzGuiCallbackPayload DvzGuiCallbackPayload;
 
 // Forward declarations.
-typedef struct DvzWindow DvzWindow;
-typedef struct DvzGui DvzGui;
+// typedef struct DvzWindow DvzWindow;
 
 // Callback types.
-typedef void (*DvzGuiCallback)(DvzWindow* window, void* user_data);
+typedef void (*DvzGuiCallback)(DvzGuiWindow* gui_window, void* user_data);
 
 
 
@@ -75,8 +75,7 @@ struct DvzPresenter
     DvzClient* client;
     int flags;
 
-    // Callbacks.
-    // bool gui_initialized;
+    // GUI callbacks.
     uint32_t callback_count;
     DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
 

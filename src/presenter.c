@@ -84,6 +84,9 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
             // Create the GUI window.
             DvzGuiWindow* gui_window = dvz_gui_window(
                 prt->gui, window, canvas->render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
+            // NOTE: save the ID in the GUI window so that we can retrieve it in the GUI callback
+            // helper.
+            gui_window->obj.id = rq.id;
 
             // Associate it to the ID.
             dvz_map_add(prt->gui_map, rq.id, 0, (void*)gui_window);
@@ -119,7 +122,7 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
 
 
 /*************************************************************************************************/
-/*  Callbacks */
+/*  Callbacks                                                                                    */
 /*************************************************************************************************/
 
 // This function is called when the Client receives a REQUESTS event. It will route the
@@ -178,36 +181,31 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_dat
 
 
 
-static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* window)
+static void
+_gui_callback(DvzPresenter* prt, DvzGuiWindow* gui_window, DvzSubmit* submit, uint32_t img_idx)
 {
-    // ASSERT(prt != NULL);
-    // ASSERT(canvas != NULL);
-    // ASSERT(window != NULL);
-    // ASSERT(canvas->recorder != NULL);
+    ASSERT(prt != NULL);
+    ASSERT(gui_window != NULL);
+    ASSERT(submit != NULL);
 
-    // if (!prt->gui_initialized)
-    // {
-    //     // Initialize the GUI.
-    //     dvz_gui(prt->rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
+    // Begin recording the GUI command buffer.
+    dvz_gui_window_begin(gui_window, img_idx);
 
-    //     // Mark the GUI as initialized.
-    //     prt->gui_initialized = true;
+    // Call the user-specified GUI callbacks.
+    DvzGuiCallbackPayload* callback = NULL;
+    for (uint32_t i = 0; i < prt->callback_count; i++)
+    {
+        callback = &prt->callbacks[i];
+        // NOTE: only call the GUI callbacks registered for the requested window (using the ID).
+        if (callback->window_id == gui_window->obj.id)
+            callback->callback(gui_window, callback->user_data);
+    }
 
-    //     // Disable the recorder cache as the command buffer will have to be recreated
-    //     dvz_recorder_cache(canvas->recorder, false);
-    // }
+    // Stop recording the GUI command buffer.
+    dvz_gui_window_end(gui_window, img_idx);
 
-    // // Begin the GUI frame.
-    // dvz_gui_window_begin(prt->gui, window);
-
-    // // GUI callbacks.
-    // for (uint32_t i = 0; i < prt->callback_count; i++)
-    // {
-    //     prt->callbacks[i].callback(window, prt->callbacks[i].user_data);
-    // }
-
-    // // End the GUI frame.
-    // dvz_gui_window_end(&canvas->cmds, canvas->render.swapchain.img_idx);
+    // Add the command buffer to the Submit instance.
+    dvz_submit_commands(submit, &gui_window->cmds);
 }
 
 
@@ -238,10 +236,10 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 
     // Create the GUI instance if needed.
     bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
+    prt->gui_map = dvz_map();
     if (has_gui)
     {
         prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
-        prt->gui_map = dvz_map();
     }
 
     return prt;
@@ -252,17 +250,17 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 void dvz_presenter_gui(
     DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data)
 {
-    // ASSERT(prt != NULL);
-    // ASSERT(window_id != 0);
-    // ASSERT(callback != NULL);
+    ASSERT(prt != NULL);
+    ASSERT(window_id != 0);
+    ASSERT(callback != NULL);
 
-    // log_debug("add GUI callback to window 0x%" PRIx64 "");
-    // DvzGuiCallbackPayload payload = {
-    //     .window_id = window_id,
-    //     .callback = callback,
-    //     .user_data = user_data,
-    // };
-    // prt->callbacks[prt->callback_count++] = payload;
+    log_debug("add GUI callback to window 0x%" PRIx64 "");
+    DvzGuiCallbackPayload payload = {
+        .window_id = window_id,
+        .callback = callback,
+        .user_data = user_data,
+    };
+    prt->callbacks[prt->callback_count++] = payload;
 }
 
 
@@ -312,6 +310,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     DvzSemaphores* sem_render_finished = &canvas->sync.sem_render_finished;
     DvzCommands* cmds = &canvas->cmds;
     DvzSubmit* submit = &canvas->render.submit;
+    DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_map_get(prt->gui_map, window_id);
 
     // Wait for fence.
     dvz_fences_wait(fences, canvas->cur_frame);
@@ -358,6 +357,12 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         ASSERT(framebuffers->attachments[0]->shape[1] == height);
         dvz_framebuffers_create(framebuffers, renderpass);
 
+        // Resuize the GUI window if it exists.
+        if (gui_window != NULL)
+        {
+            dvz_gui_window_resize(gui_window, width, height);
+        }
+
         // Emit a client Resize event.
         dvz_client_event(
             client, (DvzClientEvent){
@@ -386,17 +391,19 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
             _record_command(rd, canvas, swapchain->img_idx);
         }
 
-        // // GUI callbacks.
-        // if (prt->callback_count > 0)
-        // {
-        //     _gui_callback(prt, canvas, window);
-        // }
-
         // Reset the Submit instance before adding the command buffers.
         dvz_submit_reset(submit);
 
-        // Then, we submit the cmds on that image
+        // First, we submit the cmds on that image
         dvz_submit_commands(submit, cmds);
+
+        // Then, we submit the GUI command buffer.
+        if (gui_window != NULL && prt->callback_count > 0)
+        {
+            _gui_callback(prt, gui_window, submit, swapchain->img_idx);
+        }
+
+        // We send the submission.
         dvz_submit_wait_semaphores(
             submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, sem_img_available,
             canvas->cur_frame);
@@ -457,10 +464,7 @@ void dvz_presenter_destroy(DvzPresenter* prt)
 {
     ASSERT(prt != NULL);
 
-    if (prt->gui_map != NULL)
-    {
-        dvz_map_destroy(prt->gui_map);
-    }
+    dvz_map_destroy(prt->gui_map);
 
     if (prt->gui != NULL)
         dvz_gui_destroy(prt->gui);

@@ -262,9 +262,8 @@ int test_presenter_2(TstSuite* suite)
 
 
 
-static inline void _gui_callback_1(DvzWindow* window, void* user_data)
+static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 {
-    log_debug("GUI callback");
     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
     dvz_gui_text("Hello world");
     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
@@ -305,7 +304,7 @@ int test_presenter_gui(TstSuite* suite)
     dvz_presenter_submit(prt, &rqr);
 
     // GUI callback.
-    // dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
+    dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
