@@ -137,8 +137,6 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_shader)
     TEST(test_vklite_swapchain)
     TEST(test_vklite_graphics)
-    TEST(test_vklite_canvas_blank)
-    TEST(test_vklite_canvas_triangle)
 
     // Testing canvas.
     TEST(test_canvas_1)
@@ -150,8 +148,6 @@ int dvz_run_tests(const char* match)
 
     // Testing GUI.
     TEST(test_gui_offscreen)
-    // TEST(test_vklite_canvas_gui)
-    // TEST(test_gui_1)
 
     // // Testing presenter.
     // TEST(test_presenter_1)
