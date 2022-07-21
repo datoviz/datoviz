@@ -24,6 +24,8 @@ int test_presenter_1(TstSuite*);
 
 int test_presenter_2(TstSuite*);
 
+int test_presenter_gui(TstSuite*);
+
 
 
 #endif

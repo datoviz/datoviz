@@ -152,6 +152,7 @@ int dvz_run_tests(const char* match)
     // Testing presenter.
     TEST(test_presenter_1)
     TEST(test_presenter_2)
+    TEST(test_presenter_gui)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)

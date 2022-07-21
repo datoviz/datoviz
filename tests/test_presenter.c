@@ -9,7 +9,7 @@
 #include "test_presenter.h"
 #include "_glfw.h"
 #include "client.h"
-// #include "gui.h"
+#include "gui.h"
 #include "presenter.h"
 #include "test.h"
 #include "test_vklite.h"
@@ -48,17 +48,6 @@ struct CallbackStruct
 /*  Presenter tests                                                                              */
 /*************************************************************************************************/
 
-// static inline void _gui_callback_1(DvzWindow* window, void* user_data)
-// {
-//     log_debug("GUI callback");
-//     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
-//     dvz_gui_text("Hello world");
-//     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
-//     the
-//     // executable.
-//     dvz_gui_dialog_end();
-// }
-
 int test_presenter_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
@@ -90,9 +79,6 @@ int test_presenter_1(TstSuite* suite)
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
     dvz_presenter_submit(prt, &rqr);
-
-    // // GUI callback.
-    // dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -256,6 +242,70 @@ int test_presenter_2(TstSuite* suite)
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
     dvz_presenter_submit(prt, &rqr);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(client, N_FRAMES);
+
+    // End.
+
+
+    // Destroying all objects.
+    dvz_client_destroy(client);
+    dvz_requester_destroy(&rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_presenter_destroy(prt);
+    dvz_gpu_destroy(gpu);
+
+    return 0;
+}
+
+
+
+static inline void _gui_callback_1(DvzWindow* window, void* user_data)
+{
+    log_debug("GUI callback");
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("Hello world");
+    // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
+    // the executable.
+    dvz_gui_dialog_end();
+}
+
+int test_presenter_gui(TstSuite* suite)
+{
+    ASSERT(suite != NULL);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ASSERT(gpu != NULL);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester rqr = dvz_requester();
+    DvzRequest req = {0};
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client);
+
+    // Start.
+
+    // Make a canvas creation request.
+    req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    dvz_requester_add(&rqr, req);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, &rqr);
+
+    // GUI callback.
+    // dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
