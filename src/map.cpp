@@ -124,7 +124,7 @@ int dvz_map_type(DvzMap* map, DvzId key)
     if (dvz_map_exists(map, key))
         return map->_map[key].first;
     else
-        return NULL;
+        return 0;
 }
 
 
