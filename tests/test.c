@@ -149,9 +149,9 @@ int dvz_run_tests(const char* match)
     // Testing GUI.
     TEST(test_gui_offscreen)
 
-    // // Testing presenter.
-    // TEST(test_presenter_1)
-    // TEST(test_presenter_2)
+    // Testing presenter.
+    TEST(test_presenter_1)
+    TEST(test_presenter_2)
 
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
