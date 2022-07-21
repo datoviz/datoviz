@@ -34,16 +34,22 @@ DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     loop->window = dvz_window(DVZ_BACKEND_GLFW, width, height, flags);
     loop->surface = dvz_window_surface(gpu->host, &loop->window);
 
+    // Use the loop flag to determine whether there is a GUI.
+    bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
+
+    // The image layout depends on whether there is a GUI or not.
+    VkImageLayout layout =
+        has_gui ? VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
     // Create the renderpass.
-    loop->renderpass =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    loop->renderpass = dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, layout);
 
     // Create the canvas.
     loop->canvas = dvz_canvas(gpu, &loop->renderpass, width, height, 0);
     dvz_canvas_create(&loop->canvas, loop->surface);
 
     // Create GUI objects if needed.
-    if ((flags & DVZ_CANVAS_FLAGS_IMGUI))
+    if (has_gui)
     {
         loop->gui = dvz_gui(gpu, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -250,9 +256,13 @@ void dvz_loop_destroy(DvzLoop* loop)
     dvz_surface_destroy(loop->gpu->host, loop->surface);
     dvz_canvas_destroy(&loop->canvas);
     dvz_window_destroy(&loop->window);
-    if (loop->gui != NULL)
+
+    bool has_gui = (loop->flags & DVZ_CANVAS_FLAGS_IMGUI);
+    if (has_gui)
+    {
         dvz_gui_destroy(loop->gui);
-    if (loop->gui_window != NULL)
         dvz_gui_window_destroy(loop->gui_window);
+    }
+
     FREE(loop);
 }
