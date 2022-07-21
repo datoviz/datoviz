@@ -233,6 +233,9 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
     DvzGui* gui = (DvzGui*)calloc(1, sizeof(DvzGui));
     gui->gpu = gpu;
 
+    gui->gui_windows = dvz_container(
+        DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGuiWindow), DVZ_OBJECT_TYPE_GUI_WINDOW);
+
     gui->renderpass = _imgui_renderpass(gpu);
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
@@ -358,6 +361,25 @@ void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx)
 
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
+}
+
+
+
+void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t height)
+{
+    ASSERT(gui_window != NULL);
+    gui_window->width = width;
+    gui_window->height = height;
+
+    DvzGui* gui = gui_window->gui;
+    ASSERT(gui != NULL);
+
+    // Recreate the framebuffers.
+    if (dvz_obj_is_created(&gui_window->framebuffers.obj))
+    {
+        dvz_framebuffers_destroy(&gui_window->framebuffers);
+        dvz_framebuffers_create(&gui_window->framebuffers, &gui->renderpass);
+    }
 }
 
 

@@ -173,9 +173,7 @@ int dvz_loop_frame(DvzLoop* loop)
         // Recreate the overlay framebuffers.
         if (gui_window != NULL)
         {
-            dvz_framebuffers_destroy(&gui_window->framebuffers);
-            ASSERT(gui != NULL);
-            dvz_framebuffers_create(&gui_window->framebuffers, &gui->renderpass);
+            dvz_gui_window_resize(gui_window, width, height);
         }
 
         // Need to refill the command buffers.

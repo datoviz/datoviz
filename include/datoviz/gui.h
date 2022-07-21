@@ -138,6 +138,17 @@ DVZ_EXPORT void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx);
 
 
 /**
+ * To be called at the end of the command buffer recording.
+ *
+ * @param gui the GUI
+ * @param cmds the command buffer set
+ * @param idx the command buffer index within the set
+ */
+DVZ_EXPORT void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t height);
+
+
+
+/**
  * Destroy a GUI window.
  *
  * @param gui the GUI window
