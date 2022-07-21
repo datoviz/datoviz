@@ -250,6 +250,11 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
 void dvz_gui_destroy(DvzGui* gui)
 {
     ASSERT(gui != NULL);
+
+    // Destroy the GUI windows.
+    CONTAINER_DESTROY_ITEMS(DvzGuiWindow, gui->gui_windows, dvz_gui_window_destroy)
+    dvz_container_destroy(&gui->gui_windows);
+
     _imgui_destroy();
     FREE(gui);
 }

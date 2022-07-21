@@ -260,8 +260,8 @@ void dvz_loop_destroy(DvzLoop* loop)
     bool has_gui = (loop->flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)
     {
-        dvz_gui_destroy(loop->gui);
         dvz_gui_window_destroy(loop->gui_window);
+        dvz_gui_destroy(loop->gui);
     }
 
     FREE(loop);

@@ -67,7 +67,7 @@ int test_presenter_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client);
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
     // Start.
 
@@ -149,7 +149,7 @@ int test_presenter_2(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client);
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
     // Make rendering requests.
 
@@ -291,12 +291,12 @@ int test_presenter_gui(TstSuite* suite)
     DvzRequest req = {0};
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client);
+    DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Start.
 
     // Make a canvas creation request.
-    req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    req = dvz_create_canvas(&rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
     dvz_requester_add(&rqr, req);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
@@ -314,12 +314,10 @@ int test_presenter_gui(TstSuite* suite)
 
 
     // Destroying all objects.
-    dvz_client_destroy(client);
     dvz_requester_destroy(&rqr);
-
     dvz_renderer_destroy(rd);
     dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
-
+    dvz_client_destroy(client);
     return 0;
 }

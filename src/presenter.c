@@ -75,7 +75,24 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         ASSERT(dvz_obj_is_created(&canvas->render.swapchain.obj));
         canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
 
+        // Create the associated GUI window if requested.
+        bool has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
+        if (has_gui)
+        {
+            ASSERT(prt->gui != NULL);
+
+            // Create the GUI window.
+            DvzGuiWindow* gui_window = dvz_gui_window(
+                prt->gui, window, canvas->render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
+
+            // Associate it to the ID.
+            dvz_map_add(prt->gui_map, rq.id, 0, (void*)gui_window);
+        }
         break;
+
+        // TODO: canvas destruction. Do not forget to destroy the GUI window to be retrieved in the
+        // GUI map from its ID.
+
     default:
         break;
     }
@@ -199,7 +216,7 @@ static void _gui_callback(DvzPresenter* prt, DvzCanvas* canvas, DvzWindow* windo
 /*  Presenter */
 /*************************************************************************************************/
 
-DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
+DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 {
     ASSERT(rd != NULL);
     ASSERT(client != NULL);
@@ -209,6 +226,7 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
 
     prt->rd = rd;
     prt->client = client;
+    prt->flags = flags;
 
     // Register a REQUESTS callback which submits pending requests to the renderer.
     dvz_client_callback(
@@ -217,6 +235,14 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client)
     // Register a FRAME callback which calls dvz_presenter_frame().
     dvz_client_callback(
         client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
+
+    // Create the GUI instance if needed.
+    bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
+    if (has_gui)
+    {
+        prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
+        prt->gui_map = dvz_map();
+    }
 
     return prt;
 }
@@ -430,5 +456,14 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
 void dvz_presenter_destroy(DvzPresenter* prt)
 {
     ASSERT(prt != NULL);
+
+    if (prt->gui_map != NULL)
+    {
+        dvz_map_destroy(prt->gui_map);
+    }
+
+    if (prt->gui != NULL)
+        dvz_gui_destroy(prt->gui);
+
     FREE(prt);
 }

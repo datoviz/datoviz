@@ -13,6 +13,7 @@
 
 #include "canvas.h"
 #include "client.h"
+#include "map.h"
 #include "renderer.h"
 #include "request.h"
 #include "resources.h"
@@ -72,6 +73,7 @@ struct DvzPresenter
 {
     DvzRenderer* rd;
     DvzClient* client;
+    int flags;
 
     // Callbacks.
     // bool gui_initialized;
@@ -79,6 +81,7 @@ struct DvzPresenter
     DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
 
     DvzGui* gui;
+    DvzMap* gui_map;
 };
 
 
@@ -89,7 +92,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client);
+DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags);
 
 
 

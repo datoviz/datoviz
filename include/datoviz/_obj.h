@@ -421,7 +421,7 @@ static inline void dvz_container_destroy(DvzContainer* container)
         t* o = NULL;                                                                              \
         while (_iter.item != NULL)                                                                \
         {                                                                                         \
-            o = _iter.item;                                                                       \
+            o = (t*)_iter.item;                                                                   \
             f(o);                                                                                 \
             dvz_container_iter(&_iter);                                                           \
         }                                                                                         \
