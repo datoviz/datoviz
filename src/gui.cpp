@@ -418,7 +418,7 @@ void dvz_gui_dialog_begin(vec2 pos, vec2 size)
 
 
 
-void dvz_gui_text(const char* str) { ImGui::Text(str); }
+void dvz_gui_text(const char* str) { ImGui::Text("%s", str); }
 
 
 
