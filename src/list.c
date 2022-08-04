@@ -20,7 +20,7 @@ static void _realloc_if_needed(DvzList* list)
     if (list->count >= list->capacity)
     {
         list->capacity *= 2;
-        REALLOC(list->values, list->capacity * sizeof(int))
+        REALLOC(list->values, list->capacity * sizeof(DvzListItem))
     }
     ASSERT(list->count < list->capacity);
 }
@@ -36,13 +36,13 @@ DvzList dvz_list()
     DvzList list = {0};
     list.count = 0;
     list.capacity = DVZ_MAX_LIST_CAPACITY;
-    list.values = (int*)calloc(list.capacity, sizeof(int));
+    list.values = (DvzListItem*)calloc(list.capacity, sizeof(DvzListItem));
     return list;
 }
 
 
 
-void dvz_list_insert(DvzList* list, uint64_t index, int value)
+void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value)
 {
     ASSERT(list != NULL);
     ASSERT(list->values != NULL);
@@ -62,7 +62,10 @@ void dvz_list_insert(DvzList* list, uint64_t index, int value)
 
 
 
-void dvz_list_append(DvzList* list, int value) { dvz_list_insert(list, list->count, value); }
+void dvz_list_append(DvzList* list, DvzListItem value)
+{
+    dvz_list_insert(list, list->count, value);
+}
 
 
 
@@ -83,12 +86,12 @@ void dvz_list_remove(DvzList* list, uint64_t index)
     list->count--;
 
     // Reset the unset positions in the array.
-    memset(&list->values[list->count], 0, (list->capacity - list->count) * sizeof(int));
+    memset(&list->values[list->count], 0, (list->capacity - list->count) * sizeof(DvzListItem));
 }
 
 
 
-int dvz_list_get(DvzList* list, uint64_t index)
+DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 {
     ASSERT(list != NULL);
     ASSERT(list->values != NULL);
@@ -105,7 +108,7 @@ uint64_t dvz_list_index(DvzList* list, int value)
     ASSERT(list->values != NULL);
     for (uint64_t i = 0; i < list->count; i++)
     {
-        if (list->values[i] == value)
+        if (list->values[i].i == value)
             return i;
     }
     return UINT64_MAX;

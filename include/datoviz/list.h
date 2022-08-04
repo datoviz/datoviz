@@ -38,6 +38,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzList DvzList;
+typedef union DvzListItem DvzListItem;
 
 // Forward declarations.
 
@@ -47,11 +48,19 @@ typedef struct DvzList DvzList;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+union DvzListItem
+{
+    int i;
+    void* p;
+};
+
+
+
 struct DvzList
 {
     uint64_t capacity;
     uint64_t count;
-    int* values;
+    DvzListItem* values;
 };
 
 
@@ -77,7 +86,7 @@ DVZ_EXPORT DvzList dvz_list(void);
  * @param list the list
  * @param value an pointer to the item (memory exlusively managed by the user)
  */
-DVZ_EXPORT void dvz_list_append(DvzList* list, int value);
+DVZ_EXPORT void dvz_list_append(DvzList* list, DvzListItem value);
 
 
 
@@ -91,11 +100,11 @@ DVZ_EXPORT void dvz_list_remove(DvzList* list, uint64_t index);
 
 
 
-DVZ_EXPORT void dvz_list_insert(DvzList* list, uint64_t index, int value);
+DVZ_EXPORT void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value);
 
 
 
-DVZ_EXPORT int dvz_list_get(DvzList* list, uint64_t index);
+DVZ_EXPORT DvzListItem dvz_list_get(DvzList* list, uint64_t index);
 
 
 
