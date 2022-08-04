@@ -269,7 +269,7 @@ static void _on_key_release(DvzInput* input, DvzEvent ev, void* user_data)
     }
 }
 
-int test_input_keyboard_1(TstSuite* suite)
+int test_keyboard_1(TstSuite* suite)
 {
     // Create an input and window.
     DvzInput input = dvz_input();

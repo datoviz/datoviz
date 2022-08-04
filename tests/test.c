@@ -24,7 +24,7 @@
 #include "test_fileio.h"
 #include "test_graphics.h"
 #include "test_gui.h"
-#include "test_input.h"
+#include "test_keyboard.h"
 #include "test_list.h"
 #include "test_loop.h"
 #include "test_map.h"
@@ -113,6 +113,9 @@ int dvz_run_tests(const char* match)
 
     // Testing list.
     TEST(test_list_1)
+
+    // Testing list.
+    TEST(test_keyboard_1)
 
 
     /*********************************************************************************************/
@@ -221,7 +224,7 @@ int dvz_run_tests(const char* match)
     // Testing window.
     TEST(test_window_1)
 
-    // Testing input.
+    // Testing client.
     TEST(test_client_1)
     TEST(test_client_2)
 
