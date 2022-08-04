@@ -95,7 +95,9 @@ int test_keyboard_2(TstSuite* suite)
 
 
     // Press and release A.
+    AT(res == 0);
     dvz_keyboard_press(keyboard, DVZ_KEY_A);
+    AT(res == (int)DVZ_KEY_A);
     AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_A);
     AT(dvz_keyboard_get(keyboard, 1) == DVZ_KEY_NONE);
 
@@ -106,10 +108,12 @@ int test_keyboard_2(TstSuite* suite)
 
     // Press and release CTRL A.
     dvz_keyboard_press(keyboard, DVZ_KEY_LEFT_CONTROL);
+    AT(res == (int)DVZ_KEY_LEFT_CONTROL);
     AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_NONE);
     AT(dvz_keyboard_mods(keyboard) == DVZ_KEY_MODIFIER_CONTROL);
 
     dvz_keyboard_press(keyboard, DVZ_KEY_A);
+    AT(res == (int)DVZ_KEY_A);
     AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_A);
     AT(dvz_keyboard_mods(keyboard) == DVZ_KEY_MODIFIER_CONTROL);
 
