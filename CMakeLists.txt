@@ -521,7 +521,7 @@ set(sources
     "src/fifo.c"
     "src/array.c"
     "src/map.cpp"
-    "src/list.cpp"
+    "src/list.c"
 
     # Renderer
     "src/vklite.c"

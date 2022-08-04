@@ -13,6 +13,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "_macros.h"
 
@@ -22,7 +23,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_ID_NONE 0
+#define DVZ_MAX_LIST_CAPACITY 64
 
 
 
@@ -37,7 +38,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzList DvzList;
-typedef uint64_t DvzId;
 
 // Forward declarations.
 
@@ -46,6 +46,13 @@ typedef uint64_t DvzId;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzList
+{
+    uint64_t capacity;
+    uint64_t count;
+    int* values;
+};
 
 
 
@@ -60,7 +67,7 @@ EXTERN_C_ON
  *
  * @returns a list
  */
-DVZ_EXPORT DvzList* dvz_list(void);
+DVZ_EXPORT DvzList dvz_list(void);
 
 
 
@@ -70,7 +77,7 @@ DVZ_EXPORT DvzList* dvz_list(void);
  * @param list the list
  * @param value an pointer to the item (memory exlusively managed by the user)
  */
-DVZ_EXPORT void dvz_list_append(DvzList* list, void* value);
+DVZ_EXPORT void dvz_list_append(DvzList* list, int value);
 
 
 
@@ -80,17 +87,23 @@ DVZ_EXPORT void dvz_list_append(DvzList* list, void* value);
  * @param list the list
  * @param value the value to remove, if it exists
  */
-DVZ_EXPORT void dvz_list_remove(DvzList* list, void* value);
+DVZ_EXPORT void dvz_list_remove(DvzList* list, uint64_t index);
 
 
 
-/**
- * Go through all items in a list. To use in a while loop.
- *
- * @param list the list
- * @returns a pointer to the current item in the iteration, or NULL if the iteration is finished
- */
-DVZ_EXPORT void* dvz_list_iter(DvzList* list);
+DVZ_EXPORT void dvz_list_insert(DvzList* list, uint64_t index, int value);
+
+
+
+DVZ_EXPORT int dvz_list_get(DvzList* list, uint64_t index);
+
+
+
+DVZ_EXPORT uint64_t dvz_list_index(DvzList* list, int value);
+
+
+
+DVZ_EXPORT bool dvz_list_has(DvzList* list, int value);
 
 
 
