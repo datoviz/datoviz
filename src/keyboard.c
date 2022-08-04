@@ -50,11 +50,17 @@ DvzKeyboard* dvz_keyboard()
 
 
 
-void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key, DvzKeyboardModifiers mods)
+void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
 {
     ASSERT(keyboard != NULL);
-    dvz_list_append(&keyboard->keys, (int)key);
-    keyboard->mods = mods;
+    if (_is_key_modifier(key))
+    {
+        keyboard->mods |= _key_modifiers(key);
+    }
+    else
+    {
+        dvz_list_append(&keyboard->keys, (int)key);
+    }
 }
 
 
@@ -63,9 +69,16 @@ void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
 {
     ASSERT(keyboard != NULL);
 
-    uint64_t idx = dvz_list_index(&keyboard->keys, (int)key);
-    if (idx != UINT64_MAX)
-        dvz_list_remove(&keyboard->keys, idx);
+    if (_is_key_modifier(key))
+    {
+        keyboard->mods &= ~_key_modifiers(key);
+    }
+    else
+    {
+        uint64_t idx = dvz_list_index(&keyboard->keys, (int)key);
+        if (idx != UINT64_MAX)
+            dvz_list_remove(&keyboard->keys, idx);
+    }
 }
 
 
@@ -81,7 +94,7 @@ DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx)
 
 
 
-bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, DvzKeyboardModifiers mods)
+bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods)
 {
     ASSERT(keyboard != NULL);
     return ((keyboard->mods & mods) == mods) && dvz_list_has(&keyboard->keys, key);
@@ -89,7 +102,7 @@ bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, DvzKeyboardM
 
 
 
-DvzKeyboardModifiers dvz_keyboard_mods(DvzKeyboard* keyboard)
+int dvz_keyboard_mods(DvzKeyboard* keyboard)
 {
     ASSERT(keyboard != NULL);
     return keyboard->mods;

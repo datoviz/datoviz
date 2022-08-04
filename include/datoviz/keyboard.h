@@ -63,7 +63,7 @@ typedef struct DvzKeyboard DvzKeyboard;
 struct DvzKeyboard
 {
     DvzList keys;
-    DvzKeyboardModifiers mods;
+    int mods;
 
     // double press_time;
     bool is_active;
@@ -81,8 +81,7 @@ DVZ_EXPORT DvzKeyboard* dvz_keyboard(void);
 
 
 
-DVZ_EXPORT void
-dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key, DvzKeyboardModifiers mods);
+DVZ_EXPORT void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key);
 
 
 
@@ -94,12 +93,11 @@ DVZ_EXPORT DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx);
 
 
 
-DVZ_EXPORT bool
-dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, DvzKeyboardModifiers mods);
+DVZ_EXPORT bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods);
 
 
 
-DVZ_EXPORT DvzKeyboardModifiers dvz_keyboard_mods(DvzKeyboard* keyboard);
+DVZ_EXPORT int dvz_keyboard_mods(DvzKeyboard* keyboard);
 
 
 
