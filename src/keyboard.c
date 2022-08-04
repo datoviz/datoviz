@@ -37,6 +37,22 @@ static int _key_modifiers(int key_code)
 
 
 
+static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
+{
+    DvzKeyboardPayload* payload = NULL;
+    uint32_t n = dvz_list_count(&keyboard->callbacks);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        payload = (DvzKeyboardPayload*)dvz_list_get(&keyboard->callbacks, i).p;
+        if (payload->type == event.type)
+        {
+            payload->callback(keyboard, event, payload->user_data);
+        }
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Keyboard functions                                                                           */
 /*************************************************************************************************/
@@ -45,6 +61,7 @@ DvzKeyboard* dvz_keyboard()
 {
     DvzKeyboard* keyboard = calloc(1, sizeof(DvzKeyboard));
     keyboard->keys = dvz_list();
+    keyboard->callbacks = dvz_list();
     return keyboard;
 }
 
@@ -59,8 +76,13 @@ void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
     }
     else
     {
-        dvz_list_append(&keyboard->keys, (int)key);
+        dvz_list_append(&keyboard->keys, (DvzListItem){.i = (int)key});
     }
+
+    // Create the PRESS event struct.
+    DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_PRESS, .mods = keyboard->mods, .key = key};
+    // Call the registered callbacks.
+    _callbacks(keyboard, ev);
 }
 
 
@@ -79,6 +101,11 @@ void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
         if (idx != UINT64_MAX)
             dvz_list_remove(&keyboard->keys, idx);
     }
+
+    // Create the PRESS event struct.
+    DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_RELEASE, .mods = keyboard->mods, .key = key};
+    // Call the registered callbacks.
+    _callbacks(keyboard, ev);
 }
 
 
@@ -87,7 +114,7 @@ DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx)
 {
     ASSERT(keyboard != NULL);
     if (key_idx < keyboard->keys.count)
-        return (DvzKeyCode)dvz_list_get(&keyboard->keys, key_idx);
+        return (DvzKeyCode)dvz_list_get(&keyboard->keys, key_idx).i;
     else
         return DVZ_KEY_NONE;
 }
@@ -110,9 +137,34 @@ int dvz_keyboard_mods(DvzKeyboard* keyboard)
 
 
 
+void dvz_keyboard_callback(
+    DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
+    void* user_data)
+{
+    ASSERT(keyboard != NULL);
+    DvzKeyboardPayload* payload = (DvzKeyboardPayload*)calloc(1, sizeof(DvzKeyboardPayload*));
+    payload->type = type;
+    payload->callback = callback;
+    payload->user_data = user_data;
+    dvz_list_append(&keyboard->callbacks, (DvzListItem){.p = (void*)payload});
+}
+
+
+
 void dvz_keyboard_destroy(DvzKeyboard* keyboard)
 {
     ASSERT(keyboard != NULL);
+
+    // Free the callback payloads.
+    DvzKeyboardPayload* payload = NULL;
+    for (uint32_t i = 0; i < keyboard->callbacks.count; i++)
+    {
+        payload = (DvzKeyboardPayload*)(dvz_list_get(&keyboard->callbacks, i).p);
+        ASSERT(payload != NULL);
+        FREE(payload);
+    }
+    dvz_list_destroy(&keyboard->callbacks);
+
     dvz_list_destroy(&keyboard->keys);
     FREE(keyboard);
 }

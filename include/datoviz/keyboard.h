@@ -23,9 +23,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_KEYBOARD_MAX_CALLBACKS 64
-#define DVZ_KEYBOARD_PRESS_DELAY   .05
-#define DVZ_KEYBOARD_MAX_KEYS      8
+// Maximum number of simultaneously pressed keys.
+#define DVZ_KEYBOARD_MAX_KEYS 8
 
 
 
@@ -46,13 +45,25 @@ typedef enum
 
 
 
+// Keyboard event type (press or release)
+typedef enum
+{
+    DVZ_KEYBOARD_EVENT_NONE,
+    DVZ_KEYBOARD_EVENT_PRESS,
+    DVZ_KEYBOARD_EVENT_RELEASE,
+} DvzKeyboardEventType;
+
+
+
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzKeyboardEvent DvzKeyboardEvent;
+typedef struct DvzKeyboardPayload DvzKeyboardPayload;
 
-// typedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzEvent, void*);
+typedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzKeyboardEvent, void*);
 
 
 
@@ -60,10 +71,30 @@ typedef struct DvzKeyboard DvzKeyboard;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzKeyboardEvent
+{
+    DvzKeyboardEventType type;
+    DvzKeyCode key;
+    int mods;
+};
+
+
+
+struct DvzKeyboardPayload
+{
+    DvzKeyboardEventType type;
+    DvzKeyboardCallback callback;
+    void* user_data;
+};
+
+
+
 struct DvzKeyboard
 {
     DvzList keys;
     int mods;
+
+    DvzList callbacks;
 
     // double press_time;
     bool is_active;
@@ -74,7 +105,7 @@ struct DvzKeyboard
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Keyboard functions                                                                           */
+/*  Keyboard functions */
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzKeyboard* dvz_keyboard(void);
@@ -103,9 +134,11 @@ DVZ_EXPORT int dvz_keyboard_mods(DvzKeyboard* keyboard);
 
 DVZ_EXPORT void dvz_keyboard_destroy(DvzKeyboard* keyboard);
 
-// void dvz_keyboard_callback(
-//     DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
-//     void* user_data);
+
+
+DVZ_EXPORT void dvz_keyboard_callback(
+    DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
+    void* user_data);
 
 
 

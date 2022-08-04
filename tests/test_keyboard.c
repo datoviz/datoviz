@@ -19,33 +19,78 @@
 /*  Keyboard tests                                                                               */
 /*************************************************************************************************/
 
-// static void _on_key_press(DvzInput* input, DvzEvent ev, void* user_data)
-// {
-//     ASSERT(input != NULL);
-//     log_debug("key press %d, modifiers %d", ev.content.k.key_code, ev.mods);
-//     DvzKeyCode* k = input->keyboard.keys;
-//     log_debug("%d key(s) pressed: %d %d %d %d", input->keyboard.key_count, k[0], k[1], k[2],
-//     k[3]); if (user_data != NULL)
-//     {
-//         *((int*)user_data) = ev.content.k.key_code;
-//     }
-// }
-
-// static void _on_key_release(DvzInput* input, DvzEvent ev, void* user_data)
-// {
-//     ASSERT(input != NULL);
-//     log_debug("key release %d", ev.content.k.key_code);
-//     if (user_data != NULL)
-//     {
-//         *((int*)user_data) = DVZ_KEY_NONE;
-//     }
-// }
-
 int test_keyboard_1(TstSuite* suite)
 {
-    // Create an input and window.
     DvzKeyboard* keyboard = dvz_keyboard();
 
+    AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_NONE);
+
+
+    // Press and release A.
+    dvz_keyboard_press(keyboard, DVZ_KEY_A);
+    AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_A);
+    AT(dvz_keyboard_get(keyboard, 1) == DVZ_KEY_NONE);
+
+    dvz_keyboard_release(keyboard, DVZ_KEY_A);
+    AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_NONE);
+    AT(dvz_keyboard_get(keyboard, 1) == DVZ_KEY_NONE);
+
+
+    // Press and release CTRL A.
+    dvz_keyboard_press(keyboard, DVZ_KEY_LEFT_CONTROL);
+    AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_NONE);
+    AT(dvz_keyboard_mods(keyboard) == DVZ_KEY_MODIFIER_CONTROL);
+
+    dvz_keyboard_press(keyboard, DVZ_KEY_A);
+    AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_A);
+    AT(dvz_keyboard_mods(keyboard) == DVZ_KEY_MODIFIER_CONTROL);
+
+    dvz_keyboard_release(keyboard, DVZ_KEY_A);
+    dvz_keyboard_release(keyboard, DVZ_KEY_LEFT_CONTROL);
+
+
+    // Destroy the resources.
+    dvz_keyboard_destroy(keyboard);
+    return 0;
+}
+
+
+
+static void _on_key_press(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user_data)
+{
+    ASSERT(keyboard != NULL);
+    log_debug("key press %d, modifiers %d", ev.key, ev.mods);
+    DvzList* keys = &keyboard->keys;
+    uint32_t n = dvz_list_count(keys);
+    DvzKeyCode k[4] = {0};
+    for (uint32_t i = 0; i < MIN(4, n); i++)
+        k[i] = (DvzKeyCode)dvz_list_get(keys, i).i;
+    log_debug("%d key(s) pressed: %d %d %d %d", n, k[0], k[1], k[2], k[3]);
+    if (user_data != NULL)
+    {
+        *((int*)user_data) = (int)ev.key;
+    }
+}
+
+static void _on_key_release(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user_data)
+{
+    ASSERT(keyboard != NULL);
+    log_debug("key release %d", ev.key);
+    if (user_data != NULL)
+    {
+        *((int*)user_data) = (int)DVZ_KEY_NONE;
+    }
+}
+
+int test_keyboard_2(TstSuite* suite)
+{
+    DvzKeyboard* keyboard = dvz_keyboard();
+
+
+    // Register keyboard callbacks.
+    int res = 0;
+    dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_PRESS, _on_key_press, &res);
+    dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_RELEASE, _on_key_release, &res);
     AT(dvz_keyboard_get(keyboard, 0) == DVZ_KEY_NONE);
 
 

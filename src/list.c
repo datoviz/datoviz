@@ -95,7 +95,6 @@ DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 {
     ASSERT(list != NULL);
     ASSERT(list->values != NULL);
-    // ASSERT(0 <= index);
     ASSERT(index < list->count);
     return list->values[index];
 }

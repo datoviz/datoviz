@@ -116,6 +116,7 @@ int dvz_run_tests(const char* match)
 
     // Testing list.
     TEST(test_keyboard_1)
+    TEST(test_keyboard_2)
 
 
     /*********************************************************************************************/
