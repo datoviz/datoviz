@@ -128,7 +128,8 @@ struct DvzMouseEvent
         } c;
 
     } content;
-    void* user_data;
+    int mods;
+    // void* user_data;
 };
 
 
