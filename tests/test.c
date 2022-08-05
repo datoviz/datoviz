@@ -121,7 +121,10 @@ int dvz_run_tests(const char* match)
     TEST(test_keyboard_2)
 
     // Testing mouse.
-    TEST(test_mouse_1)
+    TEST(test_mouse_move)
+    TEST(test_mouse_press)
+    TEST(test_mouse_wheel)
+    TEST(test_mouse_drag)
 
     // Testing timer.
     TEST(test_timer_1)

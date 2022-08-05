@@ -129,7 +129,6 @@ struct DvzMouseEvent
 
     } content;
     int mods;
-    // void* user_data;
 };
 
 

@@ -20,7 +20,13 @@
 /*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-int test_mouse_1(TstSuite*);
+int test_mouse_move(TstSuite*);
+
+int test_mouse_press(TstSuite*);
+
+int test_mouse_wheel(TstSuite*);
+
+int test_mouse_drag(TstSuite*);
 
 
 
