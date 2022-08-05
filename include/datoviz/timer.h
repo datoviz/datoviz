@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/*  List                                                                                         */
+/*  Timer                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_LIST
-#define DVZ_HEADER_LIST
+#ifndef DVZ_HEADER_TIMER
+#define DVZ_HEADER_TIMER
 
 
 
@@ -11,11 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-#include "_macros.h"
+#include "common.h"
+#include "list.h"
 
 
 
@@ -23,7 +20,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_MAX_LIST_CAPACITY 64
+#define DVZ_TIMER_MAX_FIRING 16
 
 
 
@@ -37,10 +34,8 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzList DvzList;
-typedef union DvzListItem DvzListItem;
-
-// Forward declarations.
+typedef struct DvzTimer DvzTimer;
+typedef struct DvzTimerItem DvzTimerItem;
 
 
 
@@ -48,19 +43,23 @@ typedef union DvzListItem DvzListItem;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-union DvzListItem
+struct DvzTimerItem
 {
-    int i;
-    void* p;
+    DvzTimer* timer;
+    double delay, period;
+    uint64_t count, max_count;
+    double start_time, last_fire;
+    bool is_running;
 };
 
 
 
-struct DvzList
+struct DvzTimer
 {
-    uint64_t capacity;
-    uint64_t count;
-    DvzListItem* values;
+    double time;
+    DvzList items;
+    uint32_t firing_count;
+    DvzTimerItem* firing[DVZ_TIMER_MAX_FIRING];
 };
 
 
@@ -68,74 +67,43 @@ struct DvzList
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Timer functions                                                                              */
 /*************************************************************************************************/
 
-/**
- * Create a list storing pointers.
- *
- * @returns a list
- */
-DVZ_EXPORT DvzList dvz_list(void);
+DVZ_EXPORT DvzTimer* dvz_timer(void);
 
 
 
-/**
- * Append an item to a list.
- *
- * @param list the list
- * @param value an pointer to the item (memory exlusively managed by the user)
- */
-DVZ_EXPORT void dvz_list_append(DvzList* list, DvzListItem value);
+DVZ_EXPORT uint32_t dvz_timer_count(DvzTimer* timer);
 
 
 
-/**
- * Remove an item from a list.
- *
- * @param list the list
- * @param value the value to remove, if it exists
- */
-DVZ_EXPORT void dvz_list_remove(DvzList* list, uint64_t index);
+DVZ_EXPORT DvzTimerItem*
+dvz_timer_new(DvzTimer* timer, double delay, double period, uint64_t max_count);
 
 
 
-DVZ_EXPORT void dvz_list_remove_pointer(DvzList* list, void* pointer);
+DVZ_EXPORT void dvz_timer_start(DvzTimerItem* item);
 
 
 
-DVZ_EXPORT void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value);
+DVZ_EXPORT void dvz_timer_pause(DvzTimerItem* item);
 
 
 
-DVZ_EXPORT DvzListItem dvz_list_get(DvzList* list, uint64_t index);
+DVZ_EXPORT void dvz_timer_remove(DvzTimerItem* item);
 
 
 
-DVZ_EXPORT uint64_t dvz_list_index(DvzList* list, int value);
+DVZ_EXPORT void dvz_timer_tick(DvzTimer* timer, double time);
 
 
 
-DVZ_EXPORT bool dvz_list_has(DvzList* list, int value);
+DVZ_EXPORT DvzTimerItem** dvz_timer_firing(DvzTimer* timer, uint32_t* count);
 
 
 
-/**
- * Return the number of items in a list.
- *
- * @param list the list
- * @returns the number of items
- */
-DVZ_EXPORT uint64_t dvz_list_count(DvzList* list);
-
-
-
-/**
- * Destroy a list.
- *
- * @param list the list
- */
-DVZ_EXPORT void dvz_list_destroy(DvzList* list);
+DVZ_EXPORT void dvz_timer_destroy(DvzTimer* timer);
 
 
 

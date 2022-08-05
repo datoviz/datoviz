@@ -90,6 +90,22 @@ void dvz_list_remove(DvzList* list, uint64_t index)
 }
 
 
+void dvz_list_remove_pointer(DvzList* list, void* pointer)
+{
+    ASSERT(list != NULL);
+    ASSERT(list->values != NULL);
+    ASSERT(pointer != NULL);
+
+    for (uint64_t i = 0; i < list->count; i++)
+    {
+        if (list->values[i].p == pointer)
+        {
+            dvz_list_remove(list, i);
+        }
+    }
+}
+
+
 
 DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 {

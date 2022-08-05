@@ -37,6 +37,7 @@
 #include "test_resources.h"
 #include "test_runner.h"
 #include "test_thread.h"
+#include "test_timer.h"
 #include "test_transfers.h"
 #include "test_vklite.h"
 #include "test_window.h"
@@ -114,9 +115,13 @@ int dvz_run_tests(const char* match)
     // Testing list.
     TEST(test_list_1)
 
-    // Testing list.
+    // Testing keyboard.
     TEST(test_keyboard_1)
     TEST(test_keyboard_2)
+
+    // Testing timer.
+    TEST(test_timer_1)
+
 
 
     /*********************************************************************************************/

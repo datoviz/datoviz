@@ -2,8 +2,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_KEYBOARD
-#define DVZ_HEADER_TEST_KEYBOARD
+#ifndef DVZ_HEADER_TEST_TIMER
+#define DVZ_HEADER_TEST_TIMER
 
 
 
@@ -17,12 +17,10 @@
 
 
 /*************************************************************************************************/
-/*  Keyboard tests                                                                               */
+/*  Timer tests                                                                                  */
 /*************************************************************************************************/
 
-int test_keyboard_1(TstSuite*);
-
-int test_keyboard_2(TstSuite*);
+int test_timer_1(TstSuite*);
 
 
 

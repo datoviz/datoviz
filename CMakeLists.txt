@@ -523,6 +523,7 @@ set(sources
     "src/map.cpp"
     "src/list.c"
     "src/keyboard.c"
+    "src/timer.c"
 
     # Renderer
     "src/vklite.c"
@@ -600,6 +601,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_map.c"
         "tests/test_list.c"
         "tests/test_keyboard.c"
+        "tests/test_timer.c"
 
         # Renderer
         "tests/test_vklite.c"

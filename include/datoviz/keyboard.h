@@ -11,9 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_prng.h"
 #include "common.h"
-#include "fifo.h"
 #include "keycode.h"
 #include "list.h"
 
@@ -105,7 +103,7 @@ struct DvzKeyboard
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Keyboard functions */
+/*  Keyboard functions                                                                           */
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzKeyboard* dvz_keyboard(void);

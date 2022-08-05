@@ -1,9 +1,6 @@
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Testing timer                                                                                */
 /*************************************************************************************************/
-
-#ifndef DVZ_HEADER_TEST_KEYBOARD
-#define DVZ_HEADER_TEST_KEYBOARD
 
 
 
@@ -11,19 +8,21 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "test_timer.h"
 #include "test.h"
 #include "testing.h"
+#include "timer.h"
 
 
 
 /*************************************************************************************************/
-/*  Keyboard tests                                                                               */
+/*  Timer tests                                                                                  */
 /*************************************************************************************************/
 
-int test_keyboard_1(TstSuite*);
+int test_timer_1(TstSuite* suite)
+{
+    DvzTimer* timer = dvz_timer();
 
-int test_keyboard_2(TstSuite*);
-
-
-
-#endif
+    dvz_timer_destroy(timer);
+    return 0;
+}
