@@ -31,15 +31,22 @@ static bool _timer_item_firing(DvzTimerItem* item)
     // Local time, taking into account the global current time, the item start time and delay
     // (encoded in start time).
     double local_time = timer->time - item->start_time;
+    // log_info("local time is %f, last fire is %f", local_time, item->last_fire);
 
     // The timer item has not started running yet.
     if (local_time < 0)
         return false;
 
+    // First firing
+    if (local_time >= 0 && item->last_fire < 0)
+    {
+        return true;
+    }
+
     // When is the next expected time?
     double t = local_time;
     double p = item->period;
-    double last = item->last_fire;
+    double last = item->last_fire - item->start_time;
     ASSERT(t >= 0);
     ASSERT(last >= 0);
     ASSERT(p > 0);
@@ -84,10 +91,12 @@ DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64
     item->delay = delay;
     item->period = period;
     item->max_count = max_count;
-    item->is_running = true;
 
     // Add it to the list.
     dvz_list_append(&timer->items, (DvzListItem){.p = item});
+
+    // Start the timer when creating it.
+    dvz_timer_start(item);
 
     return item;
 }
@@ -97,13 +106,17 @@ DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64
 void dvz_timer_start(DvzTimerItem* item)
 {
     ASSERT(item != NULL);
-    item->is_running = true;
-
     DvzTimer* timer = item->timer;
     ASSERT(timer != NULL);
 
+    // Mark the timer item as running.
+    item->is_running = true;
+
     // Reset the timer item start time.
     item->start_time = timer->time + item->delay;
+
+    // NOTE: a negative value means the timer item has never fired yet
+    item->last_fire = -1;
 }
 
 
@@ -131,12 +144,21 @@ void dvz_timer_remove(DvzTimerItem* item)
 
 
 
+bool dvz_timer_running(DvzTimerItem* item)
+{
+    ASSERT(item != NULL);
+    return item->is_running;
+}
+
+
+
 void dvz_timer_tick(DvzTimer* timer, double time)
 {
     // Determine which timers are firing now.
     // To be called at every frame
 
     ASSERT(timer != NULL);
+    ASSERT(time >= 0);
 
     // Set the global time.
     timer->time = time;
@@ -157,6 +179,8 @@ void dvz_timer_tick(DvzTimer* timer, double time)
         {
             ASSERT(timer->firing_count < DVZ_TIMER_MAX_FIRING - 1);
             timer->firing[timer->firing_count++] = item;
+            // Keep track of the firing.
+            item->last_fire = timer->time;
         }
     }
 }
@@ -170,7 +194,7 @@ DvzTimerItem** dvz_timer_firing(DvzTimer* timer, uint32_t* count)
     ASSERT(count != NULL);
 
     *count = timer->firing_count;
-    return timer->firing;
+    return *count > 0 ? timer->firing : NULL;
 }
 
 

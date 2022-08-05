@@ -95,6 +95,10 @@ DVZ_EXPORT void dvz_timer_remove(DvzTimerItem* item);
 
 
 
+DVZ_EXPORT bool dvz_timer_running(DvzTimerItem* item);
+
+
+
 DVZ_EXPORT void dvz_timer_tick(DvzTimer* timer, double time);
 
 
