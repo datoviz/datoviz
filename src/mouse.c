@@ -84,6 +84,9 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button)
             ev.content.c.button = button;
             glm_vec2_copy(mouse->cur_pos, ev.content.c.pos);
             ev.content.c.double_click = state == DVZ_MOUSE_STATE_CLICK_PRESS;
+
+            // Record the time of the last click.
+            mouse->last_click = mouse->time;
         }
         else
         {
@@ -109,6 +112,10 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
 
     // Save the button.
     mouse->button = button;
+
+    // Copy the press position and time.
+    glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
+    mouse->last_press = mouse->time;
 
     // Delay since the last click.
     double delay = mouse->time - mouse->last_click;
@@ -160,7 +167,7 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
     DvzMouseState state = mouse->state;
 
     // Copy the current position.
-    glm_vec2_copy(mouse->cur_pos, pos);
+    glm_vec2_copy(pos, mouse->cur_pos);
 
     // Delay since the last click.
     float delta = glm_vec2_distance(mouse->press_pos, mouse->cur_pos);
