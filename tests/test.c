@@ -28,6 +28,7 @@
 #include "test_list.h"
 #include "test_loop.h"
 #include "test_map.h"
+#include "test_mouse.h"
 #include "test_obj.h"
 #include "test_pipe.h"
 #include "test_pipelib.h"
@@ -118,6 +119,9 @@ int dvz_run_tests(const char* match)
     // Testing keyboard.
     TEST(test_keyboard_1)
     TEST(test_keyboard_2)
+
+    // Testing mouse.
+    TEST(test_mouse_1)
 
     // Testing timer.
     TEST(test_timer_1)

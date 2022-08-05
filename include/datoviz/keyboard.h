@@ -130,13 +130,13 @@ DVZ_EXPORT int dvz_keyboard_mods(DvzKeyboard* keyboard);
 
 
 
-DVZ_EXPORT void dvz_keyboard_destroy(DvzKeyboard* keyboard);
-
-
-
 DVZ_EXPORT void dvz_keyboard_callback(
     DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
     void* user_data);
+
+
+
+DVZ_EXPORT void dvz_keyboard_destroy(DvzKeyboard* keyboard);
 
 
 
