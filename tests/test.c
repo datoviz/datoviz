@@ -121,6 +121,7 @@ int dvz_run_tests(const char* match)
 
     // Testing timer.
     TEST(test_timer_1)
+    TEST(test_timer_2)
 
 
 

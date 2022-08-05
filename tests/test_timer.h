@@ -22,6 +22,8 @@
 
 int test_timer_1(TstSuite*);
 
+int test_timer_2(TstSuite*);
+
 
 
 #endif

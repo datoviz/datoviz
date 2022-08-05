@@ -36,6 +36,10 @@
 
 typedef struct DvzTimer DvzTimer;
 typedef struct DvzTimerItem DvzTimerItem;
+typedef struct DvzTimerEvent DvzTimerEvent;
+typedef struct DvzTimerPayload DvzTimerPayload;
+
+typedef void (*DvzTimerCallback)(DvzTimer*, DvzTimerEvent, void*);
 
 
 
@@ -60,6 +64,25 @@ struct DvzTimer
     DvzList items;
     uint32_t firing_count;
     DvzTimerItem* firing[DVZ_TIMER_MAX_FIRING];
+
+    DvzList callbacks;
+};
+
+
+
+struct DvzTimerEvent
+{
+    DvzTimerItem* item;
+    double time;
+};
+
+
+
+struct DvzTimerPayload
+{
+    DvzTimerItem* item;
+    DvzTimerCallback callback;
+    void* user_data;
 };
 
 
@@ -104,6 +127,11 @@ DVZ_EXPORT void dvz_timer_tick(DvzTimer* timer, double time);
 
 
 DVZ_EXPORT DvzTimerItem** dvz_timer_firing(DvzTimer* timer, uint32_t* count);
+
+
+
+DVZ_EXPORT void dvz_timer_callback(
+    DvzTimer* timer, DvzTimerItem* item, DvzTimerCallback callback, void* user_data);
 
 
 

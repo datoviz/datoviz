@@ -142,7 +142,7 @@ void dvz_keyboard_callback(
     void* user_data)
 {
     ASSERT(keyboard != NULL);
-    DvzKeyboardPayload* payload = (DvzKeyboardPayload*)calloc(1, sizeof(DvzKeyboardPayload*));
+    DvzKeyboardPayload* payload = (DvzKeyboardPayload*)calloc(1, sizeof(DvzKeyboardPayload));
     payload->type = type;
     payload->callback = callback;
     payload->user_data = user_data;

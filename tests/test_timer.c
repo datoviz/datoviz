@@ -106,3 +106,40 @@ int test_timer_1(TstSuite* suite)
     dvz_timer_destroy(timer);
     return 0;
 }
+
+
+
+static void _on_timer(DvzTimer* timer, DvzTimerEvent ev, void* user_data)
+{
+    ASSERT(timer != NULL);
+
+    double* res = (double*)user_data;
+    ASSERT(res != NULL);
+
+    *res = ev.time;
+}
+
+int test_timer_2(TstSuite* suite)
+{
+    double period = .1;
+    DvzTimer* timer = dvz_timer();
+    DvzTimerItem* item = dvz_timer_new(timer, 0, period, 0);
+
+    double res = 0;
+    dvz_timer_callback(timer, item, _on_timer, &res);
+
+    dvz_timer_tick(timer, 0.1);
+    AT(res == .1);
+    AT(item->count == 1);
+
+    dvz_timer_tick(timer, 0.15);
+    AT(res == .1);
+    AT(item->count == 1);
+
+    dvz_timer_tick(timer, 0.2);
+    AT(res == .2);
+    AT(item->count == 2);
+
+    dvz_timer_destroy(timer);
+    return 0;
+}
