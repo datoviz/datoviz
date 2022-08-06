@@ -5,11 +5,11 @@
 #include <map>
 
 #include "_log.h"
+#include "_map.h"
 #include "board.h"
 #include "canvas.h"
 #include "context.h"
 #include "graphics.h"
-#include "map.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "recorder.h"

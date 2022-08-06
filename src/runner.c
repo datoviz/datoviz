@@ -7,8 +7,8 @@
 /*************************************************************************************************/
 
 #include "../include/datoviz/runner.h"
+#include "../include/datoviz/_map.h"
 #include "../include/datoviz/canvas.h"
-#include "../include/datoviz/map.h"
 #include "../include/datoviz/vklite.h"
 #include "canvas_utils.h"
 #include "runner_utils.h"

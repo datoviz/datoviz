@@ -3,11 +3,11 @@
 /*************************************************************************************************/
 
 #include "presenter.h"
+#include "_map.h"
 #include "canvas.h"
 #include "canvas_utils.h"
 #include "client_utils.h"
 #include "gui.h"
-#include "map.h"
 #include "request.h"
 #include "surface.h"
 #include "vklite.h"

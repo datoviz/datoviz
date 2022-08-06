@@ -520,7 +520,7 @@ set(sources
     "src/fileio.cpp"
     "src/fifo.c"
     "src/array.c"
-    "src/map.cpp"
+    "src/_map.cpp"
     "src/_list.c"
     "src/keyboard.c"
     "src/mouse.c"
