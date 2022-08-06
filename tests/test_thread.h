@@ -19,13 +19,13 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_utils_thread_1(TstSuite*);
+int test_thread_1(TstSuite*);
 
-int test_utils_mutex_1(TstSuite*);
+int test_mutex_1(TstSuite*);
 
-int test_utils_cond_1(TstSuite*);
+int test_cond_1(TstSuite*);
 
-int test_utils_atomic_1(TstSuite*);
+int test_atomic_1(TstSuite*);
 
 
 

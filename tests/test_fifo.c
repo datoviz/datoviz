@@ -63,7 +63,7 @@ static int _fifo_thread_2(void* arg)
 
 
 
-int test_utils_fifo_1(TstSuite* suite)
+int test_fifo_1(TstSuite* suite)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint8_t item = 12;
@@ -107,7 +107,7 @@ int test_utils_fifo_1(TstSuite* suite)
 
 
 
-int test_utils_fifo_2(TstSuite* suite)
+int test_fifo_2(TstSuite* suite)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[64] = {0};
@@ -130,7 +130,7 @@ int test_utils_fifo_2(TstSuite* suite)
 
 
 
-int test_utils_fifo_resize(TstSuite* suite)
+int test_fifo_resize(TstSuite* suite)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[256] = {0};
@@ -157,7 +157,7 @@ int test_utils_fifo_resize(TstSuite* suite)
 
 
 
-int test_utils_fifo_discard(TstSuite* suite)
+int test_fifo_discard(TstSuite* suite)
 {
     DvzFifo fifo = dvz_fifo(8);
     uint32_t numbers[8] = {0};
@@ -185,7 +185,7 @@ int test_utils_fifo_discard(TstSuite* suite)
 
 
 
-int test_utils_fifo_first(TstSuite* suite)
+int test_fifo_first(TstSuite* suite)
 {
     DvzFifo fifo = dvz_fifo(8);
     dvz_fifo_enqueue(&fifo, (int[]){1});
@@ -215,7 +215,7 @@ static void _deq_1_callback(DvzDeq* deq, void* item, void* user_data)
     *data = *((int*)item);
 }
 
-int test_utils_deq_1(TstSuite* suite)
+int test_deq_1(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(2);
     DvzDeqItem item = {0};
@@ -265,7 +265,7 @@ int test_utils_deq_1(TstSuite* suite)
 
 
 
-int test_utils_deq_2(TstSuite* suite)
+int test_deq_2(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(2);
     dvz_deq_proc(&deq, 0, 2, (uint32_t[]){0, 1});
@@ -329,7 +329,7 @@ static int _dep_thread_2(void* user_data)
     return 0;
 }
 
-int test_utils_deq_dependencies(TstSuite* suite)
+int test_deq_dependencies(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(3);
     int res = 0;
@@ -410,7 +410,7 @@ static void _proc_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, 
     v[0][2] = *((uint32_t*)item);
 }
 
-int test_utils_deq_proc(TstSuite* suite)
+int test_deq_proc(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(3);
     dvz_deq_proc(&deq, 0, 2, (uint32_t[]){0, 1});
@@ -447,7 +447,7 @@ int test_utils_deq_proc(TstSuite* suite)
 
 
 
-int test_utils_deq_circular(TstSuite* suite)
+int test_deq_circular(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(2);
     dvz_deq_proc(&deq, 0, 2, (uint32_t[]){0, 1});
@@ -502,7 +502,7 @@ static void _proc_wait(DvzDeq* deq, void* user_data)
     log_debug("wait iter %d", *count);
 }
 
-int test_utils_deq_wait(TstSuite* suite)
+int test_deq_wait(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(1);
     dvz_deq_proc(&deq, 0, 1, (uint32_t[]){0});
@@ -556,7 +556,7 @@ static void _proc_batch(
     }
 }
 
-int test_utils_deq_batch(TstSuite* suite)
+int test_deq_batch(TstSuite* suite)
 {
     DvzDeq deq = dvz_deq(2);
     dvz_deq_proc(&deq, 0, 1, (uint32_t[]){0});

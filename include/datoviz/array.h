@@ -119,7 +119,7 @@ struct DvzArray
  * @param dtype the data type of the array
  * @returns a new array
  */
-DVZ_EXPORT DvzArray dvz_array(uint32_t item_count, DvzDataType dtype);
+DVZ_EXPORT DvzArray* dvz_array(uint32_t item_count, DvzDataType dtype);
 
 
 
@@ -129,7 +129,7 @@ DVZ_EXPORT DvzArray dvz_array(uint32_t item_count, DvzDataType dtype);
  * @param arr an array
  * @returns a new array
  */
-DVZ_EXPORT DvzArray dvz_array_copy(DvzArray* arr);
+DVZ_EXPORT DvzArray* dvz_array_copy(DvzArray* arr);
 
 
 
@@ -139,7 +139,7 @@ DVZ_EXPORT DvzArray dvz_array_copy(DvzArray* arr);
  * @param pos initial number of elements
  * @returns a new array
  */
-DVZ_EXPORT DvzArray dvz_array_point(dvec3 pos);
+DVZ_EXPORT DvzArray* dvz_array_point(dvec3 pos);
 
 
 
@@ -155,7 +155,7 @@ DVZ_EXPORT DvzArray dvz_array_point(dvec3 pos);
  * @param dtype the data type of the array
  * @returns the array wrapping the buffer
  */
-DVZ_EXPORT DvzArray dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data);
+DVZ_EXPORT DvzArray* dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data);
 
 
 
@@ -166,7 +166,7 @@ DVZ_EXPORT DvzArray dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void*
  * @param item_size size, in bytes, of each item
  * @returns the array
  */
-DVZ_EXPORT DvzArray dvz_array_struct(uint32_t item_count, DvzSize item_size);
+DVZ_EXPORT DvzArray* dvz_array_struct(uint32_t item_count, DvzSize item_size);
 
 
 
@@ -180,7 +180,7 @@ DVZ_EXPORT DvzArray dvz_array_struct(uint32_t item_count, DvzSize item_size);
  * @param item_size size of each item in bytes
  * @returns the array
  */
-DVZ_EXPORT DvzArray
+DVZ_EXPORT DvzArray*
 dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, DvzSize item_size);
 
 
@@ -266,7 +266,7 @@ DVZ_EXPORT void dvz_array_copy_region(
  * === "C"
  *     ```c
  *     // Create an array of 10 double numbers, initialize all elements with 1.23.
- *     DvzArray arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
+ *     DvzArray* arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
  *     double item = 1.23;
  *     dvz_array_data(&arr, 0, 10, 1, &item);
  *     ```

@@ -11,7 +11,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "array.h"
 #include "graphics.h"
 
 
@@ -30,6 +29,7 @@ typedef void (*DvzGraphicsCallback)(DvzGraphicsData* data, uint32_t item_count, 
 
 // Forward declarations.
 typedef struct DvzGraphics DvzGraphics;
+typedef struct DvzArray DvzArray;
 
 
 

@@ -19,7 +19,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_utils_png_1(TstSuite* suite)
+int test_png_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
 

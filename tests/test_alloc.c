@@ -22,7 +22,7 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_utils_alloc_1(TstSuite* suite)
+int test_alloc_1(TstSuite* suite)
 {
     DvzSize size = 32;
     DvzSize alignment = 4;
@@ -81,7 +81,7 @@ int test_utils_alloc_1(TstSuite* suite)
 
 
 
-int test_utils_alloc_2(TstSuite* suite)
+int test_alloc_2(TstSuite* suite)
 {
     DvzSize size = 1024;
     DvzSize alignment = 16;
@@ -105,7 +105,7 @@ int test_utils_alloc_2(TstSuite* suite)
 
 
 
-int test_utils_alloc_3(TstSuite* suite)
+int test_alloc_3(TstSuite* suite)
 {
     DvzSize size = 128;
     DvzSize alignment = 16;

@@ -63,43 +63,43 @@ int dvz_run_tests(const char* match)
     /*********************************************************************************************/
 
     // Testing thread utils.
-    TEST(test_utils_thread_1)
-    TEST(test_utils_mutex_1)
-    TEST(test_utils_cond_1)
-    TEST(test_utils_atomic_1)
+    TEST(test_thread_1)
+    TEST(test_mutex_1)
+    TEST(test_cond_1)
+    TEST(test_atomic_1)
 
     // Testing obj.
-    TEST(test_utils_obj_1)
+    TEST(test_obj_1)
 
     // Testing file IO.
-    TEST(test_utils_png_1)
+    TEST(test_png_1)
 
     // Testing FIFO.
-    TEST(test_utils_obj_1)
-    TEST(test_utils_fifo_1)
-    TEST(test_utils_fifo_2)
-    TEST(test_utils_fifo_resize)
-    TEST(test_utils_fifo_discard)
-    TEST(test_utils_fifo_first)
-    TEST(test_utils_deq_1)
-    TEST(test_utils_deq_2)
+    TEST(test_obj_1)
+    TEST(test_fifo_1)
+    TEST(test_fifo_2)
+    TEST(test_fifo_resize)
+    TEST(test_fifo_discard)
+    TEST(test_fifo_first)
+    TEST(test_deq_1)
+    TEST(test_deq_2)
 
     // Testing array.
-    TEST(test_utils_array_1)
-    TEST(test_utils_array_2)
-    TEST(test_utils_array_3)
-    TEST(test_utils_array_4)
-    TEST(test_utils_array_5)
-    TEST(test_utils_array_6)
-    TEST(test_utils_array_7)
-    TEST(test_utils_array_cast)
-    TEST(test_utils_array_mvp)
-    TEST(test_utils_array_3D)
+    TEST(test_array_1)
+    TEST(test_array_2)
+    TEST(test_array_3)
+    TEST(test_array_4)
+    TEST(test_array_5)
+    TEST(test_array_6)
+    TEST(test_array_7)
+    TEST(test_array_cast)
+    TEST(test_array_mvp)
+    TEST(test_array_3D)
 
     // Testing alloc.
-    TEST(test_utils_alloc_1)
-    TEST(test_utils_alloc_2)
-    TEST(test_utils_alloc_3)
+    TEST(test_alloc_1)
+    TEST(test_alloc_2)
+    TEST(test_alloc_3)
 
     // Testing colormaps.
     TEST(test_colormaps_idx)

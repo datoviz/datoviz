@@ -149,20 +149,20 @@ static uint32_t _get_components(DvzDataType dtype)
 
 // Create a new 1D array with a given dtype, number of elements, and item size (used for record
 // arrays containing heterogeneous data)
-static DvzArray _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
+static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
 {
-    DvzArray arr;
-    memset(&arr, 0, sizeof(DvzArray));
-    arr.obj.type = DVZ_OBJECT_TYPE_ARRAY;
-    arr.dtype = dtype;
-    arr.components = _get_components(dtype);
-    arr.item_size = item_size;
+    DvzArray* arr = calloc(1, sizeof(DvzArray));
+    memset(arr, 0, sizeof(DvzArray));
+    arr->obj.type = DVZ_OBJECT_TYPE_ARRAY;
+    arr->dtype = dtype;
+    arr->components = _get_components(dtype);
+    arr->item_size = item_size;
     ASSERT(item_size > 0);
-    arr.item_count = item_count;
-    arr.buffer_size = item_count * arr.item_size;
+    arr->item_count = item_count;
+    arr->buffer_size = item_count * arr->item_size;
     if (item_count > 0)
-        arr.data = calloc(item_count, arr.item_size);
-    dvz_obj_created(&arr.obj);
+        arr->data = calloc(item_count, arr->item_size);
+    dvz_obj_created(&arr->obj);
     return arr;
 }
 
@@ -222,7 +222,7 @@ _repeat_last(uint32_t old_item_count, DvzSize item_size, void* data, uint32_t it
  * @param dtype the data type of the array
  * @returns a new array
  */
-DvzArray dvz_array(uint32_t item_count, DvzDataType dtype)
+DvzArray* dvz_array(uint32_t item_count, DvzDataType dtype)
 {
     ASSERT(dtype != DVZ_DTYPE_NONE);
     ASSERT(dtype != DVZ_DTYPE_CUSTOM);
@@ -237,11 +237,12 @@ DvzArray dvz_array(uint32_t item_count, DvzDataType dtype)
  * @param arr an array
  * @returns a new array
  */
-DvzArray dvz_array_copy(DvzArray* arr)
+DvzArray* dvz_array_copy(DvzArray* arr)
 {
-    DvzArray arr_new = *arr; // struct copy
-    arr_new.data = malloc(arr->buffer_size);
-    memcpy(arr_new.data, arr->data, arr->buffer_size);
+    DvzArray* arr_new = calloc(1, sizeof(DvzArray));
+    memcpy(arr_new, arr, sizeof(DvzArray));
+    arr_new->data = malloc(arr->buffer_size);
+    memcpy(arr_new->data, arr->data, arr->buffer_size);
     return arr_new;
 }
 
@@ -253,10 +254,10 @@ DvzArray dvz_array_copy(DvzArray* arr)
  * @param pos initial number of elements
  * @returns a new array
  */
-DvzArray dvz_array_point(dvec3 pos)
+DvzArray* dvz_array_point(dvec3 pos)
 {
-    DvzArray arr = dvz_array(1, DVZ_DTYPE_DVEC3);
-    memcpy(arr.data, pos, sizeof(dvec3));
+    DvzArray* arr = dvz_array(1, DVZ_DTYPE_DVEC3);
+    memcpy(arr->data, pos, sizeof(dvec3));
     return arr;
 }
 
@@ -274,13 +275,13 @@ DvzArray dvz_array_point(dvec3 pos)
  * @param dtype the data type of the array
  * @returns the array wrapping the buffer
  */
-DvzArray dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data)
+DvzArray* dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data)
 {
-    DvzArray arr = dvz_array(0, dtype); // do not allocate underlying buffer
+    DvzArray* arr = dvz_array(0, dtype); // do not allocate underlying buffer
     // Manual setting of struct fields with the passed buffer
-    arr.item_count = item_count;
-    arr.buffer_size = item_count * arr.item_size;
-    arr.data = data;
+    arr->item_count = item_count;
+    arr->buffer_size = item_count * arr->item_size;
+    arr->data = data;
     return arr;
 }
 
@@ -293,7 +294,7 @@ DvzArray dvz_array_wrap(uint32_t item_count, DvzDataType dtype, void* data)
  * @param item_size size, in bytes, of each item
  * @returns the array
  */
-DvzArray dvz_array_struct(uint32_t item_count, DvzSize item_size)
+DvzArray* dvz_array_struct(uint32_t item_count, DvzSize item_size)
 {
     ASSERT(item_size > 0);
     return _create_array(item_count, DVZ_DTYPE_CUSTOM, item_size);
@@ -311,7 +312,7 @@ DvzArray dvz_array_struct(uint32_t item_count, DvzSize item_size)
  * @param item_size size of each item in bytes
  * @returns the array
  */
-DvzArray
+DvzArray*
 dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, DvzSize item_size)
 {
     ASSERT(ndims > 0);
@@ -324,11 +325,11 @@ dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, Dv
 
     uint32_t item_count = width * height * depth;
 
-    DvzArray arr = _create_array(item_count, DVZ_DTYPE_CUSTOM, item_size);
-    arr.ndims = ndims;
-    arr.shape[0] = width;
-    arr.shape[1] = height;
-    arr.shape[2] = depth;
+    DvzArray* arr = _create_array(item_count, DVZ_DTYPE_CUSTOM, item_size);
+    arr->ndims = ndims;
+    arr->shape[0] = width;
+    arr->shape[1] = height;
+    arr->shape[2] = depth;
     return arr;
 }
 
@@ -530,9 +531,9 @@ void dvz_array_copy_region(
  * === "C"
  *     ```c
  *     // Create an array of 10 double numbers, initialize all elements with 1.23.
- *     DvzArray arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
+ *     DvzArray* arr = dvz_array(10, DVZ_DTYPE_DOUBLE);
  *     double item = 1.23;
- *     dvz_array_data(&arr, 0, 10, 1, &item);
+ *     dvz_array_data(arr, 0, 10, 1, &item);
  *     ```
  *
  * @param array the array
@@ -591,6 +592,7 @@ void dvz_array_data(
             (void*)((int64_t)array->data + (int64_t)(first_item * item_size)), item_count);
     }
 }
+
 
 
 /**
@@ -740,5 +742,6 @@ void dvz_array_destroy(DvzArray* array)
     if (!dvz_obj_is_created(&array->obj))
         return;
     dvz_obj_destroyed(&array->obj);
-    FREE(array->data) //
+    FREE(array->data);
+    FREE(array);
 }

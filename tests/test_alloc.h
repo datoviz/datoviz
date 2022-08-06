@@ -19,11 +19,11 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_utils_alloc_1(TstSuite*);
+int test_alloc_1(TstSuite*);
 
-int test_utils_alloc_2(TstSuite*);
+int test_alloc_2(TstSuite*);
 
-int test_utils_alloc_3(TstSuite*);
+int test_alloc_3(TstSuite*);
 
 
 
