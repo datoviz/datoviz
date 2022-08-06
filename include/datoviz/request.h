@@ -218,7 +218,7 @@ EXTERN_C_ON
  *
  * @returns the requester struct
  */
-DVZ_EXPORT DvzRequester dvz_requester(void);
+DVZ_EXPORT DvzRequester* dvz_requester(void);
 
 
 

@@ -31,16 +31,16 @@ static DvzRequest _request(void)
 
 
 
-DvzRequester dvz_requester(void)
+DvzRequester* dvz_requester(void)
 {
-    DvzRequester rqr = {0};
-    rqr.prng = dvz_prng();
+    DvzRequester* rqr = calloc(1, sizeof(DvzRequester));
+    rqr->prng = dvz_prng();
 
     // Initialize the list of requests for batchs.
-    rqr.capacity = DVZ_CONTAINER_DEFAULT_COUNT;
-    rqr.requests = (DvzRequest*)calloc(rqr.capacity, sizeof(DvzRequest));
+    rqr->capacity = DVZ_CONTAINER_DEFAULT_COUNT;
+    rqr->requests = (DvzRequest*)calloc(rqr->capacity, sizeof(DvzRequest));
 
-    dvz_obj_init(&rqr.obj);
+    dvz_obj_init(&rqr->obj);
     return rqr;
 }
 
@@ -52,6 +52,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
     FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);
     dvz_obj_destroyed(&rqr->obj);
+    FREE(rqr);
 }
 
 
