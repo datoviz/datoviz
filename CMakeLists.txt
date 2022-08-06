@@ -521,7 +521,7 @@ set(sources
     "src/fifo.c"
     "src/array.c"
     "src/map.cpp"
-    "src/list.c"
+    "src/_list.c"
     "src/keyboard.c"
     "src/mouse.c"
     "src/timer.c"
