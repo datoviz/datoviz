@@ -11,13 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_input.h"
 #include "_map.h"
 #include "common.h"
 #include "fifo.h"
-
-// TODO: use instead a header just with the common enums and structs
-#include "keyboard.h"
-#include "mouse.h"
 
 
 

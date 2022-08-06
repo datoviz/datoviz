@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_input.h"
 #include "_keycode.h"
 #include "_list.h"
 #include "common.h"
@@ -27,38 +28,10 @@
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-// Keyboard mods
-// NOTE: must match GLFW values! no mapping is done as of now
-typedef enum
-{
-    DVZ_KEY_MODIFIER_NONE = 0x00000000,
-    DVZ_KEY_MODIFIER_SHIFT = 0x00000001,
-    DVZ_KEY_MODIFIER_CONTROL = 0x00000002,
-    DVZ_KEY_MODIFIER_ALT = 0x00000004,
-    DVZ_KEY_MODIFIER_SUPER = 0x00000008,
-} DvzKeyboardModifiers;
-
-
-
-// Keyboard event type (press or release)
-typedef enum
-{
-    DVZ_KEYBOARD_EVENT_NONE,
-    DVZ_KEYBOARD_EVENT_PRESS,
-    DVZ_KEYBOARD_EVENT_RELEASE,
-} DvzKeyboardEventType;
-
-
-
-/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzKeyboard DvzKeyboard;
-typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzKeyboardPayload DvzKeyboardPayload;
 
 typedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzKeyboardEvent, void*);
@@ -68,15 +41,6 @@ typedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzKeyboardEvent, void*);
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzKeyboardEvent
-{
-    DvzKeyboardEventType type;
-    DvzKeyCode key;
-    int mods;
-};
-
-
 
 struct DvzKeyboardPayload
 {
