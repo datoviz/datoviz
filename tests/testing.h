@@ -94,7 +94,7 @@ typedef struct TstFixture TstFixture;
 typedef struct TstItem TstItem; // either a test or a fixture
 typedef union TstItemUnion TstItemUnion;
 
-typedef int (*TstFunction)(TstSuite*);
+typedef int (*TstFunction)(TstSuite* suite);
 
 
 

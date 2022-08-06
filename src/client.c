@@ -49,7 +49,8 @@ static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 
     if (payload->mode == DVZ_CLIENT_CALLBACK_SYNC)
     {
-        payload->callback(client, *ev, payload->user_data);
+        ev->user_data = payload->user_data;
+        payload->callback(client, *ev);
     }
     else if (payload->mode == DVZ_CLIENT_CALLBACK_ASYNC)
     {

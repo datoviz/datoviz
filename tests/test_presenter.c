@@ -99,7 +99,7 @@ int test_presenter_1(TstSuite* suite)
 
 
 
-static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_data)
+static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
 
@@ -107,7 +107,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev, void* user_da
     uint32_t height = ev.content.w.height;
     log_info("window %x resized to %dx%d", ev.window_id, width, height);
 
-    CallbackStruct* s = (CallbackStruct*)user_data;
+    CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ASSERT(s != NULL);
 
     DvzRequester* rqr = s->rqr;

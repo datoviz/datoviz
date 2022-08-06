@@ -34,13 +34,13 @@
 /*  Client input tests                                                                           */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzClient* client, DvzClientEvent ev, void* user_data)
+static void _on_mouse(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
     log_debug("mouse event %d", ev.content.m.type);
 }
 
-static void _on_keyboard(DvzClient* client, DvzClientEvent ev, void* user_data)
+static void _on_keyboard(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
     log_debug("keyboard event %d", ev.content.k.type);

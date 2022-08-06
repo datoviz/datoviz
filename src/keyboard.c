@@ -47,9 +47,10 @@ static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
     for (uint32_t i = 0; i < n; i++)
     {
         payload = (DvzKeyboardPayload*)dvz_list_get(keyboard->callbacks, i).p;
+        event.user_data = payload->user_data;
         if (payload->type == event.type)
         {
-            payload->callback(keyboard, event, payload->user_data);
+            payload->callback(keyboard, event);
         }
     }
 }

@@ -25,11 +25,11 @@
 /*  Input callbacks                                                                              */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
 
-    DvzWindow* window = (DvzWindow*)user_data;
+    DvzWindow* window = (DvzWindow*)ev.user_data;
     ASSERT(window != NULL);
 
     DvzClient* client = window->client;
@@ -42,11 +42,11 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
     dvz_client_event(client, cev);
 }
 
-static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user_data)
+static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
     ASSERT(keyboard != NULL);
 
-    DvzWindow* window = (DvzWindow*)user_data;
+    DvzWindow* window = (DvzWindow*)ev.user_data;
     ASSERT(window != NULL);
 
     DvzClient* client = window->client;

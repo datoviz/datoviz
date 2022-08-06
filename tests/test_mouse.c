@@ -19,13 +19,13 @@
 /*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-static void _on_mouse_move(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_move(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_MOVE);
-    *((float*)user_data) = ev.content.m.pos[0];
+    *((float*)ev.user_data) = ev.content.m.pos[0];
 }
 
 int test_mouse_move(TstSuite* suite)
@@ -47,22 +47,22 @@ int test_mouse_move(TstSuite* suite)
 
 
 
-static void _on_mouse_press(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_press(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_PRESS);
-    *((int*)user_data) = ev.content.b.button;
+    *((int*)ev.user_data) = ev.content.b.button;
 }
 
-static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_CLICK);
-    *((float*)user_data) = ev.content.c.pos[0];
+    *((float*)ev.user_data) = ev.content.c.pos[0];
 }
 
 int test_mouse_press(TstSuite* suite)
@@ -111,13 +111,13 @@ int test_mouse_press(TstSuite* suite)
 
 
 
-static void _on_mouse_wheel(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_wheel(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_WHEEL);
-    *((float*)user_data) = ev.content.w.dir[1];
+    *((float*)ev.user_data) = ev.content.w.dir[1];
 }
 
 int test_mouse_wheel(TstSuite* suite)
@@ -143,22 +143,22 @@ int test_mouse_wheel(TstSuite* suite)
 
 
 
-static void _on_mouse_drag(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_drag(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     // ASSERT(ev.type == DVZ_MOUSE_EVENT_DRAG);
-    *((float*)user_data) = ev.content.d.pos[0];
+    *((float*)ev.user_data) = ev.content.d.pos[0];
 }
 
-static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
-    ASSERT(user_data != NULL);
+    ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_DRAG_STOP);
-    *((int*)user_data) = ev.content.d.button;
+    *((int*)ev.user_data) = ev.content.d.button;
 }
 
 int test_mouse_drag(TstSuite* suite)

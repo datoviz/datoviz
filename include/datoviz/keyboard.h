@@ -32,7 +32,7 @@
 typedef struct DvzKeyboard DvzKeyboard;
 typedef struct DvzKeyboardPayload DvzKeyboardPayload;
 
-typedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzKeyboardEvent, void*);
+typedef void (*DvzKeyboardCallback)(DvzKeyboard* keyboard, DvzKeyboardEvent ev);
 
 
 

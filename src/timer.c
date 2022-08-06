@@ -65,9 +65,10 @@ static void _callbacks(DvzTimer* timer, DvzTimerEvent event)
     for (uint32_t i = 0; i < n; i++)
     {
         payload = (DvzTimerPayload*)dvz_list_get(timer->callbacks, i).p;
+        event.user_data = payload->user_data;
         if (payload->item == event.item)
         {
-            payload->callback(timer, event, payload->user_data);
+            payload->callback(timer, event);
         }
     }
 }

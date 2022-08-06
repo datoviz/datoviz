@@ -32,7 +32,7 @@
 /*  Input tests                                                                                  */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev, void* user_data)
+static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 {
     ASSERT(mouse != NULL);
 
@@ -126,7 +126,7 @@ int test_input_mouse(TstSuite* suite)
 
 
 
-static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user_data)
+static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
     ASSERT(keyboard != NULL);
 

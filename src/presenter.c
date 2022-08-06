@@ -169,11 +169,12 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
 // This function is called when the Client receives a REQUESTS event. It will route the
 // requests to the underlying renderer, and also create associated Client objects such as
 // windows associated to canvases.
-static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user_data)
+static void _requester_callback(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
-    ASSERT(user_data != NULL);
-    DvzPresenter* prt = (DvzPresenter*)user_data;
+
+    DvzPresenter* prt = (DvzPresenter*)ev.user_data;
+    ASSERT(prt != NULL);
 
     DvzRenderer* rd = prt->rd;
     ASSERT(rd != NULL);
@@ -211,11 +212,12 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev, void* user
 
 
 
-static void _frame_callback(DvzClient* client, DvzClientEvent ev, void* user_data)
+static void _frame_callback(DvzClient* client, DvzClientEvent ev)
 {
     ASSERT(client != NULL);
-    ASSERT(user_data != NULL);
-    DvzPresenter* prt = (DvzPresenter*)user_data;
+
+    DvzPresenter* prt = (DvzPresenter*)ev.user_data;
+    ASSERT(prt != NULL);
 
     dvz_presenter_frame(prt, ev.window_id);
 }

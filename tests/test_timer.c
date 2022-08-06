@@ -109,11 +109,11 @@ int test_timer_1(TstSuite* suite)
 
 
 
-static void _on_timer(DvzTimer* timer, DvzTimerEvent ev, void* user_data)
+static void _on_timer(DvzTimer* timer, DvzTimerEvent ev)
 {
     ASSERT(timer != NULL);
 
-    double* res = (double*)user_data;
+    double* res = (double*)ev.user_data;
     ASSERT(res != NULL);
 
     *res = ev.time;

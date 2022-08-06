@@ -52,7 +52,7 @@ typedef struct TestCanvas TestCanvas;
 typedef struct TestVisual TestVisual;
 typedef struct TestVertex TestVertex;
 
-typedef void (*FillCallback)(TestCanvas*, DvzCommands*, uint32_t);
+typedef void (*FillCallback)(TestCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx);
 
 
 

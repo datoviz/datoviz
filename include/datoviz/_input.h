@@ -107,6 +107,7 @@ struct DvzKeyboardEvent
     DvzKeyboardEventType type;
     DvzKeyCode key;
     int mods;
+    void* user_data;
 };
 
 
@@ -150,6 +151,7 @@ struct DvzMouseEvent
 
     } content;
     int mods;
+    void* user_data;
 };
 
 

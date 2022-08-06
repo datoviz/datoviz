@@ -66,7 +66,7 @@ typedef uint64_t DvzId;
 typedef struct DvzDeq DvzDeq;
 
 // Callback types.
-typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev, void* user_data);
+typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev);
 
 
 
@@ -122,6 +122,7 @@ struct DvzClientEvent
         //     int mods;
         // } k;
     } content;
+    void* user_data;
 };
 
 

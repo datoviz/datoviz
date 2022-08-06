@@ -35,7 +35,7 @@
 typedef struct DvzMouse DvzMouse;
 typedef struct DvzMousePayload DvzMousePayload;
 
-typedef void (*DvzMouseCallback)(DvzMouse*, DvzMouseEvent, void*);
+typedef void (*DvzMouseCallback)(DvzMouse* mouse, DvzMouseEvent ev);
 
 
 
