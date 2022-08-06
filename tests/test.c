@@ -38,7 +38,6 @@
 #include "test_renderer.h"
 #include "test_request.h"
 #include "test_resources.h"
-#include "test_runner.h"
 #include "test_thread.h"
 #include "test_timer.h"
 #include "test_transfers.h"
