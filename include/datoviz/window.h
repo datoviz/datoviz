@@ -34,8 +34,8 @@ typedef enum
 typedef struct DvzWindow DvzWindow;
 
 // Forward declarations.
-typedef struct DvzMouse DvzMouse;
-typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzInput DvzInput;
+typedef struct DvzClient DvzClient;
 typedef struct DvzGuiWindow DvzGuiWindow;
 
 
@@ -52,9 +52,9 @@ struct DvzWindow
     uint32_t width, height; // in screen coordinates
     DvzGuiWindow* gui_window;
 
-    // Forward pointers.
-    DvzMouse* mouse;
-    DvzKeyboard* keyboard;
+    // Forward pointer.
+    DvzInput* input;
+    DvzClient* client;
 };
 
 

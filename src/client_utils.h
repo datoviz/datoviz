@@ -48,6 +48,7 @@ create_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t heigh
 
     // Register the window id.
     window->obj.id = (uint64_t)id;
+    window->client = client;
     dvz_map_add(client->map, id, DVZ_OBJECT_TYPE_WINDOW, window);
 
     return window;

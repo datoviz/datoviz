@@ -18,6 +18,7 @@
 #include "test_board.h"
 #include "test_canvas.h"
 #include "test_client.h"
+#include "test_client_input.h"
 #include "test_colormaps.h"
 #include "test_datalloc.h"
 #include "test_fifo.h"
@@ -134,6 +135,9 @@ int dvz_run_tests(const char* match)
     // Testing input.
     TEST(test_input_mouse)
     TEST(test_input_keyboard)
+
+    // Testing client input.
+    TEST(test_client_input)
 
 
     /*********************************************************************************************/

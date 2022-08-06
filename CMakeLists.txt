@@ -526,6 +526,7 @@ set(sources
     "src/mouse.c"
     "src/timer.c"
     "src/input.c"
+    "src/client_input.c"
 
     # Renderer
     "src/vklite.c"
@@ -606,6 +607,7 @@ if (DATOVIZ_WITH_CLI)
         "tests/test_mouse.c"
         "tests/test_timer.c"
         "tests/test_input.c"
+        "tests/test_client_input.c"
 
         # Renderer
         "tests/test_vklite.c"

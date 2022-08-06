@@ -15,6 +15,10 @@
 #include "fifo.h"
 #include "map.h"
 
+// TODO: use instead a header just with the common enums and structs
+#include "keyboard.h"
+#include "mouse.h"
+
 
 
 /*************************************************************************************************/
@@ -77,6 +81,7 @@ struct DvzClientEvent
     DvzId window_id;
     union
     {
+        // Window.
         struct
         {
             uint32_t width;
@@ -84,16 +89,39 @@ struct DvzClientEvent
             int flags;
         } w;
 
+        // Frame.
         struct
         {
             uint64_t frame_idx;
         } f;
 
+        // Requests.
         struct
         {
             uint32_t request_count;
             void* requests;
         } r;
+
+        // Mouse.
+        DvzMouseEvent m;
+        // struct
+        // {
+        //     vec2 pos;
+        //     // HACK: DvzMouseButton is in mouse.h but we don't want client.h to depend on it.
+        //     // TODO: improve this
+        //     int button;
+        //     int mods;
+        // } m;
+
+        // Keyboard.
+        DvzKeyboardEvent k;
+        // struct
+        // {
+        //     // HACK: DvzKeyCode is in keycode.h but we don't want client.h to depend on it.
+        //     // TODO: improve this
+        //     int key;
+        //     int mods;
+        // } k;
     } content;
 };
 
