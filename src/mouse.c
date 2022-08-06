@@ -39,7 +39,7 @@ static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
 /*  Mouse state transitions                                                                      */
 /*************************************************************************************************/
 
-static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button)
+static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ASSERT(mouse != NULL);
 
@@ -55,6 +55,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button)
     // Generate the press event, may be modified below.
     DvzMouseEvent ev = {0};
     ev.type = DVZ_MOUSE_EVENT_RELEASE;
+    ev.mods = mods;
     ev.content.b.button = button;
 
     switch (state)
@@ -279,12 +280,12 @@ void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 
 
 
-void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button)
+void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ASSERT(mouse != NULL);
 
     // This call may change the mouse state, and return an output transition.
-    DvzMouseEvent ev = _after_release(mouse, button);
+    DvzMouseEvent ev = _after_release(mouse, button, mods);
     _callbacks(mouse, ev);
 }
 

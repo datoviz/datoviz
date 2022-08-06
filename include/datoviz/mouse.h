@@ -172,7 +172,7 @@ DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods
 
 
 
-DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button);
+DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 

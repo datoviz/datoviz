@@ -87,7 +87,7 @@ int test_mouse_press(TstSuite* suite)
     dvz_mouse_move(mouse, pos, 0);
 
     // Mouse release.
-    dvz_mouse_release(mouse, button);
+    dvz_mouse_release(mouse, button, 0);
 
     // Should trigger click.
     AT(resp == 2);
@@ -101,7 +101,7 @@ int test_mouse_press(TstSuite* suite)
 
     // New click, but not close enough to do a double-click.
     dvz_mouse_press(mouse, button, 0);
-    dvz_mouse_release(mouse, button);
+    dvz_mouse_release(mouse, button, 0);
     AT(resp == 1);
 
     // Destroy the resources.
@@ -190,7 +190,7 @@ int test_mouse_drag(TstSuite* suite)
     AT(res == 20);
 
     // Mouse release.
-    dvz_mouse_release(mouse, button);
+    dvz_mouse_release(mouse, button, 0);
     AT(resi == (int)DVZ_MOUSE_BUTTON_LEFT);
 
     // Destroy the resources.

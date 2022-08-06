@@ -143,6 +143,11 @@ static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user_
     default:
         break;
     }
+
+    log_debug(
+        "keys pressed: %d %d %d %d", //
+        dvz_keyboard_get(keyboard, 0), dvz_keyboard_get(keyboard, 1),
+        dvz_keyboard_get(keyboard, 2), dvz_keyboard_get(keyboard, 3));
 }
 
 int test_input_keyboard(TstSuite* suite)
