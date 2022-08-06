@@ -50,7 +50,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button)
     mouse->button = DVZ_MOUSE_BUTTON_NONE;
 
     // Delay since the last click.
-    double delay = mouse->time - mouse->last_click;
+    double delay = mouse->time - mouse->last_press;
 
     // Generate the press event, may be modified below.
     DvzMouseEvent ev = {0};
@@ -80,10 +80,10 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button)
         if (delay <= DVZ_MOUSE_CLICK_MAX_DELAY)
         {
             mouse->state = DVZ_MOUSE_STATE_CLICK;
-            ev.type = DVZ_MOUSE_EVENT_CLICK;
+            ev.type = state == DVZ_MOUSE_STATE_CLICK_PRESS ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
+                                                           : DVZ_MOUSE_EVENT_CLICK;
             ev.content.c.button = button;
             glm_vec2_copy(mouse->cur_pos, ev.content.c.pos);
-            ev.content.c.double_click = state == DVZ_MOUSE_STATE_CLICK_PRESS;
 
             // Record the time of the last click.
             mouse->last_click = mouse->time;
@@ -115,10 +115,10 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
 
     // Copy the press position and time.
     glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
-    mouse->last_press = mouse->time;
 
-    // Delay since the last click.
-    double delay = mouse->time - mouse->last_click;
+    // Delay since the last press.
+    double delay = mouse->time - mouse->last_press;
+    mouse->last_press = mouse->time;
 
     // Generate the press event, may be modified below.
     DvzMouseEvent ev = {0};
@@ -139,7 +139,7 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
         break;
 
     case DVZ_MOUSE_STATE_CLICK:
-        if (delay <= DVZ_MOUSE_CLICK_MAX_DELAY)
+        if (delay <= DVZ_MOUSE_DOUBLE_CLICK_MAX_DELAY)
         {
             mouse->state = DVZ_MOUSE_STATE_CLICK_PRESS;
         }

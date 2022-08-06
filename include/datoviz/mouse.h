@@ -124,7 +124,6 @@ struct DvzMouseEvent
         {
             DvzMouseButton button;
             vec2 pos;
-            bool double_click;
         } c;
 
     } content;

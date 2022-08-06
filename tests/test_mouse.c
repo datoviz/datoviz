@@ -102,7 +102,7 @@ int test_mouse_press(TstSuite* suite)
     // New click, but not close enough to do a double-click.
     dvz_mouse_press(mouse, button, 0);
     dvz_mouse_release(mouse, button);
-    AT(resp == 2);
+    AT(resp == 1);
 
     // Destroy the resources.
     dvz_mouse_destroy(mouse);

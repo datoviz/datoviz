@@ -35,6 +35,15 @@ static DvzMouseButton _from_glfw_button(int button)
 
 
 
+// Update the mouse time.
+static inline void _clock(DvzInput* input)
+{
+    ASSERT(input != NULL);
+    dvz_mouse_tick(input->mouse, dvz_clock_get(&input->clock));
+}
+
+
+
 static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
 {
     ASSERT(window != NULL);
@@ -42,6 +51,7 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     ASSERT(input != NULL);
     ASSERT(input->mouse != NULL);
     ASSERT(input->keyboard != NULL);
+    _clock(input);
 
     // TODO: debouncer or throttler
     vec2 pos = {xpos, ypos};
@@ -57,6 +67,7 @@ static void _glfw_button_callback(GLFWwindow* window, int b, int action, int mod
     ASSERT(input != NULL);
     ASSERT(input->mouse != NULL);
     ASSERT(input->keyboard != NULL);
+    _clock(input);
 
     DvzMouseButton button = _from_glfw_button(b);
     if (action == GLFW_PRESS)
@@ -74,6 +85,7 @@ static void _glfw_wheel_callback(GLFWwindow* window, double dx, double dy)
     ASSERT(input != NULL);
     ASSERT(input->mouse != NULL);
     ASSERT(input->keyboard != NULL);
+    _clock(input);
 
     vec2 dir = {dx, dy};
     dvz_mouse_wheel(input->mouse, dir, input->keyboard->mods);
@@ -88,6 +100,7 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
     ASSERT(input != NULL);
     ASSERT(input->mouse != NULL);
     ASSERT(input->keyboard != NULL);
+    _clock(input);
 
     // IMPORTANT NOTE: here, we assume that the GLFW keycode and the Datoviz DvzKeyCode match!
     if (action == GLFW_PRESS)
@@ -109,6 +122,7 @@ DvzInput* dvz_input(DvzWindow* window)
     DvzInput* input = (DvzInput*)calloc(1, sizeof(DvzInput));
     input->mouse = dvz_mouse();
     input->keyboard = dvz_keyboard();
+    input->clock = dvz_clock();
 
     GLFWwindow* w = window->backend_window;
     ASSERT(w != NULL);

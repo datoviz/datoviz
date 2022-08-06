@@ -35,6 +35,7 @@ struct DvzInput
 {
     DvzMouse* mouse;
     DvzKeyboard* keyboard;
+    DvzClock clock;
 };
 
 

@@ -21,10 +21,10 @@
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-#define DBG(x)  printf("%" PRIu64 "\n", (x));
-#define DBGS(x) printf("%" PRId64 "\n", (x));
-#define DBGF(x) printf("%.8f\n", (double)(x))
-#define PRT(x)  printf("%s\n", (x))
+#define Pu(x) printf("%s=%" PRIu64 "\n", (#x), (x));
+#define Pd(x) printf("%s=%" PRId64 "\n", (#x), (x));
+#define Pf(x) printf("%s=%.8f\n", (#x), (double)(x));
+#define Ps(x) printf("%s=%s\n", (#x), (x));
 
 
 
