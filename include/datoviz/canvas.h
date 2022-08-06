@@ -78,7 +78,7 @@ struct DvzRender
     DvzImages depth;
     DvzImages staging;
 
-    // TODO
+    // TODO: picking, screencast
     // DvzImages pick_image;
     // DvzImages pick_staging;
 

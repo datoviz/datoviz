@@ -102,7 +102,7 @@ static void _graphics_text_callback(DvzGraphicsData* data, uint32_t item_count, 
     size_t g = 0;
     for (uint32_t i = 0; i < n; i++)
     {
-        // TODO
+        // TODO: improve glyph size
         // size_t g = _font_atlas_glyph(atlas, str_item->string, i);
 
         // // Glyph size.

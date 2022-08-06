@@ -169,7 +169,7 @@ void dvz_client_callback(
 {
     ASSERT(client != NULL);
 
-    // TODO
+    // TODO: async callbacks
     if (mode == DVZ_CLIENT_CALLBACK_ASYNC)
     {
         log_error("async callbacks are not yet implemented, falling back to sync callbacks");
@@ -199,7 +199,6 @@ int dvz_client_frame(DvzClient* client)
     ASSERT(client != NULL);
 
     // Poll backend events (mouse, keyboard...).
-    // TODO: enqueue mouse and keyboard events
     backend_poll_events(client->backend);
 
     // Dequeue and process events.
@@ -286,7 +285,7 @@ void dvz_client_destroy(DvzClient* client)
 
     dvz_map_destroy(client->map);
 
-    // TODO: stop background thread
+    // TODO: stop background thread for async callbacks
 
     backend_terminate(client->backend);
 

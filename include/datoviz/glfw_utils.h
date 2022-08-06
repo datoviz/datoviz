@@ -128,9 +128,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
             glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
         }
 
-        // TODO!
         // glfwSetWindowUserPointer(bwin, window);
-
         // Callback that marks the window to close if ESC is pressed, but only if
         // DvzWindow.close_on_esc=true
         // glfwSetKeyCallback(bwin, _glfw_esc_callback);

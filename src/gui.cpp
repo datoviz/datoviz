@@ -65,7 +65,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     // init_info.PipelineCache = gpu->pipeline_cache;
     // init_info.Allocator = gpu->allocator;
 
-    // TODO
+    // TODO: better selection of image count (from Vulkan instead of hard-coded)
     init_info.MinImageCount = 2;
     init_info.ImageCount = 2;
 

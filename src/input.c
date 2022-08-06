@@ -53,7 +53,7 @@ static void _glfw_move_callback(GLFWwindow* window, double xpos, double ypos)
     ASSERT(input->keyboard != NULL);
     _clock(input);
 
-    // TODO: debouncer or throttler
+    // TODO: implement debouncer or throttler
     vec2 pos = {xpos, ypos};
     dvz_mouse_move(input->mouse, pos, input->keyboard->mods);
 }

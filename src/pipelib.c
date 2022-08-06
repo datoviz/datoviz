@@ -117,7 +117,7 @@ DvzPipe* dvz_pipelib_graphics(
 DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 {
     ASSERT(lib != NULL);
-    // TODO
+    // TODO: compute shader
     return NULL;
 }
 

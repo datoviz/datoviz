@@ -170,13 +170,6 @@ int dvz_host_destroy(DvzHost* host)
         host->instance = 0;
     }
 
-    // TODO
-    // // Destroy the run.
-    // if (host->run != NULL)
-    // {
-    //     dvz_run_destroy(host->run);
-    // }
-
     // Backend-specific termination code.
     backend_terminate(host->backend);
 

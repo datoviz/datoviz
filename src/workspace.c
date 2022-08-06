@@ -79,9 +79,6 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
 
     *canvas = dvz_canvas(workspace->gpu, renderpass, width, height, flags);
 
-    // TODO: wrap the following line in a new function dvz_canvas_clear_color()?
-    // memcpy(canvas->clear_color, background, sizeof(cvec4));
-
     // NOTE: dvz_canvas_create() must be called, but only AFTER a window and a surface have been
     // created, and this requires a Client. This is done by the Presenter.
 

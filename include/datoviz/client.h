@@ -103,24 +103,9 @@ struct DvzClientEvent
 
         // Mouse.
         DvzMouseEvent m;
-        // struct
-        // {
-        //     vec2 pos;
-        //     // HACK: DvzMouseButton is in mouse.h but we don't want client.h to depend on it.
-        //     // TODO: improve this
-        //     int button;
-        //     int mods;
-        // } m;
 
         // Keyboard.
         DvzKeyboardEvent k;
-        // struct
-        // {
-        //     // HACK: DvzKeyCode is in keycode.h but we don't want client.h to depend on it.
-        //     // TODO: improve this
-        //     int key;
-        //     int mods;
-        // } k;
     } content;
     void* user_data;
 };

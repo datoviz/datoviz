@@ -29,8 +29,6 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-// TODO/ docstrings
-
 DVZ_EXPORT DvzPrng* dvz_prng(void);
 
 
