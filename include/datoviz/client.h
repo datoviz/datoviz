@@ -11,9 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_enums.h"
 #include "_input.h"
 #include "_map.h"
-#include "fifo.h"
+#include "_obj.h"
 
 
 
@@ -60,7 +61,9 @@ typedef struct DvzClient DvzClient;
 typedef struct DvzClientPayload DvzClientPayload;
 typedef struct DvzClientEvent DvzClientEvent;
 
+// Forward declarations.
 typedef uint64_t DvzId;
+typedef struct DvzDeq DvzDeq;
 
 // Callback types.
 typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev, void* user_data);

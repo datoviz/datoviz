@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "fifo.h"
 #include "resources.h"
 #include "transfers.h"
 #include "vklite.h"

@@ -5,6 +5,7 @@
 #include "client.h"
 #include "client_utils.h"
 #include "common.h"
+#include "fifo.h"
 #include "glfw_utils.h"
 #include "window.h"
 
