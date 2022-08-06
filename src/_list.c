@@ -31,12 +31,12 @@ static void _realloc_if_needed(DvzList* list)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzList dvz_list()
+DvzList* dvz_list()
 {
-    DvzList list = {0};
-    list.count = 0;
-    list.capacity = DVZ_MAX_LIST_CAPACITY;
-    list.values = (DvzListItem*)calloc(list.capacity, sizeof(DvzListItem));
+    DvzList* list = (DvzList*)calloc(1, sizeof(DvzList));
+    list->count = 0;
+    list->capacity = DVZ_MAX_LIST_CAPACITY;
+    list->values = (DvzListItem*)calloc(list->capacity, sizeof(DvzListItem));
     return list;
 }
 
@@ -64,6 +64,7 @@ void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value)
 
 void dvz_list_append(DvzList* list, DvzListItem value)
 {
+    ASSERT(list != NULL);
     dvz_list_insert(list, list->count, value);
 }
 
@@ -147,4 +148,5 @@ void dvz_list_destroy(DvzList* list)
 {
     ASSERT(list != NULL);
     FREE(list->values);
+    FREE(list);
 }

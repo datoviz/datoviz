@@ -76,7 +76,7 @@ EXTERN_C_ON
  *
  * @returns a list
  */
-DVZ_EXPORT DvzList dvz_list(void);
+DVZ_EXPORT DvzList* dvz_list(void);
 
 
 

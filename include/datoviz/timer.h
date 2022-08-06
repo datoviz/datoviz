@@ -61,11 +61,11 @@ struct DvzTimerItem
 struct DvzTimer
 {
     double time;
-    DvzList items;
+    DvzList* items;
     uint32_t firing_count;
     DvzTimerItem* firing[DVZ_TIMER_MAX_FIRING];
 
-    DvzList callbacks;
+    DvzList* callbacks;
 };
 
 

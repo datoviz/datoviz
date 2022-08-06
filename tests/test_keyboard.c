@@ -60,7 +60,7 @@ static void _on_key_press(DvzKeyboard* keyboard, DvzKeyboardEvent ev, void* user
 {
     ASSERT(keyboard != NULL);
     log_debug("key press %d, modifiers %d", ev.key, ev.mods);
-    DvzList* keys = &keyboard->keys;
+    DvzList* keys = keyboard->keys;
     uint32_t n = dvz_list_count(keys);
     DvzKeyCode k[4] = {0};
     for (uint32_t i = 0; i < MIN(4, n); i++)

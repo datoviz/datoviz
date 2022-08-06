@@ -51,10 +51,10 @@ struct DvzKeyboardPayload
 
 struct DvzKeyboard
 {
-    DvzList keys;
+    DvzList* keys;
     int mods;
 
-    DvzList callbacks;
+    DvzList* callbacks;
 
     // double press_time;
     bool is_active;

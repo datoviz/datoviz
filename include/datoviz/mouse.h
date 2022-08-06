@@ -54,7 +54,7 @@ struct DvzMousePayload
 
 struct DvzMouse
 {
-    DvzList callbacks;
+    DvzList* callbacks;
     bool is_active;
 
     DvzMouseState state;

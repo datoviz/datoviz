@@ -21,11 +21,14 @@
 
 static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
 {
+    ASSERT(mouse != NULL);
+    ASSERT(mouse->callbacks != NULL);
+
     DvzMousePayload* payload = NULL;
-    uint32_t n = dvz_list_count(&mouse->callbacks);
+    uint32_t n = dvz_list_count(mouse->callbacks);
     for (uint32_t i = 0; i < n; i++)
     {
-        payload = (DvzMousePayload*)dvz_list_get(&mouse->callbacks, i).p;
+        payload = (DvzMousePayload*)dvz_list_get(mouse->callbacks, i).p;
         if (payload->type == event.type)
         {
             payload->callback(mouse, event, payload->user_data);
@@ -314,11 +317,12 @@ void dvz_mouse_callback(
     DvzMouse* mouse, DvzMouseEventType type, DvzMouseCallback callback, void* user_data)
 {
     ASSERT(mouse != NULL);
+
     DvzMousePayload* payload = (DvzMousePayload*)calloc(1, sizeof(DvzMousePayload));
     payload->type = type;
     payload->callback = callback;
     payload->user_data = user_data;
-    dvz_list_append(&mouse->callbacks, (DvzListItem){.p = (void*)payload});
+    dvz_list_append(mouse->callbacks, (DvzListItem){.p = (void*)payload});
 }
 
 
@@ -326,16 +330,17 @@ void dvz_mouse_callback(
 void dvz_mouse_destroy(DvzMouse* mouse)
 {
     ASSERT(mouse != NULL);
+    ASSERT(mouse->callbacks != NULL);
 
     // Free the callback payloads.
     DvzMousePayload* payload = NULL;
-    for (uint32_t i = 0; i < mouse->callbacks.count; i++)
+    for (uint32_t i = 0; i < mouse->callbacks->count; i++)
     {
-        payload = (DvzMousePayload*)(dvz_list_get(&mouse->callbacks, i).p);
+        payload = (DvzMousePayload*)(dvz_list_get(mouse->callbacks, i).p);
         ASSERT(payload != NULL);
         FREE(payload);
     }
-    dvz_list_destroy(&mouse->callbacks);
+    dvz_list_destroy(mouse->callbacks);
 
     FREE(mouse);
 }

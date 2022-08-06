@@ -61,10 +61,10 @@ static bool _timer_item_firing(DvzTimerItem* item)
 static void _callbacks(DvzTimer* timer, DvzTimerEvent event)
 {
     DvzTimerPayload* payload = NULL;
-    uint32_t n = dvz_list_count(&timer->callbacks);
+    uint32_t n = dvz_list_count(timer->callbacks);
     for (uint32_t i = 0; i < n; i++)
     {
-        payload = (DvzTimerPayload*)dvz_list_get(&timer->callbacks, i).p;
+        payload = (DvzTimerPayload*)dvz_list_get(timer->callbacks, i).p;
         if (payload->item == event.item)
         {
             payload->callback(timer, event, payload->user_data);
@@ -91,7 +91,7 @@ DvzTimer* dvz_timer()
 uint32_t dvz_timer_count(DvzTimer* timer)
 {
     ASSERT(timer != NULL);
-    return dvz_list_count(&timer->items);
+    return dvz_list_count(timer->items);
 }
 
 
@@ -110,7 +110,7 @@ DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64
     item->max_count = max_count;
 
     // Add it to the list.
-    dvz_list_append(&timer->items, (DvzListItem){.p = item});
+    dvz_list_append(timer->items, (DvzListItem){.p = item});
 
     // Start the timer when creating it.
     dvz_timer_start(item);
@@ -151,7 +151,7 @@ void dvz_timer_remove(DvzTimerItem* item)
     ASSERT(item != NULL);
     ASSERT(item->timer != NULL);
 
-    DvzList* list = &item->timer->items;
+    DvzList* list = item->timer->items;
     ASSERT(list != NULL);
 
     dvz_list_remove_pointer(list, item);
@@ -184,12 +184,12 @@ void dvz_timer_tick(DvzTimer* timer, double time)
     timer->firing_count = 0;
 
     // Go through all timer items.
-    uint64_t n = dvz_list_count(&timer->items);
+    uint64_t n = dvz_list_count(timer->items);
     DvzTimerItem* item = NULL;
     DvzTimerEvent ev = {0};
     for (uint64_t i = 0; i < n; i++)
     {
-        item = (DvzTimerItem*)dvz_list_get(&timer->items, i).p;
+        item = (DvzTimerItem*)dvz_list_get(timer->items, i).p;
         ASSERT(item != NULL);
 
         // If the current timer item is firing, append it to the list of currently-firing items.
@@ -236,7 +236,7 @@ void dvz_timer_callback(
     payload->item = item;
     payload->callback = callback;
     payload->user_data = user_data;
-    dvz_list_append(&timer->callbacks, (DvzListItem){.p = (void*)payload});
+    dvz_list_append(timer->callbacks, (DvzListItem){.p = (void*)payload});
 }
 
 
@@ -244,7 +244,7 @@ void dvz_timer_callback(
 void dvz_timer_destroy(DvzTimer* timer)
 {
     ASSERT(timer != NULL);
-    DvzList* list = &timer->items;
+    DvzList* list = timer->items;
     uint64_t n = dvz_list_count(list);
 
     // Remove all timer items.
@@ -264,7 +264,7 @@ void dvz_timer_destroy(DvzTimer* timer)
     dvz_list_destroy(list);
 
     // Destroy the list of callbacks.
-    dvz_list_destroy(&timer->callbacks);
+    dvz_list_destroy(timer->callbacks);
 
     // Free the memory associated to the timer struct.
     FREE(timer);
