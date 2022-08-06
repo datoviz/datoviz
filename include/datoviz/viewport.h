@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/*  Input                                                                                        */
+/*  Viewport                                                                                     */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_INPUT
-#define DVZ_HEADER_INPUT
+#ifndef DVZ_HEADER_VIEWPORT
+#define DVZ_HEADER_VIEWPORT
 
 
 
@@ -11,7 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_time.h"
+#include "vklite.h"
 
 
 
@@ -19,38 +19,37 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzInput DvzInput;
+typedef struct DvzViewport DvzViewport;
 
-// Forward declarations.
-typedef struct DvzKeyboard DvzKeyboard;
-typedef struct DvzMouse DvzMouse;
-typedef struct DvzWindow DvzWindow;
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzInput
+// NOTE: must correspond to the shader structure in common.glsl
+struct DvzViewport
 {
-    DvzMouse* mouse;
-    DvzKeyboard* keyboard;
-    DvzClock clock;
+    VkViewport viewport; // Vulkan viewport
+    vec4 margins;
+
+    // Position and size of the viewport in screen coordinates.
+    uvec2 offset_screen;
+    uvec2 size_screen;
+
+    // Position and size of the viewport in framebuffer coordinates.
+    uvec2 offset_framebuffer;
+    uvec2 size_framebuffer;
+
+    // Options
+    // Viewport clipping.
+    DvzViewportClip clip; // used by the GPU for viewport clipping
+
+    // Used to discard transform on one axis
+    int32_t interact_axis;
+
+    // TODO: aspect ratio
 };
-
-
-
-/*************************************************************************************************/
-/*  Window input functions                                                                       */
-/*************************************************************************************************/
-
-DVZ_EXPORT DvzInput* dvz_input(DvzWindow* window);
-
-DVZ_EXPORT DvzMouse* dvz_input_mouse(DvzInput* input);
-
-DVZ_EXPORT DvzKeyboard* dvz_input_keyboard(DvzInput* input);
-
-DVZ_EXPORT void dvz_input_destroy(DvzInput* input);
 
 
 

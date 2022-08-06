@@ -4,8 +4,6 @@
 
 #include "recorder.h"
 #include "canvas.h"
-#include "common.h"
-#include "pipe.h"
 #include "renderer.h"
 
 

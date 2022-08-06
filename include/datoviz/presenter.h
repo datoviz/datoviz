@@ -11,13 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_map.h"
 #include "canvas.h"
 #include "client.h"
 #include "gui.h"
 #include "renderer.h"
-#include "request.h"
-#include "resources.h"
 
 
 

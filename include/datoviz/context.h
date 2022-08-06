@@ -11,11 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "common.h"
 #include "datalloc.h"
-#include "resources.h"
 #include "transfers.h"
-#include "vklite.h"
 
 
 

@@ -11,14 +11,10 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
-#include "board.h"
 #include "common.h"
-#include "context.h"
-#include "host.h"
-#include "pipe.h"
+#include "graphics.h"
 #include "pipelib.h"
 #include "request.h"
-#include "vklite.h"
 
 
 
@@ -46,6 +42,7 @@ typedef struct DvzContext DvzContext;
 typedef struct DvzPipelib DvzPipelib;
 typedef struct DvzWorkspace DvzWorkspace;
 typedef struct DvzCanvas DvzCanvas;
+typedef struct DvzBoard DvzBoard;
 typedef struct DvzMap DvzMap;
 
 

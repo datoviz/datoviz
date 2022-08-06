@@ -11,10 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_macros.h"
-#include "array.h"
-// #include "fileio.h"
+#include "viewport.h"
 #include "vklite.h"
 
 
@@ -37,7 +34,6 @@
 
 typedef struct DvzVertex DvzVertex;
 typedef struct DvzMVP DvzMVP;
-typedef struct DvzViewport DvzViewport;
 
 // typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
 
@@ -95,32 +91,6 @@ struct DvzMVP
     mat4 view;
     mat4 proj;
     float time;
-};
-
-
-
-// NOTE: must correspond to the shader structure in common.glsl
-struct DvzViewport
-{
-    VkViewport viewport; // Vulkan viewport
-    vec4 margins;
-
-    // Position and size of the viewport in screen coordinates.
-    uvec2 offset_screen;
-    uvec2 size_screen;
-
-    // Position and size of the viewport in framebuffer coordinates.
-    uvec2 offset_framebuffer;
-    uvec2 size_framebuffer;
-
-    // Options
-    // Viewport clipping.
-    DvzViewportClip clip; // used by the GPU for viewport clipping
-
-    // Used to discard transform on one axis
-    int32_t interact_axis;
-
-    // TODO: aspect ratio
 };
 
 

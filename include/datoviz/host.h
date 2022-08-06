@@ -13,7 +13,9 @@
 
 #include <vulkan/vulkan.h>
 
-#include "common.h"
+#include "_enums.h"
+#include "_obj.h"
+#include "_time.h"
 
 
 

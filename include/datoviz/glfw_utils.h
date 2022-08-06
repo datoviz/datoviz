@@ -18,7 +18,6 @@
 #include <GLFW/glfw3.h>
 #endif
 
-#include "common.h"
 #include "window.h"
 
 

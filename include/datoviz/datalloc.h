@@ -12,9 +12,7 @@
 /*************************************************************************************************/
 
 #include "alloc.h"
-#include "common.h"
 #include "resources.h"
-#include "vklite.h"
 
 
 

@@ -13,7 +13,6 @@
 
 #include "canvas.h"
 #include "common.h"
-#include "vklite.h"
 #include "window.h"
 
 
