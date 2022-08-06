@@ -26,19 +26,19 @@ static void _wait_dat_upload(DvzTransfers* transfers, bool staging, bool need_de
     ASSERT(transfers != NULL);
 
     if (staging)
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
     else
     {
         // WARNING: for mappable buffers, the transfer is done on the main thread (using
         // the COPY queue, not the UD queue), not in the background thread, so we need to
         // dequeue the COPY queue manually!
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
         dvz_queue_wait(transfers->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
     }
 
     // Dequeue the upload_done event if needed.
     if (need_dealloc_stg)
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 }
 
 
@@ -48,13 +48,13 @@ static void _wait_dat_download(DvzTransfers* transfers, bool staging)
     ASSERT(transfers != NULL);
 
     if (staging)
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
     else
-        // dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_UD, true);
+        // dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_UD, true);
         dvz_queue_wait(transfers->gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 
     // Wait until the download finished event has been raised.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 }
 
 
@@ -67,7 +67,7 @@ static void _wait_dup(DvzTransfers* transfers, DvzDat* dat)
     // IMPORTANT: before calling the dvz_transfers_frame(), we must wait for the DUP task
     // to be in the queue. Here we dequeue it manually. The callback will add it to the
     // special Dups structure, and it will be correctly processed by dvz_transfer_frame().
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_DUP, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_DUP, true);
 
     ASSERT(dat->br.count > 0);
     for (uint32_t i = 0; i < dat->br.count; i++)
@@ -272,7 +272,7 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
     {
         // Enqueue a standard upload task, with or without staging buffer.
         DvzDeqItem* done = need_dealloc_stg ? _create_upload_done(stg) : NULL;
-        _enqueue_buffer_upload(&transfers->deq, dat->br, offset, stg_br, 0, size, data, done);
+        _enqueue_buffer_upload(transfers->deq, dat->br, offset, stg_br, 0, size, data, done);
         if (wait)
             _wait_dat_upload(transfers, staging, need_dealloc_stg);
     }
@@ -280,7 +280,7 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
     else
     {
         // Enqueue a dup transfer task, with or without staging buffer.
-        _enqueue_dup_transfer(&transfers->deq, dat->br, offset, stg_br, 0, size, data);
+        _enqueue_dup_transfer(transfers->deq, dat->br, offset, stg_br, 0, size, data);
         if (wait)
             _wait_dup(transfers, dat);
     }
@@ -324,7 +324,7 @@ void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, boo
     log_debug("download %s from dat%s", pretty_size(size), staging ? " (with staging)" : "");
 
     // Enqueue a standard download task, with or without staging buffer.
-    _enqueue_buffer_download(&transfers->deq, dat->br, offset, stg_br, 0, size, data);
+    _enqueue_buffer_download(transfers->deq, dat->br, offset, stg_br, 0, size, data);
 
     if (wait)
         _wait_dat_download(transfers, staging);
@@ -412,11 +412,11 @@ void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* 
     // May use shape[i] = 0 to indicate the full shape along that axis.
     for (uint32_t i = 0; i < 3; i++)
         shape[i] = shape[i] | tex->shape[i];
-    _enqueue_image_upload(&transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
+    _enqueue_image_upload(transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
 
     if (wait)
     {
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
     }
 }
 
@@ -437,12 +437,12 @@ void dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void
     DvzDat* stg = _tex_staging(ctx, tex, size);
     ASSERT(stg != NULL);
 
-    _enqueue_image_download(&transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
+    _enqueue_image_download(transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
 
     if (wait)
     {
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-        dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+        dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
     }
 }
 

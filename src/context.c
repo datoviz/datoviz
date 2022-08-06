@@ -56,7 +56,7 @@ DvzContext* dvz_context(DvzGpu* gpu)
     // Called when a transfer upload is finished, if the temporary staging buffer needs to be
     // deallocated.
     dvz_deq_callback(
-        &ctx->transfers.deq, DVZ_TRANSFER_DEQ_EV, //
+        ctx->transfers.deq, DVZ_TRANSFER_DEQ_EV, //
         DVZ_TRANSFER_UPLOAD_DONE, _buffer_upload_done, NULL);
 
 
@@ -83,7 +83,7 @@ void dvz_context_wait(DvzContext* ctx)
 {
     ASSERT(ctx != NULL);
     for (uint32_t i = 0; i < 4; i++)
-        dvz_deq_wait(&ctx->transfers.deq, i);
+        dvz_deq_wait(ctx->transfers.deq, i);
     dvz_queue_wait(ctx->transfers.gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 

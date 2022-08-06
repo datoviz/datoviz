@@ -116,5 +116,5 @@ void dvz_client_input(DvzClient* client)
 
     // Register a window_create callback that is called after the default one.
     dvz_deq_callback(
-        &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _create_window_input, client);
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _create_window_input, client);
 }

@@ -141,7 +141,7 @@ struct DvzClient
 {
     DvzBackend backend;
 
-    DvzDeq deq;
+    DvzDeq* deq;
     uint64_t frame_idx;
 
     // Windows.

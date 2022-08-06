@@ -131,11 +131,11 @@ DvzClient* dvz_client(DvzBackend backend)
     client->deq = dvz_deq(1);
 
     // A single proc handling all events.
-    dvz_deq_proc(&client->deq, 0, 1, (uint32_t[]){0});
+    dvz_deq_proc(client->deq, 0, 1, (uint32_t[]){0});
 
     // Register a deq callback.
     dvz_deq_callback(
-        &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
 
     // TODO: create async queue
     // start background thread
@@ -156,7 +156,7 @@ void dvz_client_event(DvzClient* client, DvzClientEvent ev)
     DvzClientEvent* pev = calloc(1, sizeof(DvzClientEvent));
     *pev = ev;
 
-    dvz_deq_enqueue(&client->deq, 0, (int)ev.type, pev);
+    dvz_deq_enqueue(client->deq, 0, (int)ev.type, pev);
 }
 
 
@@ -179,7 +179,7 @@ void dvz_client_callback(
     payload->callback = callback;
     payload->user_data = user_data;
     payload->mode = mode;
-    dvz_deq_callback(&client->deq, 0, (int)type, _deq_callback, payload);
+    dvz_deq_callback(client->deq, 0, (int)type, _deq_callback, payload);
 }
 
 
@@ -187,7 +187,7 @@ void dvz_client_callback(
 void dvz_client_process(DvzClient* client)
 {
     ASSERT(client != NULL);
-    dvz_deq_dequeue_batch(&client->deq, 0);
+    dvz_deq_dequeue_batch(client->deq, 0);
 }
 
 
@@ -277,7 +277,7 @@ void dvz_client_destroy(DvzClient* client)
 {
     ASSERT(client != NULL);
 
-    dvz_deq_destroy(&client->deq);
+    dvz_deq_destroy(client->deq);
 
     CONTAINER_DESTROY_ITEMS(DvzWindow, client->windows, dvz_window_destroy)
     dvz_container_destroy(&client->windows);

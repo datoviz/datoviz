@@ -27,7 +27,7 @@ static int _thread_transfers(void* user_data)
 {
     DvzTransfers* transfers = (DvzTransfers*)user_data;
     ASSERT(transfers != NULL);
-    dvz_deq_dequeue_loop(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue_loop(transfers->deq, DVZ_TRANSFER_PROC_UD);
     return 0;
 }
 
@@ -40,58 +40,58 @@ static void _create_transfers(DvzTransfers* transfers)
 
     // Producer/consumer pairs (deq processes).
     dvz_deq_proc(
-        &transfers->deq, DVZ_TRANSFER_PROC_UD, //
+        transfers->deq, DVZ_TRANSFER_PROC_UD, //
         2, (uint32_t[]){DVZ_TRANSFER_DEQ_UL, DVZ_TRANSFER_DEQ_DL});
     dvz_deq_proc(
-        &transfers->deq, DVZ_TRANSFER_PROC_CPY, //
+        transfers->deq, DVZ_TRANSFER_PROC_CPY, //
         1, (uint32_t[]){DVZ_TRANSFER_DEQ_COPY});
     dvz_deq_proc(
-        &transfers->deq, DVZ_TRANSFER_PROC_EV, //
+        transfers->deq, DVZ_TRANSFER_PROC_EV, //
         1, (uint32_t[]){DVZ_TRANSFER_DEQ_EV});
     dvz_deq_proc(
-        &transfers->deq, DVZ_TRANSFER_PROC_DUP, //
+        transfers->deq, DVZ_TRANSFER_PROC_DUP, //
         1, (uint32_t[]){DVZ_TRANSFER_DEQ_DUP});
 
     // Transfer deq callbacks.
 
     // Uploads.
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_UL, //
-        DVZ_TRANSFER_BUFFER_UPLOAD,           //
+        transfers->deq, DVZ_TRANSFER_DEQ_UL, //
+        DVZ_TRANSFER_BUFFER_UPLOAD,          //
         _process_buffer_upload, transfers);
 
     // Uploads on the main thread, used when there is no staging buffer.
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
-        DVZ_TRANSFER_BUFFER_UPLOAD,             //
+        transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
+        DVZ_TRANSFER_BUFFER_UPLOAD,            //
         _process_buffer_upload, transfers);
 
     // Downloads.
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_DL, //
-        DVZ_TRANSFER_BUFFER_DOWNLOAD,         //
+        transfers->deq, DVZ_TRANSFER_DEQ_DL, //
+        DVZ_TRANSFER_BUFFER_DOWNLOAD,        //
         _process_buffer_download, transfers);
 
     // Copies.
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
-        DVZ_TRANSFER_BUFFER_COPY,               //
+        transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
+        DVZ_TRANSFER_BUFFER_COPY,              //
         _process_buffer_copy, transfers);
 
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
-        DVZ_TRANSFER_IMAGE_COPY,                //
+        transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
+        DVZ_TRANSFER_IMAGE_COPY,               //
         _process_image_copy, transfers);
 
     // Buffer/image copies.
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
-        DVZ_TRANSFER_IMAGE_BUFFER,              //
+        transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
+        DVZ_TRANSFER_IMAGE_BUFFER,             //
         _process_image_buffer, transfers);
 
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
-        DVZ_TRANSFER_BUFFER_IMAGE,              //
+        transfers->deq, DVZ_TRANSFER_DEQ_COPY, //
+        DVZ_TRANSFER_BUFFER_IMAGE,             //
         _process_buffer_image, transfers);
 
     // Transfer thread.
@@ -101,13 +101,13 @@ static void _create_transfers(DvzTransfers* transfers)
     transfers->dups = _dups();
 
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_DUP, //
-        DVZ_TRANSFER_DUP_UPLOAD,               //
+        transfers->deq, DVZ_TRANSFER_DEQ_DUP, //
+        DVZ_TRANSFER_DUP_UPLOAD,              //
         _append_dup_item, transfers);
 
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_DUP, //
-        DVZ_TRANSFER_DUP_COPY,                 //
+        transfers->deq, DVZ_TRANSFER_DEQ_DUP, //
+        DVZ_TRANSFER_DUP_COPY,                //
         _append_dup_item, transfers);
 }
 
@@ -214,14 +214,14 @@ void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx)
     // Dequeue all pending copies (which are either buffer copies, or direct mappable).
     // This is NOT used for transfer dups, which are enqueued in a different queue/proc (DUP).
     // NOTE: this call *blocks* the GPU until the copies are complete.
-    dvz_deq_dequeue_batch(&transfers->deq, DVZ_TRANSFER_PROC_CPY);
+    dvz_deq_dequeue_batch(transfers->deq, DVZ_TRANSFER_PROC_CPY);
 
     // Dequeue the pending EV items, mostly used for UPLOAD_DONE events (temporary staging dat
     // deallocation).
-    dvz_deq_dequeue_batch(&transfers->deq, DVZ_TRANSFER_PROC_EV);
+    dvz_deq_dequeue_batch(transfers->deq, DVZ_TRANSFER_PROC_EV);
 
     // Now, process dup transfers.
-    dvz_deq_dequeue_batch(&transfers->deq, DVZ_TRANSFER_PROC_DUP);
+    dvz_deq_dequeue_batch(transfers->deq, DVZ_TRANSFER_PROC_DUP);
 
     // Check if there are ongoing non-recurrent dup transfers.
     DvzTransferDups* dups = &transfers->dups;
@@ -258,14 +258,14 @@ void dvz_transfers_destroy(DvzTransfers* transfers)
     ASSERT(transfers->gpu != NULL);
 
     // Enqueue a STOP task to stop the UL and DL threads.
-    dvz_deq_enqueue(&transfers->deq, DVZ_TRANSFER_DEQ_UL, 0, NULL);
-    dvz_deq_enqueue(&transfers->deq, DVZ_TRANSFER_DEQ_DL, 0, NULL);
+    dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_UL, 0, NULL);
+    dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_DL, 0, NULL);
 
     // Join the UL and DL threads.
     dvz_thread_join(&transfers->thread);
 
     // Destroy the deq.
-    dvz_deq_destroy(&transfers->deq);
+    dvz_deq_destroy(transfers->deq);
 
     // Mark the object as destroyed.
     dvz_obj_destroyed(&transfers->obj);
@@ -286,10 +286,10 @@ static void _flush_transfers(DvzTransfers* transfers)
     ASSERT(transfers->gpu->host != NULL);
 
     // Flush all queues.
-    for (uint32_t i = 0; i < transfers->deq.proc_count; i++)
+    for (uint32_t i = 0; i < transfers->deq->proc_count; i++)
     {
         log_debug("flush transfers deq #%d", i);
-        dvz_deq_dequeue_batch(&transfers->deq, i);
+        dvz_deq_dequeue_batch(transfers->deq, i);
     }
     dvz_host_wait(transfers->gpu->host);
 }
@@ -318,11 +318,11 @@ void dvz_upload_buffer(
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_upload(&transfers->deq, br, offset, stg, 0, size, data, NULL);
+    _enqueue_buffer_upload(transfers->deq, br, offset, stg, 0, size, data, NULL);
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     // Destroy the transient staging buffer.
     _destroy_buffer_regions(stg);
@@ -352,15 +352,15 @@ void dvz_download_buffer(
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_download(&transfers->deq, br, offset, stg, 0, size, data);
+    _enqueue_buffer_download(transfers->deq, br, offset, stg, 0, size, data);
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     // Wait until the download is done.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_EV);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_EV);
 
     // Destroy the transient staging buffer.
     _destroy_buffer_regions(stg);
@@ -386,11 +386,11 @@ void dvz_copy_buffer(
     _flush_transfers(transfers);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_copy(&transfers->deq, src, src_offset, dst, dst_offset, size);
+    _enqueue_buffer_copy(transfers->deq, src, src_offset, dst, dst_offset, size);
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 }
 
 
@@ -432,11 +432,11 @@ void dvz_upload_image(
     // NOTE: not optimal at all: we create a special staging DvzBuffer and we delete it at the end.
     // Furthermore, we could avoid using a staging buffer by testing if the buffer is host-visible.
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
-    _enqueue_image_upload(&transfers->deq, img, offset, shape, stg, 0, size, data);
+    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data);
 
     // Destroy the transient staging buffer.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     _destroy_buffer_regions(stg);
 }
@@ -470,14 +470,14 @@ void dvz_download_image(
     // Furthermore, we could avoid using a staging buffer by testing if the buffer is host-visible.
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
 
-    _enqueue_image_download(&transfers->deq, img, offset, shape, stg, 0, size, data);
+    _enqueue_image_download(transfers->deq, img, offset, shape, stg, 0, size, data);
 
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     // Wait until the download is done.
-    // dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
-    dvz_deq_dequeue_batch(&transfers->deq, DVZ_TRANSFER_PROC_EV);
+    // dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue_batch(transfers->deq, DVZ_TRANSFER_PROC_EV);
 
     // Destroy the transient staging buffer.
     _destroy_buffer_regions(stg);
@@ -501,8 +501,8 @@ void dvz_copy_image(
 
     _flush_transfers(transfers);
 
-    _enqueue_image_copy(&transfers->deq, src, src_offset, dst, dst_offset, shape);
+    _enqueue_image_copy(transfers->deq, src, src_offset, dst, dst_offset, shape);
 
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 }

@@ -195,7 +195,7 @@ struct DvzDeqProc
 struct DvzDeq
 {
     uint32_t queue_count;
-    DvzFifo queues[DVZ_DEQ_MAX_QUEUES];
+    DvzFifo* queues[DVZ_DEQ_MAX_QUEUES];
 
     uint32_t callback_count;
     DvzDeqCallbackRegister callbacks[DVZ_DEQ_MAX_CALLBACKS];
@@ -223,7 +223,7 @@ EXTERN_C_ON
  * @param capacity the maximum size
  * @returns a FIFO queue
  */
-DVZ_EXPORT DvzFifo dvz_fifo(int32_t capacity);
+DVZ_EXPORT DvzFifo* dvz_fifo(int32_t capacity);
 
 
 
@@ -326,7 +326,7 @@ DVZ_EXPORT void dvz_fifo_destroy(DvzFifo* fifo);
  * @param capacity the maximum size
  * @returns a Deq
  */
-DVZ_EXPORT DvzDeq dvz_deq(uint32_t nq);
+DVZ_EXPORT DvzDeq* dvz_deq(uint32_t nq);
 
 
 

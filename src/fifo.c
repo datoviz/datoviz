@@ -16,24 +16,24 @@
 /*  Thread-safe FIFO queue                                                                       */
 /*************************************************************************************************/
 
-DvzFifo dvz_fifo(int32_t capacity)
+DvzFifo* dvz_fifo(int32_t capacity)
 {
     log_trace("creating generic FIFO queue with a capacity of %d items", capacity);
     ASSERT(capacity >= 2);
-    DvzFifo fifo = {0};
+    DvzFifo* fifo = (DvzFifo*)calloc(1, sizeof(DvzFifo));
     ASSERT(capacity <= DVZ_MAX_FIFO_CAPACITY);
-    fifo.capacity = capacity;
-    fifo.items = calloc((uint32_t)capacity, sizeof(void*));
+    fifo->capacity = capacity;
+    fifo->items = (void**)calloc((uint32_t)capacity, sizeof(void*));
 
     // Create atomic variables.
-    fifo.is_empty = dvz_atomic();
-    dvz_atomic_set(fifo.is_empty, 1);
+    fifo->is_empty = dvz_atomic();
+    dvz_atomic_set(fifo->is_empty, 1);
 
-    fifo.is_processing = dvz_atomic();
-    dvz_atomic_set(fifo.is_processing, 0);
+    fifo->is_processing = dvz_atomic();
+    dvz_atomic_set(fifo->is_processing, 0);
 
-    fifo.lock = dvz_mutex();
-    fifo.cond = dvz_cond();
+    fifo->lock = dvz_mutex();
+    fifo->cond = dvz_cond();
 
     return fifo;
 }
@@ -234,6 +234,7 @@ void dvz_fifo_destroy(DvzFifo* fifo)
 
     ASSERT(fifo->items != NULL);
     FREE(fifo->items);
+    FREE(fifo);
 }
 
 
@@ -247,7 +248,7 @@ static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
     ASSERT(deq != NULL);
     ASSERT(deq_idx < deq->queue_count);
 
-    DvzFifo* fifo = &deq->queues[deq_idx];
+    DvzFifo* fifo = deq->queues[deq_idx];
     ASSERT(fifo != NULL);
     ASSERT(fifo->capacity > 0);
     return fifo;
@@ -301,7 +302,7 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
 
 
 
-// Return the total size of the Deq.
+// Return the total size of the deq->
 static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
 {
     ASSERT(deq != NULL);
@@ -313,7 +314,7 @@ static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
     {
         deq_idx = queue_ids[i];
         ASSERT(deq_idx < deq->queue_count);
-        size += dvz_fifo_size(&deq->queues[deq_idx]);
+        size += dvz_fifo_size(deq->queues[deq_idx]);
     }
     return size;
 }
@@ -439,13 +440,13 @@ static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
 /*  Dequeues                                                                                     */
 /*************************************************************************************************/
 
-DvzDeq dvz_deq(uint32_t nq)
+DvzDeq* dvz_deq(uint32_t nq)
 {
-    DvzDeq deq = {0};
+    DvzDeq* deq = (DvzDeq*)calloc(1, sizeof(DvzDeq));
     ASSERT(nq <= DVZ_DEQ_MAX_QUEUES);
-    deq.queue_count = nq;
+    deq->queue_count = nq;
     for (uint32_t i = 0; i < nq; i++)
-        deq.queues[i] = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
+        deq->queues[i] = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
     return deq;
 }
 
@@ -991,7 +992,7 @@ void dvz_deq_stats(DvzDeq* deq)
     char sn[8] = {0};
     for (uint32_t i = 0; i < deq->queue_count; i++)
     {
-        snprintf(sn, sizeof(sn), "%d", dvz_fifo_size(&deq->queues[i]));
+        snprintf(sn, sizeof(sn), "%d", dvz_fifo_size(deq->queues[i]));
         _strcat(s, sn);
         if (i < deq->queue_count - 1)
             _strcat(s, ", ");
@@ -1006,7 +1007,7 @@ void dvz_deq_destroy(DvzDeq* deq)
     ASSERT(deq != NULL);
 
     for (uint32_t i = 0; i < deq->queue_count; i++)
-        dvz_fifo_destroy(&deq->queues[i]);
+        dvz_fifo_destroy(deq->queues[i]);
 
     for (uint32_t i = 0; i < deq->proc_count; i++)
     {
@@ -1014,4 +1015,5 @@ void dvz_deq_destroy(DvzDeq* deq)
         dvz_cond_destroy(&deq->procs[i].cond);
         dvz_atomic_destroy(deq->procs[i].is_processing);
     }
+    FREE(deq);
 }

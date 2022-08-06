@@ -77,7 +77,7 @@ int test_transfers_buffer_mappable(TstSuite* suite)
     // Callback for when the download has finished.
     int res = 0; // should be set to 42 by _dl_done().
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
+        transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
 
     uint8_t data[128] = {0};
     for (uint32_t i = 0; i < 128; i++)
@@ -87,21 +87,21 @@ int test_transfers_buffer_mappable(TstSuite* suite)
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, 1024);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_upload(&transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, 128, data, NULL);
+    _enqueue_buffer_upload(transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, 128, data, NULL);
 
     // NOTE: need to wait for the upload to be finished before we download the data.
     // The DL and UL are on different queues and may be processed out of order.
-    // dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_CPY);
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    // dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_CPY);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
 
     // Enqueue a download transfer task.
     uint8_t data2[128] = {0};
-    _enqueue_buffer_download(&transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, 128, data2);
+    _enqueue_buffer_download(transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, 128, data2);
     AT(res == 0);
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     // Wait until the download_done event has been raised, dequeue it, and finish the test.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 
     // Check that the copy worked.
     AT(data2[127] == 127);
@@ -132,27 +132,27 @@ int test_transfers_buffer_large(TstSuite* suite)
 
     int res = 0; // should be set to 42 by _dl_done().
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
+        transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
 
     // Allocate a staging buffer region.
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_upload(&transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, size, data, NULL);
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    _enqueue_buffer_upload(transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, size, data, NULL);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
 
     // Wait for the transfer thread to process both transfer tasks.
     dvz_host_wait(gpu->host);
 
     // Enqueue a download transfer task.
     uint8_t* data2 = calloc(size, 1);
-    _enqueue_buffer_download(&transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, size, data2);
+    _enqueue_buffer_download(transfers->deq, stg, 0, (DvzBufferRegions){0}, 0, size, data2);
     // This download task will be processed by the background transfer thread. At the end, it
     // will enqueue a DOWNLOAD_DONE task in the EV queue.
     AT(res == 0);
 
     // Wait until the download_done event has been raised, dequeue it, and finish the test.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 
     // Check that the copy worked.
     AT(data2[0] == 1);
@@ -183,11 +183,11 @@ int test_transfers_buffer_copy(TstSuite* suite)
     // Callback for when the download has finished.
     int res = 0; // should be set to 42 by _dl_done().
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
+        transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
     // Called at the end of the upload transfer. Will modify the int pointer passed by
     // _enqueue_buffer_upload().
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_UPLOAD_DONE, _up_done, NULL);
+        transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_UPLOAD_DONE, _up_done, NULL);
 
 
     uint8_t data[128] = {0};
@@ -198,23 +198,23 @@ int test_transfers_buffer_copy(TstSuite* suite)
     DvzBufferRegions br = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_VERTEX, 1, 1024);
 
     // Enqueue an upload transfer task.
-    _enqueue_buffer_upload(&transfers->deq, br, 0, stg, 0, 128, data, _create_upload_done(&res));
+    _enqueue_buffer_upload(transfers->deq, br, 0, stg, 0, 128, data, _create_upload_done(&res));
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
     // Wait until the upload_done event has been raised, and dequeue it.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
     AT(res == 314);
     res = 0;
 
 
     // Enqueue a download transfer task.
     uint8_t data2[128] = {0};
-    _enqueue_buffer_download(&transfers->deq, br, 0, stg, 0, 128, data2);
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    _enqueue_buffer_download(transfers->deq, br, 0, stg, 0, 128, data2);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
 
     // Wait until the download_done event has been raised, dequeue it, and finish the test.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 
 
     // Check that the copy worked.
@@ -260,13 +260,13 @@ int test_transfers_image_buffer(TstSuite* suite)
     // Callback for when the download has finished.
     int res = 0; // should be set to 42 by _dl_done().
     dvz_deq_callback(
-        &transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
+        transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
 
     // Enqueue an upload transfer task.
-    _enqueue_image_upload(&transfers->deq, img, offset, shape, stg, 0, size, data);
+    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data);
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
 
     // NOTE: we should clear the staging buffer to avoid false positives.
     log_debug("clear staging buffer");
@@ -276,11 +276,11 @@ int test_transfers_image_buffer(TstSuite* suite)
 
     // Enqueue a download transfer task.
     uint8_t data2[256] = {0};
-    _enqueue_image_download(&transfers->deq, img, offset, shape, stg, 0, size, data2);
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
+    _enqueue_image_download(transfers->deq, img, offset, shape, stg, 0, size, data2);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
 
     // Wait until the download_done event has been raised, dequeue it, and finish the test.
-    dvz_deq_dequeue(&transfers->deq, DVZ_TRANSFER_PROC_EV, true);
+    dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_EV, true);
 
     dvz_host_wait(gpu->host);
 
@@ -488,7 +488,7 @@ int test_transfers_dups_upload(TstSuite* suite)
 
     // Enqueue a dup upload.
     uint8_t data = 42;
-    _enqueue_dup_transfer(&transfers->deq, br, 0, (DvzBufferRegions){0}, 0, sizeof(data), &data);
+    _enqueue_dup_transfer(transfers->deq, br, 0, (DvzBufferRegions){0}, 0, sizeof(data), &data);
 
     // This will upload the data to buffer region #1 but not the others.
     dvz_transfers_frame(transfers, 1);
@@ -547,11 +547,11 @@ int test_transfers_dups_copy(TstSuite* suite)
 
     // Enqueue a dup copy.
     uint8_t data = 42;
-    _enqueue_dup_transfer(&transfers->deq, br, 0, stg, 0, sizeof(data), &data);
+    _enqueue_dup_transfer(transfers->deq, br, 0, stg, 0, sizeof(data), &data);
 
     // HACK: we need to wait for the upload to occur in the background thread before we can
     // continue with testing.
-    dvz_deq_wait(&transfers->deq, DVZ_TRANSFER_PROC_UD);
+    dvz_deq_wait(transfers->deq, DVZ_TRANSFER_PROC_UD);
 
     // This will upload the data to buffer region #1 but not the others.
     dvz_transfers_frame(transfers, 1);
