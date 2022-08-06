@@ -20,7 +20,9 @@
 /*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-int test_input_1(TstSuite*);
+int test_input_mouse(TstSuite*);
+
+int test_input_keyboard(TstSuite*);
 
 
 

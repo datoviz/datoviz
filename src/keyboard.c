@@ -62,6 +62,7 @@ DvzKeyboard* dvz_keyboard()
     DvzKeyboard* keyboard = calloc(1, sizeof(DvzKeyboard));
     keyboard->keys = dvz_list();
     keyboard->callbacks = dvz_list();
+    keyboard->mods = 0;
     return keyboard;
 }
 

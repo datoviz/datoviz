@@ -132,7 +132,8 @@ int dvz_run_tests(const char* match)
     TEST(test_timer_2)
 
     // Testing input.
-    TEST(test_input_1)
+    TEST(test_input_mouse)
+    TEST(test_input_keyboard)
 
 
     /*********************************************************************************************/
