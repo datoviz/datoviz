@@ -50,7 +50,7 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 
     DvzCanvas* canvas = NULL;
     DvzWindow* window = NULL;
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
+    DvzSurface surface = {0};
     DvzGuiWindow* gui_window = NULL;
     bool has_gui = false;
 
@@ -124,7 +124,7 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
         dvz_canvas_destroy(canvas);
 
         // Destroy the surface.
-        ASSERT(surface != VK_NULL_HANDLE);
+        ASSERT(surface.surface != VK_NULL_HANDLE);
         dvz_surface_destroy(host, canvas->surface);
 
         // Destroy the GUI window if it exists.

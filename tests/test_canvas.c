@@ -56,7 +56,7 @@ int test_canvas_1(TstSuite* suite)
 
     // Create the window and surface.
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
-    VkSurfaceKHR surface = dvz_window_surface(host, &window);
+    DvzSurface surface = dvz_window_surface(host, &window);
 
     // Create the renderpass.
     DvzRenderpass renderpass = desktop_renderpass(gpu);

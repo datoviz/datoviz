@@ -21,11 +21,19 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzSurface DvzSurface;
+
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzSurface
+{
+    DvzGpu* gpu;
+    VkSurfaceKHR surface;
+};
 
 
 
@@ -38,9 +46,9 @@
  *
  * @param host the host
  * @param window the window
- * @returns a Vulkan surface object
+ * @returns a surface
  */
-DVZ_EXPORT VkSurfaceKHR dvz_window_surface(DvzHost* host, DvzWindow* window);
+DVZ_EXPORT DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window);
 
 
 
@@ -58,7 +66,7 @@ DVZ_EXPORT void dvz_gpu_create_with_surface(DvzGpu* gpu);
  *
  * @param surface the surface to destroy
  */
-DVZ_EXPORT void dvz_surface_destroy(DvzHost* host, VkSurfaceKHR surface);
+DVZ_EXPORT void dvz_surface_destroy(DvzHost* host, DvzSurface surface);
 
 
 

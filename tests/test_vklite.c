@@ -853,15 +853,15 @@ int test_vklite_swapchain(TstSuite* suite)
     DvzHost* host = get_host(suite);
     // OFFSCREEN_SKIP
     DvzWindow window = dvz_window(host->backend, 100, 100, 0);
-    VkSurfaceKHR surface = dvz_window_surface(host, &window);
-    AT(surface != VK_NULL_HANDLE);
+    DvzSurface surface = dvz_window_surface(host, &window);
+    AT(surface.surface != VK_NULL_HANDLE);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
-    dvz_gpu_create(gpu, surface);
+    dvz_gpu_create(gpu, surface.surface);
 
-    DvzSwapchain swapchain = dvz_swapchain(gpu, surface, 3);
+    DvzSwapchain swapchain = dvz_swapchain(gpu, surface.surface, 3);
     dvz_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     dvz_swapchain_present_mode(&swapchain, VK_PRESENT_MODE_FIFO_KHR);
     dvz_swapchain_create(&swapchain);

@@ -44,7 +44,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
 
 
 
-void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
+void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
 {
     ASSERT(canvas != NULL);
 
@@ -59,7 +59,7 @@ void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface)
     uint32_t width = canvas->width;
     uint32_t height = canvas->height;
 
-    ASSERT(surface != VK_NULL_HANDLE);
+    ASSERT(surface.surface != VK_NULL_HANDLE);
     canvas->surface = surface;
 
     // Make the swapchain.

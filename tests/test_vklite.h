@@ -66,7 +66,7 @@ struct TestCanvas
     bool is_offscreen;
 
     DvzWindow* window;
-    VkSurfaceKHR surface;
+    DvzSurface surface;
 
     DvzRenderpass renderpass;
     DvzFramebuffers framebuffers;
@@ -292,7 +292,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
 
 
 
-static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR surface)
+static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, DvzSurface surface)
 {
     ASSERT(gpu != NULL);
     ASSERT(window != NULL);
@@ -305,7 +305,7 @@ static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR su
     canvas.window = window;
 
     canvas.surface = surface;
-    ASSERT(canvas.surface != VK_NULL_HANDLE);
+    ASSERT(canvas.surface.surface != VK_NULL_HANDLE);
 
     // uint32_t framebuffer_width = 0, framebuffer_height = 0;
     // backend_get_framebuffer_size(window, &framebuffer_width, &framebuffer_height);
@@ -315,7 +315,7 @@ static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, VkSurfaceKHR su
     // Make the renderpass.
     canvas.renderpass = desktop_renderpass(gpu);
 
-    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface, 3);
+    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface.surface, 3);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     dvz_swapchain_present_mode(&canvas.swapchain, PRESENT_MODE);
     dvz_swapchain_create(&canvas.swapchain);

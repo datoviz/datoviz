@@ -22,12 +22,12 @@
 /*************************************************************************************************/
 
 static void
-make_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, DvzSwapchain* swapchain, uint32_t img_count)
+make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t img_count)
 {
     ASSERT(swapchain != NULL);
     log_trace("making swapchain");
 
-    *swapchain = dvz_swapchain(gpu, surface, img_count);
+    *swapchain = dvz_swapchain(gpu, surface.surface, img_count);
     dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
     // TODO: activate/deactivate vsync
     dvz_swapchain_present_mode(swapchain, DVZ_DEFAULT_PRESENT_MODE);

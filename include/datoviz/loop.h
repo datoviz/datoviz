@@ -13,6 +13,7 @@
 
 #include "canvas.h"
 #include "common.h"
+#include "surface.h"
 #include "window.h"
 
 
@@ -43,7 +44,7 @@ struct DvzLoop
 
     uint64_t frame_idx;
     DvzRenderpass renderpass;
-    VkSurfaceKHR surface;
+    DvzSurface surface;
     DvzCanvas canvas;
     DvzWindow window;
 

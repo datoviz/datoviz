@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "surface.h"
 #include "vklite.h"
 
 
@@ -113,7 +114,7 @@ struct DvzCanvas
     DvzGpu* gpu;
     int flags;
 
-    VkSurfaceKHR surface;
+    DvzSurface surface;
     DvzFormat format;
     // cvec4 clear_color;
     uint32_t width, height;
@@ -160,7 +161,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
  *
  * @param canvas a canvas
  */
-DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, VkSurfaceKHR surface);
+DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface);
 
 
 
