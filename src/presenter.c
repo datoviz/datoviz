@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "presenter.h"
+#include "_list.h"
 #include "_map.h"
 #include "canvas.h"
 #include "canvas_utils.h"
@@ -235,13 +236,16 @@ _gui_callback(DvzPresenter* prt, DvzGuiWindow* gui_window, DvzSubmit* submit, ui
     dvz_gui_window_begin(gui_window, img_idx);
 
     // Call the user-specified GUI callbacks.
-    DvzGuiCallbackPayload* callback = NULL;
-    for (uint32_t i = 0; i < prt->callback_count; i++)
+    DvzGuiCallbackPayload* payload = NULL;
+    uint32_t n = dvz_list_count(prt->callbacks);
+    for (uint32_t i = 0; i < n; i++)
     {
-        callback = &prt->callbacks[i];
+        payload = (DvzGuiCallbackPayload*)dvz_list_get(prt->callbacks, i).p;
         // NOTE: only call the GUI callbacks registered for the requested window (using the ID).
-        if (callback->window_id == gui_window->obj.id)
-            callback->callback(gui_window, callback->user_data);
+        if (payload->window_id == gui_window->obj.id)
+        {
+            payload->callback(gui_window, payload->user_data);
+        }
     }
 
     // Stop recording the GUI command buffer.
@@ -287,6 +291,8 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     // Mappings.
     prt->maps.guis = dvz_map();
 
+    prt->callbacks = dvz_list();
+
     return prt;
 }
 
@@ -300,12 +306,12 @@ void dvz_presenter_gui(
     ASSERT(callback != NULL);
 
     log_debug("add GUI callback to window 0x%" PRIx64 "");
-    DvzGuiCallbackPayload payload = {
-        .window_id = window_id,
-        .callback = callback,
-        .user_data = user_data,
-    };
-    prt->callbacks[prt->callback_count++] = payload;
+    DvzGuiCallbackPayload* payload =
+        (DvzGuiCallbackPayload*)calloc(1, sizeof(DvzGuiCallbackPayload));
+    payload->window_id = window_id;
+    payload->callback = callback;
+    payload->user_data = user_data;
+    dvz_list_append(prt->callbacks, (DvzListItem){.p = (void*)payload});
 }
 
 
@@ -443,7 +449,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         dvz_submit_commands(submit, cmds);
 
         // Then, we submit the GUI command buffer.
-        if (gui_window != NULL && prt->callback_count > 0)
+        if (gui_window != NULL && dvz_list_count(prt->callbacks) > 0)
         {
             _gui_callback(prt, gui_window, submit, swapchain->img_idx);
         }
@@ -508,11 +514,22 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
 void dvz_presenter_destroy(DvzPresenter* prt)
 {
     ASSERT(prt != NULL);
+    ASSERT(prt->callbacks != NULL);
 
     dvz_map_destroy(prt->maps.guis);
 
     if (prt->gui != NULL)
         dvz_gui_destroy(prt->gui);
+
+    // Free the callback payloads.
+    DvzGuiCallbackPayload* payload = NULL;
+    for (uint32_t i = 0; i < prt->callbacks->count; i++)
+    {
+        payload = (DvzGuiCallbackPayload*)(dvz_list_get(prt->callbacks, i).p);
+        ASSERT(payload != NULL);
+        FREE(payload);
+    }
+    dvz_list_destroy(prt->callbacks);
 
     FREE(prt);
 }

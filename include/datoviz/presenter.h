@@ -22,8 +22,6 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_GUI_MAX_CALLBACKS 16
-
 
 
 /*************************************************************************************************/
@@ -40,7 +38,7 @@ typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzGuiCallbackPayload DvzGuiCallbackPayload;
 
 // Forward declarations.
-// typedef struct DvzWindow DvzWindow;
+typedef struct DvzList DvzList;
 
 // Callback types.
 typedef void (*DvzGuiCallback)(DvzGuiWindow* gui_window, void* user_data);
@@ -74,8 +72,7 @@ struct DvzPresenter
 
     // GUI callbacks.
     DvzGui* gui;
-    uint32_t callback_count;
-    DvzGuiCallbackPayload callbacks[DVZ_GUI_MAX_CALLBACKS];
+    DvzList* callbacks;
 
     // Mappings.
     struct
