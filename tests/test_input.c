@@ -105,15 +105,7 @@ int test_input_mouse(TstSuite* suite)
     DvzMouse* mouse = dvz_input_mouse(input);
 
     // Callbacks.
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_CLICK, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DOUBLE_CLICK, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_START, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_STOP, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_MOVE, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_PRESS, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_RELEASE, _on_mouse, NULL);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_WHEEL, _on_mouse, NULL);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_ALL, _on_mouse, NULL);
 
     // Main loop.
     backend_loop(&window, N_FRAMES);

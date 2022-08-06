@@ -85,6 +85,7 @@ typedef enum
     DVZ_MOUSE_EVENT_DRAG = 11,
     DVZ_MOUSE_EVENT_DRAG_STOP = 12,
     DVZ_MOUSE_EVENT_WHEEL = 20,
+    DVZ_MOUSE_EVENT_ALL = 255,
 } DvzMouseEventType;
 
 

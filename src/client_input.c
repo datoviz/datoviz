@@ -88,16 +88,7 @@ static void _create_window_input(DvzDeq* deq, void* item, void* user_data)
 
     // Register mouse callbacks that enqueue events to the client queue.
     DvzMouse* mouse = dvz_input_mouse(window->input);
-    // TODO: DVZ_MOUSE_EVENT_ALL to catch all
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_CLICK, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DOUBLE_CLICK, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_START, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_DRAG_STOP, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_MOVE, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_PRESS, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_RELEASE, _on_mouse, window);
-    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_WHEEL, _on_mouse, window);
+    dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_ALL, _on_mouse, window);
 
     // Register keyboard callbacks that enqueue events to the client queue.
     DvzKeyboard* keyboard = dvz_input_keyboard(window->input);

@@ -30,7 +30,7 @@ static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
     {
         payload = (DvzMousePayload*)dvz_list_get(mouse->callbacks, i).p;
         event.user_data = payload->user_data;
-        if (payload->type == event.type)
+        if (payload->type == event.type || payload->type == DVZ_MOUSE_EVENT_ALL)
         {
             payload->callback(mouse, event);
         }
