@@ -53,7 +53,7 @@ static void _on_mouse_press(DvzMouse* mouse, DvzMouseEvent ev)
     ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_PRESS);
-    *((int*)ev.user_data) = ev.content.b.button;
+    *((int*)ev.user_data) = (int)ev.content.b.button;
 }
 
 static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent ev)
@@ -158,7 +158,7 @@ static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent ev)
     ASSERT(ev.user_data != NULL);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_DRAG_STOP);
-    *((int*)ev.user_data) = ev.content.d.button;
+    *((int*)ev.user_data) = (int)ev.content.d.button;
 }
 
 int test_mouse_drag(TstSuite* suite)
