@@ -17,20 +17,10 @@
 
 
 /*************************************************************************************************/
-/*  Input tests                                                                                  */
+/*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-int test_input_mouse_1(TstSuite*);
-
-int test_input_drag_1(TstSuite*);
-
-int test_input_click_1(TstSuite*);
-
-int test_keyboard_1(TstSuite*);
-
-int test_input_timer_1(TstSuite*);
-
-int test_input_glfw_1(TstSuite*);
+int test_input_1(TstSuite*);
 
 
 

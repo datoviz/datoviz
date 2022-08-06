@@ -133,7 +133,7 @@ DvzClient* dvz_client(DvzBackend backend)
     // A single proc handling all events.
     dvz_deq_proc(&client->deq, 0, 1, (uint32_t[]){0});
 
-    // Register a proc callback.
+    // Register a deq callback.
     dvz_deq_callback(
         &client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
 

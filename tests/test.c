@@ -24,6 +24,7 @@
 #include "test_fileio.h"
 #include "test_graphics.h"
 #include "test_gui.h"
+#include "test_input.h"
 #include "test_keyboard.h"
 #include "test_list.h"
 #include "test_loop.h"
@@ -130,6 +131,8 @@ int dvz_run_tests(const char* match)
     TEST(test_timer_1)
     TEST(test_timer_2)
 
+    // Testing input.
+    TEST(test_input_1)
 
 
     /*********************************************************************************************/
