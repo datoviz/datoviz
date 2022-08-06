@@ -11,9 +11,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_glfw.h"
 #include "client.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "window.h"
 
 

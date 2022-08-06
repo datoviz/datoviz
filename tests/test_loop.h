@@ -11,7 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_glfw.h"
+#include "glfw_utils.h"
 #include "loop.h"
 #include "surface.h"
 #include "testing.h"

@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #include "input.h"
-#include "_glfw.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "window.h"

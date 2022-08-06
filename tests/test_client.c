@@ -7,8 +7,8 @@
 /*************************************************************************************************/
 
 #include "test_client.h"
-#include "_glfw.h"
 #include "client.h"
+#include "glfw_utils.h"
 #include "test.h"
 #include "test_vklite.h"
 #include "testing.h"

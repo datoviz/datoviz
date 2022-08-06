@@ -9,10 +9,10 @@
 /*************************************************************************************************/
 
 #include "client_input.h"
-#include "_glfw.h"
 #include "client.h"
 #include "client_utils.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "input.h"
 #include "keyboard.h"
 #include "mouse.h"

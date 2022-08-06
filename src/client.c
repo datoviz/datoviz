@@ -3,9 +3,9 @@
 /*************************************************************************************************/
 
 #include "client.h"
-#include "_glfw.h"
 #include "client_utils.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "window.h"
 
 

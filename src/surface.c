@@ -3,8 +3,8 @@
 /*************************************************************************************************/
 
 #include "surface.h"
-#include "_glfw.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "vklite_utils.h"
 #include "window.h"
 

@@ -11,8 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_glfw.h"
 #include "canvas_utils.h"
+#include "glfw_utils.h"
 #include "renderer.h"
 #include "runner.h"
 #include "vklite.h"

@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 
-#include "_glfw.h"
+#include "glfw_utils.h"
 #include "host.h"
 #include "test_window.h"
 #include "testing.h"

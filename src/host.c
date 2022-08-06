@@ -3,7 +3,7 @@
 /*************************************************************************************************/
 
 // NOTE: glfw is required because it exposes the Vulkan extensions used by the instance
-#include "_glfw.h"
+#include "glfw_utils.h"
 
 #include "common.h"
 #include "host.h"

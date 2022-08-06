@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #include "test_runner.h"
-#include "_glfw.h"
 #include "context.h"
+#include "glfw_utils.h"
 #include "map.h"
 #include "renderer.h"
 #include "request.h"

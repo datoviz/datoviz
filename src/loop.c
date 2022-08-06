@@ -3,9 +3,9 @@
 /*************************************************************************************************/
 
 #include "loop.h"
-#include "_glfw.h"
 #include "canvas.h"
 #include "common.h"
+#include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"
 #include "surface.h"
