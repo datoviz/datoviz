@@ -262,7 +262,7 @@ void dvz_transfers_destroy(DvzTransfers* transfers)
     dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_DL, 0, NULL);
 
     // Join the UL and DL threads.
-    dvz_thread_join(&transfers->thread);
+    dvz_thread_join(transfers->thread);
 
     // Destroy the deq.
     dvz_deq_destroy(transfers->deq);

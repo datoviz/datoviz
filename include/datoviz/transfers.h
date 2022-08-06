@@ -193,8 +193,8 @@ struct DvzTransfers
     DvzObject obj;
     DvzGpu* gpu;
 
-    DvzDeq* deq;      // transfer dequeues
-    DvzThread thread; // transfer thread
+    DvzDeq* deq;       // transfer dequeues
+    DvzThread* thread; // transfer thread
 
     DvzTransferDups dups;
 };

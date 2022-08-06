@@ -79,10 +79,10 @@ int test_fifo_1(TstSuite* suite)
     ASSERT(*data == item);
 
     // Enqueue in the main thread, dequeue in a background thread.
-    DvzThread thread = dvz_thread(_fifo_thread_1, fifo);
+    DvzThread* thread = dvz_thread(_fifo_thread_1, fifo);
     dvz_fifo_enqueue(fifo, &item);
     AT(!_is_empty(fifo));
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     ASSERT(fifo->user_data != NULL);
     ASSERT(fifo->user_data == &item);
 
@@ -98,7 +98,7 @@ int test_fifo_1(TstSuite* suite)
         AT(*dequeued == i);
         i++;
     } while (dequeued != NULL);
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     FREE(fifo->user_data);
 
     dvz_fifo_destroy(fifo);
@@ -367,8 +367,8 @@ int test_deq_dependencies(TstSuite* suite)
     dvz_deq_wait(deq, 2);
 
     // Dequeue in a thread.
-    DvzThread thread1 = dvz_thread(_dep_thread_1, deq);
-    DvzThread thread2 = dvz_thread(_dep_thread_2, deq);
+    DvzThread* thread1 = dvz_thread(_dep_thread_1, deq);
+    DvzThread* thread2 = dvz_thread(_dep_thread_2, deq);
 
     // After 20 ms, the first item is still being processed. The second item is NOT in the queue
     // and is not being processed, because it will only be enqueued after the first item's callback
@@ -390,8 +390,8 @@ int test_deq_dependencies(TstSuite* suite)
     // End the threads.
     dvz_deq_enqueue(deq, 0, 0, NULL);
     dvz_deq_enqueue(deq, 1, 0, NULL);
-    dvz_thread_join(&thread1);
-    dvz_thread_join(&thread2);
+    dvz_thread_join(thread1);
+    dvz_thread_join(thread2);
     dvz_deq_destroy(deq);
     return 0;
 }
@@ -510,7 +510,7 @@ int test_deq_wait(TstSuite* suite)
     int count = 0;
     dvz_deq_proc_wait_callback(deq, 0, _proc_wait, &count);
 
-    DvzThread thread = dvz_thread(_proc_thread, deq);
+    DvzThread* thread = dvz_thread(_proc_thread, deq);
 
     dvz_sleep(100);
     AT(count >= 3);
@@ -524,7 +524,7 @@ int test_deq_wait(TstSuite* suite)
     AT(count >= 4);
 
     dvz_deq_enqueue(deq, 0, 0, NULL);
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     dvz_deq_destroy(deq);
     return 0;
 }

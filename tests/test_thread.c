@@ -35,9 +35,9 @@ int test_thread_1(TstSuite* suite)
 {
     ASSERT(suite != NULL);
     int data = 0;
-    DvzThread thread = dvz_thread(_thread_callback, &data);
+    DvzThread* thread = dvz_thread(_thread_callback, &data);
     AT(data == 0);
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     AT(data == 42);
     return 0;
 }
@@ -58,12 +58,12 @@ int test_mutex_1(TstSuite* suite)
     ASSERT(suite != NULL);
     DvzMutex mutex = dvz_mutex();
 
-    DvzThread thread = dvz_thread(_mutex_callback, &mutex);
+    DvzThread* thread = dvz_thread(_mutex_callback, &mutex);
     dvz_mutex_lock(&mutex);
     dvz_sleep(20);
     dvz_mutex_unlock(&mutex);
 
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     dvz_mutex_destroy(&mutex);
     return 0;
 }
@@ -85,10 +85,10 @@ int test_cond_1(TstSuite* suite)
     DvzCond cond = dvz_cond();
     DvzMutex mutex = dvz_mutex();
 
-    DvzThread thread = dvz_thread(_cond_callback, &cond);
+    DvzThread* thread = dvz_thread(_cond_callback, &cond);
     dvz_cond_wait(&cond, &mutex);
 
-    dvz_thread_join(&thread);
+    dvz_thread_join(thread);
     dvz_mutex_destroy(&mutex);
     dvz_cond_destroy(&cond);
     return 0;
