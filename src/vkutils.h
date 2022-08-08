@@ -41,8 +41,7 @@ static const char* VALIDATION_IGNORES[] = {
 
     "but only supports loader interface version 4",
 
-    "VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED and the "
-    "contents may be discarded, but the newLayout is",
+    "VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED",
 };
 
 
