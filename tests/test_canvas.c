@@ -62,7 +62,8 @@ int test_canvas_1(TstSuite* suite)
     DvzRenderpass renderpass = desktop_renderpass(gpu);
 
     // Create the canvas.
-    DvzCanvas canvas = dvz_canvas(gpu, &renderpass, WIDTH, HEIGHT, 0);
+    DvzCanvas canvas =
+        dvz_canvas(gpu, &renderpass, window.framebuffer_width, window.framebuffer_height, 0);
     dvz_canvas_create(&canvas, surface);
 
     dvz_canvas_destroy(&canvas);

@@ -48,7 +48,9 @@ DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     loop->renderpass = dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, layout);
 
     // Create the canvas.
-    loop->canvas = dvz_canvas(gpu, &loop->renderpass, width, height, 0);
+    loop->canvas = dvz_canvas(
+        gpu, &loop->renderpass, loop->window.framebuffer_width, loop->window.framebuffer_height,
+        0);
     dvz_canvas_create(&loop->canvas, loop->surface);
 
     // Create GUI objects if needed.
