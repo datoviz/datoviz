@@ -142,6 +142,8 @@ int dvz_run_tests(const char* match)
     /*  Renderer                                                                                 */
     /*********************************************************************************************/
 
+    TEST(test_vklite_host)
+
     // Setup the host fixture.
     SETUP(setup_host)
 
@@ -251,9 +253,6 @@ int dvz_run_tests(const char* match)
     // Testing request.
     TEST(test_request_1)
     TEST(test_request_2)
-
-    // Testing vklite.
-    TEST(test_vklite_host)
 
     //
 
