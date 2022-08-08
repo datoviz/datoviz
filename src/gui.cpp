@@ -124,8 +124,11 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
         // ASSERT(ImFont_IsLoaded(font));
     }
 
-
-    DvzCommands cmd = dvz_commands(gpu, 0, 1);
+    // NOTE: not the TRANSFER queue, otherwise the following warning occurs:
+    // dstStageMask flag VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT is not compatible with the queue
+    // family properties (VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT) of this command
+    // buffer.
+    DvzCommands cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_cmd_begin(&cmd, 0);
     ImGui_ImplVulkan_CreateFontsTexture(cmd.cmds[0]);
     dvz_cmd_end(&cmd, 0);
@@ -254,6 +257,8 @@ void dvz_gui_destroy(DvzGui* gui)
     // Destroy the GUI windows.
     CONTAINER_DESTROY_ITEMS(DvzGuiWindow, gui->gui_windows, dvz_gui_window_destroy)
     dvz_container_destroy(&gui->gui_windows);
+
+    dvz_renderpass_destroy(&gui->renderpass);
 
     _imgui_destroy();
     FREE(gui);
