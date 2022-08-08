@@ -49,7 +49,8 @@ struct DvzWindow
 
     DvzBackend backend;
     void* backend_window;
-    uint32_t width, height; // in screen coordinates
+    uint32_t width, height;                         // screen size
+    uint32_t framebuffer_width, framebuffer_height; // framebuffer size
     DvzGuiWindow* gui_window;
 
     // Forward pointer.

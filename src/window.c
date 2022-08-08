@@ -14,6 +14,10 @@
 
 DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int flags)
 {
+    ASSERT(backend != DVZ_BACKEND_NONE);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     DvzWindow window = {0};
     dvz_obj_init(&window.obj);
     window.obj.type = DVZ_OBJECT_TYPE_WINDOW;
@@ -25,8 +29,11 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     // Create the window, depending on the backend.
     window.backend_window = backend_window(backend, width, height, flags);
 
-    // Set initialize size.
+    // Set the initial size.
     backend_get_window_size(&window, &window.width, &window.height);
+
+    // NOTE: poll the framebuffer size
+    backend_get_framebuffer_size(&window, &window.framebuffer_width, &window.framebuffer_height);
 
     dvz_obj_created(&window.obj);
     return window;
@@ -38,6 +45,7 @@ void dvz_window_poll_size(DvzWindow* window)
 {
     ANN(window);
     backend_get_window_size(window, &window->width, &window->height);
+    backend_get_framebuffer_size(window, &window->framebuffer_width, &window->framebuffer_height);
 }
 
 

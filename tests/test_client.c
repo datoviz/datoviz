@@ -37,8 +37,8 @@ static void _create_window(DvzClient* client, DvzId id)
     DvzClientEvent ev = {
         .window_id = id,
         .type = DVZ_CLIENT_EVENT_WINDOW_CREATE,
-        .content.w.width = WIDTH,
-        .content.w.height = HEIGHT};
+        .content.w.screen_width = WIDTH,
+        .content.w.screen_height = HEIGHT};
     dvz_client_event(client, ev);
 }
 

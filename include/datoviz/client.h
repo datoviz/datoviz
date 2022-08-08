@@ -83,8 +83,10 @@ struct DvzClientEvent
         // Window.
         struct
         {
-            uint32_t width;
-            uint32_t height;
+            uint32_t framebuffer_width;
+            uint32_t framebuffer_height;
+            uint32_t screen_width;
+            uint32_t screen_height;
             int flags;
         } w;
 

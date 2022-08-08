@@ -49,21 +49,29 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     // Retrieve the canvas that was just created by the renderer in _requester_callback().
     DvzCanvas* canvas = dvz_renderer_canvas(rd, rq.id);
 
-    // TODO: canvas.screen_width/height because this is the window size, not the framebuffer
-    // size
-    uint32_t width = rq.content.canvas.width;
-    uint32_t height = rq.content.canvas.height;
+    // Distinguish between canvas size and screen size.
+    uint32_t screen_width = rq.content.canvas.screen_width;
+    uint32_t screen_height = rq.content.canvas.screen_height;
+    ASSERT(screen_width > 0);
+    ASSERT(screen_height > 0);
 
     // Create a client window.
     // NOTE: the window's id in the Client matches the canvas's id in the Renderer.
-    DvzWindow* window = create_client_window(client, rq.id, width, height, 0);
+    DvzWindow* window = create_client_window(client, rq.id, screen_width, screen_height, 0);
+
+    // Once the window has been created, we can request the framebuffer size. It was set up
+    // automatically when creating the window.
+    canvas->width = window->framebuffer_width;
+    canvas->height = window->framebuffer_height;
 
     // Create a surface (requires the renderer's GPU).
     DvzSurface surface = dvz_window_surface(host, window);
 
     // Finally, associate the canvas with the created window surface.
+
     // NOTE: This call does not in the renderer, because we need the surface which depends on the
-    // client, and the renderer is agnostic wrt the client.
+    // client, and the renderer is agnostic wrt the client. Also, we need to know the framebuffer
+    // size, which also requires the window (so depends on the client as well).
     dvz_canvas_create(canvas, surface);
 
     // HACK: keep track of the created surface so that we can destroy it when destroying the
@@ -467,12 +475,19 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         }
 
         // Emit a client Resize event.
+        // NOTE: the width and height of the RESIZE event come from the window's
+        // dvz_window_poll_size(), because this is the screen size, not the framebuffer size.
         dvz_client_event(
             client, (DvzClientEvent){
                         .type = DVZ_CLIENT_EVENT_WINDOW_RESIZE,
                         .window_id = window_id,
-                        .content.w.width = width,
-                        .content.w.height = height});
+                        // Canvas size.
+                        .content.w.framebuffer_width = width,
+                        .content.w.framebuffer_height = height,
+                        // Window size.
+                        .content.w.screen_width = window->width,
+                        .content.w.screen_height = window->height,
+                    });
 
         // Need to refill the command buffers.
         // if (canvas->recorder)

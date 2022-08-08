@@ -43,6 +43,10 @@ static DvzWindow*
 create_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t height, int flags)
 {
     ANN(client);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+    ASSERT(id != DVZ_ID_NONE);
+
     DvzWindow* window = (DvzWindow*)dvz_container_alloc(&client->windows);
     *window = dvz_window(client->backend, width, height, flags);
 

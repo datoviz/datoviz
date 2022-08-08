@@ -192,8 +192,10 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
     CREATE_REQUEST(CREATE, CANVAS);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
-    req.content.canvas.width = width;
-    req.content.canvas.height = height;
+    req.content.canvas.screen_width = width;
+    req.content.canvas.screen_height = height;
+    // NOTE: the framebuffer size will have to be determined once the window has been created.
+    // As a fallback, the window size will be taken as equal to the screen size.
     memcpy(req.content.canvas.background, background, sizeof(cvec4));
     return req;
 }

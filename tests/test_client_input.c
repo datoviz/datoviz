@@ -60,8 +60,8 @@ int test_client_input(TstSuite* suite)
     DvzClientEvent ev = {
         .window_id = id,
         .type = DVZ_CLIENT_EVENT_WINDOW_CREATE,
-        .content.w.width = 800,
-        .content.w.height = 600};
+        .content.w.screen_width = 800,
+        .content.w.screen_height = 600};
     dvz_client_event(client, ev);
 
     // Dequeue and process all pending events.

@@ -77,8 +77,8 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
     DvzClientEvent* ev = (DvzClientEvent*)item;
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
 
-    uint32_t width = ev->content.w.width;
-    uint32_t height = ev->content.w.height;
+    uint32_t width = ev->content.w.screen_width;
+    uint32_t height = ev->content.w.screen_height;
 
     log_debug("client: create window #%d (%dx%d)", ev->window_id, width, height);
 

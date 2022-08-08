@@ -103,8 +103,8 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
 
-    uint32_t width = ev.content.w.width;
-    uint32_t height = ev.content.w.height;
+    uint32_t width = ev.content.w.screen_width;
+    uint32_t height = ev.content.w.screen_height;
     log_info("window %x resized to %dx%d", ev.window_id, width, height);
 
     CallbackStruct* s = (CallbackStruct*)ev.user_data;

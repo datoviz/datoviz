@@ -69,6 +69,9 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
     ANN(rd);
     log_trace("create board");
 
+    ASSERT(req.content.board.width > 0);
+    ASSERT(req.content.board.height > 0);
+
     DvzBoard* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
     ANN(board);
@@ -99,6 +102,9 @@ static void* _board_resize(DvzRenderer* rd, DvzRequest req)
     ANN(rd);
     ASSERT(req.id != 0);
     log_trace("resize board");
+
+    ASSERT(req.content.board.width > 0);
+    ASSERT(req.content.board.height > 0);
 
     GET_ID(DvzBoard, board, req.id)
 
@@ -148,8 +154,13 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
     ANN(rd);
     log_trace("create canvas");
 
+    // NOTE: when creating a desktop canvas, we know the requested screen size, but not the
+    // framebuffer size yet. This will be determined *after* the window has been created, which
+    // will occur in the presenter (client-side), not on the renderer (server-side).
+
     DvzCanvas* canvas = dvz_workspace_canvas(
-        rd->workspace, req.content.canvas.width, req.content.canvas.height, req.flags);
+        rd->workspace, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height,
+        req.flags);
     ANN(canvas);
     SET_ID(canvas)
 

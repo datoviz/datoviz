@@ -101,7 +101,8 @@ union DvzRequestContent
     // Canvas.
     struct
     {
-        uint32_t width, height;
+        uint32_t framebuffer_width, framebuffer_height;
+        uint32_t screen_width, screen_height;
         cvec4 background;
     } canvas;
 

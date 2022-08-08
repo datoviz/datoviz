@@ -22,8 +22,11 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
     // otherwise it will be copied and the pointer will be invalid.
 
     ANN(gpu);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
+
+    if (width == 0 && height == 0)
+    {
+        log_warn("The canvas size is null, it will have to be set correctly before creation.");
+    }
 
     DvzCanvas canvas = {0};
     canvas.obj.type = DVZ_OBJECT_TYPE_CANVAS;

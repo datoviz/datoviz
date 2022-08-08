@@ -101,6 +101,9 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
 {
     ASSERT(backend != DVZ_BACKEND_NONE);
 
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     log_trace("create window with size %dx%d", width, height);
 
     switch (backend)

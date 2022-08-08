@@ -21,6 +21,9 @@
 DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
     ANN(gpu);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
     DvzLoop* loop = calloc(1, sizeof(DvzLoop));
     loop->flags = flags;
     loop->gpu = gpu;
