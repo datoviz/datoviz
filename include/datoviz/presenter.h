@@ -70,6 +70,10 @@ struct DvzPresenter
     DvzClient* client;
     int flags;
 
+    // HACK: need to keep a list of surfaces so that we can delete them when the presenter is
+    // destroyed.
+    DvzList* surfaces;
+
     // GUI callbacks.
     DvzGui* gui;
     DvzList* callbacks;

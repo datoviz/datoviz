@@ -946,7 +946,10 @@ void dvz_renderer_destroy(DvzRenderer* rd)
     ASSERT(rd != NULL);
 
     dvz_map_destroy(rd->map);
+
+    // This call destroys all canvases etc.
     dvz_workspace_destroy(rd->workspace);
+
     dvz_pipelib_destroy(rd->pipelib);
     dvz_context_destroy(rd->ctx);
 

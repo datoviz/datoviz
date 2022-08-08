@@ -119,6 +119,11 @@ DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
     recorder->img_count = img_count;
     recorder->capacity = DVZ_RECORDER_COMMAND_COUNT;
     recorder->commands = calloc(recorder->capacity, sizeof(DvzRecorderCommand));
+
+    // Clear the recorder initially, and make sure it is set as dirty. This way, the command buffer
+    // will be recorded at the very first frame.
+    dvz_recorder_clear(recorder);
+
     return recorder;
 }
 

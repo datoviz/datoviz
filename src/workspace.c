@@ -97,6 +97,8 @@ void dvz_workspace_destroy(DvzWorkspace* workspace)
     CONTAINER_DESTROY_ITEMS(DvzCanvas, workspace->canvases, dvz_canvas_destroy)
     dvz_container_destroy(&workspace->canvases);
 
+    // Destroy the renderpasses.
+    dvz_renderpass_destroy(&workspace->renderpass_overlay);
     dvz_renderpass_destroy(&workspace->renderpass_offscreen);
     dvz_renderpass_destroy(&workspace->renderpass_desktop);
 
