@@ -75,7 +75,6 @@ int dvz_run_tests(const char* match)
     TEST(test_png_1)
 
     // Testing FIFO.
-    TEST(test_obj_1)
     TEST(test_fifo_1)
     TEST(test_fifo_2)
     TEST(test_fifo_resize)

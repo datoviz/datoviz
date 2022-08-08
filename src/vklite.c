@@ -3412,11 +3412,11 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
     submit_info.pCommandBuffers = cmd_bufs;
 
     submit_info.waitSemaphoreCount = submit->wait_semaphores_count;
-    submit_info.pWaitSemaphores = wait_semaphores;
+    submit_info.pWaitSemaphores = submit->wait_semaphores_count > 0 ? wait_semaphores : NULL;
     submit_info.pWaitDstStageMask = submit->wait_stages;
 
     submit_info.signalSemaphoreCount = submit->signal_semaphores_count;
-    submit_info.pSignalSemaphores = signal_semaphores;
+    submit_info.pSignalSemaphores = submit->signal_semaphores_count > 0 ? signal_semaphores : NULL;
 
     VkFence vfence = fences == NULL ? 0 : fences->fences[fence_idx];
 

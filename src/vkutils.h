@@ -37,7 +37,9 @@ static const char* VALIDATION_IGNORES[] = {
 
     // https://github.com/datoviz/datoviz/issues/17#issuecomment-849213008
     // https://www.gitmemory.com/issue/KhronosGroup/Vulkan-ValidationLayers/2729/824406355
-    "invalid layer manifest file",
+    // "invalid layer manifest file",
+
+    "but only supports loader interface version 4",
 };
 
 
@@ -238,7 +240,7 @@ static void create_instance(
     {
         has_validation = check_validation_layer_support(ARRAY_COUNT(DVZ_LAYERS), DVZ_LAYERS);
         if (!has_validation)
-            log_debug(
+            log_warn(
                 "validation layer support missing, make sure you have exported the environment "
                 "variable VK_LAYER_PATH=\"$VULKAN_SDK/etc/vulkan/explicit_layer.d\"");
     }
@@ -293,6 +295,7 @@ static void create_instance(
 
     if (has_validation)
     {
+        log_debug("enable Vulkan validation layer");
         info_inst.enabledLayerCount = ARRAY_COUNT(DVZ_LAYERS);
         info_inst.ppEnabledLayerNames = DVZ_LAYERS;
 
@@ -311,6 +314,7 @@ static void create_instance(
     }
     else
     {
+        log_warn("disable Vulkan validation layer");
         info_inst.enabledLayerCount = 0;
         info_inst.pNext = NULL;
     }

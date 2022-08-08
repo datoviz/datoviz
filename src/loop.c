@@ -245,6 +245,8 @@ void dvz_loop_run(DvzLoop* loop, uint64_t n_frames)
         if (dvz_loop_frame(loop))
             break;
     }
+
+    dvz_gpu_wait(loop->gpu);
 }
 
 
@@ -253,9 +255,9 @@ void dvz_loop_destroy(DvzLoop* loop)
 {
     ASSERT(loop != NULL);
     dvz_renderpass_destroy(&loop->renderpass);
-    dvz_surface_destroy(loop->gpu->host, loop->surface);
     dvz_canvas_destroy(&loop->canvas);
     dvz_window_destroy(&loop->window);
+    dvz_surface_destroy(loop->gpu->host, loop->surface);
 
     bool has_gui = (loop->flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)

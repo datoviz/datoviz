@@ -261,7 +261,6 @@ static VkImageType _image_type_from_dims(DvzTexDims dims)
 static void _transition_image(DvzImages* img)
 {
     ASSERT(img != NULL);
-
     DvzGpu* gpu = img->gpu;
     ASSERT(gpu != NULL);
 
