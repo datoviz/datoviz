@@ -39,6 +39,19 @@ typedef struct ImGuiIO ImGuiIO;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+// GUI flags.
+typedef enum
+{
+    DVZ_GUI_FLAGS_NONE,
+    DVZ_GUI_FLAGS_OFFSCREEN,
+} DvzGuiFlags;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -75,7 +88,7 @@ EXTERN_C_ON
  * @param gpu the GPU
  * @param queue_idx the render queue
  */
-DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx);
+DVZ_EXPORT DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags);
 
 
 

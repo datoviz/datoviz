@@ -285,7 +285,7 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)
     {
-        prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER);
+        prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_GUI_FLAGS_NONE);
     }
 
     // Mappings.

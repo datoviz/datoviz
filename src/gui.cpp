@@ -128,7 +128,10 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
     // dstStageMask flag VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT is not compatible with the queue
     // family properties (VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT) of this command
     // buffer.
-    DvzCommands cmd = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
+    // HACK: we may use this code when the DVZ_DEFAULT_QUEUE_RENDER is not defined, ie when there
+    // is a single queue (offscreen tests, for example).
+    DvzCommands cmd =
+        dvz_commands(gpu, MIN(((int)DVZ_DEFAULT_QUEUE_RENDER), (gpu->queues.queue_count - 1)), 1);
     dvz_cmd_begin(&cmd, 0);
     ImGui_ImplVulkan_CreateFontsTexture(cmd.cmds[0]);
     dvz_cmd_end(&cmd, 0);
@@ -159,7 +162,7 @@ static void _imgui_set_window(DvzWindow* window)
 
 
 
-static DvzRenderpass _imgui_renderpass(DvzGpu* gpu)
+static DvzRenderpass _imgui_renderpass(DvzGpu* gpu, bool offscreen)
 {
     ASSERT(gpu != NULL);
 
@@ -174,7 +177,8 @@ static DvzRenderpass _imgui_renderpass(DvzGpu* gpu)
         DVZ_RENDERPASS_ATTACHMENT_COLOR, (VkFormat)DVZ_DEFAULT_FORMAT,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_renderpass_attachment_layout(
-        &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+        &renderpass, 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        offscreen ? VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL : VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     dvz_renderpass_attachment_ops(
         &renderpass, 0, VK_ATTACHMENT_LOAD_OP_LOAD, VK_ATTACHMENT_STORE_OP_STORE);
 
@@ -222,7 +226,7 @@ static void _imgui_destroy()
 /*  GUI functions                                                                                */
 /*************************************************************************************************/
 
-DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
+DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 {
     ASSERT(gpu != NULL);
 
@@ -239,7 +243,7 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx)
     gui->gui_windows = dvz_container(
         DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGuiWindow), DVZ_OBJECT_TYPE_GUI_WINDOW);
 
-    gui->renderpass = _imgui_renderpass(gpu);
+    gui->renderpass = _imgui_renderpass(gpu, flags == DVZ_GUI_FLAGS_OFFSCREEN);
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);

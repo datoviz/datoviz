@@ -265,9 +265,10 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
     dvz_images_memory(images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     dvz_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
-    dvz_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_images_layout(images, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     dvz_images_queue_access(images, 0);
     dvz_images_create(images);
+    dvz_images_transition(images);
     canvas.images = images;
 
     // Depth attachment.

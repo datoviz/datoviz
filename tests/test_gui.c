@@ -37,7 +37,7 @@ int test_gui_offscreen(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     // Need to init the GUI engine.
-    DvzGui* gui = dvz_gui(gpu, 0);
+    DvzGui* gui = dvz_gui(gpu, 0, DVZ_GUI_FLAGS_OFFSCREEN);
 
     // Mark the beginning and end of the frame.
     DvzGuiWindow* gui_window = dvz_gui_offscreen(gui, canvas.images, 0);

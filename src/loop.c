@@ -51,7 +51,7 @@ DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
     // Create GUI objects if needed.
     if (has_gui)
     {
-        loop->gui = dvz_gui(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+        loop->gui = dvz_gui(gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_GUI_FLAGS_NONE);
 
         loop->gui_window = dvz_gui_window(
             loop->gui, &loop->window, loop->canvas.render.swapchain.images,
