@@ -30,9 +30,9 @@
 
 static int assert_firing(DvzTimerItem* item, double time, bool firing)
 {
-    ASSERT(item != NULL);
+    ANN(item);
     DvzTimer* timer = item->timer;
-    ASSERT(timer != NULL);
+    ANN(timer);
 
     dvz_timer_tick(timer, time);
 
@@ -111,10 +111,10 @@ int test_timer_1(TstSuite* suite)
 
 static void _on_timer(DvzTimer* timer, DvzTimerEvent ev)
 {
-    ASSERT(timer != NULL);
+    ANN(timer);
 
     double* res = (double*)ev.user_data;
-    ASSERT(res != NULL);
+    ANN(res);
 
     *res = ev.time;
 }

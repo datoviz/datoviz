@@ -58,7 +58,7 @@ int test_keyboard_1(TstSuite* suite)
 
 static void _on_key_press(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
-    ASSERT(keyboard != NULL);
+    ANN(keyboard);
     log_debug("key press %d, modifiers %d", ev.key, ev.mods);
     DvzList* keys = keyboard->keys;
     uint32_t n = dvz_list_count(keys);
@@ -74,7 +74,7 @@ static void _on_key_press(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 
 static void _on_key_release(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
-    ASSERT(keyboard != NULL);
+    ANN(keyboard);
     log_debug("key release %d", ev.key);
     if (ev.user_data != NULL)
     {

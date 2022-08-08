@@ -87,7 +87,7 @@ static void backend_terminate(DvzBackend backend)
 //     DvzCanvas
 //     // This is because the DvzCanvas has its own glfw keyboard callback, and there can be
 //     only 1. DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
-//     ASSERT(window != NULL);
+//     ANN(window);
 //     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
 //     {
 //         window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
@@ -120,7 +120,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
         }
 
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
-        ASSERT(bwin != NULL);
+        ANN(bwin);
 
         // Visible window.
         if ((flags & DVZ_WINDOW_FLAGS_HIDDEN))
@@ -184,7 +184,7 @@ static void backend_wait(DvzBackend backend)
 static void backend_window_destroy(DvzBackend backend, void* bwin)
 {
     ASSERT(backend != DVZ_BACKEND_NONE);
-    ASSERT(bwin != NULL);
+    ANN(bwin);
 
     // NOTE TODO: need to vkDeviceWaitIdle(device) on all devices before calling this
     log_trace("starting destruction of backend window...");
@@ -194,7 +194,7 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
 #if HAS_GLFW
         glfwPollEvents();
         log_trace("destroy GLFW window");
-        ASSERT(bwin != NULL);
+        ANN(bwin);
         glfwDestroyWindow((GLFWwindow*)bwin);
 #endif
         break;
@@ -215,7 +215,7 @@ static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t 
 {
     log_trace("setting the size of backend window...");
 
-    ASSERT(window != NULL);
+    ANN(window);
     void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;
@@ -225,7 +225,7 @@ static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t 
     {
     case DVZ_BACKEND_GLFW:;
 #if HAS_GLFW
-        ASSERT(bwin != NULL);
+        ANN(bwin);
         int w = (int)width, h = (int)height;
         log_trace("set window size to %dx%d", w, h);
         glfwSetWindowSize((GLFWwindow*)bwin, w, h);
@@ -244,7 +244,7 @@ backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* win
 {
     log_trace("determining the size of backend window...");
 
-    ASSERT(window != NULL);
+    ANN(window);
     void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;
@@ -255,7 +255,7 @@ backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* win
     case DVZ_BACKEND_GLFW:;
 #if HAS_GLFW
         int w, h;
-        ASSERT(bwin != NULL);
+        ANN(bwin);
 
         // Get window size.
         glfwGetWindowSize((GLFWwindow*)bwin, &w, &h);
@@ -285,7 +285,7 @@ static void backend_get_framebuffer_size(
 {
     log_trace("determining the size of backend window...");
 
-    ASSERT(window != NULL);
+    ANN(window);
 
     DvzBackend backend = window->backend;
     ASSERT(backend != DVZ_BACKEND_NONE);
@@ -297,7 +297,7 @@ static void backend_get_framebuffer_size(
 #if HAS_GLFW
         int w, h;
         void* bwin = window->backend_window;
-        ASSERT(bwin != NULL);
+        ANN(bwin);
 
         // Get framebuffer size.
         glfwGetFramebufferSize((GLFWwindow*)bwin, &w, &h);
@@ -324,7 +324,7 @@ static void backend_get_framebuffer_size(
 
 static bool backend_should_close(DvzWindow* window)
 {
-    ASSERT(window != NULL);
+    ANN(window);
     void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;
@@ -348,7 +348,7 @@ static bool backend_should_close(DvzWindow* window)
 
 static void backend_loop(DvzWindow* window, uint64_t max_frames)
 {
-    ASSERT(window != NULL);
+    ANN(window);
     void* bwin = window->backend_window;
 
     DvzBackend backend = window->backend;

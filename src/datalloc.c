@@ -19,9 +19,9 @@
 
 void dvz_datalloc(DvzGpu* gpu, DvzResources* res, DvzDatAlloc* datalloc)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     ASSERT(!dvz_obj_is_created(&datalloc->obj));
     // NOTE: this function should only be called once, at context creation.
 
@@ -46,7 +46,7 @@ void dvz_datalloc(DvzGpu* gpu, DvzResources* res, DvzDatAlloc* datalloc)
 DvzSize dvz_datalloc_alloc(
     DvzDatAlloc* datalloc, DvzResources* res, DvzBufferType type, bool mappable, DvzSize req_size)
 {
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     ASSERT(req_size > 0);
     CHECK_BUFFER_TYPE
 
@@ -70,7 +70,7 @@ DvzSize dvz_datalloc_alloc(
 
 void dvz_datalloc_dealloc(DvzDatAlloc* datalloc, DvzBufferType type, bool mappable, DvzSize offset)
 {
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     CHECK_BUFFER_TYPE
 
     // Get the abstract DvzAlloc object associated to the dat's buffer.
@@ -82,7 +82,7 @@ void dvz_datalloc_dealloc(DvzDatAlloc* datalloc, DvzBufferType type, bool mappab
 
 void dvz_datalloc_stats(DvzDatAlloc* datalloc)
 {
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     for (uint32_t i = 0; i < sizeof(datalloc->allocators) / sizeof(DvzAlloc*); i++)
     {
         dvz_alloc_stats(datalloc->allocators[i]);
@@ -99,8 +99,8 @@ void dvz_datalloc_destroy(DvzDatAlloc* datalloc)
         return;
     }
     log_trace("destroying datalloc");
-    ASSERT(datalloc != NULL);
-    ASSERT(datalloc->gpu != NULL);
+    ANN(datalloc);
+    ANN(datalloc->gpu);
 
     // Destroy the DvzDat allocators.
     for (uint32_t i = 0; i < 2 * DVZ_BUFFER_TYPE_COUNT - 1; i++)

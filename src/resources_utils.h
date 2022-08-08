@@ -41,7 +41,7 @@ static void _default_queues(DvzGpu* gpu, bool has_present_queue)
 
 static inline bool _is_buffer_mappable(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     return ((buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0);
 }
 
@@ -89,10 +89,10 @@ static inline VkBufferUsageFlags _find_buffer_usage(DvzBufferType type)
 
 static DvzBuffer* _make_new_buffer(DvzResources* res)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     DvzBuffer* buffer = (DvzBuffer*)dvz_container_alloc(&res->buffers);
     *buffer = dvz_buffer(res->gpu);
-    ASSERT(buffer != NULL);
+    ANN(buffer);
 
     // All buffers may be accessed from these queues.
     dvz_buffer_queue_access(buffer, DVZ_DEFAULT_QUEUE_TRANSFER);
@@ -107,7 +107,7 @@ static DvzBuffer* _make_new_buffer(DvzResources* res)
 // NOT for staging
 static void _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mappable, DvzSize size)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     CHECK_BUFFER_TYPE
     ASSERT(type != DVZ_BUFFER_TYPE_STAGING);
 
@@ -126,7 +126,7 @@ static void _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mapp
 
 static void _make_staging_buffer(DvzBuffer* buffer, DvzSize size)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     dvz_buffer_type(buffer, DVZ_BUFFER_TYPE_STAGING);
     dvz_buffer_size(buffer, size);
     dvz_buffer_usage(buffer, TRANSFERABLE);
@@ -140,7 +140,7 @@ static void _make_staging_buffer(DvzBuffer* buffer, DvzSize size)
 static DvzBuffer*
 _make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     ASSERT((uint32_t)type > 0);
     ASSERT(size > 0);
     DvzBuffer* buffer = _make_new_buffer(res);
@@ -164,7 +164,7 @@ _make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, Dv
 
 static DvzBuffer* _find_shared_buffer(DvzResources* res, DvzBufferType type, bool mappable)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     CHECK_BUFFER_TYPE
 
     DvzContainerIterator iter = dvz_container_iterator(&res->buffers);
@@ -172,7 +172,7 @@ static DvzBuffer* _find_shared_buffer(DvzResources* res, DvzBufferType type, boo
     while (iter.item != NULL)
     {
         buffer = (DvzBuffer*)iter.item;
-        ASSERT(buffer != NULL);
+        ANN(buffer);
         // log_trace(
         //     "buffer %d=%d? %d=%d?", buffer->type, type, _is_buffer_mappable(buffer), mappable);
         if (dvz_obj_is_created(&buffer->obj) && //
@@ -189,7 +189,7 @@ static DvzBuffer* _find_shared_buffer(DvzResources* res, DvzBufferType type, boo
 // Get an existing shared buffer, or create a new one if needed.
 static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool mappable)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     CHECK_BUFFER_TYPE
 
     DvzBuffer* buffer = _find_shared_buffer(res, type, mappable);
@@ -198,7 +198,7 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
         log_trace("count not find shared buffer with type %d, so creating a new one", type);
         buffer = _make_standalone_buffer(res, type, mappable, DVZ_BUFFER_DEFAULT_SIZE);
     }
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     return buffer;
 }
 
@@ -212,7 +212,7 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
 static DvzBufferRegions
 _standalone_buffer_regions(DvzGpu* gpu, DvzBufferType type, uint32_t count, DvzSize size)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT((uint32_t)type > 0);
 
     DvzBuffer* buffer = (DvzBuffer*)calloc(1, sizeof(DvzBuffer));
@@ -260,9 +260,9 @@ static VkImageType _image_type_from_dims(DvzTexDims dims)
 
 static void _transition_image(DvzImages* img)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     DvzGpu* gpu = img->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
     DvzCommands* cmds = &cmds_;
@@ -286,7 +286,7 @@ static void _transition_image(DvzImages* img)
 static void
 _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     *img = dvz_images(gpu, _image_type_from_dims(dims), 1);
 
     // Create the image.
@@ -312,7 +312,7 @@ _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, DvzFormat
 
 static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(1 <= dims && dims <= 3);
     log_debug(
         "creating %dD image with shape %dx%dx%d and format %d", //
@@ -340,7 +340,7 @@ static void _destroy_image(DvzImages* img)
 
 static void _create_resources(DvzResources* res)
 {
-    ASSERT(res != NULL);
+    ANN(res);
 
     res->buffers = //
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzBuffer), DVZ_OBJECT_TYPE_BUFFER);
@@ -358,7 +358,7 @@ static void _create_resources(DvzResources* res)
 
 static void _destroy_resources(DvzResources* res)
 {
-    ASSERT(res != NULL);
+    ANN(res);
 
     log_trace("context destroy buffers");
     CONTAINER_DESTROY_ITEMS(DvzBuffer, res->buffers, dvz_buffer_destroy)
@@ -384,7 +384,7 @@ static void _destroy_resources(DvzResources* res)
 
 static inline bool _dat_is_standalone(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_STANDALONE) != 0;
 }
 
@@ -392,7 +392,7 @@ static inline bool _dat_is_standalone(DvzDat* dat)
 
 static inline bool _dat_has_staging(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_MAPPABLE) == 0;
 }
 
@@ -400,7 +400,7 @@ static inline bool _dat_has_staging(DvzDat* dat)
 
 static inline bool _dat_is_dup(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_DUP) != 0;
 }
 
@@ -408,7 +408,7 @@ static inline bool _dat_is_dup(DvzDat* dat)
 
 static inline bool _dat_keep_on_resize(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_KEEP_ON_RESIZE) != 0;
 }
 
@@ -416,7 +416,7 @@ static inline bool _dat_keep_on_resize(DvzDat* dat)
 
 static inline bool _dat_persistent_staging(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_PERSISTENT_STAGING) != 0;
 }
 
@@ -439,7 +439,7 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, DvzSize size, DvzSize* al
 
 static inline DvzDat* _alloc_staging(DvzContext* ctx, DvzSize size)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     return dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
 }
 
@@ -448,8 +448,8 @@ static inline DvzDat* _alloc_staging(DvzContext* ctx, DvzSize size)
 static void
 _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, DvzSize size)
 {
-    ASSERT(res != NULL);
-    ASSERT(dat != NULL);
+    ANN(res);
+    ANN(dat);
 
     DvzBuffer* buffer = NULL;
     DvzSize offset = 0; // to determine with allocator if shared buffer
@@ -503,7 +503,7 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
 
 static void _dat_dealloc(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     log_debug("deallocate dat, offset %d, size %s", dat->br.offsets[0], pretty_size(dat->br.size));
 
     bool shared = !_dat_is_standalone(dat);
@@ -529,7 +529,7 @@ static void _dat_dealloc(DvzDat* dat)
 
 static inline bool _tex_persistent_staging(DvzTex* tex)
 {
-    ASSERT(tex != NULL);
+    ANN(tex);
     return (tex->flags & DVZ_TEX_FLAGS_PERSISTENT_STAGING) != 0;
 }
 
@@ -537,8 +537,8 @@ static inline bool _tex_persistent_staging(DvzTex* tex)
 
 static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
 {
-    ASSERT(ctx != NULL);
-    ASSERT(tex != NULL);
+    ANN(ctx);
+    ANN(tex);
     DvzDat* stg = tex->stg;
     if (stg != NULL)
         return stg;
@@ -559,8 +559,8 @@ static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
 static void
 _tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, DvzFormat format, uvec3 shape)
 {
-    ASSERT(res != NULL);
-    ASSERT(tex != NULL);
+    ANN(res);
+    ANN(tex);
 
     // Create a new image for the tex.
     tex->img = dvz_resources_image(res, dims, shape, format);
@@ -618,7 +618,7 @@ static inline DvzSize _tex_size(DvzFormat format, uvec3 shape)
 
 static void _tex_dealloc(DvzTex* tex)
 {
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     // Destroy the image.
     dvz_images_destroy(tex->img);

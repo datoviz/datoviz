@@ -23,7 +23,7 @@
 
 static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
 
     if (pipe->bindings.obj.status != DVZ_OBJECT_STATUS_NONE)
         return;
@@ -59,7 +59,7 @@ static bool _all_set(uint32_t count, bool* vars)
 
 DvzPipe dvz_pipe(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzPipe pipe = {0};
     pipe.obj.type = DVZ_OBJECT_TYPE_PIPE;
     pipe.gpu = gpu;
@@ -71,7 +71,7 @@ DvzPipe dvz_pipe(DvzGpu* gpu)
 
 DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     ASSERT(count > 0);
 
     pipe->type = DVZ_PIPE_GRAPHICS;
@@ -85,8 +85,8 @@ DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
 
 DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 {
-    ASSERT(pipe != NULL);
-    ASSERT(shader_path != NULL);
+    ANN(pipe);
+    ANN(shader_path);
 
     pipe->type = DVZ_PIPE_COMPUTE;
 
@@ -100,8 +100,8 @@ DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 
 void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex)
 {
-    ASSERT(pipe != NULL);
-    ASSERT(dat_vertex != NULL);
+    ANN(pipe);
+    ANN(dat_vertex);
     pipe->dat_vertex = dat_vertex;
 }
 
@@ -109,8 +109,8 @@ void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex)
 
 void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
 {
-    ASSERT(pipe != NULL);
-    ASSERT(dat_index != NULL);
+    ANN(pipe);
+    ANN(dat_index);
     pipe->dat_index = dat_index;
 }
 
@@ -118,11 +118,11 @@ void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
 
 void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
 
-    ASSERT(dat != NULL);
-    ASSERT(dat->br.buffer != NULL);
+    ANN(dat);
+    ANN(dat->br.buffer);
     ASSERT(dat->br.size > 0);
 
     pipe->bindings_set[idx] = true;
@@ -138,11 +138,11 @@ void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 
 void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
 
-    ASSERT(tex != NULL);
-    ASSERT(sampler != NULL);
+    ANN(tex);
+    ANN(sampler);
     // pipe->texs[idx] = tex;
     // pipe->samplers[idx] = sampler;
 
@@ -158,7 +158,7 @@ void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 
 bool dvz_pipe_complete(DvzPipe* pipe)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     return _all_set(pipe->bindings.slots->slot_count, pipe->bindings_set);
 }
 
@@ -166,7 +166,7 @@ bool dvz_pipe_complete(DvzPipe* pipe)
 
 void dvz_pipe_create(DvzPipe* pipe)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     log_trace("creating pipe");
 
     // Create the bindings if needed.
@@ -191,7 +191,7 @@ void dvz_pipe_create(DvzPipe* pipe)
 
 void dvz_pipe_destroy(DvzPipe* pipe)
 {
-    ASSERT(pipe != NULL);
+    ANN(pipe);
 
     if (pipe->type == DVZ_PIPE_GRAPHICS)
         dvz_graphics_destroy(&pipe->u.graphics);
@@ -213,12 +213,12 @@ void dvz_pipe_destroy(DvzPipe* pipe)
 
 static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(pipe != NULL);
-    ASSERT(cmds != NULL);
+    ANN(pipe);
+    ANN(cmds);
 
     ASSERT(pipe->type == DVZ_PIPE_GRAPHICS);
     DvzGraphics* graphics = &pipe->u.graphics;
-    ASSERT(graphics != NULL);
+    ANN(graphics);
 
     // TODO: dat vertex byte offset?
     dvz_cmd_bind_vertex_buffer(cmds, idx, pipe->dat_vertex->br, 0);
@@ -239,7 +239,7 @@ void dvz_pipe_draw(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
 {
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_cmd_draw(cmds, idx, first_vertex, vertex_count);
 }
 
@@ -250,7 +250,7 @@ void dvz_pipe_draw_indexed(
     uint32_t index_count)
 {
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_cmd_draw_indexed(cmds, idx, first_index, vertex_offset, index_count);
 }
 
@@ -258,9 +258,9 @@ void dvz_pipe_draw_indexed(
 
 void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
 {
-    ASSERT(dat_indirect != NULL);
+    ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_cmd_draw_indirect(cmds, idx, dat_indirect->br);
 }
 
@@ -269,9 +269,9 @@ void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzD
 void dvz_pipe_draw_indexed_indirect(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
 {
-    ASSERT(dat_indirect != NULL);
+    ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_cmd_draw_indexed_indirect(cmds, idx, dat_indirect->br);
 }
 
@@ -283,12 +283,12 @@ void dvz_pipe_draw_indexed_indirect(
 
 void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size)
 {
-    ASSERT(pipe != NULL);
-    ASSERT(cmds != NULL);
+    ANN(pipe);
+    ANN(cmds);
 
     ASSERT(pipe->type == DVZ_PIPE_COMPUTE);
     DvzCompute* compute = &pipe->u.compute;
-    ASSERT(compute != NULL);
+    ANN(compute);
 
     dvz_cmd_compute(cmds, idx, compute, size);
 }

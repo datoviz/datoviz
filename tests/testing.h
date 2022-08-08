@@ -191,8 +191,8 @@ static void print_end(int index, int res)
 
 static inline bool test_name_matches(TstTest* test, const char* str)
 {
-    ASSERT(test != NULL);
-    ASSERT(str != NULL);
+    ANN(test);
+    ANN(str);
     return strstr(test->name, str) != NULL;
 }
 
@@ -215,7 +215,7 @@ static TstSuite tst_suite(void)
 
 static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* user_data)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     // log_trace(
     //     "append one test item to suite with %d items, capacity %d", //
     //     suite->n_items, suite->capacity);
@@ -223,7 +223,7 @@ static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function,
     if (suite->capacity == suite->n_items)
     {
         log_trace("reallocate memory for test suite items");
-        ASSERT(suite->items != NULL);
+        ANN(suite->items);
         ASSERT(suite->n_items > 0);
         REALLOC(suite->items, (size_t)(2 * suite->n_items * sizeof(TstItem)));
         suite->capacity *= 2;
@@ -254,7 +254,7 @@ static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function,
 
 static void tst_suite_setup(TstSuite* suite, TstFunction setup, void* user_data)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     _append(suite, TST_ITEM_SETUP, setup, user_data);
 }
 
@@ -262,7 +262,7 @@ static void tst_suite_setup(TstSuite* suite, TstFunction setup, void* user_data)
 
 static void tst_suite_add(TstSuite* suite, const char* name, TstFunction test, void* user_data)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     TstItem* item = _append(suite, TST_ITEM_TEST, test, user_data);
     item->u.t.name = name;
 }
@@ -271,7 +271,7 @@ static void tst_suite_add(TstSuite* suite, const char* name, TstFunction test, v
 
 static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user_data)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     _append(suite, TST_ITEM_TEARDOWN, teardown, user_data);
 }
 
@@ -279,7 +279,7 @@ static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user
 
 static void tst_suite_run(TstSuite* suite, const char* match)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     TstItem* item = NULL;
     int index = 0;
     int res = 0, cur_res = 0;
@@ -317,8 +317,8 @@ static void tst_suite_run(TstSuite* suite, const char* match)
 
 static void tst_suite_destroy(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
-    ASSERT(suite->items != NULL);
+    ANN(suite);
+    ANN(suite->items);
     suite->n_items = 0;
     suite->capacity = 0;
     FREE(suite->items);

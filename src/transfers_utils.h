@@ -29,9 +29,9 @@ static DvzDeqItem* _create_buffer_transfer(
 {
     // Upload/download to mappable buffer only (otherwise, will need a GPU-GPU copy task too).
 
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     ASSERT(type == DVZ_TRANSFER_BUFFER_UPLOAD || type == DVZ_TRANSFER_BUFFER_DOWNLOAD);
 
@@ -51,8 +51,8 @@ static DvzDeqItem* _create_buffer_copy(
     DvzBufferRegions src, DvzSize src_offset, DvzBufferRegions dst, DvzSize dst_offset,
     DvzSize size)
 {
-    ASSERT(src.buffer != NULL);
-    ASSERT(dst.buffer != NULL);
+    ANN(src.buffer);
+    ANN(dst.buffer);
     ASSERT(size > 0);
 
     DvzTransferBufferCopy* tr = (DvzTransferBufferCopy*)calloc(1, sizeof(DvzTransferBufferCopy));
@@ -75,10 +75,10 @@ static DvzDeqItem* _create_buffer_image_copy(
 )
 {
     ASSERT(type == DVZ_TRANSFER_IMAGE_BUFFER || type == DVZ_TRANSFER_BUFFER_IMAGE);
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(size > 0);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
@@ -105,8 +105,8 @@ static DvzDeqItem* _create_image_copy(
     DvzImages* dst, uvec3 dst_offset, uvec3 shape //
 )
 {
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
+    ANN(src);
+    ANN(dst);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
@@ -127,7 +127,7 @@ static DvzDeqItem* _create_image_copy(
 // Create a download done task.
 static DvzDeqItem* _create_download_done(DvzSize size, void* data)
 {
-    ASSERT(data != NULL);
+    ANN(data);
 
     // will be free-ed by the callbacks:
     DvzTransferDownloadDone* tr =
@@ -154,9 +154,9 @@ static DvzDeqItem* _create_upload_done(void* user_data)
 static DvzDeqItem*
 _create_dup_upload(DvzBufferRegions br, DvzSize offset, DvzSize size, void* data, uint32_t deq_idx)
 {
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     DvzTransferDup* tr = (DvzTransferDup*)calloc(1, sizeof(DvzTransferDup));
     tr->type = DVZ_TRANSFER_DUP_UPLOAD;
@@ -178,8 +178,8 @@ static DvzDeqItem* _create_dup_copy(
     DvzBufferRegions dst, DvzSize dst_offset, //
     DvzSize size, uint32_t deq_idx)
 {
-    ASSERT(src.buffer != NULL);
-    ASSERT(dst.buffer != NULL);
+    ANN(src.buffer);
+    ANN(dst.buffer);
     // NOTE: for now we impose the staging (source) buffer to have a single copy of the data.
     ASSERT(src.count == 1);
     ASSERT(size > 0);
@@ -211,9 +211,9 @@ static void _enqueue_buffer_upload(
     DvzBufferRegions stg, DvzSize stg_offset, // optional staging buffer
     DvzSize size, void* data, DvzDeqItem* done_item)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
     log_trace("enqueue buffer upload");
 
     DvzDeqItem* deq_item = NULL;
@@ -264,9 +264,9 @@ static void _enqueue_buffer_download(
     DvzBufferRegions stg, DvzSize stg_offset, //
     DvzSize size, void* data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
     log_trace("enqueue buffer download");
 
     DvzDeqItem* deq_item = NULL;
@@ -312,9 +312,9 @@ static void _enqueue_buffer_copy(
     DvzBufferRegions dst, DvzSize dst_offset, //
     DvzSize size)
 {
-    ASSERT(deq != NULL);
-    ASSERT(src.buffer != NULL);
-    ASSERT(dst.buffer != NULL);
+    ANN(deq);
+    ANN(src.buffer);
+    ANN(dst.buffer);
     ASSERT(size > 0);
     log_trace("enqueue buffer copy");
 
@@ -326,7 +326,7 @@ static void _enqueue_buffer_copy(
 
 // static void _enqueue_buffer_download_done(DvzDeq* deq, DvzSize size, void* data)
 // {
-//     ASSERT(deq != NULL);
+//     ANN(deq);
 //     ASSERT(size > 0);
 //     log_info("enqueue buffer download done");
 //     dvz_deq_enqueue_submit(deq, _create_download_done(size, data), false);
@@ -344,9 +344,9 @@ static void _enqueue_dup_transfer(
     DvzBufferRegions stg, DvzSize stg_offset, // optional staging buffer
     DvzSize size, void* data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     DvzDeqItem* deq_item = NULL;
     DvzDeqItem* next_item = NULL;
@@ -393,17 +393,17 @@ static void _enqueue_image_upload(
     DvzDeq* deq, DvzImages* img, uvec3 offset, uvec3 shape, //
     DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    ASSERT(stg.buffer != NULL);
+    ANN(stg.buffer);
 
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     log_trace("enqueue image upload");
 
@@ -430,17 +430,17 @@ static void _enqueue_image_download(
     DvzDeq* deq, DvzImages* img, uvec3 offset, uvec3 shape, //
     DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    ASSERT(stg.buffer != NULL);
+    ANN(stg.buffer);
 
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     log_trace("enqueue image download");
 
@@ -470,9 +470,9 @@ static void _enqueue_image_download(
 static void _enqueue_image_copy(
     DvzDeq* deq, DvzImages* src, uvec3 src_offset, DvzImages* dst, uvec3 dst_offset, uvec3 shape)
 {
-    ASSERT(deq != NULL);
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
+    ANN(deq);
+    ANN(src);
+    ANN(dst);
 
     log_trace("enqueue image copy");
 
@@ -491,14 +491,14 @@ static void _enqueue_image_buffer(
     DvzImages* img, uvec3 img_offset, uvec3 shape, //
     DvzBufferRegions br, DvzSize buf_offset, DvzSize size)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(size > 0);
 
     log_trace("enqueue image buffer copy");
@@ -517,14 +517,14 @@ static void _enqueue_buffer_image(
     DvzImages* img, uvec3 img_offset, uvec3 shape          //
 )
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(size > 0);
 
     log_trace("enqueue image buffer copy");
@@ -545,11 +545,11 @@ static void _enqueue_buffer_image(
 static void _process_buffer_upload(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferBuffer* tr = (DvzTransferBuffer*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
     log_trace("process mappable buffer upload");
 
     // Copy the data to the staging buffer.
-    ASSERT(tr->br.buffer != NULL);
+    ANN(tr->br.buffer);
     ASSERT(tr->br.size > 0);
     ASSERT(tr->size > 0);
     ASSERT(tr->offset + tr->size <= tr->br.size);
@@ -564,11 +564,11 @@ static void _process_buffer_upload(DvzDeq* deq, void* item, void* user_data)
 static void _process_buffer_download(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferBuffer* tr = (DvzTransferBuffer*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
     log_trace("process mappable buffer download");
 
     // Copy the data to the staging buffer.
-    ASSERT(tr->br.buffer != NULL);
+    ANN(tr->br.buffer);
     ASSERT(tr->br.size > 0);
     ASSERT(tr->size > 0);
     ASSERT(tr->offset + tr->size <= tr->br.size);
@@ -583,12 +583,12 @@ static void _process_buffer_download(DvzDeq* deq, void* item, void* user_data)
 
 static void _process_buffer_copy(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzTransfers* transfers = (DvzTransfers*)user_data;
     log_trace("process buffer copy (sync)");
 
     DvzTransferBufferCopy* tr = (DvzTransferBufferCopy*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
 
     // Make the GPU-GPU buffer copy (block the GPU and wait for the copy to finish).
 
@@ -610,15 +610,15 @@ static void _process_buffer_copy(DvzDeq* deq, void* item, void* user_data)
 static void _process_image_buffer(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferBufferImage* tr = (DvzTransferBufferImage*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
     log_trace("process copy image to buffer (sync)");
 
     // Copy the data to the staging buffer.
-    ASSERT(tr->img != NULL);
-    ASSERT(tr->br.buffer != NULL);
+    ANN(tr->img);
+    ANN(tr->br.buffer);
 
     DvzTransfers* transfers = (DvzTransfers*)user_data;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     ASSERT(tr->shape[0] > 0);
     ASSERT(tr->shape[1] > 0);
@@ -635,15 +635,15 @@ static void _process_image_buffer(DvzDeq* deq, void* item, void* user_data)
 static void _process_buffer_image(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferBufferImage* tr = (DvzTransferBufferImage*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
     log_trace("process copy buffer to image (sync)");
 
     // Copy the data to the staging buffer.
-    ASSERT(tr->img != NULL);
-    ASSERT(tr->br.buffer != NULL);
+    ANN(tr->img);
+    ANN(tr->br.buffer);
 
     DvzTransfers* transfers = (DvzTransfers*)user_data;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     ASSERT(tr->shape[0] > 0);
     ASSERT(tr->shape[1] > 0);
@@ -663,12 +663,12 @@ static void _process_buffer_image(DvzDeq* deq, void* item, void* user_data)
 
 static void _process_image_copy(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzTransfers* transfers = (DvzTransfers*)user_data;
     log_trace("process image copy");
 
     DvzTransferImageCopy* tr = (DvzTransferImageCopy*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
 
     // Make the GPU-GPU buffer copy (block the GPU and wait for the copy to finish).
     dvz_queue_wait(transfers->gpu, DVZ_DEFAULT_QUEUE_RENDER);
@@ -715,7 +715,7 @@ static uint32_t _dups_get_idx(
 static DvzTransferDupItem* _dups_get(
     DvzTransferDups* dups, DvzTransferType type, DvzBufferRegions br, DvzSize offset, DvzSize size)
 {
-    ASSERT(dups != NULL);
+    ANN(dups);
     uint32_t idx = _dups_get_idx(dups, type, br, offset, size);
     if (idx >= DVZ_DUPS_MAX)
         return NULL;
@@ -728,7 +728,7 @@ static DvzTransferDupItem* _dups_get(
 
 static bool _dups_empty(DvzTransferDups* dups)
 {
-    ASSERT(dups != NULL);
+    ANN(dups);
     return dups->count == 0;
 }
 
@@ -738,7 +738,7 @@ static bool _dups_has(
     DvzTransferDups* dups, DvzTransferType type, //
     DvzBufferRegions br, DvzSize offset, DvzSize size)
 {
-    ASSERT(dups != NULL);
+    ANN(dups);
     return _dups_get(dups, type, br, offset, size) != NULL;
 }
 
@@ -746,8 +746,8 @@ static bool _dups_has(
 
 static void _dups_append(DvzTransferDups* dups, DvzTransferDup* tr)
 {
-    ASSERT(dups != NULL);
-    ASSERT(tr != NULL);
+    ANN(dups);
+    ANN(tr);
     DvzBufferRegions* br = &tr->br;
     DvzSize offset = tr->offset;
     DvzSize size = tr->size;
@@ -775,7 +775,7 @@ static void _dups_append(DvzTransferDups* dups, DvzTransferDup* tr)
 
 static void _dups_remove(DvzTransferDups* dups, DvzTransferDupItem* item)
 {
-    ASSERT(dups != NULL);
+    ANN(dups);
     ASSERT(dups->count > 0);
     memset(item, 0, sizeof(DvzTransferDupItem));
     dups->count--;
@@ -785,8 +785,8 @@ static void _dups_remove(DvzTransferDups* dups, DvzTransferDupItem* item)
 
 static void _dups_mark_done(DvzTransferDups* dups, DvzTransferDupItem* item, uint32_t buf_idx)
 {
-    ASSERT(dups != NULL);
-    ASSERT(item != NULL);
+    ANN(dups);
+    ANN(item);
     item->done[buf_idx] = true;
 }
 
@@ -794,8 +794,8 @@ static void _dups_mark_done(DvzTransferDups* dups, DvzTransferDupItem* item, uin
 
 static bool _dups_is_done(DvzTransferDups* dups, DvzTransferDupItem* item, uint32_t idx)
 {
-    ASSERT(dups != NULL);
-    ASSERT(item != NULL);
+    ANN(dups);
+    ANN(item);
     return item->done[idx];
 }
 
@@ -803,9 +803,9 @@ static bool _dups_is_done(DvzTransferDups* dups, DvzTransferDupItem* item, uint3
 
 static bool _dups_all_done(DvzTransferDups* dups, DvzTransferDupItem* item)
 {
-    ASSERT(dups != NULL);
+    ANN(dups);
     bool all_done = true;
-    ASSERT(item != NULL);
+    ANN(item);
     for (uint32_t i = 0; i < item->tr.br.count; i++)
     {
         all_done &= item->done[i];
@@ -818,14 +818,14 @@ static bool _dups_all_done(DvzTransferDups* dups, DvzTransferDupItem* item)
 static void _append_dup_item(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferDup* tr = (DvzTransferDup*)item;
-    ASSERT(tr != NULL);
+    ANN(tr);
     log_trace("process dup task with type %d", tr->type);
 
     DvzTransfers* transfers = (DvzTransfers*)user_data;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzTransferDups* dups = &transfers->dups;
-    ASSERT(dups != NULL);
+    ANN(dups);
 
     // Append the dequeue TransferDup struct in the DvzTransfers specialized structure that keeps
     // track of all ongoing transfer dups.

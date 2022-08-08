@@ -13,10 +13,10 @@
 
 static bool _timer_item_firing(DvzTimerItem* item)
 {
-    ASSERT(item != NULL);
+    ANN(item);
 
     DvzTimer* timer = item->timer;
-    ASSERT(timer != NULL);
+    ANN(timer);
 
     // If the numbers of ticks was exceeded, stop the timer.
     if (item->max_count > 0 && item->count >= item->max_count)
@@ -91,7 +91,7 @@ DvzTimer* dvz_timer()
 
 uint32_t dvz_timer_count(DvzTimer* timer)
 {
-    ASSERT(timer != NULL);
+    ANN(timer);
     return dvz_list_count(timer->items);
 }
 
@@ -99,7 +99,7 @@ uint32_t dvz_timer_count(DvzTimer* timer)
 
 DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64_t max_count)
 {
-    ASSERT(timer != NULL);
+    ANN(timer);
 
     ASSERT(period > 0);
 
@@ -123,9 +123,9 @@ DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64
 
 void dvz_timer_start(DvzTimerItem* item)
 {
-    ASSERT(item != NULL);
+    ANN(item);
     DvzTimer* timer = item->timer;
-    ASSERT(timer != NULL);
+    ANN(timer);
 
     // Mark the timer item as running.
     item->is_running = true;
@@ -141,7 +141,7 @@ void dvz_timer_start(DvzTimerItem* item)
 
 void dvz_timer_pause(DvzTimerItem* item)
 {
-    ASSERT(item != NULL);
+    ANN(item);
     item->is_running = false;
 }
 
@@ -149,11 +149,11 @@ void dvz_timer_pause(DvzTimerItem* item)
 
 void dvz_timer_remove(DvzTimerItem* item)
 {
-    ASSERT(item != NULL);
-    ASSERT(item->timer != NULL);
+    ANN(item);
+    ANN(item->timer);
 
     DvzList* list = item->timer->items;
-    ASSERT(list != NULL);
+    ANN(list);
 
     dvz_list_remove_pointer(list, item);
 
@@ -164,7 +164,7 @@ void dvz_timer_remove(DvzTimerItem* item)
 
 bool dvz_timer_running(DvzTimerItem* item)
 {
-    ASSERT(item != NULL);
+    ANN(item);
     return item->is_running;
 }
 
@@ -175,7 +175,7 @@ void dvz_timer_tick(DvzTimer* timer, double time)
     // Determine which timers are firing now.
     // To be called at every frame
 
-    ASSERT(timer != NULL);
+    ANN(timer);
     ASSERT(time >= 0);
 
     // Set the global time.
@@ -191,7 +191,7 @@ void dvz_timer_tick(DvzTimer* timer, double time)
     for (uint64_t i = 0; i < n; i++)
     {
         item = (DvzTimerItem*)dvz_list_get(timer->items, i).p;
-        ASSERT(item != NULL);
+        ANN(item);
 
         // If the current timer item is firing, append it to the list of currently-firing items.
         if (_timer_item_firing(item))
@@ -218,8 +218,8 @@ void dvz_timer_tick(DvzTimer* timer, double time)
 DvzTimerItem** dvz_timer_firing(DvzTimer* timer, uint32_t* count)
 {
     // return an array with the timers that are firing at that tick: timer->firing
-    ASSERT(timer != NULL);
-    ASSERT(count != NULL);
+    ANN(timer);
+    ANN(count);
 
     *count = timer->firing_count;
     return *count > 0 ? timer->firing : NULL;
@@ -230,8 +230,8 @@ DvzTimerItem** dvz_timer_firing(DvzTimer* timer, uint32_t* count)
 void dvz_timer_callback(
     DvzTimer* timer, DvzTimerItem* item, DvzTimerCallback callback, void* user_data)
 {
-    ASSERT(timer != NULL);
-    ASSERT(item != NULL);
+    ANN(timer);
+    ANN(item);
 
     DvzTimerPayload* payload = (DvzTimerPayload*)calloc(1, sizeof(DvzTimerPayload));
     payload->item = item;
@@ -244,7 +244,7 @@ void dvz_timer_callback(
 
 void dvz_timer_destroy(DvzTimer* timer)
 {
-    ASSERT(timer != NULL);
+    ANN(timer);
     DvzList* list = timer->items;
     uint64_t n = dvz_list_count(list);
 
@@ -253,7 +253,7 @@ void dvz_timer_destroy(DvzTimer* timer)
     for (uint64_t i = 0; i < n; i++)
     {
         item = (DvzTimerItem*)dvz_list_get(list, i).p;
-        ASSERT(item != NULL);
+        ANN(item);
         // This will also free the heap-allocated DvzTimerItem objects before destroying the list.
         dvz_timer_remove(item);
     }

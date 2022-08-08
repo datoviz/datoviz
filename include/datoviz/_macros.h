@@ -147,6 +147,7 @@
 
 #define ARRAY_COUNT(arr) sizeof((arr)) / sizeof((arr)[0])
 #define ASSERT(x)        assert((x))
+#define ANN(x)           ASSERT((x) != NULL);
 
 #ifdef LANG_CPP
 #define INIT(t, n) t n = {};

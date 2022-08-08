@@ -15,13 +15,13 @@
 static void
 _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
-    ASSERT(record != NULL);
-    ASSERT(rd != NULL);
-    ASSERT(cmds != NULL);
+    ANN(record);
+    ANN(rd);
+    ANN(cmds);
     ASSERT(img_idx < cmds->count);
 
     DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     DvzPipe* pipe = NULL;
     DvzDat* dat_indirect = NULL;
@@ -52,13 +52,13 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
             "recorder: draw direct from vertex #%d for %d vertices (#%d)", //
             first_vertex, vertex_count, img_idx);
         pipe = dvz_renderer_pipe(rd, record->contents.draw_direct.pipe_id);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
         dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count);
         break;
 
     case DVZ_RECORDER_DRAW_DIRECT_INDEXED:;
         pipe = dvz_renderer_pipe(rd, record->contents.draw_direct_indexed.pipe_id);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
         dvz_pipe_draw_indexed(
             pipe, cmds, img_idx,                                //
             record->contents.draw_direct_indexed.first_index,   //
@@ -68,20 +68,20 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
     case DVZ_RECORDER_DRAW_INDIRECT:
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
 
         dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
-        ASSERT(dat_indirect != NULL);
+        ANN(dat_indirect);
 
         dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect);
         break;
 
     case DVZ_RECORDER_DRAW_INDIRECT_INDEXED:
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
 
         dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
-        ASSERT(dat_indirect != NULL);
+        ANN(dat_indirect);
 
         dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect);
         break;
@@ -101,7 +101,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
 static inline bool _has_cache(DvzRecorder* recorder)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     return !(recorder->flags & DVZ_RECORDER_FLAGS_DISABLE_CACHE);
 }
 
@@ -131,7 +131,7 @@ DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
 
 void dvz_recorder_clear(DvzRecorder* recorder)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     log_debug("clear recorder commands");
     recorder->count = 0;
     dvz_recorder_set_dirty(recorder);
@@ -141,7 +141,7 @@ void dvz_recorder_clear(DvzRecorder* recorder)
 
 void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     ASSERT(rc.canvas_id != 0);
     log_debug("append recorder command");
 
@@ -158,7 +158,7 @@ void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 
 void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
 
     // this function updates the command buffer for the given swapchain image index, only if needed
     if (_has_cache(recorder) && !recorder->dirty[img_idx])
@@ -177,7 +177,7 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
 
 void dvz_recorder_cache(DvzRecorder* recorder, bool activate)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     if (activate)
         // Clear DISABLE_CACHE flag
         recorder->flags &= ~(DVZ_RECORDER_FLAGS_DISABLE_CACHE << 0);
@@ -192,7 +192,7 @@ void dvz_recorder_cache(DvzRecorder* recorder, bool activate)
 
 bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     return !_has_cache(recorder) || recorder->dirty[img_idx];
 }
 
@@ -200,7 +200,7 @@ bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx)
 
 void dvz_recorder_set_dirty(DvzRecorder* recorder)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
 
     // Reset dirty to true for all swapchain image indices.
     if (_has_cache(recorder))
@@ -211,7 +211,7 @@ void dvz_recorder_set_dirty(DvzRecorder* recorder)
 
 uint32_t dvz_recorder_size(DvzRecorder* recorder)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     return (recorder->count);
 }
 
@@ -219,7 +219,7 @@ uint32_t dvz_recorder_size(DvzRecorder* recorder)
 
 void dvz_recorder_destroy(DvzRecorder* recorder)
 {
-    ASSERT(recorder != NULL);
+    ANN(recorder);
     FREE(recorder->commands);
     FREE(recorder);
 }

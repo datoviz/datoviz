@@ -130,7 +130,7 @@ DvzHost* dvz_host(DvzBackend backend)
 
 void dvz_host_wait(DvzHost* host)
 {
-    ASSERT(host != NULL);
+    ANN(host);
     log_trace("wait for all GPUs to be idle");
     DvzGpu* gpu = NULL;
     DvzContainerIterator iter = dvz_container_iterator(&host->gpus);
@@ -146,7 +146,7 @@ void dvz_host_wait(DvzHost* host)
 
 int dvz_host_destroy(DvzHost* host)
 {
-    ASSERT(host != NULL);
+    ANN(host);
 
     log_debug("destroy the host with backend %d", host->backend);
     dvz_host_wait(host);

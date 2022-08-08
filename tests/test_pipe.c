@@ -25,13 +25,13 @@
 
 int test_pipe_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     // Create the renderpass.
     DvzRenderpass renderpass = offscreen_renderpass(gpu);

@@ -95,7 +95,7 @@ char* dvz_read_npy(const char* filename, size_t* size)
 
     // Read the data buffer.
     buffer = (char*)calloc((uint32_t)length, 1);
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);
 
@@ -205,8 +205,8 @@ uint8_t* dvz_read_ppm(const char* filename, int* width, int* height)
 
 int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb)
 {
-    ASSERT(filename != NULL);
-    ASSERT(rgb != NULL);
+    ANN(filename);
+    ANN(rgb);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -219,9 +219,9 @@ int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const u
 
 int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out)
 {
-    ASSERT(rgb != NULL);
-    ASSERT(size != NULL);
-    ASSERT(out != NULL);
+    ANN(rgb);
+    ANN(size);
+    ANN(out);
     ASSERT(width > 0);
     ASSERT(height > 0);
 

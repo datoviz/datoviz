@@ -11,7 +11,7 @@
 /*************************************************************************************************/
 
 #define CREATE_REQUEST(_action, _type)                                                            \
-    ASSERT(rqr != NULL);                                                                          \
+    ANN(rqr);                                                                                     \
     DvzRequest req = _request();                                                                  \
     req.action = DVZ_REQUEST_ACTION_##_action;                                                    \
     req.type = DVZ_REQUEST_OBJECT_##_type;
@@ -48,7 +48,7 @@ DvzRequester* dvz_requester(void)
 
 void dvz_requester_destroy(DvzRequester* rqr)
 {
-    ASSERT(rqr != NULL);
+    ANN(rqr);
     FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);
     dvz_obj_destroyed(&rqr->obj);
@@ -63,7 +63,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
 
 void dvz_requester_begin(DvzRequester* rqr)
 {
-    ASSERT(rqr != NULL);
+    ANN(rqr);
     rqr->count = 0;
 }
 
@@ -71,7 +71,7 @@ void dvz_requester_begin(DvzRequester* rqr)
 
 void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 {
-    ASSERT(rqr != NULL);
+    ANN(rqr);
     // Resize the array if needed.
     if (rqr->count == rqr->capacity)
     {
@@ -88,7 +88,7 @@ void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 
 DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 {
-    ASSERT(rqr != NULL);
+    ANN(rqr);
     if (count != NULL)
         *count = rqr->count;
     return rqr->requests;
@@ -98,8 +98,8 @@ DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 
 DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 {
-    ASSERT(rqr != NULL);
-    ASSERT(count != NULL);
+    ANN(rqr);
+    ANN(count);
     uint32_t n = rqr->count;
 
     // Modify the count pointer to the number of returned requests.
@@ -119,7 +119,7 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 
 void dvz_request_print(DvzRequest* req)
 {
-    ASSERT(req != NULL);
+    ANN(req);
     log_info("Request action %d <type %d> <id %" PRIx64 ">", req->action, req->type, req->id);
 }
 

@@ -24,7 +24,7 @@
 
 int test_window_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzBackend backend = DVZ_BACKEND_GLFW;
 
     DvzWindow window = dvz_window(backend, 100, 100, 0);

@@ -45,12 +45,12 @@ struct TestLoopStruct
 
 int test_loop_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzHost* host = get_host(suite);
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, 0);
 
@@ -65,13 +65,13 @@ int test_loop_1(TstSuite* suite)
 
 static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     TestLoopStruct* s = (TestLoopStruct*)user_data;
-    ASSERT(s != NULL);
+    ANN(s);
 
     DvzPipe* pipe = s->pipe;
     triangle_commands(
@@ -81,16 +81,16 @@ static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, v
 
 int test_loop_2(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzHost* host = get_host(suite);
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     // Create the pipelib.
     DvzPipelib* lib = dvz_pipelib(ctx);
@@ -107,7 +107,7 @@ int test_loop_2(TstSuite* suite)
 
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
     dvz_pipe_vertex(pipe, dat_vertex);
 
     // Upload the triangle data.
@@ -139,7 +139,7 @@ int test_loop_2(TstSuite* suite)
 
 static void _gui_callback(DvzLoop* loop, void* user_data)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
 
     dvz_gui_dialog_begin((vec2){100, 100}, (vec2){400, 400});
     // dvz_gui_text("Hello");
@@ -149,12 +149,12 @@ static void _gui_callback(DvzLoop* loop, void* user_data)
 
 int test_loop_gui(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzHost* host = get_host(suite);
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 

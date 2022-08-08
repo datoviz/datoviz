@@ -32,7 +32,7 @@
 DvzBoard
 dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -59,7 +59,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
 
 void dvz_board_format(DvzBoard* board, DvzFormat format)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     board->format = format;
     // NOTE: for now only 4 bytes per pixel. Otherwise need to update board.size as a function of
     // the format.
@@ -70,7 +70,7 @@ void dvz_board_format(DvzBoard* board, DvzFormat format)
 
 // void dvz_board_clear_color(DvzBoard* board, cvec4 color)
 // {
-//     ASSERT(board != NULL);
+//     ANN(board);
 //     ASSERT(sizeof(cvec4) == 4);
 //     memcpy(board->clear_color, color, sizeof(cvec4));
 //     log_trace("changing board clear color, need to recreate the board");
@@ -80,10 +80,10 @@ void dvz_board_format(DvzBoard* board, DvzFormat format)
 
 void dvz_board_create(DvzBoard* board)
 {
-    ASSERT(board != NULL);
+    ANN(board);
 
     DvzGpu* gpu = board->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     log_trace("creating the board");
 
@@ -107,7 +107,7 @@ void dvz_board_create(DvzBoard* board)
 
 void dvz_board_recreate(DvzBoard* board)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     log_trace("recreating the board");
     dvz_board_destroy(board);
     dvz_board_create(board);
@@ -117,7 +117,7 @@ void dvz_board_recreate(DvzBoard* board)
 
 void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     board->width = width;
     board->height = height;
     board->size = width * height * 3 * sizeof(uint8_t);
@@ -134,10 +134,10 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
 
 void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(board != NULL);
+    ANN(board);
 
     DvzGpu* gpu = board->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, board->renderpass, &board->framebuffers);
@@ -147,7 +147,7 @@ void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
-    ASSERT(board != NULL);
+    ANN(board);
 
     // A value of 0 = full canvas.
     if (size[0] == 0)
@@ -167,8 +167,8 @@ void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 o
 
 void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(board != NULL);
-    ASSERT(cmds != NULL);
+    ANN(board);
+    ANN(cmds);
 
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
@@ -178,12 +178,12 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 uint8_t* dvz_board_alloc(DvzBoard* board)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
     if (board->rgb == NULL)
         board->rgb = calloc(board->width * board->height, 3 * sizeof(uint8_t));
-    ASSERT(board->rgb != NULL);
+    ANN(board->rgb);
     return board->rgb;
 }
 
@@ -191,7 +191,7 @@ uint8_t* dvz_board_alloc(DvzBoard* board)
 
 void dvz_board_free(DvzBoard* board)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     if (board->rgb != NULL)
         FREE(board->rgb);
 }
@@ -200,14 +200,14 @@ void dvz_board_free(DvzBoard* board)
 
 void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
 {
-    ASSERT(board != NULL);
+    ANN(board);
     ASSERT(size > 0);
     if (rgb == NULL)
         rgb = board->rgb;
-    ASSERT(rgb != NULL);
+    ANN(rgb);
 
     DvzGpu* gpu = board->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Start the image transition command buffers.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
@@ -241,7 +241,7 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
 
 void dvz_board_destroy(DvzBoard* board)
 {
-    ASSERT(board != NULL); //
+    ANN(board); //
 
     dvz_images_destroy(&board->images);
     dvz_images_destroy(&board->depth);

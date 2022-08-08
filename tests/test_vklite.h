@@ -214,7 +214,7 @@ static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
 
 static DvzGpu* make_gpu(DvzHost* host)
 {
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzGpu* gpu = dvz_gpu_best(host);
     _default_queues(gpu, true);
@@ -256,7 +256,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
     // Color attachment
     DvzImages images_struct = dvz_images(canvas.renderpass.gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* images = (DvzImages*)calloc(1, sizeof(DvzImages));
-    ASSERT(images != NULL);
+    ANN(images);
     *images = images_struct;
     dvz_images_format(images, canvas.renderpass.attachments[0].format);
     dvz_images_size(images, (uvec3){WIDTH, HEIGHT, 1});
@@ -274,7 +274,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
     // Depth attachment.
     DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
-    ASSERT(depth != NULL);
+    ANN(depth);
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, WIDTH, HEIGHT);
     canvas.depth = depth;
@@ -295,10 +295,10 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
 
 static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, DvzSurface surface)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(window != NULL);
+    ANN(gpu);
+    ANN(window);
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     TestCanvas canvas = {0};
     canvas.is_offscreen = false;
@@ -325,7 +325,7 @@ static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, DvzSurface surf
     // Depth attachment.
     DvzImages depth_struct = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
-    ASSERT(depth != NULL);
+    ANN(depth);
     *depth = depth_struct;
     depth_image(depth, &canvas.renderpass, canvas.images->shape[0], canvas.images->shape[1]);
     canvas.depth = depth;
@@ -449,19 +449,19 @@ static void triangle_commands(
     DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers,
     DvzGraphics* graphics, DvzBindings* bindings, DvzBufferRegions br)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
 
-    ASSERT(framebuffers != NULL);
+    ANN(framebuffers);
     ASSERT(framebuffers->framebuffers[0] != VK_NULL_HANDLE);
 
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     ASSERT(graphics->pipeline != VK_NULL_HANDLE);
 
-    ASSERT(bindings != NULL);
+    ANN(bindings);
     ASSERT(bindings->dsets != VK_NULL_HANDLE);
 
-    ASSERT(br.buffer != NULL);
+    ANN(br.buffer);
     ASSERT(br.buffer->buffer != VK_NULL_HANDLE);
 
     uint32_t width = framebuffers->attachments[0]->shape[0];

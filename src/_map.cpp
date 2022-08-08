@@ -65,7 +65,7 @@ DvzMap* dvz_map(void)
 
 bool dvz_map_exists(DvzMap* map, DvzId key)
 {
-    ASSERT(map != NULL);
+    ANN(map);
     ASSERT(key != DVZ_ID_NONE);
 
     return map->_map.count(key) > 0;
@@ -75,9 +75,9 @@ bool dvz_map_exists(DvzMap* map, DvzId key)
 
 void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 {
-    ASSERT(map != NULL);
+    ANN(map);
     ASSERT(key > 0);
-    ASSERT(value != NULL);
+    ANN(value);
 
     if (map->_map.count(key) > 0)
     {
@@ -94,7 +94,7 @@ void dvz_map_add(DvzMap* map, DvzId key, int type, void* value)
 void dvz_map_remove(DvzMap* map, DvzId key)
 {
 
-    ASSERT(map != NULL);
+    ANN(map);
     ASSERT(key != DVZ_ID_NONE);
 
     if (dvz_map_exists(map, key))
@@ -105,7 +105,7 @@ void dvz_map_remove(DvzMap* map, DvzId key)
 
 void* dvz_map_get(DvzMap* map, DvzId key)
 {
-    ASSERT(map != NULL);
+    ANN(map);
     ASSERT(key != DVZ_ID_NONE);
 
     if (dvz_map_exists(map, key))
@@ -118,7 +118,7 @@ void* dvz_map_get(DvzMap* map, DvzId key)
 
 int dvz_map_type(DvzMap* map, DvzId key)
 {
-    ASSERT(map != NULL);
+    ANN(map);
     ASSERT(key != DVZ_ID_NONE);
 
     if (dvz_map_exists(map, key))
@@ -131,7 +131,7 @@ int dvz_map_type(DvzMap* map, DvzId key)
 
 uint64_t dvz_map_count(DvzMap* map, int type)
 {
-    ASSERT(map != NULL);
+    ANN(map);
 
     if (type == 0)
         return map->_map.size();
@@ -151,7 +151,7 @@ uint64_t dvz_map_count(DvzMap* map, int type)
 
 void* dvz_map_first(DvzMap* map, int type)
 {
-    ASSERT(map != NULL);
+    ANN(map);
 
     for (const auto& [id, pair] : map->_map)
     {
@@ -166,7 +166,7 @@ void* dvz_map_first(DvzMap* map, int type)
 
 void* dvz_map_last(DvzMap* map, int type)
 {
-    ASSERT(map != NULL);
+    ANN(map);
     for (const auto& [id, pair] : reverse(map->_map))
     {
         if (type == 0 || pair.first == type)

@@ -22,8 +22,8 @@ static inline void _load_shader(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, //
     DvzSize size, const unsigned char* buffer)
 {
-    ASSERT(graphics != NULL);
-    ASSERT(buffer != NULL);
+    ANN(graphics);
+    ANN(buffer);
     ASSERT(size > 0);
     uint32_t* code = (uint32_t*)calloc(size, 1);
     memcpy(code, buffer, size);
@@ -37,7 +37,7 @@ static inline void _load_shader(
         unsigned long size = 0;                                                                   \
         unsigned char* buffer = dvz_resource_shader(x, &size);                                    \
         ASSERT(size > 0);                                                                         \
-        ASSERT(buffer != NULL);                                                                   \
+        ANN(buffer);                                                                              \
         _load_shader(graphics, VK_SHADER_STAGE_##stage##_BIT, size, buffer);                      \
     }
 
@@ -110,8 +110,8 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
 static void
 _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
-    ASSERT(renderpass != NULL);
-    ASSERT(graphics != NULL);
+    ANN(renderpass);
+    ANN(graphics);
 
     SHADER(VERTEX, "graphics_basic_vert")
     SHADER(FRAGMENT, "graphics_basic_frag")
@@ -422,8 +422,8 @@ static void _graphics_mesh(DvzRenderpass* renderpass, DvzGraphics* graphics)
 void dvz_graphics_builtin(
     DvzRenderpass* renderpass, DvzGraphics* graphics, DvzGraphicsType type, int flags)
 {
-    ASSERT(renderpass != NULL);
-    ASSERT(graphics != NULL);
+    ANN(renderpass);
+    ANN(graphics);
     ASSERT(type != DVZ_GRAPHICS_NONE);
 
     graphics->type = type;

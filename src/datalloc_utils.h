@@ -23,7 +23,7 @@
 
 static DvzAlloc** _get_alloc(DvzDatAlloc* datalloc, DvzBufferType type, bool mappable)
 {
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     CHECK_BUFFER_TYPE
 
     uint32_t idx = 2 * (uint32_t)(type - 1) + (uint32_t)mappable - 1;
@@ -36,7 +36,7 @@ static DvzAlloc** _get_alloc(DvzDatAlloc* datalloc, DvzBufferType type, bool map
 static DvzAlloc* _make_allocator(
     DvzDatAlloc* datalloc, DvzResources* res, DvzBufferType type, bool mappable, DvzSize size)
 {
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
     CHECK_BUFFER_TYPE
 
     DvzAlloc** alloc = _get_alloc(datalloc, type, mappable);

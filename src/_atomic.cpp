@@ -33,7 +33,7 @@ struct DvzAtomic_
 
 void dvz_atomic_init(DvzAtomic atomic)
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     atomic->atom = 0;
 }
 
@@ -50,7 +50,7 @@ DvzAtomic dvz_atomic()
 
 void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     atomic->atom = value;
 }
 
@@ -58,7 +58,7 @@ void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 
 int32_t dvz_atomic_get(DvzAtomic atomic)
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     int32_t value = atomic->atom;
     return value;
 }
@@ -67,6 +67,6 @@ int32_t dvz_atomic_get(DvzAtomic atomic)
 
 void dvz_atomic_destroy(DvzAtomic atomic)
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     FREE(atomic);
 }

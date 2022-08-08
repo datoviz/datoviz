@@ -17,14 +17,14 @@
 
 static uint64_t count_windows(DvzClient* client)
 {
-    ASSERT(client != NULL);
+    ANN(client);
     DvzContainerIterator iter = dvz_container_iterator(&client->windows);
     DvzWindow* window = NULL;
     uint64_t count = 0;
     while (iter.item != NULL)
     {
         window = (DvzWindow*)iter.item;
-        ASSERT(window != NULL);
+        ANN(window);
         if (dvz_obj_is_created(&window->obj))
             count++;
         dvz_container_iter(&iter);
@@ -36,16 +36,16 @@ static uint64_t count_windows(DvzClient* client)
 
 static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     DvzClientPayload* payload = (DvzClientPayload*)user_data;
-    ASSERT(payload != NULL);
+    ANN(payload);
 
     DvzClient* client = payload->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzClientEvent* ev = (DvzClientEvent*)item;
-    ASSERT(ev != NULL);
+    ANN(ev);
 
     if (payload->mode == DVZ_CLIENT_CALLBACK_SYNC)
     {
@@ -68,12 +68,12 @@ static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 
 static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzClient* client = (DvzClient*)user_data;
 
-    ASSERT(item != NULL);
+    ANN(item);
     DvzClientEvent* ev = (DvzClientEvent*)item;
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
 
@@ -89,12 +89,12 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
 static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzClient* client = (DvzClient*)user_data;
 
-    ASSERT(item != NULL);
+    ANN(item);
     DvzClientEvent* ev = (DvzClientEvent*)item;
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
@@ -152,7 +152,7 @@ DvzClient* dvz_client(DvzBackend backend)
 
 void dvz_client_event(DvzClient* client, DvzClientEvent ev)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     // Enqueue event.
     DvzClientEvent* pev = calloc(1, sizeof(DvzClientEvent));
@@ -167,7 +167,7 @@ void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
     DvzClientCallback callback, void* user_data)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     // TODO: async callbacks
     if (mode == DVZ_CLIENT_CALLBACK_ASYNC)
@@ -188,7 +188,7 @@ void dvz_client_callback(
 
 void dvz_client_process(DvzClient* client)
 {
-    ASSERT(client != NULL);
+    ANN(client);
     dvz_deq_dequeue_batch(client->deq, 0);
 }
 
@@ -196,7 +196,7 @@ void dvz_client_process(DvzClient* client)
 
 int dvz_client_frame(DvzClient* client)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     // Poll backend events (mouse, keyboard...).
     backend_poll_events(client->backend);
@@ -215,7 +215,7 @@ int dvz_client_frame(DvzClient* client)
     while (iter.item != NULL)
     {
         window = (DvzWindow*)iter.item;
-        ASSERT(window != NULL);
+        ANN(window);
 
         // Skip non-created windows.
         if (!dvz_obj_is_created(&window->obj))
@@ -257,7 +257,7 @@ int dvz_client_frame(DvzClient* client)
 
 void dvz_client_run(DvzClient* client, uint64_t n_frames)
 {
-    ASSERT(client != NULL);
+    ANN(client);
     log_trace("start client event loop with %d frames", n_frames);
     int window_count = 0;
     uint64_t n = (n_frames > 0 ? n_frames : INFINITY);
@@ -276,7 +276,7 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
 
 void dvz_client_destroy(DvzClient* client)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     dvz_deq_destroy(client->deq);
 

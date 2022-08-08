@@ -24,7 +24,7 @@
 
 static bool _is_empty(DvzFifo* fifo)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     return dvz_atomic_get(fifo->is_empty) == 1;
 }
 
@@ -83,7 +83,7 @@ int test_fifo_1(TstSuite* suite)
     dvz_fifo_enqueue(fifo, &item);
     AT(!_is_empty(fifo));
     dvz_thread_join(thread);
-    ASSERT(fifo->user_data != NULL);
+    ANN(fifo->user_data);
     ASSERT(fifo->user_data == &item);
 
     // Multiple enqueues in the background thread, dequeue in the main thread.
@@ -208,9 +208,9 @@ int test_fifo_first(TstSuite* suite)
 
 static void _deq_1_callback(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
-    ASSERT(item != NULL);
-    ASSERT(user_data != NULL);
+    ANN(deq);
+    ANN(item);
+    ANN(user_data);
     int* data = (int*)user_data;
     *data = *((int*)item);
 }
@@ -301,22 +301,22 @@ int test_deq_2(TstSuite* suite)
 
 static void _deq_dep_callback_1(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     dvz_sleep(50);
 }
 
 static void _deq_dep_callback_2(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     int* res = (int*)user_data;
-    ASSERT(res != NULL);
+    ANN(res);
     *res = 42;
 }
 
 static int _dep_thread_1(void* user_data)
 {
     DvzDeq* deq = (DvzDeq*)user_data;
-    ASSERT(deq != NULL);
+    ANN(deq);
     dvz_deq_dequeue_loop(deq, 0);
     return 0;
 }
@@ -324,7 +324,7 @@ static int _dep_thread_1(void* user_data)
 static int _dep_thread_2(void* user_data)
 {
     DvzDeq* deq = (DvzDeq*)user_data;
-    ASSERT(deq != NULL);
+    ANN(deq);
     dvz_deq_dequeue_loop(deq, 1);
     return 0;
 }
@@ -400,9 +400,9 @@ int test_deq_dependencies(TstSuite* suite)
 
 static void _proc_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
-    ASSERT(item != NULL);
-    ASSERT(user_data != NULL);
+    ANN(deq);
+    ANN(item);
+    ANN(user_data);
 
     uvec3* v = (uvec3*)user_data;
     v[0][0] = deq_idx;
@@ -488,16 +488,16 @@ int test_deq_circular(TstSuite* suite)
 static int _proc_thread(void* user_data)
 {
     DvzDeq* deq = (DvzDeq*)user_data;
-    ASSERT(deq != NULL);
+    ANN(deq);
     dvz_deq_dequeue_loop(deq, 0);
     return 0;
 }
 
 static void _proc_wait(DvzDeq* deq, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     int* count = (int*)user_data;
-    ASSERT(count != NULL);
+    ANN(count);
     (*count)++;
     log_debug("wait iter %d", *count);
 }
@@ -535,9 +535,9 @@ static void _proc_batch(
     DvzDeq* deq, DvzDeqProcBatchPosition pos, uint32_t item_count, DvzDeqItem* items,
     void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     int* res = (int*)user_data;
-    ASSERT(res != NULL);
+    ANN(res);
     if (pos == DVZ_DEQ_PROC_BATCH_BEGIN)
     {
         log_debug("begin batch, %d item(s) to be dequeued", item_count);

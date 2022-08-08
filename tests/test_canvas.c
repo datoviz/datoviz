@@ -47,12 +47,12 @@ struct TestCanvasStruct
 
 int test_canvas_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzHost* host = get_host(suite);
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create the window and surface.
     DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);

@@ -46,7 +46,7 @@ DvzAlloc* dvz_alloc(DvzSize size, DvzSize alignment)
 
 DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
 
     DvzSize req = _align(req_size, alloc->alignment);
     ASSERT(req >= req_size);
@@ -111,7 +111,7 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
 
 DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
     if (alloc->occupied.count(offset) > 0)
     {
         return alloc->occupied[offset];
@@ -123,7 +123,7 @@ DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset)
 
 DvzSize dvz_alloc_size(DvzAlloc* alloc)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
     return alloc->alloc_size;
 }
 
@@ -131,7 +131,7 @@ DvzSize dvz_alloc_size(DvzAlloc* alloc)
 
 void dvz_alloc_stats(DvzAlloc* alloc)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
     uint32_t dat_count = alloc->occupied.size();
     DvzSize alloc_occupied = (DvzSize)std::accumulate(
         std::begin(alloc->occupied), std::end(alloc->occupied), 0,
@@ -149,7 +149,7 @@ void dvz_alloc_stats(DvzAlloc* alloc)
 
 void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
 
     if (alloc->occupied.count(offset) == 0)
     {
@@ -185,7 +185,7 @@ void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset)
 
 void dvz_alloc_clear(DvzAlloc* alloc)
 {
-    ASSERT(alloc != NULL);
+    ANN(alloc);
     alloc->occupied.clear();
     alloc->free.clear();
     alloc->alloc_size = 0;

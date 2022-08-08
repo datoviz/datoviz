@@ -34,7 +34,7 @@
 
 static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     switch (ev.type)
     {
@@ -120,7 +120,7 @@ int test_input_mouse(TstSuite* suite)
 
 static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
-    ASSERT(keyboard != NULL);
+    ANN(keyboard);
 
     switch (ev.type)
     {

@@ -36,7 +36,7 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
 
 void dvz_window_poll_size(DvzWindow* window)
 {
-    ASSERT(window != NULL);
+    ANN(window);
     backend_get_window_size(window, &window->width, &window->height);
 }
 
@@ -44,7 +44,7 @@ void dvz_window_poll_size(DvzWindow* window)
 
 void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
-    ASSERT(window != NULL);
+    ANN(window);
     backend_set_window_size(window, width, height);
     backend_get_window_size(window, &window->width, &window->height);
 }
@@ -58,7 +58,7 @@ void dvz_window_destroy(DvzWindow* window)
         log_trace("skip destruction of already-destroyed window");
         return;
     }
-    ASSERT(window != NULL);
+    ANN(window);
     backend_window_destroy(window->backend, window->backend_window);
     dvz_obj_destroyed(&window->obj);
 }

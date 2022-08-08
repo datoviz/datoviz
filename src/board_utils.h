@@ -23,8 +23,8 @@
 static void
 make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, uint32_t height)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(images != NULL);
+    ANN(gpu);
+    ANN(images);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -47,8 +47,8 @@ make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, ui
 
 static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t height)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(depth != NULL);
+    ANN(gpu);
+    ANN(depth);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -71,8 +71,8 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
 static void
 make_staging(DvzGpu* gpu, DvzImages* staging, DvzFormat format, uint32_t width, uint32_t height)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(staging != NULL);
+    ANN(gpu);
+    ANN(staging);
     ASSERT(format != 0);
     ASSERT(width > 0);
     ASSERT(height > 0);
@@ -97,11 +97,11 @@ static void make_framebuffers(
     DvzGpu* gpu, DvzFramebuffers* framebuffers, DvzRenderpass* renderpass, //
     DvzImages* images, DvzImages* depth)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(framebuffers != NULL);
-    ASSERT(renderpass != NULL);
-    ASSERT(images != NULL);
-    ASSERT(depth != NULL);
+    ANN(gpu);
+    ANN(framebuffers);
+    ANN(renderpass);
+    ANN(images);
+    ANN(depth);
     log_trace("making framebuffers");
 
     *framebuffers = dvz_framebuffers(gpu);

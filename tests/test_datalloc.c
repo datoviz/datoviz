@@ -25,9 +25,9 @@
 
 int test_datalloc_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create the resources object.
     DvzContext* ctx = dvz_context(gpu);
@@ -37,7 +37,7 @@ int test_datalloc_1(TstSuite* suite)
 
     // 2 allocations in the staging buffer.
     DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
-    ASSERT(dat != NULL);
+    ANN(dat);
     log_trace("[128 | ---");
     AT(dat->br.offsets[0] == 0);
     AT(dat->br.size == size);
@@ -46,7 +46,7 @@ int test_datalloc_1(TstSuite* suite)
     alignment = dat->br.buffer->vma.alignment;
 
     DvzDat* dat_1 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
-    ASSERT(dat_1 != NULL);
+    ANN(dat_1);
     log_trace("[128 | 128 | ---");
     AT(dat_1->br.offsets[0] == _align(size, alignment));
     AT(dat_1->br.size == size);
@@ -61,7 +61,7 @@ int test_datalloc_1(TstSuite* suite)
 
     // 1 allocation in the vertex buffer.
     DvzDat* dat_2 = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
-    ASSERT(dat_2 != NULL);
+    ANN(dat_2);
     AT(dat_2->br.offsets[0] == 0);
     AT(dat_2->br.size == size);
 
@@ -72,7 +72,7 @@ int test_datalloc_1(TstSuite* suite)
 
     // New allocation in the staging buffer.
     DvzDat* dat_3 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, size, 0);
-    ASSERT(dat_3 != NULL);
+    ANN(dat_3);
     log_trace("[128 | 192 | ---");
     AT(dat_3->br.offsets[0] == 0);
     AT(dat_3->br.size == size);

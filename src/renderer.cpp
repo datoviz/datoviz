@@ -37,7 +37,7 @@
         log_error("%s Ox%" PRIx64 " doesn't exist", #n, i);                                       \
         return NULL;                                                                              \
     }                                                                                             \
-    ASSERT(n != NULL);
+    ANN(n);
 
 
 
@@ -66,12 +66,12 @@ extern "C" struct DvzRouter
 
 static void* _board_create(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     log_trace("create board");
 
     DvzBoard* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
-    ASSERT(board != NULL);
+    ANN(board);
     SET_ID(board)
     board->rgb = dvz_board_alloc(board);
     return (void*)board;
@@ -81,7 +81,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _board_update(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("update board");
 
@@ -96,7 +96,7 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
 
 static void* _board_resize(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("resize board");
 
@@ -111,7 +111,7 @@ static void* _board_resize(DvzRenderer* rd, DvzRequest req)
 
 static void* _board_background(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     GET_ID(DvzBoard, board, req.id)
@@ -126,7 +126,7 @@ static void* _board_background(DvzRenderer* rd, DvzRequest req)
 
 static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete board");
 
@@ -145,12 +145,12 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 
 static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     log_trace("create canvas");
 
     DvzCanvas* canvas = dvz_workspace_canvas(
         rd->workspace, req.content.canvas.width, req.content.canvas.height, req.flags);
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     SET_ID(canvas)
 
     // NOTE: we cannot create the canvas recorder yet, as we need the swapchain image count, and
@@ -164,13 +164,13 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete canvas");
 
     GET_ID(DvzCanvas, canvas, req.id)
 
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     if (canvas->recorder)
         dvz_recorder_destroy(canvas->recorder);
     dvz_canvas_destroy(canvas);
@@ -185,10 +185,10 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 
 static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzGpu* gpu = rd->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Get the board.
     DvzId id = req.content.graphics.parent;
@@ -203,14 +203,14 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
     if (type == DVZ_REQUEST_OBJECT_BOARD)
     {
         DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
-        ASSERT(board != NULL);
+        ANN(board);
 
         // Create the pipe.
         uvec2 size = {board->width, board->height};
         pipe = dvz_pipelib_graphics(
             rd->pipelib, rd->ctx, board->renderpass, board->images.count, //
             size, req.content.graphics.type, req.flags);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
         SET_ID(pipe)
     }
 
@@ -218,7 +218,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
     {
         log_trace("get canvas 0x%" PRIx64 "", id);
         DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
-        ASSERT(canvas != NULL);
+        ANN(canvas);
 
         // Get the canvas framebuffer size.
         uvec2 viewport_size = {0};
@@ -237,10 +237,10 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         pipe = dvz_pipelib_graphics(
             rd->pipelib, rd->ctx, canvas->render.renderpass, canvas->render.swapchain.img_count,
             viewport_size, req.content.graphics.type, req.flags);
-        ASSERT(pipe != NULL);
+        ANN(pipe);
         SET_ID(pipe)
     }
-    ASSERT(pipe != NULL);
+    ANN(pipe);
 
     return (void*)pipe;
 }
@@ -249,7 +249,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
@@ -278,7 +278,7 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
 
 static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
@@ -301,7 +301,7 @@ static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
 
 static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     // Get the graphics pipe.
@@ -312,7 +312,7 @@ static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
 
     // Get the sampler.
     GET_ID(DvzSampler, sampler, req.content.set_tex.sampler);
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     // Link the tex.
     // pipe->texs[req.content.set_binding.slot_idx] = tex;
@@ -328,7 +328,7 @@ static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
 
 static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete pipe");
 
@@ -346,11 +346,11 @@ static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
 
 static void* _dat_create(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     log_trace("create dat");
 
     DvzDat* dat = dvz_dat(rd->ctx, req.content.dat.type, req.content.dat.size, req.flags);
-    ASSERT(dat != NULL);
+    ANN(dat);
     SET_ID(dat)
 
     return (void*)dat;
@@ -360,11 +360,11 @@ static void* _dat_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     GET_ID(DvzDat, dat, req.id)
-    ASSERT(dat->br.buffer != NULL);
+    ANN(dat->br.buffer);
     ASSERT(dat->br.size > 0);
     ASSERT(req.content.dat_upload.size > 0);
 
@@ -408,7 +408,7 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
 
 static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("resize dat");
 
@@ -423,7 +423,7 @@ static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
 
 static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete dat");
 
@@ -441,12 +441,12 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 
 static void* _tex_create(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     log_trace("create tex");
 
     DvzTex* tex = dvz_tex(
         rd->ctx, req.content.tex.dims, req.content.tex.shape, req.content.tex.format, req.flags);
-    ASSERT(tex != NULL);
+    ANN(tex);
     SET_ID(tex)
 
     return (void*)tex;
@@ -456,11 +456,11 @@ static void* _tex_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     GET_ID(DvzTex, tex, req.id)
-    ASSERT(tex->img != NULL);
+    ANN(tex->img);
     ASSERT(req.content.tex_upload.size > 0);
 
     if ( //
@@ -489,7 +489,7 @@ static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
 
 static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("resize tex");
 
@@ -504,7 +504,7 @@ static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
 
 static void* _tex_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete tex");
 
@@ -523,12 +523,12 @@ static void* _tex_delete(DvzRenderer* rd, DvzRequest req)
 static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
 {
 
-    ASSERT(rd != NULL);
+    ANN(rd);
     log_trace("create sampler");
 
     DvzSampler* sampler =
         dvz_resources_sampler(&rd->ctx->res, req.content.sampler.filter, req.content.sampler.mode);
-    ASSERT(sampler != NULL);
+    ANN(sampler);
     SET_ID(sampler)
 
     return (void*)sampler;
@@ -538,7 +538,7 @@ static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
 
 static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
     log_trace("delete sampler");
 
@@ -556,7 +556,7 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
 
 static void* _record_append(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     ASSERT(req.id != 0);
 
     // Get the canvas.
@@ -587,7 +587,7 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
 
 static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
@@ -602,7 +602,7 @@ static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 
 static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
@@ -618,7 +618,7 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 
 static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     GET_ID(DvzPipe, pipe, req.content.record.command.contents.draw_direct.pipe_id);
 
     // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
@@ -636,7 +636,7 @@ static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 
 static void* _record_end(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
@@ -650,7 +650,7 @@ static void* _record_end(DvzRenderer* rd, DvzRequest req)
 
 static void* _record(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
@@ -695,8 +695,8 @@ static void* _record(DvzRenderer* rd, DvzRequest req)
 
 static void _init_renderer(DvzRenderer* rd)
 {
-    ASSERT(rd != NULL);
-    ASSERT(rd->gpu != NULL);
+    ANN(rd);
+    ANN(rd->gpu);
     rd->ctx = dvz_context(rd->gpu);
     rd->pipelib = dvz_pipelib(rd->ctx);
     // NOTE: the renderer flags are passed directly to the workspace flags for now
@@ -710,7 +710,7 @@ static void _init_renderer(DvzRenderer* rd)
 
 static void _setup_router(DvzRenderer* rd)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     rd->router = new DvzRouter();
     rd->router->router =
@@ -760,14 +760,14 @@ static void _setup_router(DvzRenderer* rd)
 
 static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     // Handle the id-object mapping.
     switch (req.action)
     {
         // Creation.
     case DVZ_REQUEST_ACTION_CREATE:
-        ASSERT(obj != NULL);
+        ANN(obj);
         ASSERT(req.id != DVZ_ID_NONE);
 
         log_trace("adding object type %d id 0x%" PRIx64 " to mapping", req.type, req.id);
@@ -814,9 +814,9 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
 
 DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzRenderer* rd = (DvzRenderer*)calloc(1, sizeof(DvzRenderer));
-    ASSERT(rd != NULL);
+    ANN(rd);
     rd->gpu = gpu;
     rd->flags = flags;
     _init_renderer(rd);
@@ -828,7 +828,7 @@ DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags)
 
 void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzRouterCallback cb = rd->router->router[std::make_pair(req.action, req.type)];
     if (cb == NULL)
@@ -849,11 +849,11 @@ void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 
 void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
     if (count == 0)
         return;
     ASSERT(count > 0);
-    ASSERT(reqs != NULL);
+    ANN(reqs);
     for (uint32_t i = 0; i < count; i++)
     {
         dvz_renderer_request(rd, reqs[i]);
@@ -864,10 +864,10 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 
 DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
-    ASSERT(board != NULL);
+    ANN(board);
     return board;
 }
 
@@ -875,10 +875,10 @@ DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 
 DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     return canvas;
 }
 
@@ -886,10 +886,10 @@ DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
 
 DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzDat* dat = (DvzDat*)dvz_map_get(rd->map, id);
-    ASSERT(dat != NULL);
+    ANN(dat);
     return dat;
 }
 
@@ -897,10 +897,10 @@ DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id)
 
 DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzTex* tex = (DvzTex*)dvz_map_get(rd->map, id);
-    ASSERT(tex != NULL);
+    ANN(tex);
     return tex;
 }
 
@@ -908,10 +908,10 @@ DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
 
 DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, id);
-    ASSERT(pipe != NULL);
+    ANN(pipe);
     return pipe;
 }
 
@@ -919,20 +919,20 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 
 uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, board_id);
-    ASSERT(board != NULL);
+    ANN(board);
 
     // Find the pointer: either passed here, or the board-owned pointer.
     rgb = rgb != NULL ? rgb : board->rgb;
-    ASSERT(rgb != NULL);
+    ANN(rgb);
 
     // Download the image to the buffer.
     dvz_board_download(board, board->size, rgb);
 
     // Set the size.
-    ASSERT(size != NULL);
+    ANN(size);
     *size = board->size;
 
     // Return the pointer.
@@ -943,7 +943,7 @@ uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint
 
 void dvz_renderer_destroy(DvzRenderer* rd)
 {
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     dvz_map_destroy(rd->map);
 

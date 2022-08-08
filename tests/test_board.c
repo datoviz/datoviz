@@ -22,12 +22,12 @@
 
 int test_board_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzRenderpass renderpass = offscreen_renderpass(gpu);
 

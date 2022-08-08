@@ -45,7 +45,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
 {
     ASSERT(!_imgui_has_context());
 
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     ImGui::DebugCheckVersionAndDataLayout(
         IMGUI_VERSION, sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4),
@@ -101,7 +101,7 @@ static void _imgui_setup()
 
 static void _imgui_fonts_upload(DvzGpu* gpu)
 {
-    ASSERT(ImGui::GetCurrentContext() != NULL);
+    ANN(ImGui::GetCurrentContext());
 
     log_trace("uploading Dear ImGui fonts");
 
@@ -116,11 +116,11 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
         // unsigned long file_size = 0;
         // unsigned char* buffer = dvz_resource_font("Roboto_Medium", &file_size);
         // ASSERT(file_size > 0);
-        // ASSERT(buffer != NULL);
+        // ANN(buffer);
         // ImFontAtlas_AddFontDefault(io.Fonts, NULL);
         // font = ImFontAtlas_AddFontFromMemoryTTF(
         //     io.Fonts, buffer, file_size, font_size, &config, NULL);
-        // ASSERT(font != NULL);
+        // ANN(font);
         // ASSERT(ImFont_IsLoaded(font));
     }
 
@@ -145,7 +145,7 @@ static void _imgui_fonts_upload(DvzGpu* gpu)
 
 static void _imgui_set_window(DvzWindow* window)
 {
-    ASSERT(window != NULL);
+    ANN(window);
 
     DvzBackend backend = window->backend;
     ASSERT(backend != DVZ_BACKEND_NONE);
@@ -164,7 +164,7 @@ static void _imgui_set_window(DvzWindow* window)
 
 static DvzRenderpass _imgui_renderpass(DvzGpu* gpu, bool offscreen)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     log_trace("create Dear ImGui renderpass");
 
@@ -195,7 +195,7 @@ static DvzRenderpass _imgui_renderpass(DvzGpu* gpu, bool offscreen)
 static DvzFramebuffers
 _imgui_framebuffers(DvzGpu* gpu, DvzRenderpass* renderpass, DvzImages* images)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     log_trace("creating Dear ImGui framebuffers");
 
@@ -215,7 +215,7 @@ static void _imgui_destroy()
     ImGui_ImplVulkan_Shutdown();
     if (_imgui_has_glfw())
         ImGui_ImplGlfw_Shutdown();
-    ASSERT(ImGui::GetCurrentContext() != NULL);
+    ANN(ImGui::GetCurrentContext());
     ImGui::DestroyContext(ImGui::GetCurrentContext());
     ASSERT(ImGui::GetCurrentContext() == NULL);
 }
@@ -228,7 +228,7 @@ static void _imgui_destroy()
 
 DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     if (_imgui_has_context())
     {
@@ -256,7 +256,7 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 
 void dvz_gui_destroy(DvzGui* gui)
 {
-    ASSERT(gui != NULL);
+    ANN(gui);
 
     // Destroy the GUI windows.
     CONTAINER_DESTROY_ITEMS(DvzGuiWindow, gui->gui_windows, dvz_gui_window_destroy)
@@ -279,14 +279,14 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
     // NOTE: window is optional (offscreen tests)
     // NOTE: glfw is the only supported backend for now
 
-    ASSERT(gui != NULL);
-    ASSERT(window != NULL);
+    ANN(gui);
+    ANN(window);
     ASSERT(!window || window->gui_window == NULL); // Only set it once.
-    ASSERT(images != NULL);
+    ANN(images);
     ASSERT(images->count > 0);
 
     DvzGpu* gpu = gui->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_container_alloc(&gui->gui_windows);
     gui_window->gui = gui;
@@ -314,11 +314,11 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
 
 DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_idx)
 {
-    ASSERT(gui != NULL);
-    ASSERT(images != NULL);
+    ANN(gui);
+    ANN(images);
 
     DvzGpu* gpu = gui->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_container_alloc(&gui->gui_windows);
     gui_window->gui = gui;
@@ -343,13 +343,13 @@ DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_i
 
 void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx)
 {
-    ASSERT(gui_window != NULL);
+    ANN(gui_window);
 
     DvzCommands* cmds = &gui_window->cmds;
-    ASSERT(cmds != NULL);
+    ANN(cmds);
 
     DvzGui* gui = gui_window->gui;
-    ASSERT(gui != NULL);
+    ANN(gui);
 
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize.x = gui_window->width;
@@ -370,10 +370,10 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx)
 
 void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx)
 {
-    ASSERT(gui_window != NULL);
+    ANN(gui_window);
 
     DvzCommands* cmds = &gui_window->cmds;
-    ASSERT(cmds != NULL);
+    ANN(cmds);
 
     ImGui::Render();
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx], VK_NULL_HANDLE);
@@ -386,12 +386,12 @@ void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx)
 
 void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t height)
 {
-    ASSERT(gui_window != NULL);
+    ANN(gui_window);
     gui_window->width = width;
     gui_window->height = height;
 
     DvzGui* gui = gui_window->gui;
-    ASSERT(gui != NULL);
+    ANN(gui);
 
     // Recreate the framebuffers.
     dvz_framebuffers_destroy(&gui_window->framebuffers);
@@ -402,7 +402,7 @@ void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t he
 
 void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 {
-    ASSERT(gui_window != NULL);
+    ANN(gui_window);
     dvz_framebuffers_destroy(&gui_window->framebuffers);
     dvz_obj_destroyed(&gui_window->obj);
 }

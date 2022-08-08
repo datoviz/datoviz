@@ -21,7 +21,7 @@
 
 int test_png_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     int32_t width = 2048, height = 1024;
     uint8_t* rgb = calloc((uint32_t)(width * height), 3);

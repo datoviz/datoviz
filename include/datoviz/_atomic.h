@@ -61,7 +61,7 @@ EXTERN_C_ON
 ATOMIC_DECL void dvz_atomic_init(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     atomic_init(atomic, 0);
 }
 #else
@@ -97,7 +97,7 @@ ATOMIC_DECL DvzAtomic dvz_atomic()
 ATOMIC_DECL void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 #ifdef ATOMIC_C
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     atomic_store(atomic, value);
 }
 #else
@@ -115,7 +115,7 @@ ATOMIC_DECL void dvz_atomic_set(DvzAtomic atomic, int32_t value)
 ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     return atomic_load(atomic);
 }
 #else
@@ -132,7 +132,7 @@ ATOMIC_DECL int32_t dvz_atomic_get(DvzAtomic atomic)
 ATOMIC_DECL void dvz_atomic_destroy(DvzAtomic atomic)
 #ifdef ATOMIC_C
 {
-    ASSERT(atomic != NULL);
+    ANN(atomic);
     FREE(atomic);
 }
 #else

@@ -171,9 +171,9 @@ static inline DvzContainer dvz_container(uint32_t count, size_t item_size, DvzOb
  */
 static inline void dvz_container_delete_if_destroyed(DvzContainer* container, uint32_t idx)
 {
-    ASSERT(container != NULL);
+    ANN(container);
     ASSERT(container->capacity > 0);
-    ASSERT(container->items != NULL);
+    ANN(container->items);
     ASSERT(idx < container->capacity);
     if (container->items[idx] == NULL)
         return;
@@ -200,9 +200,9 @@ static inline void dvz_container_delete_if_destroyed(DvzContainer* container, ui
  */
 static inline void* dvz_container_alloc(DvzContainer* container)
 {
-    ASSERT(container != NULL);
+    ANN(container);
     ASSERT(container->capacity > 0);
-    ASSERT(container->items != NULL);
+    ANN(container->items);
     uint32_t available_slot = UINT32_MAX;
 
     // Free the memory of destroyed objects and find the first available slot.
@@ -220,10 +220,10 @@ static inline void* dvz_container_alloc(DvzContainer* container)
         log_trace("reallocate container up to %d items", 2 * container->capacity);
         void** _new = (void**)realloc(
             container->items, (size_t)(2 * container->capacity * container->item_size));
-        ASSERT(_new != NULL);
+        ANN(_new);
         container->items = _new;
 
-        ASSERT(container->items != NULL);
+        ANN(container->items);
         // Initialize newly-allocated pointers to NULL.
         for (uint32_t i = container->capacity; i < 2 * container->capacity; i++)
         {
@@ -243,7 +243,7 @@ static inline void* dvz_container_alloc(DvzContainer* container)
     // log_trace("container allocates new item #%d", available_slot);
     container->items[available_slot] = calloc(1, container->item_size);
     container->count++;
-    ASSERT(container->items[available_slot] != NULL);
+    ANN(container->items[available_slot]);
 
     // Initialize the DvzObject field.
     DvzObject* obj = (DvzObject*)container->items[available_slot];
@@ -264,8 +264,8 @@ static inline void* dvz_container_alloc(DvzContainer* container)
  */
 static inline void* dvz_container_get(DvzContainer* container, uint32_t idx)
 {
-    ASSERT(container != NULL);
-    ASSERT(container->items != NULL);
+    ANN(container);
+    ANN(container->items);
     ASSERT(idx < container->capacity);
     return container->items[idx];
 }
@@ -280,9 +280,9 @@ static inline void* dvz_container_get(DvzContainer* container, uint32_t idx)
  */
 static inline void dvz_container_iter(DvzContainerIterator* iterator)
 {
-    ASSERT(iterator != NULL);
+    ANN(iterator);
     DvzContainer* container = iterator->container;
-    ASSERT(container != NULL);
+    ANN(container);
 
     // IMPORTANT: make sure the item is reset to null if we return early in this function, so that
     // the infinite while loop stops.
@@ -319,7 +319,7 @@ static inline void dvz_container_iter(DvzContainerIterator* iterator)
  */
 static inline DvzContainerIterator dvz_container_iterator(DvzContainer* container)
 {
-    ASSERT(container != NULL);
+    ANN(container);
 
     INIT(DvzContainerIterator, iterator);
     iterator.container = container;
@@ -338,8 +338,8 @@ static inline DvzContainerIterator dvz_container_iterator(DvzContainer* containe
  */
 static inline void* dvz_container_get_created(DvzContainer* container, uint32_t idx)
 {
-    ASSERT(container != NULL);
-    ASSERT(container->items != NULL);
+    ANN(container);
+    ANN(container->items);
     DvzContainerIterator iter = dvz_container_iterator(container);
     DvzObject* obj = NULL;
     uint32_t n = 0;
@@ -348,7 +348,7 @@ static inline void* dvz_container_get_created(DvzContainer* container, uint32_t 
         // WARNING: we assume that every item in the container is a struct for which the first item
         // is a DvzObject.
         obj = (DvzObject*)iter.item;
-        ASSERT(obj != NULL);
+        ANN(obj);
         if (dvz_obj_is_created(obj))
         {
             if (n == idx)
@@ -376,10 +376,10 @@ static inline void* dvz_container_get_created(DvzContainer* container, uint32_t 
  */
 static inline void dvz_container_destroy(DvzContainer* container)
 {
-    ASSERT(container != NULL);
+    ANN(container);
     if (container->items == NULL)
         return;
-    ASSERT(container->items != NULL);
+    ANN(container->items);
     // log_trace("container destroy");
     // Check all elements have been destroyed, and free them if necessary.
     uint32_t count = container->count;

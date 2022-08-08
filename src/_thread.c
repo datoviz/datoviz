@@ -40,12 +40,12 @@ DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data)
 
 void dvz_thread_lock(DvzThread* thread)
 {
-    ASSERT(thread != NULL);
+    ANN(thread);
     if (!dvz_obj_is_created(&thread->obj))
         return;
     // The lock idx is used to ensure that nested thread_lock() will work as expected. Only the
     // first lock is effective. Only the last unlock is effective.
-    ASSERT(thread->lock_idx != NULL);
+    ANN(thread->lock_idx);
     int lock_idx = dvz_atomic_get(thread->lock_idx);
     ASSERT(lock_idx >= 0);
     if (lock_idx == 0)
@@ -60,10 +60,10 @@ void dvz_thread_lock(DvzThread* thread)
 
 void dvz_thread_unlock(DvzThread* thread)
 {
-    ASSERT(thread != NULL);
+    ANN(thread);
     if (!dvz_obj_is_created(&thread->obj))
         return;
-    ASSERT(thread->lock_idx != NULL);
+    ANN(thread->lock_idx);
     int lock_idx = dvz_atomic_get(thread->lock_idx);
     ASSERT(lock_idx >= 0);
     if (lock_idx == 1)
@@ -81,7 +81,7 @@ void dvz_thread_unlock(DvzThread* thread)
 
 void dvz_thread_join(DvzThread* thread)
 {
-    ASSERT(thread != NULL);
+    ANN(thread);
     log_trace("joining thread");
     tct_thrd_join(thread->thread, NULL);
     dvz_mutex_destroy(&thread->lock);

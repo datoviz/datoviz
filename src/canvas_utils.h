@@ -24,7 +24,7 @@
 static void
 make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t img_count)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     log_trace("making swapchain");
 
     *swapchain = dvz_swapchain(gpu, surface.surface, img_count);
@@ -34,7 +34,7 @@ make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_
     // dvz_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
     dvz_swapchain_create(swapchain);
 
-    ASSERT(swapchain->images != NULL);
+    ANN(swapchain->images);
 
     // Create a staging buffer, to be used by screencast and screenshot.
     // It is automatically recreated upon resize.
@@ -45,8 +45,8 @@ make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_
 
 static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(sync != NULL);
+    ANN(gpu);
+    ANN(sync);
     log_trace("making sync objects");
 
     uint32_t frames_in_flight = DVZ_MAX_FRAMES_IN_FLIGHT;
@@ -63,12 +63,12 @@ static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
 
 static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(cmds != NULL);
+    ANN(canvas);
+    ANN(cmds);
 
 
     DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     dvz_cmd_begin(cmds, cmd_idx);
     dvz_cmd_begin_renderpass(
@@ -82,7 +82,7 @@ static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_id
 // Submit the command buffers, + swapchain synchronization + presentation if not offscreen.
 static void canvas_render(DvzCanvas* canvas)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     DvzSubmit* s = &canvas->render.submit;
     uint32_t f = canvas->cur_frame;

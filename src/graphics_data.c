@@ -20,9 +20,9 @@
 static void
 _graphics_segment_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
-    ASSERT(data->indices != NULL);
+    ANN(data);
+    ANN(data->vertices);
+    ANN(data->indices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 4 * item_count);
@@ -30,7 +30,7 @@ _graphics_segment_callback(DvzGraphicsData* data, uint32_t item_count, const voi
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     // Fill the vertices array by simply repeating them 4 times.
@@ -55,8 +55,8 @@ _graphics_segment_callback(DvzGraphicsData* data, uint32_t item_count, const voi
 // NOTE: item_count is the TOTAL number of points, including junction points.
 static void _graphics_path_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 4 * item_count); // 4 vertices per point
@@ -64,7 +64,7 @@ static void _graphics_path_callback(DvzGraphicsData* data, uint32_t item_count, 
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     // Simply repeat the vertex 4 times.
@@ -79,17 +79,17 @@ static void _graphics_text_callback(DvzGraphicsData* data, uint32_t item_count, 
 {
     // NOTE: item_count is the total number of glyphs
 
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 4 * item_count);
     // DvzFontAtlas* atlas = &data->graphics->gpu->context->font_atlas;
-    // ASSERT(atlas != NULL);
+    // ANN(atlas);
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     // const char* str = item;
@@ -129,15 +129,15 @@ static void _graphics_text_callback(DvzGraphicsData* data, uint32_t item_count, 
 
 static void _graphics_image_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 6 * item_count);
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     const DvzGraphicsImageItem* item_vert = (const DvzGraphicsImageItem*)item;
@@ -168,15 +168,15 @@ static void _graphics_image_callback(DvzGraphicsData* data, uint32_t item_count,
 static void
 _graphics_volume_slice_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 6 * item_count);
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     const DvzGraphicsVolumeSliceItem* item_vert = (const DvzGraphicsVolumeSliceItem*)item;
@@ -206,15 +206,15 @@ _graphics_volume_slice_callback(DvzGraphicsData* data, uint32_t item_count, cons
 
 static void _graphics_volume_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     ASSERT(item_count > 0);
     dvz_array_resize(data->vertices, 36 * item_count);
 
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     const DvzGraphicsVolumeItem* item_vert = (const DvzGraphicsVolumeItem*)item;
@@ -284,13 +284,13 @@ static void _graphics_volume_callback(DvzGraphicsData* data, uint32_t item_count
 
 static void _default_callback(DvzGraphicsData* data, uint32_t item_count, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(data->vertices != NULL);
+    ANN(data);
+    ANN(data->vertices);
 
     dvz_array_resize(data->vertices, item_count);
     if (item == NULL)
         return;
-    ASSERT(item != NULL);
+    ANN(item);
     ASSERT(data->current_idx < item_count);
 
     // Fill the vertices array by simply copying the current item (assumed to be a vertex).
@@ -303,7 +303,7 @@ static void _default_callback(DvzGraphicsData* data, uint32_t item_count, const 
 DvzGraphicsData dvz_graphics_data(
     DvzGraphicsCallback callback, DvzArray* vertices, DvzArray* indices, void* user_data)
 {
-    ASSERT(vertices != NULL);
+    ANN(vertices);
 
     DvzGraphicsData data = {0};
     data.callback = callback == NULL ? _default_callback : callback;
@@ -317,7 +317,7 @@ DvzGraphicsData dvz_graphics_data(
 
 void dvz_graphics_alloc(DvzGraphicsData* data, uint32_t item_count)
 {
-    ASSERT(data != NULL);
+    ANN(data);
     if (item_count == 0)
     {
         log_error("empty graphics allocation");
@@ -328,7 +328,7 @@ void dvz_graphics_alloc(DvzGraphicsData* data, uint32_t item_count)
     DvzGraphicsCallback callback = data->callback;
 
     // The graphics callback should allocate the vertices and indices arrays.
-    ASSERT(callback != NULL);
+    ANN(callback);
     callback(data, item_count, NULL);
 }
 
@@ -336,12 +336,12 @@ void dvz_graphics_alloc(DvzGraphicsData* data, uint32_t item_count)
 
 void dvz_graphics_append(DvzGraphicsData* data, const void* item)
 {
-    ASSERT(data != NULL);
-    ASSERT(item != NULL);
+    ANN(data);
+    ANN(item);
 
     // call the callback with item_count and item
     DvzGraphicsCallback callback = data->callback;
-    ASSERT(callback != NULL);
+    ANN(callback);
 
     callback(data, data->item_count, item);
 }

@@ -26,13 +26,13 @@
 
 int test_pipelib_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     uvec2 size = {WIDTH, HEIGHT};
 
@@ -53,7 +53,7 @@ int test_pipelib_1(TstSuite* suite)
 
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
     dvz_pipe_vertex(pipe, dat_vertex);
 
     // Upload the triangle data.

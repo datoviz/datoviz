@@ -24,7 +24,7 @@
 
 static DvzWindow* id2window(DvzClient* client, DvzId id)
 {
-    ASSERT(client != NULL);
+    ANN(client);
     DvzWindow* window = dvz_map_get(client->map, id);
     return window;
 }
@@ -33,7 +33,7 @@ static DvzWindow* id2window(DvzClient* client, DvzId id)
 
 static DvzId window2id(DvzWindow* window)
 {
-    ASSERT(window != NULL);
+    ANN(window);
     return (DvzId)window->obj.id;
 }
 
@@ -42,7 +42,7 @@ static DvzId window2id(DvzWindow* window)
 static DvzWindow*
 create_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t height, int flags)
 {
-    ASSERT(client != NULL);
+    ANN(client);
     DvzWindow* window = (DvzWindow*)dvz_container_alloc(&client->windows);
     *window = dvz_window(client->backend, width, height, flags);
 

@@ -26,7 +26,7 @@
 static int _thread_transfers(void* user_data)
 {
     DvzTransfers* transfers = (DvzTransfers*)user_data;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
     dvz_deq_dequeue_loop(transfers->deq, DVZ_TRANSFER_PROC_UD);
     return 0;
 }
@@ -35,7 +35,7 @@ static int _thread_transfers(void* user_data)
 
 static void _create_transfers(DvzTransfers* transfers)
 {
-    ASSERT(transfers != NULL);
+    ANN(transfers);
     transfers->deq = dvz_deq(5);
 
     // Producer/consumer pairs (deq processes).
@@ -116,11 +116,11 @@ static void _create_transfers(DvzTransfers* transfers)
 static void
 _process_pending_dup(DvzTransfers* transfers, DvzTransferDupItem* item, uint32_t img_idx)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(item != NULL);
+    ANN(transfers);
+    ANN(item);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzBufferRegions* br = &item->tr.br;
     ASSERT(img_idx < br->count);
@@ -184,9 +184,9 @@ _process_pending_dup(DvzTransfers* transfers, DvzTransferDupItem* item, uint32_t
 void dvz_transfers(DvzGpu* gpu, DvzTransfers* transfers)
 {
 
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
-    ASSERT(transfers != NULL);
+    ANN(transfers);
     ASSERT(!dvz_obj_is_created(&transfers->obj));
     // NOTE: this function should only be called once, at context creation.
 
@@ -205,11 +205,11 @@ void dvz_transfers(DvzGpu* gpu, DvzTransfers* transfers)
 // running in MAIN queue (main thread).
 void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx)
 {
-    ASSERT(transfers != NULL);
+    ANN(transfers);
     log_trace("transfers frame #%d", img_idx);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Dequeue all pending copies (which are either buffer copies, or direct mappable).
     // This is NOT used for transfer dups, which are enqueued in a different queue/proc (DUP).
@@ -236,7 +236,7 @@ void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx)
     for (uint32_t i = 0; i < DVZ_DUPS_MAX; i++)
     {
         item = &dups->dups[i];
-        ASSERT(item != NULL);
+        ANN(item);
         if (item->is_set)
         {
             _process_pending_dup(transfers, item, img_idx);
@@ -254,8 +254,8 @@ void dvz_transfers_destroy(DvzTransfers* transfers)
         return;
     }
     log_trace("destroying transfers");
-    ASSERT(transfers != NULL);
-    ASSERT(transfers->gpu != NULL);
+    ANN(transfers);
+    ANN(transfers->gpu);
 
     // Enqueue a STOP task to stop the UL and DL threads.
     dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_UL, 0, NULL);
@@ -281,9 +281,9 @@ void dvz_transfers_destroy(DvzTransfers* transfers)
 
 static void _flush_transfers(DvzTransfers* transfers)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(transfers->gpu != NULL);
-    ASSERT(transfers->gpu->host != NULL);
+    ANN(transfers);
+    ANN(transfers->gpu);
+    ANN(transfers->gpu->host);
 
     // Flush all queues.
     for (uint32_t i = 0; i < transfers->deq->proc_count; i++)
@@ -300,14 +300,14 @@ void dvz_upload_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
     DvzSize offset, DvzSize size, void* data)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(br.buffer != NULL);
-    ASSERT(data != NULL);
+    ANN(transfers);
+    ANN(br.buffer);
+    ANN(data);
     ASSERT(size > 0);
     ASSERT(br.count == 1);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     log_debug("upload %s to a buffer", pretty_size(size));
 
@@ -334,14 +334,14 @@ void dvz_download_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
     DvzSize offset, DvzSize size, void* data)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(br.buffer != NULL);
-    ASSERT(data != NULL);
+    ANN(transfers);
+    ANN(br.buffer);
+    ANN(data);
     ASSERT(size > 0);
     ASSERT(br.count == 1);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     log_debug("download %s from a buffer", pretty_size(size));
 
@@ -374,9 +374,9 @@ void dvz_copy_buffer(
     DvzBufferRegions dst, DvzSize dst_offset, //
     DvzSize size)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(src.buffer != NULL);
-    ASSERT(dst.buffer != NULL);
+    ANN(transfers);
+    ANN(src.buffer);
+    ANN(dst.buffer);
     ASSERT(src.count == 1);
     ASSERT(dst.count == 1);
     ASSERT(size > 0);
@@ -401,7 +401,7 @@ void dvz_copy_buffer(
 
 static void _full_tex_shape(DvzImages* img, uvec3 shape)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     for (uint32_t i = 0; i < 3; i++)
         if (shape[i] == 0)
             shape[i] = img->shape[i];
@@ -413,16 +413,16 @@ void dvz_upload_image(
     DvzTransfers* transfers, DvzImages* img, //
     uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(img != NULL);
-    ASSERT(data != NULL);
+    ANN(transfers);
+    ANN(img);
+    ANN(data);
     ASSERT(size > 0);
     ASSERT(img->count == 1);
 
     _flush_transfers(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     _full_tex_shape(img, shape);
     ASSERT(shape[0] > 0);
@@ -447,9 +447,9 @@ void dvz_download_image(
     DvzTransfers* transfers, DvzImages* img, //
     uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(img != NULL);
-    ASSERT(data != NULL);
+    ANN(transfers);
+    ANN(img);
+    ANN(data);
     ASSERT(size > 0);
     if (img->count > 1)
     {
@@ -459,7 +459,7 @@ void dvz_download_image(
     _flush_transfers(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     _full_tex_shape(img, shape);
     ASSERT(shape[0] > 0);
@@ -491,9 +491,9 @@ void dvz_copy_image(
     DvzImages* dst, uvec3 dst_offset, //
     uvec3 shape, DvzSize size)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
+    ANN(transfers);
+    ANN(src);
+    ANN(dst);
     ASSERT(src->count == 1);
     ASSERT(dst->count == 1);
 

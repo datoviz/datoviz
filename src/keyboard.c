@@ -39,8 +39,8 @@ static int _key_modifiers(int key_code)
 
 static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->callbacks != NULL);
+    ANN(keyboard);
+    ANN(keyboard->callbacks);
 
     DvzKeyboardPayload* payload = NULL;
     uint32_t n = dvz_list_count(keyboard->callbacks);
@@ -74,8 +74,8 @@ DvzKeyboard* dvz_keyboard()
 
 void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->keys != NULL);
+    ANN(keyboard);
+    ANN(keyboard->keys);
 
     if (_is_key_modifier(key))
     {
@@ -96,8 +96,8 @@ void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
 
 void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->keys != NULL);
+    ANN(keyboard);
+    ANN(keyboard->keys);
 
     if (_is_key_modifier(key))
     {
@@ -120,8 +120,8 @@ void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
 
 DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->keys != NULL);
+    ANN(keyboard);
+    ANN(keyboard->keys);
 
     if (key_idx < keyboard->keys->count)
         return (DvzKeyCode)dvz_list_get(keyboard->keys, key_idx).i;
@@ -133,8 +133,8 @@ DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx)
 
 bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->keys != NULL);
+    ANN(keyboard);
+    ANN(keyboard->keys);
 
     return ((keyboard->mods & mods) == mods) && dvz_list_has(keyboard->keys, key);
 }
@@ -143,7 +143,7 @@ bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods)
 
 int dvz_keyboard_mods(DvzKeyboard* keyboard)
 {
-    ASSERT(keyboard != NULL);
+    ANN(keyboard);
     return keyboard->mods;
 }
 
@@ -153,8 +153,8 @@ void dvz_keyboard_callback(
     DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
     void* user_data)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->callbacks != NULL);
+    ANN(keyboard);
+    ANN(keyboard->callbacks);
 
     DvzKeyboardPayload* payload = (DvzKeyboardPayload*)calloc(1, sizeof(DvzKeyboardPayload));
     payload->type = type;
@@ -167,15 +167,15 @@ void dvz_keyboard_callback(
 
 void dvz_keyboard_destroy(DvzKeyboard* keyboard)
 {
-    ASSERT(keyboard != NULL);
-    ASSERT(keyboard->callbacks != NULL);
+    ANN(keyboard);
+    ANN(keyboard->callbacks);
 
     // Free the callback payloads.
     DvzKeyboardPayload* payload = NULL;
     for (uint32_t i = 0; i < keyboard->callbacks->count; i++)
     {
         payload = (DvzKeyboardPayload*)(dvz_list_get(keyboard->callbacks, i).p);
-        ASSERT(payload != NULL);
+        ANN(payload);
         FREE(payload);
     }
 

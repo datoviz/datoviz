@@ -24,9 +24,9 @@
 
 static int setup_gpu(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     log_debug("setup: creating GPU");
     ctx->host = dvz_host(DVZ_BACKEND_GLFW);
@@ -43,15 +43,15 @@ static int setup_gpu(TstSuite* suite)
 
 static int teardown_gpu(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     log_debug("teardown: destroying GPU");
-    ASSERT(ctx->gpu != NULL);
+    ANN(ctx->gpu);
     dvz_gpu_destroy(ctx->gpu);
 
-    ASSERT(ctx->host != NULL);
+    ANN(ctx->host);
     dvz_host_destroy(ctx->host);
 
     return 0;
@@ -62,16 +62,16 @@ static int teardown_gpu(TstSuite* suite)
 // Get or create the host from the suite's context.
 static DvzGpu* get_gpu(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     DvzGpu* gpu = ctx->gpu;
     if (gpu == NULL)
     {
         log_error("you need to add the setup fixture setup_gpu()");
         // setup_host(suite);
     }
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     return gpu;
 }
 

@@ -23,7 +23,7 @@
 
 static void _wait_dat_upload(DvzTransfers* transfers, bool staging, bool need_dealloc_stg)
 {
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     if (staging)
         dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
@@ -45,7 +45,7 @@ static void _wait_dat_upload(DvzTransfers* transfers, bool staging, bool need_de
 
 static void _wait_dat_download(DvzTransfers* transfers, bool staging)
 {
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     if (staging)
         dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);
@@ -61,8 +61,8 @@ static void _wait_dat_download(DvzTransfers* transfers, bool staging)
 
 static void _wait_dup(DvzTransfers* transfers, DvzDat* dat)
 {
-    ASSERT(transfers != NULL);
-    ASSERT(dat != NULL);
+    ANN(transfers);
+    ANN(dat);
 
     // IMPORTANT: before calling the dvz_transfers_frame(), we must wait for the DUP task
     // to be in the queue. Here we dequeue it manually. The callback will add it to the
@@ -82,9 +82,9 @@ static void _wait_dup(DvzTransfers* transfers, DvzDat* dat)
 
 void dvz_resources(DvzGpu* gpu, DvzResources* res)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
-    ASSERT(res != NULL);
+    ANN(res);
     ASSERT(!dvz_obj_is_created(&res->obj));
     // NOTE: this function should only be called once, at context creation.
 
@@ -103,8 +103,8 @@ void dvz_resources(DvzGpu* gpu, DvzResources* res)
 
 DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
-    ASSERT(res != NULL);
-    ASSERT(res->gpu != NULL);
+    ANN(res);
+    ANN(res->gpu);
     DvzImages* img = (DvzImages*)dvz_container_alloc(&res->images);
     _make_image(res->gpu, img, dims, shape, format);
     return img;
@@ -114,7 +114,7 @@ DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, 
 
 DvzBuffer* dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     DvzBuffer* buffer = _make_standalone_buffer(res, type, mappable, size);
     return buffer;
 }
@@ -123,7 +123,7 @@ DvzBuffer* dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mapp
 
 DvzSampler* dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode)
 {
-    ASSERT(res != NULL);
+    ANN(res);
     DvzSampler* sampler = (DvzSampler*)dvz_container_alloc(&res->samplers);
     *sampler = dvz_sampler(res->gpu);
     dvz_sampler_min_filter(sampler, (VkFilter)filter);
@@ -145,8 +145,8 @@ void dvz_resources_destroy(DvzResources* res)
         return;
     }
     log_trace("destroying resources");
-    ASSERT(res != NULL);
-    ASSERT(res->gpu != NULL);
+    ANN(res);
+    ANN(res->gpu);
 
     // Destroy the resources.
     _destroy_resources(res);
@@ -169,11 +169,11 @@ void dvz_resources_destroy(DvzResources* res)
 
 DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ASSERT(size > 0);
 
     DvzResources* res = &ctx->res;
-    ASSERT(res != NULL);
+    ANN(res);
 
     DvzDat* dat = (DvzDat*)dvz_container_alloc(&res->dats);
     dat->ctx = ctx;
@@ -211,8 +211,8 @@ DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
 
 void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 {
-    ASSERT(dat != NULL);
-    ASSERT(dat->br.buffer != NULL);
+    ANN(dat);
+    ANN(dat->br.buffer);
 
     if (new_size == dat->br.size)
     {
@@ -234,19 +234,19 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 
 void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
 
     DvzResources* res = dat->res;
-    ASSERT(res != NULL);
+    ANN(res);
 
     DvzDatAlloc* datalloc = dat->datalloc;
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
 
     DvzTransfers* transfers = dat->transfers;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = res->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Do we need a staging buffer?
     DvzDat* stg = dat->stg;
@@ -290,22 +290,22 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
 
 void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
 
     DvzContext* ctx = dat->ctx;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzResources* res = dat->res;
-    ASSERT(res != NULL);
+    ANN(res);
 
     DvzDatAlloc* datalloc = dat->datalloc;
-    ASSERT(datalloc != NULL);
+    ANN(datalloc);
 
     DvzTransfers* transfers = dat->transfers;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = res->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Do we need a staging buffer?
     DvzDat* stg = dat->stg;
@@ -334,7 +334,7 @@ void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, boo
 
 void dvz_dat_destroy(DvzDat* dat)
 {
-    ASSERT(dat != NULL);
+    ANN(dat);
     _dat_dealloc(dat);
 
     // Destroy the persistent staging dat if there is one.
@@ -352,9 +352,9 @@ void dvz_dat_destroy(DvzDat* dat)
 
 DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     DvzResources* res = &ctx->res;
-    ASSERT(res != NULL);
+    ANN(res);
 
     DvzTex* tex = (DvzTex*)dvz_container_alloc(&res->texs);
     tex->ctx = ctx;
@@ -376,8 +376,8 @@ DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format,
 
 void dvz_tex_resize(DvzTex* tex, uvec3 new_shape)
 {
-    ASSERT(tex != NULL);
-    ASSERT(tex->img != NULL);
+    ANN(tex);
+    ANN(tex->img);
 
     // TODO: GPU sync before?
     dvz_images_resize(tex->img, new_shape);
@@ -396,18 +396,18 @@ void dvz_tex_resize(DvzTex* tex, uvec3 new_shape)
 
 void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait)
 {
-    ASSERT(tex != NULL);
-    ASSERT(tex->img != NULL);
+    ANN(tex);
+    ANN(tex->img);
 
     DvzContext* ctx = tex->ctx;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzTransfers* transfers = &ctx->transfers;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     // Get the associated staging buffer.
     DvzDat* stg = _tex_staging(ctx, tex, size);
-    ASSERT(stg != NULL);
+    ANN(stg);
 
     // May use shape[i] = 0 to indicate the full shape along that axis.
     for (uint32_t i = 0; i < 3; i++)
@@ -424,18 +424,18 @@ void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* 
 
 void dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait)
 {
-    ASSERT(tex != NULL);
-    ASSERT(tex->img != NULL);
+    ANN(tex);
+    ANN(tex->img);
 
     DvzContext* ctx = tex->ctx;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzTransfers* transfers = &ctx->transfers;
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     // Get the associated staging buffer.
     DvzDat* stg = _tex_staging(ctx, tex, size);
-    ASSERT(stg != NULL);
+    ANN(stg);
 
     _enqueue_image_download(transfers->deq, tex->img, offset, shape, stg->br, 0, size, data);
 
@@ -450,7 +450,7 @@ void dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void
 
 void dvz_tex_destroy(DvzTex* tex)
 {
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     // Deallocate the tex.
     _tex_dealloc(tex);

@@ -48,9 +48,9 @@ struct DvzTestCtx
 
 static int setup_host(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     log_debug("setup: creating host");
     ctx->host = dvz_host(DVZ_BACKEND_GLFW);
@@ -62,12 +62,12 @@ static int setup_host(TstSuite* suite)
 
 static int teardown_host(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     log_debug("teardown: destroying host");
-    ASSERT(ctx->host != NULL);
+    ANN(ctx->host);
     dvz_host_destroy(ctx->host);
 
     return 0;
@@ -78,16 +78,16 @@ static int teardown_host(TstSuite* suite)
 // Get or create the host from the suite's context.
 static DvzHost* get_host(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     DvzHost* host = ctx->host;
     if (host == NULL)
     {
         log_error("you need to add the setup fixture setup_host()");
         // setup_host(suite);
     }
-    ASSERT(host != NULL);
+    ANN(host);
     return host;
 }
 

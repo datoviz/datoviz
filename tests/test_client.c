@@ -31,7 +31,7 @@
 
 static void _create_window(DvzClient* client, DvzId id)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     // Enqueue a window creation event.
     DvzClientEvent ev = {

@@ -50,13 +50,13 @@ struct CallbackStruct
 
 int test_presenter_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     // GPU-side.
     DvzHost* host = get_host(suite);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -101,17 +101,17 @@ int test_presenter_1(TstSuite* suite)
 
 static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     uint32_t width = ev.content.w.width;
     uint32_t height = ev.content.w.height;
     log_info("window %x resized to %dx%d", ev.window_id, width, height);
 
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
-    ASSERT(s != NULL);
+    ANN(s);
 
     DvzRequester* rqr = s->rqr;
-    ASSERT(rqr != NULL);
+    ANN(rqr);
 
     // Submit new recording commands to the client.
     DvzRequest req = {0};
@@ -132,13 +132,13 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 
 int test_presenter_2(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     // GPU-side.
     DvzHost* host = get_host(suite);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -273,13 +273,13 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
 int test_presenter_gui(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     // GPU-side.
     DvzHost* host = get_host(suite);
 
     DvzGpu* gpu = make_gpu(host);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);

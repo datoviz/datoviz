@@ -42,7 +42,7 @@ struct TestObject
 
 int test_obj_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     uint32_t capacity = 2;
 

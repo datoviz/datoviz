@@ -17,10 +17,10 @@
 
 static DvzDat* _make_dat_mvp(DvzContext* ctx)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
-    ASSERT(dat_mvp != NULL);
+    ANN(dat_mvp);
 
     DvzMVP mvp = dvz_mvp_default();
     // TODO OPTIM: not wait here but later at the end of the pipelib graphics creation
@@ -34,12 +34,12 @@ static DvzDat* _make_dat_mvp(DvzContext* ctx)
 
 static DvzDat* _make_dat_viewport(DvzContext* ctx, uvec2 size)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
 
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
-    ASSERT(dat_viewport != NULL);
+    ANN(dat_viewport);
 
     DvzViewport viewport = dvz_viewport_default(size[0], size[1]);
     // TODO OPTIM: not wait here but later at the end of the pipelib graphics creation
@@ -56,11 +56,11 @@ static DvzDat* _make_dat_viewport(DvzContext* ctx, uvec2 size)
 
 DvzPipelib* dvz_pipelib(DvzContext* ctx)
 {
-    ASSERT(ctx != NULL);
-    ASSERT(ctx->gpu != NULL);
+    ANN(ctx);
+    ANN(ctx->gpu);
 
     DvzPipelib* lib = calloc(1, sizeof(DvzPipelib));
-    ASSERT(lib != NULL);
+    ANN(lib);
 
     lib->gpu = ctx->gpu;
     lib->graphics =
@@ -78,14 +78,14 @@ DvzPipe* dvz_pipelib_graphics(
     DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
     uint32_t img_count, uvec2 viewport_size, DvzGraphicsType type, int flags)
 {
-    ASSERT(lib != NULL);
-    ASSERT(renderpass != NULL);
+    ANN(lib);
+    ANN(renderpass);
 
     DvzGpu* gpu = lib->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ASSERT(dvz_obj_is_created(&ctx->obj));
 
     // Allocate a DvzPipe pointer.
@@ -116,7 +116,7 @@ DvzPipe* dvz_pipelib_graphics(
 
 DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 {
-    ASSERT(lib != NULL);
+    ANN(lib);
     // TODO: compute shader
     return NULL;
 }
@@ -125,8 +125,8 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 
 // void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe)
 // {
-//     ASSERT(lib != NULL);
-//     ASSERT(pipe != NULL);
+//     ANN(lib);
+//     ANN(pipe);
 //     dvz_pipe_destroy(pipe);
 // }
 
@@ -134,7 +134,7 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 
 void dvz_pipelib_destroy(DvzPipelib* lib)
 {
-    ASSERT(lib != NULL);
+    ANN(lib);
 
     CONTAINER_DESTROY_ITEMS(DvzPipe, lib->graphics, dvz_pipe_destroy)
     dvz_container_destroy(&lib->graphics);

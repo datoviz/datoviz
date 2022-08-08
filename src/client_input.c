@@ -27,13 +27,13 @@
 
 static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     DvzWindow* window = (DvzWindow*)ev.user_data;
-    ASSERT(window != NULL);
+    ANN(window);
 
     DvzClient* client = window->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzClientEvent cev = {0};
     cev.type = DVZ_CLIENT_EVENT_MOUSE;
@@ -44,13 +44,13 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 
 static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
-    ASSERT(keyboard != NULL);
+    ANN(keyboard);
 
     DvzWindow* window = (DvzWindow*)ev.user_data;
-    ASSERT(window != NULL);
+    ANN(window);
 
     DvzClient* client = window->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzClientEvent cev = {0};
     cev.type = DVZ_CLIENT_EVENT_KEYBOARD;
@@ -67,20 +67,20 @@ static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 
 static void _create_window_input(DvzDeq* deq, void* item, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     DvzClient* client = (DvzClient*)user_data;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzClientEvent* ev = (DvzClientEvent*)item;
-    ASSERT(ev != NULL);
+    ANN(ev);
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
 
     DvzId id = ev->window_id;
 
     // Retrieve the created window with id2window().
     DvzWindow* window = id2window(client, id);
-    ASSERT(window != NULL);
+    ANN(window);
 
     // Create the input and associate it to the window.
     // This call uses the GLFW callback functions to update the Mouse and Keyboard state machines.
@@ -104,7 +104,7 @@ static void _create_window_input(DvzDeq* deq, void* item, void* user_data)
 
 void dvz_client_input(DvzClient* client)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     // Register a window_create callback that is called after the default one.
     dvz_deq_callback(

@@ -28,7 +28,7 @@
 int test_renderer_1(TstSuite* suite)
 {
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzRequester* rqr = dvz_requester();
@@ -132,7 +132,7 @@ int test_renderer_1(TstSuite* suite)
 int test_renderer_resize(TstSuite* suite)
 {
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzRequester* rqr = dvz_requester();
@@ -212,7 +212,7 @@ int test_renderer_resize(TstSuite* suite)
 int test_renderer_image(TstSuite* suite)
 {
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzRequester* rqr = dvz_requester();

@@ -28,19 +28,19 @@
 
 static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
 {
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     DvzClient* client = prt->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzRenderer* rd = prt->rd;
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzGpu* gpu = rd->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     // When the client receives a REQUEST event with a canvas creation command, it will *also*
     // create a window in the client with the same id and size. The canvas and window will be
@@ -80,7 +80,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     bool has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)
     {
-        ASSERT(prt->gui != NULL);
+        ANN(prt->gui);
 
         // Create the GUI window.
         DvzGuiWindow* gui_window = dvz_gui_window(
@@ -98,23 +98,23 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
 
 static void _delete_canvas(DvzPresenter* prt, DvzId id)
 {
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     DvzClient* client = prt->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzRenderer* rd = prt->rd;
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzGpu* gpu = rd->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     // Destroy the window.
     DvzWindow* window = id2window(client, id);
-    ASSERT(window != NULL);
+    ANN(window);
     dvz_window_destroy(window);
 
     // Start canvas destruction.
@@ -129,7 +129,7 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     dvz_surface_destroy(host, canvas->surface);
 
     // Then, destroy the canvas.
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     dvz_canvas_destroy(canvas);
 
     // Destroy the GUI window if it exists.
@@ -150,19 +150,19 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
 // NOTE: this function must be called AFTER the request has been processed by the renderer.
 static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 {
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     DvzClient* client = prt->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzRenderer* rd = prt->rd;
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzGpu* gpu = rd->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     switch (rq.action)
     {
@@ -190,9 +190,9 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 
 static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
 {
-    ASSERT(rd != NULL);
-    ASSERT(canvas != NULL);
-    ASSERT(canvas->recorder != NULL);
+    ANN(rd);
+    ANN(canvas);
+    ANN(canvas->recorder);
     if (canvas->recorder->count > 0)
     {
         log_debug("record the commands in the command buffer");
@@ -218,13 +218,13 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
 // windows associated to canvases.
 static void _requester_callback(DvzClient* client, DvzClientEvent ev)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzPresenter* prt = (DvzPresenter*)ev.user_data;
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     DvzRenderer* rd = prt->rd;
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     ASSERT(ev.type == DVZ_CLIENT_EVENT_REQUESTS);
 
@@ -233,7 +233,7 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
     ASSERT(count > 0);
 
     DvzRequest* requests = (DvzRequest*)ev.content.r.requests;
-    ASSERT(requests != NULL);
+    ANN(requests);
 
     // Submit the pending requests to the renderer.
     log_debug("renderer processes %d requests", count);
@@ -261,10 +261,10 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
 
 static void _frame_callback(DvzClient* client, DvzClientEvent ev)
 {
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzPresenter* prt = (DvzPresenter*)ev.user_data;
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     dvz_presenter_frame(prt, ev.window_id);
 }
@@ -274,9 +274,9 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev)
 static void
 _gui_callback(DvzPresenter* prt, DvzGuiWindow* gui_window, DvzSubmit* submit, uint32_t img_idx)
 {
-    ASSERT(prt != NULL);
-    ASSERT(gui_window != NULL);
-    ASSERT(submit != NULL);
+    ANN(prt);
+    ANN(gui_window);
+    ANN(submit);
 
     // Begin recording the GUI command buffer.
     dvz_gui_window_begin(gui_window, img_idx);
@@ -310,11 +310,11 @@ _gui_callback(DvzPresenter* prt, DvzGuiWindow* gui_window, DvzSubmit* submit, ui
 
 DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 {
-    ASSERT(rd != NULL);
-    ASSERT(client != NULL);
+    ANN(rd);
+    ANN(client);
 
     DvzPresenter* prt = calloc(1, sizeof(DvzPresenter));
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     prt->rd = rd;
     prt->client = client;
@@ -353,9 +353,9 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 void dvz_presenter_gui(
     DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data)
 {
-    ASSERT(prt != NULL);
+    ANN(prt);
     ASSERT(window_id != 0);
-    ASSERT(callback != NULL);
+    ANN(callback);
 
     log_debug("add GUI callback to window 0x%" PRIx64 "");
     DvzGuiCallbackPayload* payload =
@@ -370,34 +370,34 @@ void dvz_presenter_gui(
 
 void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 {
-    ASSERT(prt != NULL);
+    ANN(prt);
 
     DvzClient* client = prt->client;
-    ASSERT(client != NULL);
+    ANN(client);
 
     DvzRenderer* rd = prt->rd;
-    ASSERT(rd != NULL);
+    ANN(rd);
 
     DvzGpu* gpu = rd->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     DvzContext* ctx = rd->ctx;
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     // Retrieve the window from its id.
     DvzWindow* window = id2window(client, window_id);
-    ASSERT(window != NULL);
+    ANN(window);
 
     // Retrieve the canvas from its id.
     DvzCanvas* canvas = dvz_renderer_canvas(rd, window_id);
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     // Retrieve the canvas' recorder.
     DvzRecorder* recorder = canvas->recorder;
-    ASSERT(recorder != NULL);
+    ANN(recorder);
 
     uint64_t frame_idx = client->frame_idx;
     log_trace("frame %d, window #%x", frame_idx, window_id);
@@ -541,16 +541,16 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
 void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
 {
-    ASSERT(prt != NULL);
-    ASSERT(rqr != NULL);
-    ASSERT(prt->client != NULL);
+    ANN(prt);
+    ANN(rqr);
+    ANN(prt->client);
 
     uint32_t count = 0;
     DvzRequest* requests = dvz_requester_flush(rqr, &count);
     // NOTE: the presenter will need to FREE the requests array.
 
     ASSERT(count > 0);
-    ASSERT(requests != NULL);
+    ANN(requests);
 
     // Submit the requests to the client's event loop. Will be processed by
     // _requester_callback(), which will also free the requests array.
@@ -565,8 +565,8 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
 
 void dvz_presenter_destroy(DvzPresenter* prt)
 {
-    ASSERT(prt != NULL);
-    ASSERT(prt->callbacks != NULL);
+    ANN(prt);
+    ANN(prt->callbacks);
 
     // Go through all remaining surfaces to destroy them, as they were created by the
     // presenter, not by the renderer, so they won't be destroyed by the renderer destruction
@@ -591,7 +591,7 @@ void dvz_presenter_destroy(DvzPresenter* prt)
     for (uint32_t i = 0; i < prt->callbacks->count; i++)
     {
         payload = (DvzGuiCallbackPayload*)(dvz_list_get(prt->callbacks, i).p);
-        ASSERT(payload != NULL);
+        ANN(payload);
         FREE(payload);
     }
 

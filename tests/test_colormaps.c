@@ -20,7 +20,7 @@
 
 int test_colormaps_idx(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_BLUES;
     uint8_t value = 128;
@@ -37,7 +37,7 @@ int test_colormaps_idx(TstSuite* suite)
 
 int test_colormaps_uv(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_BLUES;
     DvzColormap cpal32 = DVZ_CPAL032_PAIRED;
@@ -65,7 +65,7 @@ int test_colormaps_uv(TstSuite* suite)
 
 int test_colormaps_extent(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_BLUES;
     DvzColormap cpal32 = DVZ_CPAL032_PAIRED;
@@ -98,7 +98,7 @@ int test_colormaps_extent(TstSuite* suite)
 
 int test_colormaps_default(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_HSV;
     cvec4 color = {0};
@@ -127,7 +127,7 @@ int test_colormaps_default(TstSuite* suite)
 
 int test_colormaps_scale(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_HSV;
     cvec4 color = {0};
@@ -160,7 +160,7 @@ int test_colormaps_scale(TstSuite* suite)
 
 int test_colormaps_packuv(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     vec2 uv = {0};
 
@@ -175,7 +175,7 @@ int test_colormaps_packuv(TstSuite* suite)
 
 int test_colormaps_array(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_BLUES;
     double vmin = -1;

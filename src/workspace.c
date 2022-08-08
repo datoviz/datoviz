@@ -25,7 +25,7 @@ static bool _has_overlay(int flags) { return (flags & DVZ_WORKSPACE_FLAGS_OVERLA
 
 DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzWorkspace* ws = calloc(1, sizeof(DvzWorkspace));
     ws->obj.type = DVZ_OBJECT_TYPE_WORKSPACE;
     ws->gpu = gpu;
@@ -51,8 +51,8 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
 
 DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
 {
-    ASSERT(workspace != NULL);
-    ASSERT(workspace->gpu != NULL);
+    ANN(workspace);
+    ANN(workspace->gpu);
 
     DvzBoard* board = (DvzBoard*)dvz_container_alloc(&workspace->boards);
 
@@ -71,7 +71,7 @@ DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t 
 DvzCanvas*
 dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags)
 {
-    ASSERT(workspace != NULL);
+    ANN(workspace);
     DvzCanvas* canvas = (DvzCanvas*)dvz_container_alloc(&workspace->canvases);
 
     DvzRenderpass* renderpass =
@@ -89,7 +89,7 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
 
 void dvz_workspace_destroy(DvzWorkspace* workspace)
 {
-    ASSERT(workspace != NULL);
+    ANN(workspace);
 
     CONTAINER_DESTROY_ITEMS(DvzBoard, workspace->boards, dvz_board_destroy)
     dvz_container_destroy(&workspace->boards);

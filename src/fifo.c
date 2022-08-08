@@ -53,7 +53,7 @@ static void _fifo_resize(DvzFifo* fifo)
     // Resize if queue is full.
     if ((fifo->tail + 1) % fifo->capacity == fifo->head)
     {
-        ASSERT(fifo->items != NULL);
+        ANN(fifo->items);
         ASSERT(size == fifo->capacity - 1);
         ASSERT(fifo->capacity <= DVZ_MAX_FIFO_CAPACITY);
 
@@ -84,7 +84,7 @@ static void _fifo_resize(DvzFifo* fifo)
 
 void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_lock(&fifo->lock);
 
     // Resize the FIFO queue if needed.
@@ -106,7 +106,7 @@ void dvz_fifo_enqueue(DvzFifo* fifo, void* item)
 
 void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_lock(&fifo->lock);
 
     // Resize the FIFO queue if needed.
@@ -135,7 +135,7 @@ void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item)
 
 void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_lock(&fifo->lock);
 
     // Wait until the queue is not empty.
@@ -178,7 +178,7 @@ void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait)
 
 int dvz_fifo_size(DvzFifo* fifo)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_lock(&fifo->lock);
     // log_debug("tail %d head %d", fifo->tail, fifo->head);
     int size = fifo->tail - fifo->head;
@@ -193,7 +193,7 @@ int dvz_fifo_size(DvzFifo* fifo)
 
 void dvz_fifo_discard(DvzFifo* fifo, int max_size)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     if (max_size == 0)
         return;
     dvz_mutex_lock(&fifo->lock);
@@ -216,7 +216,7 @@ void dvz_fifo_discard(DvzFifo* fifo, int max_size)
 
 void dvz_fifo_reset(DvzFifo* fifo)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_lock(&fifo->lock);
     fifo->tail = 0;
     fifo->head = 0;
@@ -228,11 +228,11 @@ void dvz_fifo_reset(DvzFifo* fifo)
 
 void dvz_fifo_destroy(DvzFifo* fifo)
 {
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     dvz_mutex_destroy(&fifo->lock);
     dvz_cond_destroy(&fifo->cond);
 
-    ASSERT(fifo->items != NULL);
+    ANN(fifo->items);
     FREE(fifo->items);
     FREE(fifo);
 }
@@ -245,11 +245,11 @@ void dvz_fifo_destroy(DvzFifo* fifo)
 
 static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(deq_idx < deq->queue_count);
 
     DvzFifo* fifo = deq->queues[deq_idx];
-    ASSERT(fifo != NULL);
+    ANN(fifo);
     ASSERT(fifo->capacity > 0);
     return fifo;
 }
@@ -259,8 +259,8 @@ static DvzFifo* _deq_fifo(DvzDeq* deq, uint32_t deq_idx)
 // Call all callback functions registered with a deq_idx and type on a deq item.
 static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
 {
-    ASSERT(deq != NULL);
-    ASSERT(item->item != NULL);
+    ANN(deq);
+    ANN(item->item);
     DvzDeqCallbackRegister* reg = NULL;
     uint32_t n = deq->callback_count;
 
@@ -272,7 +272,7 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
         for (uint32_t i = 0; i < n; i++)
         {
             reg = &deq->callbacks[i];
-            ASSERT(reg != NULL);
+            ANN(reg);
             if (reg->deq_idx == item->deq_idx && reg->type == item->type && !reg->is_default)
             {
                 // NOTE: we call all non-default callbacks. We only call a default callback if
@@ -289,7 +289,7 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
     for (uint32_t i = 0; i < n; i++)
     {
         reg = &deq->callbacks[i];
-        ASSERT(reg != NULL);
+        ANN(reg);
         if (reg->deq_idx == item->deq_idx && reg->type == item->type)
         {
             // NOTE: we do not call the callback if we should not call the default callbacks, and
@@ -305,9 +305,9 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
 // Return the total size of the deq->
 static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(queue_count > 0);
-    ASSERT(queue_ids != NULL);
+    ANN(queue_ids);
     int size = 0;
     uint32_t deq_idx = 0;
     for (uint32_t i = 0; i < queue_count; i++)
@@ -324,7 +324,7 @@ static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
 static void
 _proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqItem* item)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
 
@@ -332,7 +332,7 @@ _proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, 
     {
         if (proc->callbacks[i].pos == pos)
         {
-            ASSERT(proc->callbacks[i].callback != NULL);
+            ANN(proc->callbacks[i].callback);
             proc->callbacks[i].callback(
                 deq, item->deq_idx, item->type, item->item, proc->callbacks[i].user_data);
         }
@@ -343,13 +343,13 @@ _proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, 
 
 static void _proc_wait_callbacks(DvzDeq* deq, uint32_t proc_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
 
     for (uint32_t i = 0; i < proc->wait_callback_count; i++)
     {
-        ASSERT(proc->wait_callbacks[i].callback != NULL);
+        ANN(proc->wait_callbacks[i].callback);
         proc->wait_callbacks[i].callback(deq, proc->wait_callbacks[i].user_data);
     }
 }
@@ -360,7 +360,7 @@ static void _proc_batch_callbacks(
     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, uint32_t item_count,
     DvzDeqItem* items)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
     DvzDeqProcBatchCallbackRegister* reg = NULL;
@@ -368,7 +368,7 @@ static void _proc_batch_callbacks(
     for (uint32_t i = 0; i < proc->batch_callback_count; i++)
     {
         reg = &proc->batch_callbacks[i];
-        ASSERT(reg->callback != NULL);
+        ANN(reg->callback);
         if (reg->pos == pos)
             reg->callback(deq, pos, item_count, items, reg->user_data);
     }
@@ -380,7 +380,7 @@ static void _proc_batch_callbacks(
 // (in which case we need to continue waiting).
 static int _proc_wait(DvzDeqProc* proc)
 {
-    ASSERT(proc != NULL);
+    ANN(proc);
 
     if (proc->max_wait == 0)
     {
@@ -414,11 +414,11 @@ static int _proc_wait(DvzDeqProc* proc)
 
 static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     if (item_count == 0)
         return;
     ASSERT(item_count > 0);
-    ASSERT(items != NULL);
+    ANN(items);
 
     // Go through all items.
     DvzDeqItemNext* next = NULL;
@@ -456,11 +456,11 @@ static void _deq_callback(
     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data,
     bool is_default)
 {
-    ASSERT(deq != NULL);
-    ASSERT(callback != NULL);
+    ANN(deq);
+    ANN(callback);
 
     DvzDeqCallbackRegister* reg = &deq->callbacks[deq->callback_count++];
-    ASSERT(reg != NULL);
+    ANN(reg);
 
     reg->deq_idx = deq_idx;
     reg->type = type;
@@ -488,15 +488,15 @@ void dvz_deq_callback_default(
 
 void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* queue_ids)
 {
-    ASSERT(deq != NULL);
-    ASSERT(queue_ids != NULL);
+    ANN(deq);
+    ANN(queue_ids);
 
     // HACK: calls to dvz_deq_proc(deq, proc_idx, ...) must be with proc_idx strictly increasing:
     // 0, 1, 2...
     ASSERT(proc_idx == deq->proc_count);
 
     DvzDeqProc* proc = &deq->procs[deq->proc_count++];
-    ASSERT(proc != NULL);
+    ANN(proc);
 
     ASSERT(queue_count <= DVZ_DEQ_MAX_PROC_SIZE);
     proc->queue_count = queue_count;
@@ -523,16 +523,16 @@ void dvz_deq_proc_callback(
     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqProcCallback callback,
     void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
-    ASSERT(proc != NULL);
+    ANN(proc);
 
-    ASSERT(callback != NULL);
+    ANN(callback);
 
     DvzDeqProcCallbackRegister* reg = &proc->callbacks[proc->callback_count++];
-    ASSERT(reg != NULL);
+    ANN(reg);
 
     reg->callback = callback;
     reg->pos = pos;
@@ -543,10 +543,10 @@ void dvz_deq_proc_callback(
 
 void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
-    ASSERT(proc != NULL);
+    ANN(proc);
 
     proc->max_wait = delay_ms;
 }
@@ -556,16 +556,16 @@ void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms)
 void dvz_deq_proc_wait_callback(
     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcWaitCallback callback, void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
-    ASSERT(proc != NULL);
+    ANN(proc);
 
-    ASSERT(callback != NULL);
+    ANN(callback);
 
     DvzDeqProcWaitCallbackRegister* reg = &proc->wait_callbacks[proc->wait_callback_count++];
-    ASSERT(reg != NULL);
+    ANN(reg);
 
     reg->callback = callback;
     reg->user_data = user_data;
@@ -577,16 +577,16 @@ void dvz_deq_proc_batch_callback(
     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, DvzDeqProcBatchCallback callback,
     void* user_data)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
-    ASSERT(proc != NULL);
+    ANN(proc);
 
-    ASSERT(callback != NULL);
+    ANN(callback);
 
     DvzDeqProcBatchCallbackRegister* reg = &proc->batch_callbacks[proc->batch_callback_count++];
-    ASSERT(reg != NULL);
+    ANN(reg);
 
     reg->callback = callback;
     reg->pos = pos;
@@ -599,7 +599,7 @@ static DvzDeqItem*
 _deq_item(uint32_t deq_idx, int type, void* item, uint32_t next_count, DvzDeqItemNext* next_items)
 {
     DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
-    ASSERT(deq_item != NULL);
+    ANN(deq_item);
     deq_item->deq_idx = deq_idx;
     deq_item->type = type;
     deq_item->item = item;
@@ -612,7 +612,7 @@ _deq_item(uint32_t deq_idx, int type, void* item, uint32_t next_count, DvzDeqIte
 static void
 _deq_enqueue_item(DvzDeq* deq, uint32_t deq_idx, DvzDeqItem* deq_item, bool enqueue_first)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(deq_idx < deq->queue_count);
     ASSERT(deq_idx < DVZ_DEQ_MAX_QUEUES);
 
@@ -654,15 +654,15 @@ DvzDeqItem* dvz_deq_enqueue_custom(uint32_t deq_idx, int type, void* item)
 
 void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next_item, bool enqueue_first)
 {
-    ASSERT(deq_item != NULL);
-    ASSERT(next_item != NULL);
+    ANN(deq_item);
+    ANN(next_item);
 
     if (deq_item->next_items == NULL)
     {
         ASSERT(deq_item->next_count == 0);
         deq_item->next_items = calloc(2, sizeof(DvzDeqItemNext));
     }
-    ASSERT(deq_item->next_items != NULL);
+    ANN(deq_item->next_items);
     if (deq_item->next_count >= 2)
     {
         // TO DO: implement this, just need a REALLOC with a 2x size
@@ -676,8 +676,8 @@ void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next_item, bool enqu
 
 void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_first)
 {
-    ASSERT(deq != NULL);
-    ASSERT(deq_item != NULL);
+    ANN(deq);
+    ANN(deq_item);
 
     _deq_enqueue_item(deq, deq_item->deq_idx, deq_item, enqueue_first);
 }
@@ -686,7 +686,7 @@ void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_firs
 
 void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
     dvz_fifo_discard(fifo, max_size);
@@ -696,7 +696,7 @@ void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size)
 
 DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
     return *((DvzDeqItem*)(fifo->items[fifo->head]));
@@ -706,7 +706,7 @@ DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx)
 
 DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(deq_idx < deq->queue_count);
     DvzFifo* fifo = _deq_fifo(deq, deq_idx);
     int32_t last = fifo->tail - 1;
@@ -720,10 +720,10 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 
 void dvz_deq_strategy(DvzDeq* deq, uint32_t proc_idx, DvzDeqStrategy strategy)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
-    ASSERT(proc != NULL);
+    ANN(proc);
     proc->strategy = strategy;
 }
 
@@ -731,7 +731,7 @@ void dvz_deq_strategy(DvzDeq* deq, uint32_t proc_idx, DvzDeqStrategy strategy)
 
 DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     DvzFifo* fifo = NULL;
     DvzDeqItem* deq_item = NULL;
@@ -825,7 +825,7 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
 // WARNING: when using this function, the items that are enqueued will be FREE-ed automatically!
 void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqItem item = {0};
 
@@ -856,7 +856,7 @@ void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
 // WARNING: this function FREEs every enqueue item, like dvz_deq_dequeue_loop().
 void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     DvzFifo* fifo = NULL;
     DvzDeqItem* deq_item = NULL;
@@ -959,7 +959,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
 
 void dvz_deq_wait(DvzDeq* deq, uint32_t proc_idx)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     ASSERT(proc_idx < deq->proc_count);
     DvzDeqProc* proc = &deq->procs[proc_idx];
@@ -986,7 +986,7 @@ static char* _strcat(char* dest, char* src)
 
 void dvz_deq_stats(DvzDeq* deq)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     char s[1024] = {0};
     char sn[8] = {0};
@@ -1004,7 +1004,7 @@ void dvz_deq_stats(DvzDeq* deq)
 
 void dvz_deq_destroy(DvzDeq* deq)
 {
-    ASSERT(deq != NULL);
+    ANN(deq);
 
     for (uint32_t i = 0; i < deq->queue_count; i++)
         dvz_fifo_destroy(deq->queues[i]);

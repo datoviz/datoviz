@@ -26,9 +26,9 @@
 
 static DvzTransfers* get_transfers(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzTransfers* transfers = calloc(1, sizeof(DvzTransfers));
     dvz_transfers(gpu, transfers);
@@ -37,7 +37,7 @@ static DvzTransfers* get_transfers(TstSuite* suite)
 
 static void destroy_transfers(DvzTransfers* transfers)
 {
-    ASSERT(transfers != NULL);
+    ANN(transfers);
     dvz_transfers_destroy(transfers);
     FREE(transfers);
 }
@@ -53,8 +53,8 @@ static void _dl_done(DvzDeq* deq, void* item, void* user_data)
 static void _up_done(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferUploadDone* up = (DvzTransferUploadDone*)item;
-    ASSERT(up != NULL);
-    ASSERT(up->user_data != NULL);
+    ANN(up);
+    ANN(up->user_data);
     *((int*)up->user_data) = 314;
 }
 
@@ -66,13 +66,13 @@ static void _up_done(DvzDeq* deq, void* item, void* user_data)
 
 int test_transfers_buffer_mappable(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Callback for when the download has finished.
     int res = 0; // should be set to 42 by _dl_done().
@@ -117,13 +117,13 @@ int test_transfers_buffer_mappable(TstSuite* suite)
 
 int test_transfers_buffer_large(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uint64_t size = 32 * 1024 * 1024; // MB
     uint8_t* data = calloc(size, 1);
@@ -172,13 +172,13 @@ int test_transfers_buffer_large(TstSuite* suite)
 
 int test_transfers_buffer_copy(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Callback for when the download has finished.
     int res = 0; // should be set to 42 by _dl_done().
@@ -233,13 +233,13 @@ int test_transfers_buffer_copy(TstSuite* suite)
 
 int test_transfers_image_buffer(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uvec3 shape_full = {8, 24, 1};
     uvec3 offset = {0, 8, 0};
@@ -303,13 +303,13 @@ int test_transfers_image_buffer(TstSuite* suite)
 
 int test_transfers_direct_buffer(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create a data array.
     uint8_t data[64] = {0};
@@ -343,13 +343,13 @@ int test_transfers_direct_buffer(TstSuite* suite)
 
 int test_transfers_direct_image(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uvec3 shape_full = {16, 48, 1};
     uvec3 offset = {0, 16, 0};
@@ -387,13 +387,13 @@ int test_transfers_direct_image(TstSuite* suite)
 
 int test_transfers_dups_util(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uint32_t count = 3;
     DvzSize size = 16;
@@ -471,13 +471,13 @@ int test_transfers_dups_util(TstSuite* suite)
 
 int test_transfers_dups_upload(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uint32_t count = 3;
     DvzSize size = 16;
@@ -529,13 +529,13 @@ int test_transfers_dups_upload(TstSuite* suite)
 
 int test_transfers_dups_copy(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     DvzTransfers* transfers = get_transfers(suite);
-    ASSERT(transfers != NULL);
+    ANN(transfers);
 
     DvzGpu* gpu = transfers->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     uint32_t count = 3;
     DvzSize size = 16;

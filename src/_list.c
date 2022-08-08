@@ -13,8 +13,8 @@
 
 static void _realloc_if_needed(DvzList* list)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
+    ANN(list);
+    ANN(list->values);
     ASSERT(list->capacity > 0);
 
     if (list->count >= list->capacity)
@@ -44,8 +44,8 @@ DvzList* dvz_list()
 
 void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
+    ANN(list);
+    ANN(list->values);
 
     _realloc_if_needed(list);
 
@@ -64,7 +64,7 @@ void dvz_list_insert(DvzList* list, uint64_t index, DvzListItem value)
 
 void dvz_list_append(DvzList* list, DvzListItem value)
 {
-    ASSERT(list != NULL);
+    ANN(list);
     dvz_list_insert(list, list->count, value);
 }
 
@@ -72,8 +72,8 @@ void dvz_list_append(DvzList* list, DvzListItem value)
 
 void dvz_list_remove(DvzList* list, uint64_t index)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
+    ANN(list);
+    ANN(list->values);
     ASSERT(list->capacity > 0);
 
     // ASSERT(0 <= index);
@@ -93,9 +93,9 @@ void dvz_list_remove(DvzList* list, uint64_t index)
 
 void dvz_list_remove_pointer(DvzList* list, void* pointer)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
-    ASSERT(pointer != NULL);
+    ANN(list);
+    ANN(list->values);
+    ANN(pointer);
 
     for (uint64_t i = 0; i < list->count; i++)
     {
@@ -110,8 +110,8 @@ void dvz_list_remove_pointer(DvzList* list, void* pointer)
 
 DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
+    ANN(list);
+    ANN(list->values);
     ASSERT(index < list->count);
     return list->values[index];
 }
@@ -120,8 +120,8 @@ DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 
 uint64_t dvz_list_index(DvzList* list, int value)
 {
-    ASSERT(list != NULL);
-    ASSERT(list->values != NULL);
+    ANN(list);
+    ANN(list->values);
     for (uint64_t i = 0; i < list->count; i++)
     {
         if (list->values[i].i == value)
@@ -138,7 +138,7 @@ bool dvz_list_has(DvzList* list, int value) { return dvz_list_index(list, value)
 
 uint64_t dvz_list_count(DvzList* list)
 {
-    ASSERT(list != NULL);
+    ANN(list);
     return list->count;
 }
 
@@ -146,7 +146,7 @@ uint64_t dvz_list_count(DvzList* list)
 
 void dvz_list_destroy(DvzList* list)
 {
-    ASSERT(list != NULL);
+    ANN(list);
     FREE(list->values);
     FREE(list);
 }

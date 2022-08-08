@@ -21,8 +21,8 @@
 
 static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
 {
-    ASSERT(mouse != NULL);
-    ASSERT(mouse->callbacks != NULL);
+    ANN(mouse);
+    ANN(mouse->callbacks);
 
     DvzMousePayload* payload = NULL;
     uint32_t n = dvz_list_count(mouse->callbacks);
@@ -45,7 +45,7 @@ static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
 
 static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // Old state.
     DvzMouseState state = mouse->state;
@@ -110,7 +110,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
 
 static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // Old state.
     DvzMouseState state = mouse->state;
@@ -166,7 +166,7 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
 
 static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // Old state.
     DvzMouseState state = mouse->state;
@@ -227,7 +227,7 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
 
 static DvzMouseEvent _after_wheel(DvzMouse* mouse, vec2 dir, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // Old state.
     DvzMouseState state = mouse->state;
@@ -264,7 +264,7 @@ DvzMouse* dvz_mouse()
 
 void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_move(mouse, pos, mods);
@@ -275,7 +275,7 @@ void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
 
 void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_press(mouse, button, mods);
@@ -286,7 +286,7 @@ void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 
 void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_release(mouse, button, mods);
@@ -297,7 +297,7 @@ void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 
 void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_wheel(mouse, dir, mods);
@@ -308,7 +308,7 @@ void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
 
 void dvz_mouse_tick(DvzMouse* mouse, double time)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
     mouse->time = time;
 }
 
@@ -317,7 +317,7 @@ void dvz_mouse_tick(DvzMouse* mouse, double time)
 void dvz_mouse_callback(
     DvzMouse* mouse, DvzMouseEventType type, DvzMouseCallback callback, void* user_data)
 {
-    ASSERT(mouse != NULL);
+    ANN(mouse);
 
     DvzMousePayload* payload = (DvzMousePayload*)calloc(1, sizeof(DvzMousePayload));
     payload->type = type;
@@ -330,15 +330,15 @@ void dvz_mouse_callback(
 
 void dvz_mouse_destroy(DvzMouse* mouse)
 {
-    ASSERT(mouse != NULL);
-    ASSERT(mouse->callbacks != NULL);
+    ANN(mouse);
+    ANN(mouse->callbacks);
 
     // Free the callback payloads.
     DvzMousePayload* payload = NULL;
     for (uint32_t i = 0; i < mouse->callbacks->count; i++)
     {
         payload = (DvzMousePayload*)(dvz_list_get(mouse->callbacks, i).p);
-        ASSERT(payload != NULL);
+        ANN(payload);
         FREE(payload);
     }
     dvz_list_destroy(mouse->callbacks);

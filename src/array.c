@@ -347,7 +347,7 @@ dvz_array_3D(uint32_t ndims, uint32_t width, uint32_t height, uint32_t depth, Dv
  */
 void dvz_array_resize(DvzArray* array, uint32_t item_count)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     ASSERT(item_count > 0);
     ASSERT(array->item_size > 0);
 
@@ -376,7 +376,7 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
     // Here, the array was already allocated, and the requested size is different.
     DvzSize old_size = array->buffer_size;
     DvzSize new_size = item_count * array->item_size;
-    ASSERT(array->data != NULL);
+    ANN(array->data);
 
     // Only reallocate if the existing buffer is not large enough for the new item_count.
     if (new_size > old_size)
@@ -406,7 +406,7 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
  */
 void dvz_array_clear(DvzArray* array)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     memset(array->data, 0, array->buffer_size);
 }
 
@@ -426,7 +426,7 @@ void dvz_array_clear(DvzArray* array)
  */
 void dvz_array_reshape(DvzArray* array, uint32_t width, uint32_t height, uint32_t depth)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     ASSERT(width > 0);
     ASSERT(height > 0);
     ASSERT(depth > 0);
@@ -460,9 +460,9 @@ void dvz_array_reshape(DvzArray* array, uint32_t width, uint32_t height, uint32_
  */
 void dvz_array_insert(DvzArray* array, uint32_t offset, uint32_t size, void* insert)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     ASSERT(size > 0);
-    ASSERT(insert != NULL);
+    ANN(insert);
 
     // Size of the chunk to move to make place for the inserted buffer.
     DvzSize chunk1_size = (array->item_count - offset) * array->item_size;
@@ -501,8 +501,8 @@ void dvz_array_copy_region(
     DvzArray* src_arr, DvzArray* dst_arr, uint32_t src_offset, uint32_t dst_offset,
     uint32_t item_count)
 {
-    ASSERT(src_arr != NULL);
-    ASSERT(dst_arr != NULL);
+    ANN(src_arr);
+    ANN(dst_arr);
     ASSERT(item_count > 0);
     ASSERT(src_offset + item_count <= src_arr->item_count);
     ASSERT(dst_offset + item_count <= dst_arr->item_count);
@@ -546,9 +546,9 @@ void dvz_array_data(
     DvzArray* array, uint32_t first_item, uint32_t item_count, //
     uint32_t data_item_count, const void* data)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     ASSERT(data_item_count > 0);
-    ASSERT(array->data != NULL);
+    ANN(array->data);
     if (data == NULL)
     {
         log_debug("skipping dvz_array_data() with NULL data");
@@ -572,9 +572,9 @@ void dvz_array_data(
     // Allocate the array if needed.
     if (dst == NULL)
         dst = array->data = calloc(first_item + array->item_count, array->item_size);
-    ASSERT(dst != NULL);
+    ANN(dst);
     const void* src = data;
-    ASSERT(src != NULL);
+    ANN(src);
 
     DvzSize copy_size = MIN(item_count, data_item_count) * item_size;
     ASSERT(copy_size > 0);
@@ -606,7 +606,7 @@ void dvz_array_data(
  */
 void dvz_array_scale(DvzArray* arr, float scaling)
 {
-    ASSERT(arr != NULL);
+    ANN(arr);
     // TODO: support other dtypes.
     if (arr->dtype == DVZ_DTYPE_FLOAT)
     {
@@ -645,10 +645,10 @@ void dvz_array_column(
     DvzDataType source_dtype, DvzDataType target_dtype, //
     DvzArrayCopyType copy_type, uint32_t reps)          //
 {
-    ASSERT(array != NULL);
+    ANN(array);
     ASSERT(data_item_count > 0);
-    ASSERT(array->data != NULL);
-    ASSERT(data != NULL);
+    ANN(array->data);
+    ANN(data);
     ASSERT(item_count > 0);
     ASSERT(first_item + item_count <= array->item_count);
 
@@ -661,8 +661,8 @@ void dvz_array_column(
     void* dst = array->data;
     const void* src = data;
 
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
+    ANN(src);
+    ANN(dst);
     ASSERT(src_stride > 0);
     ASSERT(dst_stride > 0);
     ASSERT(item_count > 0);
@@ -715,7 +715,7 @@ void dvz_array_column(
 
 void dvz_array_print(DvzArray* array)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     dvec3* item = NULL;
     for (uint32_t i = 0; i < array->item_count; i++)
     {
@@ -738,7 +738,7 @@ void dvz_array_print(DvzArray* array)
  */
 void dvz_array_destroy(DvzArray* array)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     if (!dvz_obj_is_created(&array->obj))
         return;
     dvz_obj_destroyed(&array->obj);

@@ -15,14 +15,14 @@
 /*************************************************************************************************/
 
 #define CMD_START                                                                                 \
-    ASSERT(cmds != NULL);                                                                         \
+    ANN(cmds);                                                                                    \
     VkCommandBuffer cb = {0};                                                                     \
     uint32_t i = idx;                                                                             \
     cb = cmds->cmds[i];
 
 
 #define CMD_START_CLIP(cnt)                                                                       \
-    ASSERT(cmds != NULL);                                                                         \
+    ANN(cmds);                                                                                    \
     ASSERT(cnt > 0);                                                                              \
     if (!((cnt) == 1 || (cnt) == cmds->count))                                                    \
         log_debug("mismatch between image count and cmd buf count");                              \
@@ -66,7 +66,7 @@ DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx)
 
 DvzGpu* dvz_gpu_best(DvzHost* host)
 {
-    ASSERT(host != NULL);
+    ANN(host);
     log_trace("start looking for the best GPU on the system among %d GPU(s)", host->gpus.count);
 
     DvzGpu* gpu = NULL;
@@ -79,7 +79,7 @@ DvzGpu* dvz_gpu_best(DvzHost* host)
     for (uint32_t i = 0; i < host->gpus.count; i++)
     {
         gpu = dvz_gpu(host, i);
-        ASSERT(gpu != NULL);
+        ANN(gpu);
         ASSERT(gpu->vram > 0);
 
         // Find the discrete GPU with the most VRAM.
@@ -105,7 +105,7 @@ DvzGpu* dvz_gpu_best(DvzHost* host)
     }
 
     best_gpu = best_gpu_discrete != NULL ? best_gpu_discrete : best_gpu;
-    ASSERT(best_gpu != NULL);
+    ANN(best_gpu);
     log_trace("best GPU: %s with %s VRAM", best_gpu->name, pretty_size(best_gpu->vram));
     return best_gpu;
 }
@@ -114,7 +114,7 @@ DvzGpu* dvz_gpu_best(DvzHost* host)
 
 DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout layout)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzRenderpass renderpass = {0};
     make_renderpass(gpu, &renderpass, DVZ_DEFAULT_FORMAT, layout, get_clear_color(clear_color));
     return renderpass;
@@ -124,7 +124,7 @@ DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout l
 
 void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     gpu->requested_features = requested_features;
 }
 
@@ -132,9 +132,9 @@ void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_fe
 
 void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzQueues* q = &gpu->queues;
-    ASSERT(q != NULL);
+    ANN(q);
     ASSERT(idx < DVZ_MAX_QUEUES);
     q->queue_types[idx] = type;
     ASSERT(idx == q->queue_count);
@@ -145,8 +145,8 @@ void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
 
 void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(gpu->host != NULL);
+    ANN(gpu);
+    ANN(gpu->host);
 
     if (gpu->queues.queue_count == 0)
     {
@@ -193,7 +193,7 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
 
 void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(queue_idx < gpu->queues.queue_count);
     // log_trace("waiting for queue #%d", queue_idx);
     vkQueueWaitIdle(gpu->queues.queues[queue_idx]);
@@ -203,7 +203,7 @@ void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx)
 
 void dvz_gpu_wait(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     log_trace("waiting for device");
     if (gpu->device != VK_NULL_HANDLE)
         vkDeviceWaitIdle(gpu->device);
@@ -213,7 +213,7 @@ void dvz_gpu_wait(DvzGpu* gpu)
 
 void dvz_gpu_destroy(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     log_trace("starting destruction of GPU #%d...", gpu->idx);
     if (!dvz_obj_is_created(&gpu->obj))
     {
@@ -311,8 +311,8 @@ static void _swapchain_create(DvzSwapchain* swapchain)
 
 static void _swapchain_destroy(DvzSwapchain* swapchain)
 {
-    ASSERT(swapchain != NULL);
-    ASSERT(swapchain->gpu != NULL);
+    ANN(swapchain);
+    ANN(swapchain->gpu);
 
     if (swapchain->images != NULL)
         dvz_images_destroy(swapchain->images);
@@ -328,7 +328,7 @@ static void _swapchain_destroy(DvzSwapchain* swapchain)
 
 DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_count)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzSwapchain swapchain = {0};
@@ -343,7 +343,7 @@ DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_c
 
 void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     swapchain->format = format;
 }
 
@@ -351,8 +351,8 @@ void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format)
 
 void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR present_mode)
 {
-    ASSERT(swapchain != NULL);
-    ASSERT(swapchain->gpu != NULL);
+    ANN(swapchain);
+    ANN(swapchain->gpu);
     ASSERT(dvz_obj_is_created(&swapchain->gpu->obj));
 
     swapchain->present_mode = VK_PRESENT_MODE_FIFO_KHR; // default present mode
@@ -372,7 +372,7 @@ void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR presen
 
 void dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t height)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     swapchain->requested_width = width;
     swapchain->requested_height = height;
 }
@@ -381,8 +381,8 @@ void dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint3
 
 void dvz_swapchain_create(DvzSwapchain* swapchain)
 {
-    ASSERT(swapchain != NULL);
-    ASSERT(swapchain->gpu != NULL);
+    ANN(swapchain);
+    ANN(swapchain->gpu);
 
     log_trace("starting creation of swapchain...");
 
@@ -406,7 +406,7 @@ void dvz_swapchain_create(DvzSwapchain* swapchain)
 
 void dvz_swapchain_recreate(DvzSwapchain* swapchain)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     _swapchain_destroy(swapchain);
     _swapchain_create(swapchain);
 
@@ -420,7 +420,7 @@ void dvz_swapchain_acquire(
     DvzSwapchain* swapchain, DvzSemaphores* semaphores, uint32_t semaphore_idx, DvzFences* fences,
     uint32_t fence_idx)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     // log_trace(
     //     "acquiring swapchain image with semaphore %d...",
     //     semaphores->semaphores[semaphore_idx]);
@@ -464,7 +464,7 @@ void dvz_swapchain_acquire(
 void dvz_swapchain_present(
     DvzSwapchain* swapchain, uint32_t queue_idx, DvzSemaphores* semaphores, uint32_t semaphore_idx)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     ASSERT(swapchain->swapchain != VK_NULL_HANDLE);
     // log_trace(
     //     "present swapchain image #%d and wait for semaphore %d", swapchain->img_idx,
@@ -506,7 +506,7 @@ void dvz_swapchain_present(
 
 void dvz_swapchain_destroy(DvzSwapchain* swapchain)
 {
-    ASSERT(swapchain != NULL);
+    ANN(swapchain);
     if (!dvz_obj_is_created(&swapchain->obj))
     {
         log_trace("skip destruction of already-destroyed swapchain");
@@ -537,7 +537,7 @@ void dvz_swapchain_destroy(DvzSwapchain* swapchain)
 
 DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     ASSERT(count <= DVZ_MAX_COMMAND_BUFFERS_PER_SET);
@@ -563,7 +563,7 @@ DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count)
 
 void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(cmds != NULL);
+    ANN(cmds);
     ASSERT(cmds->count > 0);
     ASSERT(idx != cmds->count);
 
@@ -577,7 +577,7 @@ void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_end(DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(cmds != NULL);
+    ANN(cmds);
     ASSERT(cmds->count > 0);
     ASSERT(idx != cmds->count);
 
@@ -591,7 +591,7 @@ void dvz_cmd_end(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(cmds != NULL);
+    ANN(cmds);
     ASSERT(cmds->count > 0);
     ASSERT(idx != cmds->count);
 
@@ -608,9 +608,9 @@ void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_free(DvzCommands* cmds)
 {
-    ASSERT(cmds != NULL);
+    ANN(cmds);
     ASSERT(cmds->count > 0);
-    ASSERT(cmds->gpu != NULL);
+    ANN(cmds->gpu);
     ASSERT(cmds->gpu->device != VK_NULL_HANDLE);
 
     log_trace("free %d command buffer(s)", cmds->count);
@@ -643,7 +643,7 @@ void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
 
 void dvz_commands_destroy(DvzCommands* cmds)
 {
-    ASSERT(cmds != NULL);
+    ANN(cmds);
     if (!dvz_obj_is_created(&cmds->obj))
     {
         log_trace("skip destruction of already-destroyed commands");
@@ -661,7 +661,7 @@ void dvz_commands_destroy(DvzCommands* cmds)
 
 DvzBuffer dvz_buffer(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzBuffer buffer = {0};
@@ -679,7 +679,7 @@ DvzBuffer dvz_buffer(DvzGpu* gpu)
 
 void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buffer->size = size;
 }
 
@@ -687,7 +687,7 @@ void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size)
 
 void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buffer->type = type;
 }
 
@@ -695,7 +695,7 @@ void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type)
 
 void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buffer->usage = usage;
 }
 
@@ -703,7 +703,7 @@ void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage)
 
 void dvz_buffer_vma_usage(DvzBuffer* buffer, VmaMemoryUsage vma_usage)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buffer->vma.usage = vma_usage;
 }
 
@@ -711,7 +711,7 @@ void dvz_buffer_vma_usage(DvzBuffer* buffer, VmaMemoryUsage vma_usage)
 
 void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buffer->memory = memory;
 }
 
@@ -719,8 +719,8 @@ void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory)
 
 void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
     ASSERT(queue_idx < buffer->gpu->queues.queue_count);
     buffer->queues[buffer->queue_count++] = queue_idx;
 }
@@ -729,9 +729,9 @@ void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx)
 
 static void _buffer_create(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     DvzGpu* gpu = buffer->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     VkBufferCreateInfo buf_info = {0};
     buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -771,8 +771,8 @@ static void _buffer_create(DvzBuffer* buffer)
 
 static void _buffer_destroy(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
 
     // Unmap permanently-mapped buffers before destruction.
     if (buffer->mmap != NULL)
@@ -810,8 +810,8 @@ static void _buffer_copy(DvzBuffer* buffer0, DvzBuffer* buffer1)
 
 void dvz_buffer_create(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(buffer->size > 0);
     ASSERT(buffer->usage != 0);
@@ -829,7 +829,7 @@ void dvz_buffer_create(DvzBuffer* buffer)
 
 void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     DvzGpu* gpu = buffer->gpu;
     if (size <= buffer->size)
     {
@@ -919,8 +919,8 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
 
 void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(dvz_obj_is_created(&buffer->obj));
     if (size < UINT64_MAX)
@@ -951,8 +951,8 @@ void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size)
 
 void dvz_buffer_unmap(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(dvz_obj_is_created(&buffer->obj));
 
@@ -969,9 +969,9 @@ void dvz_buffer_unmap(DvzBuffer* buffer)
 
 void dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     ASSERT(size > 0);
-    ASSERT(data != NULL);
+    ANN(data);
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
     ASSERT(offset + size <= buffer->size);
 
@@ -989,7 +989,7 @@ void dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size
         need_unmap = false;
     }
 
-    ASSERT(mapped != NULL);
+    ANN(mapped);
     log_trace("memcpy %s from %d to %d", pretty_size(size), data, mapped);
     memcpy(mapped, data, size);
 
@@ -1024,7 +1024,7 @@ void dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize si
 
 void dvz_buffer_destroy(DvzBuffer* buffer)
 {
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     if (!dvz_obj_is_created(&buffer->obj))
     {
         log_trace("skip destruction of already-destroyed buffer");
@@ -1045,8 +1045,8 @@ DvzBufferRegions dvz_buffer_regions(
     DvzBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment)
 {
-    ASSERT(buffer != NULL);
-    ASSERT(buffer->gpu != NULL);
+    ANN(buffer);
+    ANN(buffer->gpu);
     ASSERT(buffer->gpu->device != VK_NULL_HANDLE);
     ASSERT(dvz_obj_is_created(&buffer->obj));
     ASSERT(count <= DVZ_MAX_BUFFER_REGIONS_PER_SET);
@@ -1088,7 +1088,7 @@ DvzBufferRegions dvz_buffer_regions(
 void* dvz_buffer_regions_map(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size)
 {
-    ASSERT(br != NULL);
+    ANN(br);
     DvzBuffer* buffer = br->buffer;
     ASSERT(idx < br->count);
     ASSERT(size <= br->size);
@@ -1100,9 +1100,9 @@ void* dvz_buffer_regions_map(
 
 void dvz_buffer_regions_unmap(DvzBufferRegions* br)
 {
-    ASSERT(br != NULL);
+    ANN(br);
     DvzBuffer* buffer = br->buffer;
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     dvz_buffer_unmap(buffer);
 }
 
@@ -1111,15 +1111,15 @@ void dvz_buffer_regions_unmap(DvzBufferRegions* br)
 void dvz_buffer_regions_upload(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
-    ASSERT(br != NULL);
+    ANN(br);
     DvzBuffer* buffer = br->buffer;
 
     // VkDeviceSize size = br->size;
     // NOTE: size is now passed as an argument to the function
 
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     ASSERT(size != 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     log_trace("uploading %s to GPU buffer", pretty_size(size));
 
@@ -1135,7 +1135,7 @@ void dvz_buffer_regions_upload(
         mapped = buffer->mmap;
         need_unmap = false;
     }
-    ASSERT(mapped != NULL);
+    ANN(mapped);
 
     log_trace("memcpy %s from %u to %u", pretty_size(size), data, mapped);
     memcpy(mapped, data, size);
@@ -1149,15 +1149,15 @@ void dvz_buffer_regions_upload(
 void dvz_buffer_regions_download(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size, void* data)
 {
-    ASSERT(br != NULL);
+    ANN(br);
     DvzBuffer* buffer = br->buffer;
 
     // VkDeviceSize size = br->size;
     // NOTE: size is now passed as an argument to the function
 
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     ASSERT(size != 0);
-    ASSERT(data != NULL);
+    ANN(data);
 
     log_trace("downloading %s from GPU buffer", pretty_size(size));
 
@@ -1173,7 +1173,7 @@ void dvz_buffer_regions_download(
         mapped = buffer->mmap;
         need_unmap = false;
     }
-    ASSERT(mapped != NULL);
+    ANN(mapped);
 
     memcpy(data, mapped, size);
 
@@ -1187,11 +1187,11 @@ void dvz_buffer_regions_copy(
     DvzBufferRegions* src, uint32_t src_idx, VkDeviceSize src_offset, //
     DvzBufferRegions* dst, uint32_t dst_idx, VkDeviceSize dst_offset, VkDeviceSize size)
 {
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
-    ASSERT(src->buffer != NULL);
-    ASSERT(dst->buffer != NULL);
-    ASSERT(src->buffer->gpu != NULL);
+    ANN(src);
+    ANN(dst);
+    ANN(src->buffer);
+    ANN(dst->buffer);
+    ANN(src->buffer->gpu);
     ASSERT(src->buffer->gpu == dst->buffer->gpu);
 
     log_debug(
@@ -1199,7 +1199,7 @@ void dvz_buffer_regions_copy(
         src_idx, src->count, dst_idx, dst->count);
 
     DvzGpu* gpu = src->buffer->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(size > 0);
 
     // HACK: use queue 0 for transfers (convention)
@@ -1262,7 +1262,7 @@ void dvz_buffer_regions_copy(
 
 DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzImages images = {0};
@@ -1289,7 +1289,7 @@ DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count)
 
 void dvz_images_format(DvzImages* img, VkFormat format)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->format = format;
 }
 
@@ -1297,7 +1297,7 @@ void dvz_images_format(DvzImages* img, VkFormat format)
 
 void dvz_images_layout(DvzImages* img, VkImageLayout layout)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->layout = layout;
 }
 
@@ -1305,7 +1305,7 @@ void dvz_images_layout(DvzImages* img, VkImageLayout layout)
 
 void dvz_images_size(DvzImages* img, uvec3 shape)
 {
-    ASSERT(img != NULL);
+    ANN(img);
 
     log_trace("set image size %dx%dx%d", shape[0], shape[1], shape[2]);
     check_dims(img->image_type, shape);
@@ -1317,7 +1317,7 @@ void dvz_images_size(DvzImages* img, uvec3 shape)
 
 void dvz_images_tiling(DvzImages* img, VkImageTiling tiling)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->tiling = tiling;
 }
 
@@ -1325,7 +1325,7 @@ void dvz_images_tiling(DvzImages* img, VkImageTiling tiling)
 
 void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->usage = usage;
 }
 
@@ -1333,7 +1333,7 @@ void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage)
 
 void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     for (uint32_t i = 0; i < img->count; i++)
         img->vma[i].usage = vma_usage;
 }
@@ -1342,7 +1342,7 @@ void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage)
 
 void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->memory = memory;
 }
 
@@ -1350,7 +1350,7 @@ void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory)
 
 void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     img->aspect = aspect;
 }
 
@@ -1358,7 +1358,7 @@ void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect)
 
 void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(queue_idx < img->gpu->queues.queue_count);
     img->queues[img->queue_count++] = queue_idx;
 }
@@ -1367,10 +1367,10 @@ void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx)
 
 static void _images_create(DvzImages* img)
 {
-    ASSERT(img != NULL);
+    ANN(img);
 
     DvzGpu* gpu = img->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     VkDeviceSize size = 0;
     ASSERT(img->format != 0);
@@ -1470,8 +1470,8 @@ static void _images_create(DvzImages* img)
 
 static void _images_destroy(DvzImages* img)
 {
-    ASSERT(img != NULL);
-    ASSERT(img->gpu != NULL);
+    ANN(img);
+    ANN(img->gpu);
 
     for (uint32_t i = 0; i < img->count; i++)
     {
@@ -1492,8 +1492,8 @@ static void _images_destroy(DvzImages* img)
 
 void dvz_images_create(DvzImages* img)
 {
-    ASSERT(img != NULL);
-    ASSERT(img->gpu != NULL);
+    ANN(img);
+    ANN(img->gpu);
     ASSERT(img->gpu->device != VK_NULL_HANDLE);
 
     check_dims(img->image_type, img->shape);
@@ -1508,9 +1508,9 @@ void dvz_images_create(DvzImages* img)
 
 void dvz_images_transition(DvzImages* img)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     DvzGpu* gpu = img->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Start the image transition command buffer.
     // HACK: use queue 0 for transfer (convention)
@@ -1533,7 +1533,7 @@ void dvz_images_transition(DvzImages* img)
 
 void dvz_images_resize(DvzImages* img, uvec3 new_shape)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     log_debug(
         "[SLOW] resize images to size %dx%dx%d, losing the data in it", //
         new_shape[0], new_shape[1], new_shape[2]);
@@ -1547,8 +1547,8 @@ void dvz_images_resize(DvzImages* img, uvec3 new_shape)
 static void*
 _images_download(DvzImages* img, uint32_t idx, bool has_alpha, VkSubresourceLayout* res_layout)
 {
-    ASSERT(img != NULL);
-    ASSERT(img->gpu != NULL);
+    ANN(img);
+    ANN(img->gpu);
 
     VkImageSubresource res = {0};
     res.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -1558,7 +1558,7 @@ _images_download(DvzImages* img, uint32_t idx, bool has_alpha, VkSubresourceLayo
     void* cdata = NULL;
     // vkMapMemory(images->gpu->device, images->memories[idx], 0, VK_WHOLE_SIZE, 0, &cdata);
     vmaMapMemory(img->gpu->allocator, img->vma[idx].alloc, &cdata);
-    ASSERT(cdata != NULL);
+    ANN(cdata);
     VkDeviceSize row_pitch = res_layout->rowPitch;
     ASSERT(row_pitch > 0);
 
@@ -1586,9 +1586,9 @@ static void _pack_image_data(
     VkDeviceSize offset, VkDeviceSize row_pitch,                     //
     bool swizzle, bool has_alpha, void* out)
 {
-    ASSERT(img != NULL);
-    ASSERT(imgdata != NULL);
-    ASSERT(out != NULL);
+    ANN(img);
+    ANN(imgdata);
+    ANN(out);
     ASSERT(row_pitch > 0);
 
     // void* image_orig = images;
@@ -1639,8 +1639,8 @@ void dvz_images_download(
     // - source always has alpha
     // - parameter "has_alpha" only refers to the source buffer
 
-    ASSERT(staging != NULL);
-    ASSERT(out != NULL);
+    ANN(staging);
+    ANN(out);
     ASSERT(bytes_per_component > 0);
 
     VkSubresourceLayout res_layout = {0};
@@ -1659,10 +1659,10 @@ void dvz_images_download(
 void dvz_images_copy(
     DvzImages* src, uvec3 src_offset, DvzImages* dst, uvec3 dst_offset, uvec3 shape)
 {
-    ASSERT(src != NULL);
-    ASSERT(dst != NULL);
+    ANN(src);
+    ANN(dst);
     DvzGpu* gpu = src->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Take transfer cmd buf.
     DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
@@ -1763,12 +1763,12 @@ void dvz_images_copy_from_buffer(
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     DvzGpu* gpu = img->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzBuffer* buffer = br.buffer;
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buf_offset = br.offsets[0] + buf_offset;
 
     for (uint32_t i = 0; i < 3; i++)
@@ -1788,8 +1788,8 @@ void dvz_images_copy_from_buffer(
     // Image transition.
     DvzBarrier barrier = dvz_barrier(gpu);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    ASSERT(img != NULL);
-    ASSERT(img != NULL);
+    ANN(img);
+    ANN(img);
     dvz_barrier_images(&barrier, img);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -1824,12 +1824,12 @@ void dvz_images_copy_to_buffer(
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     DvzGpu* gpu = img->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzBuffer* buffer = br.buffer;
-    ASSERT(buffer != NULL);
+    ANN(buffer);
     buf_offset = br.offsets[0] + buf_offset;
 
     for (uint32_t i = 0; i < 3; i++)
@@ -1849,8 +1849,8 @@ void dvz_images_copy_to_buffer(
     // Image transition.
     DvzBarrier barrier = dvz_barrier(gpu);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    ASSERT(img != NULL);
-    ASSERT(img != NULL);
+    ANN(img);
+    ANN(img);
     dvz_barrier_images(&barrier, img);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
@@ -1883,7 +1883,7 @@ void dvz_images_copy_to_buffer(
 
 void dvz_images_destroy(DvzImages* img)
 {
-    ASSERT(img != NULL);
+    ANN(img);
     if (!dvz_obj_is_created(&img->obj))
     {
         log_trace("skip destruction of already-destroyed images");
@@ -1902,7 +1902,7 @@ void dvz_images_destroy(DvzImages* img)
 
 DvzSampler dvz_sampler(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzSampler sampler = {0};
@@ -1916,7 +1916,7 @@ DvzSampler dvz_sampler(DvzGpu* gpu)
 
 void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter)
 {
-    ASSERT(sampler != NULL);
+    ANN(sampler);
     sampler->min_filter = filter;
 }
 
@@ -1924,7 +1924,7 @@ void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter)
 
 void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter)
 {
-    ASSERT(sampler != NULL);
+    ANN(sampler);
     sampler->mag_filter = filter;
 }
 
@@ -1933,7 +1933,7 @@ void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter)
 void dvz_sampler_address_mode(
     DvzSampler* sampler, DvzSamplerAxis axis, VkSamplerAddressMode address_mode)
 {
-    ASSERT(sampler != NULL);
+    ANN(sampler);
     ASSERT(axis <= 2);
     sampler->address_modes[axis] = address_mode;
 }
@@ -1942,8 +1942,8 @@ void dvz_sampler_address_mode(
 
 void dvz_sampler_create(DvzSampler* sampler)
 {
-    ASSERT(sampler != NULL);
-    ASSERT(sampler->gpu != NULL);
+    ANN(sampler);
+    ANN(sampler->gpu);
     ASSERT(sampler->gpu->device != VK_NULL_HANDLE);
 
     log_trace("starting creation of sampler...");
@@ -1960,7 +1960,7 @@ void dvz_sampler_create(DvzSampler* sampler)
 
 void dvz_sampler_destroy(DvzSampler* sampler)
 {
-    ASSERT(sampler != NULL);
+    ANN(sampler);
     if (!dvz_obj_is_created(&sampler->obj))
     {
         log_trace("skip destruction of already-destroyed sampler");
@@ -1983,7 +1983,7 @@ void dvz_sampler_destroy(DvzSampler* sampler)
 
 DvzSlots dvz_slots(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzSlots slots = {0};
@@ -1997,7 +1997,7 @@ DvzSlots dvz_slots(DvzGpu* gpu)
 
 void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
 {
-    ASSERT(slots != NULL);
+    ANN(slots);
     ASSERT(idx == slots->slot_count);
     ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
     slots->types[slots->slot_count++] = type;
@@ -2008,7 +2008,7 @@ void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
 void dvz_slots_push(
     DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
-    ASSERT(slots != NULL);
+    ANN(slots);
     uint32_t idx = slots->push_count;
     ASSERT(idx < DVZ_MAX_PUSH_CONSTANTS);
 
@@ -2023,8 +2023,8 @@ void dvz_slots_push(
 
 void dvz_slots_create(DvzSlots* slots)
 {
-    ASSERT(slots != NULL);
-    ASSERT(slots->gpu != NULL);
+    ANN(slots);
+    ANN(slots->gpu);
     ASSERT(slots->gpu->device != VK_NULL_HANDLE);
 
     log_trace("starting creation of slots...");
@@ -2054,8 +2054,8 @@ void dvz_slots_create(DvzSlots* slots)
 
 void dvz_slots_destroy(DvzSlots* slots)
 {
-    ASSERT(slots != NULL);
-    ASSERT(slots->gpu != NULL);
+    ANN(slots);
+    ANN(slots->gpu);
     if (!dvz_obj_is_created(&slots->obj))
     {
         log_trace("skip destruction of already-destroyed slots");
@@ -2084,9 +2084,9 @@ void dvz_slots_destroy(DvzSlots* slots)
 
 DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count)
 {
-    ASSERT(slots != NULL);
+    ANN(slots);
     DvzGpu* gpu = slots->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzBindings bindings = {0};
@@ -2116,7 +2116,7 @@ DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count)
 
 void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions br)
 {
-    ASSERT(bindings != NULL);
+    ANN(bindings);
     ASSERT(br.buffer != VK_NULL_HANDLE);
     ASSERT(br.count > 0);
     ASSERT(bindings->dset_count > 0);
@@ -2133,9 +2133,9 @@ void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions b
 
 void dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzImages* img, DvzSampler* sampler)
 {
-    ASSERT(bindings != NULL);
-    ASSERT(img != NULL);
-    ASSERT(sampler != NULL);
+    ANN(bindings);
+    ANN(img);
+    ANN(sampler);
     ASSERT(img->count == 1 || img->count == bindings->dset_count);
 
     log_trace("set bindings with texture for binding #%d", idx);
@@ -2151,7 +2151,7 @@ void dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzImages* img, D
 void dvz_bindings_update(DvzBindings* bindings)
 {
     log_trace("update bindings");
-    ASSERT(bindings->slots != NULL);
+    ANN(bindings->slots);
     ASSERT(dvz_obj_is_created(&bindings->slots->obj));
     ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
     ASSERT(bindings->dset_count > 0);
@@ -2173,8 +2173,8 @@ void dvz_bindings_update(DvzBindings* bindings)
 
 void dvz_bindings_destroy(DvzBindings* bindings)
 {
-    ASSERT(bindings != NULL);
-    ASSERT(bindings->gpu != NULL);
+    ANN(bindings);
+    ANN(bindings->gpu);
     if (!dvz_obj_is_created(&bindings->obj))
     {
         log_trace("skip destruction of already-destroyed bindings");
@@ -2192,7 +2192,7 @@ void dvz_bindings_destroy(DvzBindings* bindings)
 
 DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzCompute compute = {0};
@@ -2211,7 +2211,7 @@ DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path)
 
 void dvz_compute_code(DvzCompute* compute, const char* code)
 {
-    ASSERT(compute != NULL);
+    ANN(compute);
     compute->shader_code = code;
 }
 
@@ -2219,7 +2219,7 @@ void dvz_compute_code(DvzCompute* compute, const char* code)
 
 void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 {
-    ASSERT(compute != NULL);
+    ANN(compute);
     dvz_slots_binding(&compute->slots, idx, type);
 }
 
@@ -2228,7 +2228,7 @@ void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 void dvz_compute_push(
     DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
-    ASSERT(compute != NULL);
+    ANN(compute);
     dvz_slots_push(&compute->slots, offset, size, shaders);
 }
 
@@ -2236,8 +2236,8 @@ void dvz_compute_push(
 
 void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings)
 {
-    ASSERT(compute != NULL);
-    ASSERT(bindings != NULL);
+    ANN(compute);
+    ANN(bindings);
     compute->bindings = bindings;
 }
 
@@ -2245,10 +2245,10 @@ void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings)
 
 void dvz_compute_create(DvzCompute* compute)
 {
-    ASSERT(compute != NULL);
-    ASSERT(compute->gpu != NULL);
+    ANN(compute);
+    ANN(compute->gpu);
     ASSERT(compute->gpu->device != VK_NULL_HANDLE);
-    ASSERT(compute->shader_path != NULL);
+    ANN(compute->shader_path);
     if (!dvz_obj_is_created(&compute->slots.obj))
         dvz_slots_create(&compute->slots);
 
@@ -2270,7 +2270,7 @@ void dvz_compute_create(DvzCompute* compute)
         compute->shader_module =
             create_shader_module_from_file(compute->gpu->device, compute->shader_path);
     }
-    ASSERT(compute->shader_module != NULL);
+    ANN(compute->shader_module);
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //
@@ -2284,8 +2284,8 @@ void dvz_compute_create(DvzCompute* compute)
 
 void dvz_compute_destroy(DvzCompute* compute)
 {
-    ASSERT(compute != NULL);
-    ASSERT(compute->gpu != NULL);
+    ANN(compute);
+    ANN(compute->gpu);
     if (!dvz_obj_is_created(&compute->obj))
     {
         log_trace("skip destruction of already-destroyed compute");
@@ -2320,7 +2320,7 @@ void dvz_compute_destroy(DvzCompute* compute)
 
 DvzGraphics dvz_graphics(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzGraphics graphics = {0};
@@ -2337,7 +2337,7 @@ DvzGraphics dvz_graphics(DvzGpu* gpu)
 
 void dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->renderpass = renderpass;
     graphics->subpass = subpass;
 }
@@ -2347,7 +2347,7 @@ void dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, u
 void dvz_graphics_drawing(DvzGraphics* graphics, int drawing)
 {
 
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->drawing = drawing;
 }
 
@@ -2355,7 +2355,7 @@ void dvz_graphics_drawing(DvzGraphics* graphics, int drawing)
 
 void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->topology = topology;
 }
 
@@ -2363,8 +2363,8 @@ void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology)
 
 void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* code)
 {
-    ASSERT(graphics != NULL);
-    ASSERT(graphics->gpu != NULL);
+    ANN(graphics);
+    ANN(graphics->gpu);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     graphics->shader_stages[graphics->shader_count] = stage;
@@ -2378,8 +2378,8 @@ void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage
 void dvz_graphics_shader(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path)
 {
-    ASSERT(graphics != NULL);
-    ASSERT(graphics->gpu != NULL);
+    ANN(graphics);
+    ANN(graphics->gpu);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     graphics->shader_stages[graphics->shader_count] = stage;
@@ -2393,8 +2393,8 @@ void dvz_graphics_shader_spirv(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, //
     VkDeviceSize size, const uint32_t* buffer)
 {
-    ASSERT(graphics != NULL);
-    ASSERT(graphics->gpu != NULL);
+    ANN(graphics);
+    ANN(graphics->gpu);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
 
     graphics->shader_stages[graphics->shader_count] = stage;
@@ -2406,7 +2406,7 @@ void dvz_graphics_shader_spirv(
 
 void dvz_graphics_vertex_binding(DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     DvzVertexBinding* vb = &graphics->vertex_bindings[graphics->vertex_binding_count++];
     vb->binding = binding;
     vb->stride = stride;
@@ -2418,7 +2418,7 @@ void dvz_graphics_vertex_attr(
     DvzGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
     VkDeviceSize offset)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     DvzVertexAttr* va = &graphics->vertex_attrs[graphics->vertex_attr_count++];
     va->binding = binding;
     va->location = location;
@@ -2430,7 +2430,7 @@ void dvz_graphics_vertex_attr(
 
 void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->blend_type = blend_type;
 }
 
@@ -2438,7 +2438,7 @@ void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type)
 
 void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     if (depth_test)
         log_debug("enable depth test");
     graphics->depth_test = depth_test;
@@ -2448,7 +2448,7 @@ void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test)
 
 void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     if (support_pick)
         log_debug("enable picking in graphics pipeline");
     graphics->support_pick = support_pick;
@@ -2458,7 +2458,7 @@ void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick)
 
 void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->polygon_mode = polygon_mode;
 }
 
@@ -2466,7 +2466,7 @@ void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode
 
 void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->cull_mode = cull_mode;
 }
 
@@ -2474,7 +2474,7 @@ void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode)
 
 void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     graphics->front_face = front_face;
 }
 
@@ -2482,7 +2482,7 @@ void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face)
 
 void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_slots_binding(&graphics->slots, idx, type);
 }
 
@@ -2491,7 +2491,7 @@ void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType typ
 void dvz_graphics_push(
     DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     dvz_slots_push(&graphics->slots, offset, size, shaders);
 }
 
@@ -2499,10 +2499,10 @@ void dvz_graphics_push(
 
 void dvz_graphics_create(DvzGraphics* graphics)
 {
-    ASSERT(graphics != NULL);
-    ASSERT(graphics->gpu != NULL);
+    ANN(graphics);
+    ANN(graphics->gpu);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
-    ASSERT(graphics->renderpass != NULL);
+    ANN(graphics->renderpass);
     if (!dvz_obj_is_created(&graphics->slots.obj))
         dvz_slots_create(&graphics->slots);
 
@@ -2542,7 +2542,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
         shader_stages[i].stage = graphics->shader_stages[i];
         shader_stages[i].module = graphics->shader_modules[i];
         ASSERT(graphics->shader_stages[i] != 0);
-        ASSERT(graphics->shader_modules[i] != NULL);
+        ANN(graphics->shader_modules[i]);
         shader_stages[i].pName = "main";
     }
 
@@ -2603,13 +2603,13 @@ void dvz_graphics_create(DvzGraphics* graphics)
 
 void dvz_graphics_destroy(DvzGraphics* graphics)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     if (graphics->obj.status <= DVZ_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
         // log_trace("skip destruction of already-destroyed graphics");
         return;
     }
-    ASSERT(graphics->gpu != NULL);
+    ANN(graphics->gpu);
     log_trace("destroy graphics");
 
     VkDevice device = graphics->gpu->device;
@@ -2642,7 +2642,7 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
 
 DvzBarrier dvz_barrier(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzBarrier barrier = {0};
@@ -2655,7 +2655,7 @@ DvzBarrier dvz_barrier(DvzGpu* gpu)
 void dvz_barrier_stages(
     DvzBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
     barrier->src_stage = src_stage;
     barrier->dst_stage = dst_stage;
 }
@@ -2664,7 +2664,7 @@ void dvz_barrier_stages(
 
 void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
     DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count++];
     b->br = br;
 }
@@ -2673,10 +2673,10 @@ void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br)
 
 void dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
-    ASSERT(b->br.buffer != NULL);
+    ANN(b->br.buffer);
 
     b->queue_transfer = true;
     b->src_queue = src_queue;
@@ -2688,10 +2688,10 @@ void dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t 
 void dvz_barrier_buffer_access(
     DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierBuffer* b = &barrier->buffer_barriers[barrier->buffer_barrier_count - 1];
-    ASSERT(b->br.buffer != NULL);
+    ANN(b->br.buffer);
 
     b->src_access = src_access;
     b->dst_access = dst_access;
@@ -2701,7 +2701,7 @@ void dvz_barrier_buffer_access(
 
 void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count++];
 
@@ -2713,10 +2713,10 @@ void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img)
 void dvz_barrier_images_layout(
     DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
-    ASSERT(b->images != NULL);
+    ANN(b->images);
 
     b->src_layout = src_layout;
     b->dst_layout = dst_layout;
@@ -2727,10 +2727,10 @@ void dvz_barrier_images_layout(
 void dvz_barrier_images_access(
     DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
-    ASSERT(b->images != NULL);
+    ANN(b->images);
 
     b->src_access = src_access;
     b->dst_access = dst_access;
@@ -2740,10 +2740,10 @@ void dvz_barrier_images_access(
 
 void dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
 
     DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
-    ASSERT(b->images != NULL);
+    ANN(b->images);
 
     b->queue_transfer = true;
     b->src_queue = src_queue;
@@ -2758,7 +2758,7 @@ void dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t 
 
 DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     ASSERT(count > 0);
@@ -2782,14 +2782,14 @@ DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count)
 
 void dvz_semaphores_recreate(DvzSemaphores* semaphores)
 {
-    ASSERT(semaphores != NULL);
+    ANN(semaphores);
     if (!dvz_obj_is_created(&semaphores->obj))
     {
         log_trace("skip destruction of already-destroyed semaphores");
         return;
     }
     DvzGpu* gpu = semaphores->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     ASSERT(semaphores->count > 0);
     log_trace("recreate set of %d semaphore(s)", semaphores->count);
@@ -2811,7 +2811,7 @@ void dvz_semaphores_recreate(DvzSemaphores* semaphores)
 
 void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 {
-    ASSERT(semaphores != NULL);
+    ANN(semaphores);
     if (!dvz_obj_is_created(&semaphores->obj))
     {
         log_trace("skip destruction of already-destroyed semaphores");
@@ -2840,7 +2840,7 @@ void dvz_semaphores_destroy(DvzSemaphores* semaphores)
 
 DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzFences fences = {0};
@@ -2868,8 +2868,8 @@ DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled)
 void dvz_fences_copy(
     DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, uint32_t dst_idx)
 {
-    ASSERT(src_fences != NULL);
-    ASSERT(dst_fences != NULL);
+    ANN(src_fences);
+    ANN(dst_fences);
 
     ASSERT(src_idx < src_fences->count);
     ASSERT(dst_idx < dst_fences->count);
@@ -2885,7 +2885,7 @@ void dvz_fences_copy(
 
 void dvz_fences_wait(DvzFences* fences, uint32_t idx)
 {
-    ASSERT(fences != NULL);
+    ANN(fences);
     ASSERT(idx < fences->count);
     if (fences->fences[idx] != VK_NULL_HANDLE)
     {
@@ -2904,7 +2904,7 @@ void dvz_fences_wait(DvzFences* fences, uint32_t idx)
 
 bool dvz_fences_ready(DvzFences* fences, uint32_t idx)
 {
-    ASSERT(fences != NULL);
+    ANN(fences);
     ASSERT(idx < fences->count);
     ASSERT(fences->fences[idx] != VK_NULL_HANDLE);
     VkResult res = vkGetFenceStatus(fences->gpu->device, fences->fences[idx]);
@@ -2917,7 +2917,7 @@ bool dvz_fences_ready(DvzFences* fences, uint32_t idx)
 
 void dvz_fences_reset(DvzFences* fences, uint32_t idx)
 {
-    ASSERT(fences != NULL);
+    ANN(fences);
     if (fences->fences[idx] != NULL)
     {
         // log_trace("reset fence %d", fences->fences[idx]);
@@ -2929,7 +2929,7 @@ void dvz_fences_reset(DvzFences* fences, uint32_t idx)
 
 void dvz_fences_destroy(DvzFences* fences)
 {
-    ASSERT(fences != NULL);
+    ANN(fences);
     if (!dvz_obj_is_created(&fences->obj))
     {
         log_trace("skip destruction of already-destroyed fences");
@@ -2958,7 +2958,7 @@ void dvz_fences_destroy(DvzFences* fences)
 
 DvzRenderpass dvz_renderpass(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzRenderpass renderpass = {0};
@@ -2971,7 +2971,7 @@ DvzRenderpass dvz_renderpass(DvzGpu* gpu)
 
 void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue value)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->clear_values[renderpass->clear_count++] = value;
 }
 
@@ -2981,7 +2981,7 @@ void dvz_renderpass_attachment(
     DvzRenderpass* renderpass, uint32_t idx, DvzRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->attachments[idx].ref_layout = ref_layout;
     renderpass->attachments[idx].type = type;
     renderpass->attachments[idx].format = format;
@@ -2993,7 +2993,7 @@ void dvz_renderpass_attachment(
 void dvz_renderpass_attachment_layout(
     DvzRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->attachments[idx].src_layout = src_layout;
     renderpass->attachments[idx].dst_layout = dst_layout;
     renderpass->attachment_count = MAX(renderpass->attachment_count, idx + 1);
@@ -3005,7 +3005,7 @@ void dvz_renderpass_attachment_ops(
     DvzRenderpass* renderpass, uint32_t idx, //
     VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->attachments[idx].load_op = load_op;
     renderpass->attachments[idx].store_op = store_op;
     renderpass->attachment_count = MAX(renderpass->attachment_count, idx + 1);
@@ -3016,7 +3016,7 @@ void dvz_renderpass_attachment_ops(
 void dvz_renderpass_subpass_attachment(
     DvzRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->subpasses[subpass_idx]
         .attachments[renderpass->subpasses[subpass_idx].attachment_count++] = attachment_idx;
     renderpass->subpass_count = MAX(renderpass->subpass_count, subpass_idx + 1);
@@ -3028,7 +3028,7 @@ void dvz_renderpass_subpass_dependency(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     uint32_t src_subpass, uint32_t dst_subpass)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->dependencies[dependency_idx].src_subpass = src_subpass;
     renderpass->dependencies[dependency_idx].dst_subpass = dst_subpass;
     renderpass->dependency_count = MAX(renderpass->dependency_count, dependency_idx + 1);
@@ -3040,7 +3040,7 @@ void dvz_renderpass_subpass_dependency_access(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkAccessFlags src_access, VkAccessFlags dst_access)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->dependencies[dependency_idx].src_access = src_access;
     renderpass->dependencies[dependency_idx].dst_access = dst_access;
 }
@@ -3051,7 +3051,7 @@ void dvz_renderpass_subpass_dependency_stage(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     renderpass->dependencies[dependency_idx].src_stage = src_stage;
     renderpass->dependencies[dependency_idx].dst_stage = dst_stage;
 }
@@ -3060,9 +3060,9 @@ void dvz_renderpass_subpass_dependency_stage(
 
 void dvz_renderpass_create(DvzRenderpass* renderpass)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
 
-    ASSERT(renderpass->gpu != NULL);
+    ANN(renderpass->gpu);
     ASSERT(renderpass->gpu->device != VK_NULL_HANDLE);
     log_trace("starting creation of renderpass...");
 
@@ -3145,7 +3145,7 @@ void dvz_renderpass_create(DvzRenderpass* renderpass)
 
 void dvz_renderpass_destroy(DvzRenderpass* renderpass)
 {
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     if (!dvz_obj_is_created(&renderpass->obj))
     {
         log_trace("skip destruction of already-destroyed renderpass");
@@ -3170,7 +3170,7 @@ void dvz_renderpass_destroy(DvzRenderpass* renderpass)
 
 DvzFramebuffers dvz_framebuffers(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzFramebuffers framebuffers = {0};
@@ -3184,9 +3184,9 @@ DvzFramebuffers dvz_framebuffers(DvzGpu* gpu)
 void dvz_framebuffers_attachment(
     DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* img)
 {
-    ASSERT(framebuffers != NULL);
+    ANN(framebuffers);
 
-    ASSERT(img != NULL);
+    ANN(img);
     ASSERT(img->count > 0);
     ASSERT(img->shape[0] > 0);
     ASSERT(img->shape[1] > 0);
@@ -3203,7 +3203,7 @@ void dvz_framebuffers_attachment(
 static void _framebuffers_create(DvzFramebuffers* framebuffers)
 {
     DvzRenderpass* renderpass = framebuffers->renderpass;
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
 
     // The actual framebuffer size in pixels is determined by the first attachment (color images)
     // as these images are created by the swapchain.
@@ -3226,7 +3226,7 @@ static void _framebuffers_create(DvzFramebuffers* framebuffers)
             img = framebuffers->attachments[j];
             attachments[j] = img->image_views[MIN(i, img->count - 1)];
         }
-        ASSERT(img != NULL);
+        ANN(img);
 
         VkFramebufferCreateInfo info = {0};
         info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -3260,12 +3260,12 @@ static void _framebuffers_destroy(DvzFramebuffers* framebuffers)
 
 void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* renderpass)
 {
-    ASSERT(framebuffers != NULL);
+    ANN(framebuffers);
 
-    ASSERT(framebuffers->gpu != NULL);
+    ANN(framebuffers->gpu);
     ASSERT(framebuffers->gpu->device != VK_NULL_HANDLE);
 
-    ASSERT(renderpass != NULL);
+    ANN(renderpass);
     ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     framebuffers->renderpass = renderpass;
@@ -3287,7 +3287,7 @@ void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* rende
 
 void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers)
 {
-    ASSERT(framebuffers != NULL);
+    ANN(framebuffers);
     if (!dvz_obj_is_created(&framebuffers->obj))
     {
         log_trace("skip destruction of already-destroyed framebuffers");
@@ -3306,7 +3306,7 @@ void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers)
 
 DvzSubmit dvz_submit(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzSubmit submit = {0};
@@ -3319,8 +3319,8 @@ DvzSubmit dvz_submit(DvzGpu* gpu)
 
 void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands)
 {
-    ASSERT(submit != NULL);
-    ASSERT(commands != NULL);
+    ANN(submit);
+    ANN(commands);
 
     uint32_t n = submit->commands_count;
     ASSERT(n < DVZ_MAX_COMMANDS_PER_SUBMIT);
@@ -3334,8 +3334,8 @@ void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands)
 void dvz_submit_wait_semaphores(
     DvzSubmit* submit, VkPipelineStageFlags stage, DvzSemaphores* semaphores, uint32_t idx)
 {
-    ASSERT(submit != NULL);
-    ASSERT(semaphores != NULL);
+    ANN(submit);
+    ANN(semaphores);
 
     ASSERT(idx < semaphores->count);
     ASSERT(idx < DVZ_MAX_SEMAPHORES_PER_SET);
@@ -3355,7 +3355,7 @@ void dvz_submit_wait_semaphores(
 
 void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint32_t idx)
 {
-    ASSERT(submit != NULL);
+    ANN(submit);
 
     ASSERT(idx < DVZ_MAX_SEMAPHORES_PER_SET);
     uint32_t n = submit->signal_semaphores_count;
@@ -3371,7 +3371,7 @@ void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, 
 
 void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx)
 {
-    ASSERT(submit != NULL);
+    ANN(submit);
     // log_trace("starting command buffer submission...");
 
     VkSubmitInfo submit_info = {0};
@@ -3437,7 +3437,7 @@ void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uin
 
 void dvz_submit_reset(DvzSubmit* submit)
 {
-    ASSERT(submit != NULL);
+    ANN(submit);
     // log_trace("reset Submit instance");
     submit->commands_count = 0;
     submit->wait_semaphores_count = 0;
@@ -3453,8 +3453,8 @@ void dvz_submit_reset(DvzSubmit* submit)
 void dvz_cmd_begin_renderpass(
     DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers)
 {
-    ASSERT(renderpass != NULL);
-    ASSERT(framebuffers != NULL);
+    ANN(renderpass);
+    ANN(framebuffers);
 
     ASSERT(dvz_obj_is_created(&renderpass->obj));
     ASSERT(dvz_obj_is_created(&framebuffers->obj));
@@ -3487,8 +3487,8 @@ void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size)
 {
-    ASSERT(compute->bindings != NULL);
-    ASSERT(compute->bindings->dsets != NULL);
+    ANN(compute->bindings);
+    ANN(compute->bindings->dsets);
     ASSERT(compute->pipeline != VK_NULL_HANDLE);
     ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
     ASSERT(size[0] > 0);
@@ -3509,7 +3509,7 @@ void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3
 
 void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
 {
-    ASSERT(barrier != NULL);
+    ANN(barrier);
     DvzQueues* q = &cmds->gpu->queues;
     CMD_START
 
@@ -3592,7 +3592,7 @@ void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
 static VkBufferImageCopy
 _image_buffer_copy(DvzImages* img, VkDeviceSize buf_offset, uvec3 tex_offset, uvec3 shape)
 {
-    ASSERT(img != NULL);
+    ANN(img);
 
     ASSERT(shape[0] > 0);
     ASSERT(shape[1] > 0);
@@ -3629,8 +3629,8 @@ void dvz_cmd_copy_buffer_to_image(
     DvzBuffer* buffer, VkDeviceSize buf_offset, //
     DvzImages* img, uvec3 tex_offset, uvec3 shape)
 {
-    ASSERT(cmds != NULL);
-    ASSERT(buffer != NULL);
+    ANN(cmds);
+    ANN(buffer);
 
     CMD_START_CLIP(img->count)
     VkBufferImageCopy region = _image_buffer_copy(img, buf_offset, tex_offset, shape);
@@ -3646,8 +3646,8 @@ void dvz_cmd_copy_image_to_buffer(
     DvzBuffer* buffer, VkDeviceSize buf_offset     //
 )
 {
-    ASSERT(cmds != NULL);
-    ASSERT(buffer != NULL);
+    ANN(cmds);
+    ANN(buffer);
 
     CMD_START_CLIP(img->count)
     VkBufferImageCopy region = _image_buffer_copy(img, buf_offset, tex_offset, shape);
@@ -3665,8 +3665,8 @@ void dvz_cmd_copy_image_region(
     DvzImages* dst_img, ivec3 dst_offset, //
     uvec3 shape)
 {
-    ASSERT(src_img != NULL);
-    ASSERT(dst_img != NULL);
+    ANN(src_img);
+    ANN(dst_img);
 
     for (uint32_t i = 0; i < 3; i++)
     {
@@ -3736,10 +3736,10 @@ void dvz_cmd_bind_graphics(
     DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
     DvzBindings* bindings, uint32_t dynamic_idx)
 {
-    ASSERT(graphics != NULL);
+    ANN(graphics);
     DvzSlots* slots = &graphics->slots;
-    ASSERT(slots != NULL);
-    ASSERT(bindings != NULL);
+    ANN(slots);
+    ANN(bindings);
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
@@ -3832,9 +3832,9 @@ void dvz_cmd_copy_buffer(
     DvzBuffer* dst_buf, VkDeviceSize dst_offset, //
     VkDeviceSize size)
 {
-    ASSERT(cmds != NULL);
-    ASSERT(src_buf != NULL);
-    ASSERT(dst_buf != NULL);
+    ANN(cmds);
+    ANN(src_buf);
+    ANN(dst_buf);
     ASSERT(size > 0);
     ASSERT(src_offset + size <= src_buf->size);
     ASSERT(dst_offset + size <= dst_buf->size);

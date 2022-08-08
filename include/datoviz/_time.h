@@ -115,7 +115,7 @@ static inline void dvz_sleep(int milliseconds)
 
 static inline void dvz_clock_reset(DvzClock* clock)
 {
-    ASSERT(clock != NULL);
+    ANN(clock);
     gettimeofday(&clock->start, NULL);
 }
 
@@ -140,7 +140,7 @@ static inline DvzClock dvz_clock()
  */
 static inline double dvz_clock_get(DvzClock* clock)
 {
-    ASSERT(clock != NULL);
+    ANN(clock);
     gettimeofday(&clock->current, NULL);
     double elapsed = (clock->current.tv_sec - clock->start.tv_sec) +
                      (clock->current.tv_usec - clock->start.tv_usec) / 1000000.0;
@@ -156,7 +156,7 @@ static inline double dvz_clock_get(DvzClock* clock)
  */
 static inline void dvz_clock_tick(DvzClock* clock)
 {
-    ASSERT(clock != NULL);
+    ANN(clock);
     clock->tick = dvz_clock_get(clock);
 }
 
@@ -170,7 +170,7 @@ static inline void dvz_clock_tick(DvzClock* clock)
  */
 static inline double dvz_clock_interval(DvzClock* clock)
 {
-    ASSERT(clock != NULL);
+    ANN(clock);
     return dvz_clock_get(clock) - clock->tick;
 }
 

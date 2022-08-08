@@ -24,7 +24,7 @@
 
 static int _thread_callback(void* user_data)
 {
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     dvz_sleep(10);
     *((int*)user_data) = 42;
     log_debug("from thread");
@@ -33,7 +33,7 @@ static int _thread_callback(void* user_data)
 
 int test_thread_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     int data = 0;
     DvzThread* thread = dvz_thread(_thread_callback, &data);
     AT(data == 0);
@@ -46,7 +46,7 @@ int test_thread_1(TstSuite* suite)
 
 static int _mutex_callback(void* user_data)
 {
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzMutex* mutex = (DvzMutex*)user_data;
     dvz_sleep(10);
     dvz_mutex_lock(mutex);
@@ -55,7 +55,7 @@ static int _mutex_callback(void* user_data)
 
 int test_mutex_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzMutex mutex = dvz_mutex();
 
     DvzThread* thread = dvz_thread(_mutex_callback, &mutex);
@@ -72,7 +72,7 @@ int test_mutex_1(TstSuite* suite)
 
 static int _cond_callback(void* user_data)
 {
-    ASSERT(user_data != NULL);
+    ANN(user_data);
     DvzCond* cond = (DvzCond*)user_data;
     dvz_sleep(10);
     dvz_cond_signal(cond);
@@ -81,7 +81,7 @@ static int _cond_callback(void* user_data)
 
 int test_cond_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzCond cond = dvz_cond();
     DvzMutex mutex = dvz_mutex();
 
@@ -98,7 +98,7 @@ int test_cond_1(TstSuite* suite)
 
 int test_atomic_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzAtomic atomic = dvz_atomic();
     dvz_atomic_set(atomic, 42);
     AT(dvz_atomic_get(atomic) == 42)

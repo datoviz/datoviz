@@ -22,13 +22,13 @@
 static void _buffer_upload_done(DvzDeq* deq, void* item, void* user_data)
 {
     DvzTransferUploadDone* up = (DvzTransferUploadDone*)item;
-    ASSERT(up != NULL);
+    ANN(up);
     DvzDat* dat = (DvzDat*)up->user_data;
     if (dat == NULL)
         return;
 
     // Only for staging buffers.
-    ASSERT(dat->br.buffer != NULL);
+    ANN(dat->br.buffer);
     ASSERT(dat->br.buffer->type == DVZ_BUFFER_TYPE_STAGING);
     log_info("deallocate temporary staging dat with size %s", pretty_size(dat->br.size));
     dvz_dat_destroy(dat);
@@ -42,12 +42,12 @@ static void _buffer_upload_done(DvzDeq* deq, void* item, void* user_data)
 
 DvzContext* dvz_context(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
     log_trace("creating context");
 
     DvzContext* ctx = calloc(1, sizeof(DvzContext));
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ctx->gpu = gpu;
 
     // Create the transfers.
@@ -81,7 +81,7 @@ DvzContext* dvz_context(DvzGpu* gpu)
 
 void dvz_context_wait(DvzContext* ctx)
 {
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     for (uint32_t i = 0; i < 4; i++)
         dvz_deq_wait(ctx->transfers.deq, i);
     dvz_queue_wait(ctx->transfers.gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
@@ -97,10 +97,10 @@ void dvz_context_destroy(DvzContext* ctx)
         return;
     }
     log_trace("destroying context");
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     DvzGpu* gpu = ctx->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     // ASSERT(gpu->context == ctx);
 
     // Destroy the companion objects.

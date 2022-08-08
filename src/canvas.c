@@ -21,7 +21,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
     // lifecycle. If a pointer to a structure, that structure should not be returned as a function,
     // otherwise it will be copied and the pointer will be invalid.
 
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
@@ -46,13 +46,13 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
 
 void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     log_trace("creating the canvas");
 
@@ -96,7 +96,7 @@ void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
 
 void dvz_canvas_reset(DvzCanvas* canvas)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     dvz_gpu_wait(canvas->gpu);
 
     canvas->cur_frame = 0;
@@ -107,20 +107,20 @@ void dvz_canvas_reset(DvzCanvas* canvas)
 
 void dvz_canvas_recreate(DvzCanvas* canvas)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
     DvzRenderpass* renderpass = canvas->render.renderpass;
 
-    ASSERT(gpu != NULL);
-    ASSERT(swapchain != NULL);
-    ASSERT(framebuffers != NULL);
-    ASSERT(renderpass != NULL);
+    ANN(gpu);
+    ANN(swapchain);
+    ANN(framebuffers);
+    ANN(renderpass);
 
     log_trace("recreate canvas after resize");
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     // Wait until the device is ready and the window fully resized.
     dvz_gpu_wait(gpu);
@@ -167,8 +167,8 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
 void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(refill != NULL);
+    ANN(canvas);
+    ANN(refill);
     canvas->refill = refill;
     canvas->refill_data = user_data;
 }
@@ -177,9 +177,9 @@ void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_dat
 
 void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
     DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, canvas->render.renderpass, &canvas->render.framebuffers);
 }
@@ -189,7 +189,7 @@ void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 void dvz_canvas_viewport(
     DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     // A value of 0 = full canvas.
     float width = size[0], height = size[1];
@@ -207,8 +207,8 @@ void dvz_canvas_viewport(
 
 void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 {
-    ASSERT(canvas != NULL);
-    ASSERT(cmds != NULL);
+    ANN(canvas);
+    ANN(cmds);
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
 }
@@ -225,13 +225,13 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     }
     log_debug("destroying canvas with status %d", canvas->obj.status);
 
-    ASSERT(canvas != NULL);
+    ANN(canvas);
 
     DvzGpu* gpu = canvas->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     // Wait until all pending events have been processed.
     // backend_poll_events(host->backend);

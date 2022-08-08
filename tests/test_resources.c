@@ -23,9 +23,9 @@
 
 int test_resources_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create the resources object.
     DvzResources res = {0};
@@ -34,15 +34,15 @@ int test_resources_1(TstSuite* suite)
     // Create some GPU objects, which should be automatically destroyed upon context destruction
     // (resources destruction).
     DvzBuffer* buffer = dvz_resources_buffer(&res, DVZ_BUFFER_TYPE_VERTEX, false, 64);
-    ASSERT(buffer != NULL);
+    ANN(buffer);
 
     uvec3 shape = {2, 4, 1};
     DvzImages* img = dvz_resources_image(&res, DVZ_TEX_2D, shape, DVZ_FORMAT_R8G8B8A8_UNORM);
-    ASSERT(img != NULL);
+    ANN(img);
 
     DvzSampler* sampler =
         dvz_resources_sampler(&res, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
-    ASSERT(sampler != NULL);
+    ANN(sampler);
 
     dvz_resources_destroy(&res);
     return 0;
@@ -52,17 +52,17 @@ int test_resources_1(TstSuite* suite)
 
 int test_resources_dat_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     // Allocate a dat.
     DvzSize size = 128;
     DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
-    ASSERT(dat != NULL);
+    ANN(dat);
 
     dvz_dat_destroy(dat);
     dvz_context_destroy(ctx);
@@ -73,20 +73,20 @@ int test_resources_dat_1(TstSuite* suite)
 
 int test_resources_tex_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     // Create the context.
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     uvec3 shape = {2, 4, 1};
     DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
 
     // Allocate a tex.
     DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     dvz_tex_destroy(tex);
 
@@ -102,12 +102,12 @@ int test_resources_tex_1(TstSuite* suite)
 
 int test_resources_dat_transfers(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ctx->res.img_count = 3;
 
     // Allocate a dat.
@@ -127,7 +127,7 @@ int test_resources_dat_transfers(TstSuite* suite)
     {
         // dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_FLAGS_MAPPABLE);
         dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, flags_tests[i]);
-        ASSERT(dat != NULL);
+        ANN(dat);
 
         // Upload some data.
         dvz_dat_upload(dat, 0, sizeof(data), data, true);
@@ -150,12 +150,12 @@ int test_resources_dat_transfers(TstSuite* suite)
 
 int test_resources_dat_resize(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
     ctx->res.img_count = 3;
 
     // Allocate a dat.
@@ -188,12 +188,12 @@ int test_resources_dat_resize(TstSuite* suite)
 
 int test_resources_tex_transfers(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     uvec3 shape = {2, 4, 1};
     DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
@@ -208,7 +208,7 @@ int test_resources_tex_transfers(TstSuite* suite)
 
     // Allocate a tex.
     DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     // Upload some data.
     dvz_tex_upload(tex, DVZ_ZERO_OFFSET, shape, size, data, true);
@@ -234,12 +234,12 @@ int test_resources_tex_transfers(TstSuite* suite)
 
 int test_resources_tex_resize(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzContext* ctx = dvz_context(gpu);
-    ASSERT(ctx != NULL);
+    ANN(ctx);
 
     uvec3 shape = {2, 4, 1};
     DvzFormat format = DVZ_FORMAT_R8G8B8A8_UNORM;
@@ -254,7 +254,7 @@ int test_resources_tex_resize(TstSuite* suite)
 
     // Allocate a tex.
     DvzTex* tex = dvz_tex(ctx, DVZ_TEX_2D, shape, format, 0);
-    ASSERT(tex != NULL);
+    ANN(tex);
 
     // Upload some data.
     dvz_tex_upload(tex, DVZ_ZERO_OFFSET, shape, size, data, true);

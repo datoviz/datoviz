@@ -29,7 +29,7 @@
 /*************************************************************************************************/
 
 #define GRAPHICS_BEGIN                                                                            \
-    ASSERT(suite != NULL);                                                                        \
+    ANN(suite);                                                                                   \
                                                                                                   \
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);                                                   \
                                                                                                   \
@@ -39,7 +39,7 @@
     dvz_gpu_create(gpu, 0);                                                                       \
                                                                                                   \
     DvzContext* ctx = dvz_context(gpu);                                                           \
-    ASSERT(ctx != NULL);                                                                          \
+    ANN(ctx);                                                                                     \
                                                                                                   \
     DvzRenderpass renderpass = offscreen_renderpass(gpu);                                         \
                                                                                                   \
@@ -48,7 +48,7 @@
 
 #define GRAPHICS_MVP                                                                              \
     DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);                   \
-    ASSERT(dat_mvp != NULL);                                                                      \
+    ANN(dat_mvp);                                                                                 \
     DvzMVP mvp = {0};                                                                             \
     glm_mat4_identity(mvp.model);                                                                 \
     glm_mat4_identity(mvp.view);                                                                  \
@@ -57,7 +57,7 @@
 
 #define GRAPHICS_VIEWPORT                                                                         \
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);         \
-    ASSERT(dat_viewport != NULL);                                                                 \
+    ANN(dat_viewport);                                                                            \
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);                                   \
     dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
 
@@ -101,7 +101,7 @@ int test_graphics_point(TstSuite* suite)
     // Create the dats.
     DvzDat* dat_vertex =
         dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex), 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
 
     // Slots 0 and 1.
     GRAPHICS_MVP
@@ -162,7 +162,7 @@ int test_graphics_triangle(TstSuite* suite)
 
     // Create the dats.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
 
     // Slots 0 and 1.
     GRAPHICS_MVP
@@ -218,7 +218,7 @@ int test_graphics_line_list(TstSuite* suite)
 
     // Create the dats.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
 
     // Slots 0 and 1.
     GRAPHICS_MVP
@@ -271,7 +271,7 @@ int test_graphics_line_list(TstSuite* suite)
 
 int test_graphics_line_strip(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -280,7 +280,7 @@ int test_graphics_line_strip(TstSuite* suite)
 
 int test_graphics_triangle_list(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -289,7 +289,7 @@ int test_graphics_triangle_list(TstSuite* suite)
 
 int test_graphics_triangle_strip(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -298,7 +298,7 @@ int test_graphics_triangle_strip(TstSuite* suite)
 
 int test_graphics_triangle_fan(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -322,7 +322,7 @@ int test_graphics_raster(TstSuite* suite)
 
     // Create the dats.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
 
     // Slots 0 and 1.
     GRAPHICS_MVP
@@ -330,7 +330,7 @@ int test_graphics_raster(TstSuite* suite)
 
     // Slot 2: params.
     DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsRasterParams), 0);
-    ASSERT(dat_params != NULL);
+    ANN(dat_params);
     DvzGraphicsRasterParams params = {
         .alpha_range = {0.5, 1.0},
         .cmap_range = {0, 1},
@@ -385,7 +385,7 @@ int test_graphics_raster(TstSuite* suite)
 
 int test_graphics_marker(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -394,7 +394,7 @@ int test_graphics_marker(TstSuite* suite)
 
 int test_graphics_segment(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -403,7 +403,7 @@ int test_graphics_segment(TstSuite* suite)
 
 int test_graphics_path(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -412,7 +412,7 @@ int test_graphics_path(TstSuite* suite)
 
 int test_graphics_text(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -433,7 +433,7 @@ int test_graphics_image_1(TstSuite* suite)
     // Create the dats.
     DvzDat* dat_vertex =
         dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 6 * sizeof(DvzGraphicsImageVertex), 0);
-    ASSERT(dat_vertex != NULL);
+    ANN(dat_vertex);
 
     // Slots 0 and 1.
     GRAPHICS_MVP
@@ -441,7 +441,7 @@ int test_graphics_image_1(TstSuite* suite)
 
     // Slot 2: params.
     DvzDat* dat_params = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
-    ASSERT(dat_params != NULL);
+    ANN(dat_params);
     DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
     dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
 
@@ -527,7 +527,7 @@ int test_graphics_image_1(TstSuite* suite)
 
 int test_graphics_image_cmap(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -536,7 +536,7 @@ int test_graphics_image_cmap(TstSuite* suite)
 
 int test_graphics_volume_slice(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -545,7 +545,7 @@ int test_graphics_volume_slice(TstSuite* suite)
 
 int test_graphics_volume_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }
@@ -554,7 +554,7 @@ int test_graphics_volume_1(TstSuite* suite)
 
 int test_graphics_mesh(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
 
     return 0;
 }

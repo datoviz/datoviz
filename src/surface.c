@@ -16,9 +16,9 @@
 
 DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window)
 {
-    ASSERT(host != NULL);
-    ASSERT(window != NULL);
-    ASSERT(window->backend_window != NULL);
+    ANN(host);
+    ANN(window);
+    ANN(window->backend_window);
 
     DvzSurface surface = {0};
     VkResult res =
@@ -33,9 +33,9 @@ DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window)
 
 void dvz_gpu_create_with_surface(DvzGpu* gpu)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzHost* host = gpu->host;
-    ASSERT(host != NULL);
+    ANN(host);
 
     // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
     // capabilities.
@@ -53,7 +53,7 @@ void dvz_gpu_create_with_surface(DvzGpu* gpu)
 
 void dvz_surface_destroy(DvzHost* host, DvzSurface surface)
 {
-    ASSERT(host != NULL);
+    ANN(host);
     if (surface.surface != VK_NULL_HANDLE)
     {
         log_trace("destroy surface");

@@ -352,7 +352,7 @@ DVZ_EXPORT void dvz_array_destroy(DvzArray* array);
  */
 static inline void* dvz_array_item(DvzArray* array, uint32_t idx)
 {
-    ASSERT(array != NULL);
+    ANN(array);
     idx = CLIP(idx, 0, array->item_count - 1);
     return (void*)((int64_t)array->data + (int64_t)(idx * array->item_size));
 }

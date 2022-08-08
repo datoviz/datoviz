@@ -42,7 +42,7 @@ DvzPrng* dvz_prng(void)
 
 uint64_t dvz_prng_uuid(DvzPrng* prng)
 {
-    ASSERT(prng != NULL);
+    ANN(prng);
     return prng->dis(prng->prng);
 }
 
@@ -50,6 +50,6 @@ uint64_t dvz_prng_uuid(DvzPrng* prng)
 
 void dvz_prng_destroy(DvzPrng* prng)
 {
-    ASSERT(prng != NULL);
+    ANN(prng);
     delete prng;
 }

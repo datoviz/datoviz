@@ -24,13 +24,13 @@
 
 int test_workspace_1(TstSuite* suite)
 {
-    ASSERT(suite != NULL);
+    ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzWorkspace* ws = dvz_workspace(gpu, 0);
     DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
-    ASSERT(board != NULL);
+    ANN(board);
 
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_cmd_begin(&cmds, 0);

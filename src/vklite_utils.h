@@ -141,7 +141,7 @@ aligned_repeat(VkDeviceSize size, const void* data, uint32_t count, VkDeviceSize
         repeated = aligned_malloc(rep_size, alignment);
     else
         repeated = malloc(rep_size);
-    ASSERT(repeated != NULL);
+    ANN(repeated);
     memset(repeated, 0, rep_size);
     for (uint32_t i = 0; i < count; i++)
     {
@@ -202,8 +202,8 @@ create_command_pool(VkDevice device, uint32_t queue_family_index, VkCommandPool*
 static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
 {
     log_trace("starting creation of device...");
-    ASSERT(gpu != NULL);
-    ASSERT(gpu->host != NULL);
+    ANN(gpu);
+    ANN(gpu->host);
 
     bool has_surface = surface != VK_NULL_HANDLE;
     // bool has_validation = gpu->app->debug_messenger != NULL;
@@ -551,7 +551,7 @@ static void create_swapchain(
     }
 
     ASSERT(pdevice != VK_NULL_HANDLE);
-    ASSERT(caps != NULL);
+    ANN(caps);
     VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(pdevice, surface, caps));
     log_trace("caps window size is %dx%d", caps->currentExtent.width, caps->currentExtent.height);
 
@@ -639,13 +639,13 @@ static void make_shared(
     DvzQueues* queues, uint32_t queue_count, const uint32_t* queue_indices, //
     VkSharingMode* sharing_mode, uint32_t* queue_family_count, uint32_t* queue_families)
 {
-    ASSERT(queues != NULL);
-    ASSERT(sharing_mode != NULL);
+    ANN(queues);
+    ANN(sharing_mode);
     if (queue_count == 0)
     {
         return;
     }
-    ASSERT(queue_families != NULL);
+    ANN(queue_families);
 
     // Go through the requested queues, check their queue family, and count the total number of
     // different queue families. If >= 2, mode is concurrent, otherwise it is exclusive.
@@ -924,7 +924,7 @@ static void update_descriptor_set(
                 log_error("buffer of type %d #%d is not set", binding_type, i);
             }
             br = &buffer_regions[i];
-            ASSERT(buffer_regions[i].buffer != NULL);
+            ANN(buffer_regions[i].buffer);
             ASSERT(br->size > 0);
 
             uint32_t idx_clip = MIN(idx, br->count - 1);
@@ -935,7 +935,7 @@ static void update_descriptor_set(
         else if (is_descriptor_type_image(binding_type))
         {
             // log_trace("bind texture for binding point %d", i);
-            ASSERT(images[i] != NULL);
+            ANN(images[i]);
             // if (images[i] != NULL)
             // {
             uint32_t idx_clip = MIN(idx, images[i]->count - 1);
@@ -980,7 +980,7 @@ create_shader_module(VkDevice device, VkDeviceSize size, const uint32_t* buffer)
 {
     ASSERT(device != VK_NULL_HANDLE);
     ASSERT(size > 0);
-    ASSERT(buffer != NULL);
+    ANN(buffer);
 
     VkShaderModuleCreateInfo createInfo = {0};
     createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -999,7 +999,7 @@ static VkShaderModule create_shader_module_from_file(VkDevice device, const char
     log_trace("create shader module from file %s", filename);
     size_t size = 0;
     uint32_t* shader_code = (uint32_t*)dvz_read_file(filename, &size);
-    ASSERT(shader_code != NULL);
+    ANN(shader_code);
     ASSERT(size > 0);
     VkShaderModule module = create_shader_module(device, size, shader_code);
     FREE(shader_code);
@@ -1204,7 +1204,7 @@ static void begin_render_pass(
     ASSERT(width > 0);
     ASSERT(height > 0);
     // ASSERT(clear_count > 0);
-    // ASSERT(clear_colors != NULL);
+    // ANN(clear_colors);
 
     VkRenderPassBeginInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1223,8 +1223,8 @@ static void make_renderpass(
     DvzGpu* gpu, DvzRenderpass* renderpass, DvzFormat format, VkImageLayout layout,
     VkClearColorValue clear_color)
 {
-    ASSERT(gpu != NULL);
-    ASSERT(renderpass != NULL);
+    ANN(gpu);
+    ANN(renderpass);
     ASSERT(format != 0);
 
     log_trace("making renderpass");

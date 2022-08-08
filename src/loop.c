@@ -20,7 +20,7 @@
 
 DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 {
-    ASSERT(gpu != NULL);
+    ANN(gpu);
     DvzLoop* loop = calloc(1, sizeof(DvzLoop));
     loop->flags = flags;
     loop->gpu = gpu;
@@ -65,7 +65,7 @@ DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags)
 
 void dvz_loop_refill(DvzLoop* loop, DvzCanvasRefill callback, void* user_data)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
     dvz_canvas_refill(&loop->canvas, callback, user_data);
 }
 
@@ -73,7 +73,7 @@ void dvz_loop_refill(DvzLoop* loop, DvzCanvasRefill callback, void* user_data)
 
 void dvz_loop_overlay(DvzLoop* loop, DvzLoopOverlay callback, void* user_data)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
     loop->overlay = callback;
     loop->overlay_data = user_data;
 }
@@ -82,17 +82,17 @@ void dvz_loop_overlay(DvzLoop* loop, DvzLoopOverlay callback, void* user_data)
 
 int dvz_loop_frame(DvzLoop* loop)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
 
     DvzGpu* gpu = loop->gpu;
-    ASSERT(gpu != NULL);
+    ANN(gpu);
 
     DvzCanvas* canvas = &loop->canvas;
     DvzWindow* window = &loop->window;
 
-    ASSERT(canvas != NULL);
-    ASSERT(window != NULL);
-    ASSERT(canvas->refill != NULL);
+    ANN(canvas);
+    ANN(window);
+    ANN(canvas->refill);
 
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
@@ -104,15 +104,15 @@ int dvz_loop_frame(DvzLoop* loop)
     DvzCommands* cmds = &canvas->cmds;
     DvzSubmit* submit = &canvas->render.submit;
 
-    ASSERT(swapchain != NULL);
-    ASSERT(framebuffers != NULL);
-    ASSERT(renderpass != NULL);
-    ASSERT(fences != NULL);
-    ASSERT(fences_bak != NULL);
-    ASSERT(sem_img_available != NULL);
-    ASSERT(sem_render_finished != NULL);
-    ASSERT(cmds != NULL);
-    ASSERT(submit != NULL);
+    ANN(swapchain);
+    ANN(framebuffers);
+    ANN(renderpass);
+    ANN(fences);
+    ANN(fences_bak);
+    ANN(sem_img_available);
+    ANN(sem_render_finished);
+    ANN(cmds);
+    ANN(submit);
 
     DvzGui* gui = loop->gui;
     DvzGuiWindow* gui_window = loop->gui_window;
@@ -202,8 +202,8 @@ int dvz_loop_frame(DvzLoop* loop)
         // Custom callback for overlay filling.
         if (loop->overlay != NULL)
         {
-            ASSERT(gui != NULL);
-            ASSERT(gui_window != NULL);
+            ANN(gui);
+            ANN(gui_window);
 
             dvz_gui_window_begin(gui_window, swapchain->img_idx);
             loop->overlay(loop, loop->overlay_data);
@@ -236,7 +236,7 @@ int dvz_loop_frame(DvzLoop* loop)
 
 void dvz_loop_run(DvzLoop* loop, uint64_t n_frames)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
 
     uint64_t n = (n_frames > 0 ? n_frames : INFINITY);
     for (loop->frame_idx = 0; loop->frame_idx < n; loop->frame_idx++)
@@ -253,7 +253,7 @@ void dvz_loop_run(DvzLoop* loop, uint64_t n_frames)
 
 void dvz_loop_destroy(DvzLoop* loop)
 {
-    ASSERT(loop != NULL);
+    ANN(loop);
     dvz_renderpass_destroy(&loop->renderpass);
     dvz_canvas_destroy(&loop->canvas);
     dvz_window_destroy(&loop->window);

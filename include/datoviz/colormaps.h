@@ -310,7 +310,7 @@ static unsigned char* _load_colormaps()
         return DVZ_COLORMAP_ARRAY;
     unsigned long size = 0;
     DVZ_COLORMAP_ARRAY = dvz_resource_texture("cmap_atlas", &size);
-    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
+    ANN(DVZ_COLORMAP_ARRAY);
     ASSERT(size > 0);
     return DVZ_COLORMAP_ARRAY;
 }
@@ -405,7 +405,7 @@ DVZ_INLINE void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color)
 
     // Make sure the colormap array is loaded in memory.
     _load_colormaps();
-    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
+    ANN(DVZ_COLORMAP_ARRAY);
 
     uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
     ASSERT(offset < 256 * 256 * 4 - 4);
@@ -448,8 +448,8 @@ dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cve
 DVZ_INLINE void dvz_colormap_array(
     DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
 {
-    ASSERT(values != NULL);
-    ASSERT(out != NULL);
+    ANN(values);
+    ANN(out);
     for (uint32_t i = 0; i < count; i++)
         dvz_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
 }
@@ -486,7 +486,7 @@ DVZ_INLINE void dvz_colormap_set(uint8_t row, uint8_t col, cvec4 color)
 {
     // Make sure the colormap array is loaded in memory.
     _load_colormaps();
-    ASSERT(DVZ_COLORMAP_ARRAY != NULL);
+    ANN(DVZ_COLORMAP_ARRAY);
 
     uint32_t offset = (uint32_t)row * 256 * 4 + (uint32_t)col * 4;
     ASSERT(offset < 256 * 256 * 4 - 4);
@@ -514,7 +514,7 @@ DVZ_INLINE void dvz_colormap_custom(uint8_t cmap, uint32_t color_count, cvec4* c
         (cmap >= CMAP_CUSTOM && cmap < CMAP_TOT) ||
         (cmap >= CPAL256_CUSTOM && cmap < CPAL032_OFS));
     ASSERT(color_count > 0);
-    ASSERT(colors != NULL);
+    ANN(colors);
     log_debug("setting custom colormap #%d with %d colors", cmap, color_count);
 
     cvec2 ij = {0};

@@ -361,7 +361,7 @@ static void create_instance(
 static void find_queue_families(VkPhysicalDevice device, DvzQueues* queues)
 {
     ASSERT(device != VK_NULL_HANDLE);
-    ASSERT(queues != NULL);
+    ANN(queues);
 
     // Get the queue family properties.
     vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_family_count, NULL);
