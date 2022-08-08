@@ -1052,6 +1052,7 @@ static VkPipelineInputAssemblyStateCreateInfo create_input_assembly(VkPrimitiveT
 }
 
 
+
 static VkPipelineRasterizationStateCreateInfo
 create_rasterizer(VkCullModeFlags cull_mode, VkFrontFace front_face)
 {
@@ -1068,6 +1069,7 @@ create_rasterizer(VkCullModeFlags cull_mode, VkFrontFace front_face)
 }
 
 
+
 static VkPipelineMultisampleStateCreateInfo create_multisampling()
 {
     VkPipelineMultisampleStateCreateInfo multisampling = {0};
@@ -1076,6 +1078,7 @@ static VkPipelineMultisampleStateCreateInfo create_multisampling()
     multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     return multisampling;
 }
+
 
 
 static VkPipelineColorBlendAttachmentState create_color_blend_attachment(bool enable)
@@ -1097,6 +1100,7 @@ static VkPipelineColorBlendAttachmentState create_color_blend_attachment(bool en
 }
 
 
+
 static VkPipelineColorBlendStateCreateInfo
 create_color_blending(uint32_t count, VkPipelineColorBlendAttachmentState* attachments)
 {
@@ -1112,6 +1116,7 @@ create_color_blending(uint32_t count, VkPipelineColorBlendAttachmentState* attac
     color_blending.blendConstants[3] = 0.0f;
     return color_blending;
 }
+
 
 
 static VkPipelineDepthStencilStateCreateInfo create_depth_stencil(bool enable)
@@ -1131,6 +1136,7 @@ static VkPipelineDepthStencilStateCreateInfo create_depth_stencil(bool enable)
 }
 
 
+
 static VkPipelineViewportStateCreateInfo create_viewport_state()
 {
     VkPipelineViewportStateCreateInfo viewport_state = {0};
@@ -1140,6 +1146,7 @@ static VkPipelineViewportStateCreateInfo create_viewport_state()
     viewport_state.scissorCount = 1;
     return viewport_state;
 }
+
 
 
 static VkPipelineDynamicStateCreateInfo
