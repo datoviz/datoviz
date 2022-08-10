@@ -58,11 +58,19 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
     dvz_images_format(depth, VK_FORMAT_D32_SFLOAT);
     dvz_images_size(depth, (uvec3){width, height, 1});
     dvz_images_tiling(depth, VK_IMAGE_TILING_OPTIMAL);
-    dvz_images_usage(depth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    dvz_images_memory(depth, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_usage(
+        depth,
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT);
+    dvz_images_memory(
+        depth, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     dvz_images_layout(depth, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     dvz_images_aspect(depth, VK_IMAGE_ASPECT_DEPTH_BIT);
     dvz_images_queue_access(depth, 0);
+
+    // HACK: lazily allocated image
+    for (uint32_t i = 0; i < depth->count; i++)
+        depth->vma[i].usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+
     dvz_images_create(depth);
 }
 

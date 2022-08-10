@@ -140,18 +140,18 @@ static void empty_commands(TestCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 
 
 static void
-depth_image(DvzImages* depth_images, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
+depth_image(DvzImages* depth, DvzRenderpass* renderpass, uint32_t width, uint32_t height)
 {
     // Depth attachment
-    dvz_images_format(depth_images, renderpass->attachments[1].format);
-    dvz_images_size(depth_images, (uvec3){width, height, 1});
-    dvz_images_tiling(depth_images, VK_IMAGE_TILING_OPTIMAL);
-    dvz_images_usage(depth_images, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    dvz_images_memory(depth_images, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-    dvz_images_layout(depth_images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    dvz_images_aspect(depth_images, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_images_queue_access(depth_images, 0);
-    dvz_images_create(depth_images);
+    dvz_images_format(depth, renderpass->attachments[1].format);
+    dvz_images_size(depth, (uvec3){width, height, 1});
+    dvz_images_tiling(depth, VK_IMAGE_TILING_OPTIMAL);
+    dvz_images_usage(depth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+    dvz_images_memory(depth, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    dvz_images_layout(depth, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_images_aspect(depth, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_images_queue_access(depth, 0);
+    dvz_images_create(depth);
 }
 
 
