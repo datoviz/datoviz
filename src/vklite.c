@@ -1439,9 +1439,9 @@ static void _images_create(DvzImages* img)
     {
         if (!img->is_swapchain)
         {
-            vmaCreateImage(
+            VK_CHECK_RESULT(vmaCreateImage(
                 gpu->allocator, &info, &alloc_info, &img->images[i], //
-                &img->vma[i].alloc, &img->vma[i].info);
+                &img->vma[i].alloc, &img->vma[i].info));
             ASSERT(img->images[i] != VK_NULL_HANDLE);
 
             // Get the memory flags found by VMA and store them in the DvzBuffer instance.

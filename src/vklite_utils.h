@@ -438,8 +438,11 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     device_info.enabledExtensionCount = n_extensions;
     device_info.ppEnabledExtensionNames = (const char* const*)extensions;
 
-    // device_info.enabledLayerCount = has_validation ? ARRAY_COUNT(DVZ_LAYERS) : 0;
-    // device_info.ppEnabledLayerNames = has_validation ? DVZ_LAYERS : NULL;
+    log_trace("loaded %d extension(s):", n_extensions);
+    for (uint32_t i = 0; i < n_extensions; i++)
+    {
+        log_trace("- %s", extensions[i]);
+    }
 
     // Create the device
     VK_CHECK_RESULT(vkCreateDevice(gpu->physical_device, &device_info, NULL, &gpu->device));

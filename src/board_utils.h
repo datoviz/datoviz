@@ -67,9 +67,9 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
     dvz_images_aspect(depth, VK_IMAGE_ASPECT_DEPTH_BIT);
     dvz_images_queue_access(depth, 0);
 
-    // HACK: lazily allocated image
-    for (uint32_t i = 0; i < depth->count; i++)
-        depth->vma[i].usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
+    // // HACK: lazily allocated image
+    // for (uint32_t i = 0; i < depth->count; i++)
+    //     depth->vma[i].usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
 
     dvz_images_create(depth);
 }
