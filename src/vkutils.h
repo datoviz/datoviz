@@ -338,26 +338,6 @@ static void create_instance(
 
 
 
-// static void destroy_instance(DvzHost* host)
-// {
-//     log_trace("starting destruction of instance...");
-
-//     if (host->debug_messenger)
-//         destroy_debug_utils_messenger_EXT(host->instance, host->debug_messenger, NULL);
-
-//     // Destroy the instance.
-//     log_trace("destroy instance");
-//     if (host->instance != VK_NULL_HANDLE)
-//     {
-//         vkDestroyInstance(host->instance, NULL);
-//         host->instance = VK_NULL_HANDLE;
-//     }
-
-//     log_trace("instance destroyed");
-// }
-
-
-
 static void find_queue_families(VkPhysicalDevice device, DvzQueues* queues)
 {
     ASSERT(device != VK_NULL_HANDLE);
