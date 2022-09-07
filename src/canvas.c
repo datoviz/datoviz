@@ -14,6 +14,14 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+// NOTE: wrapper for DvzCanvasRefill callback type.
+static void _blank_refill(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void* user_data)
+{
+    ANN(canvas)
+    ANN(cmds)
+    blank_commands(canvas->render.renderpass, &canvas->render.framebuffers, cmds, idx, user_data);
+}
+
 DvzCanvas
 dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags)
 {
@@ -33,7 +41,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
     canvas.gpu = gpu;
     canvas.flags = flags;
     canvas.format = DVZ_DEFAULT_FORMAT;
-    canvas.refill = blank_commands;
+    canvas.refill = _blank_refill;
 
     canvas.width = width;
     canvas.height = height;

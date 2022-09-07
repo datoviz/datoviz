@@ -11,37 +11,15 @@
 /*  Imports                                                                                      */
 /*************************************************************************************************/
 
-#include "board.h"
-#include "board_utils.h"
+// #include "board.h"
 #include "canvas.h"
+#include "render_utils.h"
 
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
-
-static void
-make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t img_count)
-{
-    ANN(swapchain);
-    log_trace("making swapchain");
-
-    *swapchain = dvz_swapchain(gpu, surface.surface, img_count);
-    dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
-    // TODO: activate/deactivate vsync
-    dvz_swapchain_present_mode(swapchain, DVZ_DEFAULT_PRESENT_MODE);
-    // dvz_swapchain_present_mode(swapchain, VK_PRESENT_MODE_IMMEDIATE_KHR);
-    dvz_swapchain_create(swapchain);
-
-    ANN(swapchain->images);
-
-    // Create a staging buffer, to be used by screencast and screenshot.
-    // It is automatically recreated upon resize.
-    // _screencast_staging(canvas);
-}
-
-
 
 static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
 {
@@ -57,24 +35,6 @@ static void make_sync(DvzGpu* gpu, DvzSync* sync, uint32_t img_count)
     sync->fences_render_finished = dvz_fences(gpu, frames_in_flight, true);
     sync->fences_flight.gpu = gpu;
     sync->fences_flight.count = img_count;
-}
-
-
-
-static void blank_commands(DvzCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
-{
-    ANN(canvas);
-    ANN(cmds);
-
-
-    DvzGpu* gpu = canvas->gpu;
-    ANN(gpu);
-
-    dvz_cmd_begin(cmds, cmd_idx);
-    dvz_cmd_begin_renderpass(
-        cmds, cmd_idx, canvas->render.renderpass, &canvas->render.framebuffers);
-    dvz_cmd_end_renderpass(cmds, cmd_idx);
-    dvz_cmd_end(cmds, cmd_idx);
 }
 
 
@@ -102,7 +62,9 @@ static void canvas_render(DvzCanvas* canvas)
     {
         log_debug("empty command buffers, filling with blank color");
         for (uint32_t i = 0; i < canvas->render.swapchain.img_count; i++)
-            blank_commands(canvas, &canvas->cmds, i, canvas->refill_data);
+            blank_commands(
+                canvas->render.renderpass, &canvas->render.framebuffers, &canvas->cmds, i,
+                canvas->refill_data);
     }
 
     ASSERT(canvas->cmds.obj.status == DVZ_OBJECT_STATUS_CREATED);

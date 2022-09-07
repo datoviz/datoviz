@@ -210,7 +210,8 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
     else
     {
         log_debug("record blank commands in the command buffer");
-        blank_commands(canvas, &canvas->cmds, img_idx, NULL);
+        blank_commands(
+            canvas->render.renderpass, &canvas->render.framebuffers, &canvas->cmds, img_idx, NULL);
         dvz_recorder_set(canvas->recorder, rd, &canvas->cmds, img_idx);
     }
 }

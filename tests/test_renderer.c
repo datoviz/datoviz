@@ -16,8 +16,8 @@
 #include "renderer.h"
 #include "test.h"
 #include "test_resources.h"
-#include "test_vklite.h"
 #include "testing.h"
+#include "testing_utils.h"
 
 
 

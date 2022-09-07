@@ -7,21 +7,9 @@
 /*************************************************************************************************/
 
 #include "board.h"
-#include "board_utils.h"
+#include "render_utils.h"
 #include "resources.h"
 #include "vklite_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
 
 
 
@@ -65,16 +53,6 @@ void dvz_board_format(DvzBoard* board, DvzFormat format)
     // the format.
     log_trace("changing board format, need to recreate the board");
 }
-
-
-
-// void dvz_board_clear_color(DvzBoard* board, cvec4 color)
-// {
-//     ANN(board);
-//     ASSERT(sizeof(cvec4) == 4);
-//     memcpy(board->clear_color, color, sizeof(cvec4));
-//     log_trace("changing board clear color, need to recreate the board");
-// }
 
 
 

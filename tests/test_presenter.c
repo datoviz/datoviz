@@ -12,8 +12,8 @@
 #include "gui.h"
 #include "presenter.h"
 #include "test.h"
-#include "test_vklite.h"
 #include "testing.h"
+#include "testing_utils.h"
 
 
 /*************************************************************************************************/

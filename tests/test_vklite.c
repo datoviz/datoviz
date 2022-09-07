@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_vklite.h"
+#include "../src/render_utils.h"
 #include "../src/vklite_utils.h"
 #include "fileio.h"
 #include "resources.h"
@@ -16,6 +17,7 @@
 #include "test.h"
 #include "test_gui.h"
 #include "testing.h"
+#include "testing_utils.h"
 #include "vklite.h"
 #include "window.h"
 
@@ -717,7 +719,7 @@ int test_vklite_offscreen(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    empty_commands(&canvas, &cmds, 0);
+    blank_commands(&canvas.renderpass, &canvas.framebuffers, &cmds, 0, NULL);
     dvz_cmd_submit_sync(&cmds, 0);
 
     uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
@@ -726,7 +728,7 @@ int test_vklite_offscreen(TstSuite* suite)
 
     FREE(rgb);
 
-    test_canvas_destroy(&canvas);
+    canvas_destroy(&canvas);
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);
@@ -804,8 +806,8 @@ int test_vklite_graphics(TstSuite* suite)
     dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
     FREE(rgb);
 
-    destroy_visual(&visual);
-    test_canvas_destroy(&canvas);
+    visual_destroy(&visual);
+    canvas_destroy(&canvas);
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);

@@ -9,15 +9,14 @@
 /*************************************************************************************************/
 
 #include "test_loop.h"
-// #include "../src/vklite_utils.h"
 #include "canvas.h"
 #include "gui.h"
 #include "loop.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "test.h"
-#include "test_vklite.h"
 #include "testing.h"
+#include "testing_utils.h"
 
 
 /*************************************************************************************************/

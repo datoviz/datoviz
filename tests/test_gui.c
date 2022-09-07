@@ -12,8 +12,8 @@
 #include "canvas.h"
 #include "gui.h"
 #include "test.h"
-#include "test_vklite.h"
 #include "testing.h"
+#include "testing_utils.h"
 
 
 
@@ -63,7 +63,7 @@ int test_gui_offscreen(TstSuite* suite)
     dvz_write_ppm(path, WIDTH, HEIGHT, rgb);
     FREE(rgb);
 
-    test_canvas_destroy(&canvas);
+    canvas_destroy(&canvas);
 
     // Destroy the GUI engine.
     dvz_gui_destroy(gui);
