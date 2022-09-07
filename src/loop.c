@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Simple loop                                                                                  */
+/*  Simple loop with a single canvas                                                             */
 /*************************************************************************************************/
 
 #include "loop.h"
@@ -154,37 +154,16 @@ int dvz_loop_frame(DvzLoop* loop)
         log_trace("recreating the swapchain");
 
         // Wait until the device is ready and the window fully resized.
-        // Framebuffer new size.
         dvz_gpu_wait(gpu);
         dvz_window_poll_size(window);
 
-        // Destroy swapchain resources.
-        dvz_framebuffers_destroy(framebuffers);
-        dvz_images_destroy(&canvas->render.depth);
-        dvz_images_destroy(canvas->render.swapchain.images);
-
-        // Recreate the swapchain. This will automatically set the swapchain->images new
-        // size.
-        dvz_swapchain_recreate(swapchain);
-        // Find the new framebuffer size as determined by the swapchain recreation.
-        uint32_t width = swapchain->images->shape[0];
-        uint32_t height = swapchain->images->shape[1];
-
-        // Need to recreate the depth image with the new size.
-        dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
-        dvz_images_create(&canvas->render.depth);
-
-        // TODO: refactor with canvas_recreate??
-
-        // Recreate the framebuffers with the new size.
-        ASSERT(framebuffers->attachments[0]->shape[0] == width);
-        ASSERT(framebuffers->attachments[0]->shape[1] == height);
-        dvz_framebuffers_create(framebuffers, renderpass);
+        // Recreate the canvas. The new framebuffer size will be stored in canvas->width/height.
+        dvz_canvas_recreate(canvas);
 
         // Recreate the overlay framebuffers.
         if (gui_window != NULL)
         {
-            dvz_gui_window_resize(gui_window, width, height);
+            dvz_gui_window_resize(gui_window, canvas->width, canvas->height);
         }
 
         // Need to refill the command buffers.

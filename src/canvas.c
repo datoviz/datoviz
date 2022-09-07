@@ -119,6 +119,7 @@ void dvz_canvas_reset(DvzCanvas* canvas)
 void dvz_canvas_recreate(DvzCanvas* canvas)
 {
     ANN(canvas);
+
     DvzGpu* gpu = canvas->gpu;
     DvzSwapchain* swapchain = &canvas->render.swapchain;
     DvzFramebuffers* framebuffers = &canvas->render.framebuffers;
@@ -129,31 +130,27 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     ANN(framebuffers);
     ANN(renderpass);
 
-    log_trace("recreate canvas after resize");
-    DvzHost* host = gpu->host;
-    ANN(host);
+    log_debug("recreate the canvas");
 
     // Wait until the device is ready and the window fully resized.
     dvz_gpu_wait(gpu);
 
     // Destroy swapchain resources.
-    dvz_framebuffers_destroy(&canvas->render.framebuffers);
+    dvz_framebuffers_destroy(framebuffers);
     dvz_images_destroy(&canvas->render.depth);
     dvz_images_destroy(canvas->render.swapchain.images);
 
-    // Recreate the swapchain. This will automatically set the swapchain->images new size.
-    // The new swpachain's size is determined by the surface's size, which is queried via Vulkan.
+    // Recreate the swapchain. This will automatically set the swapchain->images new
+    // size.
     dvz_swapchain_recreate(swapchain);
 
     // Find the new framebuffer size as determined by the swapchain recreation.
     uint32_t width = swapchain->images->shape[0];
     uint32_t height = swapchain->images->shape[1];
 
+    // Ensure the canvas size is updated as well.
     canvas->width = width;
     canvas->height = height;
-
-    // Check that we use the same DvzImages struct here.
-    ASSERT(swapchain->images == framebuffers->attachments[0]);
 
     // Need to recreate the depth image with the new size.
     dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
@@ -166,12 +163,6 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
         ASSERT(framebuffers->attachments[i]->shape[1] == height);
     }
     dvz_framebuffers_create(framebuffers, renderpass);
-
-    // Recreate the semaphores.
-    dvz_gpu_wait(canvas->gpu);
-    dvz_semaphores_recreate(&canvas->sync.sem_img_available);
-    dvz_semaphores_recreate(&canvas->sync.sem_render_finished);
-    canvas->sync.present_semaphores = &canvas->sync.sem_render_finished;
 }
 
 
@@ -266,14 +257,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     log_trace("canvas destroy framebuffers");
     dvz_framebuffers_destroy(&canvas->render.framebuffers);
 
-    // Destroy the Dear ImGui context if it was initialized.
-
-    // HACK: we should NOT destroy imgui when using multiple DvzApp, since Dear ImGui uses
-    // global context shared by all DvzApps. In practice, this is for now equivalent to using the
-    // offscreen backend (which does not support Dear ImGui at the moment anyway).
-    // if (canvas->app->backend != DVZ_BACKEND_OFFSCREEN)
-    //     dvz_imgui_destroy();
-
     // Destroy the semaphores.
     log_trace("canvas destroy semaphores");
     dvz_semaphores_destroy(&canvas->sync.sem_img_available);
@@ -284,10 +267,6 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_fences_destroy(&canvas->sync.fences_render_finished);
 
     FREE(canvas->render.swapchain.images);
-
-    // NOTE: the Input destruction must occur AFTER the window destruction, otherwise the window
-    // glfw callbacks might enqueue input events to a destroyed deq, causing a segfault.
-    // dvz_input_destroy(&canvas->input);
 
     dvz_obj_destroyed(&canvas->obj);
 }
