@@ -26,6 +26,8 @@ int test_presenter_2(TstSuite*);
 
 int test_presenter_gui(TstSuite*);
 
+int test_presenter_multi(TstSuite*);
+
 
 
 #endif

@@ -321,3 +321,153 @@ int test_presenter_gui(TstSuite* suite)
     dvz_client_destroy(client);
     return 0;
 }
+
+
+
+int test_presenter_multi(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+    DvzRequest req = {0};
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    // Make rendering requests.
+
+    DvzId canvas_id_0, canvas_id_1, graphics_id_0, graphics_id_1, dat_id, mvp_id, viewport_id;
+    {
+        // Canvas #0.
+
+        // Make a canvas creation request.
+        req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        dvz_requester_add(rqr, req);
+        canvas_id_0 = req.id;
+
+        req = dvz_create_graphics(rqr, canvas_id_0, DVZ_GRAPHICS_TRIANGLE, 0);
+        dvz_requester_add(rqr, req);
+        graphics_id_0 = req.id;
+
+
+        // Canvas #1.
+
+        // Make a canvas creation request.
+        req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        dvz_requester_add(rqr, req);
+        canvas_id_1 = req.id;
+
+        req = dvz_create_graphics(rqr, canvas_id_0, DVZ_GRAPHICS_TRIANGLE, 0);
+        dvz_requester_add(rqr, req);
+        graphics_id_1 = req.id;
+
+
+        // Create the vertex buffer dat.
+        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+        dvz_requester_add(rqr, req);
+        dat_id = req.id;
+
+        // Bind the vertex buffer dat to the graphics pipe.
+        req = dvz_set_vertex(rqr, graphics_id_0, dat_id);
+        dvz_requester_add(rqr, req);
+        req = dvz_set_vertex(rqr, graphics_id_1, dat_id);
+        dvz_requester_add(rqr, req);
+
+        // Upload the triangle data.
+        DvzVertex data[] = {
+            {{-1, -1, 0}, {255, 0, 0, 255}},
+            {{+1, -1, 0}, {0, 255, 0, 255}},
+            {{+0, +1, 0}, {0, 0, 255, 255}},
+        };
+        req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+        dvz_requester_add(rqr, req);
+
+        // Binding #0: MVP.
+        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+        dvz_requester_add(rqr, req);
+        mvp_id = req.id;
+
+        req = dvz_bind_dat(rqr, graphics_id_0, 0, mvp_id);
+        dvz_requester_add(rqr, req);
+        req = dvz_bind_dat(rqr, graphics_id_1, 0, mvp_id);
+        dvz_requester_add(rqr, req);
+
+        DvzMVP mvp = dvz_mvp_default();
+        // dvz_show_base64(sizeof(mvp), &mvp);
+        req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+        dvz_requester_add(rqr, req);
+
+        // Binding #1: viewport.
+        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+        dvz_requester_add(rqr, req);
+        viewport_id = req.id;
+
+        req = dvz_bind_dat(rqr, graphics_id_0, 1, viewport_id);
+        dvz_requester_add(rqr, req);
+        req = dvz_bind_dat(rqr, graphics_id_1, 1, viewport_id);
+        dvz_requester_add(rqr, req);
+
+        DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+        // dvz_show_base64(sizeof(viewport), &viewport);
+        req = dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+        dvz_requester_add(rqr, req);
+
+
+        // Command buffer.
+        req = dvz_record_begin(rqr, canvas_id_0);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_viewport(rqr, canvas_id_0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_draw(rqr, canvas_id_0, graphics_id_0, 0, 3);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_end(rqr, canvas_id_0);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_begin(rqr, canvas_id_1);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_viewport(rqr, canvas_id_1, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_draw(rqr, canvas_id_1, graphics_id_1, 0, 3);
+        dvz_requester_add(rqr, req);
+
+        req = dvz_record_end(rqr, canvas_id_1);
+        dvz_requester_add(rqr, req);
+    }
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(client, N_FRAMES);
+
+    // End.
+
+
+    // Destroying all objects.
+    dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_presenter_destroy(prt);
+    dvz_gpu_destroy(gpu);
+
+    return 0;
+}
