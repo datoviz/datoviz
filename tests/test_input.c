@@ -15,6 +15,7 @@
 #include "mouse.h"
 #include "test.h"
 #include "testing.h"
+#include "testing_utils.h"
 #include "time.h"
 
 
@@ -22,9 +23,6 @@
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
-
-#define DEBUG_TEST (getenv("DVZ_DEBUG") != NULL)
-#define N_FRAMES   (DEBUG_TEST ? 0 : 5)
 
 
 

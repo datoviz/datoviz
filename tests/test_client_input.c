@@ -17,6 +17,7 @@
 #include "mouse.h"
 #include "test.h"
 #include "testing.h"
+#include "testing_utils.h"
 #include "time.h"
 
 
@@ -24,9 +25,6 @@
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
-
-#define DEBUG_TEST (getenv("DVZ_DEBUG") != NULL)
-#define N_FRAMES   (DEBUG_TEST ? 0 : 5)
 
 
 
@@ -44,6 +42,16 @@ static void _on_keyboard(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
     log_debug("keyboard event %d", ev.content.k.type);
+
+    // Test: close on ESC.
+    if (ev.content.k.key == DVZ_KEY_ESCAPE)
+    {
+        DvzClientEvent cev = {
+            .window_id = ev.window_id,
+            .type = DVZ_CLIENT_EVENT_WINDOW_DELETE,
+        };
+        dvz_client_event(client, cev);
+    }
 }
 
 int test_client_input(TstSuite* suite)
