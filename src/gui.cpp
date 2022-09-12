@@ -212,6 +212,42 @@ _imgui_framebuffers(DvzGpu* gpu, DvzRenderpass* renderpass, DvzImages* images)
 
 
 
+static int _imgui_styling(int flags)
+{
+    const ImGuiIO& io = ImGui::GetIO();
+    int imgui_flags = ImGuiWindowFlags_NoSavedSettings;
+
+    if ((flags & DVZ_DIALOG_FLAGS_FPS) != 0)
+    {
+        imgui_flags |= ImGuiWindowFlags_NoTitleBar |         //
+                       ImGuiWindowFlags_NoScrollbar |        //
+                       ImGuiWindowFlags_NoResize |           //
+                       ImGuiWindowFlags_NoCollapse |         //
+                       ImGuiWindowFlags_NoNav |              //
+                       ImGuiWindowFlags_NoNavInputs |        //
+                       ImGuiWindowFlags_NoDecoration |       //
+                       ImGuiWindowFlags_NoMove |             //
+                       ImGuiWindowFlags_NoSavedSettings |    //
+                       ImGuiWindowFlags_NoFocusOnAppearing | //
+                       ImGuiWindowFlags_NoBackground;
+        // ImGui::SetNextWindowBgAlpha(0);
+
+        // 0 = TL, 1 = TR, 2 = LL, 3 = LR
+        // NOTE: by default, always top right
+        int corner = 1;
+        float distance = 0;
+        ImVec2 window_pos = ImVec2(
+            (corner & 1) ? io.DisplaySize.x - distance : distance,
+            (corner & 2) ? io.DisplaySize.y - distance : distance);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    }
+
+    return imgui_flags;
+}
+
+
+
 static void _imgui_destroy()
 {
     ImGui_ImplVulkan_Shutdown();
@@ -416,16 +452,15 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 /*  DearImGui Wrappers                                                                           */
 /*************************************************************************************************/
 
-void dvz_gui_dialog_begin(vec2 pos, vec2 size)
+void dvz_gui_dialog_begin(vec2 pos, vec2 size, int flags)
 {
-    // const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_FirstUseEver, ImVec2(0, 0));
-    // (ImVec2){main_viewport->WorkPos.x, main_viewport->WorkPos.y},
     ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_FirstUseEver);
 
+    int imgui_flags = _imgui_styling(flags);
+
     bool open = true;
-    // ImGui::PushFont(font);
-    ImGui::Begin("Dialog", &open, ImGuiWindowFlags_NoSavedSettings);
+    ImGui::Begin("Dialog", &open, imgui_flags);
 }
 
 

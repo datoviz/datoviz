@@ -51,6 +51,15 @@ typedef enum
 
 
 
+// GUI dialog flags.
+typedef enum
+{
+    DVZ_DIALOG_FLAGS_NONE = 0x0000,
+    DVZ_DIALOG_FLAGS_FPS = 0x0007,
+} DvzDialogFlags;
+
+
+
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
@@ -180,7 +189,7 @@ DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
  * @param pos the dialog position
  * @param size the dialog size
  */
-DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size);
+DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size, int flags);
 
 
 

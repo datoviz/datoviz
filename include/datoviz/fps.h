@@ -11,6 +11,7 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+#include "_math.h"
 #include "_time.h"
 
 
@@ -21,7 +22,7 @@
 
 #define DVZ_FPS_MAX_COUNT 2000
 #define DVZ_FPS_BINS      100
-#define DVZ_FPS_HEIGHT    80.0f
+#define DVZ_FPS_HEIGHT    50.0f
 
 
 
@@ -47,6 +48,7 @@ struct DvzFps
     DvzClock clock;
     uint64_t counter;
     uint32_t count; // number of values in delays
+    dvec2 min_max;
     double* values;
     float* hist;
 };

@@ -265,7 +265,7 @@ int test_presenter_2(TstSuite* suite)
 
 static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 {
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200}, 0);
     dvz_gui_text("Hello world");
     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
     // the executable.
@@ -481,7 +481,7 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
     DvzFps* fps = (DvzFps*)user_data;
     ANN(fps);
 
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200}, DVZ_DIALOG_FLAGS_FPS);
 
     dvz_fps_tick(fps);
     dvz_fps_histogram(fps);

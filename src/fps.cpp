@@ -13,7 +13,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void compute_hist(uint32_t count, double* values, uint32_t bins, float* hist)
+static void compute_hist(uint32_t count, double* values, dvec2 min_max, uint32_t bins, float* hist)
 {
     ANN(values);
     ANN(hist);
@@ -22,8 +22,8 @@ static void compute_hist(uint32_t count, double* values, uint32_t bins, float* h
 
     memset(hist, 0, bins * sizeof(float));
 
-    dvec2 min_max = {0};
-    dvz_range(count, values, min_max);
+    if (min_max[0] == 0 && min_max[1] == 0)
+        dvz_range(count, values, min_max);
     double min = 0;
     double max = min_max[1];
     double diff = min < max ? max - min : 1;
@@ -39,6 +39,7 @@ static void compute_hist(uint32_t count, double* values, uint32_t bins, float* h
         bin = round(bin * bins);
         bin = CLIP(bin, 0, bins - 1);
         ASSERT((0 <= bin) && (bin <= bins - 1));
+        ASSERT((int)bin < (int)bins);
 
         hist[(int)bin]++;
     }
@@ -66,10 +67,10 @@ void dvz_fps_tick(DvzFps* fps)
     ANN(fps);
     ANN(fps->values);
 
+    double interval = dvz_clock_interval(&fps->clock);
+
     uint64_t counter_mod = fps->counter % DVZ_FPS_MAX_COUNT;
     ASSERT(counter_mod < DVZ_FPS_MAX_COUNT);
-
-    double interval = dvz_clock_interval(&fps->clock);
     fps->values[counter_mod] = 1. / interval;
 
     fps->count = MIN(fps->counter, DVZ_FPS_MAX_COUNT);
@@ -84,8 +85,15 @@ void dvz_fps_histogram(DvzFps* fps)
 {
     ANN(fps);
 
+    // Compute the min and max of the values.
+    dvec2 min_max = {0};
+    dvz_range(fps->count, fps->values, min_max);
+
+    // Keep the absolute maximum value.
+    fps->min_max[1] = MAX(fps->min_max[1], min_max[1]);
+
     // Compute the FPS histogram.
-    compute_hist(fps->count, fps->values, DVZ_FPS_BINS, fps->hist);
+    compute_hist(fps->count, fps->values, fps->min_max, DVZ_FPS_BINS, fps->hist);
 
     // Compute the average FPS.
     double mean = fps->count >= 2 ? dvz_mean(fps->count, fps->values) : 1.0;
@@ -94,9 +102,16 @@ void dvz_fps_histogram(DvzFps* fps)
     char str[32] = {0};
     snprintf(str, 32, "FPS: %04.0f/s", mean);
 
+    // Use the full line width.
     ImGui::PushItemWidth(-1);
+    // No background color.
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
+
+    // Histogram.
     ImGui::PlotHistogram(
         "", fps->hist, DVZ_FPS_BINS, 0, str, FLT_MAX, FLT_MAX, ImVec2(0, DVZ_FPS_HEIGHT));
+
+    ImGui::PopStyleColor();
     ImGui::PopItemWidth();
 }
 
