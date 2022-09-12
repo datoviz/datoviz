@@ -364,7 +364,7 @@ int test_presenter_multi(TstSuite* suite)
         // Canvas #1.
 
         // Make a canvas creation request.
-        req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        req = dvz_create_canvas(rqr, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
         dvz_requester_add(rqr, req);
         canvas_id_1 = req.id;
 
@@ -418,7 +418,7 @@ int test_presenter_multi(TstSuite* suite)
         req = dvz_bind_dat(rqr, graphics_id_1, 1, viewport_id);
         dvz_requester_add(rqr, req);
 
-        DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+        DvzViewport viewport = dvz_viewport_default(WIDTH / 2, HEIGHT / 2);
         // dvz_show_base64(sizeof(viewport), &viewport);
         req = dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
         dvz_requester_add(rqr, req);

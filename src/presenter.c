@@ -120,11 +120,6 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     DvzHost* host = gpu->host;
     ANN(host);
 
-    // Destroy the window.
-    DvzWindow* window = id2window(client, id);
-    ANN(window);
-    dvz_window_destroy(window);
-
     // Start canvas destruction.
     DvzCanvas* canvas = dvz_renderer_canvas(rd, id);
 
@@ -144,6 +139,12 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     DvzGuiWindow* gui_window = dvz_map_get(prt->maps.guis, id);
     if (gui_window != NULL)
         dvz_gui_window_destroy(gui_window);
+
+    // Destroy the window.
+    DvzWindow* window = id2window(client, id);
+    ANN(window);
+    dvz_map_remove(client->map, id);
+    dvz_window_destroy(window);
 }
 
 

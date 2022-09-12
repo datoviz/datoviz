@@ -83,6 +83,11 @@ int test_client_2(TstSuite* suite)
     DvzClient* client = dvz_client(BACKEND);
 
     _create_window(client, WID);
+    _create_window(client, WID + 1);
+
+    dvz_client_run(client, 5);
+
+    _delete_window(client, WID + 1);
     dvz_client_run(client, 5);
 
     _delete_window(client, WID);
