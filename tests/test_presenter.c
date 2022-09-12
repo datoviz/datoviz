@@ -471,3 +471,99 @@ int test_presenter_multi(TstSuite* suite)
 
     return 0;
 }
+
+
+#define DVZ_FPS_MAX_COUNT 2000
+#define DVZ_FPS_BINS      100
+static double fps_delays[DVZ_FPS_MAX_COUNT] = {0};
+static float hist[DVZ_FPS_BINS] = {0};
+static DvzClock fps_clock;
+
+static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
+{
+    ANN(gui_window);
+
+    uint64_t* counter = (uint64_t*)user_data;
+    ANN(counter);
+
+    uint64_t counter_mod = (*counter) % DVZ_FPS_MAX_COUNT;
+    ASSERT(counter_mod < DVZ_FPS_MAX_COUNT);
+
+    double interval = dvz_clock_interval(&fps_clock);
+    fps_delays[counter_mod] = interval;
+
+    uint32_t count = MIN(DVZ_FPS_MAX_COUNT, *counter);
+    double fps = (*counter) > 0 ? dvz_mean(count, fps_delays) : 0.0;
+
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_text("FPS: %04.0f", 1. / fps);
+
+    memset(hist, 0, DVZ_FPS_BINS * sizeof(float));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        hist[MIN((int)round(1.0 / fps_delays[i] * .05), DVZ_FPS_BINS - 1)]++;
+    }
+
+    dvz_gui_histogram("hist", DVZ_FPS_BINS, hist);
+
+    dvz_gui_demo();
+
+    dvz_gui_dialog_end();
+
+    dvz_clock_tick(&fps_clock);
+    (*counter)++;
+}
+
+int test_presenter_fps(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+    DvzRequest req = {0};
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
+
+    // Start.
+
+    fps_clock = dvz_clock();
+
+    // Make a canvas creation request.
+    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+    dvz_requester_add(rqr, req);
+    // DvzId canvas_id = req.id;
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    // GUI callback.
+    uint64_t counter = 0;
+    dvz_presenter_gui(prt, req.id, _gui_callback_fps, &counter);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(client, N_FRAMES);
+
+    // End.
+
+
+    // Destroying all objects.
+    dvz_requester_destroy(rqr);
+    dvz_renderer_destroy(rd);
+    dvz_presenter_destroy(prt);
+    dvz_gpu_destroy(gpu);
+    dvz_client_destroy(client);
+    return 0;
+}

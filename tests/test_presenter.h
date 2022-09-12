@@ -28,6 +28,8 @@ int test_presenter_gui(TstSuite*);
 
 int test_presenter_multi(TstSuite*);
 
+int test_presenter_fps(TstSuite*);
+
 
 
 #endif

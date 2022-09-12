@@ -439,6 +439,12 @@ void dvz_gui_text(const char* fmt, ...)
 }
 
 
+void dvz_gui_histogram(const char* str, uint32_t count, float* values)
+{
+    ImGui::PlotHistogram(str, values, (int)count, 0, NULL, FLT_MAX, FLT_MAX, ImVec2(0, 80.0f));
+}
+
+
 
 void dvz_gui_dialog_end() { ImGui::End(); }
 

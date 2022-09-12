@@ -194,6 +194,16 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
 
 
 /**
+ * Show a histogram.
+ *
+ * @param str the plot title
+ * TODO
+ */
+DVZ_EXPORT void dvz_gui_histogram(const char* str, uint32_t count, float* values);
+
+
+
+/**
  * Show the demo GUI.
  *
  * @param gui the GUI
