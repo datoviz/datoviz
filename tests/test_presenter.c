@@ -490,24 +490,37 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
     ASSERT(counter_mod < DVZ_FPS_MAX_COUNT);
 
     double interval = dvz_clock_interval(&fps_clock);
-    fps_delays[counter_mod] = interval;
+    fps_delays[counter_mod] = 1. / interval;
 
     uint32_t count = MIN(DVZ_FPS_MAX_COUNT, *counter);
-    double fps = (*counter) > 0 ? dvz_mean(count, fps_delays) : 0.0;
+    double fps = (*counter) >= 2 ? dvz_mean(count, fps_delays) : 1.0;
 
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
-    dvz_gui_text("FPS: %04.0f", 1. / fps);
+    dvec2 min_max = {0};
+    dvz_range(count, fps_delays, min_max);
+    double min = 0; // min_max[0];
+    double max = min_max[1];
+    double diff = max - min;
+    if (diff == 0)
+        diff = 1;
 
     memset(hist, 0, DVZ_FPS_BINS * sizeof(float));
+    double bin = 0;
     for (uint32_t i = 0; i < count; i++)
     {
-        hist[MIN((int)round(1.0 / fps_delays[i] * .05), DVZ_FPS_BINS - 1)]++;
+        bin = (fps_delays[i] - min) / diff;
+        ASSERT((0 <= bin) && (bin <= 1));
+        bin = round(bin * DVZ_FPS_BINS);
+        bin = CLIP(bin, 0, DVZ_FPS_BINS - 1);
+        ASSERT((0 <= bin) && (bin <= DVZ_FPS_BINS - 1));
+        hist[(int)bin]++;
     }
 
-    dvz_gui_histogram("hist", DVZ_FPS_BINS, hist);
+    char str[32] = {0};
+    snprintf(str, 32, "FPS: %04.0f/s", fps);
 
-    dvz_gui_demo();
-
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200});
+    dvz_gui_histogram(str, DVZ_FPS_BINS, hist);
+    // dvz_gui_demo();
     dvz_gui_dialog_end();
 
     dvz_clock_tick(&fps_clock);
