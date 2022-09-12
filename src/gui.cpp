@@ -2,8 +2,10 @@
 /*  Dear ImGUI wrapper                                                                           */
 /*************************************************************************************************/
 
-#include "gui.h"
+#include <stdarg.h>
+
 #include "canvas.h"
+#include "gui.h"
 #include "host.h"
 #include "vklite.h"
 #include "window.h"
@@ -290,6 +292,7 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
 
     DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_container_alloc(&gui->gui_windows);
     gui_window->gui = gui;
+    gui_window->window = window;
 
     // GUI window width and height relate to the framebuffer, not the window size.
     gui_window->width = images->shape[0];
@@ -427,7 +430,13 @@ void dvz_gui_dialog_begin(vec2 pos, vec2 size)
 
 
 
-void dvz_gui_text(const char* str) { ImGui::Text("%s", str); }
+void dvz_gui_text(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    ImGui::TextV(fmt, args);
+    va_end(args);
+}
 
 
 

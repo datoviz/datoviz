@@ -68,6 +68,7 @@ struct DvzGuiWindow
 {
     DvzObject obj;
     DvzGui* gui;
+    DvzWindow* window;
     uint32_t width, height;
     bool is_offscreen;
     DvzFramebuffers framebuffers;
@@ -186,10 +187,9 @@ DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size);
 /**
  * Add a text item in a dialog.
  *
- * @param gui the GUI
- * @param str the string
+ * @param fmt the format string
  */
-DVZ_EXPORT void dvz_gui_text(const char* str);
+DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
 
 
 
