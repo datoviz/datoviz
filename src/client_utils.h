@@ -60,4 +60,23 @@ create_client_window(DvzClient* client, DvzId id, uint32_t width, uint32_t heigh
 
 
 
+static void delete_client_window(DvzClient* client, DvzId id)
+{
+    ANN(client);
+    ASSERT(id != DVZ_ID_NONE);
+
+    DvzWindow* window = id2window(client, id);
+    if (window == NULL)
+    {
+        log_warn("window #%d not found", id);
+        return;
+    }
+    ANN(window);
+
+    dvz_map_remove(client->map, id);
+    dvz_window_destroy(window);
+}
+
+
+
 #endif
