@@ -106,12 +106,14 @@ void dvz_fps_histogram(DvzFps* fps)
     ImGui::PushItemWidth(-1);
     // No background color.
     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
+    // Histogram color.
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0, 0, 0.5f));
 
     // Histogram.
     ImGui::PlotHistogram(
         "", fps->hist, DVZ_FPS_BINS, 0, str, FLT_MAX, FLT_MAX, ImVec2(0, DVZ_FPS_HEIGHT));
 
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(2);
     ImGui::PopItemWidth();
 }
 
