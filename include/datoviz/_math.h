@@ -460,6 +460,35 @@ static inline double dvz_mean(uint32_t n, double* values)
 
 
 
+/**
+ * Compute the range of an array of double values.
+ *
+ * @param n the number of values
+ * @param values an array of double numbers
+ * @param[out] the min and max values
+ */
+static inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
+{
+    if (n == 0)
+        return;
+    ASSERT(n > 0);
+    ASSERT(values != NULL);
+    min_max[0] = FLT_MAX;
+    min_max[1] = FLT_MIN;
+    double val = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        val = values[i];
+        if (val < min_max[0])
+            min_max[0] = val;
+
+        if (val > min_max[1])
+            min_max[1] = val;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Random number generation                                                                     */
 /*************************************************************************************************/
