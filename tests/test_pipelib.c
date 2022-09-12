@@ -34,8 +34,6 @@ int test_pipelib_1(TstSuite* suite)
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
 
-    uvec2 size = {WIDTH, HEIGHT};
-
     // Create the renderpass.
     DvzRenderpass renderpass = offscreen_renderpass(gpu);
 

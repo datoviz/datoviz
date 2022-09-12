@@ -26,10 +26,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define WIDTH      800
-#define HEIGHT     600
-#define DEBUG_TEST (getenv("DVZ_DEBUG") != NULL)
-#define N_FRAMES   (DEBUG_TEST ? 0 : 5)
+#define WIDTH        800
+#define HEIGHT       600
+#define DEBUG_TEST   (getenv("DVZ_DEBUG") != NULL)
+#define N_FRAMES     (DEBUG_TEST ? 0 : 5)
+#define PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
 
 #define TRIANGLE_VERTICES                                                                         \
     {                                                                                             \

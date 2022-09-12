@@ -21,10 +21,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-// #define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-// #define DVZ_DEFAULT_PRESENT_MODE VK_PRESENT_MODE_IMMEDIATE_KHR
-#define PRESENT_MODE VK_PRESENT_MODE_FIFO_KHR
-#define FORMAT       VK_FORMAT_B8G8R8A8_UNORM
+#define FORMAT VK_FORMAT_B8G8R8A8_UNORM
 #define BACKGROUND                                                                                \
     (cvec4) { 102, 153, 204, 255 }
 
@@ -161,16 +158,16 @@ static DvzRenderpass desktop_renderpass(DvzGpu* gpu)
 
 
 
-static void
-make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t min_img_count)
+static void make_swapchain(
+    DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t min_img_count, bool vsync)
 {
     ANN(swapchain);
     log_trace("making swapchain");
 
     *swapchain = dvz_swapchain(gpu, surface.surface, min_img_count);
     dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
-    // TODO: activate/deactivate vsync
-    dvz_swapchain_present_mode(swapchain, PRESENT_MODE);
+    dvz_swapchain_present_mode(
+        swapchain, vsync ? VK_PRESENT_MODE_FIFO_KHR : VK_PRESENT_MODE_IMMEDIATE_KHR);
     dvz_swapchain_create(swapchain);
 
     ANN(swapchain->images);

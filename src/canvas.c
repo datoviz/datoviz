@@ -73,8 +73,11 @@ void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
     ASSERT(surface.surface != VK_NULL_HANDLE);
     canvas->surface = surface;
 
+    bool vsync = (canvas->flags & DVZ_CANVAS_FLAGS_VSYNC) != 0;
+
     // Make the swapchain.
-    make_swapchain(gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT);
+    make_swapchain(
+        gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT, vsync);
 
     // Make depth buffer image.
     make_depth(gpu, &canvas->render.depth, width, height);
