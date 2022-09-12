@@ -62,12 +62,16 @@ typedef enum
     DVZ_REQUEST_OBJECT_VERTEX,
 
     DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
-    // DVZ_REQUEST_OBJECT_BEGIN,
-    // DVZ_REQUEST_OBJECT_VIEWPORT,
-    // DVZ_REQUEST_OBJECT_BARRIER,
-    // DVZ_REQUEST_OBJECT_DRAW,
-    // DVZ_REQUEST_OBJECT_END,
 } DvzRequestObject;
+
+
+
+// Request flags.
+typedef enum
+{
+    DVZ_REQUEST_FLAGS_NONE = 0x0000,
+    DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000,
+} DvzRequestFlags;
 
 
 
@@ -148,7 +152,6 @@ union DvzRequestContent
     // Graphics.
     struct
     {
-        DvzId parent; // either a board or canvas id
         DvzGraphicsType type;
     } graphics;
 
@@ -513,8 +516,7 @@ dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mo
  * @param flags the graphics creation flags
  * @returns the request, containing a newly-generated id for the graphics pipe to be created
  */
-DVZ_EXPORT DvzRequest
-dvz_create_graphics(DvzRequester* rqr, DvzId parent, DvzGraphicsType type, int flags);
+DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags);
 
 
 

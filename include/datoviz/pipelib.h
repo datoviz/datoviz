@@ -83,14 +83,13 @@ DVZ_EXPORT DvzPipelib* dvz_pipelib(DvzContext* ctx);
  * @param ctx the context
  * @param renderpass the renderpass
  * @param img_count the number of swapchain images
- * @param viewport_size the viewport size
  * @param type the builtin graphics type
  * @param flags the graphics creation flags
  * @returns the pipe
  */
 DVZ_EXPORT DvzPipe* dvz_pipelib_graphics(
     DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
-    uint32_t img_count, uvec2 viewport_size, DvzGraphicsType type, int flags);
+    uint32_t img_count, DvzGraphicsType type, int flags);
 
 
 

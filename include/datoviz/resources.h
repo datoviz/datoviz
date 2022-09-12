@@ -91,7 +91,7 @@ struct DvzResources
 {
     DvzObject obj;
     DvzGpu* gpu;
-    uint32_t img_count;
+    uint32_t img_count; // NOTE: must be set by requesting the number of images for a canvas
 
     DvzContainer buffers;
     DvzContainer images;

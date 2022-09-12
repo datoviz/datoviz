@@ -35,8 +35,6 @@ static DvzDat* _make_dat_mvp(DvzContext* ctx)
 static DvzDat* _make_dat_viewport(DvzContext* ctx, uvec2 size)
 {
     ANN(ctx);
-    ASSERT(size[0] > 0);
-    ASSERT(size[1] > 0);
 
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
     ANN(dat_viewport);
@@ -76,7 +74,7 @@ DvzPipelib* dvz_pipelib(DvzContext* ctx)
 
 DvzPipe* dvz_pipelib_graphics(
     DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
-    uint32_t img_count, uvec2 viewport_size, DvzGraphicsType type, int flags)
+    uint32_t img_count, DvzGraphicsType type, int flags)
 {
     ANN(lib);
     ANN(renderpass);
@@ -101,11 +99,17 @@ DvzPipe* dvz_pipelib_graphics(
 
     // Create the first common uniform dat: MVP.
     if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_MVP)
+    {
         dvz_pipe_dat(pipe, 0, _make_dat_mvp(ctx));
+    }
 
     // Create the second common uniform dat: viewport.
     if (pipe->flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
-        dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, viewport_size));
+    {
+        // NOTE: null viewport size here as we don't know the viewport size yet, the caller will
+        // need to upload a correct viewport size later.
+        dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, (uvec2){0, 0}));
+    }
 
     dvz_pipe_create(pipe);
 
@@ -120,15 +124,6 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
     // TODO: compute shader
     return NULL;
 }
-
-
-
-// void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe)
-// {
-//     ANN(lib);
-//     ANN(pipe);
-//     dvz_pipe_destroy(pipe);
-// }
 
 
 

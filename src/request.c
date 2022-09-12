@@ -311,12 +311,11 @@ DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAdd
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzId parent, DvzGraphicsType type, int flags)
+DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
 {
     CREATE_REQUEST(CREATE, GRAPHICS);
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
-    req.content.graphics.parent = parent;
     req.content.graphics.type = type;
     return req;
 }

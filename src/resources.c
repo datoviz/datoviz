@@ -93,6 +93,9 @@ void dvz_resources(DvzGpu* gpu, DvzResources* res)
     // Create the resources.
     res->gpu = gpu;
 
+    // Initially, only 1 img_count.
+    res->img_count = 1;
+
     // Allocate memory for buffers, textures, samplers.
     _create_resources(res);
 

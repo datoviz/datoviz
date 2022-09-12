@@ -44,7 +44,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
 
     // Create a graphics.
-    req = dvz_create_graphics(rqr, board_id, DVZ_GRAPHICS_TRIANGLE, 0);
+    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, DVZ_REQUEST_FLAGS_OFFSCREEN);
     dvz_renderer_request(rd, req);
     DvzId graphics_id = req.id;
 
@@ -225,8 +225,9 @@ int test_renderer_image(TstSuite* suite)
 
     // Create a graphics.
     req = dvz_create_graphics(
-        rqr, board_id, DVZ_GRAPHICS_IMAGE,
-        DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
+        rqr, DVZ_GRAPHICS_IMAGE,
+        DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT |
+            DVZ_REQUEST_FLAGS_OFFSCREEN);
     dvz_renderer_request(rd, req);
     DvzId graphics_id = req.id;
 

@@ -201,57 +201,22 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
     DvzGpu* gpu = rd->gpu;
     ANN(gpu);
 
-    // Get the board.
-    DvzId id = req.content.graphics.parent;
-    ASSERT(id != DVZ_ID_NONE);
-
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, id);
-    log_trace("create graphics for parent 0x%" PRIx64 " with type %d", id, type);
-    ASSERT(type == DVZ_REQUEST_OBJECT_BOARD || type == DVZ_REQUEST_OBJECT_CANVAS);
-
     DvzPipe* pipe = NULL;
 
-    if (type == DVZ_REQUEST_OBJECT_BOARD)
-    {
-        DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
-        ANN(board);
+    bool is_offscreen = (req.flags & DVZ_REQUEST_FLAGS_OFFSCREEN) != 0;
+    DvzRenderpass* renderpass =
+        is_offscreen ? &rd->workspace->renderpass_offscreen : &rd->workspace->renderpass_desktop;
 
-        // Create the pipe.
-        uvec2 size = {board->width, board->height};
-        pipe = dvz_pipelib_graphics(
-            rd->pipelib, rd->ctx, board->renderpass, board->images.count, //
-            size, req.content.graphics.type, req.flags);
-        ANN(pipe);
-        SET_ID(pipe)
-    }
+    // NOTE: make sure the DvzResources structure has img_count set.
+    uint32_t img_count = rd->ctx->res.img_count;
+    ASSERT(img_count > 0);
 
-    else if (type == DVZ_REQUEST_OBJECT_CANVAS)
-    {
-        log_trace("get canvas 0x%" PRIx64 "", id);
-        DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
-        ANN(canvas);
-
-        // Get the canvas framebuffer size.
-        uvec2 viewport_size = {0};
-
-        if (req.flags & DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT)
-        {
-            log_warn("automatic viewport dat creation is poorly supported for now, may be "
-                     "disabled soon. We need the viewport size, so as a temporary hack we take "
-                     "the canvas size.");
-            viewport_size[0] = canvas->width;
-            viewport_size[1] = canvas->height;
-        }
-
-        // Create the pipe.
-        log_trace("create pipelib graphics");
-        pipe = dvz_pipelib_graphics(
-            rd->pipelib, rd->ctx, canvas->render.renderpass, canvas->render.swapchain.img_count,
-            viewport_size, req.content.graphics.type, req.flags);
-        ANN(pipe);
-        SET_ID(pipe)
-    }
+    // Create the pipe.
+    log_trace("create pipelib graphics");
+    pipe = dvz_pipelib_graphics(
+        rd->pipelib, rd->ctx, renderpass, img_count, req.content.graphics.type, req.flags);
     ANN(pipe);
+    SET_ID(pipe)
 
     return (void*)pipe;
 }

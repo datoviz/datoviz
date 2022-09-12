@@ -84,6 +84,10 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     ASSERT(dvz_obj_is_created(&canvas->render.swapchain.obj));
     canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
 
+    // HACK: once we have an img_count, we update the "global" variable with this value.
+    // We ensure that the global img_count is larger than all img_count of canvases.
+    rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
+
     // Create the associated GUI window if requested.
     bool has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)

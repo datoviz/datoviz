@@ -162,12 +162,12 @@ static DvzRenderpass desktop_renderpass(DvzGpu* gpu)
 
 
 static void
-make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t img_count)
+make_swapchain(DvzGpu* gpu, DvzSurface surface, DvzSwapchain* swapchain, uint32_t min_img_count)
 {
     ANN(swapchain);
     log_trace("making swapchain");
 
-    *swapchain = dvz_swapchain(gpu, surface.surface, img_count);
+    *swapchain = dvz_swapchain(gpu, surface.surface, min_img_count);
     dvz_swapchain_format(swapchain, (VkFormat)DVZ_DEFAULT_FORMAT);
     // TODO: activate/deactivate vsync
     dvz_swapchain_present_mode(swapchain, PRESENT_MODE);

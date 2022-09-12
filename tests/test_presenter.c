@@ -163,7 +163,7 @@ int test_presenter_2(TstSuite* suite)
         canvas_id = req.id;
 
         // Create a graphics.
-        req = dvz_create_graphics(rqr, canvas_id, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
         dvz_requester_add(rqr, req);
         graphics_id = req.id;
 
@@ -356,7 +356,7 @@ int test_presenter_multi(TstSuite* suite)
         dvz_requester_add(rqr, req);
         canvas_id_0 = req.id;
 
-        req = dvz_create_graphics(rqr, canvas_id_0, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
         dvz_requester_add(rqr, req);
         graphics_id_0 = req.id;
 
@@ -368,7 +368,7 @@ int test_presenter_multi(TstSuite* suite)
         dvz_requester_add(rqr, req);
         canvas_id_1 = req.id;
 
-        req = dvz_create_graphics(rqr, canvas_id_0, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
         dvz_requester_add(rqr, req);
         graphics_id_1 = req.id;
 
