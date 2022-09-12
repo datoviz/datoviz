@@ -9,30 +9,25 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include("cmake/colormsg.cmake")
 include(FetchContent)
 
-
 # -------------------------------------------------------------------------------------------------
 # Datoviz project
 # -------------------------------------------------------------------------------------------------
-
 set(DATOVIZ_VERSION 0.2.0)
 project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
-
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
-
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
-# option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
+# option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
 # -------------------------------------------------------------------------------------------------
 # Build type
 # -------------------------------------------------------------------------------------------------
-
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
@@ -47,18 +42,15 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 #
 # 2. In the iwyu git cloned directory:
 # python fix_includes.py -n --nosafe_headers
-#     --ignore_re="_deps|_shaders.c|_textures.c|_fonts.c"
-#     < ~/git/datoviz-distributed/build/iwyu.out
+# --ignore_re="_deps|_shaders.c|_textures.c|_fonts.c"
+# < ~/git/datoviz-distributed/build/iwyu.out
 #
 # find_program(iwyu_path NAMES include-what-you-use iwyu REQUIRED)
 # set(CMAKE_C_INCLUDE_WHAT_YOU_USE iwyu -Xiwyu;any;-Xiwyu;iwyu;-Xiwyu;args)
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Detect the OS
 # -------------------------------------------------------------------------------------------------
-
 set(OS_LINUX 0)
 set(OS_MACOS 0)
 set(OS_WIN32 0)
@@ -71,11 +63,9 @@ elseif(WIN32)
     set(OS_WIN32 1)
 endif()
 
-
 # -------------------------------------------------------------------------------------------------
 # Detect the compiler
 # -------------------------------------------------------------------------------------------------
-
 set(CC_GCC 0)
 set(CC_CLANG 0)
 set(CC_MSVC 0)
@@ -88,11 +78,9 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     set(CC_MSVC 1)
 endif()
 
-
 # -------------------------------------------------------------------------------------------------
 # Directories
 # -------------------------------------------------------------------------------------------------
-
 set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
 set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv)
 set(ARTIFACTS_DIR "${CMAKE_BINARY_DIR}/artifacts")
@@ -101,11 +89,9 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
 file(MAKE_DIRECTORY ${SPIRV_DIR})
 file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 
-
 # -------------------------------------------------------------------------------------------------
 # Include directories
 # -------------------------------------------------------------------------------------------------
-
 set(INCL_DIRS
     ${CMAKE_SOURCE_DIR}/include/datoviz
     ${CMAKE_SOURCE_DIR}/external
@@ -116,16 +102,15 @@ set(INCL_DIRS
 if(${OS_MACOS})
     set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
 elseif(${OS_WIN32})
-    set(INCL_DIRS ${INCL_DIRS}) #$ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
+    set(INCL_DIRS ${INCL_DIRS}) # $ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
     find_path(MINGW_DIR NAMES "gcc.exe")
 endif()
-
 
 # -------------------------------------------------------------------------------------------------
 # Linking libraries
 # -------------------------------------------------------------------------------------------------
-
 set(LINK_LIBS cglm)
+
 # Link with system libraries.
 if(NOT ${WIN32})
     set(LINK_LIBS m dl pthread ${LINK_LIBS})
@@ -139,7 +124,6 @@ elseif(${OS_WIN32})
     set(LINK_LIBS ${LINK_LIBS})
 endif()
 
-
 # -------------------------------------------------------------------------------------------------
 # Build dependencies
 # -------------------------------------------------------------------------------------------------
@@ -147,13 +131,14 @@ endif()
 # ---- cglm ---------------------------------------------------------------------------------------
 FetchContent_Declare(
     cglm
-    GIT_REPOSITORY  https://github.com/recp/cglm/
-    GIT_TAG         v0.8.5
+    GIT_REPOSITORY https://github.com/recp/cglm/
+    GIT_TAG v0.8.5
 )
 FetchContent_MakeAvailable(cglm)
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(HAS_GLFW 0)
+
 if(DATOVIZ_WITH_GLFW)
     set(HAS_GLFW 1)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -162,8 +147,8 @@ if(DATOVIZ_WITH_GLFW)
 
     FetchContent_Declare(
         glfw
-        GIT_REPOSITORY  https://github.com/glfw/glfw/
-        GIT_TAG         3.3.4
+        GIT_REPOSITORY https://github.com/glfw/glfw/
+        GIT_TAG 3.3.4
     )
     FetchContent_MakeAvailable(glfw)
 
@@ -173,59 +158,63 @@ endif()
 
 # ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
 set(HAS_GLSLANG 0)
-if (DATOVIZ_WITH_VULKAN_SDK)
+
+if(DATOVIZ_WITH_VULKAN_SDK)
     find_package(Vulkan)
 endif()
-if (Vulkan_FOUND)
+
+if(Vulkan_FOUND)
     message(STATUS "Found Vulkan")
 
     find_program(GLSLC glslc)
-    if (NOT GLSLC)
+
+    if(NOT GLSLC)
         message(FATAL_ERROR "-- glslc executable NOT found")
     endif()
 
     # glslang
     set(glslangValidator "")
-    if (DATOVIZ_WITH_GLSLANG)
+
+    if(DATOVIZ_WITH_GLSLANG)
         FetchContent_Declare(
             glslang
             GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-            GIT_TAG        11.7.1
+            GIT_TAG 11.7.1
         )
         FetchContent_MakeAvailable(glslang)
         set(HAS_GLSLANG 1)
     endif()
 else()
-
     # Vulkan headers
     FetchContent_Declare(
         vulkan-headers
-        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Headers.git
-        GIT_TAG         v1.2.195 # main
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
+        GIT_TAG v1.2.195 # main
     )
     FetchContent_MakeAvailable(vulkan-headers)
 
     # Vulkan loader
     FetchContent_Declare(
         vulkan-loader
-        GIT_REPOSITORY  https://github.com/KhronosGroup/Vulkan-Loader.git
-        GIT_TAG         v1.2.195 # master
+        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
+        GIT_TAG v1.2.195 # master
     )
     FetchContent_MakeAvailable(vulkan-loader)
 
     # SPIRV-Headers
     FetchContent_Declare(
         SPIRV-Headers
-        GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Headers.git
-        GIT_TAG         master # 1.5.4.raytracing.fixed
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+        GIT_TAG master # 1.5.4.raytracing.fixed
     )
     FetchContent_MakeAvailable(SPIRV-Headers)
 
     # SPIRV-Tools
     FetchContent_Declare(
         SPIRV-Tools
-        GIT_REPOSITORY  https://github.com/KhronosGroup/SPIRV-Tools.git
-        GIT_TAG         master # v2021.3
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+        GIT_TAG master # v2021.3
+
         # # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
         # GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
         # GIT_TAG         fix_ci_failure
@@ -236,7 +225,7 @@ else()
     FetchContent_Declare(
         glslang
         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-        GIT_TAG        master # 11.6.0
+        GIT_TAG master # 11.6.0
     )
     FetchContent_MakeAvailable(glslang)
 
@@ -247,13 +236,12 @@ else()
     FetchContent_Declare(
         glslc
         GIT_REPOSITORY https://github.com/google/shaderc
-        GIT_TAG        main # v2021.2
-        )
+        GIT_TAG main # v2021.2
+    )
     FetchContent_MakeAvailable(glslc)
 
     set(HAS_GLSLANG 1)
     set(GLSLC glslc_exe)
-
 endif()
 
 # Link with Vulkan.
@@ -264,7 +252,7 @@ else()
 endif()
 
 # Link with glslang.
-if (HAS_GLSLANG)
+if(HAS_GLSLANG)
     set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
     set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
@@ -272,7 +260,6 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
-
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=1
@@ -296,9 +283,9 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
     HAS_GLSLANG=${HAS_GLSLANG}
+
     # HAS_PNG=${HAS_PNG}
 )
-
 
 # -------------------------------------------------------------------------------------------------
 # Compiler options
@@ -326,9 +313,10 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
     ")
-    # -Wno-missing-field-initializers
-    # -Wno-unused-result \
-    # -Wno-variadic-macros")
+
+# -Wno-missing-field-initializers
+# -Wno-unused-result \
+# -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
@@ -347,8 +335,9 @@ if(CC_GCC)
 
     set(COMMON_FLAGS "${COMMON_FLAGS} \
         -Wlogical-op -fdiagnostics-color=always \
-        -DFPNG_NO_SSE=0 -msse4.1 -mpclmul")  # for fpng
-    if (NOT OS_WIN32)
+        -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
+
+    if(NOT OS_WIN32)
         set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
     endif()
 
@@ -367,7 +356,8 @@ elseif(CC_CLANG)
 
     # for fpng
     set(COMMON_FLAGS "${COMMON_FLAGS} -fdiagnostics-color=always")
-    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
         set(COMMON_FLAGS "${COMMON_FLAGS} -DFPNG_NO_SSE=0 -msse4.1 -mpclmul")
     else()
     endif()
@@ -379,12 +369,9 @@ elseif(CC_CLANG)
 
 elseif(CC_MSVC)
     # MSVC
-
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /std:c11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-
 endif()
-
 
 # -------------------------------------------------------------------------------------------------
 # RPATH
@@ -406,15 +393,14 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # the RPATH to be used when installing, but only if it's not a system directory
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+
 if("${isSystemDir}" STREQUAL "-1")
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif("${isSystemDir}" STREQUAL "-1")
 
-
 # -------------------------------------------------------------------------------------------------
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
-
 find_program(GLSLC glslc)
 file(GLOB shader_sources
     "*/glsl/*.vert"
@@ -422,21 +408,24 @@ file(GLOB shader_sources
     "*/glsl/*.comp"
     "*/glsl/*.frag"
 )
+
 foreach(shader_source ${shader_sources})
     get_filename_component(shader_name ${shader_source} NAME)
+
     # NOTE: there was a bug because the shader output was a relative path, not a full path
     # and cmake believed the output was not properly created by the custom command glslc.
     set(shader_output "${SPIRV_DIR}/${shader_name}.spv")
     add_custom_command(
         OUTPUT ${shader_output}
         COMMAND ${GLSLC}
-            -o "${shader_output}" ${shader_source}
-            -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
+        -o "${shader_output}" ${shader_source}
+        -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
         DEPENDS ${shader_source}
         IMPLICIT_DEPENDS ${shader_source}
-        )
+    )
     list(APPEND shader_outputs ${shader_output})
 endforeach()
+
 add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
 
 # NOTE: Only include graphics shaders in the embed resources files.
@@ -454,7 +443,6 @@ add_custom_command(
     IMPLICIT_DEPENDS shaders_spirv ${shader_sources}
 )
 add_custom_target(shaders DEPENDS ${path_shadersc})
-
 
 # -------------------------------------------------------------------------------------------------
 # Other binary resources
@@ -486,7 +474,6 @@ add_custom_command(
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
 
-
 # -------------------------------------------------------------------------------------------------
 # Source files
 # -------------------------------------------------------------------------------------------------
@@ -511,6 +498,7 @@ set(external_sources
 )
 
 set(sources
+
     # Utils
     "src/_thread.c"
     "src/_mutex.c"
@@ -553,43 +541,44 @@ set(sources
     "src/request.c"
     "src/window.c"
     "src/client.c"
-    "src/gui.cpp"
     "src/presenter.c"
+
+    # GUI
+    "src/gui.cpp"
+    "src/fps.cpp"
 
     ${external_sources}
 )
 
-
-
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
-
 add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${path_fonts})
 set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 2
+
     # PUBLIC_HEADER include/datoviz/datoviz.h
     OUTPUT_NAME "datoviz"
-    )
+)
+
 if(${OS_WIN32})
     set_target_properties(
         libdatoviz PROPERTIES
         OUTPUT_NAME "libdatoviz"
     )
 endif()
+
 add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 target_link_libraries(libdatoviz ${LINK_LIBS})
 
-
 # -------------------------------------------------------------------------------------------------
 # CLI tool
 # -------------------------------------------------------------------------------------------------
-
-if (DATOVIZ_WITH_CLI)
+if(DATOVIZ_WITH_CLI)
     set(cli
         "cli/main.c"
 
