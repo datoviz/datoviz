@@ -439,6 +439,27 @@ static inline uint64_t dvz_next_pow2(uint64_t x)
 
 
 
+/**
+ * Compute the mean of an array of double values.
+ *
+ * @param n the number of values
+ * @param values an array of double numbers
+ * @returns the mean
+ */
+static inline double dvz_mean(uint32_t n, double* values)
+{
+    ASSERT(n > 0);
+    ASSERT(values != NULL);
+    double mean = 0;
+    for (uint32_t i = 0; i < n; i++)
+        mean += values[i];
+    mean /= n;
+    ASSERT(mean >= 0);
+    return mean;
+}
+
+
+
 /*************************************************************************************************/
 /*  Random number generation                                                                     */
 /*************************************************************************************************/
