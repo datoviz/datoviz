@@ -67,8 +67,8 @@ int test_canvas_1(TstSuite* suite)
     dvz_canvas_create(&canvas, surface);
 
     dvz_canvas_destroy(&canvas);
-    dvz_window_destroy(&window);
     dvz_surface_destroy(host, surface);
+    dvz_window_destroy(&window);
     dvz_renderpass_destroy(&renderpass);
     dvz_gpu_destroy(gpu);
     return 0;

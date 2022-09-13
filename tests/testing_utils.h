@@ -240,8 +240,8 @@ static void canvas_destroy(TestCanvas* canvas)
     dvz_swapchain_destroy(&canvas->swapchain);
     dvz_framebuffers_destroy(&canvas->framebuffers);
     dvz_renderpass_destroy(&canvas->renderpass);
-    dvz_window_destroy(canvas->window);
     dvz_surface_destroy(canvas->gpu->host, canvas->surface);
+    dvz_window_destroy(canvas->window);
 }
 
 

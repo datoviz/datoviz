@@ -868,8 +868,8 @@ int test_vklite_swapchain(TstSuite* suite)
     dvz_swapchain_present_mode(&swapchain, VK_PRESENT_MODE_FIFO_KHR);
     dvz_swapchain_create(&swapchain);
     dvz_swapchain_destroy(&swapchain);
-    dvz_window_destroy(&window);
     dvz_surface_destroy(host, surface);
+    dvz_window_destroy(&window);
 
     dvz_gpu_destroy(gpu);
     // dvz_host_destroy(host);

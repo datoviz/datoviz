@@ -45,8 +45,8 @@ void dvz_gpu_create_with_surface(DvzGpu* gpu)
     ASSERT(surface.surface != VK_NULL_HANDLE);
     dvz_gpu_create(gpu, surface.surface);
 
-    dvz_window_destroy(&window);
     dvz_surface_destroy(host, surface);
+    dvz_window_destroy(&window);
 }
 
 
