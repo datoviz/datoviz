@@ -191,7 +191,7 @@ DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
     uint32_t count = _dat_is_dup(dat) ? res->img_count : 1;
     if (count == 0)
     {
-        log_warn("DvzContext.img_count is not set");
+        log_warn("DvzResources.img_count is not set");
         count = DVZ_MAX_SWAPCHAIN_IMAGES;
     }
     ASSERT(count > 0);

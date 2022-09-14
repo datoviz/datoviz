@@ -7,6 +7,7 @@
 #include "canvas.h"
 #include "gui.h"
 #include "host.h"
+#include "resources.h"
 #include "vklite.h"
 #include "window.h"
 
@@ -471,6 +472,33 @@ void dvz_gui_text(const char* fmt, ...)
     va_start(args, fmt);
     ImGui::TextV(fmt, args);
     va_end(args);
+}
+
+
+
+void dvz_gui_image(DvzTex* tex, float width, float height)
+{
+    ANN(tex);
+
+    ASSERT(tex->dims == DVZ_TEX_2D);
+
+    // HACK: create a Vulkan descriptor set for ImGui.
+    if (tex->_imgui_texid == VK_NULL_HANDLE)
+    {
+        DvzSampler* sampler = dvz_resources_sampler(
+            tex->res, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+
+        tex->_imgui_texid = ImGui_ImplVulkan_AddTexture(
+            sampler->sampler, tex->img->image_views[0], VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+    ASSERT(tex->_imgui_texid != VK_NULL_HANDLE);
+
+    ImVec2 uv_min = ImVec2(0.0f, 0.0f);               // Top-left
+    ImVec2 uv_max = ImVec2(1.0f, 1.0f);               // Lower-right
+    ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // No tint
+    // ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+
+    ImGui::Image((ImTextureID)tex->_imgui_texid, ImVec2(width, height), uv_min, uv_max, tint_col);
 }
 
 

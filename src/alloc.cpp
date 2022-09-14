@@ -17,8 +17,8 @@
 
 extern "C" struct DvzAlloc
 {
-    std::map<DvzSize, DvzSize> occupied;
-    std::map<DvzSize, DvzSize> free;
+    std::map<DvzSize, DvzSize> occupied; // offset: (aligned) block size
+    std::map<DvzSize, DvzSize> free;     // offset: (aligned) block size
     DvzSize alignment, alloc_size, buf_size;
 };
 

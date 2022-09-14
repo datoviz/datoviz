@@ -8,6 +8,7 @@
 
 #include "test_presenter.h"
 #include "client.h"
+#include "colormaps.h"
 #include "fps.h"
 #include "glfw_utils.h"
 #include "gui.h"
@@ -269,6 +270,24 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
     dvz_gui_text("Hello world");
     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
     // the executable.
+
+    // dvz_gui_demo();
+
+    // DvzTex* tex = (DvzTex*)user_data;
+    // ANN(tex);
+    // {
+    //     const uint32_t width = tex->shape[0];
+
+    //     cvec4* img = (cvec4*)calloc(width, 4);
+    //     for (uint32_t i = 0; i < width; i++)
+    //         dvz_colormap(DVZ_CMAP_HSV, i * 256 / (width), img[i]);
+
+    //     dvz_tex_upload(
+    //         tex, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), img, true);
+    //     FREE(img);
+    // }
+    // dvz_gui_image(tex, 300, 50);
+
     dvz_gui_dialog_end();
 }
 
@@ -298,12 +317,16 @@ int test_presenter_gui(TstSuite* suite)
     // Make a canvas creation request.
     req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
     dvz_requester_add(rqr, req);
-    // DvzId canvas_id = req.id;
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
     dvz_presenter_submit(prt, rqr);
+
+    // // Texture.
+    // DvzTex* tex = dvz_tex(
+    //     rd->ctx, DVZ_TEX_2D, (uvec3){256, 1, 1}, DVZ_FORMAT_R8G8B8A8_UNORM,
+    //     DVZ_TEX_FLAGS_PERSISTENT_STAGING);
 
     // GUI callback.
     dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);

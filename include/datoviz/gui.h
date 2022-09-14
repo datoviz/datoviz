@@ -34,6 +34,7 @@ typedef struct DvzGui DvzGui;
 typedef struct DvzRenderpass DvzRenderpass;
 typedef struct DvzCommands DvzCommands;
 typedef struct DvzWindow DvzWindow;
+typedef struct DvzTex DvzTex;
 typedef struct ImGuiIO ImGuiIO;
 
 
@@ -199,6 +200,10 @@ DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size, int flags);
  * @param fmt the format string
  */
 DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
+
+
+
+DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
 
 
 

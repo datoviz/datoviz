@@ -79,6 +79,9 @@ struct DvzTex
     DvzImages* img;
 
     DvzDat* stg; // used for persistent staging, resized when the tex is resized
+
+    // HACK: pointer to use the DvzTex as an image in Dear ImGui.
+    VkDescriptorSet _imgui_texid;
 };
 
 
