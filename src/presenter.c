@@ -427,6 +427,10 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     DvzSubmit* submit = &canvas->render.submit;
     DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_map_get(prt->maps.guis, window_id);
 
+    ANN(swapchain);
+    ANN(cmds);
+    ANN(submit);
+
     // Wait for fence.
     dvz_fences_wait(fences, canvas->cur_frame);
 

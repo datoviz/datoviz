@@ -197,7 +197,6 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
 #if HAS_GLFW
         glfwPollEvents();
         log_trace("destroy GLFW window");
-        ANN(bwin);
         glfwDestroyWindow((GLFWwindow*)bwin);
 #endif
         break;

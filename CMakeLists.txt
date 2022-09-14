@@ -148,7 +148,7 @@ if(DATOVIZ_WITH_GLFW)
     FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw/
-        GIT_TAG 3.3.4
+        GIT_TAG 3.3.8
     )
     FetchContent_MakeAvailable(glfw)
 

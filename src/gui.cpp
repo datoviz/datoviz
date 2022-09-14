@@ -47,6 +47,7 @@ static inline bool _imgui_has_glfw()
 static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpass)
 {
     ASSERT(!_imgui_has_context());
+    log_debug("initialize Dear ImGui context");
 
     ANN(gpu);
 
@@ -155,8 +156,10 @@ static void _imgui_set_window(DvzWindow* window)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
-        if (window->backend_window)
+        if (window->backend_window != NULL)
+        {
             ImGui_ImplGlfw_InitForVulkan((GLFWwindow*)window->backend_window, true);
+        }
         break;
     default:
         break;
@@ -195,20 +198,18 @@ static DvzRenderpass _imgui_renderpass(DvzGpu* gpu, bool offscreen)
 
 
 
-static DvzFramebuffers
-_imgui_framebuffers(DvzGpu* gpu, DvzRenderpass* renderpass, DvzImages* images)
+static void _imgui_framebuffers(
+    DvzGpu* gpu, DvzRenderpass* renderpass, DvzImages* images, DvzFramebuffers* framebuffers)
 {
     ANN(gpu);
+    ANN(renderpass);
+    ANN(images);
 
     log_trace("creating Dear ImGui framebuffers");
 
-    INIT(DvzFramebuffers, framebuffers)
-
-    framebuffers = dvz_framebuffers(gpu);
-    dvz_framebuffers_attachment(&framebuffers, 0, images);
-    dvz_framebuffers_create(&framebuffers, renderpass);
-
-    return framebuffers;
+    *framebuffers = dvz_framebuffers(gpu);
+    dvz_framebuffers_attachment(framebuffers, 0, images);
+    dvz_framebuffers_create(framebuffers, renderpass);
 }
 
 
@@ -320,8 +321,9 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
 
     ANN(gui);
     ANN(window);
-    ASSERT(!window || window->gui_window == NULL); // Only set it once.
     ANN(images);
+
+    ASSERT(!window || window->gui_window == NULL); // Only set it once.
     ASSERT(images->count > 0);
 
     DvzGpu* gpu = gui->gpu;
@@ -341,10 +343,11 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
     gui_window->cmds = dvz_commands(gpu, queue_idx, images->count);
 
     // Create the framebuffers.
-    gui_window->framebuffers = _imgui_framebuffers(gpu, &gui->renderpass, images);
+    _imgui_framebuffers(gpu, &gui->renderpass, images, &gui_window->framebuffers);
 
-    if (window != NULL)
+    if (window != NULL && window->gui_window == NULL)
         _imgui_set_window(window);
+    window->gui_window = gui_window;
 
     dvz_obj_created(&gui_window->obj);
     return gui_window;
@@ -373,7 +376,7 @@ DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_i
     gui_window->cmds = dvz_commands(gpu, queue_idx, 1);
 
     // Create the framebuffers.
-    gui_window->framebuffers = _imgui_framebuffers(gpu, &gui->renderpass, images);
+    _imgui_framebuffers(gpu, &gui->renderpass, images, &gui_window->framebuffers);
 
     dvz_obj_created(&gui_window->obj);
     return gui_window;
