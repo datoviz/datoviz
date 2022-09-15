@@ -8,6 +8,7 @@
 #include "canvas.h"
 #include "canvas_utils.h"
 #include "client_utils.h"
+#include "fifo.h"
 #include "gui.h"
 #include "request.h"
 #include "surface.h"
@@ -128,6 +129,9 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     DvzCanvas* canvas = dvz_renderer_canvas(rd, id);
     ANN(canvas);
 
+    // Then, destroy the canvas.
+    dvz_canvas_destroy(canvas);
+
     // First, destroy the surface.
     // HACK: remove the surface from the list, as we won't have to destroy it when destroying
     // the presenter.
@@ -135,9 +139,6 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     // surface to remove it from the list.
     dvz_list_remove_pointer(prt->surfaces, (void*)&canvas->surface);
     dvz_surface_destroy(host, canvas->surface);
-
-    // Then, destroy the canvas.
-    dvz_canvas_destroy(canvas);
 
     // Destroy the GUI window if it exists.
     DvzGuiWindow* gui_window = dvz_map_get(prt->maps.guis, id);
@@ -237,6 +238,9 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
 
     DvzId window_id = ev.window_id;
     log_error("request close window %d", window_id);
+
+    // TODO: if the canvas does not exist but the window does, delete just the window
+    _delete_canvas(prt, window_id);
 }
 
 
@@ -351,6 +355,9 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     prt->rd = rd;
     prt->client = client;
     prt->flags = flags;
+
+    // Clear the client callbacks to request_close as the presenter will provide its own.
+    dvz_deq_callback_clear(client->deq);
 
     // Register a REQUESTS callback which submits pending requests to the renderer.
     dvz_client_callback(

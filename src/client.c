@@ -87,7 +87,7 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
 
 
-static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
+static void _callback_window_request_delete(DvzDeq* deq, void* item, void* user_data)
 {
     ANN(deq);
 
@@ -96,7 +96,7 @@ static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
 
     ANN(item);
     DvzClientEvent* ev = (DvzClientEvent*)item;
-    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
+    // ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
     log_debug("client: delete window #%d", ev->window_id);
 
@@ -131,8 +131,15 @@ DvzClient* dvz_client(DvzBackend backend)
     dvz_deq_callback(
         client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
 
+    // dvz_deq_callback(
+    //     client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, _callback_window_request_delete,
+    //     client);
+
+    // Ty default, the client registers a callback to request_close, that just destroys the window.
+
     dvz_deq_callback(
-        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, _callback_window_delete, client);
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
+        _callback_window_request_delete, client);
 
     // TODO: create async queue
     // start background thread
