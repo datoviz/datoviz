@@ -453,9 +453,8 @@ DvzDeq* dvz_deq(uint32_t nq)
 
 
 
-static void _deq_callback(
-    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data,
-    bool is_default)
+void dvz_deq_callback(
+    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
 {
     ANN(deq);
     ANN(callback);
@@ -467,23 +466,22 @@ static void _deq_callback(
     reg->type = type;
     reg->callback = callback;
     reg->user_data = user_data;
-    reg->is_default = is_default;
-
-    if (is_default)
-        deq->has_default = true;
 }
 
-void dvz_deq_callback(
-    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+
+
+void dvz_deq_callback_clear(DvzDeq* deq)
 {
-    _deq_callback(deq, deq_idx, type, callback, user_data, false);
+    ANN(deq);
+    deq->callback_count = 0;
 }
 
-void dvz_deq_callback_default(
-    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
-{
-    _deq_callback(deq, deq_idx, type, callback, user_data, true);
-}
+
+// void dvz_deq_callback_default(
+//     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data)
+// {
+//     _deq_callback(deq, deq_idx, type, callback, user_data, true);
+// }
 
 
 

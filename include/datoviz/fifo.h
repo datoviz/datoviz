@@ -344,19 +344,24 @@ DVZ_EXPORT void dvz_deq_callback(
 
 
 
-/**
- * Define a default callback.
- *
- * The default callback is only called when there are no other callbacks. Specifically, we discard
- * a default callback iff there are other callbacks after it in the list of callbacks.
- *
- * @param deq the Deq
- * @param deq_idx the queue index
- * @param type the type to register the callback to
- * @param user_data pointer to arbitrary data to be passed to the callback
- */
-DVZ_EXPORT void dvz_deq_callback_default(
-    DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
+DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq);
+
+
+
+// /**
+//  * Define a default callback.
+//  *
+//  * The default callback is only called when there are no other callbacks. Specifically, we
+//  discard
+//  * a default callback iff there are other callbacks after it in the list of callbacks.
+//  *
+//  * @param deq the Deq
+//  * @param deq_idx the queue index
+//  * @param type the type to register the callback to
+//  * @param user_data pointer to arbitrary data to be passed to the callback
+//  */
+// DVZ_EXPORT void dvz_deq_callback_default(
+//     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
 
 
 
@@ -373,14 +378,14 @@ dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* que
 
 
 
-/**
- * Set a maximum time delay for dequeue waiting, in milliseconds.
- *
- * @param deq the Deq
- * @param proc_idx the Proc index
- * @param delay_ms how many milliseconds to wait before probing for deq size while dequeueing
- */
-DVZ_EXPORT void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms);
+// /**
+//  * Set a maximum time delay for dequeue waiting, in milliseconds.
+//  *
+//  * @param deq the Deq
+//  * @param proc_idx the Proc index
+//  * @param delay_ms how many milliseconds to wait before probing for deq size while dequeueing
+//  */
+// DVZ_EXPORT void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms);
 
 
 
