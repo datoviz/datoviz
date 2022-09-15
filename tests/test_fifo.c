@@ -398,17 +398,17 @@ int test_deq_dependencies(TstSuite* suite)
 
 
 
-static void _proc_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data)
-{
-    ANN(deq);
-    ANN(item);
-    ANN(user_data);
+// static void _proc_callback(DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data)
+// {
+//     ANN(deq);
+//     ANN(item);
+//     ANN(user_data);
 
-    uvec3* v = (uvec3*)user_data;
-    v[0][0] = deq_idx;
-    v[0][1] = (uint32_t)type;
-    v[0][2] = *((uint32_t*)item);
-}
+//     uvec3* v = (uvec3*)user_data;
+//     v[0][0] = deq_idx;
+//     v[0][1] = (uint32_t)type;
+//     v[0][2] = *((uint32_t*)item);
+// }
 
 int test_deq_proc(TstSuite* suite)
 {
@@ -417,7 +417,7 @@ int test_deq_proc(TstSuite* suite)
     dvz_deq_proc(deq, 1, 1, (uint32_t[]){2});
 
     uvec3 v = {0};
-    dvz_deq_proc_callback(deq, 0, DVZ_DEQ_PROC_CALLBACK_PRE, _proc_callback, &v);
+    // dvz_deq_proc_callback(deq, 0, DVZ_DEQ_PROC_CALLBACK_PRE, _proc_callback, &v);
 
     DvzDeqItem item = {0};
 
@@ -485,101 +485,101 @@ int test_deq_circular(TstSuite* suite)
 
 
 
-static int _proc_thread(void* user_data)
-{
-    DvzDeq* deq = (DvzDeq*)user_data;
-    ANN(deq);
-    dvz_deq_dequeue_loop(deq, 0);
-    return 0;
-}
+// static int _proc_thread(void* user_data)
+// {
+//     DvzDeq* deq = (DvzDeq*)user_data;
+//     ANN(deq);
+//     dvz_deq_dequeue_loop(deq, 0);
+//     return 0;
+// }
 
-static void _proc_wait(DvzDeq* deq, void* user_data)
-{
-    ANN(deq);
-    int* count = (int*)user_data;
-    ANN(count);
-    (*count)++;
-    log_debug("wait iter %d", *count);
-}
+// static void _proc_wait(DvzDeq* deq, void* user_data)
+// {
+//     ANN(deq);
+//     int* count = (int*)user_data;
+//     ANN(count);
+//     (*count)++;
+//     log_debug("wait iter %d", *count);
+// }
 
-int test_deq_wait(TstSuite* suite)
-{
-    DvzDeq* deq = dvz_deq(1);
-    dvz_deq_proc(deq, 0, 1, (uint32_t[]){0});
-    dvz_deq_proc_wait_delay(deq, 0, 10);
-    int count = 0;
-    dvz_deq_proc_wait_callback(deq, 0, _proc_wait, &count);
+// int test_deq_wait(TstSuite* suite)
+// {
+//     DvzDeq* deq = dvz_deq(1);
+//     dvz_deq_proc(deq, 0, 1, (uint32_t[]){0});
+//     dvz_deq_proc_wait_delay(deq, 0, 10);
+//     int count = 0;
+//     dvz_deq_proc_wait_callback(deq, 0, _proc_wait, &count);
 
-    DvzThread* thread = dvz_thread(_proc_thread, deq);
+//     DvzThread* thread = dvz_thread(_proc_thread, deq);
 
-    dvz_sleep(100);
-    AT(count >= 3);
+//     dvz_sleep(100);
+//     AT(count >= 3);
 
-    int* item = calloc(1, sizeof(int));
-    *item = 1;
-    dvz_deq_enqueue(
-        deq, 0, 0, item); // will be FREEd by the dequeue proc in dvz_deq_dequeue_loop()
+//     int* item = calloc(1, sizeof(int));
+//     *item = 1;
+//     dvz_deq_enqueue(
+//         deq, 0, 0, item); // will be FREEd by the dequeue proc in dvz_deq_dequeue_loop()
 
-    dvz_sleep(20);
-    AT(count >= 4);
+//     dvz_sleep(20);
+//     AT(count >= 4);
 
-    dvz_deq_enqueue(deq, 0, 0, NULL);
-    dvz_thread_join(thread);
-    dvz_deq_destroy(deq);
-    return 0;
-}
+//     dvz_deq_enqueue(deq, 0, 0, NULL);
+//     dvz_thread_join(thread);
+//     dvz_deq_destroy(deq);
+//     return 0;
+// }
 
 
 
-static void _proc_batch(
-    DvzDeq* deq, DvzDeqProcBatchPosition pos, uint32_t item_count, DvzDeqItem* items,
-    void* user_data)
-{
-    ANN(deq);
-    int* res = (int*)user_data;
-    ANN(res);
-    if (pos == DVZ_DEQ_PROC_BATCH_BEGIN)
-    {
-        log_debug("begin batch, %d item(s) to be dequeued", item_count);
-        ASSERT(item_count == 5);
-        ASSERT(items == NULL);
-    }
-    else
-    {
-        log_debug("end batch, %d item(s) processed", item_count);
-        ASSERT(item_count == 5);
-        // Compute the sum of all dequeued items in the batch.
-        for (uint32_t i = 0; i < item_count; i++)
-        {
-            *res += *(int*)items[i].item;
-        }
-    }
-}
+// static void _proc_batch(
+//     DvzDeq* deq, DvzDeqProcBatchPosition pos, uint32_t item_count, DvzDeqItem* items,
+//     void* user_data)
+// {
+//     ANN(deq);
+//     int* res = (int*)user_data;
+//     ANN(res);
+//     if (pos == DVZ_DEQ_PROC_BATCH_BEGIN)
+//     {
+//         log_debug("begin batch, %d item(s) to be dequeued", item_count);
+//         ASSERT(item_count == 5);
+//         ASSERT(items == NULL);
+//     }
+//     else
+//     {
+//         log_debug("end batch, %d item(s) processed", item_count);
+//         ASSERT(item_count == 5);
+//         // Compute the sum of all dequeued items in the batch.
+//         for (uint32_t i = 0; i < item_count; i++)
+//         {
+//             *res += *(int*)items[i].item;
+//         }
+//     }
+// }
 
-int test_deq_batch(TstSuite* suite)
-{
-    DvzDeq* deq = dvz_deq(2);
-    dvz_deq_proc(deq, 0, 1, (uint32_t[]){0});
-    dvz_deq_proc(deq, 1, 1, (uint32_t[]){1});
+// int test_deq_batch(TstSuite* suite)
+// {
+//     DvzDeq* deq = dvz_deq(2);
+//     dvz_deq_proc(deq, 0, 1, (uint32_t[]){0});
+//     dvz_deq_proc(deq, 1, 1, (uint32_t[]){1});
 
-    int res = 0;
-    dvz_deq_proc_batch_callback(deq, 1, DVZ_DEQ_PROC_BATCH_BEGIN, _proc_batch, &res);
-    dvz_deq_proc_batch_callback(deq, 1, DVZ_DEQ_PROC_BATCH_END, _proc_batch, &res);
+//     int res = 0;
+//     dvz_deq_proc_batch_callback(deq, 1, DVZ_DEQ_PROC_BATCH_BEGIN, _proc_batch, &res);
+//     dvz_deq_proc_batch_callback(deq, 1, DVZ_DEQ_PROC_BATCH_END, _proc_batch, &res);
 
-    for (uint32_t i = 0; i < 10; i++)
-    {
-        int* item = calloc(1, sizeof(int)); // will be FREE-ed by dequeue_batch
-        *item = (int)i;
+//     for (uint32_t i = 0; i < 10; i++)
+//     {
+//         int* item = calloc(1, sizeof(int)); // will be FREE-ed by dequeue_batch
+//         *item = (int)i;
 
-        // NOTE: the type should not be taken into account by the batch callbacks.
-        dvz_deq_enqueue(deq, i % 2, (int)i, item);
-    }
+//         // NOTE: the type should not be taken into account by the batch callbacks.
+//         dvz_deq_enqueue(deq, i % 2, (int)i, item);
+//     }
 
-    dvz_deq_dequeue_batch(deq, 1);
+//     dvz_deq_dequeue_batch(deq, 1);
 
-    // 1+3+5+7+9 because we batch-dequeue the second proc only.
-    AT(res == 25);
+//     // 1+3+5+7+9 because we batch-dequeue the second proc only.
+//     AT(res == 25);
 
-    dvz_deq_destroy(deq);
-    return 0;
-}
+//     dvz_deq_destroy(deq);
+//     return 0;
+// }

@@ -321,58 +321,59 @@ static int _deq_size(DvzDeq* deq, uint32_t queue_count, uint32_t* queue_ids)
 
 
 
-static void
-_proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqItem* item)
-{
-    ANN(deq);
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
+// static void
+// _proc_callbacks(DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqItem*
+// item)
+// {
+//     ANN(deq);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
 
-    for (uint32_t i = 0; i < proc->callback_count; i++)
-    {
-        if (proc->callbacks[i].pos == pos)
-        {
-            ANN(proc->callbacks[i].callback);
-            proc->callbacks[i].callback(
-                deq, item->deq_idx, item->type, item->item, proc->callbacks[i].user_data);
-        }
-    }
-}
-
-
-
-static void _proc_wait_callbacks(DvzDeq* deq, uint32_t proc_idx)
-{
-    ANN(deq);
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-
-    for (uint32_t i = 0; i < proc->wait_callback_count; i++)
-    {
-        ANN(proc->wait_callbacks[i].callback);
-        proc->wait_callbacks[i].callback(deq, proc->wait_callbacks[i].user_data);
-    }
-}
+//     for (uint32_t i = 0; i < proc->callback_count; i++)
+//     {
+//         if (proc->callbacks[i].pos == pos)
+//         {
+//             ANN(proc->callbacks[i].callback);
+//             proc->callbacks[i].callback(
+//                 deq, item->deq_idx, item->type, item->item, proc->callbacks[i].user_data);
+//         }
+//     }
+// }
 
 
 
-static void _proc_batch_callbacks(
-    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, uint32_t item_count,
-    DvzDeqItem* items)
-{
-    ANN(deq);
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-    DvzDeqProcBatchCallbackRegister* reg = NULL;
+// static void _proc_wait_callbacks(DvzDeq* deq, uint32_t proc_idx)
+// {
+//     ANN(deq);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
 
-    for (uint32_t i = 0; i < proc->batch_callback_count; i++)
-    {
-        reg = &proc->batch_callbacks[i];
-        ANN(reg->callback);
-        if (reg->pos == pos)
-            reg->callback(deq, pos, item_count, items, reg->user_data);
-    }
-}
+//     for (uint32_t i = 0; i < proc->wait_callback_count; i++)
+//     {
+//         ANN(proc->wait_callbacks[i].callback);
+//         proc->wait_callbacks[i].callback(deq, proc->wait_callbacks[i].user_data);
+//     }
+// }
+
+
+
+// static void _proc_batch_callbacks(
+//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, uint32_t item_count,
+//     DvzDeqItem* items)
+// {
+//     ANN(deq);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
+//     DvzDeqProcBatchCallbackRegister* reg = NULL;
+
+//     for (uint32_t i = 0; i < proc->batch_callback_count; i++)
+//     {
+//         reg = &proc->batch_callbacks[i];
+//         ANN(reg->callback);
+//         if (reg->pos == pos)
+//             reg->callback(deq, pos, item_count, items, reg->user_data);
+//     }
+// }
 
 
 
@@ -519,79 +520,79 @@ void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t
 
 
 
-void dvz_deq_proc_callback(
-    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqProcCallback callback,
-    void* user_data)
-{
-    ANN(deq);
+// void dvz_deq_proc_callback(
+//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqProcCallback callback,
+//     void* user_data)
+// {
+//     ANN(deq);
 
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-    ANN(proc);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
+//     ANN(proc);
 
-    ANN(callback);
+//     ANN(callback);
 
-    DvzDeqProcCallbackRegister* reg = &proc->callbacks[proc->callback_count++];
-    ANN(reg);
+//     DvzDeqProcCallbackRegister* reg = &proc->callbacks[proc->callback_count++];
+//     ANN(reg);
 
-    reg->callback = callback;
-    reg->pos = pos;
-    reg->user_data = user_data;
-}
-
-
-
-void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms)
-{
-    ANN(deq);
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-    ANN(proc);
-
-    proc->max_wait = delay_ms;
-}
+//     reg->callback = callback;
+//     reg->pos = pos;
+//     reg->user_data = user_data;
+// }
 
 
 
-void dvz_deq_proc_wait_callback(
-    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcWaitCallback callback, void* user_data)
-{
-    ANN(deq);
+// void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms)
+// {
+//     ANN(deq);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
+//     ANN(proc);
 
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-    ANN(proc);
-
-    ANN(callback);
-
-    DvzDeqProcWaitCallbackRegister* reg = &proc->wait_callbacks[proc->wait_callback_count++];
-    ANN(reg);
-
-    reg->callback = callback;
-    reg->user_data = user_data;
-}
+//     proc->max_wait = delay_ms;
+// }
 
 
 
-void dvz_deq_proc_batch_callback(
-    DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, DvzDeqProcBatchCallback callback,
-    void* user_data)
-{
-    ANN(deq);
+// void dvz_deq_proc_wait_callback(
+//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcWaitCallback callback, void* user_data)
+// {
+//     ANN(deq);
 
-    ASSERT(proc_idx < deq->proc_count);
-    DvzDeqProc* proc = &deq->procs[proc_idx];
-    ANN(proc);
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
+//     ANN(proc);
 
-    ANN(callback);
+//     ANN(callback);
 
-    DvzDeqProcBatchCallbackRegister* reg = &proc->batch_callbacks[proc->batch_callback_count++];
-    ANN(reg);
+//     DvzDeqProcWaitCallbackRegister* reg = &proc->wait_callbacks[proc->wait_callback_count++];
+//     ANN(reg);
 
-    reg->callback = callback;
-    reg->pos = pos;
-    reg->user_data = user_data;
-}
+//     reg->callback = callback;
+//     reg->user_data = user_data;
+// }
+
+
+
+// void dvz_deq_proc_batch_callback(
+//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, DvzDeqProcBatchCallback
+//     callback, void* user_data)
+// {
+//     ANN(deq);
+
+//     ASSERT(proc_idx < deq->proc_count);
+//     DvzDeqProc* proc = &deq->procs[proc_idx];
+//     ANN(proc);
+
+//     ANN(callback);
+
+//     DvzDeqProcBatchCallbackRegister* reg = &proc->batch_callbacks[proc->batch_callback_count++];
+//     ANN(reg);
+
+//     reg->callback = callback;
+//     reg->pos = pos;
+//     reg->user_data = user_data;
+// }
 
 
 
@@ -748,15 +749,15 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
         log_trace("waiting for one of the queues in proc #%d to be non-empty", proc_idx);
         while (_deq_size(deq, proc->queue_count, proc->queue_indices) == 0)
         {
-            // log_trace("waiting for proc #%d cond", proc_idx);
+            log_trace("waiting for proc #%d cond", proc_idx);
             if (_proc_wait(proc) != 0)
             {
-                // If the timeout-ed wait was unsuccessful, we will continue waiting at the next
-                // iteration. But before that, we call the proc wait callbacks.
-                _proc_wait_callbacks(deq, proc_idx);
+                // If the timeout-ed wait was unsuccessful, we will continue waiting at the
+                // next iteration. But before that, we call the proc wait callbacks.
+                // _proc_wait_callbacks(deq, proc_idx);
             }
         }
-        // log_trace("proc #%d has an item", proc_idx);
+        log_trace("proc #%d has an item", proc_idx);
     }
 
     // Here, we know there is at least one item to dequeue because one of the queues is non-empty.
@@ -793,8 +794,8 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
     // enqueue new tasks.
     dvz_mutex_unlock(&proc->lock);
 
-    // First, call the generic Proc pre callbacks.
-    _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_PRE, &item_s);
+    // // First, call the generic Proc pre callbacks.
+    // _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_PRE, &item_s);
 
     // Then, call the typed callbacks.
     if (item_s.item != NULL)
@@ -803,8 +804,8 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
         _deq_callbacks(deq, &item_s);
     }
 
-    // Finally, call the generic Proc post callbacks.
-    _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_POST, &item_s);
+    // // Finally, call the generic Proc post callbacks.
+    // _proc_callbacks(deq, proc_idx, DVZ_DEQ_PROC_CALLBACK_POST, &item_s);
 
     dvz_atomic_set(proc->is_processing, 0);
 
@@ -887,7 +888,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
     // Call the BEGIN batch callbacks.
     dvz_atomic_set(proc->is_processing, 1);
     // NOTE: we cannot pass the items array at BEGIN because we haven't dequeued the items yet.
-    _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_BEGIN, item_count, NULL);
+    // _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_BEGIN, item_count, NULL);
     dvz_atomic_set(proc->is_processing, 0);
 
     // Go through the queue indices.
@@ -939,7 +940,7 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
     }
 
     // Call the END batch callbacks.
-    _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_END, item_count, items);
+    // _proc_batch_callbacks(deq, proc_idx, DVZ_DEQ_PROC_BATCH_END, item_count, items);
 
     dvz_atomic_set(proc->is_processing, 0);
 
