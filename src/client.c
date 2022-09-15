@@ -218,7 +218,14 @@ int dvz_client_frame(DvzClient* client)
         // Skip windows that should be closed.
         if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
         {
-            delete_client_window(client, window->obj.id);
+            // delete_client_window(client, window->obj.id);
+            {
+                dvz_client_event(
+                    client, (DvzClientEvent){
+                                .type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
+                                .window_id = window->obj.id,
+                            });
+            }
             dvz_container_iter(&iter);
             continue;
         }

@@ -126,6 +126,7 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
 
     // Start canvas destruction.
     DvzCanvas* canvas = dvz_renderer_canvas(rd, id);
+    ANN(canvas);
 
     // First, destroy the surface.
     // HACK: remove the surface from the list, as we won't have to destroy it when destroying
@@ -136,7 +137,6 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     dvz_surface_destroy(host, canvas->surface);
 
     // Then, destroy the canvas.
-    ANN(canvas);
     dvz_canvas_destroy(canvas);
 
     // Destroy the GUI window if it exists.
@@ -219,6 +219,24 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
             canvas->render.renderpass, &canvas->render.framebuffers, &canvas->cmds, img_idx, NULL);
         dvz_recorder_set(canvas->recorder, rd, &canvas->cmds, img_idx);
     }
+}
+
+
+
+static void _delete_callback(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    DvzPresenter* prt = (DvzPresenter*)ev.user_data;
+    ANN(prt);
+
+    DvzRenderer* rd = prt->rd;
+    ANN(rd);
+
+    ASSERT(ev.type == DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+
+    DvzId window_id = ev.window_id;
+    log_error("request close window %d", window_id);
 }
 
 
@@ -341,6 +359,11 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     // Register a FRAME callback which calls dvz_presenter_frame().
     dvz_client_callback(
         client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _frame_callback, prt);
+
+    // Register a callback when the user closes a window.
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, DVZ_CLIENT_CALLBACK_SYNC, _delete_callback,
+        prt);
 
     // Create the GUI instance if needed.
     bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
