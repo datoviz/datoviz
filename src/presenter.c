@@ -237,9 +237,11 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
     ASSERT(ev.type == DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
 
     DvzId window_id = ev.window_id;
-    log_error("request close window %d", window_id);
+    log_trace("request close window #%x", window_id);
 
-    // TODO: if the canvas does not exist but the window does, delete just the window
+    // TODO: if the canvas does not exist but the window does, delete just the window.
+    // This would happen if one uses the DVZ_CLIENT_EVENT_WINDOW_CREATE event directly,
+    // instead of creating a canvas via the renderer.
     _delete_canvas(prt, window_id);
 }
 
