@@ -21,7 +21,14 @@
 /*************************************************************************************************/
 
 #define PAN(x, y)                                                                                 \
-    dvz_panzoom_pan_shift(&pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});
+    dvz_panzoom_pan_shift(&pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});     \
+    dvz_panzoom_end(&pz);
+
+#define ZOOM(x, y, cx, cy)                                                                        \
+    dvz_panzoom_zoom_shift(&pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH * cx, HEIGHT * cy});  \
+    dvz_panzoom_end(&pz);
+
+#define RESET dvz_panzoom_reset(&pz);
 
 #define AP(x, y)                                                                                  \
     AC(pz.pan[0], x, EPS);                                                                        \
@@ -43,13 +50,43 @@ int test_panzoom_1(TstSuite* suite)
 
     DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
 
-    PAN(0, 0);
-    AP(0, 0);
-    SHOW;
+    // Test pan.
+    {
+        PAN(0, 0);
+        AP(0, 0);
 
-    PAN(.5, 0);
-    AP(1, 0);
-    SHOW;
+        PAN(.5, 0);
+        AP(1, 0);
+
+        PAN(.5, 0);
+        AP(2, 0);
+
+        PAN(-1, .5);
+        AP(0, -1);
+    }
+
+    RESET;
+
+    // Test zoom.
+    {
+        ZOOM(0, 0, .5, .5);
+        AP(0, 0);
+
+        ZOOM(.5, -1, .5, .5);
+        AT(pz.zoom[0] > 1);
+        AT(pz.zoom[1] < 1);
+    }
+
+    // Zoom with shift center.
+    RESET;
+    {
+        ZOOM(10, 10, .5, -.5);
+        AT(pz.zoom[0] > 1e6);
+        AT(pz.zoom[1] > 1e6);
+        AT(pz.zoom[0] == pz.zoom[1]);
+        AP(WIDTH / 2, -HEIGHT / 2);
+        // SHOW;
+    }
 
     dvz_panzoom_destroy(&pz);
     return 0;
