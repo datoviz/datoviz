@@ -549,6 +549,9 @@ set(sources
     "src/gui.cpp"
     "src/fps.cpp"
 
+    # Scene
+    "src/scene/panzoom.c"
+
     ${external_sources}
 )
 
@@ -620,6 +623,10 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_client.c"
         "tests/test_request.c"
         "tests/test_presenter.c"
+
+        # Scene
+        "tests/scene/test_panzoom.c"
+
         "tests/test.c"
     )
 

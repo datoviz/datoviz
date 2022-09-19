@@ -12,6 +12,7 @@
 
 #include "_thread.h"
 #include "fileio.h"
+#include "scene/test_panzoom.h"
 #include "test.h"
 #include "test_alloc.h"
 #include "test_array.h"
@@ -256,7 +257,9 @@ int dvz_run_tests(const char* match)
     TEST(test_request_1)
     TEST(test_request_2)
 
-    //
+    // Testing scene.
+    TEST(test_panzoom_1)
+
 
     tst_suite_run(&suite, match);
     tst_suite_destroy(&suite);
