@@ -143,6 +143,8 @@ struct DvzClient
     // Callbacks.
     uint32_t callback_count;
     DvzClientPayload callbacks[DVZ_CLIENT_MAX_CALLBACKS];
+
+    void* user_data;
 };
 
 

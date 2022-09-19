@@ -42,6 +42,8 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     dvz_client_event(client, cev);
 }
 
+
+
 static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 {
     ANN(keyboard);
@@ -119,6 +121,8 @@ void dvz_window_input(DvzWindow* window)
     // Create the input and associate it to the window.
     // This call uses the GLFW callback functions to update the Mouse and Keyboard state machines.
     window->input = dvz_input(window);
+
+    // Route all backend events from all windows to the unified client queue.
 
     // Register mouse callbacks that enqueue events to the client queue.
     DvzMouse* mouse = dvz_input_mouse(window->input);

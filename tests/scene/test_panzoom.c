@@ -36,7 +36,9 @@
 
 #define SHOW                                                                                      \
     log_info(                                                                                     \
-        "pan: (%.2f, %.2f)  zoom: (%.2f, %.2f)", pz.pan[0], pz.pan[1], pz.zoom[0], pz.zoom[1]);
+        "pan: (%.2f, %.2f)  zoom: (%.2f, %.2f)", pz.pan[0], pz.pan[1], pz.zoom[0], pz.zoom[1]);   \
+    dvz_panzoom_mvp(&pz);                                                                         \
+    glm_mat4_print(pz.mvp.view, stdout);
 
 
 
@@ -54,9 +56,11 @@ int test_panzoom_1(TstSuite* suite)
     {
         PAN(0, 0);
         AP(0, 0);
+        // SHOW;
 
         PAN(.5, 0);
         AP(1, 0);
+        // SHOW;
 
         PAN(.5, 0);
         AP(2, 0);

@@ -14,6 +14,7 @@
 #include "glfw_utils.h"
 #include "gui.h"
 #include "presenter.h"
+#include "scene/panzoom.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
@@ -43,6 +44,17 @@ struct CallbackStruct
     DvzId viewport_id;
     DvzId dat_id;
     DvzId graphics_id;
+};
+
+
+
+typedef struct PanzoomStruct PanzoomStruct;
+struct PanzoomStruct
+{
+    DvzRequester* rqr;
+    DvzPresenter* prt;
+    DvzId mvp_id;
+    DvzPanzoom* pz;
 };
 
 
@@ -577,7 +589,53 @@ int test_presenter_fps(TstSuite* suite)
 static void _on_mouse(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
-    log_debug("mouse event %d", ev.content.m.type);
+
+    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    ANN(ps);
+
+    DvzPanzoom* pz = ps->pz;
+    ANN(pz);
+
+    DvzPresenter* prt = ps->prt;
+    ANN(prt);
+
+    DvzRequester* rqr = ps->rqr;
+    ANN(rqr);
+
+    DvzId mvp_id = ps->mvp_id;
+
+    // Dragging: pan.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        // ev.content.m.content.d.pos
+        dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+    }
+
+    // Stop dragging.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_panzoom_end(pz);
+    }
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_panzoom_mvp(pz);
+
+    // Submit a dat upload request with the new MVP matrices.
+    DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_requester_add(rqr, req);
+    dvz_presenter_submit(prt, rqr);
+}
+
+static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    uint32_t width = ev.content.w.screen_width;
+    uint32_t height = ev.content.w.screen_height;
+    log_info("window %x resized to %dx%d", ev.window_id, width, height);
+
+    DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
+    dvz_panzoom_resize(pz, width, height);
 }
 
 int test_presenter_scatter(TstSuite* suite)
@@ -595,8 +653,6 @@ int test_presenter_scatter(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse, NULL);
-
     DvzRequester* rqr = dvz_requester();
     DvzRequest req = {0};
 
@@ -604,7 +660,6 @@ int test_presenter_scatter(TstSuite* suite)
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
     // Make rendering requests.
-
     DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
 
     // Make a canvas creation request.
@@ -690,6 +745,19 @@ int test_presenter_scatter(TstSuite* suite)
     // renderer.
     dvz_presenter_submit(prt, rqr);
 
+
+    // Panzoom callback.
+    DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    PanzoomStruct ps = {
+        .mvp_id = mvp_id,
+        .prt = prt,
+        .pz = &pz,
+        .rqr = rqr,
+    };
+    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse, &ps);
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _scatter_resize, &pz);
+
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
 
@@ -699,6 +767,7 @@ int test_presenter_scatter(TstSuite* suite)
     dvz_presenter_destroy(prt);
 
     dvz_client_destroy(client);
+    dvz_panzoom_destroy(&pz);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);

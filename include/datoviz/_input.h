@@ -141,6 +141,7 @@ struct DvzMouseEvent
         {
             DvzMouseButton button;
             vec2 pos;
+            vec2 shift;
         } d;
 
         // Mouse click.

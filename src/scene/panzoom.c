@@ -81,6 +81,8 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
 
     pz->zoom_center[0] = 1;
     pz->zoom_center[1] = 1;
+
+    pz->mvp = dvz_mvp_default();
 }
 
 
@@ -268,9 +270,9 @@ DvzMVP* dvz_panzoom_mvp(DvzPanzoom* pz)
 
     // View matrix (depends on the pan).
     {
-        float x = pz->pan[0];
-        float y = pz->pan[1];
-        glm_lookat(pz->pan, (vec3){x, y, 0}, (vec3){0, 1, 0}, mvp->view);
+        float x = -pz->pan[0];
+        float y = -pz->pan[1];
+        glm_lookat((vec3){x, y, 2}, (vec3){x, y, 0}, (vec3){0, 1, 0}, mvp->view);
     }
 
     // Proj matrix (depends on the zoom).

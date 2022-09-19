@@ -213,6 +213,8 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
     case DVZ_MOUSE_STATE_DRAGGING:
         ev.type = DVZ_MOUSE_EVENT_DRAG;
         glm_vec2_copy(pos, ev.content.d.pos);
+        // Shift between the press position and the current position.
+        glm_vec2_sub(pos, mouse->press_pos, ev.content.d.shift);
         ev.content.d.button = mouse->button;
         break;
 

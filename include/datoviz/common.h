@@ -27,9 +27,6 @@
 /*************************************************************************************************/
 
 #include "_macros.h"
-MUTE_ON
-#include <cglm/cglm.h>
-MUTE_OFF
 
 
 
@@ -37,12 +34,13 @@ MUTE_OFF
 /*  Internal includes                                                                            */
 /*************************************************************************************************/
 
-#include "_debug.h"
 #include "_log.h"
 #include "_math.h"
 #include "_obj.h"
 #include "_thread.h"
 #include "_time.h"
+
+#include "_debug.h"
 
 
 
