@@ -8,6 +8,7 @@
 
 #include "test_presenter.h"
 #include "client.h"
+#include "client_input.h"
 #include "colormaps.h"
 #include "fps.h"
 #include "glfw_utils.h"
@@ -89,11 +90,12 @@ int test_presenter_1(TstSuite* suite)
 
 
     // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
     dvz_client_destroy(client);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);
-    dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 
     return 0;
@@ -252,11 +254,12 @@ int test_presenter_2(TstSuite* suite)
 
 
     // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
     dvz_client_destroy(client);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);
-    dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 
     return 0;
@@ -336,13 +339,15 @@ int test_presenter_gui(TstSuite* suite)
 
     // End.
 
-
     // Destroying all objects.
-    dvz_requester_destroy(rqr);
-    dvz_renderer_destroy(rd);
     dvz_presenter_destroy(prt);
-    dvz_gpu_destroy(gpu);
+
     dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
     return 0;
 }
 
@@ -486,11 +491,12 @@ int test_presenter_multi(TstSuite* suite)
 
 
     // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
     dvz_client_destroy(client);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);
-    dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 
     return 0;
@@ -555,15 +561,24 @@ int test_presenter_fps(TstSuite* suite)
 
 
     // Destroying all objects.
-    dvz_requester_destroy(rqr);
-    dvz_renderer_destroy(rd);
     dvz_presenter_destroy(prt);
-    dvz_gpu_destroy(gpu);
+
     dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
     return 0;
 }
 
 
+
+static void _on_mouse(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+    log_debug("mouse event %d", ev.content.m.type);
+}
 
 int test_presenter_scatter(TstSuite* suite)
 {
@@ -580,6 +595,8 @@ int test_presenter_scatter(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
+    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse, NULL);
+
     DvzRequester* rqr = dvz_requester();
     DvzRequest req = {0};
 
@@ -679,11 +696,12 @@ int test_presenter_scatter(TstSuite* suite)
     // End.
 
     // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
     dvz_client_destroy(client);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);
-    dvz_presenter_destroy(prt);
     dvz_gpu_destroy(gpu);
 
     FREE(data);

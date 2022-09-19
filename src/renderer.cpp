@@ -920,6 +920,7 @@ uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint
 void dvz_renderer_destroy(DvzRenderer* rd)
 {
     ANN(rd);
+    log_trace("destroy the renderer");
 
     dvz_map_destroy(rd->map);
 

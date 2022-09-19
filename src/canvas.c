@@ -228,7 +228,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
             "skip destruction of already-destroyed canvas with status %d", canvas->obj.status);
         return;
     }
-    log_debug("destroying canvas with status %d", canvas->obj.status);
+    log_debug("destroy the canvas with status %d", canvas->obj.status);
 
     ANN(canvas);
 

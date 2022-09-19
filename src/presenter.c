@@ -7,9 +7,11 @@
 #include "_map.h"
 #include "canvas.h"
 #include "canvas_utils.h"
+#include "client_input.h"
 #include "client_utils.h"
 #include "fifo.h"
 #include "gui.h"
+#include "input.h"
 #include "request.h"
 #include "surface.h"
 #include "vklite.h"
@@ -59,6 +61,9 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     // Create a client window.
     // NOTE: the window's id in the Client matches the canvas's id in the Renderer.
     DvzWindow* window = create_client_window(client, rq.id, screen_width, screen_height, 0);
+
+    // Create a window input.
+    dvz_window_input(window);
 
     // Once the window has been created, we can request the framebuffer size. It was set up
     // automatically when creating the window.
@@ -130,9 +135,10 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     ANN(canvas);
 
     // Then, destroy the canvas.
+    // NOTE: this destroys the swapchain, which must occurs BEFORE destroying the surface.
     dvz_canvas_destroy(canvas);
 
-    // First, destroy the surface.
+    // Destroy the surface.
     // HACK: remove the surface from the list, as we won't have to destroy it when destroying
     // the presenter.
     // WARNING: we need the canvas object to be not destroyed yet as we use the pointer to its
@@ -148,7 +154,15 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     // Destroy the window.
     DvzWindow* window = id2window(client, id);
     ANN(window);
+
+    // Destroy the input.
+    if (window->input != NULL)
+        dvz_input_destroy(window->input);
+
+    // Remove the window from the list of windows.
     dvz_map_remove(client->map, id);
+
+    // Finally, destroy the window.
     dvz_window_destroy(window);
 }
 
@@ -358,8 +372,8 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     prt->client = client;
     prt->flags = flags;
 
-    // Clear the client callbacks to request_close as the presenter will provide its own.
-    dvz_deq_callback_clear(client->deq);
+    // NOTE: clear the client callbacks to request_delete as the presenter will provide its own.
+    dvz_deq_callback_clear(client->deq, DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
 
     // Register a REQUESTS callback which submits pending requests to the renderer.
     dvz_client_callback(
@@ -601,17 +615,25 @@ void dvz_presenter_destroy(DvzPresenter* prt)
 {
     ANN(prt);
     ANN(prt->callbacks);
+    log_trace("destroying the presenter");
 
-    // Go through all remaining surfaces to destroy them, as they were created by the
-    // presenter, not by the renderer, so they won't be destroyed by the renderer destruction
-    // code.
-    DvzRenderer* rd = prt->rd;
-    DvzList* surfaces = prt->surfaces;
-    uint64_t n = dvz_list_count(surfaces);
-    for (uint64_t i = 0; i < n; i++)
-    {
-        dvz_surface_destroy(rd->gpu->host, *((DvzSurface*)dvz_list_get(surfaces, i).p));
-    }
+    // // Go through all remaining surfaces to destroy them, as they were created by the
+    // // presenter, not by the renderer, so they won't be destroyed by the renderer destruction
+    // // code.
+    // // NOTE: the surface must be destroyed AFTER the swapchain was destroyed.
+    // DvzRenderer* rd = prt->rd;
+    // DvzList* surfaces = prt->surfaces;
+    // uint64_t n = dvz_list_count(surfaces);
+    // for (uint64_t i = 0; i < n; i++)
+    // {
+    //     dvz_surface_destroy(rd->gpu->host, *((DvzSurface*)dvz_list_get(surfaces, i).p));
+    // }
+
+    // Emit a request_delete event for all remaining windows. The presenter will handle the canvas
+    // destruction.
+    ANN(prt->client);
+    request_delete_windows(prt->client);
+    dvz_client_process(prt->client);
 
     // Destroy the GuiWindow map.
     dvz_map_destroy(prt->maps.guis);

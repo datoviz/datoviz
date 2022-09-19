@@ -21,12 +21,15 @@
 
 // Forward declarations.
 typedef struct DvzClient DvzClient;
+typedef struct DvzWindow DvzWindow;
 
 
 
 /*************************************************************************************************/
 /*  Client input functions                                                                       */
 /*************************************************************************************************/
+
+DVZ_EXPORT void dvz_window_input(DvzWindow* window);
 
 DVZ_EXPORT void dvz_client_input(DvzClient* client);
 

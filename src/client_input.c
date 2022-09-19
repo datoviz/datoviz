@@ -82,6 +82,40 @@ static void _create_window_input(DvzDeq* deq, void* item, void* user_data)
     DvzWindow* window = id2window(client, id);
     ANN(window);
 
+    dvz_window_input(window);
+}
+
+
+
+static void _delete_window_input(DvzDeq* deq, void* item, void* user_data)
+{
+    ANN(deq);
+
+    DvzClient* client = (DvzClient*)user_data;
+    ANN(client);
+
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+    ANN(ev);
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+
+    DvzId id = ev->window_id;
+
+    // Retrieve the window with id2window().
+    DvzWindow* window = id2window(client, id);
+    if (window != NULL && window->input != NULL)
+        dvz_input_destroy(window->input);
+}
+
+
+
+/*************************************************************************************************/
+/*  Client input functions                                                                       */
+/*************************************************************************************************/
+
+void dvz_window_input(DvzWindow* window)
+{
+    ANN(window);
+
     // Create the input and associate it to the window.
     // This call uses the GLFW callback functions to update the Mouse and Keyboard state machines.
     window->input = dvz_input(window);
@@ -98,10 +132,6 @@ static void _create_window_input(DvzDeq* deq, void* item, void* user_data)
 
 
 
-/*************************************************************************************************/
-/*  Client input functions                                                                       */
-/*************************************************************************************************/
-
 void dvz_client_input(DvzClient* client)
 {
     ANN(client);
@@ -109,4 +139,29 @@ void dvz_client_input(DvzClient* client)
     // Register a window_create callback that is called after the default one.
     dvz_deq_callback(
         client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _create_window_input, client);
+
+    // Delete the input upon window deletion.
+
+    // HACK: we want 2 callbacks to be registered to request_delete:
+    // 1) delete the input
+    // 2) delete the window
+    // The problem is that (2) is normally registered first in dvz_client(), whereas (1)
+    // (_delete_window_input()) is registered second here. We want (1) to occur before (2), because
+    // we need the window to still exist when we destroy the input.
+    // So as a temporary hack here, we clear all callbacks, and register (1) before (2).
+
+    // NOTE: all DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE callbacks are cleared when using the
+    // presenter anyway. The presenter takes care of destroying the input before destroying the
+    // window when destroying the canvas.
+
+    dvz_deq_callback_clear(client->deq, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+
+    // Callback (1): delete the input.
+    dvz_deq_callback(
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, _delete_window_input, client);
+
+    // Callback (2): delete the window.
+    dvz_deq_callback(
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
+        _callback_window_request_delete, client);
 }

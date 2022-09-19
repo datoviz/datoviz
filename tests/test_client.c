@@ -48,7 +48,7 @@ static void _delete_window(DvzClient* client, DvzId id)
 {
     ANN(client);
 
-    // Enqueue a window creation event.
+    // Enqueue a window deletion event.
     DvzClientEvent ev = {
         .window_id = id,
         .type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,

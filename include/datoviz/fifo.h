@@ -115,7 +115,7 @@ struct DvzDeqCallbackRegister
     int type;
     DvzDeqCallback callback;
     void* user_data;
-    bool is_default; // if true, the callback will be discarded if there are other callbacks
+    // bool is_default; // if true, the callback will be discarded if there are other callbacks
 };
 
 // struct DvzDeqProcWaitCallbackRegister
@@ -193,6 +193,8 @@ struct DvzDeqProc
     DvzAtomic is_processing;
 };
 
+
+
 struct DvzDeq
 {
     uint32_t queue_count;
@@ -205,7 +207,7 @@ struct DvzDeq
     DvzDeqProc procs[DVZ_DEQ_MAX_PROCS];
     uint32_t q_to_proc[DVZ_DEQ_MAX_QUEUES]; // for each queue, which proc idx is handling it
 
-    bool has_default; // true if there is at least one registered default callback
+    // bool has_default; // true if there is at least one registered default callback
 };
 
 
@@ -343,8 +345,14 @@ DVZ_EXPORT void dvz_deq_callback(
     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
 
 
+/**
+ * Clear all callbacks of a given type.
+ *
+ * @param deq the Deq
+ * @param type the type of the callbacks to clear
+ */
 
-DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq);
+DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
 
 
 

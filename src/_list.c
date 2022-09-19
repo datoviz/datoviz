@@ -91,6 +91,7 @@ void dvz_list_remove(DvzList* list, uint64_t index)
 }
 
 
+
 void dvz_list_remove_pointer(DvzList* list, void* pointer)
 {
     ANN(list);

@@ -158,6 +158,7 @@ DvzKeyboard* dvz_input_keyboard(DvzInput* input)
 void dvz_input_destroy(DvzInput* input)
 {
     ANN(input);
+    log_trace("destroy the input");
     dvz_mouse_destroy(input->mouse);
     dvz_keyboard_destroy(input->keyboard);
     FREE(input);

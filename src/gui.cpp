@@ -304,7 +304,10 @@ void dvz_gui_destroy(DvzGui* gui)
 
     dvz_renderpass_destroy(&gui->renderpass);
 
+    // NOTE: this must occur BEFORE backend_destroy(), as imgui will unregister the callbacks using
+    // glfw functions.
     _imgui_destroy();
+
     FREE(gui);
 }
 

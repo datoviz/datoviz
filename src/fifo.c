@@ -264,25 +264,26 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
     DvzDeqCallbackRegister* reg = NULL;
     uint32_t n = deq->callback_count;
 
-    // First, we need to determine if there is at least one non-default callback. If so, we'll only
-    // call them. Otherwise, we call the default callbacks.
-    bool do_call_default = true;
-    if (deq->has_default)
-    {
-        for (uint32_t i = 0; i < n; i++)
-        {
-            reg = &deq->callbacks[i];
-            ANN(reg);
-            if (reg->deq_idx == item->deq_idx && reg->type == item->type && !reg->is_default)
-            {
-                // NOTE: we call all non-default callbacks. We only call a default callback if
-                // it's the last one in the list of callbacks. Otherwise, we assume that the
-                // other callbacks after the default will supersede it.
-                do_call_default = false;
-                break;
-            }
-        }
-    }
+    // // First, we need to determine if there is at least one non-default callback. If so, we'll
+    // only
+    // // call them. Otherwise, we call the default callbacks.
+    // bool do_call_default = true;
+    // if (deq->has_default)
+    // {
+    //     for (uint32_t i = 0; i < n; i++)
+    //     {
+    //         reg = &deq->callbacks[i];
+    //         ANN(reg);
+    //         if (reg->deq_idx == item->deq_idx && reg->type == item->type && !reg->is_default)
+    //         {
+    //             // NOTE: we call all non-default callbacks. We only call a default callback if
+    //             // it's the last one in the list of callbacks. Otherwise, we assume that the
+    //             // other callbacks after the default will supersede it.
+    //             do_call_default = false;
+    //             break;
+    //         }
+    //     }
+    // }
 
     // Now, we go through all callbacks and we call them or not depending on whether they're
     // default, and whether we call the default or not.
@@ -290,12 +291,12 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
     {
         reg = &deq->callbacks[i];
         ANN(reg);
-        if (reg->deq_idx == item->deq_idx && reg->type == item->type)
+        if (reg->callback != NULL && reg->deq_idx == item->deq_idx && reg->type == item->type)
         {
             // NOTE: we do not call the callback if we should not call the default callbacks, and
             // if the current callback is a default one.
-            if (do_call_default || !reg->is_default)
-                reg->callback(deq, item->item, reg->user_data);
+            // if (do_call_default || !reg->is_default)
+            reg->callback(deq, item->item, reg->user_data);
         }
     }
 }
@@ -459,6 +460,7 @@ void dvz_deq_callback(
     ANN(deq);
     ANN(callback);
 
+    ASSERT(deq->callback_count < DVZ_DEQ_MAX_CALLBACKS);
     DvzDeqCallbackRegister* reg = &deq->callbacks[deq->callback_count++];
     ANN(reg);
 
@@ -470,10 +472,16 @@ void dvz_deq_callback(
 
 
 
-void dvz_deq_callback_clear(DvzDeq* deq)
+void dvz_deq_callback_clear(DvzDeq* deq, int type)
 {
     ANN(deq);
-    deq->callback_count = 0;
+    for (uint32_t i = 0; i < deq->callback_count; i++)
+    {
+        if (deq->callbacks[i].type == type)
+        {
+            deq->callbacks[i].callback = NULL;
+        }
+    }
 }
 
 
@@ -494,6 +502,7 @@ void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t
     // 0, 1, 2...
     ASSERT(proc_idx == deq->proc_count);
 
+    ASSERT(deq->proc_count < DVZ_DEQ_MAX_PROCS);
     DvzDeqProc* proc = &deq->procs[deq->proc_count++];
     ANN(proc);
 

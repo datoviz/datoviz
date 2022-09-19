@@ -63,49 +63,6 @@ static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 
 
 /*************************************************************************************************/
-/*  Callback functions                                                                           */
-/*************************************************************************************************/
-
-static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
-{
-    ANN(deq);
-
-    ANN(user_data);
-    DvzClient* client = (DvzClient*)user_data;
-
-    ANN(item);
-    DvzClientEvent* ev = (DvzClientEvent*)item;
-    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
-
-    uint32_t width = ev->content.w.screen_width;
-    uint32_t height = ev->content.w.screen_height;
-
-    log_debug("client: create window #%d (%dx%d)", ev->window_id, width, height);
-
-    create_client_window(client, ev->window_id, width, height, ev->content.w.flags);
-}
-
-
-
-static void _callback_window_request_delete(DvzDeq* deq, void* item, void* user_data)
-{
-    ANN(deq);
-
-    ANN(user_data);
-    DvzClient* client = (DvzClient*)user_data;
-
-    ANN(item);
-    DvzClientEvent* ev = (DvzClientEvent*)item;
-    // ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
-
-    log_debug("client: delete window #%d", ev->window_id);
-
-    delete_client_window(client, ev->window_id);
-}
-
-
-
-/*************************************************************************************************/
 /*  Client functions                                                                             */
 /*************************************************************************************************/
 
@@ -284,6 +241,12 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
 void dvz_client_destroy(DvzClient* client)
 {
     ANN(client);
+    log_trace("destroy the client");
+
+    // Raise request delete events. This is notably to ensure we destroy the inputs before
+    // destryoing the windows.
+    request_delete_windows(client);
+    dvz_client_process(client);
 
     dvz_deq_destroy(client->deq);
 

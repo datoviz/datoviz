@@ -79,4 +79,76 @@ static void delete_client_window(DvzClient* client, DvzId id)
 
 
 
+static void request_delete_windows(DvzClient* client)
+{
+    // Emit a request_delete event for all remaining windows.
+    ANN(client);
+
+    // Loop over the windows.
+    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+    DvzWindow* window = NULL;
+
+    // Request delete event.
+    DvzClientEvent ev = {0};
+    ev.type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE;
+
+    while (iter.item != NULL)
+    {
+        window = (DvzWindow*)iter.item;
+        if (window != NULL)
+        {
+            // Emit a request delete event to all windows.
+            ev.window_id = window->obj.id;
+            log_trace("emit request_delete for window %x", ev.window_id);
+            dvz_client_event(client, ev);
+        }
+        dvz_container_iter(&iter);
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Callback functions                                                                           */
+/*************************************************************************************************/
+
+static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
+{
+    ANN(deq);
+
+    ANN(user_data);
+    DvzClient* client = (DvzClient*)user_data;
+
+    ANN(item);
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_CREATE);
+
+    uint32_t width = ev->content.w.screen_width;
+    uint32_t height = ev->content.w.screen_height;
+
+    log_debug("client: create window #%d (%dx%d)", ev->window_id, width, height);
+
+    create_client_window(client, ev->window_id, width, height, ev->content.w.flags);
+}
+
+
+
+static void _callback_window_request_delete(DvzDeq* deq, void* item, void* user_data)
+{
+    ANN(deq);
+
+    ANN(user_data);
+    DvzClient* client = (DvzClient*)user_data;
+
+    ANN(item);
+    DvzClientEvent* ev = (DvzClientEvent*)item;
+    // ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
+
+    log_debug("client: delete window #%d", ev->window_id);
+
+    delete_client_window(client, ev->window_id);
+}
+
+
+
 #endif
