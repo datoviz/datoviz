@@ -49,7 +49,9 @@ struct DvzPanzoom
     int flags;
 
     vec2 pan;
+    vec2 pan_center;
     vec2 zoom;
+    vec2 zoom_center;
     DvzMVP mvp;
 };
 
@@ -79,9 +81,11 @@ DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan); // in NDC, gets or se
 
 DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom); // in NDC
 
-DVZ_EXPORT void dvz_panzoom_shift_pan(DvzPanzoom* pz, vec2 pan_shift);
+DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
-DVZ_EXPORT void dvz_panzoom_shift_zoom(DvzPanzoom* pz, vec2 zoom_shift, vec2 center_px);
+DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz); // end of pan or zoom interaction
+
+DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
 // if (0, 0), gets the xrange, otherwise sets it
