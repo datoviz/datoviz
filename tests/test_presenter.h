@@ -30,6 +30,8 @@ int test_presenter_multi(TstSuite*);
 
 int test_presenter_fps(TstSuite*);
 
+int test_presenter_scatter(TstSuite*);
+
 
 
 #endif
