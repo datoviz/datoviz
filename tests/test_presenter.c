@@ -607,8 +607,15 @@ static void _on_mouse(DvzClient* client, DvzClientEvent ev)
     // Dragging: pan.
     if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
     {
-        // ev.content.m.content.d.pos
-        dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+        }
+        else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        {
+            dvz_panzoom_zoom_shift(
+                pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
+        }
     }
 
     // Stop dragging.

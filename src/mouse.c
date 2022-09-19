@@ -215,6 +215,7 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
         glm_vec2_copy(pos, ev.content.d.pos);
         // Shift between the press position and the current position.
         glm_vec2_sub(pos, mouse->press_pos, ev.content.d.shift);
+        glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos);
         ev.content.d.button = mouse->button;
         break;
 

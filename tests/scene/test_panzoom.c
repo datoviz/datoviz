@@ -76,7 +76,7 @@ int test_panzoom_1(TstSuite* suite)
         ZOOM(0, 0, .5, .5);
         AP(0, 0);
 
-        ZOOM(.5, -1, .5, .5);
+        ZOOM(.5, +.5, .5, .5);
         AT(pz.zoom[0] > 1);
         AT(pz.zoom[1] < 1);
     }
@@ -84,12 +84,12 @@ int test_panzoom_1(TstSuite* suite)
     // Zoom with shift center.
     RESET;
     {
-        ZOOM(10, 10, .5, -.5);
+        ZOOM(10, -10, 1, 0); // top right corner
         AT(pz.zoom[0] > 1e6);
         AT(pz.zoom[1] > 1e6);
         AT(pz.zoom[0] == pz.zoom[1]);
-        AP(WIDTH / 2, -HEIGHT / 2);
-        // SHOW;
+        SHOW;
+        AP(-1, -1);
     }
 
     dvz_panzoom_destroy(&pz);

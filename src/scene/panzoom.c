@@ -19,17 +19,19 @@ static inline bool _is_vec2_null(vec2 v) { return memcmp(v, (vec2){0, 0}, sizeof
 
 
 
-// static inline void _normalize_pos(DvzPanzoom* pz, vec2 in, vec2 out)
-// {
-//     // From pixel coordinates (origin is upper left corner) to NDC (origin is center of
-//     viewport) float x = in[0]; float y = in[1];
+static inline void _normalize_pos(DvzPanzoom* pz, vec2 in, vec2 out)
+{
+    // From pixel coordinates (origin is upper left corner) to NDC (origin is center of
+    // viewport)
+    float x = in[0];
+    float y = in[1];
 
-//     float w = pz->viewport_size[0];
-//     float h = pz->viewport_size[1];
+    float w = pz->viewport_size[0];
+    float h = pz->viewport_size[1];
 
-//     out[0] = -1 + 2 * x / w;
-//     out[1] = +1 - 2 * y / h;
-// }
+    out[0] = -1 + 2 * x / w;
+    out[1] = +1 - 2 * y / h;
+}
 
 
 
@@ -184,12 +186,16 @@ void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 
 void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {
-    // NOTE: center_px is in pixel center coordinates (origin at the center of the viewport)
+    // NOTE: center_px is the center of the zoom, in pixel coordinates (origin at the upper left
+    // corner of the viewport)
     ANN(pz);
 
     vec2 shift = {0};
+    // From pixel coordinates to NDC coordinates.
     _normalize_shift(pz, shift_px, shift);
-    shift[1] *= -1;
+
+    vec2 center = {0};
+    _normalize_pos(pz, center_px, center);
 
     float zx0 = pz->zoom_center[0];
     float zy0 = pz->zoom_center[1];
@@ -203,13 +209,12 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     ASSERT(zy > 0);
 
     // Update pan.
-    float px = -center_px[0] * (1.0f / zx0 - 1.0f / zx) * zx;
-    float py = -center_px[1] * (1.0f / zy0 - 1.0f / zy) * zy;
+    float px = center[0] * (1.0f / zx0 - 1.0f / zx) * zx;
+    float py = center[1] * (1.0f / zy0 - 1.0f / zy) * zy;
 
     float x0 = pz->pan_center[0];
     float y0 = pz->pan_center[1];
 
-    // dvz_panzoom_pan_shift(pz, pan_shift_px, center_px);
     pz->pan[0] = x0 - px / zx;
     pz->pan[1] = y0 - py / zy;
 }

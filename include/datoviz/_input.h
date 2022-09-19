@@ -140,7 +140,7 @@ struct DvzMouseEvent
         struct
         {
             DvzMouseButton button;
-            vec2 pos;
+            vec2 pos, press_pos;
             vec2 shift;
         } d;
 
