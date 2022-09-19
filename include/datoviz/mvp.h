@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/*  Viewport                                                                                     */
+/*  Collection of builtin graphics pipelines                                                     */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_VIEWPORT
-#define DVZ_HEADER_VIEWPORT
+#ifndef DVZ_HEADER_MVP
+#define DVZ_HEADER_MVP
 
 
 
@@ -11,7 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "vklite.h"
+#include "_math.h"
 
 
 
@@ -19,7 +19,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzViewport DvzViewport;
+typedef struct DvzMVP DvzMVP;
 
 
 
@@ -27,28 +27,12 @@ typedef struct DvzViewport DvzViewport;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-// NOTE: must correspond to the shader structure in common.glsl
-struct DvzViewport
+struct DvzMVP
 {
-    VkViewport viewport; // Vulkan viewport
-    vec4 margins;
-
-    // Position and size of the viewport in screen coordinates.
-    uvec2 offset_screen;
-    uvec2 size_screen;
-
-    // Position and size of the viewport in framebuffer coordinates.
-    uvec2 offset_framebuffer;
-    uvec2 size_framebuffer;
-
-    // Options
-    // Viewport clipping.
-    DvzViewportClip clip; // used by the GPU for viewport clipping
-
-    // Used to discard transform on one axis
-    int32_t interact_axis;
-
-    // TODO: aspect ratio
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
 };
 
 
@@ -59,18 +43,15 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-
 /**
- * Return a default viewport
+ * Return a default DvzMVP struct
  *
- * @param width the viewport width, in framebuffer pixels
- * @param height the viewport height, in framebuffer pixels
- * @returns the viewport
+ * @returns the DvzMVP struct
  */
-DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
+DVZ_EXPORT DvzMVP dvz_mvp_default(void);
+
 
 
 EXTERN_C_OFF
-
 
 #endif

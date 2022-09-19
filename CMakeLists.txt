@@ -515,6 +515,8 @@ set(sources
     "src/timer.c"
     "src/input.c"
     "src/client_input.c"
+    "src/mvp.c"
+    "src/viewport.c"
 
     # Renderer
     "src/vklite.c"

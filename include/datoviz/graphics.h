@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "mvp.h"
 #include "viewport.h"
 #include "vklite.h"
 
@@ -33,7 +34,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzVertex DvzVertex;
-typedef struct DvzMVP DvzMVP;
 
 // typedef struct DvzGraphicsPointParams DvzGraphicsPointParams;
 
@@ -81,16 +81,6 @@ struct DvzVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
-};
-
-
-
-struct DvzMVP
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
 };
 
 
@@ -327,26 +317,6 @@ EXTERN_C_ON
  */
 DVZ_EXPORT void dvz_graphics_builtin(
     DvzRenderpass* renderpass, DvzGraphics* graphics, DvzGraphicsType type, int flags);
-
-
-
-/**
- * Return a default DvzMVP struct
- *
- * @returns the DvzMVP struct
- */
-DVZ_EXPORT DvzMVP dvz_mvp_default(void);
-
-
-
-/**
- * Return a default viewport
- *
- * @param width the viewport width, in framebuffer pixels
- * @param height the viewport height, in framebuffer pixels
- * @returns the viewport
- */
-DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
 
 
 
