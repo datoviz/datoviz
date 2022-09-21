@@ -15,8 +15,14 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_PANZOOM_ZOOM_DRAG_COEF  1.5
+#define DVZ_PANZOOM_ZOOM_DRAG_COEF 1.5
+
+#if OS_MACOS
+// HACK: touchpad wheel too sensitive on macOS
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF -5
+#else
 #define DVZ_PANZOOM_ZOOM_WHEEL_COEF 50
+#endif
 
 
 
