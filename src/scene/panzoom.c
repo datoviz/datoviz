@@ -12,6 +12,15 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_PANZOOM_ZOOM_DRAG_COEF  1.5
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF 50
+
+
+
+/*************************************************************************************************/
 /*  Utility functions                                                                            */
 /*************************************************************************************************/
 
@@ -200,8 +209,8 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float zx0 = pz->zoom_center[0];
     float zy0 = pz->zoom_center[1];
 
-    pz->zoom[0] = zx0 * exp(shift[0]);
-    pz->zoom[1] = zy0 * exp(shift[1]);
+    pz->zoom[0] = zx0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * shift[0]);
+    pz->zoom[1] = zy0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * shift[1]);
 
     float zx = pz->zoom[0];
     float zy = pz->zoom[1];
@@ -217,6 +226,31 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 
     pz->pan[0] = x0 - px / zx;
     pz->pan[1] = y0 - py / zy;
+}
+
+
+
+void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
+{
+    ANN(pz);
+
+    float w = pz->viewport_size[0];
+    float h = pz->viewport_size[1];
+    ASSERT(w > 0);
+    ASSERT(h > 0);
+    // Aspect ratio.
+    float a = h / w;
+
+    float d = dir[1];
+    if (d != 0)
+    {
+        d /= (float)fabs((double)d);
+        vec2 shift = {0};
+        shift[0] = DVZ_PANZOOM_ZOOM_WHEEL_COEF * (d);
+        shift[1] = -a * shift[0];
+        dvz_panzoom_zoom_shift(pz, shift, center_px);
+        dvz_panzoom_end(pz);
+    }
 }
 
 
