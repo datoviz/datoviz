@@ -1,0 +1,95 @@
+{
+    dbus
+    Memcheck:Leak
+    ...
+    obj:*dbus*
+    ...
+}
+
+{
+    x11
+    Memcheck:Leak
+    ...
+    obj:*X11*
+    ...
+}
+
+{
+    libg
+    Memcheck:Leak
+    ...
+    obj:*libg*
+    ...
+}
+
+{
+    pixman
+    Memcheck:Leak
+    ...
+    obj:*libpixman*
+    ...
+}
+
+{
+    llvm
+    Memcheck:Leak
+    ...
+    obj:*libLLVM*
+    ...
+}
+
+{
+    nvidia
+    Memcheck:Leak
+    ...
+    obj:*libnvidia*
+    ...
+}
+
+{
+    vulkan
+    Memcheck:Leak
+    ...
+    obj:*vulkan_layer_chassis*
+    ...
+}
+
+{
+    vulkan_trampoline
+    Memcheck:Leak
+    ...
+    src:trampoline.c
+    ...
+}
+
+{
+    glfw
+    Memcheck:Leak
+    ...
+    fun:*glfw*
+    ...
+}
+
+{
+    loader
+    Memcheck:Leak
+    ...
+    src:loader.c
+    ...
+}
+
+{
+    dlsrc
+    Memcheck:Leak
+    ...
+    src:dl*.c
+    ...
+}
+
+{
+    dlfun
+    Memcheck:Leak
+    ...
+    fun:*_dl_*
+    ...
+}

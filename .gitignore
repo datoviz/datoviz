@@ -72,3 +72,4 @@ joblib
 *.npy
 *.npz
 experimental
+*.out.txt

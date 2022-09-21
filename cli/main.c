@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     ASSERT(argc >= 2);
     int res = 0;
 
-    // SWITCH_CLI_ARG(info)
+    SWITCH_CLI_ARG(info)
     SWITCH_CLI_ARG(test)
     // SWITCH_CLI_ARG(demo)
 

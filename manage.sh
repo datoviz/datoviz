@@ -66,6 +66,19 @@ then
     find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
 fi
 
+if [ $1 == "valgrind" ]
+then
+    valgrind \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --keep-debuginfo=yes \
+        --track-origins=yes \
+        --verbose \
+        --suppressions=.valgrind.exceptions.txt \
+        --log-file=.valgrind.out.txt \
+        ${@:2}
+fi
+
 
 
 # -------------------------------------------------------------------------------------------------
