@@ -630,6 +630,12 @@ static void _on_mouse(DvzClient* client, DvzClientEvent ev)
         dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
     }
 
+    // Double-click
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_panzoom_reset(pz);
+    }
+
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_panzoom_mvp(pz);
 
