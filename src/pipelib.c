@@ -73,8 +73,7 @@ DvzPipelib* dvz_pipelib(DvzContext* ctx)
 
 
 DvzPipe* dvz_pipelib_graphics(
-    DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, //
-    uint32_t img_count, DvzGraphicsType type, int flags)
+    DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, DvzGraphicsType type, int flags)
 {
     ANN(lib);
     ANN(renderpass);
@@ -94,7 +93,7 @@ DvzPipe* dvz_pipelib_graphics(
     pipe->flags = flags;
 
     // Initialize the graphics pipeline.
-    DvzGraphics* graphics = dvz_pipe_graphics(pipe, img_count);
+    DvzGraphics* graphics = dvz_pipe_graphics(pipe);
     dvz_graphics_builtin(renderpass, graphics, type, flags);
 
     // Create the first common uniform dat: MVP.

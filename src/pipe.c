@@ -69,10 +69,9 @@ DvzPipe dvz_pipe(DvzGpu* gpu)
 
 
 
-DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t count)
+DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe)
 {
     ANN(pipe);
-    ASSERT(count > 0);
 
     pipe->type = DVZ_PIPE_GRAPHICS;
     DvzGraphics* graphics = &pipe->u.graphics;

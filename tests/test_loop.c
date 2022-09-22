@@ -100,7 +100,7 @@ int test_loop_2(TstSuite* suite)
 
     // Create a graphics pipe.
     DvzPipe* pipe = dvz_pipelib_graphics(
-        lib, ctx, &loop->renderpass, 1, DVZ_GRAPHICS_TRIANGLE,
+        lib, ctx, &loop->renderpass, DVZ_GRAPHICS_TRIANGLE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
 
     // Create the vertex buffer dat.

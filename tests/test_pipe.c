@@ -48,7 +48,7 @@ int test_pipe_1(TstSuite* suite)
 
     // Create the graphics pipe.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_renderpass(graphics, &renderpass, 0);
     dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);

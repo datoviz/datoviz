@@ -207,14 +207,10 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
     DvzRenderpass* renderpass =
         is_offscreen ? &rd->workspace->renderpass_offscreen : &rd->workspace->renderpass_desktop;
 
-    // NOTE: make sure the DvzResources structure has img_count set.
-    uint32_t img_count = rd->ctx->res.img_count;
-    ASSERT(img_count > 0);
-
     // Create the pipe.
     log_trace("create pipelib graphics");
     pipe = dvz_pipelib_graphics(
-        rd->pipelib, rd->ctx, renderpass, img_count, req.content.graphics.type, req.flags);
+        rd->pipelib, rd->ctx, renderpass, req.content.graphics.type, req.flags);
     ANN(pipe);
     SET_ID(pipe)
 

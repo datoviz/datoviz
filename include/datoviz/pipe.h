@@ -105,9 +105,8 @@ DVZ_EXPORT DvzPipe dvz_pipe(DvzGpu* gpu);
  *
  * @param pipe the pipe
  * @param graphics the graphics
- * @param count the number of descriptor sets (= number of swapchain images)
  */
-DVZ_EXPORT DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe, uint32_t dset_count);
+DVZ_EXPORT DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe);
 
 
 

@@ -458,7 +458,6 @@ struct DvzCompute
 {
     DvzObject obj;
     DvzGpu* gpu;
-    // DvzContext* context;
 
     char shader_path[1024];
     const char* shader_code;

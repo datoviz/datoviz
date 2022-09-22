@@ -93,7 +93,7 @@ int test_graphics_point(TstSuite* suite)
 
     // Create the graphics.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_builtin(&renderpass, graphics, DVZ_GRAPHICS_POINT, 0);
 
     const uint32_t n = 50;
@@ -157,7 +157,7 @@ int test_graphics_triangle(TstSuite* suite)
 
     // Create the graphics.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_builtin(&renderpass, graphics, DVZ_GRAPHICS_TRIANGLE, 0);
 
     // Create the dats.
@@ -208,7 +208,7 @@ int test_graphics_line_list(TstSuite* suite)
 
     // Create the graphics.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_builtin(&renderpass, graphics, DVZ_GRAPHICS_LINE, 0);
 
     // Vertex count and params.
@@ -312,7 +312,7 @@ int test_graphics_raster(TstSuite* suite)
 
     // Create the graphics.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_builtin(&renderpass, graphics, DVZ_GRAPHICS_RASTER, 0);
 
     // Vertex count and params.
@@ -426,7 +426,7 @@ int test_graphics_image_1(TstSuite* suite)
 
     // Create the graphics.
     DvzPipe pipe = dvz_pipe(gpu);
-    DvzGraphics* graphics = dvz_pipe_graphics(&pipe, 1);
+    DvzGraphics* graphics = dvz_pipe_graphics(&pipe);
     dvz_graphics_builtin(&renderpass, graphics, DVZ_GRAPHICS_IMAGE, 0);
 
 
