@@ -660,10 +660,10 @@ DvzDeqItem* dvz_deq_enqueue_custom(uint32_t deq_idx, int type, void* item)
     return _deq_item(deq_idx, type, item, 0, NULL);
 }
 
-void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next_item, bool enqueue_first)
+void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next, bool enqueue_first)
 {
     ANN(deq_item);
-    ANN(next_item);
+    ANN(next);
 
     if (deq_item->next_items == NULL)
     {
@@ -678,8 +678,8 @@ void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next_item, bool enqu
         return;
     }
 
-    DvzDeqItemNext* next = &deq_item->next_items[deq_item->next_count++];
-    next->next_item = next_item;
+    DvzDeqItemNext* next_item = &deq_item->next_items[deq_item->next_count++];
+    next_item->next_item = next;
 }
 
 void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_first)

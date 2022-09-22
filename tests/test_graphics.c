@@ -448,7 +448,7 @@ int test_graphics_image_1(TstSuite* suite)
     // Slot 3: tex.
     const uint32_t width = 16;
     const uint32_t height = 8;
-    cvec4* img = calloc(width * height, 4);
+    cvec4* img = (cvec4*)calloc(width * height, sizeof(cvec4));
     for (uint32_t i = 0; i < width * height; i++)
         dvz_colormap(DVZ_CMAP_HSV, i * 256 / (width * height), img[i]);
     DvzTex* tex =

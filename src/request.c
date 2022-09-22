@@ -163,11 +163,11 @@ DvzRequest dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint
 
 
 
-DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 color)
+DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background)
 {
     CREATE_REQUEST(SET, BACKGROUND);
     req.id = id;
-    memcpy(req.content.board.background, color, sizeof(cvec4));
+    memcpy(req.content.board.background, background, sizeof(cvec4));
     return req;
 }
 

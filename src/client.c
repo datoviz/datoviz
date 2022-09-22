@@ -15,22 +15,22 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static uint64_t count_windows(DvzClient* client)
-{
-    ANN(client);
-    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
-    DvzWindow* window = NULL;
-    uint64_t count = 0;
-    while (iter.item != NULL)
-    {
-        window = (DvzWindow*)iter.item;
-        ANN(window);
-        if (dvz_obj_is_created(&window->obj))
-            count++;
-        dvz_container_iter(&iter);
-    }
-    return count;
-}
+// static uint64_t count_windows(DvzClient* client)
+// {
+//     ANN(client);
+//     DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+//     DvzWindow* window = NULL;
+//     uint64_t count = 0;
+//     while (iter.item != NULL)
+//     {
+//         window = (DvzWindow*)iter.item;
+//         ANN(window);
+//         if (dvz_obj_is_created(&window->obj))
+//             count++;
+//         dvz_container_iter(&iter);
+//     }
+//     return count;
+// }
 
 
 

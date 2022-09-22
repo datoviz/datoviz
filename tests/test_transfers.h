@@ -32,11 +32,11 @@ int test_transfers_direct_buffer(TstSuite*);
 
 int test_transfers_direct_image(TstSuite*);
 
-int test_transfers_dups_util(TstSuite* tc);
+int test_transfers_dups_util(TstSuite*);
 
-int test_transfers_dups_upload(TstSuite* tc);
+int test_transfers_dups_upload(TstSuite*);
 
-int test_transfers_dups_copy(TstSuite* tc);
+int test_transfers_dups_copy(TstSuite*);
 
 
 

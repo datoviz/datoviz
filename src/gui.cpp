@@ -174,8 +174,7 @@ static DvzRenderpass _imgui_renderpass(DvzGpu* gpu, bool offscreen)
 
     log_trace("create Dear ImGui renderpass");
 
-    INIT(DvzRenderpass, renderpass)
-    renderpass = dvz_renderpass(gpu);
+    DvzRenderpass renderpass = dvz_renderpass(gpu);
 
     // Color attachment.
     dvz_renderpass_attachment(
@@ -348,7 +347,7 @@ DvzGuiWindow* dvz_gui_window(DvzGui* gui, DvzWindow* window, DvzImages* images, 
     // Create the framebuffers.
     _imgui_framebuffers(gpu, &gui->renderpass, images, &gui_window->framebuffers);
 
-    if (window != NULL && window->gui_window == NULL)
+    if (window->gui_window == NULL)
         _imgui_set_window(window);
     window->gui_window = gui_window;
 

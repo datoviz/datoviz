@@ -41,7 +41,7 @@ void dvz_atomic_init(DvzAtomic atomic)
 
 DvzAtomic dvz_atomic()
 {
-    DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic));
+    DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic_));
     dvz_atomic_init(atomic);
     return atomic;
 }

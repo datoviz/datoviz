@@ -38,7 +38,8 @@ static bool _timer_item_firing(DvzTimerItem* item)
         return false;
 
     // First firing
-    if (local_time >= 0 && item->last_fire < 0)
+    ASSERT(local_time >= 0);
+    if (item->last_fire < 0)
     {
         return true;
     }

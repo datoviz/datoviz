@@ -900,7 +900,6 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     // Update the existing DvzBuffer struct with the newly-created Vulkan objects.
     buffer->buffer = new_buffer.buffer;
     // buffer->device_memory = new_buffer.device_memory;
-    buffer->buffer = new_buffer.buffer;
     buffer->vma = new_buffer.vma;
 
     ASSERT(buffer->buffer != VK_NULL_HANDLE);

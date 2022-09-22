@@ -72,7 +72,7 @@ DVZ_EXPORT void dvz_context_wait(DvzContext* ctx);
  *
  * @param context the context
  */
-DVZ_EXPORT void dvz_context_destroy(DvzContext* context);
+DVZ_EXPORT void dvz_context_destroy(DvzContext* ctx);
 
 
 

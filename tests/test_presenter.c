@@ -573,6 +573,7 @@ int test_presenter_fps(TstSuite* suite)
 
 
     // Destroying all objects.
+    dvz_fps_destroy(&fps);
     dvz_presenter_destroy(prt);
 
     dvz_client_destroy(client);

@@ -79,6 +79,19 @@ then
         ${@:2}
 fi
 
+if [ $1 == "cppcheck" ]
+then
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external -I include/datoviz
+    # 2> .cppcheck.out.txt && \
+    # echo ".cppcheck.out.txt saved"
+fi
+
+if [ $1 == "prof" ]
+then
+    gprof build/datoviz gmon.out
+fi
+
+
 
 
 # -------------------------------------------------------------------------------------------------

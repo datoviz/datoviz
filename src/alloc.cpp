@@ -38,6 +38,7 @@ DvzAlloc* dvz_alloc(DvzSize size, DvzSize alignment)
 
     alloc->alignment = alignment;
     alloc->buf_size = size;
+    alloc->alloc_size = 0;
 
     return alloc;
 }

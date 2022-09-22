@@ -66,7 +66,6 @@ int test_map_2(TstSuite* suite)
 
     // Empty map.
     DvzId id = 1; // dvz_map_id(map);
-    AT(id == 1);
     AT(dvz_map_count(map, 0) == 0);
 
     int type = 3;

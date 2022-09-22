@@ -100,7 +100,7 @@ DVZ_EXPORT void dvz_list_remove(DvzList* list, uint64_t index);
 
 
 
-DVZ_EXPORT void dvz_list_remove_pointer(DvzList* list, void* pointer);
+DVZ_EXPORT void dvz_list_remove_pointer(DvzList* list, const void* pointer);
 
 
 

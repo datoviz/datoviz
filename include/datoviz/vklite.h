@@ -1121,7 +1121,7 @@ DVZ_EXPORT DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count);
  * @param images the images
  * @param format the image format
  */
-DVZ_EXPORT void dvz_images_format(DvzImages* images, VkFormat format);
+DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
 
 /**
  * Set the images layout.
@@ -1129,7 +1129,7 @@ DVZ_EXPORT void dvz_images_format(DvzImages* images, VkFormat format);
  * @param images the images
  * @param layout the image layout
  */
-DVZ_EXPORT void dvz_images_layout(DvzImages* images, VkImageLayout layout);
+DVZ_EXPORT void dvz_images_layout(DvzImages* img, VkImageLayout layout);
 
 /**
  * Set the images shape.
@@ -1137,7 +1137,7 @@ DVZ_EXPORT void dvz_images_layout(DvzImages* images, VkImageLayout layout);
  * @param images the images
  * @param shape the image shape (width, height, depth)
  */
-DVZ_EXPORT void dvz_images_size(DvzImages* images, uvec3 shape);
+DVZ_EXPORT void dvz_images_size(DvzImages* img, uvec3 shape);
 
 /**
  * Set the images tiling.
@@ -1145,7 +1145,7 @@ DVZ_EXPORT void dvz_images_size(DvzImages* images, uvec3 shape);
  * @param images the images
  * @param tiling the image tiling
  */
-DVZ_EXPORT void dvz_images_tiling(DvzImages* images, VkImageTiling tiling);
+DVZ_EXPORT void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
 
 /**
  * Set the images usage.
@@ -1153,7 +1153,7 @@ DVZ_EXPORT void dvz_images_tiling(DvzImages* images, VkImageTiling tiling);
  * @param images the images
  * @param usage the image usage
  */
-DVZ_EXPORT void dvz_images_usage(DvzImages* images, VkImageUsageFlags usage);
+DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
 
 /**
  * Set the images VMA usage.
@@ -1161,7 +1161,7 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* images, VkImageUsageFlags usage);
  * @param images the images
  * @param usage the memory usage
  */
-DVZ_EXPORT void dvz_images_vma_usage(DvzImages* images, VmaMemoryUsage vma_usage);
+DVZ_EXPORT void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage);
 
 /**
  * Set the images memory properties.
@@ -1169,7 +1169,7 @@ DVZ_EXPORT void dvz_images_vma_usage(DvzImages* images, VmaMemoryUsage vma_usage
  * @param images the images
  * @param memory the memory properties
  */
-DVZ_EXPORT void dvz_images_memory(DvzImages* images, VkMemoryPropertyFlags memory);
+DVZ_EXPORT void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory);
 
 /**
  * Set the images aspect.
@@ -1177,7 +1177,7 @@ DVZ_EXPORT void dvz_images_memory(DvzImages* images, VkMemoryPropertyFlags memor
  * @param images the images
  * @param aspect the image aspect
  */
-DVZ_EXPORT void dvz_images_aspect(DvzImages* images, VkImageAspectFlags aspect);
+DVZ_EXPORT void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect);
 
 /**
  * Set the images queue access.
@@ -1188,14 +1188,14 @@ DVZ_EXPORT void dvz_images_aspect(DvzImages* images, VkImageAspectFlags aspect);
  * @param images the images
  * @param queue_idx the queue index
  */
-DVZ_EXPORT void dvz_images_queue_access(DvzImages* images, uint32_t queue_idx);
+DVZ_EXPORT void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx);
 
 /**
  * Create the images after they have been set up.
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_create(DvzImages* images);
+DVZ_EXPORT void dvz_images_create(DvzImages* img);
 
 /**
  * Resize images.
@@ -1206,7 +1206,7 @@ DVZ_EXPORT void dvz_images_create(DvzImages* images);
  * @param images the images
  * @param new_shape the new shape
  */
-DVZ_EXPORT void dvz_images_resize(DvzImages* images, uvec3 shape);
+DVZ_EXPORT void dvz_images_resize(DvzImages* img, uvec3 shape);
 
 /**
  * Transition the images to their layout after creation.
@@ -1216,7 +1216,7 @@ DVZ_EXPORT void dvz_images_resize(DvzImages* images, uvec3 shape);
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_transition(DvzImages* images);
+DVZ_EXPORT void dvz_images_transition(DvzImages* img);
 
 /**
  * Download the data from a staging GPU image.
@@ -1279,7 +1279,7 @@ DVZ_EXPORT void dvz_images_copy_to_buffer(
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_destroy(DvzImages* images);
+DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
 
 
 
@@ -1744,7 +1744,7 @@ dvz_barrier_buffer_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @param barrier the barrier
  * @param images the images
  */
-DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* images);
+DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img);
 
 /**
  * Set the barrier images layout.
@@ -2004,7 +2004,7 @@ DVZ_EXPORT DvzFramebuffers dvz_framebuffers(DvzGpu* gpu);
  */
 
 DVZ_EXPORT void dvz_framebuffers_attachment(
-    DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* images);
+    DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* img);
 
 /**
  * Create a set of framebuffers after it has been set up.
@@ -2140,7 +2140,7 @@ DVZ_EXPORT void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* bar
 DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
     DvzCommands* cmds, uint32_t idx,            //
     DvzBuffer* buffer, VkDeviceSize buf_offset, //
-    DvzImages* images, uvec3 tex_offset, uvec3 shape);
+    DvzImages* img, uvec3 tex_offset, uvec3 shape);
 
 /**
  * Copy a GPU image to a GPU buffer.
@@ -2154,8 +2154,8 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  * @param buf_offset the buffer offset
  */
 DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
-    DvzCommands* cmds, uint32_t idx,                  //
-    DvzImages* images, uvec3 tex_offset, uvec3 shape, //
+    DvzCommands* cmds, uint32_t idx,               //
+    DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBuffer* buffer, VkDeviceSize buf_offset);
 
 /**
