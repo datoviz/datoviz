@@ -260,6 +260,7 @@ int test_array_7(TstSuite* suite)
     AT(*a == 5);
 
     dvz_array_destroy(arr);
+    dvz_array_destroy(arr2);
     return 0;
 }
 

@@ -228,9 +228,13 @@ void dvz_fifo_reset(DvzFifo* fifo)
 
 void dvz_fifo_destroy(DvzFifo* fifo)
 {
+    log_trace("destroy FIFO queue");
     ANN(fifo);
     dvz_mutex_destroy(&fifo->lock);
     dvz_cond_destroy(&fifo->cond);
+
+    dvz_atomic_destroy(fifo->is_empty);
+    dvz_atomic_destroy(fifo->is_processing);
 
     ANN(fifo->items);
     FREE(fifo->items);
@@ -606,7 +610,7 @@ void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t
 static DvzDeqItem*
 _deq_item(uint32_t deq_idx, int type, void* item, uint32_t next_count, DvzDeqItemNext* next_items)
 {
-    DvzDeqItem* deq_item = calloc(1, sizeof(DvzDeqItem));
+    DvzDeqItem* deq_item = (DvzDeqItem*)calloc(1, sizeof(DvzDeqItem));
     ANN(deq_item);
     deq_item->deq_idx = deq_idx;
     deq_item->type = type;
@@ -1023,5 +1027,9 @@ void dvz_deq_destroy(DvzDeq* deq)
         dvz_cond_destroy(&deq->procs[i].cond);
         dvz_atomic_destroy(deq->procs[i].is_processing);
     }
+
+    for (uint32_t i = 0; i < deq->queue_count; i++)
+        dvz_fifo_destroy(deq->queues[i]);
+
     FREE(deq);
 }

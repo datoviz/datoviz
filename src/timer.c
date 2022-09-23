@@ -246,27 +246,45 @@ void dvz_timer_callback(
 void dvz_timer_destroy(DvzTimer* timer)
 {
     ANN(timer);
-    DvzList* list = timer->items;
-    uint64_t n = dvz_list_count(list);
 
     // Remove all timer items.
-    DvzTimerItem* item = NULL;
-    for (uint64_t i = 0; i < n; i++)
     {
-        item = (DvzTimerItem*)dvz_list_get(list, i).p;
-        ANN(item);
-        // This will also free the heap-allocated DvzTimerItem objects before destroying the list.
-        dvz_timer_remove(item);
+        DvzList* list = timer->items;
+        uint64_t n = dvz_list_count(list);
+
+        DvzTimerItem* item = NULL;
+        for (uint64_t i = 0; i < n; i++)
+        {
+            item = (DvzTimerItem*)dvz_list_get(list, i).p;
+            ANN(item);
+            // This will also free the heap-allocated DvzTimerItem objects before destroying the
+            // list.
+            dvz_timer_remove(item);
+        }
+
+        // The list should now be empty and all item pointers should have been free-ed.
+        ASSERT(dvz_list_count(list) == 0);
+
+        // Destroy the list.
+        dvz_list_destroy(list);
     }
 
-    // The list should now be empty and all item pointers should have been free-ed.
-    ASSERT(dvz_list_count(list) == 0);
+    // Remove all timer callbacks.
+    {
+        DvzList* list = timer->callbacks;
+        uint64_t n = dvz_list_count(list);
 
-    // Destroy the list.
-    dvz_list_destroy(list);
-
-    // Destroy the list of callbacks.
-    dvz_list_destroy(timer->callbacks);
+        DvzTimerPayload* item = NULL;
+        for (uint64_t i = 0; i < n; i++)
+        {
+            item = (DvzTimerPayload*)dvz_list_get(list, i).p;
+            ANN(item);
+            dvz_list_remove_pointer(list, item);
+            FREE(item);
+        }
+        ASSERT(dvz_list_count(list) == 0);
+        dvz_list_destroy(list);
+    }
 
     // Free the memory associated to the timer struct.
     FREE(timer);
