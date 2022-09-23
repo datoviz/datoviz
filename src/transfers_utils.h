@@ -35,13 +35,13 @@ static DvzDeqItem* _create_buffer_transfer(
 
     ASSERT(type == DVZ_TRANSFER_BUFFER_UPLOAD || type == DVZ_TRANSFER_BUFFER_DOWNLOAD);
 
-    DvzTransferBuffer* tr = (DvzTransferBuffer*)calloc(1, sizeof(DvzTransferBuffer));
-    tr->br = br;
-    tr->offset = offset;
-    tr->size = size;
-    tr->data = data;
+    DvzTransferBuffer tr = {0};
+    tr.br = br;
+    tr.offset = offset;
+    tr.size = size;
+    tr.data = data;
 
-    return dvz_deq_enqueue_custom(deq_idx, (int)type, tr);
+    return dvz_deq_enqueue_custom(deq_idx, (int)type, sizeof(DvzTransferBuffer), &tr);
 }
 
 
@@ -55,14 +55,15 @@ static DvzDeqItem* _create_buffer_copy(
     ANN(dst.buffer);
     ASSERT(size > 0);
 
-    DvzTransferBufferCopy* tr = (DvzTransferBufferCopy*)calloc(1, sizeof(DvzTransferBufferCopy));
-    tr->src = src;
-    tr->src_offset = src_offset;
-    tr->dst = dst;
-    tr->dst_offset = dst_offset;
-    tr->size = size;
+    DvzTransferBufferCopy tr = {0};
+    tr.src = src;
+    tr.src_offset = src_offset;
+    tr.dst = dst;
+    tr.dst_offset = dst_offset;
+    tr.size = size;
 
-    return dvz_deq_enqueue_custom(DVZ_TRANSFER_DEQ_COPY, (int)DVZ_TRANSFER_BUFFER_COPY, tr);
+    return dvz_deq_enqueue_custom(
+        DVZ_TRANSFER_DEQ_COPY, (int)DVZ_TRANSFER_BUFFER_COPY, sizeof(DvzTransferBufferCopy), &tr);
 }
 
 
@@ -83,18 +84,18 @@ static DvzDeqItem* _create_buffer_image_copy(
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    DvzTransferBufferImage* tr = (DvzTransferBufferImage*)calloc(
-        1, sizeof(DvzTransferBufferImage)); // will be free-ed by the callbacks
+    DvzTransferBufferImage tr = {0};
 
-    tr->br = br;
-    tr->buf_offset = buf_offset;
-    tr->size = size;
+    tr.br = br;
+    tr.buf_offset = buf_offset;
+    tr.size = size;
 
-    tr->img = img;
-    memcpy(tr->img_offset, img_offset, sizeof(uvec3));
-    memcpy(tr->shape, shape, sizeof(uvec3));
+    tr.img = img;
+    memcpy(tr.img_offset, img_offset, sizeof(uvec3));
+    memcpy(tr.shape, shape, sizeof(uvec3));
 
-    return dvz_deq_enqueue_custom(DVZ_TRANSFER_DEQ_COPY, (int)type, tr);
+    return dvz_deq_enqueue_custom(
+        DVZ_TRANSFER_DEQ_COPY, (int)type, sizeof(DvzTransferBufferImage), &tr);
 }
 
 
@@ -111,15 +112,15 @@ static DvzDeqItem* _create_image_copy(
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] > 0);
 
-    DvzTransferImageCopy* tr = (DvzTransferImageCopy*)calloc(
-        1, sizeof(DvzTransferImageCopy)); // will be free-ed by the callbacks
-    tr->src = src;
-    tr->dst = dst;
-    memcpy(tr->src_offset, src_offset, sizeof(uvec3));
-    memcpy(tr->dst_offset, dst_offset, sizeof(uvec3));
-    memcpy(tr->shape, shape, sizeof(uvec3));
+    DvzTransferImageCopy tr = {0};
+    tr.src = src;
+    tr.dst = dst;
+    memcpy(tr.src_offset, src_offset, sizeof(uvec3));
+    memcpy(tr.dst_offset, dst_offset, sizeof(uvec3));
+    memcpy(tr.shape, shape, sizeof(uvec3));
 
-    return dvz_deq_enqueue_custom(DVZ_TRANSFER_DEQ_COPY, (int)DVZ_TRANSFER_IMAGE_COPY, tr);
+    return dvz_deq_enqueue_custom(
+        DVZ_TRANSFER_DEQ_COPY, (int)DVZ_TRANSFER_IMAGE_COPY, sizeof(DvzTransferImageCopy), &tr);
 }
 
 
@@ -129,12 +130,12 @@ static DvzDeqItem* _create_download_done(DvzSize size, void* data)
 {
     ANN(data);
 
-    // will be free-ed by the callbacks:
-    DvzTransferDownloadDone* tr =
-        (DvzTransferDownloadDone*)calloc(1, sizeof(DvzTransferDownloadDone));
-    tr->size = size;
-    tr->data = data;
-    return dvz_deq_enqueue_custom(DVZ_TRANSFER_DEQ_EV, (int)DVZ_TRANSFER_DOWNLOAD_DONE, tr);
+    DvzTransferDownloadDone tr = {0};
+    tr.size = size;
+    tr.data = data;
+    return dvz_deq_enqueue_custom(
+        DVZ_TRANSFER_DEQ_EV, (int)DVZ_TRANSFER_DOWNLOAD_DONE, sizeof(DvzTransferDownloadDone),
+        &tr);
 }
 
 
@@ -142,10 +143,10 @@ static DvzDeqItem* _create_download_done(DvzSize size, void* data)
 // Create an upload done task.
 static DvzDeqItem* _create_upload_done(void* user_data)
 {
-    // will be free-ed by the callbacks:
-    DvzTransferUploadDone* tr = (DvzTransferUploadDone*)calloc(1, sizeof(DvzTransferUploadDone));
-    tr->user_data = user_data;
-    return dvz_deq_enqueue_custom(DVZ_TRANSFER_DEQ_EV, (int)DVZ_TRANSFER_UPLOAD_DONE, tr);
+    DvzTransferUploadDone tr = {0};
+    tr.user_data = user_data;
+    return dvz_deq_enqueue_custom(
+        DVZ_TRANSFER_DEQ_EV, (int)DVZ_TRANSFER_UPLOAD_DONE, sizeof(DvzTransferUploadDone), &tr);
 }
 
 
@@ -158,15 +159,16 @@ _create_dup_upload(DvzBufferRegions br, DvzSize offset, DvzSize size, void* data
     ASSERT(size > 0);
     ANN(data);
 
-    DvzTransferDup* tr = (DvzTransferDup*)calloc(1, sizeof(DvzTransferDup));
-    tr->type = DVZ_TRANSFER_DUP_UPLOAD;
-    tr->br = br;
-    tr->offset = offset;
-    tr->size = size;
-    tr->data = data;
+    DvzTransferDup tr = {0};
+    tr.type = DVZ_TRANSFER_DUP_UPLOAD;
+    tr.br = br;
+    tr.offset = offset;
+    tr.size = size;
+    tr.data = data;
     // TODO: recurrent?
 
-    return dvz_deq_enqueue_custom(deq_idx, (int)DVZ_TRANSFER_DUP_UPLOAD, tr);
+    return dvz_deq_enqueue_custom(
+        deq_idx, (int)DVZ_TRANSFER_DUP_UPLOAD, sizeof(DvzTransferDup), &tr);
 }
 
 
@@ -184,16 +186,17 @@ static DvzDeqItem* _create_dup_copy(
     ASSERT(src.count == 1);
     ASSERT(size > 0);
 
-    DvzTransferDup* tr = (DvzTransferDup*)calloc(1, sizeof(DvzTransferDup));
-    tr->type = DVZ_TRANSFER_DUP_COPY;
-    tr->br = dst;
-    tr->offset = dst_offset;
-    tr->stg = src;
-    tr->stg_offset = src_offset;
-    tr->size = size;
+    DvzTransferDup tr = {0};
+    tr.type = DVZ_TRANSFER_DUP_COPY;
+    tr.br = dst;
+    tr.offset = dst_offset;
+    tr.stg = src;
+    tr.stg_offset = src_offset;
+    tr.size = size;
     // TODO: recurrent?
 
-    return dvz_deq_enqueue_custom(deq_idx, (int)DVZ_TRANSFER_DUP_COPY, tr);
+    return dvz_deq_enqueue_custom(
+        deq_idx, (int)DVZ_TRANSFER_DUP_COPY, sizeof(DvzTransferDup), &tr);
 }
 
 

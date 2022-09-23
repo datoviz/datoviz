@@ -73,16 +73,6 @@ typedef struct DvzDeqProc DvzDeqProc;
 typedef struct DvzDeqCallbackRegister DvzDeqCallbackRegister;
 typedef void (*DvzDeqCallback)(DvzDeq* deq, void* item, void* user_data);
 
-// typedef struct DvzDeqProcCallbackRegister DvzDeqProcCallbackRegister;
-// typedef struct DvzDeqProcWaitCallbackRegister DvzDeqProcWaitCallbackRegister;
-// typedef struct DvzDeqProcBatchCallbackRegister DvzDeqProcBatchCallbackRegister;
-// typedef void (*DvzDeqProcCallback)(
-//     DvzDeq* deq, uint32_t deq_idx, int type, void* item, void* user_data);
-// typedef void (*DvzDeqProcWaitCallback)(DvzDeq* deq, void* user_data);
-// typedef void (*DvzDeqProcBatchCallback)(
-//     DvzDeq* deq, DvzDeqProcBatchPosition pos, uint32_t item_count, DvzDeqItem* items,
-//     void* user_data);
-
 
 
 /*************************************************************************************************/
@@ -117,26 +107,6 @@ struct DvzDeqCallbackRegister
     void* user_data;
     // bool is_default; // if true, the callback will be discarded if there are other callbacks
 };
-
-// struct DvzDeqProcWaitCallbackRegister
-// {
-//     DvzDeqProcWaitCallback callback;
-//     void* user_data;
-// };
-
-// struct DvzDeqProcBatchCallbackRegister
-// {
-//     DvzDeqProcBatchCallback callback;
-//     DvzDeqProcBatchPosition pos;
-//     void* user_data;
-// };
-
-// struct DvzDeqProcCallbackRegister
-// {
-//     DvzDeqProcCallback callback;
-//     DvzDeqProcCallbackPosition pos;
-//     void* user_data;
-// };
 
 
 
@@ -197,6 +167,8 @@ struct DvzDeqProc
 
 struct DvzDeq
 {
+    DvzSize item_size;
+
     uint32_t queue_count;
     DvzFifo* queues[DVZ_DEQ_MAX_QUEUES];
 
@@ -329,7 +301,7 @@ DVZ_EXPORT void dvz_fifo_destroy(DvzFifo* fifo);
  * @param capacity the maximum size
  * @returns a Deq
  */
-DVZ_EXPORT DvzDeq* dvz_deq(uint32_t nq);
+DVZ_EXPORT DvzDeq* dvz_deq(uint32_t nq, DvzSize item_size);
 
 
 
@@ -345,31 +317,14 @@ DVZ_EXPORT void dvz_deq_callback(
     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
 
 
+
 /**
  * Clear all callbacks of a given type.
  *
  * @param deq the Deq
  * @param type the type of the callbacks to clear
  */
-
 DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
-
-
-
-// /**
-//  * Define a default callback.
-//  *
-//  * The default callback is only called when there are no other callbacks. Specifically, we
-//  discard
-//  * a default callback iff there are other callbacks after it in the list of callbacks.
-//  *
-//  * @param deq the Deq
-//  * @param deq_idx the queue index
-//  * @param type the type to register the callback to
-//  * @param user_data pointer to arbitrary data to be passed to the callback
-//  */
-// DVZ_EXPORT void dvz_deq_callback_default(
-//     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
 
 
 
@@ -383,70 +338,6 @@ DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
  */
 DVZ_EXPORT void
 dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* queue_ids);
-
-
-
-// /**
-//  * Set a maximum time delay for dequeue waiting, in milliseconds.
-//  *
-//  * @param deq the Deq
-//  * @param proc_idx the Proc index
-//  * @param delay_ms how many milliseconds to wait before probing for deq size while dequeueing
-//  */
-// DVZ_EXPORT void dvz_deq_proc_wait_delay(DvzDeq* deq, uint32_t proc_idx, uint32_t delay_ms);
-
-
-
-// /**
-//  * Register a Proc callback.
-//  *
-//  * A Proc callback is called in the Deq loop for the associated proc, after every item dequeue.
-//  *
-//  * @param deq the Deq
-//  * @param proc_idx the Proc index (should be regularly increasing: 0, 1, 2, ...)
-//  * @param pos this callback should be called either before or after the item callbacks
-//  * @param callback the callback
-//  * @param user_data pointer to arbitrary data
-//  */
-// DVZ_EXPORT void dvz_deq_proc_callback(
-//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcCallbackPosition pos, DvzDeqProcCallback callback,
-//     void* user_data);
-
-
-
-// /**
-//  * Register a Proc wait callback.
-//  *
-//  * A Proc callback is called in the Deq loop for the associated proc, while waiting for a
-//  dequeue.
-//  * It may be used to raise Timer events.
-//  *
-//  * @param deq the Deq
-//  * @param proc_idx the Proc index (should be regularly increasing: 0, 1, 2, ...)
-//  * @param callback the callback
-//  * @param user_data pointer to arbitrary data
-//  */
-// DVZ_EXPORT void dvz_deq_proc_wait_callback(
-//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcWaitCallback callback, void* user_data);
-
-
-
-// /**
-//  * Register a Proc batch callback.
-//  *
-//  * A batch callback is called in dvz_deq_dequeue_batch(), before *and* after dequeuing all items
-//  in
-//  * a proc.
-//  *
-//  * @param deq the Deq
-//  * @param proc_idx the Proc index (should be regularly increasing: 0, 1, 2, ...)
-//  * @param pos called either at the beginning or at the end of the batch dequeue
-//  * @param callback the callback
-//  * @param user_data pointer to arbitrary data
-//  */
-// DVZ_EXPORT void dvz_deq_proc_batch_callback(
-//     DvzDeq* deq, uint32_t proc_idx, DvzDeqProcBatchPosition pos, DvzDeqProcBatchCallback
-//     callback, void* user_data);
 
 
 
@@ -485,7 +376,8 @@ DVZ_EXPORT void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, v
  * @param type the type
  * @param item the item
  */
-DVZ_EXPORT DvzDeqItem* dvz_deq_enqueue_custom(uint32_t deq_idx, int type, void* item);
+DVZ_EXPORT DvzDeqItem*
+dvz_deq_enqueue_custom(uint32_t deq_idx, int type, DvzSize item_size, void* item);
 
 
 
@@ -541,17 +433,6 @@ DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
  * @returns the item
  */
 DVZ_EXPORT DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
-
-
-
-/**
- * Specify the dequeue strategy: breadth-first or depth-first.
- *
- * @param deq the Deq
- * @param proc_idx the Proc index
- * @param strategy the dequeue strategy
- */
-DVZ_EXPORT void dvz_deq_strategy(DvzDeq* deq, uint32_t proc_idx, DvzDeqStrategy strategy);
 
 
 

@@ -79,7 +79,7 @@ DvzClient* dvz_client(DvzBackend backend)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzWindow), DVZ_OBJECT_TYPE_WINDOW);
 
     // Create queue.
-    client->deq = dvz_deq(1);
+    client->deq = dvz_deq(1, sizeof(DvzClientEvent));
 
     // A single proc handling all events.
     dvz_deq_proc(client->deq, 0, 1, (uint32_t[]){0});
@@ -109,12 +109,7 @@ DvzClient* dvz_client(DvzBackend backend)
 void dvz_client_event(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
-
-    // Enqueue event.
-    DvzClientEvent* pev = calloc(1, sizeof(DvzClientEvent));
-    *pev = ev;
-
-    dvz_deq_enqueue(client->deq, 0, (int)ev.type, pev);
+    dvz_deq_enqueue(client->deq, 0, (int)ev.type, &ev);
 }
 
 

@@ -33,10 +33,23 @@ static int _thread_transfers(void* user_data)
 
 
 
+static DvzSize _transfer_item_size()
+{
+    return MAX(
+        sizeof(DvzTransferBuffer),
+        MAX(sizeof(DvzTransferBufferCopy),
+            MAX(sizeof(DvzTransferBufferImage),
+                MAX(sizeof(DvzTransferImageCopy),
+                    MAX(sizeof(DvzTransferDownloadDone),
+                        MAX(sizeof(DvzTransferUploadDone), sizeof(DvzTransferDup)))))));
+}
+
+
+
 static void _create_transfers(DvzTransfers* transfers)
 {
     ANN(transfers);
-    transfers->deq = dvz_deq(5);
+    transfers->deq = dvz_deq(5, _transfer_item_size());
 
     // Producer/consumer pairs (deq processes).
     dvz_deq_proc(
@@ -258,10 +271,12 @@ void dvz_transfers_destroy(DvzTransfers* transfers)
     ANN(transfers->gpu);
 
     // Enqueue a STOP task to stop the UL and DL threads.
+    log_trace("enqueue STOP");
     dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_UL, 0, NULL);
     dvz_deq_enqueue(transfers->deq, DVZ_TRANSFER_DEQ_DL, 0, NULL);
 
     // Join the UL and DL threads.
+    log_trace("join threads");
     dvz_thread_join(transfers->thread);
 
     // Destroy the deq.

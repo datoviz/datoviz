@@ -39,16 +39,6 @@ int test_deq_1(TstSuite*);
 
 int test_deq_2(TstSuite*);
 
-int test_deq_dependencies(TstSuite*);
-
-int test_deq_circular(TstSuite*);
-
-int test_deq_proc(TstSuite*);
-
-int test_deq_wait(TstSuite*);
-
-int test_deq_batch(TstSuite*);
-
 
 
 #endif
