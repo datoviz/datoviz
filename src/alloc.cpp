@@ -52,6 +52,8 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
     DvzSize req = _align(req_size, alloc->alignment);
     ASSERT(req >= req_size);
 
+    DvzSize out = 0;
+
     // Find a free slot large enough for the req size.
     for (const auto& [o, s] : alloc->free)
     {
@@ -60,18 +62,23 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
         {
             // Make sure this slot is not already occupied.
             ASSERT(alloc->occupied.count(o) == 0);
+
+            log_trace("alloc new %lu, found offset %lu", req_size, out);
+            out = o;
+
             // Add the new allocated slot.
             alloc->occupied[o] = req;
+
             // If empty space remains, update the existing empty space.
             if (s > req)
             {
                 alloc->free[o + req] = s - req;
             }
+
             // In all cases, remove the existing free slot.
             alloc->free.erase(o);
 
-            log_trace("alloc new %d, found offset %d", req_size, o);
-            return o;
+            return out;
         }
     }
 
@@ -85,7 +92,7 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
     // Ensure the new slot doesn't already exist.
     ASSERT(alloc->occupied.count(alloc->alloc_size) == 0);
     alloc->occupied[alloc->alloc_size] = req;
-    DvzSize out = alloc->alloc_size;
+    out = alloc->alloc_size;
     // Increase the total allocated size.
     alloc->alloc_size += req;
 
@@ -104,7 +111,7 @@ DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized)
         log_trace("will need to resize alloc buffer to %s", pretty_size(alloc->buf_size));
     }
 
-    log_trace("alloc new %d, found offset %d", req_size, out);
+    log_trace("alloc new %lu, found offset %lu", req_size, out);
     return out;
 }
 
