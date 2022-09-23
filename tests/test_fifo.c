@@ -228,7 +228,7 @@ int test_deq_1(TstSuite* suite)
 
     // Enqueue in the queue with a callback.
     dvz_deq_enqueue(deq, 0, 0, (int[]){2});
-    item = dvz_deq_dequeue(deq, 0, false);
+    item = dvz_deq_dequeue_return(deq, 0, false);
     AT(item.deq_idx == 0);
     AT(item.type == 0);
     AT(data == 2);
@@ -237,7 +237,7 @@ int test_deq_1(TstSuite* suite)
     // Enqueue in the queue without a callback.
     data = 0;
     dvz_deq_enqueue(deq, 1, 10, (int[]){2});
-    item = dvz_deq_dequeue(deq, 0, false);
+    item = dvz_deq_dequeue_return(deq, 0, false);
     AT(item.deq_idx == 1);
     AT(item.type == 10);
     AT(data == 0);
@@ -245,7 +245,7 @@ int test_deq_1(TstSuite* suite)
 
     // Enqueue in the queue with a callback.
     dvz_deq_enqueue(deq, 0, 10, (int[]){3});
-    item = dvz_deq_dequeue(deq, 0, false);
+    item = dvz_deq_dequeue_return(deq, 0, false);
     AT(item.deq_idx == 0);
     AT(item.type == 10);
     AT(data == 0);
@@ -253,7 +253,7 @@ int test_deq_1(TstSuite* suite)
 
     dvz_deq_callback(deq, 0, 10, _deq_1_callback, &data);
     dvz_deq_enqueue(deq, 0, 10, (int[]){4});
-    item = dvz_deq_dequeue(deq, 0, false);
+    item = dvz_deq_dequeue_return(deq, 0, false);
     AT(item.deq_idx == 0);
     AT(item.type == 10);
     AT(item.item != NULL);
@@ -261,7 +261,7 @@ int test_deq_1(TstSuite* suite)
     FREE(item.item);
 
     // Supbsequent dequeues are empty.
-    item = dvz_deq_dequeue(deq, 0, false);
+    item = dvz_deq_dequeue_return(deq, 0, false);
     AT(item.item == NULL);
 
     dvz_deq_destroy(deq);

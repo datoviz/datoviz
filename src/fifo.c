@@ -360,6 +360,8 @@ static void _enqueue_next(DvzDeq* deq, uint32_t item_count, DvzDeqItem* items)
             // Enqueue the next item.
             dvz_deq_enqueue_submit(deq, next->next_item, next->enqueue_first);
         }
+        // Free the next_items array.
+        FREE(items[i].next_items);
     }
 }
 
@@ -585,7 +587,7 @@ DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx)
 
 
 // WARNING: the deq_item.item pointer must be FREE-ed by the caller.
-DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
+DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait)
 {
     ANN(deq);
 
@@ -672,6 +674,16 @@ DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
 
 
 
+// NOTE: this function FREEs the item and does not return it.
+void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait)
+{
+    DvzDeqItem item = dvz_deq_dequeue_return(deq, proc_idx, wait);
+    if (item.item != NULL)
+        FREE(item.item);
+}
+
+
+
 void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
 {
     ANN(deq);
@@ -683,7 +695,7 @@ void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx)
         log_trace("waiting for proc #%d", proc_idx);
         // This call dequeues an item and also calls all registered callbacks if the item is not
         // null.
-        item = dvz_deq_dequeue(deq, proc_idx, true);
+        item = dvz_deq_dequeue_return(deq, proc_idx, true);
         if (item.item == NULL)
         {
             log_debug("stop the deq loop for proc #%d", proc_idx);
@@ -863,7 +875,7 @@ void dvz_deq_destroy(DvzDeq* deq)
     {
         while (true)
         {
-            item = dvz_deq_dequeue(deq, i, false);
+            item = dvz_deq_dequeue_return(deq, i, false);
             if (item.item == NULL)
                 break;
             else

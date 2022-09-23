@@ -225,6 +225,8 @@ int test_transfers_buffer_copy(TstSuite* suite)
 
     dvz_buffer_destroy(stg.buffer);
     dvz_buffer_destroy(br.buffer);
+    _destroy_buffer_regions(br);
+    _destroy_buffer_regions(stg);
     destroy_transfers(transfers);
     return 0;
 }

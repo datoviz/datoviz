@@ -215,6 +215,7 @@ _standalone_buffer_regions(DvzGpu* gpu, DvzBufferType type, uint32_t count, DvzS
     ANN(gpu);
     ASSERT((uint32_t)type > 0);
 
+    // Will be FREE-ed in _destroy_buffer_regions() below.
     DvzBuffer* buffer = (DvzBuffer*)calloc(1, sizeof(DvzBuffer));
     *buffer = dvz_buffer(gpu);
     if (type == DVZ_BUFFER_TYPE_STAGING)

@@ -442,9 +442,20 @@ DVZ_EXPORT DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
  * @param deq the Deq
  * @param proc_idx the Proc index
  * @param wait whether this call should be blocking
+ */
+DVZ_EXPORT void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait);
+
+
+
+/**
+ * Dequeue a single item from one of the queues of a given proc, and return it.
+ *
+ * @param deq the Deq
+ * @param proc_idx the Proc index
+ * @param wait whether this call should be blocking
  * @returns the dequeue-ed item if a queue was non-empty, or an empty item
  */
-DVZ_EXPORT DvzDeqItem dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait);
+DVZ_EXPORT DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait);
 
 
 
