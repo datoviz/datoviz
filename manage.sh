@@ -68,6 +68,7 @@ fi
 
 if [ $1 == "valgrind" ]
 then
+    # NOTE: need to remove -pg compiler option before running valgrind
     valgrind \
         --leak-check=full \
         --show-leak-kinds=all \

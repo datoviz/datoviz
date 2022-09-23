@@ -341,10 +341,11 @@ if(CC_GCC)
         -Wlogical-op -fdiagnostics-color=always \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
 
-    # NOTE: to uncomment when not using valgrind
-    # if(NOT OS_WIN32)
-    # set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
-    # endif()
+    # NOTE: to comment when using valgrind
+    if(NOT OS_WIN32)
+        set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
+    endif()
+
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} \
         -std=gnu11 -Wmissing-prototypes -Wimplicit-function-declaration")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
