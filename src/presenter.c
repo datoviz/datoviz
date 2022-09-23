@@ -138,6 +138,10 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     // NOTE: this destroys the swapchain, which must occurs BEFORE destroying the surface.
     dvz_canvas_destroy(canvas);
 
+    // Destroy the canvas recorder.
+    if (canvas->recorder != NULL)
+        dvz_recorder_destroy(canvas->recorder);
+
     // Destroy the surface.
     // HACK: remove the surface from the list, as we won't have to destroy it when destroying
     // the presenter.

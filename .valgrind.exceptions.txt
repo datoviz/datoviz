@@ -111,6 +111,14 @@
 }
 
 {
+    dlsrc
+    Memcheck:Addr8
+    ...
+    src:imgui_impl*
+    ...
+}
+
+{
     dlfun
     Memcheck:Leak
     ...

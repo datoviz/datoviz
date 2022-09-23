@@ -202,6 +202,7 @@ int test_renderer_resize(TstSuite* suite)
     AT(tex->shape[2] == 40);
 
 
+    // NOTE: the board should be automatically destroyed when destroying the renderer.
 
     // Destroy the requester and renderer.
     dvz_requester_destroy(rqr);

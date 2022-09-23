@@ -182,7 +182,7 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzCanvas, canvas, req.id)
 
     ANN(canvas);
-    if (canvas->recorder)
+    if (canvas->recorder != NULL)
         dvz_recorder_destroy(canvas->recorder);
     dvz_canvas_destroy(canvas);
     return NULL;
