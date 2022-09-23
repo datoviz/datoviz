@@ -797,7 +797,10 @@ void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx)
         // We free the item copy made by the enqueue function. The user-specified item pointer
         // is never used directly.
         if (items[i].item != NULL)
+        {
+            // log_trace("free item #%d in proc #%d", i, proc_idx);
             FREE(items[i].item);
+        }
     }
     FREE(items);
 }
@@ -852,10 +855,21 @@ void dvz_deq_stats(DvzDeq* deq)
 void dvz_deq_destroy(DvzDeq* deq)
 {
     ANN(deq);
+    log_trace("destroy deq");
 
-    // Empty the queues before destryoing it, to ensure all item copies are FREE-ed.
+    // Empty the queues before destryoing them, to ensure all item copies are FREE-ed.
+    DvzDeqItem item = {0};
     for (uint32_t i = 0; i < deq->proc_count; i++)
-        dvz_deq_dequeue_batch(deq, i);
+    {
+        while (true)
+        {
+            item = dvz_deq_dequeue(deq, i, false);
+            if (item.item == NULL)
+                break;
+            else
+                FREE(item.item);
+        }
+    }
 
     for (uint32_t i = 0; i < deq->proc_count; i++)
     {
