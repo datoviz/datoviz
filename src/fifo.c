@@ -1018,9 +1018,6 @@ void dvz_deq_destroy(DvzDeq* deq)
 {
     ANN(deq);
 
-    for (uint32_t i = 0; i < deq->queue_count; i++)
-        dvz_fifo_destroy(deq->queues[i]);
-
     for (uint32_t i = 0; i < deq->proc_count; i++)
     {
         dvz_mutex_destroy(&deq->procs[i].lock);
