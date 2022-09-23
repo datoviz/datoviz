@@ -33,6 +33,7 @@ static DvzRequest _request(void)
 
 DvzRequester* dvz_requester(void)
 {
+    log_trace("create requester");
     DvzRequester* rqr = calloc(1, sizeof(DvzRequester));
     rqr->prng = dvz_prng();
 
@@ -48,6 +49,7 @@ DvzRequester* dvz_requester(void)
 
 void dvz_requester_destroy(DvzRequester* rqr)
 {
+    log_trace("destroy requester");
     ANN(rqr);
     FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);

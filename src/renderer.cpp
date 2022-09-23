@@ -926,6 +926,8 @@ void dvz_renderer_destroy(DvzRenderer* rd)
     dvz_pipelib_destroy(rd->pipelib);
     dvz_context_destroy(rd->ctx);
 
+    delete rd->router;
+
     dvz_obj_destroyed(&rd->obj);
     FREE(rd);
 }

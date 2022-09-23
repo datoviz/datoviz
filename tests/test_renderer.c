@@ -122,7 +122,8 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_delete_board(rqr, board_id);
     dvz_renderer_request(rd, req);
 
-    // Destroy the renderer.
+    // Destroy the requester and renderer.
+    dvz_requester_destroy(rqr);
     dvz_renderer_destroy(rd);
     return 0;
 }
@@ -202,7 +203,8 @@ int test_renderer_resize(TstSuite* suite)
 
 
 
-    // Destroy the renderer.
+    // Destroy the requester and renderer.
+    dvz_requester_destroy(rqr);
     dvz_renderer_destroy(rd);
     return 0;
 }
@@ -356,7 +358,8 @@ int test_renderer_image(TstSuite* suite)
     req = dvz_delete_board(rqr, board_id);
     dvz_renderer_request(rd, req);
 
-    // Destroy the renderer.
+    // Destroy the requester and renderer.
+    dvz_requester_destroy(rqr);
     dvz_renderer_destroy(rd);
     return 0;
 }

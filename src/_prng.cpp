@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 
 #include "_prng.h"
+#include "_log.h"
 
 #include <iostream>
 #include <random>
@@ -32,6 +33,7 @@ extern "C" struct DvzPrng
 
 DvzPrng* dvz_prng(void)
 {
+    log_trace("create prng");
     DvzPrng* prng = new DvzPrng();
     auto seed = std::random_device{}();
     prng->prng.seed(seed);
@@ -51,5 +53,6 @@ uint64_t dvz_prng_uuid(DvzPrng* prng)
 void dvz_prng_destroy(DvzPrng* prng)
 {
     ANN(prng);
+    log_trace("delete prng");
     delete prng;
 }
