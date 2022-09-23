@@ -918,14 +918,13 @@ void dvz_renderer_destroy(DvzRenderer* rd)
     ANN(rd);
     log_trace("destroy the renderer");
 
-    dvz_map_destroy(rd->map);
-
     // This call destroys all canvases etc.
     dvz_workspace_destroy(rd->workspace);
 
     dvz_pipelib_destroy(rd->pipelib);
     dvz_context_destroy(rd->ctx);
 
+    dvz_map_destroy(rd->map);
     delete rd->router;
 
     dvz_obj_destroyed(&rd->obj);

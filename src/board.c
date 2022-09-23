@@ -87,7 +87,15 @@ void dvz_board_recreate(DvzBoard* board)
 {
     ANN(board);
     log_trace("recreating the board");
-    dvz_board_destroy(board);
+
+    // NOTE: we do not call dvz_board_destroy() because we do not want to destroy the rgb pointer
+    // if it is allocated. It is reallocated in dvz_board_resize() (which calls
+    // dvz_board_recreate()).
+    dvz_images_destroy(&board->images);
+    dvz_images_destroy(&board->depth);
+    dvz_images_destroy(&board->staging);
+    dvz_framebuffers_destroy(&board->framebuffers);
+
     dvz_board_create(board);
 }
 
@@ -98,12 +106,13 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
     ANN(board);
     board->width = width;
     board->height = height;
-    board->size = width * height * 3 * sizeof(uint8_t);
+    DvzSize new_size = width * height * 3 * sizeof(uint8_t);
+    DvzSize old_size = board->size;
+    board->size = new_size;
     // Realloc the RGBA CPU buffer storing the downloaded image.
-    if (board->rgb != NULL)
+    if (board->rgb != NULL && new_size > old_size)
     {
-        dvz_board_free(board);
-        dvz_board_alloc(board);
+        REALLOC(board->rgb, new_size)
     }
     dvz_board_recreate(board);
 }
@@ -160,7 +169,7 @@ uint8_t* dvz_board_alloc(DvzBoard* board)
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
     if (board->rgb == NULL)
-        board->rgb = calloc(board->width * board->height, 3 * sizeof(uint8_t));
+        board->rgb = (uint8_t*)calloc(board->width * board->height, 3 * sizeof(uint8_t));
     ANN(board->rgb);
     return board->rgb;
 }
@@ -220,11 +229,13 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
 void dvz_board_destroy(DvzBoard* board)
 {
     ANN(board); //
+    log_trace("destroy board");
 
     dvz_images_destroy(&board->images);
     dvz_images_destroy(&board->depth);
     dvz_images_destroy(&board->staging);
     dvz_framebuffers_destroy(&board->framebuffers);
 
+    dvz_board_free(board);
     dvz_obj_destroyed(&board->obj);
 }
