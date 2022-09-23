@@ -101,6 +101,12 @@ fi
 if [ $1 == "build" ]
 then
     build
+elif [ $1 == "clean" ]
+then
+    rmbuild
+elif [ $1 == "clang" ]
+then
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ build
 elif [ $1 == "rebuild" ]
 then
     rmbuild

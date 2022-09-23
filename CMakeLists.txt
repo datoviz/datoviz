@@ -71,10 +71,13 @@ set(CC_CLANG 0)
 set(CC_MSVC 0)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    # message("compiler is GCC")
     set(CC_GCC 1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # message("compiler is clang")
     set(CC_CLANG 1)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    # message("compiler is MSVC")
     set(CC_MSVC 1)
 endif()
 
@@ -363,7 +366,7 @@ elseif(CC_CLANG)
     else()
     endif()
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=c11")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=gnu11")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
     set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
         -Wno-partial-availability -Wno-unguarded-availability-new")
