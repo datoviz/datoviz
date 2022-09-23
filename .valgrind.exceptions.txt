@@ -55,6 +55,14 @@
 }
 
 {
+    vulkan
+    Memcheck:Cond
+    ...
+    fun:*vulkan_layer_chassis*
+    ...
+}
+
+{
     vulkan_trampoline
     Memcheck:Leak
     ...
@@ -79,8 +87,24 @@
 }
 
 {
+    loader
+    Memcheck:Cond
+    ...
+    src:loader.c
+    ...
+}
+
+{
     dlsrc
     Memcheck:Leak
+    ...
+    src:dl*.c
+    ...
+}
+
+{
+    dlsrc
+    Memcheck:Addr8
     ...
     src:dl*.c
     ...
