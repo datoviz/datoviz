@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/* Plot                                                                                       */
+/* Scene                                                                                         */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PLOT
-#define DVZ_HEADER_PLOT
+#ifndef DVZ_HEADER_SCENE
+#define DVZ_HEADER_SCENE
 
 
 
@@ -21,19 +21,12 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzApp DvzApp;
 typedef struct DvzScene DvzScene;
-typedef struct DvzDevice DvzDevice;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzPanel DvzPanel;
 
 // Forward declarations.
-typedef struct DvzHost DvzHost;
-typedef struct DvzClient DvzClient;
-typedef struct DvzGpu DvzGpu;
-typedef struct DvzRenderer DvzRenderer;
-typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzList DvzList;
 
@@ -153,23 +146,6 @@ typedef enum
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzApp
-{
-    DvzHost* host;
-    DvzClient* client;
-};
-
-
-
-struct DvzDevice // depends on DvzApp
-{
-    DvzGpu* gpu;
-    DvzRenderer* rd;
-    DvzPresenter* prt;
-};
-
-
-
 struct DvzScene
 {
     DvzRequester* rqr;
@@ -214,10 +190,6 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
-
-DVZ_EXPORT DvzDevice* dvz_device(DvzApp* app);
-
 DVZ_EXPORT DvzScene* dvz_scene(void);
 
 DVZ_EXPORT DvzFigure* dvz_figure(
@@ -231,19 +203,13 @@ DVZ_EXPORT DvzVisual* dvz_visual(DvzScene* scene, DvzVisualType vtype, int flags
 DVZ_EXPORT void
 dvz_visual_data(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data);
 
-DVZ_EXPORT void vz_app_run(DvzApp* app, DvzScene* scene, uint64_t n_frames);
-
 DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
 
 DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
 DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
-DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
-
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
-
-DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
 
 
