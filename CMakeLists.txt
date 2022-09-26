@@ -556,6 +556,7 @@ set(sources
 
     # Scene
     "src/scene/panzoom.c"
+    "src/scene/plot.c"
 
     ${external_sources}
 )
@@ -631,6 +632,7 @@ if(DATOVIZ_WITH_CLI)
 
         # Scene
         "tests/scene/test_panzoom.c"
+        "tests/scene/test_plot.c"
 
         "tests/test.c"
     )
