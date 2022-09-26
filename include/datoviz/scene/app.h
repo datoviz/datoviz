@@ -55,6 +55,7 @@ struct DvzApp
 
 struct DvzDevice // depends on DvzApp
 {
+    DvzApp* app;
     DvzGpu* gpu;
     DvzRenderer* rd;
     DvzPresenter* prt;
@@ -72,7 +73,7 @@ DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
 
 DVZ_EXPORT DvzDevice* dvz_device(DvzApp* app);
 
-DVZ_EXPORT void vz_app_run(DvzApp* app, DvzScene* scene, uint64_t n_frames);
+DVZ_EXPORT void vz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
 
 DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 

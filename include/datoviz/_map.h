@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "_macros.h"
+#include "_math.h"
 
 
 
@@ -37,7 +38,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzMap DvzMap;
-typedef uint64_t DvzId;
 
 // Forward declarations.
 

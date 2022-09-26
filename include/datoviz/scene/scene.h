@@ -146,7 +146,7 @@ typedef enum
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzScene
+struct DvzScene // singleton in a given app
 {
     DvzRequester* rqr;
     DvzList* visuals;
@@ -154,16 +154,9 @@ struct DvzScene
 
 
 
-struct DvzVisual
-{
-    DvzScene* scene;
-    // TODO
-};
-
-
-
 struct DvzFigure
 {
+    DvzId id;
     DvzScene* scene;
     uint32_t rows, cols;
     float* row_heights;
@@ -176,10 +169,19 @@ struct DvzFigure
 
 struct DvzPanel
 {
+    DvzId id;
     DvzFigure* figure;
     DvzPanelType type;
     uint32_t row, col;
     vec2 offset;
+};
+
+
+
+struct DvzVisual
+{
+    DvzId id;
+    DvzScene* scene;
 };
 
 
@@ -202,6 +204,8 @@ DVZ_EXPORT DvzVisual* dvz_visual(DvzScene* scene, DvzVisualType vtype, int flags
 
 DVZ_EXPORT void
 dvz_visual_data(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data);
+
+DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int pos);
 
 DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
 

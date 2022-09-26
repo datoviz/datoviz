@@ -25,18 +25,19 @@ int test_app_1(TstSuite* suite)
 {
     ANN(suite);
 
-    // Create the boilerplate objects: requester, renderer, presenter...
+    // Create app objects.
     DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
     DvzDevice* device = dvz_device(app);
 
-    // Generate a bunch of requests.
+    // Create scene objects.
     DvzScene* scene = dvz_scene();
     DvzFigure* fig = dvz_figure(scene, WIDTH, HEIGHT, 1, 1, 0);
     DvzPanel* panel = dvz_panel(fig, 0, 0, DVZ_PANEL_TYPE_NONE, 0);
     DvzVisual* visual = dvz_visual(scene, DVZ_VISUAL_MARKER, 0);
 
 
-    // Create the vertex buffer dat.
+
+    // Create the visual properties.
     const uint32_t n = 50;
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
     double t = 0;
@@ -52,16 +53,24 @@ int test_app_1(TstSuite* suite)
     }
     dvz_visual_data(visual, DVZ_PROP_POS, 0, n, pos);
 
-    // Run the presenter.
-    vz_app_run(app, scene, 0);
+    // Add the visual to the panel.
+    dvz_panel_visual(panel, visual, 0);
 
-    // Destroy the boilerplate objects.
+
+
+    // Run the presenter.
+    vz_device_run(device, scene, 0);
+
+
+
+    // Destroy the scene objects.
     dvz_visual_destroy(visual);
     dvz_panel_destroy(panel);
     dvz_figure_destroy(fig);
-    dvz_device_destroy(device);
-
     dvz_scene_destroy(scene);
+
+    // Destroy the app objects.
+    dvz_device_destroy(device);
     dvz_app_destroy(app);
 
     return 0;

@@ -13,6 +13,7 @@
 #include "host.h"
 #include "presenter.h"
 #include "renderer.h"
+#include "scene/scene.h"
 
 
 
@@ -43,7 +44,7 @@ DvzDevice* dvz_device(DvzApp* app)
     ANN(app->client);
 
     DvzDevice* device = (DvzDevice*)calloc(1, sizeof(DvzDevice));
-
+    device->app = app;
     device->gpu = make_gpu(app->host);
     device->rd = dvz_renderer(device->gpu, 0);
     device->prt = dvz_presenter(device->rd, app->client, 0);
@@ -53,10 +54,25 @@ DvzDevice* dvz_device(DvzApp* app)
 
 
 
-void vz_app_run(DvzApp* app, DvzScene* scene, uint64_t n_frames)
+void vz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
 {
-    ANN(app);
+    ANN(device);
+    ANN(device->prt);
+
     ANN(scene);
+    ANN(scene->rqr);
+
+    DvzApp* app = device->app;
+    ANN(app);
+    ANN(app->client);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(device->prt, scene->rqr);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(app->client, n_frames);
 }
 
 
