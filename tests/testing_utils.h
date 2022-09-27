@@ -13,7 +13,10 @@
 
 #include "../src/render_utils.h"
 #include "../src/vklite_utils.h"
+#include "colormaps.h"
 #include "glfw_utils.h"
+#include "graphics.h"
+#include "request.h"
 #include "surface.h"
 #include "test_resources.h"
 #include "testing.h"
@@ -45,6 +48,7 @@
 
 typedef struct TestCanvas TestCanvas;
 typedef struct TestVisual TestVisual;
+typedef struct GraphicsWrapper GraphicsWrapper;
 typedef struct TestVertex TestVertex;
 
 typedef void (*FillCallback)(TestCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx);
@@ -116,6 +120,16 @@ struct TestVertex
 {
     vec3 pos;
     vec4 color;
+};
+
+
+
+struct GraphicsWrapper
+{
+    DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
+    DvzViewport viewport;
+    DvzMVP mvp;
+    void* data;
 };
 
 
@@ -377,6 +391,101 @@ static void visual_destroy(TestVisual* visual)
     dvz_buffer_destroy(&visual->buffer);
     FREE(visual->user_data);
     FREE(visual->data);
+}
+
+
+
+/*************************************************************************************************/
+/*  Graphics wrapper                                                                             */
+/*************************************************************************************************/
+
+static void graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper)
+{
+    // Make a canvas creation request.
+    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    dvz_requester_add(rqr, req);
+
+    // Canvas id.
+    wrapper->canvas_id = req.id;
+
+    // Create a graphics.
+    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_POINT, 0);
+    dvz_requester_add(rqr, req);
+    wrapper->graphics_id = req.id;
+
+    // Create the vertex buffer dat.
+    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex), 0);
+    dvz_requester_add(rqr, req);
+    wrapper->dat_id = req.id;
+
+    // Bind the vertex buffer dat to the graphics pipe.
+    req = dvz_set_vertex(rqr, wrapper->graphics_id, wrapper->dat_id);
+    dvz_requester_add(rqr, req);
+
+    // Binding #0: MVP.
+    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+    dvz_requester_add(rqr, req);
+    wrapper->mvp_id = req.id;
+
+    req = dvz_bind_dat(rqr, wrapper->graphics_id, 0, wrapper->mvp_id);
+    dvz_requester_add(rqr, req);
+
+    wrapper->mvp = dvz_mvp_default();
+    req = dvz_upload_dat(rqr, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
+    dvz_requester_add(rqr, req);
+
+    // Binding #1: viewport.
+    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+    dvz_requester_add(rqr, req);
+    wrapper->viewport_id = req.id;
+
+    req = dvz_bind_dat(rqr, wrapper->graphics_id, 1, wrapper->viewport_id);
+    dvz_requester_add(rqr, req);
+
+    wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    req = dvz_upload_dat(rqr, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
+    dvz_requester_add(rqr, req);
+
+    // Command buffer.
+    req = dvz_record_begin(rqr, wrapper->canvas_id);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, n);
+    dvz_requester_add(rqr, req);
+
+    req = dvz_record_end(rqr, wrapper->canvas_id);
+    dvz_requester_add(rqr, req);
+}
+
+
+
+// NOTE: the caller needs to free the output pointer.
+static void* graphics_scatter(DvzRequester* rqr, DvzId dat_id, const uint32_t n)
+{
+    // Upload the data.
+    DvzGraphicsPointVertex* data =
+        (DvzGraphicsPointVertex*)calloc(n, sizeof(DvzGraphicsPointVertex));
+    double t = 0;
+    double aspect = WIDTH / (double)HEIGHT;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n);
+        data[i].pos[0] = .5 * cos(M_2PI * t);
+        data[i].pos[1] = aspect * .5 * sin(M_2PI * t);
+
+        data[i].size = 50;
+
+        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
+        data[i].color[3] = 128;
+    }
+
+    DvzRequest req = dvz_upload_dat(rqr, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+    dvz_requester_add(rqr, req);
+
+    return data;
 }
 
 

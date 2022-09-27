@@ -241,6 +241,7 @@ DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 
 DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
 {
+    // WARNING: the data pointer must live through the next frame in the main rendering loop.
     CREATE_REQUEST(UPLOAD, DAT);
     req.id = dat;
     req.content.dat_upload.offset = offset;
@@ -282,6 +283,7 @@ DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
 DvzRequest
 dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
+    // WARNING: the data pointer must live through the next frame in the main rendering loop.
     CREATE_REQUEST(UPLOAD, TEX);
     req.id = tex;
 

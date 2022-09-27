@@ -427,6 +427,9 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 /**
  * Create a request for dat upload.
  *
+ * WARNING: the passed pointer will *not* be copied and the caller must ensure the pointer will
+ * live long enough until it is processed by the rendering main loop in the main thread.
+ *
  * @param rqr the requester
  * @param dat the id of the dat to upload to
  * @param offset the byte offset of the upload transfer
@@ -472,6 +475,9 @@ DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape);
 
 /**
  * Create a request for tex upload.
+ *
+ * WARNING: the passed pointer will *not* be copied and the caller must ensure the pointer will
+ * live long enough until it is processed by the rendering main loop in the main thread.
  *
  * @param rqr the requester
  * @param tex the id of the tex to upload to
