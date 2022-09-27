@@ -186,6 +186,8 @@ int dvz_run_tests(const char* match)
     TEST(test_presenter_fps)
     TEST(test_presenter_scatter)
 
+    TEST(test_animation_2)
+
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
 

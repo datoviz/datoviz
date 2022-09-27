@@ -15,6 +15,7 @@
 #include "_input.h"
 #include "_map.h"
 #include "_obj.h"
+#include "_time.h"
 
 
 
@@ -95,6 +96,7 @@ struct DvzClientEvent
         struct
         {
             uint64_t frame_idx;
+            double time;
         } f;
 
         // Requests.
@@ -135,6 +137,8 @@ struct DvzClient
 
     DvzDeq* deq;
     uint64_t frame_idx;
+
+    DvzClock clock;
 
     // Windows.
     DvzContainer windows;

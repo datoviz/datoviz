@@ -73,6 +73,7 @@ DvzClient* dvz_client(DvzBackend backend)
     DvzClient* client = calloc(1, sizeof(DvzClient));
     client->backend = backend;
     client->map = dvz_map();
+    client->clock = dvz_clock();
 
     // Create the window container.
     client->windows =
@@ -198,6 +199,7 @@ int dvz_client_frame(DvzClient* client)
         // Enqueue a FRAME event on active windows.
         frame_ev.window_id = window2id(window);
         frame_ev.content.f.frame_idx = client->frame_idx;
+        frame_ev.content.f.time = dvz_clock_get(&client->clock);
         dvz_client_event(client, frame_ev);
 
         // Count the number of active windows.
