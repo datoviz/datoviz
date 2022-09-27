@@ -59,7 +59,7 @@ int test_app_1(TstSuite* suite)
 
 
     // Run the presenter.
-    vz_device_run(device, scene, 0);
+    vz_device_run(device, scene, N_FRAMES);
 
 
 
