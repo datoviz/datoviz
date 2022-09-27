@@ -18,7 +18,7 @@
 /*************************************************************************************************/
 
 #define RQ(FUN, ...)                                                                              \
-    DvzRequest req = (FUN)(scene->rqr, ##__VA_ARGS__);                                            \
+    DvzRequest req = (FUN)(scene->rqr, __VA_ARGS__);                                              \
     dvz_requester_add(scene->rqr, req);
 
 
