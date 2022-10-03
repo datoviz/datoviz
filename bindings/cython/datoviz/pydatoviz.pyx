@@ -1309,7 +1309,21 @@ cdef class Panel:
     def link_to(self, Panel panel):
         cv.dvz_panel_link(&self._c_scene.grid, self._c_panel, panel._c_panel)
 
+    def camera_pos(self, float x, float y, float z):
+        cdef cv.vec3 pos
+        pos[0] = x
+        pos[1] = y
+        pos[2] = z
+        cv.dvz_camera_pos(self._c_panel, pos)
 
+    def arcball_rotate(self, float u, float v, float w, float a):
+        cdef cv.vec3 axis
+        axis[0] = u
+        axis[1] = v
+        axis[2] = w
+        cdef float angle
+        angle = a
+        cv.dvz_arcball_rotate(self._c_panel, angle, axis)
 
 # -------------------------------------------------------------------------------------------------
 # Visual

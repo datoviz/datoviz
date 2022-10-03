@@ -50,6 +50,9 @@ FUNCTIONS = (
     'dvz_app_run',
     'dvz_app',
     'dvz_autorun_setup',
+    'dvz_camera_pos',
+    'dvz_camera_look',
+    'dvz_arcball_rotate',
     'dvz_canvas_clear_color',
     'dvz_canvas_frame',
     'dvz_canvas_pause',
@@ -110,7 +113,6 @@ UNION_START = '# UNION START'
 UNION_END = '# UNION END'
 FUNCTION_START = '# FUNCTION START'
 FUNCTION_END = '# FUNCTION END'
-
 
 
 # Cython generation utils
@@ -252,8 +254,10 @@ def generate_functions():
 
 def generate_cython():
     insert_into_file(CYTHON_OUTPUT, ENUM_START, ENUM_END, generate_enums())
-    insert_into_file(CYTHON_OUTPUT, STRUCT_START, STRUCT_END, generate_structs())
-    insert_into_file(CYTHON_OUTPUT, FUNCTION_START, FUNCTION_END, generate_functions())
+    insert_into_file(CYTHON_OUTPUT, STRUCT_START,
+                     STRUCT_END, generate_structs())
+    insert_into_file(CYTHON_OUTPUT, FUNCTION_START,
+                     FUNCTION_END, generate_functions())
 
 
 if __name__ == '__main__':

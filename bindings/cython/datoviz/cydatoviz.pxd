@@ -1425,6 +1425,12 @@ cdef extern from "<datoviz/datoviz.h>":
 
     DvzVisual* dvz_scene_visual(DvzPanel* panel, DvzVisualType type, int flags)
 
+    void dvz_camera_pos(DvzPanel* panel, vec3 pos)
+
+    void dvz_camera_look(DvzPanel* panel, vec3 center)
+
+    void dvz_arcball_rotate(DvzPanel* panel, float angle, vec3 axis)
+
     void dvz_upload_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
 
     void dvz_download_buffer(DvzContext* context, DvzBufferRegions br, VkDeviceSize offset, VkDeviceSize size, void* data)
