@@ -71,14 +71,16 @@ The philosophy of Datoviz is to **implement all the logic and functionality in C
 === "Linux"
 
     !!! note
-        Only Ubuntu 20.04 has been tested so far.
+        Only Ubuntu 20.04 and 22.04 have been tested so far.
 
     1. Install the latest graphics drivers.
-    2. Install the build tools:
+    2. Install the build tools and Vulkan SDK dependencies:
 
         ```bash
         sudo apt install build-essential cmake ninja-build \
-            xcb libx11-xcb-dev libxcursor-dev libxi-dev patchelf
+            xcb libx11-xcb-dev libxrandr-dev libwayland-dev \
+            wayland-protocols libxcursor-dev libxi-dev \
+            libxinerama-dev libxcb-keysyms1-dev patchelf
         ```
 
     3. Install the optional dependencies:

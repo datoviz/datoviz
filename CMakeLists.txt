@@ -48,13 +48,14 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(cglm)
 
 # glfw3
+#set(GLFW_LIBRARY_TYPE SHARED CACHE BOOL "" FORCE)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY  https://github.com/glfw/glfw/
-    GIT_TAG         3.3.5
+    GIT_TAG         3.3.7
 )
 FetchContent_MakeAvailable(glfw)
 

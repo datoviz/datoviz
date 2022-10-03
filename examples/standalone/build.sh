@@ -1,7 +1,13 @@
 # This command requires glfw with include files and libraries.
 
-# This build script should be improved, use cmake perhaps
+if [ -z "$1" ]; then 
+export DVZ_EXAMPLE_FILE="standalone_canvas.c";
+else
 export DVZ_EXAMPLE_FILE=$1
+fi
+
+# This build script should be improved, use cmake perhaps
+#export DVZ_EXAMPLE_FILE=$1
 export DVZ_ROOT=../../
 export AUTOMATED=""
 if [ ! -z "$2" ]
@@ -24,9 +30,11 @@ gcc $DVZ_EXAMPLE_FILE \
     -I$DVZ_ROOT/build/_deps/glfw-src/include \
     -I$DVZ_ROOT/external/imgui/ \
     -I$DVZ_ROOT/external/ \
+    -I$VULKAN_SDK/include/ \
+    -L$VULKAN_SDK/lib/ \
     -L$DVZ_ROOT/build/ \
     -L$DVZ_ROOT/build/_deps/glfw-build/src \
-    -lvulkan -lm $GLFW -ldatoviz -o datoviz_example
+    -lvulkan -lm -ldatoviz -o datoviz_example
 
 # Compile the shaders.
 for filename in *.vert *.frag; do
