@@ -132,6 +132,7 @@ struct TstItem
 {
     TstItemType type;
     TstItemUnion u;
+    bool active;
 };
 
 
@@ -231,6 +232,7 @@ static TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function,
     ASSERT(suite->n_items < suite->capacity);
     TstItem* item = &suite->items[suite->n_items++];
     item->type = type;
+    item->active = false;
     switch (type)
     {
     case TST_ITEM_SETUP:
@@ -281,9 +283,42 @@ static void tst_suite_run(TstSuite* suite, const char* match)
 {
     ANN(suite);
     TstItem* item = NULL;
+    TstItem* current_fixture = NULL;
+    print_start();
+
+    // First pass: mark selected tests and mark fixtures with at least 1 test.
+    for (uint32_t i = 0; i < suite->n_items; i++)
+    {
+        item = &suite->items[i];
+        switch (item->type)
+        {
+        case TST_ITEM_SETUP:
+            current_fixture = item;
+            break;
+        case TST_ITEM_TEARDOWN:
+            if (current_fixture != NULL)
+            {
+                // The teardown is active iff the associated setup is.
+                item->active = current_fixture->active;
+            }
+            current_fixture = NULL;
+            break;
+        case TST_ITEM_TEST:
+            if (match == NULL || test_name_matches(&item->u.t, match))
+            {
+                item->active = true;
+                if (current_fixture != NULL)
+                    current_fixture->active = true;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+
+    // Second pass: run selected tests.
     int index = 0;
     int res = 0, cur_res = 0;
-    print_start();
     for (uint32_t i = 0; i < suite->n_items; i++)
     {
         item = &suite->items[i];
@@ -291,11 +326,13 @@ static void tst_suite_run(TstSuite* suite, const char* match)
         {
         case TST_ITEM_SETUP:
         case TST_ITEM_TEARDOWN:
-            item->u.f.function(suite);
+            if (item->active)
+                item->u.f.function(suite);
+
             break;
 
         case TST_ITEM_TEST:
-            if (match == NULL || test_name_matches(&item->u.t, match))
+            if (item->active)
             {
                 item->u.t.res = item->u.t.function(suite);
                 cur_res = item->u.t.res;
@@ -308,8 +345,16 @@ static void tst_suite_run(TstSuite* suite, const char* match)
         default:
             break;
         }
-        // TODO: mark as PASS or FAIL depending on the res
     }
+
+    // Third pass: reset active to true for all items.
+    for (uint32_t i = 0; i < suite->n_items; i++)
+    {
+        item = &suite->items[i];
+        item->active = true;
+    }
+
+    // TODO: mark as PASS or FAIL depending on the res
     print_end(index, res);
 }
 
