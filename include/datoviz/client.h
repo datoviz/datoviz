@@ -11,10 +11,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_atomic.h"
 #include "_enums.h"
 #include "_input.h"
 #include "_map.h"
 #include "_obj.h"
+#include "_thread.h"
 #include "_time.h"
 
 
@@ -136,7 +138,7 @@ struct DvzClient
     DvzBackend backend;
 
     DvzDeq* deq;
-    uint64_t frame_idx;
+    uint64_t frame_idx, n_frames;
 
     DvzClock clock;
 
@@ -149,6 +151,8 @@ struct DvzClient
     DvzClientPayload callbacks[DVZ_CLIENT_MAX_CALLBACKS];
 
     void* user_data;
+    DvzThread* thread;
+    DvzAtomic to_stop;
 };
 
 
@@ -168,25 +172,37 @@ DVZ_EXPORT DvzClient* dvz_client(DvzBackend backend);
 
 
 
-void dvz_client_event(DvzClient* client, DvzClientEvent ev);
+DVZ_EXPORT void dvz_client_event(DvzClient* client, DvzClientEvent ev);
 
 
 
-void dvz_client_callback(
+DVZ_EXPORT void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
     DvzClientCallback callback, void* user_data);
 
 
 
-void dvz_client_process(DvzClient* client);
+DVZ_EXPORT void dvz_client_process(DvzClient* client);
 
 
 
-int dvz_client_frame(DvzClient* client);
+DVZ_EXPORT int dvz_client_frame(DvzClient* client);
 
 
 
-void dvz_client_run(DvzClient* client, uint64_t n_frames);
+DVZ_EXPORT void dvz_client_run(DvzClient* client, uint64_t n_frames);
+
+
+
+DVZ_EXPORT void dvz_client_thread(DvzClient* client, uint64_t n_frames);
+
+
+
+DVZ_EXPORT void dvz_client_join(DvzClient* client);
+
+
+
+DVZ_EXPORT void dvz_client_stop(DvzClient* client);
 
 
 

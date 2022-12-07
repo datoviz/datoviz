@@ -74,6 +74,7 @@ DvzClient* dvz_client(DvzBackend backend)
     client->backend = backend;
     client->map = dvz_map();
     client->clock = dvz_clock();
+    client->to_stop = dvz_atomic();
 
     // Create the window container.
     client->windows =
@@ -155,6 +156,8 @@ int dvz_client_frame(DvzClient* client)
 
     // Dequeue and process events.
     dvz_client_process(client);
+    if (dvz_atomic_get(client->to_stop) == 1)
+        return 0;
 
     // Loop over the windows.
     DvzContainerIterator iter = dvz_container_iterator(&client->windows);
@@ -221,6 +224,7 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
     ANN(client);
     log_trace("start client event loop with %d frames", n_frames);
     int window_count = 0;
+    client->n_frames = n_frames;
     uint64_t n = (n_frames > 0 ? n_frames : INFINITY);
     for (client->frame_idx = 0; client->frame_idx < n; client->frame_idx++)
     {
@@ -235,6 +239,48 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
 
 
 
+static int client_thread(void* user_data)
+{
+    DvzClient* client = (DvzClient*)user_data;
+    ANN(client);
+    log_trace("start client event loop in background thread");
+    dvz_client_run(client, client->n_frames);
+    return 0;
+}
+
+void dvz_client_thread(DvzClient* client, uint64_t n_frames)
+{
+    ANN(client);
+    client->n_frames = n_frames;
+    log_trace("start client thread");
+    client->thread = dvz_thread(client_thread, (void*)client);
+}
+
+
+
+void dvz_client_stop(DvzClient* client)
+{
+    ANN(client);
+    log_trace("request client stop");
+    dvz_atomic_set(client->to_stop, 1);
+}
+
+
+
+void dvz_client_join(DvzClient* client)
+{
+    ANN(client);
+    if (client->thread != NULL)
+    {
+        // Wait until the event loop is done or stopped.
+        log_trace("joining on client thread");
+        dvz_thread_join(client->thread);
+        client->thread = NULL;
+    }
+}
+
+
+
 void dvz_client_destroy(DvzClient* client)
 {
     ANN(client);
@@ -245,6 +291,11 @@ void dvz_client_destroy(DvzClient* client)
     request_delete_windows(client);
     dvz_client_process(client);
 
+    // Join the thread if any.
+    dvz_client_stop(client);
+    dvz_client_join(client);
+
+    // Destroy the deq.
     dvz_deq_destroy(client->deq);
 
     CONTAINER_DESTROY_ITEMS(DvzWindow, client->windows, dvz_window_destroy)
@@ -256,5 +307,6 @@ void dvz_client_destroy(DvzClient* client)
 
     backend_terminate(client->backend);
 
+    dvz_atomic_destroy(client->to_stop);
     FREE(client);
 }

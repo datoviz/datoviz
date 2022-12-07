@@ -96,3 +96,26 @@ int test_client_2(TstSuite* suite)
     dvz_client_destroy(client);
     return 0;
 }
+
+
+
+int test_client_thread(TstSuite* suite)
+{
+    DvzClient* client = dvz_client(BACKEND);
+
+    // Create a window.
+    _create_window(client, WID);
+
+    // Start the client background thread and run an infinite event loop in the thread.
+    dvz_client_thread(client, 0);
+
+    // Stop the event loop in the thread.
+    dvz_sleep(15);
+    dvz_client_stop(client);
+
+    // Wait until the client event loop is done.
+    dvz_client_join(client);
+
+    dvz_client_destroy(client);
+    return 0;
+}

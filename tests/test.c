@@ -258,6 +258,7 @@ int dvz_run_tests(const char* match)
     // Testing client.
     TEST(test_client_1)
     TEST(test_client_2)
+    TEST(test_client_thread)
 
     // Testing request.
     TEST(test_request_1)
