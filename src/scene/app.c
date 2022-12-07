@@ -54,7 +54,7 @@ DvzDevice* dvz_device(DvzApp* app)
 
 
 
-void vz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
 {
     ANN(device);
     ANN(device->prt);

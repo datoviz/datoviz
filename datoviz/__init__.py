@@ -11,8 +11,9 @@ from IPython import get_ipython
 from IPython.terminal.pt_inputhooks import register
 
 try:
-    from .requester import Requester
-    from .renderer import Renderer
+    # from .requester import Requester
+    # from .renderer import Renderer
+    from .app import *
 except ImportError:
     raise ImportError(
         "Unable to load the shared library, make sure to run in your terminal:\n"

@@ -25,6 +25,7 @@ from pyparsing import (
 
 ROOT_DIR = Path(__file__).parent.parent
 HEADER_DIR = (ROOT_DIR / 'include/datoviz').resolve()
+SCENE_HEADER_DIR = (ROOT_DIR / 'include/datoviz/scene').resolve()
 INTERNAL_HEADER_DIR = (ROOT_DIR / 'src').resolve()
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 CACHE_PATH = ROOT_DIR / 'tools/headers.json'
@@ -81,6 +82,8 @@ def count_header_files():
 
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
+        yield h
+    for h in sorted(SCENE_HEADER_DIR.glob('*.h')):
         yield h
     for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
         yield h

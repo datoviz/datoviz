@@ -42,9 +42,9 @@ setup(
     install_requires=require,
     ext_modules=cythonize(
         [
-            # requester
+            # app
             Extension(
-                'datoviz.requester', ['datoviz/requester.pyx'],
+                'datoviz.app', ['datoviz/app.pyx'],
                 libraries=['datoviz'],
                 include_dirs=[
                     np.get_include(),
@@ -58,22 +58,54 @@ setup(
                 # extra_compile_args=['-w'],
             ),
 
-            # renderer
+            # scene
             Extension(
-                'datoviz.renderer', ['datoviz/renderer.pyx'],
+                'datoviz.scene', [],
                 libraries=['datoviz'],
                 include_dirs=[
                     np.get_include(),
                     str(INCLUDE_DIR),
-                    str(ROOT_DIR / 'external/'),
                     str(VULKAN_DIR / 'include'),
+                    str(ROOT_DIR / 'external/'),
                     str(BUILD_DIR / '_deps/cglm-src/include'),
-                    str(BUILD_DIR / '_deps/glfw-src/include'),
                 ],
                 library_dirs=[str(BUILD_DIR)],
                 undef_macros=['NDEBUG'],
                 # extra_compile_args=['-w'],
             ),
+
+            # # requester
+            # Extension(
+            #     'datoviz.requester', ['datoviz/requester.pyx'],
+            #     libraries=['datoviz'],
+            #     include_dirs=[
+            #         np.get_include(),
+            #         str(INCLUDE_DIR),
+            #         str(VULKAN_DIR / 'include'),
+            #         str(ROOT_DIR / 'external/'),
+            #         str(BUILD_DIR / '_deps/cglm-src/include'),
+            #     ],
+            #     library_dirs=[str(BUILD_DIR)],
+            #     undef_macros=['NDEBUG'],
+            #     # extra_compile_args=['-w'],
+            # ),
+
+            # # renderer
+            # Extension(
+            #     'datoviz.renderer', ['datoviz/renderer.pyx'],
+            #     libraries=['datoviz'],
+            #     include_dirs=[
+            #         np.get_include(),
+            #         str(INCLUDE_DIR),
+            #         str(ROOT_DIR / 'external/'),
+            #         str(VULKAN_DIR / 'include'),
+            #         str(BUILD_DIR / '_deps/cglm-src/include'),
+            #         str(BUILD_DIR / '_deps/glfw-src/include'),
+            #     ],
+            #     library_dirs=[str(BUILD_DIR)],
+            #     undef_macros=['NDEBUG'],
+            #     # extra_compile_args=['-w'],
+            # ),
         ],
         compiler_directives={'language_level': '3'}),
 )

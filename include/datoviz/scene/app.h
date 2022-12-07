@@ -11,9 +11,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_log.h"
-#include "_math.h"
+#include "../_enums.h"
+#include "../_log.h"
+#include "../_math.h"
 
 
 
@@ -69,14 +69,29 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzApp* dvz_app(DvzBackend backend);
 
+/**
+ *
+ */
 DVZ_EXPORT DvzDevice* dvz_device(DvzApp* app);
 
-DVZ_EXPORT void vz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
 
