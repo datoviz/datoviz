@@ -182,7 +182,7 @@ struct DvzPanel
 
 struct DvzVisual
 {
-    DvzId id;
+    DvzId id, vertex;
     DvzScene* scene;
     DvzMVP mvp;
     DvzViewport viewport;
@@ -224,6 +224,12 @@ DVZ_EXPORT DvzVisual* dvz_visual(DvzScene* scene, DvzVisualType vtype, int flags
  */
 DVZ_EXPORT void
 dvz_visual_data(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data);
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_update(
+    DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data);
 
 /**
  *

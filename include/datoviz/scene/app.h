@@ -87,6 +87,26 @@ DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_fr
 /**
  *
  */
+DVZ_EXPORT void dvz_device_async(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_device_wait(DvzDevice* device);
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_device_stop(DvzDevice* device);
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_device_update(DvzDevice* device, DvzScene* scene);
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_device_destroy(DvzDevice* device);
 
 /**

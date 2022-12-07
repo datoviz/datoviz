@@ -106,9 +106,9 @@ void dvz_visual_data(
 
     DvzRequest req = {0};
     RQ(dvz_create_dat, DVZ_BUFFER_TYPE_VERTEX, count * item_size, 0);
-    DvzId dat_id = req.id;
-    RQ(dvz_set_vertex, visual_id, dat_id);
-    RQ(dvz_upload_dat, dat_id, 0, count * item_size, data);
+    visual->vertex = req.id;
+    RQ(dvz_set_vertex, visual_id, visual->vertex);
+    RQ(dvz_upload_dat, visual->vertex, 0, count * item_size, data);
 
     RQ(dvz_create_dat, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     DvzId mvp_id = req.id;
@@ -116,6 +116,21 @@ void dvz_visual_data(
 
     visual->mvp = dvz_mvp_default();
     RQ(dvz_upload_dat, mvp_id, 0, sizeof(DvzMVP), &visual->mvp);
+}
+
+
+
+void dvz_visual_update(
+    DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data)
+{
+    ANN(visual);
+
+    DvzScene* scene = visual->scene;
+    ANN(scene);
+
+    DvzSize item_size = sizeof(DvzGraphicsPointVertex);
+    DvzRequest req = {0};
+    RQ(dvz_upload_dat, visual->vertex, 0, count * item_size, data);
 }
 
 

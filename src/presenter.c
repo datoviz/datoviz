@@ -601,6 +601,9 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
     DvzRequest* requests = dvz_requester_flush(rqr, &count);
     // NOTE: the presenter will need to FREE the requests array.
 
+    if (count == 0)
+        return;
+
     ASSERT(count > 0);
     ANN(requests);
 

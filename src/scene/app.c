@@ -54,7 +54,7 @@ DvzDevice* dvz_device(DvzApp* app)
 
 
 
-void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+static void _device_loop(DvzDevice* device, DvzScene* scene, uint64_t n_frames, bool sync)
 {
     ANN(device);
     ANN(device->prt);
@@ -72,7 +72,43 @@ void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
     dvz_presenter_submit(device->prt, scene->rqr);
 
     // Dequeue and process all pending events.
-    dvz_client_run(app->client, n_frames);
+    if (sync)
+        dvz_client_run(app->client, n_frames);
+    else
+        dvz_client_thread(app->client, n_frames);
+}
+
+void dvz_device_update(DvzDevice* device, DvzScene* scene)
+{
+    ANN(device);
+    ANN(scene);
+    dvz_presenter_submit(device->prt, scene->rqr);
+}
+
+void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+{
+    _device_loop(device, scene, n_frames, true);
+}
+
+void dvz_device_async(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+{
+    _device_loop(device, scene, n_frames, false);
+}
+
+void dvz_device_wait(DvzDevice* device)
+{
+    DvzApp* app = device->app;
+    ANN(app);
+    ANN(app->client);
+    dvz_client_join(app->client);
+}
+
+void dvz_device_stop(DvzDevice* device)
+{
+    DvzApp* app = device->app;
+    ANN(app);
+    ANN(app->client);
+    dvz_client_stop(app->client);
 }
 
 
