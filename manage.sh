@@ -30,6 +30,10 @@ function rmbuild {
     rm -rf build
 }
 
+function clang {
+    CC=/usr/bin/clang CXX=/usr/bin/clang++ build
+}
+
 
 
 # -------------------------------------------------------------------------------------------------
@@ -50,26 +54,14 @@ function build_cython {
 
 
 # -------------------------------------------------------------------------------------------------
-# Tests
-# -------------------------------------------------------------------------------------------------
-
-function test {
-    ./build/datoviz test $1
-}
-
-
-
-# -------------------------------------------------------------------------------------------------
 # Code quality
 # -------------------------------------------------------------------------------------------------
 
-if [ $1 == "format" ]
-then
+function format {
     find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
-fi
+}
 
-if [ $1 == "valgrind" ]
-then
+function valgrind {
     # NOTE: need to remove -pg compiler option before running valgrind
     valgrind \
         --leak-check=full \
@@ -80,19 +72,32 @@ then
         --suppressions=.valgrind.exceptions.txt \
         --log-file=.valgrind.out.txt \
         ${@:2}
-fi
+}
 
-if [ $1 == "cppcheck" ]
-then
+function cppcheck {
     cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external -I include/datoviz
     # 2> .cppcheck.out.txt && \
     # echo ".cppcheck.out.txt saved"
-fi
+}
 
-if [ $1 == "prof" ]
-then
+function prof {
     gprof build/datoviz gmon.out
-fi
+}
+
+
+
+# -------------------------------------------------------------------------------------------------
+# Tests
+# -------------------------------------------------------------------------------------------------
+
+function test {
+    ./build/datoviz test $1
+}
+
+function pytest {
+    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
+}
+
 
 
 
@@ -100,29 +105,56 @@ fi
 # Entry-point
 # -------------------------------------------------------------------------------------------------
 
+# Building
 if [ $1 == "build" ]
 then
     build
+
 elif [ $1 == "clean" ]
 then
     rmbuild
-elif [ $1 == "clang" ]
-then
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ build
+
 elif [ $1 == "rebuild" ]
 then
     rmbuild
     build
-elif [ $1 == "cython" ]
+
+elif [ $1 == "clang" ]
 then
-    build_cython
+    clang
+
+
+# Cython
 elif [ $1 == "parseheaders" ]
 then
     parse_headers
+
+elif [ $1 == "cython" ]
+then
+    build_cython
+
+
+# Code quality
+elif [ $1 == "format" ]
+then
+    format
+elif [ $1 == "valgrind" ]
+then
+    valgrind
+elif [ $1 == "cppcheck" ]
+then
+    cppcheck
+elif [ $1 == "prof" ]
+then
+    prof
+
+
+# Test
 elif [ $1 == "test" ]
 then
     test $2
+
 elif [ $1 == "pytest" ]
 then
-    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
+    pytest
 fi
