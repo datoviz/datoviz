@@ -16,6 +16,16 @@
     req.action = DVZ_REQUEST_ACTION_##_action;                                                    \
     req.type = DVZ_REQUEST_OBJECT_##_type;
 
+#define STR_ACTION(r)                                                                             \
+    case DVZ_REQUEST_ACTION_##r:                                                                  \
+        str = #r;                                                                                 \
+        break
+
+#define STR_OBJECT(r)                                                                             \
+    case DVZ_REQUEST_OBJECT_##r:                                                                  \
+        str = #r;                                                                                 \
+        break
+
 
 
 /*************************************************************************************************/
@@ -122,7 +132,47 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 void dvz_request_print(DvzRequest* req)
 {
     ANN(req);
-    log_info("Request action %d <type %d> <id %" PRIx64 ">", req->action, req->type, req->id);
+
+    char* str = "UNKNOWN";
+    switch (req->action)
+    {
+        STR_ACTION(NONE);
+        STR_ACTION(CREATE);
+        STR_ACTION(DELETE);
+        STR_ACTION(RESIZE);
+        STR_ACTION(UPDATE);
+        STR_ACTION(BIND);
+        STR_ACTION(RECORD);
+        STR_ACTION(UPLOAD);
+        STR_ACTION(UPFILL);
+        STR_ACTION(DOWNLOAD);
+        STR_ACTION(SET);
+        STR_ACTION(GET);
+    default:
+        break;
+    }
+    char* action = str;
+
+    // str[0] = 0;
+    switch (req->type)
+    {
+        STR_OBJECT(NONE);
+        STR_OBJECT(BOARD);
+        STR_OBJECT(CANVAS);
+        STR_OBJECT(DAT);
+        STR_OBJECT(TEX);
+        STR_OBJECT(SAMPLER);
+        STR_OBJECT(COMPUTE);
+        STR_OBJECT(GRAPHICS);
+        STR_OBJECT(BACKGROUND);
+        STR_OBJECT(VERTEX);
+        STR_OBJECT(RECORD);
+    default:
+        break;
+    }
+    char* type = str;
+
+    log_info("Request %s %s #%" PRIx64, action, type, req->id);
 }
 
 
