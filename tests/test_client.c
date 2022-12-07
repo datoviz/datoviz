@@ -101,6 +101,10 @@ int test_client_2(TstSuite* suite)
 
 int test_client_thread(TstSuite* suite)
 {
+#if OS_MACOS
+    return 0;
+#endif
+
     DvzClient* client = dvz_client(BACKEND);
 
     // Create a window.

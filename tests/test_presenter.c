@@ -821,6 +821,9 @@ int test_presenter_thread(TstSuite* suite)
     };
     dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_click, &s);
 
+#if OS_MACOS
+    dvz_client_run(client, N_FRAMES);
+#else
     // Start the client background thread and run an infinite event loop in the thread.
     dvz_client_thread(client, N_FRAMES);
 
@@ -830,6 +833,7 @@ int test_presenter_thread(TstSuite* suite)
 
     // Wait until the client event loop is done.
     dvz_client_join(client);
+#endif
 
     // End.
 
