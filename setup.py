@@ -74,23 +74,6 @@ setup(
                 undef_macros=['NDEBUG'],
                 # extra_compile_args=['-w'],
             ),
-
-            # runner
-            Extension(
-                'datoviz.runner', ['datoviz/runner.pyx'],
-                libraries=['datoviz'],
-                include_dirs=[
-                    np.get_include(),
-                    str(INCLUDE_DIR),
-                    str(ROOT_DIR / 'external/'),
-                    str(VULKAN_DIR / 'include'),
-                    str(BUILD_DIR / '_deps/cglm-src/include'),
-                    str(BUILD_DIR / '_deps/glfw-src/include'),
-                ],
-                library_dirs=[str(BUILD_DIR)],
-                undef_macros=['NDEBUG'],
-                # extra_compile_args=['-w'],
-            )
         ],
         compiler_directives={'language_level': '3'}),
 )

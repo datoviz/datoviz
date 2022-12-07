@@ -3,7 +3,6 @@
 from ._types cimport *
 
 
-
 cdef extern from "<datoviz/request.h>":
     # Semi-opaque structs:
 
@@ -16,7 +15,10 @@ cdef extern from "<datoviz/request.h>":
     ctypedef struct DvzRequester:
         uint32_t count
         uint32_t capacity
-        DvzRequest* requests
+        DvzRequest * requests
+
+    ctypedef struct DvzRecorder:
+        pass
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -37,7 +39,9 @@ cdef extern from "<datoviz/request.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzRequester dvz_requester()
+    DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
+
+    DvzRequester* dvz_requester()
 
     void dvz_requester_destroy(DvzRequester* rqr)
 
@@ -46,6 +50,8 @@ cdef extern from "<datoviz/request.h>":
     void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 
     DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
+
+    DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 
     void dvz_request_print(DvzRequest* req)
 
@@ -71,7 +77,7 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
 
-    DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzId parent, DvzGraphicsType type, int flags)
+    DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
 
     DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
@@ -96,9 +102,9 @@ cdef class Request:
 
 
 cdef class Requester:
-    cdef DvzRequest* _c_rqs
+    cdef DvzRequest * _c_rqs
     cdef uint32_t _c_count
-    cdef DvzRequester _c_rqr
+    cdef DvzRequester * _c_rqr
 
     # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
     # collected by the garbage collector until they are effectively transferred to the GPU.

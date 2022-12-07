@@ -52,10 +52,6 @@ RENDERER_FUNCTIONS = (
     'dvz_renderer',
 )
 
-RUNNER_FUNCTIONS = (
-    'dvz_runner',
-)
-
 
 # Cython generation utils
 # -------------------------------------------------------------------------------------------------
@@ -211,11 +207,6 @@ def generate_cython():
     insert_into_file(path, FUNCTION_START, FUNCTION_END,
                      generate_functions(RENDERER_FUNCTIONS))
     # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
-
-    # runner.h
-    path = ROOT_DIR / 'datoviz/runner.pxd'
-    insert_into_file(path, FUNCTION_START, FUNCTION_END,
-                     generate_functions(RUNNER_FUNCTIONS))
 
 
 if __name__ == '__main__':

@@ -4,8 +4,8 @@ from ._types cimport *
 
 
 cdef class Renderer:
-    cdef DvzRenderer* _c_rd
-    cdef DvzGpu* _c_gpu
+    cdef DvzRenderer * _c_rd
+    cdef DvzGpu * _c_gpu
 
 
 cdef extern from "<datoviz/renderer.h>":
@@ -24,7 +24,7 @@ cdef extern from "<datoviz/renderer.h>":
         pass
 
     ctypedef struct DvzGpu:
-        DvzHost* host
+        DvzHost * host
 
     ctypedef struct DvzBoard:
         uint32_t width
@@ -34,12 +34,14 @@ cdef extern from "<datoviz/renderer.h>":
         uint32_t width
         uint32_t height
 
+    ctypedef struct DvzPipe:
+        pass
+
     ctypedef struct DvzDat:
         pass
 
     ctypedef struct DvzTex:
         pass
-
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -60,10 +62,6 @@ cdef extern from "<datoviz/renderer.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzGpu* dvz_init_offscreen()
-
-    DvzGpu* dvz_init_glfw()
-
     DvzHost* dvz_host(DvzBackend backend)
 
     void dvz_host_wait(DvzHost* host)
@@ -83,6 +81,8 @@ cdef extern from "<datoviz/renderer.h>":
     DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id)
 
     DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id)
+
+    DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 
     uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
 

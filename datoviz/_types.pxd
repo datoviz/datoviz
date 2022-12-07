@@ -34,7 +34,6 @@ cdef extern from "<datoviz/common.h>":
     ctypedef uint64_t DvzSize
     ctypedef uint64_t DvzId
 
-
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -52,31 +51,32 @@ cdef extern from "<datoviz/common.h>":
         DVZ_OBJECT_TYPE_HOST = 1
         DVZ_OBJECT_TYPE_GPU = 2
         DVZ_OBJECT_TYPE_WINDOW = 3
-        DVZ_OBJECT_TYPE_SWAPCHAIN = 4
-        DVZ_OBJECT_TYPE_CANVAS = 5
-        DVZ_OBJECT_TYPE_BOARD = 6
-        DVZ_OBJECT_TYPE_COMMANDS = 7
-        DVZ_OBJECT_TYPE_BUFFER = 8
-        DVZ_OBJECT_TYPE_DAT = 9
-        DVZ_OBJECT_TYPE_TEX = 10
-        DVZ_OBJECT_TYPE_IMAGES = 11
-        DVZ_OBJECT_TYPE_SAMPLER = 12
-        DVZ_OBJECT_TYPE_BINDINGS = 13
-        DVZ_OBJECT_TYPE_COMPUTE = 14
-        DVZ_OBJECT_TYPE_GRAPHICS = 15
-        DVZ_OBJECT_TYPE_PIPE = 16
-        DVZ_OBJECT_TYPE_BARRIER = 17
-        DVZ_OBJECT_TYPE_FENCES = 18
-        DVZ_OBJECT_TYPE_SEMAPHORES = 19
-        DVZ_OBJECT_TYPE_RENDERPASS = 20
-        DVZ_OBJECT_TYPE_FRAMEBUFFER = 21
-        DVZ_OBJECT_TYPE_WORKSPACE = 22
-        DVZ_OBJECT_TYPE_PIPELIB = 23
-        DVZ_OBJECT_TYPE_SUBMIT = 24
-        DVZ_OBJECT_TYPE_SCREENCAST = 25
-        DVZ_OBJECT_TYPE_TIMER = 26
-        DVZ_OBJECT_TYPE_ARRAY = 27
-        DVZ_OBJECT_TYPE_CUSTOM = 28
+        DVZ_OBJECT_TYPE_GUI_WINDOW = 4
+        DVZ_OBJECT_TYPE_SWAPCHAIN = 5
+        DVZ_OBJECT_TYPE_CANVAS = 6
+        DVZ_OBJECT_TYPE_BOARD = 7
+        DVZ_OBJECT_TYPE_COMMANDS = 8
+        DVZ_OBJECT_TYPE_BUFFER = 9
+        DVZ_OBJECT_TYPE_DAT = 10
+        DVZ_OBJECT_TYPE_TEX = 11
+        DVZ_OBJECT_TYPE_IMAGES = 12
+        DVZ_OBJECT_TYPE_SAMPLER = 13
+        DVZ_OBJECT_TYPE_BINDINGS = 14
+        DVZ_OBJECT_TYPE_COMPUTE = 15
+        DVZ_OBJECT_TYPE_GRAPHICS = 16
+        DVZ_OBJECT_TYPE_PIPE = 17
+        DVZ_OBJECT_TYPE_BARRIER = 18
+        DVZ_OBJECT_TYPE_FENCES = 19
+        DVZ_OBJECT_TYPE_SEMAPHORES = 20
+        DVZ_OBJECT_TYPE_RENDERPASS = 21
+        DVZ_OBJECT_TYPE_FRAMEBUFFER = 22
+        DVZ_OBJECT_TYPE_WORKSPACE = 23
+        DVZ_OBJECT_TYPE_PIPELIB = 24
+        DVZ_OBJECT_TYPE_SUBMIT = 25
+        DVZ_OBJECT_TYPE_SCREENCAST = 26
+        DVZ_OBJECT_TYPE_TIMER = 27
+        DVZ_OBJECT_TYPE_ARRAY = 28
+        DVZ_OBJECT_TYPE_CUSTOM = 29
 
     ctypedef enum DvzObjectStatus:
         DVZ_OBJECT_STATUS_NONE = 0
@@ -89,6 +89,11 @@ cdef extern from "<datoviz/common.h>":
         DVZ_OBJECT_STATUS_NEED_DESTROY = 7
         DVZ_OBJECT_STATUS_INACTIVE = 8
         DVZ_OBJECT_STATUS_INVALID = 9
+
+    ctypedef enum DvzBackend:
+        DVZ_BACKEND_NONE = 0
+        DVZ_BACKEND_GLFW = 1
+        DVZ_BACKEND_OFFSCREEN = 2
 
     ctypedef enum DvzBufferType:
         DVZ_BUFFER_TYPE_UNDEFINED = 0
@@ -240,6 +245,169 @@ cdef extern from "<datoviz/common.h>":
     ctypedef enum DvzRendererFlags:
         DVZ_RENDERER_FLAGS_NONE = 0
 
+    ctypedef enum DvzKeyboardModifiers:
+        DVZ_KEY_MODIFIER_NONE = 0x00000000
+        DVZ_KEY_MODIFIER_SHIFT = 0x00000001
+        DVZ_KEY_MODIFIER_CONTROL = 0x00000002
+        DVZ_KEY_MODIFIER_ALT = 0x00000004
+        DVZ_KEY_MODIFIER_SUPER = 0x00000008
+
+    ctypedef enum DvzKeyboardEventType:
+        DVZ_KEYBOARD_EVENT_NONE = 0
+        DVZ_KEYBOARD_EVENT_PRESS = 1
+        DVZ_KEYBOARD_EVENT_RELEASE = 2
+
+    ctypedef enum DvzMouseButton:
+        DVZ_MOUSE_BUTTON_NONE = 0
+        DVZ_MOUSE_BUTTON_LEFT = 1
+        DVZ_MOUSE_BUTTON_MIDDLE = 2
+        DVZ_MOUSE_BUTTON_RIGHT = 3
+
+    ctypedef enum DvzMouseState:
+        DVZ_MOUSE_STATE_RELEASE = 0
+        DVZ_MOUSE_STATE_PRESS = 1
+        DVZ_MOUSE_STATE_CLICK = 3
+        DVZ_MOUSE_STATE_CLICK_PRESS = 4
+        DVZ_MOUSE_STATE_DOUBLE_CLICK = 5
+        DVZ_MOUSE_STATE_DRAGGING = 11
+
+    ctypedef enum DvzMouseEventType:
+        DVZ_MOUSE_EVENT_RELEASE = 0
+        DVZ_MOUSE_EVENT_PRESS = 1
+        DVZ_MOUSE_EVENT_MOVE = 2
+        DVZ_MOUSE_EVENT_CLICK = 3
+        DVZ_MOUSE_EVENT_DOUBLE_CLICK = 5
+        DVZ_MOUSE_EVENT_DRAG_START = 10
+        DVZ_MOUSE_EVENT_DRAG = 11
+        DVZ_MOUSE_EVENT_DRAG_STOP = 12
+        DVZ_MOUSE_EVENT_WHEEL = 20
+        DVZ_MOUSE_EVENT_ALL = 255
+
+    ctypedef enum DvzKeyCode:
+        DVZ_KEY_UNKNOWN = -1
+        DVZ_KEY_NONE = +0
+        DVZ_KEY_SPACE = 32
+        DVZ_KEY_APOSTROPHE = 39
+        DVZ_KEY_COMMA = 44
+        DVZ_KEY_MINUS = 45
+        DVZ_KEY_PERIOD = 46
+        DVZ_KEY_SLASH = 47
+        DVZ_KEY_0 = 48
+        DVZ_KEY_1 = 49
+        DVZ_KEY_2 = 50
+        DVZ_KEY_3 = 51
+        DVZ_KEY_4 = 52
+        DVZ_KEY_5 = 53
+        DVZ_KEY_6 = 54
+        DVZ_KEY_7 = 55
+        DVZ_KEY_8 = 56
+        DVZ_KEY_9 = 57
+        DVZ_KEY_SEMICOLON = 59
+        DVZ_KEY_EQUAL = 61
+        DVZ_KEY_A = 65
+        DVZ_KEY_B = 66
+        DVZ_KEY_C = 67
+        DVZ_KEY_D = 68
+        DVZ_KEY_E = 69
+        DVZ_KEY_F = 70
+        DVZ_KEY_G = 71
+        DVZ_KEY_H = 72
+        DVZ_KEY_I = 73
+        DVZ_KEY_J = 74
+        DVZ_KEY_K = 75
+        DVZ_KEY_L = 76
+        DVZ_KEY_M = 77
+        DVZ_KEY_N = 78
+        DVZ_KEY_O = 79
+        DVZ_KEY_P = 80
+        DVZ_KEY_Q = 81
+        DVZ_KEY_R = 82
+        DVZ_KEY_S = 83
+        DVZ_KEY_T = 84
+        DVZ_KEY_U = 85
+        DVZ_KEY_V = 86
+        DVZ_KEY_W = 87
+        DVZ_KEY_X = 88
+        DVZ_KEY_Y = 89
+        DVZ_KEY_Z = 90
+        DVZ_KEY_LEFT_BRACKET = 91
+        DVZ_KEY_BACKSLASH = 92
+        DVZ_KEY_RIGHT_BRACKET = 93
+        DVZ_KEY_GRAVE_ACCENT = 96
+        DVZ_KEY_WORLD_1 = 161
+        DVZ_KEY_WORLD_2 = 162
+        DVZ_KEY_ESCAPE = 256
+        DVZ_KEY_ENTER = 257
+        DVZ_KEY_TAB = 258
+        DVZ_KEY_BACKSPACE = 259
+        DVZ_KEY_INSERT = 260
+        DVZ_KEY_DELETE = 261
+        DVZ_KEY_RIGHT = 262
+        DVZ_KEY_LEFT = 263
+        DVZ_KEY_DOWN = 264
+        DVZ_KEY_UP = 265
+        DVZ_KEY_PAGE_UP = 266
+        DVZ_KEY_PAGE_DOWN = 267
+        DVZ_KEY_HOME = 268
+        DVZ_KEY_END = 269
+        DVZ_KEY_CAPS_LOCK = 280
+        DVZ_KEY_SCROLL_LOCK = 281
+        DVZ_KEY_NUM_LOCK = 282
+        DVZ_KEY_PRINT_SCREEN = 283
+        DVZ_KEY_PAUSE = 284
+        DVZ_KEY_F1 = 290
+        DVZ_KEY_F2 = 291
+        DVZ_KEY_F3 = 292
+        DVZ_KEY_F4 = 293
+        DVZ_KEY_F5 = 294
+        DVZ_KEY_F6 = 295
+        DVZ_KEY_F7 = 296
+        DVZ_KEY_F8 = 297
+        DVZ_KEY_F9 = 298
+        DVZ_KEY_F10 = 299
+        DVZ_KEY_F11 = 300
+        DVZ_KEY_F12 = 301
+        DVZ_KEY_F13 = 302
+        DVZ_KEY_F14 = 303
+        DVZ_KEY_F15 = 304
+        DVZ_KEY_F16 = 305
+        DVZ_KEY_F17 = 306
+        DVZ_KEY_F18 = 307
+        DVZ_KEY_F19 = 308
+        DVZ_KEY_F20 = 309
+        DVZ_KEY_F21 = 310
+        DVZ_KEY_F22 = 311
+        DVZ_KEY_F23 = 312
+        DVZ_KEY_F24 = 313
+        DVZ_KEY_F25 = 314
+        DVZ_KEY_KP_0 = 320
+        DVZ_KEY_KP_1 = 321
+        DVZ_KEY_KP_2 = 322
+        DVZ_KEY_KP_3 = 323
+        DVZ_KEY_KP_4 = 324
+        DVZ_KEY_KP_5 = 325
+        DVZ_KEY_KP_6 = 326
+        DVZ_KEY_KP_7 = 327
+        DVZ_KEY_KP_8 = 328
+        DVZ_KEY_KP_9 = 329
+        DVZ_KEY_KP_DECIMAL = 330
+        DVZ_KEY_KP_DIVIDE = 331
+        DVZ_KEY_KP_MULTIPLY = 332
+        DVZ_KEY_KP_SUBTRACT = 333
+        DVZ_KEY_KP_ADD = 334
+        DVZ_KEY_KP_ENTER = 335
+        DVZ_KEY_KP_EQUAL = 336
+        DVZ_KEY_LEFT_SHIFT = 340
+        DVZ_KEY_LEFT_CONTROL = 341
+        DVZ_KEY_LEFT_ALT = 342
+        DVZ_KEY_LEFT_SUPER = 343
+        DVZ_KEY_RIGHT_SHIFT = 344
+        DVZ_KEY_RIGHT_CONTROL = 345
+        DVZ_KEY_RIGHT_ALT = 346
+        DVZ_KEY_RIGHT_SUPER = 347
+        DVZ_KEY_MENU = 348
+        DVZ_KEY_LAST = 348
+
     ctypedef enum DvzDataType:
         DVZ_DTYPE_NONE = 0
         DVZ_DTYPE_CUSTOM = 1
@@ -285,11 +453,23 @@ cdef extern from "<datoviz/common.h>":
         DVZ_CANVAS_FLAGS_NONE = 0x0000
         DVZ_CANVAS_FLAGS_IMGUI = 0x0001
         DVZ_CANVAS_FLAGS_FPS = 0x0003
-        DVZ_CANVAS_FLAGS_PICK = 0x0004
+        DVZ_CANVAS_FLAGS_VSYNC = 0x0004
+        DVZ_CANVAS_FLAGS_PICK = 0x0010
 
-    ctypedef enum DvzCanvasSizeType:
-        DVZ_CANVAS_SIZE_SCREEN = 0
-        DVZ_CANVAS_SIZE_FRAMEBUFFER = 1
+    ctypedef enum DvzClientEventType:
+        DVZ_CLIENT_EVENT_NONE = 0
+        DVZ_CLIENT_EVENT_WINDOW_CREATE = 1
+        DVZ_CLIENT_EVENT_WINDOW_RESIZE = 2
+        DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE = 3
+        DVZ_CLIENT_EVENT_FRAME = 4
+        DVZ_CLIENT_EVENT_MOUSE = 5
+        DVZ_CLIENT_EVENT_KEYBOARD = 6
+        DVZ_CLIENT_EVENT_TIMER = 7
+        DVZ_CLIENT_EVENT_REQUESTS = 8
+
+    ctypedef enum DvzClientCallbackMode:
+        DVZ_CLIENT_CALLBACK_SYNC = 0
+        DVZ_CLIENT_CALLBACK_ASYNC = 1
 
     ctypedef enum DvzColormap:
         DVZ_CMAP_BINARY = 0
@@ -440,15 +620,6 @@ cdef extern from "<datoviz/common.h>":
         DVZ_CPAL032_CATEGORY20C_20 = 145
         DVZ_CPAL032_COLORBLIND8 = 146
 
-    ctypedef enum DvzBackend:
-        DVZ_BACKEND_NONE = 0
-        DVZ_BACKEND_GLFW = 1
-        DVZ_BACKEND_OFFSCREEN = 2
-
-    ctypedef enum DvzDeqProcCallbackPosition:
-        DVZ_DEQ_PROC_CALLBACK_PRE = 0
-        DVZ_DEQ_PROC_CALLBACK_POST = 1
-
     ctypedef enum DvzDeqProcBatchPosition:
         DVZ_DEQ_PROC_BATCH_BEGIN = 0
         DVZ_DEQ_PROC_BATCH_END = 1
@@ -457,173 +628,13 @@ cdef extern from "<datoviz/common.h>":
         DVZ_DEQ_STRATEGY_BREADTH_FIRST = 0
         DVZ_DEQ_STRATEGY_DEPTH_FIRST = 1
 
-    ctypedef enum DvzEventType:
-        DVZ_EVENT_NONE = 0
-        DVZ_EVENT_INIT = 1
-        DVZ_EVENT_MOUSE_MOVE = 2
-        DVZ_EVENT_MOUSE_PRESS = 3
-        DVZ_EVENT_MOUSE_RELEASE = 4
-        DVZ_EVENT_MOUSE_CLICK = 5
-        DVZ_EVENT_MOUSE_DOUBLE_CLICK = 6
-        DVZ_EVENT_MOUSE_WHEEL = 7
-        DVZ_EVENT_MOUSE_DRAG_BEGIN = 8
-        DVZ_EVENT_MOUSE_DRAG = 9
-        DVZ_EVENT_MOUSE_DRAG_END = 10
-        DVZ_EVENT_KEYBOARD_PRESS = 11
-        DVZ_EVENT_KEYBOARD_RELEASE = 12
-        DVZ_EVENT_KEYBOARD_STROKE = 13
-        DVZ_EVENT_TIMER_TICK = 14
+    ctypedef enum DvzGuiFlags:
+        DVZ_GUI_FLAGS_NONE = 0
+        DVZ_GUI_FLAGS_OFFSCREEN = 1
 
-    ctypedef enum DvzKeyModifiers:
-        DVZ_KEY_MODIFIER_NONE = 0x00000000
-        DVZ_KEY_MODIFIER_SHIFT = 0x00000001
-        DVZ_KEY_MODIFIER_CONTROL = 0x00000002
-        DVZ_KEY_MODIFIER_ALT = 0x00000004
-        DVZ_KEY_MODIFIER_SUPER = 0x00000008
-
-    ctypedef enum DvzMouseButton:
-        DVZ_MOUSE_BUTTON_NONE = 0
-        DVZ_MOUSE_BUTTON_LEFT = 1
-        DVZ_MOUSE_BUTTON_MIDDLE = 2
-        DVZ_MOUSE_BUTTON_RIGHT = 3
-
-    ctypedef enum DvzMouseStateType:
-        DVZ_MOUSE_STATE_INACTIVE = 0
-        DVZ_MOUSE_STATE_DRAG = 1
-        DVZ_MOUSE_STATE_WHEEL = 2
-        DVZ_MOUSE_STATE_CLICK = 3
-        DVZ_MOUSE_STATE_DOUBLE_CLICK = 4
-        DVZ_MOUSE_STATE_CAPTURE = 5
-
-    ctypedef enum DvzKeyboardStateType:
-        DVZ_KEYBOARD_STATE_INACTIVE = 0
-        DVZ_KEYBOARD_STATE_ACTIVE = 1
-        DVZ_KEYBOARD_STATE_CAPTURE = 2
-
-    ctypedef enum DvzKeyCode:
-        DVZ_KEY_UNKNOWN = -1
-        DVZ_KEY_NONE = +0
-        DVZ_KEY_SPACE = 32
-        DVZ_KEY_APOSTROPHE = 39
-        DVZ_KEY_COMMA = 44
-        DVZ_KEY_MINUS = 45
-        DVZ_KEY_PERIOD = 46
-        DVZ_KEY_SLASH = 47
-        DVZ_KEY_0 = 48
-        DVZ_KEY_1 = 49
-        DVZ_KEY_2 = 50
-        DVZ_KEY_3 = 51
-        DVZ_KEY_4 = 52
-        DVZ_KEY_5 = 53
-        DVZ_KEY_6 = 54
-        DVZ_KEY_7 = 55
-        DVZ_KEY_8 = 56
-        DVZ_KEY_9 = 57
-        DVZ_KEY_SEMICOLON = 59
-        DVZ_KEY_EQUAL = 61
-        DVZ_KEY_A = 65
-        DVZ_KEY_B = 66
-        DVZ_KEY_C = 67
-        DVZ_KEY_D = 68
-        DVZ_KEY_E = 69
-        DVZ_KEY_F = 70
-        DVZ_KEY_G = 71
-        DVZ_KEY_H = 72
-        DVZ_KEY_I = 73
-        DVZ_KEY_J = 74
-        DVZ_KEY_K = 75
-        DVZ_KEY_L = 76
-        DVZ_KEY_M = 77
-        DVZ_KEY_N = 78
-        DVZ_KEY_O = 79
-        DVZ_KEY_P = 80
-        DVZ_KEY_Q = 81
-        DVZ_KEY_R = 82
-        DVZ_KEY_S = 83
-        DVZ_KEY_T = 84
-        DVZ_KEY_U = 85
-        DVZ_KEY_V = 86
-        DVZ_KEY_W = 87
-        DVZ_KEY_X = 88
-        DVZ_KEY_Y = 89
-        DVZ_KEY_Z = 90
-        DVZ_KEY_LEFT_BRACKET = 91
-        DVZ_KEY_BACKSLASH = 92
-        DVZ_KEY_RIGHT_BRACKET = 93
-        DVZ_KEY_GRAVE_ACCENT = 96
-        DVZ_KEY_WORLD_1 = 161
-        DVZ_KEY_WORLD_2 = 162
-        DVZ_KEY_ESCAPE = 256
-        DVZ_KEY_ENTER = 257
-        DVZ_KEY_TAB = 258
-        DVZ_KEY_BACKSPACE = 259
-        DVZ_KEY_INSERT = 260
-        DVZ_KEY_DELETE = 261
-        DVZ_KEY_RIGHT = 262
-        DVZ_KEY_LEFT = 263
-        DVZ_KEY_DOWN = 264
-        DVZ_KEY_UP = 265
-        DVZ_KEY_PAGE_UP = 266
-        DVZ_KEY_PAGE_DOWN = 267
-        DVZ_KEY_HOME = 268
-        DVZ_KEY_END = 269
-        DVZ_KEY_CAPS_LOCK = 280
-        DVZ_KEY_SCROLL_LOCK = 281
-        DVZ_KEY_NUM_LOCK = 282
-        DVZ_KEY_PRINT_SCREEN = 283
-        DVZ_KEY_PAUSE = 284
-        DVZ_KEY_F1 = 290
-        DVZ_KEY_F2 = 291
-        DVZ_KEY_F3 = 292
-        DVZ_KEY_F4 = 293
-        DVZ_KEY_F5 = 294
-        DVZ_KEY_F6 = 295
-        DVZ_KEY_F7 = 296
-        DVZ_KEY_F8 = 297
-        DVZ_KEY_F9 = 298
-        DVZ_KEY_F10 = 299
-        DVZ_KEY_F11 = 300
-        DVZ_KEY_F12 = 301
-        DVZ_KEY_F13 = 302
-        DVZ_KEY_F14 = 303
-        DVZ_KEY_F15 = 304
-        DVZ_KEY_F16 = 305
-        DVZ_KEY_F17 = 306
-        DVZ_KEY_F18 = 307
-        DVZ_KEY_F19 = 308
-        DVZ_KEY_F20 = 309
-        DVZ_KEY_F21 = 310
-        DVZ_KEY_F22 = 311
-        DVZ_KEY_F23 = 312
-        DVZ_KEY_F24 = 313
-        DVZ_KEY_F25 = 314
-        DVZ_KEY_KP_0 = 320
-        DVZ_KEY_KP_1 = 321
-        DVZ_KEY_KP_2 = 322
-        DVZ_KEY_KP_3 = 323
-        DVZ_KEY_KP_4 = 324
-        DVZ_KEY_KP_5 = 325
-        DVZ_KEY_KP_6 = 326
-        DVZ_KEY_KP_7 = 327
-        DVZ_KEY_KP_8 = 328
-        DVZ_KEY_KP_9 = 329
-        DVZ_KEY_KP_DECIMAL = 330
-        DVZ_KEY_KP_DIVIDE = 331
-        DVZ_KEY_KP_MULTIPLY = 332
-        DVZ_KEY_KP_SUBTRACT = 333
-        DVZ_KEY_KP_ADD = 334
-        DVZ_KEY_KP_ENTER = 335
-        DVZ_KEY_KP_EQUAL = 336
-        DVZ_KEY_LEFT_SHIFT = 340
-        DVZ_KEY_LEFT_CONTROL = 341
-        DVZ_KEY_LEFT_ALT = 342
-        DVZ_KEY_LEFT_SUPER = 343
-        DVZ_KEY_RIGHT_SHIFT = 344
-        DVZ_KEY_RIGHT_CONTROL = 345
-        DVZ_KEY_RIGHT_ALT = 346
-        DVZ_KEY_RIGHT_SUPER = 347
-        DVZ_KEY_MENU = 348
-        DVZ_KEY_LAST = 348
+    ctypedef enum DvzDialogFlags:
+        DVZ_DIALOG_FLAGS_NONE = 0x0000
+        DVZ_DIALOG_FLAGS_FPS = 0x0007
 
     ctypedef enum DvzPipeType:
         DVZ_PIPE_NONE = 0
@@ -634,6 +645,20 @@ cdef extern from "<datoviz/common.h>":
         DVZ_PIPELIB_FLAGS_NONE = 0x0000
         DVZ_PIPELIB_FLAGS_CREATE_MVP = 0x0001
         DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT = 0x0002
+
+    ctypedef enum DvzRecorderCommandType:
+        DVZ_RECORDER_NONE = 0
+        DVZ_RECORDER_BEGIN = 1
+        DVZ_RECORDER_DRAW_DIRECT = 2
+        DVZ_RECORDER_DRAW_DIRECT_INDEXED = 3
+        DVZ_RECORDER_DRAW_INDIRECT = 4
+        DVZ_RECORDER_DRAW_INDIRECT_INDEXED = 5
+        DVZ_RECORDER_VIEWPORT = 6
+        DVZ_RECORDER_END = 7
+
+    ctypedef enum DvzRecorderFlags:
+        DVZ_RECORDER_FLAGS_NONE = 0x00
+        DVZ_RECORDER_FLAGS_DISABLE_CACHE = 0x01
 
     ctypedef enum DvzRequestAction:
         DVZ_REQUEST_ACTION_NONE = 0
@@ -658,32 +683,13 @@ cdef extern from "<datoviz/common.h>":
         DVZ_REQUEST_OBJECT_SAMPLER = 5
         DVZ_REQUEST_OBJECT_COMPUTE = 6
         DVZ_REQUEST_OBJECT_GRAPHICS = 7
-        DVZ_REQUEST_OBJECT_BEGIN = 8
-        DVZ_REQUEST_OBJECT_BACKGROUND = 9
-        DVZ_REQUEST_OBJECT_VIEWPORT = 10
-        DVZ_REQUEST_OBJECT_VERTEX = 11
-        DVZ_REQUEST_OBJECT_BARRIER = 12
-        DVZ_REQUEST_OBJECT_DRAW = 13
-        DVZ_REQUEST_OBJECT_END = 14
+        DVZ_REQUEST_OBJECT_BACKGROUND = 8
+        DVZ_REQUEST_OBJECT_VERTEX = 9
+        DVZ_REQUEST_OBJECT_RECORD = 10
 
-    ctypedef enum DvzCanvasEventType:
-        DVZ_RUNNER_CANVAS_NONE = 0
-        DVZ_RUNNER_CANVAS_FRAME = 1
-        DVZ_RUNNER_CANVAS_NEW = 2
-        DVZ_RUNNER_CANVAS_RECREATE = 3
-        DVZ_RUNNER_CANVAS_RUNNING = 4
-        DVZ_RUNNER_CANVAS_VISIBLE = 5
-        DVZ_RUNNER_CANVAS_RESIZE = 6
-        DVZ_RUNNER_CANVAS_CLEAR_COLOR = 7
-        DVZ_RUNNER_CANVAS_DPI = 8
-        DVZ_RUNNER_CANVAS_FPS = 9
-        DVZ_RUNNER_CANVAS_UPFILL = 10
-        DVZ_RUNNER_CANVAS_DELETE = 11
-        DVZ_RUNNER_CANVAS_TO_REFILL = 12
-        DVZ_RUNNER_CANVAS_REFILL_WRAP = 13
-        DVZ_RUNNER_CANVAS_REFILL = 14
-        DVZ_RUNNER_CANVAS_PRESENT = 15
-        DVZ_RUNNER_REQUEST = 16
+    ctypedef enum DvzRequestFlags:
+        DVZ_REQUEST_FLAGS_NONE = 0x0000
+        DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000
 
     ctypedef enum DvzTransferType:
         DVZ_TRANSFER_NONE = 0
@@ -731,6 +737,14 @@ cdef extern from "<datoviz/common.h>":
         DVZ_RENDERPASS_ATTACHMENT_COLOR = 0
         DVZ_RENDERPASS_ATTACHMENT_DEPTH = 1
         DVZ_RENDERPASS_ATTACHMENT_PICK = 2
+
+    ctypedef enum DvzWindowFlags:
+        DVZ_WINDOW_FLAGS_NONE = 0x0000
+        DVZ_WINDOW_FLAGS_HIDDEN = 0x1000
+
+    ctypedef enum DvzWorkspaceFlags:
+        DVZ_WORKSPACE_FLAGS_NONE = 0x00
+        DVZ_WORKSPACE_FLAGS_OVERLAY = 0x01
 
 
     # ENUM END
