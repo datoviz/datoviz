@@ -39,6 +39,9 @@ ENUMS = (
     'DvzKeyCode',
     'DvzRequestAction',
     'DvzRequestObject',
+    'DvzPanelType',
+    'DvzVisualType',
+    'DvzPropType',
 )
 
 APP_FUNCTIONS = (
@@ -49,8 +52,8 @@ APP_FUNCTIONS = (
 SCENE_FUNCTIONS = (
     'dvz_scene',
     'dvz_figure',
-    # 'dvz_panel',
-    # 'dvz_visual',
+    'dvz_panel',
+    'dvz_visual',
 )
 
 # REQUEST_FUNCTIONS = (

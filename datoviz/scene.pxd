@@ -13,6 +13,9 @@ cdef extern from "<datoviz/scene/scene.h>":
     ctypedef struct DvzPanel:
         pass
 
+    ctypedef struct DvzVisual:
+        pass
+
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -35,6 +38,18 @@ cdef extern from "<datoviz/scene/scene.h>":
     DvzScene* dvz_scene()
 
     DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, uint32_t n_rows, uint32_t n_cols, int flags)
+
+    DvzPanel* dvz_panel(DvzFigure* fig, uint32_t row, uint32_t col, DvzPanelType type, int flags)
+
+    DvzVisual* dvz_visual(DvzScene* scene, DvzVisualType vtype, int flags)
+
+    void dvz_visual_data(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data)
+
+    void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int pos)
+
+    void dvz_visual_destroy(DvzVisual* visual)
+
+    void dvz_panel_destroy(DvzPanel* panel)
 
     void dvz_figure_destroy(DvzFigure* figure)
 
