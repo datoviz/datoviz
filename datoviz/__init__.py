@@ -13,7 +13,7 @@ from IPython.terminal.pt_inputhooks import register
 try:
     # from .requester import Requester
     # from .renderer import Renderer
-    from .app import *
+    from .proto import *
 except ImportError:
     raise ImportError(
         "Unable to load the shared library, make sure to run in your terminal:\n"

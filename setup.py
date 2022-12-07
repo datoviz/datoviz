@@ -44,7 +44,7 @@ setup(
         [
             # app
             Extension(
-                'datoviz.app', ['datoviz/app.pyx'],
+                'datoviz.proto', ['datoviz/proto.pyx'],
                 libraries=['datoviz'],
                 include_dirs=[
                     np.get_include(),
@@ -58,21 +58,21 @@ setup(
                 # extra_compile_args=['-w'],
             ),
 
-            # scene
-            Extension(
-                'datoviz.scene', [],
-                libraries=['datoviz'],
-                include_dirs=[
-                    np.get_include(),
-                    str(INCLUDE_DIR),
-                    str(VULKAN_DIR / 'include'),
-                    str(ROOT_DIR / 'external/'),
-                    str(BUILD_DIR / '_deps/cglm-src/include'),
-                ],
-                library_dirs=[str(BUILD_DIR)],
-                undef_macros=['NDEBUG'],
-                # extra_compile_args=['-w'],
-            ),
+            # # scene
+            # Extension(
+            #     'datoviz.scene', [],
+            #     libraries=['datoviz'],
+            #     include_dirs=[
+            #         np.get_include(),
+            #         str(INCLUDE_DIR),
+            #         str(VULKAN_DIR / 'include'),
+            #         str(ROOT_DIR / 'external/'),
+            #         str(BUILD_DIR / '_deps/cglm-src/include'),
+            #     ],
+            #     library_dirs=[str(BUILD_DIR)],
+            #     undef_macros=['NDEBUG'],
+            #     # extra_compile_args=['-w'],
+            # ),
 
             # # requester
             # Extension(
