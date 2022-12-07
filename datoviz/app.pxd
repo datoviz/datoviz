@@ -38,6 +38,14 @@ cdef extern from "<datoviz/scene/app.h>":
 
     void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
 
+    void dvz_device_async(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+
+    void dvz_device_wait(DvzDevice* device)
+
+    void dvz_device_stop(DvzDevice* device)
+
+    void dvz_device_update(DvzDevice* device, DvzScene* scene)
+
     void dvz_device_destroy(DvzDevice* device)
 
     void dvz_app_destroy(DvzApp* app)

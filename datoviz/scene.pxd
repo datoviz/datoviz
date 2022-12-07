@@ -45,6 +45,8 @@ cdef extern from "<datoviz/scene/scene.h>":
 
     void dvz_visual_data(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data)
 
+    void dvz_visual_update(DvzVisual* visual, DvzPropType ptype, uint64_t index, uint64_t count, void* data)
+
     void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int pos)
 
     void dvz_visual_destroy(DvzVisual* visual)
