@@ -32,6 +32,8 @@ int test_presenter_fps(TstSuite*);
 
 int test_presenter_scatter(TstSuite*);
 
+int test_presenter_thread(TstSuite*);
+
 
 
 #endif

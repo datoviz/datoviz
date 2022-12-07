@@ -44,6 +44,8 @@ struct CallbackStruct
     DvzId viewport_id;
     DvzId dat_id;
     DvzId graphics_id;
+    GraphicsWrapper* graphics_wrapper;
+    uint32_t n;
 };
 
 
@@ -717,5 +719,129 @@ int test_presenter_scatter(TstSuite* suite)
     dvz_gpu_destroy(gpu);
 
     FREE(data);
+    return 0;
+}
+
+
+
+static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
+{
+    ASSERT(n > 0);
+    ANN(data);
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        data[i].pos[0] = -1 + 2 * dvz_rand_float();
+        data[i].pos[1] = -1 + 2 * dvz_rand_float();
+        data[i].size = 5;
+        dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
+        data[i].color[3] = 224;
+    }
+}
+
+static void _on_click(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+    if (ev.content.m.type != DVZ_MOUSE_EVENT_CLICK)
+        return;
+
+    CallbackStruct* s = (CallbackStruct*)ev.user_data;
+    ANN(s);
+
+    DvzRequester* rqr = s->rqr;
+    ANN(rqr);
+
+    DvzPresenter* prt = s->prt;
+    ANN(prt);
+
+    GraphicsWrapper* wrapper = s->graphics_wrapper;
+    ANN(wrapper);
+
+    // Update the data.
+    _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
+    DvzRequest req = dvz_upload_dat(
+        rqr, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+    dvz_requester_add(rqr, req);
+
+    // // Update the command buffer with the new n.
+    // req = dvz_record_begin(rqr, wrapper->canvas_id);
+    // dvz_requester_add(rqr, req);
+
+    // req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT,
+    // DVZ_DEFAULT_VIEWPORT); dvz_requester_add(rqr, req);
+
+    // req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, s->n);
+    // dvz_requester_add(rqr, req);
+
+    // req = dvz_record_end(rqr, wrapper->canvas_id);
+    // dvz_requester_add(rqr, req);
+
+    dvz_presenter_submit(prt, rqr);
+}
+
+int test_presenter_thread(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    const uint32_t n = 256;
+    GraphicsWrapper wrapper = {0};
+    graphics_request(rqr, n, &wrapper);
+    wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
+    _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
+    DvzRequest req =
+        dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_requester_add(rqr, req);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    CallbackStruct s = {
+        .prt = prt,
+        .rqr = rqr,
+        .graphics_wrapper = &wrapper,
+        .n = n,
+    };
+    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_click, &s);
+
+    // Start the client background thread and run an infinite event loop in the thread.
+    dvz_client_thread(client, N_FRAMES);
+
+    // Stop the event loop in the thread.
+    // dvz_sleep(100);
+    // dvz_client_stop(client);
+
+    // Wait until the client event loop is done.
+    dvz_client_join(client);
+
+    // End.
+
+    // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
+    dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
+    FREE(wrapper.data);
     return 0;
 }
