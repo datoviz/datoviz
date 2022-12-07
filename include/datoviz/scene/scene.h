@@ -14,6 +14,8 @@
 #include "../_enums.h"
 #include "../_log.h"
 #include "../_math.h"
+#include "../mvp.h"
+#include "../viewport.h"
 
 
 
@@ -182,6 +184,9 @@ struct DvzVisual
 {
     DvzId id;
     DvzScene* scene;
+    DvzMVP mvp;
+    DvzViewport viewport;
+    uint64_t count;
 };
 
 

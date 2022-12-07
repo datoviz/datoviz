@@ -42,7 +42,7 @@ setup(
     install_requires=require,
     ext_modules=cythonize(
         [
-            # app
+            # proto
             Extension(
                 'datoviz.proto', ['datoviz/proto.pyx'],
                 libraries=['datoviz'],
