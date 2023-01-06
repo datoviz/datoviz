@@ -78,11 +78,17 @@ cdef class Record:
         cdef vec2 offset = (x, y)
         cdef vec2 shape = (w, h)
 
+        logger.debug(
+            f"record viewport, canvas={self._canvas_id:02x}, x={x}, y={y}, w={w}, h={h}")
+
         cdef rq.DvzRequest req = rq.dvz_record_viewport(self._c_rqr, self._canvas_id, offset, shape)
         rq.dvz_requester_add(self._c_rqr, req)
 
     def draw(self, Graphics g, int first_vertex, int vertex_count):
         cdef DvzId graphics_id = g._c_id
+
+        logger.debug(
+            f"record draw, canvas={self._canvas_id:02x}, graphics={graphics_id:02x}, first_vertex={first_vertex}, vertex_count={vertex_count}")
 
         req = rq.dvz_record_draw(self._c_rqr, self._canvas_id, graphics_id, first_vertex, vertex_count)
         rq.dvz_requester_add(self._c_rqr, req)
