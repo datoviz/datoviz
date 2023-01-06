@@ -11,13 +11,11 @@ from IPython import get_ipython
 from IPython.terminal.pt_inputhooks import register
 
 try:
-    # from .requester import Requester
-    # from .renderer import Renderer
-    from .proto import *
-except ImportError:
-    raise ImportError(
-        "Unable to load the shared library, make sure to run in your terminal:\n"
-        "`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/build`")
+    from .app import *
+except ImportError as e:
+    raise ImportError(str(e))
+    # "Unable to load the shared library, make sure to run in your terminal:\n"
+    # "`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/build`")
     exit(1)
 
 

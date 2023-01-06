@@ -97,15 +97,15 @@ cdef extern from "<datoviz/request.h>":
     # FUNCTION END
 
 
-cdef class Request:
-    cdef DvzRequest _c_req
+# cdef class Request:
+#     cdef DvzRequest _c_req
 
 
-cdef class Requester:
-    cdef DvzRequest * _c_rqs
-    cdef uint32_t _c_count
-    cdef DvzRequester * _c_rqr
+# cdef class Requester:
+#     cdef DvzRequest * _c_rqs
+#     cdef uint32_t _c_count
+#     cdef DvzRequester * _c_rqr
 
-    # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
-    # collected by the garbage collector until they are effectively transferred to the GPU.
-    cdef object _np_cache
+#     # HACK: keep a reference of the arrays to be uploaded, to prevent them from being
+#     # collected by the garbage collector until they are effectively transferred to the GPU.
+#     cdef object _np_cache

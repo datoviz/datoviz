@@ -51,6 +51,69 @@ cdef extern from "<datoviz/common.h>":
         DVZ_BACKEND_GLFW = 1
         DVZ_BACKEND_OFFSCREEN = 2
 
+    ctypedef enum DvzBufferType:
+        DVZ_BUFFER_TYPE_UNDEFINED = 0
+        DVZ_BUFFER_TYPE_STAGING = 1
+        DVZ_BUFFER_TYPE_VERTEX = 2
+        DVZ_BUFFER_TYPE_INDEX = 3
+        DVZ_BUFFER_TYPE_STORAGE = 4
+        DVZ_BUFFER_TYPE_UNIFORM = 5
+
+    ctypedef enum DvzFormat:
+        DVZ_FORMAT_NONE = 0
+        DVZ_FORMAT_R8_UNORM = 9
+        DVZ_FORMAT_R8_SNORM = 10
+        DVZ_FORMAT_R8G8B8_UNORM = 23
+        DVZ_FORMAT_R8G8B8A8_UNORM = 37
+        DVZ_FORMAT_R8G8B8A8_UINT = 41
+        DVZ_FORMAT_B8G8R8A8_UNORM = 44
+        DVZ_FORMAT_R16_UNORM = 70
+        DVZ_FORMAT_R16_SNORM = 71
+        DVZ_FORMAT_R32_UINT = 98
+        DVZ_FORMAT_R32_SINT = 99
+        DVZ_FORMAT_R32_SFLOAT = 100
+
+    ctypedef enum DvzFilter:
+        DVZ_FILTER_NEAREST = 0
+        DVZ_FILTER_LINEAR = 1
+        DVZ_FILTER_CUBIC_IMG = 1000015000
+
+    ctypedef enum DvzSamplerAddressMode:
+        DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0
+        DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3
+        DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
+
+    ctypedef enum DvzTexDims:
+        DVZ_TEX_NONE = 0
+        DVZ_TEX_1D = 1
+        DVZ_TEX_2D = 2
+        DVZ_TEX_3D = 3
+
+    ctypedef enum DvzGraphicsType:
+        DVZ_GRAPHICS_NONE = 0
+        DVZ_GRAPHICS_POINT = 1
+        DVZ_GRAPHICS_LINE = 2
+        DVZ_GRAPHICS_LINE_STRIP = 3
+        DVZ_GRAPHICS_TRIANGLE = 4
+        DVZ_GRAPHICS_TRIANGLE_STRIP = 5
+        DVZ_GRAPHICS_TRIANGLE_FAN = 6
+        DVZ_GRAPHICS_RASTER = 7
+        DVZ_GRAPHICS_MARKER = 8
+        DVZ_GRAPHICS_SEGMENT = 9
+        DVZ_GRAPHICS_ARROW = 10
+        DVZ_GRAPHICS_PATH = 11
+        DVZ_GRAPHICS_TEXT = 12
+        DVZ_GRAPHICS_IMAGE = 13
+        DVZ_GRAPHICS_IMAGE_CMAP = 14
+        DVZ_GRAPHICS_VOLUME_SLICE = 15
+        DVZ_GRAPHICS_MESH = 16
+        DVZ_GRAPHICS_FAKE_SPHERE = 17
+        DVZ_GRAPHICS_VOLUME = 18
+        DVZ_GRAPHICS_COUNT = 19
+        DVZ_GRAPHICS_CUSTOM = 20
+
     ctypedef enum DvzKeyCode:
         DVZ_KEY_UNKNOWN = -1
         DVZ_KEY_NONE = +0
@@ -202,86 +265,6 @@ cdef extern from "<datoviz/common.h>":
         DVZ_REQUEST_OBJECT_BACKGROUND = 8
         DVZ_REQUEST_OBJECT_VERTEX = 9
         DVZ_REQUEST_OBJECT_RECORD = 10
-
-    ctypedef enum DvzPanelType:
-        DVZ_PANEL_TYPE_NONE = 0
-        DVZ_PANEL_TYPE_PANZOOM = 1
-        DVZ_PANEL_TYPE_AXES_2D = 2
-
-    ctypedef enum DvzPropType:
-        DVZ_PROP_NONE = 0
-        DVZ_PROP_POS = 1
-        DVZ_PROP_COLOR = 2
-        DVZ_PROP_ALPHA = 3
-        DVZ_PROP_COLORMAP = 4
-        DVZ_PROP_MARKER_SIZE = 5
-        DVZ_PROP_MARKER_TYPE = 6
-        DVZ_PROP_ANGLE = 7
-        DVZ_PROP_TEXT = 8
-        DVZ_PROP_TEXT_SIZE = 9
-        DVZ_PROP_GLYPH = 10
-        DVZ_PROP_ANCHOR = 11
-        DVZ_PROP_LINE_WIDTH = 12
-        DVZ_PROP_MITER_LIMIT = 13
-        DVZ_PROP_CAP_TYPE = 14
-        DVZ_PROP_JOIN_TYPE = 15
-        DVZ_PROP_TOPOLOGY = 16
-        DVZ_PROP_LENGTH = 17
-        DVZ_PROP_RANGE = 18
-        DVZ_PROP_MARGIN = 19
-        DVZ_PROP_NORMAL = 20
-        DVZ_PROP_TEXCOORDS = 21
-        DVZ_PROP_TEXCOEFS = 22
-        DVZ_PROP_IMAGE = 23
-        DVZ_PROP_VOLUME = 24
-        DVZ_PROP_TRANSFER_X = 25
-        DVZ_PROP_TRANSFER_Y = 26
-        DVZ_PROP_LIGHT_POS = 27
-        DVZ_PROP_LIGHT_PARAMS = 28
-        DVZ_PROP_CLIP = 29
-        DVZ_PROP_MODEL = 30
-        DVZ_PROP_VIEW = 31
-        DVZ_PROP_PROJ = 32
-        DVZ_PROP_VIEWPORT = 33
-        DVZ_PROP_TIME = 34
-        DVZ_PROP_INDEX = 35
-        DVZ_PROP_SCALE = 36
-        DVZ_PROP_TRANSFORM = 37
-
-    ctypedef enum DvzVisualType:
-        DVZ_VISUAL_NONE = 0
-        DVZ_VISUAL_POINT = 1
-        DVZ_VISUAL_LINE = 2
-        DVZ_VISUAL_LINE_STRIP = 3
-        DVZ_VISUAL_TRIANGLE = 4
-        DVZ_VISUAL_TRIANGLE_STRIP = 5
-        DVZ_VISUAL_TRIANGLE_FAN = 6
-        DVZ_VISUAL_RECTANGLE = 7
-        DVZ_VISUAL_MARKER = 8
-        DVZ_VISUAL_SEGMENT = 9
-        DVZ_VISUAL_ARROW = 10
-        DVZ_VISUAL_PATH = 11
-        DVZ_VISUAL_TEXT = 12
-        DVZ_VISUAL_IMAGE = 13
-        DVZ_VISUAL_IMAGE_CMAP = 14
-        DVZ_VISUAL_DISC = 15
-        DVZ_VISUAL_SECTOR = 16
-        DVZ_VISUAL_MESH = 17
-        DVZ_VISUAL_POLYGON = 18
-        DVZ_VISUAL_PSLG = 19
-        DVZ_VISUAL_HISTOGRAM = 20
-        DVZ_VISUAL_AREA = 21
-        DVZ_VISUAL_CANDLE = 22
-        DVZ_VISUAL_GRAPH = 23
-        DVZ_VISUAL_SURFACE = 24
-        DVZ_VISUAL_VOLUME_SLICE = 25
-        DVZ_VISUAL_VOLUME = 26
-        DVZ_VISUAL_FAKE_SPHERE = 27
-        DVZ_VISUAL_AXES_2D = 28
-        DVZ_VISUAL_AXES_3D = 29
-        DVZ_VISUAL_COLORMAP = 30
-        DVZ_VISUAL_COUNT = 31
-        DVZ_VISUAL_CUSTOM = 32
 
 
     # ENUM END
