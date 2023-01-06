@@ -54,7 +54,16 @@ DvzDevice* dvz_device(DvzApp* app)
 
 
 
-static void _device_loop(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames, bool sync)
+void dvz_device_update(DvzDevice* device, DvzRequester* rqr)
+{
+    ANN(device);
+    ANN(rqr);
+    dvz_presenter_submit(device->prt, rqr);
+}
+
+
+
+static inline void _device_loop(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames, bool sync)
 {
     ANN(device);
     ANN(device->prt);
@@ -77,13 +86,6 @@ static void _device_loop(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames
         dvz_client_thread(app->client, n_frames);
 }
 
-void dvz_device_update(DvzDevice* device, DvzRequester* rqr)
-{
-    ANN(device);
-    ANN(rqr);
-    dvz_presenter_submit(device->prt, rqr);
-}
-
 void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
 {
     _device_loop(device, rqr, n_frames, true);
@@ -94,6 +96,24 @@ void dvz_device_async(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
     _device_loop(device, rqr, n_frames, false);
 }
 
+
+
+void dvz_device_frame(DvzDevice* device, DvzRequester* rqr)
+{
+    ANN(device);
+    ANN(device->prt);
+
+    ANN(rqr);
+
+    DvzApp* app = device->app;
+    ANN(app);
+    ANN(app->client);
+
+    dvz_client_frame(app->client);
+}
+
+
+
 void dvz_device_wait(DvzDevice* device)
 {
     DvzApp* app = device->app;
@@ -101,6 +121,8 @@ void dvz_device_wait(DvzDevice* device)
     ANN(app->client);
     dvz_client_join(app->client);
 }
+
+
 
 void dvz_device_stop(DvzDevice* device)
 {

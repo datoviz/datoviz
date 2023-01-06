@@ -82,10 +82,16 @@ DVZ_EXPORT DvzDevice* dvz_device(DvzApp* app);
 /**
  *
  */
-DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames);
+DVZ_EXPORT void dvz_device_frame(DvzDevice* device, DvzRequester* rqr);
 
 /**
  *
+ */
+DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames);
+
+/**
+ * NOTE: does not appear to work on macOS (it requires the swapchain commands to be emitted from
+ * the main thread)
  */
 DVZ_EXPORT void dvz_device_async(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames);
 
