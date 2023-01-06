@@ -13,7 +13,7 @@
 #include "host.h"
 #include "presenter.h"
 #include "renderer.h"
-#include "scene/scene.h"
+#include "request.h"
 
 
 
@@ -54,13 +54,12 @@ DvzDevice* dvz_device(DvzApp* app)
 
 
 
-static void _device_loop(DvzDevice* device, DvzScene* scene, uint64_t n_frames, bool sync)
+static void _device_loop(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames, bool sync)
 {
     ANN(device);
     ANN(device->prt);
 
-    ANN(scene);
-    ANN(scene->rqr);
+    ANN(rqr);
 
     DvzApp* app = device->app;
     ANN(app);
@@ -69,7 +68,7 @@ static void _device_loop(DvzDevice* device, DvzScene* scene, uint64_t n_frames, 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(device->prt, scene->rqr);
+    dvz_presenter_submit(device->prt, rqr);
 
     // Dequeue and process all pending events.
     if (sync)
@@ -78,21 +77,21 @@ static void _device_loop(DvzDevice* device, DvzScene* scene, uint64_t n_frames, 
         dvz_client_thread(app->client, n_frames);
 }
 
-void dvz_device_update(DvzDevice* device, DvzScene* scene)
+void dvz_device_update(DvzDevice* device, DvzRequester* rqr)
 {
     ANN(device);
-    ANN(scene);
-    dvz_presenter_submit(device->prt, scene->rqr);
+    ANN(rqr);
+    dvz_presenter_submit(device->prt, rqr);
 }
 
-void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
 {
-    _device_loop(device, scene, n_frames, true);
+    _device_loop(device, rqr, n_frames, true);
 }
 
-void dvz_device_async(DvzDevice* device, DvzScene* scene, uint64_t n_frames)
+void dvz_device_async(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
 {
-    _device_loop(device, scene, n_frames, false);
+    _device_loop(device, rqr, n_frames, false);
 }
 
 void dvz_device_wait(DvzDevice* device)

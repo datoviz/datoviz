@@ -26,10 +26,10 @@ typedef struct DvzDevice DvzDevice;
 
 // Forward declarations.
 typedef struct DvzHost DvzHost;
-typedef struct DvzScene DvzScene;
 typedef struct DvzClient DvzClient;
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderer DvzRenderer;
+typedef struct DvzRequester DvzRequester;
 typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzList DvzList;
 
@@ -82,12 +82,12 @@ DVZ_EXPORT DvzDevice* dvz_device(DvzApp* app);
 /**
  *
  */
-DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
+DVZ_EXPORT void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames);
 
 /**
  *
  */
-DVZ_EXPORT void dvz_device_async(DvzDevice* device, DvzScene* scene, uint64_t n_frames);
+DVZ_EXPORT void dvz_device_async(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames);
 
 /**
  *
@@ -102,7 +102,7 @@ DVZ_EXPORT void dvz_device_stop(DvzDevice* device);
 /**
  *
  */
-DVZ_EXPORT void dvz_device_update(DvzDevice* device, DvzScene* scene);
+DVZ_EXPORT void dvz_device_update(DvzDevice* device, DvzRequester* rqr);
 
 /**
  *
