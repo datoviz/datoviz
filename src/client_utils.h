@@ -99,7 +99,7 @@ static void request_delete_windows(DvzClient* client)
         {
             // Emit a request delete event to all windows.
             ev.window_id = window->obj.id;
-            log_trace("emit request_delete for window %x", ev.window_id);
+            log_trace("emit request_delete for window 0x%" PRIx64, ev.window_id);
             dvz_client_event(client, ev);
         }
         dvz_container_iter(&iter);

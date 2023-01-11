@@ -464,7 +464,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     ANN(recorder);
 
     uint64_t frame_idx = client->frame_idx;
-    log_trace("frame %d, window #%x", frame_idx, window_id);
+    log_trace("frame %d, window 0x%" PRIx64, frame_idx, window_id);
 
     // Swapchain logic.
 

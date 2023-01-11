@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "request.h"
+#include "_debug.h"
 
 
 
@@ -94,6 +95,9 @@ void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 
     // Append the request.
     rqr->requests[rqr->count++] = req;
+
+    // if (getenv("DVZ_VERBOSE") != NULL)
+    //     dvz_request_print(&req);
 }
 
 
@@ -172,7 +176,7 @@ void dvz_request_print(DvzRequest* req)
     }
     char* type = str;
 
-    log_info("Request %s %s #%" PRIx64, action, type, req->id);
+    log_info("Request %s %s 0x%" PRIx64, action, type, req->id);
 }
 
 

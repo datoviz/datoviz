@@ -123,7 +123,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 
     uint32_t width = ev.content.w.screen_width;
     uint32_t height = ev.content.w.screen_height;
-    log_info("window %x resized to %dx%d", ev.window_id, width, height);
+    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
 
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ANN(s);
@@ -654,7 +654,7 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
 
     uint32_t width = ev.content.w.screen_width;
     uint32_t height = ev.content.w.screen_height;
-    log_info("window %x resized to %dx%d", ev.window_id, width, height);
+    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
 
     DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
     dvz_panzoom_resize(pz, width, height);
