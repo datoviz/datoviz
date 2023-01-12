@@ -47,8 +47,7 @@ DvzDevice* dvz_device(DvzApp* app)
     device->app = app;
     device->gpu = make_gpu(app->host);
     device->rd = dvz_renderer(device->gpu, 0);
-    device->prt = dvz_presenter(device->rd, app->client, 0);
-
+    device->prt = dvz_presenter(device->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
     return device;
 }
 

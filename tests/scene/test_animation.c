@@ -123,7 +123,7 @@ int test_animation_2(TstSuite* suite)
 
     const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper);
+    graphics_request(rqr, n, &wrapper, 0);
 
 
     // Upload the data.

@@ -13,6 +13,7 @@
 
 #include "canvas.h"
 #include "client.h"
+#include "fps.h"
 #include "gui.h"
 #include "renderer.h"
 
@@ -77,6 +78,8 @@ struct DvzPresenter
     // GUI callbacks.
     DvzGui* gui;
     DvzList* callbacks;
+
+    DvzFps fps;
 
     // Mappings.
     struct

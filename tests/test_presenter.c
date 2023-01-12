@@ -518,20 +518,6 @@ int test_presenter_multi(TstSuite* suite)
 
 
 
-static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
-{
-    ANN(gui_window);
-    DvzFps* fps = (DvzFps*)user_data;
-    ANN(fps);
-
-    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){200, 200}, DVZ_DIALOG_FLAGS_FPS);
-
-    dvz_fps_tick(fps);
-    dvz_fps_histogram(fps);
-
-    dvz_gui_dialog_end();
-}
-
 int test_presenter_fps(TstSuite* suite)
 {
     ANN(suite);
@@ -564,10 +550,6 @@ int test_presenter_fps(TstSuite* suite)
     // renderer.
     dvz_presenter_submit(prt, rqr);
 
-    // FPS callback.
-    DvzFps fps = dvz_fps();
-    dvz_presenter_gui(prt, req.id, _gui_callback_fps, &fps);
-
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
 
@@ -575,7 +557,6 @@ int test_presenter_fps(TstSuite* suite)
 
 
     // Destroying all objects.
-    dvz_fps_destroy(&fps);
     dvz_presenter_destroy(prt);
 
     dvz_client_destroy(client);
@@ -678,11 +659,11 @@ int test_presenter_scatter(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+    DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
 
     const uint32_t n = 52;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper);
+    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
     void* data = graphics_scatter(rqr, wrapper.dat_id, n);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
@@ -801,7 +782,7 @@ int test_presenter_thread(TstSuite* suite)
 
     const uint32_t n = 256;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper);
+    graphics_request(rqr, n, &wrapper, 0);
     wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
     _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
     DvzRequest req =

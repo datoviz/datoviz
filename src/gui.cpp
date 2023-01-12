@@ -220,18 +220,17 @@ static int _imgui_styling(int flags)
 
     if ((flags & DVZ_DIALOG_FLAGS_FPS) != 0)
     {
-        imgui_flags |= ImGuiWindowFlags_NoTitleBar |         //
-                       ImGuiWindowFlags_NoScrollbar |        //
-                       ImGuiWindowFlags_NoResize |           //
-                       ImGuiWindowFlags_NoCollapse |         //
-                       ImGuiWindowFlags_NoNav |              //
-                       ImGuiWindowFlags_NoNavInputs |        //
-                       ImGuiWindowFlags_NoDecoration |       //
-                       ImGuiWindowFlags_NoMove |             //
-                       ImGuiWindowFlags_NoSavedSettings |    //
-                       ImGuiWindowFlags_NoFocusOnAppearing | //
-                       ImGuiWindowFlags_NoBackground;
-        // ImGui::SetNextWindowBgAlpha(0);
+        imgui_flags |= ImGuiWindowFlags_NoTitleBar |        //
+                       ImGuiWindowFlags_NoScrollbar |       //
+                       ImGuiWindowFlags_NoResize |          //
+                       ImGuiWindowFlags_NoCollapse |        //
+                       ImGuiWindowFlags_NoNav |             //
+                       ImGuiWindowFlags_NoNavInputs |       //
+                       ImGuiWindowFlags_NoDecoration |      //
+                       ImGuiWindowFlags_NoMove |            //
+                       ImGuiWindowFlags_NoSavedSettings |   //
+                       ImGuiWindowFlags_NoFocusOnAppearing; //
+        ImGui::SetNextWindowBgAlpha(0.5fb);
 
         // 0 = TL, 1 = TR, 2 = LL, 3 = LR
         // NOTE: by default, always top right

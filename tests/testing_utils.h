@@ -399,10 +399,11 @@ static void visual_destroy(TestVisual* visual)
 /*  Graphics wrapper                                                                             */
 /*************************************************************************************************/
 
-static void graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper)
+static void
+graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, int flags)
 {
     // Make a canvas creation request.
-    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, flags);
     dvz_requester_add(rqr, req);
 
     // Canvas id.

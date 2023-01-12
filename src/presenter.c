@@ -29,6 +29,22 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
+{
+    ANN(gui_window);
+    DvzFps* fps = (DvzFps*)user_data;
+    ANN(fps);
+
+    dvz_gui_dialog_begin((vec2){100, 100}, (vec2){140, 70}, DVZ_DIALOG_FLAGS_FPS);
+
+    dvz_fps_tick(fps);
+    dvz_fps_histogram(fps);
+
+    dvz_gui_dialog_end();
+}
+
+
+
 static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
 {
     ANN(prt);
@@ -109,6 +125,12 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
 
         // Associate it to the ID.
         dvz_map_add(prt->maps.guis, rq.id, 0, (void*)gui_window);
+    }
+
+    bool has_fps = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
+    if (has_fps)
+    {
+        dvz_presenter_gui(prt, rq.id, _gui_callback_fps, &prt->fps);
     }
 }
 
@@ -409,6 +431,8 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     // presenter is destroyed.
     prt->surfaces = dvz_list();
 
+    prt->fps = dvz_fps();
+
     return prt;
 }
 
@@ -663,6 +687,8 @@ void dvz_presenter_destroy(DvzPresenter* prt)
 
     // Destroy the list of surfaces.
     dvz_list_destroy(prt->surfaces);
+
+    dvz_fps_destroy(&prt->fps);
 
     FREE(prt);
 }
