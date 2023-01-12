@@ -29,7 +29,7 @@
         str = #r;                                                                                 \
         break
 
-// #define PRT(x) printf(x "\n");
+#define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
 
 
 
@@ -82,6 +82,11 @@ DvzRequester* dvz_requester(void)
     rqr->requests = (DvzRequest*)calloc(rqr->capacity, sizeof(DvzRequest));
 
     rqr->pointers_to_free = dvz_list();
+
+    IF_VERBOSE
+    printf("---\n"
+           "version: '1.0'\n"
+           "requests:\n");
 
     dvz_obj_init(&rqr->obj);
     return rqr;
@@ -427,6 +432,18 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
     // NOTE: the framebuffer size will have to be determined once the window has been created.
     // As a fallback, the window size will be taken as equal to the screen size.
     memcpy(req.content.canvas.background, background, sizeof(cvec4));
+
+    IF_VERBOSE
+    printf(
+        "- action: create\n"
+        "  type: canvas\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  flags: %d\n"
+        "  content:\n"
+        "    width: %d\n"
+        "    height: %d\n",
+        req.id, flags, width, height);
+
     return req;
 }
 
@@ -461,6 +478,18 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
     req.flags = flags;
     req.content.dat.type = type;
     req.content.dat.size = size;
+
+    IF_VERBOSE
+    printf(
+        "- action: create\n"
+        "  type: dat\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  flags: %d\n"
+        "  content:\n"
+        "    type: %d\n"
+        "    size: %lu\n",
+        req.id, flags, type, size);
+
     return req;
 }
 
@@ -468,6 +497,8 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
 
 DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 {
+    ASSERT(size > 0);
+
     CREATE_REQUEST(RESIZE, DAT);
     req.id = dat;
     req.content.dat.size = size;
@@ -478,12 +509,32 @@ DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 
 DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
 {
+    ASSERT(size > 0);
+    ANN(data);
+
     // WARNING: the data pointer must live through the next frame in the main rendering loop.
     CREATE_REQUEST(UPLOAD, DAT);
     req.id = dat;
     req.content.dat_upload.offset = offset;
     req.content.dat_upload.size = size;
     req.content.dat_upload.data = data;
+
+    if (getenv("DVZ_VERBOSE") != NULL)
+    {
+        char* encoded = b64_encode((const unsigned char*)data, size);
+        printf(
+            "- action: upload\n"
+            "  type: dat\n"
+            "  id: 0x%" PRIx64 "\n"
+            "  content:\n"
+            "    offset: %lu\n"
+            "    size: %lu\n"
+            "    data:\n"
+            "      mode: base64\n"
+            "      buffer: %s\n",
+            dat, offset, size, encoded);
+        free(encoded);
+    }
     return req;
 }
 
@@ -558,6 +609,17 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
     req.id = dvz_prng_uuid(rqr->prng);
     req.flags = flags;
     req.content.graphics.type = type;
+
+    IF_VERBOSE
+    printf(
+        "- action: create\n"
+        "  type: graphics\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  flags: %d\n"
+        "  content:\n"
+        "    type: %d\n",
+        req.id, flags, type);
+
     return req;
 }
 
@@ -568,6 +630,16 @@ DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
     CREATE_REQUEST(SET, VERTEX);
     req.id = graphics;
     req.content.set_vertex.dat = dat;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: vertex\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    dat: 0x%" PRIx64 "\n",
+        req.id, dat);
+
     return req;
 }
 
@@ -609,6 +681,14 @@ DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
     CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
     req.content.record.command.type = DVZ_RECORDER_BEGIN;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: begin\n"
+        "  id: 0x%" PRIx64 "\n",
+        req.id);
+
     return req;
 }
 
@@ -621,6 +701,21 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
     memcpy(req.content.record.command.contents.v.offset, offset, sizeof(vec2));
     memcpy(req.content.record.command.contents.v.shape, shape, sizeof(vec2));
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: viewport\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    offset:\n"
+        "    - %.3f\n"
+        "    - %.3f\n"
+        "    shape:\n"
+        "    - %.3f\n"
+        "    - %.3f\n",
+        board, offset[0], offset[1], shape[0], shape[1]);
+
     return req;
 }
 
@@ -635,6 +730,18 @@ DvzRequest dvz_record_draw(
     req.content.record.command.contents.draw_direct.pipe_id = graphics;
     req.content.record.command.contents.draw_direct.first_vertex = first_vertex;
     req.content.record.command.contents.draw_direct.vertex_count = vertex_count;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: draw\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    graphics: 0x%" PRIx64 "\n"
+        "    first_vertex: %u\n"
+        "    vertex_count: %u\n",
+        board, graphics, first_vertex, vertex_count);
+
     return req;
 }
 
@@ -645,5 +752,13 @@ DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
     CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
     req.content.record.command.type = DVZ_RECORDER_END;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: end\n"
+        "  id: 0x%" PRIx64 "\n",
+        req.id);
+
     return req;
 }

@@ -680,7 +680,7 @@ int test_presenter_scatter(TstSuite* suite)
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
-    const uint32_t n = 50;
+    const uint32_t n = 52;
     GraphicsWrapper wrapper = {0};
     graphics_request(rqr, n, &wrapper);
     void* data = graphics_scatter(rqr, wrapper.dat_id, n);
