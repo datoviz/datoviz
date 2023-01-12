@@ -230,7 +230,7 @@ static int _imgui_styling(int flags)
                        ImGuiWindowFlags_NoMove |            //
                        ImGuiWindowFlags_NoSavedSettings |   //
                        ImGuiWindowFlags_NoFocusOnAppearing; //
-        ImGui::SetNextWindowBgAlpha(0.5fb);
+        ImGui::SetNextWindowBgAlpha(0.5f);
 
         // 0 = TL, 1 = TR, 2 = LL, 3 = LR
         // NOTE: by default, always top right
