@@ -88,7 +88,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
 
     // Create the canvas recorder.
     ASSERT(dvz_obj_is_created(&canvas->render.swapchain.obj));
-    canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
+    canvas->recorder = dvz_recorder(0);
 
     // HACK: once we have an img_count, we update the "global" variable with this value.
     // We ensure that the global img_count is larger than all img_count of canvases.

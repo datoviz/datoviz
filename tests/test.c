@@ -186,6 +186,7 @@ int dvz_run_tests(const char* match)
     TEST(test_presenter_fps)
     TEST(test_presenter_scatter)
     TEST(test_presenter_thread)
+    TEST(test_presenter_deserialize)
 
     TEST(test_animation_2)
 

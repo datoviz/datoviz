@@ -173,6 +173,21 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 
 
 
+// static void* _canvas_update(DvzRenderer* rd, DvzRequest req)
+// {
+//     ANN(rd);
+//     ASSERT(req.id != 0);
+//     log_trace("update canvas");
+
+//     GET_ID(DvzCanvas, canvas, req.id)
+
+//     dvz_cmd_submit_sync(&canvas->cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+//     return NULL;
+// }
+
+
+
 static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
@@ -538,7 +553,8 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
     if (!canvas->recorder)
     {
         log_debug("renderer automatically creates recorder for canvas 0x%" PRIx64, req.id);
-        canvas->recorder = dvz_recorder(canvas->render.swapchain.img_count, 0);
+
+        canvas->recorder = dvz_recorder(0);
     }
 
     // Get the recorder command.
@@ -697,6 +713,7 @@ static void _setup_router(DvzRenderer* rd)
 
     // Canvas.
     ROUTE(CREATE, CANVAS, _canvas_create)
+    // ROUTE(UPDATE, CANVAS, _canvas_update)
     ROUTE(DELETE, CANVAS, _canvas_delete)
 
     // Graphics.
@@ -889,23 +906,64 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 
 
 
-uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb)
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb)
 {
     ANN(rd);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, board_id);
-    ANN(board);
+    int bctype = dvz_map_type(rd->map, bc_id);
 
-    // Find the pointer: either passed here, or the board-owned pointer.
-    rgb = rgb != NULL ? rgb : board->rgb;
-    ANN(rgb);
+    if (bctype == DVZ_REQUEST_OBJECT_BOARD)
+    {
+        DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, bc_id);
+        ANN(board);
 
-    // Download the image to the buffer.
-    dvz_board_download(board, board->size, rgb);
+        // Find the pointer: either passed here, or the board-owned pointer.
+        rgb = rgb != NULL ? rgb : board->rgb;
+        ANN(rgb);
 
-    // Set the size.
-    ANN(size);
-    *size = board->size;
+        // Download the image to the buffer.
+        dvz_board_download(board, board->size, rgb);
+
+        // Set the size.
+        ANN(size);
+        *size = board->size;
+    }
+
+    // else if (bctype == DVZ_REQUEST_OBJECT_CANVAS)
+    // {
+    //     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, bc_id);
+    //     ANN(canvas);
+
+
+    //     // Start the image transition command buffers.
+    //     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+    //     dvz_cmd_begin(&cmds, 0);
+
+    //     DvzBarrier barrier = dvz_barrier(gpu);
+    //     dvz_barrier_stages(
+    //         &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    //     dvz_barrier_images(&barrier, &canvas->render.staging);
+    //     dvz_barrier_images_layout(
+    //         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    //     dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    //     dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    //     // Copy the image to the staging image.
+    //     dvz_cmd_copy_image(&cmds, 0, &canvas->images, &canvas->render.staging);
+
+    //     dvz_barrier_images_layout(
+    //         &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
+    //     dvz_barrier_images_access(
+    //         &barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    //     dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    //     // End the cmds and submit them.
+    //     dvz_cmd_end(&cmds, 0);
+    //     dvz_cmd_submit_sync(&cmds, 0);
+
+    //     // Now, copy the staging image into CPU memory.
+    //     dvz_images_download(&canvas->render.staging, 0, 1, true, false, rgb);
+    // }
 
     // Return the pointer.
     return rgb;

@@ -113,7 +113,6 @@ struct DvzRecorderCommand
 struct DvzRecorder
 {
     int flags;
-    uint32_t img_count;
     uint32_t capacity;
     uint32_t count; // number of commands
     DvzRecorderCommand* commands;
@@ -128,7 +127,7 @@ EXTERN_C_ON
 /*  Recorder functions                                                                           */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzRecorder* dvz_recorder(uint32_t img_count, int flags);
+DVZ_EXPORT DvzRecorder* dvz_recorder(int flags);
 
 DVZ_EXPORT void dvz_recorder_clear(DvzRecorder* recorder);
 

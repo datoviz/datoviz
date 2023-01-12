@@ -168,8 +168,7 @@ DVZ_EXPORT DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
  * @param rgb a pointer to the image, or NULL if this array should be handled by datoviz
  * @returns a pointer to the image
  */
-DVZ_EXPORT uint8_t*
-dvz_renderer_image(DvzRenderer* rd, DvzId board_id, DvzSize* size, uint8_t* rgb);
+DVZ_EXPORT uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb);
 
 
 

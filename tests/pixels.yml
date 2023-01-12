@@ -1,0 +1,60 @@
+---
+version: '1.0'
+requests:
+- action: create
+  type: canvas
+  id: 1
+  content:
+    width: 800
+    height: 600
+- action: create
+  type: graphics
+  id: 2
+  flags: 3
+  content:
+    canvas: 1
+    type: 4
+- action: create
+  type: dat
+  id: 3
+  content:
+    type: 2
+    size: 48
+  flags: 768
+- action: set
+  type: vertex
+  id: 2
+  content:
+    dat: 3
+- action: upload
+  type: dat
+  id: 3
+  content:
+    offset: 0
+    size: 1000
+    data:
+      mode: base64
+      buffer: AGCAvwAAgL8AAAAA/////wAAIEE2X4C/RwyAvwAAAAD/////AAAgQdxcgL9aGIC/AAAAAP////8AACBB/FiAvwckgL8AAAAA/////wAAIEGmU4C/HC+AvwAAAAD/////AAAgQfBMgL9rOYC/AAAAAP////8AACBB9kSAv8lCgL8AAAAA/////wAAIEHbO4C/DkuAvwAAAAD/////AAAgQcQxgL8YUoC/AAAAAP////8AACBB3CaAv8lXgL8AAAAA/////wAAIEFRG4C/CFyAvwAAAAD/////AAAgQVIPgL/FXoC/AAAAAP////8AACBBFAOAv/NfgL8AAAAA/////wAAIEGQ7X+/jl+AvwAAAAD/////AAAgQUfVf7+YXYC/AAAAAP////8AACBBsb1/vxhagL8AAAAA/////wAAIEExp3+/HVWAvwAAAAD/////AAAgQSeSf7+9ToC/AAAAAP////8AACBB635/vxFHgL8AAAAA/////wAAIEHNbX+/Oz6AvwAAAAD/////AAAgQRZff79fNIC/AAAAAP////8AACBBBFN/v6cpgL8AAAAA/////wAAIEHISX+/QB6AvwAAAAD/////AAAgQYpDf79aEoC/AAAAAP////8AACBBZUB/vycGgL8AAAAA/////wAAIEFlQH+/s/N/vwAAAAD/////AAAgQYpDf79M23+/AAAAAP////8AACBByEl/v4DDf78AAAAA/////wAAIEEEU3+/sqx/vwAAAAD/////AAAgQRZff79Cl3+/AAAAAP////8AACBBzW1/v4qDf78AAAAA/////wAAIEHrfn+/3nF/vwAAAAD/////AAAgQSeSf7+HYn+/AAAAAP////8AACBBMad/v8ZVf78AAAAA/////wAAIEGxvX+/0Et/vwAAAAD/////AAAgQUfVf7/QRH+/AAAAAP////8AACBBkO1/v+NAf78AAAAA/////wAAIEEUA4C/GUB/vwAAAAD/////AAAgQVIPgL92Qn+/AAAAAP////8AACBBURuAv/BHf78AAAAA/////wAAIEHcJoC/b1B/vwAAAAD/////AAAgQcQxgL/QW3+/AAAAAP////8AACBB2zuAv+Npf78AAAAA/////wAAIEH2RIC/bnp/vwAAAAD/////AAAgQfBMgL8qjX+/AAAAAP////8AACBBplOAv8ihf78AAAAA/////wAAIEH8WIC/87d/vwAAAAD/////AAAgQdxcgL9Mz3+/AAAAAP////8AACBBNl+Av3Pnf78AAAAA/////wAAIEEAYIC/AACAvwAAAAD/////AAAgQQ==
+- action: record
+  type: begin
+  id: 1
+- action: record
+  type: viewport
+  id: 1
+  content:
+    offset:
+    - 0
+    - 0
+    shape:
+    - 0
+    - 0
+- action: record
+  type: draw
+  id: 1
+  content:
+    graphics: 2
+    first_vertex: 0
+    vertex_count: 50
+- action: record
+  type: end
+  id: 1

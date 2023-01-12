@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "common.h"
+#include "fileio.h"
 
 
 

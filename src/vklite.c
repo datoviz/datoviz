@@ -625,6 +625,10 @@ void dvz_cmd_free(DvzCommands* cmds)
 
 void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
 {
+    ANN(cmds);
+    ASSERT(cmds->count > 0);
+    ASSERT(idx < cmds->count);
+
     log_debug("[SLOW] submit %d command buffer(s) to queue #%d", cmds->count, cmds->queue_idx);
 
     DvzQueues* q = &cmds->gpu->queues;

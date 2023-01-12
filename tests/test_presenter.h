@@ -34,6 +34,8 @@ int test_presenter_scatter(TstSuite*);
 
 int test_presenter_thread(TstSuite*);
 
+int test_presenter_deserialize(TstSuite*);
+
 
 
 #endif

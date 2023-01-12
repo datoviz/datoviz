@@ -849,3 +849,50 @@ int test_presenter_thread(TstSuite* suite)
     FREE(wrapper.data);
     return 0;
 }
+
+
+
+int test_presenter_deserialize(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    // Load the requests from requests.dvz.
+    dvz_requester_load(rqr, DVZ_DUMP_FILENAME);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(client, N_FRAMES);
+
+    // End.
+
+    // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
+    dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
+    return 0;
+}

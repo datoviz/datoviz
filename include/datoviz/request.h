@@ -21,6 +21,8 @@
 /*************************************************************************************************/
 
 #define DVZ_REQUEST_VERSION 1
+// filename for the dump, to activate with the DVZ_DUMP=1 environment variable
+#define DVZ_DUMP_FILENAME "requests.dvz"
 
 
 
@@ -85,6 +87,7 @@ typedef struct DvzRequester DvzRequester;
 
 // Forward declarations.
 typedef struct DvzPipe DvzPipe;
+typedef struct DvzList DvzList;
 typedef uint64_t DvzId;
 
 
@@ -207,6 +210,8 @@ struct DvzRequester
     uint32_t count;
     uint32_t capacity;
     DvzRequest* requests;
+
+    DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
 };
 
 
@@ -266,6 +271,18 @@ DVZ_EXPORT void dvz_requester_add(DvzRequester* rqr, DvzRequest req);
  * @returns a pointer to the array of requests
  */
 DVZ_EXPORT DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count);
+
+
+
+/**
+ */
+DVZ_EXPORT int dvz_requester_dump(DvzRequester* rqr, const char* filename);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
 
 
 
@@ -380,6 +397,17 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
  */
 DVZ_EXPORT DvzRequest
 dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags);
+
+
+
+/**
+ * Create a request for a canvas redraw (command buffer submission).
+ *
+ * @param rqr the requester
+ * @param id the canvas id
+ * @returns the request
+ */
+// DVZ_EXPORT DvzRequest dvz_update_canvas(DvzRequester* rqr, DvzId id);
 
 
 

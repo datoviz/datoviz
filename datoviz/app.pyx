@@ -27,6 +27,11 @@ logger = logging.getLogger('datoviz')
 
 
 # -------------------------------------------------------------------------------------------------
+# Util functions
+# -------------------------------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
 
@@ -78,19 +83,21 @@ cdef class Record:
         cdef vec2 offset = (x, y)
         cdef vec2 shape = (w, h)
 
-        logger.debug(
-            f"record viewport, canvas={self._canvas_id:02x}, x={x}, y={y}, w={w}, h={h}")
+        # logger.debug(
+        #     f"record viewport, canvas={self._canvas_id:02x}, x={x}, y={y}, w={w}, h={h}")
 
         cdef rq.DvzRequest req = rq.dvz_record_viewport(self._c_rqr, self._canvas_id, offset, shape)
+        # print_req(req)
         rq.dvz_requester_add(self._c_rqr, req)
 
     def draw(self, Graphics g, int first_vertex, int vertex_count):
         cdef DvzId graphics_id = g._c_id
 
-        logger.debug(
-            f"record draw, canvas={self._canvas_id:02x}, graphics={graphics_id:02x}, first_vertex={first_vertex}, vertex_count={vertex_count}")
+        # logger.debug(
+        #     f"record draw, canvas={self._canvas_id:02x}, graphics={graphics_id:02x}, first_vertex={first_vertex}, vertex_count={vertex_count}")
 
-        req = rq.dvz_record_draw(self._c_rqr, self._canvas_id, graphics_id, first_vertex, vertex_count)
+        req = rq.dvz_record_draw(
+            self._c_rqr, self._canvas_id, graphics_id, first_vertex, vertex_count)
         rq.dvz_requester_add(self._c_rqr, req)
 
 
@@ -147,7 +154,7 @@ cdef class Graphics:
     def set_vertex_buffer(self, Dat vb):
         cdef DvzId graphics_id = self._c_id
         cdef DvzId dat_id = vb._c_id
-        logger.debug(f"set vertex, graphics={graphics_id:02x}, dat={dat_id:02x}")
+        # logger.debug(f"set vertex, graphics={graphics_id:02x}, dat={dat_id:02x}")
         cdef rq.DvzRequest req = rq.dvz_set_vertex(self._c_rqr, graphics_id, dat_id)
         rq.dvz_requester_add(self._c_rqr, req)
 
@@ -190,19 +197,19 @@ cdef class Commands:
 
         cdef rq.DvzRequest req = rq.dvz_create_canvas(self._c_rqr, width, height, c_background, flags)
         id = self._submit_req(req, id)
-        logger.debug(f"create canvas {width}x{height}, id={id:02x}, flags={flags}")
+        # logger.debug(f"create canvas {width}x{height}, id={id:02x}, flags={flags}")
         return Canvas(self, id)
 
     def Graphics(self, DvzGraphicsType gtype, int flags=0, DvzId id=0):
         cdef rq.DvzRequest req = rq.dvz_create_graphics(self._c_rqr, gtype, flags)
         id = self._submit_req(req, id)
-        logger.debug(f"create graphics, gtype={gtype}, id={id:02x}, flags={flags}")
+        # logger.debug(f"create graphics, gtype={gtype}, id={id:02x}, flags={flags}")
         return Graphics(self, id)
 
     def Dat(self, DvzBufferType btype, DvzSize size, int flags=0, DvzId id=0):
         cdef rq.DvzRequest req = rq.dvz_create_dat(self._c_rqr, btype, size, flags)
         id = self._submit_req(req, id)
-        logger.debug(f"create dat, btype={btype}, size={size}, id={id:02x}, flags={flags}")
+        # logger.debug(f"create dat, btype={btype}, size={size}, id={id:02x}, flags={flags}")
         return Dat(self, id)
 
     def VertexBuffer(self, np.ndarray arr):
@@ -217,8 +224,8 @@ cdef class Commands:
         cdef Dat dat = self.Dat(DVZ_BUFFER_TYPE_VERTEX, size)
         cdef DvzId dat_id = dat._c_id
 
-        logger.debug(
-            f"upload dat {dat_id:02x}, offset={offset}, data=<array {arr.dtype} with {str(arr.size)} items>")
+        # logger.debug(
+        #     f"upload dat {dat_id:02x}, offset={offset}, data=<array {arr.dtype} with {str(arr.size)} items>")
 
         cdef tp.uint8_t * data = <tp.uint8_t*> & arr.data[0]
         cdef rq.DvzRequest req = rq.dvz_upload_dat(
@@ -248,7 +255,8 @@ def main():
     app = App()
 
     n = 50
-    arr = np.zeros(n, dtype=[('pos', 'f4', 3), ('color', 'u1', 4), ('size', 'f4')])
+    arr = np.zeros(n, dtype=[('pos', 'f4', 3),
+                   ('color', 'u1', 4), ('size', 'f4')])
     t = np.linspace(-1, 1, n, dtype=np.float32)
     arr['pos'] = .75 * \
         np.c_[np.cos(np.pi*t), np.sin(np.pi*t), np.zeros(n)]

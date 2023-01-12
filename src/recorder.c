@@ -111,12 +111,10 @@ static inline bool _has_cache(DvzRecorder* recorder)
 /*  Recorder functions                                                                           */
 /*************************************************************************************************/
 
-DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
+DvzRecorder* dvz_recorder(int flags)
 {
-    ASSERT(img_count > 0);
     DvzRecorder* recorder = (DvzRecorder*)calloc(1, sizeof(DvzRecorder));
     recorder->flags = flags;
-    recorder->img_count = img_count;
     recorder->capacity = DVZ_RECORDER_COMMAND_COUNT;
     recorder->commands = calloc(recorder->capacity, sizeof(DvzRecorderCommand));
 

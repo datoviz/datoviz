@@ -4,6 +4,8 @@
 
 #include "request.h"
 #include "_debug.h"
+#include "_list.h"
+#include "fileio.h"
 
 
 
@@ -27,10 +29,12 @@
         str = #r;                                                                                 \
         break
 
+// #define PRT(x) printf(x "\n");
+
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Util functions                                                                               */
 /*************************************************************************************************/
 
 static DvzRequest _request(void)
@@ -42,6 +46,31 @@ static DvzRequest _request(void)
 
 
 
+static int write_file(const char* filename, DvzSize block_size, uint32_t block_count, void* data)
+{
+    ANN(filename);
+    ASSERT(block_size > 0);
+    ASSERT(block_count > 0);
+    ANN(data);
+
+    log_trace("saving binary `%s`", filename);
+    FILE* fp = fopen(filename, "wb");
+    if (fp == NULL)
+    {
+        log_error("error writing `%s`", filename);
+        return 1;
+    }
+    fwrite(data, block_size, block_count, fp);
+    fclose(fp);
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
 DvzRequester* dvz_requester(void)
 {
     log_trace("create requester");
@@ -51,6 +80,8 @@ DvzRequester* dvz_requester(void)
     // Initialize the list of requests for batchs.
     rqr->capacity = DVZ_CONTAINER_DEFAULT_COUNT;
     rqr->requests = (DvzRequest*)calloc(rqr->capacity, sizeof(DvzRequest));
+
+    rqr->pointers_to_free = dvz_list();
 
     dvz_obj_init(&rqr->obj);
     return rqr;
@@ -62,8 +93,19 @@ void dvz_requester_destroy(DvzRequester* rqr)
 {
     log_trace("destroy requester");
     ANN(rqr);
+
+    // NOTE: free all pointers created when loading requests dumps.
+    uint32_t n = dvz_list_count(rqr->pointers_to_free);
+    void* pointer = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pointer = dvz_list_get(rqr->pointers_to_free, i).p;
+        FREE(pointer);
+    }
+
     FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);
+    dvz_list_destroy(rqr->pointers_to_free);
     dvz_obj_destroyed(&rqr->obj);
     FREE(rqr);
 }
@@ -112,6 +154,130 @@ DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 
 
 
+int dvz_requester_dump(DvzRequester* rqr, const char* filename)
+{
+    ANN(rqr);
+    int res = 0;
+    if (rqr->count == 0)
+    {
+        log_error("empty requester, aborting requester dump");
+        return 1;
+    }
+    ANN(rqr->requests);
+
+    log_trace("start serializing %d requests", rqr->count);
+
+    // Dump the DvzRequest structures.
+    log_trace("saving main dump file `%s`", filename);
+    res = write_file(filename, sizeof(DvzRequest), rqr->count, rqr->requests);
+    if (res != 0)
+        return res;
+
+    // Write additional files for uploaded data.
+    DvzRequest* req = NULL;
+    DvzRequestContent* c = NULL;
+    char filename_bin[32] = {0};
+    uint32_t k = 1;
+    for (uint32_t i = 0; i < rqr->count; i++)
+    {
+        req = &rqr->requests[i];
+        c = &req->content;
+        ANN(req);
+
+        if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
+        {
+            // Increment the filename.
+            snprintf(filename_bin, 30, "%s.%03d", filename, k++);
+            log_trace("saving secondary dump file `%s`", filename_bin);
+
+            ANN(c);
+            if (req->type == DVZ_REQUEST_OBJECT_DAT)
+            {
+                if (write_file(filename_bin, c->dat_upload.size, 1, c->dat_upload.data) != 0)
+                    return 1;
+            }
+            else if (req->type == DVZ_REQUEST_OBJECT_TEX)
+            {
+                if (write_file(filename_bin, c->tex_upload.size, 1, c->tex_upload.data) != 0)
+                    return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+
+void dvz_requester_load(DvzRequester* rqr, const char* filename)
+{
+    ANN(rqr);
+    ANN(filename);
+    ANN(rqr->requests);
+
+    // int res = 0;
+    log_trace("start deserializing requests from file `%s`", filename);
+
+    // Dump the DvzRequest structures.
+    log_trace("load main dump file `%s`", filename);
+
+    DvzSize size = 0;
+    uint32_t* contents = dvz_read_file(filename, &size);
+    if (contents == NULL)
+    {
+        log_error("unable to read `%s`", filename);
+        return;
+    }
+    ASSERT(size > 0);
+
+    // Number of requests.
+    uint32_t count = size / sizeof(DvzRequest);
+
+
+    // Write additional files for uploaded data.
+    DvzRequest* requests = (DvzRequest*)contents;
+    DvzRequest* req = NULL;
+    DvzRequestContent* c = NULL;
+    char filename_bin[32] = {0};
+    uint32_t k = 1;
+
+    dvz_requester_begin(rqr);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        req = &requests[i];
+        c = &req->content;
+        ANN(req);
+
+        log_info("%u", req->id);
+
+        if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
+        {
+            // Increment the filename.
+            snprintf(filename_bin, 30, "%s.%03d", filename, k++);
+            log_trace("saving secondary dump file `%s`", filename_bin);
+
+            ANN(c);
+            if (req->type == DVZ_REQUEST_OBJECT_DAT)
+            {
+                c->dat_upload.data = dvz_read_file(filename_bin, &c->dat_upload.size);
+                dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->dat_upload.data});
+            }
+            else if (req->type == DVZ_REQUEST_OBJECT_TEX)
+            {
+                c->tex_upload.data = dvz_read_file(filename_bin, &c->tex_upload.size);
+                dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->tex_upload.data});
+            }
+        }
+
+        dvz_requester_add(rqr, *req);
+    }
+
+    dvz_requester_end(rqr, NULL);
+}
+
+
+
 DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 {
     ANN(rqr);
@@ -124,6 +290,14 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
     // Make a copy of the pending requests.
     DvzRequest* requests = calloc(n, sizeof(DvzRequest));
     memcpy(requests, rqr->requests, n * sizeof(DvzRequest));
+
+    if (getenv("DVZ_DUMP") != NULL)
+    {
+        if (dvz_requester_dump(rqr, DVZ_DUMP_FILENAME) == 0)
+            log_info("wrote %d Datoviz requests to `%s`", n, DVZ_DUMP_FILENAME);
+        else
+            log_error("error writing Datoviz requests to dump file `%s`", DVZ_DUMP_FILENAME);
+    }
 
     // Flush the requests.
     rqr->count = 0;
@@ -255,6 +429,15 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
     memcpy(req.content.canvas.background, background, sizeof(cvec4));
     return req;
 }
+
+
+
+// DvzRequest dvz_update_canvas(DvzRequester* rqr, DvzId id)
+// {
+//     CREATE_REQUEST(UPDATE, CANVAS);
+//     req.id = id;
+//     return req;
+// }
 
 
 

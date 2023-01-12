@@ -74,3 +74,4 @@ joblib
 experimental
 *.out.txt
 *~.*
+*.dvz*
