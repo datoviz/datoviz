@@ -31,6 +31,9 @@
 
 #define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
 
+// Maximum size of buffers encoded in base65 when printing the commands
+#define VERBOSE_MAX_BASE64 1048576
+
 
 
 /*************************************************************************************************/
@@ -521,7 +524,12 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
 
     if (getenv("DVZ_VERBOSE") != NULL)
     {
-        char* encoded = b64_encode((const unsigned char*)data, size);
+        char* encoded = NULL;
+        // NOTE: avoid computing the base64 of large arrays.
+        if (size < VERBOSE_MAX_BASE64)
+            encoded = b64_encode((const unsigned char*)data, size);
+        else
+            encoded = "<snip>";
         printf(
             "- action: upload\n"
             "  type: dat\n"
@@ -533,7 +541,8 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
             "      mode: base64\n"
             "      buffer: %s\n",
             dat, offset, size, encoded);
-        free(encoded);
+        if (size < VERBOSE_MAX_BASE64)
+            free(encoded);
     }
     return req;
 }
