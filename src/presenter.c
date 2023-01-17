@@ -599,11 +599,10 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     // IMPORTANT: we need to wait for the present queue to be idle, otherwise the GPU hangs
     // when waiting for fences (not sure why). The problem only arises when using different
     // queues for command buffer submission and swapchain present.
-    dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_PRESENT);
 
-    // HACK: improve this: img_idx depends on the canvas, but this function does not...
-    // DUP transfers must be refactored.
-    dvz_transfers_frame(&ctx->transfers, 0);
+    // Transfers.
+    dvz_transfers_frame(&ctx->transfers, swapchain->img_idx);
 
     // TODO:
     // need to go through the pending requests again in the requester (eg those raise in the

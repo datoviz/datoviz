@@ -30,6 +30,7 @@ static void _ensure_bindings_created(DvzPipe* pipe, uint32_t count)
 
     ASSERT(count > 0);
 
+    log_trace("create bindings with %d descriptors", count);
     if (pipe->type == DVZ_PIPE_GRAPHICS)
         pipe->bindings = dvz_bindings(&pipe->u.graphics.slots, count);
     else if (pipe->type == DVZ_PIPE_COMPUTE)
@@ -158,6 +159,8 @@ void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 bool dvz_pipe_complete(DvzPipe* pipe)
 {
     ANN(pipe);
+    if (pipe->bindings.slots == NULL)
+        return false;
     return _all_set(pipe->bindings.slots->slot_count, pipe->bindings_set);
 }
 
@@ -169,7 +172,7 @@ void dvz_pipe_create(DvzPipe* pipe)
     log_trace("creating pipe");
 
     // Create the bindings if needed.
-    _ensure_bindings_created(pipe, 1);
+    // _ensure_bindings_created(pipe, 1);
 
     if (pipe->type == DVZ_PIPE_GRAPHICS)
         dvz_graphics_create(&pipe->u.graphics);

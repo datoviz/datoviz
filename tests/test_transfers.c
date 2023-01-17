@@ -495,7 +495,7 @@ int test_transfers_dups_upload(TstSuite* suite)
     // This will upload the data to buffer region #1 but not the others.
     dvz_transfers_frame(transfers, 1);
 
-    // Download the buffer region and check that region #1, and only this one, has the data.
+    // Download the buffer region and check that region #1 has the data.
     uint8_t* downloaded = (uint8_t*)calloc(size, 1);
     dvz_buffer_regions_download(&br, 1, 0, size, downloaded);
     AT(downloaded[0] == data);
@@ -509,6 +509,8 @@ int test_transfers_dups_upload(TstSuite* suite)
         dvz_buffer_regions_download(&br, i, 0, size, downloaded);
         AT(downloaded[0] == data);
     }
+
+    // Should not be empty.
     AT(!_dups_empty(&transfers->dups));
 
     // Last buffer is #0.
@@ -519,6 +521,8 @@ int test_transfers_dups_upload(TstSuite* suite)
         dvz_buffer_regions_download(&br, i, 0, size, downloaded);
         AT(downloaded[0] == data);
     }
+
+    // Now, should not be empty.
     AT(_dups_empty(&transfers->dups));
 
     _destroy_buffer_regions(br);

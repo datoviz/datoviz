@@ -426,8 +426,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
     dvz_requester_add(rqr, req);
 
     // Binding #0: MVP.
-    req = dvz_create_dat(
-        rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
     dvz_requester_add(rqr, req);
     wrapper->mvp_id = req.id;
 

@@ -2123,6 +2123,7 @@ void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions b
     ASSERT(br.buffer != VK_NULL_HANDLE);
     ASSERT(br.count > 0);
     ASSERT(bindings->dset_count > 0);
+    log_debug("%d brain regions, %d descriptor sets", br.count, bindings->dset_count);
     ASSERT(br.count == 1 || br.count == bindings->dset_count);
     log_trace("set bindings with buffer for binding #%d", idx);
 

@@ -256,8 +256,6 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
         c = &req->content;
         ANN(req);
 
-        log_info("%u", req->id);
-
         if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
         {
             // Increment the filename.
