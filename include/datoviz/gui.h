@@ -186,11 +186,12 @@ DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
 /**
  * Start a new dialog.
  *
- * @param gui the GUI
+ * @param title the dialog title
  * @param pos the dialog position
  * @param size the dialog size
+ * @param flags the flags
  */
-DVZ_EXPORT void dvz_gui_dialog_begin(vec2 pos, vec2 size, int flags);
+DVZ_EXPORT void dvz_gui_dialog_begin(const char* title, vec2 pos, vec2 size, int flags);
 
 
 

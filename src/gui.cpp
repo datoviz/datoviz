@@ -47,7 +47,7 @@ static inline bool _imgui_has_glfw()
 static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpass)
 {
     ASSERT(!_imgui_has_context());
-    log_debug("initialize Dear ImGui context");
+    log_debug("initialize the Dear ImGui context");
 
     ANN(gpu);
 
@@ -457,15 +457,18 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 /*  DearImGui Wrappers                                                                           */
 /*************************************************************************************************/
 
-void dvz_gui_dialog_begin(vec2 pos, vec2 size, int flags)
+void dvz_gui_dialog_begin(const char* title, vec2 pos, vec2 size, int flags)
 {
+    ANN(title);
+
+    // WARNING: the title should be unique for each different dialog!
     ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_FirstUseEver, ImVec2(0, 0));
     ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_FirstUseEver);
 
     int imgui_flags = _imgui_styling(flags);
 
     bool open = true;
-    ImGui::Begin("Dialog", &open, imgui_flags);
+    ImGui::Begin(title, &open, imgui_flags);
 }
 
 
