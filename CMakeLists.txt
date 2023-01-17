@@ -352,12 +352,15 @@ if(CC_GCC)
 
 elseif(CC_CLANG)
     # clang
+    # on Ubuntu, must do: sudo apt-get install libc++abi-dev libc++-dev
     set(COMMON_FLAGS "${COMMON_FLAGS} \
         -Wno-unused-parameter \
         -fcolor-diagnostics \
         -Wno-missing-braces \
         -Wmissing-prototypes \
         ")
+
+    # -fcatch-undefined-behavior \  # runtime checks
 
     # for fpng
     set(COMMON_FLAGS "${COMMON_FLAGS} -fdiagnostics-color=always")
@@ -368,7 +371,7 @@ elseif(CC_CLANG)
     endif()
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} -std=gnu11")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -stdlib=libc++ -std=c++17")
     set(CMAKE_OBJC_FLAGS "${CMAKE_OBJC_FLAGS} ${COMMON_FLAGS}
         -Wno-partial-availability -Wno-unguarded-availability-new")
 

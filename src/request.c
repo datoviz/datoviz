@@ -230,8 +230,8 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
     log_trace("load main dump file `%s`", filename);
 
     DvzSize size = 0;
-    uint32_t* contents = dvz_read_file(filename, &size);
-    if (contents == NULL)
+    DvzRequest* requests = (DvzRequest*)dvz_read_file(filename, &size);
+    if (requests == NULL)
     {
         log_error("unable to read `%s`", filename);
         return;
@@ -243,7 +243,6 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
 
 
     // Write additional files for uploaded data.
-    DvzRequest* requests = (DvzRequest*)contents;
     DvzRequest* req = NULL;
     DvzRequestContent* c = NULL;
     char filename_bin[32] = {0};
@@ -268,12 +267,12 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
             ANN(c);
             if (req->type == DVZ_REQUEST_OBJECT_DAT)
             {
-                c->dat_upload.data = dvz_read_file(filename_bin, &c->dat_upload.size);
+                c->dat_upload.data = (void*)dvz_read_file(filename_bin, &c->dat_upload.size);
                 dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->dat_upload.data});
             }
             else if (req->type == DVZ_REQUEST_OBJECT_TEX)
             {
-                c->tex_upload.data = dvz_read_file(filename_bin, &c->tex_upload.size);
+                c->tex_upload.data = (void*)dvz_read_file(filename_bin, &c->tex_upload.size);
                 dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->tex_upload.data});
             }
         }

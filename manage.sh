@@ -17,6 +17,8 @@ fi
 # -------------------------------------------------------------------------------------------------
 
 function build {
+    unset CC
+    unset CXX
     mkdir -p docs/images &&
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
@@ -27,11 +29,13 @@ function build {
 }
 
 function rmbuild {
-    rm -rf build
+    rm -rf ./build/
 }
 
 function clang {
-    CC=/usr/bin/clang CXX=/usr/bin/clang++ build
+    export CC=/usr/bin/clang
+    export CXX=/usr/bin/clang++
+    build
 }
 
 

@@ -13,10 +13,10 @@
 /*  Generic file I/O utils                                                                       */
 /*************************************************************************************************/
 
-uint32_t* dvz_read_file(const char* filename, size_t* size)
+void* dvz_read_file(const char* filename, size_t* size)
 {
     /* The returned pointer must be freed by the caller. */
-    uint32_t* buffer = NULL;
+    void* buffer = NULL;
     size_t length = 0;
     FILE* f = fopen(filename, "rb");
 
@@ -30,7 +30,7 @@ uint32_t* dvz_read_file(const char* filename, size_t* size)
     if (size != NULL)
         *size = length;
     fseek(f, 0, SEEK_SET);
-    buffer = (uint32_t*)malloc((size_t)length);
+    buffer = (void*)malloc((size_t)length);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);
 

@@ -877,3 +877,138 @@ int test_presenter_deserialize(TstSuite* suite)
 
     return 0;
 }
+
+
+
+// static void _on_mouse(DvzClient* client, DvzClientEvent ev)
+// {
+//     ANN(client);
+
+//     PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+//     ANN(ps);
+
+//     DvzPanzoom* pz = ps->pz;
+//     ANN(pz);
+
+//     DvzPresenter* prt = ps->prt;
+//     ANN(prt);
+
+//     DvzRequester* rqr = ps->rqr;
+//     ANN(rqr);
+
+//     DvzId mvp_id = ps->mvp_id;
+
+//     // Dragging: pan.
+//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+//     {
+//         if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+//         {
+//             dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+//         }
+//         else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+//         {
+//             dvz_panzoom_zoom_shift(
+//                 pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
+//         }
+//     }
+
+//     // Stop dragging.
+//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+//     {
+//         dvz_panzoom_end(pz);
+//     }
+
+//     // Mouse wheel.
+//     if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+//     {
+//         dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+//     }
+
+//     // Double-click
+//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+//     {
+//         dvz_panzoom_reset(pz);
+//     }
+
+//     // Update the MVP matrices.
+//     DvzMVP* mvp = dvz_panzoom_mvp(pz);
+
+//     // Submit a dat upload request with the new MVP matrices.
+//     DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+//     dvz_requester_add(rqr, req);
+//     dvz_presenter_submit(prt, rqr);
+// }
+
+// static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
+// {
+//     ANN(client);
+
+//     uint32_t width = ev.content.w.screen_width;
+//     uint32_t height = ev.content.w.screen_height;
+//     log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
+
+//     DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
+//     dvz_panzoom_resize(pz, width, height);
+// }
+
+// int test_presenter_arcball(TstSuite* suite)
+// {
+//     ANN(suite);
+
+//     // GPU-side.
+//     DvzHost* host = get_host(suite);
+
+//     DvzGpu* gpu = make_gpu(host);
+//     ANN(gpu);
+
+//     // Create a renderer.
+//     DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+//     // Client-side.
+//     DvzClient* client = dvz_client(BACKEND);
+//     DvzRequester* rqr = dvz_requester();
+
+//     // Presenter linking the renderer and the client.
+//     DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
+
+//     const uint32_t n = 52;
+//     GraphicsWrapper wrapper = {0};
+//     graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+//     void* data = graphics_scatter(rqr, wrapper.dat_id, n);
+
+//     // Submit a client event with type REQUESTS and with a pointer to the requester.
+//     // The Presenter will register a REQUESTS callback sending the requests to the underlying
+//     // renderer.
+//     dvz_presenter_submit(prt, rqr);
+
+
+//     // Panzoom callback.
+//     DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+//     PanzoomStruct ps = {
+//         .mvp_id = wrapper.mvp_id,
+//         .prt = prt,
+//         .pz = &pz,
+//         .rqr = rqr,
+//     };
+//     dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse,
+//     &ps); dvz_client_callback(
+//         client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _arcball_resize, &pz);
+
+//     // Dequeue and process all pending events.
+//     dvz_client_run(client, N_FRAMES);
+
+//     // End.
+
+//     // Destroying all objects.
+//     dvz_presenter_destroy(prt);
+
+//     dvz_client_destroy(client);
+//     dvz_panzoom_destroy(&pz);
+//     dvz_requester_destroy(rqr);
+
+//     dvz_renderer_destroy(rd);
+//     dvz_gpu_destroy(gpu);
+
+//     FREE(data);
+//     return 0;
+// }
