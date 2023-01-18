@@ -15,6 +15,7 @@
 #include "scene/test_animation.h"
 #include "scene/test_app.h"
 #include "scene/test_arcball.h"
+#include "scene/test_camera.h"
 #include "scene/test_panzoom.h"
 #include "test.h"
 #include "test_alloc.h"
@@ -270,6 +271,7 @@ int dvz_run_tests(const char* match)
     // Testing scene.
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
+    TEST(test_camera_1)
     TEST(test_animation_1)
     TEST(test_app_1)
 

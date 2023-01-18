@@ -560,6 +560,7 @@ set(sources
     # Scene
     "src/scene/panzoom.c"
     "src/scene/arcball.c"
+    "src/scene/camera.c"
     "src/scene/animation.c"
     "src/scene/app.c"
     "src/scene/scene.c"
@@ -639,6 +640,7 @@ if(DATOVIZ_WITH_CLI)
         # Scene
         "tests/scene/test_panzoom.c"
         "tests/scene/test_arcball.c"
+        "tests/scene/test_camera.c"
         "tests/scene/test_animation.c"
         "tests/scene/test_app.c"
 
