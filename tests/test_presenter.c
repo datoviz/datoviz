@@ -679,16 +679,16 @@ int test_presenter_scatter(TstSuite* suite)
 
 
     // Panzoom callback.
-    DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
     PanzoomStruct ps = {
         .mvp_id = wrapper.mvp_id,
         .prt = prt,
-        .pz = &pz,
+        .pz = pz,
         .rqr = rqr,
     };
     dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse, &ps);
     dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _scatter_resize, &pz);
+        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _scatter_resize, pz);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -699,7 +699,7 @@ int test_presenter_scatter(TstSuite* suite)
     dvz_presenter_destroy(prt);
 
     dvz_client_destroy(client);
-    dvz_panzoom_destroy(&pz);
+    dvz_panzoom_destroy(pz);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);

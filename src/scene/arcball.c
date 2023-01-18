@@ -43,15 +43,15 @@ static void _screen_to_arcball(vec2 p, versor q)
 /*  Arcball functions                                                                            */
 /*************************************************************************************************/
 
-DvzArcball dvz_arcball(float width, float height, int flags)
+DvzArcball* dvz_arcball(float width, float height, int flags)
 {
     // width, width are the inner viewport size
-    DvzArcball arcball = {0};
-    arcball.flags = flags;
-    arcball.viewport_size[0] = width;
-    arcball.viewport_size[1] = height;
+    DvzArcball* arcball = (DvzArcball*)calloc(1, sizeof(DvzArcball));
+    arcball->flags = flags;
+    arcball->viewport_size[0] = width;
+    arcball->viewport_size[1] = height;
 
-    dvz_arcball_reset(&arcball);
+    dvz_arcball_reset(arcball);
 
     return arcball;
 }
@@ -162,4 +162,8 @@ void dvz_arcball_print(DvzArcball* arcball)
 
 
 
-void dvz_arcball_destroy(DvzArcball* arcball) { ANN(arcball); }
+void dvz_arcball_destroy(DvzArcball* arcball)
+{
+    ANN(arcball);
+    FREE(arcball);
+}

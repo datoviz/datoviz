@@ -64,7 +64,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzPanzoom dvz_panzoom(float width, float height, int flags); // inner viewport size
+DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
 
 DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
 

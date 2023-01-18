@@ -21,24 +21,25 @@
 /*************************************************************************************************/
 
 #define PAN(x, y)                                                                                 \
-    dvz_panzoom_pan_shift(&pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});     \
-    dvz_panzoom_end(&pz);
+    dvz_panzoom_pan_shift(pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});      \
+    dvz_panzoom_end(pz);
 
 #define ZOOM(x, y, cx, cy)                                                                        \
-    dvz_panzoom_zoom_shift(&pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH * cx, HEIGHT * cy});  \
-    dvz_panzoom_end(&pz);
+    dvz_panzoom_zoom_shift(pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH * cx, HEIGHT * cy});   \
+    dvz_panzoom_end(pz);
 
-#define RESET dvz_panzoom_reset(&pz);
+#define RESET dvz_panzoom_reset(pz);
 
 #define AP(x, y)                                                                                  \
-    AC(pz.pan[0], x, EPS);                                                                        \
-    AC(pz.pan[1], y, EPS);
+    AC(pz->pan[0], x, EPS);                                                                       \
+    AC(pz->pan[1], y, EPS);
 
 #define SHOW                                                                                      \
     log_info(                                                                                     \
-        "pan: (%.2f, %.2f)  zoom: (%.2f, %.2f)", pz.pan[0], pz.pan[1], pz.zoom[0], pz.zoom[1]);   \
-    dvz_panzoom_mvp(&pz, &mvp);                                                                   \
-    glm_mat4_print(&mvp.view, stdout);
+        "pan: (%.2f, %.2f)  zoom: (%.2f, %.2f)", pz->pan[0], pz->pan[1], pz->zoom[0],             \
+        pz->zoom[1]);                                                                             \
+    dvz_panzoom_mvp(pz, &mvp);                                                                    \
+    glm_mat4_print(mvp.view, stdout);
 
 
 
@@ -50,7 +51,7 @@ int test_panzoom_1(TstSuite* suite)
 {
     ANN(suite);
 
-    DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
     DvzMVP mvp = dvz_mvp_default();
 
     // Test pan.
@@ -78,21 +79,21 @@ int test_panzoom_1(TstSuite* suite)
         AP(0, 0);
 
         ZOOM(.5, +.5, .5, .5);
-        AT(pz.zoom[0] > 1);
-        AT(pz.zoom[1] < 1);
+        AT(pz->zoom[0] > 1);
+        AT(pz->zoom[1] < 1);
     }
 
     // Zoom with shift center.
     RESET;
     {
         ZOOM(10, -10, 1, 0); // top right corner
-        AT(pz.zoom[0] > 1e6);
-        AT(pz.zoom[1] > 1e6);
-        AT(pz.zoom[0] == pz.zoom[1]);
+        AT(pz->zoom[0] > 1e6);
+        AT(pz->zoom[1] > 1e6);
+        AT(pz->zoom[0] == pz->zoom[1]);
         SHOW;
         AP(-1, -1);
     }
 
-    dvz_panzoom_destroy(&pz);
+    dvz_panzoom_destroy(pz);
     return 0;
 }

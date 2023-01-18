@@ -68,15 +68,15 @@ static inline void _normalize_shift(DvzPanzoom* pz, vec2 in, vec2 out)
 /*  Panzoom functions                                                                            */
 /*************************************************************************************************/
 
-DvzPanzoom dvz_panzoom(float width, float height, int flags)
+DvzPanzoom* dvz_panzoom(float width, float height, int flags)
 {
     // width, width are the inner viewport size
-    DvzPanzoom pz = {0};
-    pz.flags = flags;
-    pz.viewport_size[0] = width;
-    pz.viewport_size[1] = height;
+    DvzPanzoom* pz = (DvzPanzoom*)calloc(1, sizeof(DvzPanzoom));
+    pz->flags = flags;
+    pz->viewport_size[0] = width;
+    pz->viewport_size[1] = height;
 
-    dvz_panzoom_reset(&pz);
+    dvz_panzoom_reset(pz);
 
     return pz;
 }
@@ -332,4 +332,8 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
 
 
 
-void dvz_panzoom_destroy(DvzPanzoom* pz) { ANN(pz); }
+void dvz_panzoom_destroy(DvzPanzoom* pz)
+{
+    ANN(pz);
+    FREE(pz);
+}

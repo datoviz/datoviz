@@ -56,7 +56,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzArcball dvz_arcball(float width, float height, int flags); // inner viewport size
+DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
 
 DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
 
