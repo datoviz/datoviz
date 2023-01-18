@@ -928,11 +928,14 @@ static void _on_mouse_arcball(DvzClient* client, DvzClientEvent ev)
     {
         if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
         {
+            float width = arcball->viewport_size[0];
+            float height = arcball->viewport_size[1];
+
             vec2 cur_pos, last_pos;
-            cur_pos[0] = -1 + 2 * ev.content.m.content.d.pos[0] / WIDTH;
-            cur_pos[1] = +1 - 2 * ev.content.m.content.d.pos[1] / HEIGHT;
-            last_pos[0] = -1 + 2 * ev.content.m.content.d.press_pos[0] / WIDTH;
-            last_pos[1] = +1 - 2 * ev.content.m.content.d.press_pos[1] / HEIGHT;
+            cur_pos[0] = -1 + 2 * ev.content.m.content.d.pos[0] / width;
+            cur_pos[1] = +1 - 2 * ev.content.m.content.d.pos[1] / height;
+            last_pos[0] = -1 + 2 * ev.content.m.content.d.press_pos[0] / width;
+            last_pos[1] = +1 - 2 * ev.content.m.content.d.press_pos[1] / height;
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
@@ -994,7 +997,11 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
 
     DvzCamera* camera = arc->cam;
     ANN(camera);
-    dvz_camera_ratio(camera, (vec2){width, height});
+    dvz_camera_resize(camera, width, height);
+
+    DvzArcball* arcball = arc->arcball;
+    ANN(arcball);
+    dvz_arcball_resize(arcball, width, height);
 
     // Update the MVP matrices.
     dvz_camera_mvp(camera, mvp); // set the model matrix
@@ -1059,8 +1066,7 @@ int test_presenter_arcball(TstSuite* suite)
 
     // Arcball callback.
     DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
-    DvzCamera* camera = dvz_camera();
-    dvz_camera_ratio(camera, (vec2){WIDTH, HEIGHT});
+    DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
     ArcballStruct arc = {
         .mvp_id = wrapper.mvp_id,
         .prt = prt,

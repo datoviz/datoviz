@@ -28,9 +28,13 @@
 /*  Camera functions                                                                             */
 /*************************************************************************************************/
 
-DvzCamera* dvz_camera()
+DvzCamera* dvz_camera(float width, float height, int flags)
 {
     DvzCamera* camera = (DvzCamera*)calloc(1, sizeof(DvzCamera));
+
+    camera->flags = flags;
+
+    dvz_camera_resize(camera, width, height);
 
     dvz_camera_zrange(camera, DVZ_CAMERA_DEFAULT_ZRANGE);
     dvz_camera_perspective(camera, DVZ_CAMERA_DEFAULT_FOV);
@@ -64,20 +68,31 @@ void dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, 
 
 
 
-void dvz_camera_aspect(DvzCamera* camera, float aspect)
+// void dvz_camera_aspect(DvzCamera* camera, float aspect)
+// {
+//     ANN(camera);
+//     // if 1, fix aspect ratio, if 0, do not fix aspect ratio
+//     camera->aspect = aspect;
+// }
+
+
+
+// void dvz_camera_ratio(DvzCamera* camera, vec2 viewport_size)
+// {
+//     ANN(camera);
+//     ASSERT(viewport_size[1] > 0);
+//     dvz_camera_aspect(camera, viewport_size[0] / viewport_size[1]);
+// }
+
+
+void dvz_camera_resize(DvzCamera* camera, float width, float height)
 {
     ANN(camera);
-    // if 1, fix aspect ratio, if 0, do not fix aspect ratio
-    camera->aspect = aspect;
-}
+    ASSERT(height > 0);
 
-
-
-void dvz_camera_ratio(DvzCamera* camera, vec2 viewport_size)
-{
-    ANN(camera);
-    ASSERT(viewport_size[1] > 0);
-    dvz_camera_aspect(camera, viewport_size[0] / viewport_size[1]);
+    camera->viewport_size[0] = width;
+    camera->viewport_size[1] = height;
+    camera->aspect = width / height;
 }
 
 

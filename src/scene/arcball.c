@@ -47,6 +47,7 @@ DvzArcball* dvz_arcball(float width, float height, int flags)
 {
     // width, width are the inner viewport size
     DvzArcball* arcball = (DvzArcball*)calloc(1, sizeof(DvzArcball));
+
     arcball->flags = flags;
     arcball->viewport_size[0] = width;
     arcball->viewport_size[1] = height;

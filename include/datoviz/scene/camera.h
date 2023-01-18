@@ -50,6 +50,9 @@ typedef struct DvzCamera DvzCamera;
 
 struct DvzCamera
 {
+    vec2 viewport_size;
+    int flags;
+
     float near, far; // zrange
     float aspect;
 
@@ -70,7 +73,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzCamera* dvz_camera(void);
+DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
 
 
 
@@ -83,11 +86,7 @@ dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float
 
 
 
-DVZ_EXPORT void dvz_camera_aspect(DvzCamera* camera, float aspect);
-
-
-
-DVZ_EXPORT void dvz_camera_ratio(DvzCamera* camera, vec2 viewport_size);
+DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 

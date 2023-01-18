@@ -72,9 +72,10 @@ DvzPanzoom* dvz_panzoom(float width, float height, int flags)
 {
     // width, width are the inner viewport size
     DvzPanzoom* pz = (DvzPanzoom*)calloc(1, sizeof(DvzPanzoom));
-    pz->flags = flags;
+
     pz->viewport_size[0] = width;
     pz->viewport_size[1] = height;
+    pz->flags = flags;
 
     dvz_panzoom_reset(pz);
 
