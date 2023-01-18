@@ -143,6 +143,15 @@ void dvz_arcball_model(DvzArcball* arcball, mat4 model)
 
 
 
+void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp)
+{
+    ANN(arcball);
+    ANN(mvp);
+    dvz_arcball_model(arcball, mvp->model);
+}
+
+
+
 void dvz_arcball_print(DvzArcball* arcball)
 {
     ANN(arcball);

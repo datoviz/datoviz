@@ -14,6 +14,7 @@
 #include "_log.h"
 #include "_math.h"
 #include "mvp.h"
+#include "scene/panzoom.h"
 
 
 
@@ -70,6 +71,8 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
 // DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
+
+DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
 
 DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
 
