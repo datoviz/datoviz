@@ -172,7 +172,11 @@ void dvz_pipe_create(DvzPipe* pipe)
     log_trace("creating pipe");
 
     // Create the bindings if needed.
-    // _ensure_bindings_created(pipe, 1);
+    if (pipe->bindings.dset_count == 0)
+    {
+        log_debug("by default, create bindings with dset count=1");
+        _ensure_bindings_created(pipe, 1);
+    }
 
     if (pipe->type == DVZ_PIPE_GRAPHICS)
         dvz_graphics_create(&pipe->u.graphics);
