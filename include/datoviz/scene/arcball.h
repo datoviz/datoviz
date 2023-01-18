@@ -41,11 +41,8 @@ struct DvzArcball
     vec2 viewport_size;
     int flags;
 
-    versor rotation;
-    // mat4 mat;
-
-    // mat4 translate;
-    // mat4 inv_model;
+    mat4 mat;        // current model
+    versor rotation; // current rotation (while dragging), to be applied to mat after dragging
 };
 
 
@@ -73,6 +70,8 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
 // DVZ_EXPORT void dvz_arcball_lock(DvzArcball* arcball, vec3 dir);
 
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
+
+DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
 
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
 

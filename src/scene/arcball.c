@@ -64,7 +64,8 @@ void dvz_arcball_reset(DvzArcball* arcball)
 
     dvz_arcball_angles(arcball, (vec3){0});
 
-    // glm_mat4_identity(arcball->mat);
+    glm_mat4_identity(arcball->mat);
+    // glm_mat4_identity(arcball->mat_inv);
     glm_quat_identity(arcball->rotation);
 }
 
@@ -111,6 +112,7 @@ void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
     _screen_to_arcball(cur_pos, mouse_cur_ball);
     _screen_to_arcball(last_pos, mouse_prev_ball);
 
+    glm_quat_identity(arcball->rotation);
     glm_quat_mul(mouse_prev_ball, arcball->rotation, arcball->rotation);
     glm_quat_mul(mouse_cur_ball, arcball->rotation, arcball->rotation);
 }
@@ -135,10 +137,24 @@ void dvz_arcball_model(DvzArcball* arcball, mat4 model)
 {
     ANN(arcball);
 
-    glm_quat_mat4(arcball->rotation, model);
-    // glm_mat4_copy(arcball->mat, model);
-    // glm_mat4_inv(model, arcball->inv_model);
-    // glm_mat4_mul(model, arcball->translate, model);
+    mat4 rot;
+    glm_quat_mat4(arcball->rotation, rot);
+
+    // model=rot*mat
+    glm_mat4_mul(rot, arcball->mat, model);
+}
+
+
+
+void dvz_arcball_end(DvzArcball* arcball)
+{
+    ANN(arcball);
+    mat4 rot;
+    glm_quat_mat4(arcball->rotation, rot);
+
+    glm_mat4_mul(rot, arcball->mat, arcball->mat);
+    // glm_mat4_inv(arcball->mat, arcball->mat_inv);
+    glm_quat_identity(arcball->rotation);
 }
 
 

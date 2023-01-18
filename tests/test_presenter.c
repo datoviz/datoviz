@@ -14,6 +14,8 @@
 #include "glfw_utils.h"
 #include "gui.h"
 #include "presenter.h"
+#include "scene/arcball.h"
+#include "scene/camera.h"
 #include "scene/panzoom.h"
 #include "test.h"
 #include "testing.h"
@@ -58,6 +60,19 @@ struct PanzoomStruct
     DvzId mvp_id;
     DvzMVP mvp;
     DvzPanzoom* pz;
+};
+
+
+
+typedef struct ArcballStruct ArcballStruct;
+struct ArcballStruct
+{
+    DvzRequester* rqr;
+    DvzPresenter* prt;
+    DvzId mvp_id;
+    DvzMVP mvp;
+    DvzArcball* arcball;
+    DvzCamera* cam;
 };
 
 
@@ -268,6 +283,181 @@ int test_presenter_2(TstSuite* suite)
 
     // End.
 
+
+    // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
+    dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
+    return 0;
+}
+
+
+
+static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
+{
+    ASSERT(n > 0);
+    ANN(data);
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        data[i].pos[0] = -1 + 2 * dvz_rand_float();
+        data[i].pos[1] = -1 + 2 * dvz_rand_float();
+        data[i].size = 5;
+        dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
+        data[i].color[3] = 224;
+    }
+}
+
+static void _on_click(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+    if (ev.content.m.type != DVZ_MOUSE_EVENT_CLICK)
+        return;
+
+    CallbackStruct* s = (CallbackStruct*)ev.user_data;
+    ANN(s);
+
+    DvzRequester* rqr = s->rqr;
+    ANN(rqr);
+
+    DvzPresenter* prt = s->prt;
+    ANN(prt);
+
+    GraphicsWrapper* wrapper = s->graphics_wrapper;
+    ANN(wrapper);
+
+    // Update the data.
+    _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
+    DvzRequest req = dvz_upload_dat(
+        rqr, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+    dvz_requester_add(rqr, req);
+
+    // // Update the command buffer with the new n.
+    // req = dvz_record_begin(rqr, wrapper->canvas_id);
+    // dvz_requester_add(rqr, req);
+
+    // req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT,
+    // DVZ_DEFAULT_VIEWPORT); dvz_requester_add(rqr, req);
+
+    // req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, s->n);
+    // dvz_requester_add(rqr, req);
+
+    // req = dvz_record_end(rqr, wrapper->canvas_id);
+    // dvz_requester_add(rqr, req);
+
+    dvz_presenter_submit(prt, rqr);
+}
+
+int test_presenter_thread(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    const uint32_t n = 256;
+    GraphicsWrapper wrapper = {0};
+    graphics_request(rqr, n, &wrapper, 0);
+    wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
+    _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
+    DvzRequest req =
+        dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_requester_add(rqr, req);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    CallbackStruct s = {
+        .prt = prt,
+        .rqr = rqr,
+        .graphics_wrapper = &wrapper,
+        .n = n,
+    };
+    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_click, &s);
+
+#if OS_MACOS
+    dvz_client_run(client, N_FRAMES);
+#else
+    // Start the client background thread and run an infinite event loop in the thread.
+    dvz_client_thread(client, N_FRAMES);
+
+    // Stop the event loop in the thread.
+    // dvz_sleep(100);
+    // dvz_client_stop(client);
+
+    // Wait until the client event loop is done.
+    dvz_client_join(client);
+#endif
+
+    // End.
+
+    // Destroying all objects.
+    dvz_presenter_destroy(prt);
+
+    dvz_client_destroy(client);
+    dvz_requester_destroy(rqr);
+
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
+    FREE(wrapper.data);
+    return 0;
+}
+
+
+
+int test_presenter_deserialize(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzRequester* rqr = dvz_requester();
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    // Load the requests from requests.dvz.
+    dvz_requester_load(rqr, DVZ_DUMP_FILENAME);
+
+    // Submit a client event with type REQUESTS and with a pointer to the requester.
+    // The Presenter will register a REQUESTS callback sending the requests to the underlying
+    // renderer.
+    dvz_presenter_submit(prt, rqr);
+
+    // Dequeue and process all pending events.
+    dvz_client_run(client, N_FRAMES);
+
+    // End.
 
     // Destroying all objects.
     dvz_presenter_destroy(prt);
@@ -644,6 +834,7 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
 
     DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
+    ANN(pz);
     dvz_panzoom_resize(pz, width, height);
 }
 
@@ -711,62 +902,110 @@ int test_presenter_scatter(TstSuite* suite)
 
 
 
-static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
-{
-    ASSERT(n > 0);
-    ANN(data);
-
-    for (uint32_t i = 0; i < n; i++)
-    {
-        data[i].pos[0] = -1 + 2 * dvz_rand_float();
-        data[i].pos[1] = -1 + 2 * dvz_rand_float();
-        data[i].size = 5;
-        dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
-        data[i].color[3] = 224;
-    }
-}
-
-static void _on_click(DvzClient* client, DvzClientEvent ev)
+static void _on_mouse_arcball(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
-    if (ev.content.m.type != DVZ_MOUSE_EVENT_CLICK)
-        return;
 
-    CallbackStruct* s = (CallbackStruct*)ev.user_data;
-    ANN(s);
+    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ANN(arc);
 
-    DvzRequester* rqr = s->rqr;
-    ANN(rqr);
+    DvzArcball* arcball = arc->arcball;
+    ANN(arcball);
 
-    DvzPresenter* prt = s->prt;
+    DvzPresenter* prt = arc->prt;
     ANN(prt);
 
-    GraphicsWrapper* wrapper = s->graphics_wrapper;
-    ANN(wrapper);
+    DvzRequester* rqr = arc->rqr;
+    ANN(rqr);
 
-    // Update the data.
-    _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
-    DvzRequest req = dvz_upload_dat(
-        rqr, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+    DvzMVP* mvp = &arc->mvp;
+    ANN(mvp);
+
+    DvzId mvp_id = arc->mvp_id;
+
+    // Dragging: pan.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            vec2 cur_pos, last_pos;
+            cur_pos[0] = -1 + 2 * ev.content.m.content.d.pos[0] / WIDTH;
+            cur_pos[1] = +1 - 2 * ev.content.m.content.d.pos[1] / HEIGHT;
+            last_pos[0] = -1 + 2 * ev.content.m.content.d.press_pos[0] / WIDTH;
+            last_pos[1] = +1 - 2 * ev.content.m.content.d.press_pos[1] / HEIGHT;
+
+            dvz_arcball_rotate(arcball, cur_pos, last_pos);
+        }
+        // else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        // {
+        // }
+    }
+
+    // Stop dragging.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_arcball_end(arcball);
+    }
+
+    // // Mouse wheel.
+    // if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+    // {
+    //     dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+    // }
+
+    // Double-click
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_arcball_reset(arcball);
+    }
+
+    // Update the MVP matrices.
+    dvz_arcball_mvp(arcball, mvp); // set the model matrix
+
+    // Submit a dat upload request with the new MVP matrices.
+    DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
     dvz_requester_add(rqr, req);
-
-    // // Update the command buffer with the new n.
-    // req = dvz_record_begin(rqr, wrapper->canvas_id);
-    // dvz_requester_add(rqr, req);
-
-    // req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT,
-    // DVZ_DEFAULT_VIEWPORT); dvz_requester_add(rqr, req);
-
-    // req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, s->n);
-    // dvz_requester_add(rqr, req);
-
-    // req = dvz_record_end(rqr, wrapper->canvas_id);
-    // dvz_requester_add(rqr, req);
-
     dvz_presenter_submit(prt, rqr);
 }
 
-int test_presenter_thread(TstSuite* suite)
+static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    uint32_t width = ev.content.w.screen_width;
+    uint32_t height = ev.content.w.screen_height;
+    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
+
+    ANN(client);
+
+    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ANN(arc);
+
+    DvzPresenter* prt = arc->prt;
+    ANN(prt);
+
+    DvzRequester* rqr = arc->rqr;
+    ANN(rqr);
+
+    DvzMVP* mvp = &arc->mvp;
+    ANN(mvp);
+
+    DvzId mvp_id = arc->mvp_id;
+
+    DvzCamera* camera = arc->cam;
+    ANN(camera);
+    dvz_camera_ratio(camera, (vec2){width, height});
+
+    // Update the MVP matrices.
+    dvz_camera_mvp(camera, mvp); // set the model matrix
+
+    // Submit a dat upload request with the new MVP matrices.
+    DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_requester_add(rqr, req);
+    dvz_presenter_submit(prt, rqr);
+}
+
+int test_presenter_arcball(TstSuite* suite)
 {
     ANN(suite);
 
@@ -784,15 +1023,33 @@ int test_presenter_thread(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
 
     // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+    DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
 
-    const uint32_t n = 256;
+    const uint32_t n = 10000;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper, 0);
-    wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
-    _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
+    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    // void* data = graphics_scatter(rqr, wrapper.dat_id, n);
+
+    // Upload the data.
+    DvzGraphicsPointVertex* data =
+        (DvzGraphicsPointVertex*)calloc(n, sizeof(DvzGraphicsPointVertex));
+    double t = 0;
+    // double aspect = WIDTH / (double)HEIGHT;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n);
+        data[i].pos[0] = .25 * dvz_rand_normal();
+        data[i].pos[1] = .25 * dvz_rand_normal();
+        data[i].pos[2] = .25 * dvz_rand_normal();
+
+        data[i].size = 2;
+
+        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
+        data[i].color[3] = 255;
+    }
+
     DvzRequest req =
-        dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+        dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
     dvz_requester_add(rqr, req);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
@@ -800,72 +1057,29 @@ int test_presenter_thread(TstSuite* suite)
     // renderer.
     dvz_presenter_submit(prt, rqr);
 
-    CallbackStruct s = {
+    // Arcball callback.
+    DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
+    DvzCamera* camera = dvz_camera();
+    dvz_camera_ratio(camera, (vec2){WIDTH, HEIGHT});
+    ArcballStruct arc = {
+        .mvp_id = wrapper.mvp_id,
         .prt = prt,
+        .arcball = arcball,
+        .cam = camera,
         .rqr = rqr,
-        .graphics_wrapper = &wrapper,
-        .n = n,
+        .mvp = dvz_mvp_default(),
     };
-    dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_click, &s);
+    dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
 
-#if OS_MACOS
-    dvz_client_run(client, N_FRAMES);
-#else
-    // Start the client background thread and run an infinite event loop in the thread.
-    dvz_client_thread(client, N_FRAMES);
-
-    // Stop the event loop in the thread.
-    // dvz_sleep(100);
-    // dvz_client_stop(client);
-
-    // Wait until the client event loop is done.
-    dvz_client_join(client);
-#endif
-
-    // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
-    dvz_client_destroy(client);
-    dvz_requester_destroy(rqr);
-
-    dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
-
-    FREE(wrapper.data);
-    return 0;
-}
-
-
-
-int test_presenter_deserialize(TstSuite* suite)
-{
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
-
-    // Create a renderer.
-    DvzRenderer* rd = dvz_renderer(gpu, 0);
-
-    // Client-side.
-    DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
-
-    // Presenter linking the renderer and the client.
-    DvzPresenter* prt = dvz_presenter(rd, client, 0);
-
-    // Load the requests from requests.dvz.
-    dvz_requester_load(rqr, DVZ_DUMP_FILENAME);
-
-    // Submit a client event with type REQUESTS and with a pointer to the requester.
-    // The Presenter will register a REQUESTS callback sending the requests to the underlying
-    // renderer.
+    // Submit a dat upload request with the new MVP matrices.
+    req = dvz_upload_dat(rqr, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
+    dvz_requester_add(rqr, req);
     dvz_presenter_submit(prt, rqr);
+
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse_arcball, &arc);
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _arcball_resize, &arc);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -876,145 +1090,13 @@ int test_presenter_deserialize(TstSuite* suite)
     dvz_presenter_destroy(prt);
 
     dvz_client_destroy(client);
+    dvz_arcball_destroy(arcball);
+    dvz_camera_destroy(camera);
     dvz_requester_destroy(rqr);
 
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
+    FREE(data);
     return 0;
 }
-
-
-
-// static void _on_mouse(DvzClient* client, DvzClientEvent ev)
-// {
-//     ANN(client);
-
-//     PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
-//     ANN(ps);
-
-//     DvzPanzoom* pz = ps->pz;
-//     ANN(pz);
-
-//     DvzPresenter* prt = ps->prt;
-//     ANN(prt);
-
-//     DvzRequester* rqr = ps->rqr;
-//     ANN(rqr);
-
-//     DvzId mvp_id = ps->mvp_id;
-
-//     // Dragging: pan.
-//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
-//     {
-//         if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
-//         {
-//             dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
-//         }
-//         else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
-//         {
-//             dvz_panzoom_zoom_shift(
-//                 pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
-//         }
-//     }
-
-//     // Stop dragging.
-//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
-//     {
-//         dvz_panzoom_end(pz);
-//     }
-
-//     // Mouse wheel.
-//     if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
-//     {
-//         dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
-//     }
-
-//     // Double-click
-//     if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
-//     {
-//         dvz_panzoom_reset(pz);
-//     }
-
-//     // Update the MVP matrices.
-//     DvzMVP* mvp = dvz_panzoom_mvp(pz);
-
-//     // Submit a dat upload request with the new MVP matrices.
-//     DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
-//     dvz_requester_add(rqr, req);
-//     dvz_presenter_submit(prt, rqr);
-// }
-
-// static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
-// {
-//     ANN(client);
-
-//     uint32_t width = ev.content.w.screen_width;
-//     uint32_t height = ev.content.w.screen_height;
-//     log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
-
-//     DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
-//     dvz_panzoom_resize(pz, width, height);
-// }
-
-// int test_presenter_arcball(TstSuite* suite)
-// {
-//     ANN(suite);
-
-//     // GPU-side.
-//     DvzHost* host = get_host(suite);
-
-//     DvzGpu* gpu = make_gpu(host);
-//     ANN(gpu);
-
-//     // Create a renderer.
-//     DvzRenderer* rd = dvz_renderer(gpu, 0);
-
-//     // Client-side.
-//     DvzClient* client = dvz_client(BACKEND);
-//     DvzRequester* rqr = dvz_requester();
-
-//     // Presenter linking the renderer and the client.
-//     DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
-
-//     const uint32_t n = 52;
-//     GraphicsWrapper wrapper = {0};
-//     graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
-//     void* data = graphics_scatter(rqr, wrapper.dat_id, n);
-
-//     // Submit a client event with type REQUESTS and with a pointer to the requester.
-//     // The Presenter will register a REQUESTS callback sending the requests to the underlying
-//     // renderer.
-//     dvz_presenter_submit(prt, rqr);
-
-
-//     // Panzoom callback.
-//     DvzPanzoom pz = dvz_panzoom(WIDTH, HEIGHT, 0);
-//     PanzoomStruct ps = {
-//         .mvp_id = wrapper.mvp_id,
-//         .prt = prt,
-//         .pz = &pz,
-//         .rqr = rqr,
-//     };
-//     dvz_client_callback(client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _on_mouse,
-//     &ps); dvz_client_callback(
-//         client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, _arcball_resize, &pz);
-
-//     // Dequeue and process all pending events.
-//     dvz_client_run(client, N_FRAMES);
-
-//     // End.
-
-//     // Destroying all objects.
-//     dvz_presenter_destroy(prt);
-
-//     dvz_client_destroy(client);
-//     dvz_panzoom_destroy(&pz);
-//     dvz_requester_destroy(rqr);
-
-//     dvz_renderer_destroy(rd);
-//     dvz_gpu_destroy(gpu);
-
-//     FREE(data);
-//     return 0;
-// }

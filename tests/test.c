@@ -183,12 +183,13 @@ int dvz_run_tests(const char* match)
     // Testing presenter.
     TEST(test_presenter_1)
     TEST(test_presenter_2)
+    TEST(test_presenter_thread)
+    TEST(test_presenter_deserialize)
     TEST(test_presenter_gui)
     TEST(test_presenter_multi)
     TEST(test_presenter_fps)
     TEST(test_presenter_scatter)
-    TEST(test_presenter_thread)
-    TEST(test_presenter_deserialize)
+    TEST(test_presenter_arcball)
 
     TEST(test_animation_2)
 
