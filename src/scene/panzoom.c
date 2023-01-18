@@ -99,7 +99,7 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
     pz->zoom_center[0] = 1;
     pz->zoom_center[1] = 1;
 
-    pz->mvp = dvz_mvp_default();
+    // pz->mvp = dvz_mvp_default();
 }
 
 
@@ -307,11 +307,11 @@ void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange)
 
 
 
-DvzMVP* dvz_panzoom_mvp(DvzPanzoom* pz)
+void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
 {
     ANN(pz);
 
-    DvzMVP* mvp = &pz->mvp;
+    // DvzMVP* mvp = &pz->mvp;
 
     // View matrix (depends on the pan).
     {
@@ -327,7 +327,7 @@ DvzMVP* dvz_panzoom_mvp(DvzPanzoom* pz)
         glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, mvp->proj);
     }
 
-    return mvp;
+    // return mvp;
 }
 
 

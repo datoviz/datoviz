@@ -53,7 +53,7 @@ struct DvzPanzoom
     vec2 pan_center;
     vec2 zoom;
     vec2 zoom_center;
-    DvzMVP mvp;
+    // DvzMVP mvp;
 };
 
 
@@ -95,7 +95,7 @@ DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
 
 DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
 
-DVZ_EXPORT DvzMVP* dvz_panzoom_mvp(DvzPanzoom* pz);
+DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 

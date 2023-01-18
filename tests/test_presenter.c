@@ -56,6 +56,7 @@ struct PanzoomStruct
     DvzRequester* rqr;
     DvzPresenter* prt;
     DvzId mvp_id;
+    DvzMVP mvp;
     DvzPanzoom* pz;
 };
 
@@ -587,6 +588,9 @@ static void _on_mouse(DvzClient* client, DvzClientEvent ev)
     DvzRequester* rqr = ps->rqr;
     ANN(rqr);
 
+    DvzMVP* mvp = &ps->mvp;
+    ANN(mvp);
+
     DvzId mvp_id = ps->mvp_id;
 
     // Dragging: pan.
@@ -622,7 +626,8 @@ static void _on_mouse(DvzClient* client, DvzClientEvent ev)
     }
 
     // Update the MVP matrices.
-    DvzMVP* mvp = dvz_panzoom_mvp(pz);
+    *mvp = dvz_mvp_default();
+    dvz_panzoom_mvp(pz, mvp);
 
     // Submit a dat upload request with the new MVP matrices.
     DvzRequest req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
