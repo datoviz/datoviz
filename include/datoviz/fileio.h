@@ -32,7 +32,7 @@ EXTERN_C_ON
  * @param[out] size of the file
  * @returns pointer to a byte buffer with the file contents
  */
-DVZ_EXPORT void* dvz_read_file(const char* filename, size_t* size);
+DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
 
 
 
@@ -43,7 +43,7 @@ DVZ_EXPORT void* dvz_read_file(const char* filename, size_t* size);
  * @param[out] size of the file
  * @returns pointer to a buffer containing the array elements
  */
-DVZ_EXPORT char* dvz_read_npy(const char* filename, size_t* size);
+DVZ_EXPORT char* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 

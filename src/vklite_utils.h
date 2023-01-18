@@ -879,7 +879,7 @@ create_shader_module(VkDevice device, VkDeviceSize size, const uint32_t* buffer)
 static VkShaderModule create_shader_module_from_file(VkDevice device, const char* filename)
 {
     log_trace("create shader module from file %s", filename);
-    size_t size = 0;
+    DvzSize size = 0;
     uint32_t* shader_code = (uint32_t*)dvz_read_file(filename, &size);
     ANN(shader_code);
     ASSERT(size > 0);

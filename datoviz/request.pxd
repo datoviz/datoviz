@@ -39,7 +39,7 @@ cdef extern from "<datoviz/request.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
+    DvzRecorder* dvz_recorder(int flags)
 
     DvzRequester* dvz_requester()
 
@@ -50,6 +50,10 @@ cdef extern from "<datoviz/request.h>":
     void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 
     DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
+
+    int dvz_requester_dump(DvzRequester* rqr, const char* filename)
+
+    void dvz_requester_load(DvzRequester* rqr, const char* filename)
 
     DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 

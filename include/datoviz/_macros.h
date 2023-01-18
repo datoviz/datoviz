@@ -100,15 +100,16 @@
                         "clang diagnostic ignored \"-Wundef\"")                                   \
                         _Pragma("clang diagnostic ignored \"-Wmissing-braces\"") _Pragma(         \
                             "clang diagnostic ignored \"-Wnullability-extension\"")               \
-                            _Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"")
+                            _Pragma("clang diagnostic ignored \"-Wunguarded-availability-new\"")  \
+                                _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
 
 #define MUTE_OFF _Pragma("clang diagnostic pop")
 #else
 // MSVC: TODO
 #define MUTE_ON
-//#pragma warning(push)
+// #pragma warning(push)
 #define MUTE_OFF
-//#pragma warning(pop)
+// #pragma warning(pop)
 #endif
 
 

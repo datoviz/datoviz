@@ -13,11 +13,11 @@
 /*  Generic file I/O utils                                                                       */
 /*************************************************************************************************/
 
-void* dvz_read_file(const char* filename, size_t* size)
+void* dvz_read_file(const char* filename, DvzSize* size)
 {
     /* The returned pointer must be freed by the caller. */
     void* buffer = NULL;
-    size_t length = 0;
+    DvzSize length = 0;
     FILE* f = fopen(filename, "rb");
 
     if (!f)
@@ -26,7 +26,7 @@ void* dvz_read_file(const char* filename, size_t* size)
         return NULL;
     }
     fseek(f, 0, SEEK_END);
-    length = (size_t)ftell(f);
+    length = (DvzSize)ftell(f);
     if (size != NULL)
         *size = length;
     fseek(f, 0, SEEK_SET);
@@ -39,13 +39,13 @@ void* dvz_read_file(const char* filename, size_t* size)
 
 
 
-char* dvz_read_npy(const char* filename, size_t* size)
+char* dvz_read_npy(const char* filename, DvzSize* size)
 {
     /* Tiny NPY reader that requires the user to know in advance the data type of the file. */
 
     /* The returned pointer must be freed by the caller. */
     char* buffer = NULL;
-    size_t length = 0;
+    DvzSize length = 0;
     int nread = 0, err = 0;
 
     FILE* f = fopen(filename, "rb");
@@ -57,7 +57,7 @@ char* dvz_read_npy(const char* filename, size_t* size)
 
     // Determine the total file size.
     fseek(f, 0, SEEK_END);
-    length = (size_t)ftell(f);
+    length = (DvzSize)ftell(f);
     fseek(f, 0, SEEK_SET);
 
     // const uint32_t MAGIC_SIZE = 6;
@@ -94,7 +94,7 @@ char* dvz_read_npy(const char* filename, size_t* size)
         goto error;
 
     // Read the data buffer.
-    buffer = (char*)calloc((uint32_t)length, 1);
+    buffer = (char*)calloc((size_t)length, 1);
     ANN(buffer);
     fread(buffer, 1, (size_t)length, f);
     fclose(f);

@@ -487,7 +487,7 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n"
-        "    size: %lu\n",
+        "    size: %llu\n",
         req.id, flags, type, size);
 
     return req;
@@ -532,8 +532,8 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
             "  type: dat\n"
             "  id: 0x%" PRIx64 "\n"
             "  content:\n"
-            "    offset: %lu\n"
-            "    size: %lu\n"
+            "    offset: %llu\n"
+            "    size: %llu\n"
             "    data:\n"
             "      mode: base64\n"
             "      buffer: %s\n",
