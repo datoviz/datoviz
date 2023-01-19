@@ -195,7 +195,9 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
-        glfwPollEvents();
+        // NOTE: this call leads to a crash with GLFW when input events (eg mouse) are still in the
+        // queue while the window is being destroyed.
+        // glfwPollEvents();
         log_trace("destroy GLFW window");
         glfwDestroyWindow((GLFWwindow*)bwin);
 #endif
