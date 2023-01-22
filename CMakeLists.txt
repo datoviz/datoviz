@@ -43,7 +43,7 @@ set(CMAKE_BUILD_TYPE Debug)
 FetchContent_Declare(
     cglm
     GIT_REPOSITORY  https://github.com/recp/cglm/
-    GIT_TAG         v0.8.3
+    # GIT_TAG         v0.8.3
 )
 FetchContent_MakeAvailable(cglm)
 
@@ -55,7 +55,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY  https://github.com/glfw/glfw/
-    GIT_TAG         3.3.7
+    # GIT_TAG         3.3.7
 )
 FetchContent_MakeAvailable(glfw)
 
