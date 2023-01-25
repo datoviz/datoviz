@@ -1032,7 +1032,7 @@ int test_presenter_arcball(TstSuite* suite)
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
 
-    const uint32_t n = 10000;
+    const uint32_t n = 1000;
     GraphicsWrapper wrapper = {0};
     graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
     // void* data = graphics_scatter(rqr, wrapper.dat_id, n);
@@ -1049,10 +1049,12 @@ int test_presenter_arcball(TstSuite* suite)
         data[i].pos[1] = .25 * dvz_rand_normal();
         data[i].pos[2] = .25 * dvz_rand_normal();
 
-        data[i].size = 2;
+        glm_vec3_normalize(data[i].pos);
+
+        data[i].size = 4;
 
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = 255;
+        data[i].color[3] = 128;
     }
 
     DvzRequest req =
@@ -1066,6 +1068,7 @@ int test_presenter_arcball(TstSuite* suite)
 
     // Arcball callback.
     DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
+    // dvz_arcball_constrain(arcball, (vec3){0, 1, 0});
     DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
     ArcballStruct arc = {
         .mvp_id = wrapper.mvp_id,

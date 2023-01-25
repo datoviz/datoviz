@@ -2,6 +2,10 @@
 /*  Arcball                                                                                      */
 /*************************************************************************************************/
 
+// References:
+// https://github.com/Twinklebear/arcball-cpp
+// http://www.talisman.org/~erlkonig/misc/shoemake92-arcball.pdf
+
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
@@ -34,6 +38,32 @@ static void _screen_to_arcball(vec2 p, versor q)
         // otherwise we project the point onto the sphere
         glm_vec2_normalize(p);
         glm_vec4_copy((vec4){p[0], p[1], 0, 0}, q);
+    }
+}
+
+
+
+static void _constrain(versor q, vec3 axis)
+{
+    glm_vec3_normalize(axis);
+    // adapted from http://www.talisman.org/~erlkonig/misc/shoemake92-arcball.pdf page 4
+    float dot = glm_vec3_dot(q, axis);
+    vec3 proj, t;
+    glm_vec3_scale(axis, dot, t);
+    glm_vec3_sub(q, t, proj);
+    float norm = glm_vec3_norm(proj);
+    if (norm > 0)
+    {
+        float s = proj[2] >= 0 ? 1 / norm : -1 / norm;
+        glm_vec3_scale(proj, s, q);
+    }
+    else if (axis[2] == 1)
+    {
+        glm_vec3_copy((vec3){1, 0, 0}, q);
+    }
+    else
+    {
+        glm_vec3_normalize_to((vec3){-axis[1], axis[0]}, q);
     }
 }
 
@@ -89,6 +119,21 @@ void dvz_arcball_flags(DvzArcball* arcball, int flags)
 
 
 
+void dvz_arcball_constrain(DvzArcball* arcball, vec3 constrain)
+{
+    ANN(arcball);
+    if (glm_vec3_norm(constrain) == 0)
+    {
+        log_warn("null arcball constrain axis, ignoring constrain");
+        return;
+    }
+    glm_vec3_normalize(arcball->constrain);
+    glm_vec3_copy(constrain, arcball->constrain);
+    arcball->flags |= DVZ_ARCBALL_FLAGS_CONSTRAIN;
+}
+
+
+
 void dvz_arcball_angles(DvzArcball* arcball, vec3 angles)
 {
     ANN(arcball);
@@ -112,6 +157,12 @@ void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
     versor mouse_cur_ball = {0}, mouse_prev_ball = {0};
     _screen_to_arcball(cur_pos, mouse_cur_ball);
     _screen_to_arcball(last_pos, mouse_prev_ball);
+
+    if ((arcball->flags & DVZ_ARCBALL_FLAGS_CONSTRAIN) != 0)
+    {
+        _constrain(mouse_cur_ball, arcball->constrain);
+        _constrain(mouse_prev_ball, arcball->constrain);
+    }
 
     glm_quat_identity(arcball->rotation);
     glm_quat_mul(mouse_prev_ball, arcball->rotation, arcball->rotation);

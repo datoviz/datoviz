@@ -30,6 +30,12 @@ typedef struct DvzArcball DvzArcball;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_ARCBALL_FLAGS_NONE,
+    DVZ_ARCBALL_FLAGS_CONSTRAIN,
+} DvzArcballFlags;
+
 
 
 /*************************************************************************************************/
@@ -43,6 +49,7 @@ struct DvzArcball
 
     mat4 mat;        // current model
     versor rotation; // current rotation (while dragging), to be applied to mat after dragging
+    vec3 constrain;  // constrain axis, null if no constraint
 };
 
 
@@ -60,6 +67,8 @@ DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
 DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
 
 DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
+
+DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
 
 DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 angles);
 
