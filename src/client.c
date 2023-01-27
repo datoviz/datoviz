@@ -62,6 +62,14 @@ static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 
 
 
+static inline bool _should_close(DvzWindow* window)
+{
+    ANN(window);
+    return backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY;
+}
+
+
+
 /*************************************************************************************************/
 /*  Client functions                                                                             */
 /*************************************************************************************************/
@@ -90,15 +98,18 @@ DvzClient* dvz_client(DvzBackend backend)
     dvz_deq_callback(
         client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _callback_window_create, client);
 
-    // dvz_deq_callback(
-    //     client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, _callback_window_request_delete,
-    //     client);
+    // Delete window callback, in reverse order because the client's default close callback
+    // (destroying the window) must be called after the other delete callbacks registered by the
+    // other components (client_input, canvas...).
+    dvz_deq_callback(
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, _callback_window_delete, client);
+    dvz_deq_order(client->deq, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, DVZ_DEQ_ORDER_REVERSE);
 
     // Ty default, the client registers a callback to request_close, that just destroys the window.
 
-    dvz_deq_callback(
-        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
-        _callback_window_request_delete, client);
+    // dvz_deq_callback(
+    //     client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
+    //     _callback_window_request_delete, client);
 
     // TODO: create async queue
     // start background thread
@@ -166,6 +177,7 @@ int dvz_client_frame(DvzClient* client)
 
     DvzClientEvent frame_ev = {0};
     frame_ev.type = DVZ_CLIENT_EVENT_FRAME;
+    bool to_close = false;
 
     while (iter.item != NULL)
     {
@@ -179,16 +191,10 @@ int dvz_client_frame(DvzClient* client)
             continue;
         }
         // Skip windows that should be closed.
-        if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+        if (_should_close(window))
         {
-            // delete_client_window(client, window->obj.id);
-            {
-                dvz_client_event(
-                    client, (DvzClientEvent){
-                                .type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
-                                .window_id = window->obj.id,
-                            });
-            }
+            // Do nothing, just skip the FRAME.
+            to_close = true;
             dvz_container_iter(&iter);
             continue;
         }
@@ -212,6 +218,31 @@ int dvz_client_frame(DvzClient* client)
 
     // Dequeue and process events, again (after sending the FRAME event to the active windows).
     dvz_client_process(client);
+
+    // Collect the windows that should close.
+    if (to_close)
+    {
+        iter = dvz_container_iterator(&client->windows);
+        while (iter.item != NULL)
+        {
+            window = (DvzWindow*)iter.item;
+            ANN(window);
+            // Skip non-created windows.
+            if (dvz_obj_is_created(&window->obj) && _should_close(window))
+            {
+                // Emit a window delete event.
+                dvz_client_event(
+                    client, (DvzClientEvent){
+                                .type = DVZ_CLIENT_EVENT_WINDOW_DELETE,
+                                .window_id = window->obj.id,
+                            });
+            }
+            dvz_container_iter(&iter);
+        }
+
+        // Process all window delete events.
+        dvz_client_process(client);
+    }
 
     // Return the number of active windows.
     return count;
@@ -286,10 +317,27 @@ void dvz_client_destroy(DvzClient* client)
     ANN(client);
     log_trace("destroy the client");
 
-    // Raise request delete events. This is notably to ensure we destroy the inputs before
-    // destryoing the windows.
-    request_delete_windows(client);
+    // Delete all remaining windows.
+    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+    DvzWindow* window = NULL;
+    while (iter.item != NULL)
+    {
+        window = (DvzWindow*)iter.item;
+        ANN(window);
+
+        if (dvz_obj_is_created(&window->obj))
+        {
+            // Emit a window delete event.
+            dvz_client_event(
+                client, (DvzClientEvent){
+                            .type = DVZ_CLIENT_EVENT_WINDOW_DELETE,
+                            .window_id = window->obj.id,
+                        });
+        }
+        dvz_container_iter(&iter);
+    }
     dvz_client_process(client);
+
 
     // Join the thread if any.
     dvz_client_stop(client);
@@ -309,4 +357,5 @@ void dvz_client_destroy(DvzClient* client)
 
     dvz_atomic_destroy(client->to_stop);
     FREE(client);
+    log_trace("client destroyed");
 }

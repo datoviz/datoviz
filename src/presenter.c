@@ -152,6 +152,9 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     DvzHost* host = gpu->host;
     ANN(host);
 
+    // Wait for all GPU processing to stop.
+    dvz_gpu_wait(gpu);
+
     // Start canvas destruction.
     DvzCanvas* canvas = dvz_renderer_canvas(rd, id);
     ANN(canvas);
@@ -177,19 +180,19 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
     if (gui_window != NULL)
         dvz_gui_window_destroy(gui_window);
 
-    // Destroy the window.
-    DvzWindow* window = id2window(client, id);
-    ANN(window);
+    // // Destroy the window.
+    // DvzWindow* window = id2window(client, id);
+    // ANN(window);
 
-    // Destroy the input.
-    if (window->input != NULL)
-        dvz_input_destroy(window->input);
+    // // Destroy the input.
+    // if (window->input != NULL)
+    //     dvz_input_destroy(window->input);
 
-    // Remove the window from the list of windows.
-    dvz_map_remove(client->map, id);
+    // // Remove the window from the list of windows.
+    // dvz_map_remove(client->map, id);
 
-    // Finally, destroy the window.
-    dvz_window_destroy(window);
+    // // Finally, destroy the window.
+    // dvz_window_destroy(window);
 }
 
 
@@ -274,14 +277,11 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
     DvzRenderer* rd = prt->rd;
     ANN(rd);
 
-    ASSERT(ev.type == DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+    ASSERT(ev.type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
     DvzId window_id = ev.window_id;
-    log_trace("request close window #%x", window_id);
+    log_trace("delete window #%x", window_id);
 
-    // TODO: if the canvas does not exist but the window does, delete just the window.
-    // This would happen if one uses the DVZ_CLIENT_EVENT_WINDOW_CREATE event directly,
-    // instead of creating a canvas via the renderer.
     _delete_canvas(prt, window_id);
 }
 
@@ -398,8 +398,8 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     prt->client = client;
     prt->flags = flags;
 
-    // NOTE: clear the client callbacks to request_delete as the presenter will provide its own.
-    dvz_deq_callback_clear(client->deq, DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+    // // NOTE: clear the client callbacks to request_delete as the presenter will provide its own.
+    // dvz_deq_callback_clear(client->deq, DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
     // Register a REQUESTS callback which submits pending requests to the renderer.
     dvz_client_callback(
@@ -411,8 +411,7 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
 
     // Register a callback when the user closes a window.
     dvz_client_callback(
-        client, DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, DVZ_CLIENT_CALLBACK_SYNC, _delete_callback,
-        prt);
+        client, DVZ_CLIENT_EVENT_WINDOW_DELETE, DVZ_CLIENT_CALLBACK_SYNC, _delete_callback, prt);
 
     // Create the GUI instance if needed.
     bool has_gui = (flags & DVZ_CANVAS_FLAGS_IMGUI);
@@ -650,7 +649,7 @@ void dvz_presenter_destroy(DvzPresenter* prt)
     // // Go through all remaining surfaces to destroy them, as they were created by the
     // // presenter, not by the renderer, so they won't be destroyed by the renderer destruction
     // // code.
-    // // NOTE: the surface must be destroyed AFTER the swapchain was destroyed.
+    // // NOTE: destruction order: swapchain => surface
     // DvzRenderer* rd = prt->rd;
     // DvzList* surfaces = prt->surfaces;
     // uint64_t n = dvz_list_count(surfaces);
@@ -661,9 +660,9 @@ void dvz_presenter_destroy(DvzPresenter* prt)
 
     // Emit a request_delete event for all remaining windows. The presenter will handle the canvas
     // destruction.
-    ANN(prt->client);
-    request_delete_windows(prt->client);
-    dvz_client_process(prt->client);
+    // ANN(prt->client);
+    // request_delete_windows(prt->client);
+    // dvz_client_process(prt->client);
 
     // Destroy the GuiWindow map.
     dvz_map_destroy(prt->maps.guis);
@@ -690,4 +689,5 @@ void dvz_presenter_destroy(DvzPresenter* prt)
     dvz_fps_destroy(&prt->fps);
 
     FREE(prt);
+    log_trace("presenter destroyed");
 }

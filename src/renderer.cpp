@@ -987,4 +987,5 @@ void dvz_renderer_destroy(DvzRenderer* rd)
 
     dvz_obj_destroyed(&rd->obj);
     FREE(rd);
+    log_trace("renderer destroyed");
 }

@@ -79,32 +79,32 @@ static void delete_client_window(DvzClient* client, DvzId id)
 
 
 
-static void request_delete_windows(DvzClient* client)
-{
-    // Emit a request_delete event for all remaining windows.
-    ANN(client);
+// static void request_delete_windows(DvzClient* client)
+// {
+//     // Emit a request_delete event for all remaining windows.
+//     ANN(client);
 
-    // Loop over the windows.
-    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
-    DvzWindow* window = NULL;
+//     // Loop over the windows.
+//     DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+//     DvzWindow* window = NULL;
 
-    // Request delete event.
-    DvzClientEvent ev = {0};
-    ev.type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE;
+//     // Request delete event.
+//     DvzClientEvent ev = {0};
+//     ev.type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE;
 
-    while (iter.item != NULL)
-    {
-        window = (DvzWindow*)iter.item;
-        if (window != NULL)
-        {
-            // Emit a request delete event to all windows.
-            ev.window_id = window->obj.id;
-            log_trace("emit request_delete for window 0x%" PRIx64, ev.window_id);
-            dvz_client_event(client, ev);
-        }
-        dvz_container_iter(&iter);
-    }
-}
+//     while (iter.item != NULL)
+//     {
+//         window = (DvzWindow*)iter.item;
+//         if (window != NULL)
+//         {
+//             // Emit a request delete event to all windows.
+//             ev.window_id = window->obj.id;
+//             log_trace("emit request_delete for window 0x%" PRIx64, ev.window_id);
+//             dvz_client_event(client, ev);
+//         }
+//         dvz_container_iter(&iter);
+//     }
+// }
 
 
 
@@ -133,7 +133,7 @@ static void _callback_window_create(DvzDeq* deq, void* item, void* user_data)
 
 
 
-static void _callback_window_request_delete(DvzDeq* deq, void* item, void* user_data)
+static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
 {
     ANN(deq);
 
@@ -142,7 +142,7 @@ static void _callback_window_request_delete(DvzDeq* deq, void* item, void* user_
 
     ANN(item);
     DvzClientEvent* ev = (DvzClientEvent*)item;
-    // ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
     log_debug("client: delete window #%d", ev->window_id);
 

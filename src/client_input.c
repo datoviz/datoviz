@@ -98,7 +98,7 @@ static void _delete_window_input(DvzDeq* deq, void* item, void* user_data)
 
     DvzClientEvent* ev = (DvzClientEvent*)item;
     ANN(ev);
-    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
+    ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
     DvzId id = ev->window_id;
 
@@ -145,27 +145,8 @@ void dvz_client_input(DvzClient* client)
         client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_CREATE, _create_window_input, client);
 
     // Delete the input upon window deletion.
-
-    // HACK: we want 2 callbacks to be registered to request_delete:
-    // 1) delete the input
-    // 2) delete the window
-    // The problem is that (2) is normally registered first in dvz_client(), whereas (1)
-    // (_delete_window_input()) is registered second here. We want (1) to occur before (2), because
-    // we need the window to still exist when we destroy the input.
-    // So as a temporary hack here, we clear all callbacks, and register (1) before (2).
-
-    // NOTE: all DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE callbacks are cleared when using the
-    // presenter anyway. The presenter takes care of destroying the input before destroying the
-    // window when destroying the canvas.
-
-    dvz_deq_callback_clear(client->deq, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE);
-
-    // Callback (1): delete the input.
+    // NOTE: DVZ_CLIENT_EVENT_WINDOW_DELETE is marked as a reverse callback event, so this callback
+    // deleting the input will be called *before* the window destruction.
     dvz_deq_callback(
-        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, _delete_window_input, client);
-
-    // Callback (2): delete the window.
-    dvz_deq_callback(
-        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
-        _callback_window_request_delete, client);
+        client->deq, 0, (int)DVZ_CLIENT_EVENT_WINDOW_DELETE, _delete_window_input, client);
 }

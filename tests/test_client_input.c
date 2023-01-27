@@ -48,7 +48,7 @@ static void _on_keyboard(DvzClient* client, DvzClientEvent ev)
     {
         DvzClientEvent cev = {
             .window_id = ev.window_id,
-            .type = DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE,
+            .type = DVZ_CLIENT_EVENT_WINDOW_DELETE,
         };
         dvz_client_event(client, cev);
     }

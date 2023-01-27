@@ -38,13 +38,13 @@ typedef enum
     DVZ_CLIENT_EVENT_NONE,
     DVZ_CLIENT_EVENT_WINDOW_CREATE, // w
     DVZ_CLIENT_EVENT_WINDOW_RESIZE, // w
-    // DVZ_CLIENT_EVENT_WINDOW_DELETE,         // w
-    DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, // w
-    DVZ_CLIENT_EVENT_FRAME,                 // f
-    DVZ_CLIENT_EVENT_MOUSE,                 // m
-    DVZ_CLIENT_EVENT_KEYBOARD,              // k
-    DVZ_CLIENT_EVENT_TIMER,                 // t
-    DVZ_CLIENT_EVENT_REQUESTS,              // r
+    DVZ_CLIENT_EVENT_WINDOW_DELETE, // w
+    // DVZ_CLIENT_EVENT_WINDOW_REQUEST_DELETE, // w
+    DVZ_CLIENT_EVENT_FRAME,    // f
+    DVZ_CLIENT_EVENT_MOUSE,    // m
+    DVZ_CLIENT_EVENT_KEYBOARD, // k
+    DVZ_CLIENT_EVENT_TIMER,    // t
+    DVZ_CLIENT_EVENT_REQUESTS, // r
 } DvzClientEventType;
 
 

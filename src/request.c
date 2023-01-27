@@ -116,6 +116,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
     dvz_list_destroy(rqr->pointers_to_free);
     dvz_obj_destroyed(&rqr->obj);
     FREE(rqr);
+    log_trace("requester destroyed");
 }
 
 
@@ -487,7 +488,7 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n"
-        "    size: %llu\n",
+        "    size: %" PRIx64 "\n",
         req.id, flags, type, size);
 
     return req;
@@ -532,8 +533,8 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
             "  type: dat\n"
             "  id: 0x%" PRIx64 "\n"
             "  content:\n"
-            "    offset: %llu\n"
-            "    size: %llu\n"
+            "    offset: %" PRIx64 "\n"
+            "    size: %" PRIx64 "\n"
             "    data:\n"
             "      mode: base64\n"
             "      buffer: %s\n",

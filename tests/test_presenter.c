@@ -117,14 +117,9 @@ int test_presenter_1(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -282,14 +277,9 @@ int test_presenter_2(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -410,13 +400,9 @@ int test_presenter_thread(TstSuite* suite)
 #endif
 
     // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -458,13 +444,9 @@ int test_presenter_deserialize(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -544,13 +526,9 @@ int test_presenter_gui(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -694,14 +672,9 @@ int test_presenter_multi(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -746,14 +719,9 @@ int test_presenter_fps(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -885,16 +853,12 @@ int test_presenter_scatter(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
-    dvz_panzoom_destroy(pz);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
+    dvz_panzoom_destroy(pz);
 
     FREE(data);
     return 0;
@@ -1096,13 +1060,11 @@ int test_presenter_arcball(TstSuite* suite)
     // End.
 
     // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
+    dvz_requester_destroy(rqr);
     dvz_arcball_destroy(arcball);
     dvz_camera_destroy(camera);
-    dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
