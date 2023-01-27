@@ -294,6 +294,7 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 
 void dvz_gui_destroy(DvzGui* gui)
 {
+    log_debug("destroy the Gui");
     ANN(gui);
 
     // Destroy the GUI windows.

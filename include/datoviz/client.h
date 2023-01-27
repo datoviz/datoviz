@@ -45,6 +45,7 @@ typedef enum
     DVZ_CLIENT_EVENT_KEYBOARD, // k
     DVZ_CLIENT_EVENT_TIMER,    // t
     DVZ_CLIENT_EVENT_REQUESTS, // r
+    DVZ_CLIENT_EVENT_DESTROY,
 } DvzClientEventType;
 
 

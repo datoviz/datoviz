@@ -336,6 +336,12 @@ void dvz_client_destroy(DvzClient* client)
         }
         dvz_container_iter(&iter);
     }
+
+    // NOTE: used to call a destruction callback registered by the presenter, to destroy the GUI
+    // *before* the backend glfw is destroyed. This is because imgui requires glfw when
+    // unregistering its input callbacks.
+    dvz_client_event(client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_DESTROY});
+
     dvz_client_process(client);
 
 

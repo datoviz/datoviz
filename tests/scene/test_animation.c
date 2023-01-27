@@ -162,13 +162,9 @@ int test_animation_2(TstSuite* suite)
     dvz_client_run(client, N_FRAMES);
 
     // End.
-
-    // Destroying all objects.
-    dvz_presenter_destroy(prt);
-
     dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
     dvz_requester_destroy(rqr);
-
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
