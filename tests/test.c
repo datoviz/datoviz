@@ -87,6 +87,7 @@ int dvz_run_tests(const char* match)
     TEST(test_fifo_first)
     TEST(test_deq_1)
     TEST(test_deq_2)
+    TEST(test_deq_3)
 
     // Testing array.
     TEST(test_array_1)

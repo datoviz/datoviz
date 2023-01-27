@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "fifo.h"
+#include "_map.h"
 
 
 
@@ -270,9 +271,15 @@ static void _deq_callbacks(DvzDeq* deq, DvzDeqItem* item)
 
     // Now, we go through all callbacks and we call them or not depending on whether they're
     // default, and whether we call the default or not.
+    uint32_t k = 0;
     for (uint32_t i = 0; i < n; i++)
     {
-        reg = &deq->callbacks[i];
+        // Call the callbacks in reverse order if the item is of the only event type marked as
+        // reverse.
+        k = ((deq->reverse_callback_type != 0) && (deq->reverse_callback_type == item->type))
+                ? n - 1 - i
+                : i;
+        reg = &deq->callbacks[k];
         ANN(reg);
         if (reg->callback != NULL && reg->deq_idx == item->deq_idx && reg->type == item->type)
         {
@@ -412,6 +419,26 @@ void dvz_deq_callback_clear(DvzDeq* deq, int type)
         {
             deq->callbacks[i].callback = NULL;
         }
+    }
+}
+
+
+
+void dvz_deq_order(DvzDeq* deq, int type, DvzDeqOrder order)
+{
+    ANN(deq);
+    if (order == DVZ_DEQ_ORDER_REVERSE)
+    {
+        if (deq->reverse_callback_type != 0)
+            log_warn(
+                "event type %d is already set for reverse calback order, will be replaced by new "
+                "event type %d",
+                deq->reverse_callback_type, type);
+        deq->reverse_callback_type = type;
+    }
+    else
+    {
+        deq->reverse_callback_type = 0;
     }
 }
 

@@ -39,6 +39,8 @@ int test_deq_1(TstSuite*);
 
 int test_deq_2(TstSuite*);
 
+int test_deq_3(TstSuite*);
+
 
 
 #endif

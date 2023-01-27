@@ -61,6 +61,15 @@ typedef enum
 
 
 
+// Callback ordering.
+typedef enum
+{
+    DVZ_DEQ_ORDER_DEFAULT,
+    DVZ_DEQ_ORDER_REVERSE,
+} DvzDeqOrder;
+
+
+
 /*************************************************************************************************/
 /*  Type definitions                                                                             */
 /*************************************************************************************************/
@@ -178,6 +187,9 @@ struct DvzDeq
     uint32_t proc_count;
     DvzDeqProc procs[DVZ_DEQ_MAX_PROCS];
     uint32_t q_to_proc[DVZ_DEQ_MAX_QUEUES]; // for each queue, which proc idx is handling it
+
+    // One event type can have its callbacks called in reverse order.
+    int reverse_callback_type;
 
     // bool has_default; // true if there is at least one registered default callback
 };
@@ -325,6 +337,17 @@ DVZ_EXPORT void dvz_deq_callback(
  * @param type the type of the callbacks to clear
  */
 DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
+
+
+
+/**
+ * Set the callback order for a given event type.
+ *
+ * @param deq the Deq
+ * @param type the event type
+ * @param order the callback order (normal or reverse)
+ */
+DVZ_EXPORT void dvz_deq_order(DvzDeq* deq, int type, DvzDeqOrder order);
 
 
 

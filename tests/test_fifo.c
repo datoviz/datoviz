@@ -301,3 +301,48 @@ int test_deq_2(TstSuite* suite)
     dvz_deq_destroy(deq);
     return 0;
 }
+
+
+
+static void _deq_3_callback_a(DvzDeq* deq, void* item, void* user_data)
+{
+    ANN(deq);
+    ANN(item);
+    ANN(user_data);
+    int* data = (int*)user_data;
+    *data += 2;
+}
+
+static void _deq_3_callback_b(DvzDeq* deq, void* item, void* user_data)
+{
+    ANN(deq);
+    ANN(item);
+    ANN(user_data);
+    int* data = (int*)user_data;
+    *data *= 2;
+}
+
+int test_deq_3(TstSuite* suite)
+{
+    // Test the callback order.
+    DvzDeq* deq = dvz_deq(2, sizeof(int));
+
+    int data = 10;
+    dvz_deq_callback(deq, 0, 1, _deq_3_callback_a, &data);
+    dvz_deq_callback(deq, 0, 1, _deq_3_callback_b, &data);
+    dvz_deq_proc(deq, 0, 2, (uint32_t[]){0, 1});
+
+    // Enqueue in the queue with a callback.
+    dvz_deq_enqueue(deq, 0, 1, (int[]){0});
+    dvz_deq_dequeue_batch(deq, 0);
+    AT(data == 24); // (10+2)*2
+
+    data = 10;
+    dvz_deq_order(deq, 1, DVZ_DEQ_ORDER_REVERSE);
+    dvz_deq_enqueue(deq, 0, 1, (int[]){0});
+    dvz_deq_dequeue_batch(deq, 0);
+    AT(data == 22); // (10*2)+2
+
+    dvz_deq_destroy(deq);
+    return 0;
+}
