@@ -9,8 +9,11 @@
 /*************************************************************************************************/
 
 #include "test_app.h"
+#include "canvas.h"
 #include "scene/app.h"
-#include "scene/scene.h"
+#include "scene/arcball.h"
+#include "scene/camera.h"
+#include "scene/panzoom.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
@@ -18,76 +21,135 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define WIDTH  800
+#define HEIGHT 600
+
+
+
+/*************************************************************************************************/
+/*  Test utils                                                                                   */
+/*************************************************************************************************/
+
+typedef struct PanzoomStruct PanzoomStruct;
+struct PanzoomStruct
+{
+    DvzApp* app;
+    DvzId mvp_id;
+    DvzMVP mvp;
+    DvzPanzoom* pz;
+};
+
+
+
+/*************************************************************************************************/
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
+static void _on_mouse(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    ANN(ps);
+
+    DvzPanzoom* pz = ps->pz;
+    ANN(pz);
+
+    DvzPresenter* prt = ps->app->prt;
+    ANN(prt);
+
+    DvzRequester* rqr = ps->app->rqr;
+    ANN(rqr);
+
+    DvzMVP* mvp = &ps->mvp;
+    ANN(mvp);
+
+    DvzId mvp_id = ps->mvp_id;
+
+    // Dragging: pan.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+        }
+        else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        {
+            dvz_panzoom_zoom_shift(
+                pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
+        }
+    }
+
+    // Stop dragging.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_panzoom_end(pz);
+    }
+
+    // Mouse wheel.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+    {
+        dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+    }
+
+    // Double-click
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_panzoom_reset(pz);
+    }
+
+    // Update the MVP matrices.
+    *mvp = dvz_mvp_default();
+    dvz_panzoom_mvp(pz, mvp);
+
+    // Submit a dat upload request with the new MVP matrices.
+    dvz_requester_add(rqr, dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp));
+}
+
+static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    uint32_t width = ev.content.w.screen_width;
+    uint32_t height = ev.content.w.screen_height;
+    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
+
+    DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
+    ANN(pz);
+    dvz_panzoom_resize(pz, width, height);
+}
+
 int test_app_1(TstSuite* suite)
 {
-    return 0;
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app(DVZ_BACKEND_GLFW);
-    DvzDevice* device = dvz_device(app);
-    DvzRequester* rqr = dvz_requester();
+    DvzApp* app = dvz_app();
+    DvzRequester* rqr = dvz_app_requester(app);
 
-    // // Create scene objects.
-    // DvzScene* scene = dvz_scene();
-    // DvzFigure* fig = dvz_figure(scene, WIDTH, HEIGHT, 1, 1, 0);
-    // DvzPanel* panel = dvz_panel(fig, 0, 0, DVZ_PANEL_TYPE_NONE, 0);
-    // DvzVisual* visual = dvz_visual(scene, DVZ_VISUAL_POINT, 0);
+    const uint32_t n = 52;
+    GraphicsWrapper wrapper = {0};
+    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    void* data = graphics_scatter(rqr, wrapper.dat_id, n);
 
-    // Create the visual properties.
-    // const uint32_t n = 50;
+    // Panzoom callback.
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    PanzoomStruct ps = {
+        .mvp_id = wrapper.mvp_id,
+        .app = app,
+        .pz = pz,
+    };
+    dvz_app_mouse(app, _on_mouse, &ps);
+    dvz_app_resize(app, _scatter_resize, pz);
 
-    // vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    // double t = 0;
-    // double aspect = WIDTH / (double)HEIGHT;
-    // for (uint32_t i = 0; i < n; i++)
-    // {
-    //     t = i / (double)(n);
-    //     pos[i][0] = .5 * cos(M_2PI * t);
-    //     pos[i][1] = aspect * .5 * sin(M_2PI * t);
+    dvz_app_run(app, N_FRAMES);
 
-    //     // dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-    //     // data[i].color[3] = 128;
-    // }
-
-    // DvzGraphicsPointVertex* data =
-    //     (DvzGraphicsPointVertex*)calloc(n, sizeof(DvzGraphicsPointVertex));
-    // double t = 0;
-    // double aspect = WIDTH / (double)HEIGHT;
-    // for (uint32_t i = 0; i < n; i++)
-    // {
-    //     t = i / (double)(n);
-    //     data[i].pos[0] = .5 * cos(M_2PI * t);
-    //     data[i].pos[1] = aspect * .5 * sin(M_2PI * t);
-
-    //     data[i].size = 50;
-
-    //     dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-    //     data[i].color[3] = 128;
-    // }
-
-    // // Set the visual data.
-    // dvz_visual_data(visual, DVZ_PROP_NONE, 0, n, data);
-
-    // // Add the visual to the panel.
-    // dvz_panel_visual(panel, visual, 0);
-
-    // Run the presenter.
-    dvz_device_run(device, rqr, N_FRAMES);
-
-    // // Destroy the scene objects.
-    // dvz_visual_destroy(visual);
-    // dvz_panel_destroy(panel);
-    // dvz_figure_destroy(fig);
-    // dvz_scene_destroy(scene);
-
-    // Destroy the app objects.
-    dvz_requester_destroy(rqr);
-    dvz_device_destroy(device);
+    dvz_panzoom_destroy(pz);
     dvz_app_destroy(app);
 
+    FREE(data);
     return 0;
 }

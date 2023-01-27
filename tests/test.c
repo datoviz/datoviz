@@ -275,6 +275,7 @@ int dvz_run_tests(const char* match)
     TEST(test_arcball_1)
     TEST(test_camera_1)
     TEST(test_animation_1)
+
     TEST(test_app_1)
 
 

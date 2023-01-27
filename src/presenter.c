@@ -644,6 +644,8 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
     if (count == 0)
         return;
 
+    log_trace("submit %d requests to the presenter", count);
+
     ASSERT(count > 0);
     ANN(requests);
 
