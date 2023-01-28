@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #include "canvas.h"
+#include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"
 #include "resources.h"
@@ -448,6 +449,12 @@ void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t he
 void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 {
     ANN(gui_window);
+    ANN(gui_window->window);
+    ANN(gui_window->window->backend_window);
+
+    backend_poll_events(DVZ_BACKEND_GLFW);
+    backend_window_clear_callbacks(DVZ_BACKEND_GLFW, gui_window->window->backend_window);
+
     dvz_framebuffers_destroy(&gui_window->framebuffers);
     dvz_obj_destroyed(&gui_window->obj);
 }

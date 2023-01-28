@@ -167,11 +167,7 @@ void dvz_input_destroy(DvzInput* input)
     GLFWwindow* w = input->window->backend_window;
     ANN(w);
 
-    glfwSetWindowUserPointer(w, NULL);
-    glfwSetCursorPosCallback(w, NULL);
-    glfwSetMouseButtonCallback(w, NULL);
-    glfwSetScrollCallback(w, NULL);
-    glfwSetKeyCallback(w, NULL);
+    backend_window_clear_callbacks(DVZ_BACKEND_GLFW, w);
 
     dvz_mouse_destroy(input->mouse);
     dvz_keyboard_destroy(input->keyboard);

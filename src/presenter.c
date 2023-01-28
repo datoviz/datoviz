@@ -288,6 +288,7 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
 
 static void _gui_destroy_callback(DvzClient* client, DvzClientEvent ev)
 {
+    // This is called in dvz_client_destroy(), callback to the DVZ_CLIENT_EVENT_DESTROY event.
     ANN(client);
 
     DvzPresenter* prt = (DvzPresenter*)ev.user_data;
@@ -295,7 +296,9 @@ static void _gui_destroy_callback(DvzClient* client, DvzClientEvent ev)
 
     // Destroy the GUI.
     if (prt->gui != NULL)
+    {
         dvz_gui_destroy(prt->gui);
+    }
 }
 
 

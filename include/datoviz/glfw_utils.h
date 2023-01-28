@@ -40,6 +40,7 @@ static void backend_init(DvzBackend backend)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         log_debug("initialize glfw");
         glfwSetErrorCallback(_glfw_error);
@@ -49,6 +50,7 @@ static void backend_init(DvzBackend backend)
         }
 #endif
         break;
+    }
     default:
         break;
     }
@@ -63,11 +65,13 @@ static void backend_terminate(DvzBackend backend)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         log_debug("terminate glfw");
         glfwTerminate();
 #endif
         break;
+    }
     default:
         break;
     }
@@ -109,6 +113,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         log_trace("init glfw if needed");
         glfwInit();
@@ -141,6 +146,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
         return bwin;
 #endif
         break;
+    }
     default:
         break;
     }
@@ -157,10 +163,12 @@ static void backend_poll_events(DvzBackend backend)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         glfwPollEvents();
 #endif
         break;
+    }
     default:
         break;
     }
@@ -175,10 +183,42 @@ static void backend_wait(DvzBackend backend)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         glfwWaitEvents();
 #endif
         break;
+    }
+    default:
+        break;
+    }
+}
+
+
+
+static void backend_window_clear_callbacks(DvzBackend backend, void* bwin)
+{
+    ASSERT(backend != DVZ_BACKEND_NONE);
+    ANN(bwin);
+
+    log_trace("removing window input callbacks");
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+    {
+#if HAS_GLFW
+        GLFWwindow* window = (GLFWwindow*)bwin;
+
+        glfwSetWindowFocusCallback(window, NULL);
+        glfwSetCursorEnterCallback(window, NULL);
+        glfwSetCursorPosCallback(window, NULL);
+        glfwSetMouseButtonCallback(window, NULL);
+        glfwSetScrollCallback(window, NULL);
+        glfwSetKeyCallback(window, NULL);
+        glfwSetCharCallback(window, NULL);
+#endif
+        break;
+    }
     default:
         break;
     }
@@ -196,6 +236,7 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
     switch (backend)
     {
     case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         // NOTE: this call leads to a crash with GLFW when input events (eg mouse) are still in the
         // queue while the window is being destroyed.
@@ -204,6 +245,7 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
         glfwDestroyWindow((GLFWwindow*)bwin);
 #endif
         break;
+    }
     default:
         break;
     }
@@ -229,7 +271,8 @@ static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t 
 
     switch (backend)
     {
-    case DVZ_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         ANN(bwin);
         int w = (int)width, h = (int)height;
@@ -237,7 +280,7 @@ static void backend_set_window_size(DvzWindow* window, uint32_t width, uint32_t 
         glfwSetWindowSize((GLFWwindow*)bwin, w, h);
 #endif
         break;
-
+    }
     default:
         break;
     }
@@ -258,7 +301,8 @@ backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* win
 
     switch (backend)
     {
-    case DVZ_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         int w, h;
         ANN(bwin);
@@ -278,6 +322,7 @@ backend_get_window_size(DvzWindow* window, uint32_t* window_width, uint32_t* win
         log_trace("window size is %dx%d", w, h);
 #endif
         break;
+    }
 
     default:
         break;
@@ -298,8 +343,8 @@ static void backend_get_framebuffer_size(
 
     switch (backend)
     {
-    case DVZ_BACKEND_GLFW:;
-
+    case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         int w, h;
         void* bwin = window->backend_window;
@@ -320,6 +365,7 @@ static void backend_get_framebuffer_size(
         log_trace("framebuffer size is %dx%d", w, h);
 #endif
         break;
+    }
 
     default:
         break;
@@ -338,12 +384,14 @@ static bool backend_should_close(DvzWindow* window)
 
     switch (backend)
     {
-    case DVZ_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         if (bwin != NULL)
             return glfwWindowShouldClose((GLFWwindow*)bwin);
 #endif
         break;
+    }
     default:
         break;
     }
@@ -362,16 +410,18 @@ static void backend_loop(DvzWindow* window, uint64_t max_frames)
 
     switch (backend)
     {
-    case DVZ_BACKEND_GLFW:;
+    case DVZ_BACKEND_GLFW:
+    {
 #if HAS_GLFW
         for (uint64_t i = 0; max_frames == 0 || i < max_frames; i++)
         {
-            if (glfwWindowShouldClose(bwin))
+            if (glfwWindowShouldClose((GLFWwindow*)bwin))
                 break;
             glfwPollEvents();
         }
 #endif
         break;
+    }
     default:
         break;
     }
