@@ -110,6 +110,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
     {
     case DVZ_BACKEND_GLFW:
 #if HAS_GLFW
+        log_trace("init glfw if needed");
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -123,6 +124,7 @@ static void* backend_window(DvzBackend backend, uint32_t width, uint32_t height,
         }
 
         GLFWwindow* bwin = glfwCreateWindow((int)width, (int)height, APPLICATION_NAME, NULL, NULL);
+        log_trace("created glfw window %x", (uint64_t)bwin);
         ANN(bwin);
 
         // Visible window.
@@ -198,7 +200,7 @@ static void backend_window_destroy(DvzBackend backend, void* bwin)
         // NOTE: this call leads to a crash with GLFW when input events (eg mouse) are still in the
         // queue while the window is being destroyed.
         // glfwPollEvents();
-        log_trace("destroy GLFW window");
+        log_trace("destroy GLFW window %x", (uint64_t)bwin);
         glfwDestroyWindow((GLFWwindow*)bwin);
 #endif
         break;

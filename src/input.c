@@ -123,6 +123,7 @@ DvzInput* dvz_input(DvzWindow* window)
     input->mouse = dvz_mouse();
     input->keyboard = dvz_keyboard();
     input->clock = dvz_clock();
+    input->window = window;
 
     GLFWwindow* w = window->backend_window;
     ANN(w);
@@ -159,6 +160,19 @@ void dvz_input_destroy(DvzInput* input)
 {
     ANN(input);
     log_trace("destroy the input");
+
+    backend_poll_events(DVZ_BACKEND_GLFW);
+
+    ANN(input->window);
+    GLFWwindow* w = input->window->backend_window;
+    ANN(w);
+
+    glfwSetWindowUserPointer(w, NULL);
+    glfwSetCursorPosCallback(w, NULL);
+    glfwSetMouseButtonCallback(w, NULL);
+    glfwSetScrollCallback(w, NULL);
+    glfwSetKeyCallback(w, NULL);
+
     dvz_mouse_destroy(input->mouse);
     dvz_keyboard_destroy(input->keyboard);
     FREE(input);
