@@ -35,8 +35,6 @@ typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzTimer DvzTimer;
 typedef struct DvzTimerItem DvzTimerItem;
 
-// Callback types.
-// typedef void (*DvzAppCallback)(DvzApp* app, DvzClientEvent ev);
 
 
 /*************************************************************************************************/
@@ -74,15 +72,16 @@ DVZ_EXPORT DvzRequester* dvz_app_requester(DvzApp* app);
 
 DVZ_EXPORT void dvz_app_frame(DvzApp* app);
 
-DVZ_EXPORT void dvz_app_mouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data);
+DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data);
 
-DVZ_EXPORT void dvz_app_keyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data);
+DVZ_EXPORT void dvz_app_onkeyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data);
 
-DVZ_EXPORT void dvz_app_resize(DvzApp* app, DvzClientCallback on_resize, void* user_data);
+DVZ_EXPORT void dvz_app_onresize(DvzApp* app, DvzClientCallback on_resize, void* user_data);
 
-DVZ_EXPORT DvzTimerItem* dvz_app_timer(
-    DvzApp* app, double delay, double period, uint64_t max_count, DvzTimerCallback on_timer,
-    void* user_data);
+DVZ_EXPORT DvzTimerItem*
+dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
+
+DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data);
 
 DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t n_frames);
 

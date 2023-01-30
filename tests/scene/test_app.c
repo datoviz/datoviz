@@ -164,8 +164,8 @@ int test_app_scatter(TstSuite* suite)
         .app = app,
         .pz = pz,
     };
-    dvz_app_mouse(app, _scatter_mouse, &ps);
-    dvz_app_resize(app, _scatter_resize, pz);
+    dvz_app_onmouse(app, _scatter_mouse, &ps);
+    dvz_app_onresize(app, _scatter_resize, pz);
 
     dvz_app_run(app, N_FRAMES);
 
@@ -326,8 +326,8 @@ int test_app_arcball(TstSuite* suite)
     // Submit a dat upload request with the new MVP matrices.
     dvz_upload_dat(rqr, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
 
-    dvz_app_mouse(app, _arcball_mouse, &arc);
-    dvz_app_resize(app, _arcball_resize, &arc);
+    dvz_app_onmouse(app, _arcball_mouse, &arc);
+    dvz_app_onresize(app, _arcball_resize, &arc);
 
     dvz_app_run(app, N_FRAMES);
 
@@ -357,7 +357,7 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     ASSERT(n > 0);
 
     const double dur = 2.0;
-    double t = fmod(ev.content.f.time / dur, 1);
+    double t = fmod(ev.content.t.time / dur, 1);
     for (uint32_t i = 0; i < n; i++)
     {
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
@@ -398,7 +398,8 @@ int test_app_anim(TstSuite* suite)
     dvz_upload_dat(rqr, wrapper.dat_id, 0, size, data);
 
     AnimStruct anim = {.data = data, .rqr = rqr, .dat_id = wrapper.dat_id, .n = n, .size = size};
-    // dvz_app_timer(app, 0, 1. / 60., 0, _anim_timer, &anim);
+    dvz_app_timer(app, 0, 1. / 60., 0);
+    dvz_app_ontimer(app, _anim_timer, &anim);
 
     dvz_app_run(app, N_FRAMES);
 

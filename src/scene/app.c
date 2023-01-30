@@ -38,6 +38,9 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
     ANN(app);
 
     dvz_presenter_submit(app->prt, app->rqr);
+
+    // The timer callbacks are called here.
+    dvz_timer_tick(app->timer, ev.content.f.time);
 }
 
 
@@ -96,7 +99,7 @@ void dvz_app_frame(DvzApp* app)
 
 
 
-void dvz_app_mouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
+void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
 {
     ANN(app);
     dvz_client_callback(
@@ -105,7 +108,7 @@ void dvz_app_mouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
 
 
 
-void dvz_app_keyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data)
+void dvz_app_onkeyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data)
 {
     ANN(app);
     dvz_client_callback(
@@ -114,7 +117,7 @@ void dvz_app_keyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_dat
 
 
 
-void dvz_app_resize(DvzApp* app, DvzClientCallback on_resize, void* user_data)
+void dvz_app_onresize(DvzApp* app, DvzClientCallback on_resize, void* user_data)
 {
     ANN(app);
     dvz_client_callback(
@@ -124,17 +127,52 @@ void dvz_app_resize(DvzApp* app, DvzClientCallback on_resize, void* user_data)
 
 
 
-DvzTimerItem* dvz_app_timer(
-    DvzApp* app, double delay, double period, uint64_t max_count, DvzTimerCallback on_timer,
-    void* user_data)
+static void _timer_callback(DvzTimer* timer, DvzTimerEvent ev)
+{
+    ANN(timer);
+    ANN(ev.item);
+
+    DvzApp* app = (DvzApp*)ev.user_data;
+    ANN(app);
+    ANN(app->client);
+
+    // Emit a client TIMER event.
+    DvzClientEvent cev = {
+        .type = DVZ_CLIENT_EVENT_TIMER,
+        .content =
+            {
+                .t =
+                    {
+                        .timer_item = ev.item,
+                        .timer_idx = ev.item->timer_idx,
+                        .time = ev.time,
+                        .step_idx = ev.item->count,
+                    },
+            },
+    };
+    dvz_client_event(app->client, cev);
+}
+
+DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count)
 {
     ANN(app);
     ANN(app->timer);
 
     DvzTimerItem* item = dvz_timer_new(app->timer, delay, period, max_count);
-    dvz_timer_callback(app->timer, item, on_timer, user_data);
+    dvz_timer_callback(app->timer, item, _timer_callback, app);
 
     return item;
+}
+
+
+
+void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data)
+{
+    ANN(app);
+    ANN(app->client);
+
+    dvz_client_callback(
+        app->client, DVZ_CLIENT_EVENT_TIMER, DVZ_CLIENT_CALLBACK_SYNC, on_timer, user_data);
 }
 
 
@@ -153,6 +191,7 @@ void dvz_app_destroy(DvzApp* app)
     ANN(app);
     dvz_client_destroy(app->client);
     dvz_presenter_destroy(app->prt);
+    dvz_timer_destroy(app->timer);
     dvz_requester_destroy(app->rqr);
     dvz_renderer_destroy(app->rd);
     dvz_gpu_destroy(app->gpu);

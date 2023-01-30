@@ -50,6 +50,7 @@ typedef void (*DvzTimerCallback)(DvzTimer* timer, DvzTimerEvent ev);
 struct DvzTimerItem
 {
     DvzTimer* timer;
+    uint32_t timer_idx;
     double delay, period;
     uint64_t count, max_count;
     double start_time, last_fire;

@@ -110,6 +110,7 @@ DvzTimerItem* dvz_timer_new(DvzTimer* timer, double delay, double period, uint64
     item->delay = delay;
     item->period = period;
     item->max_count = max_count;
+    item->timer_idx = (uint32_t)dvz_list_count(timer->items);
 
     // Add it to the list.
     dvz_list_append(timer->items, (DvzListItem){.p = item});

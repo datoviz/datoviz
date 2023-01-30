@@ -69,6 +69,7 @@ typedef struct DvzClientEvent DvzClientEvent;
 // Forward declarations.
 typedef uint64_t DvzId;
 typedef struct DvzDeq DvzDeq;
+typedef struct DvzTimerItem DvzTimerItem;
 
 // Callback types.
 typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev);
@@ -101,6 +102,15 @@ struct DvzClientEvent
             uint64_t frame_idx;
             double time;
         } f;
+
+        // Timer.
+        struct
+        {
+            uint32_t timer_idx;
+            DvzTimerItem* timer_item;
+            uint64_t step_idx;
+            double time;
+        } t;
 
         // Requests.
         struct
