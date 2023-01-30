@@ -94,11 +94,10 @@ int test_renderer_1(TstSuite* suite)
 
     // Commands.
     dvz_requester_begin(rqr);
-    dvz_requester_add(rqr, dvz_record_begin(rqr, board_id));
-    dvz_requester_add(
-        rqr, dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
-    dvz_requester_add(rqr, dvz_record_draw(rqr, board_id, graphics_id, 0, 3));
-    dvz_requester_add(rqr, dvz_record_end(rqr, board_id));
+    dvz_record_begin(rqr, board_id);
+    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(rqr, board_id, graphics_id, 0, 3);
+    dvz_record_end(rqr, board_id);
     uint32_t count = 0;
     DvzRequest* reqs = dvz_requester_end(rqr, &count);
     AT(count > 0);
@@ -331,11 +330,11 @@ int test_renderer_image(TstSuite* suite)
 
     // Commands.
     dvz_requester_begin(rqr);
-    dvz_requester_add(rqr, dvz_record_begin(rqr, board_id));
-    dvz_requester_add(
-        rqr, dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT));
-    dvz_requester_add(rqr, dvz_record_draw(rqr, board_id, graphics_id, 0, 6));
-    dvz_requester_add(rqr, dvz_record_end(rqr, board_id));
+    dvz_record_begin(rqr, board_id);
+    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(rqr, board_id, graphics_id, 0, 6);
+    dvz_record_end(rqr, board_id);
+
     uint32_t count = 0;
     DvzRequest* reqs = dvz_requester_end(rqr, &count);
     AT(count > 0);

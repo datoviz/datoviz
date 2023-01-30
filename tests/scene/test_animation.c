@@ -96,8 +96,7 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
     }
 
-    DvzRequest req = dvz_upload_dat(rqr, anim->dat_id, 0, anim->size, data);
-    dvz_requester_add(rqr, req);
+    dvz_upload_dat(rqr, anim->dat_id, 0, anim->size, data);
     dvz_presenter_submit(prt, rqr);
 }
 
@@ -143,8 +142,7 @@ int test_animation_2(TstSuite* suite)
     }
 
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);
-    DvzRequest req = dvz_upload_dat(rqr, wrapper.dat_id, 0, size, data);
-    dvz_requester_add(rqr, req);
+    dvz_upload_dat(rqr, wrapper.dat_id, 0, size, data);
 
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.

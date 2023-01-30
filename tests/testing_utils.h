@@ -404,64 +404,50 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
 {
     // Make a canvas creation request.
     DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, flags);
-    dvz_requester_add(rqr, req);
 
     // Canvas id.
     wrapper->canvas_id = req.id;
 
     // Create a graphics.
     req = dvz_create_graphics(rqr, DVZ_GRAPHICS_POINT, 0);
-    dvz_requester_add(rqr, req);
     wrapper->graphics_id = req.id;
 
     // Create the vertex buffer dat.
     req = dvz_create_dat(
         rqr, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex),
         DVZ_DAT_FLAGS_PERSISTENT_STAGING);
-    dvz_requester_add(rqr, req);
     wrapper->dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
     req = dvz_set_vertex(rqr, wrapper->graphics_id, wrapper->dat_id);
-    dvz_requester_add(rqr, req);
 
     // Binding #0: MVP.
     req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
-    dvz_requester_add(rqr, req);
     wrapper->mvp_id = req.id;
 
     req = dvz_bind_dat(rqr, wrapper->graphics_id, 0, wrapper->mvp_id);
-    dvz_requester_add(rqr, req);
 
     wrapper->mvp = dvz_mvp_default();
     req = dvz_upload_dat(rqr, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
-    dvz_requester_add(rqr, req);
 
     // Binding #1: viewport.
     req = dvz_create_dat(
         rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
-    dvz_requester_add(rqr, req);
     wrapper->viewport_id = req.id;
 
     req = dvz_bind_dat(rqr, wrapper->graphics_id, 1, wrapper->viewport_id);
-    dvz_requester_add(rqr, req);
 
     wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
     req = dvz_upload_dat(rqr, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
-    dvz_requester_add(rqr, req);
 
     // Command buffer.
     req = dvz_record_begin(rqr, wrapper->canvas_id);
-    dvz_requester_add(rqr, req);
 
     req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_requester_add(rqr, req);
 
     req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, n);
-    dvz_requester_add(rqr, req);
 
     req = dvz_record_end(rqr, wrapper->canvas_id);
-    dvz_requester_add(rqr, req);
 }
 
 
@@ -486,9 +472,7 @@ static void* graphics_scatter(DvzRequester* rqr, DvzId dat_id, const uint32_t n)
         data[i].color[3] = 128;
     }
 
-    DvzRequest req = dvz_upload_dat(rqr, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
-    dvz_requester_add(rqr, req);
-
+    dvz_upload_dat(rqr, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
     return data;
 }
 

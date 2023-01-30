@@ -19,6 +19,10 @@
     req.action = DVZ_REQUEST_ACTION_##_action;                                                    \
     req.type = DVZ_REQUEST_OBJECT_##_type;
 
+#define RETURN_REQUEST                                                                            \
+    dvz_requester_add(rqr, req);                                                                  \
+    return req;
+
 #define STR_ACTION(r)                                                                             \
     case DVZ_REQUEST_ACTION_##r:                                                                  \
         str = #r;                                                                                 \
@@ -374,7 +378,7 @@ dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 backg
     req.content.board.width = width;
     req.content.board.height = height;
     memcpy(req.content.board.background, background, sizeof(cvec4));
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -383,7 +387,7 @@ DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
 {
     CREATE_REQUEST(UPDATE, BOARD);
     req.id = id;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -394,7 +398,7 @@ DvzRequest dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint
     req.id = board;
     req.content.board.width = width;
     req.content.board.height = height;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -404,7 +408,7 @@ DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background)
     CREATE_REQUEST(SET, BACKGROUND);
     req.id = id;
     memcpy(req.content.board.background, background, sizeof(cvec4));
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -413,7 +417,7 @@ DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 {
     CREATE_REQUEST(DELETE, BOARD);
     req.id = id;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -445,7 +449,7 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
         "    height: %d\n",
         req.id, flags, width, height);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -454,7 +458,7 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
 // {
 //     CREATE_REQUEST(UPDATE, CANVAS);
 //     req.id = id;
-//     return req;
+//     RETURN_REQUEST
 // }
 
 
@@ -463,7 +467,7 @@ DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
 {
     CREATE_REQUEST(DELETE, CANVAS);
     req.id = id;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -491,7 +495,7 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
         "    size: %" PRIx64 "\n",
         req.id, flags, type, size);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -503,7 +507,7 @@ DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
     CREATE_REQUEST(RESIZE, DAT);
     req.id = dat;
     req.content.dat.size = size;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -542,7 +546,7 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
         if (size < VERBOSE_MAX_BASE64)
             free(encoded);
     }
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -560,7 +564,7 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape
     req.content.tex.dims = dims;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
     req.content.tex.format = format;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -570,7 +574,7 @@ DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
     CREATE_REQUEST(RESIZE, TEX);
     req.id = tex;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -586,7 +590,7 @@ dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize 
     memcpy(req.content.tex_upload.shape, shape, sizeof(uvec3));
     req.content.tex_upload.size = size;
     req.content.tex_upload.data = data;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -601,7 +605,7 @@ DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAdd
     req.id = dvz_prng_uuid(rqr->prng);
     req.content.sampler.filter = filter;
     req.content.sampler.mode = mode;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -627,7 +631,7 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
         "    type: %d\n",
         req.id, flags, type);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -647,7 +651,7 @@ DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
         "    dat: 0x%" PRIx64 "\n",
         req.id, dat);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -662,7 +666,7 @@ DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
     req.id = pipe;
     req.content.set_dat.slot_idx = slot_idx;
     req.content.set_dat.dat = dat;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -674,7 +678,7 @@ DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
     req.content.set_tex.slot_idx = slot_idx;
     req.content.set_tex.tex = tex;
     req.content.set_tex.sampler = sampler;
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -696,7 +700,7 @@ DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
         "  id: 0x%" PRIx64 "\n",
         req.id);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -723,7 +727,7 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
         "    - %.3f\n",
         board, offset[0], offset[1], shape[0], shape[1]);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -749,7 +753,7 @@ DvzRequest dvz_record_draw(
         "    vertex_count: %u\n",
         board, graphics, first_vertex, vertex_count);
 
-    return req;
+    RETURN_REQUEST
 }
 
 
@@ -767,5 +771,5 @@ DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
         "  id: 0x%" PRIx64 "\n",
         req.id);
 
-    return req;
+    RETURN_REQUEST
 }

@@ -106,7 +106,7 @@ static void _on_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_mvp(pz, mvp);
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_requester_add(rqr, dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp));
+    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
 }
 
 static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
