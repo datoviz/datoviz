@@ -248,21 +248,19 @@ static void create_instance(
     }
 
     uint32_t extension_count = required_extension_count;
-    if (has_validation)
-    {
-        extension_count++;
-    }
+    // ASSERT(extension_count <= 90);
+    char** extensions = (char**)calloc(required_extension_count + 2, sizeof(char*));
+    memcpy(extensions, required_extensions, required_extension_count * sizeof(char*));
 
-    ASSERT(extension_count <= 100);
-    const char* extensions[100];
-    for (uint32_t i = 0; i < required_extension_count; i++)
-    {
-        extensions[i] = required_extensions[i];
-    }
+    // Validation.
     if (has_validation)
-    {
-        extensions[required_extension_count] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
-    }
+        extensions[extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
+
+    // Portability.
+    extensions[extension_count++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+
+    // Required + validation and portability.
+    ASSERT(extension_count <= required_extension_count + 2);
 
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
@@ -277,7 +275,8 @@ static void create_instance(
     info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     info_inst.pApplicationInfo = &appInfo;
     info_inst.enabledExtensionCount = extension_count;
-    info_inst.ppEnabledExtensionNames = extensions;
+    info_inst.ppEnabledExtensionNames = (const char* const*)extensions;
+    info_inst.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Validation layers.
     VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
@@ -334,6 +333,7 @@ static void create_instance(
     }
 
     log_trace("instance created");
+    FREE(extensions);
 }
 
 
