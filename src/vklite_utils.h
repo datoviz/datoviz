@@ -582,6 +582,7 @@ static void create_instance(
     }
 
     extensions[extension_count++] = "VK_KHR_get_physical_device_properties2";
+    extensions[extension_count++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
 
     // Prepare the creation of the Vulkan instance.
     VkApplicationInfo appInfo = {0};
@@ -597,6 +598,7 @@ static void create_instance(
     info_inst.pApplicationInfo = &appInfo;
     info_inst.enabledExtensionCount = extension_count;
     info_inst.ppEnabledExtensionNames = extensions;
+    info_inst.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Validation layers.
     VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};
