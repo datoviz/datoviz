@@ -116,6 +116,7 @@ int test_renderer_1(TstSuite* suite)
     char imgpath[1024];
     snprintf(imgpath, sizeof(imgpath), "%s/renderer_1.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
     // Create a board deletion request.
     req = dvz_delete_board(rqr, board_id);
@@ -353,6 +354,7 @@ int test_renderer_image(TstSuite* suite)
     char imgpath[1024];
     snprintf(imgpath, sizeof(imgpath), "%s/renderer_image.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
     // Create a board deletion request.
     req = dvz_delete_board(rqr, board_id);

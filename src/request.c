@@ -35,7 +35,7 @@
 
 #define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
 
-// Maximum size of buffers encoded in base65 when printing the commands
+// Maximum size of buffers encoded in base64 when printing the commands
 #define VERBOSE_MAX_BASE64 1048576
 
 

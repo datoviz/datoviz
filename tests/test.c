@@ -185,7 +185,7 @@ int dvz_run_tests(const char* match)
     TEST(test_presenter_1)
     TEST(test_presenter_2)
     TEST(test_presenter_thread)
-    TEST(test_presenter_deserialize)
+    // TEST(test_presenter_deserialize) // used for debugging with a requests.dvz file
     TEST(test_presenter_gui)
     TEST(test_presenter_multi)
     TEST(test_presenter_fps)

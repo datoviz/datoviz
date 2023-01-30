@@ -52,6 +52,19 @@ struct CallbackStruct
 
 
 
+typedef struct TexStruct TexStruct;
+struct TexStruct
+{
+    DvzRequester* rqr;
+    DvzPresenter* prt;
+
+    uint32_t width;
+    DvzId tex_id;
+    cvec4* tex_data;
+};
+
+
+
 typedef struct PanzoomStruct PanzoomStruct;
 struct PanzoomStruct
 {
@@ -424,27 +437,52 @@ int test_presenter_deserialize(TstSuite* suite)
 
 static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 {
-    dvz_gui_dialog_begin("Hello", (vec2){100, 100}, (vec2){200, 200}, 0);
+    dvz_gui_dialog_begin("Window title", (vec2){100, 100}, (vec2){400, 200}, 0);
     dvz_gui_text("Hello world");
+
     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
     // the executable.
 
     // dvz_gui_demo();
 
-    // DvzTex* tex = (DvzTex*)user_data;
-    // ANN(tex);
-    // {
-    //     const uint32_t width = tex->shape[0];
+    TexStruct* tex_struct = (TexStruct*)user_data;
+    ANN(tex_struct);
 
-    //     cvec4* img = (cvec4*)calloc(width, 4);
-    //     for (uint32_t i = 0; i < width; i++)
-    //         dvz_colormap(DVZ_CMAP_HSV, i * 256 / (width), img[i]);
+    DvzPresenter* prt = tex_struct->prt;
+    ANN(prt);
 
-    //     dvz_tex_upload(
-    //         tex, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), img, true);
-    //     FREE(img);
-    // }
-    // dvz_gui_image(tex, 300, 50);
+    DvzRequester* rqr = tex_struct->rqr;
+    ANN(rqr);
+
+    DvzId tex_id = tex_struct->tex_id;
+    ASSERT(tex_id != 0);
+
+    uint32_t width = tex_struct->width;
+    ASSERT(width > 0);
+
+    cvec4* tex_data = tex_struct->tex_data;
+    ANN(tex_data);
+
+    // Elapsed time.
+    double t = dvz_clock_get(&prt->client->clock);
+
+    // Update the texture data.
+    for (uint32_t i = 0; i < width; i++)
+        dvz_colormap(
+            DVZ_CMAP_HSV, (i - ((uint32_t)round(t * 128) % width)) * 256 / width, tex_data[i]);
+
+    // Upload the texture data.
+    dvz_upload_tex(
+        rqr, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+
+    // NOTE: this call needs to be explicit when using the presenter API. The app API automatically
+    // calls it so the user doesn't need it.
+    dvz_presenter_submit(prt, rqr);
+
+    // Display the texture as an image in the GUI.
+    DvzTex* tex = dvz_renderer_tex(tex_struct->prt->rd, tex_struct->tex_id);
+    ANN(tex);
+    dvz_gui_image(tex, 300, 50);
 
     dvz_gui_dialog_end();
 }
@@ -474,19 +512,38 @@ int test_presenter_gui(TstSuite* suite)
 
     // Make a canvas creation request.
     req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
+    DvzId canvas_id = req.id;
+
+    // Texture.
+    const uint32_t width = 256, height = 1;
+    req = dvz_create_tex(
+        rqr, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, (uvec3){width, height, 1},
+        DVZ_TEX_FLAGS_PERSISTENT_STAGING);
+    DvzId tex_id = req.id;
+
+    // Texture data.
+    cvec4* tex_data = (cvec4*)calloc(width * height, sizeof(cvec4));
+    for (uint32_t i = 0; i < width; i++)
+        dvz_colormap(DVZ_CMAP_HSV, i * 256 / width, tex_data[i]);
+    dvz_upload_tex(
+        rqr, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+
+    // Texture struct.
+    TexStruct tex_struct = {
+        .prt = prt,
+        .rqr = rqr,
+        .width = width,
+        .tex_id = tex_id,
+        .tex_data = tex_data,
+    };
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
     dvz_presenter_submit(prt, rqr);
 
-    // // Texture.
-    // DvzTex* tex = dvz_tex(
-    //     rd->ctx, DVZ_TEX_2D, (uvec3){256, 1, 1}, DVZ_FORMAT_R8G8B8A8_UNORM,
-    //     DVZ_TEX_FLAGS_PERSISTENT_STAGING);
-
     // GUI callback.
-    dvz_presenter_gui(prt, req.id, _gui_callback_1, NULL);
+    dvz_presenter_gui(prt, canvas_id, _gui_callback_1, &tex_struct);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -497,6 +554,8 @@ int test_presenter_gui(TstSuite* suite)
     dvz_requester_destroy(rqr);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
+
+    FREE(tex_data);
 
     return 0;
 }
