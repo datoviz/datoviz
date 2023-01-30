@@ -10,6 +10,7 @@
 
 #include "test_app.h"
 #include "canvas.h"
+#include "scene/animation.h"
 #include "scene/app.h"
 #include "scene/arcball.h"
 #include "scene/camera.h"
@@ -48,11 +49,22 @@ typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
     DvzRequester* rqr;
-    DvzPresenter* prt;
     DvzId mvp_id;
     DvzMVP mvp;
     DvzArcball* arcball;
     DvzCamera* cam;
+};
+
+
+
+typedef struct AnimStruct AnimStruct;
+struct AnimStruct
+{
+    DvzRequester* rqr;
+    DvzId dat_id;
+    DvzSize size;
+    uint32_t n;
+    void* data;
 };
 
 
@@ -70,9 +82,6 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
 
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
-
-    DvzPresenter* prt = ps->app->prt;
-    ANN(prt);
 
     DvzRequester* rqr = ps->app->rqr;
     ANN(rqr);
@@ -325,6 +334,75 @@ int test_app_arcball(TstSuite* suite)
     dvz_arcball_destroy(arcball);
     dvz_app_destroy(app);
 
+    FREE(data);
+    return 0;
+}
+
+
+
+static void _anim_timer(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    AnimStruct* anim = (AnimStruct*)ev.user_data;
+    ANN(anim);
+
+    DvzRequester* rqr = anim->rqr;
+    ANN(rqr);
+
+    DvzGraphicsPointVertex* data = (DvzGraphicsPointVertex*)anim->data;
+    ANN(data);
+
+    uint32_t n = anim->n;
+    ASSERT(n > 0);
+
+    const double dur = 2.0;
+    double t = fmod(ev.content.f.time / dur, 1);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
+    }
+
+    dvz_upload_dat(rqr, anim->dat_id, 0, anim->size, data);
+}
+
+int test_app_anim(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app();
+    DvzRequester* rqr = dvz_app_requester(app);
+
+    const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
+    GraphicsWrapper wrapper = {0};
+    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+
+    // Upload the data.
+    DvzGraphicsPointVertex* data =
+        (DvzGraphicsPointVertex*)calloc(n, sizeof(DvzGraphicsPointVertex));
+    double t = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n - 1);
+        data[i].pos[0] = .9 * (-1 + 2 * t);
+        data[i].pos[1] = 0;
+
+        data[i].size = 50;
+
+        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
+        data[i].color[3] = 128;
+    }
+
+    DvzSize size = n * sizeof(DvzGraphicsPointVertex);
+    dvz_upload_dat(rqr, wrapper.dat_id, 0, size, data);
+
+    AnimStruct anim = {.data = data, .rqr = rqr, .dat_id = wrapper.dat_id, .n = n, .size = size};
+    // dvz_app_timer(app, 0, 1. / 60., 0, _anim_timer, &anim);
+
+    dvz_app_run(app, N_FRAMES);
+
+    dvz_app_destroy(app);
     FREE(data);
     return 0;
 }

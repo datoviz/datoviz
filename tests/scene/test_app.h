@@ -23,6 +23,8 @@ int test_app_scatter(TstSuite*);
 
 int test_app_arcball(TstSuite*);
 
+int test_app_anim(TstSuite*);
+
 
 
 #endif

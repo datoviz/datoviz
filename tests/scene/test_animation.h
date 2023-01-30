@@ -21,8 +21,6 @@
 
 int test_animation_1(TstSuite*);
 
-int test_animation_2(TstSuite*);
-
 
 
 #endif

@@ -189,8 +189,6 @@ int dvz_run_tests(const char* match)
     TEST(test_presenter_gui)
     TEST(test_presenter_multi)
 
-    TEST(test_animation_2)
-
     // Teardown the host fixture.
     TEARDOWN(teardown_host)
 
@@ -267,14 +265,16 @@ int dvz_run_tests(const char* match)
     TEST(test_request_1)
     TEST(test_request_2)
 
-    // Testing scene.
+    // Testing scene elements.
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
     TEST(test_camera_1)
     TEST(test_animation_1)
 
+    // Testing app.
     TEST(test_app_scatter)
     TEST(test_app_arcball)
+    TEST(test_app_anim)
 
 
     tst_suite_run(&suite, match);
