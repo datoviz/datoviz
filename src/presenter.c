@@ -111,7 +111,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
 
     // Create the associated GUI window if requested.
-    bool has_gui = (rq.flags & DVZ_CANVAS_FLAGS_IMGUI);
+    bool has_gui = ((rq.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
     if (has_gui)
     {
         ANN(prt->gui);
@@ -127,7 +127,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
         dvz_map_add(prt->maps.guis, rq.id, 0, (void*)gui_window);
     }
 
-    bool has_fps = (rq.flags & DVZ_CANVAS_FLAGS_FPS);
+    bool has_fps = ((rq.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
     if (has_fps)
     {
         dvz_presenter_gui(prt, rq.id, _gui_callback_fps, &prt->fps);
