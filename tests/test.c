@@ -188,9 +188,6 @@ int dvz_run_tests(const char* match)
     // TEST(test_presenter_deserialize) // used for debugging with a requests.dvz file
     TEST(test_presenter_gui)
     TEST(test_presenter_multi)
-    TEST(test_presenter_fps)
-    TEST(test_presenter_scatter)
-    TEST(test_presenter_arcball)
 
     TEST(test_animation_2)
 
@@ -276,7 +273,8 @@ int dvz_run_tests(const char* match)
     TEST(test_camera_1)
     TEST(test_animation_1)
 
-    TEST(test_app_1)
+    TEST(test_app_scatter)
+    TEST(test_app_arcball)
 
 
     tst_suite_run(&suite, match);

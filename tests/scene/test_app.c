@@ -44,11 +44,24 @@ struct PanzoomStruct
 
 
 
+typedef struct ArcballStruct ArcballStruct;
+struct ArcballStruct
+{
+    DvzRequester* rqr;
+    DvzPresenter* prt;
+    DvzId mvp_id;
+    DvzMVP mvp;
+    DvzArcball* arcball;
+    DvzCamera* cam;
+};
+
+
+
 /*************************************************************************************************/
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzClient* client, DvzClientEvent ev)
+static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
 
@@ -122,7 +135,7 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_resize(pz, width, height);
 }
 
-int test_app_1(TstSuite* suite)
+int test_app_scatter(TstSuite* suite)
 {
     ANN(suite);
 
@@ -142,12 +155,174 @@ int test_app_1(TstSuite* suite)
         .app = app,
         .pz = pz,
     };
-    dvz_app_mouse(app, _on_mouse, &ps);
+    dvz_app_mouse(app, _scatter_mouse, &ps);
     dvz_app_resize(app, _scatter_resize, pz);
 
     dvz_app_run(app, N_FRAMES);
 
     dvz_panzoom_destroy(pz);
+    dvz_app_destroy(app);
+
+    FREE(data);
+    return 0;
+}
+
+
+
+static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ANN(arc);
+
+    DvzArcball* arcball = arc->arcball;
+    ANN(arcball);
+
+    DvzRequester* rqr = arc->rqr;
+    ANN(rqr);
+
+    DvzMVP* mvp = &arc->mvp;
+    ANN(mvp);
+
+    DvzId mvp_id = arc->mvp_id;
+
+    // Dragging: pan.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            float width = arcball->viewport_size[0];
+            float height = arcball->viewport_size[1];
+
+            vec2 cur_pos, last_pos;
+            cur_pos[0] = -1 + 2 * ev.content.m.content.d.pos[0] / width;
+            cur_pos[1] = +1 - 2 * ev.content.m.content.d.pos[1] / height;
+            last_pos[0] = -1 + 2 * ev.content.m.content.d.press_pos[0] / width;
+            last_pos[1] = +1 - 2 * ev.content.m.content.d.press_pos[1] / height;
+
+            dvz_arcball_rotate(arcball, cur_pos, last_pos);
+        }
+        // else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        // {
+        // }
+    }
+
+    // Stop dragging.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_arcball_end(arcball);
+    }
+
+    // // Mouse wheel.
+    // if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+    // {
+    //     dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+    // }
+
+    // Double-click
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_arcball_reset(arcball);
+    }
+
+    // Update the MVP matrices.
+    dvz_arcball_mvp(arcball, mvp); // set the model matrix
+
+    // Submit a dat upload request with the new MVP matrices.
+    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+}
+
+static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    uint32_t width = ev.content.w.screen_width;
+    uint32_t height = ev.content.w.screen_height;
+    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
+
+    ANN(client);
+
+    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ANN(arc);
+
+    DvzRequester* rqr = arc->rqr;
+    ANN(rqr);
+
+    DvzMVP* mvp = &arc->mvp;
+    ANN(mvp);
+
+    DvzId mvp_id = arc->mvp_id;
+
+    DvzCamera* camera = arc->cam;
+    ANN(camera);
+    dvz_camera_resize(camera, width, height);
+
+    DvzArcball* arcball = arc->arcball;
+    ANN(arcball);
+    dvz_arcball_resize(arcball, width, height);
+
+    // Update the MVP matrices.
+    dvz_camera_mvp(camera, mvp); // set the model matrix
+
+    // Submit a dat upload request with the new MVP matrices.
+    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+}
+
+int test_app_arcball(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app();
+    DvzRequester* rqr = dvz_app_requester(app);
+
+    const uint32_t n = 1000;
+    GraphicsWrapper wrapper = {0};
+    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+
+    // Upload the data.
+    DvzGraphicsPointVertex* data =
+        (DvzGraphicsPointVertex*)calloc(n, sizeof(DvzGraphicsPointVertex));
+    double t = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = i / (double)(n);
+        data[i].pos[0] = .25 * dvz_rand_normal();
+        data[i].pos[1] = .25 * dvz_rand_normal();
+        data[i].pos[2] = .25 * dvz_rand_normal();
+
+        glm_vec3_normalize(data[i].pos);
+
+        data[i].size = 4;
+
+        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
+        data[i].color[3] = 128;
+    }
+    dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+
+    // Arcball callback.
+    DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
+    // dvz_arcball_constrain(arcball, (vec3){0, 1, 0});
+    DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
+    ArcballStruct arc = {
+        .mvp_id = wrapper.mvp_id,
+        .arcball = arcball,
+        .cam = camera,
+        .rqr = rqr,
+        .mvp = dvz_mvp_default(),
+    };
+    dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
+
+    // Submit a dat upload request with the new MVP matrices.
+    dvz_upload_dat(rqr, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
+
+    dvz_app_mouse(app, _arcball_mouse, &arc);
+    dvz_app_resize(app, _arcball_resize, &arc);
+
+    dvz_app_run(app, N_FRAMES);
+
+    dvz_arcball_destroy(arcball);
     dvz_app_destroy(app);
 
     FREE(data);

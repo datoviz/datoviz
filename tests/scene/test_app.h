@@ -19,7 +19,9 @@
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-int test_app_1(TstSuite*);
+int test_app_scatter(TstSuite*);
+
+int test_app_arcball(TstSuite*);
 
 
 
