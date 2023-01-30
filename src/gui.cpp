@@ -251,6 +251,10 @@ static int _imgui_styling(int flags)
 
 static void _imgui_destroy()
 {
+    // NOTE: destruction order:
+    // 1) ImGui_ImplVulkan_Shutdown()
+    // 2) ImGui_ImplGlfw_Shutdown()
+
     ImGui_ImplVulkan_Shutdown();
     if (_imgui_has_glfw())
         ImGui_ImplGlfw_Shutdown();
@@ -295,18 +299,18 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 
 void dvz_gui_destroy(DvzGui* gui)
 {
-    log_debug("destroy the Gui");
+    log_debug("destroy the GUI");
     ANN(gui);
+
+    // NOTE: this (ImplVulkan destruction) should be called *BEFORE* gui_window_destroy (ImplGlfw
+    // shutdown)
+    _imgui_destroy();
 
     // Destroy the GUI windows.
     CONTAINER_DESTROY_ITEMS(DvzGuiWindow, gui->gui_windows, dvz_gui_window_destroy)
     dvz_container_destroy(&gui->gui_windows);
 
     dvz_renderpass_destroy(&gui->renderpass);
-
-    // NOTE: this must occur BEFORE backend_destroy(), as imgui will unregister the callbacks using
-    // glfw functions.
-    _imgui_destroy();
 
     FREE(gui);
 }
@@ -387,7 +391,7 @@ DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_i
 
 
 
-void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx)
+void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
 {
     ANN(gui_window);
 
@@ -408,13 +412,13 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx)
 
     ImGui::NewFrame();
 
-    dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, &gui->renderpass, &gui_window->framebuffers);
+    dvz_cmd_begin(cmds, cmd_idx);
+    dvz_cmd_begin_renderpass(cmds, cmd_idx, &gui->renderpass, &gui_window->framebuffers);
 }
 
 
 
-void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx)
+void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t cmd_idx)
 {
     ANN(gui_window);
 
@@ -422,10 +426,10 @@ void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx)
     ANN(cmds);
 
     ImGui::Render();
-    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[idx], VK_NULL_HANDLE);
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmds->cmds[cmd_idx], VK_NULL_HANDLE);
 
-    dvz_cmd_end_renderpass(cmds, idx);
-    dvz_cmd_end(cmds, idx);
+    dvz_cmd_end_renderpass(cmds, cmd_idx);
+    dvz_cmd_end(cmds, cmd_idx);
 }
 
 
@@ -448,12 +452,21 @@ void dvz_gui_window_resize(DvzGuiWindow* gui_window, uint32_t width, uint32_t he
 
 void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 {
+    log_trace("destroy gui window");
     ANN(gui_window);
-    ANN(gui_window->window);
-    ANN(gui_window->window->backend_window);
 
-    backend_poll_events(DVZ_BACKEND_GLFW);
-    backend_window_clear_callbacks(DVZ_BACKEND_GLFW, gui_window->window->backend_window);
+    // if (_imgui_has_glfw())
+    if (!gui_window->is_offscreen)
+    {
+        ANN(gui_window->window);
+        ANN(gui_window->window->backend_window);
+
+        backend_poll_events(DVZ_BACKEND_GLFW);
+        backend_window_clear_callbacks(DVZ_BACKEND_GLFW, gui_window->window->backend_window);
+
+        // TODO: Move that to GUI destruction?
+        // ImGui_ImplGlfw_Shutdown();
+    }
 
     dvz_framebuffers_destroy(&gui_window->framebuffers);
     dvz_obj_destroyed(&gui_window->obj);

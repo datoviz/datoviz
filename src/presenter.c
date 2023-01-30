@@ -177,8 +177,15 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
 
     // Destroy the GUI window if it exists.
     DvzGuiWindow* gui_window = dvz_map_get(prt->maps.guis, id);
+
+    // NOTE: GUI window destruction will be done during GUI destruction, because ImGui requires
+    // GUI destruction (ImplVulkan) to occur *before* GUI window destruction (ImplGlfw).
     if (gui_window != NULL)
         dvz_gui_window_destroy(gui_window);
+
+    // NOTE: window destruction occurs in the client _callback_window_delete() callback, registered
+    // first, but called last (reverse order) among the other window destruction callbacks.
+
 
     // // Destroy the window.
     // DvzWindow* window = id2window(client, id);
@@ -286,20 +293,20 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
 }
 
 
-static void _gui_destroy_callback(DvzClient* client, DvzClientEvent ev)
-{
-    // This is called in dvz_client_destroy(), callback to the DVZ_CLIENT_EVENT_DESTROY event.
-    ANN(client);
+// static void _gui_destroy_callback(DvzClient* client, DvzClientEvent ev)
+// {
+//     // This is called in dvz_client_destroy(), callback to the DVZ_CLIENT_EVENT_DESTROY event.
+//     ANN(client);
 
-    DvzPresenter* prt = (DvzPresenter*)ev.user_data;
-    ANN(prt);
+//     DvzPresenter* prt = (DvzPresenter*)ev.user_data;
+//     ANN(prt);
 
-    // Destroy the GUI.
-    if (prt->gui != NULL)
-    {
-        dvz_gui_destroy(prt->gui);
-    }
-}
+//     // Destroy the GUI.
+//     if (prt->gui != NULL)
+//     {
+//         dvz_gui_destroy(prt->gui);
+//     }
+// }
 
 
 
@@ -435,10 +442,10 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     {
         prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_GUI_FLAGS_NONE);
 
-        // Destroy the GUI when the client is destroyed, *before* the backend (glfw) is destroyed.
-        dvz_client_callback(
-            client, DVZ_CLIENT_EVENT_DESTROY, DVZ_CLIENT_CALLBACK_SYNC, _gui_destroy_callback,
-            prt);
+        // // Destroy the GUI when the client is destroyed, *before* the backend (glfw) is
+        // destroyed. dvz_client_callback(
+        //     client, DVZ_CLIENT_EVENT_DESTROY, DVZ_CLIENT_CALLBACK_SYNC, _gui_destroy_callback,
+        //     prt);
     }
 
     // Mappings.
@@ -691,8 +698,8 @@ void dvz_presenter_destroy(DvzPresenter* prt)
     dvz_map_destroy(prt->maps.guis);
 
     // // Destroy the GUI.
-    // if (prt->gui != NULL)
-    //     dvz_gui_destroy(prt->gui);
+    if (prt->gui != NULL)
+        dvz_gui_destroy(prt->gui);
 
     // Free the callback payloads.
     DvzGuiCallbackPayload* payload = NULL;

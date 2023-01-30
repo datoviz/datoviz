@@ -79,7 +79,7 @@ struct DvzGuiWindow
     DvzObject obj;
     DvzGui* gui;
     DvzWindow* window;
-    uint32_t width, height;
+    uint32_t width, height; // framebuffer window size
     bool is_offscreen;
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
@@ -144,7 +144,7 @@ DVZ_EXPORT DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint3
  * @param gui the GUI
  * @param window the window
  */
-DVZ_EXPORT void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx);
+DVZ_EXPORT void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx);
 
 
 
@@ -155,7 +155,7 @@ DVZ_EXPORT void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t idx);
  * @param cmds the command buffer set
  * @param idx the command buffer index within the set
  */
-DVZ_EXPORT void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t idx);
+DVZ_EXPORT void dvz_gui_window_end(DvzGuiWindow* gui_window, uint32_t cmd_idx);
 
 
 

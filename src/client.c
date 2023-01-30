@@ -76,7 +76,7 @@ static inline bool _should_close(DvzWindow* window)
 
 DvzClient* dvz_client(DvzBackend backend)
 {
-    backend_init(backend);
+    // backend_init(backend);
 
     DvzClient* client = calloc(1, sizeof(DvzClient));
     client->backend = backend;
@@ -359,7 +359,8 @@ void dvz_client_destroy(DvzClient* client)
 
     // TODO: stop background thread for async callbacks
 
-    backend_terminate(client->backend);
+    // NOTE: the host is responsible for terminating the backend.
+    // backend_terminate(client->backend);
 
     dvz_atomic_destroy(client->to_stop);
     FREE(client);

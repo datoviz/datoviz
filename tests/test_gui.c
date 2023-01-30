@@ -61,6 +61,7 @@ int test_gui_offscreen(TstSuite* suite)
     snprintf(path, sizeof(path), "%s/imgui.ppm", ARTIFACTS_DIR);
     log_debug("saving screenshot to %s", path);
     dvz_write_ppm(path, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT, rgb));
     FREE(rgb);
 
     canvas_destroy(&canvas);
