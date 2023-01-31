@@ -3832,19 +3832,24 @@ void dvz_cmd_draw_indexed(
 
 
 
-void dvz_cmd_draw_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect)
+void dvz_cmd_draw_indirect(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count)
 {
     CMD_START_CLIP(indirect.count)
-    vkCmdDrawIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
+    vkCmdDrawIndirect(
+        cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, sizeof(VkDrawIndirectCommand));
     CMD_END
 }
 
 
 
-void dvz_cmd_draw_indexed_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect)
+void dvz_cmd_draw_indexed_indirect(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count)
 {
     CMD_START_CLIP(indirect.count)
-    vkCmdDrawIndexedIndirect(cb, indirect.buffer->buffer, indirect.offsets[iclip], 1, 0);
+    vkCmdDrawIndexedIndirect(
+        cb, indirect.buffer->buffer, indirect.offsets[iclip], 1,
+        sizeof(VkDrawIndexedIndirectCommand));
     CMD_END
 }
 

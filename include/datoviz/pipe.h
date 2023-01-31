@@ -226,9 +226,10 @@ DVZ_EXPORT void dvz_pipe_draw_indexed(                                  //
  * @param cmds the command buffers
  * @param idx the command buffer index
  * @param dat_indirect dat with the indirect draw info
+ * @param draw_count the number of indirect draw calls to make
  */
 DVZ_EXPORT void dvz_pipe_draw_indirect( //
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect);
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count);
 
 
 
@@ -239,9 +240,10 @@ DVZ_EXPORT void dvz_pipe_draw_indirect( //
  * @param cmds the command buffers
  * @param idx the command buffer index
  * @param dat_indirect dat with the indirect draw info
+ * @param draw_count the number of indirect draw calls to make
  */
 DVZ_EXPORT void dvz_pipe_draw_indexed_indirect( //
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect);
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count);
 
 
 

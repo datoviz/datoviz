@@ -117,18 +117,6 @@ typedef enum
 
 
 
-// // Drawing flags for graphics.
-// typedef enum
-// {
-//     DVZ_DRAWING_NONE = 0x00,
-//     DVZ_DRAWING_FLAT = 0x01,
-//     DVZ_DRAWING_INDEXED = 0x02,
-//     DVZ_DRAWING_DIRECT = 0x04,
-//     DVZ_DRAWING_INDIRECT = 0x08,
-// } DvzDrawingFlags;
-
-
-
 // Vertex input rate (vertex or instance).
 typedef enum
 {
@@ -2273,7 +2261,8 @@ DVZ_EXPORT void dvz_cmd_draw_indexed(
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-DVZ_EXPORT void dvz_cmd_draw_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect);
+DVZ_EXPORT void dvz_cmd_draw_indirect(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count);
 
 /**
  * Indirect indexed draw.
@@ -2282,8 +2271,8 @@ DVZ_EXPORT void dvz_cmd_draw_indirect(DvzCommands* cmds, uint32_t idx, DvzBuffer
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-DVZ_EXPORT void
-dvz_cmd_draw_indexed_indirect(DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect);
+DVZ_EXPORT void dvz_cmd_draw_indexed_indirect(
+    DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count);
 
 /**
  * Copy a GPU buffer to another.

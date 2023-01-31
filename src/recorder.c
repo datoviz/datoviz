@@ -94,10 +94,12 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
 
+        uint32_t draw_count = record->contents.draw_indirect.draw_count;
+
         dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ANN(dat_indirect);
 
-        dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect);
+        dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
         break;
     }
 
@@ -106,10 +108,12 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
 
+        uint32_t draw_count = record->contents.draw_indirect.draw_count;
+
         dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ANN(dat_indirect);
 
-        dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect);
+        dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
         break;
     }
 

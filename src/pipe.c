@@ -267,25 +267,26 @@ void dvz_pipe_draw_indexed(
 
 
 
-void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
+void dvz_pipe_draw_indirect(
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count)
 {
     // NOTE: this function is called by the recorder, in _process_command().
     ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
-    dvz_cmd_draw_indirect(cmds, idx, dat_indirect->br);
+    dvz_cmd_draw_indirect(cmds, idx, dat_indirect->br, draw_count);
 }
 
 
 
 void dvz_pipe_draw_indexed_indirect(
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count)
 {
     // NOTE: this function is called by the recorder, in _process_command().
     ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
-    dvz_cmd_draw_indexed_indirect(cmds, idx, dat_indirect->br);
+    dvz_cmd_draw_indexed_indirect(cmds, idx, dat_indirect->br, draw_count);
 }
 
 

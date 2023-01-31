@@ -106,12 +106,14 @@ struct DvzRecorderCommand
         {
             DvzId pipe_id;
             DvzId dat_indirect_id;
+            uint32_t draw_count;
         } draw_indirect;
 
         struct
         {
             DvzId pipe_id;
             DvzId dat_indirect_id;
+            uint32_t draw_count;
         } draw_indexed_indirect;
     } contents;
 };
