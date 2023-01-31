@@ -32,10 +32,10 @@ typedef enum
 {
     DVZ_RECORDER_NONE,
     DVZ_RECORDER_BEGIN,
-    DVZ_RECORDER_DRAW_DIRECT,
-    DVZ_RECORDER_DRAW_DIRECT_INDEXED,
+    DVZ_RECORDER_DRAW,
+    DVZ_RECORDER_DRAW_INDEXED,
     DVZ_RECORDER_DRAW_INDIRECT,
-    DVZ_RECORDER_DRAW_INDIRECT_INDEXED,
+    DVZ_RECORDER_DRAW_INDEXED_INDIRECT,
     DVZ_RECORDER_VIEWPORT,
     DVZ_RECORDER_END,
 } DvzRecorderCommandType;
@@ -92,19 +92,27 @@ struct DvzRecorderCommand
         {
             DvzId pipe_id;
             uint32_t first_vertex, vertex_count;
-        } draw_direct;
+            uint32_t first_instance, instance_count;
+        } draw;
 
         struct
         {
             DvzId pipe_id;
             uint32_t first_index, vertex_offset, index_count;
-        } draw_direct_indexed;
+            uint32_t first_instance, instance_count;
+        } draw_indexed;
 
         struct
         {
             DvzId pipe_id;
             DvzId dat_indirect_id;
         } draw_indirect;
+
+        struct
+        {
+            DvzId pipe_id;
+            DvzId dat_indirect_id;
+        } draw_indexed_indirect;
     } contents;
 };
 

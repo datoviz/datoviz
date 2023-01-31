@@ -3821,11 +3821,12 @@ void dvz_cmd_draw(
 
 void dvz_cmd_draw_indexed(
     DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
-    uint32_t index_count)
+    uint32_t index_count, uint32_t first_instance, uint32_t instance_count)
 {
     ASSERT(index_count > 0);
     CMD_START
-    vkCmdDrawIndexed(cb, index_count, 1, first_index, (int32_t)vertex_offset, 0);
+    vkCmdDrawIndexed(
+        cb, index_count, instance_count, first_index, (int32_t)vertex_offset, first_instance);
     CMD_END
 }
 

@@ -208,10 +208,14 @@ DVZ_EXPORT void dvz_pipe_draw( //
  * @param first_index index of the first index
  * @param vertex_offset offset of the vertex
  * @param index_count number of indices to draw
+ * @param vertex_count number of vertices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */
-DVZ_EXPORT void dvz_pipe_draw_indexed(              //
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, //
-    uint32_t first_index, uint32_t vertex_offset, uint32_t index_count);
+DVZ_EXPORT void dvz_pipe_draw_indexed(                                  //
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx,                     //
+    uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
+    uint32_t first_instance, uint32_t instance_count);
 
 
 

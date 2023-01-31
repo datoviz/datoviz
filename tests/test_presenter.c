@@ -156,7 +156,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
     // Submit new recording commands to the client.
     dvz_record_begin(rqr, s->canvas_id);
     dvz_record_viewport(rqr, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, s->canvas_id, s->graphics_id, 0, 3);
+    dvz_record_draw(rqr, s->canvas_id, s->graphics_id, 0, 3, 0, 1);
     dvz_record_end(rqr, s->canvas_id);
     dvz_presenter_submit(s->prt, rqr);
 }
@@ -238,7 +238,7 @@ int test_presenter_2(TstSuite* suite)
 
         req = dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
-        req = dvz_record_draw(rqr, canvas_id, graphics_id, 0, 3);
+        req = dvz_record_draw(rqr, canvas_id, graphics_id, 0, 3, 0, 1);
 
         req = dvz_record_end(rqr, canvas_id);
     }
@@ -649,11 +649,11 @@ int test_presenter_multi(TstSuite* suite)
         // Command buffer.
         dvz_record_begin(rqr, canvas_id_0);
         dvz_record_viewport(rqr, canvas_id_0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-        dvz_record_draw(rqr, canvas_id_0, graphics_id_0, 0, 3);
+        dvz_record_draw(rqr, canvas_id_0, graphics_id_0, 0, 3, 0, 1);
         dvz_record_end(rqr, canvas_id_0);
         dvz_record_begin(rqr, canvas_id_1);
         dvz_record_viewport(rqr, canvas_id_1, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-        dvz_record_draw(rqr, canvas_id_1, graphics_id_1, 0, 3);
+        dvz_record_draw(rqr, canvas_id_1, graphics_id_1, 0, 3, 0, 1);
         dvz_record_end(rqr, canvas_id_1);
     }
 

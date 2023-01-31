@@ -617,15 +617,15 @@ static void* _record_viewport(DvzRenderer* rd, DvzRequest req)
 static void* _record_draw(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
-    GET_ID(DvzPipe, pipe, req.content.record.command.contents.draw_direct.pipe_id);
+    GET_ID(DvzPipe, pipe, req.content.record.command.contents.draw.pipe_id);
 
     // DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
     GET_ID(DvzBoard, board, req.id)
     dvz_pipe_draw(
         pipe, &board->cmds, 0, //
-        req.content.record.command.contents.draw_direct.first_vertex,
-        req.content.record.command.contents.draw_direct.vertex_count, 0, 1);
+        req.content.record.command.contents.draw.first_vertex,
+        req.content.record.command.contents.draw.vertex_count, 0, 1);
 
     return NULL;
 }
@@ -668,7 +668,7 @@ static void* _record(DvzRenderer* rd, DvzRequest req)
             _record_viewport(rd, req);
             break;
 
-        case DVZ_RECORDER_DRAW_DIRECT:
+        case DVZ_RECORDER_DRAW:
             _record_draw(rd, req);
             break;
 

@@ -445,7 +445,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
 
     req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
-    req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, n);
+    req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, n, 0, 1);
 
     req = dvz_record_end(rqr, wrapper->canvas_id);
 }

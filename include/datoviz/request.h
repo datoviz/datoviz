@@ -638,7 +638,8 @@ DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 o
  */
 DVZ_EXPORT DvzRequest dvz_record_draw(
     DvzRequester* rqr, DvzId board, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count);
+    uint32_t first_vertex, uint32_t vertex_count,   //
+    uint32_t first_instance, uint32_t instance_count);
 
 
 

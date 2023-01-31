@@ -117,15 +117,15 @@ typedef enum
 
 
 
-// Drawing flags for graphics.
-typedef enum
-{
-    DVZ_DRAWING_NONE = 0x00,
-    DVZ_DRAWING_FLAT = 0x01,
-    DVZ_DRAWING_INDEXED = 0x02,
-    DVZ_DRAWING_DIRECT = 0x04,
-    DVZ_DRAWING_INDIRECT = 0x08,
-} DvzDrawingFlags;
+// // Drawing flags for graphics.
+// typedef enum
+// {
+//     DVZ_DRAWING_NONE = 0x00,
+//     DVZ_DRAWING_FLAT = 0x01,
+//     DVZ_DRAWING_INDEXED = 0x02,
+//     DVZ_DRAWING_DIRECT = 0x04,
+//     DVZ_DRAWING_INDIRECT = 0x08,
+// } DvzDrawingFlags;
 
 
 
@@ -2264,7 +2264,7 @@ DVZ_EXPORT void dvz_cmd_draw(
  */
 DVZ_EXPORT void dvz_cmd_draw_indexed(
     DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
-    uint32_t index_count);
+    uint32_t index_count, uint32_t first_instance, uint32_t instance_count);
 
 /**
  * Indirect draw.

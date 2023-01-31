@@ -162,7 +162,7 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int pos)
 
     RQ(dvz_record_begin, canvas_id);
     RQ(dvz_record_viewport, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    RQ(dvz_record_draw, canvas_id, visual_id, 0, visual->count);
+    RQ(dvz_record_draw, canvas_id, visual_id, 0, visual->count, 0, 1);
     RQ(dvz_record_end, canvas_id);
 }
 

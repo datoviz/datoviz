@@ -256,12 +256,13 @@ void dvz_pipe_draw(
 
 void dvz_pipe_draw_indexed(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
-    uint32_t index_count)
+    uint32_t index_count, uint32_t first_instance, uint32_t instance_count)
 {
     // NOTE: this function is called by the recorder, in _process_command().
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
-    dvz_cmd_draw_indexed(cmds, idx, first_index, vertex_offset, index_count);
+    dvz_cmd_draw_indexed(
+        cmds, idx, first_index, vertex_offset, index_count, first_instance, instance_count);
 }
 
 

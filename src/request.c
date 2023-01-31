@@ -742,14 +742,17 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
 
 
 DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
+    DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
-    req.content.record.command.type = DVZ_RECORDER_DRAW_DIRECT;
-    req.content.record.command.contents.draw_direct.pipe_id = graphics;
-    req.content.record.command.contents.draw_direct.first_vertex = first_vertex;
-    req.content.record.command.contents.draw_direct.vertex_count = vertex_count;
+    req.content.record.command.type = DVZ_RECORDER_DRAW;
+    req.content.record.command.contents.draw.pipe_id = graphics;
+    req.content.record.command.contents.draw.first_vertex = first_vertex;
+    req.content.record.command.contents.draw.vertex_count = vertex_count;
+    req.content.record.command.contents.draw.first_instance = first_instance;
+    req.content.record.command.contents.draw.instance_count = instance_count;
 
     IF_VERBOSE
     printf(

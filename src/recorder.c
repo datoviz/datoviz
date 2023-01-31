@@ -31,12 +31,15 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     {
 
     case DVZ_RECORDER_BEGIN:
+    {
         log_debug("recorder: begin (#%d)", img_idx);
         dvz_cmd_reset(cmds, img_idx);
         dvz_canvas_begin(canvas, cmds, img_idx);
         break;
+    }
 
-    case DVZ_RECORDER_VIEWPORT:;
+    case DVZ_RECORDER_VIEWPORT:
+    {
         float x = record->contents.v.offset[0];
         float y = record->contents.v.offset[1];
         float w = record->contents.v.shape[0];
@@ -45,29 +48,49 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
         dvz_canvas_viewport(
             canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
         break;
+    }
 
-    case DVZ_RECORDER_DRAW_DIRECT:;
-        uint32_t first_vertex = record->contents.draw_direct.first_vertex;
-        uint32_t vertex_count = record->contents.draw_direct.vertex_count;
+    case DVZ_RECORDER_DRAW:
+    {
+        uint32_t first_vertex = record->contents.draw.first_vertex;
+        uint32_t vertex_count = record->contents.draw.vertex_count;
+        uint32_t first_instance = record->contents.draw.first_instance;
+        uint32_t instance_count = record->contents.draw.instance_count;
+
         log_debug(
-            "recorder: draw direct from vertex #%d for %d vertices (#%d)", //
-            first_vertex, vertex_count, img_idx);
-        pipe = dvz_renderer_pipe(rd, record->contents.draw_direct.pipe_id);
-        ANN(pipe);
-        dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count, 0, 1); // TODO
-        break;
+            "recorder: draw direct from vertex #%d for %d vertices, %d instances from idx %d "
+            "(#%d)", //
+            first_vertex, vertex_count, instance_count, first_instance, img_idx);
 
-    case DVZ_RECORDER_DRAW_DIRECT_INDEXED:;
-        pipe = dvz_renderer_pipe(rd, record->contents.draw_direct_indexed.pipe_id);
+        pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
+        ANN(pipe);
+        dvz_pipe_draw(
+            pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
+        break;
+    }
+
+    case DVZ_RECORDER_DRAW_INDEXED:
+    {
+        uint32_t first_index = record->contents.draw_indexed.first_index;
+        uint32_t index_count = record->contents.draw_indexed.index_count;
+        uint32_t vertex_offset = record->contents.draw_indexed.vertex_offset;
+        uint32_t first_instance = record->contents.draw_indexed.first_instance;
+        uint32_t instance_count = record->contents.draw_indexed.instance_count;
+
+        log_debug(
+            "recorder: draw indexed from index #%d for %d indices (#%d)", //
+            first_index, index_count, img_idx);
+
+        pipe = dvz_renderer_pipe(rd, record->contents.draw_indexed.pipe_id);
         ANN(pipe);
         dvz_pipe_draw_indexed(
-            pipe, cmds, img_idx,                                //
-            record->contents.draw_direct_indexed.first_index,   //
-            record->contents.draw_direct_indexed.vertex_offset, //
-            record->contents.draw_direct_indexed.index_count);
+            pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
+            instance_count);
         break;
+    }
 
     case DVZ_RECORDER_DRAW_INDIRECT:
+    {
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
 
@@ -76,8 +99,10 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
         dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect);
         break;
+    }
 
-    case DVZ_RECORDER_DRAW_INDIRECT_INDEXED:
+    case DVZ_RECORDER_DRAW_INDEXED_INDIRECT:
+    {
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
 
@@ -86,15 +111,20 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
         dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect);
         break;
+    }
 
     case DVZ_RECORDER_END:
+    {
         log_debug("recorder: end (#%d)", img_idx);
         dvz_canvas_end(canvas, cmds, img_idx);
         break;
+    }
 
     default:
+    {
         log_error("unknown record command with type %d", record->type);
         break;
+    }
     }
 }
 

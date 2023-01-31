@@ -96,7 +96,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_requester_begin(rqr);
     dvz_record_begin(rqr, board_id);
     dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, board_id, graphics_id, 0, 3);
+    dvz_record_draw(rqr, board_id, graphics_id, 0, 3, 0, 1);
     dvz_record_end(rqr, board_id);
     uint32_t count = 0;
     DvzRequest* reqs = dvz_requester_end(rqr, &count);
@@ -333,7 +333,7 @@ int test_renderer_image(TstSuite* suite)
     dvz_requester_begin(rqr);
     dvz_record_begin(rqr, board_id);
     dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, board_id, graphics_id, 0, 6);
+    dvz_record_draw(rqr, board_id, graphics_id, 0, 6, 0, 1);
     dvz_record_end(rqr, board_id);
 
     uint32_t count = 0;
