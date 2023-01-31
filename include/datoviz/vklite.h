@@ -129,6 +129,15 @@ typedef enum
 
 
 
+// Vertex input rate (vertex or instance).
+typedef enum
+{
+    DVZ_VERTEX_INPUT_RATE_VERTEX,
+    DVZ_VERTEX_INPUT_RATE_INSTANCE,
+} DvzVertexInputRate;
+
+
+
 // Blend type.
 typedef enum
 {
@@ -474,6 +483,7 @@ struct DvzVertexBinding
 {
     uint32_t binding;
     VkDeviceSize stride;
+    DvzVertexInputRate input_rate;
 };
 
 
@@ -1581,9 +1591,11 @@ dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, const ch
  * @param graphics the graphics pipeline
  * @param binding the binding index
  * @param stride the stride in the vertex buffer, in bytes
+ * @param input_rate the vertex input rate, DVZ_VERTEX_INPUT_RATE_VERTEX or
+ * DVZ_VERTEX_INPUT_RATE_INSTANCE
  */
-DVZ_EXPORT void
-dvz_graphics_vertex_binding(DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride);
+DVZ_EXPORT void dvz_graphics_vertex_binding(
+    DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride, DvzVertexInputRate input_rate);
 
 /**
  * Add a vertex attribute.

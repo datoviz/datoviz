@@ -52,7 +52,7 @@ static inline void _load_shader(
 // dvz_graphics_create(graphics);
 
 #define ATTR_BEGIN(t)                                                                             \
-    dvz_graphics_vertex_binding(graphics, 0, sizeof(t));                                          \
+    dvz_graphics_vertex_binding(graphics, 0, sizeof(t), DVZ_VERTEX_INPUT_RATE_VERTEX);            \
     uint32_t attr_idx = 0;
 
 #define ATTR(t, fmt, f) dvz_graphics_vertex_attr(graphics, 0, attr_idx++, fmt, offsetof(t, f));

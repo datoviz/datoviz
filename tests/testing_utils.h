@@ -278,7 +278,7 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass, con
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle%s.frag.spv", SPIRV_DIR, suffix);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex));
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(
         &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
     dvz_graphics_vertex_attr(
