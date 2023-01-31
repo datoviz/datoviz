@@ -780,7 +780,7 @@ DvzRequest dvz_record_draw_indexed(
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = board;
-    req.content.record.command.type = DVZ_RECORDER_DRAW;
+    req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED;
     req.content.record.command.contents.draw_indexed.pipe_id = graphics;
     req.content.record.command.contents.draw_indexed.first_index = first_index;
     req.content.record.command.contents.draw_indexed.vertex_offset = vertex_offset;
@@ -801,6 +801,58 @@ DvzRequest dvz_record_draw_indexed(
         "    first_instance: %u\n"
         "    instance_count: %u\n",
         board, graphics, first_index, vertex_offset, index_count, first_instance, instance_count);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_record_draw_indirect(
+    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count)
+{
+    CREATE_REQUEST(RECORD, RECORD);
+    req.id = board;
+    req.content.record.command.type = DVZ_RECORDER_DRAW_INDIRECT;
+    req.content.record.command.contents.draw_indirect.pipe_id = graphics;
+    req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
+    req.content.record.command.contents.draw_indirect.draw_count = draw_count;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: draw_indirect\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    graphics: 0x%" PRIx64 "\n"
+        "    indirect: 0x%" PRIx64 "\n"
+        "    draw_count: %u\n",
+        board, graphics, indirect, draw_count);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_record_draw_indexed_indirect(
+    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count)
+{
+    CREATE_REQUEST(RECORD, RECORD);
+    req.id = board;
+    req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED_INDIRECT;
+    req.content.record.command.contents.draw_indirect.pipe_id = graphics;
+    req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
+    req.content.record.command.contents.draw_indirect.draw_count = draw_count;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: draw_indirect\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    graphics: 0x%" PRIx64 "\n"
+        "    indirect: 0x%" PRIx64 "\n"
+        "    draw_count: %u\n",
+        board, graphics, indirect, draw_count);
 
     RETURN_REQUEST
 }

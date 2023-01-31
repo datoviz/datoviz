@@ -666,6 +666,36 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
 
 
 /**
+ * Create a request for an indirect draw of a graphics during command buffer recording.
+ *
+ * @param rqr the requester
+ * @param board the id of the board
+ * @param graphics the id of the graphics pipe to draw
+ * @param indirect the id of the dat containing the indirect draw data
+ * @param draw_count the number of draws to make
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
+    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count);
+
+
+
+/**
+ * Create a request for an indexed indirect draw of a graphics during command buffer recording.
+ *
+ * @param rqr the requester
+ * @param board the id of the board
+ * @param graphics the id of the graphics pipe to draw
+ * @param indirect the id of the dat containing the indirect draw data
+ * @param draw_count the number of draws to make
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
+    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count);
+
+
+
+/**
  * Create a request for ending recording of command buffer.
  *
  * @param rqr the requester
