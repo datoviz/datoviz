@@ -2228,7 +2228,8 @@ DVZ_EXPORT void dvz_cmd_bind_graphics(
  * @param offset the offset within the buffer regions, in bytes
  */
 DVZ_EXPORT void dvz_cmd_bind_vertex_buffer(
-    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset);
+    DvzCommands* cmds, uint32_t idx, uint32_t binding_count, DvzBufferRegions* brs,
+    VkDeviceSize* offsets);
 
 /**
  * Bind an index buffer.

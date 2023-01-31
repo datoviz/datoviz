@@ -369,7 +369,7 @@ static void triangle_commands(
     dvz_cmd_begin(cmds, idx);
     dvz_cmd_begin_renderpass(cmds, idx, renderpass, framebuffers);
     dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, (float)width, (float)height, 0, 1});
-    dvz_cmd_bind_vertex_buffer(cmds, idx, br, 0);
+    dvz_cmd_bind_vertex_buffer(cmds, idx, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
     dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
 
     if (graphics->slots.push_count > 0)

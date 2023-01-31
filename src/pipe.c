@@ -227,7 +227,8 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
     ANN(graphics);
 
     // TODO: dat vertex byte offset?
-    dvz_cmd_bind_vertex_buffer(cmds, idx, pipe->dat_vertex->br, 0);
+    dvz_cmd_bind_vertex_buffer(
+        cmds, idx, 1, (DvzBufferRegions[]){pipe->dat_vertex->br}, (DvzSize[]){0});
 
     // TODO: dat index byte offset?
     if (pipe->dat_index != NULL)

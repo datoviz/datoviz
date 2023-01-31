@@ -3773,11 +3773,25 @@ void dvz_cmd_bind_graphics(
 
 
 void dvz_cmd_bind_vertex_buffer(
-    DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset)
+    DvzCommands* cmds, uint32_t idx, uint32_t binding_count, DvzBufferRegions* brs,
+    VkDeviceSize* offsets)
 {
-    CMD_START_CLIP(br.count)
-    VkDeviceSize offsets[] = {br.offsets[iclip] + offset};
-    vkCmdBindVertexBuffers(cb, 0, 1, &br.buffer->buffer, offsets);
+    ASSERT(binding_count > 0);
+    ANN(brs);
+    ANN(offsets);
+
+    CMD_START_CLIP(brs[0].count)
+    ASSERT(binding_count <= DVZ_MAX_VERTEX_BINDINGS);
+
+    VkBuffer buffers[DVZ_MAX_VERTEX_BINDINGS] = {0};
+    VkDeviceSize vkoffsets[DVZ_MAX_VERTEX_BINDINGS] = {0};
+
+    for (uint32_t j = 0; j < binding_count; j++)
+    {
+        buffers[j] = brs[j].buffer->buffer;
+        vkoffsets[j] = brs[j].offsets[iclip] + offsets[j];
+    }
+    vkCmdBindVertexBuffers(cb, 0, 1, buffers, vkoffsets);
     CMD_END
 }
 
