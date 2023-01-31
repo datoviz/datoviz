@@ -517,12 +517,16 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
     ASSERT(size > 0);
     ANN(data);
 
-    // WARNING: the data pointer must live through the next frame in the main rendering loop.
     CREATE_REQUEST(UPLOAD, DAT);
     req.id = dat;
     req.content.dat_upload.offset = offset;
     req.content.dat_upload.size = size;
-    req.content.dat_upload.data = data;
+
+    // NOTE: we make a copy of the data to ensure it lives until the renderer has done processing
+    // it.
+    void* data_cpy = malloc(size);
+    memcpy(data_cpy, data, size);
+    req.content.dat_upload.data = data_cpy;
 
     if (getenv("DVZ_VERBOSE") != NULL)
     {
@@ -582,14 +586,19 @@ DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
 DvzRequest
 dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
-    // WARNING: the data pointer must live through the next frame in the main rendering loop.
     CREATE_REQUEST(UPLOAD, TEX);
     req.id = tex;
 
     memcpy(req.content.tex_upload.offset, offset, sizeof(uvec3));
     memcpy(req.content.tex_upload.shape, shape, sizeof(uvec3));
     req.content.tex_upload.size = size;
-    req.content.tex_upload.data = data;
+
+    // NOTE: we make a copy of the data to ensure it lives until the renderer has done processing
+    // it.
+    void* data_cpy = malloc(size);
+    memcpy(data_cpy, data, size);
+    req.content.tex_upload.data = data_cpy;
+
     RETURN_REQUEST
 }
 

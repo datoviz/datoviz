@@ -388,6 +388,10 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
             true);                         // TODO: do not wait? try false
     }
 
+    // We free the copy of the data that had been done by the requester in dvz_upload_dat().
+    FREE(req.content.dat_upload.data);
+    // TODO: if we do not wait, the freeing must wait until the transfer is done.
+
     return NULL;
 }
 
@@ -468,6 +472,10 @@ static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
         req.content.tex_upload.size,   //
         req.content.tex_upload.data,   //
         true);                         // TODO: do not wait? try false
+
+    // We free the copy of the data that had been done by the requester in dvz_upload_dat().
+    FREE(req.content.tex_upload.data);
+    // TODO: if we do not wait, the freeing must wait until the transfer is done.
 
     return NULL;
 }
