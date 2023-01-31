@@ -581,6 +581,8 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
 
 
 
+// TODO: the 4 functions below should be deprecated and replaced by dvz_recorder_set()
+
 static void* _record_begin(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
@@ -623,7 +625,7 @@ static void* _record_draw(DvzRenderer* rd, DvzRequest req)
     dvz_pipe_draw(
         pipe, &board->cmds, 0, //
         req.content.record.command.contents.draw_direct.first_vertex,
-        req.content.record.command.contents.draw_direct.vertex_count);
+        req.content.record.command.contents.draw_direct.vertex_count, 0, 1);
 
     return NULL;
 }
@@ -646,10 +648,14 @@ static void* _record_end(DvzRenderer* rd, DvzRequest req)
 
 static void* _record(DvzRenderer* rd, DvzRequest req)
 {
+    // NOTE: this function is called whenever a RECORD request is processed by the renderer.
     ANN(rd);
 
     DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
 
+    // TODO: remove this, and the _record_draw() functions etc, and use _record_append() instead,
+    // but use a board instead of a canvas (the DvzBoard struct needs to have a DvzRecorder, just
+    // like DvzCanvas)
     if (type == DVZ_REQUEST_OBJECT_BOARD)
     {
         switch (req.content.record.command.type)

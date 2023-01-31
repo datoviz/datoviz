@@ -190,9 +190,12 @@ DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
  * @param idx the command buffer index
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
+ * @param first_instance index of the first instance
+ * @param instance_count number of instances to draw
  */
 DVZ_EXPORT void dvz_pipe_draw( //
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count);
 
 
 

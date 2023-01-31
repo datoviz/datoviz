@@ -254,6 +254,9 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
 
 static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx)
 {
+    // NOTE: this function is called in the main event loop, whenever it requires the command
+    // buffer to be refilled. The function dvz_recorder_set() effectively refills the command
+    // buffer, in the _process_command() function of recorder.c.
     ANN(rd);
     ANN(canvas);
     ANN(canvas->recorder);

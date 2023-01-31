@@ -3807,11 +3807,13 @@ void dvz_cmd_bind_index_buffer(
 
 
 
-void dvz_cmd_draw(DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
+void dvz_cmd_draw(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count)
 {
     ASSERT(vertex_count > 0);
     CMD_START
-    vkCmdDraw(cb, vertex_count, 1, first_vertex, 0);
+    vkCmdDraw(cb, vertex_count, instance_count, first_vertex, first_instance);
     CMD_END
 }
 

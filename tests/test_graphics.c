@@ -135,7 +135,7 @@ int test_graphics_point(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pipe_draw(&pipe, &cmds, 0, 0, n);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, n, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -186,7 +186,7 @@ int test_graphics_triangle(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pipe_draw(&pipe, &cmds, 0, 0, 3);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, 3, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -253,7 +253,7 @@ int test_graphics_line_list(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pipe_draw(&pipe, &cmds, 0, 0, 2 * n);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, 2 * n, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -367,7 +367,7 @@ int test_graphics_raster(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pipe_draw(&pipe, &cmds, 0, 0, n * n);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, n * n, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -510,7 +510,7 @@ int test_graphics_image_1(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pipe_draw(&pipe, &cmds, 0, 0, 6);
+    dvz_pipe_draw(&pipe, &cmds, 0, 0, 6, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);
 

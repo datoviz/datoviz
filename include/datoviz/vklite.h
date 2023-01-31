@@ -1591,8 +1591,7 @@ dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, const ch
  * @param graphics the graphics pipeline
  * @param binding the binding index
  * @param stride the stride in the vertex buffer, in bytes
- * @param input_rate the vertex input rate, DVZ_VERTEX_INPUT_RATE_VERTEX or
- * DVZ_VERTEX_INPUT_RATE_INSTANCE
+ * @param input_rate the vertex input rate, DVZ_VERTEX_INPUT_RATE_VERTEX|INSTANCE
  */
 DVZ_EXPORT void dvz_graphics_vertex_binding(
     DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride, DvzVertexInputRate input_rate);
@@ -2250,8 +2249,9 @@ DVZ_EXPORT void dvz_cmd_bind_index_buffer(
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
  */
-DVZ_EXPORT void
-dvz_cmd_draw(DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count);
+DVZ_EXPORT void dvz_cmd_draw(
+    DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count);
 
 /**
  * Direct indexed draw.

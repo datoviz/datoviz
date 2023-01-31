@@ -377,7 +377,7 @@ static void triangle_commands(
             cmds, idx, &graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, //
             sizeof(vec3), graphics->user_data);
 
-    dvz_cmd_draw(cmds, idx, 0, n_vertices);
+    dvz_cmd_draw(cmds, idx, 0, n_vertices, 0, 1);
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
 }

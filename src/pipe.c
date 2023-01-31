@@ -243,11 +243,13 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
 
 
 void dvz_pipe_draw(
-    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count)
+    DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
+    uint32_t first_instance, uint32_t instance_count)
 {
+    // NOTE: this function is called by the recorder, in _process_command().
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
-    dvz_cmd_draw(cmds, idx, first_vertex, vertex_count);
+    dvz_cmd_draw(cmds, idx, first_vertex, vertex_count, first_instance, instance_count);
 }
 
 
@@ -256,6 +258,7 @@ void dvz_pipe_draw_indexed(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count)
 {
+    // NOTE: this function is called by the recorder, in _process_command().
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
     dvz_cmd_draw_indexed(cmds, idx, first_index, vertex_offset, index_count);
@@ -265,6 +268,7 @@ void dvz_pipe_draw_indexed(
 
 void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
 {
+    // NOTE: this function is called by the recorder, in _process_command().
     ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);
@@ -276,6 +280,7 @@ void dvz_pipe_draw_indirect(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzD
 void dvz_pipe_draw_indexed_indirect(
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect)
 {
+    // NOTE: this function is called by the recorder, in _process_command().
     ANN(dat_indirect);
     DvzGraphics* graphics = _pre_draw(pipe, cmds, idx);
     ANN(graphics);

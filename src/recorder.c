@@ -15,6 +15,7 @@
 static void
 _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
+    // NOTE: This function is called inside the presenter event loop.
     ANN(record);
     ANN(rd);
     ANN(cmds);
@@ -53,7 +54,7 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
             first_vertex, vertex_count, img_idx);
         pipe = dvz_renderer_pipe(rd, record->contents.draw_direct.pipe_id);
         ANN(pipe);
-        dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count);
+        dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count, 0, 1); // TODO
         break;
 
     case DVZ_RECORDER_DRAW_DIRECT_INDEXED:;
