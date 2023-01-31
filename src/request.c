@@ -742,7 +742,8 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
 
 
 DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count,
+    DvzRequester* rqr, DvzId board, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,   //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
@@ -762,8 +763,44 @@ DvzRequest dvz_record_draw(
         "  content:\n"
         "    graphics: 0x%" PRIx64 "\n"
         "    first_vertex: %u\n"
-        "    vertex_count: %u\n",
-        board, graphics, first_vertex, vertex_count);
+        "    vertex_count: %u\n"
+        "    first_instance: %u\n"
+        "    instance_count: %u\n",
+        board, graphics, first_vertex, vertex_count, first_instance, instance_count);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_record_draw_indexed(
+    DvzRequester* rqr, DvzId board, DvzId graphics,                     //
+    uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
+    uint32_t first_instance, uint32_t instance_count)
+{
+    CREATE_REQUEST(RECORD, RECORD);
+    req.id = board;
+    req.content.record.command.type = DVZ_RECORDER_DRAW;
+    req.content.record.command.contents.draw_indexed.pipe_id = graphics;
+    req.content.record.command.contents.draw_indexed.first_index = first_index;
+    req.content.record.command.contents.draw_indexed.vertex_offset = vertex_offset;
+    req.content.record.command.contents.draw_indexed.index_count = index_count;
+    req.content.record.command.contents.draw_indexed.first_instance = first_instance;
+    req.content.record.command.contents.draw_indexed.instance_count = instance_count;
+
+    IF_VERBOSE
+    printf(
+        "- action: record\n"
+        "  type: draw_indexed\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    graphics: 0x%" PRIx64 "\n"
+        "    first_index: %u\n"
+        "    vertex_offset: %u\n"
+        "    index_count: %u\n"
+        "    first_instance: %u\n"
+        "    instance_count: %u\n",
+        board, graphics, first_index, vertex_offset, index_count, first_instance, instance_count);
 
     RETURN_REQUEST
 }

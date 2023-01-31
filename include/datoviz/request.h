@@ -627,18 +627,40 @@ DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 o
 
 
 /**
- * Create a request for drawing a graphics during command buffer recording.
+ * Create a request for a direct draw of a graphics during command buffer recording.
  *
  * @param rqr the requester
  * @param board the id of the board
  * @param graphics the id of the graphics pipe to draw
  * @param first_vertex the index of the first vertex to draw
  * @param vertex_count the number of vertices to draw
+ * @param first_instance the index of the first instance to draw
+ * @param instance_count the number of instances to draw
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw(
     DvzRequester* rqr, DvzId board, DvzId graphics, //
     uint32_t first_vertex, uint32_t vertex_count,   //
+    uint32_t first_instance, uint32_t instance_count);
+
+
+
+/**
+ * Create a request for an indexed draw of a graphics during command buffer recording.
+ *
+ * @param rqr the requester
+ * @param board the id of the board
+ * @param graphics the id of the graphics pipe to draw
+ * @param first_index the index of the first index to draw
+ * @param vertex_offset the vertex offset within the vertices indexed by the indexes
+ * @param index_count the number of indexes to draw
+ * @param first_instance the index of the first instance to draw
+ * @param instance_count the number of instances to draw
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
+    DvzRequester* rqr, DvzId board, DvzId graphics,                     //
+    uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count);
 
 
