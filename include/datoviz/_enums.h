@@ -67,6 +67,48 @@ typedef enum
 
 
 /*************************************************************************************************/
+/*  Requests                                                                                     */
+/*************************************************************************************************/
+
+// Request action.
+typedef enum
+{
+    DVZ_REQUEST_ACTION_NONE,
+    DVZ_REQUEST_ACTION_CREATE,
+    DVZ_REQUEST_ACTION_DELETE,
+    DVZ_REQUEST_ACTION_RESIZE,
+    DVZ_REQUEST_ACTION_UPDATE,
+    DVZ_REQUEST_ACTION_BIND,
+    DVZ_REQUEST_ACTION_RECORD,
+    DVZ_REQUEST_ACTION_UPLOAD,
+    DVZ_REQUEST_ACTION_UPFILL,
+    DVZ_REQUEST_ACTION_DOWNLOAD,
+    DVZ_REQUEST_ACTION_SET,
+    DVZ_REQUEST_ACTION_GET,
+} DvzRequestAction;
+
+
+
+// Request object.
+typedef enum
+{
+    DVZ_REQUEST_OBJECT_NONE,
+    DVZ_REQUEST_OBJECT_BOARD = 100,
+    DVZ_REQUEST_OBJECT_CANVAS,
+    DVZ_REQUEST_OBJECT_DAT,
+    DVZ_REQUEST_OBJECT_TEX,
+    DVZ_REQUEST_OBJECT_SAMPLER,
+    DVZ_REQUEST_OBJECT_COMPUTE,
+    DVZ_REQUEST_OBJECT_GRAPHICS,
+    DVZ_REQUEST_OBJECT_BACKGROUND,
+    DVZ_REQUEST_OBJECT_VERTEX,
+
+    DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
+} DvzRequestObject;
+
+
+
+/*************************************************************************************************/
 /*  Host                                                                                         */
 /*************************************************************************************************/
 

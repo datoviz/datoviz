@@ -30,44 +30,6 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Request action.
-typedef enum
-{
-    DVZ_REQUEST_ACTION_NONE,
-    DVZ_REQUEST_ACTION_CREATE,
-    DVZ_REQUEST_ACTION_DELETE,
-    DVZ_REQUEST_ACTION_RESIZE,
-    DVZ_REQUEST_ACTION_UPDATE,
-    DVZ_REQUEST_ACTION_BIND,
-    DVZ_REQUEST_ACTION_RECORD,
-    DVZ_REQUEST_ACTION_UPLOAD,
-    DVZ_REQUEST_ACTION_UPFILL,
-    DVZ_REQUEST_ACTION_DOWNLOAD,
-    DVZ_REQUEST_ACTION_SET,
-    DVZ_REQUEST_ACTION_GET,
-} DvzRequestAction;
-
-
-
-// Request object.
-typedef enum
-{
-    DVZ_REQUEST_OBJECT_NONE,
-    DVZ_REQUEST_OBJECT_BOARD = 100,
-    DVZ_REQUEST_OBJECT_CANVAS,
-    DVZ_REQUEST_OBJECT_DAT,
-    DVZ_REQUEST_OBJECT_TEX,
-    DVZ_REQUEST_OBJECT_SAMPLER,
-    DVZ_REQUEST_OBJECT_COMPUTE,
-    DVZ_REQUEST_OBJECT_GRAPHICS,
-    DVZ_REQUEST_OBJECT_BACKGROUND,
-    DVZ_REQUEST_OBJECT_VERTEX,
-
-    DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
-} DvzRequestObject;
-
-
-
 // Request flags.
 typedef enum
 {
@@ -606,10 +568,10 @@ dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId 
  * Create a request for starting recording of command buffer.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board);
+DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id);
 
 
 
@@ -617,12 +579,13 @@ DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board);
  * Create a request for setting the viewport during command buffer recording.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @param offset the viewport offset, in framebuffer pixels
  * @param shape the viewport size, in framebuffer pixels
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape);
+DVZ_EXPORT DvzRequest
+dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, vec2 shape);
 
 
 
@@ -630,7 +593,7 @@ DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 o
  * Create a request for a direct draw of a graphics during command buffer recording.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param first_vertex the index of the first vertex to draw
  * @param vertex_count the number of vertices to draw
@@ -639,8 +602,8 @@ DVZ_EXPORT DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 o
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId board, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,   //
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,                //
     uint32_t first_instance, uint32_t instance_count);
 
 
@@ -649,7 +612,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw(
  * Create a request for an indexed draw of a graphics during command buffer recording.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param first_index the index of the first index to draw
  * @param vertex_offset the vertex offset within the vertices indexed by the indexes
@@ -659,7 +622,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw(
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
-    DvzRequester* rqr, DvzId board, DvzId graphics,                     //
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics,        //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count);
 
@@ -669,14 +632,15 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
  * Create a request for an indirect draw of a graphics during command buffer recording.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
  * @param draw_count the number of draws to make
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
-    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count);
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    uint32_t draw_count);
 
 
 
@@ -684,14 +648,15 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
  * Create a request for an indexed indirect draw of a graphics during command buffer recording.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
  * @param draw_count the number of draws to make
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
-    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count);
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    uint32_t draw_count);
 
 
 
@@ -699,10 +664,10 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
  * Create a request for ending recording of command buffer.
  *
  * @param rqr the requester
- * @param board the id of the board
+ * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board);
+DVZ_EXPORT DvzRequest dvz_record_end(DvzRequester* rqr, DvzId canvas_or_board_id);
 
 
 

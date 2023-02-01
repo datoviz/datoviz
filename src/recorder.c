@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "recorder.h"
+#include "board.h"
 #include "canvas.h"
 #include "renderer.h"
 
@@ -21,8 +22,25 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     ANN(cmds);
     ASSERT(img_idx < cmds->count);
 
-    DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);
-    ANN(canvas);
+    DvzCanvas* canvas = NULL;
+    DvzBoard* board = NULL;
+
+    ASSERT(
+        record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||
+        record->object_type == DVZ_REQUEST_OBJECT_BOARD);
+    bool is_canvas = record->object_type == DVZ_REQUEST_OBJECT_CANVAS;
+
+    if (is_canvas)
+    {
+        canvas = dvz_renderer_canvas(rd, record->canvas_or_board_id);
+        ANN(canvas);
+    }
+    else
+    {
+        board = dvz_renderer_board(rd, record->canvas_or_board_id);
+        ANN(board);
+    }
+    ASSERT(canvas != NULL || board != NULL);
 
     DvzPipe* pipe = NULL;
     DvzDat* dat_indirect = NULL;
@@ -34,7 +52,10 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     {
         log_debug("recorder: begin (#%d)", img_idx);
         dvz_cmd_reset(cmds, img_idx);
-        dvz_canvas_begin(canvas, cmds, img_idx);
+        if (is_canvas)
+            dvz_canvas_begin(canvas, cmds, img_idx);
+        else
+            dvz_board_begin(board, cmds, img_idx);
         break;
     }
 
@@ -45,8 +66,12 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
         float w = record->contents.v.shape[0];
         float h = record->contents.v.shape[1];
         log_debug("recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d)", x, y, w, h, img_idx);
-        dvz_canvas_viewport(
-            canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
+        if (is_canvas)
+            dvz_canvas_viewport(
+                canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
+        else
+            dvz_board_viewport(
+                board, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
         break;
     }
 
@@ -120,7 +145,10 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     case DVZ_RECORDER_END:
     {
         log_debug("recorder: end (#%d)", img_idx);
-        dvz_canvas_end(canvas, cmds, img_idx);
+        if (is_canvas)
+            dvz_canvas_end(canvas, cmds, img_idx);
+        else
+            dvz_board_end(board, cmds, img_idx);
         break;
     }
 
@@ -175,7 +203,7 @@ void dvz_recorder_clear(DvzRecorder* recorder)
 void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 {
     ANN(recorder);
-    ASSERT(rc.canvas_id != 0);
+    ASSERT(rc.canvas_or_board_id != 0);
     log_debug("append recorder command");
 
     if (recorder->count >= recorder->capacity)

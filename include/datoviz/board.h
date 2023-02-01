@@ -21,6 +21,9 @@
 
 typedef struct DvzBoard DvzBoard;
 
+// Forward declarations.
+typedef struct DvzRecorder DvzRecorder;
+
 
 
 /*************************************************************************************************/
@@ -48,6 +51,8 @@ struct DvzBoard
 
     DvzCommands cmds;
     // TODO: picking
+
+    DvzRecorder* recorder; // used to record command buffer when using the presenter
 };
 
 

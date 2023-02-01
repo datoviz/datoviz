@@ -696,10 +696,10 @@ DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
+DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_BEGIN;
 
     IF_VERBOSE
@@ -714,10 +714,11 @@ DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
 
 
 
-DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
+DvzRequest
+dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, vec2 shape)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
     memcpy(req.content.record.command.contents.v.offset, offset, sizeof(vec2));
     memcpy(req.content.record.command.contents.v.shape, shape, sizeof(vec2));
@@ -734,7 +735,7 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
         "    shape:\n"
         "    - %.3f\n"
         "    - %.3f\n",
-        board, offset[0], offset[1], shape[0], shape[1]);
+        canvas_or_board_id, offset[0], offset[1], shape[0], shape[1]);
 
     RETURN_REQUEST
 }
@@ -742,12 +743,12 @@ DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2
 
 
 DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId board, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,   //
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,                //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW;
     req.content.record.command.contents.draw.pipe_id = graphics;
     req.content.record.command.contents.draw.first_vertex = first_vertex;
@@ -766,7 +767,7 @@ DvzRequest dvz_record_draw(
         "    vertex_count: %u\n"
         "    first_instance: %u\n"
         "    instance_count: %u\n",
-        board, graphics, first_vertex, vertex_count, first_instance, instance_count);
+        canvas_or_board_id, graphics, first_vertex, vertex_count, first_instance, instance_count);
 
     RETURN_REQUEST
 }
@@ -774,12 +775,12 @@ DvzRequest dvz_record_draw(
 
 
 DvzRequest dvz_record_draw_indexed(
-    DvzRequester* rqr, DvzId board, DvzId graphics,                     //
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics,        //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED;
     req.content.record.command.contents.draw_indexed.pipe_id = graphics;
     req.content.record.command.contents.draw_indexed.first_index = first_index;
@@ -800,7 +801,8 @@ DvzRequest dvz_record_draw_indexed(
         "    index_count: %u\n"
         "    first_instance: %u\n"
         "    instance_count: %u\n",
-        board, graphics, first_index, vertex_offset, index_count, first_instance, instance_count);
+        canvas_or_board_id, graphics, first_index, vertex_offset, index_count, first_instance,
+        instance_count);
 
     RETURN_REQUEST
 }
@@ -808,10 +810,11 @@ DvzRequest dvz_record_draw_indexed(
 
 
 DvzRequest dvz_record_draw_indirect(
-    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count)
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDIRECT;
     req.content.record.command.contents.draw_indirect.pipe_id = graphics;
     req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
@@ -826,7 +829,7 @@ DvzRequest dvz_record_draw_indirect(
         "    graphics: 0x%" PRIx64 "\n"
         "    indirect: 0x%" PRIx64 "\n"
         "    draw_count: %u\n",
-        board, graphics, indirect, draw_count);
+        canvas_or_board_id, graphics, indirect, draw_count);
 
     RETURN_REQUEST
 }
@@ -834,10 +837,11 @@ DvzRequest dvz_record_draw_indirect(
 
 
 DvzRequest dvz_record_draw_indexed_indirect(
-    DvzRequester* rqr, DvzId board, DvzId graphics, DvzId indirect, uint32_t draw_count)
+    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED_INDIRECT;
     req.content.record.command.contents.draw_indirect.pipe_id = graphics;
     req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
@@ -852,17 +856,17 @@ DvzRequest dvz_record_draw_indexed_indirect(
         "    graphics: 0x%" PRIx64 "\n"
         "    indirect: 0x%" PRIx64 "\n"
         "    draw_count: %u\n",
-        board, graphics, indirect, draw_count);
+        canvas_or_board_id, graphics, indirect, draw_count);
 
     RETURN_REQUEST
 }
 
 
 
-DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
+DvzRequest dvz_record_end(DvzRequester* rqr, DvzId canvas_or_board_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = board;
+    req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_END;
 
     IF_VERBOSE

@@ -73,15 +73,11 @@ typedef struct DvzRenderer DvzRenderer;
 struct DvzRecorderCommand
 {
     DvzRecorderCommandType type;
-    DvzId canvas_id;
+    DvzId canvas_or_board_id;
+    DvzRequestObject object_type;
+
     union
     {
-        // // Begin recording for canvas.
-        // struct
-        // {
-        //     DvzCanvas* canvas;
-        // } c;
-
         // Viewport.
         struct
         {
