@@ -289,52 +289,6 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass, con
 
 
 
-static TestVisual triangle_visual(
-    DvzGpu* gpu, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers, const char* suffix)
-{
-    TestVisual visual = {0};
-    visual.gpu = gpu;
-    visual.renderpass = renderpass;
-    visual.framebuffers = framebuffers;
-
-    // Make the graphics.
-    visual.graphics = triangle_graphics(gpu, renderpass, suffix);
-
-    if (strncmp(suffix, "_push", 5) == 0)
-        dvz_graphics_push(&visual.graphics, 0, sizeof(vec3), VK_SHADER_STAGE_VERTEX_BIT);
-
-    // Create the bindings.
-    visual.bindings = dvz_bindings(&visual.graphics.slots, 1);
-    dvz_bindings_update(&visual.bindings);
-
-    // Create the graphics pipeline.
-    dvz_graphics_create(&visual.graphics);
-
-    // Create the buffer.
-    visual.buffer = dvz_buffer(gpu);
-    VkDeviceSize size = 3 * sizeof(TestVertex);
-    dvz_buffer_size(&visual.buffer, size);
-    dvz_buffer_usage(
-        &visual.buffer,                          //
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT |      //
-            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | //
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    // dvz_buffer_memory(
-    //     &visual.buffer,
-    //     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(&visual.buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_create(&visual.buffer);
-
-    // Upload the triangle data.
-    TestVertex data[] = TRIANGLE_VERTICES;
-    dvz_buffer_upload(&visual.buffer, 0, size, data);
-    dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
-
-    return visual;
-}
-
-
-
 static void triangle_commands(
     DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers,
     DvzGraphics* graphics, DvzBindings* bindings, DvzBufferRegions br)
@@ -380,17 +334,6 @@ static void triangle_commands(
     dvz_cmd_draw(cmds, idx, 0, n_vertices, 0, 1);
     dvz_cmd_end_renderpass(cmds, idx);
     dvz_cmd_end(cmds, idx);
-}
-
-
-
-static void visual_destroy(TestVisual* visual)
-{
-    dvz_graphics_destroy(&visual->graphics);
-    dvz_bindings_destroy(&visual->bindings);
-    dvz_buffer_destroy(&visual->buffer);
-    FREE(visual->user_data);
-    FREE(visual->data);
 }
 
 

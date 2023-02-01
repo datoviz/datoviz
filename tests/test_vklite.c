@@ -779,38 +779,57 @@ int test_vklite_graphics(TstSuite* suite)
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
 
+    // Create an offscreen canvas.
     TestCanvas canvas = offscreen_canvas(gpu);
-    TestVisual visual = triangle_visual(gpu, &canvas.renderpass, &canvas.framebuffers, "");
-    visual.br.buffer = &visual.buffer;
-    visual.br.size = visual.buffer.size;
-    visual.br.count = 1;
-    canvas.data = &visual;
-    canvas.br = visual.br;
-    ASSERT(canvas.br.buffer->buffer != VK_NULL_HANDLE);
-    canvas.graphics = &visual.graphics;
-    canvas.bindings = &visual.bindings;
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
+    // Make the graphics.
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass, "");
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
+    dvz_bindings_update(&bindings);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+    // Create the buffer.
+    DvzBuffer buffer = dvz_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
+    dvz_buffer_size(&buffer, size);
+    dvz_buffer_usage(
+        &buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                     VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
+    dvz_buffer_create(&buffer);
+
+    // Upload the triangle data.
+    TestVertex data[] = TRIANGLE_VERTICES;
+    dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
+
+    // Create and submit the command buffer.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    triangle_commands(
-        &cmds, 0, &canvas.renderpass, &canvas.framebuffers, //
-        canvas.graphics, canvas.bindings, canvas.br);
+    DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, buffer.size, 0);
+    triangle_commands(&cmds, 0, renderpass, framebuffers, &graphics, &bindings, br);
     dvz_cmd_submit_sync(&cmds, 0);
 
+    // Save a screenshot.
     char path[1024];
     snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
-
     log_debug("saving screenshot to %s", path);
-    // Make a screenshot of the color attachment.
-    DvzImages* images = visual.framebuffers->attachments[0];
+    DvzImages* images = framebuffers->attachments[0];
     uint8_t* rgb = (uint8_t*)screenshot(images, 1);
     dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
     FREE(rgb);
 
-    visual_destroy(&visual);
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_bindings_destroy(&bindings);
+    dvz_buffer_destroy(&buffer);
     canvas_destroy(&canvas);
-
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
