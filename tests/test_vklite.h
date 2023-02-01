@@ -36,6 +36,7 @@ int test_vklite_shader(TstSuite*);
 int test_vklite_surface(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
+int test_vklite_indexed(TstSuite*);
 
 
 

@@ -817,7 +817,7 @@ int test_vklite_graphics(TstSuite* suite)
 
     // Save a screenshot.
     char path[1024];
-    snprintf(path, sizeof(path), "%s/screenshot.ppm", ARTIFACTS_DIR);
+    snprintf(path, sizeof(path), "%s/vklite_screenshot.ppm", ARTIFACTS_DIR);
     log_debug("saving screenshot to %s", path);
     DvzImages* images = framebuffers->attachments[0];
     uint8_t* rgb = (uint8_t*)screenshot(images, 1);
@@ -828,6 +828,113 @@ int test_vklite_graphics(TstSuite* suite)
     dvz_graphics_destroy(&graphics);
     dvz_bindings_destroy(&bindings);
     dvz_buffer_destroy(&buffer);
+    canvas_destroy(&canvas);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
+int test_vklite_indexed(TstSuite* suite)
+{
+    ANN(suite);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create an offscreen canvas.
+    TestCanvas canvas = offscreen_canvas(gpu);
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+
+    // Make the graphics.
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass, "");
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
+    dvz_bindings_update(&bindings);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+
+    // Create the vertex buffer.
+    DvzBuffer buffer = dvz_buffer(gpu);
+    VkDeviceSize size = 4 * sizeof(TestVertex);
+    dvz_buffer_size(&buffer, size);
+    dvz_buffer_usage(
+        &buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                     VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
+    dvz_buffer_create(&buffer);
+
+    // Upload the quad data.
+    TestVertex data[] = {
+        {{-1, +1, 0}, {1, 0, 0, 1}},
+        {{+1, +1, 0}, {0, 1, 0, 1}},
+        {{-1, -1, 0}, {0, 0, 1, 1}},
+        {{+1, -1, 0}, {1, 1, 0, 1}},
+    };
+    dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
+
+
+    // Create the index buffer.
+    DvzBuffer buffer_index = dvz_buffer(gpu);
+    VkDeviceSize size_index = 6 * sizeof(uint32_t);
+    dvz_buffer_size(&buffer_index, size_index);
+    dvz_buffer_usage(
+        &buffer_index, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+                           VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    dvz_buffer_vma_usage(&buffer_index, VMA_MEMORY_USAGE_CPU_ONLY);
+    dvz_buffer_create(&buffer_index);
+
+    // Upload the index data.
+    uint32_t indices[] = {0, 1, 2, 3, 2, 1};
+    dvz_buffer_upload(&buffer_index, 0, size_index, indices);
+    dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
+
+
+
+    // Create and submit the command buffer.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, size, 0);
+    DvzBufferRegions bri = dvz_buffer_regions(&buffer_index, 1, 0, size_index, 0);
+
+    uint32_t width = framebuffers->attachments[0]->shape[0];
+    uint32_t height = framebuffers->attachments[0]->shape[1];
+    uint32_t n_vertices = 6;
+
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    // Commands.
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
+    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)width, (float)height, 0, 1});
+    dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
+    dvz_cmd_bind_index_buffer(&cmds, 0, bri, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_draw_indexed(&cmds, 0, 0, 0, n_vertices, 0, 1);
+    dvz_cmd_end_renderpass(&cmds, 0);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Save a screenshot.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/vklite_indexed.ppm", ARTIFACTS_DIR);
+    log_debug("saving screenshot to %s", path);
+    DvzImages* images = framebuffers->attachments[0];
+    uint8_t* rgb = (uint8_t*)screenshot(images, 1);
+    dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
+    FREE(rgb);
+
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_bindings_destroy(&bindings);
+    dvz_buffer_destroy(&buffer);
+    dvz_buffer_destroy(&buffer_index);
     canvas_destroy(&canvas);
     dvz_gpu_destroy(gpu);
     return 0;
