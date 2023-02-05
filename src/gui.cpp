@@ -249,15 +249,34 @@ static int _imgui_styling(int flags)
 
 
 
+static void _imgui_destroy_window(DvzWindow* window)
+{
+    log_trace("calling ImGui_ImplVulkan_Shutdown()");
+    ImGui_ImplVulkan_Shutdown();
+
+    if (window != NULL)
+    {
+        // NOTE: gui_window->window may be NULL if offscreen.
+        backend_poll_events(DVZ_BACKEND_GLFW);
+
+        backend_window_clear_callbacks(DVZ_BACKEND_GLFW, window->backend_window);
+
+        log_trace("calling ImGui_ImplGlfw_Shutdown()");
+        ImGui_ImplGlfw_Shutdown();
+    }
+}
+
+
+
 static void _imgui_destroy()
 {
-    // NOTE: destruction order:
+    // IMPORTANT NOTE: to avoid segfaults while destroying ImGui or the windows, the following
+    // destruction order must be followed:
     // 1) ImGui_ImplVulkan_Shutdown()
     // 2) ImGui_ImplGlfw_Shutdown()
+    // 3) ImGui::DestroyContext()
+    // 4) glfwDestroyWindow()
 
-    ImGui_ImplVulkan_Shutdown();
-    if (_imgui_has_glfw())
-        ImGui_ImplGlfw_Shutdown();
     ANN(ImGui::GetCurrentContext());
     ImGui::DestroyContext(ImGui::GetCurrentContext());
     ASSERT(ImGui::GetCurrentContext() == NULL);
@@ -302,8 +321,6 @@ void dvz_gui_destroy(DvzGui* gui)
     log_debug("destroy the GUI");
     ANN(gui);
 
-    // NOTE: this (ImplVulkan destruction) should be called *BEFORE* gui_window_destroy (ImplGlfw
-    // shutdown)
     _imgui_destroy();
 
     // Destroy the GUI windows.
@@ -455,18 +472,8 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
     log_trace("destroy gui window");
     ANN(gui_window);
 
-    // if (_imgui_has_glfw())
-    if (!gui_window->is_offscreen)
-    {
-        ANN(gui_window->window);
-        ANN(gui_window->window->backend_window);
-
-        backend_poll_events(DVZ_BACKEND_GLFW);
-        backend_window_clear_callbacks(DVZ_BACKEND_GLFW, gui_window->window->backend_window);
-
-        // TODO: Move that to GUI destruction?
-        // ImGui_ImplGlfw_Shutdown();
-    }
+    // NOTE: gui_window->window may be NULL if offscreen.
+    _imgui_destroy_window(gui_window->window);
 
     dvz_framebuffers_destroy(&gui_window->framebuffers);
     dvz_obj_destroyed(&gui_window->obj);

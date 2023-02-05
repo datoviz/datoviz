@@ -216,6 +216,8 @@ static void backend_window_clear_callbacks(DvzBackend backend, void* bwin)
         glfwSetScrollCallback(window, NULL);
         glfwSetKeyCallback(window, NULL);
         glfwSetCharCallback(window, NULL);
+
+        glfwPollEvents();
 #endif
         break;
     }

@@ -240,8 +240,6 @@ void dvz_loop_destroy(DvzLoop* loop)
     ANN(loop);
     dvz_renderpass_destroy(&loop->renderpass);
     dvz_canvas_destroy(&loop->canvas);
-    dvz_window_destroy(&loop->window);
-    dvz_surface_destroy(loop->gpu->host, loop->surface);
 
     bool has_gui = (loop->flags & DVZ_CANVAS_FLAGS_IMGUI);
     if (has_gui)
@@ -249,6 +247,9 @@ void dvz_loop_destroy(DvzLoop* loop)
         dvz_gui_window_destroy(loop->gui_window);
         dvz_gui_destroy(loop->gui);
     }
+
+    dvz_window_destroy(&loop->window);
+    dvz_surface_destroy(loop->gpu->host, loop->surface);
 
     FREE(loop);
 }

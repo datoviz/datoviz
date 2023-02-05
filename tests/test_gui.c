@@ -67,6 +67,7 @@ int test_gui_offscreen(TstSuite* suite)
     canvas_destroy(&canvas);
 
     // Destroy the GUI engine.
+    dvz_gui_window_destroy(gui_window);
     dvz_gui_destroy(gui);
 
     dvz_gpu_destroy(gpu);

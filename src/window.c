@@ -67,6 +67,9 @@ void dvz_window_destroy(DvzWindow* window)
         return;
     }
     ANN(window);
+
+    backend_window_clear_callbacks(window->backend, window->backend_window);
+
     log_debug("destroy the window");
     backend_window_destroy(window->backend, window->backend_window);
     dvz_obj_destroyed(&window->obj);
