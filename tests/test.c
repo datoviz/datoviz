@@ -169,6 +169,7 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_swapchain)
     TEST(test_vklite_graphics)
     TEST(test_vklite_indexed)
+    TEST(test_vklite_instanced)
 
 
     // Testing canvas.

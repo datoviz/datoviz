@@ -64,7 +64,7 @@ static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
 {
     char path[1024];
     snprintf(path, sizeof(path), "%s/%s.ppm", ARTIFACTS_DIR, name);
-    log_debug("saving screenshot to %s", path);
+    log_info("saving screenshot to %s", path);
     DvzImages* images = framebuffers->attachments[0];
     uint8_t* rgb = (uint8_t*)screenshot(images, 1);
     dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
@@ -137,13 +137,8 @@ int test_vklite_buffer_1(TstSuite* suite)
 
     DvzBuffer buffer = dvz_buffer(gpu);
     const VkDeviceSize size = 256;
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    // dvz_buffer_memory(
-    //     &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_queue_access(&buffer, 0);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
     // Send some data to the GPU.
     uint8_t* data = calloc(size, 1);
@@ -184,13 +179,8 @@ int test_vklite_buffer_resize(TstSuite* suite)
 
     DvzBuffer buffer = dvz_buffer(gpu);
     const VkDeviceSize size = 256;
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    // dvz_buffer_memory(
-    //     &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_queue_access(&buffer, 0);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
     // Map the buffer.
     buffer.mmap = dvz_buffer_map(&buffer, 0, VK_WHOLE_SIZE);
@@ -352,15 +342,10 @@ int test_vklite_push(TstSuite* suite)
     DvzBuffer buffer = dvz_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(
-        &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    // dvz_buffer_memory(
-    //     &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_queue_access(&buffer, 0);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
     // Send some data to the GPU.
     float* data = calloc(n, sizeof(float));
@@ -819,7 +804,7 @@ int test_vklite_graphics(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     // Make the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, renderpass, "");
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
@@ -872,7 +857,7 @@ int test_vklite_indexed(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     // Make the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, renderpass, "");
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
@@ -941,6 +926,84 @@ int test_vklite_indexed(TstSuite* suite)
     dvz_bindings_destroy(&bindings);
     dvz_buffer_destroy(&buffer);
     dvz_buffer_destroy(&buffer_index);
+    canvas_destroy(&canvas);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
+int test_vklite_instanced(TstSuite* suite)
+{
+    ANN(suite);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create an offscreen canvas.
+    TestCanvas canvas = offscreen_canvas(gpu);
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+
+    // Make the graphics.
+    DvzGraphics graphics = dvz_graphics(gpu);
+
+    dvz_graphics_renderpass(&graphics, renderpass, 0);
+    dvz_graphics_topology(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
+    dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_triangle_instanced.vert.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(
+        &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
+    dvz_graphics_vertex_attr(
+        &graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
+
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
+    dvz_bindings_update(&bindings);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+    // Create the buffer.
+    DvzBuffer buffer = dvz_buffer(gpu);
+    const uint32_t n_vertices = 3;
+    VkDeviceSize size = n_vertices * sizeof(TestVertex);
+    _make_vertex_buffer(&buffer, size);
+
+    // Upload the triangle data.
+    TestVertex data[] = TRIANGLE_VERTICES;
+    dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
+
+    // Create and submit the command buffer.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, buffer.size, 0);
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
+    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)WIDTH, (float)HEIGHT, 0, 1});
+    dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_draw(&cmds, 0, 0, n_vertices, 0, 1);
+    dvz_cmd_end_renderpass(&cmds, 0);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Save a screenshot.
+    _save_screenshot(framebuffers, "vklite_instanced");
+
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_bindings_destroy(&bindings);
+    dvz_buffer_destroy(&buffer);
     canvas_destroy(&canvas);
     dvz_gpu_destroy(gpu);
     return 0;

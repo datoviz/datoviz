@@ -36,7 +36,7 @@ int test_board_1(TstSuite* suite)
     dvz_board_create(&board);
 
     // Create the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, &renderpass, "");
+    DvzGraphics graphics = triangle_graphics(gpu, &renderpass);
 
     // Create the bindings.
     DvzBindings bindings = dvz_bindings(&graphics.slots, 1);

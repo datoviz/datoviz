@@ -37,6 +37,7 @@ int test_vklite_surface(TstSuite*);
 int test_vklite_swapchain(TstSuite*);
 int test_vklite_graphics(TstSuite*);
 int test_vklite_indexed(TstSuite*);
+int test_vklite_instanced(TstSuite*);
 
 
 

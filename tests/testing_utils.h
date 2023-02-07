@@ -264,7 +264,7 @@ static void canvas_destroy(TestCanvas* canvas)
 /*  Test graphics                                                                                */
 /*************************************************************************************************/
 
-static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass, const char* suffix)
+static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass)
 {
     DvzGraphics graphics = dvz_graphics(gpu);
 
@@ -274,9 +274,9 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass, con
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
     char path[1024];
-    snprintf(path, sizeof(path), "%s/test_triangle%s.vert.spv", SPIRV_DIR, suffix);
+    snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
-    snprintf(path, sizeof(path), "%s/test_triangle%s.frag.spv", SPIRV_DIR, suffix);
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
     dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(
