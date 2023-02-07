@@ -3791,7 +3791,7 @@ void dvz_cmd_bind_vertex_buffer(
         buffers[j] = brs[j].buffer->buffer;
         vkoffsets[j] = brs[j].offsets[iclip] + offsets[j];
     }
-    vkCmdBindVertexBuffers(cb, 0, 1, buffers, vkoffsets);
+    vkCmdBindVertexBuffers(cb, 0, binding_count, buffers, vkoffsets);
     CMD_END
 }
 

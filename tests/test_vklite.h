@@ -39,6 +39,7 @@ int test_vklite_graphics(TstSuite*);
 int test_vklite_indirect(TstSuite*);
 int test_vklite_indexed(TstSuite*);
 int test_vklite_instanced(TstSuite*);
+int test_vklite_vertex_bindings(TstSuite*);
 
 
 
