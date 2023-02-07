@@ -843,6 +843,85 @@ int test_vklite_graphics(TstSuite* suite)
 
 
 
+int test_vklite_indirect(TstSuite* suite)
+{
+    ANN(suite);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create an offscreen canvas.
+    TestCanvas canvas = offscreen_canvas(gpu);
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+
+    // Make the graphics.
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass);
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
+    dvz_bindings_update(&bindings);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+
+    // Create the vertex buffer.
+    DvzBuffer buffer = dvz_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
+    _make_vertex_buffer(&buffer, size);
+
+    // Upload the quad data.
+    TestVertex data[] = TRIANGLE_VERTICES;
+    dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, 0);
+
+
+    // Create the indirect buffer.
+    DvzBuffer indirect = dvz_buffer(gpu);
+    VkDeviceSize size_indirect = 1 * sizeof(VkDrawIndirectCommand);
+    _make_buffer(
+        &indirect, size,
+        VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    VkDrawIndirectCommand data_indirect = {
+        .firstInstance = 0, .firstVertex = 0, .instanceCount = 1, .vertexCount = 3};
+    dvz_buffer_upload(&indirect, 0, size_indirect, &data_indirect);
+    dvz_queue_wait(gpu, 0);
+
+
+    // Create and submit the command buffer.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, size, 0);
+    DvzBufferRegions br_indirect = dvz_buffer_regions(&indirect, 1, 0, size_indirect, 0);
+
+    // Commands.
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
+    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
+    dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_draw_indirect(&cmds, 0, br_indirect, 1);
+    dvz_cmd_end_renderpass(&cmds, 0);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Save a screenshot.
+    _save_screenshot(framebuffers, "vklite_indirect");
+
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_bindings_destroy(&bindings);
+    dvz_buffer_destroy(&buffer);
+    dvz_buffer_destroy(&indirect);
+    canvas_destroy(&canvas);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
 int test_vklite_indexed(TstSuite* suite)
 {
     ANN(suite);
@@ -899,17 +978,12 @@ int test_vklite_indexed(TstSuite* suite)
     DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, size, 0);
     DvzBufferRegions bri = dvz_buffer_regions(&buffer_index, 1, 0, size_index, 0);
 
-    uint32_t width = framebuffers->attachments[0]->shape[0];
-    uint32_t height = framebuffers->attachments[0]->shape[1];
     uint32_t n_vertices = 6;
-
-    ASSERT(width > 0);
-    ASSERT(height > 0);
 
     // Commands.
     dvz_cmd_begin(&cmds, 0);
     dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
-    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)width, (float)height, 0, 1});
+    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
     dvz_cmd_bind_index_buffer(&cmds, 0, bri, 0);
     dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
