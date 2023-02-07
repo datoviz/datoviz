@@ -976,6 +976,7 @@ int test_vklite_instanced(TstSuite* suite)
     // Create the buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     const uint32_t n_vertices = 3;
+    const uint32_t n_instances = 7;
     VkDeviceSize size = n_vertices * sizeof(TestVertex);
     _make_vertex_buffer(&buffer, size);
 
@@ -992,7 +993,7 @@ int test_vklite_instanced(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)WIDTH, (float)HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
     dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
-    dvz_cmd_draw(&cmds, 0, 0, n_vertices, 0, 1);
+    dvz_cmd_draw(&cmds, 0, 0, n_vertices, 0, n_instances);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
