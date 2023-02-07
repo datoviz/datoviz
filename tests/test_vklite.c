@@ -24,6 +24,12 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
@@ -420,13 +426,10 @@ int test_vklite_sampler(TstSuite* suite)
 
 
 
-static void _make_buffer(DvzBuffer* buffer)
+static void _make_buffer(DvzBuffer* buffer, VkDeviceSize size, VkBufferUsageFlags usage)
 {
-    const VkDeviceSize size = 256 * sizeof(float);
     dvz_buffer_size(buffer, size);
-    dvz_buffer_usage(
-        buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                    VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    dvz_buffer_usage(buffer, usage);
     // dvz_buffer_memory(
     //     buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     dvz_buffer_vma_usage(buffer, VMA_MEMORY_USAGE_CPU_ONLY);
@@ -448,8 +451,13 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     // Buffers.
     DvzBuffer buffer0 = dvz_buffer(gpu);
     DvzBuffer buffer1 = dvz_buffer(gpu);
-    _make_buffer(&buffer0);
-    _make_buffer(&buffer1);
+    VkBufferUsageFlags usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                               VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                               VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    VkDeviceSize bsize = 256 * sizeof(float);
+    _make_buffer(&buffer0, bsize, usage);
+    _make_buffer(&buffer1, bsize, usage);
+
     const uint32_t N = 20;
     const VkDeviceSize size = N * sizeof(float);
 
@@ -545,13 +553,7 @@ int test_vklite_barrier_image(TstSuite* suite)
     // Staging buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     const VkDeviceSize size = (size_t)(img_size * img_size * 4);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(&buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    // dvz_buffer_memory(
-    //     &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_queue_access(&buffer, 0);
-    dvz_buffer_create(&buffer);
+    _make_buffer(&buffer, size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 
     // Send some data to the staging buffer.
     uint8_t* data = calloc(size, 1);
@@ -797,12 +799,10 @@ int test_vklite_graphics(TstSuite* suite)
     // Create the buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(
-        &buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                     VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
     // Upload the triangle data.
     TestVertex data[] = TRIANGLE_VERTICES;
@@ -862,12 +862,10 @@ int test_vklite_indexed(TstSuite* suite)
     // Create the vertex buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     VkDeviceSize size = 4 * sizeof(TestVertex);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(
-        &buffer, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                     VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
     // Upload the quad data.
     TestVertex data[] = {
