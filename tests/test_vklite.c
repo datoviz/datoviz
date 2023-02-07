@@ -27,6 +27,50 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _make_buffer(DvzBuffer* buffer, VkDeviceSize size, VkBufferUsageFlags usage)
+{
+    dvz_buffer_size(buffer, size);
+    dvz_buffer_usage(buffer, usage);
+    // dvz_buffer_memory(
+    //     buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    dvz_buffer_vma_usage(buffer, VMA_MEMORY_USAGE_CPU_ONLY);
+    dvz_buffer_queue_access(buffer, 0);
+    dvz_buffer_create(buffer);
+}
+
+
+
+static inline void _make_vertex_buffer(DvzBuffer* buffer, VkDeviceSize size)
+{
+    _make_buffer(
+        buffer, size,
+        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+}
+
+
+
+static inline void _make_index_buffer(DvzBuffer* buffer, VkDeviceSize size)
+{
+    _make_buffer(
+        buffer, size,
+        VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+}
+
+
+
+static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
+{
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/%s.ppm", ARTIFACTS_DIR, name);
+    log_debug("saving screenshot to %s", path);
+    DvzImages* images = framebuffers->attachments[0];
+    uint8_t* rgb = (uint8_t*)screenshot(images, 1);
+    dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
+    FREE(rgb);
+}
+
 
 
 /*************************************************************************************************/
@@ -236,15 +280,10 @@ int test_vklite_compute(TstSuite* suite)
     DvzBuffer buffer = dvz_buffer(gpu);
     const uint32_t n = 20;
     const VkDeviceSize size = n * sizeof(float);
-    dvz_buffer_size(&buffer, size);
-    dvz_buffer_usage(
-        &buffer, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
-                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    // dvz_buffer_memory(
-    //     &buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(&buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_queue_access(&buffer, 0);
-    dvz_buffer_create(&buffer);
+    _make_buffer(
+        &buffer, size,
+        VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+            VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
 
     // Send some data to the GPU.
     float* data = calloc(n, sizeof(float));
@@ -425,17 +464,6 @@ int test_vklite_sampler(TstSuite* suite)
 }
 
 
-
-static void _make_buffer(DvzBuffer* buffer, VkDeviceSize size, VkBufferUsageFlags usage)
-{
-    dvz_buffer_size(buffer, size);
-    dvz_buffer_usage(buffer, usage);
-    // dvz_buffer_memory(
-    //     buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    dvz_buffer_vma_usage(buffer, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_queue_access(buffer, 0);
-    dvz_buffer_create(buffer);
-}
 
 int test_vklite_barrier_buffer(TstSuite* suite)
 {
@@ -773,6 +801,10 @@ int test_vklite_shader(TstSuite* suite)
 
 
 
+/*************************************************************************************************/
+/*  Graphics tests                                                                               */
+/*************************************************************************************************/
+
 int test_vklite_graphics(TstSuite* suite)
 {
     ANN(suite);
@@ -799,10 +831,7 @@ int test_vklite_graphics(TstSuite* suite)
     // Create the buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     VkDeviceSize size = 3 * sizeof(TestVertex);
-    _make_buffer(
-        &buffer, size,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    _make_vertex_buffer(&buffer, size);
 
     // Upload the triangle data.
     TestVertex data[] = TRIANGLE_VERTICES;
@@ -816,13 +845,7 @@ int test_vklite_graphics(TstSuite* suite)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Save a screenshot.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/vklite_screenshot.ppm", ARTIFACTS_DIR);
-    log_debug("saving screenshot to %s", path);
-    DvzImages* images = framebuffers->attachments[0];
-    uint8_t* rgb = (uint8_t*)screenshot(images, 1);
-    dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
-    FREE(rgb);
+    _save_screenshot(framebuffers, "vklite_screenshot");
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
@@ -862,10 +885,7 @@ int test_vklite_indexed(TstSuite* suite)
     // Create the vertex buffer.
     DvzBuffer buffer = dvz_buffer(gpu);
     VkDeviceSize size = 4 * sizeof(TestVertex);
-    _make_buffer(
-        &buffer, size,
-        VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-            VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+    _make_vertex_buffer(&buffer, size);
 
     // Upload the quad data.
     TestVertex data[] = {
@@ -881,18 +901,12 @@ int test_vklite_indexed(TstSuite* suite)
     // Create the index buffer.
     DvzBuffer buffer_index = dvz_buffer(gpu);
     VkDeviceSize size_index = 6 * sizeof(uint32_t);
-    dvz_buffer_size(&buffer_index, size_index);
-    dvz_buffer_usage(
-        &buffer_index, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
-                           VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-    dvz_buffer_vma_usage(&buffer_index, VMA_MEMORY_USAGE_CPU_ONLY);
-    dvz_buffer_create(&buffer_index);
+    _make_index_buffer(&buffer_index, size_index);
 
     // Upload the index data.
     uint32_t indices[] = {0, 1, 2, 3, 2, 1};
     dvz_buffer_upload(&buffer_index, 0, size_index, indices);
     dvz_queue_wait(gpu, 0); // DVZ_DEFAULT_QUEUE_TRANSFER
-
 
 
     // Create and submit the command buffer.
@@ -920,13 +934,7 @@ int test_vklite_indexed(TstSuite* suite)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Save a screenshot.
-    char path[1024];
-    snprintf(path, sizeof(path), "%s/vklite_indexed.ppm", ARTIFACTS_DIR);
-    log_debug("saving screenshot to %s", path);
-    DvzImages* images = framebuffers->attachments[0];
-    uint8_t* rgb = (uint8_t*)screenshot(images, 1);
-    dvz_write_ppm(path, images->shape[0], images->shape[1], rgb);
-    FREE(rgb);
+    _save_screenshot(framebuffers, "vklite_indexed");
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
