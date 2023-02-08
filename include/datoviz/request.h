@@ -126,6 +126,12 @@ union DvzRequestContent
         DvzId dat;
     } set_vertex;
 
+    // Set primitive.
+    struct
+    {
+        DvzPrimitiveTopology primitive;
+    } set_primitive;
+
     // Set pipe binding with dat.
     struct
     {
@@ -525,6 +531,10 @@ DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType typ
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
+
+
+
+DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology topology);
 
 
 

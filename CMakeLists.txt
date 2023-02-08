@@ -420,7 +420,6 @@ file(GLOB shader_sources
     "*/*/glsl/*.comp"
     "*/*/glsl/*.frag"
 )
-message(${shader_sources})
 
 foreach(shader_source ${shader_sources})
     get_filename_component(shader_name ${shader_source} NAME)

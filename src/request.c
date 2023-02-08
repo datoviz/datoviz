@@ -665,6 +665,26 @@ DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
 
 
+DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive)
+{
+    CREATE_REQUEST(SET, VERTEX);
+    req.id = graphics;
+    req.content.set_primitive.primitive = primitive;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: primitive\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    primitive: %d\n",
+        req.id, primitive);
+
+    RETURN_REQUEST
+}
+
+
+
 /*************************************************************************************************/
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
