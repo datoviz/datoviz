@@ -415,7 +415,12 @@ file(GLOB shader_sources
     "*/glsl/*.geom"
     "*/glsl/*.comp"
     "*/glsl/*.frag"
+    "*/*/glsl/*.vert"
+    "*/*/glsl/*.geom"
+    "*/*/glsl/*.comp"
+    "*/*/glsl/*.frag"
 )
+message(${shader_sources})
 
 foreach(shader_source ${shader_sources})
     get_filename_component(shader_name ${shader_source} NAME)
@@ -427,7 +432,7 @@ foreach(shader_source ${shader_sources})
         OUTPUT ${shader_output}
         COMMAND ${GLSLC}
         -o "${shader_output}" ${shader_source}
-        -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
+        -I "${CMAKE_SOURCE_DIR}/include/datoviz/scene/glsl"
         DEPENDS ${shader_source}
         IMPLICIT_DEPENDS ${shader_source}
     )
