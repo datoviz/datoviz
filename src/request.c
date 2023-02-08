@@ -659,7 +659,7 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
 
 DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 {
-    CREATE_REQUEST(SET, VERTEX);
+    CREATE_REQUEST(BIND, VERTEX);
     req.id = graphics;
     req.content.bind_vertex.dat = dat;
 
