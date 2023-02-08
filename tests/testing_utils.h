@@ -13,7 +13,7 @@
 
 #include "../src/render_utils.h"
 #include "../src/vklite_utils.h"
-#include "colormaps.h"
+#include "scene/colormaps.h"
 #include "glfw_utils.h"
 #include "graphics.h"
 #include "request.h"

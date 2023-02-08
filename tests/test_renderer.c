@@ -10,7 +10,7 @@
 
 #include "test_renderer.h"
 #include "board.h"
-#include "colormaps.h"
+#include "scene/colormaps.h"
 #include "fileio.h"
 #include "graphics.h"
 #include "renderer.h"

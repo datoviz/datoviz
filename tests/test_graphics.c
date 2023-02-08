@@ -10,12 +10,12 @@
 
 #include "test_graphics.h"
 #include "board.h"
-#include "colormaps.h"
 #include "context.h"
 #include "fileio.h"
 #include "graphics.h"
 #include "host.h"
 #include "pipe.h"
+#include "scene/colormaps.h"
 #include "test.h"
 #include "test_resources.h"
 #include "testing.h"

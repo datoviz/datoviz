@@ -606,7 +606,6 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_fileio.c"
         "tests/test_fifo.c"
         "tests/test_alloc.c"
-        "tests/test_colormaps.c"
         "tests/test_map.c"
         "tests/test_list.c"
         "tests/test_keyboard.c"
@@ -638,6 +637,7 @@ if(DATOVIZ_WITH_CLI)
 
         # Scene
         "tests/scene/test_array.c"
+        "tests/scene/test_colormaps.c"
         "tests/scene/test_panzoom.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_camera.c"

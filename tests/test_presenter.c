@@ -9,7 +9,7 @@
 #include "test_presenter.h"
 #include "client.h"
 #include "client_input.h"
-#include "colormaps.h"
+#include "scene/colormaps.h"
 #include "fps.h"
 #include "glfw_utils.h"
 #include "gui.h"

@@ -9,7 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_colormaps.h"
-#include "colormaps.h"
+#include "scene/colormaps.h"
 #include "testing.h"
 
 
