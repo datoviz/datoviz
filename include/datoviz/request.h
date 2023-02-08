@@ -611,11 +611,14 @@ DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType typ
  * @param dat the id of the dat with the vertex data
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
+DVZ_EXPORT DvzRequest
+dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
 
 
 
 DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
+
+
 
 DVZ_EXPORT DvzRequest
 dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);

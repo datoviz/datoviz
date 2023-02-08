@@ -362,7 +362,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
     wrapper->dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_bind_vertex(rqr, wrapper->graphics_id, wrapper->dat_id);
+    req = dvz_bind_vertex(rqr, wrapper->graphics_id, 0, wrapper->dat_id, 0);
 
     // Binding #0: MVP.
     req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);

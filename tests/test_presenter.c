@@ -210,7 +210,7 @@ int test_presenter_2(TstSuite* suite)
         dat_id = req.id;
 
         // Bind the vertex buffer dat to the graphics pipe.
-        req = dvz_bind_vertex(rqr, graphics_id, dat_id);
+        req = dvz_bind_vertex(rqr, graphics_id, 0, dat_id, 0);
 
         // Upload the triangle data.
         DvzVertex data[] = {
@@ -637,8 +637,8 @@ int test_presenter_multi(TstSuite* suite)
         dat_id = req.id;
 
         // Bind the vertex buffer dat to the graphics pipe.
-        req = dvz_bind_vertex(rqr, graphics_id_0, dat_id);
-        req = dvz_bind_vertex(rqr, graphics_id_1, dat_id);
+        req = dvz_bind_vertex(rqr, graphics_id_0, 0, dat_id, 0);
+        req = dvz_bind_vertex(rqr, graphics_id_1, 0, dat_id, 0);
 
         // Upload the triangle data.
         DvzVertex data[] = {

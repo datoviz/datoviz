@@ -657,7 +657,8 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
 
 
 
-DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
+DvzRequest
+dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
 {
     CREATE_REQUEST(BIND, VERTEX);
     req.id = graphics;
@@ -665,12 +666,14 @@ DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
     IF_VERBOSE
     printf(
-        "- action: set\n"
+        "- action: bind\n"
         "  type: vertex\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    dat: 0x%" PRIx64 "\n",
-        req.id, dat);
+        "    binding_idx: %d\n"
+        "    dat: 0x%" PRIx64 "\n"
+        "    offset: 0x%" PRIx64 "\n",
+        req.id, binding_idx, dat, offset);
 
     RETURN_REQUEST
 }

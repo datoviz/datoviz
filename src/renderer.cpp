@@ -412,8 +412,6 @@ static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
 
 
 
-// TODO: remove this function once all graphics are manual (no more builtin graphics outside of
-// scene/)
 static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
