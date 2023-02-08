@@ -898,10 +898,10 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(SET, VERTEX, _graphics_vertex)
     ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
     ROUTE(SET, SLOT, _graphics_slot)
-
     ROUTE(BIND, VERTEX, _graphics_bind_vertex)
     ROUTE(BIND, INDEX, _graphics_bind_index)
 
+    // Pipes.
     ROUTE(BIND, DAT, _pipe_dat)
     ROUTE(BIND, TEX, _pipe_tex)
     ROUTE(DELETE, GRAPHICS, _pipe_delete)

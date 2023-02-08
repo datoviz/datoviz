@@ -172,6 +172,7 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_indexed)
     TEST(test_vklite_instanced)
     TEST(test_vklite_vertex_bindings)
+    TEST(test_vklite_constattr)
 
 
     // Testing canvas.

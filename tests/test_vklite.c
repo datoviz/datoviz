@@ -1176,6 +1176,99 @@ int test_vklite_vertex_bindings(TstSuite* suite)
 
 
 
+int test_vklite_constattr(TstSuite* suite)
+{
+    ANN(suite);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create an offscreen canvas.
+    TestCanvas canvas = offscreen_canvas(gpu);
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+
+    // Make the graphics.
+    DvzGraphics graphics = dvz_graphics(gpu);
+
+    dvz_graphics_renderpass(&graphics, renderpass, 0);
+    dvz_graphics_primitive(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
+    dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX);
+    // NOTE: use only 1 color value for all vertices (stride=0, and VK_VERTEX_INPUT_RATE_INSTANCE).
+    // NOTE: unclear if a stride of 0 is valid in Vulkan?
+    dvz_graphics_vertex_binding(&graphics, 1, 0, VK_VERTEX_INPUT_RATE_INSTANCE);
+    dvz_graphics_vertex_attr(&graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
+
+
+    // Create the bindings.
+    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
+    dvz_bindings_update(&bindings);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+    // Create the vertex buffer for pos.
+    DvzBuffer buffer_pos = dvz_buffer(gpu);
+    VkDeviceSize size_pos = 3 * sizeof(vec3);
+    _make_vertex_buffer(&buffer_pos, size_pos);
+
+    // Create the vertex buffer for color.
+    DvzBuffer buffer_color = dvz_buffer(gpu);
+    // NOTE: a single color, used for all vertices (vertex input rate instance).
+    VkDeviceSize size_color = 1 * sizeof(vec4);
+    _make_vertex_buffer(&buffer_color, size_color);
+
+    // Upload the positions and colors.
+    vec3 pos[] = {{-1, +1, 0}, {+1, +1, 0}, {+0, -1, 0}};
+    vec4 color[] = {{1, 0, 0, 1}};
+
+    dvz_buffer_upload(&buffer_pos, 0, size_pos, pos);
+    dvz_buffer_upload(&buffer_color, 0, size_color, color);
+    dvz_queue_wait(gpu, 0);
+
+
+    // Create and submit the command buffer.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBufferRegions br_pos = dvz_buffer_regions(&buffer_pos, 1, 0, size_pos, 0);
+    DvzBufferRegions br_color = dvz_buffer_regions(&buffer_color, 1, 0, size_color, 0);
+
+    // Commands.
+    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
+    dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
+    dvz_cmd_bind_vertex_buffer(
+        &cmds, 0, 2, (DvzBufferRegions[]){br_pos, br_color}, (DvzSize[]){0, 0});
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
+    dvz_cmd_end_renderpass(&cmds, 0);
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Save a screenshot.
+    _save_screenshot(framebuffers, "vklite_constattr");
+
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_bindings_destroy(&bindings);
+    dvz_buffer_destroy(&buffer_pos);
+    dvz_buffer_destroy(&buffer_color);
+    canvas_destroy(&canvas);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests with window                                                                            */
 /*************************************************************************************************/
