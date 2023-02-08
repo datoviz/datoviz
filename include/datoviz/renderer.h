@@ -12,7 +12,7 @@
 /*************************************************************************************************/
 
 #include "common.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "pipelib.h"
 #include "request.h"
 

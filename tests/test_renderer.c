@@ -12,7 +12,7 @@
 #include "board.h"
 #include "scene/colormaps.h"
 #include "fileio.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "renderer.h"
 #include "test.h"
 #include "test_resources.h"

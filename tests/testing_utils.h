@@ -15,7 +15,7 @@
 #include "../src/vklite_utils.h"
 #include "scene/colormaps.h"
 #include "glfw_utils.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "request.h"
 #include "surface.h"
 #include "test_resources.h"

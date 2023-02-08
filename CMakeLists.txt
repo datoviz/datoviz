@@ -537,8 +537,6 @@ set(sources
     "src/board.c"
     "src/pipe.c"
     "src/pipelib.c"
-    "src/graphics.c"
-    "src/graphics_data.c"
     "src/canvas.c"
     "src/loop.c"
     "src/workspace.c"
@@ -557,6 +555,8 @@ set(sources
 
     # Scene
     "src/scene/array.c"
+    "src/scene/graphics.c"
+    "src/scene/graphics_data.c"
     "src/scene/mvp.c"
     "src/scene/panzoom.c"
     "src/scene/arcball.c"
@@ -622,7 +622,6 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_board.c"
         "tests/test_pipe.c"
         "tests/test_pipelib.c"
-        "tests/test_graphics.c"
         "tests/test_canvas.c"
         "tests/test_loop.c"
         "tests/test_workspace.c"
@@ -638,6 +637,7 @@ if(DATOVIZ_WITH_CLI)
         # Scene
         "tests/scene/test_array.c"
         "tests/scene/test_colormaps.c"
+        "tests/scene/test_graphics.c"
         "tests/scene/test_panzoom.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_camera.c"

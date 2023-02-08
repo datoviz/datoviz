@@ -7,7 +7,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "fileio.h"
 #include "scene/array.h"
 #include "vklite.h"

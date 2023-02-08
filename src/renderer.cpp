@@ -9,7 +9,7 @@
 #include "board.h"
 #include "canvas.h"
 #include "context.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "recorder.h"

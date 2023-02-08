@@ -10,7 +10,7 @@
 #include "board.h"
 #include "context.h"
 #include "fileio.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "test.h"
 #include "test_resources.h"
 #include "testing.h"

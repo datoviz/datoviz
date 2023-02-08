@@ -12,7 +12,7 @@
 #include "board.h"
 #include "context.h"
 #include "fileio.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "host.h"
 #include "pipe.h"
 #include "scene/colormaps.h"

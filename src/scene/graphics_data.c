@@ -7,8 +7,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "graphics_data.h"
-#include "graphics.h"
+#include "scene/graphics_data.h"
+#include "scene/graphics.h"
 #include "scene/array.h"
 
 

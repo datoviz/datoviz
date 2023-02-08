@@ -10,7 +10,7 @@
 
 #include "scene/scene.h"
 #include "common.h"
-#include "graphics.h"
+#include "scene/graphics.h"
 #include "request.h"
 
 
