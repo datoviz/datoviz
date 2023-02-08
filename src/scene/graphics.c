@@ -48,7 +48,7 @@ static inline void _load_shader(
 
 
 // NOTE: the graphics should be created manually instead
-#define CREATE
+// #define CREATE
 // dvz_graphics_create(graphics);
 
 #define ATTR_BEGIN(t)                                                                             \
@@ -98,7 +98,7 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
     _common_slots(graphics);
     // dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -130,7 +130,7 @@ _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTop
 
     _common_slots(graphics);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -159,7 +159,7 @@ static void _graphics_raster(DvzRenderpass* renderpass, DvzGraphics* graphics)
     _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -189,7 +189,7 @@ static void _graphics_marker(DvzRenderpass* renderpass, DvzGraphics* graphics)
     _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -217,7 +217,7 @@ static void _graphics_segment(DvzRenderpass* renderpass, DvzGraphics* graphics)
 
     _common_slots(graphics);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -243,7 +243,7 @@ static void _graphics_path(DvzRenderpass* renderpass, DvzGraphics* graphics)
     _common_slots(graphics);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -272,7 +272,7 @@ static void _graphics_text(DvzRenderpass* renderpass, DvzGraphics* graphics)
     dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -297,7 +297,7 @@ static void _graphics_image(DvzRenderpass* renderpass, DvzGraphics* graphics)
         dvz_graphics_slot(
             graphics, DVZ_USER_BINDING + i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -323,7 +323,7 @@ static void _graphics_image_cmap(DvzRenderpass* renderpass, DvzGraphics* graphic
     // Scalar image.
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -348,7 +348,7 @@ static void _graphics_volume_slice(DvzRenderpass* renderpass, DvzGraphics* graph
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -380,7 +380,7 @@ static void _graphics_volume(DvzRenderpass* renderpass, DvzGraphics* graphics)
     // Transfer 1D texture.
     dvz_graphics_slot(graphics, DVZ_USER_BINDING + 3, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -410,7 +410,7 @@ static void _graphics_mesh(DvzRenderpass* renderpass, DvzGraphics* graphics)
         dvz_graphics_slot(
             graphics, DVZ_USER_BINDING + i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    CREATE
+    // CREATE
 }
 
 
@@ -508,6 +508,7 @@ void dvz_graphics_builtin(
         break;
 
     case DVZ_GRAPHICS_CUSTOM:
+        dvz_graphics_renderpass(graphics, renderpass, 0);
         break;
 
     default:

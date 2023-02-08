@@ -101,6 +101,7 @@ typedef enum
     DVZ_REQUEST_OBJECT_COMPUTE,
     DVZ_REQUEST_OBJECT_PRIMITIVE,
     DVZ_REQUEST_OBJECT_DEPTH,
+    DVZ_REQUEST_OBJECT_BLEND,
     DVZ_REQUEST_OBJECT_POLYGON,
     DVZ_REQUEST_OBJECT_CULL,
     DVZ_REQUEST_OBJECT_FRONT,
@@ -131,7 +132,7 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Vklite                                                                                       */
+/*  Vklite, also used by request.h                                                               */
 /*************************************************************************************************/
 
 // Buffer type.
@@ -166,6 +167,24 @@ typedef enum
     DVZ_SAMPLER_FILTER_MIN,
     DVZ_SAMPLER_FILTER_MAG,
 } DvzSamplerFilter;
+
+
+
+// Blend type.
+typedef enum
+{
+    DVZ_BLEND_DISABLE,
+    DVZ_BLEND_ENABLE,
+} DvzBlendType;
+
+
+
+// Depth test.
+typedef enum
+{
+    DVZ_DEPTH_TEST_DISABLE,
+    DVZ_DEPTH_TEST_ENABLE,
+} DvzDepthTest;
 
 
 
@@ -212,6 +231,70 @@ typedef enum
     DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
     DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
 } DvzSamplerAddressMode;
+
+
+
+// VkPrimitiveTopology wrapper.
+typedef enum
+{
+    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
+    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
+    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
+    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
+    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
+    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
+
+} DvzPrimitiveTopology;
+
+
+
+// VkVertexInputRate wrapper.
+typedef enum
+{
+    DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
+    DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
+} DvzVertexInputRate;
+
+
+
+// VkPolygonMode wrapper.
+typedef enum
+{
+    DVZ_POLYGON_MODE_FILL = 0,
+    DVZ_POLYGON_MODE_LINE = 1,
+    DVZ_POLYGON_MODE_POINT = 2,
+} DvzPolygonMode;
+
+
+// VkFrontFace wrapper.
+typedef enum
+{
+    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
+    DVZ_FRONT_FACE_CLOCKWISE = 1,
+} DvzFrontFace;
+
+
+
+// VkCullModeFlagBits wrapper.
+typedef enum
+{
+    DVZ_CULL_MODE_NONE = 0,
+    DVZ_CULL_MODE_FRONT = 0x00000001,
+    DVZ_CULL_MODE_BACK = 0x00000002,
+} DvzCullMode;
+
+
+
+// VkShaderStageFlagBits wrapper.
+typedef enum
+{
+    DVZ_SHADER_VERTEX = 0x00000001,
+    DVZ_SHADER_TESSELLATION_CONTROL = 0x00000002,
+    DVZ_SHADER_TESSELLATION_EVALUATION = 0x00000004,
+    DVZ_SHADER_GEOMETRY = 0x00000008,
+    DVZ_SHADER_FRAGMENT = 0x00000010,
+    DVZ_SHADER_COMPUTE = 0x00000020,
+} DvzShaderType;
 
 
 
@@ -281,6 +364,8 @@ typedef enum
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
+// TODO: move to scene_enums.h
+
 // Graphics flags.
 typedef enum
 {
@@ -322,22 +407,6 @@ typedef enum
     DVZ_GRAPHICS_COUNT,
     DVZ_GRAPHICS_CUSTOM,
 } DvzGraphicsType;
-
-
-
-// Primitive topology.
-// NOTE: matches VkPrimitiveTopology
-// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPrimitiveTopology.html
-typedef enum
-{
-    DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1,
-    DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4,
-    DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5,
-
-} DvzPrimitiveTopology;
 
 
 

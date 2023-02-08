@@ -246,7 +246,7 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzPipe, pipe, req.id)
 
     // Get the dat with the vertex data.
-    GET_ID(DvzDat, dat, req.content.set_vertex.dat);
+    GET_ID(DvzDat, dat, req.content.bind_vertex.dat);
 
     // Link the two.
     pipe->dat_vertex = dat;

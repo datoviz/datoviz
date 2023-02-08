@@ -117,24 +117,6 @@ typedef enum
 
 
 
-// Blend type.
-typedef enum
-{
-    DVZ_BLEND_DISABLE,
-    DVZ_BLEND_ENABLE,
-} DvzBlendType;
-
-
-
-// Depth test.
-typedef enum
-{
-    DVZ_DEPTH_TEST_DISABLE,
-    DVZ_DEPTH_TEST_ENABLE,
-} DvzDepthTest;
-
-
-
 // Render pass attachment type.
 typedef enum
 {

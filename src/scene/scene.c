@@ -113,7 +113,7 @@ void dvz_visual_data(
     DvzRequest req = {0};
     RQ(dvz_create_dat, DVZ_BUFFER_TYPE_VERTEX, count * item_size, 0);
     visual->vertex = req.id;
-    RQ(dvz_set_vertex, visual_id, visual->vertex);
+    RQ(dvz_bind_vertex, visual_id, visual->vertex);
     RQ(dvz_upload_dat, visual->vertex, 0, count * item_size, data);
 
     RQ(dvz_create_dat, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);

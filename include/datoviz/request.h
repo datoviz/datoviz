@@ -114,23 +114,90 @@ union DvzRequestContent
         void* data;
     } tex_upload;
 
+
     // Graphics.
     struct
     {
         DvzGraphicsType type;
     } graphics;
 
-    // Set vertex.
-    struct
-    {
-        DvzId dat;
-    } set_vertex;
-
     // Set primitive.
     struct
     {
         DvzPrimitiveTopology primitive;
     } set_primitive;
+
+    // Set blend type.
+    struct
+    {
+        DvzBlendType blend;
+    } set_blend;
+
+    // Set depth test.
+    struct
+    {
+        DvzDepthTest depth;
+    } set_depth;
+
+    // Set polygon mode.
+    struct
+    {
+        DvzPolygonMode polygon;
+    } set_polygon;
+
+    // Set cull mode.
+    struct
+    {
+        DvzCullMode cull;
+    } set_cull;
+
+    // Set front face mode.
+    struct
+    {
+        DvzFrontFace front;
+    } set_front;
+
+    // Set GLSL.
+    struct
+    {
+        DvzShaderType shader_type;
+        DvzSize size;
+        const char* code;
+    } set_glsl;
+
+    // Set SPIRV.
+    struct
+    {
+        DvzShaderType shader_type;
+        DvzSize size;
+        const uint32_t* buffer;
+    } set_spirv;
+
+    // Set vertex.
+    struct
+    {
+        uint32_t binding_idx;
+        DvzSize stride;
+        DvzVertexInputRate input_rate;
+    } set_vertex;
+
+    // Set attr.
+    struct
+    {
+        uint32_t binding_idx;
+        uint32_t location;
+        DvzFormat format;
+        DvzSize offset;
+    } set_attr;
+
+
+    // Bind vertex.
+    struct
+    {
+        DvzId dat;
+    } bind_vertex;
+
+
 
     // Set pipe binding with dat.
     struct
@@ -530,11 +597,38 @@ DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType typ
  * @param dat the id of the dat with the vertex data
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
+DVZ_EXPORT DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat);
 
 
 
-DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology topology);
+DVZ_EXPORT DvzRequest
+dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);
+
+DVZ_EXPORT DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_type);
+
+DVZ_EXPORT DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_test);
+
+DVZ_EXPORT DvzRequest
+dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode polygon_mode);
+
+DVZ_EXPORT DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode);
+
+DVZ_EXPORT DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_face);
+
+DVZ_EXPORT DvzRequest dvz_set_glsl(
+    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size, const char* code);
+
+DVZ_EXPORT DvzRequest dvz_set_spirv(
+    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
+    const uint32_t* buffer);
+
+DVZ_EXPORT DvzRequest dvz_set_vertex(
+    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,
+    DvzVertexInputRate input_rate);
+
+DVZ_EXPORT DvzRequest dvz_set_attr(
+    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
+    DvzSize offset);
 
 
 

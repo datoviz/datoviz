@@ -54,7 +54,7 @@ int test_renderer_1(TstSuite* suite)
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_set_vertex(rqr, graphics_id, dat_id);
+    req = dvz_bind_vertex(rqr, graphics_id, dat_id);
     dvz_renderer_request(rd, req);
 
     // Upload the triangle data.
@@ -151,7 +151,7 @@ int test_renderer_graphics(TstSuite* suite)
 
     // Create a custom graphics.
     dvz_requester_begin(rqr);
-    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
     dvz_requester_end(rqr, NULL);
     uint32_t req_count = 0;
     DvzRequest* requests = dvz_requester_flush(rqr, &req_count);
@@ -166,7 +166,7 @@ int test_renderer_graphics(TstSuite* suite)
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_set_vertex(rqr, graphics_id, dat_id);
+    req = dvz_bind_vertex(rqr, graphics_id, dat_id);
     dvz_renderer_request(rd, req);
 
     // Upload the triangle data.
@@ -354,7 +354,7 @@ int test_renderer_image(TstSuite* suite)
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_set_vertex(rqr, graphics_id, dat_id);
+    req = dvz_bind_vertex(rqr, graphics_id, dat_id);
     dvz_renderer_request(rd, req);
 
 

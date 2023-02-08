@@ -657,11 +657,11 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
 
 
 
-DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
+DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 {
     CREATE_REQUEST(SET, VERTEX);
     req.id = graphics;
-    req.content.set_vertex.dat = dat;
+    req.content.bind_vertex.dat = dat;
 
     IF_VERBOSE
     printf(
@@ -691,6 +691,232 @@ DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopo
         "  content:\n"
         "    primitive: %d\n",
         req.id, primitive);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_type)
+{
+    CREATE_REQUEST(SET, BLEND);
+    req.id = graphics;
+    req.content.set_blend.blend = blend_type;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: blend\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    blend: %d\n",
+        req.id, blend_type);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_test)
+{
+    CREATE_REQUEST(SET, DEPTH);
+    req.id = graphics;
+    req.content.set_depth.depth = depth_test;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: depth\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    depth: %d\n",
+        req.id, depth_test);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode polygon_mode)
+{
+    CREATE_REQUEST(SET, POLYGON);
+    req.id = graphics;
+    req.content.set_polygon.polygon = polygon_mode;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: polygon\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    polygon: %d\n",
+        req.id, polygon_mode);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode)
+{
+    CREATE_REQUEST(SET, CULL);
+    req.id = graphics;
+    req.content.set_cull.cull = cull_mode;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: cull\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    cull: %d\n",
+        req.id, cull_mode);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_face)
+{
+    CREATE_REQUEST(SET, FRONT);
+    req.id = graphics;
+    req.content.set_front.front = front_face;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: front\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    front: %d\n",
+        req.id, front_face);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_glsl(
+    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size, const char* code)
+{
+    CREATE_REQUEST(SET, GLSL);
+    req.id = graphics;
+    req.content.set_glsl.shader_type = shader_type;
+    req.content.set_glsl.size = size;
+    req.content.set_glsl.code = code;
+
+    if (getenv("DVZ_VERBOSE") != NULL)
+    {
+        char* encoded = NULL;
+        // NOTE: avoid computing the base64 of large arrays.
+        if (size < VERBOSE_MAX_BASE64)
+            encoded = b64_encode((const unsigned char*)code, size);
+        else
+            encoded = "<snip>";
+        printf(
+            "- action: set\n"
+            "  type: glsl\n"
+            "  id: 0x%" PRIx64 "\n"
+            "  content:\n"
+            "    shader_type: %d\n"
+            "    size: %" PRIx64 "\n"
+            "    data:\n"
+            "      mode: base64\n"
+            "      buffer: %s\n",
+            req.id, shader_type, size, encoded);
+        if (size < VERBOSE_MAX_BASE64)
+            free(encoded);
+    }
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_spirv(
+    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
+    const uint32_t* buffer)
+{
+    CREATE_REQUEST(SET, SPIRV);
+    req.content.set_spirv.shader_type = shader_type;
+    req.content.set_spirv.size = size;
+    req.content.set_spirv.buffer = buffer;
+
+    if (getenv("DVZ_VERBOSE") != NULL)
+    {
+        char* encoded = NULL;
+        // NOTE: avoid computing the base64 of large arrays.
+        if (size < VERBOSE_MAX_BASE64)
+            encoded = b64_encode((const unsigned char*)buffer, size);
+        else
+            encoded = "<snip>";
+        printf(
+            "- action: set\n"
+            "  type: spirv\n"
+            "  id: 0x%" PRIx64 "\n"
+            "  content:\n"
+            "    shader_type: %d\n"
+            "    size: %" PRIx64 "\n"
+            "    data:\n"
+            "      mode: base64\n"
+            "      buffer: %s\n",
+            req.id, shader_type, size, encoded);
+        if (size < VERBOSE_MAX_BASE64)
+            free(encoded);
+    }
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_vertex(
+    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,
+    DvzVertexInputRate input_rate)
+{
+    CREATE_REQUEST(SET, VERTEX);
+    req.id = graphics;
+    req.content.set_vertex.binding_idx = binding_idx;
+    req.content.set_vertex.stride = stride;
+    req.content.set_vertex.binding_idx = input_rate;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: vertex\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    binding_idx: %d\n"
+        "    stride: %" PRIx64 "\n"
+        "    input_rate: %d\n",
+        req.id, binding_idx, stride, input_rate);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_attr(
+    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
+    DvzSize offset)
+{
+    CREATE_REQUEST(SET, VERTEX_ATTR);
+    req.id = graphics;
+    req.content.set_attr.binding_idx = binding_idx;
+    req.content.set_attr.location = location;
+    req.content.set_attr.format = format;
+    req.content.set_attr.offset = offset;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: attr\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    binding_idx: %d\n"
+        "    location: %d\n"
+        "    format: %d\n"
+        "    offset: %" PRIx64 "\n",
+        req.id, binding_idx, location, format, offset);
 
     RETURN_REQUEST
 }
