@@ -13,7 +13,7 @@
 
 #include "_log.h"
 #include "_math.h"
-#include "mvp.h"
+#include "scene/mvp.h"
 #include "scene/camera.h"
 
 

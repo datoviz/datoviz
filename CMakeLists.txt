@@ -522,7 +522,6 @@ set(sources
     "src/timer.c"
     "src/input.c"
     "src/client_input.c"
-    "src/mvp.c"
     "src/viewport.c"
 
     # Renderer
@@ -558,6 +557,7 @@ set(sources
 
     # Scene
     "src/scene/array.c"
+    "src/scene/mvp.c"
     "src/scene/panzoom.c"
     "src/scene/arcball.c"
     "src/scene/camera.c"

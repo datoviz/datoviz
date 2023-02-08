@@ -11,7 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "mvp.h"
+#include "scene/mvp.h"
 #include "viewport.h"
 #include "vklite.h"
 
