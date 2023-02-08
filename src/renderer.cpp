@@ -424,7 +424,8 @@ static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzDat, dat, req.content.bind_vertex.dat);
 
     // Link the two.
-    pipe->dat_vertex = dat;
+    dvz_pipe_vertex(
+        pipe, req.content.bind_vertex.binding_idx, dat, req.content.bind_vertex.offset);
 
     return NULL;
 }
@@ -443,7 +444,7 @@ static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzDat, dat, req.content.bind_index.dat);
 
     // Link the two.
-    pipe->dat_index = dat;
+    dvz_pipe_index(pipe, dat);
 
     return NULL;
 }

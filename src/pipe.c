@@ -98,11 +98,17 @@ DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path)
 
 
 
-void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex)
+void dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize offset)
 {
     ANN(pipe);
     ANN(dat_vertex);
-    pipe->dat_vertex = dat_vertex;
+    ASSERT(binding_idx < DVZ_MAX_VERTEX_BINDINGS);
+    pipe->vertex_bindings[binding_idx].binding_idx = binding_idx;
+    pipe->vertex_bindings[binding_idx].dat = dat_vertex;
+    pipe->vertex_bindings[binding_idx].offset = offset;
+
+    // Update the number of vertex bindings.
+    pipe->vertex_bindings_count = MAX(pipe->vertex_bindings_count, binding_idx + 1);
 }
 
 
@@ -245,9 +251,20 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
     DvzGraphics* graphics = &pipe->u.graphics;
     ANN(graphics);
 
-    // TODO: dat vertex byte offset?
-    dvz_cmd_bind_vertex_buffer(
-        cmds, idx, 1, (DvzBufferRegions[]){pipe->dat_vertex->br}, (DvzSize[]){0});
+    // Vertex bindings.
+    uint32_t count = pipe->vertex_bindings_count;
+    DvzBufferRegions brs[DVZ_MAX_VERTEX_BINDINGS] = {0};
+    DvzSize offsets[DVZ_MAX_VERTEX_BINDINGS] = {0};
+    DvzDat* dat = NULL;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dat = pipe->vertex_bindings[i].dat;
+        ANN(dat);
+        ASSERT(pipe->vertex_bindings[i].binding_idx == i);
+        brs[i] = dat->br;
+        offsets[i] = pipe->vertex_bindings[i].offset;
+    }
+    dvz_cmd_bind_vertex_buffer(cmds, idx, count, brs, offsets);
 
     // TODO: dat index byte offset?
     if (pipe->dat_index != NULL)

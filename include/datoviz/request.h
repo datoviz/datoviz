@@ -202,7 +202,9 @@ union DvzRequestContent
     // Bind vertex.
     struct
     {
+        uint32_t binding_idx;
         DvzId dat;
+        DvzSize offset;
     } bind_vertex;
 
     // Bind index.

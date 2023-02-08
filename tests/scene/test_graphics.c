@@ -12,10 +12,10 @@
 #include "board.h"
 #include "context.h"
 #include "fileio.h"
-#include "scene/graphics.h"
 #include "host.h"
 #include "pipe.h"
 #include "scene/colormaps.h"
+#include "scene/graphics.h"
 #include "test.h"
 #include "test_resources.h"
 #include "testing.h"
@@ -108,7 +108,7 @@ int test_graphics_point(TstSuite* suite)
     GRAPHICS_VIEWPORT
 
     // Create the bindings.
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
     dvz_pipe_create(&pipe);
@@ -169,7 +169,7 @@ int test_graphics_triangle(TstSuite* suite)
     GRAPHICS_VIEWPORT
 
     // Create the bindings.
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
     dvz_pipe_create(&pipe);
@@ -225,7 +225,7 @@ int test_graphics_line_list(TstSuite* suite)
     GRAPHICS_VIEWPORT
 
     // Create the bindings.
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
     dvz_pipe_create(&pipe);
@@ -339,7 +339,7 @@ int test_graphics_raster(TstSuite* suite)
     dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
 
     // Create the bindings.
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
     dvz_pipe_dat(&pipe, 2, dat_params);
@@ -463,7 +463,7 @@ int test_graphics_image_1(TstSuite* suite)
         dvz_resources_sampler(&ctx->res, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     // Create the bindings.
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
     dvz_pipe_dat(&pipe, 2, dat_params);

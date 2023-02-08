@@ -33,6 +33,7 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzPipe DvzPipe;
+typedef struct DvzPipeBinding DvzPipeBinding; // vertex binding
 typedef union DvzPipeUnion DvzPipeUnion;
 
 // Forward declarations.
@@ -44,6 +45,16 @@ typedef struct DvzTex DvzTex;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+// Vertex bindings.
+struct DvzPipeBinding
+{
+    uint32_t binding_idx;
+    DvzDat* dat;
+    DvzSize offset;
+};
+
+
 
 union DvzPipeUnion
 {
@@ -66,21 +77,12 @@ struct DvzPipe
     DvzBindings bindings;
 
     // Vertex and index buffers.
-    DvzDat* dat_vertex;
+    DvzPipeBinding vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
+    uint32_t vertex_bindings_count;
     DvzDat* dat_index;
 
     // Dat resources.
     bool bindings_set[DVZ_MAX_BINDINGS_SIZE];
-    // uint32_t dat_count;
-    // DvzDat* dats[DVZ_MAX_BINDINGS_SIZE]; // uniforms, the first ones are mvp, viewport, params
-
-    // Texture resources.
-    // uint32_t tex_count;
-    // DvzTex* texs[DVZ_MAX_BINDINGS_SIZE];
-
-    // Sampler resources.
-    // uint32_t tex_count;
-    // DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
 };
 
 
@@ -126,7 +128,8 @@ DVZ_EXPORT DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path);
  * @param pipe the pipe
  * @param dat the dat with the vertex buffer
  */
-DVZ_EXPORT void dvz_pipe_vertex(DvzPipe* pipe, DvzDat* dat_vertex);
+DVZ_EXPORT void
+dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize offset);
 
 
 

@@ -63,7 +63,7 @@ int test_pipe_1(TstSuite* suite)
         graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
     dvz_graphics_vertex_attr(
         graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
-    dvz_pipe_vertex(&pipe, dat_vertex);
+    dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_create(&pipe);
 
     // Command buffer.

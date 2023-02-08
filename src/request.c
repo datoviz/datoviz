@@ -662,7 +662,9 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId d
 {
     CREATE_REQUEST(BIND, VERTEX);
     req.id = graphics;
+    req.content.bind_vertex.binding_idx = binding_idx;
     req.content.bind_vertex.dat = dat;
+    req.content.bind_vertex.offset = offset;
 
     IF_VERBOSE
     printf(

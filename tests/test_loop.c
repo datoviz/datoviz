@@ -109,7 +109,7 @@ int test_loop_2(TstSuite* suite)
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
     ANN(dat_vertex);
-    dvz_pipe_vertex(pipe, dat_vertex);
+    dvz_pipe_vertex(pipe, 0, dat_vertex, 0);
 
     // Upload the triangle data.
     DvzVertex data[] = {
