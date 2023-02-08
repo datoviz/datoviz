@@ -9,13 +9,13 @@
 #include "test_presenter.h"
 #include "client.h"
 #include "client_input.h"
-#include "scene/colormaps.h"
 #include "fps.h"
 #include "glfw_utils.h"
 #include "gui.h"
 #include "presenter.h"
 #include "scene/arcball.h"
 #include "scene/camera.h"
+#include "scene/colormaps.h"
 #include "scene/panzoom.h"
 #include "test.h"
 #include "testing.h"
@@ -111,6 +111,11 @@ int test_presenter_1(TstSuite* suite)
     DvzClient* client = dvz_client(BACKEND);
     DvzRequester* rqr = dvz_requester();
 
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
+
+
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
@@ -178,6 +183,10 @@ int test_presenter_2(TstSuite* suite)
     DvzClient* client = dvz_client(BACKEND);
     DvzRequester* rqr = dvz_requester();
     DvzRequest req = {0};
+
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
@@ -341,6 +350,10 @@ int test_presenter_thread(TstSuite* suite)
     DvzClient* client = dvz_client(BACKEND);
     DvzRequester* rqr = dvz_requester();
 
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
+
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
@@ -408,6 +421,10 @@ int test_presenter_deserialize(TstSuite* suite)
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
     DvzRequester* rqr = dvz_requester();
+
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
@@ -505,6 +522,10 @@ int test_presenter_gui(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     DvzRequest req = {0};
 
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
+
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
 
@@ -579,6 +600,10 @@ int test_presenter_multi(TstSuite* suite)
     DvzClient* client = dvz_client(BACKEND);
     DvzRequester* rqr = dvz_requester();
     DvzRequest req = {0};
+
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(rqr);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);

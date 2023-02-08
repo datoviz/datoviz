@@ -9,11 +9,11 @@
 #include "board.h"
 #include "canvas.h"
 #include "context.h"
-#include "scene/graphics.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "recorder.h"
 #include "renderer.h"
+#include "scene/graphics.h"
 #include "workspace.h"
 
 
@@ -881,6 +881,13 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 
     DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, id);
     ANN(pipe);
+
+    if (!dvz_obj_is_created(&pipe->obj))
+    {
+        log_debug("lazily create pipe before using it for command buffer recording");
+        dvz_pipe_create(pipe);
+    }
+
     return pipe;
 }
 

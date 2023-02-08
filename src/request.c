@@ -20,7 +20,8 @@
     req.type = DVZ_REQUEST_OBJECT_##_type;
 
 #define RETURN_REQUEST                                                                            \
-    dvz_requester_add(rqr, req);                                                                  \
+    if (rqr->count != UINT32_MAX)                                                                 \
+        dvz_requester_add(rqr, req);                                                              \
     return req;
 
 #define STR_ACTION(r)                                                                             \
@@ -89,6 +90,11 @@ DvzRequester* dvz_requester(void)
     rqr->requests = (DvzRequest*)calloc(rqr->capacity, sizeof(DvzRequest));
 
     rqr->pointers_to_free = dvz_list();
+
+    // NOTE: special value to indicate that requester_begin() as not been called, so requests calls
+    // should not automatically append requests to the batch. One has to call requester_begin() to
+    // initialize count to 1 and make the requests append themselves to the batch.
+    rqr->count = UINT32_MAX;
 
     IF_VERBOSE
     printf("---\n"
@@ -292,6 +298,11 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 {
     ANN(rqr);
     ANN(count);
+    if (rqr->count == UINT32_MAX)
+    {
+        log_error("cannot flush requester as dvz_requester_begin() was not called");
+        return NULL;
+    }
     uint32_t n = rqr->count;
 
     // Modify the count pointer to the number of returned requests.
@@ -310,6 +321,7 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
     }
 
     // Flush the requests.
+    // NOTE: setting the count to 0 means we're automatically beginning a new batch.
     rqr->count = 0;
 
     return requests;
@@ -667,7 +679,7 @@ DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
 
 DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive)
 {
-    CREATE_REQUEST(SET, VERTEX);
+    CREATE_REQUEST(SET, PRIMITIVE);
     req.id = graphics;
     req.content.set_primitive.primitive = primitive;
 

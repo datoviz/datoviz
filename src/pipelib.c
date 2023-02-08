@@ -110,7 +110,15 @@ DvzPipe* dvz_pipelib_graphics(
         dvz_pipe_dat(pipe, 1, _make_dat_viewport(ctx, (uvec2){0, 0}));
     }
 
-    dvz_pipe_create(pipe);
+
+    // NOTE: we no longer create the pipe immediately here, as when using custom graphics, we want
+    // to send other graphics creation commands *before* the pipe is created. The pipe will be
+    // automatically (lazily) created when needed, ie when recording the command buffer
+    // (dvz_renderer_pipe() which is called by recorder.c). This is why the call below is
+    // commented.
+
+    // dvz_pipe_create(pipe);
+
 
     return pipe;
 }

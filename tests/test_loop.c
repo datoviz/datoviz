@@ -103,6 +103,9 @@ int test_loop_2(TstSuite* suite)
         lib, ctx, &loop->renderpass, DVZ_GRAPHICS_TRIANGLE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
 
+    // NOTE: we now have to create the pipe manually (or automatically when using recorder.c).
+    dvz_pipe_create(pipe);
+
     // Create the vertex buffer dat.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
     ANN(dat_vertex);

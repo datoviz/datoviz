@@ -10,8 +10,8 @@
 
 #include "scene/scene.h"
 #include "common.h"
-#include "scene/graphics.h"
 #include "request.h"
+#include "scene/graphics.h"
 
 
 
@@ -40,6 +40,11 @@ DvzScene* dvz_scene(void)
 {
     DvzScene* scene = (DvzScene*)calloc(1, sizeof(DvzScene));
     scene->rqr = dvz_requester();
+
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(scene->rqr);
+
     return scene;
 }
 

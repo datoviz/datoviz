@@ -71,6 +71,10 @@ DvzApp* dvz_app(void)
     app->rqr = dvz_requester();
     ANN(app->rqr);
 
+    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
+    // automatically recorded in the requester batch.
+    dvz_requester_begin(app->rqr);
+
     app->timer = dvz_timer();
     ANN(app->timer);
 
