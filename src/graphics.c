@@ -8,8 +8,8 @@
 /*************************************************************************************************/
 
 #include "graphics.h"
-#include "array.h"
 #include "fileio.h"
+#include "scene/array.h"
 #include "vklite.h"
 
 

@@ -8,8 +8,8 @@
 /*************************************************************************************************/
 
 #include "graphics_data.h"
-#include "array.h"
 #include "graphics.h"
+#include "scene/array.h"
 
 
 

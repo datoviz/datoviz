@@ -8,8 +8,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "test_array.h"
-#include "array.h"
+#include "scene/test_array.h"
+#include "scene/array.h"
 #include "test.h"
 #include "testing.h"
 

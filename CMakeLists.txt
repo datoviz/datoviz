@@ -515,7 +515,6 @@ set(sources
     "src/log.c"
     "src/fileio.cpp"
     "src/fifo.c"
-    "src/array.c"
     "src/_map.cpp"
     "src/_list.c"
     "src/keyboard.c"
@@ -558,6 +557,7 @@ set(sources
     "src/fps.cpp"
 
     # Scene
+    "src/scene/array.c"
     "src/scene/panzoom.c"
     "src/scene/arcball.c"
     "src/scene/camera.c"
@@ -605,7 +605,6 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_obj.c"
         "tests/test_fileio.c"
         "tests/test_fifo.c"
-        "tests/test_array.c"
         "tests/test_alloc.c"
         "tests/test_colormaps.c"
         "tests/test_map.c"
@@ -638,6 +637,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_presenter.c"
 
         # Scene
+        "tests/scene/test_array.c"
         "tests/scene/test_panzoom.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_camera.c"
