@@ -522,7 +522,6 @@ set(sources
     "src/timer.c"
     "src/input.c"
     "src/client_input.c"
-    "src/viewport.c"
 
     # Renderer
     "src/vklite.c"
@@ -559,6 +558,7 @@ set(sources
     "src/scene/graphics_data.c"
     "src/scene/mvp.c"
     "src/scene/panzoom.c"
+    "src/scene/viewport.c"
     "src/scene/arcball.c"
     "src/scene/camera.c"
     "src/scene/animation.c"

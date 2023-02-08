@@ -12,7 +12,7 @@
 /*************************************************************************************************/
 
 #include "scene/mvp.h"
-#include "viewport.h"
+#include "scene/viewport.h"
 #include "vklite.h"
 
 
