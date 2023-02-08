@@ -2357,7 +2357,7 @@ void dvz_graphics_drawing(DvzGraphics* graphics, int drawing)
 
 
 
-void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology)
+void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology)
 {
     ANN(graphics);
     graphics->topology = topology;

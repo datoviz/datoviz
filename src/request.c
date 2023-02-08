@@ -838,6 +838,7 @@ DvzRequest dvz_set_spirv(
     const uint32_t* buffer)
 {
     CREATE_REQUEST(SET, SPIRV);
+    req.id = graphics;
     req.content.set_spirv.shader_type = shader_type;
     req.content.set_spirv.size = size;
     req.content.set_spirv.buffer = buffer;
@@ -917,6 +918,29 @@ DvzRequest dvz_set_attr(
         "    format: %d\n"
         "    offset: %" PRIx64 "\n",
         req.id, binding_idx, location, format, offset);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest
+dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type)
+{
+    CREATE_REQUEST(SET, SLOT);
+    req.id = graphics;
+    req.content.set_slot.slot_idx = slot_idx;
+    req.content.set_slot.type = type;
+
+    IF_VERBOSE
+    printf(
+        "- action: set\n"
+        "  type: slot\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    slot_idx: %d\n"
+        "    type: %d\n",
+        req.id, slot_idx, type);
 
     RETURN_REQUEST
 }

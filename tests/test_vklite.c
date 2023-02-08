@@ -1024,7 +1024,7 @@ int test_vklite_instanced(TstSuite* suite)
     DvzGraphics graphics = dvz_graphics(gpu);
 
     dvz_graphics_renderpass(&graphics, renderpass, 0);
-    dvz_graphics_topology(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_primitive(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
@@ -1103,7 +1103,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     DvzGraphics graphics = dvz_graphics(gpu);
 
     dvz_graphics_renderpass(&graphics, renderpass, 0);
-    dvz_graphics_topology(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_primitive(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 

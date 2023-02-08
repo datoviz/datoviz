@@ -43,7 +43,7 @@ static inline void _load_shader(
 
 #define PRIMITIVE(x)                                                                              \
     dvz_graphics_renderpass(graphics, renderpass, 0);                                             \
-    dvz_graphics_topology(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                   \
+    dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_##x);                                  \
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
 
@@ -117,7 +117,7 @@ _graphics_basic(DvzRenderpass* renderpass, DvzGraphics* graphics, VkPrimitiveTop
     SHADER(FRAGMENT, "graphics_basic_frag")
 
     dvz_graphics_renderpass(graphics, renderpass, 0);
-    dvz_graphics_topology(graphics, topology);
+    dvz_graphics_primitive(graphics, topology);
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
 
     // Depth test flag.

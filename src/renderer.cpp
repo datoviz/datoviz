@@ -237,7 +237,177 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
 
 
+// Helper function to retrieve the DvzGraphics* pointer of graphics creation request.
+static inline DvzGraphics* _get_graphics(DvzRenderer* rd, DvzRequest req)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+
+    // Get the graphics pipe.
+    GET_ID(DvzPipe, pipe, req.id)
+
+    // Get the graphics object.
+    ASSERT(pipe->type == DVZ_PIPE_GRAPHICS);
+    DvzGraphics* graphics = &pipe->u.graphics;
+
+    return graphics;
+}
+
+
+
+static void* _graphics_primitive(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_PRIMITIVE);
+
+    // NOTE: we assume VkPrimitiveTopology and DvzPrimitiveTopology match.
+    dvz_graphics_primitive(graphics, (VkPrimitiveTopology)req.content.set_primitive.primitive);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_depth(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_DEPTH);
+
+    dvz_graphics_depth_test(graphics, req.content.set_depth.depth);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_blend(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_BLEND);
+
+    dvz_graphics_blend(graphics, req.content.set_blend.blend);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_polygon(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_POLYGON);
+
+    // NOTE: we assume VkPolygonMode and DvzPolygonMode match.
+    dvz_graphics_polygon_mode(graphics, (VkPolygonMode)req.content.set_polygon.polygon);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_cull(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_CULL);
+
+    // NOTE: we assume VkCullModeFlags and DvzCullMode match.
+    dvz_graphics_cull_mode(graphics, (VkCullModeFlags)req.content.set_cull.cull);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_front(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_FRONT);
+
+    // NOTE: we assume VkFrontFace and DvzFrontFace match.
+    dvz_graphics_front_face(graphics, (VkFrontFace)req.content.set_front.front);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_glsl(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_GLSL);
+
+    // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
+    dvz_graphics_shader_glsl(
+        graphics, (VkShaderStageFlagBits)req.content.set_glsl.shader_type,
+        req.content.set_glsl.code);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_spirv(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_SPIRV);
+
+    // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
+    dvz_graphics_shader_spirv(
+        graphics, (VkShaderStageFlagBits)req.content.set_spirv.shader_type,
+        req.content.set_spirv.size, req.content.set_spirv.buffer);
+
+    return NULL;
+}
+
+
+
 static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_VERTEX);
+
+    // NOTE: we assume VkVertexInputRate and DvzVertexInputRate match.
+    dvz_graphics_vertex_binding(
+        graphics, req.content.set_vertex.binding_idx, req.content.set_vertex.stride,
+        (VkVertexInputRate)req.content.set_vertex.input_rate);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_vertex_attr(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_VERTEX_ATTR);
+
+    // NOTE: we assume VkFormat and DvzFormat match.
+    dvz_graphics_vertex_attr(
+        graphics, req.content.set_attr.binding_idx, req.content.set_attr.location,
+        (VkFormat)req.content.set_attr.format, req.content.set_attr.offset);
+
+    return NULL;
+}
+
+
+
+static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_SLOT);
+
+    // NOTE: we assume VkDescriptorType and DvzDescriptorType match.
+    dvz_graphics_slot(
+        graphics, req.content.set_slot.slot_idx, (VkDescriptorType)req.content.set_slot.type);
+
+    return NULL;
+}
+
+
+
+// TODO: remove this function once all graphics are manual (no more builtin graphics outside of
+// scene/)
+static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -250,6 +420,25 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
 
     // Link the two.
     pipe->dat_vertex = dat;
+
+    return NULL;
+}
+
+
+
+static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+
+    // Get the graphics pipe.
+    GET_ID(DvzPipe, pipe, req.id)
+
+    // Get the dat with the index data.
+    GET_ID(DvzDat, dat, req.content.bind_index.dat);
+
+    // Link the two.
+    pipe->dat_index = dat;
 
     return NULL;
 }
@@ -698,7 +887,21 @@ static void _setup_router(DvzRenderer* rd)
 
     // Graphics.
     ROUTE(CREATE, GRAPHICS, _graphics_create)
-    ROUTE(BIND, VERTEX, _graphics_vertex)
+    ROUTE(SET, PRIMITIVE, _graphics_primitive)
+    ROUTE(SET, DEPTH, _graphics_depth)
+    ROUTE(SET, BLEND, _graphics_blend)
+    ROUTE(SET, POLYGON, _graphics_polygon)
+    ROUTE(SET, CULL, _graphics_cull)
+    ROUTE(SET, FRONT, _graphics_front)
+    ROUTE(SET, GLSL, _graphics_glsl)
+    ROUTE(SET, SPIRV, _graphics_spirv)
+    ROUTE(SET, VERTEX, _graphics_vertex)
+    ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
+    ROUTE(SET, SLOT, _graphics_slot)
+
+    ROUTE(BIND, VERTEX, _graphics_bind_vertex)
+    ROUTE(BIND, INDEX, _graphics_bind_index)
+
     ROUTE(BIND, DAT, _pipe_dat)
     ROUTE(BIND, TEX, _pipe_tex)
     ROUTE(DELETE, GRAPHICS, _pipe_delete)

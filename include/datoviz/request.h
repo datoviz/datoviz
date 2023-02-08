@@ -161,7 +161,7 @@ union DvzRequestContent
     struct
     {
         DvzShaderType shader_type;
-        DvzSize size;
+        DvzSize size; // TODO: remove because useless?
         const char* code;
     } set_glsl;
 
@@ -190,12 +190,26 @@ union DvzRequestContent
         DvzSize offset;
     } set_attr;
 
+    // Set slot.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzDescriptorType type;
+    } set_slot;
+
+
 
     // Bind vertex.
     struct
     {
         DvzId dat;
     } bind_vertex;
+
+    // Bind index.
+    struct
+    {
+        DvzId dat;
+    } bind_index;
 
 
 
@@ -601,6 +615,8 @@ DVZ_EXPORT DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, DvzId d
 
 
 
+DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
+
 DVZ_EXPORT DvzRequest
 dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);
 
@@ -629,6 +645,9 @@ DVZ_EXPORT DvzRequest dvz_set_vertex(
 DVZ_EXPORT DvzRequest dvz_set_attr(
     DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset);
+
+DVZ_EXPORT DvzRequest
+dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
 
 
 

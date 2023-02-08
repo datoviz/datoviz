@@ -152,12 +152,46 @@ int test_renderer_graphics(TstSuite* suite)
     // Create a custom graphics.
     dvz_requester_begin(rqr);
     req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    DvzId graphics_id = req.id;
+
+    // Load vertex shader.
+    {
+        unsigned long shader_size = 0;
+        uint32_t* shader_buffer =
+            (uint32_t*)dvz_resource_shader("graphics_basic_vert", &shader_size);
+        dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_VERTEX, shader_size, shader_buffer);
+    }
+
+    // Load fragment shader.
+    {
+        unsigned long shader_size = 0;
+        uint32_t* shader_buffer =
+            (uint32_t*)dvz_resource_shader("graphics_basic_frag", &shader_size);
+        dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_FRAGMENT, shader_size, shader_buffer);
+    }
+
+    // Primitive topology.
+    dvz_set_primitive(rqr, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    // Polygon mode.
+    dvz_set_polygon(rqr, graphics_id, DVZ_POLYGON_MODE_FILL);
+
+    // Vertex binding.
+    dvz_set_vertex(rqr, graphics_id, 0, sizeof(DvzVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+
+    // Vertex attrs.
+    dvz_set_attr(rqr, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+    dvz_set_attr(rqr, graphics_id, 0, 1, DVZ_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+
+    // Descriptor slots.
+    dvz_set_slot(rqr, graphics_id, 0, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_set_slot(rqr, graphics_id, 1, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
     dvz_requester_end(rqr, NULL);
     uint32_t req_count = 0;
     DvzRequest* requests = dvz_requester_flush(rqr, &req_count);
     dvz_renderer_requests(rd, req_count, requests);
     FREE(requests);
-    DvzId graphics_id = req.id;
 
 
     // Create the vertex buffer dat.

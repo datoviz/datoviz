@@ -1513,7 +1513,7 @@ DVZ_EXPORT void dvz_graphics_drawing(DvzGraphics* graphics, int drawing);
  * @param graphics the graphics pipeline
  * @param topology the primitive topology
  */
-DVZ_EXPORT void dvz_graphics_topology(DvzGraphics* graphics, VkPrimitiveTopology topology);
+DVZ_EXPORT void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology);
 
 /**
  * Set the GLSL code of a graphics pipeline.
