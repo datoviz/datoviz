@@ -13,10 +13,10 @@
 
 #include "../src/render_utils.h"
 #include "../src/vklite_utils.h"
-#include "scene/colormaps.h"
 #include "glfw_utils.h"
-#include "scene/graphics.h"
 #include "request.h"
+#include "scene/colormaps.h"
+#include "scene/graphics.h"
 #include "surface.h"
 #include "test_resources.h"
 #include "testing.h"
@@ -278,7 +278,7 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass)
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), VK_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(
         &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
     dvz_graphics_vertex_attr(

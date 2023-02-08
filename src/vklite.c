@@ -2409,7 +2409,7 @@ void dvz_graphics_shader_spirv(
 
 
 void dvz_graphics_vertex_binding(
-    DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride, DvzVertexInputRate input_rate)
+    DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride, VkVertexInputRate input_rate)
 {
     ANN(graphics);
     DvzVertexBinding* vb = &graphics->vertex_bindings[graphics->vertex_binding_count++];
@@ -2523,8 +2523,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
     {
         bindings_info[i].binding = graphics->vertex_bindings[i].binding;
         bindings_info[i].stride = graphics->vertex_bindings[i].stride;
-        // NOTE: this works because the DvzVertexInputRate and VkVertexInputRate enums match.
-        bindings_info[i].inputRate = (VkVertexInputRate)graphics->vertex_bindings[i].input_rate;
+        bindings_info[i].inputRate = graphics->vertex_bindings[i].input_rate;
     }
     vertex_input_info.vertexBindingDescriptionCount = graphics->vertex_binding_count;
     vertex_input_info.pVertexBindingDescriptions = bindings_info;

@@ -1033,7 +1033,7 @@ int test_vklite_instanced(TstSuite* suite)
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), VK_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(
         &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
     dvz_graphics_vertex_attr(
@@ -1112,8 +1112,8 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
-    dvz_graphics_vertex_binding(&graphics, 0, sizeof(vec3), DVZ_VERTEX_INPUT_RATE_VERTEX);
-    dvz_graphics_vertex_binding(&graphics, 1, sizeof(vec4), DVZ_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_binding(&graphics, 1, sizeof(vec4), VK_VERTEX_INPUT_RATE_VERTEX);
     dvz_graphics_vertex_attr(&graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 
