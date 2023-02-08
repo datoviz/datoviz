@@ -681,6 +681,27 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId d
 }
 
 
+DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize offset)
+{
+    CREATE_REQUEST(BIND, INDEX);
+    req.id = graphics;
+    req.content.bind_index.dat = dat;
+    req.content.bind_index.offset = offset;
+
+    IF_VERBOSE
+    printf(
+        "- action: bind\n"
+        "  type: index\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    dat: 0x%" PRIx64 "\n"
+        "    offset: 0x%" PRIx64 "\n",
+        req.id, dat, offset);
+
+    RETURN_REQUEST
+}
+
+
 
 DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive)
 {

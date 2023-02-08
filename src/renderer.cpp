@@ -444,7 +444,7 @@ static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzDat, dat, req.content.bind_index.dat);
 
     // Link the two.
-    dvz_pipe_index(pipe, dat);
+    dvz_pipe_index(pipe, dat, req.content.bind_index.offset);
 
     return NULL;
 }

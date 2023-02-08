@@ -211,6 +211,7 @@ union DvzRequestContent
     struct
     {
         DvzId dat;
+        DvzSize offset;
     } bind_index;
 
 

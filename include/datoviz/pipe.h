@@ -76,10 +76,12 @@ struct DvzPipe
     // Bindings.
     DvzBindings bindings;
 
-    // Vertex and index buffers.
+    // Vertex buffers.
     DvzPipeBinding vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
     uint32_t vertex_bindings_count;
-    DvzDat* dat_index;
+
+    // Index buffer.
+    DvzPipeBinding index_binding;
 
     // Dat resources.
     bool bindings_set[DVZ_MAX_BINDINGS_SIZE];
@@ -139,7 +141,7 @@ dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize
  * @param pipe the pipe
  * @param dat the dat with the index buffer
  */
-DVZ_EXPORT void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index);
+DVZ_EXPORT void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset);
 
 
 

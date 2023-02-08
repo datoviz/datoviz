@@ -113,11 +113,12 @@ void dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, Dv
 
 
 
-void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index)
+void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset)
 {
     ANN(pipe);
     ANN(dat_index);
-    pipe->dat_index = dat_index;
+    pipe->index_binding.dat = dat_index;
+    pipe->index_binding.offset = offset;
 }
 
 
@@ -266,9 +267,12 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
     }
     dvz_cmd_bind_vertex_buffer(cmds, idx, count, brs, offsets);
 
-    // TODO: dat index byte offset?
-    if (pipe->dat_index != NULL)
-        dvz_cmd_bind_index_buffer(cmds, idx, pipe->dat_index->br, 0);
+    // Index buffer.
+    if (pipe->index_binding.dat != NULL)
+    {
+        dvz_cmd_bind_index_buffer(
+            cmds, idx, pipe->index_binding.dat->br, pipe->index_binding.offset);
+    }
 
     // TODO: dynamic uniform buffer index
     dvz_cmd_bind_graphics(cmds, idx, graphics, &pipe->bindings, 0);
