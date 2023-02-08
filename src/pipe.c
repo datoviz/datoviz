@@ -178,10 +178,29 @@ void dvz_pipe_create(DvzPipe* pipe)
         _ensure_bindings_created(pipe, 1);
     }
 
+    // Graphics pipe.
     if (pipe->type == DVZ_PIPE_GRAPHICS)
+    {
+        if (dvz_obj_is_created(&pipe->u.graphics.obj))
+        {
+            log_debug(
+                "requesting pipe creation for an already-existing pipe, destroying it first");
+            dvz_graphics_destroy(&pipe->u.graphics);
+        }
         dvz_graphics_create(&pipe->u.graphics);
+    }
+
+    // Compute pipe.
     else if (pipe->type == DVZ_PIPE_COMPUTE)
+    {
+        if (dvz_obj_is_created(&pipe->u.graphics.obj))
+        {
+            log_debug(
+                "requesting pipe creation for an already-existing pipe, destroying it first");
+            dvz_graphics_destroy(&pipe->u.graphics);
+        }
         dvz_compute_create(&pipe->u.compute);
+    }
 
     // if (dvz_obj_is_created(&pipe->bindings.obj))
     if (dvz_pipe_complete(pipe))

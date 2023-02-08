@@ -246,6 +246,13 @@ static inline DvzGraphics* _get_graphics(DvzRenderer* rd, DvzRequest req)
     // Get the graphics pipe.
     GET_ID(DvzPipe, pipe, req.id)
 
+    // If calling a graphics modification function while the pipe has already been created, mark it
+    // has needing to be recreated.
+    if (dvz_obj_is_created(&pipe->obj))
+    {
+        pipe->obj.status = DVZ_OBJECT_STATUS_NEED_RECREATE;
+    }
+
     // Get the graphics object.
     ASSERT(pipe->type == DVZ_PIPE_GRAPHICS);
     DvzGraphics* graphics = &pipe->u.graphics;
@@ -1085,6 +1092,8 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
     DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, id);
     ANN(pipe);
 
+    // NOTE: if the status is NEED_RECREATE, this condition will be false and the dvz_pipe_create()
+    // will be called. That function will ensure the pipeline is destroyed before being recreated.
     if (!dvz_obj_is_created(&pipe->obj))
     {
         log_debug("lazily create pipe before using it for command buffer recording");
