@@ -342,11 +342,15 @@ static void* _graphics_glsl(DvzRenderer* rd, DvzRequest req)
 {
     DvzGraphics* graphics = _get_graphics(rd, req);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_GLSL);
+    ANN(req.content.set_glsl.code);
 
     // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
     dvz_graphics_shader_glsl(
         graphics, (VkShaderStageFlagBits)req.content.set_glsl.shader_type,
         req.content.set_glsl.code);
+
+    // NOTE: the code has been copied by the requester, we can free it now.
+    FREE(req.content.set_glsl.code);
 
     return NULL;
 }
@@ -362,6 +366,9 @@ static void* _graphics_spirv(DvzRenderer* rd, DvzRequest req)
     dvz_graphics_shader_spirv(
         graphics, (VkShaderStageFlagBits)req.content.set_spirv.shader_type,
         req.content.set_spirv.size, req.content.set_spirv.buffer);
+
+    // NOTE: the buffer has been copied by the requester, we can free it now.
+    FREE(req.content.set_spirv.buffer);
 
     return NULL;
 }

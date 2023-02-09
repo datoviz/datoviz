@@ -1204,8 +1204,11 @@ int test_vklite_constattr(TstSuite* suite)
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
     dvz_graphics_vertex_binding(&graphics, 0, sizeof(vec3), VK_VERTEX_INPUT_RATE_VERTEX);
     // NOTE: use only 1 color value for all vertices (stride=0, and VK_VERTEX_INPUT_RATE_INSTANCE).
-    // NOTE: unclear if a stride of 0 is valid in Vulkan?
-    dvz_graphics_vertex_binding(&graphics, 1, 0, VK_VERTEX_INPUT_RATE_INSTANCE);
+
+    // NOTE: stride cannot be 0, otherwise it would have allowed us to use a constant value across
+    // multiple instances.
+    dvz_graphics_vertex_binding(&graphics, 1, sizeof(vec4), VK_VERTEX_INPUT_RATE_INSTANCE);
+
     dvz_graphics_vertex_attr(&graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 

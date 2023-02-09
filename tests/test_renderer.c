@@ -22,6 +22,29 @@
 
 
 /*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+static void
+_load_shader(DvzRequester* rqr, DvzId graphics_id, DvzShaderType shader_type, const char* name)
+{
+    ANN(rqr);
+    ASSERT(graphics_id != 0);
+
+    unsigned long shader_size = 0;
+    unsigned char* shader_buffer = dvz_resource_shader(name, &shader_size);
+    ASSERT(shader_size > 0);
+    // // NOTE: we have to make a copy to ignore a clang alignment warning on macOS, unless there
+    // // is a better solution?
+    // uint32_t* shader_buffer_uint32 = (uint32_t*)malloc(shader_size);
+    // memcpy(shader_buffer_uint32, shader_buffer, shader_size);
+    dvz_set_spirv(rqr, graphics_id, shader_type, shader_size, shader_buffer);
+    // FREE(shader_buffer_uint32);
+}
+
+
+
+/*************************************************************************************************/
 /*  Renderer tests                                                                               */
 /*************************************************************************************************/
 
@@ -154,21 +177,9 @@ int test_renderer_graphics(TstSuite* suite)
     req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
 
-    // Load vertex shader.
-    {
-        unsigned long shader_size = 0;
-        uint32_t* shader_buffer =
-            (uint32_t*)dvz_resource_shader("graphics_basic_vert", &shader_size);
-        dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_VERTEX, shader_size, shader_buffer);
-    }
-
-    // Load fragment shader.
-    {
-        unsigned long shader_size = 0;
-        uint32_t* shader_buffer =
-            (uint32_t*)dvz_resource_shader("graphics_basic_frag", &shader_size);
-        dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_FRAGMENT, shader_size, shader_buffer);
-    }
+    // Load shaders.
+    _load_shader(rqr, graphics_id, DVZ_SHADER_VERTEX, "graphics_basic_vert");
+    _load_shader(rqr, graphics_id, DVZ_SHADER_FRAGMENT, "graphics_basic_frag");
 
     // Primitive topology.
     dvz_set_primitive(rqr, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

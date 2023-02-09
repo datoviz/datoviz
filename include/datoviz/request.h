@@ -642,7 +642,7 @@ DVZ_EXPORT DvzRequest dvz_set_glsl(
 
 DVZ_EXPORT DvzRequest dvz_set_spirv(
     DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
-    const uint32_t* buffer);
+    const unsigned char* buffer);
 
 DVZ_EXPORT DvzRequest dvz_set_vertex(
     DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,

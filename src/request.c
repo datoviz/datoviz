@@ -54,6 +54,27 @@ static DvzRequest _request(void)
 
 
 
+// NOTE: the returned pointer will have to be freed.
+static void* _cpy(DvzSize size, const void* data)
+{
+    void* data_cpy = malloc(size);
+    memcpy(data_cpy, data, size);
+    return data_cpy;
+}
+
+
+
+// NOTE: the returned pointer will have to be freed.
+static uint32_t* _cpy_uint32(DvzSize size, const void* data)
+{
+    ASSERT(size % 4 == 0);
+    uint32_t* data_cpy = (uint32_t*)calloc(size / 4, sizeof(uint32_t));
+    memcpy(data_cpy, data, size);
+    return data_cpy;
+}
+
+
+
 static int write_file(const char* filename, DvzSize block_size, uint32_t block_count, void* data)
 {
     ANN(filename);
@@ -536,9 +557,7 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
 
     // NOTE: we make a copy of the data to ensure it lives until the renderer has done processing
     // it.
-    void* data_cpy = malloc(size);
-    memcpy(data_cpy, data, size);
-    req.content.dat_upload.data = data_cpy;
+    req.content.dat_upload.data = _cpy(size, data);
 
     if (getenv("DVZ_VERBOSE") != NULL)
     {
@@ -607,9 +626,7 @@ dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize 
 
     // NOTE: we make a copy of the data to ensure it lives until the renderer has done processing
     // it.
-    void* data_cpy = malloc(size);
-    memcpy(data_cpy, data, size);
-    req.content.tex_upload.data = data_cpy;
+    req.content.tex_upload.data = _cpy(size, data);
 
     RETURN_REQUEST
 }
@@ -830,7 +847,7 @@ DvzRequest dvz_set_glsl(
     req.id = graphics;
     req.content.set_glsl.shader_type = shader_type;
     req.content.set_glsl.size = size;
-    req.content.set_glsl.code = code;
+    req.content.set_glsl.code = _cpy(size, code);
 
     if (getenv("DVZ_VERBOSE") != NULL)
     {
@@ -861,13 +878,13 @@ DvzRequest dvz_set_glsl(
 
 DvzRequest dvz_set_spirv(
     DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
-    const uint32_t* buffer)
+    const unsigned char* buffer)
 {
     CREATE_REQUEST(SET, SPIRV);
     req.id = graphics;
     req.content.set_spirv.shader_type = shader_type;
     req.content.set_spirv.size = size;
-    req.content.set_spirv.buffer = buffer;
+    req.content.set_spirv.buffer = _cpy_uint32(size, buffer);
 
     if (getenv("DVZ_VERBOSE") != NULL)
     {
