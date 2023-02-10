@@ -162,7 +162,7 @@ union DvzRequestContent
     {
         DvzShaderType shader_type;
         DvzSize size; // TODO: remove because useless?
-        const char* code;
+        char* code;
     } set_glsl;
 
     // Set SPIRV.
@@ -170,7 +170,7 @@ union DvzRequestContent
     {
         DvzShaderType shader_type;
         DvzSize size;
-        const uint32_t* buffer;
+        uint32_t* buffer;
     } set_spirv;
 
     // Set vertex.

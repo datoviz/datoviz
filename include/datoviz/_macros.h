@@ -121,7 +121,7 @@
 #define FREE(x)                                                                                   \
     if ((x) != NULL)                                                                              \
     {                                                                                             \
-        free((void*)(x));                                                                         \
+        free((x));                                                                                \
         (x) = NULL;                                                                               \
     }
 
