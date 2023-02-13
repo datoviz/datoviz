@@ -84,7 +84,7 @@ struct DvzPipe
     DvzPipeBinding index_binding;
 
     // Dat resources.
-    bool bindings_set[DVZ_MAX_BINDINGS_SIZE];
+    bool bindings_set[DVZ_MAX_BINDINGS];
 };
 
 

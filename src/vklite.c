@@ -2002,7 +2002,7 @@ void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
 {
     ANN(slots);
     ASSERT(idx == slots->slot_count);
-    ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
+    ASSERT(idx < DVZ_MAX_BINDINGS);
     slots->types[slots->slot_count++] = type;
 }
 
@@ -3749,8 +3749,8 @@ void dvz_cmd_bind_graphics(
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
-    uint32_t dyn_offsets[DVZ_MAX_BINDINGS_SIZE] = {0};
-    ASSERT(slots->slot_count <= DVZ_MAX_BINDINGS_SIZE);
+    uint32_t dyn_offsets[DVZ_MAX_BINDINGS] = {0};
+    ASSERT(slots->slot_count <= DVZ_MAX_BINDINGS);
     for (uint32_t i = 0; i < slots->slot_count; i++)
     {
         if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)

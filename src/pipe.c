@@ -126,7 +126,7 @@ void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset)
 void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 {
     ANN(pipe);
-    ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
+    ASSERT(idx < DVZ_MAX_BINDINGS);
 
     ANN(dat);
     ANN(dat->br.buffer);
@@ -146,7 +146,7 @@ void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
 void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 {
     ANN(pipe);
-    ASSERT(idx < DVZ_MAX_BINDINGS_SIZE);
+    ASSERT(idx < DVZ_MAX_BINDINGS);
 
     ANN(tex);
     ANN(sampler);

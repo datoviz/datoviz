@@ -788,8 +788,8 @@ static void update_descriptor_set(
     log_trace("update descriptor set #%d", idx);
     VkWriteDescriptorSet* descriptor_writes = calloc(binding_count, sizeof(VkWriteDescriptorSet));
 
-    VkDescriptorBufferInfo buffer_infos[DVZ_MAX_BINDINGS_SIZE] = {0};
-    VkDescriptorImageInfo image_infos[DVZ_MAX_BINDINGS_SIZE] = {0};
+    VkDescriptorBufferInfo buffer_infos[DVZ_MAX_BINDINGS] = {0};
+    VkDescriptorImageInfo image_infos[DVZ_MAX_BINDINGS] = {0};
 
     VkDescriptorType binding_type = {0};
     DvzBufferRegions* br = NULL;

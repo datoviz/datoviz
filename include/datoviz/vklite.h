@@ -28,7 +28,7 @@ MUTE_OFF
 
 #define DVZ_VULKAN_API VK_API_VERSION_1_1
 
-#define DVZ_MAX_BINDINGS_SIZE               16
+#define DVZ_MAX_BINDINGS                    16
 #define DVZ_MAX_DESCRIPTOR_SETS             1024
 #define DVZ_MAX_PRESENT_MODES               16
 #define DVZ_MAX_PUSH_CONSTANTS              16
@@ -392,7 +392,7 @@ struct DvzSlots
     DvzGpu* gpu;
 
     uint32_t slot_count;
-    VkDescriptorType types[DVZ_MAX_BINDINGS_SIZE];
+    VkDescriptorType types[DVZ_MAX_BINDINGS];
 
     uint32_t push_count;
     VkDeviceSize push_offsets[DVZ_MAX_PUSH_CONSTANTS];
@@ -417,9 +417,9 @@ struct DvzBindings
     uint32_t dset_count;
     VkDescriptorSet dsets[DVZ_MAX_SWAPCHAIN_IMAGES];
 
-    DvzBufferRegions br[DVZ_MAX_BINDINGS_SIZE];
-    DvzImages* images[DVZ_MAX_BINDINGS_SIZE];
-    DvzSampler* samplers[DVZ_MAX_BINDINGS_SIZE];
+    DvzBufferRegions br[DVZ_MAX_BINDINGS];
+    DvzImages* images[DVZ_MAX_BINDINGS];
+    DvzSampler* samplers[DVZ_MAX_BINDINGS];
 };
 
 
