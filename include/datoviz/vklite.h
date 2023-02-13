@@ -28,7 +28,6 @@ MUTE_OFF
 
 #define DVZ_VULKAN_API VK_API_VERSION_1_1
 
-#define DVZ_MAX_BINDINGS                    16
 #define DVZ_MAX_DESCRIPTOR_SETS             1024
 #define DVZ_MAX_PRESENT_MODES               16
 #define DVZ_MAX_PUSH_CONSTANTS              16
@@ -47,8 +46,6 @@ MUTE_OFF
 #define DVZ_MAX_ATTACHMENTS_PER_RENDERPASS  8
 #define DVZ_MAX_SUBPASSES_PER_RENDERPASS    8
 #define DVZ_MAX_DEPENDENCIES_PER_RENDERPASS 8
-#define DVZ_MAX_VERTEX_BINDINGS             8
-#define DVZ_MAX_VERTEX_ATTRS                16
 #define DVZ_MAX_FRAMES_IN_FLIGHT            2
 
 
