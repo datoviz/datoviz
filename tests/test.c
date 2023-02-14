@@ -18,6 +18,7 @@
 #include "scene/test_array.h"
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
+#include "scene/test_dual.h"
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
 #include "test.h"
@@ -89,31 +90,12 @@ int dvz_run_tests(const char* match)
     TEST(test_deq_2)
     TEST(test_deq_3)
 
-    // Testing array.
-    TEST(test_array_1)
-    TEST(test_array_2)
-    TEST(test_array_3)
-    TEST(test_array_4)
-    TEST(test_array_5)
-    TEST(test_array_6)
-    TEST(test_array_7)
-    TEST(test_array_cast)
-    TEST(test_array_mvp)
-    TEST(test_array_3D)
 
     // Testing alloc.
     TEST(test_alloc_1)
     TEST(test_alloc_2)
     TEST(test_alloc_3)
 
-    // Testing colormaps.
-    TEST(test_colormaps_idx)
-    TEST(test_colormaps_uv)
-    TEST(test_colormaps_extent)
-    TEST(test_colormaps_default)
-    TEST(test_colormaps_scale)
-    TEST(test_colormaps_packuv)
-    TEST(test_colormaps_array)
 
     // Testing map.
     TEST(test_map_1)
@@ -255,6 +237,7 @@ int dvz_run_tests(const char* match)
     TEST(test_graphics_image_1)
 
 
+
     /*********************************************************************************************/
     /*  Client                                                                                   */
     /*********************************************************************************************/
@@ -271,6 +254,36 @@ int dvz_run_tests(const char* match)
     TEST(test_request_1)
     TEST(test_request_2)
 
+
+
+    /*********************************************************************************************/
+    /*  Scene                                                                                    */
+    /*********************************************************************************************/
+
+    // Testing array.
+    TEST(test_array_1)
+    TEST(test_array_2)
+    TEST(test_array_3)
+    TEST(test_array_4)
+    TEST(test_array_5)
+    TEST(test_array_6)
+    TEST(test_array_7)
+    TEST(test_array_cast)
+    TEST(test_array_mvp)
+    TEST(test_array_3D)
+
+    // Testing dual.
+    TEST(test_dual_1)
+
+    // Testing colormaps.
+    TEST(test_colormaps_idx)
+    TEST(test_colormaps_uv)
+    TEST(test_colormaps_extent)
+    TEST(test_colormaps_default)
+    TEST(test_colormaps_scale)
+    TEST(test_colormaps_packuv)
+    TEST(test_colormaps_array)
+
     // Testing scene elements.
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
@@ -281,6 +294,7 @@ int dvz_run_tests(const char* match)
     TEST(test_app_scatter)
     TEST(test_app_arcball)
     TEST(test_app_anim)
+
 
 
     tst_suite_run(&suite, match);

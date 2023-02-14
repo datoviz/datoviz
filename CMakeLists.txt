@@ -643,6 +643,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_array.c"
         "tests/scene/test_colormaps.c"
         "tests/scene/test_graphics.c"
+        "tests/scene/test_dual.c"
         "tests/scene/test_panzoom.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_camera.c"

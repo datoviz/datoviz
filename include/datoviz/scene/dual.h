@@ -45,6 +45,7 @@ struct DvzDual
     DvzId dat;
     uint32_t dirty_first;
     uint32_t dirty_last; // smallest contiguous interval encompassing all dirty intervals
+    // dirty_last is the first non-dirty item (count=last-first)
 };
 
 
@@ -61,8 +62,7 @@ DVZ_EXPORT void dvz_dual_dirty(DvzDual* dual, uint32_t first, uint32_t count);
 
 DVZ_EXPORT void dvz_dual_clear(DvzDual* dual);
 
-DVZ_EXPORT void
-dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, DvzSize size, void* data);
+DVZ_EXPORT void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data);
 
 DVZ_EXPORT void dvz_dual_update(DvzDual* dual);
 
