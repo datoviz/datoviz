@@ -558,6 +558,7 @@ set(sources
 
     # Scene
     "src/scene/array.c"
+    "src/scene/dual.c"
     "src/scene/graphics.c"
     "src/scene/graphics_data.c"
     "src/scene/mvp.c"
