@@ -94,7 +94,7 @@ void dvz_dual_update(DvzDual* dual)
     DvzArray* array = dual->array;
     DvzSize item_size = array->item_size;
     DvzSize offset = dual->dirty_first * item_size;
-    DvzSize size = ((int64_t)dual->dirty_last - (int64_t)dual->dirty_first) * item_size;
+    DvzSize size = (DvzSize)((int64_t)dual->dirty_last - (int64_t)dual->dirty_first) * item_size;
     void* data = dvz_array_item(array, dual->dirty_first);
     dvz_upload_dat(dual->rqr, dual->dat, offset, size, data);
 
