@@ -901,7 +901,8 @@ int test_vklite_indirect(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
+    dvz_cmd_bind_descriptors(&cmds, 0, &descriptors, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw_indirect(&cmds, 0, br_indirect, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -986,7 +987,8 @@ int test_vklite_indexed(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
     dvz_cmd_bind_index_buffer(&cmds, 0, bri, 0);
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
+    dvz_cmd_bind_descriptors(&cmds, 0, &descriptors, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw_indexed(&cmds, 0, 0, 0, n_vertices, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1066,7 +1068,8 @@ int test_vklite_instanced(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)WIDTH, (float)HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
+    dvz_cmd_bind_descriptors(&cmds, 0, &descriptors, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw(&cmds, 0, 0, n_vertices, 0, n_instances);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1155,7 +1158,8 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(
         &cmds, 0, 2, (DvzBufferRegions[]){br_pos, br_color}, (DvzSize[]){0, 0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
+    dvz_cmd_bind_descriptors(&cmds, 0, &descriptors, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1251,7 +1255,8 @@ int test_vklite_constattr(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(
         &cmds, 0, 2, (DvzBufferRegions[]){br_pos, br_color}, (DvzSize[]){0, 0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
+    dvz_cmd_bind_descriptors(&cmds, 0, &descriptors, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics);
     dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);

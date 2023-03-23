@@ -275,7 +275,8 @@ static DvzGraphics* _pre_draw(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx)
     }
 
     // TODO: dynamic uniform buffer index
-    dvz_cmd_bind_graphics(cmds, idx, graphics, &pipe->descriptors, 0);
+    dvz_cmd_bind_descriptors(cmds, idx, &pipe->descriptors, 0);
+    dvz_cmd_bind_graphics(cmds, idx, graphics);
 
     return graphics;
 }

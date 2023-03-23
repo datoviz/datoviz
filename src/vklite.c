@@ -3740,14 +3740,28 @@ void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport)
 
 
 
-void dvz_cmd_bind_graphics(
-    DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
-    DvzDescriptors* descriptors, uint32_t dynamic_idx)
+void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics)
 {
     ANN(graphics);
     DvzSlots* slots = &graphics->slots;
     ANN(slots);
+
+    // CMD_START_CLIP(descriptors->dset_count)
+    CMD_START
+    if (dvz_obj_is_created(&graphics->obj))
+        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
+    CMD_END
+}
+
+
+
+void dvz_cmd_bind_descriptors(
+    DvzCommands* cmds, uint32_t idx, DvzDescriptors* descriptors, uint32_t dynamic_idx)
+{
     ANN(descriptors);
+
+    DvzSlots* slots = descriptors->slots;
+    ANN(slots);
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
@@ -3763,8 +3777,6 @@ void dvz_cmd_bind_graphics(
     }
 
     CMD_START_CLIP(descriptors->dset_count)
-    if (dvz_obj_is_created(&graphics->obj))
-        vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
         0, 1, &descriptors->dsets[iclip], dyn_count, dyn_offsets);

@@ -2170,12 +2170,19 @@ DVZ_EXPORT void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport vie
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  * @param graphics the graphics pipeline
+ */
+DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics);
+
+/**
+ * Bind descriptors.
+ *
+ * @param cmds the set of command buffers to record
+ * @param idx the index of the command buffer to record
  * @param descriptors the descriptors associated to the pipeline
  * @param dynamic_idx the dynamic uniform buffer index
  */
-DVZ_EXPORT void dvz_cmd_bind_graphics(
-    DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
-    DvzDescriptors* descriptors, uint32_t dynamic_idx);
+DVZ_EXPORT void dvz_cmd_bind_descriptors(
+    DvzCommands* cmds, uint32_t idx, DvzDescriptors* descriptors, uint32_t dynamic_idx);
 
 /**
  * Bind a vertex buffer.
