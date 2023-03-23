@@ -285,14 +285,14 @@ int test_vklite_compute(TstSuite* suite)
     // Create the slots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&compute.slots, 1);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
     DvzBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
-    dvz_bindings_buffer(&bindings, 0, br);
-    dvz_bindings_update(&bindings);
+    dvz_descriptors_buffer(&descriptors, 0, br);
+    dvz_descriptors_update(&descriptors);
 
-    // Link the bindings to the compute pipeline and create it.
-    dvz_compute_bindings(&compute, &bindings);
+    // Link the descriptors to the compute pipeline and create it.
+    dvz_compute_descriptors(&compute, &descriptors);
     dvz_compute_create(&compute);
 
     // Command buffers.
@@ -311,7 +311,7 @@ int test_vklite_compute(TstSuite* suite)
     FREE(data);
     FREE(data2);
 
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_compute_destroy(&compute);
     dvz_buffer_destroy(&buffer);
 
@@ -358,14 +358,14 @@ int test_vklite_push(TstSuite* suite)
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_compute_push(&compute, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&compute.slots, 1);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
     DvzBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
-    dvz_bindings_buffer(&bindings, 0, br);
-    dvz_bindings_update(&bindings);
+    dvz_descriptors_buffer(&descriptors, 0, br);
+    dvz_descriptors_update(&descriptors);
 
-    // Link the bindings to the compute pipeline and create it.
-    dvz_compute_bindings(&compute, &bindings);
+    // Link the descriptors to the compute pipeline and create it.
+    dvz_compute_descriptors(&compute, &descriptors);
     dvz_compute_create(&compute);
 
     // Command buffers.
@@ -386,7 +386,7 @@ int test_vklite_push(TstSuite* suite)
     FREE(data);
     FREE(data2);
 
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_compute_destroy(&compute);
     dvz_buffer_destroy(&buffer);
 
@@ -491,15 +491,15 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     // Create the slots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&compute.slots, 1);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
     DvzBufferRegions br = {.buffer = &buffer0, .size = size, .count = 1};
     br.offsets[0] = offset;
-    dvz_bindings_buffer(&bindings, 0, br);
-    dvz_bindings_update(&bindings);
+    dvz_descriptors_buffer(&descriptors, 0, br);
+    dvz_descriptors_update(&descriptors);
 
-    // Link the bindings to the compute pipeline and create it.
-    dvz_compute_bindings(&compute, &bindings);
+    // Link the descriptors to the compute pipeline and create it.
+    dvz_compute_descriptors(&compute, &descriptors);
     dvz_compute_create(&compute);
 
     // Barrier.
@@ -529,7 +529,7 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     FREE(data0);
     FREE(data1);
 
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_compute_destroy(&compute);
 
     dvz_buffer_destroy(&buffer0);
@@ -651,23 +651,23 @@ int test_vklite_submit(TstSuite* suite)
     dvz_compute_slot(&compute1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_compute_slot(&compute2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
-    // Create the bindings.
-    DvzBindings bindings1 = dvz_bindings(&compute1.slots, 1);
+    // Create the descriptors.
+    DvzDescriptors descriptors1 = dvz_descriptors(&compute1.slots, 1);
     DvzBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
-    dvz_bindings_buffer(&bindings1, 0, br1);
-    dvz_bindings_update(&bindings1);
+    dvz_descriptors_buffer(&descriptors1, 0, br1);
+    dvz_descriptors_update(&descriptors1);
 
-    DvzBindings bindings2 = dvz_bindings(&compute2.slots, 1);
+    DvzDescriptors descriptors2 = dvz_descriptors(&compute2.slots, 1);
     DvzBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
-    dvz_bindings_buffer(&bindings2, 0, br2);
-    dvz_bindings_update(&bindings2);
+    dvz_descriptors_buffer(&descriptors2, 0, br2);
+    dvz_descriptors_update(&descriptors2);
 
-    // Link the bindings1 to the compute1 pipeline and create it.
-    dvz_compute_bindings(&compute1, &bindings1);
+    // Link the descriptors1 to the compute1 pipeline and create it.
+    dvz_compute_descriptors(&compute1, &descriptors1);
     dvz_compute_create(&compute1);
 
-    // Link the bindings1 to the compute2 pipeline and create it.
-    dvz_compute_bindings(&compute2, &bindings2);
+    // Link the descriptors1 to the compute2 pipeline and create it.
+    dvz_compute_descriptors(&compute2, &descriptors2);
     dvz_compute_create(&compute2);
 
     // Command buffers.
@@ -706,8 +706,8 @@ int test_vklite_submit(TstSuite* suite)
 
 
     dvz_semaphores_destroy(&semaphores);
-    dvz_bindings_destroy(&bindings1);
-    dvz_bindings_destroy(&bindings2);
+    dvz_descriptors_destroy(&descriptors1);
+    dvz_descriptors_destroy(&descriptors2);
     dvz_buffer_destroy(&buffer);
     dvz_compute_destroy(&compute1);
     dvz_compute_destroy(&compute2);
@@ -806,9 +806,9 @@ int test_vklite_graphics(TstSuite* suite)
     // Make the graphics.
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -826,7 +826,7 @@ int test_vklite_graphics(TstSuite* suite)
     // Create and submit the command buffer.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, buffer.size, 0);
-    triangle_commands(&cmds, 0, renderpass, framebuffers, &graphics, &bindings, br);
+    triangle_commands(&cmds, 0, renderpass, framebuffers, &graphics, &descriptors, br);
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Save a screenshot.
@@ -834,7 +834,7 @@ int test_vklite_graphics(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer);
     canvas_destroy(&canvas);
     dvz_gpu_destroy(gpu);
@@ -859,9 +859,9 @@ int test_vklite_indirect(TstSuite* suite)
     // Make the graphics.
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -901,7 +901,7 @@ int test_vklite_indirect(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
     dvz_cmd_draw_indirect(&cmds, 0, br_indirect, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -912,7 +912,7 @@ int test_vklite_indirect(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer);
     dvz_buffer_destroy(&indirect);
     canvas_destroy(&canvas);
@@ -938,9 +938,9 @@ int test_vklite_indexed(TstSuite* suite)
     // Make the graphics.
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -986,7 +986,7 @@ int test_vklite_indexed(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
     dvz_cmd_bind_index_buffer(&cmds, 0, bri, 0);
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
     dvz_cmd_draw_indexed(&cmds, 0, 0, 0, n_vertices, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -997,7 +997,7 @@ int test_vklite_indexed(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer);
     dvz_buffer_destroy(&buffer_index);
     canvas_destroy(&canvas);
@@ -1040,9 +1040,9 @@ int test_vklite_instanced(TstSuite* suite)
         &graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
 
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -1066,7 +1066,7 @@ int test_vklite_instanced(TstSuite* suite)
     dvz_cmd_begin_renderpass(&cmds, 0, renderpass, framebuffers);
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, (float)WIDTH, (float)HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(&cmds, 0, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
     dvz_cmd_draw(&cmds, 0, 0, n_vertices, 0, n_instances);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1077,7 +1077,7 @@ int test_vklite_instanced(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer);
     canvas_destroy(&canvas);
     dvz_gpu_destroy(gpu);
@@ -1117,9 +1117,9 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_graphics_vertex_attr(&graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -1155,7 +1155,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(
         &cmds, 0, 2, (DvzBufferRegions[]){br_pos, br_color}, (DvzSize[]){0, 0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
     dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1166,7 +1166,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer_pos);
     dvz_buffer_destroy(&buffer_color);
     canvas_destroy(&canvas);
@@ -1213,9 +1213,9 @@ int test_vklite_constattr(TstSuite* suite)
     dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -1251,7 +1251,7 @@ int test_vklite_constattr(TstSuite* suite)
     dvz_cmd_viewport(&cmds, 0, (VkViewport){0, 0, WIDTH, HEIGHT, 0, 1});
     dvz_cmd_bind_vertex_buffer(
         &cmds, 0, 2, (DvzBufferRegions[]){br_pos, br_color}, (DvzSize[]){0, 0});
-    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &bindings, 0);
+    dvz_cmd_bind_graphics(&cmds, 0, &graphics, &descriptors, 0);
     dvz_cmd_draw(&cmds, 0, 0, 3, 0, 1);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
@@ -1262,7 +1262,7 @@ int test_vklite_constattr(TstSuite* suite)
 
     // Cleanup.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer_pos);
     dvz_buffer_destroy(&buffer_color);
     canvas_destroy(&canvas);

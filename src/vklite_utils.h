@@ -709,32 +709,32 @@ static void create_pipeline_layout(
 
 
 static void create_descriptor_set_layout(
-    VkDevice device, uint32_t binding_count, VkDescriptorType* binding_types,
+    VkDevice device, uint32_t descriptor_count, VkDescriptorType* descriptor_types,
     VkDescriptorSetLayout* dset_layout)
 {
     // Descriptor set layout.
-    VkDescriptorSetLayoutBinding* layout_bindings =
-        calloc(binding_count, sizeof(VkDescriptorSetLayoutBinding));
+    VkDescriptorSetLayoutBinding* layout_descriptors =
+        calloc(descriptor_count, sizeof(VkDescriptorSetLayoutBinding));
 
-    for (uint32_t i = 0; i < binding_count; i++)
+    for (uint32_t i = 0; i < descriptor_count; i++)
     {
-        VkDescriptorType dtype = binding_types[i];
-        layout_bindings[i].binding = i;
-        layout_bindings[i].descriptorType = dtype;
-        layout_bindings[i].descriptorCount = 1;
-        layout_bindings[i].stageFlags = VK_SHADER_STAGE_ALL;
-        layout_bindings[i].pImmutableSamplers = NULL; // Optional
+        VkDescriptorType dtype = descriptor_types[i];
+        layout_descriptors[i].binding = i;
+        layout_descriptors[i].descriptorType = dtype;
+        layout_descriptors[i].descriptorCount = 1;
+        layout_descriptors[i].stageFlags = VK_SHADER_STAGE_ALL;
+        layout_descriptors[i].pImmutableSamplers = NULL; // Optional
     }
 
     // Create descriptor set layout.
     VkDescriptorSetLayoutCreateInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    info.bindingCount = binding_count;
-    info.pBindings = layout_bindings;
+    info.bindingCount = descriptor_count;
+    info.pBindings = layout_descriptors;
 
     log_trace("create descriptor set layout");
     VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &info, NULL, dset_layout));
-    FREE(layout_bindings);
+    FREE(layout_descriptors);
 }
 
 
@@ -762,48 +762,49 @@ static void allocate_descriptor_sets(
 
 
 
-static bool is_descriptor_type_buffer(VkDescriptorType binding_type)
+static bool is_descriptor_type_buffer(VkDescriptorType descriptor_type)
 {
-    return binding_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
-           binding_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
-           binding_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
-           binding_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    return descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
+           descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
+           descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
+           descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
 }
 
 
 
-static bool is_descriptor_type_image(VkDescriptorType binding_type)
+static bool is_descriptor_type_image(VkDescriptorType descriptor_type)
 {
-    return binding_type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ||
-           binding_type == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    return descriptor_type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ||
+           descriptor_type == VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 }
 
 
 
 static void update_descriptor_set(
-    VkDevice device, uint32_t binding_count, VkDescriptorType* types,            //
+    VkDevice device, uint32_t descriptor_count, VkDescriptorType* types,         //
     DvzBufferRegions* buffer_regions, DvzImages** images, DvzSampler** samplers, //
     uint32_t idx, VkDescriptorSet dset)
 {
     log_trace("update descriptor set #%d", idx);
-    VkWriteDescriptorSet* descriptor_writes = calloc(binding_count, sizeof(VkWriteDescriptorSet));
+    VkWriteDescriptorSet* descriptor_writes =
+        calloc(descriptor_count, sizeof(VkWriteDescriptorSet));
 
     VkDescriptorBufferInfo buffer_infos[DVZ_MAX_BINDINGS] = {0};
     VkDescriptorImageInfo image_infos[DVZ_MAX_BINDINGS] = {0};
 
-    VkDescriptorType binding_type = {0};
+    VkDescriptorType descriptor_type = {0};
     DvzBufferRegions* br = NULL;
 
-    for (uint32_t i = 0; i < binding_count; i++)
+    for (uint32_t i = 0; i < descriptor_count; i++)
     {
-        binding_type = types[i];
+        descriptor_type = types[i];
 
-        if (is_descriptor_type_buffer(binding_type))
+        if (is_descriptor_type_buffer(descriptor_type))
         {
             // log_trace("bind buffer for binding point %d", i);
             if (buffer_regions[i].buffer == NULL)
             {
-                log_error("buffer of type %d #%d is not set", binding_type, i);
+                log_error("buffer of type %d #%d is not set", descriptor_type, i);
             }
             br = &buffer_regions[i];
             ANN(buffer_regions[i].buffer);
@@ -814,7 +815,7 @@ static void update_descriptor_set(
             buffer_infos[i].offset = br->offsets[idx_clip];
             buffer_infos[i].range = br->size;
         }
-        else if (is_descriptor_type_image(binding_type))
+        else if (is_descriptor_type_image(descriptor_type))
         {
             // log_trace("bind texture for binding point %d", i);
             ANN(images[i]);
@@ -832,7 +833,7 @@ static void update_descriptor_set(
         }
         else
         {
-            log_error("unsupported descriptor type %d", binding_type);
+            log_error("unsupported descriptor type %d", descriptor_type);
             return;
         }
         descriptor_writes[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -841,13 +842,13 @@ static void update_descriptor_set(
         descriptor_writes[i].dstBinding = i;
         descriptor_writes[i].dstArrayElement = 0;
         descriptor_writes[i].descriptorCount = 1;
-        descriptor_writes[i].descriptorType = binding_type;
+        descriptor_writes[i].descriptorType = descriptor_type;
         descriptor_writes[i].pImageInfo = &image_infos[i];
         descriptor_writes[i].pBufferInfo = &buffer_infos[i];
         descriptor_writes[i].pTexelBufferView = VK_NULL_HANDLE;
     }
 
-    vkUpdateDescriptorSets(device, binding_count, descriptor_writes, 0, NULL);
+    vkUpdateDescriptorSets(device, descriptor_count, descriptor_writes, 0, NULL);
     FREE(descriptor_writes);
 }
 

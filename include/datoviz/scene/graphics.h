@@ -21,7 +21,7 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-// Number of common bindings
+// Number of common descriptors
 // NOTE: must correspond to the same constant in common.glsl
 #define DVZ_USER_BINDING 2
 

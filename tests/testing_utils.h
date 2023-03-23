@@ -75,7 +75,7 @@ struct TestCanvas
     DvzImages* depth;
 
     DvzCompute* compute;
-    DvzBindings* bindings;
+    DvzDescriptors* descriptors;
     DvzGraphics* graphics;
 
     // NOTE: this is used in vklite:
@@ -97,7 +97,7 @@ struct TestVisual
     DvzFramebuffers* framebuffers;
     DvzGraphics graphics;
     DvzCompute* compute;
-    DvzBindings bindings;
+    DvzDescriptors descriptors;
     DvzBuffer buffer;
 
     // NOTE: this is used in vklite:
@@ -291,7 +291,7 @@ static DvzGraphics triangle_graphics(DvzGpu* gpu, DvzRenderpass* renderpass)
 
 static void triangle_commands(
     DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers,
-    DvzGraphics* graphics, DvzBindings* bindings, DvzBufferRegions br)
+    DvzGraphics* graphics, DvzDescriptors* descriptors, DvzBufferRegions br)
 {
     ANN(renderpass);
     ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
@@ -302,8 +302,8 @@ static void triangle_commands(
     ANN(graphics);
     ASSERT(graphics->pipeline != VK_NULL_HANDLE);
 
-    ANN(bindings);
-    ASSERT(bindings->dsets != VK_NULL_HANDLE);
+    ANN(descriptors);
+    ASSERT(descriptors->dsets != VK_NULL_HANDLE);
 
     ANN(br.buffer);
     ASSERT(br.buffer->buffer != VK_NULL_HANDLE);
@@ -324,7 +324,7 @@ static void triangle_commands(
     dvz_cmd_begin_renderpass(cmds, idx, renderpass, framebuffers);
     dvz_cmd_viewport(cmds, idx, (VkViewport){0, 0, (float)width, (float)height, 0, 1});
     dvz_cmd_bind_vertex_buffer(cmds, idx, 1, (DvzBufferRegions[]){br}, (DvzSize[]){0});
-    dvz_cmd_bind_graphics(cmds, idx, graphics, bindings, 0);
+    dvz_cmd_bind_graphics(cmds, idx, graphics, descriptors, 0);
 
     if (graphics->slots.push_count > 0)
         dvz_cmd_push(

@@ -64,7 +64,7 @@ typedef struct DvzBufferRegions DvzBufferRegions;
 typedef struct DvzImages DvzImages;
 typedef struct DvzSampler DvzSampler;
 typedef struct DvzSlots DvzSlots;
-typedef struct DvzBindings DvzBindings;
+typedef struct DvzDescriptors DvzDescriptors;
 typedef struct DvzCompute DvzCompute;
 typedef struct DvzVertexBinding DvzVertexBinding;
 typedef struct DvzVertexAttr DvzVertexAttr;
@@ -402,7 +402,7 @@ struct DvzSlots
 
 
 
-struct DvzBindings
+struct DvzDescriptors
 {
     DvzObject obj;
     DvzGpu* gpu;
@@ -431,7 +431,7 @@ struct DvzCompute
 
     VkPipeline pipeline;
     DvzSlots slots;
-    DvzBindings* bindings;
+    DvzDescriptors* descriptors;
     VkShaderModule shader_module;
 };
 
@@ -1317,7 +1317,7 @@ DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
 DVZ_EXPORT DvzSlots dvz_slots(DvzGpu* gpu);
 
 /**
- * Set the slots binding.
+ * Set the slots descriptor.
  *
  * @param slots the slots
  * @param idx the slot index to set up
@@ -1357,45 +1357,46 @@ DVZ_EXPORT void dvz_slots_destroy(DvzSlots* slots);
 /*************************************************************************************************/
 
 /**
- * Initialize bindings corresponding to slots.
+ * Initialize descriptors corresponding to slots.
  *
  * @param slots the slots
  * @param dset_count the number of descriptor sets (number of swapchain images)
  */
-DVZ_EXPORT DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count);
+DVZ_EXPORT DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count);
 
 /**
  * Bind a buffer to a slot.
  *
- * @param bindings the bindings
+ * @param descriptors the descriptors
  * @param idx the slot index
  * @param br the buffer regions to bind to that slot
  */
-DVZ_EXPORT void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions br);
+DVZ_EXPORT void
+dvz_descriptors_buffer(DvzDescriptors* descriptors, uint32_t idx, DvzBufferRegions br);
 
 /**
  * Bind a texture to a slot.
  *
- * @param bindings the bindings
+ * @param descriptors the descriptors
  * @param idx the slot index
  * @param br the texture to bind to that slot
  */
-DVZ_EXPORT void
-dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzImages* img, DvzSampler* sampler);
+DVZ_EXPORT void dvz_descriptors_texture(
+    DvzDescriptors* descriptors, uint32_t idx, DvzImages* img, DvzSampler* sampler);
 
 /**
- * Update the bindings after the buffers/textures have been set up.
+ * Update the descriptors after the buffers/textures have been set up.
  *
- * @param bindings the bindings
+ * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_bindings_update(DvzBindings* bindings);
+DVZ_EXPORT void dvz_descriptors_update(DvzDescriptors* descriptors);
 
 /**
- * Destroy bindings.
+ * Destroy descriptors.
  *
- * @param bindings the bindings
+ * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_bindings_destroy(DvzBindings* bindings);
+DVZ_EXPORT void dvz_descriptors_destroy(DvzDescriptors* descriptors);
 
 
 
@@ -1448,12 +1449,12 @@ DVZ_EXPORT void dvz_compute_push(
     DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
- * Associate a bindings object to a compute pipeline.
+ * Associate a descriptors object to a compute pipeline.
  *
  * @param compute the compute pipeline
- * @param bindings the bindings
+ * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings);
+DVZ_EXPORT void dvz_compute_descriptors(DvzCompute* compute, DvzDescriptors* descriptors);
 
 /**
  * Destroy a compute pipeline.
@@ -1628,7 +1629,7 @@ DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front
 DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
 
 /**
- * Set a binding slot for a graphics pipeline.
+ * Set a descriptor slot for a graphics pipeline.
  *
  * @param graphics the graphics pipeline
  * @param idx the slot index
@@ -2169,12 +2170,12 @@ DVZ_EXPORT void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport vie
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  * @param graphics the graphics pipeline
- * @param bindings the bindings associated to the pipeline
+ * @param descriptors the descriptors associated to the pipeline
  * @param dynamic_idx the dynamic uniform buffer index
  */
 DVZ_EXPORT void dvz_cmd_bind_graphics(
     DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
-    DvzBindings* bindings, uint32_t dynamic_idx);
+    DvzDescriptors* descriptors, uint32_t dynamic_idx);
 
 /**
  * Bind a vertex buffer.

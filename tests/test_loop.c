@@ -75,7 +75,7 @@ static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, v
     DvzPipe* pipe = s->pipe;
     triangle_commands(
         cmds, idx, canvas->render.renderpass, &canvas->render.framebuffers, //
-        &pipe->u.graphics, &pipe->bindings, s->br);
+        &pipe->u.graphics, &pipe->descriptors, s->br);
 }
 
 int test_loop_2(TstSuite* suite)

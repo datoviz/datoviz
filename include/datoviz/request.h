@@ -216,14 +216,14 @@ union DvzRequestContent
 
 
 
-    // Set pipe binding with dat.
+    // Set pipe descriptor with dat.
     struct
     {
         uint32_t slot_idx;
         DvzId dat;
     } set_dat;
 
-    // Set pipe binding with tex.
+    // Set pipe descriptor with tex.
     struct
     {
         uint32_t slot_idx;
@@ -666,7 +666,7 @@ dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptor
  *
  * @param rqr the requester
  * @param pipe the id of the pipe
- * @param slot_idx the index of the binding slot
+ * @param slot_idx the index of the descriptor slot
  * @param dat the id of the dat to bind to the pipe
  * @returns the request
  */
@@ -679,7 +679,7 @@ DVZ_EXPORT DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_
  *
  * @param rqr the requester
  * @param pipe the id of the pipe
- * @param slot_idx the index of the binding slot
+ * @param slot_idx the index of the descriptor slot
  * @param tex the id of the tex to bind to the pipe
  * @param tex the id of the sampler
  * @returns the request

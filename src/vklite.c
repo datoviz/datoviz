@@ -2085,107 +2085,109 @@ void dvz_slots_destroy(DvzSlots* slots)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-DvzBindings dvz_bindings(DvzSlots* slots, uint32_t dset_count)
+DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count)
 {
     ANN(slots);
     DvzGpu* gpu = slots->gpu;
     ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    DvzBindings bindings = {0};
-    bindings.slots = slots;
-    bindings.gpu = gpu;
+    DvzDescriptors descriptors = {0};
+    descriptors.slots = slots;
+    descriptors.gpu = gpu;
 
-    dvz_obj_init(&bindings.obj);
+    dvz_obj_init(&descriptors.obj);
 
     if (!dvz_obj_is_created(&slots->obj))
         dvz_slots_create(slots);
     ASSERT(dset_count > 0);
     ASSERT(slots->dset_layout != VK_NULL_HANDLE);
 
-    log_trace("starting creation of bindings with %d descriptor sets...", dset_count);
-    bindings.dset_count = dset_count;
+    log_trace("starting creation of descriptors with %d descriptor sets...", dset_count);
+    descriptors.dset_count = dset_count;
 
     allocate_descriptor_sets(
-        gpu->device, gpu->dset_pool, slots->dset_layout, bindings.dset_count, bindings.dsets);
+        gpu->device, gpu->dset_pool, slots->dset_layout, descriptors.dset_count,
+        descriptors.dsets);
 
-    dvz_obj_created(&bindings.obj);
-    log_trace("bindings created");
+    dvz_obj_created(&descriptors.obj);
+    log_trace("descriptors created");
 
-    return bindings;
+    return descriptors;
 }
 
 
 
-void dvz_bindings_buffer(DvzBindings* bindings, uint32_t idx, DvzBufferRegions br)
+void dvz_descriptors_buffer(DvzDescriptors* descriptors, uint32_t idx, DvzBufferRegions br)
 {
-    ANN(bindings);
+    ANN(descriptors);
     ASSERT(br.buffer != VK_NULL_HANDLE);
     ASSERT(br.count > 0);
-    ASSERT(bindings->dset_count > 0);
-    log_debug("%d buffer regions, %d descriptor sets", br.count, bindings->dset_count);
-    ASSERT(br.count == 1 || br.count == bindings->dset_count);
-    log_trace("set bindings with buffer for binding #%d", idx);
+    ASSERT(descriptors->dset_count > 0);
+    log_debug("%d buffer regions, %d descriptor sets", br.count, descriptors->dset_count);
+    ASSERT(br.count == 1 || br.count == descriptors->dset_count);
+    log_trace("set descriptors with buffer for descriptor #%d", idx);
 
-    bindings->br[idx] = br;
+    descriptors->br[idx] = br;
 
-    if (bindings->obj.status == DVZ_OBJECT_STATUS_CREATED)
-        bindings->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
+    if (descriptors->obj.status == DVZ_OBJECT_STATUS_CREATED)
+        descriptors->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
 
-void dvz_bindings_texture(DvzBindings* bindings, uint32_t idx, DvzImages* img, DvzSampler* sampler)
+void dvz_descriptors_texture(
+    DvzDescriptors* descriptors, uint32_t idx, DvzImages* img, DvzSampler* sampler)
 {
-    ANN(bindings);
+    ANN(descriptors);
     ANN(img);
     ANN(sampler);
-    ASSERT(img->count == 1 || img->count == bindings->dset_count);
+    ASSERT(img->count == 1 || img->count == descriptors->dset_count);
 
-    log_trace("set bindings with texture for binding #%d", idx);
-    bindings->images[idx] = img;
-    bindings->samplers[idx] = sampler;
+    log_trace("set descriptors with texture for descriptor #%d", idx);
+    descriptors->images[idx] = img;
+    descriptors->samplers[idx] = sampler;
 
-    if (bindings->obj.status == DVZ_OBJECT_STATUS_CREATED)
-        bindings->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
+    if (descriptors->obj.status == DVZ_OBJECT_STATUS_CREATED)
+        descriptors->obj.status = DVZ_OBJECT_STATUS_NEED_UPDATE;
 }
 
 
 
-void dvz_bindings_update(DvzBindings* bindings)
+void dvz_descriptors_update(DvzDescriptors* descriptors)
 {
-    log_trace("update bindings");
-    ANN(bindings->slots);
-    ASSERT(dvz_obj_is_created(&bindings->slots->obj));
-    ASSERT(bindings->slots->dset_layout != VK_NULL_HANDLE);
-    ASSERT(bindings->dset_count > 0);
-    ASSERT(bindings->dset_count <= DVZ_MAX_SWAPCHAIN_IMAGES);
+    log_trace("update descriptors");
+    ANN(descriptors->slots);
+    ASSERT(dvz_obj_is_created(&descriptors->slots->obj));
+    ASSERT(descriptors->slots->dset_layout != VK_NULL_HANDLE);
+    ASSERT(descriptors->dset_count > 0);
+    ASSERT(descriptors->dset_count <= DVZ_MAX_SWAPCHAIN_IMAGES);
 
-    for (uint32_t i = 0; i < bindings->dset_count; i++)
+    for (uint32_t i = 0; i < descriptors->dset_count; i++)
     {
         update_descriptor_set(
-            bindings->gpu->device, bindings->slots->slot_count, bindings->slots->types,
-            bindings->br, bindings->images, bindings->samplers, //
-            i, bindings->dsets[i]);
+            descriptors->gpu->device, descriptors->slots->slot_count, descriptors->slots->types,
+            descriptors->br, descriptors->images, descriptors->samplers, //
+            i, descriptors->dsets[i]);
     }
 
-    if (bindings->obj.status == DVZ_OBJECT_STATUS_NEED_UPDATE)
-        bindings->obj.status = DVZ_OBJECT_STATUS_CREATED;
+    if (descriptors->obj.status == DVZ_OBJECT_STATUS_NEED_UPDATE)
+        descriptors->obj.status = DVZ_OBJECT_STATUS_CREATED;
 }
 
 
 
-void dvz_bindings_destroy(DvzBindings* bindings)
+void dvz_descriptors_destroy(DvzDescriptors* descriptors)
 {
-    ANN(bindings);
-    ANN(bindings->gpu);
-    if (!dvz_obj_is_created(&bindings->obj))
+    ANN(descriptors);
+    ANN(descriptors->gpu);
+    if (!dvz_obj_is_created(&descriptors->obj))
     {
-        log_trace("skip destruction of already-destroyed bindings");
+        log_trace("skip destruction of already-destroyed descriptors");
         return;
     }
-    log_trace("destroy bindings");
-    dvz_obj_destroyed(&bindings->obj);
+    log_trace("destroy descriptors");
+    dvz_obj_destroyed(&descriptors->obj);
 }
 
 
@@ -2238,11 +2240,11 @@ void dvz_compute_push(
 
 
 
-void dvz_compute_bindings(DvzCompute* compute, DvzBindings* bindings)
+void dvz_compute_descriptors(DvzCompute* compute, DvzDescriptors* descriptors)
 {
     ANN(compute);
-    ANN(bindings);
-    compute->bindings = bindings;
+    ANN(descriptors);
+    compute->descriptors = descriptors;
 }
 
 
@@ -2256,9 +2258,9 @@ void dvz_compute_create(DvzCompute* compute)
     if (!dvz_obj_is_created(&compute->slots.obj))
         dvz_slots_create(&compute->slots);
 
-    if (compute->bindings == NULL)
+    if (compute->descriptors == NULL)
     {
-        log_error("dvz_compute_bindings() must be called before creating the compute");
+        log_error("dvz_compute_descriptors() must be called before creating the compute");
         return;
     }
 
@@ -3493,8 +3495,8 @@ void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx)
 
 void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size)
 {
-    ANN(compute->bindings);
-    ANN(compute->bindings->dsets);
+    ANN(compute->descriptors);
+    ANN(compute->descriptors->dsets);
     ASSERT(compute->pipeline != VK_NULL_HANDLE);
     ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
     ASSERT(size[0] > 0);
@@ -3506,7 +3508,7 @@ void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots.pipeline_layout, 0, 1,
-        compute->bindings->dsets, 0, 0);
+        compute->descriptors->dsets, 0, 0);
     vkCmdDispatch(cb, size[0], size[1], size[2]);
     CMD_END
 }
@@ -3740,12 +3742,12 @@ void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport)
 
 void dvz_cmd_bind_graphics(
     DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics, //
-    DvzBindings* bindings, uint32_t dynamic_idx)
+    DvzDescriptors* descriptors, uint32_t dynamic_idx)
 {
     ANN(graphics);
     DvzSlots* slots = &graphics->slots;
     ANN(slots);
-    ANN(bindings);
+    ANN(descriptors);
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
@@ -3755,17 +3757,17 @@ void dvz_cmd_bind_graphics(
     {
         if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
-            ASSERT(bindings->br[i].aligned_size > 0);
-            dyn_offsets[dyn_count++] = dynamic_idx * bindings->br[i].aligned_size;
+            ASSERT(descriptors->br[i].aligned_size > 0);
+            dyn_offsets[dyn_count++] = dynamic_idx * descriptors->br[i].aligned_size;
         }
     }
 
-    CMD_START_CLIP(bindings->dset_count)
+    CMD_START_CLIP(descriptors->dset_count)
     if (dvz_obj_is_created(&graphics->obj))
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
     vkCmdBindDescriptorSets(
         cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
-        0, 1, &bindings->dsets[iclip], dyn_count, dyn_offsets);
+        0, 1, &descriptors->dsets[iclip], dyn_count, dyn_offsets);
     CMD_END
 }
 

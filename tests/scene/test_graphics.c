@@ -107,7 +107,7 @@ int test_graphics_point(TstSuite* suite)
     GRAPHICS_MVP
     GRAPHICS_VIEWPORT
 
-    // Create the bindings.
+    // Create the descriptors.
     dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
@@ -168,7 +168,7 @@ int test_graphics_triangle(TstSuite* suite)
     GRAPHICS_MVP
     GRAPHICS_VIEWPORT
 
-    // Create the bindings.
+    // Create the descriptors.
     dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
@@ -224,7 +224,7 @@ int test_graphics_line_list(TstSuite* suite)
     GRAPHICS_MVP
     GRAPHICS_VIEWPORT
 
-    // Create the bindings.
+    // Create the descriptors.
     dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
@@ -338,7 +338,7 @@ int test_graphics_raster(TstSuite* suite)
         .cmap_id = DVZ_CMAP_HSV};
     dvz_dat_upload(dat_params, 0, sizeof(params), &params, true);
 
-    // Create the bindings.
+    // Create the descriptors.
     dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);
@@ -462,7 +462,7 @@ int test_graphics_image_1(TstSuite* suite)
     DvzSampler* sampler =
         dvz_resources_sampler(&ctx->res, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
-    // Create the bindings.
+    // Create the descriptors.
     dvz_pipe_vertex(&pipe, 0, dat_vertex, 0);
     dvz_pipe_dat(&pipe, 0, dat_mvp);
     dvz_pipe_dat(&pipe, 1, dat_viewport);

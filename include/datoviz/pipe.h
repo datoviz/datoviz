@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Pipe: wrap a graphics/compute pipeline with bindings and dat/tex resources                   */
+/*  Pipe: wrap a graphics/compute pipeline with descriptors and dat/tex resources */
 /*************************************************************************************************/
 
 #ifndef DVZ_HEADER_PIPE
@@ -74,7 +74,7 @@ struct DvzPipe
     int flags;
 
     // Bindings.
-    DvzBindings bindings;
+    DvzDescriptors descriptors;
 
     // Vertex buffers.
     DvzPipeBinding vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
@@ -84,7 +84,7 @@ struct DvzPipe
     DvzPipeBinding index_binding;
 
     // Dat resources.
-    bool bindings_set[DVZ_MAX_BINDINGS];
+    bool descriptors_set[DVZ_MAX_BINDINGS];
 };
 
 
@@ -169,10 +169,10 @@ DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSample
 
 
 /**
- * Return whether all bindings have been set for a pipe.
+ * Return whether all descriptors have been set for a pipe.
  *
  * @param pipe the pipe
- * @returns whether all bindings been set or not
+ * @returns whether all descriptors been set or not
  */
 DVZ_EXPORT bool dvz_pipe_complete(DvzPipe* pipe);
 

@@ -484,7 +484,7 @@ static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
 
     dvz_pipe_dat(pipe, req.content.set_dat.slot_idx, dat);
     if (dvz_pipe_complete(pipe))
-        dvz_bindings_update(&pipe->bindings);
+        dvz_descriptors_update(&pipe->descriptors);
 
     return NULL;
 }
@@ -511,7 +511,7 @@ static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
 
     dvz_pipe_tex(pipe, req.content.set_tex.slot_idx, tex, sampler);
     if (dvz_pipe_complete(pipe))
-        dvz_bindings_update(&pipe->bindings);
+        dvz_descriptors_update(&pipe->descriptors);
 
     return NULL;
 }

@@ -38,9 +38,9 @@ int test_board_1(TstSuite* suite)
     // Create the graphics.
     DvzGraphics graphics = triangle_graphics(gpu, &renderpass);
 
-    // Create the bindings.
-    DvzBindings bindings = dvz_bindings(&graphics.slots, 1);
-    dvz_bindings_update(&bindings);
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
     dvz_graphics_create(&graphics);
@@ -64,7 +64,7 @@ int test_board_1(TstSuite* suite)
 
     // Command buffer.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
-    triangle_commands(&cmds, 0, &renderpass, &board.framebuffers, &graphics, &bindings, br);
+    triangle_commands(&cmds, 0, &renderpass, &board.framebuffers, &graphics, &descriptors, br);
 
     // Render.
     dvz_cmd_submit_sync(&cmds, 0);
@@ -80,7 +80,7 @@ int test_board_1(TstSuite* suite)
 
     // Destruction.
     dvz_graphics_destroy(&graphics);
-    dvz_bindings_destroy(&bindings);
+    dvz_descriptors_destroy(&descriptors);
     dvz_buffer_destroy(&buffer);
     dvz_board_destroy(&board);
     dvz_renderpass_destroy(&renderpass);
