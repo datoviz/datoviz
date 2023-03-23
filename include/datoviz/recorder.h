@@ -84,6 +84,7 @@ struct DvzRecorderCommand
             vec2 offset, shape; // in framebuffer pixels
         } v;
 
+        // Direct draw.
         struct
         {
             DvzId pipe_id;
@@ -91,6 +92,7 @@ struct DvzRecorderCommand
             uint32_t first_instance, instance_count;
         } draw;
 
+        // Indexed draw.
         struct
         {
             DvzId pipe_id;
@@ -98,6 +100,7 @@ struct DvzRecorderCommand
             uint32_t first_instance, instance_count;
         } draw_indexed;
 
+        // Indirect draw.
         struct
         {
             DvzId pipe_id;
@@ -105,6 +108,7 @@ struct DvzRecorderCommand
             uint32_t draw_count;
         } draw_indirect;
 
+        // Indexed indirect draw.
         struct
         {
             DvzId pipe_id;

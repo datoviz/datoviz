@@ -97,6 +97,8 @@ union DvzRequestContent
         DvzSamplerAddressMode mode;
     } sampler;
 
+
+
     // Dat upload.
     struct
     {
@@ -113,6 +115,7 @@ union DvzRequestContent
         DvzSize size;
         void* data;
     } tex_upload;
+
 
 
     // Graphics.
@@ -173,7 +176,7 @@ union DvzRequestContent
         uint32_t* buffer;
     } set_spirv;
 
-    // Set vertex.
+    // Set vertex binding.
     struct
     {
         uint32_t binding_idx;
@@ -181,7 +184,7 @@ union DvzRequestContent
         DvzVertexInputRate input_rate;
     } set_vertex;
 
-    // Set attr.
+    // Set vertex attribute.
     struct
     {
         uint32_t binding_idx;
@@ -190,7 +193,7 @@ union DvzRequestContent
         DvzSize offset;
     } set_attr;
 
-    // Set slot.
+    // Set descriptor slot.
     struct
     {
         uint32_t slot_idx;
@@ -199,7 +202,7 @@ union DvzRequestContent
 
 
 
-    // Bind vertex.
+    // Bind a dat to a vertex binding.
     struct
     {
         uint32_t binding_idx;
@@ -207,7 +210,7 @@ union DvzRequestContent
         DvzSize offset;
     } bind_vertex;
 
-    // Bind index.
+    // Bind a dat to an index binding.
     struct
     {
         DvzId dat;
@@ -230,6 +233,8 @@ union DvzRequestContent
         DvzId tex;
         DvzId sampler;
     } set_tex;
+
+
 
     // Record a command.
     struct
@@ -606,23 +611,6 @@ DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType typ
 
 
 
-/**
- * Create a request for associating a vertex dat to a graphics pipe.
- *
- * @param rqr the requester
- * @param graphics the id of the graphics pipe
- * @param dat the id of the dat with the vertex data
- * @returns the request
- */
-DVZ_EXPORT DvzRequest
-dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
-
-
-
-DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
-
-
-
 DVZ_EXPORT DvzRequest
 dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);
 
@@ -654,6 +642,23 @@ DVZ_EXPORT DvzRequest dvz_set_attr(
 
 DVZ_EXPORT DvzRequest
 dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
+
+
+
+/**
+ * Create a request for associating a vertex dat to a graphics pipe.
+ *
+ * @param rqr the requester
+ * @param graphics the id of the graphics pipe
+ * @param dat the id of the dat with the vertex data
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
+
+
+
+DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
 
 
 
