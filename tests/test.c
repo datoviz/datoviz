@@ -16,6 +16,7 @@
 #include "scene/test_app.h"
 #include "scene/test_arcball.h"
 #include "scene/test_array.h"
+#include "scene/test_baker.h"
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
 #include "scene/test_dual.h"
@@ -274,6 +275,9 @@ int dvz_run_tests(const char* match)
 
     // Testing dual.
     TEST(test_dual_1)
+
+    // Testing baker.
+    TEST(test_baker_1)
 
     // Testing colormaps.
     TEST(test_colormaps_idx)

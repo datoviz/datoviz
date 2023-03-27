@@ -1,0 +1,233 @@
+/*************************************************************************************************/
+/*  Baker                                                                                        */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "scene/baker.h"
+#include "request.h"
+#include "scene/array.h"
+#include "scene/dual.h"
+
+
+
+/*************************************************************************************************/
+/*  Internal functions                                                                           */
+/*************************************************************************************************/
+
+static void _check_sizes(DvzBaker* baker)
+{
+    DvzSize sizes[DVZ_MAX_VERTEX_BINDINGS] = {0};
+
+    // Compute the sum of the sizes of all attributes in each vertex binding.
+    for (uint32_t attr_idx = 0; attr_idx < baker->attr_count; attr_idx++)
+    {
+        sizes[attr_idx] += baker->vertex_attrs[attr_idx].item_size;
+    }
+
+    // The vertex binding stride should be larger than, or equal, to that sum.
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        ASSERT(baker->vertex_bindings[binding_idx].stride >= sizes[binding_idx]);
+    }
+}
+
+
+
+static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32_t item_count)
+{
+    ANN(baker);
+    ASSERT(binding_idx < baker->vertex_count);
+    ASSERT(item_count > 0);
+
+    DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
+
+    DvzSize item_size = bv->stride;
+    ASSERT(item_size > 0);
+
+    DvzId dat_id =
+        dvz_create_dat(baker->rqr, DVZ_BUFFER_TYPE_VERTEX, item_count * item_size, 0).id;
+
+    DvzArray* array = dvz_array_struct(item_count, item_size);
+
+    bv->dual = dvz_dual(baker->rqr, array, dat_id);
+}
+
+
+
+static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
+{
+    ANN(baker);
+    ASSERT(slot_idx < baker->slot_count);
+
+    DvzBakerDescriptor* bd = &baker->descriptors[slot_idx];
+
+    DvzSize item_size = bd->item_size;
+    ASSERT(item_size > 0);
+
+    DvzId dat_id = dvz_create_dat(baker->rqr, DVZ_BUFFER_TYPE_UNIFORM, item_size, 0).id;
+
+    DvzArray* array = dvz_array_struct(1, item_size);
+
+    bd->dual = dvz_dual(baker->rqr, array, dat_id);
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DvzBaker* dvz_baker(DvzRequester* rqr, int flags)
+{
+    ANN(rqr);
+    DvzBaker* baker = (DvzBaker*)calloc(1, sizeof(DvzBaker));
+    baker->rqr = rqr;
+
+    // 00xx: which attributes should be in a different buf (8 max)
+    // xx00: which attributes should be constants
+    baker->flags = flags;
+
+    return baker;
+}
+
+
+
+// declare a vertex binding
+void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride)
+{
+    ANN(baker);
+    ASSERT(binding_idx < DVZ_MAX_VERTEX_BINDINGS);
+    ASSERT(stride > 0);
+
+    baker->vertex_bindings[binding_idx].binding_idx = binding_idx;
+    baker->vertex_bindings[binding_idx].stride = stride;
+    baker->vertex_count = MAX(baker->vertex_count, binding_idx + 1);
+}
+
+
+
+// declare a GLSL attribute
+void dvz_baker_attr(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t binding_idx, DvzSize offset, DvzSize item_size)
+{
+    ANN(baker);
+    ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
+
+    baker->vertex_attrs[attr_idx].binding_idx = binding_idx;
+    baker->vertex_attrs[attr_idx].offset = offset;
+    baker->vertex_attrs[attr_idx].item_size = item_size;
+    baker->attr_count = MAX(baker->attr_count, attr_idx + 1);
+
+    // baker->vertex_bindings[binding_idx].stride;
+}
+
+
+
+// declare a descriptor slot
+void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
+{
+    ANN(baker);
+    baker->descriptors[slot_idx].slot_idx = slot_idx;
+    baker->descriptors[slot_idx].item_size = item_size;
+    baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
+}
+
+
+
+void dvz_baker_indexed(DvzBaker* baker)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+void dvz_baker_indirect(DvzBaker* baker)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+void dvz_baker_duals(DvzBaker* baker, uint32_t item_count)
+{
+    ANN(baker);
+
+    // Check consistency.
+    _check_sizes(baker);
+
+    // Create the vertex bindings.
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        _create_vertex_binding(baker, binding_idx, item_count);
+    }
+
+    // Create the uniform dats for the descriptors.
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        _create_descriptor(baker, slot_idx);
+    }
+}
+
+
+
+void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, DvzSize size, void* data)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+void dvz_baker_repeat(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, DvzSize size, void* data)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+void dvz_baker_quads(
+    DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+// emit the dat update commands to synchronize the dual arrays on the GPU
+void dvz_baker_update(DvzBaker* baker)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
+void dvz_baker_destroy(DvzBaker* baker)
+{
+    ANN(baker);
+
+    // Destroy all duals.
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        dvz_array_destroy(baker->vertex_bindings[binding_idx].dual.array);
+        // TODO: destroy dat
+        dvz_dual_destroy(&baker->vertex_bindings[binding_idx].dual);
+    }
+
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        dvz_array_destroy(baker->descriptors[slot_idx].dual.array);
+        // TODO: destroy dat
+        dvz_dual_destroy(&baker->descriptors[slot_idx].dual);
+    }
+}

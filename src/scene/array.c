@@ -151,7 +151,8 @@ static uint32_t _get_components(DvzDataType dtype)
 // arrays containing heterogeneous data)
 static DvzArray* _create_array(uint32_t item_count, DvzDataType dtype, DvzSize item_size)
 {
-    DvzArray* arr = calloc(1, sizeof(DvzArray));
+    log_trace("creating array with %d items of size %s each", item_count, pretty_size(item_size));
+    DvzArray* arr = (DvzArray*)calloc(1, sizeof(DvzArray));
     memset(arr, 0, sizeof(DvzArray));
     arr->obj.type = DVZ_OBJECT_TYPE_ARRAY;
     arr->dtype = dtype;
@@ -739,6 +740,7 @@ void dvz_array_print(DvzArray* array)
 void dvz_array_destroy(DvzArray* array)
 {
     ANN(array);
+    log_trace("destroying array with %d items", array->item_count);
     if (!dvz_obj_is_created(&array->obj))
         return;
     dvz_obj_destroyed(&array->obj);

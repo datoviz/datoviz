@@ -398,6 +398,17 @@ void dvz_request_print(DvzRequest* req)
 
 
 
+void dvz_requester_print(DvzRequester* rqr)
+{
+    ANN(rqr);
+    for (uint32_t i = 0; i < rqr->count; i++)
+    {
+        dvz_request_print(&rqr->requests[i]);
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Board                                                                                        */
 /*************************************************************************************************/
