@@ -363,6 +363,11 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
 
 
 
+/**
+ * Show information about all pending requests.
+ *
+ * @param rqr the requester
+ */
 DVZ_EXPORT void dvz_requester_print(DvzRequester* rqr);
 
 
