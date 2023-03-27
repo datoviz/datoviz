@@ -283,17 +283,21 @@ void dvz_baker_destroy(DvzBaker* baker)
     ANN(baker);
 
     // Destroy all duals.
+    DvzBakerVertex* bv = NULL;
     for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
     {
-        dvz_array_destroy(baker->vertex_bindings[binding_idx].dual.array);
+        bv = &baker->vertex_bindings[binding_idx];
+        dvz_array_destroy(bv->dual.array);
         // TODO: destroy dat
-        dvz_dual_destroy(&baker->vertex_bindings[binding_idx].dual);
+        dvz_dual_destroy(&bv->dual);
     }
 
+    DvzBakerDescriptor* bd = NULL;
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
-        dvz_array_destroy(baker->descriptors[slot_idx].dual.array);
+        bd = &baker->descriptors[slot_idx];
+        dvz_array_destroy(bd->dual.array);
         // TODO: destroy dat
-        dvz_dual_destroy(&baker->descriptors[slot_idx].dual);
+        dvz_dual_destroy(&bd->dual);
     }
 }
