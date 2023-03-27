@@ -63,7 +63,7 @@ int test_baker_1(TstSuite* suite)
     dvz_baker_duals(baker, 1);
 
     // Check the requests.
-    // dvz_requester_print(rqr);
+    dvz_requester_print(rqr);
 
     AT(rqr->count == 4)
 
@@ -78,6 +78,8 @@ int test_baker_1(TstSuite* suite)
 
     AT(rqr->requests[3].content.dat.size == 60);
     AT(rqr->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+
+    dvz_baker_update(baker);
 
     // Cleanup.
     dvz_baker_destroy(baker);

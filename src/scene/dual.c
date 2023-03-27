@@ -62,6 +62,9 @@ void dvz_dual_clear(DvzDual* dual)
 
 void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data)
 {
+    // WARNING: the data pointer needs to live until dvz_dual_update() which will call
+    // dvz_upload_dat() which will copy the data.
+
     ANN(dual);
     ANN(dual->array);
     ANN(data);

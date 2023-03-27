@@ -177,19 +177,36 @@ void dvz_baker_duals(DvzBaker* baker, uint32_t item_count)
 
 
 
-void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, DvzSize size, void* data)
+void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
 {
     ANN(baker);
-    // TODO
+    ASSERT(attr_idx < baker->attr_count);
+
+    DvzBakerAttr* attr = &baker->vertex_attrs[attr_idx];
+    uint32_t binding_idx = attr->binding_idx;
+    ASSERT(binding_idx < baker->vertex_count);
+
+    DvzBakerVertex* vertex = &baker->vertex_bindings[binding_idx];
+
+    DvzDual* dual = &vertex->dual;
+    if (dual == NULL)
+    {
+        log_error("dual is null, please call dvz_baker_duals()");
+        return;
+    }
+    ANN(dual);
+
+    dvz_dual_data(dual, first, count, data);
 }
 
 
 
 void dvz_baker_repeat(
-    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, DvzSize size, void* data)
+    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, uint32_t first, uint32_t count,
+    void* data)
 {
     ANN(baker);
-    // TODO
+    // void* repeats = _repeat(count, data)
 }
 
 
@@ -207,7 +224,18 @@ void dvz_baker_quads(
 void dvz_baker_update(DvzBaker* baker)
 {
     ANN(baker);
-    // TODO
+
+    // Update the vertex bindings duals.
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        dvz_dual_update(&baker->vertex_bindings[binding_idx].dual);
+    }
+
+    // Update the descriptor duals.
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        dvz_dual_update(&baker->descriptors[slot_idx].dual);
+    }
 }
 
 

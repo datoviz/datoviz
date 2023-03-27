@@ -97,33 +97,57 @@ EXTERN_C_ON
 // xx00: which attributes should be constants
 DVZ_EXPORT DvzBaker* dvz_baker(DvzRequester* rqr, int flags);
 
+
+
 // declare a vertex binding
 DVZ_EXPORT void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride);
+
+
 
 // declare a GLSL attribute
 DVZ_EXPORT void dvz_baker_attr(
     DvzBaker* baker, uint32_t attr_idx, uint32_t binding_idx, DvzSize offset, DvzSize item_size);
 
+
+
 DVZ_EXPORT void dvz_baker_indexed(DvzBaker* baker);
 
+
+
 DVZ_EXPORT void dvz_baker_indirect(DvzBaker* baker);
+
+
 
 // declare a descriptor slot
 DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
 
+
+
 // Internal function, used to instantiate the DvzDual instances.
 DVZ_EXPORT void dvz_baker_duals(DvzBaker* baker, uint32_t item_count);
 
-DVZ_EXPORT void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, DvzSize size, void* data);
+
 
 DVZ_EXPORT void
-dvz_baker_repeat(DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, DvzSize size, void* data);
+dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
+
+
+
+DVZ_EXPORT void dvz_baker_repeat(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, uint32_t first, uint32_t count,
+    void* data);
+
+
 
 DVZ_EXPORT void dvz_baker_quads(
     DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions);
 
+
+
 // emit the dat update commands to synchronize the dual arrays on the GPU
 DVZ_EXPORT void dvz_baker_update(DvzBaker* baker);
+
+
 
 DVZ_EXPORT void dvz_baker_destroy(DvzBaker* baker);
 
