@@ -179,8 +179,19 @@ void dvz_baker_duals(DvzBaker* baker, uint32_t item_count)
 
 void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
 {
+    dvz_baker_repeat(baker, attr_idx, first, count, 1, data);
+}
+
+
+
+void dvz_baker_repeat(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, uint32_t repeats,
+    void* data)
+{
     ANN(baker);
     ASSERT(attr_idx < baker->attr_count);
+    ASSERT(count > 0);
+    ANN(data);
 
     DvzBakerAttr* attr = &baker->vertex_attrs[attr_idx];
     uint32_t binding_idx = attr->binding_idx;
@@ -196,17 +207,44 @@ void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t
     }
     ANN(dual);
 
-    dvz_dual_data(dual, first, count, data);
+    if (first + count * repeats > dual->array->item_count)
+    {
+        log_error("baker array is too small to hold the specified data");
+        return;
+    }
+
+    DvzSize offset = attr->offset;
+    DvzSize item_size = attr->item_size;
+    ASSERT(item_size > 0);
+
+    DvzSize col_size = vertex->stride;
+    ASSERT(col_size > 0);
+
+    // log_info("%d %d %d %d %d", offset, item_size, first, count, repeats);
+    dvz_dual_column(dual, offset, item_size, first, count, repeats, data);
 }
 
 
 
-void dvz_baker_repeat(
-    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, uint32_t first, uint32_t count,
-    void* data)
+void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data)
 {
     ANN(baker);
-    // void* repeats = _repeat(count, data)
+    ASSERT(binding_idx < baker->slot_count);
+    ASSERT(size > 0);
+    ANN(data);
+
+    ASSERT(binding_idx < baker->slot_count);
+    DvzBakerDescriptor* descriptor = &baker->descriptors[binding_idx];
+
+    DvzDual* dual = &descriptor->dual;
+    if (dual == NULL)
+    {
+        log_error("dual is null, please call dvz_baker_duals()");
+        return;
+    }
+    ANN(dual);
+
+    dvz_dual_data(dual, 0, 1, data);
 }
 
 

@@ -134,13 +134,17 @@ dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t coun
 
 
 DVZ_EXPORT void dvz_baker_repeat(
-    DvzBaker* baker, uint32_t attr_idx, uint32_t repeats, uint32_t first, uint32_t count,
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, uint32_t repeats,
     void* data);
 
 
 
 DVZ_EXPORT void dvz_baker_quads(
     DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions);
+
+
+
+DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data);
 
 
 
