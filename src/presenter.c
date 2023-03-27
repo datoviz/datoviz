@@ -45,7 +45,7 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
 
 
 
-static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
+static void _create_canvas(DvzPresenter* prt, DvzRequest req)
 {
     ANN(prt);
 
@@ -66,17 +66,17 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     // linked together via a surface.
 
     // Retrieve the canvas that was just created by the renderer in _requester_callback().
-    DvzCanvas* canvas = dvz_renderer_canvas(rd, rq.id);
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, req.id);
 
     // Distinguish between canvas size and screen size.
-    uint32_t screen_width = rq.content.canvas.screen_width;
-    uint32_t screen_height = rq.content.canvas.screen_height;
+    uint32_t screen_width = req.content.canvas.screen_width;
+    uint32_t screen_height = req.content.canvas.screen_height;
     ASSERT(screen_width > 0);
     ASSERT(screen_height > 0);
 
     // Create a client window.
     // NOTE: the window's id in the Client matches the canvas's id in the Renderer.
-    DvzWindow* window = create_client_window(client, rq.id, screen_width, screen_height, 0);
+    DvzWindow* window = create_client_window(client, req.id, screen_width, screen_height, 0);
 
     // Create a window input.
     dvz_window_input(window);
@@ -111,7 +111,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
     rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
 
     // Create the associated GUI window if requested.
-    bool has_gui = ((rq.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
+    bool has_gui = ((req.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
     if (has_gui)
     {
         ANN(prt->gui);
@@ -121,16 +121,16 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest rq)
             prt->gui, window, canvas->render.swapchain.images, DVZ_DEFAULT_QUEUE_RENDER);
         // NOTE: save the ID in the GUI window so that we can retrieve it in the GUI callback
         // helper.
-        gui_window->obj.id = rq.id;
+        gui_window->obj.id = req.id;
 
         // Associate it to the ID.
-        dvz_map_add(prt->maps.guis, rq.id, 0, (void*)gui_window);
+        dvz_map_add(prt->maps.guis, req.id, 0, (void*)gui_window);
     }
 
-    bool has_fps = ((rq.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
+    bool has_fps = ((req.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
     if (has_fps)
     {
-        dvz_presenter_gui(prt, rq.id, _gui_callback_fps, &prt->fps);
+        dvz_presenter_gui(prt, req.id, _gui_callback_fps, &prt->fps);
     }
 }
 
@@ -212,7 +212,7 @@ static void _delete_canvas(DvzPresenter* prt, DvzId id)
 // receives the request and creates the object, but the presenter needs to tell the client to
 // create an associated window with a surface.
 // NOTE: this function must be called AFTER the request has been processed by the renderer.
-static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
+static void _canvas_request(DvzPresenter* prt, DvzRequest req)
 {
     ANN(prt);
 
@@ -228,21 +228,21 @@ static void _canvas_request(DvzPresenter* prt, DvzRequest rq)
     DvzHost* host = gpu->host;
     ANN(host);
 
-    switch (rq.action)
+    switch (req.action)
     {
 
         // Create a canvas.
     case DVZ_REQUEST_ACTION_CREATE:;
 
         log_debug("process canvas creation request");
-        _create_canvas(prt, rq);
+        _create_canvas(prt, req);
         break;
 
         // Delete a canvas.
     case DVZ_REQUEST_ACTION_DELETE:;
 
         log_debug("process canvas deletion request");
-        _delete_canvas(prt, rq.id);
+        _delete_canvas(prt, req.id);
         break;
 
     default:
