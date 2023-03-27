@@ -570,6 +570,7 @@ set(sources
     "src/scene/animation.c"
     "src/scene/app.c"
     "src/scene/scene.c"
+    "src/scene/visuals/pixel.c"
 
     ${external_sources}
 )
@@ -651,6 +652,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_camera.c"
         "tests/scene/test_animation.c"
         "tests/scene/test_app.c"
+        "tests/scene/visuals/test_pixel.c"
 
         "tests/test.c"
     )

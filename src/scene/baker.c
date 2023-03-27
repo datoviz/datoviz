@@ -300,4 +300,6 @@ void dvz_baker_destroy(DvzBaker* baker)
         // TODO: destroy dat
         dvz_dual_destroy(&bd->dual);
     }
+
+    FREE(baker);
 }
