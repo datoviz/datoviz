@@ -156,5 +156,8 @@
 #define INIT(t, n) t n = {0};
 #endif
 
+#define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
+
+
 
 #endif

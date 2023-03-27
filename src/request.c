@@ -37,8 +37,6 @@
         str = #r;                                                                                 \
         break
 
-#define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
-
 // Maximum size of buffers encoded in base64 when printing the commands
 #define VERBOSE_MAX_BASE64 1048576
 
@@ -824,9 +822,6 @@ void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 
     // Append the request.
     rqr->requests[rqr->count++] = req;
-
-    // if (getenv("DVZ_VERBOSE") != NULL)
-    //     dvz_request_print(&req);
 }
 
 

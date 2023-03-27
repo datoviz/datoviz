@@ -81,21 +81,23 @@ void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data)
 
 
 void dvz_dual_column(
-    DvzDual* dual, DvzSize offset, DvzSize col_size, uint32_t first, uint32_t count, void* data)
+    DvzDual* dual, DvzSize offset, DvzSize col_size, uint32_t first, uint32_t count,
+    uint32_t repeats, void* data)
 {
     ANN(dual);
     ANN(dual->array);
     ASSERT(col_size > 0);
     ASSERT(count > 0);
+    ASSERT(repeats >= 1);
     ANN(data);
 
     DvzArray* array = dual->array;
 
     dvz_array_column(
-        array, offset, col_size, first, count, count, data, //
-        DVZ_DTYPE_CUSTOM, DVZ_DTYPE_CUSTOM, DVZ_ARRAY_COPY_SINGLE, 1);
+        array, offset, col_size, first, repeats * count, count, data, //
+        DVZ_DTYPE_CUSTOM, DVZ_DTYPE_CUSTOM, DVZ_ARRAY_COPY_REPEAT, repeats);
 
-    dvz_dual_dirty(dual, first, count);
+    dvz_dual_dirty(dual, first, repeats * count);
 }
 
 

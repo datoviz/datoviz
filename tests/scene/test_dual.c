@@ -105,7 +105,7 @@ int test_dual_2(TstSuite* suite)
     dvz_requester_begin(rqr);
 
     DvzSize item_size = 4 + 8;
-    uint32_t count = 8;
+    uint32_t count = 12;
 
     DvzArray* array = dvz_array_struct(count, item_size);
     DvzId dat = 1;
@@ -125,10 +125,10 @@ int test_dual_2(TstSuite* suite)
     // | 0 | 2 |
 
     memset(data, 1, 4 * 4);
-    dvz_dual_column(&dual, 0, 4, 2, 4, data);
+    dvz_dual_column(&dual, 0, 4, 2, 4, 1, data);
 
-    memset(data, 2, 8 * 4);
-    dvz_dual_column(&dual, 4, 8, 4, 4, data);
+    memset(data, 2, 8);
+    dvz_dual_column(&dual, 4, 8, 4, 1, 4, data);
 
     dvz_dual_update(&dual);
 
@@ -139,6 +139,7 @@ int test_dual_2(TstSuite* suite)
     AT(req->content.dat_upload.size == 6 * item_size);
 
     char* upload = (char*)req->content.dat_upload.data;
+
     uint32_t row, col;
     for (uint32_t i = 0; i < req->content.dat_upload.size; i++)
     {
@@ -156,15 +157,20 @@ int test_dual_2(TstSuite* suite)
         {
             AT(upload[i] == 0);
         }
-
-        // printf("%hhu ", upload[i]);
-        // printf("%hhu ", upload[i]);
-        // if (i > 0 && i % 4 == 3)
-        //     printf("| ");
-        // if (i > 0 && i % 12 == 11)
-        //     printf("\n");
     }
-    printf("\n");
+
+    IF_VERBOSE
+    {
+        for (uint32_t i = 0; i < count * item_size; i++)
+        {
+            printf("%hhu ", ((char*)array->data)[i]);
+            if ((i > 0) && (i % 4 == 3))
+                printf("| ");
+            if ((i > 0) && (i % 12 == 11))
+                printf("\n");
+        }
+        printf("\n");
+    }
 
     dvz_array_destroy(array);
     dvz_dual_destroy(&dual);
