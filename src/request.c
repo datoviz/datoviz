@@ -24,6 +24,9 @@
         dvz_requester_add(rqr, req);                                                              \
     return req;
 
+#define IF_REQ(_action, _type)                                                                    \
+    if ((req->action == DVZ_REQUEST_ACTION_##_action) && (req->type == DVZ_REQUEST_OBJECT_##_type))
+
 #define STR_ACTION(r)                                                                             \
     case DVZ_REQUEST_ACTION_##r:                                                                  \
         str = #r;                                                                                 \
@@ -214,8 +217,8 @@ static void _print_create_dat(DvzRequest* req)
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n"
-        "    size: %" PRIx64 "\n",
-        req->id, req->flags, req->content.dat.type, req->content.dat.size);
+        "    size: %s\n",
+        req->id, req->flags, req->content.dat.type, pretty_size(req->content.dat.size));
 }
 
 static void _print_resize_dat(DvzRequest* req)
@@ -226,8 +229,8 @@ static void _print_resize_dat(DvzRequest* req)
         "  type: dat\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    size: %" PRIx64 "\n",
-        req->id, req->content.dat.size);
+        "    size: %s\n",
+        req->id, pretty_size(req->content.dat.size));
 }
 
 static void _print_upload_dat(DvzRequest* req)
@@ -251,11 +254,11 @@ static void _print_upload_dat(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    offset: %" PRIx64 "\n"
-        "    size: %" PRIx64 "\n"
+        "    size: %s\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        dat, offset, size, encoded);
+        dat, offset, pretty_size(size), encoded);
     if (size < VERBOSE_MAX_BASE64)
         free(encoded);
 }
@@ -313,13 +316,14 @@ static void _print_upload_tex(DvzRequest* req)
         "  type: tex\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    size: %" PRIx64 "\n"
+        "    size: %s\n"
         "    offset: [%d, %d, %d]\n"
         "    shape: [%d, %d, %d]\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2], encoded);
+        tex, pretty_size(size), offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
+        encoded);
     if (size < VERBOSE_MAX_BASE64)
         free(encoded);
 }
@@ -493,11 +497,11 @@ static void _print_set_glsl(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    shader_type: %d\n"
-        "    size: %" PRIx64 "\n"
+        "    size: %s\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        req->id, shader_type, size, encoded);
+        req->id, shader_type, pretty_size(size), encoded);
     if (size < VERBOSE_MAX_BASE64)
         free(encoded);
 }
@@ -522,11 +526,11 @@ static void _print_set_spirv(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    shader_type: %d\n"
-        "    size: %" PRIx64 "\n"
+        "    size: %s\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        req->id, shader_type, size, encoded);
+        req->id, shader_type, pretty_size(size), encoded);
     if (size < VERBOSE_MAX_BASE64)
         free(encoded);
 }
@@ -997,46 +1001,62 @@ void dvz_request_print(DvzRequest* req)
 {
     ANN(req);
 
-    char* str = "UNKNOWN";
-    switch (req->action)
-    {
-        STR_ACTION(NONE);
-        STR_ACTION(CREATE);
-        STR_ACTION(DELETE);
-        STR_ACTION(RESIZE);
-        STR_ACTION(UPDATE);
-        STR_ACTION(BIND);
-        STR_ACTION(RECORD);
-        STR_ACTION(UPLOAD);
-        STR_ACTION(UPFILL);
-        STR_ACTION(DOWNLOAD);
-        STR_ACTION(SET);
-        STR_ACTION(GET);
-    default:
-        break;
-    }
-    char* action = str;
+    IF_REQ(CREATE, BOARD) _print_create_board(req);
+    IF_REQ(UPDATE, BOARD) _print_update_board(req);
+    IF_REQ(RESIZE, BOARD) _print_resize_board(req);
+    IF_REQ(SET, BACKGROUND) _print_set_background(req);
+    IF_REQ(DELETE, BOARD) _print_delete_board(req);
 
-    // str[0] = 0;
-    switch (req->type)
-    {
-        STR_OBJECT(NONE);
-        STR_OBJECT(BOARD);
-        STR_OBJECT(CANVAS);
-        STR_OBJECT(DAT);
-        STR_OBJECT(TEX);
-        STR_OBJECT(SAMPLER);
-        STR_OBJECT(COMPUTE);
-        STR_OBJECT(GRAPHICS);
-        STR_OBJECT(BACKGROUND);
-        STR_OBJECT(VERTEX);
-        STR_OBJECT(RECORD);
-    default:
-        break;
-    }
-    char* type = str;
+    IF_REQ(CREATE, CANVAS) _print_create_canvas(req);
+    IF_REQ(DELETE, CANVAS) _print_delete_canvas(req);
 
-    log_info("Request %s %s 0x%" PRIx64, action, type, req->id);
+    IF_REQ(CREATE, DAT) _print_create_dat(req);
+    IF_REQ(RESIZE, DAT) _print_resize_dat(req);
+    IF_REQ(UPLOAD, DAT) _print_upload_dat(req);
+
+    IF_REQ(CREATE, TEX) _print_create_tex(req);
+    IF_REQ(RESIZE, TEX) _print_resize_tex(req);
+    IF_REQ(UPLOAD, TEX) _print_upload_tex(req);
+
+    IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
+
+    IF_REQ(CREATE, GRAPHICS) _print_create_graphics(req);
+
+
+    IF_REQ(BIND, VERTEX) _print_bind_vertex(req);
+    IF_REQ(BIND, INDEX) _print_bind_index(req);
+    IF_REQ(SET, PRIMITIVE) _print_set_primitive(req);
+    IF_REQ(SET, BLEND) _print_set_blend(req);
+    IF_REQ(SET, DEPTH) _print_set_depth(req);
+    IF_REQ(SET, POLYGON) _print_set_polygon(req);
+    IF_REQ(SET, CULL) _print_set_cull(req);
+    IF_REQ(SET, FRONT) _print_set_front(req);
+    IF_REQ(SET, GLSL) _print_set_glsl(req);
+    IF_REQ(SET, SPIRV) _print_set_spirv(req);
+    IF_REQ(SET, VERTEX) _print_set_vertex(req);
+    IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
+    IF_REQ(SET, SLOT) _print_set_slot(req);
+
+    IF_REQ(BIND, DAT) _print_bind_dat(req);
+    IF_REQ(BIND, TEX) _print_bind_tex(req);
+
+    IF_REQ(RECORD, RECORD)
+    {
+        if (req->content.record.command.type == DVZ_RECORDER_BEGIN)
+            _print_record_begin(req);
+        if (req->content.record.command.type == DVZ_RECORDER_VIEWPORT)
+            _print_record_viewport(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW)
+            _print_record_draw(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED)
+            _print_record_draw_indexed(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDIRECT)
+            _print_record_draw_indirect(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED_INDIRECT)
+            _print_record_draw_indexed_indirect(req);
+        if (req->content.record.command.type == DVZ_RECORDER_END)
+            _print_record_end(req);
+    }
 }
 
 
@@ -1044,6 +1064,9 @@ void dvz_request_print(DvzRequest* req)
 void dvz_requester_print(DvzRequester* rqr)
 {
     ANN(rqr);
+
+    _print_start();
+
     for (uint32_t i = 0; i < rqr->count; i++)
     {
         dvz_request_print(&rqr->requests[i]);
