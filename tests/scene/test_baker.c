@@ -47,6 +47,7 @@ int test_baker_1(TstSuite* suite)
 
     DvzBaker* baker = dvz_baker(rqr, 0);
 
+    // Declare the vertex bindings and attributes.
     dvz_baker_vertex(baker, 0, 30);
     dvz_baker_vertex(baker, 1, 40);
 
@@ -54,13 +55,31 @@ int test_baker_1(TstSuite* suite)
     dvz_baker_attr(baker, 1, 0, 0, 20);
     dvz_baker_attr(baker, 2, 1, 0, 40);
 
+    // Declare the descriptor slots.
     dvz_baker_slot(baker, 0, 50);
     dvz_baker_slot(baker, 1, 60);
 
+    // Create the arrays and emit the dat creation requests.
     dvz_baker_duals(baker, 1);
 
-    dvz_requester_print(rqr);
+    // Check the requests.
+    // dvz_requester_print(rqr);
 
+    AT(rqr->count == 4)
+
+    AT(rqr->requests[0].content.dat.size == 30);
+    AT(rqr->requests[0].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
+
+    AT(rqr->requests[1].content.dat.size == 40);
+    AT(rqr->requests[1].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
+
+    AT(rqr->requests[2].content.dat.size == 50);
+    AT(rqr->requests[2].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+
+    AT(rqr->requests[3].content.dat.size == 60);
+    AT(rqr->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+
+    // Cleanup.
     dvz_baker_destroy(baker);
     dvz_requester_destroy(rqr);
     return 0;
