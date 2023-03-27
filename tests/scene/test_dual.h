@@ -21,6 +21,8 @@
 
 int test_dual_1(TstSuite*);
 
+int test_dual_2(TstSuite*);
+
 
 
 #endif

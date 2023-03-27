@@ -62,8 +62,7 @@ void dvz_dual_clear(DvzDual* dual)
 
 void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data)
 {
-    // WARNING: the data pointer needs to live until dvz_dual_update() which will call
-    // dvz_upload_dat() which will copy the data.
+    // NOTE: the passed data buffer is immediately copied to the array.
 
     ANN(dual);
     ANN(dual->array);
@@ -75,6 +74,26 @@ void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data)
     ASSERT(item_size > 0);
 
     dvz_array_data(dual->array, first, count, count, data);
+
+    dvz_dual_dirty(dual, first, count);
+}
+
+
+
+void dvz_dual_column(
+    DvzDual* dual, DvzSize offset, DvzSize col_size, uint32_t first, uint32_t count, void* data)
+{
+    ANN(dual);
+    ANN(dual->array);
+    ASSERT(col_size > 0);
+    ASSERT(count > 0);
+    ANN(data);
+
+    DvzArray* array = dual->array;
+
+    dvz_array_column(
+        array, offset, col_size, first, count, count, data, //
+        DVZ_DTYPE_CUSTOM, DVZ_DTYPE_CUSTOM, DVZ_ARRAY_COPY_SINGLE, 1);
 
     dvz_dual_dirty(dual, first, count);
 }

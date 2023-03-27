@@ -64,6 +64,9 @@ DVZ_EXPORT void dvz_dual_clear(DvzDual* dual);
 
 DVZ_EXPORT void dvz_dual_data(DvzDual* dual, uint32_t first, uint32_t count, void* data);
 
+DVZ_EXPORT void dvz_dual_column(
+    DvzDual* dual, DvzSize offset, DvzSize col_size, uint32_t first, uint32_t count, void* data);
+
 DVZ_EXPORT void dvz_dual_update(DvzDual* dual);
 
 DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);

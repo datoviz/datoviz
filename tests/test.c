@@ -275,6 +275,7 @@ int dvz_run_tests(const char* match)
 
     // Testing dual.
     TEST(test_dual_1)
+    TEST(test_dual_2)
 
     // Testing baker.
     TEST(test_baker_1)

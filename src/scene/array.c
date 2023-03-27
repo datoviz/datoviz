@@ -628,7 +628,7 @@ void dvz_array_scale(DvzArray* arr, float scaling)
  * the user-specified visual props (data for the individual elements).
  *
  * @param array the array
- * @param offset the offset within the array, in bytes
+ * @param offset the offset of the column start within an array item, in bytes
  * @param col_size stride in the source array, in bytes
  * @param first_item first element in the array to be overwritten
  * @param item_count number of elements to write
