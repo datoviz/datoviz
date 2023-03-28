@@ -11,9 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_log.h"
-#include "_math.h"
+#include "_obj.h"
 
 
 
@@ -22,6 +20,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzPixel DvzPixel;
+typedef struct DvzPixelVertex DvzPixelVertex;
 
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
@@ -49,10 +48,20 @@ typedef enum
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzPixelVertex
+{
+    vec3 pos;    /* position */
+    cvec4 color; /* color */
+};
+
+
+
 struct DvzPixel
 {
+    DvzObject obj;
     DvzRequester* rqr;
     DvzBaker* baker;
+    DvzId graphics_id;
     int flags;
 };
 

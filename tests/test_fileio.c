@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_fileio.h"
+#include "common.h"
 #include "fileio.h"
 #include "test.h"
 #include "testing.h"
