@@ -73,6 +73,15 @@ DVZ_EXPORT void dvz_dual_update(DvzDual* dual);
 DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);
 
 
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t item_count, DvzSize item_size);
+
+DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size);
+
+
 
 EXTERN_C_OFF
 

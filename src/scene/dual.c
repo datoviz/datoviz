@@ -130,3 +130,32 @@ void dvz_dual_update(DvzDual* dual)
 
 
 void dvz_dual_destroy(DvzDual* dual) { ANN(dual); }
+
+
+
+/*************************************************************************************************/
+/*  Helpers                                                                                      */
+/*************************************************************************************************/
+
+DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t item_count, DvzSize item_size)
+{
+    ANN(rqr);
+    ASSERT(item_count > 0);
+    ASSERT(item_size > 0);
+
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, item_count * item_size, 0).id;
+    DvzArray* array = dvz_array_struct(item_count, item_size);
+    return dvz_dual(rqr, array, dat_id);
+}
+
+
+
+DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size)
+{
+    ANN(rqr);
+    ASSERT(item_size > 0);
+
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, item_size, 0).id;
+    DvzArray* array = dvz_array_struct(1, item_size);
+    return dvz_dual(rqr, array, dat_id);
+}
