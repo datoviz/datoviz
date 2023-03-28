@@ -214,7 +214,7 @@ void dvz_visual_create(DvzVisual* visual)
 
     // Compute the offsets of each attribute within their vertex bindings, and the vertex bindings
     // strides.
-    DvzSize attr_offsets[DVZ_MAX_VERTEX_BINDINGS];
+    DvzSize attr_offsets[DVZ_MAX_VERTEX_BINDINGS] = {0};
     DvzVisualAttr* attr = NULL;
     uint32_t binding_idx = 0;
     uint32_t attr_count = 0;
@@ -256,7 +256,8 @@ void dvz_visual_create(DvzVisual* visual)
     }
 
     log_debug("found %d vertex attributes and %d vertex bindings", attr_count, binding_count);
-
+    ASSERT(attr_count < DVZ_MAX_VERTEX_ATTRS);
+    ASSERT(binding_count < DVZ_MAX_VERTEX_BINDINGS);
 
     // Declare the vertex bindings.
     DvzSize stride = 0;

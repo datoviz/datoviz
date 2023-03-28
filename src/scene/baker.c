@@ -43,10 +43,11 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
     ANN(baker);
     ASSERT(binding_idx < baker->vertex_count);
     ASSERT(item_count > 0);
-    log_trace(
-        "create baker vertex binding #%d with %d items, create dat and array", binding_idx,
-        item_count);
     DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
+    ANN(bv);
+    log_trace(
+        "create baker vertex binding #%d with %d items, stride %" PRId64 ", create dat and array",
+        binding_idx, item_count, bv->stride);
     bv->dual = dvz_dual_vertex(baker->rqr, item_count, bv->stride);
 }
 
