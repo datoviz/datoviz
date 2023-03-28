@@ -255,7 +255,7 @@ static void _print_upload_dat(DvzRequest* req)
         "  type: dat\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    offset: %" PRIx64 "\n"
+        "    offset: %ld\n"
         "    size: %s\n"
         "    data:\n"
         "      mode: base64\n"
@@ -376,7 +376,7 @@ static void _print_bind_vertex(DvzRequest* req)
         "  content:\n"
         "    binding_idx: %d\n"
         "    dat: 0x%" PRIx64 "\n"
-        "    offset: 0x%" PRIx64 "\n",
+        "    offset: %ld\n",
         req->id,                              //
         req->content.bind_vertex.binding_idx, //
         req->content.bind_vertex.dat,         //
@@ -393,7 +393,7 @@ static void _print_bind_index(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    dat: 0x%" PRIx64 "\n"
-        "    offset: 0x%" PRIx64 "\n",
+        "    offset: %ld\n",
         req->id,                     //
         req->content.bind_index.dat, //
         req->content.bind_index.offset);
@@ -575,7 +575,7 @@ static void _print_set_attr(DvzRequest* req)
         "    binding_idx: %d\n"
         "    location: %d\n"
         "    format: %d\n"
-        "    offset: %" PRIx64 "\n",
+        "    offset: %ld\n",
         req->id,                           //
         req->content.set_attr.binding_idx, //
         req->content.set_attr.location,    //

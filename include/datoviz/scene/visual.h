@@ -47,8 +47,8 @@ typedef enum
 typedef enum
 {
     DVZ_ATTR_FLAGS_DEFAULT = 0x0000,
-    DVZ_ATTR_FLAGS_DYNAMIC = 0x0001,
-    DVZ_ATTR_FLAGS_CONSTANT = 0x0002,
+    DVZ_ATTR_FLAGS_DYNAMIC = 0x0011, // the N in 0x000N indicates the binding idx
+    DVZ_ATTR_FLAGS_CONSTANT = 0x0020,
     DVZ_ATTR_FLAGS_REPEAT = 0x1000, // the N in 0x0N00 indicates the number of repeats
     DVZ_ATTR_FLAGS_QUAD = 0x2000,
 } DvzAttrFlags;
@@ -63,6 +63,9 @@ struct DvzVisualAttr
 {
     DvzFormat format;
     int flags;
+    uint32_t binding_idx;
+    DvzSize offset;
+    DvzSize item_size;
 };
 
 

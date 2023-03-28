@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visual.h"
+#include "_map.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/baker.h"
@@ -23,8 +24,24 @@
 
 
 /*************************************************************************************************/
-/*  Internal functions                                                                           */
+/*  Util functions                                                                               */
 /*************************************************************************************************/
+
+static DvzSize get_attr_size(DvzFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FORMAT_R32G32B32_SFLOAT:
+        return 3 * 4;
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+        return 1 * 4;
+        // TODO: other formats
+    default:
+        log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
+        return 0;
+    }
+    return 0;
+}
 
 
 
@@ -42,6 +59,7 @@ dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, uint32_t item_coun
 
     visual->flags = flags;
     visual->rqr = rqr;
+    visual->item_count = item_count;
 
     visual->baker = dvz_baker(rqr, 0);
 
@@ -144,6 +162,10 @@ void dvz_visual_attr(DvzVisual* visual, uint32_t attr_idx, DvzFormat format, int
     // Will be done at create time. Will have to do baker side and GPU request side.
     visual->attrs[attr_idx].format = format;
     visual->attrs[attr_idx].flags = flags;
+
+    // NOTE: the last significant 4 bits of the flags encode the binding_idx. It's 0 for all flags,
+    // except DVZ_ATTR_FLAGS_DYNAMIC where it is 1.
+    visual->attrs[attr_idx].binding_idx = (uint32_t)(flags & 0x000F);
 }
 
 
@@ -181,63 +203,119 @@ void dvz_visual_create(DvzVisual* visual)
 {
     ANN(visual);
 
-    // TODO
+    DvzBaker* baker = visual->baker;
+    ANN(baker);
 
-    /*
-    vertex bindings attributions is done automatically as a function of the flags
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
 
-    // NOTE: check that props of a given vertex binding idx are either all constant or all not
-    constant
+    DvzId graphics_id = visual->graphics_id;
+    ASSERT(graphics_id != DVZ_ID_NONE);
 
-    // Determine the vertex bindings as a function of the flags.
-    // Assume the highest binding_idx of all props +1 is the number of different bindings
-    // Array with the stride of each attribute
-        uint32_t binding_count;
-        DvzSize strides[DVZ_PROP_MAX_ATTRS]; // for each GLSL attr, the number of bytes per
-                                                item
-        DvzSize offsets[DVZ_PROP_MAX_BINDINGS]; // for each binding, the offset of the last
-                                                    visited prop
-        for each prop
-            if (binding_count == 0 || binding >= binding_count) // new binding
-                dvz_set_vertex() // declare new binding
-            dvz_set_attr() // manually called for each prop, with the known GLSL location, and the
-                            binding stored in the corresponding DvzProp*
+    // Compute the offsets of each attribute within their vertex bindings, and the vertex bindings
+    // strides.
+    DvzSize attr_offsets[DVZ_MAX_VERTEX_BINDINGS];
+    DvzVisualAttr* attr = NULL;
+    uint32_t binding_idx = 0;
+    uint32_t attr_count = 0;
+    uint32_t binding_count = 0;
+    for (uint32_t attr_idx = 0; attr_idx < DVZ_MAX_VERTEX_ATTRS; attr_idx++)
+    {
+        attr = &visual->attrs[attr_idx];
+        ANN(attr);
 
-    attrs
-        set up the baker, which will create the dats
-        also emit the associated graphics commands
-        also emit the binding commands for the vertex, index
-    descriptors
-        set up the baker, which will create the dat
-        emit the dat binding
+        if (attr->format == DVZ_FORMAT_NONE)
+        {
+            break;
+        }
+
+        // The vertex binding of the current vertex attribute is directly encoded in the flags.
+        // It was set in dvz_visual_attr();
+        binding_idx = attr->binding_idx;
+
+        // Count the number of vertex bindings.
+        // NOTE: we assume that the number of vertex bindings is the maximum binding idx + 1.
+        binding_count = MAX(binding_idx + 1, binding_count);
+
+        ASSERT(binding_count <= DVZ_MAX_VERTEX_BINDINGS);
+
+        // Compute the offset and item_size of each attribute.
+        attr->offset = attr_offsets[binding_idx];
+
+        // The attribute size depends on its Vulkan format.
+        attr->item_size = get_attr_size(attr->format);
+        ASSERT(attr->item_size > 0);
+
+        // Keep track of the current offset within each vertex binding.
+        attr_offsets[binding_idx] += attr->item_size;
+
+        // Count the number of attributes.
+        attr_count++;
+
+        ASSERT(attr_count <= DVZ_MAX_VERTEX_ATTRS);
+    }
+
+    // TODO: log_debug
+    log_info("found %d vertex attributes and %d vertex bindings", attr_count, binding_count);
 
 
-    // Finish setting up the baker.
-    dvz_baker_vertex(baker, 0, sizeof(DvzPixelVertex));
-    dvz_baker_attr(baker, 0, 0, offsetof(DvzPixelVertex, pos), sizeof(vec3));
-    dvz_baker_attr(baker, 1, 0, offsetof(DvzPixelVertex, color), sizeof(cvec4));
+    // Declare the vertex bindings.
+    DvzSize stride = 0;
+    for (binding_idx = 0; binding_idx < binding_count; binding_idx++)
+    {
+        stride = attr_offsets[binding_idx];
+        ASSERT(stride > 0);
 
-    // Create the baker, which will create the arrays and dats.
-    dvz_baker_create(baker, 5000); // DEBUG
+        // Baker-side.
+        dvz_baker_vertex(baker, binding_idx, stride);
+
+        // GPU-side.
+
+        // WARNING TODO NOTE: we ASSUME here that the stride (sum of all attribute sizes)
+        // matches the total size of the struct, which is not guaranteed because of alignment
+        // issues. To check later!
+
+        // TODO: input rate instance?
+        dvz_set_vertex(rqr, graphics_id, binding_idx, stride, DVZ_VERTEX_INPUT_RATE_VERTEX);
+    }
+
+    // Declare the vertex attributes.
+    for (uint32_t attr_idx = 0; attr_idx < attr_count; attr_idx++)
+    {
+        attr = &visual->attrs[attr_idx];
+        ANN(attr);
+        ASSERT(attr->item_size > 0);
+
+        // Baker-side.
+        dvz_baker_attr(baker, attr_idx, binding_idx, attr->offset, attr->item_size);
+
+        // GPU-side.
+        dvz_set_attr(rqr, graphics_id, binding_idx, attr_idx, attr->format, attr->offset);
+    }
+
+    // The baker slots are declared directly in dvz_visual_dat() and dvz_visual_tex().
+    // Now, we can create the baker. This will create the arrays and dats.
+    dvz_baker_create(baker, visual->item_count);
+
+    // We now need to send the vertex/descriptor binding requests to the GPU.
 
     // Send the vertex binding commands.
-    dvz_set_vertex(rqr, graphics_id, 0, sizeof(DvzPixelVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
-
-    // Send the vertex attribute commands.
-    dvz_set_attr(
-        rqr, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzPixelVertex, pos));
-    dvz_set_attr(
-        rqr, graphics_id, 0, 1, DVZ_FORMAT_R8G8B8A8_UNORM, offsetof(DvzPixelVertex, color));
-
-    // Send the vertex binding commands.
-    dvz_bind_vertex(rqr, graphics_id, 0, baker->vertex_bindings[0].dual.dat, 0);
+    for (binding_idx = 0; binding_idx < binding_count; binding_idx++)
+    {
+        // TODO: dat offset?
+        dvz_bind_vertex(
+            rqr, graphics_id, binding_idx, baker->vertex_bindings[binding_idx].dual.dat, 0);
+    }
 
     // Send the dat bindings commands.
-    dvz_bind_dat(rqr, graphics_id, 0, baker->descriptors[0].dual.dat);
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        dvz_bind_dat(rqr, graphics_id, slot_idx, baker->descriptors[slot_idx].dual.dat);
+    }
 
-    DvzFormat format = visual->attrs[attr_idx].format;
+    // TODO: same for tex
 
-    */
+    dvz_obj_created(&visual->obj);
 }
 
 

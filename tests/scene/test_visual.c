@@ -97,8 +97,8 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_create(visual);
 
     // Default uniform data.
-    // dvz_visual_mvp(visual, dvz_mvp_default());
-    // dvz_visual_viewport(visual, dvz_viewport_default(WIDTH, HEIGHT));
+    dvz_visual_mvp(visual, dvz_mvp_default());
+    dvz_visual_viewport(visual, dvz_viewport_default(WIDTH, HEIGHT));
 
 
     // Vertex data.
@@ -109,7 +109,7 @@ int test_visual_1(TstSuite* suite)
         pos[i][0] = .25 * dvz_rand_normal();
         pos[i][1] = .25 * dvz_rand_normal();
     }
-    // dvz_visual_data(visual, 0, 0, n, pos);
+    dvz_visual_data(visual, 0, 0, n, pos);
 
     // Color.
     cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
@@ -118,7 +118,7 @@ int test_visual_1(TstSuite* suite)
         dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
         color[i][3] = 128;
     }
-    // dvz_visual_data(visual, 1, 0, n, color);
+    dvz_visual_data(visual, 1, 0, n, color);
 
 
     // Create a board.

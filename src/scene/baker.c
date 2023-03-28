@@ -124,6 +124,8 @@ void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride)
     baker->vertex_bindings[binding_idx].binding_idx = binding_idx;
     baker->vertex_bindings[binding_idx].stride = stride;
     baker->vertex_count = MAX(baker->vertex_count, binding_idx + 1);
+
+    log_trace("declare vertex binding #%d with stride %d", binding_idx, stride);
 }
 
 
@@ -140,7 +142,9 @@ void dvz_baker_attr(
     baker->vertex_attrs[attr_idx].item_size = item_size;
     baker->attr_count = MAX(baker->attr_count, attr_idx + 1);
 
-    // baker->vertex_bindings[binding_idx].stride;
+    log_trace(
+        "declare vertex attr #%d (binding #%d) with offset %d and size %d", //
+        attr_idx, binding_idx, offset, item_size);
 }
 
 
@@ -152,6 +156,8 @@ void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
     baker->descriptors[slot_idx].slot_idx = slot_idx;
     baker->descriptors[slot_idx].item_size = item_size;
     baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
+
+    log_trace("declare slot #%d with size %d", slot_idx, item_size);
 }
 
 
