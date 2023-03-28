@@ -555,7 +555,7 @@ static void _print_set_vertex(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    binding_idx: %d\n"
-        "    stride: %" PRIx64 "\n"
+        "    stride: %lu\n"
         "    input_rate: %d\n",
         req->id,                             //
         req->content.set_vertex.binding_idx, //
