@@ -275,9 +275,10 @@ void dvz_baker_create(DvzBaker* baker, uint32_t item_count)
 {
     ANN(baker);
     log_trace(
-        "call baker duals, %d bindings, %d descriptors", baker->vertex_count, baker->slot_count);
+        "create the dat, arrays, %d bindings, %d descriptors", //
+        baker->vertex_count, baker->slot_count);
 
-    // Check consistency.
+    // Check size consistency.
     _check_sizes(baker);
 
     // Create the vertex bindings.

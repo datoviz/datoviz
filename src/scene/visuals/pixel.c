@@ -68,19 +68,6 @@ void dvz_pixel_color(DvzPixel* pixel, uint32_t first, uint32_t count, cvec4* val
 
 
 
-void dvz_pixel_draw(DvzPixel* pixel, DvzId canvas, uint32_t first, uint32_t count, int flags)
-{
-    ANN(pixel);
-
-    // Emit the dat update commands.
-    dvz_pixel_update(pixel);
-
-    // Emit the record commands.
-    dvz_record_draw(pixel->rqr, canvas, pixel->graphics_id, first, count, 0, 1);
-}
-
-
-
 void dvz_pixel_create(DvzPixel* pixel)
 {
     ANN(pixel);
@@ -174,6 +161,19 @@ void dvz_pixel_create(DvzPixel* pixel)
     // Set up the baker
 
     */
+}
+
+
+
+void dvz_pixel_draw(DvzPixel* pixel, DvzId canvas, uint32_t first, uint32_t count, int flags)
+{
+    ANN(pixel);
+
+    // Emit the dat update commands.
+    dvz_pixel_update(pixel);
+
+    // Emit the record commands.
+    dvz_record_draw(pixel->rqr, canvas, pixel->graphics_id, first, count, 0, 1);
 }
 
 
