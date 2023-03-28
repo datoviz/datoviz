@@ -124,7 +124,7 @@ DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_
 
 
 // Internal function, used to instantiate the DvzDual instances.
-DVZ_EXPORT void dvz_baker_duals(DvzBaker* baker, uint32_t item_count);
+DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t item_count);
 
 
 

@@ -64,7 +64,7 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Baker life cycle                                                                             */
 /*************************************************************************************************/
 
 DvzBaker* dvz_baker(DvzRequester* rqr, int flags)
@@ -81,6 +81,38 @@ DvzBaker* dvz_baker(DvzRequester* rqr, int flags)
 }
 
 
+
+void dvz_baker_destroy(DvzBaker* baker)
+{
+    ANN(baker);
+
+    // Destroy all duals.
+    DvzBakerVertex* bv = NULL;
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        bv = &baker->vertex_bindings[binding_idx];
+        dvz_array_destroy(bv->dual.array);
+        // TODO: destroy dat
+        dvz_dual_destroy(&bv->dual);
+    }
+
+    DvzBakerDescriptor* bd = NULL;
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        bd = &baker->descriptors[slot_idx];
+        dvz_array_destroy(bd->dual.array);
+        // TODO: destroy dat
+        dvz_dual_destroy(&bd->dual);
+    }
+
+    FREE(baker);
+}
+
+
+
+/*************************************************************************************************/
+/*  Baker specification                                                                          */
+/*************************************************************************************************/
 
 // declare a vertex binding
 void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride)
@@ -140,29 +172,9 @@ void dvz_baker_indirect(DvzBaker* baker)
 
 
 
-void dvz_baker_duals(DvzBaker* baker, uint32_t item_count)
-{
-    ANN(baker);
-    log_trace(
-        "call baker duals, %d bindings, %d descriptors", baker->vertex_count, baker->slot_count);
-
-    // Check consistency.
-    _check_sizes(baker);
-
-    // Create the vertex bindings.
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
-    {
-        _create_vertex_binding(baker, binding_idx, item_count);
-    }
-
-    // Create the uniform dats for the descriptors.
-    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
-    {
-        _create_descriptor(baker, slot_idx);
-    }
-}
-
-
+/*************************************************************************************************/
+/*  Baker data functions                                                                         */
+/*************************************************************************************************/
 
 void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
 {
@@ -194,7 +206,7 @@ void dvz_baker_repeat(
     DvzDual* dual = &vertex->dual;
     if (dual == NULL)
     {
-        log_error("dual is null, please call dvz_baker_duals()");
+        log_error("dual is null, please call dvz_baker_create()");
         return;
     }
     ANN(dual);
@@ -223,6 +235,15 @@ void dvz_baker_repeat(
 
 
 
+void dvz_baker_quads(
+    DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions)
+{
+    ANN(baker);
+    // TODO
+}
+
+
+
 void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data)
 {
     ANN(baker);
@@ -236,7 +257,7 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
     DvzDual* dual = &descriptor->dual;
     if (dual == NULL)
     {
-        log_error("dual is null, please call dvz_baker_duals()");
+        log_error("dual is null, please call dvz_baker_create()");
         return;
     }
     ANN(dual);
@@ -246,11 +267,30 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
 
 
 
-void dvz_baker_quads(
-    DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions)
+/*************************************************************************************************/
+/*  Baker sync functions                                                                         */
+/*************************************************************************************************/
+
+void dvz_baker_create(DvzBaker* baker, uint32_t item_count)
 {
     ANN(baker);
-    // TODO
+    log_trace(
+        "call baker duals, %d bindings, %d descriptors", baker->vertex_count, baker->slot_count);
+
+    // Check consistency.
+    _check_sizes(baker);
+
+    // Create the vertex bindings.
+    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    {
+        _create_vertex_binding(baker, binding_idx, item_count);
+    }
+
+    // Create the uniform dats for the descriptors.
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        _create_descriptor(baker, slot_idx);
+    }
 }
 
 
@@ -271,32 +311,4 @@ void dvz_baker_update(DvzBaker* baker)
     {
         dvz_dual_update(&baker->descriptors[slot_idx].dual);
     }
-}
-
-
-
-void dvz_baker_destroy(DvzBaker* baker)
-{
-    ANN(baker);
-
-    // Destroy all duals.
-    DvzBakerVertex* bv = NULL;
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
-    {
-        bv = &baker->vertex_bindings[binding_idx];
-        dvz_array_destroy(bv->dual.array);
-        // TODO: destroy dat
-        dvz_dual_destroy(&bv->dual);
-    }
-
-    DvzBakerDescriptor* bd = NULL;
-    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
-    {
-        bd = &baker->descriptors[slot_idx];
-        dvz_array_destroy(bd->dual.array);
-        // TODO: destroy dat
-        dvz_dual_destroy(&bd->dual);
-    }
-
-    FREE(baker);
 }
