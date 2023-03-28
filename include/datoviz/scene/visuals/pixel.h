@@ -12,6 +12,7 @@
 /*************************************************************************************************/
 
 #include "_obj.h"
+#include "scene/viewport.h"
 
 
 
@@ -24,7 +25,7 @@ typedef struct DvzPixelVertex DvzPixelVertex;
 
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
-typedef struct DvzBaker DvzBaker;
+typedef struct DvzVisual DvzVisual;
 
 
 
@@ -60,9 +61,8 @@ struct DvzPixel
 {
     DvzObject obj;
     DvzRequester* rqr;
-    DvzBaker* baker;
-    DvzId graphics_id;
     int flags;
+    DvzVisual* visual;
 };
 
 
@@ -73,7 +73,11 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzPixel* dvz_pixel(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzPixel* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags);
+
+
+
+DVZ_EXPORT void dvz_pixel_viewport(DvzPixel* pixel, DvzViewport viewport);
 
 
 

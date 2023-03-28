@@ -12,6 +12,7 @@
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"
+#include "scene/viewport.h"
 #include "scene/visuals/pixel.h"
 #include "test.h"
 #include "testing.h"
@@ -40,10 +41,10 @@ int test_pixel_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
-    DvzPixel* pixel = dvz_pixel(rqr, 0);
-
     // Upload the data.
     const uint32_t n = 10000;
+
+    DvzPixel* pixel = dvz_pixel(rqr, n, 0);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -62,6 +63,10 @@ int test_pixel_1(TstSuite* suite)
         color[i][3] = 128;
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
+
+    // Viewport.
+    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    dvz_pixel_viewport(pixel, viewport);
 
     // Create a board.
     DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);

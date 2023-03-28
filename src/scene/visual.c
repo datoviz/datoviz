@@ -32,9 +32,9 @@ static DvzSize get_attr_size(DvzFormat format)
     switch (format)
     {
     case DVZ_FORMAT_R32G32B32_SFLOAT:
-        return 3 * 4;
+        return sizeof(vec3);
     case DVZ_FORMAT_R8G8B8A8_UNORM:
-        return 1 * 4;
+        return sizeof(cvec4);
         // TODO: other formats
     default:
         log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
@@ -465,6 +465,7 @@ void dvz_visual_destroy(DvzVisual* visual)
     {
         FREE(visual->group_sizes);
     }
+    FREE(visual);
 }
 
 
