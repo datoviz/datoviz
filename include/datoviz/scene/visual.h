@@ -49,12 +49,8 @@ typedef enum
     DVZ_ATTR_FLAGS_DEFAULT = 0x0000,
     DVZ_ATTR_FLAGS_DYNAMIC = 0x0001,
     DVZ_ATTR_FLAGS_CONSTANT = 0x0002,
-    DVZ_ATTR_FLAGS_REPEATS_2 = 0x0020,
-    DVZ_ATTR_FLAGS_REPEATS_3 = 0x0030,
-    DVZ_ATTR_FLAGS_REPEATS_4 = 0x0040,
-    DVZ_ATTR_FLAGS_REPEATS_5 = 0x0050,
-    DVZ_ATTR_FLAGS_REPEATS_6 = 0x0060,
-    DVZ_ATTR_FLAGS_QUAD = 0x00F0,
+    DVZ_ATTR_FLAGS_REPEAT = 0x1000, // the N in 0x0N00 indicates the number of repeats
+    DVZ_ATTR_FLAGS_QUAD = 0x2000,
 } DvzAttrFlags;
 
 
@@ -149,11 +145,19 @@ dvz_visual_data(DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t c
 
 
 
-DVZ_EXPORT void dvz_visual_draw(DvzVisual* visual, uint32_t first, uint32_t count);
+DVZ_EXPORT void dvz_visual_quads(
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec2 quad_size,
+    vec2* positions);
 
 
 
-DVZ_EXPORT void dvz_visual_instance(DvzVisual* visual, uint32_t first, uint32_t count); // TODO
+DVZ_EXPORT void dvz_visual_instance(
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
+    uint32_t instance_count);
+
+
+
+DVZ_EXPORT void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count);
 
 
 

@@ -86,8 +86,6 @@ void dvz_visual_shader(DvzVisual* visual, const char* name)
 
     // Vertex shader.
     snprintf(rname, 60, "%s_%s", name, "vert");
-    log_error("%s", rname);
-
     unsigned char* buffer = dvz_resource_shader(rname, &size);
     dvz_set_spirv(visual->rqr, visual->graphics_id, DVZ_SHADER_VERTEX, size, buffer);
 
@@ -95,8 +93,6 @@ void dvz_visual_shader(DvzVisual* visual, const char* name)
 
     // Fragment shader.
     snprintf(rname, 60, "%s_%s", name, "frag");
-    log_error("%s", rname);
-
     buffer = dvz_resource_shader(rname, &size);
     dvz_set_spirv(visual->rqr, visual->graphics_id, DVZ_SHADER_FRAGMENT, size, buffer);
 }
@@ -184,6 +180,9 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int f
 void dvz_visual_create(DvzVisual* visual)
 {
     ANN(visual);
+
+    // TODO
+
     /*
     vertex bindings attributions is done automatically as a function of the flags
 
@@ -236,6 +235,7 @@ void dvz_visual_create(DvzVisual* visual)
     // Send the dat bindings commands.
     dvz_bind_dat(rqr, graphics_id, 0, baker->descriptors[0].dual.dat);
 
+    DvzFormat format = visual->attrs[attr_idx].format;
 
     */
 }
@@ -245,8 +245,12 @@ void dvz_visual_create(DvzVisual* visual)
 void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 {
     ANN(visual);
-    // update the MVP
-    // use baker data, and baker update
+    ANN(visual->baker);
+
+    visual->mvp = mvp;
+
+    dvz_baker_uniform(visual->baker, 0, sizeof(DvzMVP), &visual->mvp);
+    dvz_baker_update(visual->baker);
 }
 
 
@@ -254,7 +258,13 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
 {
     ANN(visual);
-} // update the viewport
+    ANN(visual->baker);
+
+    visual->viewport = viewport;
+
+    dvz_baker_uniform(visual->baker, 0, sizeof(DvzViewport), &visual->viewport);
+    dvz_baker_update(visual->baker);
+}
 
 
 
@@ -262,23 +272,99 @@ void dvz_visual_data(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
 {
     ANN(visual);
-    // will call the appropriate baker command, depending on quad/repeat
+    ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
+
+    DvzBaker* baker = visual->baker;
+    ANN(baker);
+
+    int flags = visual->attrs[attr_idx].flags;
+
+    // Quad.
+    if ((flags & DVZ_ATTR_FLAGS_QUAD) != 0)
+    {
+        log_warn("please use dvz_visual_quads() instead");
+        return;
+    }
+
+    // Repeats.
+    else if ((flags & DVZ_ATTR_FLAGS_REPEAT) != 0)
+    {
+        // Extract the N in 0xN00 part, that is the number of repeats.
+        int reps = (flags & 0x0F00) >> 8;
+        ASSERT(reps >= 1);
+
+        log_trace("visual data for attr #%d (%d:%d), repeat %d", attr_idx, first, count, reps);
+        dvz_baker_repeat(baker, attr_idx, first, count, (uint32_t)reps, data);
+    }
+
+    // Direct copy.
+    else
+    {
+        log_trace("visual data for attr #%d (%d:%d)", attr_idx, first, count);
+        dvz_baker_data(baker, attr_idx, first, count, data);
+    }
 }
 
 
 
-void dvz_visual_draw(DvzVisual* visual, uint32_t first, uint32_t count)
+void dvz_visual_quads(
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, //
+    vec2 quad_size, vec2* positions)
 {
     ANN(visual);
-    // generic draw command first->count, as a function of indexed/indirect
+    ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
+
+    DvzBaker* baker = visual->baker;
+    ANN(baker);
+
+    int flags = visual->attrs[attr_idx].flags;
+    ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
+
+    dvz_baker_quads(baker, attr_idx, quad_size, count, positions);
 }
 
 
 
-void dvz_visual_instance(DvzVisual* visual, uint32_t first, uint32_t count)
+void dvz_visual_instance(
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
+    uint32_t instance_count)
 {
     ANN(visual);
-    // TODO
+
+    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+    bool indirect = (visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0;
+
+    if (!indexed && !indirect)
+    {
+        dvz_record_draw(
+            visual->rqr, canvas, visual->graphics_id, first, count, first_instance,
+            instance_count);
+    }
+    else if (indexed && !indirect)
+    {
+        uint32_t vertex_offset = 0; // TODO
+        dvz_record_draw_indexed(
+            visual->rqr, canvas, visual->graphics_id, first, vertex_offset, count, first_instance,
+            instance_count);
+    }
+    else if (!indexed && indirect)
+    {
+        uint32_t draw_count = 1; // TODO
+        dvz_record_draw_indirect(visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
+    }
+    else if (indexed && indirect)
+    {
+        uint32_t draw_count = 1; // TODO
+        dvz_record_draw_indexed_indirect(
+            visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
+    }
+}
+
+
+
+void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count)
+{
+    dvz_visual_instance(visual, canvas, first, count, 0, 1);
 }
 
 

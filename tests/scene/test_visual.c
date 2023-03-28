@@ -39,9 +39,56 @@ int test_visual_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
+    uint32_t n = 10;
 
+    // Create a visual.
+    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, n, 0);
+
+    // Visual shaders.
+    dvz_visual_shader(visual, "graphics_basic");
+
+    // Vertex attributes.
+    dvz_visual_attr(visual, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
+    dvz_visual_attr(visual, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+
+    // Uniforms.
+    dvz_visual_dat(visual, 0, sizeof(DvzMVP));
+    dvz_visual_dat(visual, 1, sizeof(DvzViewport));
+
+    // Create the visual.
+    dvz_visual_create(visual);
+
+    // Default uniform data.
+    // dvz_visual_mvp(visual, dvz_mvp_default());
+    // dvz_visual_viewport(visual, dvz_viewport_default(WIDTH, HEIGHT));
+
+
+    // Vertex data.
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    // dvz_visual_data(visual, 0, 0, n, pos);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 128;
+    }
+    // dvz_visual_data(visual, 1, 0, n, color);
+
+    // Visual draw.
+    // dvz_visual_draw(visual, board, 0, n);
 
     // Cleanup
+    dvz_visual_destroy(visual);
     dvz_requester_destroy(rqr);
+    FREE(pos);
+    FREE(color);
     return 0;
 }

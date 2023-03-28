@@ -40,6 +40,9 @@
 // Maximum size of buffers encoded in base64 when printing the commands
 #define VERBOSE_MAX_BASE64 1048576
 
+#define IF_VERBOSE_DATA                                                                           \
+    if ((strncmp(getenv("DVZ_VERBOSE"), "1", 1) == 0) && (size < VERBOSE_MAX_BASE64))
+
 
 
 /*************************************************************************************************/
@@ -242,10 +245,11 @@ static void _print_upload_dat(DvzRequest* req)
 
     char* encoded = NULL;
     // NOTE: avoid computing the base64 of large arrays.
-    if (size < VERBOSE_MAX_BASE64)
-        encoded = b64_encode((const unsigned char*)data, size);
-    else
-        encoded = "<snip>";
+
+    IF_VERBOSE_DATA
+    encoded = b64_encode((const unsigned char*)data, size);
+
+    else encoded = "<snip>";
     printf(
         "- action: upload\n"
         "  type: dat\n"
@@ -257,8 +261,9 @@ static void _print_upload_dat(DvzRequest* req)
         "      mode: base64\n"
         "      buffer: %s\n",
         dat, offset, pretty_size(size), encoded);
-    if (size < VERBOSE_MAX_BASE64)
-        free(encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
 }
 
 
@@ -305,10 +310,10 @@ static void _print_upload_tex(DvzRequest* req)
 
     char* encoded = NULL;
     // NOTE: avoid computing the base64 of large arrays.
-    if (size < VERBOSE_MAX_BASE64)
-        encoded = b64_encode((const unsigned char*)data, size);
-    else
-        encoded = "<snip>";
+    IF_VERBOSE_DATA
+    encoded = b64_encode((const unsigned char*)data, size);
+
+    else encoded = "<snip>";
     printf(
         "- action: upload\n"
         "  type: tex\n"
@@ -322,8 +327,9 @@ static void _print_upload_tex(DvzRequest* req)
         "      buffer: %s\n",
         tex, pretty_size(size), offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
         encoded);
-    if (size < VERBOSE_MAX_BASE64)
-        free(encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
 }
 
 
@@ -485,10 +491,11 @@ static void _print_set_glsl(DvzRequest* req)
 
     char* encoded = NULL;
     // NOTE: avoid computing the base64 of large arrays.
-    if (size < VERBOSE_MAX_BASE64)
-        encoded = b64_encode((const unsigned char*)code, size);
-    else
-        encoded = "<snip>";
+
+    IF_VERBOSE_DATA
+    encoded = b64_encode((const unsigned char*)code, size);
+    else encoded = "<snip>";
+
     printf(
         "- action: set\n"
         "  type: glsl\n"
@@ -500,8 +507,9 @@ static void _print_set_glsl(DvzRequest* req)
         "      mode: base64\n"
         "      buffer: %s\n",
         req->id, shader_type, pretty_size(size), encoded);
-    if (size < VERBOSE_MAX_BASE64)
-        free(encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
 }
 
 static void _print_set_spirv(DvzRequest* req)
@@ -514,10 +522,11 @@ static void _print_set_spirv(DvzRequest* req)
 
     char* encoded = NULL;
     // NOTE: avoid computing the base64 of large arrays.
-    if (size < VERBOSE_MAX_BASE64)
-        encoded = b64_encode((const unsigned char*)buffer, size);
-    else
-        encoded = "<snip>";
+
+    IF_VERBOSE_DATA
+    encoded = b64_encode((const unsigned char*)buffer, size);
+    else encoded = "<snip>";
+
     printf(
         "- action: set\n"
         "  type: spirv\n"
@@ -529,8 +538,9 @@ static void _print_set_spirv(DvzRequest* req)
         "      mode: base64\n"
         "      buffer: %s\n",
         req->id, shader_type, pretty_size(size), encoded);
-    if (size < VERBOSE_MAX_BASE64)
-        free(encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
 }
 
 
@@ -1352,6 +1362,7 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId d
 
     RETURN_REQUEST
 }
+
 
 
 DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize offset)
