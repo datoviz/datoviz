@@ -77,7 +77,7 @@ int test_visual_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
-    uint32_t n = 10;
+    uint32_t n = 10000;
 
     // Create a visual.
     DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, n, 0);
@@ -120,6 +120,8 @@ int test_visual_1(TstSuite* suite)
     }
     dvz_visual_data(visual, 1, 0, n, color);
 
+    // Important: upload the data to the GPU.
+    dvz_visual_update(visual);
 
     // Create a board.
     DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
@@ -133,7 +135,7 @@ int test_visual_1(TstSuite* suite)
     dvz_record_end(rqr, board_id);
 
     // Render to a PNG.
-    // render_requests(rqr, get_gpu(suite), board_id, "visual_1");
+    render_requests(rqr, get_gpu(suite), board_id, "visual_1");
 
     // Cleanup
     dvz_visual_destroy(visual);

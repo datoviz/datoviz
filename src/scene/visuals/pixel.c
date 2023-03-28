@@ -134,33 +134,6 @@ void dvz_pixel_create(DvzPixel* pixel)
     dvz_baker_uniform(baker, 1, sizeof(DvzViewport), &viewport);
 
     dvz_obj_created(&pixel->obj);
-
-    /*
-    TODO: automatic attr/slot determination in generic visual
-
-    // NOTE: check that props of a given vertex binding idx are either all constant or all not
-    constant
-
-    // Determine the vertex bindings as a function of the flags.
-    // Assume the highest binding_idx of all props +1 is the number of different bindings
-    // Array with the stride of each attribute
-        uint32_t binding_count;
-        DvzSize strides[DVZ_PROP_MAX_ATTRS]; // for each GLSL attr, the number of bytes per
-                                                item
-        DvzSize offsets[DVZ_PROP_MAX_BINDINGS]; // for each binding, the offset of the last
-                                                    visited prop
-        for each prop
-            if (binding_count == 0 || binding >= binding_count) // new binding
-                dvz_set_vertex() // declare new binding
-            dvz_set_attr() // manually called for each prop, with the known GLSL location, and the
-                            binding stored in the corresponding DvzProp*
-
-    // Uniform and texture bindings.
-    dvz_set_slot()
-
-    // Set up the baker
-
-    */
 }
 
 

@@ -255,8 +255,7 @@ void dvz_visual_create(DvzVisual* visual)
         ASSERT(attr_count <= DVZ_MAX_VERTEX_ATTRS);
     }
 
-    // TODO: log_debug
-    log_info("found %d vertex attributes and %d vertex bindings", attr_count, binding_count);
+    log_debug("found %d vertex attributes and %d vertex bindings", attr_count, binding_count);
 
 
     // Declare the vertex bindings.
@@ -287,10 +286,10 @@ void dvz_visual_create(DvzVisual* visual)
         ASSERT(attr->item_size > 0);
 
         // Baker-side.
-        dvz_baker_attr(baker, attr_idx, binding_idx, attr->offset, attr->item_size);
+        dvz_baker_attr(baker, attr_idx, attr->binding_idx, attr->offset, attr->item_size);
 
         // GPU-side.
-        dvz_set_attr(rqr, graphics_id, binding_idx, attr_idx, attr->format, attr->offset);
+        dvz_set_attr(rqr, graphics_id, attr->binding_idx, attr_idx, attr->format, attr->offset);
     }
 
     // The baker slots are declared directly in dvz_visual_dat() and dvz_visual_tex().
@@ -322,6 +321,8 @@ void dvz_visual_create(DvzVisual* visual)
 
 void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 {
+    // NOTE: the data is immediately copied into the visual's baker's dual
+
     ANN(visual);
     ANN(visual->baker);
 
@@ -335,12 +336,14 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 
 void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
 {
+    // NOTE: the data is immediately copied into the visual's baker's dual
+
     ANN(visual);
     ANN(visual->baker);
 
     visual->viewport = viewport;
 
-    dvz_baker_uniform(visual->baker, 0, sizeof(DvzViewport), &visual->viewport);
+    dvz_baker_uniform(visual->baker, 1, sizeof(DvzViewport), &visual->viewport);
     dvz_baker_update(visual->baker);
 }
 
@@ -443,6 +446,14 @@ void dvz_visual_instance(
 void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count)
 {
     dvz_visual_instance(visual, canvas, first, count, 0, 1);
+}
+
+
+
+void dvz_visual_update(DvzVisual* visual)
+{
+    ANN(visual);
+    dvz_baker_update(visual->baker);
 }
 
 

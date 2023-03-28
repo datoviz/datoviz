@@ -252,6 +252,8 @@ void dvz_baker_quads(
 
 void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data)
 {
+    // NOTE: the data is immediately copied into the baker's dual
+
     ANN(baker);
     ASSERT(binding_idx < baker->slot_count);
     ASSERT(size > 0);

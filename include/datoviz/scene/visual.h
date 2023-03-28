@@ -164,6 +164,10 @@ DVZ_EXPORT void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first,
 
 
 
+DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
+
+
+
 DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
 
 
