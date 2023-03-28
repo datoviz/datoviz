@@ -569,7 +569,6 @@ set(sources
     "src/scene/camera.c"
     "src/scene/animation.c"
     "src/scene/app.c"
-    "src/scene/scene.c"
     "src/scene/visuals/pixel.c"
     "src/scene/visual.c"
 

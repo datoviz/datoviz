@@ -11,7 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "vklite.h"
+#include "_math.h"
 
 
 
@@ -47,7 +47,16 @@ typedef struct DvzViewport DvzViewport;
 // NOTE: must correspond to the shader structure in common.glsl
 struct DvzViewport
 {
-    VkViewport viewport; // Vulkan viewport
+    // NOTE: this corresponds to VkViewport, but we want to avoid the inclusion of vklite.h
+    struct
+    {
+        float x;
+        float y;
+        float width;
+        float height;
+        float minDepth;
+        float maxDepth;
+    } viewport; // Vulkan viewport
     vec4 margins;
 
     // Position and size of the viewport in screen coordinates.
