@@ -1,0 +1,59 @@
+/*************************************************************************************************/
+/*  Testing utils                                                                                */
+/*************************************************************************************************/
+
+#ifndef DVZ_HEADER_SCENE_TESTING_UTILS
+#define DVZ_HEADER_SCENE_TESTING_UTILS
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "../testing_utils.h"
+#include "_math.h"
+#include "fileio.h"
+#include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Visual tests                                                                                 */
+/*************************************************************************************************/
+
+static int render_requests(DvzRequester* rqr, DvzGpu* gpu, DvzId board, const char* name)
+{
+    ANN(rqr);
+    ANN(gpu);
+
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Update the board.
+    dvz_update_board(rqr, board);
+
+    // Execute the requests.
+    uint32_t count = 0;
+    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    dvz_renderer_requests(rd, count, reqs);
+
+    // Retrieve the image.
+    DvzSize size = 0;
+    // This pointer will be freed automatically by the renderer.
+    uint8_t* rgb = dvz_renderer_image(rd, board, &size, NULL);
+
+    // Save to a PNG.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/%s.png", ARTIFACTS_DIR, name);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
+
+    // Destroy the requester and renderer.
+    dvz_renderer_destroy(rd);
+
+    return 0;
+}
+
+
+
+#endif

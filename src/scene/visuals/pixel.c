@@ -103,7 +103,7 @@ void dvz_pixel_create(DvzPixel* pixel)
     dvz_baker_attr(baker, 1, 0, offsetof(DvzPixelVertex, color), sizeof(cvec4));
     dvz_baker_slot(baker, 0, sizeof(DvzMVP));
     dvz_baker_slot(baker, 1, sizeof(DvzViewport));
-    dvz_baker_create(baker, 5000); // DEBUG
+    dvz_baker_create(baker, 10000); // DEBUG
 
 
     // Vertex binding.

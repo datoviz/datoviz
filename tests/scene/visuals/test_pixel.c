@@ -11,6 +11,7 @@
 #include "scene/visuals/test_pixel.h"
 #include "renderer.h"
 #include "request.h"
+#include "scene/scene_testing_utils.h"
 #include "scene/visuals/pixel.h"
 #include "test.h"
 #include "testing.h"
@@ -42,7 +43,7 @@ int test_pixel_1(TstSuite* suite)
     DvzPixel* pixel = dvz_pixel(rqr, 0);
 
     // Upload the data.
-    const uint32_t n = 5000;
+    const uint32_t n = 10000;
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -62,21 +63,10 @@ int test_pixel_1(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-
-
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
-
-    DvzRenderer* rd = dvz_renderer(gpu, 0);
-
-    // Create a boards.
+    // Create a board.
     DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId board_id = req.id;
-    // dvz_renderer_request(rd, req);
-
-    // Board clear color.
     req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
-    // dvz_renderer_request(rd, req);
 
     // Record commands.
     dvz_record_begin(rqr, board_id);
@@ -84,29 +74,8 @@ int test_pixel_1(TstSuite* suite)
     dvz_pixel_draw(pixel, board_id, 0, n, 0);
     dvz_record_end(rqr, board_id);
 
-    // Update the board.
-    dvz_update_board(rqr, board_id);
-
-    // Execute the requests.
-    uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
-    dvz_renderer_requests(rd, count, reqs);
-
-    // Retrieve the image.
-    DvzSize size = 0;
-    // This pointer will be freed automatically by the renderer.
-    uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
-
-    // Save to a PNG.
-    char imgpath[1024];
-    snprintf(imgpath, sizeof(imgpath), "%s/visual_pixel.png", ARTIFACTS_DIR);
-    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
-    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
-
-    // Destroy the requester and renderer.
-    dvz_renderer_destroy(rd);
-
-
+    // Render to a PNG.
+    render_requests(rqr, get_gpu(suite), board_id, "visual_pixel");
 
     // Cleanup
     dvz_pixel_destroy(pixel);
