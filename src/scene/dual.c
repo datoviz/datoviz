@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/dual.h"
+#include "_map.h"
 #include "request.h"
 #include "scene/array.h"
 
@@ -22,6 +23,7 @@ DvzDual dvz_dual(DvzRequester* rqr, DvzArray* array, DvzId dat)
 {
     ANN(rqr);
     ANN(array);
+    ASSERT(dat != DVZ_ID_NONE);
 
     DvzDual dual = {0};
     dual.rqr = rqr;

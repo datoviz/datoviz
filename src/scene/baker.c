@@ -43,6 +43,9 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
     ANN(baker);
     ASSERT(binding_idx < baker->vertex_count);
     ASSERT(item_count > 0);
+    log_trace(
+        "create baker vertex binding #%d with %d items, create dat and array", binding_idx,
+        item_count);
 
     DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
 
@@ -53,7 +56,6 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         dvz_create_dat(baker->rqr, DVZ_BUFFER_TYPE_VERTEX, item_count * item_size, 0).id;
 
     DvzArray* array = dvz_array_struct(item_count, item_size);
-
     bv->dual = dvz_dual(baker->rqr, array, dat_id);
 }
 
@@ -63,6 +65,8 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
 {
     ANN(baker);
     ASSERT(slot_idx < baker->slot_count);
+
+    log_trace("create baker descriptor #%d, create dat and array", slot_idx);
 
     DvzBakerDescriptor* bd = &baker->descriptors[slot_idx];
 
@@ -158,6 +162,8 @@ void dvz_baker_indirect(DvzBaker* baker)
 void dvz_baker_duals(DvzBaker* baker, uint32_t item_count)
 {
     ANN(baker);
+    log_trace(
+        "call baker duals, %d bindings, %d descriptors", baker->vertex_count, baker->slot_count);
 
     // Check consistency.
     _check_sizes(baker);
@@ -189,6 +195,11 @@ void dvz_baker_repeat(
     void* data)
 {
     ANN(baker);
+    if (baker->attr_count == 0)
+    {
+        log_error("unitialized baker");
+        return;
+    }
     ASSERT(attr_idx < baker->attr_count);
     ASSERT(count > 0);
     ANN(data);
@@ -206,6 +217,11 @@ void dvz_baker_repeat(
         return;
     }
     ANN(dual);
+    if (dual->array == NULL)
+    {
+        log_error("dual's array is null");
+        return;
+    }
 
     if (first + count * repeats > dual->array->item_count)
     {
