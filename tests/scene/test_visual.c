@@ -31,6 +31,44 @@
 
 
 /*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+static int render_requests(DvzRequester* rqr, DvzGpu* gpu, DvzId board, const char* name)
+{
+    ANN(rqr);
+    ANN(gpu);
+
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Update the board.
+    dvz_update_board(rqr, board);
+
+    // Execute the requests.
+    uint32_t count = 0;
+    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    dvz_renderer_requests(rd, count, reqs);
+
+    // Retrieve the image.
+    DvzSize size = 0;
+    // This pointer will be freed automatically by the renderer.
+    uint8_t* rgb = dvz_renderer_image(rd, board, &size, NULL);
+
+    // Save to a PNG.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/%s.png", ARTIFACTS_DIR, name);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
+
+    // Destroy the requester and renderer.
+    dvz_renderer_destroy(rd);
+
+    return 0;
+}
+
+
+
+/*************************************************************************************************/
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
@@ -82,8 +120,20 @@ int test_visual_1(TstSuite* suite)
     }
     // dvz_visual_data(visual, 1, 0, n, color);
 
-    // Visual draw.
-    // dvz_visual_draw(visual, board, 0, n);
+
+    // Create a board.
+    DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzId board_id = req.id;
+    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
+
+    // Record the commands.
+    dvz_record_begin(rqr, board_id);
+    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_visual_draw(visual, board_id, 0, n);
+    dvz_record_end(rqr, board_id);
+
+    // Render to a PNG.
+    // render_requests(rqr, get_gpu(suite), board_id, "visual_1");
 
     // Cleanup
     dvz_visual_destroy(visual);
