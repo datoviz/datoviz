@@ -100,10 +100,10 @@ void dvz_pixel_create(DvzPixel* pixel)
     unsigned char* buffer = dvz_resource_shader("graphics_basic_vert", &size);
     dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_VERTEX, size, buffer);
     buffer = dvz_resource_shader("graphics_basic_frag", &size);
-    dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_VERTEX, size, buffer);
+    dvz_set_spirv(rqr, graphics_id, DVZ_SHADER_FRAGMENT, size, buffer);
 
     // Primitive topology.
-    dvz_set_primitive(rqr, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_set_primitive(rqr, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST);
 
     // Polygon mode.
     dvz_set_polygon(rqr, graphics_id, DVZ_POLYGON_MODE_FILL);
@@ -116,7 +116,7 @@ void dvz_pixel_create(DvzPixel* pixel)
     dvz_baker_attr(baker, 1, 0, offsetof(DvzPixelVertex, color), sizeof(cvec4));
     dvz_baker_slot(baker, 0, sizeof(DvzMVP));
     dvz_baker_slot(baker, 1, sizeof(DvzViewport));
-    dvz_baker_duals(baker, 50); // DEBUG
+    dvz_baker_duals(baker, 5000); // DEBUG
 
 
     // Vertex binding.
@@ -131,6 +131,20 @@ void dvz_pixel_create(DvzPixel* pixel)
     // Descriptor slots.
     dvz_set_slot(rqr, graphics_id, 0, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
     dvz_set_slot(rqr, graphics_id, 1, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+
+    // Bindings.
+    dvz_bind_vertex(rqr, graphics_id, 0, baker->vertex_bindings[0].dual.dat, 0);
+    dvz_bind_dat(rqr, graphics_id, 0, baker->descriptors[0].dual.dat);
+    dvz_bind_dat(rqr, graphics_id, 1, baker->descriptors[1].dual.dat);
+
+    // MVP data.
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_baker_uniform(baker, 0, sizeof(DvzMVP), &mvp);
+
+    // Viewport data.
+    // TODO: pass viewport info
+    DvzViewport viewport = dvz_viewport_default(0, 0);
+    dvz_baker_uniform(baker, 1, sizeof(DvzViewport), &viewport);
 
     dvz_obj_created(&pixel->obj);
 

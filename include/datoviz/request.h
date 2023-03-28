@@ -654,12 +654,17 @@ dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptor
 
 
 
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
 /**
  * Create a request for associating a vertex dat to a graphics pipe.
  *
  * @param rqr the requester
  * @param graphics the id of the graphics pipe
  * @param dat the id of the dat with the vertex data
+ * @param offset the offset within the dat
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
@@ -667,13 +672,18 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, 
 
 
 
+/**
+ * Create a request for associating an index dat to a graphics pipe.
+ *
+ * @param rqr the requester
+ * @param graphics the id of the graphics pipe
+ * @param dat the id of the dat with the index data
+ * @param offset the offset within the dat
+ * @returns the request
+ */
 DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
 
 
-
-/*************************************************************************************************/
-/*  Bindings                                                                                     */
-/*************************************************************************************************/
 
 /**
  * Create a request for associating a dat to a pipe's slot.

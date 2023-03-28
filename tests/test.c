@@ -227,10 +227,14 @@ int dvz_run_tests(const char* match)
     TEST(test_renderer_resize)
     TEST(test_renderer_image)
 
+    // Test visuals.
+    TEST(test_pixel_1)
+
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
 
 
+    // OLD TESTS
     // Testing builtin graphics.
     TEST(test_graphics_point)
     TEST(test_graphics_triangle)
@@ -295,9 +299,6 @@ int dvz_run_tests(const char* match)
     TEST(test_arcball_1)
     TEST(test_camera_1)
     TEST(test_animation_1)
-
-    // Test visuals.
-    TEST(test_pixel_1)
 
     // Testing app.
     TEST(test_app_scatter)

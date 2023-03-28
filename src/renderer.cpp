@@ -419,6 +419,30 @@ static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+    log_trace("delete pipe");
+
+    GET_ID(DvzPipe, pipe, req.id)
+
+    dvz_pipe_destroy(pipe);
+    return NULL;
+}
+
+
+
+/*************************************************************************************************/
+/*  Computes                                                                                     */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Bindings                                                                                     */
+/*************************************************************************************************/
+
 static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
@@ -458,17 +482,7 @@ static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
 
 
 
-/*************************************************************************************************/
-/*  Computes                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Pipes                                                                                        */
-/*************************************************************************************************/
-
-static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -491,7 +505,7 @@ static void* _pipe_dat(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_tex(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -513,20 +527,6 @@ static void* _pipe_tex(DvzRenderer* rd, DvzRequest req)
     if (dvz_pipe_complete(pipe))
         dvz_descriptors_update(&pipe->descriptors);
 
-    return NULL;
-}
-
-
-
-static void* _pipe_delete(DvzRenderer* rd, DvzRequest req)
-{
-    ANN(rd);
-    ASSERT(req.id != 0);
-    log_trace("delete pipe");
-
-    GET_ID(DvzPipe, pipe, req.id)
-
-    dvz_pipe_destroy(pipe);
     return NULL;
 }
 
@@ -911,13 +911,13 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(SET, VERTEX, _graphics_vertex)
     ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
     ROUTE(SET, SLOT, _graphics_slot)
+    ROUTE(DELETE, GRAPHICS, _graphics_delete)
+
+    // Bindings.
     ROUTE(BIND, VERTEX, _graphics_bind_vertex)
     ROUTE(BIND, INDEX, _graphics_bind_index)
-
-    // Pipes.
-    ROUTE(BIND, DAT, _pipe_dat)
-    ROUTE(BIND, TEX, _pipe_tex)
-    ROUTE(DELETE, GRAPHICS, _pipe_delete)
+    ROUTE(BIND, DAT, _graphics_bind_dat)
+    ROUTE(BIND, TEX, _graphics_bind_tex)
 
     // TODO: computes.
 
