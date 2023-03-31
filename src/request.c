@@ -609,7 +609,7 @@ static void _print_bind_dat(DvzRequest* req)
         "  content:\n"
         "    slot_idx: %d\n"
         "    dat: 0x%" PRIx64 "\n",
-        req->id, req->content.set_dat.slot_idx, req->content.set_dat.dat);
+        req->id, req->content.bind_dat.slot_idx, req->content.bind_dat.dat);
 }
 
 static void _print_bind_tex(DvzRequest* req)
@@ -623,10 +623,10 @@ static void _print_bind_tex(DvzRequest* req)
         "    slot_idx: %d\n"
         "    tex: 0x%" PRIx64 "\n"
         "    sampler: 0x%" PRIx64 "\n",
-        req->id,                       //
-        req->content.set_tex.slot_idx, //
-        req->content.set_tex.tex,      //
-        req->content.set_tex.sampler);
+        req->id,                        //
+        req->content.bind_tex.slot_idx, //
+        req->content.bind_tex.tex,      //
+        req->content.bind_tex.sampler);
 }
 
 
@@ -1348,38 +1348,6 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
 
 
 
-DvzRequest
-dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
-{
-    CREATE_REQUEST(BIND, VERTEX);
-    req.id = graphics;
-    req.content.bind_vertex.binding_idx = binding_idx;
-    req.content.bind_vertex.dat = dat;
-    req.content.bind_vertex.offset = offset;
-
-    IF_VERBOSE
-    _print_bind_vertex(&req);
-
-    RETURN_REQUEST
-}
-
-
-
-DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize offset)
-{
-    CREATE_REQUEST(BIND, INDEX);
-    req.id = graphics;
-    req.content.bind_index.dat = dat;
-    req.content.bind_index.offset = offset;
-
-    IF_VERBOSE
-    _print_bind_index(&req);
-
-    RETURN_REQUEST
-}
-
-
-
 DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive)
 {
     CREATE_REQUEST(SET, PRIMITIVE);
@@ -1556,12 +1524,44 @@ dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptor
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
+DvzRequest
+dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
+{
+    CREATE_REQUEST(BIND, VERTEX);
+    req.id = graphics;
+    req.content.bind_vertex.binding_idx = binding_idx;
+    req.content.bind_vertex.dat = dat;
+    req.content.bind_vertex.offset = offset;
+
+    IF_VERBOSE
+    _print_bind_vertex(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize offset)
+{
+    CREATE_REQUEST(BIND, INDEX);
+    req.id = graphics;
+    req.content.bind_index.dat = dat;
+    req.content.bind_index.offset = offset;
+
+    IF_VERBOSE
+    _print_bind_index(&req);
+
+    RETURN_REQUEST
+}
+
+
+
 DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat)
 {
     CREATE_REQUEST(BIND, DAT);
     req.id = pipe;
-    req.content.set_dat.slot_idx = slot_idx;
-    req.content.set_dat.dat = dat;
+    req.content.bind_dat.slot_idx = slot_idx;
+    req.content.bind_dat.dat = dat;
 
     IF_VERBOSE
     _print_bind_dat(&req);
@@ -1575,9 +1575,9 @@ DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
 {
     CREATE_REQUEST(BIND, TEX);
     req.id = pipe;
-    req.content.set_tex.slot_idx = slot_idx;
-    req.content.set_tex.tex = tex;
-    req.content.set_tex.sampler = sampler;
+    req.content.bind_tex.slot_idx = slot_idx;
+    req.content.bind_tex.tex = tex;
+    req.content.bind_tex.sampler = sampler;
 
     IF_VERBOSE
     _print_bind_tex(&req);

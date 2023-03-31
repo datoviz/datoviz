@@ -217,22 +217,20 @@ union DvzRequestContent
         DvzSize offset;
     } bind_index;
 
-
-
-    // Set pipe descriptor with dat.
+    // Bind a dat to a descriptor slot.
     struct
     {
         uint32_t slot_idx;
         DvzId dat;
-    } set_dat;
+    } bind_dat;
 
-    // Set pipe descriptor with tex.
+    // Bind a tex to a descriptor slot.
     struct
     {
         uint32_t slot_idx;
         DvzId tex;
         DvzId sampler;
-    } set_tex;
+    } bind_tex;
 
 
 
@@ -623,31 +621,51 @@ DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType typ
 DVZ_EXPORT DvzRequest
 dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_type);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_test);
+
+
 
 DVZ_EXPORT DvzRequest
 dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode polygon_mode);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode);
+
+
 
 DVZ_EXPORT DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_face);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_glsl(
     DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size, const char* code);
+
+
 
 DVZ_EXPORT DvzRequest dvz_set_spirv(
     DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
     const unsigned char* buffer);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_vertex(
     DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,
     DvzVertexInputRate input_rate);
 
+
+
 DVZ_EXPORT DvzRequest dvz_set_attr(
     DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset);
+
+
 
 DVZ_EXPORT DvzRequest
 dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);

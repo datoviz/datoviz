@@ -491,12 +491,12 @@ static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzPipe, pipe, req.id)
 
     // Get the dat data.
-    GET_ID(DvzDat, dat, req.content.set_dat.dat);
+    GET_ID(DvzDat, dat, req.content.bind_dat.dat);
 
     // Link the dat.
-    // pipe->dats[req.content.set_dat.slot_idx] = dat;
+    // pipe->dats[req.content.bind_dat.slot_idx] = dat;
 
-    dvz_pipe_dat(pipe, req.content.set_dat.slot_idx, dat);
+    dvz_pipe_dat(pipe, req.content.bind_dat.slot_idx, dat);
     if (dvz_pipe_complete(pipe))
         dvz_descriptors_update(&pipe->descriptors);
 
@@ -514,16 +514,16 @@ static void* _graphics_bind_tex(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzPipe, pipe, req.id)
 
     // Get the tex.
-    GET_ID(DvzTex, tex, req.content.set_tex.tex);
+    GET_ID(DvzTex, tex, req.content.bind_tex.tex);
 
     // Get the sampler.
-    GET_ID(DvzSampler, sampler, req.content.set_tex.sampler);
+    GET_ID(DvzSampler, sampler, req.content.bind_tex.sampler);
     ANN(tex);
 
     // Link the tex.
     // pipe->texs[req.content.set_binding.slot_idx] = tex;
 
-    dvz_pipe_tex(pipe, req.content.set_tex.slot_idx, tex, sampler);
+    dvz_pipe_tex(pipe, req.content.bind_tex.slot_idx, tex, sampler);
     if (dvz_pipe_complete(pipe))
         dvz_descriptors_update(&pipe->descriptors);
 
