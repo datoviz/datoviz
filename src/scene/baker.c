@@ -30,7 +30,7 @@ static void _check_sizes(DvzBaker* baker)
     }
 
     // The vertex binding stride should be larger than, or equal, to that sum.
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
         ASSERT(baker->vertex_bindings[binding_idx].stride >= sizes[binding_idx]);
     }
@@ -38,17 +38,20 @@ static void _check_sizes(DvzBaker* baker)
 
 
 
-static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32_t item_count)
+static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32_t vertex_count)
 {
     ANN(baker);
-    ASSERT(binding_idx < baker->vertex_count);
-    ASSERT(item_count > 0);
+    ASSERT(binding_idx < baker->binding_count);
+    ASSERT(vertex_count > 0);
+
     DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
     ANN(bv);
+
     log_trace(
-        "create baker vertex binding #%d with %d items, stride %" PRId64 ", create dat and array",
-        binding_idx, item_count, bv->stride);
-    bv->dual = dvz_dual_vertex(baker->rqr, item_count, bv->stride);
+        "create baker vertex binding #%d with %d vertices, stride %" PRId64
+        ", create dat and array",
+        binding_idx, vertex_count, bv->stride);
+    bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride);
 }
 
 
@@ -89,7 +92,7 @@ void dvz_baker_destroy(DvzBaker* baker)
 
     // Destroy all duals.
     DvzBakerVertex* bv = NULL;
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
         bv = &baker->vertex_bindings[binding_idx];
         dvz_array_destroy(bv->dual.array);
@@ -124,7 +127,7 @@ void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride)
 
     baker->vertex_bindings[binding_idx].binding_idx = binding_idx;
     baker->vertex_bindings[binding_idx].stride = stride;
-    baker->vertex_count = MAX(baker->vertex_count, binding_idx + 1);
+    baker->binding_count = MAX(baker->binding_count, binding_idx + 1);
 
     log_trace("declare vertex binding #%d with stride %d", binding_idx, stride);
 }
@@ -190,6 +193,24 @@ void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t
 
 
 
+void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count)
+{
+    ANN(baker);
+    log_trace("resize the baker to %d vertices", vertex_count);
+
+    // Resize the vertex bindings.
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
+    {
+        // Resize the underlying dual array.
+        dvz_array_resize(baker->vertex_bindings[binding_idx].dual.array, vertex_count);
+
+        // Emit the dual's dat resize commands.
+        dvz_dual_resize(&baker->vertex_bindings[binding_idx].dual, vertex_count);
+    }
+}
+
+
+
 void dvz_baker_repeat(
     DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, uint32_t repeats,
     void* data)
@@ -206,7 +227,7 @@ void dvz_baker_repeat(
 
     DvzBakerAttr* attr = &baker->vertex_attrs[attr_idx];
     uint32_t binding_idx = attr->binding_idx;
-    ASSERT(binding_idx < baker->vertex_count);
+    ASSERT(binding_idx < baker->binding_count);
 
     DvzBakerVertex* vertex = &baker->vertex_bindings[binding_idx];
 
@@ -280,20 +301,20 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
 /*  Baker sync functions                                                                         */
 /*************************************************************************************************/
 
-void dvz_baker_create(DvzBaker* baker, uint32_t item_count)
+void dvz_baker_create(DvzBaker* baker, uint32_t vertex_count)
 {
     ANN(baker);
     log_trace(
         "create the dat, arrays, %d bindings, %d descriptors", //
-        baker->vertex_count, baker->slot_count);
+        baker->binding_count, baker->slot_count);
 
     // Check size consistency.
     _check_sizes(baker);
 
     // Create the vertex bindings.
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
-        _create_vertex_binding(baker, binding_idx, item_count);
+        _create_vertex_binding(baker, binding_idx, vertex_count);
     }
 
     // Create the uniform dats for the descriptors.
@@ -311,7 +332,7 @@ void dvz_baker_update(DvzBaker* baker)
     ANN(baker);
 
     // Update the vertex bindings duals.
-    for (uint32_t binding_idx = 0; binding_idx < baker->vertex_count; binding_idx++)
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
         dvz_dual_update(&baker->vertex_bindings[binding_idx].dual);
     }

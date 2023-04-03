@@ -96,8 +96,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzVisual*
-dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, uint32_t item_count, int flags);
+DVZ_EXPORT DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags);
 
 
 
@@ -110,7 +109,7 @@ DVZ_EXPORT void dvz_visual_shader(DvzVisual* visual, const char* name);
 
 
 
-DVZ_EXPORT void dvz_visual_count(DvzVisual* visual, uint32_t item_count);
+DVZ_EXPORT void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
 
 
 
@@ -130,7 +129,7 @@ DVZ_EXPORT void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims 
 
 
 
-DVZ_EXPORT void dvz_visual_create(DvzVisual* visual);
+DVZ_EXPORT void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
 
 
 

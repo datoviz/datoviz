@@ -68,16 +68,19 @@ DVZ_EXPORT void dvz_dual_column(
     DvzDual* dual, DvzSize offset, DvzSize col_size, uint32_t first, uint32_t count,
     uint32_t repeats, void* data);
 
+DVZ_EXPORT void dvz_dual_resize(DvzDual* dual, uint32_t count);
+
 DVZ_EXPORT void dvz_dual_update(DvzDual* dual);
 
 DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);
+
 
 
 /*************************************************************************************************/
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t item_count, DvzSize item_size);
+DVZ_EXPORT DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size);
 
 DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size);
 

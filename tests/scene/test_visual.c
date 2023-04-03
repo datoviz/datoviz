@@ -43,7 +43,7 @@ int test_visual_1(TstSuite* suite)
     uint32_t n = 10000;
 
     // Create a visual.
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, n, 0);
+    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_basic");
@@ -57,7 +57,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_dat(visual, 1, sizeof(DvzViewport));
 
     // Create the visual.
-    dvz_visual_create(visual);
+    dvz_visual_create(visual, n, n);
 
     // Default uniform data.
     dvz_visual_mvp(visual, dvz_mvp_default());

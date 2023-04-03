@@ -104,6 +104,21 @@ void dvz_dual_column(
 
 
 
+void dvz_dual_resize(DvzDual* dual, uint32_t count)
+{
+    ANN(dual);
+    ANN(dual->array);
+    ASSERT(count > 0);
+
+    // NOTE: for now, we do not make use of count
+    dvz_dual_clear(dual);
+
+    // Send a dat update command.
+    dvz_resize_dat(dual->rqr, dual->dat, count * dual->array->item_size);
+}
+
+
+
 void dvz_dual_update(DvzDual* dual)
 {
     ANN(dual);
@@ -137,25 +152,25 @@ void dvz_dual_destroy(DvzDual* dual) { ANN(dual); }
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t item_count, DvzSize item_size)
+DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size)
 {
     ANN(rqr);
-    ASSERT(item_count > 0);
-    ASSERT(item_size > 0);
+    ASSERT(vertex_count > 0);
+    ASSERT(vertex_size > 0);
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, item_count * item_size, 0).id;
-    DvzArray* array = dvz_array_struct(item_count, item_size);
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, 0).id;
+    DvzArray* array = dvz_array_struct(vertex_count, vertex_size);
     return dvz_dual(rqr, array, dat_id);
 }
 
 
 
-DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size)
+DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size)
 {
     ANN(rqr);
-    ASSERT(item_size > 0);
+    ASSERT(vertex_size > 0);
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, item_size, 0).id;
-    DvzArray* array = dvz_array_struct(1, item_size);
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, vertex_size, 0).id;
+    DvzArray* array = dvz_array_struct(1, vertex_size);
     return dvz_dual(rqr, array, dat_id);
 }

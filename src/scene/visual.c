@@ -49,17 +49,14 @@ static DvzSize get_attr_size(DvzFormat format)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual*
-dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, uint32_t item_count, int flags)
+DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags)
 {
     ANN(rqr);
-    ASSERT(item_count > 0);
 
     DvzVisual* visual = (DvzVisual*)calloc(1, sizeof(DvzVisual));
 
     visual->flags = flags;
     visual->rqr = rqr;
-    visual->item_count = item_count;
 
     visual->baker = dvz_baker(rqr, 0);
 
@@ -117,13 +114,19 @@ void dvz_visual_shader(DvzVisual* visual, const char* name)
 
 
 
-void dvz_visual_count(DvzVisual* visual, uint32_t item_count)
+void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
 {
     ANN(visual);
     ASSERT(item_count > 0);
 
+    // Mark the new item count.
     visual->item_count = item_count;
-    // TODO: resize the baker, emit the dat resize commands, resize the underlying arrays
+
+    // Resize the baker, resize the underlying arrays, emit the dat resize commands.
+    // TODO: write tests, NOT TESTED YET
+    dvz_baker_resize(visual->baker, vertex_count);
+
+    // TODO: resize the groups?
 }
 
 
@@ -199,7 +202,7 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int f
 
 
 
-void dvz_visual_create(DvzVisual* visual)
+void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
 {
     ANN(visual);
 
@@ -295,7 +298,9 @@ void dvz_visual_create(DvzVisual* visual)
 
     // The baker slots are declared directly in dvz_visual_dat() and dvz_visual_tex().
     // Now, we can create the baker. This will create the arrays and dats.
-    dvz_baker_create(baker, visual->item_count);
+
+    visual->item_count = item_count;
+    dvz_baker_create(baker, vertex_count);
 
     // We now need to send the vertex/descriptor binding requests to the GPU.
 

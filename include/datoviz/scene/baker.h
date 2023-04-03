@@ -72,7 +72,7 @@ struct DvzBaker
     DvzRequester* rqr;
     int flags;
 
-    uint32_t vertex_count;
+    uint32_t binding_count;
     uint32_t attr_count;
     uint32_t slot_count;
 
@@ -124,12 +124,16 @@ DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_
 
 
 // Internal function, used to instantiate the DvzDual instances.
-DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t item_count);
+DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t vertex_count);
 
 
 
 DVZ_EXPORT void
 dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
+
+
+
+DVZ_EXPORT void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count);
 
 
 

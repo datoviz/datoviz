@@ -40,7 +40,7 @@ DvzPixel* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags)
     pixel->rqr = rqr;
     pixel->flags = flags;
 
-    pixel->visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, item_count, 0);
+    pixel->visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
     ANN(pixel->visual);
 
     // Visual shaders.
@@ -55,7 +55,7 @@ DvzPixel* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags)
     dvz_visual_dat(pixel->visual, 1, sizeof(DvzViewport));
 
     // Create the visual.
-    dvz_visual_create(pixel->visual);
+    dvz_visual_create(pixel->visual, item_count, item_count);
 
     dvz_obj_init(&pixel->obj);
     return pixel;
