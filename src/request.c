@@ -1556,12 +1556,14 @@ DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize 
 
 
 
-DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat)
+DvzRequest
+dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset)
 {
     CREATE_REQUEST(BIND, DAT);
     req.id = pipe;
     req.content.bind_dat.slot_idx = slot_idx;
     req.content.bind_dat.dat = dat;
+    req.content.bind_dat.offset = offset;
 
     IF_VERBOSE
     _print_bind_dat(&req);
@@ -1571,13 +1573,15 @@ DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId 
 
 
 
-DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler)
+DvzRequest dvz_bind_tex(
+    DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 {
     CREATE_REQUEST(BIND, TEX);
     req.id = pipe;
     req.content.bind_tex.slot_idx = slot_idx;
     req.content.bind_tex.tex = tex;
     req.content.bind_tex.sampler = sampler;
+    memcpy(&req.content.bind_tex.offset, offset, sizeof(uvec3));
 
     IF_VERBOSE
     _print_bind_tex(&req);

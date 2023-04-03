@@ -222,6 +222,7 @@ union DvzRequestContent
     {
         uint32_t slot_idx;
         DvzId dat;
+        DvzSize offset;
     } bind_dat;
 
     // Bind a tex to a descriptor slot.
@@ -230,6 +231,7 @@ union DvzRequestContent
         uint32_t slot_idx;
         DvzId tex;
         DvzId sampler;
+        uvec3 offset;
     } bind_tex;
 
 
@@ -710,9 +712,11 @@ DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, D
  * @param pipe the id of the pipe
  * @param slot_idx the index of the descriptor slot
  * @param dat the id of the dat to bind to the pipe
+ * @param offset the offset
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat);
+DVZ_EXPORT DvzRequest
+dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset);
 
 
 
@@ -724,10 +728,11 @@ DVZ_EXPORT DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_
  * @param slot_idx the index of the descriptor slot
  * @param tex the id of the tex to bind to the pipe
  * @param tex the id of the sampler
+ * @param offset the offset
  * @returns the request
  */
-DVZ_EXPORT DvzRequest
-dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler);
+DVZ_EXPORT DvzRequest dvz_bind_tex(
+    DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
 
 
 

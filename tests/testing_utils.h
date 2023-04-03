@@ -369,7 +369,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
     req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
     wrapper->mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, wrapper->graphics_id, 0, wrapper->mvp_id);
+    req = dvz_bind_dat(rqr, wrapper->graphics_id, 0, wrapper->mvp_id, 0);
 
     wrapper->mvp = dvz_mvp_default();
     req = dvz_upload_dat(rqr, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
@@ -379,7 +379,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
         rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     wrapper->viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, wrapper->graphics_id, 1, wrapper->viewport_id);
+    req = dvz_bind_dat(rqr, wrapper->graphics_id, 1, wrapper->viewport_id, 0);
 
     wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
     req = dvz_upload_dat(rqr, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);

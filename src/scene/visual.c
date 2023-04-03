@@ -310,7 +310,7 @@ void dvz_visual_create(DvzVisual* visual)
     // Send the dat bindings commands.
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
-        dvz_bind_dat(rqr, graphics_id, slot_idx, baker->descriptors[slot_idx].dual.dat);
+        dvz_bind_dat(rqr, graphics_id, slot_idx, baker->descriptors[slot_idx].dual.dat, 0);
     }
 
     // TODO: same for tex

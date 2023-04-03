@@ -225,7 +225,7 @@ int test_presenter_2(TstSuite* suite)
             rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
         mvp_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id);
+        req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
@@ -235,7 +235,7 @@ int test_presenter_2(TstSuite* suite)
         req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         viewport_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id);
+        req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
 
         DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
         // dvz_show_base64(sizeof(viewport), &viewport);
@@ -652,8 +652,8 @@ int test_presenter_multi(TstSuite* suite)
         req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
         mvp_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id_0, 0, mvp_id);
-        req = dvz_bind_dat(rqr, graphics_id_1, 0, mvp_id);
+        req = dvz_bind_dat(rqr, graphics_id_0, 0, mvp_id, 0);
+        req = dvz_bind_dat(rqr, graphics_id_1, 0, mvp_id, 0);
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
@@ -663,8 +663,8 @@ int test_presenter_multi(TstSuite* suite)
         req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         viewport_id = req.id;
 
-        dvz_bind_dat(rqr, graphics_id_0, 1, viewport_id);
-        dvz_bind_dat(rqr, graphics_id_1, 1, viewport_id);
+        dvz_bind_dat(rqr, graphics_id_0, 1, viewport_id, 0);
+        dvz_bind_dat(rqr, graphics_id_1, 1, viewport_id, 0);
 
         DvzViewport viewport = dvz_viewport_default(WIDTH / 2, HEIGHT / 2);
         // dvz_show_base64(sizeof(viewport), &viewport);

@@ -94,7 +94,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id);
+    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzMVP mvp = dvz_mvp_default();
@@ -107,7 +107,7 @@ int test_renderer_1(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id);
+    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
@@ -228,7 +228,7 @@ int test_renderer_graphics(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id);
+    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzMVP mvp = dvz_mvp_default();
@@ -241,7 +241,7 @@ int test_renderer_graphics(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id);
+    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
@@ -409,7 +409,7 @@ int test_renderer_image(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId params_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 2, params_id);
+    req = dvz_bind_dat(rqr, graphics_id, 2, params_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
@@ -434,7 +434,7 @@ int test_renderer_image(TstSuite* suite)
     // Bind the texture.
     for (uint32_t i = 3; i < 3 + 4; i++)
     {
-        req = dvz_bind_tex(rqr, graphics_id, i, tex_id, sampler_id);
+        req = dvz_bind_tex(rqr, graphics_id, i, tex_id, sampler_id, DVZ_ZERO_OFFSET);
         dvz_renderer_request(rd, req);
     }
 
