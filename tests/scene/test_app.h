@@ -25,6 +25,8 @@ int test_app_arcball(TstSuite*);
 
 int test_app_anim(TstSuite*);
 
+int test_app_pixel(TstSuite*);
+
 
 
 #endif
