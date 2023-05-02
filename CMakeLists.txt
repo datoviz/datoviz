@@ -2,7 +2,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 cmake_minimum_required(VERSION 3.10)
 enable_testing()
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include("cmake/colormsg.cmake")
 include(FetchContent)
 
@@ -203,10 +203,10 @@ set(COMMON_FLAGS "${COMMON_FLAGS} -fvisibility=hidden")
 # -------------------------------------------------------------------------------------------------
 
 set(INCL_DIRS
-    ${CMAKE_SOURCE_DIR}/external
-    ${CMAKE_SOURCE_DIR}/external/imgui
-    ${CMAKE_SOURCE_DIR}/external/imgui/backends
-    ${CMAKE_SOURCE_DIR}/include/
+    ${PROJECT_SOURCE_DIR}/external
+    ${PROJECT_SOURCE_DIR}/external/imgui
+    ${PROJECT_SOURCE_DIR}/external/imgui/backends
+    ${PROJECT_SOURCE_DIR}/include/
     ${Vulkan_INCLUDE_DIRS}
 )
 set(LINK_LIBS m glfw cglm pthread)
@@ -322,11 +322,11 @@ endif()
 # Build variables and macros
 # -------------------------------------------------------------------------------------------------
 
-set(DATA_DIR "${CMAKE_SOURCE_DIR}/data")
-set(SPIRV_DIR ${CMAKE_BINARY_DIR}/spirv)
-set(ARTIFACTS_DIR "${CMAKE_BINARY_DIR}/artifacts")
+set(DATA_DIR "${PROJECT_SOURCE_DIR}/data")
+set(SPIRV_DIR ${PROJECT_BINARY_DIR}/spirv)
+set(ARTIFACTS_DIR "${PROJECT_BINARY_DIR}/artifacts")
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR})
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR})
 file(MAKE_DIRECTORY ${SPIRV_DIR})
 file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 
@@ -334,7 +334,7 @@ file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
     ENABLE_VALIDATION_LAYERS=1
-    ROOT_DIR=\"${CMAKE_SOURCE_DIR}\"
+    ROOT_DIR=\"${PROJECT_SOURCE_DIR}\"
     DATA_DIR=\"${DATA_DIR}\"
     SPIRV_DIR=\"${SPIRV_DIR}\"
     ARTIFACTS_DIR=\"${ARTIFACTS_DIR}\"
@@ -373,7 +373,7 @@ foreach(shader_source ${shader_sources})
         OUTPUT ${shader_output}
         COMMAND ${GLSLC}  # this is a target declared by the glslc fetch module
             -o "${shader_output}" ${shader_source}
-            -I "${CMAKE_SOURCE_DIR}/include/datoviz/glsl"
+            -I "${PROJECT_SOURCE_DIR}/include/datoviz/glsl"
         DEPENDS ${shader_source} ${glslang}
         IMPLICIT_DEPENDS ${shader_source} ${glslang}
         )
@@ -384,14 +384,14 @@ add_custom_target(shaders_spirv DEPENDS ${shader_outputs})
 # NOTE: Only include graphics shaders in the embed resources files.
 # file(GLOB embed_spirv "${SPIRV_DIR}/graphics_*.spv")
 # message(${embed_spirv})
-set(path_shadersc "${CMAKE_BINARY_DIR}/_shaders.c")
+set(path_shadersc "${PROJECT_BINARY_DIR}/_shaders.c")
 add_custom_command(
     OUTPUT ${path_shadersc}
     COMMAND ${CMAKE_COMMAND}
     -D DIR="${SPIRV_DIR}/*"
     -D PREFIX="shader"
     -D OUTPUT=${path_shadersc}
-    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+    -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
     DEPENDS shaders_spirv ${shader_sources}
     IMPLICIT_DEPENDS shaders_spirv ${shader_sources}
 )
@@ -403,29 +403,29 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 # -------------------------------------------------------------------------------------------------
 
 # Color texture.
-set(path_colortex "${CMAKE_BINARY_DIR}/_colortex.c")
+set(path_colortex "${PROJECT_BINARY_DIR}/_colortex.c")
 add_custom_command(
     OUTPUT ${path_colortex}
     COMMAND ${CMAKE_COMMAND}
-    -D DIR="${CMAKE_SOURCE_DIR}/data/textures/color_texture.img"
+    -D DIR="${PROJECT_SOURCE_DIR}/data/textures/color_texture.img"
     -D PREFIX="texture"
     -D OUTPUT=${path_colortex}
-    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+    -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
 
 # Fonts.
-set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
+set(path_fonts "${PROJECT_BINARY_DIR}/_fonts.c")
 set(font_files
-    "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
-    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
-    "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
+    "${PROJECT_SOURCE_DIR}/data/textures/font_inconsolata.png"
+    "${PROJECT_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
+    "${PROJECT_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
 add_custom_command(
     OUTPUT ${path_fonts}
     COMMAND ${CMAKE_COMMAND}
     -D DIR="${font_files}"
     -D PREFIX="font"
     -D OUTPUT=${path_fonts}
-    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+    -P "${PROJECT_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
 
 
