@@ -15,6 +15,7 @@
 #include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/panzoom.h"
+#include "scene/viewset.h"
 #include "scene/visuals/pixel.h"
 #include "test.h"
 #include "testing.h"
@@ -464,6 +465,72 @@ int test_app_pixel(TstSuite* suite)
     // Cleanup
     dvz_app_destroy(app);
     // dvz_pixel_destroy(pixel);
+    FREE(pos);
+    FREE(color);
+    return 0;
+}
+
+
+
+int test_app_viewset(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app();
+    DvzRequester* rqr = dvz_app_requester(app);
+
+    // Upload the data.
+    const uint32_t n = 10000;
+
+    DvzPixel* pixel = dvz_pixel(rqr, n, 0);
+
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_pixel_position(pixel, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 128;
+    }
+    dvz_pixel_color(pixel, 0, n, color, 0);
+
+    // Viewport.
+    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    dvz_pixel_viewport(pixel, viewport);
+
+    // Create a canvas.
+    DvzRequest req =
+        dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+    DvzId canvas_id = req.id;
+
+    // Create a viewset.
+    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
+
+    // Create a view.
+    DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+
+    // Create an instance.
+    DvzInstance* instance = dvz_view_instance(view, pixel->visual, 0, n);
+    ANN(instance);
+
+    // Build the viewset.
+    dvz_viewset_build(viewset);
+
+    // Run the app.
+    dvz_app_run(app, N_FRAMES);
+
+    // Cleanup
+    dvz_app_destroy(app);
+    dvz_viewset_destroy(viewset);
     FREE(pos);
     FREE(color);
     return 0;

@@ -41,7 +41,7 @@ int test_viewset_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
-    uint32_t n = 10000;
+    uint32_t n = 10;
 
     // Create a visual.
     DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
@@ -61,7 +61,8 @@ int test_viewset_1(TstSuite* suite)
     DvzInstance* instance = dvz_view_instance(view, visual, 0, n);
     dvz_instance_visible(instance, true);
 
-    // dvz_viewset_build(viewset);
+    dvz_viewset_build(viewset);
+    // dvz_requester_print(rqr);
 
     dvz_instance_destroy(instance);
     dvz_view_destroy(view);

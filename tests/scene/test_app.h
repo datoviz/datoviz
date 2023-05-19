@@ -27,6 +27,8 @@ int test_app_anim(TstSuite*);
 
 int test_app_pixel(TstSuite*);
 
+int test_app_viewset(TstSuite*);
+
 
 
 #endif

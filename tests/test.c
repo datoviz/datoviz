@@ -309,6 +309,7 @@ int dvz_run_tests(const char* match)
     TEST(test_app_arcball)
     TEST(test_app_anim)
     TEST(test_app_pixel)
+    TEST(test_app_viewset)
 
 
 
