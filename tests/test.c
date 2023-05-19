@@ -22,6 +22,7 @@
 #include "scene/test_dual.h"
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
+#include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_pixel.h"
 #include "test.h"
@@ -230,6 +231,7 @@ int dvz_run_tests(const char* match)
 
     // Test visuals.
     TEST(test_visual_1)
+    TEST(test_viewset_1)
     TEST(test_pixel_1)
 
     // Teardown the gpu fixture.

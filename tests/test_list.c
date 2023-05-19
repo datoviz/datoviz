@@ -81,6 +81,9 @@ int test_list_1(TstSuite* suite)
     AT(dvz_list_index(list, c) == 2);
     AT(dvz_list_index(list, c + 1) == UINT64_MAX);
 
+    dvz_list_clear(list);
+    AT(dvz_list_count(list) == 0);
+
     // Destroy the list.
     dvz_list_destroy(list);
     return 0;

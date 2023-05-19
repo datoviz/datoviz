@@ -137,6 +137,14 @@ bool dvz_list_has(DvzList* list, int value) { return dvz_list_index(list, value)
 
 
 
+void dvz_list_clear(DvzList* list)
+{
+    ANN(list);
+    list->count = 0;
+}
+
+
+
 uint64_t dvz_list_count(DvzList* list)
 {
     ANN(list);

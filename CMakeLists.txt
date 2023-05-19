@@ -569,8 +569,9 @@ set(sources
     "src/scene/camera.c"
     "src/scene/animation.c"
     "src/scene/app.c"
-    "src/scene/visuals/pixel.c"
     "src/scene/visual.c"
+    "src/scene/viewset.c"
+    "src/scene/visuals/pixel.c"
 
     ${external_sources}
 )
@@ -652,8 +653,9 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_camera.c"
         "tests/scene/test_animation.c"
         "tests/scene/test_app.c"
-        "tests/scene/visuals/test_pixel.c"
         "tests/scene/test_visual.c"
+        "tests/scene/test_viewset.c"
+        "tests/scene/visuals/test_pixel.c"
 
         "tests/test.c"
     )

@@ -120,6 +120,10 @@ DVZ_EXPORT bool dvz_list_has(DvzList* list, int value);
 
 
 
+DVZ_EXPORT void dvz_list_clear(DvzList* list);
+
+
+
 /**
  * Return the number of items in a list.
  *
