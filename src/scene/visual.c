@@ -300,7 +300,11 @@ void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
     // Now, we can create the baker. This will create the arrays and dats.
 
     visual->item_count = item_count;
-    dvz_baker_create(baker, vertex_count);
+
+    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+    // NOTE: if indexed, item_count is the number of indices.
+    uint32_t index_count = indexed ? item_count : 0;
+    dvz_baker_create(baker, index_count, vertex_count);
 
     // We now need to send the vertex/descriptor binding requests to the GPU.
 

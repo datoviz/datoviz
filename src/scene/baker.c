@@ -56,6 +56,27 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
 
 
 
+static void _create_index(DvzBaker* baker, uint32_t index_count)
+{
+    ANN(baker);
+    ASSERT(index_count > 0);
+
+    log_trace("create index buffer with %d vertices, create dat and array", index_count);
+    baker->index = dvz_dual_index(baker->rqr, index_count);
+}
+
+
+
+static void _create_indirect(DvzBaker* baker, bool indexed)
+{
+    ANN(baker);
+
+    log_trace("create %sindirect buffer, create dat and array", indexed ? "indexed " : "");
+    baker->indirect = dvz_dual_indirect(baker->rqr, indexed);
+}
+
+
+
 static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
 {
     ANN(baker);
@@ -166,18 +187,10 @@ void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
 
 
 
-void dvz_baker_indexed(DvzBaker* baker)
-{
-    ANN(baker);
-    // TODO
-}
-
-
-
 void dvz_baker_indirect(DvzBaker* baker)
 {
     ANN(baker);
-    // TODO
+    baker->is_indirect = true;
 }
 
 
@@ -301,7 +314,7 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
 /*  Baker sync functions                                                                         */
 /*************************************************************************************************/
 
-void dvz_baker_create(DvzBaker* baker, uint32_t vertex_count)
+void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count)
 {
     ANN(baker);
     log_trace(
@@ -321,6 +334,18 @@ void dvz_baker_create(DvzBaker* baker, uint32_t vertex_count)
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
         _create_descriptor(baker, slot_idx);
+    }
+
+    // Create the index buffer.
+    if (index_count > 0)
+    {
+        _create_index(baker, index_count);
+    }
+
+    // Create the indirect buffer.
+    if (baker->is_indirect)
+    {
+        _create_indirect(baker, index_count > 0);
     }
 }
 

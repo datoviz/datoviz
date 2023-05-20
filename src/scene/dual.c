@@ -165,6 +165,32 @@ DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex
 
 
 
+DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count)
+{
+    ANN(rqr);
+    ASSERT(index_count > 0);
+
+    DvzSize index_size = sizeof(DvzIndex);
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, 0).id;
+    DvzArray* array = dvz_array_struct(index_count, index_size);
+    return dvz_dual(rqr, array, dat_id);
+}
+
+
+
+DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed)
+{
+    ANN(rqr);
+
+    DvzSize size =
+        indexed ? sizeof(DvzDrawIndexedIndirectCommand) : sizeof(DvzDrawIndirectCommand);
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDIRECT, size, 0).id;
+    DvzArray* array = dvz_array_struct(1, size);
+    return dvz_dual(rqr, array, dat_id);
+}
+
+
+
 DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size)
 {
     ANN(rqr);

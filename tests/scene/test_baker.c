@@ -64,7 +64,7 @@ int test_baker_1(TstSuite* suite)
 
     // Create the arrays and emit the dat creation requests.
     uint32_t count = 2;
-    dvz_baker_create(baker, count);
+    dvz_baker_create(baker, 0, count);
 
     // Check the dat creations.
     {

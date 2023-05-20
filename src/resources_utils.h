@@ -78,6 +78,11 @@ static inline VkBufferUsageFlags _find_buffer_usage(DvzBufferType type)
                 VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         break;
 
+    case DVZ_BUFFER_TYPE_INDIRECT:
+        usage = TRANSFERABLE | //
+                VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+        break;
+
     default:
         log_error("could not find buffer usage for buffer type %d", type);
         break;

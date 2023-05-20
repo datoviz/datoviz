@@ -71,6 +71,7 @@ struct DvzBaker
 {
     DvzRequester* rqr;
     int flags;
+    bool is_indirect;
 
     uint32_t binding_count;
     uint32_t attr_count;
@@ -80,9 +81,8 @@ struct DvzBaker
     DvzBakerVertex vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
     DvzBakerDescriptor descriptors[DVZ_MAX_BINDINGS];
 
-    // TODO:
-    // DvzDual indexed;
-    // DvzDual indirect;
+    DvzDual index;    // index buffer
+    DvzDual indirect; // indirect buffer
 };
 
 
@@ -110,7 +110,7 @@ DVZ_EXPORT void dvz_baker_attr(
 
 
 
-DVZ_EXPORT void dvz_baker_indexed(DvzBaker* baker);
+// DVZ_EXPORT void dvz_baker_indexed(DvzBaker* baker);
 
 
 
@@ -124,7 +124,7 @@ DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_
 
 
 // Internal function, used to instantiate the DvzDual instances.
-DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t vertex_count);
+DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count);
 
 
 

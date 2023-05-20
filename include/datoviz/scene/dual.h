@@ -22,6 +22,10 @@
 
 typedef struct DvzDual DvzDual;
 
+// Vulkan wrappers.
+typedef struct DvzDrawIndirectCommand DvzDrawIndirectCommand;
+typedef struct DvzDrawIndexedIndirectCommand DvzDrawIndexedIndirectCommand;
+
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzArray DvzArray;
@@ -46,6 +50,25 @@ struct DvzDual
     uint32_t dirty_first;
     uint32_t dirty_last; // smallest contiguous interval encompassing all dirty intervals
     // dirty_last is the first non-dirty item (count=last-first)
+};
+
+
+
+struct DvzDrawIndexedIndirectCommand
+{
+    uint32_t indexCount;
+    uint32_t instanceCount;
+    uint32_t firstIndex;
+    int32_t vertexOffset;
+    uint32_t firstInstance;
+};
+
+struct DvzDrawIndirectCommand
+{
+    uint32_t vertexCount;
+    uint32_t instanceCount;
+    uint32_t firstVertex;
+    uint32_t firstInstance;
 };
 
 
@@ -81,6 +104,10 @@ DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size);
+
+DVZ_EXPORT DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count);
+
+DVZ_EXPORT DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed);
 
 DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size);
 
