@@ -413,37 +413,46 @@ void dvz_visual_quads(
 
 
 void dvz_visual_instance(
-    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
-    uint32_t instance_count)
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
+    uint32_t first_instance, uint32_t instance_count)
 {
     ANN(visual);
 
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
     bool indirect = (visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0;
+    ASSERT(!indirect);
 
-    if (!indexed && !indirect)
+    if (indexed)
+    {
+        dvz_record_draw_indexed(
+            visual->rqr, canvas, visual->graphics_id, first, vertex_offset, count, //
+            first_instance, instance_count);
+    }
+    else
     {
         dvz_record_draw(
-            visual->rqr, canvas, visual->graphics_id, first, count, first_instance,
-            instance_count);
+            visual->rqr, canvas, visual->graphics_id, first, count, //
+            first_instance, instance_count);
     }
-    else if (indexed && !indirect)
+}
+
+
+
+void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, DvzId indirect, uint32_t draw_count)
+{
+    ANN(visual);
+    ASSERT((visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0);
+
+    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+
+    if (indexed)
     {
-        uint32_t vertex_offset = 0; // TODO
-        dvz_record_draw_indexed(
-            visual->rqr, canvas, visual->graphics_id, first, vertex_offset, count, first_instance,
-            instance_count);
-    }
-    else if (!indexed && indirect)
-    {
-        uint32_t draw_count = 1; // TODO
-        dvz_record_draw_indirect(visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
-    }
-    else if (indexed && indirect)
-    {
-        uint32_t draw_count = 1; // TODO
         dvz_record_draw_indexed_indirect(
             visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
+    }
+    else
+    {
+        dvz_record_draw_indirect(visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
     }
 }
 
@@ -451,7 +460,7 @@ void dvz_visual_instance(
 
 void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count)
 {
-    dvz_visual_instance(visual, canvas, first, count, 0, 1);
+    dvz_visual_instance(visual, canvas, first, 0, count, 0, 1);
 }
 
 

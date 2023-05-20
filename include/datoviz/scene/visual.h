@@ -154,8 +154,13 @@ DVZ_EXPORT void dvz_visual_quads(
 
 
 DVZ_EXPORT void dvz_visual_instance(
-    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
-    uint32_t instance_count);
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
+    uint32_t first_instance, uint32_t instance_count);
+
+
+
+DVZ_EXPORT void
+dvz_visual_indirect(DvzVisual* visual, DvzId canvas, DvzId indirect, uint32_t draw_count);
 
 
 
