@@ -13,6 +13,7 @@
 #include "request.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/viewport.h"
+#include "scene/visual.h"
 #include "scene/visuals/pixel.h"
 #include "test.h"
 #include "testing.h"
@@ -44,7 +45,7 @@ int test_pixel_1(TstSuite* suite)
     // Upload the data.
     const uint32_t n = 10000;
 
-    DvzPixel* pixel = dvz_pixel(rqr, n, 0);
+    DvzVisual* pixel = dvz_pixel(rqr, n, 0);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -83,7 +84,7 @@ int test_pixel_1(TstSuite* suite)
     render_requests(rqr, get_gpu(suite), board_id, "visual_pixel");
 
     // Cleanup
-    dvz_pixel_destroy(pixel);
+    dvz_visual_destroy(pixel);
     dvz_requester_destroy(rqr);
     FREE(pos);
     FREE(color);
