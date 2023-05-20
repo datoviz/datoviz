@@ -12,6 +12,7 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
+#include "scene/viewset.h"
 #include "scene/visual.h"
 
 
@@ -120,6 +121,15 @@ void dvz_pixel_draw(DvzPixel* pixel, DvzId canvas, uint32_t first, uint32_t coun
 
     // Emit the record commands.
     dvz_visual_draw(pixel->visual, canvas, first, count);
+}
+
+
+
+DvzInstance* dvz_pixel_instance(DvzPixel* pixel, DvzView* view, uint32_t first, uint32_t count)
+{
+    ANN(pixel);
+    ANN(view);
+    return dvz_view_instance(view, pixel->visual, first, 0, count, 0, 1);
 }
 
 

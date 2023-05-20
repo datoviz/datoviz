@@ -26,6 +26,8 @@ typedef struct DvzPixelVertex DvzPixelVertex;
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzView DvzView;
+typedef struct DvzInstance DvzInstance;
 
 
 
@@ -93,6 +95,11 @@ dvz_pixel_color(DvzPixel* pixel, uint32_t first, uint32_t count, cvec4* values, 
 
 DVZ_EXPORT void
 dvz_pixel_draw(DvzPixel* pixel, DvzId canvas, uint32_t first, uint32_t count, int flags);
+
+
+
+DVZ_EXPORT DvzInstance* dvz_pixel_instance( //
+    DvzPixel* pixel, DvzView* view, uint32_t first, uint32_t count);
 
 
 

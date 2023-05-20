@@ -442,10 +442,16 @@ void dvz_visual_instance(
 
 
 
-void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, DvzId indirect, uint32_t draw_count)
+void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 {
     ANN(visual);
     ASSERT((visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0);
+
+    DvzBaker* baker = visual->baker;
+    ANN(baker);
+
+    DvzId indirect = baker->indirect.dat;
+    ASSERT(indirect != DVZ_ID_NONE);
 
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
 

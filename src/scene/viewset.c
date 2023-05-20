@@ -97,6 +97,7 @@ void dvz_viewset_build(DvzViewset* viewset)
     uint64_t view_count = dvz_list_count(viewset->views);
     uint64_t instance_count = 0;
     DvzView* view = NULL;
+    bool indirect = false;
     DvzInstance* instance = NULL;
 
     // for each view
@@ -116,9 +117,21 @@ void dvz_viewset_build(DvzViewset* viewset)
             instance = (DvzInstance*)dvz_list_get(view->instances, i).p;
             ANN(instance);
 
-            // WARNING: this only works for direct rendering for now
-            // TODO: what about indexed/indirect drawing etc
-            dvz_visual_draw(instance->visual, canvas_id, instance->offset, instance->item_count);
+            // Indirect rendering?
+            indirect = (instance->visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0;
+
+            if (indirect)
+            {
+                // TODO: draw_count=1 here
+                dvz_visual_indirect(instance->visual, canvas_id, 1);
+            }
+            else
+            {
+                // both non-indexed and indexed rendering
+                dvz_visual_instance(
+                    instance->visual, canvas_id, instance->first, instance->vertex_offset,
+                    instance->count, instance->first_instance, instance->instance_count);
+            }
         }
     }
 
@@ -206,8 +219,10 @@ void dvz_view_destroy(DvzView* view)
 /*  Instance                                                                                     */
 /*************************************************************************************************/
 
-DvzInstance*
-dvz_view_instance(DvzView* view, DvzVisual* visual, uint32_t offset, uint32_t item_count)
+DvzInstance* dvz_view_instance(
+    DvzView* view, DvzVisual* visual,                       //
+    uint32_t first, uint32_t vertex_offset, uint32_t count, //
+    uint32_t first_instance, uint32_t instance_count)
 {
     ANN(view);
     log_trace("create instance");
@@ -216,8 +231,11 @@ dvz_view_instance(DvzView* view, DvzVisual* visual, uint32_t offset, uint32_t it
     DvzInstance* instance = (DvzInstance*)calloc(1, sizeof(DvzInstance));
     instance->view = view;
     instance->visual = visual;
-    instance->offset = offset;
-    instance->item_count = item_count;
+    instance->first = first;
+    instance->vertex_offset = vertex_offset;
+    instance->count = count;
+    instance->first_instance = first_instance;
+    instance->instance_count = instance_count;
     instance->is_visible = true;
     dvz_list_append(view->instances, (DvzListItem){.p = instance});
     return instance;

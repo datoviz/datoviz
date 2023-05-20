@@ -159,8 +159,7 @@ DVZ_EXPORT void dvz_visual_instance(
 
 
 
-DVZ_EXPORT void
-dvz_visual_indirect(DvzVisual* visual, DvzId canvas, DvzId indirect, uint32_t draw_count);
+DVZ_EXPORT void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count);
 
 
 

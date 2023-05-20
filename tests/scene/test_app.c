@@ -519,7 +519,7 @@ int test_app_viewset(TstSuite* suite)
     DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
     // Create an instance.
-    DvzInstance* instance = dvz_view_instance(view, pixel->visual, 0, n);
+    DvzInstance* instance = dvz_pixel_instance(pixel, view, 0, n);
     ANN(instance);
 
     // Build the viewset.
