@@ -230,6 +230,7 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
     fpng::fpng_encode_image_to_memory(rgb, width, height, 3, outvec, 0);
     *size = outvec.size();
     *out = malloc(*size);
+    ANN(*out);
     memcpy(*out, outvec.data(), *size);
     return 0;
 }

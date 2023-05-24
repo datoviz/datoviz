@@ -325,21 +325,32 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
 if(CC_GCC)
     # gcc
 
-    # for fpng
-    set(GCC_COMPILE_FLAGS "\
-        -fvisibility=hidden
-        -fPIC \
-        -fno-strict-aliasing \
-        -fno-omit-frame-pointer \
-        -D_LARGEFILE64_SOURCE=1 \
-        -D_FILE_OFFSET_BITS=64 \
-        -Wall \
-        -Wextra \
-        -Isrc")
-
+    # # for fpng
+    # set(GCC_COMPILE_FLAGS "\
+    # -fvisibility=hidden
+    # -fPIC \
+    # -fno-strict-aliasing \
+    # -fno-omit-frame-pointer \
+    # -D_LARGEFILE64_SOURCE=1 \
+    # -D_FILE_OFFSET_BITS=64 \
+    # -Wall \
+    # -Wextra \
+    # -Isrc")
     set(COMMON_FLAGS "${COMMON_FLAGS} \
-        -Wlogical-op -fdiagnostics-color=always \
+        -Wlogical-op \
+        -fdiagnostics-color=always \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
+
+    # NOTES: static analysis for later?
+    # -fanalyzer \
+    # -Wno-analyzer-possible-null-dereference \
+    # -Wno-analyzer-possible-null-argument \
+    # -Wno-analyzer-malloc-leak \
+    # -Wno-analyzer-use-after-free \
+    # -Wno-analyzer-double-free \
+
+    # -Wdouble-promotion \
+    # fsanitize=address fsanitize-trap=undefined
 
     # NOTE: to comment when using valgrind
     if(NOT OS_WIN32)

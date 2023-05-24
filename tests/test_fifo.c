@@ -284,6 +284,7 @@ int test_deq_2(TstSuite* suite)
 
     // First queue.
     item = dvz_deq_peek_first(deq, 0);
+    ANN(item.item);
     AT(item.type == 0);
     AT(*(int*)(item.item) == 1);
     item = dvz_deq_peek_last(deq, 0);
