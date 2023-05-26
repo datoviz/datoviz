@@ -96,6 +96,12 @@ typedef enum
 
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
+typedef union DvzMouseEventUnion DvzMouseEventUnion;
+typedef struct DvzMouseMoveEvent DvzMouseMoveEvent;
+typedef struct DvzMouseButtonEvent DvzMouseButtonEvent;
+typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
+typedef struct DvzMouseDragEvent DvzMouseDragEvent;
+typedef struct DvzMouseClickEvent DvzMouseClickEvent;
 
 
 
@@ -112,46 +118,49 @@ struct DvzKeyboardEvent
 };
 
 
+struct DvzMouseMoveEvent
+{
+    vec2 pos;
+};
+
+struct DvzMouseButtonEvent
+{
+    DvzMouseButton button;
+};
+
+struct DvzMouseWheelEvent
+{
+    vec2 pos;
+    vec2 dir;
+};
+
+struct DvzMouseDragEvent
+{
+    DvzMouseButton button;
+    vec2 pos;
+    vec2 press_pos;
+    vec2 shift;
+};
+
+struct DvzMouseClickEvent
+{
+    DvzMouseButton button;
+    vec2 pos;
+};
+
+union DvzMouseEventUnion
+{
+    DvzMouseMoveEvent m;
+    DvzMouseButtonEvent b;
+    DvzMouseWheelEvent w;
+    DvzMouseDragEvent d;
+    DvzMouseClickEvent c;
+};
 
 struct DvzMouseEvent
 {
     DvzMouseEventType type;
-    union
-    {
-        // Mouse move.
-        struct
-        {
-            vec2 pos;
-        } m;
-
-        // Mouse button.
-        struct
-        {
-            DvzMouseButton button;
-        } b;
-
-        // Mouse wheel.
-        struct
-        {
-            vec2 pos, dir;
-        } w;
-
-        // Mouse drag.
-        struct
-        {
-            DvzMouseButton button;
-            vec2 pos, press_pos;
-            vec2 shift;
-        } d;
-
-        // Mouse click.
-        struct
-        {
-            DvzMouseButton button;
-            vec2 pos;
-        } c;
-
-    } content;
+    DvzMouseEventUnion content;
     int mods;
     void* user_data;
 };

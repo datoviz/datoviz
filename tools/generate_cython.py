@@ -36,31 +36,29 @@ FUNCTION_END = '# FUNCTION END'
 
 ENUMS = (
     'DvzBackend',
-    'DvzKeyCode',
-    'DvzRequestAction',
-    'DvzRequestObject',
     'DvzBufferType',
-    'DvzTexDims',
-    'DvzFormat',
+    'DvzClient',
     'DvzFilter',
-    'DvzGraphicsType',
-    'DvzSamplerAddressMode',
-    # 'DvzPanelType',
-    # 'DvzVisualType',
-    # 'DvzPropType',
+    'DvzFormat',
+    'DvzGraphics',
+    'DvzKey',
+    'DvzMouse',
+    'DvzPrimitive',
+    'DvzProp',
+    'DvzRequest',
+    'DvzSampler',
+    'DvzTexDims',
+    'DvzView',
+    'DvzVisual',
 )
 
 APP_FUNCTIONS = (
     'dvz_app',
-    'dvz_device',
+    # 'dvz_device',
+    'dvz_visual',
+    'dvz_view',
+    'dvz_pixel',
 )
-
-# SCENE_FUNCTIONS = (
-#     'dvz_scene',
-#     'dvz_figure',
-#     'dvz_panel',
-#     'dvz_visual',
-# )
 
 REQUEST_FUNCTIONS = (
     'dvz_request',
@@ -72,6 +70,14 @@ REQUEST_FUNCTIONS = (
     'dvz_set',
     'dvz_record',
     'dvz_delete',
+)
+
+APP_STRUCTS = (
+    'DvzClient',
+    'DvzMouse',
+    'DvzKeyboard',
+    'DvzViewport',
+    '_Vk',
 )
 
 # RENDERER_FUNCTIONS = (
@@ -227,20 +233,14 @@ def generate_cython():
 
     # app.h
     path = ROOT_DIR / 'datoviz/app.pxd'
-    insert_into_file(path, FUNCTION_START, FUNCTION_END,
-                     generate_functions(APP_FUNCTIONS))
-    # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
-
-    # # scene.h
-    # path = ROOT_DIR / 'datoviz/scene.pxd'
-    # insert_into_file(path, FUNCTION_START, FUNCTION_END,
-    #                  generate_functions(SCENE_FUNCTIONS))
-    # # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
+    insert_into_file(
+        path, FUNCTION_START, FUNCTION_END, generate_functions(APP_FUNCTIONS))
+    insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(APP_STRUCTS))
 
     # request.h
-    path = ROOT_DIR / 'datoviz/request.pxd'
-    insert_into_file(path, FUNCTION_START, FUNCTION_END,
-                     generate_functions(REQUEST_FUNCTIONS))
+    # path = ROOT_DIR / 'datoviz/request.pxd'
+    # insert_into_file(path, FUNCTION_START, FUNCTION_END,
+    #                  generate_functions(REQUEST_FUNCTIONS))
     # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
 
     # # renderer.h

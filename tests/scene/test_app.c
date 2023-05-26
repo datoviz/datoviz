@@ -529,8 +529,8 @@ int test_app_viewset(TstSuite* suite)
     dvz_app_run(app, N_FRAMES);
 
     // Cleanup
-    dvz_app_destroy(app);
     dvz_viewset_destroy(viewset);
+    dvz_app_destroy(app);
     FREE(pos);
     FREE(color);
     return 0;

@@ -7,6 +7,9 @@ cdef extern from "<datoviz/scene/app.h>":
     ctypedef struct DvzApp:
         pass
 
+    ctypedef struct DvzList:
+        pass
+
     ctypedef struct DvzDevice:
         pass
 
@@ -15,6 +18,37 @@ cdef extern from "<datoviz/scene/app.h>":
 
     ctypedef struct DvzRequest:
         pass
+
+    ctypedef struct DvzVisual:
+        pass
+
+    ctypedef struct DvzInstance:
+        pass
+
+    ctypedef struct DvzView:
+        pass
+
+    ctypedef struct DvzViewset:
+        pass
+
+    ctypedef struct DvzScene:
+        pass
+
+    ctypedef struct DvzClient:
+        pass
+
+    ctypedef struct DvzTimerItem:
+        pass
+
+    ctypedef struct DvzMouse:
+        pass
+
+    ctypedef struct DvzKeyboard:
+        pass
+
+    ctypedef void (*DvzClientCallback)(DvzClient*, DvzClientEvent)
+    ctypedef void (*DvzMouseCallback)(DvzMouse*, DvzMouseEvent)
+    ctypedef void (*DvzKeyboardCallback)(DvzKeyboard*, DvzKeyboardEvent)
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -28,6 +62,120 @@ cdef extern from "<datoviz/scene/app.h>":
     # ---------------------------------------------------------------------------------------------
 
     # STRUCT START
+    ctypedef struct DvzKeyboardEvent:
+        DvzKeyboardEventType type
+        DvzKeyCode key
+        int mods
+        void* user_data
+
+    ctypedef struct DvzMouseMoveEvent:
+        vec2 pos
+
+    ctypedef struct DvzMouseButtonEvent:
+        DvzMouseButton button
+
+    ctypedef struct DvzMouseWheelEvent:
+        vec2 pos
+        vec2 dir
+
+    ctypedef struct DvzMouseDragEvent:
+        DvzMouseButton button
+        vec2 pos
+        vec2 press_pos
+        vec2 shift
+
+    ctypedef struct DvzMouseClickEvent:
+        DvzMouseButton button
+        vec2 pos
+
+    ctypedef union DvzMouseEventUnion:
+        DvzMouseMoveEvent m
+        DvzMouseButtonEvent b
+        DvzMouseWheelEvent w
+        DvzMouseDragEvent d
+        DvzMouseClickEvent c
+
+    ctypedef struct DvzMouseEvent:
+        DvzMouseEventType type
+        DvzMouseEventUnion content
+        int mods
+        void* user_data
+
+    ctypedef struct DvzClientWindowEvent:
+        uint32_t framebuffer_width
+        uint32_t framebuffer_height
+        uint32_t screen_width
+        uint32_t screen_height
+        int flags
+
+    ctypedef struct DvzClientFrameEvent:
+        uint64_t frame_idx
+        double time
+
+    ctypedef struct DvzClientTimerEvent:
+        uint32_t timer_idx
+        DvzTimerItem* timer_item
+        uint64_t step_idx
+        double time
+
+    ctypedef struct DvzClientRequestsEvent:
+        uint32_t request_count
+        void* requests
+
+    ctypedef union DvzClientEventUnion:
+        DvzClientWindowEvent w
+        DvzClientFrameEvent f
+        DvzClientTimerEvent t
+        DvzClientRequestsEvent r
+        DvzMouseEvent m
+        DvzKeyboardEvent k
+
+    ctypedef struct DvzClientEvent:
+        DvzClientEventType type
+        DvzId window_id
+        DvzClientEventUnion content
+        void* user_data
+
+    ctypedef struct DvzClientPayload:
+        DvzClient* client
+        DvzClientCallback callback
+        DvzClientCallbackMode mode
+        void* user_data
+
+    ctypedef struct DvzKeyboardPayload:
+        DvzKeyboardEventType type
+        DvzKeyboardCallback callback
+        void* user_data
+
+    ctypedef struct DvzKeyboard:
+        DvzList* keys
+        int mods
+        DvzList* callbacks
+        bint is_active
+
+    ctypedef struct DvzMousePayload:
+        DvzMouseEventType type
+        DvzMouseCallback callback
+        void* user_data
+
+    ctypedef struct _VkViewport:
+        float x
+        float y
+        float width
+        float height
+        float minDepth
+        float maxDepth
+
+    ctypedef struct DvzViewport:
+        _VkViewport viewport
+        vec4 margins
+        uvec2 offset_screen
+        uvec2 size_screen
+        uvec2 offset_framebuffer
+        uvec2 size_framebuffer
+        DvzViewportClip clip
+        int32_t interact_axis
+
 
     # STRUCT END
 
@@ -35,25 +183,35 @@ cdef extern from "<datoviz/scene/app.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzApp* dvz_app(DvzBackend backend)
+    DvzApp* dvz_app()
 
-    DvzDevice* dvz_device(DvzApp* app)
+    DvzRequester* dvz_app_requester(DvzApp* app)
 
-    void dvz_device_frame(DvzDevice* device, DvzRequester* rqr)
+    void dvz_app_frame(DvzApp* app)
 
-    void dvz_device_run(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
+    void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
 
-    void dvz_device_async(DvzDevice* device, DvzRequester* rqr, uint64_t n_frames)
+    void dvz_app_onkeyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data)
 
-    void dvz_device_wait(DvzDevice* device)
+    void dvz_app_onresize(DvzApp* app, DvzClientCallback on_resize, void* user_data)
 
-    void dvz_device_stop(DvzDevice* device)
+    DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count)
 
-    void dvz_device_update(DvzDevice* device, DvzRequester* rqr)
+    void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data)
 
-    void dvz_device_destroy(DvzDevice* device)
+    void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
     void dvz_app_destroy(DvzApp* app)
+
+    DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
+
+    DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id)
+
+    DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
+
+    DvzInstance* dvz_view_instance(DvzView* view, DvzVisual* visual, uint32_t first, uint32_t vertex_offset, uint32_t count, uint32_t first_instance, uint32_t instance_count)
+
+    DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags)
 
 
     # FUNCTION END

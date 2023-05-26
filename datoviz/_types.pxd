@@ -46,6 +46,44 @@ cdef extern from "<datoviz/common.h>":
     # ---------------------------------------------------------------------------------------------
 
     # ENUM START
+    ctypedef enum DvzRequestAction:
+        DVZ_REQUEST_ACTION_NONE = 0
+        DVZ_REQUEST_ACTION_CREATE = 1
+        DVZ_REQUEST_ACTION_DELETE = 2
+        DVZ_REQUEST_ACTION_RESIZE = 3
+        DVZ_REQUEST_ACTION_UPDATE = 4
+        DVZ_REQUEST_ACTION_BIND = 5
+        DVZ_REQUEST_ACTION_RECORD = 6
+        DVZ_REQUEST_ACTION_UPLOAD = 7
+        DVZ_REQUEST_ACTION_UPFILL = 8
+        DVZ_REQUEST_ACTION_DOWNLOAD = 9
+        DVZ_REQUEST_ACTION_SET = 10
+        DVZ_REQUEST_ACTION_GET = 11
+
+    ctypedef enum DvzRequestObject:
+        DVZ_REQUEST_OBJECT_NONE = 0
+        DVZ_REQUEST_OBJECT_BOARD = 100
+        DVZ_REQUEST_OBJECT_CANVAS = 2
+        DVZ_REQUEST_OBJECT_DAT = 3
+        DVZ_REQUEST_OBJECT_TEX = 4
+        DVZ_REQUEST_OBJECT_SAMPLER = 5
+        DVZ_REQUEST_OBJECT_COMPUTE = 6
+        DVZ_REQUEST_OBJECT_PRIMITIVE = 7
+        DVZ_REQUEST_OBJECT_DEPTH = 8
+        DVZ_REQUEST_OBJECT_BLEND = 9
+        DVZ_REQUEST_OBJECT_POLYGON = 10
+        DVZ_REQUEST_OBJECT_CULL = 11
+        DVZ_REQUEST_OBJECT_FRONT = 12
+        DVZ_REQUEST_OBJECT_GLSL = 13
+        DVZ_REQUEST_OBJECT_SPIRV = 14
+        DVZ_REQUEST_OBJECT_VERTEX = 15
+        DVZ_REQUEST_OBJECT_VERTEX_ATTR = 16
+        DVZ_REQUEST_OBJECT_SLOT = 17
+        DVZ_REQUEST_OBJECT_GRAPHICS = 18
+        DVZ_REQUEST_OBJECT_INDEX = 19
+        DVZ_REQUEST_OBJECT_BACKGROUND = 20
+        DVZ_REQUEST_OBJECT_RECORD = 21
+
     ctypedef enum DvzBackend:
         DVZ_BACKEND_NONE = 0
         DVZ_BACKEND_GLFW = 1
@@ -58,6 +96,16 @@ cdef extern from "<datoviz/common.h>":
         DVZ_BUFFER_TYPE_INDEX = 3
         DVZ_BUFFER_TYPE_STORAGE = 4
         DVZ_BUFFER_TYPE_UNIFORM = 5
+        DVZ_BUFFER_TYPE_INDIRECT = 6
+
+    ctypedef enum DvzSamplerAxis:
+        DVZ_SAMPLER_AXIS_U = 0
+        DVZ_SAMPLER_AXIS_V = 1
+        DVZ_SAMPLER_AXIS_W = 2
+
+    ctypedef enum DvzSamplerFilter:
+        DVZ_SAMPLER_FILTER_MIN = 0
+        DVZ_SAMPLER_FILTER_MAG = 1
 
     ctypedef enum DvzFormat:
         DVZ_FORMAT_NONE = 0
@@ -72,6 +120,7 @@ cdef extern from "<datoviz/common.h>":
         DVZ_FORMAT_R32_UINT = 98
         DVZ_FORMAT_R32_SINT = 99
         DVZ_FORMAT_R32_SFLOAT = 100
+        DVZ_FORMAT_R32G32B32_SFLOAT = 106
 
     ctypedef enum DvzFilter:
         DVZ_FILTER_NEAREST = 0
@@ -85,11 +134,23 @@ cdef extern from "<datoviz/common.h>":
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3
         DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
 
+    ctypedef enum DvzPrimitiveTopology:
+        DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0
+        DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1
+        DVZ_PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4
+        DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5
+
     ctypedef enum DvzTexDims:
         DVZ_TEX_NONE = 0
         DVZ_TEX_1D = 1
         DVZ_TEX_2D = 2
         DVZ_TEX_3D = 3
+
+    ctypedef enum DvzGraphicsFlags:
+        DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100
+        DVZ_GRAPHICS_FLAGS_PICK = 0x0200
 
     ctypedef enum DvzGraphicsType:
         DVZ_GRAPHICS_NONE = 0
@@ -113,6 +174,44 @@ cdef extern from "<datoviz/common.h>":
         DVZ_GRAPHICS_VOLUME = 18
         DVZ_GRAPHICS_COUNT = 19
         DVZ_GRAPHICS_CUSTOM = 20
+
+    ctypedef enum DvzKeyboardModifiers:
+        DVZ_KEY_MODIFIER_NONE = 0x00000000
+        DVZ_KEY_MODIFIER_SHIFT = 0x00000001
+        DVZ_KEY_MODIFIER_CONTROL = 0x00000002
+        DVZ_KEY_MODIFIER_ALT = 0x00000004
+        DVZ_KEY_MODIFIER_SUPER = 0x00000008
+
+    ctypedef enum DvzKeyboardEventType:
+        DVZ_KEYBOARD_EVENT_NONE = 0
+        DVZ_KEYBOARD_EVENT_PRESS = 1
+        DVZ_KEYBOARD_EVENT_RELEASE = 2
+
+    ctypedef enum DvzMouseButton:
+        DVZ_MOUSE_BUTTON_NONE = 0
+        DVZ_MOUSE_BUTTON_LEFT = 1
+        DVZ_MOUSE_BUTTON_MIDDLE = 2
+        DVZ_MOUSE_BUTTON_RIGHT = 3
+
+    ctypedef enum DvzMouseState:
+        DVZ_MOUSE_STATE_RELEASE = 0
+        DVZ_MOUSE_STATE_PRESS = 1
+        DVZ_MOUSE_STATE_CLICK = 3
+        DVZ_MOUSE_STATE_CLICK_PRESS = 4
+        DVZ_MOUSE_STATE_DOUBLE_CLICK = 5
+        DVZ_MOUSE_STATE_DRAGGING = 11
+
+    ctypedef enum DvzMouseEventType:
+        DVZ_MOUSE_EVENT_RELEASE = 0
+        DVZ_MOUSE_EVENT_PRESS = 1
+        DVZ_MOUSE_EVENT_MOVE = 2
+        DVZ_MOUSE_EVENT_CLICK = 3
+        DVZ_MOUSE_EVENT_DOUBLE_CLICK = 5
+        DVZ_MOUSE_EVENT_DRAG_START = 10
+        DVZ_MOUSE_EVENT_DRAG = 11
+        DVZ_MOUSE_EVENT_DRAG_STOP = 12
+        DVZ_MOUSE_EVENT_WHEEL = 20
+        DVZ_MOUSE_EVENT_ALL = 255
 
     ctypedef enum DvzKeyCode:
         DVZ_KEY_UNKNOWN = -1
@@ -239,32 +338,37 @@ cdef extern from "<datoviz/common.h>":
         DVZ_KEY_MENU = 348
         DVZ_KEY_LAST = 348
 
-    ctypedef enum DvzRequestAction:
-        DVZ_REQUEST_ACTION_NONE = 0
-        DVZ_REQUEST_ACTION_CREATE = 1
-        DVZ_REQUEST_ACTION_DELETE = 2
-        DVZ_REQUEST_ACTION_RESIZE = 3
-        DVZ_REQUEST_ACTION_UPDATE = 4
-        DVZ_REQUEST_ACTION_BIND = 5
-        DVZ_REQUEST_ACTION_RECORD = 6
-        DVZ_REQUEST_ACTION_UPLOAD = 7
-        DVZ_REQUEST_ACTION_UPFILL = 8
-        DVZ_REQUEST_ACTION_DOWNLOAD = 9
-        DVZ_REQUEST_ACTION_SET = 10
-        DVZ_REQUEST_ACTION_GET = 11
+    ctypedef enum DvzClientEventType:
+        DVZ_CLIENT_EVENT_NONE = 0
+        DVZ_CLIENT_EVENT_WINDOW_CREATE = 1
+        DVZ_CLIENT_EVENT_WINDOW_RESIZE = 2
+        DVZ_CLIENT_EVENT_WINDOW_DELETE = 3
+        DVZ_CLIENT_EVENT_FRAME = 4
+        DVZ_CLIENT_EVENT_MOUSE = 5
+        DVZ_CLIENT_EVENT_KEYBOARD = 6
+        DVZ_CLIENT_EVENT_TIMER = 7
+        DVZ_CLIENT_EVENT_REQUESTS = 8
+        DVZ_CLIENT_EVENT_DESTROY = 9
 
-    ctypedef enum DvzRequestObject:
-        DVZ_REQUEST_OBJECT_NONE = 0
-        DVZ_REQUEST_OBJECT_BOARD = 100
-        DVZ_REQUEST_OBJECT_CANVAS = 2
-        DVZ_REQUEST_OBJECT_DAT = 3
-        DVZ_REQUEST_OBJECT_TEX = 4
-        DVZ_REQUEST_OBJECT_SAMPLER = 5
-        DVZ_REQUEST_OBJECT_COMPUTE = 6
-        DVZ_REQUEST_OBJECT_GRAPHICS = 7
-        DVZ_REQUEST_OBJECT_BACKGROUND = 8
-        DVZ_REQUEST_OBJECT_VERTEX = 9
-        DVZ_REQUEST_OBJECT_RECORD = 10
+    ctypedef enum DvzClientCallbackMode:
+        DVZ_CLIENT_CALLBACK_SYNC = 0
+        DVZ_CLIENT_CALLBACK_ASYNC = 1
+
+    ctypedef enum DvzRequestFlags:
+        DVZ_REQUEST_FLAGS_NONE = 0x0000
+        DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000
+
+    ctypedef enum DvzViewportClip:
+        DVZ_VIEWPORT_FULL = 0
+        DVZ_VIEWPORT_INNER = 1
+        DVZ_VIEWPORT_OUTER = 2
+        DVZ_VIEWPORT_OUTER_BOTTOM = 3
+        DVZ_VIEWPORT_OUTER_LEFT = 4
+
+    ctypedef enum DvzVisualFlags:
+        DVZ_VISUALS_FLAGS_DEFAULT = 0x0000
+        DVZ_VISUALS_FLAGS_INDEXED = 0x0001
+        DVZ_VISUALS_FLAGS_INDIRECT = 0x0002
 
 
     # ENUM END

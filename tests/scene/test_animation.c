@@ -13,7 +13,6 @@
 #include "renderer.h"
 #include "scene/animation.h"
 #include "scene/app.h"
-#include "scene/scene.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"

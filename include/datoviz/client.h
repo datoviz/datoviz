@@ -66,6 +66,12 @@ typedef struct DvzClient DvzClient;
 typedef struct DvzClientPayload DvzClientPayload;
 typedef struct DvzClientEvent DvzClientEvent;
 
+typedef union DvzClientEventUnion DvzClientEventUnion;
+typedef struct DvzClientWindowEvent DvzClientWindowEvent;
+typedef struct DvzClientFrameEvent DvzClientFrameEvent;
+typedef struct DvzClientTimerEvent DvzClientTimerEvent;
+typedef struct DvzClientRequestsEvent DvzClientRequestsEvent;
+
 // Forward declarations.
 typedef uint64_t DvzId;
 typedef struct DvzDeq DvzDeq;
@@ -80,51 +86,61 @@ typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev);
 /*  Event structs                                                                                */
 /*************************************************************************************************/
 
+struct DvzClientWindowEvent
+{
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint32_t screen_width;
+    uint32_t screen_height;
+    int flags;
+};
+
+struct DvzClientFrameEvent
+{
+    uint64_t frame_idx;
+    double time;
+};
+
+struct DvzClientTimerEvent
+{
+    uint32_t timer_idx;
+    DvzTimerItem* timer_item;
+    uint64_t step_idx;
+    double time;
+};
+
+struct DvzClientRequestsEvent
+{
+    uint32_t request_count;
+    void* requests;
+};
+
+union DvzClientEventUnion
+{
+    // Window.
+    DvzClientWindowEvent w;
+
+    // Frame.
+    DvzClientFrameEvent f;
+
+    // Timer.
+    DvzClientTimerEvent t;
+
+    // Requests.
+    DvzClientRequestsEvent r;
+
+    // Mouse.
+    DvzMouseEvent m;
+
+    // Keyboard.
+    DvzKeyboardEvent k;
+};
+
 struct DvzClientEvent
 {
     DvzClientEventType type;
     DvzId window_id;
-    union
-    {
-        // Window.
-        struct
-        {
-            uint32_t framebuffer_width;
-            uint32_t framebuffer_height;
-            uint32_t screen_width;
-            uint32_t screen_height;
-            int flags;
-        } w;
-
-        // Frame.
-        struct
-        {
-            uint64_t frame_idx;
-            double time;
-        } f;
-
-        // Timer.
-        struct
-        {
-            uint32_t timer_idx;
-            DvzTimerItem* timer_item;
-            uint64_t step_idx;
-            double time;
-        } t;
-
-        // Requests.
-        struct
-        {
-            uint32_t request_count;
-            void* requests;
-        } r;
-
-        // Mouse.
-        DvzMouseEvent m;
-
-        // Keyboard.
-        DvzKeyboardEvent k;
-    } content;
+    DvzClientEventUnion content;
     void* user_data;
 };
 

@@ -77,7 +77,7 @@ def _resolve_defines(defines):
 # -------------------------------------------------------------------------------------------------
 
 def count_header_files():
-    return len(list(HEADER_DIR.glob('*.h')) + list(INTERNAL_HEADER_DIR.glob('*.h')))
+    return len(list(HEADER_DIR.glob('*.h')) + list(SCENE_HEADER_DIR.glob('*.h')) + list(INTERNAL_HEADER_DIR.glob('*.h')))
 
 
 def iter_header_files():

@@ -37,6 +37,7 @@ typedef enum
 /*************************************************************************************************/
 
 typedef struct DvzViewport DvzViewport;
+typedef struct _VkViewport _VkViewport;
 
 
 
@@ -44,19 +45,22 @@ typedef struct DvzViewport DvzViewport;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+// NOTE: this corresponds to VkViewport, but we want to avoid the inclusion of vklite.h
+struct _VkViewport
+{
+
+    float x;
+    float y;
+    float width;
+    float height;
+    float minDepth;
+    float maxDepth;
+};
+
 // NOTE: must correspond to the shader structure in common.glsl
 struct DvzViewport
 {
-    // NOTE: this corresponds to VkViewport, but we want to avoid the inclusion of vklite.h
-    struct
-    {
-        float x;
-        float y;
-        float width;
-        float height;
-        float minDepth;
-        float maxDepth;
-    } viewport; // Vulkan viewport
+    _VkViewport viewport; // Vulkan viewport
     vec4 margins;
 
     // Position and size of the viewport in screen coordinates.

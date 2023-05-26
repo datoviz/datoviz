@@ -11,7 +11,7 @@ import shutil
 import numpy as np
 import imageio
 
-from datoviz import Requester
+# from datoviz import Requester
 
 
 ROOT_PATH = Path(__file__).resolve().parent.parent
