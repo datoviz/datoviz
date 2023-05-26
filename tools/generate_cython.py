@@ -52,14 +52,6 @@ ENUMS = (
     'DvzVisual',
 )
 
-APP_FUNCTIONS = (
-    'dvz_app',
-    # 'dvz_device',
-    'dvz_visual',
-    'dvz_view',
-    'dvz_pixel',
-)
-
 REQUEST_FUNCTIONS = (
     'dvz_request',
     'dvz_create',
@@ -72,12 +64,31 @@ REQUEST_FUNCTIONS = (
     'dvz_delete',
 )
 
+APP_FUNCTIONS = (
+    'dvz_app',
+    # 'dvz_device',
+    # 'dvz_visual',
+    # 'dvz_view',
+    # 'dvz_pixel',
+)
+
 APP_STRUCTS = (
     'DvzClient',
     'DvzMouse',
     'DvzKeyboard',
+)
+
+VIEWSET_STRUCTS = (
     'DvzViewport',
     '_Vk',
+)
+
+VIEWSET_FUNCTIONS = (
+    'dvz_view',
+)
+
+PIXEL_FUNCTIONS = (
+    'dvz_pixel',
 )
 
 # RENDERER_FUNCTIONS = (
@@ -227,20 +238,30 @@ def generate_functions(functions):
 
 def generate_cython():
 
-    # _types.pxd
+    # _types.h
     path = ROOT_DIR / 'datoviz/_types.pxd'
     insert_into_file(path, ENUM_START, ENUM_END, generate_enums(ENUMS))
 
     # app.h
     path = ROOT_DIR / 'datoviz/app.pxd'
+    insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(APP_STRUCTS))
     insert_into_file(
         path, FUNCTION_START, FUNCTION_END, generate_functions(APP_FUNCTIONS))
-    insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(APP_STRUCTS))
+
+    # viewset.h
+    path = ROOT_DIR / 'datoviz/viewset.pxd'
+    insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(VIEWSET_STRUCTS))
+    insert_into_file(
+        path, FUNCTION_START, FUNCTION_END, generate_functions(VIEWSET_FUNCTIONS))
+
+    # pixel.h
+    path = ROOT_DIR / 'datoviz/pixel.pxd'
+    insert_into_file(
+        path, FUNCTION_START, FUNCTION_END, generate_functions(PIXEL_FUNCTIONS))
 
     # request.h
-    # path = ROOT_DIR / 'datoviz/request.pxd'
-    # insert_into_file(path, FUNCTION_START, FUNCTION_END,
-    #                  generate_functions(REQUEST_FUNCTIONS))
+    path = ROOT_DIR / 'datoviz/request.pxd'
+    insert_into_file(path, FUNCTION_START, FUNCTION_END, generate_functions(REQUEST_FUNCTIONS))
     # insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs())
 
     # # renderer.h

@@ -11,10 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_obj.h"
-#include "scene/mvp.h"
-#include "scene/viewport.h"
+#include "../_enums.h"
+#include "../_obj.h"
+#include "mvp.h"
+#include "viewport.h"
 
 
 
@@ -80,14 +80,24 @@ EXTERN_C_ON
 /*  Viewset                                                                                      */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_viewset_clear(DvzViewset* viewset);
 
-// DVZ_EXPORT DvzView* dvz_viewset_root(DvzViewset* viewset);
-
+/**
+ *
+ */
 DVZ_EXPORT void dvz_viewset_build(DvzViewset* viewset);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_viewset_destroy(DvzViewset* viewset);
 
 
@@ -96,14 +106,29 @@ DVZ_EXPORT void dvz_viewset_destroy(DvzViewset* viewset);
 /*  View                                                                                         */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_view_clear(DvzView* view);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_instance_visible(DvzInstance* instance, bool is_visible);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_view_destroy(DvzView* view);
 
 
@@ -112,11 +137,17 @@ DVZ_EXPORT void dvz_view_destroy(DvzView* view);
 /*  Instance                                                                                     */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzInstance* dvz_view_instance(
     DvzView* view, DvzVisual* visual,                       //
     uint32_t first, uint32_t vertex_offset, uint32_t count, //
     uint32_t first_instance, uint32_t instance_count);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_instance_destroy(DvzInstance* instance);
 
 

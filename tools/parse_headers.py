@@ -25,7 +25,6 @@ from pyparsing import (
 
 ROOT_DIR = Path(__file__).parent.parent
 HEADER_DIR = (ROOT_DIR / 'include/datoviz').resolve()
-SCENE_HEADER_DIR = (ROOT_DIR / 'include/datoviz/scene').resolve()
 INTERNAL_HEADER_DIR = (ROOT_DIR / 'src').resolve()
 EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
 CACHE_PATH = ROOT_DIR / 'tools/headers.json'
@@ -77,18 +76,14 @@ def _resolve_defines(defines):
 # -------------------------------------------------------------------------------------------------
 
 def count_header_files():
-    return len(list(HEADER_DIR.glob('*.h')) + list(SCENE_HEADER_DIR.glob('*.h')) + list(INTERNAL_HEADER_DIR.glob('*.h')))
+    return len(list(HEADER_DIR.rglob('*.h')) + list(INTERNAL_HEADER_DIR.rglob('*.h')))
 
 
 def iter_header_files():
-    for h in sorted(HEADER_DIR.glob('*.h')):
+    for h in sorted(HEADER_DIR.rglob('*.h')):
         yield h
-    for h in sorted(SCENE_HEADER_DIR.glob('*.h')):
+    for h in sorted(INTERNAL_HEADER_DIR.rglob('*.h')):
         yield h
-    for h in sorted(INTERNAL_HEADER_DIR.glob('*.h')):
-        yield h
-    # for h in (INTERNAL_HEADER_DIR / 'log.h',):
-    #     yield h
 
 
 def remove_comments(text):

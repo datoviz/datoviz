@@ -11,8 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_obj.h"
-#include "scene/viewport.h"
+#include "../../_obj.h"
+#include "../viewport.h"
 
 
 
@@ -75,43 +75,63 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzVisual* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_pixel_viewport(DvzVisual* pixel, DvzViewport viewport);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void
 dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void
 dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void
 dvz_pixel_draw(DvzVisual* pixel, DvzId canvas, uint32_t first, uint32_t count, int flags);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT DvzInstance* dvz_pixel_instance( //
     DvzVisual* pixel, DvzView* view, uint32_t first, uint32_t count);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_pixel_create(DvzVisual* pixel);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_pixel_update(DvzVisual* pixel);
-
-
-
-// DVZ_EXPORT void dvz_pixel_destroy(DvzVisual* pixel);
 
 
 
