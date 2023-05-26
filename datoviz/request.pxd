@@ -39,7 +39,7 @@ cdef extern from "<datoviz/request.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzRecorder* dvz_recorder(uint32_t img_count, int flags)
+    DvzRecorder* dvz_recorder(int flags)
 
     DvzRequester* dvz_requester()
 
@@ -51,9 +51,15 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 
+    int dvz_requester_dump(DvzRequester* rqr, const char* filename)
+
+    void dvz_requester_load(DvzRequester* rqr, const char* filename)
+
     DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 
     void dvz_request_print(DvzRequest* req)
+
+    void dvz_requester_print(DvzRequester* rqr)
 
     DvzRequest dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
 
@@ -79,19 +85,27 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
 
-    DvzRequest dvz_set_vertex(DvzRequester* rqr, DvzId graphics, DvzId dat)
+    DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset)
 
-    DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat)
+    DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset)
 
-    DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler)
+    DvzRequest dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset)
 
-    DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId board)
+    DvzRequest dvz_bind_tex(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 
-    DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId board, vec2 offset, vec2 shape)
+    DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id)
 
-    DvzRequest dvz_record_draw(DvzRequester* rqr, DvzId board, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count)
+    DvzRequest dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, vec2 shape)
 
-    DvzRequest dvz_record_end(DvzRequester* rqr, DvzId board)
+    DvzRequest dvz_record_draw(DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, uint32_t first_vertex, uint32_t vertex_count, uint32_t first_instance, uint32_t instance_count)
+
+    DvzRequest dvz_record_draw_indexed(DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, uint32_t first_instance, uint32_t instance_count)
+
+    DvzRequest dvz_record_draw_indirect(DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
+
+    DvzRequest dvz_record_draw_indexed_indirect(DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
+
+    DvzRequest dvz_record_end(DvzRequester* rqr, DvzId canvas_or_board_id)
 
 
     # FUNCTION END

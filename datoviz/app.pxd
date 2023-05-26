@@ -19,20 +19,20 @@ cdef extern from "<datoviz/scene/app.h>":
     ctypedef struct DvzRequest:
         pass
 
-    ctypedef struct DvzVisual:
-        pass
+    # ctypedef struct DvzVisual:
+    #     pass
 
-    ctypedef struct DvzInstance:
-        pass
+    # ctypedef struct DvzInstance:
+    #     pass
 
-    ctypedef struct DvzView:
-        pass
+    # ctypedef struct DvzView:
+    #     pass
 
-    ctypedef struct DvzViewset:
-        pass
+    # ctypedef struct DvzViewset:
+    #     pass
 
-    ctypedef struct DvzScene:
-        pass
+    # ctypedef struct DvzScene:
+    #     pass
 
     ctypedef struct DvzClient:
         pass
@@ -158,24 +158,6 @@ cdef extern from "<datoviz/scene/app.h>":
         DvzMouseCallback callback
         void* user_data
 
-    ctypedef struct _VkViewport:
-        float x
-        float y
-        float width
-        float height
-        float minDepth
-        float maxDepth
-
-    ctypedef struct DvzViewport:
-        _VkViewport viewport
-        vec4 margins
-        uvec2 offset_screen
-        uvec2 size_screen
-        uvec2 offset_framebuffer
-        uvec2 size_framebuffer
-        DvzViewportClip clip
-        int32_t interact_axis
-
 
     # STRUCT END
 
@@ -202,16 +184,6 @@ cdef extern from "<datoviz/scene/app.h>":
     void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
     void dvz_app_destroy(DvzApp* app)
-
-    DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
-
-    DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id)
-
-    DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
-
-    DvzInstance* dvz_view_instance(DvzView* view, DvzVisual* visual, uint32_t first, uint32_t vertex_offset, uint32_t count, uint32_t first_instance, uint32_t instance_count)
-
-    DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags)
 
 
     # FUNCTION END

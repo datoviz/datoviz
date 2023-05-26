@@ -370,5 +370,10 @@ cdef extern from "<datoviz/common.h>":
         DVZ_VISUALS_FLAGS_INDEXED = 0x0001
         DVZ_VISUALS_FLAGS_INDIRECT = 0x0002
 
+    ctypedef enum DvzPropFlags:
+        DVZ_PROP_NONE = 0x00
+        DVZ_PROP_CONSTANT = 0x01
+        DVZ_PROP_DYNAMIC = 0x02
+
 
     # ENUM END

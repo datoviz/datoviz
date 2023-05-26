@@ -6,6 +6,8 @@
 
 # from .renderer cimport Renderer
 from . cimport _types as tp
+from . cimport viewset as vs
+from . cimport pixel as px
 from . cimport app as pt
 from . cimport request as rq
 from . cimport fileio
@@ -35,6 +37,106 @@ HEIGHT = 600
 
 
 # -------------------------------------------------------------------------------------------------
+# Visual
+# -------------------------------------------------------------------------------------------------
+
+cdef class Visual:
+    cdef pt.DvzApp * _c_app
+    cdef rq.DvzRequester * _c_rqr
+
+    cdef vs.DvzVisual * _c_visual
+    cdef tp.uint32_t _c_count
+
+    cdef np.ndarray _arr_pos
+    cdef np.ndarray _arr_color
+
+    def __init__(self, App app, count):
+        self._c_app = app._c_app
+        self._c_rqr = app._c_rqr
+
+        self._c_count = count
+
+        self._arr_pos = np.zeros((count, 3), dtype=np.float32)
+        self._arr_color = np.zeros((count, 4), dtype=np.uint8)
+
+        # TODO: other visuals
+        self._c_visual = px.dvz_pixel(self._c_rqr, self._c_count, 0)
+
+    def position(self, np.ndarray[dtype=float, ndim=2] arr):
+        self._arr_pos[:] = arr
+        cdef vec3 * data = <vec3*> & self._arr_pos.data[0]
+        px.dvz_pixel_position(self._c_visual, 0, self._c_count, data, 0)
+
+    def color(self, np.ndarray[dtype=tp.uint8_t, ndim=2] arr):
+        self._arr_color[:] = arr
+        cdef cvec4 * data = <cvec4*> & self._arr_color.data[0]
+        px.dvz_pixel_color(self._c_visual, 0, self._c_count, data, 0)
+
+
+# -------------------------------------------------------------------------------------------------
+# View
+# -------------------------------------------------------------------------------------------------
+
+cdef class View:
+    cdef pt.DvzApp * _c_app
+    cdef rq.DvzRequester * _c_rqr
+    cdef vs.DvzViewset * _c_viewset
+    cdef vs.DvzView * _c_view
+
+    cdef vec2 _c_offset
+    cdef vec2 _c_shape
+
+    def __init__(self, Canvas canvas, offset=(0, 0), shape=(0, 0)):
+        # self.app = app
+        # self.canvas = canvas
+
+        self._c_app = canvas._c_app
+        self._c_rqr = canvas._c_rqr
+        self._c_viewset = canvas._c_viewset
+
+        cdef vec2 c_offset
+        c_offset[0] = offset[0]
+        c_offset[1] = offset[1]
+
+        cdef vec2 c_shape
+        c_shape[0] = shape[0]
+        c_shape[1] = shape[1]
+
+        self._c_offset = c_offset
+        self._c_shape = c_shape
+
+        self._c_view = vs.dvz_view(self._c_viewset, c_offset, c_shape)
+
+    def add(self, Visual visual):
+        # TODO: other visuals
+        px.dvz_pixel_instance(visual._c_visual, self._c_view, 0, visual._c_count)
+
+
+# -------------------------------------------------------------------------------------------------
+# Canvas
+# -------------------------------------------------------------------------------------------------
+
+cdef class Canvas:
+    cdef pt.DvzApp * _c_app
+    cdef rq.DvzRequester * _c_rqr
+    cdef vs.DvzViewset * _c_viewset
+    cdef DvzId _c_id
+
+    def __init__(self, App app, DvzId c_id):
+        self._c_app = app._c_app
+        self._c_rqr = app._c_rqr
+        self._c_id = c_id
+
+        self._c_viewset = vs.dvz_viewset(self._c_rqr, self._c_id)
+
+    def view(self, offset=(0, 0), shape=(0, 0)):
+        return View(self, offset, shape)
+
+    def build(self):
+        vs.dvz_viewset_build(self._c_viewset)
+
+
+# -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
 
@@ -46,7 +148,7 @@ cdef class App:
         self._c_app = pt.dvz_app()
         self._c_rqr = pt.dvz_app_requester(self._c_app)
 
-    def canvas(self, int width=WIDTH, int height=HEIGHT, int flags=0, DvzId id=0):
+    def canvas(self, int width=WIDTH, int height=HEIGHT, int flags=0):
         # Background color
         cdef cvec4 c_background
         # if background is None:
@@ -63,10 +165,19 @@ cdef class App:
 
         cdef rq.DvzRequest req = rq.dvz_create_canvas(self._c_rqr, width, height, c_background, flags)
         # logger.debug(f"create canvas {width}x{height}, id={id:02x}, flags={flags}")
-        # return Canvas(self, id)
+        return Canvas(self, req.id)
+
+    def pixel(self, count):
+        return Visual(self, count)
+
+    def run(self):
+        pt.dvz_app_run(self._c_app, 0)
 
     def destroy(self):
         pt.dvz_app_destroy(self._c_app)
+
+    def __dealloc__(self):
+        self.destroy()
 
 
 # -------------------------------------------------------------------------------------------------
