@@ -818,9 +818,13 @@ static DvzRecorder* _get_or_create_recorder(DvzRenderer* rd, DvzRequest req)
 static void* _record_append(DvzRenderer* rd, DvzRequest req)
 {
     // NOTE: this function is called whenever a RECORD request is processed by the renderer.
-
     ANN(rd);
     ANN(rd->map);
+    if (req.id == DVZ_ID_NONE)
+    {
+        log_error("invalid record command on unspecified canvas #0");
+        return NULL;
+    }
 
     // Get the recorder command.
     DvzRecorderCommand* cmd = &req.content.record.command;

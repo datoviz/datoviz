@@ -41,7 +41,8 @@
 #define VERBOSE_MAX_BASE64 1048576
 
 #define IF_VERBOSE_DATA                                                                           \
-    if ((strncmp(getenv("DVZ_VERBOSE"), "1", 1) == 0) && (size < VERBOSE_MAX_BASE64))
+    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "1", 1) == 0) &&                 \
+        (size < VERBOSE_MAX_BASE64))
 
 
 
@@ -106,6 +107,7 @@ static int write_file(const char* filename, DvzSize block_size, uint32_t block_c
 
 static void _print_start()
 {
+    log_trace("print_start");
     printf("---\n"
            "version: '1.0'\n"
            "requests:\n");
@@ -115,6 +117,7 @@ static void _print_start()
 
 static void _print_create_board(DvzRequest* req)
 {
+    log_trace("print_create_board");
     ANN(req);
     printf(
         "- action: create\n"
@@ -129,6 +132,7 @@ static void _print_create_board(DvzRequest* req)
 
 static void _print_update_board(DvzRequest* req)
 {
+    log_trace("print_update_board");
     ANN(req);
     printf(
         "- action: update\n"
@@ -139,6 +143,7 @@ static void _print_update_board(DvzRequest* req)
 
 static void _print_resize_board(DvzRequest* req)
 {
+    log_trace("print_resize_board");
     ANN(req);
     printf(
         "- action: resize\n"
@@ -152,6 +157,7 @@ static void _print_resize_board(DvzRequest* req)
 
 static void _print_set_background(DvzRequest* req)
 {
+    log_trace("print_set_background");
     ANN(req);
     printf(
         "- action: set\n"
@@ -168,6 +174,7 @@ static void _print_set_background(DvzRequest* req)
 
 static void _print_delete_board(DvzRequest* req)
 {
+    log_trace("print_delete_board");
     ANN(req);
     printf(
         "- action: delete\n"
@@ -180,6 +187,7 @@ static void _print_delete_board(DvzRequest* req)
 
 static void _print_create_canvas(DvzRequest* req)
 {
+    log_trace("print_create_canvas");
     ANN(req);
     printf(
         "- action: create\n"
@@ -198,6 +206,7 @@ static void _print_create_canvas(DvzRequest* req)
 
 static void _print_delete_canvas(DvzRequest* req)
 {
+    log_trace("print_delete_canvas");
     ANN(req);
     printf(
         "- action: delete\n"
@@ -210,6 +219,7 @@ static void _print_delete_canvas(DvzRequest* req)
 
 static void _print_create_dat(DvzRequest* req)
 {
+    log_trace("print_create_dat");
     ANN(req);
     printf(
         "- action: create\n"
@@ -218,24 +228,26 @@ static void _print_create_dat(DvzRequest* req)
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n"
-        "    size: %s\n",
-        req->id, req->flags, req->content.dat.type, pretty_size(req->content.dat.size));
+        "    size: %" PRId64 "\n",
+        req->id, req->flags, req->content.dat.type, req->content.dat.size);
 }
 
 static void _print_resize_dat(DvzRequest* req)
 {
+    log_trace("print_resize_dat");
     ANN(req);
     printf(
         "- action: resize\n"
         "  type: dat\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    size: %s\n",
-        req->id, pretty_size(req->content.dat.size));
+        "    size: %" PRId64 "\n",
+        req->id, req->content.dat.size);
 }
 
 static void _print_upload_dat(DvzRequest* req)
 {
+    log_trace("print_upload_dat");
     ANN(req);
 
     DvzId dat = req->id;
@@ -256,11 +268,11 @@ static void _print_upload_dat(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    offset: %" PRId64 "\n"
-        "    size: %s\n"
+        "    size: %" PRId64 "\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        dat, offset, pretty_size(size), encoded);
+        dat, offset, size, encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -270,6 +282,7 @@ static void _print_upload_dat(DvzRequest* req)
 
 static void _print_create_tex(DvzRequest* req)
 {
+    log_trace("print_create_tex");
     ANN(req);
     printf(
         "- action: create\n"
@@ -286,6 +299,7 @@ static void _print_create_tex(DvzRequest* req)
 
 static void _print_resize_tex(DvzRequest* req)
 {
+    log_trace("print_resize_tex");
     ANN(req);
     printf(
         "- action: resize\n"
@@ -298,6 +312,7 @@ static void _print_resize_tex(DvzRequest* req)
 
 static void _print_upload_tex(DvzRequest* req)
 {
+    log_trace("print_upload_tex");
     ANN(req);
 
     DvzId tex = req->id;
@@ -319,14 +334,13 @@ static void _print_upload_tex(DvzRequest* req)
         "  type: tex\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    size: %s\n"
+        "    size: %" PRId64 "\n"
         "    offset: [%d, %d, %d]\n"
         "    shape: [%d, %d, %d]\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        tex, pretty_size(size), offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
-        encoded);
+        tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2], encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -336,6 +350,7 @@ static void _print_upload_tex(DvzRequest* req)
 
 static void _print_create_sampler(DvzRequest* req)
 {
+    log_trace("print_create_sampler");
     ANN(req);
     printf(
         "- action: create\n"
@@ -353,6 +368,7 @@ static void _print_create_sampler(DvzRequest* req)
 
 static void _print_create_graphics(DvzRequest* req)
 {
+    log_trace("print_create_graphics");
     ANN(req);
     printf(
         "- action: create\n"
@@ -368,6 +384,7 @@ static void _print_create_graphics(DvzRequest* req)
 
 static void _print_bind_vertex(DvzRequest* req)
 {
+    log_trace("print_bind_vertex");
     ANN(req);
     printf(
         "- action: bind\n"
@@ -385,6 +402,7 @@ static void _print_bind_vertex(DvzRequest* req)
 
 static void _print_bind_index(DvzRequest* req)
 {
+    log_trace("print_bind_index");
     ANN(req);
 
     printf(
@@ -403,6 +421,7 @@ static void _print_bind_index(DvzRequest* req)
 
 static void _print_set_primitive(DvzRequest* req)
 {
+    log_trace("print_set_primitive");
     ANN(req);
 
     printf(
@@ -416,6 +435,7 @@ static void _print_set_primitive(DvzRequest* req)
 
 static void _print_set_blend(DvzRequest* req)
 {
+    log_trace("print_set_blend");
     ANN(req);
 
     printf(
@@ -429,6 +449,7 @@ static void _print_set_blend(DvzRequest* req)
 
 static void _print_set_depth(DvzRequest* req)
 {
+    log_trace("print_set_depth");
     ANN(req);
 
     printf(
@@ -442,6 +463,7 @@ static void _print_set_depth(DvzRequest* req)
 
 static void _print_set_polygon(DvzRequest* req)
 {
+    log_trace("print_set_polygon");
     ANN(req);
 
     printf(
@@ -455,6 +477,7 @@ static void _print_set_polygon(DvzRequest* req)
 
 static void _print_set_cull(DvzRequest* req)
 {
+    log_trace("print_set_cull");
     ANN(req);
 
     printf(
@@ -468,6 +491,7 @@ static void _print_set_cull(DvzRequest* req)
 
 static void _print_set_front(DvzRequest* req)
 {
+    log_trace("print_set_front");
     ANN(req);
 
     printf(
@@ -483,6 +507,7 @@ static void _print_set_front(DvzRequest* req)
 
 static void _print_set_glsl(DvzRequest* req)
 {
+    log_trace("print_set_glsl");
     ANN(req);
 
     char* code = req->content.set_glsl.code;
@@ -502,11 +527,11 @@ static void _print_set_glsl(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    shader_type: %d\n"
-        "    size: %s\n"
+        "    size: %" PRId64 "\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        req->id, shader_type, pretty_size(size), encoded);
+        req->id, shader_type, size, encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -514,6 +539,7 @@ static void _print_set_glsl(DvzRequest* req)
 
 static void _print_set_spirv(DvzRequest* req)
 {
+    log_trace("print_set_spirv");
     ANN(req);
 
     uint32_t* buffer = req->content.set_spirv.buffer;
@@ -533,11 +559,11 @@ static void _print_set_spirv(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    shader_type: %d\n"
-        "    size: %s\n"
+        "    size: %" PRId64 "\n"
         "    data:\n"
         "      mode: base64\n"
         "      buffer: %s\n",
-        req->id, shader_type, pretty_size(size), encoded);
+        req->id, shader_type, size, encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -547,6 +573,7 @@ static void _print_set_spirv(DvzRequest* req)
 
 static void _print_set_vertex(DvzRequest* req)
 {
+    log_trace("print_set_vertex");
     ANN(req);
 
     printf(
@@ -565,6 +592,7 @@ static void _print_set_vertex(DvzRequest* req)
 
 static void _print_set_attr(DvzRequest* req)
 {
+    log_trace("print_set_attr");
     ANN(req);
 
     printf(
@@ -585,6 +613,7 @@ static void _print_set_attr(DvzRequest* req)
 
 static void _print_set_slot(DvzRequest* req)
 {
+    log_trace("print_set_slot");
     ANN(req);
 
     printf(
@@ -601,6 +630,7 @@ static void _print_set_slot(DvzRequest* req)
 
 static void _print_bind_dat(DvzRequest* req)
 {
+    log_trace("print_bind_dat");
     ANN(req);
     printf(
         "- action: set\n"
@@ -614,6 +644,7 @@ static void _print_bind_dat(DvzRequest* req)
 
 static void _print_bind_tex(DvzRequest* req)
 {
+    log_trace("print_bind_tex");
     ANN(req);
     printf(
         "- action: set\n"
@@ -633,6 +664,7 @@ static void _print_bind_tex(DvzRequest* req)
 
 static void _print_record_begin(DvzRequest* req)
 {
+    log_trace("print_record_begin");
     ANN(req);
     printf(
         "- action: record\n"
@@ -643,6 +675,7 @@ static void _print_record_begin(DvzRequest* req)
 
 static void _print_record_viewport(DvzRequest* req)
 {
+    log_trace("print_record_viewport");
     ANN(req);
     printf(
         "- action: record\n"
@@ -660,6 +693,7 @@ static void _print_record_viewport(DvzRequest* req)
 
 static void _print_record_draw(DvzRequest* req)
 {
+    log_trace("print_record_draw");
     ANN(req);
 
     printf(
@@ -681,6 +715,7 @@ static void _print_record_draw(DvzRequest* req)
 
 static void _print_record_draw_indexed(DvzRequest* req)
 {
+    log_trace("print_record_draw_indexed");
     ANN(req);
 
     printf(
@@ -705,6 +740,7 @@ static void _print_record_draw_indexed(DvzRequest* req)
 
 static void _print_record_draw_indirect(DvzRequest* req)
 {
+    log_trace("print_record_draw_indirect");
     ANN(req);
 
     printf(
@@ -723,6 +759,7 @@ static void _print_record_draw_indirect(DvzRequest* req)
 
 static void _print_record_draw_indexed_indirect(DvzRequest* req)
 {
+    log_trace("print_record_draw_indexed_indirect");
     ANN(req);
 
     printf(
@@ -743,6 +780,7 @@ static void _print_record_draw_indexed_indirect(DvzRequest* req)
 
 static void _print_record_end(DvzRequest* req)
 {
+    log_trace("print_record_end");
     ANN(req);
     printf(
         "- action: record\n"
@@ -1074,6 +1112,7 @@ void dvz_requester_print(DvzRequester* rqr)
 
     for (uint32_t i = 0; i < rqr->count; i++)
     {
+        log_trace("print request %d/%d", i + 1, rqr->count);
         dvz_request_print(&rqr->requests[i]);
     }
 }

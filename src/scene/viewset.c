@@ -10,6 +10,7 @@
 
 #include "scene/viewset.h"
 #include "_list.h"
+#include "_map.h"
 #include "common.h"
 #include "request.h"
 #include "scene/visual.h"
@@ -85,6 +86,7 @@ void dvz_viewset_build(DvzViewset* viewset)
     log_trace("build viewset");
 
     DvzId canvas_id = viewset->canvas_id;
+    ASSERT(canvas_id != DVZ_ID_NONE);
 
     // TODO
     // a viewset flag indicates whether the command buffer needs to be rebuilt
