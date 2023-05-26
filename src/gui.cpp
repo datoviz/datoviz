@@ -268,8 +268,10 @@ static void _imgui_destroy_window(DvzWindow* window)
 
 
 
-static void _imgui_destroy()
+static void _imgui_destroy(DvzGui* gui)
 {
+    ANN(gui);
+
     // IMPORTANT NOTE: to avoid segfaults while destroying ImGui or the windows, the following
     // destruction order must be followed:
     // 1) ImGui_ImplVulkan_Shutdown()
@@ -278,6 +280,14 @@ static void _imgui_destroy()
     // 4) glfwDestroyWindow()
 
     ANN(ImGui::GetCurrentContext());
+
+    // HACK: fix segfault when destroying the application while no window was created,
+    // because ImGui destruction requires Vulkan to shutdown before, but _imgui_destroy_window()
+    // is responsible for this, and it is never called if there was no window.
+    if (gui->gui_windows.count == 0)
+        ImGui_ImplVulkan_Shutdown();
+
+    log_trace("calling ImGui::DestroyContext()");
     ImGui::DestroyContext(ImGui::GetCurrentContext());
     ASSERT(ImGui::GetCurrentContext() == NULL);
 }
@@ -321,7 +331,7 @@ void dvz_gui_destroy(DvzGui* gui)
     log_debug("destroy the GUI");
     ANN(gui);
 
-    _imgui_destroy();
+    _imgui_destroy(gui);
 
     // Destroy the GUI windows.
     CONTAINER_DESTROY_ITEMS(DvzGuiWindow, gui->gui_windows, dvz_gui_window_destroy)
