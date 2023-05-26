@@ -480,6 +480,18 @@ int test_app_viewset(TstSuite* suite)
     DvzApp* app = dvz_app();
     DvzRequester* rqr = dvz_app_requester(app);
 
+    // Create a canvas.
+    DvzRequest req =
+        dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+    DvzId canvas_id = req.id;
+
+    // Create a viewset.
+    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
+
+    // Create a view.
+    DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+
+
     // Upload the data.
     const uint32_t n = 10000;
 
@@ -503,24 +515,10 @@ int test_app_viewset(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_pixel_viewport(pixel, viewport);
-
-    // Create a canvas.
-    DvzRequest req =
-        dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
-    DvzId canvas_id = req.id;
-
-    // Create a viewset.
-    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
-
-    // Create a view.
-    DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-
     // Create an instance.
     DvzInstance* instance = dvz_pixel_instance(pixel, view, 0, n);
     ANN(instance);
+
 
     // Build the viewset.
     dvz_viewset_build(viewset);

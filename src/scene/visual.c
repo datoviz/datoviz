@@ -338,6 +338,12 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 
     visual->mvp = mvp;
 
+    if (visual->baker->slot_count == 0)
+    {
+        log_debug("skipping visual_mvp() for visual with no common bindings");
+        return;
+    }
+
     dvz_baker_uniform(visual->baker, 0, sizeof(DvzMVP), &visual->mvp);
     dvz_baker_update(visual->baker);
 }
@@ -352,6 +358,12 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
     ANN(visual->baker);
 
     visual->viewport = viewport;
+
+    if (visual->baker->slot_count <= 1)
+    {
+        log_debug("skipping visual_viewport() for visual with no common bindings");
+        return;
+    }
 
     dvz_baker_uniform(visual->baker, 1, sizeof(DvzViewport), &visual->viewport);
     dvz_baker_update(visual->baker);

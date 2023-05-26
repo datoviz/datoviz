@@ -48,7 +48,6 @@ typedef struct _VkViewport _VkViewport;
 // NOTE: this corresponds to VkViewport, but we want to avoid the inclusion of vklite.h
 struct _VkViewport
 {
-
     float x;
     float y;
     float width;
@@ -89,6 +88,16 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ * Create a viewport.
+ *
+ * @param offset the viewport's offset
+ * @param shape the viewport's shape
+ * @returns the viewport
+ */
+DvzViewport dvz_viewport(vec2 offset, vec2 shape);
+
+
 
 /**
  * Return a default viewport
@@ -98,6 +107,7 @@ EXTERN_C_ON
  * @returns the viewport
  */
 DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
+
 
 
 EXTERN_C_OFF

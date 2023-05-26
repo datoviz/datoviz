@@ -227,7 +227,15 @@ DvzInstance* dvz_view_instance(
     ANN(view);
     log_trace("create instance");
 
-    // create a new instance and append it to view.instances
+    // Upload the MVP structure.
+    // TODO: transforms
+    dvz_visual_mvp(visual, dvz_mvp_default());
+
+    // Create the viewport and upload it to the uniform buffer.
+    DvzViewport viewport = dvz_viewport(view->offset, view->shape);
+    dvz_visual_viewport(visual, viewport);
+
+    // create a new instance and append it to view->instances
     DvzInstance* instance = (DvzInstance*)calloc(1, sizeof(DvzInstance));
     instance->view = view;
     instance->visual = visual;
