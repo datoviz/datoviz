@@ -35,6 +35,7 @@ typedef struct DvzBaker DvzBaker;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// TODO: TO REMOVE
 typedef enum
 {
     DVZ_VISUALS_FLAGS_DEFAULT = 0x0000,
@@ -81,6 +82,7 @@ struct DvzVisual
     DvzVisualAttr attrs[DVZ_MAX_VERTEX_ATTRS];
 
     uint32_t item_count;
+    uint32_t vertex_count;
     uint32_t group_count;
     uint32_t* group_sizes;
 
@@ -93,12 +95,24 @@ struct DvzVisual
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Visual lifecycle                                                                             */
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags);
 
 
+
+DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
+
+
+
+DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
+
+
+
+/*************************************************************************************************/
+/*  Visual declaration                                                                           */
+/*************************************************************************************************/
 
 DVZ_EXPORT void
 dvz_visual_spirv(DvzVisual* visual, DvzShaderType type, DvzSize size, const unsigned char* buffer);
@@ -133,6 +147,10 @@ DVZ_EXPORT void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32
 
 
 
+/*************************************************************************************************/
+/*  Visual common bindings                                                                       */
+/*************************************************************************************************/
+
 DVZ_EXPORT void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp); // update the MVP
 
 
@@ -141,6 +159,10 @@ DVZ_EXPORT void
 dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport); // update the viewport
 
 
+
+/*************************************************************************************************/
+/*  Visual data                                                                                  */
+/*************************************************************************************************/
 
 DVZ_EXPORT void
 dvz_visual_data(DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
@@ -153,6 +175,10 @@ DVZ_EXPORT void dvz_visual_quads(
 
 
 
+/*************************************************************************************************/
+/*  Visual drawing                                                                               */
+/*************************************************************************************************/
+
 DVZ_EXPORT void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
     uint32_t first_instance, uint32_t instance_count);
@@ -164,14 +190,6 @@ DVZ_EXPORT void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t dr
 
 
 DVZ_EXPORT void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count);
-
-
-
-DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
-
-
-
-DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
 
 
 

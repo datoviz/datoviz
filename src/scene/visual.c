@@ -46,7 +46,7 @@ static DvzSize get_attr_size(DvzFormat format)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Visual lifecycle                                                                             */
 /*************************************************************************************************/
 
 DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags)
@@ -77,6 +77,30 @@ DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int fla
 }
 
 
+
+void dvz_visual_update(DvzVisual* visual)
+{
+    ANN(visual);
+    dvz_baker_update(visual->baker);
+}
+
+
+
+void dvz_visual_destroy(DvzVisual* visual)
+{
+    ANN(visual);
+    if (visual->group_sizes != NULL)
+    {
+        FREE(visual->group_sizes);
+    }
+    FREE(visual);
+}
+
+
+
+/*************************************************************************************************/
+/*  Visual declaration                                                                           */
+/*************************************************************************************************/
 
 void dvz_visual_spirv(
     DvzVisual* visual, DvzShaderType type, DvzSize size, const unsigned char* buffer)
@@ -121,6 +145,7 @@ void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
 
     // Mark the new item count.
     visual->item_count = item_count;
+    visual->vertex_count = vertex_count;
 
     // Resize the baker, resize the underlying arrays, emit the dat resize commands.
     // TODO: write tests, NOT TESTED YET
@@ -329,6 +354,10 @@ void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
 
 
 
+/*************************************************************************************************/
+/*  Visual common bindings                                                                       */
+/*************************************************************************************************/
+
 void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
 {
     // NOTE: the data is immediately copied into the visual's baker's dual
@@ -370,6 +399,10 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
 }
 
 
+
+/*************************************************************************************************/
+/*  Visual data                                                                                  */
+/*************************************************************************************************/
 
 void dvz_visual_data(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
@@ -428,6 +461,10 @@ void dvz_visual_quads(
 
 
 
+/*************************************************************************************************/
+/*  Visual drawing                                                                               */
+/*************************************************************************************************/
+
 void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
     uint32_t first_instance, uint32_t instance_count)
@@ -484,26 +521,3 @@ void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t c
 {
     dvz_visual_instance(visual, canvas, first, 0, count, 0, 1);
 }
-
-
-
-void dvz_visual_update(DvzVisual* visual)
-{
-    ANN(visual);
-    dvz_baker_update(visual->baker);
-}
-
-
-
-void dvz_visual_destroy(DvzVisual* visual)
-{
-    ANN(visual);
-    if (visual->group_sizes != NULL)
-    {
-        FREE(visual->group_sizes);
-    }
-    FREE(visual);
-}
-
-
-// helper functions that creates the mvp/viewport dat
