@@ -171,7 +171,7 @@ DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex
     DvzArray* array = dvz_array_struct(vertex_count, vertex_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
-    dual.need_destroy = true;
+    // dual.need_destroy = true;
     return dual;
 }
 
@@ -187,7 +187,7 @@ DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count)
     DvzArray* array = dvz_array_struct(index_count, index_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
-    dual.need_destroy = true;
+    // dual.need_destroy = true;
     return dual;
 }
 
@@ -203,7 +203,7 @@ DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed)
     DvzArray* array = dvz_array_struct(1, size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
-    dual.need_destroy = true;
+    // dual.need_destroy = true;
     return dual;
 }
 
@@ -218,6 +218,6 @@ DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size)
     DvzArray* array = dvz_array_struct(1, vertex_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
-    dual.need_destroy = true;
+    // dual.need_destroy = true;
     return dual;
 }

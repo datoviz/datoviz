@@ -61,6 +61,8 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         return;
     }
     bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride);
+    // NOTE; mark the dual as needing to be destroyed by the library
+    bv->dual.need_destroy = true;
 }
 
 
@@ -78,6 +80,8 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         return;
     }
     baker->index = dvz_dual_index(baker->rqr, index_count);
+    // NOTE; mark the dual as needing to be destroyed by the library
+    baker->index.need_destroy = true;
 }
 
 
@@ -88,6 +92,8 @@ static void _create_indirect(DvzBaker* baker, bool indexed)
 
     log_trace("create %sindirect buffer, create dat and array", indexed ? "indexed " : "");
     baker->indirect = dvz_dual_indirect(baker->rqr, indexed);
+    // NOTE; mark the dual as needing to be destroyed by the library
+    baker->indirect.need_destroy = true;
 }
 
 
@@ -108,6 +114,8 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
         return;
     }
     bd->dual = dvz_dual_dat(baker->rqr, bd->item_size);
+    // NOTE; mark the dual as needing to be destroyed by the library
+    bd->dual.need_destroy = true;
 }
 
 

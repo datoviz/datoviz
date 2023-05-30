@@ -181,3 +181,36 @@ int test_baker_1(TstSuite* suite)
     dvz_requester_destroy(rqr);
     return 0;
 }
+
+
+
+int test_baker_2(TstSuite* suite)
+{
+    DvzRequester* rqr = dvz_requester();
+    dvz_requester_begin(rqr);
+
+    // Declare a descriptor slot.
+    DvzBaker* baker = dvz_baker(rqr, 0);
+    dvz_baker_slot(baker, 0, 1);
+
+    // Create a dual dat manually.
+    DvzDual dual = dvz_dual_dat(rqr, 1);
+
+    // Use it as baker's dat.
+    dvz_baker_share_uniform(baker, 0, &dual);
+
+    // Create the baker.
+    dvz_baker_create(baker, 0, 1);
+
+    // Set some data with the baker.
+    uint8_t data = 42;
+    dvz_baker_uniform(baker, 0, 1, &data);
+
+    AT(*((uint8_t*)dvz_array_item(dual.array, 0)) == 42);
+
+    // Destroy the objects.
+    dvz_baker_destroy(baker);
+    dvz_dual_destroy(&dual);
+    dvz_requester_destroy(rqr);
+    return 0;
+}
