@@ -40,7 +40,6 @@ typedef void (*DvzVisualCallback)(
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// TODO: TO REMOVE
 typedef enum
 {
     DVZ_VISUALS_FLAGS_DEFAULT = 0x0000,

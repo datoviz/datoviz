@@ -358,13 +358,6 @@ cdef extern from "<datoviz/common.h>":
         DVZ_REQUEST_FLAGS_NONE = 0x0000
         DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000
 
-    ctypedef enum DvzViewportClip:
-        DVZ_VIEWPORT_FULL = 0
-        DVZ_VIEWPORT_INNER = 1
-        DVZ_VIEWPORT_OUTER = 2
-        DVZ_VIEWPORT_OUTER_BOTTOM = 3
-        DVZ_VIEWPORT_OUTER_LEFT = 4
-
     ctypedef enum DvzVisualFlags:
         DVZ_VISUALS_FLAGS_DEFAULT = 0x0000
         DVZ_VISUALS_FLAGS_INDEXED = 0x0001

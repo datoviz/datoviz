@@ -23,12 +23,20 @@
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    DVZ_VIEWPORT_FULL,
-    DVZ_VIEWPORT_INNER,
-    DVZ_VIEWPORT_OUTER,
-    DVZ_VIEWPORT_OUTER_BOTTOM,
-    DVZ_VIEWPORT_OUTER_LEFT,
-} DvzViewportClip;
+    DVZ_VIEWPORT_FLAGS_NONE = 0x00,
+
+    // whether to integrate the margins in the transform or not
+    DVZ_VIEWPORT_FLAGS_WITH_MARGINS = 0x00,
+    DVZ_VIEWPORT_FLAGS_WITHOUT_MARGINS = 0x01,
+
+    // clipping strategy
+    DVZ_VIEWPORT_FLAGS_CLIP_NONE = 0x00,
+    DVZ_VIEWPORT_FLAGS_CLIP_INNER = 0x10,
+    DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20,
+    DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30,
+    DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40,
+
+} DvzViewportFlags;
 
 
 
@@ -72,7 +80,7 @@ struct DvzViewport
 
     // Options
     // Viewport clipping.
-    DvzViewportClip clip; // used by the GPU for viewport clipping
+    int flags; // used by the GPU for viewport clipping
 
     // Used to discard transform on one axis
     int32_t interact_axis;

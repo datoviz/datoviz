@@ -11,6 +11,7 @@ void main()
     gl_Position = transform(pos);
     out_color = color;
 
+
     // HACK: this is to use the same shader with the pixel visual.
     gl_PointSize = 1;
 }

@@ -47,7 +47,7 @@ cdef extern from "<datoviz/scene/viewset.h>":
         uvec2 size_screen
         uvec2 offset_framebuffer
         uvec2 size_framebuffer
-        DvzViewportClip clip
+        DvzViewportFlags flags
         int32_t interact_axis
 
 
