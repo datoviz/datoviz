@@ -13,6 +13,7 @@
 
 #include "../../_obj.h"
 #include "../viewport.h"
+#include "../visual.h"
 
 
 
@@ -102,14 +103,6 @@ dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* value
  */
 DVZ_EXPORT void
 dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void
-dvz_pixel_draw(DvzVisual* pixel, DvzId canvas, uint32_t first, uint32_t count, int flags);
 
 
 

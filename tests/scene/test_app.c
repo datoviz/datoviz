@@ -16,6 +16,7 @@
 #include "scene/camera.h"
 #include "scene/panzoom.h"
 #include "scene/viewset.h"
+#include "scene/visual.h"
 #include "scene/visuals/pixel.h"
 #include "test.h"
 #include "testing.h"
@@ -456,7 +457,7 @@ int test_app_pixel(TstSuite* suite)
     // Record commands.
     dvz_record_begin(rqr, canvas_id);
     dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_pixel_draw(pixel, canvas_id, 0, n, 0);
+    dvz_visual_draw(pixel, canvas_id, 0, n, 0, 1);
     dvz_record_end(rqr, canvas_id);
 
     // Run the app.
