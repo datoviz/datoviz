@@ -43,19 +43,19 @@ typedef struct DvzArray DvzArray;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzBakerVertex
-{
-    uint32_t binding_idx;
-    DvzSize stride;
-    DvzDual dual;
-};
-
 struct DvzBakerAttr
 {
     uint32_t attr_idx;
     uint32_t binding_idx;
     DvzSize offset;
     DvzSize item_size;
+};
+
+struct DvzBakerVertex
+{
+    uint32_t binding_idx;
+    DvzSize stride;
+    DvzDual dual;
 };
 
 struct DvzBakerDescriptor
@@ -149,6 +149,18 @@ DVZ_EXPORT void dvz_baker_quads(
 
 
 DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data);
+
+
+
+DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual);
+
+
+
+DVZ_EXPORT void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual);
+
+
+
+DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker, DvzDual* dual);
 
 
 

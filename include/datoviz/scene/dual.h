@@ -50,6 +50,9 @@ struct DvzDual
     uint32_t dirty_first;
     uint32_t dirty_last; // smallest contiguous interval encompassing all dirty intervals
     // dirty_last is the first non-dirty item (count=last-first)
+
+    bool need_destroy; // whether the library is responsible for creating and thus destroying the
+                       // dual
 };
 
 

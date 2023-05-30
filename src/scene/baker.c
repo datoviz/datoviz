@@ -51,6 +51,15 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         "create baker vertex binding #%d with %d vertices, stride %" PRId64
         ", create dat and array",
         binding_idx, vertex_count, bv->stride);
+
+    if (bv->dual.array != NULL)
+    {
+        log_trace(
+            "skipping creation of dat for vertex binding #%d as a shared dual has already been "
+            "set",
+            binding_idx);
+        return;
+    }
     bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride);
 }
 
@@ -62,6 +71,12 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
     ASSERT(index_count > 0);
 
     log_trace("create index buffer with %d vertices, create dat and array", index_count);
+    if (baker->index.array != NULL)
+    {
+        log_trace(
+            "skipping creation of dat for index buffer as a shared dual has already been set");
+        return;
+    }
     baker->index = dvz_dual_index(baker->rqr, index_count);
 }
 
@@ -83,6 +98,15 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
     ASSERT(slot_idx < baker->slot_count);
     log_trace("create baker descriptor #%d, create dat and array", slot_idx);
     DvzBakerDescriptor* bd = &baker->descriptors[slot_idx];
+    ANN(bd);
+
+    if (bd->dual.array != NULL)
+    {
+        log_trace(
+            "skipping creation of dat for descriptor #%d as a shared dual has already been set",
+            slot_idx);
+        return;
+    }
     bd->dual = dvz_dual_dat(baker->rqr, bd->item_size);
 }
 
@@ -116,21 +140,66 @@ void dvz_baker_destroy(DvzBaker* baker)
     for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
         bv = &baker->vertex_bindings[binding_idx];
-        dvz_array_destroy(bv->dual.array);
-        // TODO: destroy dat
+        // NOTE: this will destroy the dual's array only if dual.need_destroy=true (which only
+        // occurs if the dual was created with one of the helper functions in dual.c).
         dvz_dual_destroy(&bv->dual);
+        // NOTE: the dat is not destroyed at the moment.
     }
 
     DvzBakerDescriptor* bd = NULL;
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
         bd = &baker->descriptors[slot_idx];
-        dvz_array_destroy(bd->dual.array);
-        // TODO: destroy dat
+        // NOTE: same as above.
         dvz_dual_destroy(&bd->dual);
     }
 
     FREE(baker);
+}
+
+
+
+/*************************************************************************************************/
+/*  Baker sharing                                                                                */
+/*************************************************************************************************/
+
+void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual)
+{
+    ANN(baker);
+    ANN(dual);
+    ASSERT(binding_idx < baker->binding_count);
+
+    DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
+    ANN(bv);
+
+    log_trace("set shared dual for vertex binding #%d", binding_idx);
+    bv->dual = *dual;
+}
+
+
+
+void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual)
+{
+    ANN(baker);
+    ANN(dual);
+    ASSERT(binding_idx < baker->slot_count);
+
+    DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
+    ANN(bd);
+
+    log_trace("set shared dual for descriptor binding #%d", binding_idx);
+    bd->dual = *dual;
+}
+
+
+
+void dvz_baker_share_index(DvzBaker* baker, DvzDual* dual)
+{
+    ANN(baker);
+    ANN(dual);
+
+    log_trace("set shared dual for index buffer");
+    baker->index = *dual;
 }
 
 
