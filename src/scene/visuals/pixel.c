@@ -112,15 +112,6 @@ void dvz_pixel_create(DvzVisual* pixel)
 
 
 
-DvzInstance* dvz_pixel_instance(DvzVisual* pixel, DvzView* view, uint32_t first, uint32_t count)
-{
-    ANN(pixel);
-    ANN(view);
-    return dvz_view_instance(view, pixel, first, 0, count, 0, 1);
-}
-
-
-
 void dvz_pixel_update(DvzVisual* pixel)
 {
     ANN(pixel);

@@ -70,14 +70,6 @@ void dvz_viewset_clear(DvzViewset* viewset)
 
 
 
-// DvzView* dvz_viewset_root(DvzViewset* viewset)
-// {
-//     ANN(viewset);
-//     return viewset->root;
-// }
-
-
-
 void dvz_viewset_build(DvzViewset* viewset)
 {
     // this function recreates the command buffer
@@ -99,7 +91,7 @@ void dvz_viewset_build(DvzViewset* viewset)
     uint64_t view_count = dvz_list_count(viewset->views);
     uint64_t instance_count = 0;
     DvzView* view = NULL;
-    bool indirect = false;
+    // bool indirect = false;
     DvzInstance* instance = NULL;
 
     // for each view
@@ -112,28 +104,17 @@ void dvz_viewset_build(DvzViewset* viewset)
         // Set the current viewport, corresponding to the current view.
         dvz_record_viewport(rqr, canvas_id, view->offset, view->shape);
 
-        // for each instance in the view
+        // For each instance in the view
         instance_count = dvz_list_count(view->instances);
         for (uint64_t j = 0; j < instance_count; j++)
         {
             instance = (DvzInstance*)dvz_list_get(view->instances, i).p;
             ANN(instance);
 
-            // Indirect rendering?
-            indirect = (instance->visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0;
-
-            if (indirect)
-            {
-                // TODO: draw_count=1 here
-                dvz_visual_indirect(instance->visual, canvas_id, 1);
-            }
-            else
-            {
-                // both non-indexed and indexed rendering
-                dvz_visual_instance(
-                    instance->visual, canvas_id, instance->first, instance->vertex_offset,
-                    instance->count, instance->first_instance, instance->instance_count);
-            }
+            // Call the visual draw callback with the parameters stored in the DvzInstance struct.
+            dvz_visual_draw(
+                instance->visual, canvas_id, instance->first, instance->count,
+                instance->first_instance, instance->instance_count);
         }
     }
 
@@ -222,9 +203,9 @@ void dvz_view_destroy(DvzView* view)
 /*************************************************************************************************/
 
 DvzInstance* dvz_view_instance(
-    DvzView* view, DvzVisual* visual,                       //
-    uint32_t first, uint32_t vertex_offset, uint32_t count, //
-    uint32_t first_instance, uint32_t instance_count)
+    DvzView* view, DvzVisual* visual,                 //
+    uint32_t first, uint32_t count,                   // items
+    uint32_t first_instance, uint32_t instance_count) // instances
 {
     ANN(view);
     log_trace("create instance");
@@ -242,7 +223,6 @@ DvzInstance* dvz_view_instance(
     instance->view = view;
     instance->visual = visual;
     instance->first = first;
-    instance->vertex_offset = vertex_offset;
     instance->count = count;
     instance->first_instance = first_instance;
     instance->instance_count = instance_count;

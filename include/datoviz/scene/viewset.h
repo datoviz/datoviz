@@ -42,9 +42,8 @@ struct DvzInstance
     DvzView* view;
     DvzVisual* visual;
 
-    uint32_t first;         // first vertex, or index if using indexed rendering
-    uint32_t vertex_offset; // only used with indexed rendering
-    uint32_t count;         // number of vertices, or indicex if using indexed rendering
+    uint32_t first; // first item (offset)
+    uint32_t count; // number of items to draw
 
     // Instancing.
     uint32_t first_instance;
@@ -141,9 +140,9 @@ DVZ_EXPORT void dvz_view_destroy(DvzView* view);
  *
  */
 DVZ_EXPORT DvzInstance* dvz_view_instance(
-    DvzView* view, DvzVisual* visual,                       //
-    uint32_t first, uint32_t vertex_offset, uint32_t count, //
-    uint32_t first_instance, uint32_t instance_count);
+    DvzView* view, DvzVisual* visual,                  //
+    uint32_t first, uint32_t count,                    // items
+    uint32_t first_instance, uint32_t instance_count); // instances
 
 /**
  *
