@@ -58,6 +58,9 @@ DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int fla
     visual->flags = flags;
     visual->rqr = rqr;
 
+    // Default callback.
+    visual->callback = dvz_visual_draw;
+
     visual->baker = dvz_baker(rqr, 0);
 
     // Create the graphics object.
@@ -517,7 +520,19 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 
 
 
-void dvz_visual_draw(DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count)
+void dvz_visual_draw(
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
+    uint32_t instance_count)
 {
-    dvz_visual_instance(visual, canvas, first, 0, count, 0, 1);
+    dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
+}
+
+
+
+void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback)
+{
+    ANN(visual);
+    ANN(callback);
+
+    visual->callback = callback;
 }

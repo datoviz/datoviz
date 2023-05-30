@@ -120,7 +120,7 @@ void dvz_pixel_draw(DvzVisual* pixel, DvzId canvas, uint32_t first, uint32_t cou
     // dvz_visual_update(pixel);
 
     // Emit the record commands.
-    dvz_visual_draw(pixel, canvas, first, count);
+    dvz_visual_draw(pixel, canvas, first, count, 0, 1);
 }
 
 

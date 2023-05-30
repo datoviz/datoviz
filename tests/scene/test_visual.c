@@ -94,7 +94,7 @@ int test_visual_1(TstSuite* suite)
     // Record the commands.
     dvz_record_begin(rqr, board_id);
     dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_draw(visual, board_id, 0, n);
+    dvz_visual_draw(visual, board_id, 0, n, 0, 1);
     dvz_record_end(rqr, board_id);
 
     // Render to a PNG.
