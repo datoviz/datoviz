@@ -30,6 +30,7 @@ typedef struct DvzViewset DvzViewset;
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzList DvzList;
+typedef struct DvzTransform DvzTransform;
 
 
 
@@ -41,6 +42,7 @@ struct DvzInstance
 {
     DvzView* view;
     DvzVisual* visual;
+    DvzTransform* tr;
 
     uint32_t first; // first item (offset)
     uint32_t count; // number of items to draw
@@ -140,9 +142,13 @@ DVZ_EXPORT void dvz_view_destroy(DvzView* view);
  *
  */
 DVZ_EXPORT DvzInstance* dvz_view_instance(
-    DvzView* view, DvzVisual* visual,                  //
-    uint32_t first, uint32_t count,                    // items
-    uint32_t first_instance, uint32_t instance_count); // instances
+    DvzView* view, DvzVisual* visual,                 //
+    uint32_t first, uint32_t count,                   // items
+    uint32_t first_instance, uint32_t instance_count, // instances
+    DvzTransform* tr,                                 // transform
+    int flags);                                       // viewport flags
+
+
 
 /**
  *

@@ -582,6 +582,7 @@ set(sources
     "src/scene/app.c"
     "src/scene/visual.c"
     "src/scene/viewset.c"
+    "src/scene/transform.c"
     "src/scene/visuals/pixel.c"
 
     ${external_sources}

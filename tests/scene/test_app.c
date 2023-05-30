@@ -424,7 +424,11 @@ int test_app_pixel(TstSuite* suite)
     // Upload the data.
     const uint32_t n = 10000;
 
-    DvzVisual* pixel = dvz_pixel(rqr, n, 0);
+    DvzVisual* pixel = dvz_pixel(rqr, 0);
+
+    // TODO
+    dvz_pixel_create(pixel, n);
+    dvz_visual_mvp(pixel, dvz_mvp_default());
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -446,7 +450,7 @@ int test_app_pixel(TstSuite* suite)
 
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_pixel_viewport(pixel, viewport);
+    dvz_visual_viewport(pixel, viewport);
 
     // Create a board.
     DvzRequest req =
@@ -496,7 +500,11 @@ int test_app_viewset(TstSuite* suite)
     // Upload the data.
     const uint32_t n = 10000;
 
-    DvzVisual* pixel = dvz_pixel(rqr, n, 0);
+    DvzVisual* pixel = dvz_pixel(rqr, 0);
+
+    // TODO
+    dvz_pixel_create(pixel, n);
+    dvz_visual_mvp(pixel, dvz_mvp_default());
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -517,9 +525,10 @@ int test_app_viewset(TstSuite* suite)
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Create an instance.
-    DvzInstance* instance = dvz_view_instance(view, pixel, 0, n, 0, 1);
+    DvzInstance* instance = dvz_view_instance(view, pixel, 0, n, 0, 1, NULL, 0);
     ANN(instance);
 
+    dvz_pixel_create(pixel, n);
 
     // Build the viewset.
     dvz_viewset_build(viewset);

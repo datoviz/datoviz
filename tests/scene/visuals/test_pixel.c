@@ -45,7 +45,11 @@ int test_pixel_1(TstSuite* suite)
     // Upload the data.
     const uint32_t n = 10000;
 
-    DvzVisual* pixel = dvz_pixel(rqr, n, 0);
+    DvzVisual* pixel = dvz_pixel(rqr, 0);
+
+    // TODO
+    dvz_pixel_create(pixel, n);
+    dvz_visual_mvp(pixel, dvz_mvp_default());
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -67,7 +71,7 @@ int test_pixel_1(TstSuite* suite)
 
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_pixel_viewport(pixel, viewport);
+    dvz_visual_viewport(pixel, viewport);
 
     // Create a board.
     DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);

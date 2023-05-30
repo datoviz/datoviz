@@ -1,6 +1,9 @@
 /*************************************************************************************************/
-/*  Testing viewset                                                                              */
+/* Transform                                                                                     */
 /*************************************************************************************************/
+
+#ifndef DVZ_HEADER_TRANSFORM
+#define DVZ_HEADER_TRANSFORM
 
 
 
@@ -8,15 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/test_viewset.h"
-#include "renderer.h"
-#include "request.h"
-#include "scene/scene_testing_utils.h"
-#include "scene/viewset.h"
-#include "scene/visual.h"
-#include "test.h"
-#include "testing.h"
-#include "testing_utils.h"
+#include "dual.h"
+#include "mvp.h"
 
 
 
@@ -24,50 +20,54 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzTransform DvzTransform;
+
+// Forward declarations.
+typedef struct DvzRequester DvzRequester;
+// typedef struct DvzDual DvzDual;
+
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  Visual tests                                                                                 */
-/*************************************************************************************************/
-
-int test_viewset_1(TstSuite* suite)
+struct DvzTransform
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzDual dual;
+    DvzTransform* next; // NOTE: not implemented yet
+    // DvzMVP mvp; // NOTE: this is redundant because the structure is stored in the dual (array)
+};
 
-    uint32_t n = 10;
 
-    // Create a visual.
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
-    DvzId canvas_id = 1;
-    vec2 offset = {0, 0};
-    vec2 shape = {0, 0};
+EXTERN_C_ON
 
-    // Create a viewset.
-    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
+/*************************************************************************************************/
+/*  Transform                                                                                    */
+/*************************************************************************************************/
 
-    // Create a view.
-    DvzView* view = dvz_view(viewset, offset, shape);
-    dvz_view_clear(view);
+/**
+ *
+ */
+DVZ_EXPORT DvzTransform* dvz_transform(DvzRequester* rqr);
 
-    // Create an instance.
-    DvzInstance* instance = dvz_view_instance(view, visual, 0, n, 0, 1, NULL, 0);
-    dvz_instance_visible(instance, true);
 
-    dvz_viewset_build(viewset);
-    // dvz_requester_print(rqr);
 
-    dvz_instance_destroy(instance);
-    dvz_view_destroy(view);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_transform_update(DvzTransform* tr, DvzMVP mvp);
 
-    dvz_viewset_destroy(viewset);
-    dvz_requester_destroy(rqr);
-    return 0;
-}
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_transform_destroy(DvzTransform* tr);
+
+
+
+EXTERN_C_OFF
+
+#endif

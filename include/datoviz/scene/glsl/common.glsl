@@ -39,21 +39,20 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 #define CLIP                                                                                      \
     switch (viewport.clip)                                                                        \
     {                                                                                             \
-    case DVZ_VIEWPORT_NONE:                                                                       \
+    case DVZ_VIEWPORT_FLAGS_CLIP_NONE:                                                            \
         break;                                                                                    \
                                                                                                   \
-    case DVZ_VIEWPORT_INNER:                                                                      \
-    case DVZ_VIEWPORT_OUTER:                                                                      \
+    case DVZ_VIEWPORT_FLAGS_CLIP_INNER:                                                           \
         if (clip_viewport(gl_FragCoord.xy))                                                       \
             discard;                                                                              \
         break;                                                                                    \
                                                                                                   \
-    case DVZ_VIEWPORT_OUTER_BOTTOM:                                                               \
+    case DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM:                                                          \
         if (clip_viewport(gl_FragCoord.xy, 0))                                                    \
             discard;                                                                              \
         break;                                                                                    \
                                                                                                   \
-    case DVZ_VIEWPORT_OUTER_LEFT:                                                                 \
+    case DVZ_VIEWPORT_FLAGS_CLIP_LEFT:                                                            \
         if (clip_viewport(gl_FragCoord.xy, 1))                                                    \
             discard;                                                                              \
         break;                                                                                    \

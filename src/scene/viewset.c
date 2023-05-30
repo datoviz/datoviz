@@ -13,6 +13,8 @@
 #include "_map.h"
 #include "common.h"
 #include "request.h"
+#include "scene/baker.h"
+#include "scene/transform.h"
 #include "scene/visual.h"
 
 
@@ -205,7 +207,9 @@ void dvz_view_destroy(DvzView* view)
 DvzInstance* dvz_view_instance(
     DvzView* view, DvzVisual* visual,                 //
     uint32_t first, uint32_t count,                   // items
-    uint32_t first_instance, uint32_t instance_count) // instances
+    uint32_t first_instance, uint32_t instance_count, // instances
+    DvzTransform* tr,                                 // transform
+    int flags)                                        // viewport flags
 {
     ANN(view);
     log_trace("create instance");
@@ -213,15 +217,28 @@ DvzInstance* dvz_view_instance(
     // Upload the MVP structure.
     // TODO: transforms
     dvz_visual_mvp(visual, dvz_mvp_default());
+    if (tr == NULL)
+    {
+        log_trace("creating default transform for view instance");
+        tr = dvz_transform(visual->rqr);
+    }
+    ANN(tr);
+
+    // TODO: use a new #define DVZ_COMMON_MVP instead of hard-coded 0 here
+    ANN(visual->baker);
+    // HACK: handle the case where the visual does not have common bindings
+    // if (visual->baker->slot_count > 0)
+    //     dvz_baker_share_uniform(visual->baker, 0, &tr->dual);
 
     // Create the viewport and upload it to the uniform buffer.
-    DvzViewport viewport = dvz_viewport(view->offset, view->shape);
+    DvzViewport viewport = dvz_viewport(view->offset, view->shape, DVZ_VIEWPORT_FLAGS_NONE);
     dvz_visual_viewport(visual, viewport);
 
     // create a new instance and append it to view->instances
     DvzInstance* instance = (DvzInstance*)calloc(1, sizeof(DvzInstance));
     instance->view = view;
     instance->visual = visual;
+    instance->tr = tr;
     instance->first = first;
     instance->count = count;
     instance->first_instance = first_instance;

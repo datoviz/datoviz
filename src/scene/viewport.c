@@ -15,7 +15,7 @@
 /*  Default viewport                                                                             */
 /*************************************************************************************************/
 
-DvzViewport dvz_viewport(vec2 offset, vec2 shape)
+DvzViewport dvz_viewport(vec2 offset, vec2 shape, int flags)
 {
     DvzViewport viewport = {0};
 
@@ -29,6 +29,8 @@ DvzViewport dvz_viewport(vec2 offset, vec2 shape)
     viewport.size_screen[0] = viewport.size_framebuffer[0];
     viewport.size_screen[1] = viewport.size_framebuffer[1];
 
+    viewport.flags = flags;
+
     return viewport;
 }
 
@@ -36,5 +38,5 @@ DvzViewport dvz_viewport(vec2 offset, vec2 shape)
 
 DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
 {
-    return dvz_viewport((vec2){0, 0}, (vec2){width, height});
+    return dvz_viewport((vec2){0, 0}, (vec2){width, height}, DVZ_VIEWPORT_FLAGS_NONE);
 }

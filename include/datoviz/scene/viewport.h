@@ -30,7 +30,7 @@ typedef enum
     DVZ_VIEWPORT_FLAGS_WITHOUT_MARGINS = 0x01,
 
     // clipping strategy
-    DVZ_VIEWPORT_FLAGS_CLIP_NONE = 0x00,
+    // DVZ_VIEWPORT_FLAGS_CLIP_NONE = 0x00,
     DVZ_VIEWPORT_FLAGS_CLIP_INNER = 0x10,
     DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20,
     DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30,
@@ -103,7 +103,7 @@ EXTERN_C_ON
  * @param shape the viewport's shape
  * @returns the viewport
  */
-DvzViewport dvz_viewport(vec2 offset, vec2 shape);
+DvzViewport dvz_viewport(vec2 offset, vec2 shape, int flags);
 
 
 

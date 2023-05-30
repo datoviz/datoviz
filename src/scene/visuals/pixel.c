@@ -33,7 +33,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags)
+DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 {
     ANN(rqr);
 
@@ -55,23 +55,20 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags)
     dvz_visual_dat(pixel, 0, sizeof(DvzMVP));
     dvz_visual_dat(pixel, 1, sizeof(DvzViewport));
 
-    // Create the visual.
-    dvz_visual_create(pixel, item_count, item_count);
-
     // dvz_obj_init(&pixel->obj);
     return pixel;
 }
 
 
 
-void dvz_pixel_viewport(DvzVisual* pixel, DvzViewport viewport)
-{
-    ANN(pixel);
-    ANN(pixel);
+// void dvz_pixel_viewport(DvzVisual* pixel, DvzViewport viewport)
+// {
+//     ANN(pixel);
+//     ANN(pixel);
 
-    dvz_visual_mvp(pixel, dvz_mvp_default());
-    dvz_visual_viewport(pixel, viewport);
-}
+//     // dvz_visual_mvp(pixel, dvz_mvp_default());
+//     dvz_visual_viewport(pixel, viewport);
+// }
 
 
 
@@ -96,27 +93,26 @@ void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* va
 
 
 
-void dvz_pixel_create(DvzVisual* pixel)
+void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
 {
     ANN(pixel);
     log_debug("creating pixel visual");
 
-    // NOTE: needed?
-
-    // NOTE: for now static assignments
     DvzRequester* rqr = pixel->rqr;
     ANN(rqr);
 
+    // Create the visual.
+    dvz_visual_create(pixel, item_count, item_count);
     // dvz_obj_created(&pixel->obj);
 }
 
 
 
-void dvz_pixel_update(DvzVisual* pixel)
-{
-    ANN(pixel);
-    dvz_visual_update(pixel);
-}
+// void dvz_pixel_update(DvzVisual* pixel)
+// {
+//     ANN(pixel);
+//     dvz_visual_update(pixel);
+// }
 
 
 
