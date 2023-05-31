@@ -91,32 +91,32 @@ void dvz_viewset_build(DvzViewset* viewset)
     dvz_record_begin(rqr, canvas_id);
 
     uint64_t view_count = dvz_list_count(viewset->views);
-    uint64_t instance_count = 0;
+    uint64_t count = 0;
     DvzView* view = NULL;
     // bool indirect = false;
-    DvzInstance* instance = NULL;
+    DvzVisual* visual = NULL;
 
     // for each view
     for (uint64_t i = 0; i < view_count; i++)
     {
         view = (DvzView*)dvz_list_get(viewset->views, i).p;
         ANN(view);
-        ANN(view->instances);
+        ANN(view->visuals);
 
         // Set the current viewport, corresponding to the current view.
         dvz_record_viewport(rqr, canvas_id, view->offset, view->shape);
 
-        // For each instance in the view
-        instance_count = dvz_list_count(view->instances);
-        for (uint64_t j = 0; j < instance_count; j++)
+        // For each visual in the view
+        count = dvz_list_count(view->visuals);
+        for (uint64_t j = 0; j < count; j++)
         {
-            instance = (DvzInstance*)dvz_list_get(view->instances, i).p;
-            ANN(instance);
+            visual = (DvzVisual*)dvz_list_get(view->visuals, i).p;
+            ANN(visual);
 
-            // Call the visual draw callback with the parameters stored in the DvzInstance struct.
+            // Call the visual draw callback with the parameters stored in the visual.
             dvz_visual_draw(
-                instance->visual, canvas_id, instance->first, instance->count,
-                instance->first_instance, instance->instance_count);
+                visual, canvas_id, visual->first, visual->count, //
+                visual->first_instance, visual->instance_count);
         }
     }
 
@@ -130,7 +130,7 @@ void dvz_viewset_destroy(DvzViewset* viewset)
     ANN(viewset);
     log_trace("destroy viewset");
 
-    // Destroy through all views and all instances.
+    // Destroy through all views.
     dvz_viewset_clear(viewset);
     dvz_list_destroy(viewset->views);
     FREE(viewset);
@@ -149,7 +149,7 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
     DvzView* view = (DvzView*)calloc(1, sizeof(DvzView));
     view->viewset = viewset;
-    view->instances = dvz_list();
+    view->visuals = dvz_list();
     dvz_view_resize(view, offset, shape);
     dvz_list_append(viewset->views, (DvzListItem){.p = view});
     return view;
@@ -160,18 +160,18 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 void dvz_view_clear(DvzView* view)
 {
     ANN(view);
-    ANN(view->instances);
+    ANN(view->visuals);
     log_trace("clear view");
+    dvz_list_clear(view->visuals);
+}
 
-    uint64_t count = dvz_list_count(view->instances);
-    DvzInstance* instance = NULL;
-    for (uint64_t i = 0; i < count; i++)
-    {
-        instance = (DvzInstance*)dvz_list_get(view->instances, i).p;
-        ANN(instance);
-        dvz_instance_destroy(instance);
-    }
-    dvz_list_clear(view->instances);
+
+
+void dvz_view_add(DvzView* view, DvzVisual* visual)
+{
+    ANN(view);
+    log_trace("add visual to view");
+    dvz_list_append(view->visuals, (DvzListItem){.p = visual});
 }
 
 
@@ -191,81 +191,7 @@ void dvz_view_destroy(DvzView* view)
     ANN(view->viewset);
     log_trace("destroy view");
 
-    // Destroy through all instances.
-    dvz_view_clear(view);
-    dvz_list_destroy(view->instances);
+    dvz_list_destroy(view->visuals);
     dvz_list_remove_pointer(view->viewset->views, view);
     FREE(view);
-}
-
-
-
-/*************************************************************************************************/
-/*  Instance                                                                                     */
-/*************************************************************************************************/
-
-DvzInstance* dvz_view_instance(
-    DvzView* view, DvzVisual* visual,                 //
-    uint32_t first, uint32_t count,                   // items
-    uint32_t first_instance, uint32_t instance_count, // instances
-    DvzTransform* tr,                                 // transform
-    int flags)                                        // viewport flags
-{
-    ANN(view);
-    log_trace("create instance");
-
-    // Upload the MVP structure.
-    // TODO: transforms
-    dvz_visual_mvp(visual, dvz_mvp_default());
-    if (tr == NULL)
-    {
-        log_trace("creating default transform for view instance");
-        tr = dvz_transform(visual->rqr);
-    }
-    ANN(tr);
-
-    // TODO: use a new #define DVZ_COMMON_MVP instead of hard-coded 0 here
-    ANN(visual->baker);
-    // HACK: handle the case where the visual does not have common bindings
-    // if (visual->baker->slot_count > 0)
-    //     dvz_baker_share_uniform(visual->baker, 0, &tr->dual);
-
-    // Create the viewport and upload it to the uniform buffer.
-    DvzViewport viewport = dvz_viewport(view->offset, view->shape, DVZ_VIEWPORT_FLAGS_NONE);
-    dvz_visual_viewport(visual, viewport);
-
-    // create a new instance and append it to view->instances
-    DvzInstance* instance = (DvzInstance*)calloc(1, sizeof(DvzInstance));
-    instance->view = view;
-    instance->visual = visual;
-    instance->tr = tr;
-    instance->first = first;
-    instance->count = count;
-    instance->first_instance = first_instance;
-    instance->instance_count = instance_count;
-    instance->is_visible = true;
-    dvz_list_append(view->instances, (DvzListItem){.p = instance});
-    return instance;
-}
-
-
-
-void dvz_instance_visible(DvzInstance* instance, bool is_visible)
-{
-    ANN(instance);
-    instance->is_visible = is_visible;
-}
-
-
-
-void dvz_instance_destroy(DvzInstance* instance)
-{
-    ANN(instance);
-    log_trace("destroy instance");
-
-    DvzView* view = instance->view;
-    ANN(view);
-    ANN(view->instances);
-    dvz_list_remove_pointer(view->instances, instance);
-    FREE(instance);
 }

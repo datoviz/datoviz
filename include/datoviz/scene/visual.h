@@ -28,6 +28,8 @@ typedef struct DvzVisualAttr DvzVisualAttr;
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzBaker DvzBaker;
+typedef struct DvzView DvzView;
+typedef struct DvzTransform DvzTransform;
 
 // Visual draw callback function.
 typedef void (*DvzVisualCallback)(
@@ -84,15 +86,26 @@ struct DvzVisual
     DvzBaker* baker;
     DvzId graphics_id;
     DvzVisualAttr attrs[DVZ_MAX_VERTEX_ATTRS];
+    DvzTransform* transforms[DVZ_MAX_VERTEX_ATTRS];
 
+    // Data.
     uint32_t item_count;
     uint32_t vertex_count;
     uint32_t group_count;
     uint32_t* group_sizes;
 
+    // Drawing.
+    // DvzView* view;           // view
+    uint32_t first;          // first item (offset).
+    uint32_t count;          // number of items to draw.
+    uint32_t first_instance; // instancing.
+    uint32_t instance_count;
+    bool is_visible;
+
     // Visual draw callback.
     DvzVisualCallback callback;
 
+    // TODO
     DvzMVP mvp;
     DvzViewport viewport;
 };
@@ -186,6 +199,13 @@ DVZ_EXPORT void dvz_visual_quads(
 /*  Visual drawing                                                                               */
 /*************************************************************************************************/
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_visible(DvzVisual* visual, bool is_visible);
+
+
+
 DVZ_EXPORT void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
     uint32_t first_instance, uint32_t instance_count);
@@ -198,8 +218,8 @@ DVZ_EXPORT void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t dr
 
 // Default visual draw callback.
 DVZ_EXPORT void dvz_visual_draw(
-    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, uint32_t first_instance,
-    uint32_t instance_count);
+    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, //
+    uint32_t first_instance, uint32_t instance_count);
 
 
 

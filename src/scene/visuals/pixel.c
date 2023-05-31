@@ -37,10 +37,6 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 {
     ANN(rqr);
 
-    // DvzVisual* pixel = (DvzVisual*)calloc(1, sizeof(DvzVisual));
-    // pixel->rqr = rqr;
-    // pixel->flags = flags;
-
     DvzVisual* pixel = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
     ANN(pixel);
 
@@ -58,17 +54,6 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
     // dvz_obj_init(&pixel->obj);
     return pixel;
 }
-
-
-
-// void dvz_pixel_viewport(DvzVisual* pixel, DvzViewport viewport)
-// {
-//     ANN(pixel);
-//     ANN(pixel);
-
-//     // dvz_visual_mvp(pixel, dvz_mvp_default());
-//     dvz_visual_viewport(pixel, viewport);
-// }
 
 
 
@@ -103,22 +88,4 @@ void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
 
     // Create the visual.
     dvz_visual_create(pixel, item_count, item_count);
-    // dvz_obj_created(&pixel->obj);
 }
-
-
-
-// void dvz_pixel_update(DvzVisual* pixel)
-// {
-//     ANN(pixel);
-//     dvz_visual_update(pixel);
-// }
-
-
-
-// void dvz_pixel_destroy(DvzVisual* pixel)
-// {
-//     ANN(pixel);
-//     dvz_visual_destroy(pixel);
-//     FREE(pixel);
-// }

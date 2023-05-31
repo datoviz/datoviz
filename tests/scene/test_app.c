@@ -525,8 +525,7 @@ int test_app_viewset(TstSuite* suite)
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Create an instance.
-    DvzInstance* instance = dvz_view_instance(view, pixel, 0, n, 0, 1, NULL, 0);
-    ANN(instance);
+    dvz_view_add(view, pixel);
 
     dvz_pixel_create(pixel, n);
 

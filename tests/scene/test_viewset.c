@@ -57,14 +57,13 @@ int test_viewset_1(TstSuite* suite)
     DvzView* view = dvz_view(viewset, offset, shape);
     dvz_view_clear(view);
 
-    // Create an instance.
-    DvzInstance* instance = dvz_view_instance(view, visual, 0, n, 0, 1, NULL, 0);
-    dvz_instance_visible(instance, true);
+    // Add the visual to the view.
+    dvz_view_add(view, visual);
+    dvz_visual_visible(visual, true);
 
     dvz_viewset_build(viewset);
     // dvz_requester_print(rqr);
 
-    dvz_instance_destroy(instance);
     dvz_view_destroy(view);
 
     dvz_viewset_destroy(viewset);
