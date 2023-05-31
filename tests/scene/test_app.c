@@ -15,6 +15,7 @@
 #include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/panzoom.h"
+#include "scene/transform.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 #include "scene/visuals/pixel.h"
@@ -44,6 +45,7 @@ struct PanzoomStruct
     DvzId mvp_id;
     DvzMVP mvp;
     DvzPanzoom* pz;
+    DvzTransform* tr;
 };
 
 
@@ -478,6 +480,59 @@ int test_app_pixel(TstSuite* suite)
 
 
 
+static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    ANN(ps);
+
+    DvzPanzoom* pz = ps->pz;
+    ANN(pz);
+
+    DvzRequester* rqr = ps->app->rqr;
+    ANN(rqr);
+
+    DvzTransform* tr = ps->tr;
+
+    // Dragging: pan.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
+        }
+        else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        {
+            dvz_panzoom_zoom_shift(
+                pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
+        }
+    }
+
+    // Stop dragging.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_panzoom_end(pz);
+    }
+
+    // Mouse wheel.
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+    {
+        dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+    }
+
+    // Double-click
+    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_panzoom_reset(pz);
+    }
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    dvz_panzoom_mvp(pz, mvp);
+    dvz_transform_update(tr, *mvp);
+}
+
 int test_app_viewset(TstSuite* suite)
 {
     ANN(suite);
@@ -521,16 +576,30 @@ int test_app_viewset(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+    // MVP transform.
+    DvzTransform* tr = dvz_transform(rqr);
+
     // Add the visual to the view.
-    dvz_view_add(view, pixel, 0, n, 0, 1, NULL, 0);
+    dvz_view_add(view, pixel, 0, n, 0, 1, tr, 0);
 
     // Build the viewset.
     dvz_viewset_build(viewset);
 
+    // Panzoom callback.
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    PanzoomStruct ps = {
+        .app = app,
+        .pz = pz,
+        .tr = tr,
+    };
+    dvz_app_onmouse(app, _viewset_mouse, &ps);
+    dvz_app_onresize(app, _scatter_resize, pz);
+
     // Run the app.
     dvz_app_run(app, N_FRAMES);
 
-    // Cleanup
+    // Cleanup.
+    dvz_transform_destroy(tr);
     dvz_visual_destroy(pixel);
     dvz_viewset_destroy(viewset);
     dvz_app_destroy(app);

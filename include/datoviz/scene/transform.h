@@ -61,6 +61,10 @@ DVZ_EXPORT void dvz_transform_update(DvzTransform* tr, DvzMVP mvp);
 
 
 
+DVZ_EXPORT DvzMVP* dvz_transform_mvp(DvzTransform* tr);
+
+
+
 /**
  *
  */

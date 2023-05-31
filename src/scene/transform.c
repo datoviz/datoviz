@@ -11,6 +11,7 @@
 #include "scene/transform.h"
 #include "common.h"
 #include "request.h"
+#include "scene/array.h"
 #include "scene/dual.h"
 #include "scene/visual.h"
 
@@ -31,7 +32,7 @@ DvzTransform* dvz_transform(DvzRequester* rqr)
     // NOTE: the transform holds the DvzMVP dual.
     tr->dual = dvz_dual_dat(rqr, sizeof(DvzMVP));
 
-    // Initialize the MVP on
+    // Initialize the MVP on initialization.
     dvz_transform_update(tr, dvz_mvp_default());
 
     return tr;
@@ -51,6 +52,19 @@ void dvz_transform_update(DvzTransform* tr, DvzMVP mvp)
 
     // Emit the dat upload request.
     dvz_dual_update(&tr->dual);
+}
+
+
+
+DvzMVP* dvz_transform_mvp(DvzTransform* tr)
+{
+    ANN(tr);
+    ANN(tr->dual.array);
+
+    DvzMVP* mvp = (DvzMVP*)dvz_array_item(tr->dual.array, 0);
+    ANN(mvp);
+
+    return mvp;
 }
 
 

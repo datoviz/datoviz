@@ -180,10 +180,16 @@ void dvz_view_add(
 
     dvz_list_append(view->visuals, (DvzListItem){.p = visual});
 
-    // TODO
-
     // MVP.
-    dvz_visual_mvp(visual, dvz_mvp_default());
+    if (transform == NULL)
+    {
+        log_debug("creating default transform");
+        transform = dvz_transform(visual->rqr);
+    }
+    ANN(transform);
+    // TODO: use a #define macro instead of hard-coded value 0 here.
+    // NOTE: bind the transform's dual to slot idx 0 (=MVP)
+    dvz_bind_dat(visual->rqr, visual->graphics_id, 0, transform->dual.dat, 0);
 
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(view->shape[0], view->shape[1]);
