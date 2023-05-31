@@ -13,6 +13,7 @@
 
 #include "_log.h"
 #include "_math.h"
+#include "mouse.h"
 #include "scene/mvp.h"
 
 
@@ -98,6 +99,14 @@ DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
+
+
+
+/*************************************************************************************************/
+/*  Panzoom event functions                                                                      */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
 
 
 

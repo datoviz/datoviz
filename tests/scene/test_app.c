@@ -96,37 +96,8 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
 
     DvzId mvp_id = ps->mvp_id;
 
-    // Dragging: pan.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
-    {
-        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
-        {
-            dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
-        }
-        else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
-        {
-            dvz_panzoom_zoom_shift(
-                pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
-        }
-    }
-
-    // Stop dragging.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
-    {
-        dvz_panzoom_end(pz);
-    }
-
-    // Mouse wheel.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
-    {
-        dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
-    }
-
-    // Double-click
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
-    {
-        dvz_panzoom_reset(pz);
-    }
+    // Mouse event.
+    dvz_panzoom_mouse(pz, ev.content.m);
 
     // Update the MVP matrices.
     *mvp = dvz_mvp_default();
@@ -495,37 +466,8 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
 
     DvzTransform* tr = ps->tr;
 
-    // Dragging: pan.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
-    {
-        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
-        {
-            dvz_panzoom_pan_shift(pz, ev.content.m.content.d.shift, (vec2){0});
-        }
-        else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
-        {
-            dvz_panzoom_zoom_shift(
-                pz, ev.content.m.content.d.shift, ev.content.m.content.d.press_pos);
-        }
-    }
-
-    // Stop dragging.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
-    {
-        dvz_panzoom_end(pz);
-    }
-
-    // Mouse wheel.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
-    {
-        dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
-    }
-
-    // Double-click
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
-    {
-        dvz_panzoom_reset(pz);
-    }
+    // Mouse event.
+    dvz_panzoom_mouse(pz, ev.content.m);
 
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);

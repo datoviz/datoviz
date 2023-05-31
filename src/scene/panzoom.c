@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 
 #include "scene/panzoom.h"
+#include "mouse.h"
 
 
 
@@ -337,4 +338,46 @@ void dvz_panzoom_destroy(DvzPanzoom* pz)
 {
     ANN(pz);
     FREE(pz);
+}
+
+
+
+/*************************************************************************************************/
+/*  Panzoom event functions                                                                      */
+/*************************************************************************************************/
+
+void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
+{
+    ANN(pz);
+
+    // Dragging: pan.
+    if (ev.type == DVZ_MOUSE_EVENT_DRAG)
+    {
+        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        {
+            dvz_panzoom_pan_shift(pz, ev.content.d.shift, (vec2){0});
+        }
+        else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        {
+            dvz_panzoom_zoom_shift(pz, ev.content.d.shift, ev.content.d.press_pos);
+        }
+    }
+
+    // Stop dragging.
+    if (ev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    {
+        dvz_panzoom_end(pz);
+    }
+
+    // Mouse wheel.
+    if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
+    {
+        dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.content.w.pos);
+    }
+
+    // Double-click
+    if (ev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    {
+        dvz_panzoom_reset(pz);
+    }
 }
