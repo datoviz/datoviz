@@ -113,10 +113,11 @@ void dvz_viewset_build(DvzViewset* viewset)
             visual = (DvzVisual*)dvz_list_get(view->visuals, i).p;
             ANN(visual);
 
+            if (!visual->is_visible)
+                continue;
+
             // Call the visual draw callback with the parameters stored in the visual.
-            dvz_visual_record(
-                visual, canvas_id, visual->first, visual->count, //
-                visual->first_instance, visual->instance_count);
+            dvz_visual_record(visual, canvas_id);
         }
     }
 
@@ -157,21 +158,33 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
 
 
+void dvz_view_add(
+    DvzView* view, DvzVisual* visual,                 //
+    uint32_t first, uint32_t count,                   // items
+    uint32_t first_instance, uint32_t instance_count) // instances
+{
+    ANN(view);
+    ANN(visual);
+
+    ASSERT(count > 0);
+    ASSERT(instance_count > 0);
+
+    visual->draw_first = first;
+    visual->draw_count = count;
+    visual->first_instance = first_instance;
+    visual->instance_count = instance_count;
+
+    dvz_list_append(view->visuals, (DvzListItem){.p = visual});
+}
+
+
+
 void dvz_view_clear(DvzView* view)
 {
     ANN(view);
     ANN(view->visuals);
     log_trace("clear view");
     dvz_list_clear(view->visuals);
-}
-
-
-
-void dvz_view_add(DvzView* view, DvzVisual* visual)
-{
-    ANN(view);
-    log_trace("add visual to view");
-    dvz_list_append(view->visuals, (DvzListItem){.p = visual});
 }
 
 

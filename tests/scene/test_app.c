@@ -461,7 +461,7 @@ int test_app_pixel(TstSuite* suite)
     // Record commands.
     dvz_record_begin(rqr, canvas_id);
     dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_record(pixel, canvas_id, 0, n, 0, 1);
+    dvz_visual_instance(pixel, canvas_id, 0, 0, n, 0, 1);
     dvz_record_end(rqr, canvas_id);
 
     // Run the app.
@@ -524,10 +524,10 @@ int test_app_viewset(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Create an instance.
-    dvz_view_add(view, pixel);
-
     dvz_pixel_create(pixel, n);
+
+    // Add the visual to the view.
+    dvz_view_add(view, pixel, 0, n, 0, 1);
 
     // Build the viewset.
     dvz_viewset_build(viewset);

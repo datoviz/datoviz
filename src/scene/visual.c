@@ -469,16 +469,8 @@ void dvz_visual_quads(
 
 
 /*************************************************************************************************/
-/*  Visual drawing                                                                               */
+/*  Visual drawing internal functions                                                            */
 /*************************************************************************************************/
-
-void dvz_visual_visible(DvzVisual* visual, bool is_visible)
-{
-    ANN(visual);
-    visual->is_visible = is_visible;
-}
-
-
 
 void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
@@ -532,16 +524,25 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 
 
 
-void dvz_visual_record(
-    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, //
-    uint32_t first_instance, uint32_t instance_count)
+void dvz_visual_record(DvzVisual* visual, DvzId canvas)
 {
     ANN(visual);
 
+    // Call the draw callback if there is one.
     if (visual->callback != NULL)
-        visual->callback(visual, canvas, first, count, first_instance, instance_count);
+    {
+        visual->callback(
+            visual, canvas, visual->draw_first, visual->draw_count, visual->first_instance,
+            visual->instance_count);
+    }
+
+    // Otherwise call the default callback.
     else
-        dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
+    {
+        dvz_visual_instance(
+            visual, canvas, visual->draw_first, 0, visual->draw_count, visual->first_instance,
+            visual->instance_count);
+    }
 }
 
 
@@ -552,4 +553,16 @@ void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback)
     ANN(callback);
 
     visual->callback = callback;
+}
+
+
+
+/*************************************************************************************************/
+/*  Visual drawing                                                                               */
+/*************************************************************************************************/
+
+void dvz_visual_visible(DvzVisual* visual, bool is_visible)
+{
+    ANN(visual);
+    visual->is_visible = is_visible;
 }

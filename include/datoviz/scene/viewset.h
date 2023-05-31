@@ -51,7 +51,6 @@ struct DvzViewset
     DvzRequester* rqr;
     DvzId canvas_id;
     DvzList* views;
-    // DvzView* root;
 };
 
 
@@ -104,6 +103,16 @@ DVZ_EXPORT DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape);
 /**
  *
  */
+DVZ_EXPORT void dvz_view_add(
+    DvzView* view, DvzVisual* visual,                  //
+    uint32_t first, uint32_t count,                    // items
+    uint32_t first_instance, uint32_t instance_count); // instances
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_view_clear(DvzView* view);
 
 
@@ -119,13 +128,6 @@ DVZ_EXPORT void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape);
  *
  */
 DVZ_EXPORT void dvz_view_destroy(DvzView* view);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_view_add(DvzView* view, DvzVisual* visual);
 
 
 

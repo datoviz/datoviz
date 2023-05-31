@@ -51,7 +51,6 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
     dvz_visual_dat(pixel, 0, sizeof(DvzMVP));
     dvz_visual_dat(pixel, 1, sizeof(DvzViewport));
 
-    // dvz_obj_init(&pixel->obj);
     return pixel;
 }
 
@@ -60,8 +59,6 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(pixel);
-    // if (!dvz_obj_is_created(&pixel->obj))
-    //     dvz_pixel_create(pixel);
     dvz_visual_data(pixel, 0, first, count, (void*)values);
 }
 
@@ -70,9 +67,6 @@ void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* 
 void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(pixel);
-    // if (!dvz_obj_is_created(&pixel->obj))
-    //     dvz_pixel_create(pixel);
-    // dvz_baker_data(pixel->baker, 1, first, count, (void*)values);
     dvz_visual_data(pixel, 1, first, count, (void*)values);
 }
 

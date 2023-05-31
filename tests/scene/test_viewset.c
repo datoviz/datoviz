@@ -58,7 +58,7 @@ int test_viewset_1(TstSuite* suite)
     dvz_view_clear(view);
 
     // Add the visual to the view.
-    dvz_view_add(view, visual);
+    dvz_view_add(view, visual, 0, n, 0, 1);
     dvz_visual_visible(visual, true);
 
     dvz_viewset_build(viewset);

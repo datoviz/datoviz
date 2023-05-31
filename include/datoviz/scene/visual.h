@@ -95,9 +95,10 @@ struct DvzVisual
     uint32_t* group_sizes;
 
     // Drawing.
+    // DvzId canvas; // canvas
     // DvzView* view;           // view
-    uint32_t first;          // first item (offset).
-    uint32_t count;          // number of items to draw.
+    uint32_t draw_first;     // first item (offset).
+    uint32_t draw_count;     // number of items to draw.
     uint32_t first_instance; // instancing.
     uint32_t instance_count;
     bool is_visible;
@@ -196,15 +197,8 @@ DVZ_EXPORT void dvz_visual_quads(
 
 
 /*************************************************************************************************/
-/*  Visual drawing                                                                               */
+/*  Visual drawing internal functions                                                            */
 /*************************************************************************************************/
-
-/**
- *
- */
-DVZ_EXPORT void dvz_visual_visible(DvzVisual* visual, bool is_visible);
-
-
 
 DVZ_EXPORT void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,
@@ -216,13 +210,22 @@ DVZ_EXPORT void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t dr
 
 
 
-DVZ_EXPORT void dvz_visual_record(
-    DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, //
-    uint32_t first_instance, uint32_t instance_count);
+DVZ_EXPORT void dvz_visual_record(DvzVisual* visual, DvzId canvas);
 
 
 
 DVZ_EXPORT void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback);
+
+
+
+/*************************************************************************************************/
+/*  Visual drawing                                                                               */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_visible(DvzVisual* visual, bool is_visible);
 
 
 
