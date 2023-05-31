@@ -114,7 +114,7 @@ void dvz_viewset_build(DvzViewset* viewset)
             ANN(visual);
 
             // Call the visual draw callback with the parameters stored in the visual.
-            dvz_visual_draw(
+            dvz_visual_record(
                 visual, canvas_id, visual->first, visual->count, //
                 visual->first_instance, visual->instance_count);
         }

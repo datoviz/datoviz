@@ -461,7 +461,7 @@ int test_app_pixel(TstSuite* suite)
     // Record commands.
     dvz_record_begin(rqr, canvas_id);
     dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_draw(pixel, canvas_id, 0, n, 0, 1);
+    dvz_visual_record(pixel, canvas_id, 0, n, 0, 1);
     dvz_record_end(rqr, canvas_id);
 
     // Run the app.

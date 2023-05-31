@@ -532,7 +532,7 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 
 
 
-void dvz_visual_draw(
+void dvz_visual_record(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t count, //
     uint32_t first_instance, uint32_t instance_count)
 {
