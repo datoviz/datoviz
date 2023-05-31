@@ -112,8 +112,11 @@ void dvz_visual_spirv(
     ANN(buffer);
     ASSERT(size > 0);
 
-    // TODO
-    // dvz_set_spirv(visual->rqr, visual->graphics_id, type, size, buffer);
+    // First, create a shader object.
+    DvzRequest req = dvz_create_spirv(visual->rqr, type, size, buffer);
+
+    // Then associate it to the graphics.
+    dvz_set_shader(visual->rqr, visual->graphics_id, req.id);
 }
 
 
@@ -130,18 +133,14 @@ void dvz_visual_shader(DvzVisual* visual, const char* name)
     // Vertex shader.
     snprintf(rname, 60, "%s_%s", name, "vert");
     unsigned char* buffer = dvz_resource_shader(rname, &size);
-
-    // TODO
-    // dvz_set_spirv(visual->rqr, visual->graphics_id, DVZ_SHADER_VERTEX, size, buffer);
+    dvz_visual_spirv(visual, DVZ_SHADER_VERTEX, size, buffer);
 
     memset(rname, 0, 64);
 
     // Fragment shader.
     snprintf(rname, 60, "%s_%s", name, "frag");
     buffer = dvz_resource_shader(rname, &size);
-
-    // TODO
-    // dvz_set_spirv(visual->rqr, visual->graphics_id, DVZ_SHADER_FRAGMENT, size, buffer);
+    dvz_visual_spirv(visual, DVZ_SHADER_FRAGMENT, size, buffer);
 }
 
 
