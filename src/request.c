@@ -366,6 +366,47 @@ static void _print_create_sampler(DvzRequest* req)
 
 
 
+static void _print_create_shader(DvzRequest* req)
+{
+    log_trace("print_create_shader");
+    ANN(req);
+
+    DvzShaderFormat format = req->content.shader.format;
+    DvzShaderType shader_type = req->content.shader.type;
+    DvzSize size = req->content.shader.size;
+
+    void* code_buffer =
+        (format == DVZ_SHADER_SPIRV ? (void*)req->content.shader.buffer
+                                    : (void*)req->content.shader.code);
+    ANN(code_buffer);
+
+    char* encoded = NULL;
+    // NOTE: avoid computing the base64 of large arrays.
+
+    IF_VERBOSE_DATA
+    encoded = b64_encode((const unsigned char*)code_buffer, size);
+    else encoded = "<snip>";
+
+    printf(
+        "- action: create\n"
+        "  type: shader\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    type: %d\n"
+        "    format: %s\n"
+        "    size: %" PRId64 "\n"
+        "    %s:\n"
+        "      mode: base64\n"
+        "      buffer: %s\n",
+        req->id, shader_type, format == DVZ_SHADER_SPIRV ? "spirv" : "glsl", //
+        size, format == DVZ_SHADER_SPIRV ? "buffer" : "code", encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
+}
+
+
+
 static void _print_create_graphics(DvzRequest* req)
 {
     log_trace("print_create_graphics");
@@ -505,68 +546,20 @@ static void _print_set_front(DvzRequest* req)
 
 
 
-static void _print_set_glsl(DvzRequest* req)
+static void _print_set_shader(DvzRequest* req)
 {
-    log_trace("print_set_glsl");
+    log_trace("print_set_shader");
     ANN(req);
 
-    char* code = req->content.set_glsl.code;
-    DvzShaderType shader_type = req->content.set_glsl.shader_type;
-    DvzSize size = req->content.set_glsl.size;
-
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-
-    IF_VERBOSE_DATA
-    encoded = b64_encode((const unsigned char*)code, size);
-    else encoded = "<snip>";
+    DvzId shader = req->content.set_shader.shader;
 
     printf(
         "- action: set\n"
-        "  type: glsl\n"
+        "  type: shader\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    shader_type: %d\n"
-        "    size: %" PRId64 "\n"
-        "    data:\n"
-        "      mode: base64\n"
-        "      buffer: %s\n",
-        req->id, shader_type, size, encoded);
-
-    IF_VERBOSE_DATA
-    free(encoded);
-}
-
-static void _print_set_spirv(DvzRequest* req)
-{
-    log_trace("print_set_spirv");
-    ANN(req);
-
-    uint32_t* buffer = req->content.set_spirv.buffer;
-    DvzShaderType shader_type = req->content.set_glsl.shader_type;
-    DvzSize size = req->content.set_glsl.size;
-
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-
-    IF_VERBOSE_DATA
-    encoded = b64_encode((const unsigned char*)buffer, size);
-    else encoded = "<snip>";
-
-    printf(
-        "- action: set\n"
-        "  type: spirv\n"
-        "  id: 0x%" PRIx64 "\n"
-        "  content:\n"
-        "    shader_type: %d\n"
-        "    size: %" PRId64 "\n"
-        "    data:\n"
-        "      mode: base64\n"
-        "      buffer: %s\n",
-        req->id, shader_type, size, encoded);
-
-    IF_VERBOSE_DATA
-    free(encoded);
+        "    shader:0x%" PRIx64 "\n",
+        req->id, shader);
 }
 
 
@@ -1074,8 +1067,7 @@ void dvz_request_print(DvzRequest* req)
     IF_REQ(SET, POLYGON) _print_set_polygon(req);
     IF_REQ(SET, CULL) _print_set_cull(req);
     IF_REQ(SET, FRONT) _print_set_front(req);
-    IF_REQ(SET, GLSL) _print_set_glsl(req);
-    IF_REQ(SET, SPIRV) _print_set_spirv(req);
+    IF_REQ(SET, SHADER) _print_set_shader(req);
     IF_REQ(SET, VERTEX) _print_set_vertex(req);
     IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
     IF_REQ(SET, SLOT) _print_set_slot(req);
@@ -1369,6 +1361,48 @@ DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAdd
 
 
 /*************************************************************************************************/
+/*  Shaders                                                                                      */
+/*************************************************************************************************/
+
+DvzRequest
+dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const char* code)
+{
+    ANN(code);
+    ASSERT(size > 0);
+
+    CREATE_REQUEST(CREATE, SHADER);
+    req.id = dvz_prng_uuid(rqr->prng);
+    req.content.shader.type = shader_type;
+    req.content.shader.size = size;
+    req.content.shader.code = _cpy(size, code); // NOTE: the renderer will need to free it
+
+    IF_VERBOSE _print_create_shader(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_create_spirv(
+    DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer)
+{
+    ANN(buffer);
+    ASSERT(size > 0);
+
+    CREATE_REQUEST(CREATE, SHADER);
+    req.id = dvz_prng_uuid(rqr->prng);
+    req.content.shader.type = shader_type;
+    req.content.shader.size = size;
+    req.content.shader.buffer = _cpy(size, buffer); // NOTE: the renderer will need to free it
+
+    IF_VERBOSE _print_create_shader(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+/*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
@@ -1471,35 +1505,14 @@ DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_f
 
 
 
-DvzRequest dvz_set_glsl(
-    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size, const char* code)
+DvzRequest dvz_set_shader(DvzRequester* rqr, DvzId graphics, DvzId shader)
 {
-    CREATE_REQUEST(SET, GLSL);
+    CREATE_REQUEST(SET, SHADER);
     req.id = graphics;
-    req.content.set_glsl.shader_type = shader_type;
-    req.content.set_glsl.size = size;
-    req.content.set_glsl.code = _cpy(size, code);
+    req.content.set_shader.shader = shader;
 
     IF_VERBOSE
-    _print_set_glsl(&req);
-
-    RETURN_REQUEST
-}
-
-
-
-DvzRequest dvz_set_spirv(
-    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
-    const unsigned char* buffer)
-{
-    CREATE_REQUEST(SET, SPIRV);
-    req.id = graphics;
-    req.content.set_spirv.shader_type = shader_type;
-    req.content.set_spirv.size = size;
-    req.content.set_spirv.buffer = _cpy_uint32(size, buffer);
-
-    IF_VERBOSE
-    _print_set_spirv(&req);
+    _print_set_shader(&req);
 
     RETURN_REQUEST
 }

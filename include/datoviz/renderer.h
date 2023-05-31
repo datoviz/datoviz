@@ -12,9 +12,9 @@
 /*************************************************************************************************/
 
 #include "common.h"
-#include "scene/graphics.h"
 #include "pipelib.h"
 #include "request.h"
+#include "scene/graphics.h"
 
 
 
@@ -36,6 +36,7 @@
 
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzRouter DvzRouter;
+typedef struct DvzShader DvzShader;
 
 // Forward declarations.
 typedef struct DvzContext DvzContext;
@@ -51,6 +52,20 @@ typedef struct DvzMap DvzMap;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzShader
+{
+    DvzObject obj; // used to hold the id in the mapping structure
+
+    DvzShaderFormat format;
+    DvzShaderType type;
+    DvzSize size;
+
+    char* code;       // only for GLSL obj_type
+    uint32_t* buffer; // only for SPIRV obj_type
+};
+
+
+
 struct DvzRenderer
 {
     DvzObject obj;
@@ -60,8 +75,9 @@ struct DvzRenderer
     DvzContext* ctx;         // data: the "what"
     DvzPipelib* pipelib;     // GLSL programs: the "how"
     DvzWorkspace* workspace; // boards and canvases: the "where"
-    DvzMap* map;             // mapping between uuid and <type, objects>
-    DvzRouter* router;       // mapping between pairs (action, obj_type) and functions
+    DvzContainer shaders;
+    DvzMap* map;       // mapping between uuid and <type, objects>
+    DvzRouter* router; // mapping between pairs (action, obj_type) and functions
 };
 
 

@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_renderer.h"
+#include "_map.h"
 #include "board.h"
 #include "fileio.h"
 #include "renderer.h"
@@ -38,7 +39,11 @@ _load_shader(DvzRequester* rqr, DvzId graphics_id, DvzShaderType shader_type, co
     // // is a better solution?
     // uint32_t* shader_buffer_uint32 = (uint32_t*)malloc(shader_size);
     // memcpy(shader_buffer_uint32, shader_buffer, shader_size);
-    dvz_set_spirv(rqr, graphics_id, shader_type, shader_size, shader_buffer);
+
+    DvzRequest req = dvz_create_spirv(rqr, shader_type, shader_size, shader_buffer);
+    ASSERT(req.id != DVZ_ID_NONE);
+
+    dvz_set_shader(rqr, graphics_id, req.id);
     // FREE(shader_buffer_uint32);
 }
 

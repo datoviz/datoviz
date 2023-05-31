@@ -97,6 +97,16 @@ union DvzRequestContent
         DvzSamplerAddressMode mode;
     } sampler;
 
+    // Shader.
+    struct
+    {
+        DvzShaderFormat format;
+        DvzShaderType type;
+        DvzSize size;     // TODO: remove because useless?
+        char* code;       // For GLSL.
+        uint32_t* buffer; // For SPIRV
+    } shader;
+
 
 
     // Dat upload.
@@ -160,21 +170,11 @@ union DvzRequestContent
         DvzFrontFace front;
     } set_front;
 
-    // Set GLSL.
+    // Set SPIRV or GLSL shader.
     struct
     {
-        DvzShaderType shader_type;
-        DvzSize size; // TODO: remove because useless?
-        char* code;
-    } set_glsl;
-
-    // Set SPIRV.
-    struct
-    {
-        DvzShaderType shader_type;
-        DvzSize size;
-        uint32_t* buffer;
-    } set_spirv;
+        DvzId shader;
+    } set_shader;
 
     // Set vertex binding.
     struct
@@ -604,6 +604,20 @@ dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mo
 
 
 /*************************************************************************************************/
+/*  Shaders                                                                                      */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzRequest
+dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const char* code);
+
+
+
+DVZ_EXPORT DvzRequest dvz_create_spirv(
+    DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer);
+
+
+
+/*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
@@ -646,14 +660,7 @@ DVZ_EXPORT DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontF
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_glsl(
-    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size, const char* code);
-
-
-
-DVZ_EXPORT DvzRequest dvz_set_spirv(
-    DvzRequester* rqr, DvzId graphics, DvzShaderType shader_type, DvzSize size,
-    const unsigned char* buffer);
+DVZ_EXPORT DvzRequest dvz_set_shader(DvzRequester* rqr, DvzId graphics, DvzId shader);
 
 
 

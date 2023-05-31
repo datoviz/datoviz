@@ -209,6 +209,31 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
+/*  Shaders                                                                                      */
+/*************************************************************************************************/
+
+static void* _shader_create(DvzRenderer* rd, DvzRequest req)
+{
+    ANN(rd);
+
+    DvzShader* shader = (DvzShader*)dvz_container_alloc(&rd->shaders);
+    ANN(shader);
+    shader->format = req.content.shader.format;
+    shader->type = req.content.shader.type;
+    shader->size = req.content.shader.size;
+
+    // NOTE: we pass the pointers created by the requester.
+    shader->code = req.content.shader.code;
+    shader->buffer = req.content.shader.buffer;
+
+    SET_ID(shader)
+
+    return (void*)shader;
+}
+
+
+
+/*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
@@ -338,37 +363,33 @@ static void* _graphics_front(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_glsl(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_shader(DvzRenderer* rd, DvzRequest req)
 {
     DvzGraphics* graphics = _get_graphics(rd, req);
-    ASSERT(req.type == DVZ_REQUEST_OBJECT_GLSL);
-    ANN(req.content.set_glsl.code);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_SHADER);
 
-    // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
-    dvz_graphics_shader_glsl(
-        graphics, (VkShaderStageFlagBits)req.content.set_glsl.shader_type,
-        req.content.set_glsl.code);
+    // Get the shader object.
+    GET_ID(DvzShader, shader, req.content.set_shader.shader)
 
-    // NOTE: the code has been copied by the requester, we can free it now.
-    FREE(req.content.set_glsl.code);
+    DvzShaderFormat format = shader->format;
 
-    return NULL;
-}
+    if (format == DVZ_SHADER_GLSL)
+    {
+        // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
+        dvz_graphics_shader_glsl(graphics, (VkShaderStageFlagBits)shader->type, shader->code);
 
+        // NOTE: the code has been copied by the requester, we can free it now.
+        FREE(shader->code);
+    }
+    else if (format == DVZ_SHADER_SPIRV)
+    {
+        // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
+        dvz_graphics_shader_spirv(
+            graphics, (VkShaderStageFlagBits)shader->type, shader->size, shader->buffer);
 
-
-static void* _graphics_spirv(DvzRenderer* rd, DvzRequest req)
-{
-    DvzGraphics* graphics = _get_graphics(rd, req);
-    ASSERT(req.type == DVZ_REQUEST_OBJECT_SPIRV);
-
-    // NOTE: we assume VkShaderStageFlagBits and DvzShaderType match.
-    dvz_graphics_shader_spirv(
-        graphics, (VkShaderStageFlagBits)req.content.set_spirv.shader_type,
-        req.content.set_spirv.size, req.content.set_spirv.buffer);
-
-    // NOTE: the buffer has been copied by the requester, we can free it now.
-    FREE(req.content.set_spirv.buffer);
+        // NOTE: the buffer has been copied by the requester, we can free it now.
+        FREE(shader->buffer);
+    }
 
     return NULL;
 }
@@ -877,6 +898,9 @@ static void _init_renderer(DvzRenderer* rd)
     rd->workspace = dvz_workspace(rd->gpu, rd->flags);
     rd->map = dvz_map();
 
+    rd->shaders =
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzShader), DVZ_OBJECT_TYPE_SHADER);
+
     dvz_obj_init(&rd->obj);
 }
 
@@ -910,12 +934,14 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(SET, POLYGON, _graphics_polygon)
     ROUTE(SET, CULL, _graphics_cull)
     ROUTE(SET, FRONT, _graphics_front)
-    ROUTE(SET, GLSL, _graphics_glsl)
-    ROUTE(SET, SPIRV, _graphics_spirv)
+    ROUTE(SET, SHADER, _graphics_shader)
     ROUTE(SET, VERTEX, _graphics_vertex)
     ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
     ROUTE(SET, SLOT, _graphics_slot)
     ROUTE(DELETE, GRAPHICS, _graphics_delete)
+
+    // Shaders.
+    ROUTE(CREATE, SHADER, _shader_create)
 
     // Bindings.
     ROUTE(BIND, VERTEX, _graphics_bind_vertex)
@@ -1193,6 +1219,8 @@ void dvz_renderer_destroy(DvzRenderer* rd)
 
     dvz_map_destroy(rd->map);
     delete rd->router;
+
+    dvz_container_destroy(&rd->shaders);
 
     dvz_obj_destroyed(&rd->obj);
     FREE(rd);
