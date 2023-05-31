@@ -95,8 +95,6 @@ struct DvzVisual
     uint32_t* group_sizes;
 
     // Drawing.
-    // DvzId canvas; // canvas
-    // DvzView* view;           // view
     uint32_t draw_first;     // first item (offset).
     uint32_t draw_count;     // number of items to draw.
     uint32_t first_instance; // instancing.
@@ -105,10 +103,6 @@ struct DvzVisual
 
     // Visual draw callback.
     DvzVisualCallback callback;
-
-    // TODO
-    DvzMVP mvp;
-    DvzViewport viewport;
 };
 
 
@@ -171,6 +165,8 @@ DVZ_EXPORT void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32
 /*************************************************************************************************/
 /*  Visual common bindings                                                                       */
 /*************************************************************************************************/
+
+// NOTE: only used for testing, otherwise the viewset takes care of this (transform & view)
 
 DVZ_EXPORT void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp); // update the MVP
 

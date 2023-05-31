@@ -66,6 +66,7 @@ DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int fla
     // Create the graphics object.
     DvzRequest req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, 0);
     visual->graphics_id = req.id;
+    visual->is_visible = true;
 
     // Default fixed function pipeline states:
 
@@ -372,15 +373,13 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
     ANN(visual);
     ANN(visual->baker);
 
-    visual->mvp = mvp;
-
     if (visual->baker->slot_count == 0)
     {
         log_debug("skipping visual_mvp() for visual with no common bindings");
         return;
     }
 
-    dvz_baker_uniform(visual->baker, 0, sizeof(DvzMVP), &visual->mvp);
+    dvz_baker_uniform(visual->baker, 0, sizeof(DvzMVP), &mvp);
     dvz_baker_update(visual->baker);
 }
 
@@ -393,15 +392,13 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
     ANN(visual);
     ANN(visual->baker);
 
-    visual->viewport = viewport;
-
     if (visual->baker->slot_count <= 1)
     {
         log_debug("skipping visual_viewport() for visual with no common bindings");
         return;
     }
 
-    dvz_baker_uniform(visual->baker, 1, sizeof(DvzViewport), &visual->viewport);
+    dvz_baker_uniform(visual->baker, 1, sizeof(DvzViewport), &viewport);
     dvz_baker_update(visual->baker);
 }
 

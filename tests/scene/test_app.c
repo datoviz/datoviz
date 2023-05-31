@@ -426,10 +426,6 @@ int test_app_pixel(TstSuite* suite)
 
     DvzVisual* pixel = dvz_pixel(rqr, 0);
 
-    // TODO
-    dvz_pixel_create(pixel, n);
-    dvz_visual_mvp(pixel, dvz_mvp_default());
-
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
     for (uint32_t i = 0; i < n; i++)
@@ -448,15 +444,21 @@ int test_app_pixel(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+
+    // Manual setting of common bindings.
+
+    // MVP.
+    dvz_visual_mvp(pixel, dvz_mvp_default());
+
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     dvz_visual_viewport(pixel, viewport);
+
 
     // Create a board.
     DvzRequest req =
         dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
     DvzId canvas_id = req.id;
-    // req = dvz_set_background(rqr, canvas_id, (cvec4){32, 64, 128, 255});
 
     // Record commands.
     dvz_record_begin(rqr, canvas_id);
@@ -469,7 +471,6 @@ int test_app_pixel(TstSuite* suite)
 
     // Cleanup
     dvz_app_destroy(app);
-    // dvz_pixel_destroy(pixel);
     FREE(pos);
     FREE(color);
     return 0;
@@ -502,10 +503,6 @@ int test_app_viewset(TstSuite* suite)
 
     DvzVisual* pixel = dvz_pixel(rqr, 0);
 
-    // TODO
-    dvz_pixel_create(pixel, n);
-    dvz_visual_mvp(pixel, dvz_mvp_default());
-
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
     for (uint32_t i = 0; i < n; i++)
@@ -524,10 +521,8 @@ int test_app_viewset(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    dvz_pixel_create(pixel, n);
-
     // Add the visual to the view.
-    dvz_view_add(view, pixel, 0, n, 0, 1);
+    dvz_view_add(view, pixel, 0, n, 0, 1, NULL, 0);
 
     // Build the viewset.
     dvz_viewset_build(viewset);
@@ -536,6 +531,7 @@ int test_app_viewset(TstSuite* suite)
     dvz_app_run(app, N_FRAMES);
 
     // Cleanup
+    dvz_visual_destroy(pixel);
     dvz_viewset_destroy(viewset);
     dvz_app_destroy(app);
     FREE(pos);

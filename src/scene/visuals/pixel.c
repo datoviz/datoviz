@@ -27,6 +27,18 @@
 /*  Internal functions                                                                           */
 /*************************************************************************************************/
 
+static void _auto_create(DvzVisual* visual, uint32_t first, uint32_t count)
+{
+    ANN(visual);
+    ASSERT(count > 0);
+    if (visual->item_count == 0)
+    {
+        log_info("automatic creation of visual");
+        dvz_pixel_create(visual, first + count);
+    }
+    ASSERT(visual->item_count > 0);
+}
+
 
 
 /*************************************************************************************************/
@@ -56,22 +68,6 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 
 
 
-void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags)
-{
-    ANN(pixel);
-    dvz_visual_data(pixel, 0, first, count, (void*)values);
-}
-
-
-
-void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
-{
-    ANN(pixel);
-    dvz_visual_data(pixel, 1, first, count, (void*)values);
-}
-
-
-
 void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
 {
     ANN(pixel);
@@ -82,4 +78,22 @@ void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
 
     // Create the visual.
     dvz_visual_create(pixel, item_count, item_count);
+}
+
+
+
+void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags)
+{
+    ANN(pixel);
+    _auto_create(pixel, first, count);
+    dvz_visual_data(pixel, 0, first, count, (void*)values);
+}
+
+
+
+void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(pixel);
+    _auto_create(pixel, first, count);
+    dvz_visual_data(pixel, 1, first, count, (void*)values);
 }

@@ -114,7 +114,10 @@ void dvz_viewset_build(DvzViewset* viewset)
             ANN(visual);
 
             if (!visual->is_visible)
+            {
+                log_debug("skipping invisible visual");
                 continue;
+            }
 
             // Call the visual draw callback with the parameters stored in the visual.
             dvz_visual_record(visual, canvas_id);
@@ -161,7 +164,8 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 void dvz_view_add(
     DvzView* view, DvzVisual* visual,                 //
     uint32_t first, uint32_t count,                   // items
-    uint32_t first_instance, uint32_t instance_count) // instances
+    uint32_t first_instance, uint32_t instance_count, // instances
+    DvzTransform* transform, int viewport_flags)      // transform and viewport flags
 {
     ANN(view);
     ANN(visual);
@@ -175,6 +179,15 @@ void dvz_view_add(
     visual->instance_count = instance_count;
 
     dvz_list_append(view->visuals, (DvzListItem){.p = visual});
+
+    // TODO
+
+    // MVP.
+    dvz_visual_mvp(visual, dvz_mvp_default());
+
+    // Viewport.
+    DvzViewport viewport = dvz_viewport_default(view->shape[0], view->shape[1]);
+    dvz_visual_viewport(visual, viewport);
 }
 
 
