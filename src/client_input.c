@@ -39,6 +39,11 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     cev.type = DVZ_CLIENT_EVENT_MOUSE;
     cev.window_id = window->obj.id;
     cev.content.m = ev;
+
+    // Content scale, used for mouse event localization.
+    if (window->width > 0)
+        cev.content_scale = window->framebuffer_width / window->width;
+
     dvz_client_event(client, cev);
 }
 

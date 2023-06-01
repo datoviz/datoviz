@@ -141,6 +141,7 @@ struct DvzClientEvent
     DvzClientEventType type;
     DvzId window_id;
     DvzClientEventUnion content;
+    float content_scale; // ratio between framebuffer width and screen width
     void* user_data;
 };
 

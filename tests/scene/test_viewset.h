@@ -21,6 +21,8 @@
 
 int test_viewset_1(TstSuite*);
 
+int test_viewset_mouse(TstSuite*);
+
 
 
 #endif

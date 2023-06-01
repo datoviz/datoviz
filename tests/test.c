@@ -232,6 +232,7 @@ int dvz_run_tests(const char* match)
     // Test visuals.
     TEST(test_visual_1)
     TEST(test_viewset_1)
+    TEST(test_viewset_mouse)
     TEST(test_pixel_1)
 
     // Teardown the gpu fixture.

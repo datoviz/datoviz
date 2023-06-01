@@ -12,9 +12,24 @@
 /*************************************************************************************************/
 
 #include "../_enums.h"
+#include "../_input.h"
 #include "../_obj.h"
 #include "mvp.h"
 #include "viewport.h"
+
+
+
+/*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+// Mouse reference.
+typedef enum
+{
+    DVZ_MOUSE_REFERENCE_GLOBAL, // global coordinate system, (0,0) -> (w,h) in screen coords
+    DVZ_MOUSE_REFERENCE_LOCAL,  // (x0, y0) -> (vw, vh) in screen coords, relative to the View
+    DVZ_MOUSE_REFERENCE_SCALED, // like local but rescaled in (-1,1)
+} DvzMouseReference;
 
 
 
@@ -39,9 +54,10 @@ typedef struct DvzTransform DvzTransform;
 
 struct DvzView
 {
-    DvzViewset* viewset;
-    vec2 offset, shape;
-    DvzList* visuals;
+    DvzViewset* viewset; // reference to the parent viewset
+    vec2 offset, shape;  // in framebuffer pixels
+    float scale;         // scale (multiplied by the window's content scale)
+    DvzList* visuals;    // list of visuals in the view
 };
 
 
@@ -108,6 +124,11 @@ DVZ_EXPORT void dvz_view_add(
     uint32_t first, uint32_t count,                   // items
     uint32_t first_instance, uint32_t instance_count, // instances
     DvzTransform* transform, int viewport_flags);     // transform and viewport flags
+
+
+
+DVZ_EXPORT DvzMouseEvent
+dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref);
 
 
 
