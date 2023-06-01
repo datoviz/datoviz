@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "../_atomic.h"
 #include "../_enums.h"
 #include "../_input.h"
 #include "../_obj.h"
@@ -65,6 +66,7 @@ struct DvzView
 struct DvzViewset
 {
     DvzRequester* rqr;
+    DvzAtomic status;
     DvzId canvas_id;
     DvzList* views;
 };

@@ -94,9 +94,10 @@ DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id)
 
     DvzViewset* viewset = (DvzViewset*)calloc(1, sizeof(DvzViewset));
     viewset->rqr = rqr;
+    viewset->status = dvz_atomic();
     viewset->canvas_id = canvas_id;
     viewset->views = dvz_list();
-    // viewset->root = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+
     return viewset;
 }
 
@@ -117,9 +118,6 @@ void dvz_viewset_clear(DvzViewset* viewset)
         dvz_view_destroy(view);
     }
     dvz_list_clear(viewset->views);
-
-    // Recreate the root view.
-    // viewset->root = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 }
 
 
@@ -188,6 +186,7 @@ void dvz_viewset_destroy(DvzViewset* viewset)
 
     // Destroy through all views.
     dvz_viewset_clear(viewset);
+    dvz_atomic_destroy(viewset->status);
     dvz_list_destroy(viewset->views);
     FREE(viewset);
 }
