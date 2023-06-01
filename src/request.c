@@ -793,6 +793,7 @@ DvzRequester* dvz_requester(void)
     log_trace("create requester");
     DvzRequester* rqr = calloc(1, sizeof(DvzRequester));
     rqr->prng = dvz_prng();
+    rqr->status = dvz_atomic();
 
     // Initialize the list of requests for batchs.
     rqr->capacity = DVZ_CONTAINER_DEFAULT_COUNT;
@@ -830,6 +831,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
 
     FREE(rqr->requests);
     dvz_prng_destroy(rqr->prng);
+    dvz_atomic_destroy(rqr->status);
     dvz_list_destroy(rqr->pointers_to_free);
     dvz_obj_destroyed(&rqr->obj);
     FREE(rqr);
@@ -846,6 +848,7 @@ void dvz_requester_begin(DvzRequester* rqr)
 {
     ANN(rqr);
     rqr->count = 0;
+    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_BUSY);
 }
 
 
@@ -872,6 +875,7 @@ DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
     ANN(rqr);
     if (count != NULL)
         *count = rqr->count;
+    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_DIRTY);
     return rqr->requests;
 }
 
@@ -1027,6 +1031,8 @@ DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
     // Flush the requests.
     // NOTE: setting the count to 0 means we're automatically beginning a new batch.
     rqr->count = 0;
+
+    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_CLEAR);
 
     return requests;
 }

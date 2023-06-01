@@ -11,6 +11,7 @@
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+#include "_atomic.h"
 #include "_prng.h"
 #include "recorder.h"
 
@@ -262,6 +263,7 @@ struct DvzRequester
 {
     DvzObject obj;
     DvzPrng* prng;
+    DvzAtomic status;
 
     // Used for creating batch requests.
     uint32_t count;
