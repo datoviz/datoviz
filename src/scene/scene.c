@@ -219,7 +219,10 @@ static void _panel_mouse(DvzClient* client, DvzClientEvent ev)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
+
+    dvz_requester_begin(rqr);
     dvz_transform_update(tr, *mvp);
+    dvz_requester_end(rqr, NULL);
 }
 
 

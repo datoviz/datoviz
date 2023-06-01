@@ -104,7 +104,9 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_mvp(pz, mvp);
 
     // Submit a dat upload request with the new MVP matrices.
+    dvz_requester_begin(rqr);
     dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_requester_end(rqr, NULL);
 }
 
 static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
@@ -215,7 +217,9 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_arcball_mvp(arcball, mvp); // set the model matrix
 
     // Submit a dat upload request with the new MVP matrices.
+    dvz_requester_begin(rqr);
     dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_requester_end(rqr, NULL);
 }
 
 static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
@@ -339,7 +343,9 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
     }
 
+    dvz_requester_begin(rqr);
     dvz_upload_dat(rqr, anim->dat_id, 0, anim->size, data);
+    dvz_requester_end(rqr, NULL);
 }
 
 int test_app_anim(TstSuite* suite)
@@ -472,7 +478,10 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
+
+    dvz_requester_begin(rqr);
     dvz_transform_update(tr, *mvp);
+    dvz_requester_end(rqr, NULL);
 }
 
 int test_app_viewset(TstSuite* suite)

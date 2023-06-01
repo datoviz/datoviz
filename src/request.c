@@ -847,6 +847,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
 void dvz_requester_begin(DvzRequester* rqr)
 {
     ANN(rqr);
+    log_trace("begin requester");
     rqr->count = 0;
     dvz_atomic_set(rqr->status, (int)DVZ_BUILD_BUSY);
 }
@@ -873,6 +874,7 @@ void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
 DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
 {
     ANN(rqr);
+    log_trace("end requester");
     if (count != NULL)
         *count = rqr->count;
     dvz_atomic_set(rqr->status, (int)DVZ_BUILD_DIRTY);

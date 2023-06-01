@@ -175,6 +175,9 @@ void dvz_viewset_build(DvzViewset* viewset)
     }
 
     dvz_record_end(rqr, canvas_id);
+
+    // HACK
+    dvz_requester_end(rqr, NULL);
 }
 
 
