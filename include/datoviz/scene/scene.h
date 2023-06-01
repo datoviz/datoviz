@@ -50,9 +50,8 @@ typedef struct DvzArcball DvzArcball;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzScene // singleton in a given app
+struct DvzScene
 {
-    DvzApp* app;
     DvzRequester* rqr;
     DvzList* figures;
 };
@@ -93,7 +92,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzScene* dvz_scene(DvzApp* app);
+DVZ_EXPORT DvzScene* dvz_scene(DvzRequester* rqr);
 
 
 /**
@@ -153,13 +152,13 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 /**
  *
  */
-DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
+DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel);
 
 
 /**
  *
  */
-DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
+DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel);
 
 
 

@@ -48,7 +48,7 @@ int test_scene_1(TstSuite* suite)
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create a scene.
-    DvzScene* scene = dvz_scene(app);
+    DvzScene* scene = dvz_scene(rqr);
 
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
@@ -84,7 +84,7 @@ int test_scene_1(TstSuite* suite)
     dvz_panel_visual(panel, pixel);
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
     ANN(pz);
 
     // TODO: automate this

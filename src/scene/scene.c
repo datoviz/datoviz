@@ -37,11 +37,11 @@
 /*  Scene                                                                                        */
 /*************************************************************************************************/
 
-DvzScene* dvz_scene(DvzApp* app)
+DvzScene* dvz_scene(DvzRequester* rqr)
 {
+    ANN(rqr);
     DvzScene* scene = (DvzScene*)calloc(1, sizeof(DvzScene));
-    scene->app = app;
-    scene->rqr = dvz_app_requester(app);
+    scene->rqr = rqr;
     scene->figures = dvz_list();
     return scene;
 }
@@ -70,7 +70,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     fig->scene = scene;
     fig->flags = flags;
 
-    // TODO: framebuffer vs screen pixels.
+    // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     fig->width = width;
     fig->height = height;
 
@@ -224,20 +224,18 @@ static void _panel_mouse(DvzClient* client, DvzClientEvent ev)
 
 
 
-DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
+DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
 {
+    ANN(app);
     ANN(panel);
     ANN(panel->view);
     ANN(panel->figure);
     ANN(panel->figure->scene);
 
-    DvzApp* app = panel->figure->scene->app;
-    ANN(app);
-
     ASSERT(panel->view->shape[0] > 0);
     ASSERT(panel->view->shape[1] > 0);
 
-    // TODO: framebuffer vs screen pixels.
+    // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
 
     // Callbacks.
@@ -248,8 +246,9 @@ DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
 }
 
 
-DvzArcball* dvz_panel_arcball(DvzPanel* panel)
+DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
 {
+    ANN(app);
     ANN(panel);
     // TODO: camera
     return NULL;
