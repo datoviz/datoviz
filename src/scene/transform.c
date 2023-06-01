@@ -30,7 +30,7 @@ DvzTransform* dvz_transform(DvzRequester* rqr)
     // TODO: chaining of transforms, in which case there should really be only one dual.
 
     // NOTE: the transform holds the DvzMVP dual.
-    tr->dual = dvz_dual_dat(rqr, sizeof(DvzMVP));
+    tr->dual = dvz_dual_dat(rqr, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
 
     // Initialize the MVP on initialization.
     dvz_transform_update(tr, dvz_mvp_default());

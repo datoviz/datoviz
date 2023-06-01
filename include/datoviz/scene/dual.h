@@ -106,13 +106,14 @@ DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size);
+DVZ_EXPORT DvzDual
+dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size, int flags);
 
-DVZ_EXPORT DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count);
+DVZ_EXPORT DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count, int flags);
 
 DVZ_EXPORT DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed);
 
-DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size);
+DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size, int flags);
 
 
 

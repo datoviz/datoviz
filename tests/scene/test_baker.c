@@ -194,7 +194,7 @@ int test_baker_2(TstSuite* suite)
     dvz_baker_slot(baker, 0, 1);
 
     // Create a dual dat manually.
-    DvzDual dual = dvz_dual_dat(rqr, 1);
+    DvzDual dual = dvz_dual_dat(rqr, 1, 0);
 
     // Use it as baker's dat.
     dvz_baker_share_uniform(baker, 0, &dual);

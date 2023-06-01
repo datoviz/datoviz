@@ -161,13 +161,14 @@ void dvz_dual_destroy(DvzDual* dual)
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size)
+DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size, int flags)
 {
     ANN(rqr);
     ASSERT(vertex_count > 0);
     ASSERT(vertex_size > 0);
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, 0).id;
+    DvzId dat_id =
+        dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, flags).id;
     DvzArray* array = dvz_array_struct(vertex_count, vertex_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
@@ -177,13 +178,13 @@ DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex
 
 
 
-DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count)
+DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count, int flags)
 {
     ANN(rqr);
     ASSERT(index_count > 0);
 
     DvzSize index_size = sizeof(DvzIndex);
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, 0).id;
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, flags).id;
     DvzArray* array = dvz_array_struct(index_count, index_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
@@ -209,12 +210,12 @@ DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed)
 
 
 
-DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size)
+DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size, int flags)
 {
     ANN(rqr);
     ASSERT(vertex_size > 0);
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, vertex_size, 0).id;
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, vertex_size, flags).id;
     DvzArray* array = dvz_array_struct(1, vertex_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);

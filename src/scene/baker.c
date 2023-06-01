@@ -60,7 +60,7 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
             binding_idx);
         return;
     }
-    bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride);
+    bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride, 0);
     // NOTE; mark the dual as needing to be destroyed by the library
     bv->dual.need_destroy = true;
 }
@@ -79,7 +79,7 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
             "skipping creation of dat for index buffer as a shared dual has already been set");
         return;
     }
-    baker->index = dvz_dual_index(baker->rqr, index_count);
+    baker->index = dvz_dual_index(baker->rqr, index_count, 0);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->index.need_destroy = true;
 }
@@ -113,7 +113,7 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
             slot_idx);
         return;
     }
-    bd->dual = dvz_dual_dat(baker->rqr, bd->item_size);
+    bd->dual = dvz_dual_dat(baker->rqr, bd->item_size, DVZ_DAT_FLAGS_MAPPABLE);
     // NOTE; mark the dual as needing to be destroyed by the library
     bd->dual.need_destroy = true;
 }
