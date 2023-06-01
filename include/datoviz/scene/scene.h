@@ -30,6 +30,7 @@ typedef struct DvzPanel DvzPanel;
 // Forward declarations.
 typedef struct DvzApp DvzApp;
 typedef struct DvzRequester DvzRequester;
+typedef struct DvzViewset DvzViewset;
 typedef struct DvzList DvzList;
 typedef struct DvzView DvzView;
 typedef struct DvzVisual DvzVisual;
@@ -52,6 +53,7 @@ typedef struct DvzArcball DvzArcball;
 struct DvzScene // singleton in a given app
 {
     DvzApp* app;
+    DvzRequester* rqr;
     DvzList* figures;
 };
 
@@ -61,6 +63,12 @@ struct DvzFigure
 {
     DvzScene* scene;
     DvzList* panels;
+    int flags;
+
+    DvzViewset* viewset;
+    DvzId canvas_id;
+    float width;
+    float height;
 };
 
 
@@ -162,7 +170,7 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_panel_pixel(DvzPanel* panel, int flags);
+DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
 
 
 
