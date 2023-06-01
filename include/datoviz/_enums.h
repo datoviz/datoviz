@@ -164,6 +164,18 @@ typedef enum
 
 
 
+// Canvas creation flags.
+typedef enum
+{
+    DVZ_CANVAS_FLAGS_NONE = 0x0000,
+    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_VSYNC = 0x0004,
+    DVZ_CANVAS_FLAGS_PICK = 0x0010,
+} DvzCanvasFlags;
+
+
+
 // Shader format.
 typedef enum
 {
@@ -461,6 +473,44 @@ typedef enum
     DVZ_RENDERER_FLAGS_NONE = 0,
     // DVZ_RENDERER_FLAGS_SYNC_TRANSFERS = 1,
 } DvzRendererFlags;
+
+
+
+/*************************************************************************************************/
+/*  Scene                                                                                        */
+/*************************************************************************************************/
+
+// Build status
+typedef enum
+{
+    DVZ_BUILD_CLEAR,
+    DVZ_BUILD_BUSY,
+    DVZ_BUILD_DIRTY,
+} DvzBuildStatus;
+
+
+
+// Panel resizing.
+typedef enum
+{
+    DVZ_PANEL_RESIZE_STRETCH = 0x00,
+
+    DVZ_PANEL_RESIZE_FIXED_WIDTH = 0x01,
+    DVZ_PANEL_RESIZE_FIXED_HEIGHT = 0x02,
+
+    // if these 2 flags are set, FIXED_WIDTH should not be set
+    DVZ_PANEL_RESIZE_FIXED_TOP_LEFT = 0x10,
+    DVZ_PANEL_RESIZE_FIXED_TOP_RIGHT = 0x20,
+
+    // if these 2 flags are set, FIXED_HEIGHT should not be set
+    DVZ_PANEL_RESIZE_FIXED_BOTTOM_LEFT = 0x40,
+    DVZ_PANEL_RESIZE_FIXED_BOTTOM_RIGHT = 0x80,
+
+    DVZ_PANEL_RESIZE_FIXED_SHAPE = 0x03,
+    DVZ_PANEL_RESIZE_FIXED_OFFSET = 0xF0,
+
+    DVZ_PANEL_RESIZE_FIXED = 0xF3,
+} DvzPanelResizing;
 
 
 

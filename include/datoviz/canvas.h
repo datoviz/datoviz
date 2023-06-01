@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_enums.h"
 #include "surface.h"
 #include "vklite.h"
 
@@ -37,16 +38,6 @@
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
-
-// Canvas creation flags.
-typedef enum
-{
-    DVZ_CANVAS_FLAGS_NONE = 0x0000,
-    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
-    DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
-    DVZ_CANVAS_FLAGS_VSYNC = 0x0004,
-    DVZ_CANVAS_FLAGS_PICK = 0x0010,
-} DvzCanvasFlags;
 
 
 
