@@ -582,6 +582,7 @@ set(sources
     "src/scene/app.c"
     "src/scene/visual.c"
     "src/scene/viewset.c"
+    "src/scene/scene.c"
     "src/scene/transform.c"
     "src/scene/visuals/pixel.c"
 
@@ -667,6 +668,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_app.c"
         "tests/scene/test_visual.c"
         "tests/scene/test_viewset.c"
+        "tests/scene/test_scene.c"
         "tests/scene/visuals/test_pixel.c"
 
         "tests/test.c"

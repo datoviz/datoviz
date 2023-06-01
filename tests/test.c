@@ -22,6 +22,7 @@
 #include "scene/test_dual.h"
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
+#include "scene/test_scene.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_pixel.h"
@@ -313,6 +314,8 @@ int dvz_run_tests(const char* match)
     TEST(test_app_pixel)
     TEST(test_app_viewset)
 
+    // Testing scene.
+    TEST(test_scene_1)
 
 
     tst_suite_run(&suite, match);
