@@ -184,6 +184,12 @@ void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data)
 void dvz_app_run(DvzApp* app, uint64_t n_frames)
 {
     ANN(app);
+    ANN(app->client);
+    ANN(app->rqr);
+    ANN(app->prt);
+
+    // Emit a window init event.
+    dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
 
     // End the requester batch just before running the event loop. This way we ensure the requester
     // is ready to be flushed in dvz_presenter_submit().
