@@ -11,10 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_obj.h"
-#include "scene/mvp.h"
-#include "scene/viewport.h"
+#include "../_enums.h"
+#include "../_obj.h"
+#include "mvp.h"
+#include "viewport.h"
 
 
 

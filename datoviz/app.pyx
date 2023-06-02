@@ -60,7 +60,7 @@ cdef class Visual:
         self._arr_color = np.zeros((count, 4), dtype=np.uint8)
 
         # TODO: other visuals
-        self._c_visual = px.dvz_pixel(self._c_rqr, self._c_count, 0)
+        self._c_visual = px.dvz_pixel(self._c_rqr, 0)
 
     def position(self, np.ndarray[dtype=float, ndim=2] arr):
         self._arr_pos[:] = arr
@@ -109,7 +109,7 @@ cdef class View:
 
     def add(self, Visual visual):
         # TODO: other visuals
-        px.dvz_pixel_instance(visual._c_visual, self._c_view, 0, visual._c_count)
+        px.dvz_view_add(self._c_view, visual._c_visual, 0, visual._c_count, 0, 1, NULL, 0)
 
 
 # -------------------------------------------------------------------------------------------------

@@ -83,6 +83,8 @@ cdef extern from "<datoviz/request.h>":
 
     DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
 
+    DvzRequest dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const char* code)
+
     DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
 
     DvzRequest dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset)

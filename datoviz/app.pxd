@@ -134,6 +134,7 @@ cdef extern from "<datoviz/scene/app.h>":
         DvzClientEventType type
         DvzId window_id
         DvzClientEventUnion content
+        float content_scale
         void* user_data
 
     ctypedef struct DvzClientPayload:

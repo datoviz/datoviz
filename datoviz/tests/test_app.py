@@ -36,7 +36,7 @@ def test_app_1():
     canvas = app.canvas(flags=3)
     view = canvas.view()
 
-    n = 50_000_000
+    n = 1_000_000
     pixel = app.pixel(n)
 
     pos = np.zeros((n, 3), dtype=np.float32)

@@ -47,6 +47,7 @@ ENUMS = (
     'DvzProp',
     'DvzRequest',
     'DvzSampler',
+    'DvzShader',
     'DvzTexDims',
     'DvzView',
     'DvzVisual',

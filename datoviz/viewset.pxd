@@ -13,7 +13,7 @@ cdef extern from "<datoviz/scene/viewset.h>":
     ctypedef struct DvzView:
         pass
 
-    ctypedef struct DvzInstance:
+    ctypedef struct DvzTransform:
         pass
 
     ctypedef struct DvzVisual:
@@ -47,7 +47,7 @@ cdef extern from "<datoviz/scene/viewset.h>":
         uvec2 size_screen
         uvec2 offset_framebuffer
         uvec2 size_framebuffer
-        DvzViewportFlags flags
+        int flags
         int32_t interact_axis
 
 
@@ -57,7 +57,7 @@ cdef extern from "<datoviz/scene/viewset.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzViewport dvz_viewport(vec2 offset, vec2 shape)
+    DvzViewport dvz_viewport(vec2 offset, vec2 shape, int flags)
 
     DvzViewport dvz_viewport_default(uint32_t width, uint32_t height)
 
@@ -71,13 +71,13 @@ cdef extern from "<datoviz/scene/viewset.h>":
 
     DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
+    void dvz_view_add(DvzView* view, DvzVisual* visual, uint32_t first, uint32_t count, uint32_t first_instance, uint32_t instance_count, DvzTransform* transform, int viewport_flags)
+
     void dvz_view_clear(DvzView* view)
 
     void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape)
 
     void dvz_view_destroy(DvzView* view)
-
-    DvzInstance* dvz_view_instance(DvzView* view, DvzVisual* visual, uint32_t first, uint32_t vertex_offset, uint32_t count, uint32_t first_instance, uint32_t instance_count)
 
 
     # FUNCTION END

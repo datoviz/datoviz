@@ -31,19 +31,13 @@ cdef extern from "<datoviz/scene/visuals/pixel.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzVisual* dvz_pixel(DvzRequester* rqr, uint32_t item_count, int flags)
-
-    void dvz_pixel_viewport(DvzVisual* pixel, DvzViewport viewport)
+    DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 
     void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags)
 
     void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
 
-    DvzInstance* dvz_pixel_instance(DvzVisual* pixel, DvzView* view, uint32_t first, uint32_t count)
-
-    void dvz_pixel_create(DvzVisual* pixel)
-
-    void dvz_pixel_update(DvzVisual* pixel)
+    void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
 
 
     # FUNCTION END
