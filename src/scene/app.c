@@ -79,8 +79,7 @@ DvzApp* dvz_app(void)
     ANN(app->timer);
 
     // Send the pending requests to the presenter at every frame.
-    dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _on_frame, app);
+    dvz_app_onframe(app, _on_frame, app);
 
     return app;
 }
@@ -99,6 +98,15 @@ void dvz_app_frame(DvzApp* app)
 {
     ANN(app);
     dvz_client_frame(app->client);
+}
+
+
+
+void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data)
+{
+    ANN(app);
+    dvz_client_callback(
+        app->client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, on_frame, user_data);
 }
 
 

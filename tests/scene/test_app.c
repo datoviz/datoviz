@@ -183,10 +183,10 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
             float height = arcball->viewport_size[1];
 
             vec2 cur_pos, last_pos;
-            cur_pos[0] = -1 + 2 * ev.content.m.content.d.pos[0] / width;
-            cur_pos[1] = +1 - 2 * ev.content.m.content.d.pos[1] / height;
-            last_pos[0] = -1 + 2 * ev.content.m.content.d.press_pos[0] / width;
-            last_pos[1] = +1 - 2 * ev.content.m.content.d.press_pos[1] / height;
+            cur_pos[0] = -1 + 2 * ev.content.m.content.d.cur_pos[0] / width;
+            cur_pos[1] = +1 - 2 * ev.content.m.content.d.cur_pos[1] / height;
+            last_pos[0] = -1 + 2 * ev.content.m.pos[0] / width; // press position
+            last_pos[1] = +1 - 2 * ev.content.m.pos[1] / height;
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }

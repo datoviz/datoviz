@@ -256,27 +256,20 @@ DvzMouseEvent
 dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref)
 {
     ANN(view);
+
+    _normalize_pos(&ev.pos, view->offset, view->shape, content_scale, ref);
+
     switch (ev.type)
     {
-    case DVZ_MOUSE_EVENT_MOVE:
-        _normalize_pos(&ev.content.m.pos, view->offset, view->shape, content_scale, ref);
-        break;
-    case DVZ_MOUSE_EVENT_CLICK:
-    case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
-        _normalize_pos(&ev.content.c.pos, view->offset, view->shape, content_scale, ref);
-        break;
     case DVZ_MOUSE_EVENT_DRAG_START:
     case DVZ_MOUSE_EVENT_DRAG_STOP:
     case DVZ_MOUSE_EVENT_DRAG:
-        _normalize_pos(&ev.content.d.pos, view->offset, view->shape, content_scale, ref);
-        _normalize_pos(&ev.content.d.press_pos, view->offset, view->shape, content_scale, ref);
-        break;
-    case DVZ_MOUSE_EVENT_WHEEL:
-        _normalize_pos(&ev.content.w.pos, view->offset, view->shape, content_scale, ref);
+        _normalize_pos(&ev.content.d.cur_pos, view->offset, view->shape, content_scale, ref);
         break;
     default:
         break;
     }
+
     return ev;
 }
 

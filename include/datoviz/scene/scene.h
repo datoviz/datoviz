@@ -62,12 +62,11 @@ struct DvzFigure
 {
     DvzScene* scene;
     DvzList* panels;
+    vec2 shape, shape_init; // NOTE: in screen coordinates
     int flags;
 
     DvzViewset* viewset;
     DvzId canvas_id;
-    float width;
-    float height;
 };
 
 
@@ -75,7 +74,8 @@ struct DvzFigure
 struct DvzPanel
 {
     DvzFigure* figure;
-    DvzView* view; // has a list of visuals
+    DvzView* view;                // has a list of visuals
+    vec2 offset_init, shape_init; // initial viewport size
     DvzTransform* transform;
     DvzPanzoom* panzoom;
     DvzArcball* arcball;
@@ -116,6 +116,20 @@ DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t heigh
 /**
  *
  */
+DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height);
+
+
+
+/**
+ *
+ */
+DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
 
@@ -135,6 +149,13 @@ DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float 
  *
  */
 DVZ_EXPORT DvzPanel* dvz_panel_default(DvzFigure* fig);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float height);
 
 
 
@@ -184,6 +205,17 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel);
  *
  */
 DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
+
+
+
+/*************************************************************************************************/
+/*  Run                                                                                          */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames);
 
 
 

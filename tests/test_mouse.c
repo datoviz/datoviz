@@ -25,7 +25,7 @@ static void _on_mouse_move(DvzMouse* mouse, DvzMouseEvent ev)
     ANN(ev.user_data);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_MOVE);
-    *((float*)ev.user_data) = ev.content.m.pos[0];
+    *((float*)ev.user_data) = ev.pos[0];
 }
 
 int test_mouse_move(TstSuite* suite)
@@ -62,7 +62,7 @@ static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent ev)
     ANN(ev.user_data);
 
     ASSERT(ev.type == DVZ_MOUSE_EVENT_CLICK);
-    *((float*)ev.user_data) = ev.content.c.pos[0];
+    *((float*)ev.user_data) = ev.pos[0];
 }
 
 int test_mouse_press(TstSuite* suite)
@@ -149,7 +149,7 @@ static void _on_mouse_drag(DvzMouse* mouse, DvzMouseEvent ev)
     ANN(ev.user_data);
 
     // ASSERT(ev.type == DVZ_MOUSE_EVENT_DRAG);
-    *((float*)ev.user_data) = ev.content.d.pos[0];
+    *((float*)ev.user_data) = ev.content.d.cur_pos[0];
 }
 
 static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent ev)

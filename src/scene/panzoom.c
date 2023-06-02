@@ -359,7 +359,7 @@ void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
         }
         else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
         {
-            dvz_panzoom_zoom_shift(pz, ev.content.d.shift, ev.content.d.press_pos);
+            dvz_panzoom_zoom_shift(pz, ev.content.d.shift, ev.pos);
         }
     }
 
@@ -372,7 +372,7 @@ void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
     // Mouse wheel.
     if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
     {
-        dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.content.w.pos);
+        dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.pos);
     }
 
     // Double-click

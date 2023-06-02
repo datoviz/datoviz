@@ -95,11 +95,11 @@ int test_scene_1(TstSuite* suite)
 
     // TODO: automate this
     // Build the viewset.
-    dvz_viewset_build(figure->viewset);
+    // dvz_viewset_build(figure->viewset);
 
 
     // Run the app.
-    dvz_app_run(app, N_FRAMES);
+    dvz_scene_run(scene, app, N_FRAMES);
 
     dvz_panel_destroy(panel);
     dvz_figure_destroy(figure);

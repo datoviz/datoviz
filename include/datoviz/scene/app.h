@@ -89,6 +89,13 @@ DVZ_EXPORT void dvz_app_frame(DvzApp* app);
 /**
  *
  */
+DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data);
 
 

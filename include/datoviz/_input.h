@@ -97,7 +97,6 @@ typedef enum
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
 typedef union DvzMouseEventUnion DvzMouseEventUnion;
-typedef struct DvzMouseMoveEvent DvzMouseMoveEvent;
 typedef struct DvzMouseButtonEvent DvzMouseButtonEvent;
 typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
 typedef struct DvzMouseDragEvent DvzMouseDragEvent;
@@ -119,11 +118,6 @@ struct DvzKeyboardEvent
 
 
 
-struct DvzMouseMoveEvent
-{
-    vec2 pos;
-};
-
 struct DvzMouseButtonEvent
 {
     DvzMouseButton button;
@@ -131,27 +125,23 @@ struct DvzMouseButtonEvent
 
 struct DvzMouseWheelEvent
 {
-    vec2 pos;
     vec2 dir;
 };
 
 struct DvzMouseDragEvent
 {
     DvzMouseButton button;
-    vec2 pos;
-    vec2 press_pos;
+    vec2 cur_pos; // press_pos is in the mouse event itself
     vec2 shift;
 };
 
 struct DvzMouseClickEvent
 {
     DvzMouseButton button;
-    vec2 pos;
 };
 
 union DvzMouseEventUnion
 {
-    DvzMouseMoveEvent m;
     DvzMouseButtonEvent b;
     DvzMouseWheelEvent w;
     DvzMouseDragEvent d;
@@ -162,6 +152,7 @@ struct DvzMouseEvent
 {
     DvzMouseEventType type;
     DvzMouseEventUnion content;
+    vec2 pos;
     int mods;
     void* user_data;
 };

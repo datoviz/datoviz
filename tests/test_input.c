@@ -40,37 +40,37 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     case DVZ_MOUSE_EVENT_CLICK:
         log_debug(
             "mouse click button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.c.button, ev.content.c.pos[0], ev.content.c.pos[1], ev.mods);
+            ev.content.c.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
         log_debug(
             "mouse double click button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.c.button, ev.content.c.pos[0], ev.content.c.pos[1], ev.mods);
+            ev.content.c.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG:
         log_debug(
             "mouse drag button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.pos[0], ev.content.d.pos[1], ev.mods);
+            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_START:
         log_debug(
             "mouse drag start button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.pos[0], ev.content.d.pos[1], ev.mods);
+            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_STOP:
         log_debug(
             "mouse drag stop button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.pos[0], ev.content.d.pos[1], ev.mods);
+            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_MOVE:
         log_debug(
             "mouse move to (%.1f, %.1f), mods %d", //
-            ev.content.m.pos[0], ev.content.m.pos[1], ev.mods);
+            ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_PRESS:
@@ -84,8 +84,7 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     case DVZ_MOUSE_EVENT_WHEEL:
         log_debug(
             "mouse wheel at (%.1f, %.1f), dir (%.1f, %.1f), mods %d", //
-            ev.content.w.pos[0], ev.content.w.pos[1], ev.content.w.dir[0], ev.content.w.dir[1],
-            ev.mods);
+            ev.pos[0], ev.pos[1], ev.content.w.dir[0], ev.content.w.dir[1], ev.mods);
         break;
 
     default:
