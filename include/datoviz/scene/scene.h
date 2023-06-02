@@ -141,6 +141,20 @@ DVZ_EXPORT DvzPanel* dvz_panel_default(DvzFigure* fig);
 /**
  *
  */
+DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
 

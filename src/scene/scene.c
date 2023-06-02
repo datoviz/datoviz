@@ -88,6 +88,9 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     // Create the viewset;
     fig->viewset = dvz_viewset(rqr, fig->canvas_id);
 
+    // Append the figure to the scene's figures.
+    dvz_list_append(scene->figures, (DvzListItem){.p = (void*)fig});
+
     return fig;
 }
 
@@ -139,6 +142,9 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h)
     // Create a transform.
     panel->transform = dvz_transform(fig->scene->rqr);
 
+    // Append the figure to the scene's figures.
+    dvz_list_append(fig->panels, (DvzListItem){.p = (void*)panel});
+
     return panel;
 }
 
@@ -148,6 +154,46 @@ DvzPanel* dvz_panel_default(DvzFigure* fig)
 {
     ANN(fig);
     return dvz_panel(fig, 0, 0, fig->width, fig->height);
+}
+
+
+
+bool dvz_panel_contains(DvzPanel* panel, vec2 pos)
+{
+    ANN(panel);
+    ANN(panel->view);
+    float x0 = panel->view->offset[0];
+    float y0 = panel->view->offset[1];
+    float w = panel->view->shape[0];
+    float h = panel->view->shape[1];
+    float x1 = x0 + w;
+    float y1 = y0 + h;
+    float x = pos[0];
+    float y = pos[1];
+    return (x0 <= x) && (x < x1) && (y0 <= y) && (y < y1);
+}
+
+
+
+DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos)
+{
+    ANN(figure);
+    ANN(figure->panels);
+
+    // Go through all panels.
+    uint32_t n = dvz_list_count(figure->panels);
+    DvzPanel* panel = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        panel = (DvzPanel*)dvz_list_get(figure->panels, i).p;
+        if (panel != NULL)
+        {
+            // Return the first panel that contains the position.
+            if (dvz_panel_contains(panel, pos))
+                return panel;
+        }
+    }
+    return NULL;
 }
 
 

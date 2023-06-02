@@ -56,6 +56,12 @@ int test_scene_1(TstSuite* suite)
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);
 
+    // Panel contains.
+    AT(dvz_panel_contains(panel, (vec2){0, 0}));
+    AT(!dvz_panel_contains(panel, (vec2){WIDTH, HEIGHT}));
+    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, HEIGHT / 2}) == panel);
+    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
+
     // Upload the data.
     const uint32_t n = 10000;
 
