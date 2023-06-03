@@ -36,8 +36,9 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 
 // NOTE:needs to be a macro and not a function so that it can be safely included in both
 // vertex and fragment shaders (discard is forbidden in the vertex shader)
+// TODO
 #define CLIP                                                                                      \
-    switch (viewport.clip)                                                                        \
+    switch (viewport.flags)                                                                       \
     {                                                                                             \
     case DVZ_VIEWPORT_FLAGS_CLIP_NONE:                                                            \
         break;                                                                                    \
