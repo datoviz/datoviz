@@ -85,15 +85,17 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     // automatically when creating the window.
     canvas->width = window->framebuffer_width;
     canvas->height = window->framebuffer_height;
+    canvas->scale = (float)canvas->width / (float)screen_width;
+    log_info("canvas size is %dx%d, scale is %.2f", canvas->width, canvas->height, canvas->scale);
 
     // Create a surface (requires the renderer's GPU).
     DvzSurface surface = dvz_window_surface(host, window);
 
     // Finally, associate the canvas with the created window surface.
 
-    // NOTE: This call does not in the renderer, because we need the surface which depends on the
-    // client, and the renderer is agnostic wrt the client. Also, we need to know the framebuffer
-    // size, which also requires the window (so depends on the client as well).
+    // NOTE: This call does not occur in the renderer, because we need the surface which depends on
+    // the client, and the renderer is agnostic wrt the client. Also, we need to know the
+    // framebuffer size, which also requires the window (so depends on the client as well).
     dvz_canvas_create(canvas, surface);
 
     // HACK: keep track of the created surface so that we can destroy it when destroying the

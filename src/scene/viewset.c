@@ -288,8 +288,8 @@ void dvz_view_clear(DvzView* view)
 void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape)
 {
     ANN(view);
-    memcpy(view->offset, offset, sizeof(vec2));
-    memcpy(view->shape, shape, sizeof(vec2));
+    glm_vec2_copy(offset, view->offset);
+    glm_vec2_copy(shape, view->shape);
 }
 
 

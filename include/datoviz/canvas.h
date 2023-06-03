@@ -107,6 +107,7 @@ struct DvzCanvas
     DvzFormat format;
     // cvec4 clear_color;
     uint32_t width, height;
+    float scale; // size in framebuffer pixels / screen pixels
 
     DvzSize size; // width*height*3
     uint8_t* rgb; // GPU buffer storing the image

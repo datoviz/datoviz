@@ -65,13 +65,23 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
         float y = record->contents.v.offset[1];
         float w = record->contents.v.shape[0];
         float h = record->contents.v.shape[1];
-        log_debug("recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d)", x, y, w, h, img_idx);
+
+        // NOTE: ensure the scale is set.
+        float scale = is_canvas ? canvas->scale : 1.0;
+        scale = scale == 0 ? 1 : scale;
+
+        log_debug(
+            "recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d) (scale: %.2f)", //
+            x, y, w, h, img_idx, scale);
+
+        // Take DPI scaling into account. canvas->scale is set by the presenter in _create_canvas()
+        vec2 offset = {x * scale, y * scale};
+        vec2 shape = {w * scale, h * scale};
+
         if (is_canvas)
-            dvz_canvas_viewport(
-                canvas, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
+            dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
         else
-            dvz_board_viewport(
-                board, cmds, img_idx, record->contents.v.offset, record->contents.v.shape);
+            dvz_board_viewport(board, cmds, img_idx, offset, shape);
         break;
     }
 

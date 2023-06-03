@@ -68,7 +68,7 @@ static void delete_client_window(DvzClient* client, DvzId id)
     DvzWindow* window = id2window(client, id);
     if (window == NULL)
     {
-        log_warn("window #%d not found", id);
+        log_warn("window 0x%" PRIx64 " not found", id);
         return;
     }
     ANN(window);
@@ -144,7 +144,7 @@ static void _callback_window_delete(DvzDeq* deq, void* item, void* user_data)
     DvzClientEvent* ev = (DvzClientEvent*)item;
     ASSERT(ev->type == DVZ_CLIENT_EVENT_WINDOW_DELETE);
 
-    log_debug("client: delete window #%d", ev->window_id);
+    log_debug("client: delete window 0x%" PRIx64, ev->window_id);
 
     delete_client_window(client, ev->window_id);
 }

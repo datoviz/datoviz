@@ -1675,8 +1675,8 @@ dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, ve
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
-    memcpy(req.content.record.command.contents.v.offset, offset, sizeof(vec2));
-    memcpy(req.content.record.command.contents.v.shape, shape, sizeof(vec2));
+    glm_vec2_copy(offset, req.content.record.command.contents.v.offset);
+    glm_vec2_copy(shape, req.content.record.command.contents.v.shape);
 
     IF_VERBOSE
     _print_record_viewport(&req);

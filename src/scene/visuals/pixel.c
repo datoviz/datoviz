@@ -33,7 +33,7 @@ static void _auto_create(DvzVisual* visual, uint32_t first, uint32_t count)
     ASSERT(count > 0);
     if (visual->item_count == 0)
     {
-        log_info("automatic creation of visual");
+        log_debug("automatic creation of visual");
         dvz_pixel_create(visual, first + count);
     }
     ASSERT(visual->item_count > 0);

@@ -242,7 +242,7 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         return;
     }
 
-    log_debug("resize panel to %dx%d -> %dx%d", x, y, width, height);
+    log_debug("resize panel to %.0fx%.0f -> %.0fx%.0f", x, y, width, height);
 
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
@@ -428,7 +428,7 @@ static void _scene_onresize(DvzClient* client, DvzClientEvent ev)
     float w = ev.content.w.screen_width;
     float h = ev.content.w.screen_height;
 
-    log_debug("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, w, h);
+    log_debug("window 0x%" PRIx64 " resized to %.0fx%.0f", ev.window_id, w, h);
 
     DvzScene* scene = (DvzScene*)ev.user_data;
     ANN(scene);
