@@ -161,7 +161,7 @@ void dvz_viewset_build(DvzViewset* viewset)
         count = dvz_list_count(view->visuals);
         for (uint64_t j = 0; j < count; j++)
         {
-            visual = (DvzVisual*)dvz_list_get(view->visuals, i).p;
+            visual = (DvzVisual*)dvz_list_get(view->visuals, j).p;
             ANN(visual);
 
             if (!visual->is_visible)
