@@ -77,8 +77,9 @@ _normalize_pos(vec2* pos, vec2 offset, vec2 shape, float content_scale, DvzMouse
     }
 
     // Content scaling.
-    pos[0][0] *= content_scale;
-    pos[0][1] *= content_scale;
+    // log_debug("%.0fx%.0f, %f", pos[0][0], pos[0][1], content_scale);
+    // pos[0][0] *= content_scale;
+    // pos[0][1] *= content_scale;
 }
 
 
