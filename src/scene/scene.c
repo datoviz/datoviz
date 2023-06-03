@@ -64,6 +64,8 @@ void dvz_scene_destroy(DvzScene* scene)
 DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flags)
 {
     ANN(scene);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     // Initialize the structure.
     DvzFigure* fig = (DvzFigure*)calloc(1, sizeof(DvzFigure));
@@ -101,6 +103,8 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 {
     ANN(fig);
+    log_debug("resize figure to %dx%d", width, height);
+
     fig->shape[0] = width;
     fig->shape[1] = height;
 
@@ -200,6 +204,11 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h)
     DvzPanel* panel = (DvzPanel*)calloc(1, sizeof(DvzPanel));
     panel->figure = fig;
 
+    panel->offset_init[0] = x;
+    panel->offset_init[1] = y;
+    panel->shape_init[0] = w;
+    panel->shape_init[1] = h;
+
     // Create a view.
     panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){w, h});
 
@@ -226,6 +235,15 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
 {
     ANN(panel);
     ANN(panel->view);
+
+    if (width == 0 || height == 0)
+    {
+        log_warn("skip panel_resize of size 0x0");
+        return;
+    }
+
+    log_debug("resize panel to %dx%d -> %dx%d", x, y, width, height);
+
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
     if (panel->panzoom)
@@ -383,20 +401,20 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = panel->panzoom;
     if (pz != NULL)
     {
-
         DvzTransform* tr = panel->transform;
         ANN(tr);
 
         // Pass the mouse event to the panzoom object.
-        dvz_panzoom_mouse(pz, mev);
+        if (dvz_panzoom_mouse(pz, mev))
+        {
+            // Update the MVP matrices.
+            DvzMVP* mvp = dvz_transform_mvp(tr);
+            dvz_panzoom_mvp(pz, mvp);
 
-        // Update the MVP matrices.
-        DvzMVP* mvp = dvz_transform_mvp(tr);
-        dvz_panzoom_mvp(pz, mvp);
-
-        dvz_requester_begin(rqr);
-        dvz_transform_update(tr, *mvp);
-        dvz_requester_end(rqr, NULL);
+            dvz_requester_begin(rqr);
+            dvz_transform_update(tr, *mvp);
+            dvz_requester_end(rqr, NULL);
+        }
     }
 
     // Arcball.

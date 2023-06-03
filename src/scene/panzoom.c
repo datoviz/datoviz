@@ -346,13 +346,14 @@ void dvz_panzoom_destroy(DvzPanzoom* pz)
 /*  Panzoom event functions                                                                      */
 /*************************************************************************************************/
 
-void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
+bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
 {
     ANN(pz);
 
-    // Dragging: pan.
-    if (ev.type == DVZ_MOUSE_EVENT_DRAG)
+    switch (ev.type)
     {
+    // Dragging: pan.
+    case DVZ_MOUSE_EVENT_DRAG:
         if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
         {
             dvz_panzoom_pan_shift(pz, ev.content.d.shift, (vec2){0});
@@ -361,23 +362,26 @@ void dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
         {
             dvz_panzoom_zoom_shift(pz, ev.content.d.shift, ev.pos);
         }
-    }
+        break;
 
     // Stop dragging.
-    if (ev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
-    {
+    case DVZ_MOUSE_EVENT_DRAG_STOP:
         dvz_panzoom_end(pz);
-    }
+        break;
 
     // Mouse wheel.
-    if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
-    {
+    case DVZ_MOUSE_EVENT_WHEEL:
         dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.pos);
-    }
+        break;
 
     // Double-click
-    if (ev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
-    {
+    case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
         dvz_panzoom_reset(pz);
+        break;
+
+    default:
+        return false;
     }
+
+    return true;
 }
