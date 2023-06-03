@@ -153,6 +153,12 @@ int test_scene_2(TstSuite* suite)
     // Add the visual to the panel.
     dvz_panel_visual(panel_0, pixel);
 
+    // Second visual.
+    DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
+    dvz_pixel_position(pixel_1, 0, n, pos, 0);
+    dvz_pixel_color(pixel_1, 0, n, color, 0);
+    dvz_panel_visual(panel_1, pixel_1);
+
     // Panzoom.
     DvzPanzoom* pz = dvz_panel_panzoom(app, panel_0);
     ANN(pz);

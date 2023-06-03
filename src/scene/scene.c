@@ -402,7 +402,11 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
     if (pz != NULL)
     {
         DvzTransform* tr = panel->transform;
-        ANN(tr);
+        if (tr == NULL)
+        {
+            log_warn("no transform set in panel");
+            return;
+        }
 
         // Pass the mouse event to the panzoom object.
         if (dvz_panzoom_mouse(pz, mev))
