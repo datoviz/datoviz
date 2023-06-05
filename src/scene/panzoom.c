@@ -17,16 +17,17 @@
 /*************************************************************************************************/
 
 
-#if OS_MACOS
-// HACK: touchpad wheel too sensitive on macOS
-#define DVZ_PANZOOM_ZOOM_DRAG_COEF 3
 // NOTE: the wheel behavior depends on both parameters, so first finetune DRAG_COEF with right-drag
 // before tweaking WHEEL_COEFF.
-#define DVZ_PANZOOM_ZOOM_WHEEL_COEF -.01
+#if OS_MACOS
+// HACK: touchpad wheel too sensitive on macOS
+// TODO
+#define DVZ_PANZOOM_ZOOM_DRAG_COEF  .001
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF -8.0
 #else
 // TODO: test on linux/Windows.
-#define DVZ_PANZOOM_ZOOM_DRAG_COEF  1.5
-#define DVZ_PANZOOM_ZOOM_WHEEL_COEF 50
+#define DVZ_PANZOOM_ZOOM_DRAG_COEF  .002
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF 60.0
 #endif
 
 
@@ -225,8 +226,13 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float zx0 = pz->zoom_center[0];
     float zy0 = pz->zoom_center[1];
 
-    pz->zoom[0] = zx0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * shift[0]);
-    pz->zoom[1] = zy0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * shift[1]);
+    // HACK: coefficient depends onthe viewport size.
+    float w = pz->viewport_size[0];
+    float h = pz->viewport_size[1];
+    float a = .5 * (w + h);
+
+    pz->zoom[0] = zx0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[0]);
+    pz->zoom[1] = zy0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[1]);
 
     float zx = pz->zoom[0];
     float zy = pz->zoom[1];
@@ -262,7 +268,7 @@ void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
     {
         d /= (float)fabs((double)d);
         vec2 shift = {0};
-        shift[0] = DVZ_PANZOOM_ZOOM_WHEEL_COEF * w * (d);
+        shift[0] = DVZ_PANZOOM_ZOOM_WHEEL_COEF * (d);
         shift[1] = -a * shift[0];
         dvz_panzoom_zoom_shift(pz, shift, center_px);
         dvz_panzoom_end(pz);
