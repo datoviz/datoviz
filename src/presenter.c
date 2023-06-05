@@ -652,13 +652,6 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr)
     ANN(rqr);
     ANN(prt->client);
 
-    if (dvz_atomic_get(rqr->status) != DVZ_BUILD_DIRTY)
-    {
-        // log_trace("skip presenter submit because requester is not ready to be flushed (not
-        // dirty)");
-        return;
-    }
-
     uint32_t count = 0;
     DvzRequest* requests = dvz_requester_flush(rqr, &count);
     // NOTE: the presenter will need to FREE the requests array.

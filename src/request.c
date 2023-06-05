@@ -791,7 +791,7 @@ static void _print_record_end(DvzRequest* req)
 DvzRequester* dvz_requester(void)
 {
     log_trace("create requester");
-    DvzRequester* rqr = calloc(1, sizeof(DvzRequester));
+    DvzRequester* rqr = (DvzRequester*)calloc(1, sizeof(DvzRequester));
     rqr->prng = dvz_prng();
     rqr->status = dvz_atomic();
 

@@ -36,6 +36,14 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
 
     DvzApp* app = (DvzApp*)ev.user_data;
     ANN(app);
+    ANN(app->rqr);
+
+    if (dvz_atomic_get(app->rqr->status) != DVZ_BUILD_DIRTY)
+    {
+        log_trace(
+            "skip presenter submit because requester is not ready to be flushed (not dirty) ");
+        return;
+    }
 
     dvz_presenter_submit(app->prt, app->rqr);
 
