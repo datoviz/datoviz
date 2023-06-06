@@ -41,11 +41,12 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
     if (dvz_atomic_get(app->rqr->status) != DVZ_BUILD_DIRTY)
     {
         log_trace(
-            "skip presenter submit because requester is not ready to be flushed (not dirty) ");
-        return;
+            "skip presenter submit because requester is not ready to be flushed (not dirty)");
     }
-
-    dvz_presenter_submit(app->prt, app->rqr);
+    else
+    {
+        dvz_presenter_submit(app->prt, app->rqr);
+    }
 
     // The timer callbacks are called here.
     dvz_timer_tick(app->timer, ev.content.f.time);
