@@ -534,15 +534,15 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     // NOTE: only acquire a new swapchain image if the last acquired imaged was used for command
     // buffer submission, otherwise the semaphore sem_img_available will still be signaled, which
     // is forbidden according to the Vulkan spec.
-    if (!prt->awaiting_submit)
-    {
-        dvz_swapchain_acquire(swapchain, sem_img_available, canvas->cur_frame, NULL, 0);
-        prt->awaiting_submit = true;
-    }
-    else
-    {
-        return;
-    }
+    // if (!prt->awaiting_submit)
+    // {
+    dvz_swapchain_acquire(swapchain, sem_img_available, canvas->cur_frame, NULL, 0);
+    //     prt->awaiting_submit = true;
+    // }
+    // else
+    // {
+    //     return;
+    // }
 
 
 
@@ -563,6 +563,12 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
         // Recreate the canvas. The new framebuffer size will be stored in canvas->width/height.
         dvz_canvas_recreate(canvas);
+
+        // Recreate the semaphores.
+        dvz_semaphores_recreate(sem_img_available);
+        dvz_semaphores_recreate(sem_render_finished);
+        // dvz_fences
+        // fences_render_finished
 
         // Resuize the GUI window if it exists.
         if (gui_window != NULL)
@@ -594,7 +600,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         {
             _record_command(rd, canvas, i);
         }
-        prt->awaiting_submit = false;
+        // prt->awaiting_submit = false;
     }
 
     // NOTE:
@@ -633,7 +639,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         dvz_swapchain_present(swapchain, 1, sem_render_finished, canvas->cur_frame);
 
         // Mark the fact that the submission has been done.
-        prt->awaiting_submit = false;
+        // prt->awaiting_submit = false;
 
         canvas->cur_frame = (canvas->cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT;
     }

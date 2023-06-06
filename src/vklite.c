@@ -421,9 +421,8 @@ void dvz_swapchain_acquire(
     uint32_t fence_idx)
 {
     ANN(swapchain);
-    // log_trace(
-    //     "acquiring swapchain image with semaphore %d...",
-    //     semaphores->semaphores[semaphore_idx]);
+    log_trace(
+        "acquiring swapchain image with semaphore %d...", semaphores->semaphores[semaphore_idx]);
 
     VkSemaphore semaphore = {0};
     if (semaphores != NULL)
@@ -436,7 +435,7 @@ void dvz_swapchain_acquire(
     VkResult res = vkAcquireNextImageKHR(
         swapchain->gpu->device, swapchain->swapchain, 100000000, // 100M ns = 0.1s
         semaphore, fence, &swapchain->img_idx);
-    // log_trace("acquired swapchain image #%d", swapchain->img_idx);
+    log_trace("acquired swapchain image #%d", swapchain->img_idx);
 
     switch (res)
     {
