@@ -62,6 +62,11 @@ int test_scene_1(TstSuite* suite)
     ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, HEIGHT / 2}) == panel);
     ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
 
+    // Panzoom.
+    DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
+    ANN(pz);
+
+
     // Upload the data.
     const uint32_t n = 10000;
 
@@ -89,9 +94,6 @@ int test_scene_1(TstSuite* suite)
     // Add the visual to the panel.
     dvz_panel_visual(panel, pixel);
 
-    // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
-    ANN(pz);
 
     // Run the app.
     dvz_scene_run(scene, app, N_FRAMES);

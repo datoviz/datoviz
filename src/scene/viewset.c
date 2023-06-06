@@ -224,6 +224,7 @@ void dvz_view_add(
 {
     ANN(view);
     ANN(visual);
+    ANN(transform);
 
     ASSERT(count > 0);
     ASSERT(instance_count > 0);
@@ -235,13 +236,13 @@ void dvz_view_add(
 
     dvz_list_append(view->visuals, (DvzListItem){.p = visual});
 
-    // MVP.
-    if (transform == NULL)
-    {
-        log_debug("no transform set when adding the view, creating a default one");
-        transform = dvz_transform(visual->rqr);
-    }
-    ANN(transform);
+    // // MVP.
+    // if (transform == NULL)
+    // {
+    //     log_error("no transform set when adding the view, creating a default one");
+    //     transform = dvz_transform(visual->rqr);
+    // }
+    // ANN(transform);
     // TODO: use a #define macro instead of hard-coded value 0 here.
     // NOTE: bind the transform's dual to slot idx 0 (=MVP)
     dvz_bind_dat(visual->rqr, visual->graphics_id, 0, transform->dual.dat, 0);

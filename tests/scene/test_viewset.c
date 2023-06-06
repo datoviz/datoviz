@@ -12,6 +12,7 @@
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"
+#include "scene/transform.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 #include "test.h"
@@ -58,7 +59,8 @@ int test_viewset_1(TstSuite* suite)
     dvz_view_clear(view);
 
     // Add the visual to the view.
-    dvz_view_add(view, visual, 0, n, 0, 1, NULL, 0);
+    DvzTransform* tr = dvz_transform(rqr);
+    dvz_view_add(view, visual, 0, n, 0, 1, tr, 0);
     dvz_visual_visible(visual, true);
 
     dvz_viewset_build(viewset);

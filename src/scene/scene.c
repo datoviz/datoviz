@@ -335,22 +335,19 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     ANN(panel->figure);
     ANN(panel->figure->scene);
 
+    if (panel->transform != NULL)
+    {
+        log_error("could not create a panzoom as the panel has already a transform");
+        return NULL;
+    }
+
     ASSERT(panel->view->shape[0] > 0);
     ASSERT(panel->view->shape[1] > 0);
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
-
-    // If a panel transform has not been already set, we create a MVP transform that will be bound
-    // to the PanZoom in the mouse callback set by dvz_scene_run().
-    if (panel->transform == NULL)
-    {
-        log_trace(
-            "creating a new panel transform when setting a panzoom on the panel as no transform "
-            "has been manually set to the panel so far");
-        panel->transform = dvz_transform(panel->figure->scene->rqr);
-        panel->transform_to_destroy = true;
-    }
+    panel->transform = dvz_transform(panel->figure->scene->rqr);
+    panel->transform_to_destroy = true;
 
     return panel->panzoom;
 }
@@ -379,15 +376,20 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
     DvzView* view = panel->view;
     ANN(view);
 
+    // No visuals.
     if (visual->item_count == 0)
     {
         log_error("cannot add empty visual, make sure to fill the visual's properties first.");
         return;
     }
 
-    // By default, add all items, using a single instance, and the panel's transform.
+    // Panel transform must be set.
     if (panel->transform == NULL)
-        log_debug("no panel transform set when adding the view, creating a default one");
+    {
+        log_error("the panel transform must be set before calling dvz_panel_visual()");
+        return;
+    }
+
     dvz_view_add(view, visual, 0, visual->item_count, 0, 1, panel->transform, 0);
 }
 

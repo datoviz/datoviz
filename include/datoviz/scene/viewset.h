@@ -129,6 +129,9 @@ DVZ_EXPORT void dvz_view_add(
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT DvzMouseEvent
 dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref);
 
