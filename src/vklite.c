@@ -434,7 +434,7 @@ void dvz_swapchain_acquire(
         fence = fences->fences[fence_idx];
 
     VkResult res = vkAcquireNextImageKHR(
-        swapchain->gpu->device, swapchain->swapchain, 1000000000, //
+        swapchain->gpu->device, swapchain->swapchain, 100000000, // 100M ns = 0.1s
         semaphore, fence, &swapchain->img_idx);
     // log_trace("acquired swapchain image #%d", swapchain->img_idx);
 

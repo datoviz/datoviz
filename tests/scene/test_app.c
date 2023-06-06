@@ -46,6 +46,7 @@ struct PanzoomStruct
     DvzMVP mvp;
     DvzPanzoom* pz;
     DvzTransform* tr;
+    GraphicsWrapper* wrapper;
 };
 
 
@@ -113,13 +114,25 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
 {
     ANN(client);
 
+    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    ANN(ps);
+
+    DvzPanzoom* pz = ps->pz;
+    ANN(pz);
+
+    DvzRequester* rqr = ps->app->rqr;
+    ANN(rqr);
+
     uint32_t width = ev.content.w.screen_width;
     uint32_t height = ev.content.w.screen_height;
     log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
 
-    DvzPanzoom* pz = (DvzPanzoom*)ev.user_data;
-    ANN(pz);
     dvz_panzoom_resize(pz, width, height);
+
+    // Emit updated recording commands.
+    dvz_requester_begin(rqr);
+    graphics_commands(rqr, ps->wrapper);
+    dvz_requester_end(rqr, NULL);
 }
 
 int test_app_scatter(TstSuite* suite)
@@ -137,13 +150,9 @@ int test_app_scatter(TstSuite* suite)
 
     // Panzoom callback.
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
-    PanzoomStruct ps = {
-        .mvp_id = wrapper.mvp_id,
-        .app = app,
-        .pz = pz,
-    };
+    PanzoomStruct ps = {.mvp_id = wrapper.mvp_id, .app = app, .pz = pz, .wrapper = &wrapper};
     dvz_app_onmouse(app, _scatter_mouse, &ps);
-    dvz_app_onresize(app, _scatter_resize, pz);
+    dvz_app_onresize(app, _scatter_resize, &ps);
 
     dvz_app_run(app, N_FRAMES);
 

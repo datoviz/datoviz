@@ -51,7 +51,7 @@ int test_scene_1(TstSuite* suite)
     DvzScene* scene = dvz_scene(rqr);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);

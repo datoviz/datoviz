@@ -1,5 +1,8 @@
 /*************************************************************************************************/
-/*  Testing presenter */
+/*  Testing presenter                                                                            */
+/*  NOTE: resizing is not implemented in these tests except in the second one                    */
+/*  Proper resizing support requires registering a RESIZE callback and emitting new requests,    */
+/*  notably record requests.                                                                     */
 /*************************************************************************************************/
 
 /*************************************************************************************************/
@@ -131,6 +134,8 @@ int test_presenter_1(TstSuite* suite)
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
+
+    // NOTE: resizing support is not implemented in this example.
 
     // End.
     dvz_client_destroy(client);

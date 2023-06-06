@@ -129,6 +129,7 @@ struct GraphicsWrapper
     DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
     DvzViewport viewport;
     DvzMVP mvp;
+    uint32_t n;
     void* data;
 };
 
@@ -343,6 +344,15 @@ static void triangle_commands(
 /*  Graphics wrapper                                                                             */
 /*************************************************************************************************/
 
+static void graphics_commands(DvzRequester* rqr, GraphicsWrapper* wrapper)
+{
+    // Command buffer.
+    dvz_record_begin(rqr, wrapper->canvas_id);
+    dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, wrapper->n, 0, 1);
+    dvz_record_end(rqr, wrapper->canvas_id);
+}
+
 static void
 graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, int flags)
 {
@@ -351,6 +361,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
 
     // Canvas id.
     wrapper->canvas_id = req.id;
+    wrapper->n = n;
 
     // Create a graphics.
     req = dvz_create_graphics(rqr, DVZ_GRAPHICS_POINT, 0);
@@ -385,13 +396,7 @@ graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, 
     req = dvz_upload_dat(rqr, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
 
     // Command buffer.
-    req = dvz_record_begin(rqr, wrapper->canvas_id);
-
-    req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-
-    req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, n, 0, 1);
-
-    req = dvz_record_end(rqr, wrapper->canvas_id);
+    graphics_commands(rqr, wrapper);
 }
 
 
