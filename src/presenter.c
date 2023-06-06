@@ -328,6 +328,8 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
     // Submit the pending requests to the renderer.
     log_debug("renderer processes %d requests", count);
 
+    // bool has_record_request = false;
+
     // Go through all pending requests.
     for (uint32_t i = 0; i < count; i++)
     {
@@ -341,7 +343,18 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
             _canvas_request(prt, requests[i]);
         }
         // Here, new canvases have been properly created with an underlying window and surface.
+
+        // NOTE: only allow further rendering after resizing if new record commands have been
+        // processed.
+        // if (requests[i].type == DVZ_REQUEST_OBJECT_RECORD)
+        //     has_record_request = true;
     }
+
+    // NOTE: we signal the main loop (in presenter_frame) that we have processed requests.
+    // When resizing, the main loop stops updating images and will only resume once the new
+    // requests (emitted during a RESIZE event) have been processed.
+    // if (has_record_request)
+    //     prt->awaiting_submit = false;
 
     // Finally, we can FREE the requests pointer.
     FREE(requests);
