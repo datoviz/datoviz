@@ -75,6 +75,12 @@ struct DvzPresenter
     // destroyed.
     DvzList* surfaces;
 
+    // NOTE: this is used to keep track of the state of sem_img_available, true: image has been
+    // acquired and the semaphore will be unsignaled when a command buffer is submitted. If that
+    // does not happen (for example while resizing), then no further swapchain acquisition should
+    // occur until a command buffer has been submitted.
+    bool awaiting_submit;
+
     // GUI callbacks.
     DvzGui* gui;
     DvzList* callbacks;

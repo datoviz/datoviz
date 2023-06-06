@@ -517,7 +517,22 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     dvz_fences_wait(fences, canvas->cur_frame);
 
     // We acquire the next swapchain image.
-    dvz_swapchain_acquire(swapchain, sem_img_available, canvas->cur_frame, NULL, 0);
+
+    // NOTE: only acquire a new swapchain image if the last acquired imaged was used for command
+    // buffer submission, otherwise the semaphore sem_img_available will still be signaled, which
+    // is forbidden according to the Vulkan spec.
+    if (!prt->awaiting_submit)
+    {
+        dvz_swapchain_acquire(swapchain, sem_img_available, canvas->cur_frame, NULL, 0);
+        prt->awaiting_submit = true;
+    }
+    else
+    {
+        return;
+    }
+
+
+
     if (swapchain->obj.status == DVZ_OBJECT_STATUS_INVALID)
     {
         dvz_gpu_wait(gpu);
@@ -558,6 +573,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
                         .content.w.screen_width = window->width,
                         .content.w.screen_height = window->height,
                     });
+
         // Need to refill the command buffers.
         // Ensure we reset the refill flag to force reloading.
         dvz_recorder_set_dirty(recorder);
@@ -565,8 +581,11 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         {
             _record_command(rd, canvas, i);
         }
+        prt->awaiting_submit = false;
     }
-    else
+
+    // NOTE:
+    else // if (prt->awaiting_submit)
     {
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
 
@@ -600,6 +619,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
         // Once the image is rendered, we present the swapchain image.
         dvz_swapchain_present(swapchain, 1, sem_render_finished, canvas->cur_frame);
 
+        // Mark the fact that the submission has been done.
+        prt->awaiting_submit = false;
+
         canvas->cur_frame = (canvas->cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT;
     }
 
@@ -610,10 +632,6 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
     // Transfers.
     dvz_transfers_frame(&ctx->transfers, swapchain->img_idx);
-
-    // TODO:
-    // need to go through the pending requests again in the requester (eg those raise in the
-    // RESIZE callbacks)?
 
     // UPFILL: when there is a command refill + data uploads in the same batch, register
     // the cmd buf at the moment when the GPU-blocking upload really occurs
