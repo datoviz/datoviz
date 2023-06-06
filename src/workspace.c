@@ -26,7 +26,9 @@ static bool _has_overlay(int flags) { return (flags & DVZ_WORKSPACE_FLAGS_OVERLA
 DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
 {
     ANN(gpu);
-    DvzWorkspace* ws = calloc(1, sizeof(DvzWorkspace));
+    ANN(gpu->host);
+
+    DvzWorkspace* ws = (DvzWorkspace*)calloc(1, sizeof(DvzWorkspace));
     ws->obj.type = DVZ_OBJECT_TYPE_WORKSPACE;
     ws->gpu = gpu;
     ws->flags = flags;
@@ -40,8 +42,22 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
         dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     ws->renderpass_offscreen =
         dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-    ws->renderpass_desktop =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+
+    // NOTE: we only create the desktop renderpass if we use the glfw backend.
+    // This avoids the following validation error:
+
+    // vkutils.h:0174: validation layer: Validation Error: [
+    // VUID-VkAttachmentDescription-finalLayout-parameter ] Object 0: handle = 0x561a27dda3a0, type
+    // = VK_OBJECT_TYPE_DEVICE; | MessageID = 0xd072ad00 | vkCreateRenderPass: value of
+    // pCreateInfo->pAttachments[0].finalLayout (1000001002) does not fall within the begin..end
+    // range of the core VkImageLayout enumeration tokens and is not an extension added token. The
+    // Vulkan spec states: finalLayout must be a valid VkImageLayout value
+
+    if (gpu->host->backend == DVZ_BACKEND_GLFW)
+    {
+        ws->renderpass_desktop =
+            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    }
 
     dvz_obj_init(&ws->obj);
     return ws;

@@ -2510,7 +2510,14 @@ void dvz_graphics_create(DvzGraphics* graphics)
     ANN(graphics);
     ANN(graphics->gpu);
     ASSERT(graphics->gpu->device != VK_NULL_HANDLE);
+
     ANN(graphics->renderpass);
+    if (!dvz_obj_is_created(&graphics->renderpass->obj))
+    {
+        log_error("cannot create graphics pipeline because the renderpass has not been created");
+        return;
+    }
+
     if (!dvz_obj_is_created(&graphics->slots.obj))
         dvz_slots_create(&graphics->slots);
 
@@ -3750,6 +3757,10 @@ void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphic
     CMD_START
     if (dvz_obj_is_created(&graphics->obj))
         vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_GRAPHICS, graphics->pipeline);
+    else
+    {
+        log_error("could not bind uncreated graphics pipeline when recording the command buffer");
+    }
     CMD_END
 }
 

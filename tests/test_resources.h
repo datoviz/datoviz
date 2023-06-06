@@ -29,7 +29,7 @@ static int setup_gpu(TstSuite* suite)
     ANN(ctx);
 
     log_debug("setup: creating GPU");
-    ctx->host = dvz_host(DVZ_BACKEND_GLFW);
+    ctx->host = dvz_host(DVZ_BACKEND_OFFSCREEN);
 
     DvzGpu* gpu = dvz_gpu_best(ctx->host);
     _default_queues(gpu, false);

@@ -173,21 +173,6 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-// static void* _canvas_update(DvzRenderer* rd, DvzRequest req)
-// {
-//     ANN(rd);
-//     ASSERT(req.id != 0);
-//     log_trace("update canvas");
-
-//     GET_ID(DvzCanvas, canvas, req.id)
-
-//     dvz_cmd_submit_sync(&canvas->cmds, DVZ_DEFAULT_QUEUE_RENDER);
-
-//     return NULL;
-// }
-
-
-
 static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
@@ -243,10 +228,17 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
     DvzGpu* gpu = rd->gpu;
     ANN(gpu);
+    ANN(gpu->host);
 
     DvzPipe* pipe = NULL;
 
     bool is_offscreen = (req.flags & DVZ_REQUEST_FLAGS_OFFSCREEN) != 0;
+    if (gpu->host->backend && !is_offscreen)
+    {
+        log_debug("non-offscreen graphics pipeline creation was requested with an offscreen "
+                  "backend, forcing offscreen pipepline");
+        is_offscreen = true;
+    }
     DvzRenderpass* renderpass =
         is_offscreen ? &rd->workspace->renderpass_offscreen : &rd->workspace->renderpass_desktop;
 
