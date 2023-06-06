@@ -79,6 +79,7 @@ struct DvzPanel
     DvzTransform* transform;
     DvzPanzoom* panzoom;
     DvzArcball* arcball;
+    bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
 };
 
 
@@ -150,6 +151,12 @@ DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float 
  */
 DVZ_EXPORT DvzPanel* dvz_panel_default(DvzFigure* fig);
 
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr);
 
 
 /**

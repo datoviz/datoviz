@@ -123,7 +123,7 @@ int test_scene_2(TstSuite* suite)
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
 
     // Upload the data.
-    const uint32_t n = 10000;
+    const uint32_t n = 100000;
 
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
@@ -150,18 +150,22 @@ int test_scene_2(TstSuite* suite)
     DvzPanel* panel_0 = dvz_panel(figure, 0, 0, WIDTH / 2, HEIGHT);
     DvzPanel* panel_1 = dvz_panel(figure, WIDTH / 2, 0, WIDTH / 2, HEIGHT);
 
-    // Add the visual to the panel.
-    dvz_panel_visual(panel_0, pixel);
-
-    // Second visual.
-    DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
-    dvz_pixel_position(pixel_1, 0, n, pos, 0);
-    dvz_pixel_color(pixel_1, 0, n, color, 0);
-    dvz_panel_visual(panel_1, pixel_1);
+    // Transforms.
 
     // Panzoom.
     DvzPanzoom* pz = dvz_panel_panzoom(app, panel_0);
     ANN(pz);
+
+    dvz_panel_transform(panel_1, panel_0->transform);
+
+    // Second visual.
+    DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
+    dvz_pixel_position(pixel_1, 0, n / 10, pos, 0);
+    dvz_pixel_color(pixel_1, 0, n / 10, color, 0);
+
+    // Add the visuals to the panel.
+    dvz_panel_visual(panel_0, pixel);
+    dvz_panel_visual(panel_1, pixel_1);
 
     // Run the app.
     dvz_scene_run(scene, app, N_FRAMES);

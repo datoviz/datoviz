@@ -156,7 +156,7 @@
 #define INIT(t, n) t n = {0};
 #endif
 
-#define IF_VERBOSE if (getenv("DVZ_VERBOSE") != NULL)
+#define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0))
 
 
 

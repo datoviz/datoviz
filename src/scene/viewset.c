@@ -238,7 +238,7 @@ void dvz_view_add(
     // MVP.
     if (transform == NULL)
     {
-        log_debug("creating default transform");
+        log_debug("no transform set when adding the view, creating a default one");
         transform = dvz_transform(visual->rqr);
     }
     ANN(transform);

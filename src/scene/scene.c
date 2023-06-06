@@ -212,9 +212,6 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h)
     // Create a view.
     panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){w, h});
 
-    // Create a transform.
-    panel->transform = dvz_transform(fig->scene->rqr);
-
     // Append the figure to the scene's figures.
     dvz_list_append(fig->panels, (DvzListItem){.p = (void*)panel});
 
@@ -227,6 +224,15 @@ DvzPanel* dvz_panel_default(DvzFigure* fig)
 {
     ANN(fig);
     return dvz_panel(fig, 0, 0, fig->shape[0], fig->shape[1]);
+}
+
+
+
+void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr)
+{
+    ANN(panel);
+    ANN(tr);
+    panel->transform = tr;
 }
 
 
@@ -295,9 +301,16 @@ DvzPanel* dvz_panel_at(DvzFigure* fig, vec2 pos)
 void dvz_panel_destroy(DvzPanel* panel)
 {
     ANN(panel);
+    log_warn("destroy panel");
 
     // Destroy the transform.
-    dvz_transform_destroy(panel->transform);
+    if (panel->transform != NULL && panel->transform_to_destroy)
+    {
+        // NOTE: double destruction causes segfault if a transform is shared between different
+        // panels, the transform should be destroyed only once.
+        dvz_transform_destroy(panel->transform);
+        panel->transform = NULL;
+    }
 
     // Destroy the view.
     dvz_view_destroy(panel->view);
@@ -328,9 +341,16 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
 
-    // // Callbacks.
-    // dvz_app_onmouse(app, _panel_mouse, panel);
-    // dvz_app_onresize(app, _panel_resize, panel);
+    // If a panel transform has not been already set, we create a MVP transform that will be bound
+    // to the PanZoom in the mouse callback set by dvz_scene_run().
+    if (panel->transform == NULL)
+    {
+        log_trace(
+            "creating a new panel transform when setting a panzoom on the panel as no transform "
+            "has been manually set to the panel so far");
+        panel->transform = dvz_transform(panel->figure->scene->rqr);
+        panel->transform_to_destroy = true;
+    }
 
     return panel->panzoom;
 }
@@ -341,6 +361,7 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
 {
     ANN(app);
     ANN(panel);
+    log_error("arcball not implemented yet");
     // TODO: camera
     return NULL;
 }
@@ -365,6 +386,8 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
     }
 
     // By default, add all items, using a single instance, and the panel's transform.
+    if (panel->transform == NULL)
+        log_debug("no panel transform set when adding the view, creating a default one");
     dvz_view_add(view, visual, 0, visual->item_count, 0, 1, panel->transform, 0);
 }
 
@@ -407,7 +430,6 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             log_warn("no transform set in panel");
             return;
         }
-
         // Pass the mouse event to the panzoom object.
         if (dvz_panzoom_mouse(pz, mev))
         {
