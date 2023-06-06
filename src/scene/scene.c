@@ -301,7 +301,7 @@ DvzPanel* dvz_panel_at(DvzFigure* fig, vec2 pos)
 void dvz_panel_destroy(DvzPanel* panel)
 {
     ANN(panel);
-    log_warn("destroy panel");
+    log_trace("destroy panel");
 
     // Destroy the transform.
     if (panel->transform != NULL && panel->transform_to_destroy)

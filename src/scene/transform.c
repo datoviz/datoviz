@@ -72,7 +72,7 @@ DvzMVP* dvz_transform_mvp(DvzTransform* tr)
 void dvz_transform_destroy(DvzTransform* tr)
 {
     ANN(tr);
-    log_warn("destroy transform");
+    log_trace("destroy transform");
     if (tr->dual.array != NULL)
         dvz_dual_destroy(&tr->dual);
     FREE(tr);

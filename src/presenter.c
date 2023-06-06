@@ -298,22 +298,6 @@ static void _delete_callback(DvzClient* client, DvzClientEvent ev)
 }
 
 
-// static void _gui_destroy_callback(DvzClient* client, DvzClientEvent ev)
-// {
-//     // This is called in dvz_client_destroy(), callback to the DVZ_CLIENT_EVENT_DESTROY event.
-//     ANN(client);
-
-//     DvzPresenter* prt = (DvzPresenter*)ev.user_data;
-//     ANN(prt);
-
-//     // Destroy the GUI.
-//     if (prt->gui != NULL)
-//     {
-//         dvz_gui_destroy(prt->gui);
-//     }
-// }
-
-
 
 /*************************************************************************************************/
 /*  Callbacks                                                                                    */
@@ -426,9 +410,6 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     prt->client = client;
     prt->flags = flags;
 
-    // // NOTE: clear the client callbacks to request_delete as the presenter will provide its own.
-    // dvz_deq_callback_clear(client->deq, DVZ_CLIENT_EVENT_WINDOW_DELETE);
-
     // Register a REQUESTS callback which submits pending requests to the renderer.
     dvz_client_callback(
         client, DVZ_CLIENT_EVENT_REQUESTS, DVZ_CLIENT_CALLBACK_SYNC, _requester_callback, prt);
@@ -446,11 +427,6 @@ DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags)
     if (has_gui)
     {
         prt->gui = dvz_gui(rd->gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_GUI_FLAGS_NONE);
-
-        // // Destroy the GUI when the client is destroyed, *before* the backend (glfw) is
-        // destroyed. dvz_client_callback(
-        //     client, DVZ_CLIENT_EVENT_DESTROY, DVZ_CLIENT_CALLBACK_SYNC, _gui_destroy_callback,
-        //     prt);
     }
 
     // Mappings.
@@ -582,7 +558,6 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
                         .content.w.screen_width = window->width,
                         .content.w.screen_height = window->height,
                     });
-
         // Need to refill the command buffers.
         // Ensure we reset the refill flag to force reloading.
         dvz_recorder_set_dirty(recorder);
