@@ -51,7 +51,7 @@ int test_scene_1(TstSuite* suite)
     DvzScene* scene = dvz_scene(rqr);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);
@@ -120,7 +120,7 @@ int test_scene_2(TstSuite* suite)
     DvzScene* scene = dvz_scene(rqr);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_FPS);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Upload the data.
     const uint32_t n = 100000;
