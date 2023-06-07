@@ -15,6 +15,7 @@
 #include "../_enums.h"
 #include "../_input.h"
 #include "../_obj.h"
+#include "dual.h"
 #include "mvp.h"
 #include "viewport.h"
 
@@ -56,9 +57,10 @@ typedef struct DvzTransform DvzTransform;
 struct DvzView
 {
     DvzViewset* viewset; // reference to the parent viewset
-    vec2 offset, shape;  // in framebuffer pixels
-    float scale;         // scale (multiplied by the window's content scale)
-    DvzList* visuals;    // list of visuals in the view
+    DvzDual dual;
+    vec2 offset, shape; // in framebuffer pixels
+    float scale;        // scale (multiplied by the window's content scale)
+    DvzList* visuals;   // list of visuals in the view
 };
 
 

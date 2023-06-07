@@ -66,12 +66,14 @@ int test_scene_1(TstSuite* suite)
     DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
     ANN(pz);
 
-
-    // Upload the data.
-    const uint32_t n = 10000;
-
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
+    const uint32_t n = 10000;
+    dvz_pixel_create(pixel, n);
+
+    // Add the visual to the panel AFTER it has been created.
+    dvz_panel_visual(panel, pixel);
+
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -91,8 +93,8 @@ int test_scene_1(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Add the visual to the panel.
-    dvz_panel_visual(panel, pixel);
+    // Important: upload the data to the GPU.
+    dvz_visual_update(pixel);
 
 
     // Run the app.
@@ -124,11 +126,11 @@ int test_scene_2(TstSuite* suite)
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
 
-    // Upload the data.
-    const uint32_t n = 100000;
-
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
+    const uint32_t n = 100000;
+    dvz_pixel_create(pixel, n);
+
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -148,6 +150,10 @@ int test_scene_2(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+    // Important: upload the data to the GPU.
+    dvz_visual_update(pixel);
+
+
     // Create two panels.
     DvzPanel* panel_0 = dvz_panel(figure, 0, 0, WIDTH / 2, HEIGHT);
     DvzPanel* panel_1 = dvz_panel(figure, WIDTH / 2, 0, WIDTH / 2, HEIGHT);
@@ -162,8 +168,11 @@ int test_scene_2(TstSuite* suite)
 
     // Second visual.
     DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
+    dvz_pixel_create(pixel_1, n / 10);
     dvz_pixel_position(pixel_1, 0, n / 10, pos, 0);
     dvz_pixel_color(pixel_1, 0, n / 10, color, 0);
+    dvz_visual_update(pixel_1);
+
 
     // Add the visuals to the panel.
     dvz_panel_visual(panel_0, pixel);

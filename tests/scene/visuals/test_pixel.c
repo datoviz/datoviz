@@ -46,6 +46,7 @@ int test_pixel_1(TstSuite* suite)
     const uint32_t n = 10000;
 
     DvzVisual* pixel = dvz_pixel(rqr, 0);
+    dvz_pixel_create(pixel, n);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -65,15 +66,19 @@ int test_pixel_1(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+    // Important: upload the data to the GPU.
+    dvz_visual_update(pixel);
+
 
     // Manual setting of common bindings.
 
     // MVP.
-    dvz_visual_mvp(pixel, dvz_mvp_default());
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_visual_mvp(pixel, &mvp);
 
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_visual_viewport(pixel, viewport);
+    dvz_visual_viewport(pixel, &viewport);
 
 
     // Create a board.

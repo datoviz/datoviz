@@ -60,8 +60,11 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_create(visual, n, n);
 
     // Default uniform data.
-    dvz_visual_mvp(visual, dvz_mvp_default());
-    dvz_visual_viewport(visual, dvz_viewport_default(WIDTH, HEIGHT));
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_visual_mvp(visual, &mvp);
+
+    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    dvz_visual_viewport(visual, &viewport);
 
 
     // Vertex data.

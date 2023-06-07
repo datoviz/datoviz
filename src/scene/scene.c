@@ -13,6 +13,7 @@
 #include "request.h"
 #include "scene/app.h"
 #include "scene/arcball.h"
+#include "scene/baker.h"
 #include "scene/graphics.h"
 #include "scene/panzoom.h"
 #include "scene/transform.h"
@@ -372,6 +373,8 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
 void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 {
     ANN(panel);
+    ANN(visual);
+    ANN(visual->baker);
 
     DvzView* view = panel->view;
     ANN(view);
@@ -390,6 +393,9 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
         return;
     }
 
+    ANN(panel->transform);
+
+    // Add the visual to the view, and bind the common (shared) descriptors.
     dvz_view_add(view, visual, 0, visual->item_count, 0, 1, panel->transform, 0);
 }
 

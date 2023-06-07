@@ -13,6 +13,7 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/baker.h"
+#include "scene/dual.h"
 #include "scene/graphics.h"
 
 
@@ -235,6 +236,10 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int f
 
 
 
+/*************************************************************************************************/
+/*  Visual creation                                                                              */
+/*************************************************************************************************/
+
 void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
 {
     ANN(visual);
@@ -334,6 +339,12 @@ void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
 
     visual->item_count = item_count;
 
+    // NOTE: we declare the common bindings (mvp and viewport) as shared to prevent the baker from
+    // handling them. They will be handled by the panel in scene.c.
+    // TODO: use #define instead of hard-coded values here
+    dvz_baker_share_uniform(baker, 0);
+    dvz_baker_share_uniform(baker, 1);
+
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
     // NOTE: if indexed, item_count is the number of indices.
     uint32_t index_count = indexed ? item_count : 0;
@@ -342,20 +353,35 @@ void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
     // We now need to send the vertex/descriptor binding requests to the GPU.
 
     // Send the vertex binding commands.
+    DvzBakerVertex* bv = NULL;
     for (binding_idx = 0; binding_idx < binding_count; binding_idx++)
     {
+        bv = &baker->vertex_bindings[binding_idx];
+        if (bv->shared)
+        {
+            log_trace(
+                "skip binding of shared vertex binding #%d, it will be handled externally",
+                binding_idx);
+            continue;
+        }
         // TODO: dat offset?
-        dvz_bind_vertex(
-            rqr, graphics_id, binding_idx, baker->vertex_bindings[binding_idx].dual.dat, 0);
+        dvz_bind_vertex(rqr, graphics_id, binding_idx, bv->dual.dat, 0);
     }
 
     // Send the dat bindings commands.
+    DvzBakerDescriptor* bd = NULL;
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
-        dvz_bind_dat(rqr, graphics_id, slot_idx, baker->descriptors[slot_idx].dual.dat, 0);
+        bd = &baker->descriptors[slot_idx];
+        if (bd->shared)
+        {
+            log_trace(
+                "skip binding of shared descriptor binding #%d, it will be handled externally",
+                slot_idx);
+            continue;
+        }
+        dvz_bind_dat(rqr, graphics_id, slot_idx, bd->dual.dat, 0);
     }
-
-    // TODO: same for tex
 
     dvz_obj_created(&visual->obj);
 }
@@ -364,9 +390,10 @@ void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
 
 /*************************************************************************************************/
 /*  Visual common bindings                                                                       */
+/*  NOTE: only for tests. Otherwise will use scene API with transforms and viewsets.             */
 /*************************************************************************************************/
 
-void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
+void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
 {
     // NOTE: the data is immediately copied into the visual's baker's dual
 
@@ -379,13 +406,14 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp)
         return;
     }
 
-    dvz_baker_uniform(visual->baker, 0, sizeof(DvzMVP), &mvp);
-    dvz_baker_update(visual->baker);
+    DvzDual dual = dvz_dual_dat(visual->rqr, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
+    dvz_upload_dat(visual->rqr, dual.dat, 0, sizeof(DvzMVP), mvp);
+    dvz_bind_dat(visual->rqr, visual->graphics_id, 0, dual.dat, 0);
 }
 
 
 
-void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
+void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
 {
     // NOTE: the data is immediately copied into the visual's baker's dual
 
@@ -398,8 +426,9 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport)
         return;
     }
 
-    dvz_baker_uniform(visual->baker, 1, sizeof(DvzViewport), &viewport);
-    dvz_baker_update(visual->baker);
+    DvzDual dual = dvz_dual_dat(visual->rqr, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
+    dvz_upload_dat(visual->rqr, dual.dat, 0, sizeof(DvzViewport), viewport);
+    dvz_bind_dat(visual->rqr, visual->graphics_id, 1, dual.dat, 0);
 }
 
 

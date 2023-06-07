@@ -409,10 +409,10 @@ int test_app_pixel(TstSuite* suite)
     DvzApp* app = dvz_app();
     DvzRequester* rqr = dvz_app_requester(app);
 
-    // Upload the data.
-    const uint32_t n = 10000;
-
+    // Create the visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
+    const uint32_t n = 10000;
+    dvz_pixel_create(pixel, n);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -432,15 +432,19 @@ int test_app_pixel(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+    // Important: upload the data to the GPU.
+    dvz_visual_update(pixel);
+
 
     // Manual setting of common bindings.
 
     // MVP.
-    dvz_visual_mvp(pixel, dvz_mvp_default());
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_visual_mvp(pixel, &mvp);
 
     // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_visual_viewport(pixel, viewport);
+    dvz_visual_viewport(pixel, &viewport);
 
 
     // Create a board.
@@ -514,9 +518,10 @@ int test_app_viewset(TstSuite* suite)
 
 
     // Upload the data.
-    const uint32_t n = 10000;
-
     DvzVisual* pixel = dvz_pixel(rqr, 0);
+    const uint32_t n = 10000;
+    dvz_pixel_create(pixel, n);
+
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -536,6 +541,10 @@ int test_app_viewset(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
+    // Important: upload the data to the GPU.
+    dvz_visual_update(pixel);
+
+
     // MVP transform.
     DvzTransform* tr = dvz_transform(rqr);
 
@@ -547,13 +556,16 @@ int test_app_viewset(TstSuite* suite)
 
     // Panzoom callback.
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    // PanzoomStruct ps = {.mvp_id = tr->dual.dat, .app = app, .pz = pz, .wrapper = &wrapper};
     PanzoomStruct ps = {
         .app = app,
         .pz = pz,
         .tr = tr,
     };
     dvz_app_onmouse(app, _viewset_mouse, &ps);
-    dvz_app_onresize(app, _scatter_resize, pz);
+
+    // TODO
+    // dvz_app_onresize(app, _scatter_resize, &ps);
 
     // Run the app.
     dvz_app_run(app, N_FRAMES);

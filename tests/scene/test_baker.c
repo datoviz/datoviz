@@ -197,7 +197,8 @@ int test_baker_2(TstSuite* suite)
     DvzDual dual = dvz_dual_dat(rqr, 1, 0);
 
     // Use it as baker's dat.
-    dvz_baker_share_uniform(baker, 0, &dual);
+    dvz_baker_share_uniform(baker, 0);
+    baker->descriptors[0].dual = dual;
 
     // Create the baker.
     dvz_baker_create(baker, 0, 1);

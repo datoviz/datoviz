@@ -168,12 +168,12 @@ DVZ_EXPORT void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32
 
 // NOTE: only used for testing, otherwise the viewset takes care of this (transform & view)
 
-DVZ_EXPORT void dvz_visual_mvp(DvzVisual* visual, DvzMVP mvp); // update the MVP
+DVZ_EXPORT void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp); // update the MVP
 
 
 
 DVZ_EXPORT void
-dvz_visual_viewport(DvzVisual* visual, DvzViewport viewport); // update the viewport
+dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport); // update the viewport
 
 
 

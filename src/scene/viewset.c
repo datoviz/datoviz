@@ -209,6 +209,11 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
     DvzView* view = (DvzView*)calloc(1, sizeof(DvzView));
     view->viewset = viewset;
     view->visuals = dvz_list();
+
+    // NOTE: the view holds the DvzViewport dual.
+    log_trace("create view dual");
+    view->dual = dvz_dual_dat(viewset->rqr, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
+
     dvz_view_resize(view, offset, shape);
     dvz_list_append(viewset->views, (DvzListItem){.p = view});
     return view;
@@ -247,9 +252,10 @@ void dvz_view_add(
     // NOTE: bind the transform's dual to slot idx 0 (=MVP)
     dvz_bind_dat(visual->rqr, visual->graphics_id, 0, transform->dual.dat, 0);
 
-    // Viewport.
-    DvzViewport viewport = dvz_viewport_default(view->shape[0], view->shape[1]);
-    dvz_visual_viewport(visual, viewport);
+    // // Viewport.
+    // DvzViewport viewport = dvz_viewport_default(view->shape[0], view->shape[1]);
+    // dvz_visual_viewport(visual, viewport);
+    dvz_bind_dat(visual->rqr, visual->graphics_id, 1, view->dual.dat, 0);
 }
 
 
@@ -292,6 +298,12 @@ void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape)
     ANN(view);
     glm_vec2_copy(offset, view->offset);
     glm_vec2_copy(shape, view->shape);
+
+    // Update the DvzViewport structure.
+    // TODO: viewport flags
+    DvzViewport viewport = dvz_viewport(offset, shape, 0);
+    dvz_dual_data(&view->dual, 0, 1, &viewport);
+    dvz_dual_update(&view->dual);
 }
 
 
