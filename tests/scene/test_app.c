@@ -412,7 +412,7 @@ int test_app_pixel(TstSuite* suite)
     // Create the visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
     const uint32_t n = 10000;
-    dvz_pixel_create(pixel, n);
+    dvz_pixel_alloc(pixel, n);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -520,7 +520,7 @@ int test_app_viewset(TstSuite* suite)
     // Upload the data.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
     const uint32_t n = 10000;
-    dvz_pixel_create(pixel, n);
+    dvz_pixel_alloc(pixel, n);
 
 
     // Position.

@@ -57,7 +57,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_dat(visual, 1, sizeof(DvzViewport));
 
     // Create the visual.
-    dvz_visual_create(visual, n, n);
+    dvz_visual_alloc(visual, n, n);
 
     // Default uniform data.
     DvzMVP mvp = dvz_mvp_default();

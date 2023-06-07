@@ -69,10 +69,7 @@ int test_scene_1(TstSuite* suite)
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
     const uint32_t n = 10000;
-    dvz_pixel_create(pixel, n);
-
-    // Add the visual to the panel AFTER it has been created.
-    dvz_panel_visual(panel, pixel);
+    dvz_pixel_alloc(pixel, n);
 
 
     // Position.
@@ -93,8 +90,9 @@ int test_scene_1(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(pixel);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(panel, pixel);
 
 
     // Run the app.
@@ -129,7 +127,7 @@ int test_scene_2(TstSuite* suite)
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(rqr, 0);
     const uint32_t n = 100000;
-    dvz_pixel_create(pixel, n);
+    dvz_pixel_alloc(pixel, n);
 
 
     // Position.
@@ -150,9 +148,6 @@ int test_scene_2(TstSuite* suite)
     }
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(pixel);
-
 
     // Create two panels.
     DvzPanel* panel_0 = dvz_panel(figure, 0, 0, WIDTH / 2, HEIGHT);
@@ -168,13 +163,12 @@ int test_scene_2(TstSuite* suite)
 
     // Second visual.
     DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
-    dvz_pixel_create(pixel_1, n / 10);
+    dvz_pixel_alloc(pixel_1, n / 10);
     dvz_pixel_position(pixel_1, 0, n / 10, pos, 0);
     dvz_pixel_color(pixel_1, 0, n / 10, color, 0);
-    dvz_visual_update(pixel_1);
 
 
-    // Add the visuals to the panel.
+    // Add the visuals to the panel AFTER setting the visuals' data.
     dvz_panel_visual(panel_0, pixel);
     dvz_panel_visual(panel_1, pixel_1);
 

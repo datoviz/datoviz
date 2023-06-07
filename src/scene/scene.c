@@ -397,6 +397,9 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 
     // Add the visual to the view, and bind the common (shared) descriptors.
     dvz_view_add(view, visual, 0, visual->item_count, 0, 1, panel->transform, 0);
+
+    // Send the buffer upload requests.
+    dvz_visual_update(visual);
 }
 
 

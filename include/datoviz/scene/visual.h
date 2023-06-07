@@ -158,7 +158,7 @@ DVZ_EXPORT void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims 
 
 
 
-DVZ_EXPORT void dvz_visual_create(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
+DVZ_EXPORT void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
 
 
 

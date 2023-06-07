@@ -46,7 +46,7 @@ int test_pixel_1(TstSuite* suite)
     const uint32_t n = 10000;
 
     DvzVisual* pixel = dvz_pixel(rqr, 0);
-    dvz_pixel_create(pixel, n);
+    dvz_pixel_alloc(pixel, n);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));

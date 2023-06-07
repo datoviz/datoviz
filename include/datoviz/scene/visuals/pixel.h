@@ -91,7 +91,7 @@ dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values,
 /**
  *
  */
-DVZ_EXPORT void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count);
+DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count);
 
 
 

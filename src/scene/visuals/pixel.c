@@ -34,7 +34,7 @@
 //     if (visual->item_count == 0)
 //     {
 //         log_debug("automatic creation of visual");
-//         dvz_pixel_create(visual, first + count);
+//         dvz_pixel_alloc(visual, first + count);
 //     }
 //     ASSERT(visual->item_count > 0);
 // }
@@ -68,16 +68,16 @@ DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
 
 
 
-void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
+void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count)
 {
     ANN(pixel);
-    log_debug("creating pixel visual");
+    log_debug("allocating the pixel visual");
 
     DvzRequester* rqr = pixel->rqr;
     ANN(rqr);
 
     // Create the visual.
-    dvz_visual_create(pixel, item_count, item_count);
+    dvz_visual_alloc(pixel, item_count, item_count);
 }
 
 
