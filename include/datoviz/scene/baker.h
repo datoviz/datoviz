@@ -56,6 +56,7 @@ struct DvzBakerVertex
     uint32_t binding_idx;
     DvzSize stride;
     DvzDual dual;
+    bool shared; // if a dual is shared, it won't be bound upon baker creation
 };
 
 struct DvzBakerDescriptor
@@ -63,6 +64,7 @@ struct DvzBakerDescriptor
     uint32_t slot_idx;
     DvzSize item_size;
     DvzDual dual;
+    bool shared; // if a dual is shared, it won't be bound upon baker creation
 };
 
 
@@ -81,7 +83,8 @@ struct DvzBaker
     DvzBakerVertex vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
     DvzBakerDescriptor descriptors[DVZ_MAX_BINDINGS];
 
-    DvzDual index;    // index buffer
+    DvzDual index; // index buffer
+    bool index_shared;
     DvzDual indirect; // indirect buffer
 };
 
@@ -152,15 +155,15 @@ DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize
 
 
 
-DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual);
+DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx); //, DvzDual* dual);
 
 
 
-DVZ_EXPORT void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual);
+DVZ_EXPORT void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx); //, DvzDual* dual);
 
 
 
-DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker, DvzDual* dual);
+DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker); //, DvzDual* dual);
 
 
 

@@ -52,12 +52,9 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         ", create dat and array",
         binding_idx, vertex_count, bv->stride);
 
-    if (bv->dual.array != NULL)
+    if (bv->shared)
     {
-        log_trace(
-            "skipping creation of dat for vertex binding #%d as a shared dual has already been "
-            "set",
-            binding_idx);
+        log_trace("skipping creation of shared dat for vertex binding #%d", binding_idx);
         return;
     }
     bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride, 0);
@@ -73,10 +70,9 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
     ASSERT(index_count > 0);
 
     log_trace("create index buffer with %d vertices, create dat and array", index_count);
-    if (baker->index.array != NULL)
+    if (baker->index_shared)
     {
-        log_trace(
-            "skipping creation of dat for index buffer as a shared dual has already been set");
+        log_trace("skipping creation of dat for shared index buffer");
         return;
     }
     baker->index = dvz_dual_index(baker->rqr, index_count, 0);
@@ -106,13 +102,13 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
     DvzBakerDescriptor* bd = &baker->descriptors[slot_idx];
     ANN(bd);
 
-    if (bd->dual.array != NULL)
+    if (bd->shared)
     {
-        log_trace(
-            "skipping creation of dat for descriptor #%d as a shared dual has already been set",
-            slot_idx);
+        log_trace("skipping creation of dat for shared descriptor #%d", slot_idx);
         return;
     }
+
+    log_trace("create baker dual dat");
     bd->dual = dvz_dual_dat(baker->rqr, bd->item_size, DVZ_DAT_FLAGS_MAPPABLE);
     // NOTE; mark the dual as needing to be destroyed by the library
     bd->dual.need_destroy = true;
@@ -171,43 +167,46 @@ void dvz_baker_destroy(DvzBaker* baker)
 /*  Baker sharing                                                                                */
 /*************************************************************************************************/
 
-void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual)
+void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
 {
     ANN(baker);
-    ANN(dual);
+    // ANN(dual);
     ASSERT(binding_idx < baker->binding_count);
 
     DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
     ANN(bv);
 
     log_trace("set shared dual for vertex binding #%d", binding_idx);
-    bv->dual = *dual;
+    // bv->dual = *dual;
+    bv->shared = true;
 }
 
 
 
-void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx, DvzDual* dual)
+void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
 {
     ANN(baker);
-    ANN(dual);
+    // ANN(dual);
     ASSERT(binding_idx < baker->slot_count);
 
     DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
     ANN(bd);
 
     log_trace("set shared dual for descriptor binding #%d", binding_idx);
-    bd->dual = *dual;
+    // bd->dual = *dual;
+    bd->shared = true;
 }
 
 
 
-void dvz_baker_share_index(DvzBaker* baker, DvzDual* dual)
+void dvz_baker_share_index(DvzBaker* baker) //, DvzDual* dual)
 {
     ANN(baker);
-    ANN(dual);
+    // ANN(dual);
 
     log_trace("set shared dual for index buffer");
-    baker->index = *dual;
+    // baker->index = *dual;
+    baker->index_shared = true;
 }
 
 
@@ -434,14 +433,20 @@ void dvz_baker_update(DvzBaker* baker)
     ANN(baker);
 
     // Update the vertex bindings duals.
+    DvzBakerVertex* bv = NULL;
     for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
     {
-        dvz_dual_update(&baker->vertex_bindings[binding_idx].dual);
+        bv = &baker->vertex_bindings[binding_idx];
+        if (!bv->shared)
+            dvz_dual_update(&bv->dual);
     }
 
     // Update the descriptor duals.
+    DvzBakerDescriptor* bd = NULL;
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
-        dvz_dual_update(&baker->descriptors[slot_idx].dual);
+        bd = &baker->descriptors[slot_idx];
+        if (!bd->shared)
+            dvz_dual_update(&bd->dual);
     }
 }
