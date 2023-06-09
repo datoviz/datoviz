@@ -41,6 +41,7 @@ struct DvzPointVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
+    float size;  /* size */
 };
 
 
@@ -71,6 +72,14 @@ dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* value
  */
 DVZ_EXPORT void
 dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, int flags);
 
 
 

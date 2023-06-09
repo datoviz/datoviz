@@ -74,7 +74,6 @@ void dvz_segment_position(
     DvzVisual* segment, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(segment);
-    // _auto_create(segment, first, count);
     dvz_visual_data(segment, 0, first, count, (void*)values);
 }
 
@@ -84,6 +83,5 @@ void dvz_segment_color(
     DvzVisual* segment, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(segment);
-    // _auto_create(segment, first, count);
     dvz_visual_data(segment, 1, first, count, (void*)values);
 }

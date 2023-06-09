@@ -73,7 +73,6 @@ void dvz_image_alloc(DvzVisual* image, uint32_t item_count)
 void dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(image);
-    // _auto_create(image, first, count);
     dvz_visual_data(image, 0, first, count, (void*)values);
 }
 
@@ -82,6 +81,5 @@ void dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec3* 
 void dvz_image_color(DvzVisual* image, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(image);
-    // _auto_create(image, first, count);
     dvz_visual_data(image, 1, first, count, (void*)values);
 }

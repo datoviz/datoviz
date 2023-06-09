@@ -73,7 +73,6 @@ void dvz_mesh_alloc(DvzVisual* mesh, uint32_t item_count)
 void dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(mesh);
-    // _auto_create(mesh, first, count);
     dvz_visual_data(mesh, 0, first, count, (void*)values);
 }
 
@@ -82,6 +81,5 @@ void dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* va
 void dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(mesh);
-    // _auto_create(mesh, first, count);
     dvz_visual_data(mesh, 1, first, count, (void*)values);
 }

@@ -41,11 +41,12 @@ DvzVisual* dvz_point(DvzRequester* rqr, int flags)
     ANN(point);
 
     // Visual shaders.
-    dvz_visual_shader(point, "graphics_basic");
+    dvz_visual_shader(point, "graphics_point");
 
     // Vertex attributes.
     dvz_visual_attr(point, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
     dvz_visual_attr(point, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(point, 2, DVZ_FORMAT_R32_SFLOAT, 0);       // size
 
     // Uniforms.
     dvz_visual_dat(point, 0, sizeof(DvzMVP));
@@ -73,7 +74,6 @@ void dvz_point_alloc(DvzVisual* point, uint32_t item_count)
 void dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(point);
-    // _auto_create(point, first, count);
     dvz_visual_data(point, 0, first, count, (void*)values);
 }
 
@@ -82,6 +82,12 @@ void dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* 
 void dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(point);
-    // _auto_create(point, first, count);
     dvz_visual_data(point, 1, first, count, (void*)values);
+}
+
+
+void dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(point);
+    dvz_visual_data(point, 2, first, count, (void*)values);
 }

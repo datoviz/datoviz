@@ -66,6 +66,14 @@ int test_point_1(TstSuite* suite)
     }
     dvz_point_color(point, 0, n, color, 0);
 
+    // Size.
+    float* size = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size[i] = 1 + 49 * dvz_rand_float();
+    }
+    dvz_point_size(point, 0, n, size, 0);
+
     // Important: upload the data to the GPU.
     dvz_visual_update(point);
 
@@ -100,5 +108,6 @@ int test_point_1(TstSuite* suite)
     dvz_requester_destroy(rqr);
     FREE(pos);
     FREE(color);
+    FREE(size);
     return 0;
 }
