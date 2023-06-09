@@ -25,6 +25,7 @@
 #include "scene/test_scene.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
+#include "scene/visuals/test_basic.h"
 #include "scene/visuals/test_image.h"
 #include "scene/visuals/test_mesh.h"
 #include "scene/visuals/test_pixel.h"
@@ -239,6 +240,7 @@ int dvz_run_tests(const char* match)
     TEST(test_viewset_1)
     TEST(test_viewset_mouse)
 
+    TEST(test_basic_1)
     TEST(test_pixel_1)
     TEST(test_point_1)
     TEST(test_segment_1)

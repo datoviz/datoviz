@@ -586,6 +586,7 @@ set(sources
     "src/scene/transform.c"
 
     # Visuals
+    "src/scene/visuals/basic.c"
     "src/scene/visuals/pixel.c"
     "src/scene/visuals/point.c"
     "src/scene/visuals/segment.c"
@@ -676,6 +677,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_viewset.c"
 
         # Visuals
+        "tests/scene/visuals/test_basic.c"
         "tests/scene/visuals/test_pixel.c"
         "tests/scene/visuals/test_point.c"
         "tests/scene/visuals/test_segment.c"

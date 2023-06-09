@@ -22,9 +22,6 @@ cdef extern from "<datoviz/scene/app.h>":
     # ctypedef struct DvzVisual:
     #     pass
 
-    # ctypedef struct DvzInstance:
-    #     pass
-
     # ctypedef struct DvzView:
     #     pass
 
