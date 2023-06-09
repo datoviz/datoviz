@@ -20,8 +20,8 @@ void main()
 {
     gl_Position = transform(pos);
 
-    // out_pos = ((mvp.model * vec4(pos, 1.0))).xyz;
-    // out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
+    out_pos = ((mvp.model * vec4(pos, 1.0))).xyz;
+    out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
 
     // out_uv = uv;
     // out_clip = dot(vec4(pos, 1.0), params.clip_coefs);

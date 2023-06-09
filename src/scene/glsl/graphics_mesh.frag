@@ -28,19 +28,19 @@ void main()
     // if (in_clip < -eps)
     //     discard;
 
-    // vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
-    // vec4 lpar;
-    // vec3 lpos;
-    // vec3 light_color = vec3(1); // TODO
-    // float diff, spec;
+    vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
+    vec4 lpar;
+    vec3 lpos;
+    vec3 light_color = vec3(1); // TODO
+    float diff, spec;
 
-    // normal = normalize(in_normal);
-    // out_color = vec4(0, 0, 0, 1);
-    // diffuse = vec3(0);
-    // specular = vec3(0);
+    normal = normalize(in_normal);
+    out_color = vec4(0, 0, 0, 1);
+    diffuse = vec3(0);
+    specular = vec3(0);
 
-    // // Color.
-    // color = in_color;
+    // Color.
+    color = in_color.xyz;
     // if (in_uv.y >= 0)
     // {
     //     // color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
@@ -49,36 +49,36 @@ void main()
     //     // color += params.tex_coefs.w * texture(tex_3, in_uv).xyz;
     // }
 
-    // // Light position and params.
-    // for (int i = 0; i < 3; i++)
-    // {
-    //     lpos = params.lights_pos_0[i].xyz;
-    //     lpar = params.lights_params_0[i];
-    //     if (length(lpar) == 0)
-    //         break;
+    // Light position and params.
+    for (int i = 0; i < 3; i++)
+    {
+        lpos = params.lights_pos_0[i].xyz;
+        lpar = params.lights_params_0[i];
+        if (length(lpar) == 0)
+            break;
 
-    //     // Light direction.
-    //     light_dir = normalize(lpos - in_pos);
+        // Light direction.
+        light_dir = normalize(lpos - in_pos);
 
-    //     // Ambient component.
-    //     ambient = light_color;
+        // Ambient component.
+        ambient = light_color;
 
-    //     // Diffuse component.
-    //     // HACK: normals on both faces
-    //     diff = max(dot(light_dir, normal), 0.0);
-    //     diff = max(diff, max(dot(light_dir, -normal), 0.0));
-    //     diffuse = diff * light_color;
+        // Diffuse component.
+        // HACK: normals on both faces
+        diff = max(dot(light_dir, normal), 0.0);
+        diff = max(diff, max(dot(light_dir, -normal), 0.0));
+        diffuse = diff * light_color;
 
-    //     // Specular component.
-    //     view_dir = normalize(-mvp.view[3].xyz - in_pos);
-    //     reflect_dir = reflect(-light_dir, normal);
-    //     // TODO: customizable specular exponent
-    //     spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-    //     specular = spec * light_color;
+        // Specular component.
+        view_dir = normalize(-mvp.view[3].xyz - in_pos);
+        reflect_dir = reflect(-light_dir, normal);
+        // TODO: customizable specular exponent
+        spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
+        specular = spec * light_color;
 
-    //     // Total color.
-    //     out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-    // }
+        // Total color.
+        out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+    }
 
-    // out_color.a = in_alpha;
+    out_color.a = 1.0; // in_alpha;
 }
