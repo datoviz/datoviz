@@ -32,17 +32,29 @@ static DvzSize get_attr_size(DvzFormat format)
 {
     switch (format)
     {
-    case DVZ_FORMAT_R32G32B32_SFLOAT:
-        return sizeof(vec3);
-    case DVZ_FORMAT_R8G8B8A8_UNORM:
-        return sizeof(cvec4);
     case DVZ_FORMAT_R32_SFLOAT:
         return sizeof(float);
-        // TODO: other formats
+
+    case DVZ_FORMAT_R32G32_SFLOAT:
+        return sizeof(vec2);
+
+    case DVZ_FORMAT_R32G32B32_SFLOAT:
+        return sizeof(vec3);
+
+    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
+        return sizeof(vec4);
+
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+        return sizeof(cvec4);
+
+    case DVZ_FORMAT_R8_UNORM:
+        return sizeof(uint8_t);
+
     default:
         log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
         return 0;
     }
+    // TODO: other formats
     return 0;
 }
 
@@ -108,6 +120,17 @@ void dvz_visual_destroy(DvzVisual* visual)
 /*************************************************************************************************/
 /*  Visual fixed pipeline                                                                        */
 /*************************************************************************************************/
+
+void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_primitive(rqr, visual->graphics_id, primitive);
+}
+
+
 
 void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type)
 {
@@ -411,6 +434,12 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     uint32_t index_count = indexed ? item_count : 0;
     dvz_baker_create(baker, index_count, vertex_count);
 
+    // Bind the index buffer.
+    if (indexed)
+    {
+        dvz_bind_index(rqr, graphics_id, baker->index.dat, 0);
+    }
+
     // We now need to send the vertex/descriptor binding requests to the GPU.
 
     // Send the vertex binding commands.
@@ -551,6 +580,18 @@ void dvz_visual_quads(
     ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
 
     dvz_baker_quads(baker, attr_idx, quad_size, count, positions);
+}
+
+
+
+void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data)
+{
+    ANN(visual);
+
+    DvzBaker* baker = visual->baker;
+    ANN(baker);
+
+    dvz_baker_index(baker, first, count, data);
 }
 
 

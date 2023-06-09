@@ -142,6 +142,9 @@ DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
 /*  Visual fixed pipeline                                                                        */
 /*************************************************************************************************/
 
+void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive);
+
+
 DVZ_EXPORT void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
 
 
@@ -226,6 +229,11 @@ dvz_visual_data(DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t c
 DVZ_EXPORT void dvz_visual_quads(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec2 quad_size,
     vec2* positions);
+
+
+
+DVZ_EXPORT void
+dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
 
 
 
