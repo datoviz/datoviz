@@ -151,6 +151,10 @@ DVZ_EXPORT void dvz_baker_quads(
 
 
 
+DVZ_EXPORT void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* data);
+
+
+
 DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data);
 
 

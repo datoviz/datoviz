@@ -352,6 +352,38 @@ void dvz_baker_repeat(
 
 
 
+void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* data)
+{
+    ANN(baker);
+    ASSERT(count > 0);
+    ANN(data);
+
+    DvzDual* dual = &baker->index;
+    if (dual == NULL)
+    {
+        log_error("dual is null, please set up an index buffer");
+        return;
+    }
+    ANN(dual);
+
+    if (dual->array == NULL)
+    {
+        log_error("index dual's array is null");
+        return;
+    }
+    ANN(dual->array);
+
+    if (first + count > dual->array->item_count)
+    {
+        log_error("baker array is too small to hold the specified data");
+        return;
+    }
+
+    dvz_dual_data(dual, first, count, (void*)data);
+}
+
+
+
 void dvz_baker_quads(
     DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions)
 {
@@ -440,6 +472,10 @@ void dvz_baker_update(DvzBaker* baker)
         if (!bv->shared)
             dvz_dual_update(&bv->dual);
     }
+
+    // Update the index dual.
+    if (baker->index.array != NULL)
+        dvz_dual_update(&baker->index);
 
     // Update the descriptor duals.
     DvzBakerDescriptor* bd = NULL;
