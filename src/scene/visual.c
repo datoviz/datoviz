@@ -36,6 +36,8 @@ static DvzSize get_attr_size(DvzFormat format)
         return sizeof(vec3);
     case DVZ_FORMAT_R8G8B8A8_UNORM:
         return sizeof(cvec4);
+    case DVZ_FORMAT_R32_SFLOAT:
+        return sizeof(float);
         // TODO: other formats
     default:
         log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
@@ -99,6 +101,65 @@ void dvz_visual_destroy(DvzVisual* visual)
         FREE(visual->group_sizes);
     }
     FREE(visual);
+}
+
+
+
+/*************************************************************************************************/
+/*  Visual fixed pipeline                                                                        */
+/*************************************************************************************************/
+
+void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_blend(rqr, visual->graphics_id, blend_type);
+}
+
+
+
+void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_depth(rqr, visual->graphics_id, depth_test);
+}
+
+
+
+void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_polygon(rqr, visual->graphics_id, polygon_mode);
+}
+
+
+
+void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_cull(rqr, visual->graphics_id, cull_mode);
+}
+
+
+
+void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face)
+{
+    ANN(visual);
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    dvz_set_front(rqr, visual->graphics_id, front_face);
 }
 
 

@@ -94,6 +94,7 @@ struct DvzVisual
     DvzObject obj;
     DvzRequester* rqr;
     int flags;
+    void* params; // may be used for visual-specific data
 
     DvzBaker* baker;
     DvzId graphics_id;
@@ -134,6 +135,30 @@ DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
 
 
 DVZ_EXPORT void dvz_visual_destroy(DvzVisual* visual);
+
+
+
+/*************************************************************************************************/
+/*  Visual fixed pipeline                                                                        */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
+
+
+
+DVZ_EXPORT void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test);
+
+
+
+DVZ_EXPORT void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode);
+
+
+
+DVZ_EXPORT void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode);
+
+
+
+DVZ_EXPORT void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face);
 
 
 
