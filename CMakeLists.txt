@@ -584,7 +584,13 @@ set(sources
     "src/scene/viewset.c"
     "src/scene/scene.c"
     "src/scene/transform.c"
+
+    # Visuals
     "src/scene/visuals/pixel.c"
+    "src/scene/visuals/point.c"
+    "src/scene/visuals/segment.c"
+    "src/scene/visuals/mesh.c"
+    "src/scene/visuals/image.c"
 
     ${external_sources}
 )
@@ -668,8 +674,16 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_app.c"
         "tests/scene/test_visual.c"
         "tests/scene/test_viewset.c"
-        "tests/scene/test_scene.c"
+
+        # Visuals
         "tests/scene/visuals/test_pixel.c"
+        "tests/scene/visuals/test_point.c"
+        "tests/scene/visuals/test_segment.c"
+        "tests/scene/visuals/test_mesh.c"
+        "tests/scene/visuals/test_image.c"
+
+        # Scene
+        "tests/scene/test_scene.c"
 
         "tests/test.c"
     )

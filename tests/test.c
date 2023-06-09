@@ -25,7 +25,11 @@
 #include "scene/test_scene.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
+#include "scene/visuals/test_image.h"
+#include "scene/visuals/test_mesh.h"
 #include "scene/visuals/test_pixel.h"
+#include "scene/visuals/test_point.h"
+#include "scene/visuals/test_segment.h"
 #include "test.h"
 #include "test_alloc.h"
 #include "test_board.h"
@@ -234,7 +238,12 @@ int dvz_run_tests(const char* match)
     TEST(test_visual_1)
     TEST(test_viewset_1)
     TEST(test_viewset_mouse)
+
     TEST(test_pixel_1)
+    TEST(test_point_1)
+    TEST(test_segment_1)
+    TEST(test_mesh_1)
+    TEST(test_image_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
