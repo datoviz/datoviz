@@ -14,6 +14,7 @@
 #define DVZ_MAX_BINDINGS        16
 #define DVZ_MAX_VERTEX_ATTRS    16
 #define DVZ_MAX_VERTEX_BINDINGS 8
+#define DVZ_MAX_PARAMS          16
 
 
 

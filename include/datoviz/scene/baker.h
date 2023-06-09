@@ -26,6 +26,7 @@ typedef struct DvzBaker DvzBaker;
 typedef struct DvzBakerVertex DvzBakerVertex;
 typedef struct DvzBakerAttr DvzBakerAttr;
 typedef struct DvzBakerDescriptor DvzBakerDescriptor;
+typedef struct DvzBakerParam DvzBakerParam;
 
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
@@ -67,6 +68,14 @@ struct DvzBakerDescriptor
     bool shared; // if a dual is shared, it won't be bound upon baker creation
 };
 
+struct DvzBakerParam
+{
+    uint32_t prop_idx;
+    uint32_t slot_idx;
+    DvzSize offset;
+    DvzSize size;
+};
+
 
 
 struct DvzBaker
@@ -82,6 +91,7 @@ struct DvzBaker
     DvzBakerAttr vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
     DvzBakerVertex vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
     DvzBakerDescriptor descriptors[DVZ_MAX_BINDINGS];
+    DvzBakerParam params[DVZ_MAX_PARAMS];
 
     DvzDual index; // index buffer
     bool index_shared;
@@ -93,7 +103,7 @@ struct DvzBaker
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Baker lifecycle                                                                              */
 /*************************************************************************************************/
 
 // 00xx: which attributes should be in a different buf (8 max)
@@ -101,6 +111,24 @@ EXTERN_C_ON
 DVZ_EXPORT DvzBaker* dvz_baker(DvzRequester* rqr, int flags);
 
 
+
+// Internal function, used to instantiate the DvzDual instances.
+DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count);
+
+
+
+// emit the dat update commands to synchronize the dual arrays on the GPU
+DVZ_EXPORT void dvz_baker_update(DvzBaker* baker);
+
+
+
+DVZ_EXPORT void dvz_baker_destroy(DvzBaker* baker);
+
+
+
+/*************************************************************************************************/
+/*  Baker specification                                                                          */
+/*************************************************************************************************/
 
 // declare a vertex binding
 DVZ_EXPORT void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride);
@@ -113,7 +141,13 @@ DVZ_EXPORT void dvz_baker_attr(
 
 
 
-// DVZ_EXPORT void dvz_baker_indexed(DvzBaker* baker);
+// declare a descriptor slot
+DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
+
+
+
+DVZ_EXPORT void dvz_baker_property(
+    DvzBaker* baker, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size);
 
 
 
@@ -121,15 +155,25 @@ DVZ_EXPORT void dvz_baker_indirect(DvzBaker* baker);
 
 
 
-// declare a descriptor slot
-DVZ_EXPORT void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
+/*************************************************************************************************/
+/*  Baker sharing                                                                                */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx);
 
 
 
-// Internal function, used to instantiate the DvzDual instances.
-DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count);
+DVZ_EXPORT void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx);
 
 
+
+DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker);
+
+
+
+/*************************************************************************************************/
+/*  Baker data                                                                                   */
+/*************************************************************************************************/
 
 DVZ_EXPORT void
 dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
@@ -159,24 +203,7 @@ DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize
 
 
 
-DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx); //, DvzDual* dual);
-
-
-
-DVZ_EXPORT void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx); //, DvzDual* dual);
-
-
-
-DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker); //, DvzDual* dual);
-
-
-
-// emit the dat update commands to synchronize the dual arrays on the GPU
-DVZ_EXPORT void dvz_baker_update(DvzBaker* baker);
-
-
-
-DVZ_EXPORT void dvz_baker_destroy(DvzBaker* baker);
+DVZ_EXPORT void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data);
 
 
 

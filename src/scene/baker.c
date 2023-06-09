@@ -135,6 +135,73 @@ DvzBaker* dvz_baker(DvzRequester* rqr, int flags)
 
 
 
+void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count)
+{
+    ANN(baker);
+    log_trace(
+        "create the dat, arrays, %d bindings, %d descriptors", //
+        baker->binding_count, baker->slot_count);
+
+    // Check size consistency.
+    _check_sizes(baker);
+
+    // Create the vertex bindings.
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
+    {
+        _create_vertex_binding(baker, binding_idx, vertex_count);
+    }
+
+    // Create the uniform dats for the descriptors.
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        _create_descriptor(baker, slot_idx);
+    }
+
+    // Create the index buffer.
+    if (index_count > 0)
+    {
+        _create_index(baker, index_count);
+    }
+
+    // Create the indirect buffer.
+    if (baker->is_indirect)
+    {
+        _create_indirect(baker, index_count > 0);
+    }
+}
+
+
+
+// emit the dat update commands to synchronize the dual arrays on the GPU
+void dvz_baker_update(DvzBaker* baker)
+{
+    ANN(baker);
+
+    // Update the vertex bindings duals.
+    DvzBakerVertex* bv = NULL;
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
+    {
+        bv = &baker->vertex_bindings[binding_idx];
+        if (!bv->shared)
+            dvz_dual_update(&bv->dual);
+    }
+
+    // Update the index dual.
+    if (baker->index.array != NULL)
+        dvz_dual_update(&baker->index);
+
+    // Update the descriptor duals.
+    DvzBakerDescriptor* bd = NULL;
+    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
+    {
+        bd = &baker->descriptors[slot_idx];
+        if (!bd->shared)
+            dvz_dual_update(&bd->dual);
+    }
+}
+
+
+
 void dvz_baker_destroy(DvzBaker* baker)
 {
     ANN(baker);
@@ -159,54 +226,6 @@ void dvz_baker_destroy(DvzBaker* baker)
     }
 
     FREE(baker);
-}
-
-
-
-/*************************************************************************************************/
-/*  Baker sharing                                                                                */
-/*************************************************************************************************/
-
-void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
-{
-    ANN(baker);
-    // ANN(dual);
-    ASSERT(binding_idx < baker->binding_count);
-
-    DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
-    ANN(bv);
-
-    log_trace("set shared dual for vertex binding #%d", binding_idx);
-    // bv->dual = *dual;
-    bv->shared = true;
-}
-
-
-
-void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
-{
-    ANN(baker);
-    // ANN(dual);
-    ASSERT(binding_idx < baker->slot_count);
-
-    DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
-    ANN(bd);
-
-    log_trace("set shared dual for descriptor binding #%d", binding_idx);
-    // bd->dual = *dual;
-    bd->shared = true;
-}
-
-
-
-void dvz_baker_share_index(DvzBaker* baker) //, DvzDual* dual)
-{
-    ANN(baker);
-    // ANN(dual);
-
-    log_trace("set shared dual for index buffer");
-    // baker->index = *dual;
-    baker->index_shared = true;
 }
 
 
@@ -263,6 +282,17 @@ void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
 
 
 
+void dvz_baker_property(
+    DvzBaker* baker, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size)
+{
+    ANN(baker);
+    ASSERT(prop_idx < DVZ_MAX_PARAMS);
+    baker->params[prop_idx] = (DvzBakerParam){
+        .prop_idx = prop_idx, .slot_idx = slot_idx, .offset = offset, .size = size};
+}
+
+
+
 void dvz_baker_indirect(DvzBaker* baker)
 {
     ANN(baker);
@@ -272,7 +302,55 @@ void dvz_baker_indirect(DvzBaker* baker)
 
 
 /*************************************************************************************************/
-/*  Baker data functions                                                                         */
+/*  Baker sharing                                                                                */
+/*************************************************************************************************/
+
+void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
+{
+    ANN(baker);
+    // ANN(dual);
+    ASSERT(binding_idx < baker->binding_count);
+
+    DvzBakerVertex* bv = &baker->vertex_bindings[binding_idx];
+    ANN(bv);
+
+    log_trace("set shared dual for vertex binding #%d", binding_idx);
+    // bv->dual = *dual;
+    bv->shared = true;
+}
+
+
+
+void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
+{
+    ANN(baker);
+    // ANN(dual);
+    ASSERT(binding_idx < baker->slot_count);
+
+    DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
+    ANN(bd);
+
+    log_trace("set shared dual for descriptor binding #%d", binding_idx);
+    // bd->dual = *dual;
+    bd->shared = true;
+}
+
+
+
+void dvz_baker_share_index(DvzBaker* baker) //, DvzDual* dual)
+{
+    ANN(baker);
+    // ANN(dual);
+
+    log_trace("set shared dual for index buffer");
+    // baker->index = *dual;
+    baker->index_shared = true;
+}
+
+
+
+/*************************************************************************************************/
+/*  Baker data                                                                                   */
 /*************************************************************************************************/
 
 void dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
@@ -418,71 +496,19 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
 
 
 
-/*************************************************************************************************/
-/*  Baker sync functions                                                                         */
-/*************************************************************************************************/
-
-void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count)
+void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data)
 {
     ANN(baker);
-    log_trace(
-        "create the dat, arrays, %d bindings, %d descriptors", //
-        baker->binding_count, baker->slot_count);
+    ANN(data);
 
-    // Check size consistency.
-    _check_sizes(baker);
+    ASSERT(prop_idx < DVZ_MAX_PARAMS);
+    DvzBakerParam* param = &baker->params[prop_idx];
 
-    // Create the vertex bindings.
-    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
-    {
-        _create_vertex_binding(baker, binding_idx, vertex_count);
-    }
+    uint32_t slot_idx = param->slot_idx;
+    ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
-    // Create the uniform dats for the descriptors.
-    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
-    {
-        _create_descriptor(baker, slot_idx);
-    }
+    DvzSize offset = param->offset;
+    DvzSize size = param->size;
 
-    // Create the index buffer.
-    if (index_count > 0)
-    {
-        _create_index(baker, index_count);
-    }
-
-    // Create the indirect buffer.
-    if (baker->is_indirect)
-    {
-        _create_indirect(baker, index_count > 0);
-    }
-}
-
-
-
-// emit the dat update commands to synchronize the dual arrays on the GPU
-void dvz_baker_update(DvzBaker* baker)
-{
-    ANN(baker);
-
-    // Update the vertex bindings duals.
-    DvzBakerVertex* bv = NULL;
-    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
-    {
-        bv = &baker->vertex_bindings[binding_idx];
-        if (!bv->shared)
-            dvz_dual_update(&bv->dual);
-    }
-
-    // Update the index dual.
-    if (baker->index.array != NULL)
-        dvz_dual_update(&baker->index);
-
-    // Update the descriptor duals.
-    DvzBakerDescriptor* bd = NULL;
-    for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
-    {
-        bd = &baker->descriptors[slot_idx];
-        if (!bd->shared)
-            dvz_dual_update(&bd->dual);
-    }
+    dvz_dual_column(&baker->descriptors[slot_idx].dual, offset, size, 0, 1, 1, data);
 }
