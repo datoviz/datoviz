@@ -2,8 +2,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_ANIMATION
-#define DVZ_HEADER_TEST_ANIMATION
+#ifndef DVZ_HEADER_TEST_SHAPE
+#define DVZ_HEADER_TEST_SHAPE
 
 
 
@@ -16,10 +16,10 @@
 
 
 /*************************************************************************************************/
-/*  Animation tests                                                                              */
+/*  Shape tests                                                                                  */
 /*************************************************************************************************/
 
-int test_animation_1(TstSuite*);
+int test_shape_1(TstSuite*);
 
 
 

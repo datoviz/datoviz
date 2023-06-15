@@ -1,9 +1,6 @@
 /*************************************************************************************************/
-/*  Tests                                                                                        */
+/*  Testing animation                                                                            */
 /*************************************************************************************************/
-
-#ifndef DVZ_HEADER_TEST_ANIMATION
-#define DVZ_HEADER_TEST_ANIMATION
 
 
 
@@ -11,7 +8,14 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "test_shape.h"
+#include "presenter.h"
+#include "renderer.h"
+#include "scene/app.h"
+#include "scene/shape.h"
+#include "test.h"
 #include "testing.h"
+#include "testing_utils.h"
 
 
 
@@ -19,8 +23,8 @@
 /*  Animation tests                                                                              */
 /*************************************************************************************************/
 
-int test_animation_1(TstSuite*);
-
-
-
-#endif
+int test_shape_1(TstSuite* suite)
+{
+    ANN(suite);
+    return 0;
+}

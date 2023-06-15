@@ -23,6 +23,7 @@
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_scene.h"
+#include "scene/test_shape.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_basic.h"
@@ -317,6 +318,7 @@ int dvz_run_tests(const char* match)
     TEST(test_arcball_1)
     TEST(test_camera_1)
     TEST(test_animation_1)
+    TEST(test_shape_1)
 
     // Testing app.
     TEST(test_app_scatter)
