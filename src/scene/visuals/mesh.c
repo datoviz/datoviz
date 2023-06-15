@@ -50,9 +50,9 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     dvz_visual_depth(mesh, DVZ_DEPTH_TEST_ENABLE);
 
     // Vertex attributes.
-    dvz_visual_attr(mesh, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(mesh, 1, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // normal
-    dvz_visual_attr(mesh, 2, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(mesh, 0, FIELD(DvzMeshVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(mesh, 1, FIELD(DvzMeshVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(mesh, 2, FIELD(DvzMeshVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // dvz_visual_attr(mesh, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
     // dvz_visual_attr(mesh, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha

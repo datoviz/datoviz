@@ -44,8 +44,8 @@ DvzVisual* dvz_basic(DvzRequester* rqr, DvzPrimitiveTopology topology, int flags
     dvz_visual_shader(basic, "graphics_basic");
 
     // Vertex attributes.
-    dvz_visual_attr(basic, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(basic, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(basic, 0, FIELD(DvzBasicVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(basic, 1, FIELD(DvzBasicVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // Uniforms.
     dvz_visual_dat(basic, 0, sizeof(DvzMVP));

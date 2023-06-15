@@ -17,6 +17,13 @@
 #include "viewport.h"
 
 
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define FIELD(t, f) offsetof(t, f), fsizeof(t, f)
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
@@ -186,7 +193,9 @@ DVZ_EXPORT void dvz_visual_groups(DvzVisual* visual, uint32_t group_count, uint3
 
 
 
-DVZ_EXPORT void dvz_visual_attr(DvzVisual* visual, uint32_t attr_idx, DvzFormat format, int flags);
+DVZ_EXPORT void dvz_visual_attr(
+    DvzVisual* visual, uint32_t attr_idx, DvzSize offset, DvzSize item_size, //
+    DvzFormat format, int flags);
 
 
 

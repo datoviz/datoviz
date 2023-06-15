@@ -20,6 +20,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzPointVertex DvzPointVertex;
 
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;

@@ -44,9 +44,9 @@ DvzVisual* dvz_point(DvzRequester* rqr, int flags)
     dvz_visual_shader(point, "graphics_point");
 
     // Vertex attributes.
-    dvz_visual_attr(point, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(point, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
-    dvz_visual_attr(point, 2, DVZ_FORMAT_R32_SFLOAT, 0);       // size
+    dvz_visual_attr(point, 0, FIELD(DvzPointVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(point, 1, FIELD(DvzPointVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(point, 2, FIELD(DvzPointVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
 
     // Uniforms.
     dvz_visual_dat(point, 0, sizeof(DvzMVP));

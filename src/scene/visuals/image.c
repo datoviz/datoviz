@@ -44,8 +44,8 @@ DvzVisual* dvz_image(DvzRequester* rqr, int flags)
     dvz_visual_shader(image, "graphics_basic");
 
     // Vertex attributes.
-    dvz_visual_attr(image, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(image, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(image, 0, FIELD(DvzImageVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(image, 1, FIELD(DvzImageVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // Uniforms.
     dvz_visual_dat(image, 0, sizeof(DvzMVP));

@@ -158,6 +158,7 @@
 
 #define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0))
 
+#define fsizeof(type, member) sizeof(((type*)0)->member)
 
 
 #endif

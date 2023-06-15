@@ -274,13 +274,18 @@ void dvz_visual_groups(DvzVisual* visual, uint32_t group_count, uint32_t* group_
 
 
 
-void dvz_visual_attr(DvzVisual* visual, uint32_t attr_idx, DvzFormat format, int flags)
+void dvz_visual_attr(
+    DvzVisual* visual, uint32_t attr_idx, DvzSize offset, DvzSize item_size, //
+    DvzFormat format, int flags)
 {
     ANN(visual);
     ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
+    ASSERT(item_size > 0);
 
     // NOTE: lazy spec of vertex bindings and attrs, as this will depend on all attrs.
     // Will be done at create time. Will have to do baker side and GPU request side.
+    visual->attrs[attr_idx].offset = offset;
+    visual->attrs[attr_idx].item_size = item_size;
     visual->attrs[attr_idx].format = format;
     visual->attrs[attr_idx].flags = flags;
 
@@ -367,8 +372,7 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
         // Compute the offset and item_size of each attribute.
         attr->offset = attr_offsets[binding_idx];
 
-        // The attribute size depends on its Vulkan format.
-        attr->item_size = get_attr_size(attr->format);
+        // The attribute size is specified by the caller in dvz_visual_attr().
         ASSERT(attr->item_size > 0);
 
         // Keep track of the current offset within each vertex binding.
@@ -395,11 +399,6 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
         dvz_baker_vertex(baker, binding_idx, stride);
 
         // GPU-side.
-
-        // WARNING TODO NOTE: we ASSUME here that the stride (sum of all attribute sizes)
-        // matches the total size of the struct, which is not guaranteed because of alignment
-        // issues. To check later!
-
         // TODO: input rate instance?
         dvz_set_vertex(rqr, graphics_id, binding_idx, stride, DVZ_VERTEX_INPUT_RATE_VERTEX);
     }

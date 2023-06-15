@@ -44,8 +44,8 @@ DvzVisual* dvz_segment(DvzRequester* rqr, int flags)
     dvz_visual_shader(segment, "graphics_basic");
 
     // Vertex attributes.
-    dvz_visual_attr(segment, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(segment, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(segment, 0, FIELD(DvzSegmentVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(segment, 1, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // Uniforms.
     dvz_visual_dat(segment, 0, sizeof(DvzMVP));

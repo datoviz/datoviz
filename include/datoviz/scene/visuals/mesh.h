@@ -20,7 +20,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-// typedef struct DvzMeshVertex DvzMeshVertex;
+typedef struct DvzMeshVertex DvzMeshVertex;
 typedef struct DvzMeshParams DvzMeshParams;
 
 // Forward declarations.
@@ -40,17 +40,17 @@ typedef struct DvzVisual DvzVisual;
 /*************************************************************************************************/
 
 // // NOTE: unused for now
-// struct DvzMeshVertex
-// {
-//     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-//     vec4 pos;    /* position */
-//     vec4 normal; /* normal vector */
-//     vec2 uv;     /* tex coords */
+struct DvzMeshVertex
+{
+    // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
+    vec3 pos;    /* position */
+    vec3 normal; /* normal vector */
+    cvec4 color; /* color */
 
-//     float alpha;
-//     // TODO FIX
-//     // uint8_t alpha; /* transparency value */
-// };
+    // float alpha;
+    // TODO FIX
+    // uint8_t alpha; /* transparency value */
+};
 
 
 

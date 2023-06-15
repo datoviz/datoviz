@@ -49,8 +49,8 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_shader(visual, "graphics_basic");
 
     // Vertex attributes.
-    dvz_visual_attr(visual, 0, DVZ_FORMAT_R32G32B32_SFLOAT, 0); // pos
-    dvz_visual_attr(visual, 1, DVZ_FORMAT_R8G8B8A8_UNORM, 0);   // color
+    dvz_visual_attr(visual, 0, 0, sizeof(vec3), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(visual, 1, sizeof(vec3), sizeof(cvec4), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // Uniforms.
     dvz_visual_dat(visual, 0, sizeof(DvzMVP));
