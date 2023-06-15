@@ -413,7 +413,9 @@ void dvz_baker_repeat(
 
     if (first + count * repeats > dual->array->item_count)
     {
-        log_error("baker array is too small to hold the specified data");
+        log_error(
+            "baker vertex array is too small (%d) to hold the vertices (%d)",
+            dual->array->item_count, first + count * repeats);
         return;
     }
 
@@ -453,7 +455,9 @@ void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* 
 
     if (first + count > dual->array->item_count)
     {
-        log_error("baker array is too small to hold the specified data");
+        log_error(
+            "baker index array is too small (%d) to hold the indices (%d)",
+            dual->array->item_count, first + count);
         return;
     }
 

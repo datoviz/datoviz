@@ -44,18 +44,22 @@ int test_mesh_1(TstSuite* suite)
     dvz_requester_begin(rqr);
 
     // Upload the data.
-    const uint32_t vertex_count = 30;
-    const uint32_t index_count = vertex_count;
+    const uint32_t triangle_count = 30;
+    const uint32_t vertex_count = triangle_count + 1;
+    const uint32_t index_count = 3 * (vertex_count - 1);
 
     DvzVisual* mesh = dvz_mesh(rqr, 0);
     dvz_mesh_alloc(mesh, vertex_count, index_count);
 
+
     // Position.
     vec3* pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    // NOTE: start at i=1 because the first vertex is the origin (0,0)
+    float a = WIDTH / (float)HEIGHT;
     for (uint32_t i = 1; i < vertex_count; i++)
     {
-        pos[i][0] = .25 * cos(M_2PI * (float)i / (vertex_count - 2));
-        pos[i][1] = .25 * sin(M_2PI * (float)i / (vertex_count - 2));
+        pos[i][0] = .5 * cos(M_2PI * (float)i / (vertex_count - 2));
+        pos[i][1] = .5 * a * sin(M_2PI * (float)i / (vertex_count - 2));
     }
     dvz_mesh_position(mesh, 0, vertex_count, pos, 0);
 
@@ -67,22 +71,26 @@ int test_mesh_1(TstSuite* suite)
     }
     dvz_mesh_normal(mesh, 0, vertex_count, normal, 0);
 
+    // Color.
+    cvec4* color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    for (uint32_t i = 1; i < vertex_count; i++)
+    {
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, vertex_count, color[i]);
+        color[i][3] = 255;
+    }
+    dvz_mesh_color(mesh, 0, vertex_count, color, 0);
+
     // Index.
     DvzIndex* index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
-    for (uint32_t i = 0; i < index_count; i++)
+    for (uint32_t i = 0; i < vertex_count - 1; i++)
     {
-        index[i] = i;
+        ASSERT(3 * i + 2 < index_count);
+        index[3 * i + 0] = 0;
+        index[3 * i + 1] = i + 1;
+        index[3 * i + 2] = 1 + (i + 1) % triangle_count;
     }
     dvz_mesh_index(mesh, 0, index_count, index);
 
-    // Color.
-    cvec4* color = (cvec4*)calloc(index_count, sizeof(cvec4));
-    for (uint32_t i = 0; i < index_count; i++)
-    {
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, index_count, color[i]);
-        color[i][3] = 255;
-    }
-    dvz_mesh_color(mesh, 0, index_count, color, 0);
 
     // Important: upload the data to the GPU.
     dvz_visual_update(mesh);

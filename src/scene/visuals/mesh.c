@@ -40,7 +40,7 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     // NOTE: force indexed visual flag.
     flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
-    DvzVisual* mesh = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN, flags);
+    DvzVisual* mesh = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(mesh);
 
     // Visual shaders.

@@ -551,14 +551,14 @@ void dvz_visual_data(
         int reps = (flags & 0x0F00) >> 8;
         ASSERT(reps >= 1);
 
-        log_trace("visual data for attr #%d (%d:%d), repeat %d", attr_idx, first, count, reps);
+        log_debug("visual data for attr #%d (%d->%d, x%d)", attr_idx, first, count, reps);
         dvz_baker_repeat(baker, attr_idx, first, count, (uint32_t)reps, data);
     }
 
     // Direct copy.
     else
     {
-        log_trace("visual data for attr #%d (%d:%d)", attr_idx, first, count);
+        log_debug("visual data for attr #%d (%d->%d)", attr_idx, first, count);
         dvz_baker_data(baker, attr_idx, first, count, data);
     }
 }
@@ -590,6 +590,7 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
     DvzBaker* baker = visual->baker;
     ANN(baker);
 
+    log_debug("visual data for index (%d->%d)", first, count);
     dvz_baker_index(baker, first, count, data);
 }
 
