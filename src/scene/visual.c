@@ -429,8 +429,8 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     dvz_baker_share_uniform(baker, 1);
 
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
-    // NOTE: if indexed, item_count is the number of indices.
-    uint32_t index_count = indexed ? item_count : 0;
+    // NOTE: if indexed, item_count is the number of FACES (number of indices / 3).
+    uint32_t index_count = indexed ? (item_count * 3) : 0;
     dvz_baker_create(baker, index_count, vertex_count);
 
     // Bind the index buffer.

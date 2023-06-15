@@ -46,7 +46,7 @@ int test_mesh_1(TstSuite* suite)
     // Upload the data.
     const uint32_t triangle_count = 30;
     const uint32_t vertex_count = triangle_count + 1;
-    const uint32_t index_count = 3 * (vertex_count - 1);
+    const uint32_t index_count = 3 * triangle_count;
 
     DvzVisual* mesh = dvz_mesh(rqr, 0);
     dvz_mesh_alloc(mesh, vertex_count, index_count);

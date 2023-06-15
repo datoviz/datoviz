@@ -74,16 +74,19 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
 void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count)
 {
     ANN(mesh);
+    ASSERT(vertex_count > 0);
+    ASSERT(index_count % 3 == 0);
     log_debug("allocating the mesh visual");
 
     DvzRequester* rqr = mesh->rqr;
     ANN(rqr);
 
     // Create the visual.
-    // NOTE: with indexed visuals, item_count MUST correspond to the size of the index buffer
-    // by convention in dvz_visual_alloc() which calls dvz_baker_create(index_count, vertex_count)
-    // We have 3 indices per face.
-    dvz_visual_alloc(mesh, index_count, vertex_count);
+    // NOTE: with indexed visuals, item_count MUST correspond to the number of faces (triangles),
+    // so the size of the index buffer divided by 3.
+    // This is a convention in dvz_visual_alloc(visual, item_count, vertex_count) that
+    // when using indexing, item_count is the number of triangles.
+    dvz_visual_alloc(mesh, index_count / 3, vertex_count);
 }
 
 
