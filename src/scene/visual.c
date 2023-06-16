@@ -332,6 +332,15 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int f
 void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
 {
     ANN(visual);
+    ASSERT(vertex_count > 0);
+    if (item_count == 0)
+    {
+        log_debug(
+            "when allocating visual, item_count is 0, so using vertex_count instead (%d)",
+            vertex_count);
+        item_count = vertex_count;
+    }
+    ASSERT(item_count > 0);
 
     DvzBaker* baker = visual->baker;
     ANN(baker);
@@ -660,16 +669,16 @@ void dvz_visual_record(DvzVisual* visual, DvzId canvas)
     if (visual->callback != NULL)
     {
         visual->callback(
-            visual, canvas, visual->draw_first, visual->draw_count, visual->first_instance,
-            visual->instance_count);
+            visual, canvas, visual->draw_first, visual->draw_count, //
+            visual->first_instance, visual->instance_count);
     }
 
     // Otherwise call the default callback.
     else
     {
         dvz_visual_instance(
-            visual, canvas, visual->draw_first, 0, visual->draw_count, visual->first_instance,
-            visual->instance_count);
+            visual, canvas, visual->draw_first, 0, visual->draw_count, //
+            visual->first_instance, visual->instance_count);
     }
 }
 

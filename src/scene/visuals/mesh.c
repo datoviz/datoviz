@@ -28,6 +28,18 @@
 /*  Internal functions                                                                           */
 /*************************************************************************************************/
 
+static void _visual_callback(
+    DvzVisual* visual, DvzId canvas, //
+    uint32_t first, uint32_t count,  //
+    uint32_t first_instance, uint32_t instance_count)
+{
+    ANN(visual);
+    // NOTE: here, count is item_count, so index_count/3 (number of faces).
+    // We need to multiply by three to retrieve the number of elements to draw using
+    // indexing.
+    dvz_visual_instance(visual, canvas, first, 0, 3 * count, first_instance, instance_count);
+}
+
 
 
 /*************************************************************************************************/
@@ -66,6 +78,7 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     dvz_visual_dat(mesh, 2, sizeof(DvzMeshParams));
     // dvz_visual_tex(mesh, 3, DVZ_TEX_2D, 0);
 
+    dvz_visual_callback(mesh, _visual_callback);
 
     return mesh;
 }
@@ -83,10 +96,15 @@ void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count
     ANN(rqr);
 
     // Create the visual.
+
     // NOTE: with indexed visuals, item_count MUST correspond to the number of faces (triangles),
     // so the size of the index buffer divided by 3.
     // This is a convention in dvz_visual_alloc(visual, item_count, vertex_count) that
     // when using indexing, item_count is the number of triangles.
+
+    // But if there are no indices, the number of items is the number of vertices (by default in
+    // dvz_visual_alloc() if item_count is 0).
+
     dvz_visual_alloc(mesh, index_count / 3, vertex_count);
 }
 
@@ -144,7 +162,7 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
     if (shape->color)
         dvz_mesh_color(mesh, 0, vertex_count, shape->color, 0);
 
-    if (shape->index)
+    if (shape->index_count > 0)
         dvz_mesh_index(mesh, 0, index_count, shape->index);
 
     return mesh;
