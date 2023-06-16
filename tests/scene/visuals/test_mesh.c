@@ -13,6 +13,7 @@
 #include "request.h"
 #include "scene/dual.h"
 #include "scene/scene_testing_utils.h"
+#include "scene/shape.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/mesh.h"
@@ -43,54 +44,13 @@ int test_mesh_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
-    // Upload the data.
-    const uint32_t triangle_count = 30;
-    const uint32_t vertex_count = triangle_count + 1;
-    const uint32_t index_count = 3 * triangle_count;
+    // Disc shape parameters.
+    const uint32_t count = 30;
+    cvec4 color = {255, 0, 0, 255};
 
-    DvzVisual* mesh = dvz_mesh(rqr, 0);
-    dvz_mesh_alloc(mesh, vertex_count, index_count);
-
-
-    // Position.
-    vec3* pos = (vec3*)calloc(vertex_count, sizeof(vec3));
-    // NOTE: start at i=1 because the first vertex is the origin (0,0)
-    float a = WIDTH / (float)HEIGHT;
-    for (uint32_t i = 1; i < vertex_count; i++)
-    {
-        pos[i][0] = .5 * cos(M_2PI * (float)i / (vertex_count - 2));
-        pos[i][1] = .5 * a * sin(M_2PI * (float)i / (vertex_count - 2));
-    }
-    dvz_mesh_position(mesh, 0, vertex_count, pos, 0);
-
-    // Normal.
-    vec3* normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    for (uint32_t i = 0; i < vertex_count; i++)
-    {
-        normal[i][2] = 1;
-    }
-    dvz_mesh_normal(mesh, 0, vertex_count, normal, 0);
-
-    // Color.
-    cvec4* color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
-    for (uint32_t i = 1; i < vertex_count; i++)
-    {
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, vertex_count, color[i]);
-        color[i][3] = 255;
-    }
-    dvz_mesh_color(mesh, 0, vertex_count, color, 0);
-
-    // Index.
-    DvzIndex* index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
-    for (uint32_t i = 0; i < vertex_count - 1; i++)
-    {
-        ASSERT(3 * i + 2 < index_count);
-        index[3 * i + 0] = 0;
-        index[3 * i + 1] = i + 1;
-        index[3 * i + 2] = 1 + (i + 1) % triangle_count;
-    }
-    dvz_mesh_index(mesh, 0, index_count, index);
-
+    // Disc mesh.
+    DvzShape disc = dvz_shape_disc(count, color);
+    DvzVisual* mesh = dvz_mesh_shape(rqr, &disc);
 
     // Important: upload the data to the GPU.
     dvz_visual_update(mesh);
@@ -131,16 +91,15 @@ int test_mesh_1(TstSuite* suite)
     // Record commands.
     dvz_record_begin(rqr, board_id);
     dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_instance(mesh, board_id, 0, 0, index_count, 0, 1);
+    dvz_visual_instance(mesh, board_id, 0, 0, disc.index_count, 0, 1);
     dvz_record_end(rqr, board_id);
 
     // Render to a PNG.
     render_requests(rqr, get_gpu(suite), board_id, "visual_mesh");
 
     // Cleanup
+    dvz_shape_destroy(&disc);
     dvz_visual_destroy(mesh);
     dvz_requester_destroy(rqr);
-    FREE(pos);
-    FREE(index);
     return 0;
 }

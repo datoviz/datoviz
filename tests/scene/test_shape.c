@@ -28,8 +28,10 @@ int test_shape_1(TstSuite* suite)
     ANN(suite);
 
     cvec4 color = {255, 0, 0, 255};
+    const uint32_t count = 30;
+
     DvzShape square = dvz_shape_square(color);
-    DvzShape disc = dvz_shape_disc(30, color);
+    DvzShape disc = dvz_shape_disc(count, color);
 
     dvz_shape_destroy(&disc);
     dvz_shape_destroy(&square);

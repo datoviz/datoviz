@@ -11,7 +11,6 @@
 #include "scene/visuals/mesh.h"
 #include "fileio.h"
 #include "request.h"
-#include "scene/array.h"
 #include "scene/graphics.h"
 #include "scene/shape.h"
 #include "scene/viewset.h"
@@ -143,7 +142,7 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
         dvz_mesh_normal(mesh, 0, vertex_count, shape->normal, 0);
 
     if (shape->color)
-        dvz_mesh_color(mesh, 0, shape->color_count, shape->color, 0);
+        dvz_mesh_color(mesh, 0, vertex_count, shape->color, 0);
 
     if (shape->index)
         dvz_mesh_index(mesh, 0, index_count, shape->index);

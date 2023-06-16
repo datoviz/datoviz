@@ -22,9 +22,6 @@
 
 typedef struct DvzShape DvzShape;
 
-// Forward declarations.
-typedef struct DvzArray DvzArray;
-
 
 
 /*************************************************************************************************/
@@ -53,7 +50,6 @@ struct DvzShape
 {
     DvzShapeType type;
     uint32_t vertex_count;
-    uint32_t color_count;
     uint32_t index_count;
     vec3* pos;
     vec3* normal;
