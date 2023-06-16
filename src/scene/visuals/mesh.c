@@ -11,7 +11,9 @@
 #include "scene/visuals/mesh.h"
 #include "fileio.h"
 #include "request.h"
+#include "scene/array.h"
 #include "scene/graphics.h"
+#include "scene/shape.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -119,4 +121,32 @@ void dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* valu
 {
     ANN(mesh);
     dvz_visual_data(mesh, 2, first, count, (void*)values);
+}
+
+
+
+DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
+{
+    ANN(shape);
+    ANN(shape->pos);
+
+    uint32_t vertex_count = shape->pos->item_count;
+    uint32_t index_count = shape->index ? shape->index->item_count : 0;
+    ASSERT(vertex_count > 0);
+
+    DvzVisual* mesh = dvz_mesh(rqr, 0);
+    dvz_mesh_alloc(mesh, vertex_count, index_count);
+
+    dvz_mesh_position(mesh, 0, vertex_count, shape->pos->data, 0);
+
+    if (shape->normal)
+        dvz_mesh_normal(mesh, 0, vertex_count, shape->normal->data, 0);
+
+    if (shape->color)
+        dvz_mesh_color(mesh, 0, vertex_count, shape->color->data, 0);
+
+    if (shape->index)
+        dvz_mesh_index(mesh, 0, index_count, shape->index->data);
+
+    return mesh;
 }

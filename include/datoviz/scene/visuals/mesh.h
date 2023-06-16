@@ -26,6 +26,7 @@ typedef struct DvzMeshParams DvzMeshParams;
 // Forward declarations.
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzShape DvzShape;
 
 
 
@@ -112,6 +113,10 @@ DVZ_EXPORT void dvz_mesh_index(DvzVisual* mesh, uint32_t first, uint32_t count, 
  *
  */
 DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count);
+
+
+
+DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape);
 
 
 
