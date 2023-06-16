@@ -130,23 +130,23 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
     ANN(shape);
     ANN(shape->pos);
 
-    uint32_t vertex_count = shape->pos->item_count;
-    uint32_t index_count = shape->index ? shape->index->item_count : 0;
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t index_count = shape->index_count;
     ASSERT(vertex_count > 0);
 
     DvzVisual* mesh = dvz_mesh(rqr, 0);
     dvz_mesh_alloc(mesh, vertex_count, index_count);
 
-    dvz_mesh_position(mesh, 0, vertex_count, shape->pos->data, 0);
+    dvz_mesh_position(mesh, 0, vertex_count, shape->pos, 0);
 
     if (shape->normal)
-        dvz_mesh_normal(mesh, 0, vertex_count, shape->normal->data, 0);
+        dvz_mesh_normal(mesh, 0, vertex_count, shape->normal, 0);
 
     if (shape->color)
-        dvz_mesh_color(mesh, 0, vertex_count, shape->color->data, 0);
+        dvz_mesh_color(mesh, 0, shape->color_count, shape->color, 0);
 
     if (shape->index)
-        dvz_mesh_index(mesh, 0, index_count, shape->index->data);
+        dvz_mesh_index(mesh, 0, index_count, shape->index);
 
     return mesh;
 }

@@ -52,10 +52,13 @@ typedef enum
 struct DvzShape
 {
     DvzShapeType type;
-    DvzArray* pos;
-    DvzArray* normal;
-    DvzArray* color;
-    DvzArray* index;
+    uint32_t vertex_count;
+    uint32_t color_count;
+    uint32_t index_count;
+    vec3* pos;
+    vec3* normal;
+    cvec4* color;
+    DvzIndex* index;
 };
 
 

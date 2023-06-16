@@ -25,14 +25,10 @@
 void dvz_shape_destroy(DvzShape* shape)
 {
     ANN(shape);
-    if (shape->pos)
-        dvz_array_destroy(shape->pos);
-    if (shape->index)
-        dvz_array_destroy(shape->index);
-    if (shape->color)
-        dvz_array_destroy(shape->color);
-    if (shape->normal)
-        dvz_array_destroy(shape->normal);
+    FREE(shape->pos);
+    FREE(shape->index);
+    FREE(shape->color);
+    FREE(shape->normal);
 }
 
 
@@ -45,14 +41,14 @@ DvzShape dvz_shape_square(cvec4 color)
 {
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_SQUARE;
-    const uint32_t nv = 6; // 4;
-    // const uint32_t ni = 6;
+    shape.vertex_count = 6;
+    shape.color_count = 1;
 
     // Position.
     float x = .5;
-    shape.pos = dvz_array(nv, DVZ_DTYPE_VEC3);
-    dvz_array_data(
-        shape.pos, 0, nv, nv,
+    shape.pos = (vec3*)calloc(shape.vertex_count, sizeof(vec3));
+    memcpy(
+        shape.pos,
         (vec3[]){
             {-x, -x, 0},
             {+x, -x, 0},
@@ -60,14 +56,12 @@ DvzShape dvz_shape_square(cvec4 color)
             {+x, +x, 0},
             {-x, +x, 0},
             {-x, -x, 0},
-        });
+        },
+        shape.vertex_count * sizeof(vec3));
 
     // Color.
-    shape.color = dvz_array(nv, DVZ_DTYPE_CVEC4);
-    dvz_array_data(shape.color, 0, nv, 1, color); // NOTE: repeat the color
-
-    // Index.
-    // shape.index = dvz_array(ni, DVZ_DTYPE_UINT);
+    shape.color = (cvec4*)calloc(shape.color_count, sizeof(cvec4));
+    memcpy(shape.color, color, sizeof(cvec4));
 
     return shape;
 }
@@ -93,13 +87,11 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
         pos[i][0] = .5 * cos(M_2PI * (float)i / (vertex_count - 2));
         pos[i][1] = .5 * sin(M_2PI * (float)i / (vertex_count - 2));
     }
-    shape.pos = dvz_array(vertex_count, DVZ_DTYPE_VEC3);
-    dvz_array_data(shape.pos, 0, vertex_count, vertex_count, pos);
-    FREE(pos);
+    shape.pos = pos;
 
     // Color.
-    shape.color = dvz_array(vertex_count, DVZ_DTYPE_CVEC4);
-    dvz_array_data(shape.color, 0, vertex_count, 1, color); // NOTE: repeat the color
+    shape.color = (cvec4*)calloc(shape.color_count, sizeof(cvec4));
+    memcpy(shape.color, color, sizeof(cvec4));
 
     // Index.
     DvzIndex* index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
@@ -110,9 +102,7 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
         index[3 * i + 1] = i + 1;
         index[3 * i + 2] = 1 + (i + 1) % triangle_count;
     }
-    shape.index = dvz_array(index_count, DVZ_DTYPE_UINT);
-    dvz_array_data(shape.index, 0, index_count, index_count, index); // NOTE: repeat the color
-    FREE(index);
+    shape.index = index;
 
     return shape;
 }
