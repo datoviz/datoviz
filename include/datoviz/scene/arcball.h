@@ -90,6 +90,14 @@ DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 
 
 
+/*************************************************************************************************/
+/*  Arcball event functions                                                                      */
+/*************************************************************************************************/
+
+DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
+
+
+
 EXTERN_C_OFF
 
 #endif

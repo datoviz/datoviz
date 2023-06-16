@@ -14,6 +14,7 @@
 #include "scene/app.h"
 #include "scene/arcball.h"
 #include "scene/baker.h"
+#include "scene/camera.h"
 #include "scene/graphics.h"
 #include "scene/panzoom.h"
 #include "scene/transform.h"
@@ -255,6 +256,8 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
 
     if (panel->panzoom)
         dvz_panzoom_resize(panel->panzoom, width, height);
+    if (panel->arcball)
+        dvz_arcball_resize(panel->arcball, width, height);
 }
 
 
@@ -333,8 +336,6 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     ANN(app);
     ANN(panel);
     ANN(panel->view);
-    ANN(panel->figure);
-    ANN(panel->figure->scene);
 
     if (panel->transform != NULL)
     {
@@ -347,7 +348,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(panel->figure->scene->rqr);
+    panel->transform = dvz_transform(app->rqr);
     panel->transform_to_destroy = true;
 
     return panel->panzoom;
@@ -359,9 +360,23 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
 {
     ANN(app);
     ANN(panel);
-    log_error("arcball not implemented yet");
-    // TODO: camera
-    return NULL;
+    ANN(panel->view);
+
+    if (panel->transform != NULL)
+    {
+        log_error("could not create an arcball as the panel has already a transform");
+        return NULL;
+    }
+
+    ASSERT(panel->view->shape[0] > 0);
+    ASSERT(panel->view->shape[1] > 0);
+
+    // NOTE: the size is in screen coordinates, not framebuffer coordinates.
+    panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
+    panel->transform = dvz_transform(app->rqr);
+    panel->transform_to_destroy = true;
+
+    return panel->arcball;
 }
 
 
@@ -455,7 +470,27 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
     }
 
     // Arcball.
-    // TODO
+    DvzArcball* arcball = panel->arcball;
+    if (arcball != NULL)
+    {
+        DvzTransform* tr = panel->transform;
+        if (tr == NULL)
+        {
+            log_warn("no transform set in panel");
+            return;
+        }
+        // Pass the mouse event to the arcball object.
+        if (dvz_arcball_mouse(arcball, mev))
+        {
+            // Update the MVP matrices.
+            DvzMVP* mvp = dvz_transform_mvp(tr);
+            dvz_arcball_mvp(arcball, mvp);
+
+            dvz_requester_begin(rqr);
+            dvz_transform_update(tr, *mvp);
+            dvz_requester_end(rqr, NULL);
+        }
+    }
 }
 
 static void _scene_onresize(DvzClient* client, DvzClientEvent ev)

@@ -185,3 +185,74 @@ int test_scene_2(TstSuite* suite)
     FREE(color);
     return 0;
 }
+
+
+
+int test_scene_3(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app object.
+    DvzApp* app = dvz_app();
+    DvzRequester* rqr = dvz_app_requester(app);
+
+    // Create a scene.
+    DvzScene* scene = dvz_scene(rqr);
+
+    // Create a figure.
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+
+    // Create a panel.
+    DvzPanel* panel = dvz_panel_default(figure);
+
+    // Panel contains.
+    AT(dvz_panel_contains(panel, (vec2){0, 0}));
+    AT(!dvz_panel_contains(panel, (vec2){WIDTH, HEIGHT}));
+    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, HEIGHT / 2}) == panel);
+    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
+
+    // Panzoom.
+    DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
+    ANN(pz);
+
+    // Create a visual.
+    DvzVisual* pixel = dvz_pixel(rqr, 0);
+    const uint32_t n = 10000;
+    dvz_pixel_alloc(pixel, n);
+
+
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_pixel_position(pixel, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 128;
+    }
+    dvz_pixel_color(pixel, 0, n, color, 0);
+
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(panel, pixel);
+
+
+    // Run the app.
+    dvz_scene_run(scene, app, N_FRAMES);
+
+    // Cleanup.
+    dvz_panel_destroy(panel);
+    dvz_figure_destroy(figure);
+    dvz_scene_destroy(scene);
+    dvz_app_destroy(app);
+    FREE(pos);
+    FREE(color);
+    return 0;
+}

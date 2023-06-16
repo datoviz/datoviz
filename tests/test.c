@@ -330,6 +330,7 @@ int dvz_run_tests(const char* match)
     // Testing scene.
     TEST(test_scene_1)
     TEST(test_scene_2)
+    TEST(test_scene_3)
 
 
     tst_suite_run(&suite, match);
