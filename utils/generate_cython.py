@@ -4,20 +4,8 @@
 # -------------------------------------------------------------------------------------------------
 
 from functools import lru_cache
-import json
-from pathlib import Path
-import os
-from pprint import pprint
 import re
-import sys
 from textwrap import indent
-
-from tqdm import tqdm
-import pyparsing as pp
-from pyparsing import (
-    Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    Keyword, cStyleComment, Empty, Literal
-)
 
 from parse_headers import ROOT_DIR, iter_vars
 
