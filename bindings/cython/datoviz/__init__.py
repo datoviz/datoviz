@@ -7,9 +7,6 @@ import sys
 import time
 import __main__ as main
 
-from IPython import get_ipython
-from IPython.terminal.pt_inputhooks import register
-
 try:
     from .pydatoviz import App, colormap, colorpal, demo
 except ImportError:
@@ -113,6 +110,7 @@ def inputhook(context):
 
 
 def enable_ipython():
+    from IPython import get_ipython
     ipython = get_ipython()
     if ipython:
         logger.info("Enabling Datoviz IPython event loop integration")
@@ -139,7 +137,12 @@ def is_interactive():
 
 
 # print(f"In IPython: {in_ipython()}, is interactive: {is_interactive()}")
-register('datoviz', inputhook)
+try:
+    from IPython.terminal.pt_inputhooks import register
+
+    register('datoviz', inputhook)
+except ImportError:
+    pass
 
 
 # Event loops
