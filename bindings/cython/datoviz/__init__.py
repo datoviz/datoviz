@@ -185,7 +185,7 @@ def run_native(n_frames=0, **kwargs):
 
 def run(n_frames=0, event_loop=None, **kwargs):
     event_loop = event_loop or 'native'
-    if event_loop == 'ipython' or is_interactive():
+    if event_loop == 'ipython':
         enable_ipython()
     elif event_loop == 'native':
         run_native(n_frames, **kwargs)
