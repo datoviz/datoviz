@@ -6,17 +6,16 @@
 from functools import lru_cache
 import json
 from pathlib import Path
-import os
-from pprint import pprint
-import re
-import sys
-from textwrap import indent
 
-from tqdm import tqdm
-import pyparsing as pp
+try:
+    from tqdm import tqdm
+except ImportError:
+    def tqdm(x, *args, **kwargs):
+        return x
+
 from pyparsing import (
-    Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    Keyword, cStyleComment, Empty, Literal
+    Suppress, Word, alphanums, Optional, Group, ZeroOrMore,
+    Keyword, cStyleComment, Literal
 )
 
 
