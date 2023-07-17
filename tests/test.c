@@ -174,6 +174,7 @@ int dvz_run_tests(const char* match)
     // Testing simple loop.
     TEST(test_loop_1)
     TEST(test_loop_2)
+    TEST(test_loop_cube)
     TEST(test_loop_gui)
 
     // Testing GUI.
