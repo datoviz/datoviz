@@ -231,14 +231,14 @@ int test_scene_3(TstSuite* suite)
 
     // Params.
     DvzMeshParams params = {0};
-    params.light_params[0] = 1; // ambient coefficient
-    params.light_params[1] = 0; // diffuse coefficient
-    params.light_params[2] = 0; // specular coefficient
-    params.light_params[3] = 4; // specular coefficient
+    params.light_params[0] = .3; // ambient coefficient
+    params.light_params[1] = .5; // diffuse coefficient
+    params.light_params[2] = .5; // specular coefficient
+    params.light_params[3] = 32; // specular coefficient
 
     params.light_pos[0] = -2; // light position
     params.light_pos[1] = +2; //
-    params.light_pos[2] = +2; //
+    params.light_pos[2] = +5; //
     // params.tex_coefs[0] = 1;         // texture blending coefficients
 
     // Perspective camera.

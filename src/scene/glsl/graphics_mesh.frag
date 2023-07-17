@@ -56,12 +56,11 @@ void main()
     // Diffuse component.
     // HACK: normals on both faces
     diff = max(dot(light_dir, normal), 0.0);
-    // diff = max(diff, max(dot(light_dir, -normal), 0.0));
+    diff = max(diff, max(dot(light_dir, -normal), 0.0));
     diffuse = diff * light_color;
 
     // Specular component.
     view_dir = normalize(-mvp.view[3].xyz - in_pos);
-    // view_dir = normalize(-in_pos);
     reflect_dir = reflect(-light_dir, normal);
     spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
     specular = spec * light_color;
