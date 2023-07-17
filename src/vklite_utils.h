@@ -953,7 +953,7 @@ create_rasterizer(VkCullModeFlags cull_mode, VkFrontFace front_face)
 
 
 
-static VkPipelineMultisampleStateCreateInfo create_multisampling()
+static VkPipelineMultisampleStateCreateInfo create_multisampling(void)
 {
     VkPipelineMultisampleStateCreateInfo multisampling = {0};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -1020,7 +1020,7 @@ static VkPipelineDepthStencilStateCreateInfo create_depth_stencil(bool enable)
 
 
 
-static VkPipelineViewportStateCreateInfo create_viewport_state()
+static VkPipelineViewportStateCreateInfo create_viewport_state(void)
 {
     VkPipelineViewportStateCreateInfo viewport_state = {0};
     viewport_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;

@@ -124,7 +124,7 @@ static inline void dvz_clock_reset(DvzClock* clock)
 /**
  * Instantiate a new clock.
  */
-static inline DvzClock dvz_clock()
+static inline DvzClock dvz_clock(void)
 {
     INIT(DvzClock, clock)
     dvz_clock_reset(&clock);

@@ -358,7 +358,7 @@ if(CC_GCC)
     endif()
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} \
-        -std=gnu11 -Wmissing-prototypes -Wimplicit-function-declaration")
+        -std=gnu11 -Wmissing-prototypes -Wimplicit-function-declaration -Wstrict-prototypes")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
 
 elseif(CC_CLANG)

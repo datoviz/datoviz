@@ -75,7 +75,7 @@ ATOMIC_DECL void dvz_atomic_init(DvzAtomic atomic)
  *
  * @returns the atomic
  */
-ATOMIC_DECL DvzAtomic dvz_atomic()
+ATOMIC_DECL DvzAtomic dvz_atomic(void)
 #ifdef ATOMIC_C
 {
     DvzAtomic atomic = (DvzAtomic)calloc(1, sizeof(DvzAtomic_));

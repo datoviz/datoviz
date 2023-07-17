@@ -105,7 +105,7 @@ static int write_file(const char* filename, DvzSize block_size, uint32_t block_c
 /*  Print functions                                                                              */
 /*************************************************************************************************/
 
-static void _print_start()
+static void _print_start(void)
 {
     log_trace("print_start");
     printf("---\n"

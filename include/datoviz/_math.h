@@ -35,10 +35,7 @@ MUTE_OFF
 #define M_INV_255 0.00392156862745098
 
 #define DVZ_ZERO_OFFSET                                                                           \
-    (uvec3)                                                                                       \
-    {                                                                                             \
-        0, 0, 0                                                                                   \
-    }
+    (uvec3) { 0, 0, 0 }
 
 
 
@@ -52,10 +49,7 @@ MUTE_OFF
 
 #define _DMAT4_IDENTITY_INIT                                                                      \
     {                                                                                             \
-        {1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0},                         \
-        {                                                                                         \
-            0.0, 0.0, 0.0, 1.0                                                                    \
-        }                                                                                         \
+        {1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0}, { 0.0, 0.0, 0.0, 1.0 }  \
     }
 
 
@@ -514,7 +508,7 @@ static inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
  *
  * @returns random number
  */
-static inline uint8_t dvz_rand_byte() { return (uint8_t)(rand() % 256); }
+static inline uint8_t dvz_rand_byte(void) { return (uint8_t)(rand() % 256); }
 
 
 
@@ -523,7 +517,7 @@ static inline uint8_t dvz_rand_byte() { return (uint8_t)(rand() % 256); }
  *
  * @returns random number
  */
-static inline int dvz_rand_int() { return rand(); }
+static inline int dvz_rand_int(void) { return rand(); }
 
 
 
@@ -532,7 +526,7 @@ static inline int dvz_rand_int() { return rand(); }
  *
  * @returns random number
  */
-static inline float dvz_rand_float() { return (float)rand() / (float)(RAND_MAX); }
+static inline float dvz_rand_float(void) { return (float)rand() / (float)(RAND_MAX); }
 
 
 
@@ -541,7 +535,7 @@ static inline float dvz_rand_float() { return (float)rand() / (float)(RAND_MAX);
  *
  * @returns random number
  */
-static inline double dvz_rand_double() { return (double)rand() / (double)(RAND_MAX); }
+static inline double dvz_rand_double(void) { return (double)rand() / (double)(RAND_MAX); }
 
 
 
@@ -550,7 +544,7 @@ static inline double dvz_rand_double() { return (double)rand() / (double)(RAND_M
  *
  * @returns random number
  */
-static inline double dvz_rand_normal()
+static inline double dvz_rand_normal(void)
 {
     return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * M_PI * dvz_rand_double());
 }

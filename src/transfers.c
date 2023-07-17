@@ -33,7 +33,7 @@ static int _thread_transfers(void* user_data)
 
 
 
-static DvzSize _transfer_item_size()
+static DvzSize _transfer_item_size(void)
 {
     return MAX(
         sizeof(DvzTransferBuffer),

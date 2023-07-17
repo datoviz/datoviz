@@ -304,7 +304,7 @@ static uint8_t _scale_uint8(double value, double vmin, double vmax)
 
 
 // Load the colormap array.
-static unsigned char* _load_colormaps()
+static unsigned char* _load_colormaps(void)
 {
     if (DVZ_COLORMAP_ARRAY != NULL)
         return DVZ_COLORMAP_ARRAY;

@@ -82,7 +82,7 @@ static void unlock(void)
 
 static uint64_t _THREADS[MAX_THREADS];
 
-static uint64_t get_thread_idx()
+static uint64_t get_thread_idx(void)
 {
     uint64_t tid = 0;
 #if OS_MACOS

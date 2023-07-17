@@ -151,7 +151,7 @@ struct TstSuite
 /*  Test printing                                                                                */
 /*************************************************************************************************/
 
-static void print_start()
+static void print_start(void)
 {
     printf("--- Starting tests -------------------------------\n"); //
 }

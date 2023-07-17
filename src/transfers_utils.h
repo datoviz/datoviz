@@ -685,7 +685,7 @@ static void _process_image_copy(DvzDeq* deq, void* item, void* user_data)
 /*  Dup transfers                                                                                */
 /*************************************************************************************************/
 
-static DvzTransferDups _dups()
+static DvzTransferDups _dups(void)
 {
     DvzTransferDups dups = {0};
     dups.count = 0;

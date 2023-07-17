@@ -213,7 +213,7 @@ DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_demo();
+DVZ_EXPORT void dvz_gui_demo(void);
 
 
 
@@ -222,7 +222,7 @@ DVZ_EXPORT void dvz_gui_demo();
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_dialog_end();
+DVZ_EXPORT void dvz_gui_dialog_end(void);
 
 
 
