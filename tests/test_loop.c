@@ -262,7 +262,7 @@ int test_loop_cube(TstSuite* suite)
     glm_perspective(GLM_PI_4, WIDTH / (float)HEIGHT, .1, 100, mvp.proj);
 
     // Run the loop.
-    for (loop->frame_idx = 0;; loop->frame_idx++)
+    for (loop->frame_idx = 0; loop->frame_idx < (DEBUG_TEST ? UINT64_MAX : 5); loop->frame_idx++)
     {
         // Model matrix.
         glm_rotate_y(mvp.model, .001, mvp.model);
