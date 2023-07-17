@@ -11,8 +11,10 @@
 #include "test_scene.h"
 #include "canvas.h"
 #include "scene/app.h"
+#include "scene/camera.h"
 #include "scene/scene.h"
 #include "scene/shape.h"
+#include "scene/transform.h"
 #include "scene/viewset.h"
 #include "scene/visuals/mesh.h"
 #include "scene/visuals/pixel.h"
@@ -213,13 +215,15 @@ int test_scene_3(TstSuite* suite)
 
     // Create a visual.
 
-
-    // Disc shape parameters.
-    const uint32_t count = 1000;
-    cvec4 color = {255, 0, 0, 255};
-
     // Disc mesh.
-    DvzShape disc = dvz_shape_disc(count, color);
+    DvzShape disc = dvz_shape_cube((cvec4[]){
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {0, 255, 255, 255},
+        {255, 0, 255, 255},
+        {255, 255, 0, 255},
+    });
     DvzVisual* mesh = dvz_mesh_shape(rqr, &disc);
 
     // Important: upload the data to the GPU.
@@ -227,14 +231,21 @@ int test_scene_3(TstSuite* suite)
 
     // Params.
     DvzMeshParams params = {0};
-    params.lights_params_0[0][0] = 0.2;  // ambient coefficient
-    params.lights_params_0[0][1] = 0.5;  // diffuse coefficient
-    params.lights_params_0[0][2] = 0.3;  // specular coefficient
-    params.lights_params_0[0][3] = 32.0; // specular exponent
-    params.lights_pos_0[0][0] = -1;      // light position
-    params.lights_pos_0[0][1] = 1;       //
-    params.lights_pos_0[0][2] = +10;     //
-    params.tex_coefs[0] = 1;             // texture blending coefficients
+    params.light_params[0] = 1; // ambient coefficient
+    params.light_params[1] = 0; // diffuse coefficient
+    params.light_params[2] = 0; // specular coefficient
+    params.light_params[3] = 4; // specular coefficient
+
+    params.light_pos[0] = -2; // light position
+    params.light_pos[1] = +2; //
+    params.light_pos[2] = +2; //
+    // params.tex_coefs[0] = 1;         // texture blending coefficients
+
+    // Perspective camera.
+    DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
+    DvzMVP* mvp = dvz_transform_mvp(panel->transform);
+    dvz_camera_mvp(camera, mvp); // set the view and proj matrices
+    dvz_transform_update(panel->transform, *mvp);
 
     DvzDual params_dual = dvz_dual_dat(rqr, sizeof(params), 0);
     dvz_dual_data(&params_dual, 0, 1, &params);
@@ -250,6 +261,7 @@ int test_scene_3(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Cleanup.
+    dvz_camera_destroy(camera);
     dvz_panel_destroy(panel);
     dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);

@@ -134,10 +134,156 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 
 DvzShape dvz_shape_cube(cvec4* colors)
 {
-    ANN(colors);
+    ANN(colors); // 6 colors, one per face
+
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_CUBE;
-    // TODO
+
+    const uint32_t vertex_count = 36;
+
+    shape.vertex_count = vertex_count;
+
+    shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+
+    float x = .5;
+
+    // Position.
+    memcpy(
+        shape.pos,
+        (vec3[]){
+            {-x, -x, +x}, // front
+            {+x, -x, +x}, //
+            {+x, +x, +x}, //
+            {+x, +x, +x}, //
+            {-x, +x, +x}, //
+            {-x, -x, +x}, //
+            {+x, -x, +x}, // right
+            {+x, -x, -x}, //
+            {+x, +x, -x}, //
+            {+x, +x, -x}, //
+            {+x, +x, +x}, //
+            {+x, -x, +x}, //
+            {-x, +x, -x}, // back
+            {+x, +x, -x}, //
+            {+x, -x, -x}, //
+            {+x, -x, -x}, //
+            {-x, -x, -x}, //
+            {-x, +x, -x}, //
+            {-x, -x, -x}, // left
+            {-x, -x, +x}, //
+            {-x, +x, +x}, //
+            {-x, +x, +x}, //
+            {-x, +x, -x}, //
+            {-x, -x, -x}, //
+            {-x, -x, -x}, // bottom
+            {+x, -x, -x}, //
+            {+x, -x, +x}, //
+            {+x, -x, +x}, //
+            {-x, -x, +x}, //
+            {-x, -x, -x}, //
+            {-x, +x, +x}, // top
+            {+x, +x, +x}, //
+            {+x, +x, -x}, //
+            {+x, +x, -x}, //
+            {-x, +x, -x}, //
+            {-x, +x, +x}, //
+        },
+        vertex_count * sizeof(vec3));
+
+    // Normal.
+    memcpy(
+        shape.normal,
+        (vec3[]){
+            {0, 0, +1}, // front
+            {0, 0, +1}, //
+            {0, 0, +1}, //
+            {0, 0, +1}, //
+            {0, 0, +1}, //
+            {0, 0, +1}, //
+            {+1, 0, 0}, // right
+            {+1, 0, 0}, //
+            {+1, 0, 0}, //
+            {+1, 0, 0}, //
+            {+1, 0, 0}, //
+            {+1, 0, 0}, //
+            {0, 0, -1}, // back
+            {0, 0, -1}, //
+            {0, 0, -1}, //
+            {0, 0, -1}, //
+            {0, 0, -1}, //
+            {0, 0, -1}, //
+            {-1, 0, 0}, // left
+            {-1, 0, 0}, //
+            {-1, 0, 0}, //
+            {-1, 0, 0}, //
+            {-1, 0, 0}, //
+            {-1, 0, 0}, //
+            {0, -1, 0}, // bottom
+            {0, -1, 0}, //
+            {0, -1, 0}, //
+            {0, -1, 0}, //
+            {0, -1, 0}, //
+            {0, -1, 0}, //
+            {0, +1, 0}, // top
+            {0, +1, 0}, //
+            {0, +1, 0}, //
+            {0, +1, 0}, //
+            {0, +1, 0}, //
+            {0, +1, 0}, //
+        },
+        vertex_count * sizeof(vec3));
+
+    // Color.
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        for (uint32_t j = 0; j < 6; j++)
+        {
+            memcpy(shape.color[6 * i + j], colors[i], sizeof(cvec4));
+        }
+    }
+
+    // TODO later: vertex texture coordinates uv.
+    {
+        // {0, 1}, // front
+        // {1, 1}, //
+        // {1, 0}, //
+        // {1, 0}, //
+        // {0, 0}, //
+        // {0, 1}, //
+        // {0, 1}, // right
+        // {1, 1}, //
+        // {1, 0}, //
+        // {1, 0}, //
+        // {0, 0}, //
+        // {0, 1}, //
+        // {1, 0}, // back
+        // {0, 0}, //
+        // {0, 1}, //
+        // {0, 1}, //
+        // {1, 1}, //
+        // {1, 0}, //
+        // {0, 1}, // left
+        // {1, 1}, //
+        // {1, 0}, //
+        // {1, 0}, //
+        // {0, 0}, //
+        // {0, 1}, //
+        // {0, 1}, // bottom
+        // {1, 1}, //
+        // {1, 0}, //
+        // {1, 0}, //
+        // {0, 0}, //
+        // {0, 1}, //
+        // {0, 1}, // top
+        // {1, 1}, //
+        // {1, 0}, //
+        // {1, 0}, //
+        // {0, 0}, //
+        // {0, 1}, //
+    }
+
     return shape;
 }
 

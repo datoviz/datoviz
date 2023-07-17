@@ -3,10 +3,7 @@
 
 #include "params_mesh.glsl"
 
-// layout(binding = (USER_BINDING + 1)) uniform sampler2D tex_0;
-// layout(binding = (USER_BINDING + 2)) uniform sampler2D tex_1;
-// layout(binding = (USER_BINDING + 3)) uniform sampler2D tex_2;
-// layout(binding = (USER_BINDING + 4)) uniform sampler2D tex_3;
+// layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
@@ -31,7 +28,7 @@ void main()
     vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
     vec4 lpar;
     vec3 lpos;
-    vec3 light_color = vec3(1); // TODO
+    vec3 light_color = vec3(1, 1, 1); // TODO: customizable light color
     float diff, spec;
 
     normal = normalize(in_normal);
@@ -44,37 +41,30 @@ void main()
     // if (in_uv.y >= 0)
     // {
     //     // color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
-    //     // color += params.tex_coefs.y * texture(tex_1, in_uv).xyz;
-    //     // color += params.tex_coefs.z * texture(tex_2, in_uv).xyz;
-    //     // color += params.tex_coefs.w * texture(tex_3, in_uv).xyz;
     // }
 
     // Light position and params.
-    for (int i = 0; i < 3; i++)
-    {
-        lpos = params.lights_pos_0[i].xyz;
-        lpar = params.lights_params_0[i];
-        if (length(lpar) == 0)
-            break;
+    lpos = params.light_pos.xyz;
+    lpar = params.light_params;
 
-        // Light direction.
-        light_dir = normalize(lpos - in_pos);
+    // Light direction.
+    light_dir = normalize(lpos - in_pos);
 
-        // Ambient component.
-        ambient = light_color;
+    // Ambient component.
+    ambient = light_color;
 
-        // Diffuse component.
-        // HACK: normals on both faces
-        diff = max(dot(light_dir, normal), 0.0);
-        diff = max(diff, max(dot(light_dir, -normal), 0.0));
-        diffuse = diff * light_color;
+    // Diffuse component.
+    // HACK: normals on both faces
+    diff = max(dot(light_dir, normal), 0.0);
+    // diff = max(diff, max(dot(light_dir, -normal), 0.0));
+    diffuse = diff * light_color;
 
-        // Specular component.
-        view_dir = normalize(-mvp.view[3].xyz - in_pos);
-        reflect_dir = reflect(-light_dir, normal);
-        // TODO: customizable specular exponent
-        spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-        specular = spec * light_color;
+    // Specular component.
+    view_dir = normalize(-mvp.view[3].xyz - in_pos);
+    // view_dir = normalize(-in_pos);
+    reflect_dir = reflect(-light_dir, normal);
+    spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
+    specular = spec * light_color;
 
         // Total color.
         out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;

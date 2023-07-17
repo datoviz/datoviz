@@ -1113,9 +1113,10 @@ static void make_renderpass(
     log_trace("making renderpass");
     *renderpass = dvz_renderpass(gpu);
 
+    dvz_renderpass_clear(renderpass, (VkClearValue){.color = clear_color});
+
     VkClearValue clear_depth = {0};
     clear_depth.depthStencil.depth = 1.0f;
-    dvz_renderpass_clear(renderpass, (VkClearValue){.color = clear_color});
     dvz_renderpass_clear(renderpass, clear_depth);
 
     // Color attachment.

@@ -320,6 +320,7 @@ int test_app_arcball(TstSuite* suite)
 
     dvz_app_run(app, N_FRAMES);
 
+    dvz_camera_destroy(camera);
     dvz_arcball_destroy(arcball);
     dvz_app_destroy(app);
 

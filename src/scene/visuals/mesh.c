@@ -51,7 +51,7 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     ANN(rqr);
 
     // NOTE: force indexed visual flag.
-    flags |= DVZ_VISUALS_FLAGS_INDEXED;
+    // flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
     DvzVisual* mesh = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(mesh);
@@ -61,6 +61,8 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
 
     // Enable depth test.
     dvz_visual_depth(mesh, DVZ_DEPTH_TEST_ENABLE);
+    dvz_visual_front(mesh, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
+    dvz_visual_cull(mesh, DVZ_CULL_MODE_NONE);
 
     // Vertex attributes.
     dvz_visual_attr(mesh, 0, FIELD(DvzMeshVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
@@ -151,7 +153,11 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
     uint32_t index_count = shape->index_count;
     ASSERT(vertex_count > 0);
 
-    DvzVisual* mesh = dvz_mesh(rqr, 0);
+    // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
+    // has an index buffer or not.
+    int flags = index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT;
+    DvzVisual* mesh = dvz_mesh(rqr, flags);
+
     dvz_mesh_alloc(mesh, vertex_count, index_count);
 
     dvz_mesh_position(mesh, 0, vertex_count, shape->pos, 0);

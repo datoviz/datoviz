@@ -57,10 +57,10 @@ struct DvzMeshVertex
 
 struct DvzMeshParams
 {
-    mat4 lights_pos_0;    /* positions of each of the maximum four lights */
-    mat4 lights_params_0; /* ambient, diffuse, specular coefs for each light */
-    vec4 tex_coefs;       /* blending coefficients for the four textures */
-    vec4 clip_coefs;      /* clip coefficients */
+    vec4 light_pos;    /* light position */
+    vec4 light_params; /* ambient, diffuse, specular coefs */
+    // vec4 tex_coefs;    /* blending coefficients for the four textures */
+    // vec4 clip_coefs;   /* clip coefficients */
 };
 
 
