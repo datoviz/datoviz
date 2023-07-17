@@ -66,9 +66,8 @@ void main()
     spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
     specular = spec * light_color;
 
-        // Total color.
-        out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-    }
+    // Total color.
+    out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
 
     out_color.a = 1.0; // in_alpha;
 }
