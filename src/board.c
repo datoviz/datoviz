@@ -147,7 +147,14 @@ void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 o
 
     dvz_cmd_viewport(
         cmds, idx,
-        (VkViewport){.x = offset[0], .y = offset[1], .width = size[0], .height = size[1]});
+        (VkViewport){
+            .x = offset[0],
+            .y = offset[1],
+            .width = size[0],
+            .height = size[1],
+            // WARNING: do not forget this otherwise depth testing may not work!
+            .minDepth = 0,
+            .maxDepth = 1});
 }
 
 

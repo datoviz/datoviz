@@ -205,7 +205,15 @@ void dvz_canvas_viewport(
     ASSERT(height > 0);
 
     dvz_cmd_viewport(
-        cmds, idx, (VkViewport){.x = offset[0], .y = offset[1], .width = width, .height = height});
+        cmds, idx,
+        (VkViewport){
+            .x = offset[0],
+            .y = offset[1],
+            .width = width,
+            .height = height,
+            // WARNING: do not forget this otherwise depth testing may not work!
+            .minDepth = 0,
+            .maxDepth = 1});
 }
 
 

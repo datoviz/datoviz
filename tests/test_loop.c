@@ -169,6 +169,20 @@ static void _fill_cube(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, void*
     dvz_cmd_end(cmds, idx);
 }
 
+static inline void _load_shader(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, //
+    DvzSize size, const unsigned char* buffer)
+{
+    ANN(graphics);
+    ANN(buffer);
+    ASSERT(size > 0);
+    uint32_t* code = (uint32_t*)calloc(size, 1);
+    memcpy(code, buffer, size);
+    ASSERT(size % 4 == 0);
+    dvz_graphics_shader_spirv(graphics, stage, size, code);
+    FREE(code);
+}
+
 int test_loop_cube(TstSuite* suite)
 {
     ANN(suite);
@@ -189,15 +203,64 @@ int test_loop_cube(TstSuite* suite)
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, 0);
     // DvzCanvas* canvas = &loop->canvas;
 
+    bool use_builtin = true;
+
     // Create a graphics pipe.
     DvzPipe* pipe = dvz_pipelib_graphics(
-        lib, ctx, &loop->renderpass, DVZ_GRAPHICS_TRIANGLE, DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
+        lib, ctx, &loop->renderpass, use_builtin ? DVZ_GRAPHICS_TRIANGLE : DVZ_GRAPHICS_CUSTOM,
+        DVZ_PIPELIB_FLAGS_NONE | DVZ_GRAPHICS_FLAGS_DEPTH_TEST);
+
+    DvzGraphics* graphics = &pipe->u.graphics;
+
+    if (!use_builtin)
+    {
+        // Vertex shader.
+        {
+            unsigned long size = 0;
+            unsigned char* buffer = dvz_resource_shader("graphics_basic_vert", &size);
+            ASSERT(size > 0);
+            ANN(buffer);
+            _load_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, size, buffer);
+        }
+
+        // Fragment shader.
+        {
+            unsigned long size = 0;
+            unsigned char* buffer = dvz_resource_shader("graphics_basic_frag", &size);
+            ASSERT(size > 0);
+            ANN(buffer);
+            _load_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, size, buffer);
+        }
+
+        // Graphics setting.
+        dvz_graphics_renderpass(graphics, &loop->renderpass, 0);
+        dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+        dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
+        dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
+
+        // Vertex bindings and attributes.
+        dvz_graphics_vertex_binding(graphics, 0, sizeof(DvzVertex), VK_VERTEX_INPUT_RATE_VERTEX);
+        dvz_graphics_vertex_attr(
+            graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+        dvz_graphics_vertex_attr(
+            graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+
+        // Graphics slots.
+        dvz_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
+        dvz_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
+    }
 
     // Create a MVP dat manually.
     DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     DvzMVP mvp = dvz_mvp_default();
     dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);
     dvz_pipe_dat(pipe, 0, dat_mvp);
+
+    // Create a viewport dat manually.
+    DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
+    dvz_pipe_dat(pipe, 1, dat_viewport);
 
     // NOTE: we now have to create the pipe manually (or automatically when using recorder.c).
     dvz_pipe_create(pipe);
@@ -208,7 +271,7 @@ int test_loop_cube(TstSuite* suite)
     ANN(dat_vertex);
     dvz_pipe_vertex(pipe, 0, dat_vertex, 0);
 
-    // Upload the triangle data.
+    // Cube data.
     float x = .5;
     DvzVertex data[] = {
         {{-x, -x, +x}, {255, 0, 0, 255}},   // front
@@ -249,6 +312,7 @@ int test_loop_cube(TstSuite* suite)
         {{-x, +x, +x}, {255, 255, 0, 255}}, //
     };
 
+    // Upload the vertex data.
     dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
 
     // Pass some information to the refill callbacK.
@@ -265,7 +329,7 @@ int test_loop_cube(TstSuite* suite)
     for (loop->frame_idx = 0; loop->frame_idx < (DEBUG_TEST ? UINT64_MAX : 5); loop->frame_idx++)
     {
         // Model matrix.
-        glm_rotate_y(mvp.model, .001, mvp.model);
+        glm_rotate_y(mvp.model, .005, mvp.model);
 
         // Upload the MVP struct.
         dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);
