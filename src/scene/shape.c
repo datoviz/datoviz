@@ -95,8 +95,8 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
     // NOTE: start at i=1 because the first vertex is the origin (0,0)
     for (uint32_t i = 1; i < vertex_count; i++)
     {
-        shape.pos[i][0] = .5 * cos(M_2PI * (float)i / (vertex_count - 2));
-        shape.pos[i][1] = .5 * sin(M_2PI * (float)i / (vertex_count - 2));
+        shape.pos[i][0] = .5 * cos(M_2PI * (float)i / triangle_count);
+        shape.pos[i][1] = .5 * sin(M_2PI * (float)i / triangle_count);
     }
 
     // Normal.
@@ -115,7 +115,7 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 
     // Index.
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
-    for (uint32_t i = 0; i < vertex_count - 1; i++)
+    for (uint32_t i = 0; i < triangle_count; i++)
     {
         ASSERT(3 * i + 2 < index_count);
         shape.index[3 * i + 0] = 0;
