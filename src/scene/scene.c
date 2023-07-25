@@ -258,6 +258,16 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         dvz_panzoom_resize(panel->panzoom, width, height);
     if (panel->arcball)
         dvz_arcball_resize(panel->arcball, width, height);
+    if (panel->camera)
+    {
+        dvz_camera_resize(panel->camera, width, height);
+
+        // NOTE: for the camera, we also need to update the MVP struct on the GPU because the
+        // projection matrix depends on the panel's aspect ratio.
+        DvzMVP* mvp = dvz_transform_mvp(panel->transform);
+        dvz_camera_mvp(panel->camera, mvp); // set the view and proj matrices
+        dvz_transform_update(panel->transform, *mvp);
+    }
 }
 
 
@@ -337,6 +347,9 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     ANN(panel);
     ANN(panel->view);
 
+    if (panel->panzoom)
+        return panel->panzoom;
+
     if (panel->transform != NULL)
     {
         log_error("could not create a panzoom as the panel has already a transform");
@@ -346,6 +359,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     ASSERT(panel->view->shape[0] > 0);
     ASSERT(panel->view->shape[1] > 0);
 
+    log_trace("create a new Panzoom instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
     panel->transform = dvz_transform(app->rqr);
@@ -362,6 +376,9 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
     ANN(panel);
     ANN(panel->view);
 
+    if (panel->arcball)
+        return panel->arcball;
+
     if (panel->transform != NULL)
     {
         log_error("could not create an arcball as the panel has already a transform");
@@ -371,6 +388,7 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
     ASSERT(panel->view->shape[0] > 0);
     ASSERT(panel->view->shape[1] > 0);
 
+    log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
     panel->transform = dvz_transform(app->rqr);
@@ -415,6 +433,41 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 
     // Send the buffer upload requests.
     dvz_visual_update(visual);
+}
+
+
+
+/*************************************************************************************************/
+/*  Camera                                                                                       */
+/*************************************************************************************************/
+
+DvzCamera* dvz_panel_camera(DvzPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->view);
+
+    if (panel->camera)
+        return panel->camera;
+
+    if (!panel->transform)
+    {
+        log_error("need to set up a panel transform before creating a camera");
+        return NULL;
+    }
+    ANN(panel->transform);
+
+    // Create a camera.
+    log_trace("create a new Camera instance");
+    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], 0);
+    ANN(panel->camera);
+
+    // Get the MVP struct of the panel, update it with the camera, and update the buffer on the
+    // GPU.
+    DvzMVP* mvp = dvz_transform_mvp(panel->transform);
+    dvz_camera_mvp(panel->camera, mvp); // set the view and proj matrices
+    dvz_transform_update(panel->transform, *mvp);
+
+    return panel->camera;
 }
 
 
@@ -519,6 +572,7 @@ static void _scene_onresize(DvzClient* client, DvzClientEvent ev)
     }
 
     // Resize the figure, compute each panel's new size and resize them.
+    // This will also call panzoom/arcball/camera resize for each panel.
     dvz_figure_resize(fig, w, h);
 
     // Mark the viewset as dirty to trigger a command buffer record at the next frame.

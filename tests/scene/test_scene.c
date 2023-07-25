@@ -242,10 +242,7 @@ int test_scene_3(TstSuite* suite)
     // params.tex_coefs[0] = 1;         // texture blending coefficients
 
     // Perspective camera.
-    DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
-    DvzMVP* mvp = dvz_transform_mvp(panel->transform);
-    dvz_camera_mvp(camera, mvp); // set the view and proj matrices
-    dvz_transform_update(panel->transform, *mvp);
+    DvzCamera* camera = dvz_panel_camera(panel);
 
     DvzDual params_dual = dvz_dual_dat(rqr, sizeof(params), 0);
     dvz_dual_data(&params_dual, 0, 1, &params);

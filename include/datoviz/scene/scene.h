@@ -29,14 +29,15 @@ typedef struct DvzPanel DvzPanel;
 
 // Forward declarations.
 typedef struct DvzApp DvzApp;
-typedef struct DvzRequester DvzRequester;
-typedef struct DvzViewset DvzViewset;
-typedef struct DvzList DvzList;
-typedef struct DvzView DvzView;
-typedef struct DvzVisual DvzVisual;
-typedef struct DvzTransform DvzTransform;
-typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzArcball DvzArcball;
+typedef struct DvzCamera DvzCamera;
+typedef struct DvzList DvzList;
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzRequester DvzRequester;
+typedef struct DvzTransform DvzTransform;
+typedef struct DvzView DvzView;
+typedef struct DvzViewset DvzViewset;
+typedef struct DvzVisual DvzVisual;
 
 
 
@@ -77,6 +78,7 @@ struct DvzPanel
     DvzView* view;                // has a list of visuals
     vec2 offset_init, shape_init; // initial viewport size
     DvzTransform* transform;
+    DvzCamera* camera;
     DvzPanzoom* panzoom;
     DvzArcball* arcball;
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
@@ -185,6 +187,17 @@ DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
  *
  */
 DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
+
+
+
+/*************************************************************************************************/
+/*  Camera                                                                                       */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
 
 
 

@@ -34,7 +34,7 @@ typedef struct DvzRequester DvzRequester;
 
 struct DvzTransform
 {
-    DvzDual dual;
+    DvzDual dual;       // Dual array with a DvzMVP struct.
     DvzTransform* next; // NOTE: transform chaining not implemented yet
 };
 
