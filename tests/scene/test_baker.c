@@ -215,3 +215,38 @@ int test_baker_2(TstSuite* suite)
     dvz_requester_destroy(rqr);
     return 0;
 }
+
+
+
+int test_baker_3(TstSuite* suite)
+{
+    DvzRequester* rqr = dvz_requester();
+    dvz_requester_begin(rqr);
+
+    // Declare a descriptor slot.
+    DvzBaker* baker = dvz_baker(rqr, 0);
+    dvz_baker_slot(baker, 0, 6);
+
+    // Properties.
+    dvz_baker_property(baker, 0, 0, 0, 2);
+    dvz_baker_property(baker, 1, 0, 2, 4);
+
+    // Create the baker.
+    dvz_baker_create(baker, 0, 1);
+
+    // Set baker parameters.
+    dvz_baker_param(baker, 0, (char[]){1, 2});
+    dvz_baker_param(baker, 1, (char[]){3, 4, 5, 6});
+
+    // Emit the dat upload requests.
+    dvz_baker_update(baker);
+
+    // Check the upload data.
+    AT(memcmp(rqr->requests[1].content.dat_upload.data, (char[]){1, 2, 3, 4, 5, 6}, 6) == 0);
+    // dvz_show_buffer(2, 6, 6, baker->descriptors[0].dual.array->data);
+
+    // Destroy the objects.
+    dvz_baker_destroy(baker);
+    dvz_requester_destroy(rqr);
+    return 0;
+}

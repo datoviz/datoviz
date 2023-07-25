@@ -304,6 +304,7 @@ int dvz_run_tests(const char* match)
     // Testing baker.
     TEST(test_baker_1)
     TEST(test_baker_2)
+    TEST(test_baker_3)
 
     // Testing colormaps.
     TEST(test_colormaps_idx)
