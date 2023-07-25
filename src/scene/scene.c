@@ -255,9 +255,15 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
     if (panel->panzoom)
+    {
         dvz_panzoom_resize(panel->panzoom, width, height);
+    }
+
     if (panel->arcball)
+    {
         dvz_arcball_resize(panel->arcball, width, height);
+    }
+
     if (panel->camera)
     {
         dvz_camera_resize(panel->camera, width, height);

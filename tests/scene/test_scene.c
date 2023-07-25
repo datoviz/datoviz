@@ -230,29 +230,15 @@ int test_scene_3(TstSuite* suite)
     dvz_visual_update(mesh);
 
     // Params.
-    DvzMeshParams params = {0};
-    params.light_params[0] = .3; // ambient coefficient
-    params.light_params[1] = .5; // diffuse coefficient
-    params.light_params[2] = .5; // specular coefficient
-    params.light_params[3] = 32; // specular coefficient
-
-    params.light_pos[0] = -2; // light position
-    params.light_pos[1] = +2; //
-    params.light_pos[2] = +5; //
-    // params.tex_coefs[0] = 1;         // texture blending coefficients
+    // ambient, diffuse, specular, specular exponent
+    dvz_mesh_light_pos(mesh, (vec4){-2, +2, +5, 0});
+    dvz_mesh_light_params(mesh, (vec4){.5, .5, .5, 32});
 
     // Perspective camera.
     DvzCamera* camera = dvz_panel_camera(panel);
 
-    DvzDual params_dual = dvz_dual_dat(rqr, sizeof(params), 0);
-    dvz_dual_data(&params_dual, 0, 1, &params);
-    dvz_dual_update(&params_dual);
-    dvz_bind_dat(rqr, mesh->graphics_id, 2, params_dual.dat, 0);
-
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, mesh);
-
 
     // Run the app.
     dvz_scene_run(scene, app, N_FRAMES);

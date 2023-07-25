@@ -325,6 +325,16 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int f
 
 
 
+void dvz_visual_property(
+    DvzVisual* visual, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size)
+{
+    ANN(visual);
+    ANN(visual->baker);
+    dvz_baker_property(visual->baker, prop_idx, slot_idx, offset, size);
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual creation                                                                              */
 /*************************************************************************************************/
@@ -601,6 +611,15 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
 
     log_debug("visual data for index (%d->%d)", first, count);
     dvz_baker_index(baker, first, count, data);
+}
+
+
+
+void dvz_visual_param(DvzVisual* visual, uint32_t prop_idx, void* data)
+{
+    ANN(visual);
+    ANN(visual->baker);
+    dvz_baker_param(visual->baker, prop_idx, data);
 }
 
 

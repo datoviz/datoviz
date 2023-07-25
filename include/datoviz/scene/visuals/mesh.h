@@ -116,6 +116,23 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t 
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape);
 
 

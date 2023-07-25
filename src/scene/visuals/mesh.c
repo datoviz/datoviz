@@ -80,6 +80,9 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     dvz_visual_dat(mesh, 2, sizeof(DvzMeshParams));
     // dvz_visual_tex(mesh, 3, DVZ_TEX_2D, 0);
 
+    dvz_visual_property(mesh, 0, 2, offsetof(DvzMeshParams, light_pos), sizeof(vec4));
+    dvz_visual_property(mesh, 1, 2, offsetof(DvzMeshParams, light_params), sizeof(vec4));
+
     dvz_visual_callback(mesh, _visual_callback);
 
     return mesh;
@@ -140,6 +143,22 @@ void dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* valu
 {
     ANN(mesh);
     dvz_visual_data(mesh, 2, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos)
+{
+    ANN(mesh);
+    dvz_visual_param(mesh, 0, pos);
+}
+
+
+
+void dvz_mesh_light_params(DvzVisual* mesh, vec4 params)
+{
+    ANN(mesh);
+    dvz_visual_param(mesh, 1, params);
 }
 
 

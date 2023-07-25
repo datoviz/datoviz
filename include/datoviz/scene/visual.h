@@ -207,6 +207,15 @@ DVZ_EXPORT void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims 
 
 
 
+DVZ_EXPORT void dvz_visual_property(
+    DvzVisual* visual, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size);
+
+
+
+/*************************************************************************************************/
+/*  Visual creation                                                                              */
+/*************************************************************************************************/
+
 DVZ_EXPORT void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
 
 
@@ -243,6 +252,9 @@ DVZ_EXPORT void dvz_visual_quads(
 
 DVZ_EXPORT void
 dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
+
+
+DVZ_EXPORT void dvz_visual_param(DvzVisual* visual, uint32_t prop_idx, void* data);
 
 
 
