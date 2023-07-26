@@ -215,8 +215,12 @@ DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size, int flags)
     ANN(rqr);
     ASSERT(vertex_size > 0);
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, vertex_size, flags).id;
-    DvzArray* array = dvz_array_struct(1, vertex_size);
+    // NOTE: typically, we create a dat for a uniform buffer with just a single item of a given
+    // struct.
+    const uint32_t n_items = 1;
+
+    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, n_items * vertex_size, flags).id;
+    DvzArray* array = dvz_array_struct(n_items, vertex_size);
 
     DvzDual dual = dvz_dual(rqr, array, dat_id);
     // dual.need_destroy = true;

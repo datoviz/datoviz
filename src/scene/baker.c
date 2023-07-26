@@ -108,10 +108,17 @@ static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
         return;
     }
 
-    log_trace("create baker dual dat");
-    bd->dual = dvz_dual_dat(baker->rqr, bd->item_size, DVZ_DAT_FLAGS_MAPPABLE);
-    // NOTE; mark the dual as needing to be destroyed by the library
-    bd->dual.need_destroy = true;
+    if (bd->type == DVZ_SLOT_DAT)
+    {
+        log_trace("baker create dual dat");
+        bd->u.dat.dual = dvz_dual_dat(baker->rqr, bd->u.dat.item_size, DVZ_DAT_FLAGS_MAPPABLE);
+        // NOTE; mark the dual as needing to be destroyed by the library
+        bd->u.dat.dual.need_destroy = true;
+    }
+    else if (bd->type == DVZ_SLOT_TEX)
+    {
+        // NOTE: do nothing for now, this is handled by the visual directly
+    }
 }
 
 
@@ -151,9 +158,10 @@ void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_cou
         _create_vertex_binding(baker, binding_idx, vertex_count);
     }
 
-    // Create the uniform dats for the descriptors.
+    // Create the uniform dats for the dat descriptors.
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
+        // NOTE: we don't do anything for textures for now, we let the visual handle them directly.
         _create_descriptor(baker, slot_idx);
     }
 
@@ -196,7 +204,7 @@ void dvz_baker_update(DvzBaker* baker)
     {
         bd = &baker->descriptors[slot_idx];
         if (!bd->shared)
-            dvz_dual_update(&bd->dual);
+            dvz_dual_update(&bd->u.dat.dual);
     }
 }
 
@@ -222,7 +230,12 @@ void dvz_baker_destroy(DvzBaker* baker)
     {
         bd = &baker->descriptors[slot_idx];
         // NOTE: same as above.
-        dvz_dual_destroy(&bd->dual);
+        if (bd->type == DVZ_SLOT_DAT)
+            dvz_dual_destroy(&bd->u.dat.dual);
+
+        // TODO: tex destruction
+        // else if (bd->type == DVZ_SLOT_TEX)
+        //     dvz_destroy_tex(&bd->u.tex.tex);
     }
 
     FREE(baker);
@@ -269,15 +282,32 @@ void dvz_baker_attr(
 
 
 
-// declare a descriptor slot
-void dvz_baker_slot(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
+// declare a descriptor slot for a dat
+void dvz_baker_slot_dat(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
 {
     ANN(baker);
+    baker->descriptors[slot_idx].type = DVZ_SLOT_DAT;
     baker->descriptors[slot_idx].slot_idx = slot_idx;
-    baker->descriptors[slot_idx].item_size = item_size;
+    baker->descriptors[slot_idx].u.dat.item_size = item_size;
     baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
 
-    log_trace("declare slot #%d with size %d", slot_idx, item_size);
+    log_trace("declare slot #%d for a dat with an item size %d", slot_idx, item_size);
+}
+
+
+
+// declare a descriptor slot for a tex
+void dvz_baker_slot_tex(DvzBaker* baker, uint32_t slot_idx)
+{
+    // NOTE: this is a no op for now, the baker does not yet use the information that a texture is
+    // in a given slot.
+
+    ANN(baker);
+    baker->descriptors[slot_idx].type = DVZ_SLOT_TEX;
+    baker->descriptors[slot_idx].slot_idx = slot_idx;
+    baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
+
+    log_trace("declare slot #%d for a tex", slot_idx);
 }
 
 
@@ -321,7 +351,7 @@ void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* 
 
 
 
-void dvz_baker_share_uniform(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
+void dvz_baker_share_binding(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
 {
     ANN(baker);
     // ANN(dual);
@@ -487,7 +517,7 @@ void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void
     ASSERT(binding_idx < baker->slot_count);
     DvzBakerDescriptor* descriptor = &baker->descriptors[binding_idx];
 
-    DvzDual* dual = &descriptor->dual;
+    DvzDual* dual = &descriptor->u.dat.dual;
     if (dual == NULL)
     {
         log_error("dual is null, please call dvz_baker_create()");
@@ -514,5 +544,33 @@ void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data)
     DvzSize offset = param->offset;
     DvzSize size = param->size;
 
-    dvz_dual_column(&baker->descriptors[slot_idx].dual, offset, size, 0, 1, 1, data);
+    dvz_dual_column(&baker->descriptors[slot_idx].u.dat.dual, offset, size, 0, 1, 1, data);
 }
+
+
+
+// void dvz_baker_tex(
+//     DvzBaker* baker, uint32_t binding_idx, DvzTexDims dims, DvzFormat format, uvec3 shape,
+//     int flags)
+// {
+
+//     ANN(baker);
+//     ASSERT(binding_idx < baker->slot_count);
+//     // ASSERT(size > 0);
+//     // ANN(data);
+
+//     ASSERT(binding_idx < baker->slot_count);
+//     DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
+
+//     if (bd->type != DVZ_SLOT_TEX)
+//     {
+//         log_error("descriptor #%d is not a tex", binding_idx);
+//         return;
+//     }
+
+//     bd->u.tex.dims = dims;
+//     bd->u.tex.format = format;
+//     bd->flags = flags;
+//     memcpy(bd->u.tex.shape, shape, sizeof(uvec3));
+//     bd->u.tex.tex = dvz_create_tex(baker->rqr, dims, format, shape, flags).id;
+// }

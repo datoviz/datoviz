@@ -301,26 +301,32 @@ void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzSize size)
     ANN(visual);
     ANN(visual->baker);
 
-    // CPU-side: baker.
-    dvz_baker_slot(visual->baker, slot_idx, size);
+    // CPU-side: baker, also creates a dat on the GPU.
+    dvz_baker_slot_dat(visual->baker, slot_idx, size);
 
-    // GPU-size: slot request.
+    // GPU-side: slot request.
     dvz_set_slot(visual->rqr, visual->graphics_id, slot_idx, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 }
 
 
 
-void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzTexDims dims, int flags)
+void dvz_visual_tex(
+    DvzVisual* visual, uint32_t slot_idx, //
+    DvzTexDims dims, DvzFormat format, uvec3 shape, int flags)
 {
     ANN(visual);
     ANN(visual->baker);
 
-    // CPU-side: baker.
-    // TODO: baker tex slot?
-    dvz_baker_slot(visual->baker, slot_idx, 0);
+    // NOTE: this does nothing for now
+    dvz_baker_slot_tex(visual->baker, slot_idx);
 
-    // GPU-size: slot request.
+    // Create the texture.
+    dvz_create_tex(visual->rqr, dims, format, shape, flags);
+
+    // Only GPU-side: slot request.
     dvz_set_slot(visual->rqr, visual->graphics_id, slot_idx, DVZ_DESCRIPTOR_TYPE_SAMPLER);
+
+    // TODO: refactor this in a different abstraction
 }
 
 
@@ -444,8 +450,8 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     // NOTE: we declare the common bindings (mvp and viewport) as shared to prevent the baker from
     // handling them. They will be handled by the panel in scene.c.
     // TODO: use #define instead of hard-coded values here
-    dvz_baker_share_uniform(baker, 0);
-    dvz_baker_share_uniform(baker, 1);
+    dvz_baker_share_binding(baker, 0);
+    dvz_baker_share_binding(baker, 1);
 
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
     // NOTE: if indexed, item_count is the number of FACES (number of indices / 3).
@@ -481,6 +487,9 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     for (uint32_t slot_idx = 0; slot_idx < baker->slot_count; slot_idx++)
     {
         bd = &baker->descriptors[slot_idx];
+        // NOTE: this is only for dat bindings.
+        if (bd->type != DVZ_SLOT_DAT)
+            continue;
         if (bd->shared)
         {
             log_trace(
@@ -488,7 +497,7 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
                 slot_idx);
             continue;
         }
-        dvz_bind_dat(rqr, graphics_id, slot_idx, bd->dual.dat, 0);
+        dvz_bind_dat(rqr, graphics_id, slot_idx, bd->u.dat.dual.dat, 0);
     }
 
     dvz_obj_created(&visual->obj);

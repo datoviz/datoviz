@@ -59,8 +59,8 @@ int test_baker_1(TstSuite* suite)
     dvz_baker_attr(baker, 2, 1, 0, 4); // attr2
 
     // Declare the descriptor slots.
-    dvz_baker_slot(baker, 0, 5);
-    dvz_baker_slot(baker, 1, 6);
+    dvz_baker_slot_dat(baker, 0, 5);
+    dvz_baker_slot_dat(baker, 1, 6);
 
     // Create the arrays and emit the dat creation requests.
     uint32_t count = 2;
@@ -135,8 +135,8 @@ int test_baker_1(TstSuite* suite)
 
         dvz_show_buffer(3, 3, 6, baker->vertex_bindings[0].dual.array->data);
         dvz_show_buffer(2, 4, 8, baker->vertex_bindings[1].dual.array->data);
-        dvz_show_buffer(5, 5, 5, baker->descriptors[0].dual.array->data);
-        dvz_show_buffer(6, 6, 6, baker->descriptors[1].dual.array->data);
+        dvz_show_buffer(5, 5, 5, baker->descriptors[0].u.dat.dual.array->data);
+        dvz_show_buffer(6, 6, 6, baker->descriptors[1].u.dat.dual.array->data);
     }
 
     // Check the dat uploads.
@@ -191,14 +191,14 @@ int test_baker_2(TstSuite* suite)
 
     // Declare a descriptor slot.
     DvzBaker* baker = dvz_baker(rqr, 0);
-    dvz_baker_slot(baker, 0, 1);
+    dvz_baker_slot_dat(baker, 0, 1);
 
     // Create a dual dat manually.
     DvzDual dual = dvz_dual_dat(rqr, 1, 0);
 
     // Use it as baker's dat.
-    dvz_baker_share_uniform(baker, 0);
-    baker->descriptors[0].dual = dual;
+    dvz_baker_share_binding(baker, 0);
+    baker->descriptors[0].u.dat.dual = dual;
 
     // Create the baker.
     dvz_baker_create(baker, 0, 1);
@@ -225,7 +225,7 @@ int test_baker_3(TstSuite* suite)
 
     // Declare a descriptor slot.
     DvzBaker* baker = dvz_baker(rqr, 0);
-    dvz_baker_slot(baker, 0, 6);
+    dvz_baker_slot_dat(baker, 0, 6);
 
     // Properties.
     dvz_baker_property(baker, 0, 0, 0, 2);
