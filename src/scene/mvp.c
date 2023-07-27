@@ -15,7 +15,7 @@
 /*  MVP functions                                                                                */
 /*************************************************************************************************/
 
-DvzMVP dvz_mvp_default()
+DvzMVP dvz_mvp_default(void)
 {
     DvzMVP mvp = {0};
     glm_mat4_identity(mvp.model);

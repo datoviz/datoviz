@@ -31,7 +31,7 @@ static void _realloc_if_needed(DvzList* list)
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzList* dvz_list()
+DvzList* dvz_list(void)
 {
     DvzList* list = (DvzList*)calloc(1, sizeof(DvzList));
     list->count = 0;

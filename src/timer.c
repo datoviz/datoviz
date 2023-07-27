@@ -80,7 +80,7 @@ static void _callbacks(DvzTimer* timer, DvzTimerEvent event)
 /*  Timer functions                                                                              */
 /*************************************************************************************************/
 
-DvzTimer* dvz_timer()
+DvzTimer* dvz_timer(void)
 {
     DvzTimer* timer = (DvzTimer*)calloc(1, sizeof(DvzTimer));
     timer->items = dvz_list();

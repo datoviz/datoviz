@@ -61,7 +61,7 @@ static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
 /*  Keyboard functions                                                                           */
 /*************************************************************************************************/
 
-DvzKeyboard* dvz_keyboard()
+DvzKeyboard* dvz_keyboard(void)
 {
     DvzKeyboard* keyboard = calloc(1, sizeof(DvzKeyboard));
     keyboard->keys = dvz_list();

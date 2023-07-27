@@ -28,7 +28,7 @@ int dvz_mutex_init(DvzMutex* mutex)
 
 
 
-DvzMutex dvz_mutex()
+DvzMutex dvz_mutex(void)
 {
     INIT(DvzMutex, mutex);
     dvz_mutex_init(&mutex);
@@ -73,7 +73,7 @@ int dvz_cond_init(DvzCond* cond)
 
 
 
-DvzCond dvz_cond()
+DvzCond dvz_cond(void)
 {
 
     INIT(DvzCond, cond);
