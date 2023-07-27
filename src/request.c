@@ -626,7 +626,7 @@ static void _print_bind_dat(DvzRequest* req)
     log_trace("print_bind_dat");
     ANN(req);
     printf(
-        "- action: set\n"
+        "- action: bind\n"
         "  type: dat\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
@@ -640,7 +640,7 @@ static void _print_bind_tex(DvzRequest* req)
     log_trace("print_bind_tex");
     ANN(req);
     printf(
-        "- action: set\n"
+        "- action: bind\n"
         "  type: tex\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
