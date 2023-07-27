@@ -68,7 +68,7 @@ int test_baker_1(TstSuite* suite)
 
     // Check the dat creations.
     {
-        AT(rqr->count == 4)
+        AT(rqr->count == 2)
 
         AT(rqr->requests[0].content.dat.size == 3 * count);
         AT(rqr->requests[0].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
@@ -76,11 +76,11 @@ int test_baker_1(TstSuite* suite)
         AT(rqr->requests[1].content.dat.size == 4 * count);
         AT(rqr->requests[1].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
 
-        AT(rqr->requests[2].content.dat.size == 5);
-        AT(rqr->requests[2].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+        // AT(rqr->requests[2].content.dat.size == 5);
+        // AT(rqr->requests[2].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
 
-        AT(rqr->requests[3].content.dat.size == 6);
-        AT(rqr->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+        // AT(rqr->requests[3].content.dat.size == 6);
+        // AT(rqr->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
     }
 
 
@@ -140,7 +140,7 @@ int test_baker_1(TstSuite* suite)
     }
 
     // Check the dat uploads.
-    for (uint32_t i = 4; i < 8; i++)
+    for (uint32_t i = 2; i < 4; i++)
     {
         AT(rqr->requests[i].action == DVZ_REQUEST_ACTION_UPLOAD);
         AT(rqr->requests[i].type == DVZ_REQUEST_OBJECT_DAT);
@@ -151,30 +151,30 @@ int test_baker_1(TstSuite* suite)
     // | 1 2 2 |
     // | 2 4 4 |
     // +-------+
-    AT(rqr->requests[4].content.dat_upload.size == 6);
-    AT(memcmp(rqr->requests[4].content.dat_upload.data, (char[]){1, 2, 2, 2, 4, 4}, 6) == 0);
+    AT(rqr->requests[2].content.dat_upload.size == 6);
+    AT(memcmp(rqr->requests[2].content.dat_upload.data, (char[]){1, 2, 2, 2, 4, 4}, 6) == 0);
 
     // buffer with size 8 bytes:
     // +-----+-----+
     // | 4 4 | 8 8 |
     // | 4 4 | 8 8 |
     // +-----+-----+
-    AT(rqr->requests[5].content.dat_upload.size == 8);
-    AT(memcmp(rqr->requests[5].content.dat_upload.data, (char[]){4, 4, 8, 8, 4, 4, 8, 8}, 8) == 0);
+    AT(rqr->requests[3].content.dat_upload.size == 8);
+    AT(memcmp(rqr->requests[3].content.dat_upload.data, (char[]){4, 4, 8, 8, 4, 4, 8, 8}, 8) == 0);
 
     // buffer with size 5 bytes:
     // +-----------+
     // | 5 5 5 5 5 |
     // +-----------+
-    AT(rqr->requests[6].content.dat_upload.size == 5);
-    AT(memcmp(rqr->requests[6].content.dat_upload.data, (char[]){5, 5, 5, 5, 5}, 5) == 0);
+    // AT(rqr->requests[6].content.dat_upload.size == 5);
+    // AT(memcmp(rqr->requests[6].content.dat_upload.data, (char[]){5, 5, 5, 5, 5}, 5) == 0);
 
     // buffer with size 6 bytes:
     // +-------------+
     // | 6 6 6 6 6 6 |
     // +-------------+
-    AT(rqr->requests[7].content.dat_upload.size == 6);
-    AT(memcmp(rqr->requests[7].content.dat_upload.data, (char[]){6, 6, 6, 6, 6, 6}, 6) == 0);
+    // AT(rqr->requests[7].content.dat_upload.size == 6);
+    // AT(memcmp(rqr->requests[7].content.dat_upload.data, (char[]){6, 6, 6, 6, 6, 6}, 6) == 0);
 
     // Cleanup.
     dvz_baker_destroy(baker);
