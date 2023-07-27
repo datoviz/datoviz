@@ -52,20 +52,20 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_attr(visual, 0, 0, sizeof(vec3), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 1, sizeof(vec3), sizeof(cvec4), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
-    // Uniforms.
-    dvz_visual_dat(visual, 0, sizeof(DvzMVP));
-    dvz_visual_dat(visual, 1, sizeof(DvzViewport));
+    // Slots.
+    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
 
-    // Create the visual.
-    dvz_visual_alloc(visual, n, n);
-
-    // Default uniform data.
+    // MVP.
     DvzMVP mvp = dvz_mvp_default();
     dvz_visual_mvp(visual, &mvp);
 
+    // Viewport.
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     dvz_visual_viewport(visual, &viewport);
 
+    // Create the visual.
+    dvz_visual_alloc(visual, n, n);
 
     // Vertex data.
     // Position.

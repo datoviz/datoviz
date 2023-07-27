@@ -22,14 +22,14 @@
 /**
  *
  */
-DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size)
+DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size, bool is_shared)
 {
     ANN(rqr);
     ASSERT(struct_size > 0);
 
     DvzParams* params = (DvzParams*)calloc(1, sizeof(DvzParams));
     params->rqr = rqr;
-    params->struct_size = struct_size;
+    params->is_shared = is_shared;
 
     // Create the dual for the uniform with the params.
     params->dual = dvz_dual_dat(rqr, struct_size, DVZ_DAT_FLAGS_MAPPABLE);

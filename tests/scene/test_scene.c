@@ -226,13 +226,13 @@ int test_scene_3(TstSuite* suite)
     });
     DvzVisual* mesh = dvz_mesh_shape(rqr, &disc);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(mesh);
-
     // Params.
     // ambient, diffuse, specular, specular exponent
     dvz_mesh_light_pos(mesh, (vec4){-2, +2, +5, 0});
     dvz_mesh_light_params(mesh, (vec4){.5, .5, .5, 32});
+
+    // Important: upload the data to the GPU for both the vertex buffer and the params dat.
+    dvz_visual_update(mesh);
 
     // Perspective camera.
     DvzCamera* camera = dvz_panel_camera(panel);

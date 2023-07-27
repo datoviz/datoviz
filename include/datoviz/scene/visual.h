@@ -14,7 +14,9 @@
 #include "../_enums.h"
 #include "../_obj.h"
 #include "mvp.h"
+#include "params.h"
 #include "viewport.h"
+
 
 
 /*************************************************************************************************/
@@ -101,12 +103,16 @@ struct DvzVisual
     DvzObject obj;
     DvzRequester* rqr;
     int flags;
-    void* params; // may be used for visual-specific data
+    void* user_data;
 
-    DvzBaker* baker;
     DvzId graphics_id;
+    DvzBaker* baker;
     DvzVisualAttr attrs[DVZ_MAX_VERTEX_ATTRS];
     DvzTransform* transforms[DVZ_MAX_VERTEX_ATTRS];
+
+    // Bindings
+    DvzParams* params[DVZ_MAX_BINDINGS]; // dats
+    DvzId texs[DVZ_MAX_BINDINGS];        // texs
 
     // Data.
     uint32_t item_count;
@@ -244,24 +250,21 @@ DVZ_EXPORT void dvz_visual_attr(
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzSize size);
+DVZ_EXPORT void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_tex(
-    DvzVisual* visual, uint32_t slot_idx, //
-    DvzTexDims dims, DvzFormat format, uvec3 shape, int flags);
+DVZ_EXPORT void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzParams* params);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_property(
-    DvzVisual* visual, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size);
+void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
 
 
 
@@ -325,10 +328,9 @@ DVZ_EXPORT void
 dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
 
 
-/**
- *
- */
-DVZ_EXPORT void dvz_visual_param(DvzVisual* visual, uint32_t prop_idx, void* data);
+
+DVZ_EXPORT void
+dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item);
 
 
 

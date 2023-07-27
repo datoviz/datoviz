@@ -37,49 +37,49 @@ DvzVisual* dvz_basic(DvzRequester* rqr, DvzPrimitiveTopology topology, int flags
 {
     ANN(rqr);
 
-    DvzVisual* basic = dvz_visual(rqr, topology, flags);
-    ANN(basic);
+    DvzVisual* visual = dvz_visual(rqr, topology, flags);
+    ANN(visual);
 
     // Visual shaders.
-    dvz_visual_shader(basic, "graphics_basic");
+    dvz_visual_shader(visual, "graphics_basic");
 
     // Vertex attributes.
-    dvz_visual_attr(basic, 0, FIELD(DvzBasicVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(basic, 1, FIELD(DvzBasicVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 0, FIELD(DvzBasicVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(visual, 1, FIELD(DvzBasicVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
-    // Uniforms.
-    dvz_visual_dat(basic, 0, sizeof(DvzMVP));
-    dvz_visual_dat(basic, 1, sizeof(DvzViewport));
+    // Slots.
+    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
 
-    return basic;
+    return visual;
 }
 
 
 
-void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count)
+void dvz_basic_alloc(DvzVisual* visual, uint32_t item_count)
 {
-    ANN(basic);
-    log_debug("allocating the basic visual");
+    ANN(visual);
+    log_debug("allocating the visual visual");
 
-    DvzRequester* rqr = basic->rqr;
+    DvzRequester* rqr = visual->rqr;
     ANN(rqr);
 
     // Create the visual.
-    dvz_visual_alloc(basic, item_count, item_count);
+    dvz_visual_alloc(visual, item_count, item_count);
 }
 
 
 
-void dvz_basic_position(DvzVisual* basic, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_basic_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
-    ANN(basic);
-    dvz_visual_data(basic, 0, first, count, (void*)values);
+    ANN(visual);
+    dvz_visual_data(visual, 0, first, count, (void*)values);
 }
 
 
 
-void dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
-    ANN(basic);
-    dvz_visual_data(basic, 1, first, count, (void*)values);
+    ANN(visual);
+    dvz_visual_data(visual, 1, first, count, (void*)values);
 }

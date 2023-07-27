@@ -45,7 +45,7 @@ int test_params_1(TstSuite* suite)
     DvzRequester* rqr = dvz_requester();
     dvz_requester_begin(rqr);
 
-    DvzParams* params = dvz_params(rqr, sizeof(TestParams));
+    DvzParams* params = dvz_params(rqr, sizeof(TestParams), false);
     dvz_params_attr(params, 0, offsetof(TestParams, a), sizeof(char));
     dvz_params_attr(params, 1, offsetof(TestParams, b), sizeof(uint32_t));
 

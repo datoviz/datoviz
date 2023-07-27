@@ -60,9 +60,10 @@ struct DvzParamsAttr
 struct DvzParams
 {
     DvzRequester* rqr;
-    DvzSize struct_size;
+    // DvzSize struct_size;
     DvzDual dual;
     DvzParamsAttr attrs[DVZ_PARAMS_MAX_ATTRS];
+    bool is_shared; // if false, the visual will destroy it, otherwise the scene will
 };
 
 
@@ -76,7 +77,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size);
+DVZ_EXPORT DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size, bool is_shared);
 
 
 

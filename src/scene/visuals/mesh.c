@@ -53,51 +53,55 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     // NOTE: force indexed visual flag.
     // flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
-    DvzVisual* mesh = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
-    ANN(mesh);
+    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+    ANN(visual);
 
     // Visual shaders.
-    dvz_visual_shader(mesh, "graphics_mesh");
+    dvz_visual_shader(visual, "graphics_mesh");
 
     // Enable depth test.
-    dvz_visual_depth(mesh, DVZ_DEPTH_TEST_ENABLE);
-    dvz_visual_front(mesh, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
-    dvz_visual_cull(mesh, DVZ_CULL_MODE_NONE);
+    dvz_visual_depth(visual, DVZ_DEPTH_TEST_ENABLE);
+    dvz_visual_front(visual, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
+    dvz_visual_cull(visual, DVZ_CULL_MODE_NONE);
 
     // Vertex attributes.
-    dvz_visual_attr(mesh, 0, FIELD(DvzMeshVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(mesh, 1, FIELD(DvzMeshVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(mesh, 2, FIELD(DvzMeshVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 0, FIELD(DvzMeshVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(visual, 1, FIELD(DvzMeshVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+    dvz_visual_attr(visual, 2, FIELD(DvzMeshVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
-    // dvz_visual_attr(mesh, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
-    // dvz_visual_attr(mesh, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha
+    // dvz_visual_attr(visual, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
+    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha
     // TODO: fix alignment
-    // dvz_visual_attr(mesh, 3, DVZ_FORMAT_R8_UNORM, 0);         // alpha
+    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R8_UNORM, 0);         // alpha
 
-    // Uniforms.
-    dvz_visual_dat(mesh, 0, sizeof(DvzMVP));
-    dvz_visual_dat(mesh, 1, sizeof(DvzViewport));
-    dvz_visual_dat(mesh, 2, sizeof(DvzMeshParams));
-    // dvz_visual_tex(mesh, 3, DVZ_TEX_2D, 0);
+    // Slots.
+    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+    // dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
-    dvz_visual_property(mesh, 0, 2, offsetof(DvzMeshParams, light_pos), sizeof(vec4));
-    dvz_visual_property(mesh, 1, 2, offsetof(DvzMeshParams, light_params), sizeof(vec4));
+    // Params.
+    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzMeshParams), false);
+    dvz_visual_dat(visual, 2, params);
 
-    dvz_visual_callback(mesh, _visual_callback);
+    dvz_params_attr(params, 0, offsetof(DvzMeshParams, light_pos), sizeof(vec4));
+    dvz_params_attr(params, 1, offsetof(DvzMeshParams, light_params), sizeof(vec4));
 
-    return mesh;
+    dvz_visual_callback(visual, _visual_callback);
+
+    return visual;
 }
 
 
 
-void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count)
+void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_count)
 {
-    ANN(mesh);
+    ANN(visual);
     ASSERT(vertex_count > 0);
     ASSERT(index_count % 3 == 0);
     log_debug("allocating the mesh visual");
 
-    DvzRequester* rqr = mesh->rqr;
+    DvzRequester* rqr = visual->rqr;
     ANN(rqr);
 
     // Create the visual.
@@ -110,55 +114,55 @@ void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count
     // But if there are no indices, the number of items is the number of vertices (by default in
     // dvz_visual_alloc() if item_count is 0).
 
-    dvz_visual_alloc(mesh, index_count / 3, vertex_count);
+    dvz_visual_alloc(visual, index_count / 3, vertex_count);
 }
 
 
 
-void dvz_mesh_index(DvzVisual* mesh, uint32_t first, uint32_t count, DvzIndex* values)
+void dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values)
 {
-    ANN(mesh);
-    dvz_visual_index(mesh, first, count, values);
+    ANN(visual);
+    dvz_visual_index(visual, first, count, values);
 }
 
 
 
-void dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_mesh_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
-    ANN(mesh);
-    dvz_visual_data(mesh, 0, first, count, (void*)values);
+    ANN(visual);
+    dvz_visual_data(visual, 0, first, count, (void*)values);
 }
 
 
 
-void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
-    ANN(mesh);
-    dvz_visual_data(mesh, 1, first, count, (void*)values);
+    ANN(visual);
+    dvz_visual_data(visual, 1, first, count, (void*)values);
 }
 
 
 
-void dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
-    ANN(mesh);
-    dvz_visual_data(mesh, 2, first, count, (void*)values);
+    ANN(visual);
+    dvz_visual_data(visual, 2, first, count, (void*)values);
 }
 
 
 
-void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos)
+void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos)
 {
-    ANN(mesh);
-    dvz_visual_param(mesh, 0, pos);
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, pos);
 }
 
 
 
-void dvz_mesh_light_params(DvzVisual* mesh, vec4 params)
+void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 {
-    ANN(mesh);
-    dvz_visual_param(mesh, 1, params);
+    ANN(visual);
+    dvz_visual_param(visual, 2, 1, params);
 }
 
 
@@ -175,20 +179,20 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
     // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
     // has an index buffer or not.
     int flags = index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT;
-    DvzVisual* mesh = dvz_mesh(rqr, flags);
+    DvzVisual* visual = dvz_mesh(rqr, flags);
 
-    dvz_mesh_alloc(mesh, vertex_count, index_count);
+    dvz_mesh_alloc(visual, vertex_count, index_count);
 
-    dvz_mesh_position(mesh, 0, vertex_count, shape->pos, 0);
+    dvz_mesh_position(visual, 0, vertex_count, shape->pos, 0);
 
     if (shape->normal)
-        dvz_mesh_normal(mesh, 0, vertex_count, shape->normal, 0);
+        dvz_mesh_normal(visual, 0, vertex_count, shape->normal, 0);
 
     if (shape->color)
-        dvz_mesh_color(mesh, 0, vertex_count, shape->color, 0);
+        dvz_mesh_color(visual, 0, vertex_count, shape->color, 0);
 
     if (shape->index_count > 0)
-        dvz_mesh_index(mesh, 0, index_count, shape->index);
+        dvz_mesh_index(visual, 0, index_count, shape->index);
 
-    return mesh;
+    return visual;
 }

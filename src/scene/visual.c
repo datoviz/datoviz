@@ -15,6 +15,7 @@
 #include "scene/baker.h"
 #include "scene/dual.h"
 #include "scene/graphics.h"
+#include "scene/params.h"
 
 
 
@@ -101,6 +102,12 @@ void dvz_visual_update(DvzVisual* visual)
 {
     ANN(visual);
     dvz_baker_update(visual->baker);
+
+    for (uint32_t i = 0; i < DVZ_MAX_BINDINGS; i++)
+    {
+        if (visual->params[i] != NULL)
+            dvz_params_update(visual->params[i]);
+    }
 }
 
 
@@ -111,6 +118,15 @@ void dvz_visual_destroy(DvzVisual* visual)
     if (visual->group_sizes != NULL)
     {
         FREE(visual->group_sizes);
+    }
+
+    // Destroy the params.
+    for (uint32_t i = 0; i < DVZ_MAX_BINDINGS; i++)
+    {
+        if (visual->params[i] && !visual->params[i]->is_shared)
+        {
+            dvz_params_destroy(visual->params[i]);
+        }
     }
     FREE(visual);
 }
@@ -296,47 +312,47 @@ void dvz_visual_attr(
 
 
 
-void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzSize size)
+void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
 {
-    ANN(visual);
-    ANN(visual->baker);
+    ANN(visual)
+    ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
-    // CPU-side: baker, also creates a dat on the GPU.
-    // dvz_baker_slot_dat(visual->baker, slot_idx, size);
-
-    // GPU-side: slot request.
-    dvz_set_slot(visual->rqr, visual->graphics_id, slot_idx, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    // Declare a slot.
+    dvz_set_slot(
+        visual->rqr, visual->graphics_id, slot_idx,
+        type == DVZ_SLOT_DAT ? DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER : DVZ_DESCRIPTOR_TYPE_SAMPLER);
 }
 
 
 
-void dvz_visual_tex(
-    DvzVisual* visual, uint32_t slot_idx, //
-    DvzTexDims dims, DvzFormat format, uvec3 shape, int flags)
+void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzParams* params)
+{
+    ANN(visual);
+    ANN(visual->baker);
+    ANN(params);
+
+    ASSERT(visual->graphics_id != DVZ_ID_NONE);
+    ASSERT(slot_idx < DVZ_MAX_BINDINGS);
+
+    // Set a params object.
+    visual->params[slot_idx] = params; // dvz_params(visual->rqr, size);
+
+    // Call a bind_dat request for the visual graphics and the dual's dat.
+    dvz_params_bind(visual->params[slot_idx], visual->graphics_id, slot_idx);
+}
+
+
+
+void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 {
     ANN(visual);
     ANN(visual->baker);
 
-    // NOTE: this does nothing for now
-    // dvz_baker_slot_tex(visual->baker, slot_idx);
-
-    // Create the texture.
-    dvz_create_tex(visual->rqr, dims, format, shape, flags);
-
-    // Only GPU-side: slot request.
+    // Declare a slot.
     dvz_set_slot(visual->rqr, visual->graphics_id, slot_idx, DVZ_DESCRIPTOR_TYPE_SAMPLER);
 
-    // TODO: refactor this in a different abstraction
-}
-
-
-
-void dvz_visual_property(
-    DvzVisual* visual, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size)
-{
-    ANN(visual);
-    ANN(visual->baker);
-    // dvz_baker_property(visual->baker, prop_idx, slot_idx, offset, size);
+    // Bind the texture to the graphics.
+    dvz_bind_tex(visual->rqr, visual->graphics_id, slot_idx, tex, sampler, offset);
 }
 
 
@@ -517,15 +533,15 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
     ANN(visual);
     ANN(visual->baker);
 
-    if (visual->baker->slot_count == 0)
-    {
-        log_debug("skipping visual_mvp() for visual with no common bindings");
-        return;
-    }
+    // if (visual->baker->slot_count == 0)
+    // {
+    //     log_debug("skipping visual_mvp() for visual with no common bindings");
+    //     return;
+    // }
 
-    DvzDual dual = dvz_dual_dat(visual->rqr, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
-    dvz_upload_dat(visual->rqr, dual.dat, 0, sizeof(DvzMVP), mvp);
-    dvz_bind_dat(visual->rqr, visual->graphics_id, 0, dual.dat, 0);
+    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzMVP), false);
+    dvz_visual_dat(visual, 0, params);
+    dvz_params_data(params, mvp);
 }
 
 
@@ -537,15 +553,15 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
     ANN(visual);
     ANN(visual->baker);
 
-    if (visual->baker->slot_count <= 1)
-    {
-        log_debug("skipping visual_viewport() for visual with no common bindings");
-        return;
-    }
+    // if (visual->baker->slot_count <= 1)
+    // {
+    //     log_debug("skipping visual_viewport() for visual with no common bindings");
+    //     return;
+    // }
 
-    DvzDual dual = dvz_dual_dat(visual->rqr, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
-    dvz_upload_dat(visual->rqr, dual.dat, 0, sizeof(DvzViewport), viewport);
-    dvz_bind_dat(visual->rqr, visual->graphics_id, 1, dual.dat, 0);
+    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzViewport), false);
+    dvz_visual_dat(visual, 1, params);
+    dvz_params_data(params, viewport);
 }
 
 
@@ -624,11 +640,15 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
 
 
 
-void dvz_visual_param(DvzVisual* visual, uint32_t prop_idx, void* data)
+void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item)
 {
     ANN(visual);
-    ANN(visual->baker);
-    // dvz_baker_param(visual->baker, prop_idx, data);
+    ASSERT(slot_idx < DVZ_MAX_BINDINGS);
+
+    DvzParams* params = visual->params[slot_idx];
+    ANN(params);
+
+    dvz_params_set(params, attr_idx, item);
 }
 
 
