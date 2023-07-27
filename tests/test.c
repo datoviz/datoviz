@@ -22,6 +22,7 @@
 #include "scene/test_dual.h"
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
+#include "scene/test_params.h"
 #include "scene/test_scene.h"
 #include "scene/test_shape.h"
 #include "scene/test_viewset.h"
@@ -300,6 +301,9 @@ int dvz_run_tests(const char* match)
     // Testing dual.
     TEST(test_dual_1)
     TEST(test_dual_2)
+
+    // Testing params.
+    TEST(test_params_1)
 
     // Testing baker.
     TEST(test_baker_1)
