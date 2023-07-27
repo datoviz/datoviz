@@ -23,7 +23,7 @@ int test_baker_1(TstSuite*);
 
 int test_baker_2(TstSuite*);
 
-int test_baker_3(TstSuite*);
+// int test_baker_3(TstSuite*);
 
 
 

@@ -59,8 +59,8 @@ int test_baker_1(TstSuite* suite)
     dvz_baker_attr(baker, 2, 1, 0, 4); // attr2
 
     // Declare the descriptor slots.
-    dvz_baker_slot_dat(baker, 0, 5);
-    dvz_baker_slot_dat(baker, 1, 6);
+    // dvz_baker_slot_dat(baker, 0, 5);
+    // dvz_baker_slot_dat(baker, 1, 6);
 
     // Create the arrays and emit the dat creation requests.
     uint32_t count = 2;
@@ -116,13 +116,13 @@ int test_baker_1(TstSuite* suite)
         data[3] = 8;
         dvz_baker_repeat(baker, 2, 0, 1, 2, data);
 
-        // uniform0
-        memset(data, 5, 5);
-        dvz_baker_uniform(baker, 0, 5, data);
+        // // uniform0
+        // memset(data, 5, 5);
+        // dvz_baker_uniform(baker, 0, 5, data);
 
-        // uniform1
-        memset(data, 6, 6);
-        dvz_baker_uniform(baker, 1, 6, data);
+        // // uniform1
+        // memset(data, 6, 6);
+        // dvz_baker_uniform(baker, 1, 6, data);
     }
 
     // Trigger the dat uploads.
@@ -135,8 +135,8 @@ int test_baker_1(TstSuite* suite)
 
         dvz_show_buffer(3, 3, 6, baker->vertex_bindings[0].dual.array->data);
         dvz_show_buffer(2, 4, 8, baker->vertex_bindings[1].dual.array->data);
-        dvz_show_buffer(5, 5, 5, baker->descriptors[0].u.dat.dual.array->data);
-        dvz_show_buffer(6, 6, 6, baker->descriptors[1].u.dat.dual.array->data);
+        // dvz_show_buffer(5, 5, 5, baker->descriptors[0].u.dat.dual.array->data);
+        // dvz_show_buffer(6, 6, 6, baker->descriptors[1].u.dat.dual.array->data);
     }
 
     // Check the dat uploads.
@@ -186,67 +186,67 @@ int test_baker_1(TstSuite* suite)
 
 int test_baker_2(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    // DvzRequester* rqr = dvz_requester();
+    // dvz_requester_begin(rqr);
 
-    // Declare a descriptor slot.
-    DvzBaker* baker = dvz_baker(rqr, 0);
-    dvz_baker_slot_dat(baker, 0, 1);
+    // // Declare a descriptor slot.
+    // DvzBaker* baker = dvz_baker(rqr, 0);
+    // dvz_baker_slot_dat(baker, 0, 1);
 
-    // Create a dual dat manually.
-    DvzDual dual = dvz_dual_dat(rqr, 1, 0);
+    // // Create a dual dat manually.
+    // DvzDual dual = dvz_dual_dat(rqr, 1, 0);
 
-    // Use it as baker's dat.
-    dvz_baker_share_binding(baker, 0);
-    baker->descriptors[0].u.dat.dual = dual;
+    // // Use it as baker's dat.
+    // dvz_baker_share_binding(baker, 0);
+    // baker->descriptors[0].u.dat.dual = dual;
 
-    // Create the baker.
-    dvz_baker_create(baker, 0, 1);
+    // // Create the baker.
+    // dvz_baker_create(baker, 0, 1);
 
-    // Set some data with the baker.
-    uint8_t data = 42;
-    dvz_baker_uniform(baker, 0, 1, &data);
+    // // Set some data with the baker.
+    // uint8_t data = 42;
+    // dvz_baker_uniform(baker, 0, 1, &data);
 
-    AT(*((uint8_t*)dvz_array_item(dual.array, 0)) == 42);
+    // AT(*((uint8_t*)dvz_array_item(dual.array, 0)) == 42);
 
-    // Destroy the objects.
-    dvz_baker_destroy(baker);
-    dvz_dual_destroy(&dual);
-    dvz_requester_destroy(rqr);
+    // // Destroy the objects.
+    // dvz_baker_destroy(baker);
+    // dvz_dual_destroy(&dual);
+    // dvz_requester_destroy(rqr);
     return 0;
 }
 
 
 
-int test_baker_3(TstSuite* suite)
-{
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+// int test_baker_3(TstSuite* suite)
+// {
+//     DvzRequester* rqr = dvz_requester();
+//     dvz_requester_begin(rqr);
 
-    // Declare a descriptor slot.
-    DvzBaker* baker = dvz_baker(rqr, 0);
-    dvz_baker_slot_dat(baker, 0, 6);
+//     // Declare a descriptor slot.
+//     DvzBaker* baker = dvz_baker(rqr, 0);
+//     dvz_baker_slot_dat(baker, 0, 6);
 
-    // Properties.
-    dvz_baker_property(baker, 0, 0, 0, 2);
-    dvz_baker_property(baker, 1, 0, 2, 4);
+//     // Properties.
+//     dvz_baker_property(baker, 0, 0, 0, 2);
+//     dvz_baker_property(baker, 1, 0, 2, 4);
 
-    // Create the baker.
-    dvz_baker_create(baker, 0, 1);
+//     // Create the baker.
+//     dvz_baker_create(baker, 0, 1);
 
-    // Set baker parameters.
-    dvz_baker_param(baker, 0, (char[]){1, 2});
-    dvz_baker_param(baker, 1, (char[]){3, 4, 5, 6});
+//     // Set baker parameters.
+//     dvz_baker_param(baker, 0, (char[]){1, 2});
+//     dvz_baker_param(baker, 1, (char[]){3, 4, 5, 6});
 
-    // Emit the dat upload requests.
-    dvz_baker_update(baker);
+//     // Emit the dat upload requests.
+//     dvz_baker_update(baker);
 
-    // Check the upload data.
-    AT(memcmp(rqr->requests[1].content.dat_upload.data, (char[]){1, 2, 3, 4, 5, 6}, 6) == 0);
-    // dvz_show_buffer(2, 6, 6, baker->descriptors[0].dual.array->data);
+//     // Check the upload data.
+//     AT(memcmp(rqr->requests[1].content.dat_upload.data, (char[]){1, 2, 3, 4, 5, 6}, 6) == 0);
+//     // dvz_show_buffer(2, 6, 6, baker->descriptors[0].dual.array->data);
 
-    // Destroy the objects.
-    dvz_baker_destroy(baker);
-    dvz_requester_destroy(rqr);
-    return 0;
-}
+//     // Destroy the objects.
+//     dvz_baker_destroy(baker);
+//     dvz_requester_destroy(rqr);
+//     return 0;
+// }
