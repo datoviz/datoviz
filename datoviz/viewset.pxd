@@ -19,6 +19,21 @@ cdef extern from "<datoviz/scene/viewset.h>":
     ctypedef struct DvzVisual:
         pass
 
+    ctypedef struct DvzMouseReference:
+        pass
+
+    ctypedef struct DvzMouse:
+        pass
+
+    ctypedef struct DvzMouseEvent:
+        pass
+
+    ctypedef struct DvzKeyboard:
+        pass
+
+    ctypedef struct DvzKeyboardEvent:
+        pass
+
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -72,6 +87,8 @@ cdef extern from "<datoviz/scene/viewset.h>":
     DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
     void dvz_view_add(DvzView* view, DvzVisual* visual, uint32_t first, uint32_t count, uint32_t first_instance, uint32_t instance_count, DvzTransform* transform, int viewport_flags)
+
+    DvzMouseEvent dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref)
 
     void dvz_view_clear(DvzView* view)
 

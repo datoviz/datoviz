@@ -37,7 +37,7 @@ cdef extern from "<datoviz/scene/visuals/pixel.h>":
 
     void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
 
-    void dvz_pixel_create(DvzVisual* pixel, uint32_t item_count)
+    void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count)
 
 
     # FUNCTION END

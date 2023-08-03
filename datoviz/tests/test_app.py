@@ -33,10 +33,10 @@ HEIGHT = 600
 
 def test_app_1():
     app = App()
-    canvas = app.canvas(flags=3)
-    view = canvas.view()
+    scene = app.scene()
+    fig = scene.figure(WIDTH, HEIGHT, 0)
 
-    n = 1_000_000
+    n = 10_000
     pixel = app.pixel(n)
 
     pos = np.zeros((n, 3), dtype=np.float32)
@@ -48,10 +48,13 @@ def test_app_1():
     color[:, 3] = 10
     pixel.color(color)
 
-    view.add(pixel)
+    fig.visual(pixel)
 
-    canvas.build()
-    app.run()
+    # view.add(pixel)
+
+    # canvas.build()
+    # app.run()
+    scene.run()
 
 
 if __name__ == '__main__':

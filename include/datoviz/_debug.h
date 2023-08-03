@@ -32,6 +32,9 @@
 /*  Debugging functions                                                                          */
 /*************************************************************************************************/
 
+/* */
+/*
+ */
 static bool dvz_is_empty(size_t size, const uint8_t* buf)
 {
     return buf[0] == 0 && !memcmp(buf, buf + 1, size - 1);
@@ -39,6 +42,9 @@ static bool dvz_is_empty(size_t size, const uint8_t* buf)
 
 
 
+/* */
+/*
+ */
 static void dvz_show_base64(size_t size, const void* buffer)
 {
     char* encoded = b64_encode((const unsigned char*)buffer, size);

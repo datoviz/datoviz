@@ -40,7 +40,13 @@ cdef extern from "<datoviz/scene/app.h>":
     ctypedef struct DvzMouse:
         pass
 
+    ctypedef struct DvzMouseEvent:
+        pass
+
     ctypedef struct DvzKeyboard:
+        pass
+
+    ctypedef struct DvzKeyboardEvent:
         pass
 
     ctypedef void (*DvzClientCallback)(DvzClient*, DvzClientEvent)
@@ -65,28 +71,21 @@ cdef extern from "<datoviz/scene/app.h>":
         int mods
         void* user_data
 
-    ctypedef struct DvzMouseMoveEvent:
-        vec2 pos
-
     ctypedef struct DvzMouseButtonEvent:
         DvzMouseButton button
 
     ctypedef struct DvzMouseWheelEvent:
-        vec2 pos
         vec2 dir
 
     ctypedef struct DvzMouseDragEvent:
         DvzMouseButton button
-        vec2 pos
-        vec2 press_pos
+        vec2 cur_pos
         vec2 shift
 
     ctypedef struct DvzMouseClickEvent:
         DvzMouseButton button
-        vec2 pos
 
     ctypedef union DvzMouseEventUnion:
-        DvzMouseMoveEvent m
         DvzMouseButtonEvent b
         DvzMouseWheelEvent w
         DvzMouseDragEvent d
@@ -95,6 +94,7 @@ cdef extern from "<datoviz/scene/app.h>":
     ctypedef struct DvzMouseEvent:
         DvzMouseEventType type
         DvzMouseEventUnion content
+        vec2 pos
         int mods
         void* user_data
 
@@ -168,6 +168,8 @@ cdef extern from "<datoviz/scene/app.h>":
     DvzRequester* dvz_app_requester(DvzApp* app)
 
     void dvz_app_frame(DvzApp* app)
+
+    void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data)
 
     void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
 

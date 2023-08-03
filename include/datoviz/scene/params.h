@@ -11,10 +11,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_enums.h"
-#include "_log.h"
-#include "_math.h"
-#include "scene/dual.h"
+#include "../_enums.h"
+#include "../_log.h"
+#include "../_math.h"
+#include "dual.h"
 
 
 

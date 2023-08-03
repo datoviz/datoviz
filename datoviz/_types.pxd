@@ -33,6 +33,7 @@ cdef extern from "<datoviz/common.h>":
 
     ctypedef uint64_t DvzSize
     ctypedef uint64_t DvzId
+    ctypedef uint32_t DvzIndex
 
     # ---------------------------------------------------------------------------------------------
     # ---------------------------------------------------------------------------------------------
@@ -110,10 +111,19 @@ cdef extern from "<datoviz/common.h>":
         DVZ_SAMPLER_FILTER_MIN = 0
         DVZ_SAMPLER_FILTER_MAG = 1
 
+    ctypedef enum DvzBlendType:
+        DVZ_BLEND_DISABLE = 0
+        DVZ_BLEND_ENABLE = 1
+
+    ctypedef enum DvzDepthTest:
+        DVZ_DEPTH_TEST_DISABLE = 0
+        DVZ_DEPTH_TEST_ENABLE = 1
+
     ctypedef enum DvzFormat:
         DVZ_FORMAT_NONE = 0
         DVZ_FORMAT_R8_UNORM = 9
         DVZ_FORMAT_R8_SNORM = 10
+        DVZ_FORMAT_R8_UINT = 13
         DVZ_FORMAT_R8G8B8_UNORM = 23
         DVZ_FORMAT_R8G8B8A8_UNORM = 37
         DVZ_FORMAT_R8G8B8A8_UINT = 41
@@ -123,7 +133,9 @@ cdef extern from "<datoviz/common.h>":
         DVZ_FORMAT_R32_UINT = 98
         DVZ_FORMAT_R32_SINT = 99
         DVZ_FORMAT_R32_SFLOAT = 100
+        DVZ_FORMAT_R32G32_SFLOAT = 103
         DVZ_FORMAT_R32G32B32_SFLOAT = 106
+        DVZ_FORMAT_R32G32B32A32_SFLOAT = 109
 
     ctypedef enum DvzFilter:
         DVZ_FILTER_NEAREST = 0
@@ -144,6 +156,20 @@ cdef extern from "<datoviz/common.h>":
         DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3
         DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4
         DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5
+
+    ctypedef enum DvzPolygonMode:
+        DVZ_POLYGON_MODE_FILL = 0
+        DVZ_POLYGON_MODE_LINE = 1
+        DVZ_POLYGON_MODE_POINT = 2
+
+    ctypedef enum DvzFrontFace:
+        DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0
+        DVZ_FRONT_FACE_CLOCKWISE = 1
+
+    ctypedef enum DvzCullMode:
+        DVZ_CULL_MODE_NONE = 0
+        DVZ_CULL_MODE_FRONT = 0x00000001
+        DVZ_CULL_MODE_BACK = 0x00000002
 
     ctypedef enum DvzShaderType:
         DVZ_SHADER_VERTEX = 0x00000001
@@ -186,6 +212,10 @@ cdef extern from "<datoviz/common.h>":
         DVZ_GRAPHICS_COUNT = 19
         DVZ_GRAPHICS_CUSTOM = 20
 
+    ctypedef enum DvzSlotType:
+        DVZ_SLOT_DAT = 0
+        DVZ_SLOT_TEX = 1
+
     ctypedef enum DvzKeyboardModifiers:
         DVZ_KEY_MODIFIER_NONE = 0x00000000
         DVZ_KEY_MODIFIER_SHIFT = 0x00000001
@@ -203,14 +233,6 @@ cdef extern from "<datoviz/common.h>":
         DVZ_MOUSE_BUTTON_LEFT = 1
         DVZ_MOUSE_BUTTON_MIDDLE = 2
         DVZ_MOUSE_BUTTON_RIGHT = 3
-
-    ctypedef enum DvzMouseState:
-        DVZ_MOUSE_STATE_RELEASE = 0
-        DVZ_MOUSE_STATE_PRESS = 1
-        DVZ_MOUSE_STATE_CLICK = 3
-        DVZ_MOUSE_STATE_CLICK_PRESS = 4
-        DVZ_MOUSE_STATE_DOUBLE_CLICK = 5
-        DVZ_MOUSE_STATE_DRAGGING = 11
 
     ctypedef enum DvzMouseEventType:
         DVZ_MOUSE_EVENT_RELEASE = 0
@@ -378,11 +400,6 @@ cdef extern from "<datoviz/common.h>":
         DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20
         DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30
         DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40
-
-    ctypedef enum DvzMouseReference:
-        DVZ_MOUSE_REFERENCE_GLOBAL = 0
-        DVZ_MOUSE_REFERENCE_LOCAL = 1
-        DVZ_MOUSE_REFERENCE_SCALED = 2
 
     ctypedef enum DvzVisualFlags:
         DVZ_VISUALS_FLAGS_DEFAULT = 0x0000

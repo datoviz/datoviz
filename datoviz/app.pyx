@@ -9,6 +9,7 @@ from . cimport _types as tp
 from . cimport viewset as vs
 from . cimport pixel as px
 from . cimport app as pt
+from . cimport scene as sc
 from . cimport request as rq
 from . cimport fileio
 from libc.stdlib cimport free
@@ -44,7 +45,7 @@ cdef class Visual:
     cdef pt.DvzApp * _c_app
     cdef rq.DvzRequester * _c_rqr
 
-    cdef vs.DvzVisual * _c_visual
+    cdef sc.DvzVisual * _c_visual
     cdef tp.uint32_t _c_count
 
     cdef np.ndarray _arr_pos
@@ -61,6 +62,7 @@ cdef class Visual:
 
         # TODO: other visuals
         self._c_visual = px.dvz_pixel(self._c_rqr, 0)
+        px.dvz_pixel_alloc(self._c_visual, count)
 
     def position(self, np.ndarray[dtype=float, ndim=2] arr):
         self._arr_pos[:] = arr
@@ -137,6 +139,52 @@ cdef class Canvas:
 
 
 # -------------------------------------------------------------------------------------------------
+# Figure
+# -------------------------------------------------------------------------------------------------
+
+cdef class Figure:
+    cdef pt.DvzApp * _c_app
+    cdef rq.DvzRequester * _c_rqr
+    cdef sc.DvzFigure * _c_fig
+    cdef sc.DvzPanel * _c_panel
+    cdef sc.DvzScene * _c_scene
+
+    def __init__(self, Scene scene, int width, int height, int flags):
+        self._c_app = scene._c_app
+        self._c_scene = scene._c_scene
+        self._c_fig = sc.dvz_figure(self._c_scene, width, height, flags)
+        # self.width = width
+        # self.height = height
+        self._c_panel = sc.dvz_panel_default(self._c_fig)
+        cdef sc.DvzPanzoom* pz = sc.dvz_panel_panzoom(self._c_app, self._c_panel)
+
+    def visual(self, Visual visual):
+        sc.dvz_panel_visual(self._c_panel, visual._c_visual)
+
+
+# -------------------------------------------------------------------------------------------------
+# Scene
+# -------------------------------------------------------------------------------------------------
+
+cdef class Scene:
+    cdef pt.DvzApp * _c_app
+    cdef rq.DvzRequester * _c_rqr
+    cdef sc.DvzScene * _c_scene
+
+    def __init__(self, App app):
+        self._c_app = app._c_app
+        self._c_rqr = app._c_rqr
+        self._c_scene = sc.dvz_scene(self._c_rqr)
+
+    def figure(self, int width=WIDTH, int height=HEIGHT, int flags=0):
+        # cdef sc.DvzFigure* c_fig = sc.dvz_figure(self._c_scene, width, height, flags)
+        return Figure(self, width, height, flags)
+
+    def run(self, int n = 0):
+        sc.dvz_scene_run(self._c_scene, self._c_app, n)
+
+
+# -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
 
@@ -147,6 +195,9 @@ cdef class App:
     def __init__(self):
         self._c_app = pt.dvz_app()
         self._c_rqr = pt.dvz_app_requester(self._c_app)
+
+    def scene(self):
+        return Scene(self)
 
     def canvas(self, int width=WIDTH, int height=HEIGHT, int flags=0):
         # Background color
@@ -184,29 +235,29 @@ cdef class App:
 # Entry-point
 # -------------------------------------------------------------------------------------------------
 
-def main():
-    app = App()
+# def main():
+#     app = App()
 
-    n = 50
-    arr = np.zeros(n, dtype=[('pos', 'f4', 3),
-                   ('color', 'u1', 4), ('size', 'f4')])
-    t = np.linspace(-1, 1, n, dtype=np.float32)
-    arr['pos'] = .75 * \
-        np.c_[np.cos(np.pi*t), np.sin(np.pi*t), np.zeros(n)]
-    arr['color'][:] = 255
-    arr['size'][:] = 10.0
+#     n = 50
+#     arr = np.zeros(n, dtype=[('pos', 'f4', 3),
+#                    ('color', 'u1', 4), ('size', 'f4')])
+#     t = np.linspace(-1, 1, n, dtype=np.float32)
+#     arr['pos'] = .75 * \
+#         np.c_[np.cos(np.pi*t), np.sin(np.pi*t), np.zeros(n)]
+#     arr['color'][:] = 255
+#     arr['size'][:] = 10.0
 
-    with app.commands() as cmd:
-        c = cmd.Canvas(width=800, height=600)
-        g = cmd.Graphics(1, flags=3)  # default MVP and viewport
-        vb = cmd.VertexBuffer(arr)
-        g.set_vertex_buffer(vb)
+#     with app.commands() as cmd:
+#         c = cmd.Canvas(width=800, height=600)
+#         g = cmd.Graphics(1, flags=3)  # default MVP and viewport
+#         vb = cmd.VertexBuffer(arr)
+#         g.set_vertex_buffer(vb)
 
-        with c.record() as r:
-            r.viewport(0, 0, 0, 0)
-            r.draw(g, 0, n)
-    app.run()
+#         with c.record() as r:
+#             r.viewport(0, 0, 0, 0)
+#             r.draw(g, 0, n)
+#     app.run()
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()

@@ -178,12 +178,14 @@ def parse_structs(text):
 def parse_functions(text):
     funcs = {}
     const = Keyword("const")
+    unsigned = Keyword("unsigned")
     static = Keyword("static")
     inline = Keyword("inline")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     argDecl = Group(
         Optional(const("const")) +
+        Optional(unsigned("unsigned")) +
         dtype("dtype") +
         Optional(identifier("name")
                  ) + Optional(COMMA))

@@ -36,18 +36,26 @@ FUNCTION_END = '# FUNCTION END'
 
 ENUMS = (
     'DvzBackend',
+    'DvzBlendType',
     'DvzBufferType',
-    'DvzClient',
+    'DvzClientCallbackMode',
+    'DvzClientEventType',
+    'DvzCullMode',
+    'DvzDepthTest',
     'DvzFilter',
     'DvzFormat',
+    'DvzFrontFace',
     'DvzGraphics',
     'DvzKey',
-    'DvzMouse',
+    'DvzMouseButton',
+    'DvzMouseEventType',
+    'DvzPolygonMode',
     'DvzPrimitive',
     'DvzProp',
     'DvzRequest',
     'DvzSampler',
     'DvzShader',
+    'DvzSlotType',
     'DvzTexDims',
     'DvzView',
     'DvzVisual',
@@ -86,6 +94,18 @@ VIEWSET_STRUCTS = (
 
 VIEWSET_FUNCTIONS = (
     'dvz_view',
+)
+
+SCENE_STRUCTS = (
+    # 'DvzScene',
+    # 'DvzVisual',
+)
+
+SCENE_FUNCTIONS = (
+    'dvz_scene',
+    'dvz_visual',
+    'dvz_panel',
+    'dvz_figure',
 )
 
 PIXEL_FUNCTIONS = (
@@ -254,6 +274,12 @@ def generate_cython():
     insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(VIEWSET_STRUCTS))
     insert_into_file(
         path, FUNCTION_START, FUNCTION_END, generate_functions(VIEWSET_FUNCTIONS))
+
+    # scene.h
+    path = ROOT_DIR / 'datoviz/scene.pxd'
+    insert_into_file(path, STRUCT_START, STRUCT_END, generate_structs(SCENE_STRUCTS))
+    insert_into_file(
+        path, FUNCTION_START, FUNCTION_END, generate_functions(SCENE_FUNCTIONS))
 
     # pixel.h
     path = ROOT_DIR / 'datoviz/pixel.pxd'
