@@ -212,6 +212,10 @@ cdef extern from "<datoviz/common.h>":
         DVZ_GRAPHICS_COUNT = 19
         DVZ_GRAPHICS_CUSTOM = 20
 
+    ctypedef enum DvzRendererFlags:
+        DVZ_RENDERER_FLAGS_NONE = 0
+        DVZ_RENDERER_FLAGS_WHITE_BACKGROUND = 1
+
     ctypedef enum DvzSlotType:
         DVZ_SLOT_DAT = 0
         DVZ_SLOT_TEX = 1

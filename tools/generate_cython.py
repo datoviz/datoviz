@@ -53,6 +53,7 @@ ENUMS = (
     'DvzPolygonMode',
     'DvzPrimitive',
     'DvzProp',
+    'DvzRendererFlags',
     'DvzRequest',
     'DvzSampler',
     'DvzShader',

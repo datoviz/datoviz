@@ -107,7 +107,7 @@ void dvz_fps_histogram(DvzFps* fps)
     // No background color.
     ImGui::PushStyleColor(ImGuiCol_FrameBg, 0);
     // Histogram color.
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0, 0, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, (ImVec4)ImColor::HSV(0, 0, 0.75f));
 
     // Histogram.
     ImGui::PlotHistogram(
