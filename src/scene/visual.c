@@ -325,7 +325,7 @@ void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
 
 
 
-void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzParams* params)
+void dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzParams* params)
 {
     ANN(visual);
     ANN(visual->baker);
@@ -458,7 +458,7 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
         dvz_set_attr(rqr, graphics_id, attr->binding_idx, attr_idx, attr->format, attr->offset);
     }
 
-    // The baker slots are declared directly in dvz_visual_dat() and dvz_visual_tex().
+    // The baker slots are declared directly in dvz_visual_params() and dvz_visual_tex().
     // Now, we can create the baker. This will create the arrays and dats.
 
     visual->item_count = item_count;
@@ -540,7 +540,7 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
     // }
 
     DvzParams* params = dvz_params(visual->rqr, sizeof(DvzMVP), false);
-    dvz_visual_dat(visual, 0, params);
+    dvz_visual_params(visual, 0, params);
     dvz_params_data(params, mvp);
 }
 
@@ -560,7 +560,7 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
     // }
 
     DvzParams* params = dvz_params(visual->rqr, sizeof(DvzViewport), false);
-    dvz_visual_dat(visual, 1, params);
+    dvz_visual_params(visual, 1, params);
     dvz_params_data(params, viewport);
 }
 
