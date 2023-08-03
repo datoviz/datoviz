@@ -14,11 +14,14 @@ from . cimport scene as sc
 from . cimport request as rq
 from . cimport fileio
 from libc.stdlib cimport free
+from cpython.ref cimport Py_INCREF
 from cython.view cimport array
-import numpy as np
+
+import traceback
 import logging
 from contextlib import contextmanager
 
+import numpy as np
 cimport numpy as np
 
 
@@ -91,6 +94,13 @@ cdef class Visual:
         cdef cvec4 * data = <cvec4*> & arr.data[0]
         # px.dvz_pixel_color(self._c_visual, 0, self._c_count, data, 0)
         sg.dvz_segment_color(self._c_visual, 0, self._c_count, data, 0)
+
+    def update(self):
+        # NOTE: important: wrap the requests between begin and end, otherwise they won't be sent to
+        # the renderer.
+        rq.dvz_requester_begin(self._c_rqr)
+        sc.dvz_visual_update(self._c_visual)
+        rq.dvz_requester_end(self._c_rqr, NULL)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -206,6 +216,136 @@ cdef class Scene:
 # App
 # -------------------------------------------------------------------------------------------------
 
+# cdef _scene_onframe(pt.DvzClient* client, pt.DvzClientEvent ev):
+#     cdef void* user_data = ev.user_data
+
+
+# cdef _get_event_args(cv.DvzEvent c_ev):
+#     """Prepare the arguments to the Python event callbacks from the Datoviz DvzEvent struct."""
+#     cdef float* fvalue
+#     cdef int* ivalue
+#     cdef bint* bvalue
+#     dt = c_ev.type
+
+#     # GUI events.
+#     if dt == cv.DVZ_EVENT_GUI:
+#         if c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT:
+#             fvalue = <float*>c_ev.u.g.control.value
+#             return (fvalue[0],), {}
+#         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_FLOAT2:
+#             fvalue = <float*>c_ev.u.g.control.value
+#             return (fvalue[0], fvalue[1]), {}
+#         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_SLIDER_INT:
+#             ivalue = <int*>c_ev.u.g.control.value
+#             return (ivalue[0],), {}
+#         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_INPUT_FLOAT:
+#             fvalue = <float*>c_ev.u.g.control.value
+#             return (fvalue[0],), {}
+#         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_CHECKBOX:
+#             bvalue = <bint*>c_ev.u.g.control.value
+#             return (bvalue[0],), {}
+#         elif c_ev.u.g.control.type == cv.DVZ_GUI_CONTROL_BUTTON:
+#             bvalue = <bint*>c_ev.u.g.control.value
+#             return (bvalue[0],), {}
+
+#     # Key events.
+#     elif dt == cv.DVZ_EVENT_KEY_PRESS or dt == cv.DVZ_EVENT_KEY_RELEASE:
+#         key = _key_name(c_ev.u.k.key_code)
+#         modifiers = _get_modifiers(c_ev.u.k.modifiers)
+#         return (key, modifiers), {}
+
+#     # Mouse button events.
+#     elif dt == cv.DVZ_EVENT_MOUSE_PRESS or dt == cv.DVZ_EVENT_MOUSE_RELEASE:
+#         button = _button_name(c_ev.u.b.button)
+#         modifiers = _get_modifiers(c_ev.u.b.modifiers)
+#         return (button, modifiers), {}
+
+#     # Mouse button events.
+#     elif dt == cv.DVZ_EVENT_MOUSE_CLICK or dt == cv.DVZ_EVENT_MOUSE_DOUBLE_CLICK:
+#         x = c_ev.u.c.pos[0]
+#         y = c_ev.u.c.pos[1]
+#         button = _button_name(c_ev.u.c.button)
+#         modifiers = _get_modifiers(c_ev.u.c.modifiers)
+#         dbl = c_ev.u.c.double_click
+#         return (x, y), dict(button=button, modifiers=modifiers)  #, double_click=dbl)
+
+#     # Mouse move event.
+#     elif dt == cv.DVZ_EVENT_MOUSE_MOVE:
+#         x = c_ev.u.m.pos[0]
+#         y = c_ev.u.m.pos[1]
+#         modifiers = _get_modifiers(c_ev.u.m.modifiers)
+#         return (x, y), dict(modifiers=modifiers)
+
+#     # Mouse wheel event.
+#     elif dt == cv.DVZ_EVENT_MOUSE_WHEEL:
+#         x = c_ev.u.w.pos[0]
+#         y = c_ev.u.w.pos[1]
+#         dx = c_ev.u.w.dir[0]
+#         dy = c_ev.u.w.dir[1]
+#         modifiers = _get_modifiers(c_ev.u.w.modifiers)
+#         return (x, y, dx, dy), dict(modifiers=modifiers)
+
+#     # Frame event.
+#     elif dt == cv.DVZ_EVENT_FRAME:
+#         idx = c_ev.u.f.idx
+#         return (idx,), {}
+
+#     return (), {}
+
+
+
+cdef _wrapped_callback(pt.DvzClient* c_client, pt.DvzClientEvent c_ev):
+    """C callback function that wraps a Python callback function."""
+
+    # NOTE: this function may run in a background thread if using async callbacks
+    # It should not acquire the GIL.
+
+    cdef object tup
+    if c_ev.user_data != NULL:
+
+        # The Python function and its arguments are wrapped in this Python object.
+        tup = <object>c_ev.user_data
+
+        # For each type of event, get the arguments to the function
+        # ev_args, ev_kwargs = _get_event_args(c_ev)
+
+        # Recover the Python function and arguments.
+        f, args = tup
+
+        # This is the control type the callback was registered for.
+        # name = args[0] if args else None
+
+        # NOTE: we only call the callback if the raised GUI event is for that control.
+        # dt = c_ev.type
+        # if dt == cv.DVZ_EVENT_GUI:
+        #     if c_ev.u.g.control.name != name:
+        #         return
+
+        # We run the registered Python function on the event arguments.
+        try:
+            # f(*ev_args, **ev_kwargs)
+            f()
+        except Exception as e:
+            print(traceback.format_exc())
+
+
+cdef _add_event_callback(pt.DvzApp* c_app, f):
+    """Register a Python callback function using the Datoviz C API."""
+
+    # Create a tuple with the Python function, and the arguments.
+    cdef void* ptr_to_obj
+    tup = (f, ())
+
+    # IMPORTANT: need to either keep a reference of this tuple object somewhere in the class,
+    # or increase the ref, otherwise this tuple will be deleted by the time we call it in the
+    # C callback function.
+    Py_INCREF(tup)
+
+    # Call the Datoviz C API to register the C-wrapped callback function.
+    ptr_to_obj = <void*>tup
+    pt.dvz_app_onframe(c_app, <pt.DvzClientCallback>_wrapped_callback, ptr_to_obj)
+
+
 cdef class App:
     cdef pt.DvzApp * _c_app
     cdef rq.DvzRequester * _c_rqr
@@ -235,6 +375,9 @@ cdef class App:
         cdef rq.DvzRequest req = rq.dvz_create_canvas(self._c_rqr, width, height, c_background, flags)
         # logger.debug(f"create canvas {width}x{height}, id={id:02x}, flags={flags}")
         return Canvas(self, req.id)
+
+    def on_frame(self, f):
+        _add_event_callback(self._c_app, f)
 
     def visual(self, count):
         return Visual(self, count)

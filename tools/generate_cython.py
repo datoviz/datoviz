@@ -85,6 +85,7 @@ APP_FUNCTIONS = (
 
 APP_STRUCTS = (
     'DvzClient',
+    'DvzClientEvent',
     'DvzMouse',
     'DvzKeyboard',
 )

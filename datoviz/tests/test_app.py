@@ -32,13 +32,13 @@ HEIGHT = 600
 # -------------------------------------------------------------------------------------------------
 
 def test_app_1():
-    np.random.seed(0)
+    # np.random.seed(0)
 
     app = App()
     scene = app.scene()
     fig = scene.figure(512, 512, 3)
 
-    n = 1_000
+    n = 1000
     visual = app.visual(n)
 
     pos = np.zeros((n, 3), dtype=np.float32)
@@ -58,6 +58,17 @@ def test_app_1():
     visual.color(color)
 
     fig.visual(visual)
+
+    @app.on_frame
+    def f():
+        pos[:, :2] = -1+2*np.random.rand(n, 2)
+        visual.initial(pos)
+
+        pos[:, :2] = -1+2*np.random.rand(n, 2)
+        visual.terminal(pos)
+
+        # print(pos[0])
+        visual.update()
 
     # view.add(visual)
 
