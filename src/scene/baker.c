@@ -57,7 +57,8 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         log_trace("skipping creation of shared dat for vertex binding #%d", binding_idx);
         return;
     }
-    bv->dual = dvz_dual_vertex(baker->rqr, vertex_count, bv->stride, 0);
+    bv->dual =
+        dvz_dual_vertex(baker->rqr, vertex_count, bv->stride, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     // NOTE; mark the dual as needing to be destroyed by the library
     bv->dual.need_destroy = true;
 }
