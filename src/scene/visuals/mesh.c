@@ -69,6 +69,9 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzMeshVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 2, FIELD(DvzMeshVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
+    // Vertex stride.
+    dvz_visual_stride(visual, 0, sizeof(DvzMeshVertex));
+
     // dvz_visual_attr(visual, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
     // dvz_visual_attr(visual, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha
     // TODO: fix alignment

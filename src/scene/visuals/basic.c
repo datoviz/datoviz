@@ -47,6 +47,9 @@ DvzVisual* dvz_basic(DvzRequester* rqr, DvzPrimitiveTopology topology, int flags
     dvz_visual_attr(visual, 0, FIELD(DvzBasicVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 1, FIELD(DvzBasicVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
+    // Vertex stride.
+    dvz_visual_stride(visual, 0, sizeof(DvzBasicVertex));
+
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
