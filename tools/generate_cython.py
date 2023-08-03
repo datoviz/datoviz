@@ -38,6 +38,7 @@ ENUMS = (
     'DvzBackend',
     'DvzBlendType',
     'DvzBufferType',
+    'DvzCapType',
     'DvzClientCallbackMode',
     'DvzClientEventType',
     'DvzCullMode',
@@ -110,6 +111,10 @@ SCENE_FUNCTIONS = (
 
 PIXEL_FUNCTIONS = (
     'dvz_pixel',
+)
+
+SEGMENT_FUNCTIONS = (
+    'dvz_segment',
 )
 
 # RENDERER_FUNCTIONS = (
@@ -285,6 +290,11 @@ def generate_cython():
     path = ROOT_DIR / 'datoviz/pixel.pxd'
     insert_into_file(
         path, FUNCTION_START, FUNCTION_END, generate_functions(PIXEL_FUNCTIONS))
+
+    # segment.h
+    path = ROOT_DIR / 'datoviz/segment.pxd'
+    insert_into_file(
+        path, FUNCTION_START, FUNCTION_END, generate_functions(SEGMENT_FUNCTIONS))
 
     # request.h
     path = ROOT_DIR / 'datoviz/request.pxd'

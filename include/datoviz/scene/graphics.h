@@ -11,9 +11,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/mvp.h"
-#include "scene/viewport.h"
-#include "vklite.h" // TODO: remove this dependency
+#include "../vklite.h" // TODO: remove this dependency
+#include "mvp.h"
+#include "viewport.h"
 
 
 

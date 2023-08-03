@@ -36,21 +36,28 @@ def test_app_1():
     scene = app.scene()
     fig = scene.figure(WIDTH, HEIGHT, 0)
 
-    n = 1_000_000
-    pixel = app.pixel(n)
+    n = 1_000
+    visual = app.visual(n)
 
     pos = np.zeros((n, 3), dtype=np.float32)
+
     pos[:, :2] = .25 * np.random.randn(n, 2)
-    pixel.position(pos)
+    visual.initial(pos)
+
+    pos[:, :2] = .25 * np.random.randn(n, 2)
+    visual.terminal(pos)
+
+    linewidth = 10.0 * np.ones(n, dtype=np.float32)
+    visual.linewidth(linewidth)
 
     color = np.zeros((n, 4), dtype=np.uint8)
     color[:, :3] = np.random.randint(low=100, high=255, size=(n, 3))
     color[:, 3] = 255
-    pixel.color(color)
+    visual.color(color)
 
-    fig.visual(pixel)
+    fig.visual(visual)
 
-    # view.add(pixel)
+    # view.add(visual)
 
     # canvas.build()
     # app.run()

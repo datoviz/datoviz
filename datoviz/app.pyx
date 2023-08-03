@@ -8,6 +8,7 @@
 from . cimport _types as tp
 from . cimport viewset as vs
 from . cimport pixel as px
+from . cimport segment as sg
 from . cimport app as pt
 from . cimport scene as sc
 from . cimport request as rq
@@ -61,18 +62,35 @@ cdef class Visual:
         self._arr_color = np.zeros((count, 4), dtype=np.uint8)
 
         # TODO: other visuals
-        self._c_visual = px.dvz_pixel(self._c_rqr, 0)
-        px.dvz_pixel_alloc(self._c_visual, count)
+        # self._c_visual = px.dvz_pixel(self._c_rqr, 0)
+        self._c_visual = sg.dvz_segment(self._c_rqr, 0)
+        sg.dvz_segment_alloc(self._c_visual, count)
 
-    def position(self, np.ndarray[dtype=float, ndim=2] arr):
-        self._arr_pos[:] = arr
-        cdef vec3 * data = <vec3*> & self._arr_pos.data[0]
-        px.dvz_pixel_position(self._c_visual, 0, self._c_count, data, 0)
+    def initial(self, np.ndarray[dtype=float, ndim=2] arr):
+        # self._arr_pos[:] = arr
+        cdef vec3 * data = <vec3*> & arr.data[0]
+        sg.dvz_segment_initial(self._c_visual, 0, self._c_count, data, 0)
+
+    def terminal(self, np.ndarray[dtype=float, ndim=2] arr):
+        # self._arr_pos[:] = arr
+        cdef vec3 * data = <vec3*> & arr.data[0]
+        sg.dvz_segment_terminal(self._c_visual, 0, self._c_count, data, 0)
+
+    def linewidth(self, np.ndarray[dtype=float, ndim=1] arr):
+        # self._arr_pos[:] = arr
+        cdef float * data = <float*> & arr.data[0]
+        sg.dvz_segment_linewidth(self._c_visual, 0, self._c_count, data, 0)
+
+    # def position(self, np.ndarray[dtype=float, ndim=2] arr):
+    #     self._arr_pos[:] = arr
+    #     cdef vec3 * data = <vec3*> & arr.data[0]
+    #     px.dvz_pixel_position(self._c_visual, 0, self._c_count, data, 0)
 
     def color(self, np.ndarray[dtype=tp.uint8_t, ndim=2] arr):
-        self._arr_color[:] = arr
-        cdef cvec4 * data = <cvec4*> & self._arr_color.data[0]
-        px.dvz_pixel_color(self._c_visual, 0, self._c_count, data, 0)
+        # self._arr_color[:] = arr
+        cdef cvec4 * data = <cvec4*> & arr.data[0]
+        # px.dvz_pixel_color(self._c_visual, 0, self._c_count, data, 0)
+        sg.dvz_segment_color(self._c_visual, 0, self._c_count, data, 0)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -218,7 +236,7 @@ cdef class App:
         # logger.debug(f"create canvas {width}x{height}, id={id:02x}, flags={flags}")
         return Canvas(self, req.id)
 
-    def pixel(self, count):
+    def visual(self, count):
         return Visual(self, count)
 
     def run(self):

@@ -392,6 +392,15 @@ cdef extern from "<datoviz/common.h>":
         DVZ_REQUEST_FLAGS_NONE = 0x0000
         DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000
 
+    ctypedef enum DvzCapType:
+        DVZ_CAP_TYPE_NONE = 0
+        DVZ_CAP_ROUND = 1
+        DVZ_CAP_TRIANGLE_IN = 2
+        DVZ_CAP_TRIANGLE_OUT = 3
+        DVZ_CAP_SQUARE = 4
+        DVZ_CAP_BUTT = 5
+        DVZ_CAP_COUNT = 6
+
     ctypedef enum DvzViewportFlags:
         DVZ_VIEWPORT_FLAGS_NONE = 0x00
         DVZ_VIEWPORT_FLAGS_WITH_MARGINS = 0x00
