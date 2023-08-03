@@ -43,14 +43,51 @@ int test_segment_1(TstSuite* suite)
     dvz_requester_begin(rqr);
 
     // Upload the data.
-    const uint32_t n = 1;
+    const uint32_t n = 32;
 
     DvzVisual* visual = dvz_segment(rqr, 0);
     dvz_segment_alloc(visual, n);
-    dvz_segment_initial(visual, 0, n, (vec3[]){{-1, 0, 0}}, 0);
-    dvz_segment_terminal(visual, 0, n, (vec3[]){{+1, 0, 0}}, 0);
-    dvz_segment_color(visual, 0, n, (cvec4[]){{255, 0, 0, 255}}, 0);
-    dvz_segment_linewidth(visual, 0, n, (float[]){10.0f}, 0);
+
+    float t = 0, r = .75;
+    float aspect = WIDTH / (float)HEIGHT;
+    AT(aspect > 0);
+
+    vec3* initial = (vec3*)calloc(n, sizeof(vec3));
+    vec3* terminal = (vec3*)calloc(n, sizeof(vec3));
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    float* linewidth = (float*)calloc(n, sizeof(float));
+    DvzCapType* initial_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
+    DvzCapType* terminal_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
+
+    for (uint32_t i = 0; i < n; i++)
+    {
+        t = .5 * i / (float)n;
+        initial[i][0] = r * cos(M_2PI * t);
+        initial[i][1] = aspect * r * sin(M_2PI * t);
+
+        terminal[i][0] = -initial[i][0];
+        terminal[i][1] = -initial[i][1];
+
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
+        color[i][3] = 216;
+
+        linewidth[i] = 10.0f;
+
+        initial_cap[i] = i % DVZ_CAP_COUNT;
+        terminal_cap[i] = i % DVZ_CAP_COUNT;
+    }
+
+    dvz_segment_initial(visual, 0, n, initial, 0);
+    dvz_segment_terminal(visual, 0, n, terminal, 0);
+    dvz_segment_color(visual, 0, n, color, 0);
+    dvz_segment_linewidth(visual, 0, n, linewidth, 0);
+    dvz_segment_initial_cap(visual, 0, n, initial_cap, 0);
+    dvz_segment_terminal_cap(visual, 0, n, terminal_cap, 0);
+
+    FREE(initial);
+    FREE(terminal);
+    FREE(color);
+    FREE(linewidth);
 
     // // Position.
     // vec3* pos = (vec3*)calloc(n, sizeof(vec3));
