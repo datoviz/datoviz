@@ -28,7 +28,7 @@ int test_workspace_1(TstSuite* suite)
     DvzGpu* gpu = get_gpu(suite);
     ANN(gpu);
 
-    DvzWorkspace* ws = dvz_workspace(gpu, 0);
+    DvzWorkspace* ws = dvz_workspace(gpu, DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
     DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
     ANN(board);
 
@@ -46,11 +46,8 @@ int test_workspace_1(TstSuite* suite)
     snprintf(imgpath, sizeof(imgpath), "%s/workspace.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 
-    cvec4 expected = {0};
-    memcpy(expected, DVZ_DEFAULT_CLEAR_COLOR, sizeof(cvec4));
-    AT(expected[2] > 0);
     for (uint32_t i = 0; i < WIDTH * HEIGHT * 3; i++)
-        AT(rgb[i] == expected[i % 3])
+        AT(rgb[i] == 255)
     dvz_board_free(board);
 
     dvz_workspace_destroy(ws);
