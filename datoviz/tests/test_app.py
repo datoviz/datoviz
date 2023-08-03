@@ -36,7 +36,7 @@ def test_app_1():
     scene = app.scene()
     fig = scene.figure(WIDTH, HEIGHT, 0)
 
-    n = 10_000
+    n = 1_000_000
     pixel = app.pixel(n)
 
     pos = np.zeros((n, 3), dtype=np.float32)
@@ -45,7 +45,7 @@ def test_app_1():
 
     color = np.zeros((n, 4), dtype=np.uint8)
     color[:, :3] = np.random.randint(low=100, high=255, size=(n, 3))
-    color[:, 3] = 10
+    color[:, 3] = 255
     pixel.color(color)
 
     fig.visual(pixel)

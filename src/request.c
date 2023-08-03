@@ -100,6 +100,26 @@ static int write_file(const char* filename, DvzSize block_size, uint32_t block_c
 }
 
 
+static char* show_data(const unsigned char* src, size_t len)
+{
+    if (len > 1024)
+    {
+        return b64_encode(src, len);
+    }
+    else
+    {
+        char* buf = (char*)calloc(3 * len + 1, sizeof(char));
+        int index = 0;
+        for (uint32_t i = 0; i < len; i++)
+        {
+            // printf("%hhu ", src[i]);
+            index += sprintf(&buf[index], "%02X ", src[i]);
+        }
+        return buf;
+    }
+}
+
+
 
 /*************************************************************************************************/
 /*  Print functions                                                                              */
@@ -259,7 +279,7 @@ static void _print_upload_dat(DvzRequest* req)
     // NOTE: avoid computing the base64 of large arrays.
 
     IF_VERBOSE_DATA
-    encoded = b64_encode((const unsigned char*)data, size);
+    encoded = show_data((const unsigned char*)data, size);
 
     else encoded = "<snip>";
     printf(
@@ -326,7 +346,7 @@ static void _print_upload_tex(DvzRequest* req)
     char* encoded = NULL;
     // NOTE: avoid computing the base64 of large arrays.
     IF_VERBOSE_DATA
-    encoded = b64_encode((const unsigned char*)data, size);
+    encoded = show_data((const unsigned char*)data, size);
 
     else encoded = "<snip>";
     printf(
@@ -384,7 +404,7 @@ static void _print_create_shader(DvzRequest* req)
     // NOTE: avoid computing the base64 of large arrays.
 
     IF_VERBOSE_DATA
-    encoded = b64_encode((const unsigned char*)code_buffer, size);
+    encoded = show_data((const unsigned char*)code_buffer, size);
     else encoded = "<snip>";
 
     printf(
