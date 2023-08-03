@@ -211,7 +211,7 @@ cdef class App:
     cdef rq.DvzRequester * _c_rqr
 
     def __init__(self):
-        self._c_app = pt.dvz_app()
+        self._c_app = pt.dvz_app(0)
         self._c_rqr = pt.dvz_app_requester(self._c_app)
 
     def scene(self):

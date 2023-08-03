@@ -163,7 +163,7 @@ cdef extern from "<datoviz/scene/app.h>":
     # ---------------------------------------------------------------------------------------------
 
     # FUNCTION START
-    DvzApp* dvz_app()
+    DvzApp* dvz_app(0)
 
     DvzRequester* dvz_app_requester(DvzApp* app)
 

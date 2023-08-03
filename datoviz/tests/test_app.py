@@ -34,7 +34,7 @@ HEIGHT = 600
 def test_app_1():
     app = App()
     scene = app.scene()
-    fig = scene.figure(WIDTH, HEIGHT, 0)
+    fig = scene.figure(WIDTH, HEIGHT, 3)
 
     n = 1_000
     visual = app.visual(n)

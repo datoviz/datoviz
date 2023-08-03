@@ -140,7 +140,7 @@ int test_app_scatter(TstSuite* suite)
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     const uint32_t n = 52;
@@ -272,7 +272,7 @@ int test_app_arcball(TstSuite* suite)
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     const uint32_t n = 1000;
@@ -363,7 +363,7 @@ int test_app_anim(TstSuite* suite)
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
@@ -407,7 +407,7 @@ int test_app_pixel(TstSuite* suite)
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create the visual.
@@ -503,7 +503,7 @@ int test_app_viewset(TstSuite* suite)
     ANN(suite);
 
     // Create app objects.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create a canvas.

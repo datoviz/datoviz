@@ -58,7 +58,7 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
 /*  App functions                                                                                */
 /*************************************************************************************************/
 
-DvzApp* dvz_app(void)
+DvzApp* dvz_app(int flags)
 {
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
 
@@ -68,7 +68,7 @@ DvzApp* dvz_app(void)
     app->gpu = make_gpu(app->host);
     ANN(app->gpu);
 
-    app->rd = dvz_renderer(app->gpu, 0);
+    app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
 
     app->client = dvz_client(BACKEND);

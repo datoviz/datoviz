@@ -475,7 +475,7 @@ typedef enum
 typedef enum
 {
     DVZ_RENDERER_FLAGS_NONE = 0,
-    // DVZ_RENDERER_FLAGS_SYNC_TRANSFERS = 1,
+    DVZ_RENDERER_FLAGS_WHITE_BACKGROUND = 1,
 } DvzRendererFlags;
 
 

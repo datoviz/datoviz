@@ -38,10 +38,17 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
 
     // Create the renderpasses.
+    bool white = ((flags & DVZ_RENDERER_FLAGS_WHITE_BACKGROUND) > 0);
+    cvec4 clear_color = {255, 255, 255, 0};
+    if (!white)
+        memset(clear_color, 0, 4);
+    else
+        log_debug("using a white background in all canvases");
+
     ws->renderpass_overlay =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+        dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     ws->renderpass_offscreen =
-        dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+        dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 
     // NOTE: we only create the desktop renderpass if we use the glfw backend.
     // This avoids the following validation error:
@@ -56,7 +63,7 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
     if (gpu->host->backend == DVZ_BACKEND_GLFW)
     {
         ws->renderpass_desktop =
-            dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+            dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     }
 
     dvz_obj_init(&ws->obj);

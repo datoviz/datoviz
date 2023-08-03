@@ -48,7 +48,7 @@ int test_scene_1(TstSuite* suite)
     ANN(suite);
 
     // Create app object.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create a scene.
@@ -119,7 +119,7 @@ int test_scene_2(TstSuite* suite)
     ANN(suite);
 
     // Create app object.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create a scene.
@@ -197,7 +197,7 @@ int test_scene_3(TstSuite* suite)
     ANN(suite);
 
     // Create app object.
-    DvzApp* app = dvz_app();
+    DvzApp* app = dvz_app(0);
     DvzRequester* rqr = dvz_app_requester(app);
 
     // Create a scene.
@@ -228,8 +228,8 @@ int test_scene_3(TstSuite* suite)
 
     // Params.
     // ambient, diffuse, specular, specular exponent
-    dvz_mesh_light_pos(mesh, (vec4){-2, +2, +5, 0});
-    dvz_mesh_light_params(mesh, (vec4){.5, .5, .5, 32});
+    dvz_mesh_light_pos(mesh, (vec4){-1, +1, +5, 0});
+    dvz_mesh_light_params(mesh, (vec4){.25, .25, .5, 16});
 
     // Important: upload the data to the GPU for both the vertex buffer and the params dat.
     dvz_visual_update(mesh);

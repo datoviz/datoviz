@@ -68,7 +68,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzApp* dvz_app(void);
+DVZ_EXPORT DvzApp* dvz_app(int flags);
 
 
 
