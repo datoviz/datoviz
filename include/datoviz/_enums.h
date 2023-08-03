@@ -234,6 +234,7 @@ typedef enum
     DVZ_FORMAT_NONE = 0,
     DVZ_FORMAT_R8_UNORM = 9,
     DVZ_FORMAT_R8_SNORM = 10,
+    DVZ_FORMAT_R8_UINT = 13,
     DVZ_FORMAT_R8G8B8_UNORM = 23,
     DVZ_FORMAT_R8G8B8A8_UNORM = 37,
     DVZ_FORMAT_R8G8B8A8_UINT = 41,
@@ -488,6 +489,72 @@ typedef enum
     DVZ_SLOT_DAT,
     DVZ_SLOT_TEX,
 } DvzSlotType;
+
+
+
+/*************************************************************************************************/
+/*  Visual-specific enums                                                                        */
+/*************************************************************************************************/
+
+// TODO: uncomment once graphics.h has been removed
+
+// // Marker type.
+// // NOTE: the numbers need to correspond to markers.glsl at the bottom.
+// typedef enum
+// {
+//     DVZ_MARKER_DISC = 0,
+//     DVZ_MARKER_ASTERISK = 1,
+//     DVZ_MARKER_CHEVRON = 2,
+//     DVZ_MARKER_CLOVER = 3,
+//     DVZ_MARKER_CLUB = 4,
+//     DVZ_MARKER_CROSS = 5,
+//     DVZ_MARKER_DIAMOND = 6,
+//     DVZ_MARKER_ARROW = 7,
+//     DVZ_MARKER_ELLIPSE = 8,
+//     DVZ_MARKER_HBAR = 9,
+//     DVZ_MARKER_HEART = 10,
+//     DVZ_MARKER_INFINITY = 11,
+//     DVZ_MARKER_PIN = 12,
+//     DVZ_MARKER_RING = 13,
+//     DVZ_MARKER_SPADE = 14,
+//     DVZ_MARKER_SQUARE = 15,
+//     DVZ_MARKER_TAG = 16,
+//     DVZ_MARKER_TRIANGLE = 17,
+//     DVZ_MARKER_VBAR = 18,
+//     DVZ_MARKER_COUNT,
+// } DvzMarkerType;
+
+
+
+// // Cap type.
+// typedef enum
+// {
+//     DVZ_CAP_TYPE_NONE = 0,
+//     DVZ_CAP_ROUND = 1,
+//     DVZ_CAP_TRIANGLE_IN = 2,
+//     DVZ_CAP_TRIANGLE_OUT = 3,
+//     DVZ_CAP_SQUARE = 4,
+//     DVZ_CAP_BUTT = 5,
+//     DVZ_CAP_COUNT,
+// } DvzCapType;
+
+
+
+// // Joint type.
+// typedef enum
+// {
+//     DVZ_JOIN_SQUARE = 0,
+//     DVZ_JOIN_ROUND = 1,
+// } DvzJoinType;
+
+
+
+// // Path topology.
+// typedef enum
+// {
+//     DVZ_PATH_OPEN,
+//     DVZ_PATH_CLOSED,
+// } DvzPathTopology;
 
 
 

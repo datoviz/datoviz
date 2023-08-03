@@ -84,9 +84,10 @@ DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
     DvzParams* params = dvz_params(visual->rqr, sizeof(DvzMeshParams), false);
     dvz_visual_params(visual, 2, params);
 
-    dvz_params_attr(params, 0, offsetof(DvzMeshParams, light_pos), sizeof(vec4));
-    dvz_params_attr(params, 1, offsetof(DvzMeshParams, light_params), sizeof(vec4));
+    dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
+    dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
 
+    // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
 
     return visual;
@@ -106,15 +107,9 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
 
     // Create the visual.
 
-    // NOTE: with indexed visuals, item_count MUST correspond to the number of faces (triangles),
-    // so the size of the index buffer divided by 3.
-    // This is a convention in dvz_visual_alloc(visual, item_count, vertex_count) that
-    // when using indexing, item_count is the number of triangles.
-
-    // But if there are no indices, the number of items is the number of vertices (by default in
-    // dvz_visual_alloc() if item_count is 0).
-
-    dvz_visual_alloc(visual, index_count / 3, vertex_count);
+    // NOTE: by convention in this visual, 1 item = 1 triangle.
+    // This is why item_count is index_count / 3 below.
+    dvz_visual_alloc(visual, index_count / 3, vertex_count, index_count);
 }
 
 

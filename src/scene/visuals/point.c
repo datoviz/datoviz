@@ -66,7 +66,7 @@ void dvz_point_alloc(DvzVisual* visual, uint32_t item_count)
     ANN(rqr);
 
     // Create the visual.
-    dvz_visual_alloc(visual, item_count, item_count);
+    dvz_visual_alloc(visual, item_count, item_count, 0);
 }
 
 

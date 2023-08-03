@@ -65,7 +65,13 @@ typedef enum
     DVZ_ATTR_FLAGS_DEFAULT = 0x0000,
     DVZ_ATTR_FLAGS_DYNAMIC = 0x0011, // the N in 0x000N indicates the binding idx
     DVZ_ATTR_FLAGS_CONSTANT = 0x0020,
+
     DVZ_ATTR_FLAGS_REPEAT = 0x1000, // the N in 0x0N00 indicates the number of repeats
+    DVZ_ATTR_FLAGS_REPEAT_X2 = 0x1200,
+    DVZ_ATTR_FLAGS_REPEAT_X4 = 0x1400,
+    DVZ_ATTR_FLAGS_REPEAT_X6 = 0x1600,
+    DVZ_ATTR_FLAGS_REPEAT_X8 = 0x1800,
+
     DVZ_ATTR_FLAGS_QUAD = 0x2000,
 } DvzAttrFlags;
 
@@ -107,6 +113,7 @@ struct DvzVisual
 
     DvzId graphics_id;
     DvzBaker* baker;
+    DvzSize strides[DVZ_MAX_BINDINGS];
     DvzVisualAttr attrs[DVZ_MAX_VERTEX_ATTRS];
     DvzTransform* transforms[DVZ_MAX_VERTEX_ATTRS];
 
@@ -250,6 +257,13 @@ DVZ_EXPORT void dvz_visual_attr(
 /**
  *
  */
+DVZ_EXPORT void dvz_visual_stride(DvzVisual* visual, uint32_t binding_idx, DvzSize stride);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type);
 
 
@@ -275,7 +289,8 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampl
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
+DVZ_EXPORT void dvz_visual_alloc(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
 
 
 

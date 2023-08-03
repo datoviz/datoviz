@@ -65,7 +65,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_viewport(visual, &viewport);
 
     // Create the visual.
-    dvz_visual_alloc(visual, n, n);
+    dvz_visual_alloc(visual, n, n, 0);
 
     // Vertex data.
     // Position.

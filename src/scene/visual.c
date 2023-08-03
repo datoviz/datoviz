@@ -29,35 +29,35 @@
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-static DvzSize get_attr_size(DvzFormat format)
-{
-    switch (format)
-    {
-    case DVZ_FORMAT_R32_SFLOAT:
-        return sizeof(float);
+// static DvzSize get_attr_size(DvzFormat format)
+// {
+//     switch (format)
+//     {
+//     case DVZ_FORMAT_R32_SFLOAT:
+//         return sizeof(float);
 
-    case DVZ_FORMAT_R32G32_SFLOAT:
-        return sizeof(vec2);
+//     case DVZ_FORMAT_R32G32_SFLOAT:
+//         return sizeof(vec2);
 
-    case DVZ_FORMAT_R32G32B32_SFLOAT:
-        return sizeof(vec3);
+//     case DVZ_FORMAT_R32G32B32_SFLOAT:
+//         return sizeof(vec3);
 
-    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
-        return sizeof(vec4);
+//     case DVZ_FORMAT_R32G32B32A32_SFLOAT:
+//         return sizeof(vec4);
 
-    case DVZ_FORMAT_R8G8B8A8_UNORM:
-        return sizeof(cvec4);
+//     case DVZ_FORMAT_R8G8B8A8_UNORM:
+//         return sizeof(cvec4);
 
-    case DVZ_FORMAT_R8_UNORM:
-        return sizeof(uint8_t);
+//     case DVZ_FORMAT_R8_UNORM:
+//         return sizeof(uint8_t);
 
-    default:
-        log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
-        return 0;
-    }
-    // TODO: other formats
-    return 0;
-}
+//     default:
+//         log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
+//         return 0;
+//     }
+//     // TODO: other formats
+//     return 0;
+// }
 
 
 
@@ -312,6 +312,15 @@ void dvz_visual_attr(
 
 
 
+void dvz_visual_stride(DvzVisual* visual, uint32_t binding_idx, DvzSize stride)
+{
+    ANN(visual);
+    ASSERT(binding_idx < DVZ_MAX_VERTEX_BINDINGS);
+    visual->strides[binding_idx] = stride;
+}
+
+
+
 void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
 {
     ANN(visual)
@@ -361,7 +370,8 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampl
 /*  Visual creation                                                                              */
 /*************************************************************************************************/
 
-void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
+void dvz_visual_alloc(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count)
 {
     ANN(visual);
     ASSERT(vertex_count > 0);
@@ -433,7 +443,21 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     DvzSize stride = 0;
     for (binding_idx = 0; binding_idx < binding_count; binding_idx++)
     {
-        stride = attr_offsets[binding_idx];
+        // NOTE: try fetching the user-specified binding stride, or compute it simply
+        // as the last attr offset + its size.
+        // THIS IS HAZARDOUS because of alignment issues.
+        // This may cause the following Vulkan warning, for example:
+
+        // Format VK_FORMAT_R32G32B32_SFLOAT has an alignment of 4 but the alignment of
+        // attribAddress (57) is not aligned in pVertexAttributeDescriptions[0] (binding=0
+        // location=0) where attribAddress = vertex buffer offset (0) + binding stride (57) +
+        // attribute offset (0). The Vulkan spec states: For a given vertex buffer binding, any
+        // attribute data fetched must be entirely contained within the corresponding vertex buffer
+        // binding, as described in Vertex Input Description
+        // (https://vulkan.lunarg.com/doc/view/1.3.216.0/linux/1.3-extensions/vkspec.html#VUID-vkCmdDrawIndexed-None-02721)
+
+        stride = visual->strides[binding_idx];
+        stride = stride > 0 ? stride : attr_offsets[binding_idx];
         ASSERT(stride > 0);
 
         // Baker-side.
@@ -470,8 +494,11 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     // dvz_baker_share_binding(baker, 1);
 
     bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
-    // NOTE: if indexed, item_count is the number of FACES (number of indices / 3).
-    uint32_t index_count = indexed ? (item_count * 3) : 0;
+
+    // NOTE: if index_count is not specified, , item_count is the number of FACES (number of
+    // indices / 3).
+    index_count = index_count > 0 ? index_count : (indexed ? (item_count * 3) : 0);
+
     dvz_baker_create(baker, index_count, vertex_count);
 
     // Bind the index buffer.
@@ -515,6 +542,14 @@ void dvz_visual_alloc(DvzVisual* visual, uint32_t item_count, uint32_t vertex_co
     //     }
     //     dvz_bind_dat(rqr, graphics_id, slot_idx, bd->u.dat.dual.dat, 0);
     // }
+
+    // NOTE: when using the scene API (viewset.c), these are handled automatically.
+    // But when using visuals directly, in order for dvz_visual_record() to work,
+    // we need to set these as sensible defaults.
+    visual->draw_first = 0;
+    visual->draw_count = item_count;
+    visual->first_instance = 0;
+    visual->instance_count = 1;
 
     dvz_obj_created(&visual->obj);
 }
@@ -595,7 +630,7 @@ void dvz_visual_data(
         int reps = (flags & 0x0F00) >> 8;
         ASSERT(reps >= 1);
 
-        log_debug("visual data for attr #%d (%d->%d, x%d)", attr_idx, first, count, reps);
+        log_debug("visual data for attr #%d (%d->%d, repeat x%d)", attr_idx, first, count, reps);
         dvz_baker_repeat(baker, attr_idx, first, count, (uint32_t)reps, data);
     }
 
@@ -712,6 +747,7 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 void dvz_visual_record(DvzVisual* visual, DvzId canvas)
 {
     ANN(visual);
+    ASSERT(visual->draw_count > 0);
 
     // Call the draw callback if there is one.
     if (visual->callback != NULL)
