@@ -36,20 +36,26 @@ def test_app_1():
 
     app = App()
     scene = app.scene()
-    fig = scene.figure(512, 512, 3)
+    fig = scene.figure(512, 512, 0)
 
     n = 1000
     visual = app.visual(n)
 
+    rng = np.random.default_rng(123)
+
     pos = np.zeros((n, 3), dtype=np.float32)
 
-    pos[:, :2] = -1+2*np.random.rand(n, 2)
+    X = rng.random((n, 4))
+
+    pos[:, :2] = -1 + 2 * X[:, :2]
+    pos[:, 1] *= -1
     visual.initial(pos)
 
-    pos[:, :2] = -1+2*np.random.rand(n, 2)
+    pos[:, :2] = -1 + 2 * X[:, 2:]
+    pos[:, 1] *= -1
     visual.terminal(pos)
 
-    linewidth = 3.0 * np.ones(n, dtype=np.float32)
+    linewidth = 1.0 * np.ones(n, dtype=np.float32)
     visual.linewidth(linewidth)
 
     color = np.zeros((n, 4), dtype=np.uint8)
@@ -59,16 +65,17 @@ def test_app_1():
 
     fig.visual(visual)
 
-    @app.on_frame
-    def f():
-        pos[:, :2] = -1+2*np.random.rand(n, 2)
-        visual.initial(pos)
+    # @app.on_frame
+    # def f():
+    #     X = rng.random((n, 4))
 
-        pos[:, :2] = -1+2*np.random.rand(n, 2)
-        visual.terminal(pos)
+    #     pos[:, :2] = -1 + 2 * X[:, :2]
+    #     visual.initial(pos)
 
-        # print(pos[0])
-        visual.update()
+    #     pos[:, :2] = -1 + 2 * X[:, 2:]
+    #     visual.terminal(pos)
+
+    #     visual.update()
 
     # view.add(visual)
 
