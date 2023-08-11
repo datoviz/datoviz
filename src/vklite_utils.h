@@ -219,6 +219,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     for (uint32_t i = 0; i < q->queue_count; i++)
     {
         qf = q->queue_families[i]; // the queue family of the current queue
+        log_trace("queue #%d: queue family is #%d", i, qf);
         max_queues = q->max_queue_count[qf];
         ASSERT(qf < q->queue_family_count);
         ASSERT(qf < DVZ_MAX_QUEUE_FAMILIES);
@@ -409,10 +410,16 @@ static void create_swapchain(
     uint32_t n = 0;
     uint32_t qf = 0;
     bool qf_counted[DVZ_MAX_QUEUE_FAMILIES] = {0};
+
     for (uint32_t i = 0; i < queues->queue_count; i++)
     {
         qf = queues->queue_families[i];
-        if (!qf_counted[qf] && (queues->support_graphics[qf] || queues->support_present[qf]))
+
+        // HACK: state that the swapchain images always need access on the TRANSFER queue, which is
+        // used for screenshots/screencasts. We use the convention that queue #0 is always the
+        // transfer queue!
+        if ((i == 0) ||
+            (!qf_counted[qf] && (queues->support_graphics[qf] || queues->support_present[qf])))
         {
             queue_families[n++] = qf;
             qf_counted[qf] = true;
@@ -546,11 +553,17 @@ static void make_shared(
     }
     // Now, n is the number of *different* queue families.
     log_trace(
-        "requested %d queue(s), corresponding to %d distinct queue families", queue_count, n);
+        "queue access: requested %d queue(s), corresponding to %d distinct queue families",
+        queue_count, n);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        log_trace("  queue family access: %d", queue_families[i]);
+    }
     *queue_family_count = n;
 
-    // DEBUG: always use exclusive for now (require queue owernship transfer with barriers)
+    // DEBUG: uncomment to force exclusive (require queue owernship transfer with barriers)
     // if (true || n <= 1)
+
     if (n <= 1)
     {
         *sharing_mode = VK_SHARING_MODE_EXCLUSIVE;

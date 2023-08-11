@@ -1361,6 +1361,7 @@ void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect)
 void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx)
 {
     ANN(img);
+    ANN(img->gpu);
     ASSERT(queue_idx < img->gpu->queues.queue_count);
     img->queues[img->queue_count++] = queue_idx;
 }

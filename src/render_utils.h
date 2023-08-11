@@ -65,6 +65,7 @@ make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, ui
     dvz_images_aspect(images, VK_IMAGE_ASPECT_COLOR_BIT);
     dvz_images_layout(images, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
     dvz_images_queue_access(images, DVZ_DEFAULT_QUEUE_RENDER);
+    dvz_images_queue_access(images, DVZ_DEFAULT_QUEUE_TRANSFER);
     dvz_images_create(images);
 }
 
@@ -117,6 +118,7 @@ make_staging(DvzGpu* gpu, DvzImages* staging, DvzFormat format, uint32_t width, 
     dvz_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
     dvz_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     dvz_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_images_queue_access(staging, DVZ_DEFAULT_QUEUE_TRANSFER);
     // dvz_images_memory(
     //     staging, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
     dvz_images_vma_usage(staging, VMA_MEMORY_USAGE_CPU_ONLY);
