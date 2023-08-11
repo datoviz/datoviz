@@ -1073,7 +1073,10 @@ DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 {
     ANN(rd);
 
-    DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, id);
+    // NOTE: if id is None, we take the first board.
+    DvzBoard* board = id == DVZ_ID_NONE
+                          ? (DvzBoard*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_BOARD)
+                          : (DvzBoard*)dvz_map_get(rd->map, id);
     ANN(board);
     return board;
 }
@@ -1084,7 +1087,10 @@ DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
 {
     ANN(rd);
 
-    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
+    // NOTE: if id is None, we take the first canvas.
+    DvzCanvas* canvas = id == DVZ_ID_NONE
+                            ? (DvzCanvas*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_CANVAS)
+                            : (DvzCanvas*)dvz_map_get(rd->map, id);
     ANN(canvas);
     return canvas;
 }
