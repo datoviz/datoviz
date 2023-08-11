@@ -449,8 +449,7 @@ int test_app_pixel(TstSuite* suite)
 
 
     // Create a board.
-    DvzRequest req =
-        dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_id = req.id;
 
     // Record commands.
@@ -458,6 +457,12 @@ int test_app_pixel(TstSuite* suite)
     dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_visual_instance(pixel, canvas_id, 0, 0, n, 0, 1);
     dvz_record_end(rqr, canvas_id);
+
+    // Make screenshot.
+    dvz_app_run(app, 3);
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/app_pixel.png", ARTIFACTS_DIR);
+    dvz_app_screenshot(app, canvas_id, imgpath);
 
     // Run the app.
     dvz_app_run(app, N_FRAMES);

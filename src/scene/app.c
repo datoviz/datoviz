@@ -10,6 +10,7 @@
 #include "scene/app.h"
 #include "../render_utils.h"
 #include "client.h"
+#include "fileio.h"
 #include "host.h"
 #include "presenter.h"
 #include "renderer.h"
@@ -218,6 +219,26 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
     // Start the event loop.
     dvz_client_run(app->client, n_frames);
+}
+
+
+
+void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
+{
+    // NOTE: the app must have run before.
+
+    ANN(app);
+    DvzRenderer* rd = app->rd;
+    ANN(rd);
+
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
+    ANN(canvas);
+
+    // Get the canvas image buffer.
+    uint8_t* rgb = dvz_canvas_download(canvas);
+
+    // Save to a PNG.
+    dvz_write_png(filename, canvas->width, canvas->height, rgb);
 }
 
 

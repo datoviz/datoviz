@@ -139,6 +139,13 @@ DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t n_frames);
 /**
  *
  */
+DVZ_EXPORT void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
 
