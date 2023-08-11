@@ -208,7 +208,14 @@ cdef class Scene:
         # cdef sc.DvzFigure* c_fig = sc.dvz_figure(self._c_scene, width, height, flags)
         return Figure(self, width, height, flags)
 
-    def run(self, int n = 0):
+    def run(self, int n=0, unicode screenshot=None):
+        cdef char* _c_path = screenshot
+
+        # Make screenshot at the first frame.
+        if screenshot:
+            sc.dvz_scene_run(self._c_scene, self._c_app, 10)
+            pt.dvz_app_screenshot(self._c_app, 0, _c_path)
+
         sc.dvz_scene_run(self._c_scene, self._c_app, n)
 
 
@@ -382,7 +389,14 @@ cdef class App:
     def visual(self, count):
         return Visual(self, count)
 
-    def run(self):
+    def run(self, unicode screenshot=None):
+        cdef char* _c_path = screenshot
+
+        # Make screenshot at the first frame.
+        if screenshot:
+            pt.dvz_app_run(self._c_app, 1)
+            pt.dvz_app_screenshot(self._c_app, 0, _c_path)
+
         pt.dvz_app_run(self._c_app, 0)
 
     def destroy(self):

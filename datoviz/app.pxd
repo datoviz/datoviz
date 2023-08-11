@@ -183,6 +183,8 @@ cdef extern from "<datoviz/scene/app.h>":
 
     void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
+    void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
+
     void dvz_app_destroy(DvzApp* app)
 
 

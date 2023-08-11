@@ -79,9 +79,7 @@ def test_app_1():
 
     # view.add(visual)
 
-    # canvas.build()
-    # app.run()
-    scene.run()
+    scene.run(screenshot="lines.png")
 
 
 if __name__ == '__main__':
