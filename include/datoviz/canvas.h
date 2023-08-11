@@ -222,6 +222,12 @@ DVZ_EXPORT void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t id
 
 
 /**
+ */
+DVZ_EXPORT uint8_t* dvz_canvas_download(DvzCanvas* canvas);
+
+
+
+/**
  * Destroy a canvas.
  *
  * @param canvas the canvas to destroy

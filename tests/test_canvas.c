@@ -66,6 +66,16 @@ int test_canvas_1(TstSuite* suite)
         dvz_canvas(gpu, &renderpass, window.framebuffer_width, window.framebuffer_height, 0);
     dvz_canvas_create(&canvas, surface);
 
+    dvz_canvas_recreate(&canvas);
+
+    uint8_t* rgb = dvz_canvas_download(&canvas);
+    ANN(rgb);
+
+    // Save it to a file.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/canvas.png", ARTIFACTS_DIR);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+
     dvz_canvas_destroy(&canvas);
     dvz_surface_destroy(host, surface);
     dvz_window_destroy(&window);

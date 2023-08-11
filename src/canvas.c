@@ -84,6 +84,11 @@ void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
 
     // Make staging image.
     make_staging(gpu, &canvas->render.staging, canvas->format, width, height);
+    dvz_images_transition(&canvas->render.staging);
+
+    // Size of the capture buffer.
+    canvas->size = width * height * 3;
+    canvas->rgb = (uint8_t*)calloc(canvas->size, 1);
 
     // Make framebuffers.
     make_framebuffers(
@@ -156,7 +161,8 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
     canvas->height = height;
 
     // Need to recreate the depth image with the new size.
-    dvz_images_size(&canvas->render.depth, (uvec3){width, height, 1});
+    uvec3 shape = {width, height, 1};
+    dvz_images_size(&canvas->render.depth, shape);
     dvz_images_create(&canvas->render.depth);
 
     // Recreate the framebuffers with the new size.
@@ -166,6 +172,14 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
         ASSERT(framebuffers->attachments[i]->shape[1] == height);
     }
     dvz_framebuffers_create(framebuffers, renderpass);
+
+    // Resize the staging buffer.
+    dvz_images_resize(&canvas->render.staging, shape);
+    dvz_images_transition(&canvas->render.staging);
+
+    // Resize the image buffer.
+    canvas->size = width * height * 3;
+    REALLOC(canvas->rgb, canvas->size);
 }
 
 
@@ -228,6 +242,54 @@ void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx)
 
 
 
+uint8_t* dvz_canvas_download(DvzCanvas* canvas)
+{
+    // NOTE: the caller should NOT free the returned pointer, the canvas will do it upon
+    // destruction.
+    ANN(canvas);
+
+    DvzGpu* gpu = canvas->gpu;
+    ANN(gpu);
+
+    DvzImages* images = canvas->render.swapchain.images;
+    ANN(images);
+
+    ASSERT(dvz_obj_is_created(&canvas->render.staging.obj));
+    ANN(canvas->rgb);
+    ASSERT(canvas->size > 0);
+
+    // Start the image transition command buffers.
+    DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
+    dvz_cmd_begin(&cmds, 0);
+
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    dvz_barrier_images(&barrier, canvas->render.swapchain.images);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_MEMORY_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    // Copy the image to the staging image.
+    dvz_cmd_copy_image(&cmds, 0, canvas->render.swapchain.images, &canvas->render.staging);
+
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_READ_BIT, 0);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+
+    // End the cmds and submit them.
+    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Now, copy the staging image into CPU memory.
+    dvz_images_download(&canvas->render.staging, 0, 1, true, false, canvas->rgb);
+
+    return canvas->rgb;
+}
+
+
+
 void dvz_canvas_destroy(DvzCanvas* canvas)
 {
     if (canvas == NULL || canvas->obj.status != DVZ_OBJECT_STATUS_CREATED)
@@ -259,6 +321,9 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_images_destroy(canvas->render.swapchain.images);
     dvz_images_destroy(&canvas->render.depth);
     dvz_images_destroy(&canvas->render.staging);
+
+    // Destroy the image buffer.
+    FREE(canvas->rgb);
 
     // Destroy the swapchain.
     log_trace("canvas destroy swapchain");
