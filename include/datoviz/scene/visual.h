@@ -278,6 +278,13 @@ DVZ_EXPORT void dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzParam
 /**
  *
  */
+DVZ_EXPORT void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzId dat);
+
+
+
+/**
+ *
+ */
 void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
 
 

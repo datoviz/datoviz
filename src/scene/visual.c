@@ -352,6 +352,20 @@ void dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzParams* params)
 
 
 
+void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzId dat)
+{
+    ANN(visual);
+    ASSERT(dat != DVZ_ID_NONE);
+
+    ASSERT(visual->graphics_id != DVZ_ID_NONE);
+    ASSERT(slot_idx < DVZ_MAX_BINDINGS);
+
+    // Call a bind_dat request for the visual graphics and the dual's dat.
+    dvz_bind_dat(visual->rqr, visual->graphics_id, slot_idx, dat, 0);
+}
+
+
+
 void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 {
     ANN(visual);
