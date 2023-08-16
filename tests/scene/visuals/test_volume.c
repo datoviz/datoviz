@@ -61,9 +61,15 @@ int test_volume_1(TstSuite* suite)
     DvzArcball* arcball = dvz_panel_arcball(app, panel);
     ANN(arcball);
 
+    // Perspective camera.
+    DvzCamera* camera = dvz_panel_camera(panel);
+
     // Volume visual.
     DvzVisual* volume = dvz_volume(rqr, 0);
     dvz_volume_alloc(volume, 1);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(panel, volume);
 
     // Create texture.
     uint32_t a = 7;
@@ -73,6 +79,9 @@ int test_volume_1(TstSuite* suite)
     DvzId tex = dvz_create_tex(rqr, DVZ_TEX_3D, DVZ_FORMAT_R8_UNORM, shape, 0).id;
     DvzId sampler =
         dvz_create_sampler(rqr, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+
+    // Bind texture to the visual.
+    dvz_visual_tex(volume, 3, tex, sampler, DVZ_ZERO_OFFSET);
 
     // Update the texture data.
     DvzSize size = a * b * c;
@@ -89,15 +98,6 @@ int test_volume_1(TstSuite* suite)
 
     // Upload the texture data.
     dvz_upload_tex(rqr, tex, DVZ_ZERO_OFFSET, shape, size, tex_data);
-
-    // Bind texture to the visual.
-    dvz_visual_tex(volume, 3, tex, sampler, DVZ_ZERO_OFFSET);
-
-    // Perspective camera.
-    DvzCamera* camera = dvz_panel_camera(panel);
-
-    // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, volume);
 
     // Run the scene.
     dvz_scene_run(scene, app, N_FRAMES);
