@@ -329,7 +329,8 @@ void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
     // Declare a slot.
     dvz_set_slot(
         visual->rqr, visual->graphics_id, slot_idx,
-        type == DVZ_SLOT_DAT ? DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER : DVZ_DESCRIPTOR_TYPE_SAMPLER);
+        type == DVZ_SLOT_DAT ? DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+                             : DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 }
 
 
@@ -370,9 +371,6 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampl
 {
     ANN(visual);
     ANN(visual->baker);
-
-    // Declare a slot.
-    dvz_set_slot(visual->rqr, visual->graphics_id, slot_idx, DVZ_DESCRIPTOR_TYPE_SAMPLER);
 
     // Bind the texture to the graphics.
     dvz_bind_tex(visual->rqr, visual->graphics_id, slot_idx, tex, sampler, offset);
