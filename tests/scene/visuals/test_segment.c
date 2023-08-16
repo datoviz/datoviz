@@ -28,7 +28,7 @@
 
 int test_segment_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start(VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("segment", VISUAL_TEST_PANZOOM);
 
     // Number of items.
     const uint32_t n = 32;
@@ -82,6 +82,7 @@ int test_segment_1(TstSuite* suite)
     // Run the test.
     visual_test_end(vt);
 
+    // Cleanup
     FREE(initial);
     FREE(terminal);
     FREE(color);

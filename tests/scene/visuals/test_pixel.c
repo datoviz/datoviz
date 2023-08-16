@@ -15,21 +15,10 @@
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/pixel.h"
+#include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
 
 
 
@@ -39,14 +28,16 @@
 
 int test_pixel_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    VisualTest vt = visual_test_start("pixel", VISUAL_TEST_PANZOOM);
 
-    // Upload the data.
+    // Number of items.
     const uint32_t n = 10000;
 
-    DvzVisual* pixel = dvz_pixel(rqr, 0);
-    dvz_pixel_alloc(pixel, n);
+    // Create the visual.
+    DvzVisual* visual = dvz_pixel(vt.rqr, 0);
+
+    // Visual allocation.
+    dvz_pixel_alloc(visual, n);
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -55,7 +46,7 @@ int test_pixel_1(TstSuite* suite)
         pos[i][0] = .25 * dvz_rand_normal();
         pos[i][1] = .25 * dvz_rand_normal();
     }
-    dvz_pixel_position(pixel, 0, n, pos, 0);
+    dvz_pixel_position(visual, 0, n, pos, 0);
 
     // Color.
     cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
@@ -64,41 +55,17 @@ int test_pixel_1(TstSuite* suite)
         dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
         color[i][3] = 128;
     }
-    dvz_pixel_color(pixel, 0, n, color, 0);
+    dvz_pixel_color(visual, 0, n, color, 0);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(pixel);
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
 
+    // Run the test.
+    visual_test_end(vt);
 
-    // Manual setting of common bindings.
-
-    // MVP.
-    DvzMVP mvp = dvz_mvp_default();
-    dvz_visual_mvp(pixel, &mvp);
-
-    // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_visual_viewport(pixel, &viewport);
-
-
-    // Create a board.
-    DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
-
-    // Record commands.
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_instance(pixel, board_id, 0, 0, n, 0, 1);
-    dvz_record_end(rqr, board_id);
-
-    // Render to a PNG.
-    render_requests(rqr, get_gpu(suite), board_id, "visual_pixel");
-
-    // Cleanup
-    dvz_visual_destroy(pixel);
-    dvz_requester_destroy(rqr);
+    // Cleanup.
     FREE(pos);
     FREE(color);
+
     return 0;
 }

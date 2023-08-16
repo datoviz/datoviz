@@ -17,21 +17,10 @@
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/mesh.h"
+#include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
 
 
 
@@ -41,8 +30,7 @@
 
 int test_mesh_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL);
 
     // Disc shape parameters.
     const uint32_t count = 30;
@@ -50,58 +38,24 @@ int test_mesh_1(TstSuite* suite)
 
     // Disc mesh.
     DvzShape disc = dvz_shape_disc(count, color);
-    DvzVisual* mesh = dvz_mesh_shape(rqr, &disc);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(mesh);
+    // Create the visual.
+    DvzVisual* visual = dvz_mesh_shape(vt.rqr, &disc);
 
+    // Light position
+    dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
 
-    // Manual setting of common bindings.
+    // Light parameters: ambient, diffuse, specular, exponent.
+    dvz_mesh_light_params(visual, (vec4){.2, .5, .3, 32});
 
-    // MVP.
-    DvzMVP mvp = dvz_mvp_default();
-    dvz_visual_mvp(mesh, &mvp);
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
 
-    // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_visual_viewport(mesh, &viewport);
+    // Run the test.
+    visual_test_end(vt);
 
-    // TODO: replace by mesh-specific functions.
-    // Params.
-    DvzMeshParams params = {0};
-    params.light_params[0] = 0.2;  // ambient coefficient
-    params.light_params[1] = 0.5;  // diffuse coefficient
-    params.light_params[2] = 0.3;  // specular coefficient
-    params.light_params[3] = 32.0; // specular exponent
-    params.light_pos[0] = -1;      // light position
-    params.light_pos[1] = 1;       //
-    params.light_pos[2] = +10;     //
-    // params.tex_coefs[0] = 1;             // texture blending coefficients
-
-    DvzDual params_dual = dvz_dual_dat(rqr, sizeof(params), 0);
-    dvz_dual_data(&params_dual, 0, 1, &params);
-    dvz_dual_update(&params_dual);
-    dvz_bind_dat(rqr, mesh->graphics_id, 2, params_dual.dat, 0);
-
-
-    // Create a board.
-    DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
-
-    // Record commands.
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    // TODO: use dvz_visual_record(visual, board_id); instead
-    dvz_visual_instance(mesh, board_id, 0, 0, disc.index_count, 0, 1);
-    dvz_record_end(rqr, board_id);
-
-    // Render to a PNG.
-    render_requests(rqr, get_gpu(suite), board_id, "visual_mesh");
-
-    // Cleanup
+    // Cleanup.
     dvz_shape_destroy(&disc);
-    dvz_visual_destroy(mesh);
-    dvz_requester_destroy(rqr);
+
     return 0;
 }

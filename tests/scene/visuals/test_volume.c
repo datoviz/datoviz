@@ -33,7 +33,7 @@
 
 int test_volume_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL);
+    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
 
     // Volume visual.
     DvzVisual* volume = dvz_volume(vt.rqr, 0);

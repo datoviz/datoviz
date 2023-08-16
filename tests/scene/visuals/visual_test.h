@@ -50,6 +50,7 @@ typedef struct VisualTest VisualTest;
 
 struct VisualTest
 {
+    const char* name;
     DvzApp* app;
     DvzRequester* rqr;
     DvzScene* scene;
@@ -67,7 +68,7 @@ struct VisualTest
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-static VisualTest visual_test_start(VisualTestType type)
+static VisualTest visual_test_start(const char* name, VisualTestType type)
 {
 
     // NOTE: use as follows:
@@ -125,6 +126,7 @@ static VisualTest visual_test_start(VisualTestType type)
     }
 
     VisualTest vt = {
+        .name = name,
         .app = app,
         .rqr = rqr,
         .scene = scene,
@@ -141,6 +143,12 @@ static VisualTest visual_test_start(VisualTestType type)
 
 static void visual_test_end(VisualTest vt)
 {
+    // Make screenshot.
+    dvz_scene_run(vt.scene, vt.app, 10);
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/visual_%s.png", ARTIFACTS_DIR, vt.name);
+    dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
+
     // Run the scene.
     dvz_scene_run(vt.scene, vt.app, N_FRAMES);
 
