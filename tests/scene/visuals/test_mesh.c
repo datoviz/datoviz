@@ -66,6 +66,7 @@ int test_mesh_1(TstSuite* suite)
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     dvz_visual_viewport(mesh, &viewport);
 
+    // TODO: replace by mesh-specific functions.
     // Params.
     DvzMeshParams params = {0};
     params.light_params[0] = 0.2;  // ambient coefficient
@@ -91,6 +92,7 @@ int test_mesh_1(TstSuite* suite)
     // Record commands.
     dvz_record_begin(rqr, board_id);
     dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    // TODO: use dvz_visual_record(visual, board_id); instead
     dvz_visual_instance(mesh, board_id, 0, 0, disc.index_count, 0, 1);
     dvz_record_end(rqr, board_id);
 

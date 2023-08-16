@@ -33,6 +33,7 @@
 #include "scene/visuals/test_pixel.h"
 #include "scene/visuals/test_point.h"
 #include "scene/visuals/test_segment.h"
+#include "scene/visuals/test_volume.h"
 #include "test.h"
 #include "test_alloc.h"
 #include "test_board.h"
@@ -248,6 +249,7 @@ int dvz_run_tests(const char* match)
     TEST(test_point_1)
     TEST(test_segment_1)
     TEST(test_mesh_1)
+    TEST(test_volume_1)
     TEST(test_image_1)
 
     // Teardown the gpu fixture.

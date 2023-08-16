@@ -593,6 +593,7 @@ set(sources
     "src/scene/visuals/point.c"
     "src/scene/visuals/segment.c"
     "src/scene/visuals/mesh.c"
+    "src/scene/visuals/volume.c"
     "src/scene/visuals/image.c"
 
     ${external_sources}
@@ -686,6 +687,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/visuals/test_point.c"
         "tests/scene/visuals/test_segment.c"
         "tests/scene/visuals/test_mesh.c"
+        "tests/scene/visuals/test_volume.c"
         "tests/scene/visuals/test_image.c"
 
         # Scene
