@@ -549,6 +549,23 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             dvz_transform_update(tr, *mvp);
             dvz_requester_end(rqr, NULL);
         }
+
+        if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+        {
+            dvz_requester_begin(rqr);
+            vec3 pos = {0};
+            _vec3_copy(panel->camera->pos, pos);
+            pos[2] *= (1 + .01 * ev.content.m.content.w.dir[1]);
+            dvz_camera_position(panel->camera, pos);
+
+            // Update the MVP matrices.
+            DvzMVP* mvp = dvz_transform_mvp(tr);
+            dvz_camera_mvp(panel->camera, mvp); // set the model matrix
+
+            dvz_transform_update(tr, *mvp);
+
+            dvz_requester_end(rqr, NULL);
+        }
     }
 }
 
