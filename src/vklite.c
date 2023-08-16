@@ -2001,9 +2001,10 @@ DvzSlots dvz_slots(DvzGpu* gpu)
 void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
 {
     ANN(slots);
-    ASSERT(idx == slots->slot_count);
+    // ASSERT(idx == slots->slot_count);
     ASSERT(idx < DVZ_MAX_BINDINGS);
-    slots->types[slots->slot_count++] = type;
+    slots->types[idx] = type;
+    slots->slot_count++;
 }
 
 
