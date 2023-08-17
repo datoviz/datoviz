@@ -8,8 +8,8 @@
 /*************************************************************************************************/
 
 #include "scene/graphics_data.h"
-#include "scene/graphics.h"
 #include "scene/array.h"
+#include "scene/graphics.h"
 
 
 
@@ -144,12 +144,12 @@ static void _graphics_image_callback(DvzGraphicsData* data, uint32_t item_count,
 
     DvzGraphicsImageVertex vertices[6] = {0};
 
-    _vec3_copy(item_vert->pos3, vertices[0].pos);
-    _vec3_copy(item_vert->pos2, vertices[1].pos);
-    _vec3_copy(item_vert->pos1, vertices[2].pos);
-    _vec3_copy(item_vert->pos1, vertices[3].pos);
-    _vec3_copy(item_vert->pos0, vertices[4].pos);
-    _vec3_copy(item_vert->pos3, vertices[5].pos);
+    _vec2_copy(item_vert->pos3, vertices[0].pos);
+    _vec2_copy(item_vert->pos2, vertices[1].pos);
+    _vec2_copy(item_vert->pos1, vertices[2].pos);
+    _vec2_copy(item_vert->pos1, vertices[3].pos);
+    _vec2_copy(item_vert->pos0, vertices[4].pos);
+    _vec2_copy(item_vert->pos3, vertices[5].pos);
 
     _vec2_copy(item_vert->uv3, vertices[0].uv);
     _vec2_copy(item_vert->uv2, vertices[1].uv);

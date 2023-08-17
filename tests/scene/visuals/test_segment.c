@@ -82,7 +82,7 @@ int test_segment_1(TstSuite* suite)
     // Run the test.
     visual_test_end(vt);
 
-    // Cleanup
+    // Cleanup.
     FREE(initial);
     FREE(terminal);
     FREE(color);

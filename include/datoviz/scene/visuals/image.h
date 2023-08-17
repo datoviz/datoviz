@@ -40,8 +40,8 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzImageVertex
 {
-    vec3 pos;    /* position */
-    cvec4 color; /* color */
+    vec2 pos; /* position */
+    vec2 uv;  /* texture coordinates */
 };
 
 
@@ -63,7 +63,7 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzRequester* rqr, int flags);
  *
  */
 DVZ_EXPORT void
-dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec3* values, int flags);
+dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
 
 
 
@@ -71,7 +71,7 @@ dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec3* value
  *
  */
 DVZ_EXPORT void
-dvz_image_color(DvzVisual* image, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
 
 
 

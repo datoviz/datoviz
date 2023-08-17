@@ -288,14 +288,13 @@ static void _graphics_image(DvzRenderpass* renderpass, DvzGraphics* graphics)
     PRIMITIVE(TRIANGLE_LIST)
 
     ATTR_BEGIN(DvzGraphicsImageVertex)
-    ATTR_POS(DvzGraphicsImageVertex, pos)
+    ATTR(DvzGraphicsImageVertex, VK_FORMAT_R32G32_SFLOAT, pos)
     ATTR(DvzGraphicsImageVertex, VK_FORMAT_R32G32_SFLOAT, uv)
 
     _common_slots(graphics);
-    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    for (uint32_t i = 1; i <= 4; i++)
-        dvz_graphics_slot(
-            graphics, DVZ_USER_BINDING + i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    // dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    // for (uint32_t i = 1; i <= 4; i++)
+    dvz_graphics_slot(graphics, DVZ_USER_BINDING, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     // CREATE
 }

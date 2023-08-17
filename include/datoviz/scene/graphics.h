@@ -279,7 +279,7 @@ struct DvzGraphicsTextParams
 
 struct DvzGraphicsImageVertex
 {
-    vec3 pos; /* position */
+    vec2 pos; /* position */
     vec2 uv;  /* tex coordinates */
 };
 

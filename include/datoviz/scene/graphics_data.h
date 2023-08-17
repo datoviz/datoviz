@@ -73,10 +73,10 @@ struct DvzGraphicsTextItem
 
 struct DvzGraphicsImageItem
 {
-    vec3 pos0; /* top left corner */
-    vec3 pos1; /* top right corner */
-    vec3 pos2; /* bottom right corner */
-    vec3 pos3; /* bottom left corner */
+    vec2 pos0; /* top left corner */
+    vec2 pos1; /* top right corner */
+    vec2 pos2; /* bottom right corner */
+    vec2 pos3; /* bottom left corner */
 
     vec2 uv0; /* tex coords of the top left corner */
     vec2 uv1; /* tex coords of the top right corner */

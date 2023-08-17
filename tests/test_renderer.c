@@ -409,17 +409,17 @@ int test_renderer_image(TstSuite* suite)
 
 
 
-    // Binding #2: params.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
-    dvz_renderer_request(rd, req);
-    DvzId params_id = req.id;
+    // // Binding #2: params.
+    // req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
+    // dvz_renderer_request(rd, req);
+    // DvzId params_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 2, params_id, 0);
-    dvz_renderer_request(rd, req);
+    // req = dvz_bind_dat(rqr, graphics_id, 2, params_id, 0);
+    // dvz_renderer_request(rd, req);
 
-    DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
-    req = dvz_upload_dat(rqr, params_id, 0, sizeof(params), &params);
-    dvz_renderer_request(rd, req);
+    // DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
+    // req = dvz_upload_dat(rqr, params_id, 0, sizeof(params), &params);
+    // dvz_renderer_request(rd, req);
 
 
 
@@ -437,11 +437,11 @@ int test_renderer_image(TstSuite* suite)
     DvzId sampler_id = req.id;
 
     // Bind the texture.
-    for (uint32_t i = 3; i < 3 + 4; i++)
-    {
-        req = dvz_bind_tex(rqr, graphics_id, i, tex_id, sampler_id, DVZ_ZERO_OFFSET);
-        dvz_renderer_request(rd, req);
-    }
+    // for (uint32_t i = 3; i < 3 + 4; i++)
+    // {
+    req = dvz_bind_tex(rqr, graphics_id, 2, tex_id, sampler_id, DVZ_ZERO_OFFSET);
+    dvz_renderer_request(rd, req);
+    // }
 
     // Upload the texture.
     cvec4* img = calloc(width * height, 4);

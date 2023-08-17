@@ -15,21 +15,10 @@
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/image.h"
+#include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
 
 
 
@@ -39,66 +28,55 @@
 
 int test_image_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM);
 
-    // Upload the data.
+    // Number of items.
     const uint32_t n = 10000;
 
-    DvzVisual* image = dvz_image(rqr, 0);
-    dvz_image_alloc(image, n);
+    // Create the visual.
+    DvzVisual* visual = dvz_image(vt.rqr, 0);
 
-    // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
+    // Visual allocation.
+    dvz_image_alloc(visual, n);
+
+    // Image position.
+    dvz_image_position(visual, 0, 1, (vec4[]){{-1, +1, +1, -1}}, 0);
+
+    // Image texture coordinates.
+    dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
+
+    // Create texture.
+    const uint32_t w = 16;
+    const uint32_t h = 8;
+    uvec3 shape = {w, h, 1};
+    DvzId tex = dvz_create_tex(vt.rqr, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0).id;
+    DvzId sampler =
+        dvz_create_sampler(vt.rqr, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+
+    // Bind texture to the visual.
+    dvz_visual_tex(visual, 2, tex, sampler, DVZ_ZERO_OFFSET);
+
+    // Update the texture data.
+    DvzSize size = w * h;
+    cvec4* tex_data = (cvec4*)calloc(size, sizeof(cvec4));
+    for (uint32_t i = 0; i < w * h; i++)
     {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
+        // dvz_colormap(DVZ_CMAP_HSV, i % 256, tex_data[i]);
+        dvz_colormap(DVZ_CMAP_HSV, i * 256 / (w * h), tex_data[i]);
     }
-    dvz_image_position(image, 0, n, pos, 0);
+    // dvz_rand_byte();
 
-    // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
-    dvz_image_color(image, 0, n, color, 0);
+    // Upload the texture data.
+    dvz_upload_tex(vt.rqr, tex, DVZ_ZERO_OFFSET, shape, size * sizeof(cvec4), tex_data);
 
-    // Important: upload the data to the GPU.
-    dvz_visual_update(image);
+    // Run the test.
+    visual_test_end(vt);
 
+    // Cleanup.
+    FREE(tex_data);
 
-    // Manual setting of common bindings.
-
-    // MVP.
-    DvzMVP mvp = dvz_mvp_default();
-    dvz_visual_mvp(image, &mvp);
-
-    // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    dvz_visual_viewport(image, &viewport);
-
-
-    // Create a board.
-    DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
-
-    // Record commands.
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_instance(image, board_id, 0, 0, n, 0, 1);
-    dvz_record_end(rqr, board_id);
-
-    // Render to a PNG.
-    render_requests(rqr, get_gpu(suite), board_id, "visual_image");
-
-    // Cleanup
-    dvz_visual_destroy(image);
-    dvz_requester_destroy(rqr);
-    FREE(pos);
-    FREE(color);
     return 0;
 }
