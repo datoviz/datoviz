@@ -78,6 +78,14 @@ dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_l
 /**
  *
  */
+DVZ_EXPORT DvzId dvz_image_texture(
+    DvzVisual* image, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_image_alloc(DvzVisual* image, uint32_t item_count);
 
 

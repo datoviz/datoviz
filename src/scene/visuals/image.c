@@ -87,3 +87,26 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
     ANN(visual);
     dvz_visual_quads(visual, 1, first, count, ul_lr);
 }
+
+
+
+DvzId dvz_image_texture(
+    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
+{
+    ANN(visual);
+
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    DvzId tex = dvz_create_tex(rqr, DVZ_TEX_2D, format, shape, 0).id;
+    DvzId sampler = dvz_create_sampler(rqr, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+
+    // Bind texture to the visual.
+    dvz_visual_tex(visual, 2, tex, sampler, DVZ_ZERO_OFFSET);
+
+    // Upload the texture data.
+    if (size > 0 && data != NULL)
+        dvz_upload_tex(rqr, tex, DVZ_ZERO_OFFSET, shape, size, data);
+
+    return tex;
+}
