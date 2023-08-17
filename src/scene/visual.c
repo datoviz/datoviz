@@ -628,15 +628,15 @@ void dvz_visual_data(
 
     int flags = visual->attrs[attr_idx].flags;
 
-    // Quad.
-    if ((flags & DVZ_ATTR_FLAGS_QUAD) != 0)
-    {
-        log_warn("please use dvz_visual_quads() instead");
-        return;
-    }
+    // // Quad.
+    // if ((flags & DVZ_ATTR_FLAGS_QUAD) != 0)
+    // {
+    //     log_warn("please use dvz_visual_quads() instead");
+    //     return;
+    // }
 
     // Repeats.
-    else if ((flags & DVZ_ATTR_FLAGS_REPEAT) != 0)
+    if ((flags & DVZ_ATTR_FLAGS_REPEAT) != 0)
     {
         // Extract the N in 0xN00 part, that is the number of repeats.
         int reps = (flags & 0x0F00) >> 8;
@@ -657,8 +657,7 @@ void dvz_visual_data(
 
 
 void dvz_visual_quads(
-    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, //
-    vec2 quad_size, vec2* positions)
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr)
 {
     ANN(visual);
     ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
@@ -666,10 +665,10 @@ void dvz_visual_quads(
     DvzBaker* baker = visual->baker;
     ANN(baker);
 
-    int flags = visual->attrs[attr_idx].flags;
-    ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
+    // int flags = visual->attrs[attr_idx].flags;
+    // ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
 
-    dvz_baker_quads(baker, attr_idx, quad_size, count, positions);
+    dvz_baker_quads(baker, attr_idx, first, count, ul_lr);
 }
 
 

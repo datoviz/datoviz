@@ -499,10 +499,37 @@ void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* 
 
 
 void dvz_baker_quads(
-    DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions)
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr)
 {
     ANN(baker);
-    // TODO
+    ANN(ul_lr);
+    ASSERT(count > 0);
+
+    // Quad triangulation with 3 triangles = 6 vertices.
+    vec2* quads = (vec2*)calloc(6 * count, sizeof(vec2));
+    float x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        x0 = ul_lr[i][0];
+        y0 = ul_lr[i][1];
+        x1 = ul_lr[i][2];
+        y1 = ul_lr[i][3];
+
+        quads[6 * i + 0][0] = x0; // upper left
+        quads[6 * i + 0][1] = y0;
+        quads[6 * i + 1][0] = x0; // lower left
+        quads[6 * i + 1][1] = y1;
+        quads[6 * i + 2][0] = x1; // lower right
+        quads[6 * i + 2][1] = y1;
+        quads[6 * i + 3][0] = x1; // lower right
+        quads[6 * i + 3][1] = y1;
+        quads[6 * i + 4][0] = x1; // upper right
+        quads[6 * i + 4][1] = y0;
+        quads[6 * i + 5][0] = x0; // upper left
+        quads[6 * i + 5][1] = y0;
+    }
+    dvz_baker_repeat(baker, attr_idx, first, 6 * count, 1, quads);
+    FREE(quads);
 }
 
 

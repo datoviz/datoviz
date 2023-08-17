@@ -266,8 +266,8 @@ DVZ_EXPORT void dvz_baker_repeat(
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_quads(
-    DvzBaker* baker, uint32_t attr_idx, vec2 quad_size, uint32_t count, vec2* positions);
+DVZ_EXPORT void
+dvz_baker_quads(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
 
 
 

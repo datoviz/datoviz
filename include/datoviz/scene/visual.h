@@ -72,7 +72,7 @@ typedef enum
     DVZ_ATTR_FLAGS_REPEAT_X6 = 0x1600,
     DVZ_ATTR_FLAGS_REPEAT_X8 = 0x1800,
 
-    DVZ_ATTR_FLAGS_QUAD = 0x2000,
+    // DVZ_ATTR_FLAGS_QUAD = 0x2000,
 } DvzAttrFlags;
 
 
@@ -338,8 +338,7 @@ dvz_visual_data(DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t c
  *
  */
 DVZ_EXPORT void dvz_visual_quads(
-    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec2 quad_size,
-    vec2* positions);
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
 
 
 
