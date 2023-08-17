@@ -595,6 +595,7 @@ set(sources
     "src/scene/visuals/mesh.c"
     "src/scene/visuals/volume.c"
     "src/scene/visuals/image.c"
+    "src/scene/visuals/fake_sphere.c"
 
     ${external_sources}
 )
@@ -689,6 +690,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/visuals/test_mesh.c"
         "tests/scene/visuals/test_volume.c"
         "tests/scene/visuals/test_image.c"
+        "tests/scene/visuals/test_fake_sphere.c"
 
         # Scene
         "tests/scene/test_scene.c"

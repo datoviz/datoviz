@@ -28,6 +28,7 @@
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_basic.h"
+#include "scene/visuals/test_fake_sphere.h"
 #include "scene/visuals/test_image.h"
 #include "scene/visuals/test_mesh.h"
 #include "scene/visuals/test_pixel.h"
@@ -251,6 +252,7 @@ int dvz_run_tests(const char* match)
     TEST(test_mesh_1)
     TEST(test_volume_1)
     TEST(test_image_1)
+    TEST(test_fake_sphere_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
