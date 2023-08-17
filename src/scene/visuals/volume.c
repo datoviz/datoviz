@@ -172,3 +172,26 @@ void dvz_volume_alloc(DvzVisual* visual, uint32_t item_count)
     dvz_visual_data(visual, 0, 0, item_count * K, pos);
     FREE(pos);
 }
+
+
+
+DvzId dvz_volume_texture(
+    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
+{
+    ANN(visual);
+
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    DvzId tex = dvz_create_tex(rqr, DVZ_TEX_3D, format, shape, 0).id;
+    DvzId sampler = dvz_create_sampler(rqr, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+
+    // Bind texture to the visual.
+    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+
+    // Upload the texture data.
+    if (size > 0 && data != NULL)
+        dvz_upload_tex(rqr, tex, DVZ_ZERO_OFFSET, shape, size, data);
+
+    return tex;
+}

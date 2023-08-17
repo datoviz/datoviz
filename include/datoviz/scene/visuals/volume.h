@@ -78,6 +78,14 @@ DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT DvzId dvz_volume_texture(
+    DvzVisual* image, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data);
+
+
+
 EXTERN_C_OFF
 
 #endif
