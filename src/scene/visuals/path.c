@@ -1,0 +1,185 @@
+/*************************************************************************************************/
+/*  Path                                                                                      */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include "scene/visuals/path.h"
+#include "fileio.h"
+#include "request.h"
+#include "scene/graphics.h"
+#include "scene/viewset.h"
+#include "scene/visual.h"
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+
+
+/*************************************************************************************************/
+/*  Internal functions                                                                           */
+/*************************************************************************************************/
+
+static void _visual_callback(
+    DvzVisual* visual, DvzId canvas, //
+    uint32_t first, uint32_t count,  //
+    uint32_t first_instance, uint32_t instance_count)
+{
+    ANN(visual);
+    ASSERT(count > 0);
+    dvz_visual_instance(visual, canvas, 4 * first, 0, 4 * count, first_instance, instance_count);
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DvzVisual* dvz_path(DvzRequester* rqr, int flags)
+{
+    ANN(rqr);
+
+    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, flags);
+    // DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
+    ANN(visual);
+
+    // Visual shaders.
+    dvz_visual_shader(visual, "graphics_path");
+
+    // Vertex stride.
+    dvz_visual_stride(visual, 0, sizeof(DvzPathVertex));
+
+    // Vertex attributes.
+    int attr_flag = DVZ_ATTR_FLAGS_REPEAT_X4;
+
+    dvz_visual_attr(visual, 0, FIELD(DvzPathVertex, p0), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
+    dvz_visual_attr(visual, 1, FIELD(DvzPathVertex, p1), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
+    dvz_visual_attr(visual, 2, FIELD(DvzPathVertex, p2), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
+    dvz_visual_attr(visual, 3, FIELD(DvzPathVertex, p3), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
+    dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, attr_flag);
+
+    // Uniforms.
+    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+
+    // Visual draw callback.
+    dvz_visual_callback(visual, _visual_callback);
+
+    // Params.
+    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzPathParams), false);
+    dvz_visual_params(visual, 2, params);
+    dvz_params_attr(params, 0, FIELD(DvzPathParams, linewidth));
+    dvz_params_attr(params, 1, FIELD(DvzPathParams, miter_limit));
+    dvz_params_attr(params, 2, FIELD(DvzPathParams, cap_type));
+    dvz_params_attr(params, 3, FIELD(DvzPathParams, round_join));
+
+    // TODO: default params
+    dvz_visual_param(visual, 2, 0, (float[]){10.0});
+    dvz_visual_param(visual, 2, 1, (float[]){4.0});
+    dvz_visual_param(visual, 2, 2, (int32_t[]){DVZ_CAP_ROUND});
+    dvz_visual_param(visual, 2, 3, (int32_t[]){DVZ_JOIN_ROUND});
+
+    return visual;
+}
+
+
+
+void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count)
+{
+    ANN(visual);
+    log_debug("allocating the path visual");
+
+    DvzRequester* rqr = visual->rqr;
+    ANN(rqr);
+
+    // Allocate the visual.
+    dvz_visual_alloc(visual, total_vertex_count, 4 * total_vertex_count, 0);
+}
+
+
+
+void dvz_path_position(
+    DvzVisual* visual, uint32_t vertex_count, vec3* positions, //
+    uint32_t path_count, uint32_t* path_lengths, int flags)
+{
+    ANN(visual);
+    ANN(positions);
+    ASSERT(vertex_count > 0);
+    if (path_count <= 1)
+    {
+        path_count = 1;
+        path_lengths = (uint32_t[]){vertex_count};
+    }
+
+    // Compute the total number of vertices, which is the sum of all path lengths.
+    uint32_t total_length = 0;
+    int32_t path_length = 0;
+    for (uint32_t i = 0; i < path_count; i++)
+    {
+        path_length = (int32_t)path_lengths[i];
+        total_length += (uint32_t)path_length;
+    }
+
+    uint32_t k = 0;
+    uint32_t src_offset = 0;
+    int32_t i0 = 0, i1 = 0, i2 = 0, i3 = 0;
+    vec3* p0 = (vec3*)calloc(total_length, sizeof(vec3));
+    vec3* p1 = (vec3*)calloc(total_length, sizeof(vec3));
+    vec3* p2 = (vec3*)calloc(total_length, sizeof(vec3));
+    vec3* p3 = (vec3*)calloc(total_length, sizeof(vec3));
+    for (uint32_t j = 0; j < path_count; j++)
+    {
+        path_length = (int32_t)path_lengths[j];
+        for (int32_t i = 0; i < path_length; i++)
+        {
+            i0 = i >= 1 ? i - 1 : 0;
+            i1 = i + 0;
+            i2 = i < path_length - 1 ? i + 1 : path_length - 1;
+            i3 = i < path_length - 2 ? i + 2 : path_length - 1;
+
+            ASSERT(0 <= i0 && i0 < path_length);
+            ASSERT(0 <= i1 && i1 < path_length);
+            ASSERT(0 <= i2 && i2 < path_length);
+            ASSERT(0 <= i3 && i3 < path_length);
+
+            _vec3_copy(positions[src_offset + (uint32_t)i0], p0[k]);
+            _vec3_copy(positions[src_offset + (uint32_t)i1], p1[k]);
+            _vec3_copy(positions[src_offset + (uint32_t)i2], p2[k]);
+            _vec3_copy(positions[src_offset + (uint32_t)i3], p3[k]);
+
+            k++;
+        }
+        src_offset += (uint32_t)path_length;
+    }
+    ASSERT(k == total_length);
+
+    // NOTE: we did not use REPEAT attr flag for position as we do the repeat manually with a
+    // shift.
+    dvz_visual_data(visual, 0, 0, total_length, (void*)p0);
+    dvz_visual_data(visual, 1, 0, total_length, (void*)p1);
+    dvz_visual_data(visual, 2, 0, total_length, (void*)p2);
+    dvz_visual_data(visual, 3, 0, total_length, (void*)p3);
+
+    FREE(p0);
+    FREE(p1);
+    FREE(p2);
+    FREE(p3);
+}
+
+
+
+void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(visual);
+    // NOTE: repeat x4 is done transparently thanks to the attribute flags passed in dvz_path().
+    dvz_visual_data(visual, 4, first, count, (void*)values);
+}

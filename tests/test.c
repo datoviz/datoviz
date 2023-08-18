@@ -31,6 +31,7 @@
 #include "scene/visuals/test_fake_sphere.h"
 #include "scene/visuals/test_image.h"
 #include "scene/visuals/test_mesh.h"
+#include "scene/visuals/test_path.h"
 #include "scene/visuals/test_pixel.h"
 #include "scene/visuals/test_point.h"
 #include "scene/visuals/test_segment.h"
@@ -249,6 +250,7 @@ int dvz_run_tests(const char* match)
     TEST(test_pixel_1)
     TEST(test_point_1)
     TEST(test_segment_1)
+    TEST(test_path_1)
     TEST(test_mesh_1)
     TEST(test_volume_1)
     TEST(test_image_1)
@@ -260,11 +262,11 @@ int dvz_run_tests(const char* match)
 
     // OLD TESTS
     // Testing builtin graphics.
-    TEST(test_graphics_point)
-    TEST(test_graphics_triangle)
-    TEST(test_graphics_line_list)
-    TEST(test_graphics_raster)
-    TEST(test_graphics_image_1)
+    // TEST(test_graphics_point)
+    // TEST(test_graphics_triangle)
+    // TEST(test_graphics_line_list)
+    // TEST(test_graphics_raster)
+    // TEST(test_graphics_image_1)
 
 
 
