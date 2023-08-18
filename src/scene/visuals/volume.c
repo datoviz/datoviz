@@ -79,8 +79,7 @@ DvzVisual* dvz_volume(DvzRequester* rqr, int flags)
     dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
     // Params.
-    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzVolumeParams), false);
-    dvz_visual_params(visual, 2, params);
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzVolumeParams));
 
     dvz_params_attr(params, 0, FIELD(DvzVolumeParams, box_size));
     dvz_params_attr(params, 1, FIELD(DvzVolumeParams, uvw0));

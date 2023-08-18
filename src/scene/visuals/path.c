@@ -75,8 +75,7 @@ DvzVisual* dvz_path(DvzRequester* rqr, int flags)
     dvz_visual_callback(visual, _visual_callback);
 
     // Params.
-    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzPathParams), false);
-    dvz_visual_params(visual, 2, params);
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzPathParams));
     dvz_params_attr(params, 0, FIELD(DvzPathParams, linewidth));
     dvz_params_attr(params, 1, FIELD(DvzPathParams, miter_limit));
     dvz_params_attr(params, 2, FIELD(DvzPathParams, cap_type));

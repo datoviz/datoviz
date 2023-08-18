@@ -271,7 +271,7 @@ DVZ_EXPORT void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotTyp
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzParams* params);
+DVZ_EXPORT DvzParams* dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzSize size);
 
 
 

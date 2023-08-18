@@ -62,8 +62,7 @@ DvzVisual* dvz_fake_sphere(DvzRequester* rqr, int flags)
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
 
     // Params.
-    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzFakeSphereParams), false);
-    dvz_visual_params(visual, 2, params);
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzFakeSphereParams));
 
     dvz_params_attr(params, 0, FIELD(DvzFakeSphereParams, light_pos));
 

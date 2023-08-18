@@ -335,20 +335,24 @@ void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
 
 
 
-void dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzParams* params)
+DvzParams* dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzSize size)
 {
     ANN(visual);
     ANN(visual->baker);
-    ANN(params);
 
     ASSERT(visual->graphics_id != DVZ_ID_NONE);
     ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
+    // Create a params object.
+    DvzParams* params = dvz_params(visual->rqr, size, false);
+
     // Set a params object.
-    visual->params[slot_idx] = params; // dvz_params(visual->rqr, size);
+    visual->params[slot_idx] = params;
 
     // Call a bind_dat request for the visual graphics and the dual's dat.
     dvz_params_bind(visual->params[slot_idx], visual->graphics_id, slot_idx);
+
+    return params;
 }
 
 
@@ -586,8 +590,7 @@ void dvz_visual_mvp(DvzVisual* visual, DvzMVP* mvp)
     //     return;
     // }
 
-    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzMVP), false);
-    dvz_visual_params(visual, 0, params);
+    DvzParams* params = dvz_visual_params(visual, 0, sizeof(DvzMVP));
     dvz_params_data(params, mvp);
 }
 
@@ -606,8 +609,7 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
     //     return;
     // }
 
-    DvzParams* params = dvz_params(visual->rqr, sizeof(DvzViewport), false);
-    dvz_visual_params(visual, 1, params);
+    DvzParams* params = dvz_visual_params(visual, 1, sizeof(DvzViewport));
     dvz_params_data(params, viewport);
 }
 
