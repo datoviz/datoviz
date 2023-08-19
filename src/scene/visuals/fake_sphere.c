@@ -112,7 +112,7 @@ void dvz_fake_sphere_size(
 
 
 
-void dvz_fake_sphere_light_pos(DvzVisual* visual, vec4 pos)
+void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, 0, pos);

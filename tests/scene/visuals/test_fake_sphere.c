@@ -69,7 +69,7 @@ int test_fake_sphere_1(TstSuite* suite)
     dvz_panel_visual(vt.panel, visual);
 
     // Light position
-    dvz_fake_sphere_light_pos(visual, (vec4){-1, +1, +10, 0});
+    dvz_fake_sphere_light_pos(visual, (vec3){-1, +1, +10});
 
     // Run the test.
     visual_test_end(vt);
