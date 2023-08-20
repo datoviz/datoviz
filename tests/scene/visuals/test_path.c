@@ -101,6 +101,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     ANN(vt);
 
     DvzVisual* visual = vt->visual;
+    ANN(visual);
 
     // Allocate the colors array.
     cvec4* colors = (cvec4*)vt->user_data;
@@ -110,17 +111,12 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     uint32_t n_paths = vt->n;
     uint32_t N = vt->m;
     uint32_t k = 0;
+    uint64_t step = ev.content.t.step_idx;
     for (uint32_t j = 0; j < n_paths; j++)
     {
         for (int32_t i = 0; i < (int32_t)N; i++)
         {
-            // colors[k][0] = 128;
-            // colors[k][1] = 128;
-            // colors[k][2] = 128;
-            colors[k][0] = (uint8_t)(((uint32_t)colors[k][0] + 32) % 256);
-            // log_error("%d", colors[k][0]);
-
-            k++;
+            colors[k++][3] = 20 * ((-step + i + 7 * j) % 10);
         }
     }
 
@@ -134,8 +130,8 @@ int test_path_2(TstSuite* suite)
     VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM);
 
     // Number of items.
-    uint32_t N = 12; // size of each path
-    uint32_t n_paths = 3;
+    uint32_t N = 100; // size of each path
+    uint32_t n_paths = 10;
     uint32_t total_length = N * n_paths;
 
     // Path lengths.
@@ -173,7 +169,7 @@ int test_path_2(TstSuite* suite)
             colors[k][0] = 128;
             colors[k][1] = 128;
             colors[k][2] = 128;
-            colors[k][3] = 255;
+            // colors[k][3] = 255;
 
             k++;
         }
@@ -192,7 +188,7 @@ int test_path_2(TstSuite* suite)
     vt.m = N;
     vt.visual = visual;
     vt.user_data = (void*)colors;
-    dvz_app_timer(vt.app, 0, 1. / 5., 0);
+    dvz_app_timer(vt.app, 0, 1. / 30., 0);
     dvz_app_ontimer(vt.app, _on_timer, &vt);
 
     // Run the test.
