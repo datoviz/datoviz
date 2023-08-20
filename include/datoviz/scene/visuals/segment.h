@@ -82,16 +82,8 @@ DVZ_EXPORT DvzVisual* dvz_segment(DvzRequester* rqr, int flags);
 /**
  *
  */
-DVZ_EXPORT void
-dvz_segment_initial(DvzVisual* segment, uint32_t first, uint32_t count, vec3* values, int flags);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void
-dvz_segment_terminal(DvzVisual* segment, uint32_t first, uint32_t count, vec3* values, int flags);
+DVZ_EXPORT void dvz_segment_position(
+    DvzVisual* segment, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags);
 
 
 
@@ -122,16 +114,9 @@ DVZ_EXPORT void dvz_segment_linewidth(
 /**
  *
  */
-DVZ_EXPORT void dvz_segment_initial_cap(
-    DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* values, int flags);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_segment_terminal_cap(
-    DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* values, int flags);
+DVZ_EXPORT void dvz_segment_cap(
+    DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* initial, DvzCapType* terminal,
+    int flags);
 
 
 

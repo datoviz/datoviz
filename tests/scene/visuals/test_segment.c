@@ -69,12 +69,10 @@ int test_segment_1(TstSuite* suite)
         terminal_cap[i] = i % DVZ_CAP_COUNT;
     }
 
-    dvz_segment_initial(visual, 0, n, initial, 0);
-    dvz_segment_terminal(visual, 0, n, terminal, 0);
+    dvz_segment_position(visual, 0, n, initial, terminal, 0);
     dvz_segment_color(visual, 0, n, color, 0);
     dvz_segment_linewidth(visual, 0, n, linewidth, 0);
-    dvz_segment_initial_cap(visual, 0, n, initial_cap, 0);
-    dvz_segment_terminal_cap(visual, 0, n, terminal_cap, 0);
+    dvz_segment_cap(visual, 0, n, initial_cap, terminal_cap, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);

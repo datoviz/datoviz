@@ -113,20 +113,12 @@ void dvz_segment_alloc(DvzVisual* visual, uint32_t item_count)
 
 
 
-void dvz_segment_initial(
-    DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_segment_position(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags)
 {
     ANN(visual);
-    dvz_visual_data(visual, 0, first, count, (void*)values);
-}
-
-
-
-void dvz_segment_terminal(
-    DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
-{
-    ANN(visual);
-    dvz_visual_data(visual, 1, first, count, (void*)values);
+    dvz_visual_data(visual, 0, first, count, (void*)initial);
+    dvz_visual_data(visual, 1, first, count, (void*)terminal);
 }
 
 
@@ -156,18 +148,11 @@ void dvz_segment_linewidth(
 
 
 
-void dvz_segment_initial_cap(
-    DvzVisual* visual, uint32_t first, uint32_t count, DvzCapType* values, int flags)
+void dvz_segment_cap(
+    DvzVisual* visual, uint32_t first, uint32_t count, //
+    DvzCapType* initial, DvzCapType* terminal, int flags)
 {
     ANN(visual);
-    dvz_visual_data(visual, 5, first, count, (void*)values);
-}
-
-
-
-void dvz_segment_terminal_cap(
-    DvzVisual* visual, uint32_t first, uint32_t count, DvzCapType* values, int flags)
-{
-    ANN(visual);
-    dvz_visual_data(visual, 6, first, count, (void*)values);
+    dvz_visual_data(visual, 5, first, count, (void*)initial);
+    dvz_visual_data(visual, 6, first, count, (void*)terminal);
 }
