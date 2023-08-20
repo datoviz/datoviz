@@ -21,6 +21,8 @@
 
 int test_path_1(TstSuite*);
 
+int test_path_2(TstSuite*);
+
 
 
 #endif

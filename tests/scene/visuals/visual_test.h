@@ -56,10 +56,13 @@ struct VisualTest
     DvzScene* scene;
     DvzFigure* figure;
     DvzPanel* panel;
+    DvzVisual* visual;
     DvzPanzoom* panzoom;
     DvzArcball* arcball;
     DvzCamera* camera;
     DvzVisual* volume;
+    uint32_t n, m, p;
+    void* user_data;
 };
 
 

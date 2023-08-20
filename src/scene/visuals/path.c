@@ -182,3 +182,12 @@ void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* va
     // NOTE: repeat x4 is done transparently thanks to the attribute flags passed in dvz_path().
     dvz_visual_data(visual, 4, first, count, (void*)values);
 }
+
+
+
+void dvz_path_linewidth(DvzVisual* visual, float value)
+{
+    ANN(visual);
+    // NOTE: this is safe because a copy is made immediately.
+    dvz_visual_param(visual, 2, 0, &value);
+}

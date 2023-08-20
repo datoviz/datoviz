@@ -94,6 +94,13 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values,
 /**
  *
  */
+DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
 
 
