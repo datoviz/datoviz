@@ -111,7 +111,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     uint32_t n_paths = vt->n;
     uint32_t N = vt->m;
     uint32_t k = 0;
-    uint64_t step = ev.content.t.step_idx;
+    int64_t step = (int64_t)ev.content.t.step_idx;
     for (uint32_t j = 0; j < n_paths; j++)
     {
         for (int32_t i = 0; i < (int32_t)N; i++)
@@ -188,7 +188,7 @@ int test_path_2(TstSuite* suite)
     vt.m = N;
     vt.visual = visual;
     vt.user_data = (void*)colors;
-    dvz_app_timer(vt.app, 0, 1. / 30., 0);
+    dvz_app_timer(vt.app, 0, 1. / 4., 0);
     dvz_app_ontimer(vt.app, _on_timer, &vt);
 
     // Run the test.
