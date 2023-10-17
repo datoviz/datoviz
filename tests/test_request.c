@@ -57,3 +57,26 @@ int test_request_2(TstSuite* suite)
     dvz_requester_destroy(rqr);
     return 0;
 }
+
+
+
+int test_batch_1(TstSuite* suite)
+{
+    DvzRequester* rqr = dvz_requester();
+
+    DvzBatch* batch = dvz_batch();
+    DvzRequest req = dvz_create_board(rqr, 800, 600, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    dvz_batch_add(batch, req);
+    dvz_batch_add(batch, req);
+    AT(dvz_batch_size(batch) == 2);
+
+    uint32_t count = 0;
+    DvzRequest* reqs = dvz_batch_requests(batch, &count);
+    AT(reqs != NULL);
+    AT(count == 2);
+    AT(memcmp(reqs, &req, sizeof(DvzRequest)) == 0);
+    AT(memcmp(&reqs[1], &req, sizeof(DvzRequest)) == 0);
+
+    dvz_batch_destroy(batch);
+    return 0;
+}

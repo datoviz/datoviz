@@ -23,7 +23,8 @@
 
 #define DVZ_REQUEST_VERSION 1
 // filename for the dump, to activate with the DVZ_DUMP=1 environment variable
-#define DVZ_DUMP_FILENAME "requests.dvz"
+#define DVZ_DUMP_FILENAME          "requests.dvz"
+#define DVZ_BATCH_DEFAULT_CAPACITY 4
 
 
 
@@ -47,6 +48,7 @@ typedef enum
 typedef struct DvzRequest DvzRequest;
 typedef union DvzRequestContent DvzRequestContent;
 typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 
 // Forward declarations.
 typedef struct DvzPipe DvzPipe;
@@ -259,6 +261,15 @@ struct DvzRequest
 
 
 
+struct DvzBatch
+{
+    uint32_t capacity;
+    uint32_t count;
+    DvzRequest* requests;
+};
+
+
+
 struct DvzRequester
 {
     DvzObject obj;
@@ -300,8 +311,43 @@ DVZ_EXPORT void dvz_requester_destroy(DvzRequester* rqr);
 
 
 /*************************************************************************************************/
-/*  Request batch                                                                                */
+/*  Batch functions                                                                              */
 /*************************************************************************************************/
+
+/**
+ */
+DVZ_EXPORT DvzBatch* dvz_batch(void);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_batch_add(DvzBatch* batch, DvzRequest req);
+
+
+
+/**
+ */
+DVZ_EXPORT DvzRequest* dvz_batch_requests(DvzBatch* batch, uint32_t* count);
+
+
+/**
+ */
+DVZ_EXPORT uint32_t dvz_batch_size(DvzBatch* batch);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_batch_destroy(DvzBatch* batch);
+
+
+
+/*************************************************************************************************/
+/*  Requester functions */
+/*************************************************************************************************/
+
+// NOTE: REMOVE BELOW
 
 /**
  * Start a batch request.
@@ -334,18 +380,6 @@ DVZ_EXPORT DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count);
 
 
 /**
- */
-DVZ_EXPORT int dvz_requester_dump(DvzRequester* rqr, const char* filename);
-
-
-
-/**
- */
-DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
-
-
-
-/**
  * Return all pending requests and flush the requester.
  *
  * @param rqr the requester
@@ -353,6 +387,21 @@ DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
  * @returns a pointer to an array of requests (NOTE: must be free-ed by the caller)
  */
 DVZ_EXPORT DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
+
+// NOTE: REMOVE ABOVE
+
+
+
+// TODO:
+/**
+ */
+// DVZ_EXPORT void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch);
+
+
+
+/**
+ */
+// DVZ_EXPORT DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
 
 
 
@@ -371,6 +420,18 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req);
  * @param rqr the requester
  */
 DVZ_EXPORT void dvz_requester_print(DvzRequester* rqr);
+
+
+
+/**
+ */
+DVZ_EXPORT int dvz_requester_dump(DvzRequester* rqr, const char* filename);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
 
 
 

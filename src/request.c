@@ -805,7 +805,7 @@ static void _print_record_end(DvzRequest* req)
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Requester                                                                                    */
 /*************************************************************************************************/
 
 DvzRequester* dvz_requester(void)
@@ -864,6 +864,84 @@ void dvz_requester_destroy(DvzRequester* rqr)
 /*  Request batch                                                                                */
 /*************************************************************************************************/
 
+DvzBatch* dvz_batch()
+{
+    DvzBatch* batch = (DvzBatch*)calloc(1, sizeof(DvzBatch));
+    batch->capacity = DVZ_BATCH_DEFAULT_CAPACITY;
+    batch->requests = (DvzRequest*)calloc(DVZ_BATCH_DEFAULT_CAPACITY, sizeof(DvzRequest));
+
+    return batch;
+}
+
+
+
+void dvz_batch_add(DvzBatch* batch, DvzRequest req)
+{
+    ANN(batch);
+    ASSERT(batch->count <= batch->capacity);
+
+    // Resize the array if needed.
+    if (batch->count == batch->capacity)
+    {
+        batch->capacity *= 2;
+        REALLOC(batch->requests, batch->capacity * sizeof(DvzRequest));
+    }
+    ASSERT(batch->count < batch->capacity);
+
+    // Append the request.
+    batch->requests[batch->count++] = req;
+}
+
+
+
+// NOTE: the caller must free the result
+DvzRequest* dvz_batch_requests(DvzBatch* batch, uint32_t* count)
+{
+    ANN(batch);
+    ANN(count);
+
+    // Batch size.
+    uint32_t n = batch->count;
+    if (n == 0)
+    {
+        return NULL;
+    }
+    ASSERT(n > 0);
+
+    // Modify the count pointer to the number of returned requests.
+    *count = n;
+
+    // Make a copy of the pending requests.
+    DvzRequest* requests = (DvzRequest*)calloc(n, sizeof(DvzRequest));
+    memcpy(requests, batch->requests, n * sizeof(DvzRequest));
+
+    return requests;
+}
+
+
+
+uint32_t dvz_batch_size(DvzBatch* batch)
+{
+    ANN(batch);
+    return batch->count;
+}
+
+
+
+void dvz_batch_destroy(DvzBatch* batch)
+{
+    FREE(batch->requests);
+    FREE(batch);
+}
+
+
+
+/*************************************************************************************************/
+/*  Requester functions                                                                          */
+/*************************************************************************************************/
+
+// TODO: REMOVE BELOW
+
 void dvz_requester_begin(DvzRequester* rqr)
 {
     ANN(rqr);
@@ -899,6 +977,122 @@ DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
         *count = rqr->count;
     dvz_atomic_set(rqr->status, (int)DVZ_BUILD_DIRTY);
     return rqr->requests;
+}
+
+
+
+DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
+{
+    ANN(rqr);
+    ANN(count);
+    if (rqr->count == UINT32_MAX)
+    {
+        log_error("cannot flush requester as dvz_requester_begin() was not called");
+        return NULL;
+    }
+    uint32_t n = rqr->count;
+
+    // Modify the count pointer to the number of returned requests.
+    *count = n;
+
+    // Make a copy of the pending requests.
+    DvzRequest* requests = calloc(n, sizeof(DvzRequest));
+    memcpy(requests, rqr->requests, n * sizeof(DvzRequest));
+
+    if (getenv("DVZ_DUMP") != NULL)
+    {
+        if (dvz_requester_dump(rqr, DVZ_DUMP_FILENAME) == 0)
+            log_info("wrote %d Datoviz requests to `%s`", n, DVZ_DUMP_FILENAME);
+        else
+            log_error("error writing Datoviz requests to dump file `%s`", DVZ_DUMP_FILENAME);
+    }
+
+    // Flush the requests.
+    // NOTE: setting the count to 0 means we're automatically beginning a new batch.
+    rqr->count = 0;
+
+    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_CLEAR);
+
+    return requests;
+}
+
+// TODO: REMOVE ABOVE
+
+
+void dvz_request_print(DvzRequest* req)
+{
+    ANN(req);
+
+    IF_REQ(CREATE, BOARD) _print_create_board(req);
+    IF_REQ(UPDATE, BOARD) _print_update_board(req);
+    IF_REQ(RESIZE, BOARD) _print_resize_board(req);
+    IF_REQ(SET, BACKGROUND) _print_set_background(req);
+    IF_REQ(DELETE, BOARD) _print_delete_board(req);
+
+    IF_REQ(CREATE, CANVAS) _print_create_canvas(req);
+    IF_REQ(DELETE, CANVAS) _print_delete_canvas(req);
+
+    IF_REQ(CREATE, DAT) _print_create_dat(req);
+    IF_REQ(RESIZE, DAT) _print_resize_dat(req);
+    IF_REQ(UPLOAD, DAT) _print_upload_dat(req);
+
+    IF_REQ(CREATE, TEX) _print_create_tex(req);
+    IF_REQ(RESIZE, TEX) _print_resize_tex(req);
+    IF_REQ(UPLOAD, TEX) _print_upload_tex(req);
+
+    IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
+
+    IF_REQ(CREATE, GRAPHICS) _print_create_graphics(req);
+
+
+    IF_REQ(BIND, VERTEX) _print_bind_vertex(req);
+    IF_REQ(BIND, INDEX) _print_bind_index(req);
+    IF_REQ(SET, PRIMITIVE) _print_set_primitive(req);
+    IF_REQ(SET, BLEND) _print_set_blend(req);
+    IF_REQ(SET, DEPTH) _print_set_depth(req);
+    IF_REQ(SET, POLYGON) _print_set_polygon(req);
+    IF_REQ(SET, CULL) _print_set_cull(req);
+    IF_REQ(SET, FRONT) _print_set_front(req);
+    IF_REQ(SET, SHADER) _print_set_shader(req);
+    IF_REQ(SET, VERTEX) _print_set_vertex(req);
+    IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
+    IF_REQ(SET, SLOT) _print_set_slot(req);
+
+    IF_REQ(BIND, DAT) _print_bind_dat(req);
+    IF_REQ(BIND, TEX) _print_bind_tex(req);
+
+    IF_REQ(RECORD, RECORD)
+    {
+        if (req->content.record.command.type == DVZ_RECORDER_BEGIN)
+            _print_record_begin(req);
+        if (req->content.record.command.type == DVZ_RECORDER_VIEWPORT)
+            _print_record_viewport(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW)
+            _print_record_draw(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED)
+            _print_record_draw_indexed(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDIRECT)
+            _print_record_draw_indirect(req);
+        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED_INDIRECT)
+            _print_record_draw_indexed_indirect(req);
+        if (req->content.record.command.type == DVZ_RECORDER_END)
+            _print_record_end(req);
+    }
+}
+
+
+
+void dvz_requester_print(DvzRequester* rqr)
+{
+    ANN(rqr);
+
+    _print_start();
+
+    for (uint32_t i = 0; i < rqr->count; i++)
+    {
+        log_trace("print request %d/%d", i + 1, rqr->count);
+        dvz_request_print(&rqr->requests[i]);
+    }
 }
 
 
@@ -1020,121 +1214,6 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
     }
 
     dvz_requester_end(rqr, NULL);
-}
-
-
-
-DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
-{
-    ANN(rqr);
-    ANN(count);
-    if (rqr->count == UINT32_MAX)
-    {
-        log_error("cannot flush requester as dvz_requester_begin() was not called");
-        return NULL;
-    }
-    uint32_t n = rqr->count;
-
-    // Modify the count pointer to the number of returned requests.
-    *count = n;
-
-    // Make a copy of the pending requests.
-    DvzRequest* requests = calloc(n, sizeof(DvzRequest));
-    memcpy(requests, rqr->requests, n * sizeof(DvzRequest));
-
-    if (getenv("DVZ_DUMP") != NULL)
-    {
-        if (dvz_requester_dump(rqr, DVZ_DUMP_FILENAME) == 0)
-            log_info("wrote %d Datoviz requests to `%s`", n, DVZ_DUMP_FILENAME);
-        else
-            log_error("error writing Datoviz requests to dump file `%s`", DVZ_DUMP_FILENAME);
-    }
-
-    // Flush the requests.
-    // NOTE: setting the count to 0 means we're automatically beginning a new batch.
-    rqr->count = 0;
-
-    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_CLEAR);
-
-    return requests;
-}
-
-
-
-void dvz_request_print(DvzRequest* req)
-{
-    ANN(req);
-
-    IF_REQ(CREATE, BOARD) _print_create_board(req);
-    IF_REQ(UPDATE, BOARD) _print_update_board(req);
-    IF_REQ(RESIZE, BOARD) _print_resize_board(req);
-    IF_REQ(SET, BACKGROUND) _print_set_background(req);
-    IF_REQ(DELETE, BOARD) _print_delete_board(req);
-
-    IF_REQ(CREATE, CANVAS) _print_create_canvas(req);
-    IF_REQ(DELETE, CANVAS) _print_delete_canvas(req);
-
-    IF_REQ(CREATE, DAT) _print_create_dat(req);
-    IF_REQ(RESIZE, DAT) _print_resize_dat(req);
-    IF_REQ(UPLOAD, DAT) _print_upload_dat(req);
-
-    IF_REQ(CREATE, TEX) _print_create_tex(req);
-    IF_REQ(RESIZE, TEX) _print_resize_tex(req);
-    IF_REQ(UPLOAD, TEX) _print_upload_tex(req);
-
-    IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
-
-    IF_REQ(CREATE, GRAPHICS) _print_create_graphics(req);
-
-
-    IF_REQ(BIND, VERTEX) _print_bind_vertex(req);
-    IF_REQ(BIND, INDEX) _print_bind_index(req);
-    IF_REQ(SET, PRIMITIVE) _print_set_primitive(req);
-    IF_REQ(SET, BLEND) _print_set_blend(req);
-    IF_REQ(SET, DEPTH) _print_set_depth(req);
-    IF_REQ(SET, POLYGON) _print_set_polygon(req);
-    IF_REQ(SET, CULL) _print_set_cull(req);
-    IF_REQ(SET, FRONT) _print_set_front(req);
-    IF_REQ(SET, SHADER) _print_set_shader(req);
-    IF_REQ(SET, VERTEX) _print_set_vertex(req);
-    IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
-    IF_REQ(SET, SLOT) _print_set_slot(req);
-
-    IF_REQ(BIND, DAT) _print_bind_dat(req);
-    IF_REQ(BIND, TEX) _print_bind_tex(req);
-
-    IF_REQ(RECORD, RECORD)
-    {
-        if (req->content.record.command.type == DVZ_RECORDER_BEGIN)
-            _print_record_begin(req);
-        if (req->content.record.command.type == DVZ_RECORDER_VIEWPORT)
-            _print_record_viewport(req);
-        if (req->content.record.command.type == DVZ_RECORDER_DRAW)
-            _print_record_draw(req);
-        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED)
-            _print_record_draw_indexed(req);
-        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDIRECT)
-            _print_record_draw_indirect(req);
-        if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED_INDIRECT)
-            _print_record_draw_indexed_indirect(req);
-        if (req->content.record.command.type == DVZ_RECORDER_END)
-            _print_record_end(req);
-    }
-}
-
-
-
-void dvz_requester_print(DvzRequester* rqr)
-{
-    ANN(rqr);
-
-    _print_start();
-
-    for (uint32_t i = 0; i < rqr->count; i++)
-    {
-        log_trace("print request %d/%d", i + 1, rqr->count);
-        dvz_request_print(&rqr->requests[i]);
-    }
 }
 
 

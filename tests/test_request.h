@@ -23,6 +23,8 @@ int test_request_1(TstSuite*);
 
 int test_request_2(TstSuite*);
 
+int test_batch_1(TstSuite*);
+
 
 
 #endif

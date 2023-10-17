@@ -286,6 +286,7 @@ int dvz_run_tests(const char* match)
     // Testing request.
     TEST(test_request_1)
     TEST(test_request_2)
+    TEST(test_batch_1)
 
 
 
