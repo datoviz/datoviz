@@ -359,10 +359,8 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
     // if (has_record_request)
     //     prt->awaiting_submit = false;
 
-    // Finally, we can FREE the requests pointer.
-    // FREE(requests);
-    // dvz_batch_destroy(batch);
-    dvz_batch_clear(batch);
+    // Finally, we destroy the batch.
+    dvz_batch_destroy(batch);
 }
 
 
@@ -663,6 +661,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
 
 
 
+// WARNING: the batch will be destroyed automatically in the event loop
 void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
 {
     ANN(prt);
@@ -677,7 +676,7 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
     }
     ASSERT(count > 0);
 
-    log_error("submit %d requests to the presenter", count);
+    log_trace("submit %d requests to the presenter", count);
 
     // Submit the requests to the client's event loop. Will be processed by
     // _requester_callback(), which will also destroy the batch.

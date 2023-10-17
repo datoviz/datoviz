@@ -43,7 +43,7 @@ typedef struct CallbackStruct CallbackStruct;
 struct CallbackStruct
 {
     DvzPresenter* prt;
-    DvzBatch* batch;
+    // DvzBatch* batch;
     DvzId canvas_id;
     DvzId mvp_id;
     DvzId viewport_id;
@@ -58,7 +58,7 @@ struct CallbackStruct
 typedef struct TexStruct TexStruct;
 struct TexStruct
 {
-    DvzBatch* batch;
+    // DvzBatch* batch;
     DvzPresenter* prt;
 
     uint32_t width;
@@ -71,7 +71,7 @@ struct TexStruct
 typedef struct PanzoomStruct PanzoomStruct;
 struct PanzoomStruct
 {
-    DvzBatch* batch;
+    // DvzBatch* batch;
     DvzPresenter* prt;
     DvzId mvp_id;
     DvzMVP mvp;
@@ -83,7 +83,7 @@ struct PanzoomStruct
 typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
-    DvzBatch* batch;
+    // DvzBatch* batch;
     DvzPresenter* prt;
     DvzId mvp_id;
     DvzMVP mvp;
@@ -140,7 +140,7 @@ int test_presenter_1(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -160,11 +160,11 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ANN(s);
 
-    DvzBatch* batch = s->batch;
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
     ANN(batch);
 
     // Submit new recording commands to the client.
-    dvz_batch_clear(batch);
     dvz_record_begin(batch, s->canvas_id);
     dvz_record_viewport(batch, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_record_draw(batch, s->canvas_id, s->graphics_id, 0, 3, 0, 1);
@@ -249,7 +249,6 @@ int test_presenter_2(TstSuite* suite)
     // Resize callback.
     CallbackStruct s = {
         .prt = prt,
-        .batch = batch,
         .canvas_id = canvas_id,
         .graphics_id = graphics_id,
         .mvp_id = mvp_id,
@@ -269,7 +268,7 @@ int test_presenter_2(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -302,7 +301,8 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ANN(s);
 
-    DvzBatch* batch = s->batch;
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
     ANN(batch);
 
     DvzPresenter* prt = s->prt;
@@ -313,7 +313,6 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
 
     // Update the data.
     _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
-    dvz_batch_clear(batch);
     dvz_upload_dat(
         batch, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
 
@@ -368,7 +367,6 @@ int test_presenter_thread(TstSuite* suite)
 
     CallbackStruct s = {
         .prt = prt,
-        .batch = batch,
         .graphics_wrapper = &wrapper,
         .n = n,
     };
@@ -391,7 +389,7 @@ int test_presenter_thread(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -439,7 +437,7 @@ int test_presenter_deserialize(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -464,9 +462,9 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
     DvzPresenter* prt = tex_struct->prt;
     ANN(prt);
 
-    DvzBatch* batch = tex_struct->batch;
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
     ANN(batch);
-    dvz_batch_clear(batch);
 
     DvzId tex_id = tex_struct->tex_id;
     ASSERT(tex_id != 0);
@@ -549,7 +547,6 @@ int test_presenter_gui(TstSuite* suite)
     // Texture struct.
     TexStruct tex_struct = {
         .prt = prt,
-        .batch = batch,
         .width = width,
         .tex_id = tex_id,
         .tex_data = tex_data,
@@ -569,7 +566,7 @@ int test_presenter_gui(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -690,7 +687,7 @@ int test_presenter_multi(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_batch_destroy(batch);
+    // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
