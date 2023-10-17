@@ -164,6 +164,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
     ANN(batch);
 
     // Submit new recording commands to the client.
+    dvz_batch_clear(batch);
     dvz_record_begin(batch, s->canvas_id);
     dvz_record_viewport(batch, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_record_draw(batch, s->canvas_id, s->graphics_id, 0, 3, 0, 1);
@@ -189,10 +190,6 @@ int test_presenter_2(TstSuite* suite)
     DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
-    // NOTE: we need to manually begin recording the requester, otherwise requests won't be
-    // automatically recorded in the requester batch.
-    // dvz_requester_begin(batch);
-
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
@@ -202,8 +199,6 @@ int test_presenter_2(TstSuite* suite)
     {
         // Make a canvas creation request.
         req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-
-        // Canvas id.
         canvas_id = req.id;
 
         // Create a graphics.
@@ -229,7 +224,6 @@ int test_presenter_2(TstSuite* suite)
         req = dvz_create_dat(
             batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
         mvp_id = req.id;
-
         req = dvz_bind_dat(batch, graphics_id, 0, mvp_id, 0);
 
         DvzMVP mvp = dvz_mvp_default();
@@ -239,21 +233,16 @@ int test_presenter_2(TstSuite* suite)
         // Binding #1: viewport.
         req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         viewport_id = req.id;
-
         req = dvz_bind_dat(batch, graphics_id, 1, viewport_id, 0);
 
         DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
         // dvz_show_base64(sizeof(viewport), &viewport);
         req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
 
-
         // Command buffer.
         req = dvz_record_begin(batch, canvas_id);
-
         req = dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-
         req = dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
-
         req = dvz_record_end(batch, canvas_id);
     }
 
@@ -324,6 +313,7 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
 
     // Update the data.
     _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
+    dvz_batch_clear(batch);
     dvz_upload_dat(
         batch, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
 
@@ -476,6 +466,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
     DvzBatch* batch = tex_struct->batch;
     ANN(batch);
+    dvz_batch_clear(batch);
 
     DvzId tex_id = tex_struct->tex_id;
     ASSERT(tex_id != 0);

@@ -76,6 +76,7 @@ typedef struct DvzClientRequestsEvent DvzClientRequestsEvent;
 // Forward declarations.
 typedef uint64_t DvzId;
 typedef struct DvzDeq DvzDeq;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzTimerItem DvzTimerItem;
 
 // Callback types.
@@ -112,8 +113,9 @@ struct DvzClientTimerEvent
 
 struct DvzClientRequestsEvent
 {
-    uint32_t request_count;
-    void* requests;
+    // uint32_t request_count;
+    // void* requests;
+    DvzBatch* batch;
 };
 
 union DvzClientEventUnion

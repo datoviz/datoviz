@@ -319,10 +319,13 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
     ASSERT(ev.type == DVZ_CLIENT_EVENT_REQUESTS);
 
     // Get the array of requests.
-    uint32_t count = ev.content.r.request_count;
+    DvzBatch* batch = ev.content.r.batch;
+    ANN(batch);
+
+    uint32_t count = dvz_batch_size(batch);
     ASSERT(count > 0);
 
-    DvzRequest* requests = (DvzRequest*)ev.content.r.requests;
+    DvzRequest* requests = dvz_batch_requests(batch);
     ANN(requests);
 
     // Submit the pending requests to the renderer.
@@ -357,7 +360,9 @@ static void _requester_callback(DvzClient* client, DvzClientEvent ev)
     //     prt->awaiting_submit = false;
 
     // Finally, we can FREE the requests pointer.
-    FREE(requests);
+    // FREE(requests);
+    // dvz_batch_destroy(batch);
+    dvz_batch_clear(batch);
 }
 
 
@@ -664,27 +669,15 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
     ANN(batch);
     ANN(prt->client);
 
-    uint32_t count = 0;
-
-    // TODO
-    // DvzRequest* requests = dvz_requester_flush(rqr, &count);
-    // NOTE: the presenter will need to FREE the requests array.
-
-    if (count == 0)
-        return;
-
-    log_trace("submit %d requests to the presenter", count);
-
-    ASSERT(count > 0);
-    // ANN(requests);
+    log_trace("submit %d requests to the presenter", dvz_batch_size(batch));
 
     // Submit the requests to the client's event loop. Will be processed by
-    // _requester_callback(), which will also free the requests array.
-    // dvz_client_event(
-    //     prt->client, (DvzClientEvent){
-    //                      .type = DVZ_CLIENT_EVENT_REQUESTS,
-    //                      .content.r.request_count = count,
-    //                      .content.r.requests = requests});
+    // _requester_callback(), which will also destroy the batch.
+    DvzClientEvent ev = {
+        .type = DVZ_CLIENT_EVENT_REQUESTS,
+        .content.r.batch = batch,
+    };
+    dvz_client_event(prt->client, ev);
 }
 
 
