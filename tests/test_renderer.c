@@ -27,9 +27,9 @@
 /*************************************************************************************************/
 
 static void
-_load_shader(DvzRequester* rqr, DvzId graphics_id, DvzShaderType shader_type, const char* name)
+_load_shader(DvzBatch* batch, DvzId graphics_id, DvzShaderType shader_type, const char* name)
 {
-    ANN(rqr);
+    ANN(batch);
     ASSERT(graphics_id != 0);
 
     unsigned long shader_size = 0;
@@ -40,10 +40,10 @@ _load_shader(DvzRequester* rqr, DvzId graphics_id, DvzShaderType shader_type, co
     // uint32_t* shader_buffer_uint32 = (uint32_t*)malloc(shader_size);
     // memcpy(shader_buffer_uint32, shader_buffer, shader_size);
 
-    DvzRequest req = dvz_create_spirv(rqr, shader_type, shader_size, shader_buffer);
+    DvzRequest req = dvz_create_spirv(batch, shader_type, shader_size, shader_buffer);
     ASSERT(req.id != DVZ_ID_NONE);
 
-    dvz_set_shader(rqr, graphics_id, req.id);
+    dvz_set_shader(batch, graphics_id, req.id);
     // FREE(shader_buffer_uint32);
 }
 
@@ -59,30 +59,30 @@ int test_renderer_1(TstSuite* suite)
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // Create a boards.
-    req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 
     // Board clear color.
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
+    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
     dvz_renderer_request(rd, req);
 
     // Create a graphics.
-    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, DVZ_REQUEST_FLAGS_OFFSCREEN);
     dvz_renderer_request(rd, req);
     DvzId graphics_id = req.id;
 
     // Create the vertex buffer dat.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_bind_vertex(rqr, graphics_id, 0, dat_id, 0);
+    req = dvz_bind_vertex(batch, graphics_id, 0, dat_id, 0);
     dvz_renderer_request(rd, req);
 
     // Upload the triangle data.
@@ -91,48 +91,48 @@ int test_renderer_1(TstSuite* suite)
         {{+1, -1, 0}, {0, 255, 0, 255}},
         {{+0, +1, 0}, {0, 0, 255, 255}},
     };
-    req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
     // Binding #0: MVP.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     dvz_renderer_request(rd, req);
     DvzId mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
+    req = dvz_bind_dat(batch, graphics_id, 0, mvp_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzMVP mvp = dvz_mvp_default();
     // dvz_show_base64(sizeof(mvp), &mvp);
-    req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
     dvz_renderer_request(rd, req);
 
     // Binding #1: viewport.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
     dvz_renderer_request(rd, req);
     DvzId viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
+    req = dvz_bind_dat(batch, graphics_id, 1, viewport_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     // dvz_show_base64(sizeof(viewport), &viewport);
-    req = dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
     dvz_renderer_request(rd, req);
 
     // Commands.
-    dvz_requester_begin(rqr);
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, board_id, graphics_id, 0, 3, 0, 1);
-    dvz_record_end(rqr, board_id);
+    // dvz_requester_begin(batch);
+    dvz_record_begin(batch, board_id);
+    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, board_id, graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, board_id);
     uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    // DvzRequest* reqs = dvz_requester_end(batch, &count);
     AT(count > 0);
-    dvz_renderer_requests(rd, count, reqs);
+    // dvz_renderer_requests(rd, count, reqs);
 
     // Render.
-    req = dvz_update_board(rqr, board_id);
+    req = dvz_update_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Retrieve the image.
@@ -147,11 +147,11 @@ int test_renderer_1(TstSuite* suite)
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
     // Create a board deletion request.
-    req = dvz_delete_board(rqr, board_id);
+    req = dvz_delete_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Destroy the requester and renderer.
-    dvz_requester_destroy(rqr);
+    // dvz_requester_destroy(batch);
     dvz_renderer_destroy(rd);
     return 0;
 }
@@ -164,59 +164,59 @@ int test_renderer_graphics(TstSuite* suite)
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // Create a boards.
-    req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 
     // Board clear color.
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
+    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
     dvz_renderer_request(rd, req);
 
 
     // Create a custom graphics.
-    dvz_requester_begin(rqr);
-    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    // dvz_requester_begin(batch);
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
 
     // Load shaders.
-    _load_shader(rqr, graphics_id, DVZ_SHADER_VERTEX, "graphics_basic_vert");
-    _load_shader(rqr, graphics_id, DVZ_SHADER_FRAGMENT, "graphics_basic_frag");
+    _load_shader(batch, graphics_id, DVZ_SHADER_VERTEX, "graphics_basic_vert");
+    _load_shader(batch, graphics_id, DVZ_SHADER_FRAGMENT, "graphics_basic_frag");
 
     // Primitive topology.
-    dvz_set_primitive(rqr, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_set_primitive(batch, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
     // Polygon mode.
-    dvz_set_polygon(rqr, graphics_id, DVZ_POLYGON_MODE_FILL);
+    dvz_set_polygon(batch, graphics_id, DVZ_POLYGON_MODE_FILL);
 
     // Vertex binding.
-    dvz_set_vertex(rqr, graphics_id, 0, sizeof(DvzVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+    dvz_set_vertex(batch, graphics_id, 0, sizeof(DvzVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
 
     // Vertex attrs.
-    dvz_set_attr(rqr, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
-    dvz_set_attr(rqr, graphics_id, 0, 1, DVZ_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+    dvz_set_attr(batch, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+    dvz_set_attr(batch, graphics_id, 0, 1, DVZ_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
 
     // Descriptor slots.
-    dvz_set_slot(rqr, graphics_id, 0, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
-    dvz_set_slot(rqr, graphics_id, 1, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_set_slot(batch, graphics_id, 0, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    dvz_set_slot(batch, graphics_id, 1, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
-    dvz_requester_end(rqr, NULL);
-    uint32_t req_count = 0;
-    DvzRequest* requests = dvz_requester_flush(rqr, &req_count);
-    dvz_renderer_requests(rd, req_count, requests);
-    FREE(requests);
+    // dvz_requester_end(batch, NULL);
+    // uint32_t req_count = 0;
+    // DvzRequest* requests = dvz_requester_flush(batch, &req_count);
+    // dvz_renderer_requests(rd, req_count, requests);
+    // FREE(requests);
 
 
     // Create the vertex buffer dat.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_bind_vertex(rqr, graphics_id, 0, dat_id, 0);
+    req = dvz_bind_vertex(batch, graphics_id, 0, dat_id, 0);
     dvz_renderer_request(rd, req);
 
     // Upload the triangle data.
@@ -225,48 +225,48 @@ int test_renderer_graphics(TstSuite* suite)
         {{+1, -1, 0}, {0, 255, 0, 255}},
         {{+0, +1, 0}, {0, 0, 255, 255}},
     };
-    req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
     // Binding #0: MVP.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     dvz_renderer_request(rd, req);
     DvzId mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
+    req = dvz_bind_dat(batch, graphics_id, 0, mvp_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzMVP mvp = dvz_mvp_default();
     // dvz_show_base64(sizeof(mvp), &mvp);
-    req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
     dvz_renderer_request(rd, req);
 
     // Binding #1: viewport.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
     dvz_renderer_request(rd, req);
     DvzId viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
+    req = dvz_bind_dat(batch, graphics_id, 1, viewport_id, 0);
     dvz_renderer_request(rd, req);
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     // dvz_show_base64(sizeof(viewport), &viewport);
-    req = dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
     dvz_renderer_request(rd, req);
 
     // Commands.
-    dvz_requester_begin(rqr);
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, board_id, graphics_id, 0, 3, 0, 1);
-    dvz_record_end(rqr, board_id);
+    // dvz_requester_begin(batch);
+    dvz_record_begin(batch, board_id);
+    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, board_id, graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, board_id);
     uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    // DvzRequest* reqs = dvz_requester_end(batch, &count);
     AT(count > 0);
-    dvz_renderer_requests(rd, count, reqs);
+    // dvz_renderer_requests(rd, count, reqs);
 
     // Render.
-    req = dvz_update_board(rqr, board_id);
+    req = dvz_update_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Retrieve the image.
@@ -281,11 +281,11 @@ int test_renderer_graphics(TstSuite* suite)
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
     // Create a board deletion request.
-    req = dvz_delete_board(rqr, board_id);
+    req = dvz_delete_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Destroy the requester and renderer.
-    dvz_requester_destroy(rqr);
+    // dvz_requester_destroy(batch);
     dvz_renderer_destroy(rd);
     return 0;
 }
@@ -298,18 +298,18 @@ int test_renderer_resize(TstSuite* suite)
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
 
 
     // Create a boards.
-    req = dvz_create_board(rqr, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    req = dvz_create_board(batch, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 
     // Resize the board.
-    req = dvz_resize_board(rqr, board_id, WIDTH, HEIGHT);
+    req = dvz_resize_board(batch, board_id, WIDTH, HEIGHT);
     dvz_renderer_request(rd, req);
 
     // Check board resizing.
@@ -320,7 +320,7 @@ int test_renderer_resize(TstSuite* suite)
 
 
     // Create a dat.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
@@ -329,7 +329,7 @@ int test_renderer_resize(TstSuite* suite)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i % 256;
     // NOTE: upload a buffer larger than the dat, checking that automatic resize will work.
-    req = dvz_upload_dat(rqr, dat_id, 0, size, data);
+    req = dvz_upload_dat(batch, dat_id, 0, size, data);
     dvz_renderer_request(rd, req);
     FREE(data);
 
@@ -340,7 +340,7 @@ int test_renderer_resize(TstSuite* suite)
 
 
     // Resize the dat.
-    req = dvz_resize_dat(rqr, dat_id, 2 * size);
+    req = dvz_resize_dat(batch, dat_id, 2 * size);
     dvz_renderer_request(rd, req);
 
     // Check dat resizing.
@@ -349,12 +349,12 @@ int test_renderer_resize(TstSuite* suite)
 
 
     // Create a tex.
-    req = dvz_create_tex(rqr, DVZ_TEX_3D, DVZ_FORMAT_R32_UINT, (uvec3){2, 3, 4}, 0);
+    req = dvz_create_tex(batch, DVZ_TEX_3D, DVZ_FORMAT_R32_UINT, (uvec3){2, 3, 4}, 0);
     dvz_renderer_request(rd, req);
     DvzId tex_id = req.id;
 
     // Resize the tex.
-    req = dvz_resize_tex(rqr, tex_id, (uvec3){20, 30, 40});
+    req = dvz_resize_tex(batch, tex_id, (uvec3){20, 30, 40});
     dvz_renderer_request(rd, req);
 
     // Check tex resizing.
@@ -367,7 +367,7 @@ int test_renderer_resize(TstSuite* suite)
     // NOTE: the board should be automatically destroyed when destroying the renderer.
 
     // Destroy the requester and renderer.
-    dvz_requester_destroy(rqr);
+    // dvz_requester_destroy(batch);
     dvz_renderer_destroy(rd);
     return 0;
 }
@@ -380,17 +380,17 @@ int test_renderer_image(TstSuite* suite)
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // Create a boards.
-    req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     dvz_renderer_request(rd, req);
     DvzId board_id = req.id;
 
     // Create a graphics.
     req = dvz_create_graphics(
-        rqr, DVZ_GRAPHICS_IMAGE,
+        batch, DVZ_GRAPHICS_IMAGE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT |
             DVZ_REQUEST_FLAGS_OFFSCREEN);
     dvz_renderer_request(rd, req);
@@ -399,26 +399,26 @@ int test_renderer_image(TstSuite* suite)
 
 
     // Create the vertex buffer dat.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 6 * sizeof(DvzGraphicsImageVertex), 0);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 6 * sizeof(DvzGraphicsImageVertex), 0);
     dvz_renderer_request(rd, req);
     DvzId dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_bind_vertex(rqr, graphics_id, 0, dat_id, 0);
+    req = dvz_bind_vertex(batch, graphics_id, 0, dat_id, 0);
     dvz_renderer_request(rd, req);
 
 
 
     // // Binding #2: params.
-    // req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
+    // req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzGraphicsImageParams), 0);
     // dvz_renderer_request(rd, req);
     // DvzId params_id = req.id;
 
-    // req = dvz_bind_dat(rqr, graphics_id, 2, params_id, 0);
+    // req = dvz_bind_dat(batch, graphics_id, 2, params_id, 0);
     // dvz_renderer_request(rd, req);
 
     // DvzGraphicsImageParams params = {.tex_coefs = {1, 0, 0, 0}};
-    // req = dvz_upload_dat(rqr, params_id, 0, sizeof(params), &params);
+    // req = dvz_upload_dat(batch, params_id, 0, sizeof(params), &params);
     // dvz_renderer_request(rd, req);
 
 
@@ -427,19 +427,19 @@ int test_renderer_image(TstSuite* suite)
     const uint32_t width = 16;
     const uint32_t height = 8;
     uvec3 shape = {width, height, 1};
-    req = dvz_create_tex(rqr, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0);
+    req = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0);
     dvz_renderer_request(rd, req);
     DvzId tex_id = req.id;
 
     // Sampler.
-    req = dvz_create_sampler(rqr, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    req = dvz_create_sampler(batch, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
     dvz_renderer_request(rd, req);
     DvzId sampler_id = req.id;
 
     // Bind the texture.
     // for (uint32_t i = 3; i < 3 + 4; i++)
     // {
-    req = dvz_bind_tex(rqr, graphics_id, 2, tex_id, sampler_id, DVZ_ZERO_OFFSET);
+    req = dvz_bind_tex(batch, graphics_id, 2, tex_id, sampler_id, DVZ_ZERO_OFFSET);
     dvz_renderer_request(rd, req);
     // }
 
@@ -447,7 +447,8 @@ int test_renderer_image(TstSuite* suite)
     cvec4* img = calloc(width * height, 4);
     for (uint32_t i = 0; i < width * height; i++)
         dvz_colormap(DVZ_CMAP_HSV, i * 256 / (width * height), img[i]);
-    req = dvz_upload_tex(rqr, tex_id, DVZ_ZERO_OFFSET, shape, width * height * sizeof(cvec4), img);
+    req =
+        dvz_upload_tex(batch, tex_id, DVZ_ZERO_OFFSET, shape, width * height * sizeof(cvec4), img);
     dvz_renderer_request(rd, req);
     FREE(img);
 
@@ -486,25 +487,25 @@ int test_renderer_image(TstSuite* suite)
         data[5].uv[0] = 0;
         data[5].uv[1] = 1;
     }
-    req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
     dvz_renderer_request(rd, req);
 
 
 
     // Commands.
-    dvz_requester_begin(rqr);
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, board_id, graphics_id, 0, 6, 0, 1);
-    dvz_record_end(rqr, board_id);
+    // dvz_requester_begin(batch);
+    dvz_record_begin(batch, board_id);
+    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, board_id, graphics_id, 0, 6, 0, 1);
+    dvz_record_end(batch, board_id);
 
     uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
+    // DvzRequest* reqs = dvz_requester_end(batch, &count);
     AT(count > 0);
-    dvz_renderer_requests(rd, count, reqs);
+    // dvz_renderer_requests(rd, count, reqs);
 
     // Render.
-    req = dvz_update_board(rqr, board_id);
+    req = dvz_update_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Retrieve the image.
@@ -519,11 +520,11 @@ int test_renderer_image(TstSuite* suite)
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
     // Create a board deletion request.
-    req = dvz_delete_board(rqr, board_id);
+    req = dvz_delete_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
     // Destroy the requester and renderer.
-    dvz_requester_destroy(rqr);
+    // dvz_requester_destroy(batch);
     dvz_renderer_destroy(rd);
     return 0;
 }

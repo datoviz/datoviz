@@ -34,7 +34,7 @@ int test_basic_1(TstSuite* suite)
     const uint32_t n = 30000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_basic(vt.rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    DvzVisual* visual = dvz_basic(vt.batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
 
     // Visual allocation.
     dvz_basic_alloc(visual, n);

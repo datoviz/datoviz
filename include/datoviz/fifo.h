@@ -256,6 +256,17 @@ DVZ_EXPORT int dvz_fifo_size(DvzFifo* fifo);
 
 
 /**
+ * Fetch an item from the queue.
+ *
+ * @param fifo the FIFO queue
+ * @param idx the index of the item to fetch within the queue
+ * @returns the item
+ */
+DVZ_EXPORT void* dvz_fifo_get(DvzFifo* fifo, uint32_t idx);
+
+
+
+/**
  * Discard old items in a queue.
  *
  * This function will suppress all items in the queue except the `max_size` most recent ones.

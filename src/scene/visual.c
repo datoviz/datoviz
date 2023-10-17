@@ -65,32 +65,32 @@
 /*  Visual lifecycle                                                                             */
 /*************************************************************************************************/
 
-DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags)
+DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
     DvzVisual* visual = (DvzVisual*)calloc(1, sizeof(DvzVisual));
 
     visual->flags = flags;
-    visual->rqr = rqr;
+    visual->batch = batch;
 
     // No callback by default, will just use dvz_visual_instance().
     visual->callback = NULL;
 
-    visual->baker = dvz_baker(rqr, 0);
+    visual->baker = dvz_baker(batch, 0);
 
     // Create the graphics object.
-    DvzRequest req = dvz_create_graphics(rqr, DVZ_GRAPHICS_CUSTOM, 0);
+    DvzRequest req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, 0);
     visual->graphics_id = req.id;
     visual->is_visible = true;
 
     // Default fixed function pipeline states:
 
     // Primitive topology.
-    dvz_set_primitive(rqr, visual->graphics_id, primitive);
+    dvz_set_primitive(batch, visual->graphics_id, primitive);
 
     // Polygon mode.
-    dvz_set_polygon(rqr, visual->graphics_id, DVZ_POLYGON_MODE_FILL);
+    dvz_set_polygon(batch, visual->graphics_id, DVZ_POLYGON_MODE_FILL);
 
     dvz_obj_init(&visual->obj);
     return visual;
@@ -110,7 +110,7 @@ void dvz_visual_update(DvzVisual* visual)
     }
 
     // NOTE: flush the requests queue so that they are sent to the renderer.
-    dvz_requester_end(visual->rqr, NULL);
+    // dvz_requester_end(visual->batch, NULL);
 }
 
 
@@ -143,10 +143,10 @@ void dvz_visual_destroy(DvzVisual* visual)
 void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_primitive(rqr, visual->graphics_id, primitive);
+    dvz_set_primitive(batch, visual->graphics_id, primitive);
 }
 
 
@@ -154,10 +154,10 @@ void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive)
 void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_blend(rqr, visual->graphics_id, blend_type);
+    dvz_set_blend(batch, visual->graphics_id, blend_type);
 }
 
 
@@ -165,10 +165,10 @@ void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type)
 void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_depth(rqr, visual->graphics_id, depth_test);
+    dvz_set_depth(batch, visual->graphics_id, depth_test);
 }
 
 
@@ -176,10 +176,10 @@ void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test)
 void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_polygon(rqr, visual->graphics_id, polygon_mode);
+    dvz_set_polygon(batch, visual->graphics_id, polygon_mode);
 }
 
 
@@ -187,10 +187,10 @@ void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode)
 void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_cull(rqr, visual->graphics_id, cull_mode);
+    dvz_set_cull(batch, visual->graphics_id, cull_mode);
 }
 
 
@@ -198,10 +198,10 @@ void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode)
 void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face)
 {
     ANN(visual);
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    dvz_set_front(rqr, visual->graphics_id, front_face);
+    dvz_set_front(batch, visual->graphics_id, front_face);
 }
 
 
@@ -218,10 +218,10 @@ void dvz_visual_spirv(
     ASSERT(size > 0);
 
     // First, create a shader object.
-    DvzRequest req = dvz_create_spirv(visual->rqr, type, size, buffer);
+    DvzRequest req = dvz_create_spirv(visual->batch, type, size, buffer);
 
     // Then associate it to the graphics.
-    dvz_set_shader(visual->rqr, visual->graphics_id, req.id);
+    dvz_set_shader(visual->batch, visual->graphics_id, req.id);
 }
 
 
@@ -331,7 +331,7 @@ void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type)
 
     // Declare a slot.
     dvz_set_slot(
-        visual->rqr, visual->graphics_id, slot_idx,
+        visual->batch, visual->graphics_id, slot_idx,
         type == DVZ_SLOT_DAT ? DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER
                              : DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 }
@@ -347,7 +347,7 @@ DvzParams* dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzSize size)
     ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
     // Create a params object.
-    DvzParams* params = dvz_params(visual->rqr, size, false);
+    DvzParams* params = dvz_params(visual->batch, size, false);
 
     // Set a params object.
     visual->params[slot_idx] = params;
@@ -369,7 +369,7 @@ void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzId dat)
     ASSERT(slot_idx < DVZ_MAX_BINDINGS);
 
     // Call a bind_dat request for the visual graphics and the dual's dat.
-    dvz_bind_dat(visual->rqr, visual->graphics_id, slot_idx, dat, 0);
+    dvz_bind_dat(visual->batch, visual->graphics_id, slot_idx, dat, 0);
 }
 
 
@@ -380,7 +380,7 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampl
     ANN(visual->baker);
 
     // Bind the texture to the graphics.
-    dvz_bind_tex(visual->rqr, visual->graphics_id, slot_idx, tex, sampler, offset);
+    dvz_bind_tex(visual->batch, visual->graphics_id, slot_idx, tex, sampler, offset);
 }
 
 
@@ -406,8 +406,8 @@ void dvz_visual_alloc(
     DvzBaker* baker = visual->baker;
     ANN(baker);
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     DvzId graphics_id = visual->graphics_id;
     ASSERT(graphics_id != DVZ_ID_NONE);
@@ -484,7 +484,7 @@ void dvz_visual_alloc(
 
         // GPU-side.
         // TODO: input rate instance?
-        dvz_set_vertex(rqr, graphics_id, binding_idx, stride, DVZ_VERTEX_INPUT_RATE_VERTEX);
+        dvz_set_vertex(batch, graphics_id, binding_idx, stride, DVZ_VERTEX_INPUT_RATE_VERTEX);
     }
 
     // Declare the vertex attributes.
@@ -498,7 +498,7 @@ void dvz_visual_alloc(
         dvz_baker_attr(baker, attr_idx, attr->binding_idx, attr->offset, attr->item_size);
 
         // GPU-side.
-        dvz_set_attr(rqr, graphics_id, attr->binding_idx, attr_idx, attr->format, attr->offset);
+        dvz_set_attr(batch, graphics_id, attr->binding_idx, attr_idx, attr->format, attr->offset);
     }
 
     // The baker slots are declared directly in dvz_visual_params() and dvz_visual_tex().
@@ -523,7 +523,7 @@ void dvz_visual_alloc(
     // Bind the index buffer.
     if (indexed)
     {
-        dvz_bind_index(rqr, graphics_id, baker->index.dat, 0);
+        dvz_bind_index(batch, graphics_id, baker->index.dat, 0);
     }
 
     // We now need to send the vertex/descriptor binding requests to the GPU.
@@ -541,7 +541,7 @@ void dvz_visual_alloc(
             continue;
         }
         // TODO: dat offset?
-        dvz_bind_vertex(rqr, graphics_id, binding_idx, bv->dual.dat, 0);
+        dvz_bind_vertex(batch, graphics_id, binding_idx, bv->dual.dat, 0);
     }
 
     // // Send the dat bindings commands.
@@ -559,7 +559,7 @@ void dvz_visual_alloc(
     //             slot_idx);
     //         continue;
     //     }
-    //     dvz_bind_dat(rqr, graphics_id, slot_idx, bd->u.dat.dual.dat, 0);
+    //     dvz_bind_dat(batch, graphics_id, slot_idx, bd->u.dat.dual.dat, 0);
     // }
 
     // NOTE: when using the scene API (viewset.c), these are handled automatically.
@@ -721,13 +721,13 @@ void dvz_visual_instance(
     if (indexed)
     {
         dvz_record_draw_indexed(
-            visual->rqr, canvas, visual->graphics_id, first, vertex_offset, count, //
+            visual->batch, canvas, visual->graphics_id, first, vertex_offset, count, //
             first_instance, instance_count);
     }
     else
     {
         dvz_record_draw(
-            visual->rqr, canvas, visual->graphics_id, first, count, //
+            visual->batch, canvas, visual->graphics_id, first, count, //
             first_instance, instance_count);
     }
 }
@@ -750,11 +750,11 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
     if (indexed)
     {
         dvz_record_draw_indexed_indirect(
-            visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
+            visual->batch, canvas, visual->graphics_id, indirect, draw_count);
     }
     else
     {
-        dvz_record_draw_indirect(visual->rqr, canvas, visual->graphics_id, indirect, draw_count);
+        dvz_record_draw_indirect(visual->batch, canvas, visual->graphics_id, indirect, draw_count);
     }
 }
 

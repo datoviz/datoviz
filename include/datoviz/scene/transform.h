@@ -23,7 +23,7 @@
 typedef struct DvzTransform DvzTransform;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 // typedef struct DvzDual DvzDual;
 
 
@@ -49,7 +49,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzTransform* dvz_transform(DvzRequester* rqr);
+DVZ_EXPORT DvzTransform* dvz_transform(DvzBatch* batch);
 
 
 

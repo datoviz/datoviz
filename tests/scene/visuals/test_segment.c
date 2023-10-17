@@ -34,7 +34,7 @@ int test_segment_1(TstSuite* suite)
     const uint32_t n = 32;
 
     // Create the visual.
-    DvzVisual* visual = dvz_segment(vt.rqr, 0);
+    DvzVisual* visual = dvz_segment(vt.batch, 0);
 
     // Visual allocation.
     dvz_segment_alloc(visual, n);

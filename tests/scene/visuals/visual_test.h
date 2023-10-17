@@ -52,7 +52,7 @@ struct VisualTest
 {
     const char* name;
     DvzApp* app;
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzScene* scene;
     DvzFigure* figure;
     DvzPanel* panel;
@@ -79,7 +79,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     // VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL);
 
     // // Volume visual.
-    // DvzVisual* volume = dvz_volume(vt.rqr, 0);
+    // DvzVisual* volume = dvz_volume(vt.batch, 0);
     // dvz_volume_alloc(volume, 1);
 
     // // Add the visual to the panel AFTER setting the visual's data.
@@ -92,10 +92,10 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
-    DvzScene* scene = dvz_scene(rqr);
+    DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
@@ -131,7 +131,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     VisualTest vt = {
         .name = name,
         .app = app,
-        .rqr = rqr,
+        .batch = batch,
         .scene = scene,
         .figure = figure,
         .panel = panel,

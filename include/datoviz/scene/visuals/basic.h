@@ -24,7 +24,7 @@
 typedef struct DvzBasicVertex DvzBasicVertex;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 
 
@@ -56,7 +56,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_basic(DvzRequester* rqr, DvzPrimitiveTopology topology, int flags);
+DVZ_EXPORT DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags);
 
 
 

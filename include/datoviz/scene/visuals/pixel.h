@@ -21,7 +21,7 @@
 /*************************************************************************************************/
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 
 
@@ -35,7 +35,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_pixel(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzVisual* dvz_pixel(DvzBatch* batch, int flags);
 
 
 

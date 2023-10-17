@@ -33,11 +33,11 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_basic(DvzRequester* rqr, DvzPrimitiveTopology topology, int flags)
+DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
-    DvzVisual* visual = dvz_visual(rqr, topology, flags);
+    DvzVisual* visual = dvz_visual(batch, topology, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -64,8 +64,8 @@ void dvz_basic_alloc(DvzVisual* visual, uint32_t item_count)
     ANN(visual);
     log_debug("allocating the visual visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Create the visual.
     dvz_visual_alloc(visual, item_count, item_count, 0);

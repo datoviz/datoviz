@@ -43,12 +43,12 @@ static void _visual_callback(
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_segment(DvzRequester* rqr, int flags)
+DvzVisual* dvz_segment(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
     flags |= DVZ_VISUALS_FLAGS_INDEXED;
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -90,8 +90,8 @@ void dvz_segment_alloc(DvzVisual* visual, uint32_t item_count)
     ANN(visual);
     log_debug("allocating the segment visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Allocate the visual.
     dvz_visual_alloc(visual, item_count, 4 * item_count, 6 * item_count);

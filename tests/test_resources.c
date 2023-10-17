@@ -176,7 +176,7 @@ int test_resources_dat_resize(TstSuite* suite)
     // Download back the data.
     dvz_dat_download(dat, 0, sizeof(data1), data1, true);
 
-    ASSERT(memcmp(data1, data, size) == 0);
+    AT(memcmp(data1, data, size) == 0);
 
     dvz_dat_destroy(dat);
 
@@ -202,7 +202,7 @@ int test_resources_tex_transfers(TstSuite* suite)
     // Create a data array.
     uint8_t data[32] = {0};
     uint8_t data1[32 * 4] = {0};
-    ASSERT(size == 32);
+    AT(size == 32);
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
 
@@ -248,7 +248,7 @@ int test_resources_tex_resize(TstSuite* suite)
     // Create a data array.
     uint8_t data[32] = {0};
     uint8_t data1[32 * 4] = {0};
-    ASSERT(size == 32);
+    AT(size == 32);
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
 

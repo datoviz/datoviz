@@ -39,15 +39,16 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
     ANN(app);
     ANN(app->rqr);
 
-    if (dvz_atomic_get(app->rqr->status) != DVZ_BUILD_DIRTY)
-    {
-        log_trace(
-            "skip presenter submit because requester is not ready to be flushed (not dirty)");
-    }
-    else
-    {
-        dvz_presenter_submit(app->prt, app->rqr);
-    }
+    // TODO
+    // if (dvz_atomic_get(app->rqr->status) != DVZ_BUILD_DIRTY)
+    // {
+    //     log_trace(
+    //         "skip presenter submit because requester is not ready to be flushed (not dirty)");
+    // }
+    // else
+    // {
+    //     dvz_presenter_submit(app->prt, app->rqr);
+    // }
 
     // The timer callbacks are called here.
     dvz_timer_tick(app->timer, ev.content.f.time);
@@ -83,7 +84,7 @@ DvzApp* dvz_app(int flags)
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(app->rqr);
+    // dvz_requester_begin(app->rqr);
 
     app->timer = dvz_timer();
     ANN(app->timer);
@@ -100,6 +101,12 @@ DvzRequester* dvz_app_requester(DvzApp* app)
 {
     ANN(app);
     return app->rqr;
+}
+
+DvzBatch* dvz_app_batch(DvzApp* app)
+{
+    ANN(app);
+    return app->batch;
 }
 
 
@@ -211,11 +218,11 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
     // End the requester batch just before running the event loop. This way we ensure the requester
     // is ready to be flushed in dvz_presenter_submit().
-    dvz_requester_end(app->rqr, NULL);
+    // dvz_requester_end(app->rqr, NULL);
 
     // Submit all pending requests that were emitted during the initialization of the application,
     // before calling dvz_app_run().
-    dvz_presenter_submit(app->prt, app->rqr);
+    // dvz_presenter_submit(app->prt, app->rqr);
 
     // Start the event loop.
     dvz_client_run(app->client, n_frames);
@@ -249,6 +256,7 @@ void dvz_app_destroy(DvzApp* app)
     dvz_client_destroy(app->client);
     dvz_presenter_destroy(app->prt);
     dvz_timer_destroy(app->timer);
+    dvz_batch_destroy(app->batch);
     dvz_requester_destroy(app->rqr);
     dvz_renderer_destroy(app->rd);
     dvz_gpu_destroy(app->gpu);

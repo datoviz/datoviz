@@ -27,7 +27,7 @@ typedef struct DvzDrawIndirectCommand DvzDrawIndirectCommand;
 typedef struct DvzDrawIndexedIndirectCommand DvzDrawIndexedIndirectCommand;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzArray DvzArray;
 
 
@@ -44,7 +44,7 @@ typedef struct DvzArray DvzArray;
 
 struct DvzDual
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzArray* array;
     DvzId dat;
     uint32_t dirty_first;
@@ -82,7 +82,7 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzDual dvz_dual(DvzRequester* rqr, DvzArray* array, DvzId dat);
+DVZ_EXPORT DvzDual dvz_dual(DvzBatch* batch, DvzArray* array, DvzId dat);
 
 DVZ_EXPORT void dvz_dual_dirty(DvzDual* dual, uint32_t first, uint32_t count);
 
@@ -107,13 +107,13 @@ DVZ_EXPORT void dvz_dual_destroy(DvzDual* dual);
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzDual
-dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size, int flags);
+dvz_dual_vertex(DvzBatch* batch, uint32_t vertex_count, DvzSize vertex_size, int flags);
 
-DVZ_EXPORT DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count, int flags);
+DVZ_EXPORT DvzDual dvz_dual_index(DvzBatch* batch, uint32_t index_count, int flags);
 
-DVZ_EXPORT DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed);
+DVZ_EXPORT DvzDual dvz_dual_indirect(DvzBatch* batch, bool indexed);
 
-DVZ_EXPORT DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize item_size, int flags);
+DVZ_EXPORT DvzDual dvz_dual_dat(DvzBatch* batch, DvzSize item_size, int flags);
 
 
 

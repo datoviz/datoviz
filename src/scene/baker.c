@@ -58,7 +58,7 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         return;
     }
     bv->dual =
-        dvz_dual_vertex(baker->rqr, vertex_count, bv->stride, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+        dvz_dual_vertex(baker->batch, vertex_count, bv->stride, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     // NOTE; mark the dual as needing to be destroyed by the library
     bv->dual.need_destroy = true;
 }
@@ -76,7 +76,7 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         log_trace("skipping creation of dat for shared index buffer");
         return;
     }
-    baker->index = dvz_dual_index(baker->rqr, index_count, 0);
+    baker->index = dvz_dual_index(baker->batch, index_count, 0);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->index.need_destroy = true;
 }
@@ -88,7 +88,7 @@ static void _create_indirect(DvzBaker* baker, bool indexed)
     ANN(baker);
 
     log_trace("create %sindirect buffer, create dat and array", indexed ? "indexed " : "");
-    baker->indirect = dvz_dual_indirect(baker->rqr, indexed);
+    baker->indirect = dvz_dual_indirect(baker->batch, indexed);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->indirect.need_destroy = true;
 }
@@ -112,7 +112,8 @@ static void _create_indirect(DvzBaker* baker, bool indexed)
 //     if (bd->type == DVZ_SLOT_DAT)
 //     {
 //         log_trace("baker create dual dat");
-//         bd->u.dat.dual = dvz_dual_dat(baker->rqr, bd->u.dat.item_size, DVZ_DAT_FLAGS_MAPPABLE);
+//         bd->u.dat.dual = dvz_dual_dat(baker->batch, bd->u.dat.item_size,
+//         DVZ_DAT_FLAGS_MAPPABLE);
 //         // NOTE; mark the dual as needing to be destroyed by the library
 //         bd->u.dat.dual.need_destroy = true;
 //     }
@@ -128,11 +129,11 @@ static void _create_indirect(DvzBaker* baker, bool indexed)
 /*  Baker life cycle                                                                             */
 /*************************************************************************************************/
 
-DvzBaker* dvz_baker(DvzRequester* rqr, int flags)
+DvzBaker* dvz_baker(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
     DvzBaker* baker = (DvzBaker*)calloc(1, sizeof(DvzBaker));
-    baker->rqr = rqr;
+    baker->batch = batch;
 
     // 00xx: which attributes should be in a different buf (8 max)
     // xx00: which attributes should be constants
@@ -601,5 +602,5 @@ void dvz_baker_quads(
 //     bd->u.tex.format = format;
 //     bd->flags = flags;
 //     memcpy(bd->u.tex.shape, shape, sizeof(uvec3));
-//     bd->u.tex.tex = dvz_create_tex(baker->rqr, dims, format, shape, flags).id;
+//     bd->u.tex.tex = dvz_create_tex(baker->batch, dims, format, shape, flags).id;
 // }

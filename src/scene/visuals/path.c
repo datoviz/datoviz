@@ -43,12 +43,12 @@ static void _visual_callback(
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_path(DvzRequester* rqr, int flags)
+DvzVisual* dvz_path(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, flags);
-    // DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP, flags);
+    // DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -97,8 +97,8 @@ void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count)
     ANN(visual);
     log_debug("allocating the path visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Allocate the visual.
     dvz_visual_alloc(visual, total_vertex_count, 4 * total_vertex_count, 0);

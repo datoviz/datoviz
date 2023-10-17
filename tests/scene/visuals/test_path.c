@@ -41,7 +41,7 @@ int test_path_1(TstSuite* suite)
         path_lengths[j] = N;
 
     // Create the visual.
-    DvzVisual* visual = dvz_path(vt.rqr, 0);
+    DvzVisual* visual = dvz_path(vt.batch, 0);
 
     // Visual allocation.
     dvz_path_alloc(visual, total_length);
@@ -140,7 +140,7 @@ int test_path_2(TstSuite* suite)
         path_lengths[j] = N;
 
     // Create the visual.
-    DvzVisual* visual = dvz_path(vt.rqr, 0);
+    DvzVisual* visual = dvz_path(vt.batch, 0);
 
     // Visual allocation.
     dvz_path_alloc(visual, total_length);

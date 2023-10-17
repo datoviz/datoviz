@@ -344,65 +344,65 @@ static void triangle_commands(
 /*  Graphics wrapper                                                                             */
 /*************************************************************************************************/
 
-static void graphics_commands(DvzRequester* rqr, GraphicsWrapper* wrapper)
+static void graphics_commands(DvzBatch* batch, GraphicsWrapper* wrapper)
 {
     // Command buffer.
-    dvz_record_begin(rqr, wrapper->canvas_id);
-    dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, wrapper->n, 0, 1);
-    dvz_record_end(rqr, wrapper->canvas_id);
+    dvz_record_begin(batch, wrapper->canvas_id);
+    dvz_record_viewport(batch, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, wrapper->canvas_id, wrapper->graphics_id, 0, wrapper->n, 0, 1);
+    dvz_record_end(batch, wrapper->canvas_id);
 }
 
 static void
-graphics_request(DvzRequester* rqr, const uint32_t n, GraphicsWrapper* wrapper, int flags)
+graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, int flags)
 {
     // Make a canvas creation request.
-    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, flags);
+    DvzRequest req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, flags);
 
     // Canvas id.
     wrapper->canvas_id = req.id;
     wrapper->n = n;
 
     // Create a graphics.
-    req = dvz_create_graphics(rqr, DVZ_GRAPHICS_POINT, 0);
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_POINT, 0);
     wrapper->graphics_id = req.id;
 
     // Create the vertex buffer dat.
     req = dvz_create_dat(
-        rqr, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex),
+        batch, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex),
         DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     wrapper->dat_id = req.id;
 
     // Bind the vertex buffer dat to the graphics pipe.
-    req = dvz_bind_vertex(rqr, wrapper->graphics_id, 0, wrapper->dat_id, 0);
+    req = dvz_bind_vertex(batch, wrapper->graphics_id, 0, wrapper->dat_id, 0);
 
     // Binding #0: MVP.
-    req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
     wrapper->mvp_id = req.id;
 
-    req = dvz_bind_dat(rqr, wrapper->graphics_id, 0, wrapper->mvp_id, 0);
+    req = dvz_bind_dat(batch, wrapper->graphics_id, 0, wrapper->mvp_id, 0);
 
     wrapper->mvp = dvz_mvp_default();
-    req = dvz_upload_dat(rqr, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
+    req = dvz_upload_dat(batch, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
 
     // Binding #1: viewport.
     req = dvz_create_dat(
-        rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+        batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     wrapper->viewport_id = req.id;
 
-    req = dvz_bind_dat(rqr, wrapper->graphics_id, 1, wrapper->viewport_id, 0);
+    req = dvz_bind_dat(batch, wrapper->graphics_id, 1, wrapper->viewport_id, 0);
 
     wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    req = dvz_upload_dat(rqr, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
+    req = dvz_upload_dat(batch, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
 
     // Command buffer.
-    graphics_commands(rqr, wrapper);
+    graphics_commands(batch, wrapper);
 }
 
 
 
 // NOTE: the caller needs to free the output pointer.
-static void* graphics_scatter(DvzRequester* rqr, DvzId dat_id, const uint32_t n)
+static void* graphics_scatter(DvzBatch* batch, DvzId dat_id, const uint32_t n)
 {
     // Upload the data.
     DvzGraphicsPointVertex* data =
@@ -421,7 +421,7 @@ static void* graphics_scatter(DvzRequester* rqr, DvzId dat_id, const uint32_t n)
         data[i].color[3] = 128;
     }
 
-    dvz_upload_dat(rqr, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+    dvz_upload_dat(batch, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
     return data;
 }
 

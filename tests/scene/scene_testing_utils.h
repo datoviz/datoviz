@@ -23,20 +23,20 @@
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
-static int render_requests(DvzRequester* rqr, DvzGpu* gpu, DvzId board, const char* name)
+static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char* name)
 {
-    ANN(rqr);
+    ANN(batch);
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
 
     // Update the board.
-    dvz_update_board(rqr, board);
+    dvz_update_board(batch, board);
 
     // Execute the requests.
-    uint32_t count = 0;
-    DvzRequest* reqs = dvz_requester_end(rqr, &count);
-    dvz_renderer_requests(rd, count, reqs);
+    // uint32_t count = 0;
+    // DvzRequest* reqs = dvz_requester_end(batch, &count);
+    // dvz_renderer_requests(rd, count, reqs);
 
     // Retrieve the image.
     DvzSize size = 0;

@@ -49,10 +49,10 @@ int test_scene_1(TstSuite* suite)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
-    DvzScene* scene = dvz_scene(rqr);
+    DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
@@ -63,15 +63,15 @@ int test_scene_1(TstSuite* suite)
     // Panel contains.
     AT(dvz_panel_contains(panel, (vec2){0, 0}));
     AT(!dvz_panel_contains(panel, (vec2){WIDTH, HEIGHT}));
-    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, HEIGHT / 2}) == panel);
-    ASSERT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
+    AT(dvz_panel_at(figure, (vec2){WIDTH / 2, HEIGHT / 2}) == panel);
+    AT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
 
     // Panzoom.
     DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
     ANN(pz);
 
     // Create a visual.
-    DvzVisual* pixel = dvz_pixel(rqr, 0);
+    DvzVisual* pixel = dvz_pixel(batch, 0);
     const uint32_t n = 10000;
     dvz_pixel_alloc(pixel, n);
 
@@ -120,16 +120,16 @@ int test_scene_2(TstSuite* suite)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
-    DvzScene* scene = dvz_scene(rqr);
+    DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Create a visual.
-    DvzVisual* pixel = dvz_pixel(rqr, 0);
+    DvzVisual* pixel = dvz_pixel(batch, 0);
     const uint32_t n = 100000;
     dvz_pixel_alloc(pixel, n);
 
@@ -166,7 +166,7 @@ int test_scene_2(TstSuite* suite)
     dvz_panel_transform(panel_1, panel_0->transform);
 
     // Second visual.
-    DvzVisual* pixel_1 = dvz_pixel(rqr, 0);
+    DvzVisual* pixel_1 = dvz_pixel(batch, 0);
     dvz_pixel_alloc(pixel_1, n / 10);
     dvz_pixel_position(pixel_1, 0, n / 10, pos, 0);
     dvz_pixel_color(pixel_1, 0, n / 10, color, 0);
@@ -198,10 +198,10 @@ int test_scene_3(TstSuite* suite)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
-    DvzScene* scene = dvz_scene(rqr);
+    DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
@@ -224,7 +224,7 @@ int test_scene_3(TstSuite* suite)
         {255, 0, 255, 255},
         {255, 255, 0, 255},
     });
-    DvzVisual* mesh = dvz_mesh_shape(rqr, &disc);
+    DvzVisual* mesh = dvz_mesh_shape(batch, &disc);
 
     // Params.
     // ambient, diffuse, specular, specular exponent

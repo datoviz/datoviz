@@ -39,11 +39,11 @@
 /*  Scene                                                                                        */
 /*************************************************************************************************/
 
-DvzScene* dvz_scene(DvzRequester* rqr)
+DvzScene* dvz_scene(DvzBatch* batch)
 {
-    ANN(rqr);
+    ANN(batch);
     DvzScene* scene = (DvzScene*)calloc(1, sizeof(DvzScene));
-    scene->rqr = rqr;
+    scene->batch = batch;
     scene->figures = dvz_list();
     return scene;
 }
@@ -84,15 +84,15 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     fig->panels = dvz_list();
 
     // Requester.
-    DvzRequester* rqr = scene->rqr;
-    ANN(rqr);
+    DvzBatch* batch = scene->batch;
+    ANN(batch);
 
     // Create the canvas.
-    DvzRequest req = dvz_create_canvas(rqr, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
+    DvzRequest req = dvz_create_canvas(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
     fig->canvas_id = req.id;
 
     // Create the viewset;
-    fig->viewset = dvz_viewset(rqr, fig->canvas_id);
+    fig->viewset = dvz_viewset(batch, fig->canvas_id);
 
     // Append the figure to the scene's figures.
     dvz_list_append(scene->figures, (DvzListItem){.p = (void*)fig});
@@ -368,7 +368,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     log_trace("create a new Panzoom instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(app->rqr);
+    panel->transform = dvz_transform(app->batch);
     panel->transform_to_destroy = true;
 
     return panel->panzoom;
@@ -397,7 +397,7 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
     log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(app->rqr);
+    panel->transform = dvz_transform(app->batch);
     panel->transform_to_destroy = true;
 
     return panel->arcball;
@@ -489,8 +489,8 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
     DvzScene* scene = (DvzScene*)ev.user_data;
     ANN(scene);
 
-    DvzRequester* rqr = scene->rqr;
-    ANN(rqr);
+    DvzBatch* batch = scene->batch;
+    ANN(batch);
 
     DvzFigure* fig = dvz_scene_figure(scene, ev.window_id);
     ANN(fig);
@@ -522,9 +522,9 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             DvzMVP* mvp = dvz_transform_mvp(tr);
             dvz_panzoom_mvp(pz, mvp);
 
-            dvz_requester_begin(rqr);
+            // dvz_requester_begin(batch);
             dvz_transform_update(tr, *mvp);
-            dvz_requester_end(rqr, NULL);
+            // dvz_requester_end(batch, NULL);
         }
     }
 
@@ -545,14 +545,14 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             DvzMVP* mvp = dvz_transform_mvp(tr);
             dvz_arcball_mvp(arcball, mvp);
 
-            dvz_requester_begin(rqr);
+            // dvz_requester_begin(batch);
             dvz_transform_update(tr, *mvp);
-            dvz_requester_end(rqr, NULL);
+            // dvz_requester_end(batch, NULL);
         }
 
         if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
         {
-            dvz_requester_begin(rqr);
+            // dvz_requester_begin(batch);
             vec3 pos = {0};
             _vec3_copy(panel->camera->pos, pos);
             pos[2] *= (1 + .01 * ev.content.m.content.w.dir[1]);
@@ -564,7 +564,7 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
 
             dvz_transform_update(tr, *mvp);
 
-            dvz_requester_end(rqr, NULL);
+            // dvz_requester_end(batch, NULL);
         }
     }
 }

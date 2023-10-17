@@ -37,13 +37,13 @@
 
 int test_visual_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
 
     uint32_t n = 10000;
 
     // Create a visual.
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_basic");
@@ -90,22 +90,22 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_update(visual);
 
     // Create a board.
-    DvzRequest req = dvz_create_board(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzRequest req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId board_id = req.id;
-    req = dvz_set_background(rqr, board_id, (cvec4){32, 64, 128, 255});
+    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
 
     // Record the commands.
-    dvz_record_begin(rqr, board_id);
-    dvz_record_viewport(rqr, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_begin(batch, board_id);
+    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_visual_instance(visual, board_id, 0, 0, n, 0, 1);
-    dvz_record_end(rqr, board_id);
+    dvz_record_end(batch, board_id);
 
     // Render to a PNG.
-    render_requests(rqr, get_gpu(suite), board_id, "visual_1");
+    render_requests(batch, get_gpu(suite), board_id, "visual_1");
 
     // Cleanup
     dvz_visual_destroy(visual);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     FREE(pos);
     FREE(color);
     return 0;

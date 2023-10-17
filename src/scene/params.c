@@ -22,17 +22,17 @@
 /**
  *
  */
-DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size, bool is_shared)
+DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared)
 {
-    ANN(rqr);
+    ANN(batch);
     ASSERT(struct_size > 0);
 
     DvzParams* params = (DvzParams*)calloc(1, sizeof(DvzParams));
-    params->rqr = rqr;
+    params->batch = batch;
     params->is_shared = is_shared;
 
     // Create the dual for the uniform with the params.
-    params->dual = dvz_dual_dat(rqr, struct_size, DVZ_DAT_FLAGS_MAPPABLE);
+    params->dual = dvz_dual_dat(batch, struct_size, DVZ_DAT_FLAGS_MAPPABLE);
 
     return params;
 }
@@ -93,7 +93,7 @@ void dvz_params_bind(DvzParams* params, DvzId graphics_id, uint32_t slot_idx)
     ANN(params);
     ASSERT(params->dual.dat != DVZ_ID_NONE);
 
-    dvz_bind_dat(params->rqr, graphics_id, slot_idx, params->dual.dat, 0);
+    dvz_bind_dat(params->batch, graphics_id, slot_idx, params->dual.dat, 0);
 }
 
 

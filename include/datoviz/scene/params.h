@@ -26,7 +26,7 @@ typedef struct DvzParamsAttr DvzParamsAttr;
 typedef struct DvzParams DvzParams;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 
 
 
@@ -59,7 +59,7 @@ struct DvzParamsAttr
 
 struct DvzParams
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     // DvzSize struct_size;
     DvzDual dual;
     DvzParamsAttr attrs[DVZ_PARAMS_MAX_ATTRS];
@@ -77,7 +77,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzParams* dvz_params(DvzRequester* rqr, DvzSize struct_size, bool is_shared);
+DVZ_EXPORT DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared);
 
 
 

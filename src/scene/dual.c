@@ -19,14 +19,14 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzDual dvz_dual(DvzRequester* rqr, DvzArray* array, DvzId dat)
+DvzDual dvz_dual(DvzBatch* batch, DvzArray* array, DvzId dat)
 {
-    ANN(rqr);
+    ANN(batch);
     ANN(array);
     ASSERT(dat != DVZ_ID_NONE);
 
     DvzDual dual = {0};
-    dual.rqr = rqr;
+    dual.batch = batch;
     dual.array = array;
     dual.dat = dat;
 
@@ -114,7 +114,7 @@ void dvz_dual_resize(DvzDual* dual, uint32_t count)
     dvz_dual_clear(dual);
 
     // Send a dat update command.
-    dvz_resize_dat(dual->rqr, dual->dat, count * dual->array->item_size);
+    dvz_resize_dat(dual->batch, dual->dat, count * dual->array->item_size);
 }
 
 
@@ -122,7 +122,7 @@ void dvz_dual_resize(DvzDual* dual, uint32_t count)
 void dvz_dual_update(DvzDual* dual)
 {
     ANN(dual);
-    ANN(dual->rqr);
+    ANN(dual->batch);
     ANN(dual->array);
 
     if (dual->dirty_first == UINT32_MAX)
@@ -137,7 +137,7 @@ void dvz_dual_update(DvzDual* dual)
     DvzSize offset = dual->dirty_first * item_size;
     DvzSize size = (DvzSize)((int64_t)dual->dirty_last - (int64_t)dual->dirty_first) * item_size;
     void* data = dvz_array_item(array, dual->dirty_first);
-    dvz_upload_dat(dual->rqr, dual->dat, offset, size, data);
+    dvz_upload_dat(dual->batch, dual->dat, offset, size, data);
 
     dvz_dual_clear(dual);
 }
@@ -161,68 +161,69 @@ void dvz_dual_destroy(DvzDual* dual)
 /*  Helpers                                                                                      */
 /*************************************************************************************************/
 
-DvzDual dvz_dual_vertex(DvzRequester* rqr, uint32_t vertex_count, DvzSize vertex_size, int flags)
+DvzDual dvz_dual_vertex(DvzBatch* batch, uint32_t vertex_count, DvzSize vertex_size, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
     ASSERT(vertex_count > 0);
     ASSERT(vertex_size > 0);
 
     DvzId dat_id =
-        dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, flags).id;
+        dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, flags).id;
     DvzArray* array = dvz_array_struct(vertex_count, vertex_size);
 
-    DvzDual dual = dvz_dual(rqr, array, dat_id);
+    DvzDual dual = dvz_dual(batch, array, dat_id);
     // dual.need_destroy = true;
     return dual;
 }
 
 
 
-DvzDual dvz_dual_index(DvzRequester* rqr, uint32_t index_count, int flags)
+DvzDual dvz_dual_index(DvzBatch* batch, uint32_t index_count, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
     ASSERT(index_count > 0);
 
     DvzSize index_size = sizeof(DvzIndex);
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, flags).id;
+    DvzId dat_id =
+        dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, flags).id;
     DvzArray* array = dvz_array_struct(index_count, index_size);
 
-    DvzDual dual = dvz_dual(rqr, array, dat_id);
+    DvzDual dual = dvz_dual(batch, array, dat_id);
     // dual.need_destroy = true;
     return dual;
 }
 
 
 
-DvzDual dvz_dual_indirect(DvzRequester* rqr, bool indexed)
+DvzDual dvz_dual_indirect(DvzBatch* batch, bool indexed)
 {
-    ANN(rqr);
+    ANN(batch);
 
     DvzSize size =
         indexed ? sizeof(DvzDrawIndexedIndirectCommand) : sizeof(DvzDrawIndirectCommand);
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_INDIRECT, size, 0).id;
+    DvzId dat_id = dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDIRECT, size, 0).id;
     DvzArray* array = dvz_array_struct(1, size);
 
-    DvzDual dual = dvz_dual(rqr, array, dat_id);
+    DvzDual dual = dvz_dual(batch, array, dat_id);
     // dual.need_destroy = true;
     return dual;
 }
 
 
 
-DvzDual dvz_dual_dat(DvzRequester* rqr, DvzSize vertex_size, int flags)
+DvzDual dvz_dual_dat(DvzBatch* batch, DvzSize vertex_size, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
     ASSERT(vertex_size > 0);
 
     // NOTE: typically, we create a dat for a uniform buffer with just a single item of a given
     // struct.
     const uint32_t n_items = 1;
 
-    DvzId dat_id = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, n_items * vertex_size, flags).id;
+    DvzId dat_id = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, n_items * vertex_size, flags).id;
     DvzArray* array = dvz_array_struct(n_items, vertex_size);
 
-    DvzDual dual = dvz_dual(rqr, array, dat_id);
+    DvzDual dual = dvz_dual(batch, array, dat_id);
     // dual.need_destroy = true;
     return dual;
 }

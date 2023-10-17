@@ -38,7 +38,7 @@ static int _fifo_thread_1(void* arg)
 {
     DvzFifo* fifo = arg;
     uint8_t* data = dvz_fifo_dequeue(fifo, true);
-    ASSERT(*data == 12);
+    AT(*data == 12);
     // Signal to the caller thread that the dequeue was successfull.
     fifo->user_data = data;
     return 0;
@@ -73,11 +73,15 @@ int test_fifo_1(TstSuite* suite)
     AT(fifo->is_empty);
     dvz_fifo_enqueue(fifo, &item);
     AT(!_is_empty(fifo));
-    ASSERT(fifo->tail == 1);
-    ASSERT(fifo->head == 0);
+    AT(fifo->tail == 1);
+    AT(fifo->head == 0);
+
+    // Test fifo_get.
+    AT(dvz_fifo_get(fifo, 0) == &item);
+
     uint8_t* data = dvz_fifo_dequeue(fifo, true);
     AT(_is_empty(fifo));
-    ASSERT(*data == item);
+    AT(*data == item);
 
     // Enqueue in the main thread, dequeue in a background thread.
     DvzThread* thread = dvz_thread(_fifo_thread_1, fifo);
@@ -85,7 +89,7 @@ int test_fifo_1(TstSuite* suite)
     AT(!_is_empty(fifo));
     dvz_thread_join(thread);
     ANN(fifo->user_data);
-    ASSERT(fifo->user_data == &item);
+    AT(fifo->user_data == &item);
 
     // Multiple enqueues in the background thread, dequeue in the main thread.
     thread = dvz_thread(_fifo_thread_2, fifo);

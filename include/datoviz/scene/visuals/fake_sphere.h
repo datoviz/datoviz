@@ -24,7 +24,7 @@ typedef struct DvzFakeSphereVertex DvzFakeSphereVertex;
 typedef struct DvzFakeSphereParams DvzFakeSphereParams;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 
 
@@ -64,7 +64,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
 
 
 

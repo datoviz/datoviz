@@ -34,7 +34,7 @@ int test_fake_sphere_1(TstSuite* suite)
     const uint32_t n = 1000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_fake_sphere(vt.rqr, 0);
+    DvzVisual* visual = dvz_fake_sphere(vt.batch, 0);
 
     // Visual allocation.
     dvz_fake_sphere_alloc(visual, n);

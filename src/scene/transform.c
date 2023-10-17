@@ -21,9 +21,9 @@
 /*  Transform                                                                                    */
 /*************************************************************************************************/
 
-DvzTransform* dvz_transform(DvzRequester* rqr)
+DvzTransform* dvz_transform(DvzBatch* batch)
 {
-    ANN(rqr);
+    ANN(batch);
 
     DvzTransform* tr = (DvzTransform*)calloc(1, sizeof(DvzTransform));
 
@@ -31,7 +31,7 @@ DvzTransform* dvz_transform(DvzRequester* rqr)
 
     // NOTE: the transform holds the DvzMVP dual.
     log_trace("create transform dual");
-    tr->dual = dvz_dual_dat(rqr, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
+    tr->dual = dvz_dual_dat(batch, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
 
     // Initialize the MVP on initialization.
     dvz_transform_update(tr, dvz_mvp_default());

@@ -30,7 +30,6 @@ typedef struct DvzBakerAttr DvzBakerAttr;
 // typedef struct DvzBakerParam DvzBakerParam;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
 typedef struct DvzArray DvzArray;
 
 
@@ -100,7 +99,7 @@ struct DvzBakerVertex
 
 struct DvzBaker
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     int flags;
     bool is_indirect;
 
@@ -131,7 +130,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzBaker* dvz_baker(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzBaker* dvz_baker(DvzBatch* batch, int flags);
 
 
 

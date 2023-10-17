@@ -192,6 +192,16 @@ int dvz_fifo_size(DvzFifo* fifo)
 
 
 
+void* dvz_fifo_get(DvzFifo* fifo, uint32_t idx)
+{
+    ANN(fifo);
+    idx = (fifo->head + idx) % fifo->capacity;
+    ASSERT(0 <= idx && idx < fifo->capacity);
+    return fifo->items[idx];
+}
+
+
+
 void dvz_fifo_discard(DvzFifo* fifo, int max_size)
 {
     ANN(fifo);

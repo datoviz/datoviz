@@ -42,10 +42,10 @@ struct TestParams
 
 int test_params_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
 
-    DvzParams* params = dvz_params(rqr, sizeof(TestParams), false);
+    DvzParams* params = dvz_params(batch, sizeof(TestParams), false);
     dvz_params_attr(params, 0, offsetof(TestParams, a), sizeof(char));
     dvz_params_attr(params, 1, offsetof(TestParams, b), sizeof(uint32_t));
 
@@ -62,33 +62,33 @@ int test_params_1(TstSuite* suite)
     dvz_params_set(params, 0, &a);
     dvz_params_set(params, 1, &b);
 
-    AT(rqr->count == 2);
+    AT(batch->count == 2);
 
-    AT(rqr->requests[0].action == DVZ_REQUEST_ACTION_CREATE);
-    AT(rqr->requests[0].type == DVZ_REQUEST_OBJECT_DAT);
-    AT(rqr->requests[0].content.dat.size == sizeof(TestParams));
+    AT(batch->requests[0].action == DVZ_REQUEST_ACTION_CREATE);
+    AT(batch->requests[0].type == DVZ_REQUEST_OBJECT_DAT);
+    AT(batch->requests[0].content.dat.size == sizeof(TestParams));
 
-    AT(rqr->requests[1].action == DVZ_REQUEST_ACTION_BIND);
-    AT(rqr->requests[1].type == DVZ_REQUEST_OBJECT_DAT);
-    AT(rqr->requests[1].content.bind_dat.slot_idx == 1);
+    AT(batch->requests[1].action == DVZ_REQUEST_ACTION_BIND);
+    AT(batch->requests[1].type == DVZ_REQUEST_OBJECT_DAT);
+    AT(batch->requests[1].content.bind_dat.slot_idx == 1);
 
     // Update the dat dual.
     dvz_params_update(params);
-    AT(rqr->count == 3);
+    AT(batch->count == 3);
 
     // Check that the data upload request is correct.
-    // dvz_show_buffer(4, 8, sizeof(TestParams), rqr->requests[2].content.dat_upload.data);
+    // dvz_show_buffer(4, 8, sizeof(TestParams), batch->requests[2].content.dat_upload.data);
     // dvz_show_buffer(4, 8, sizeof(TestParams), &p);
-    // dvz_requester_print(rqr);
+    // dvz_requester_print(batch);
 
-    AT(rqr->requests[2].content.dat_upload.size == sizeof(TestParams));
-    AT(memcmp(rqr->requests[2].content.dat_upload.data, &p, sizeof(TestParams)) == 0);
+    AT(batch->requests[2].content.dat_upload.size == sizeof(TestParams));
+    AT(memcmp(batch->requests[2].content.dat_upload.data, &p, sizeof(TestParams)) == 0);
 
     // Check direct upload of the dat's data.
     dvz_params_data(params, &p);
-    AT(rqr->count == 4);
-    AT(memcmp(rqr->requests[3].content.dat_upload.data, &p, sizeof(TestParams)) == 0);
+    AT(batch->count == 4);
+    AT(memcmp(batch->requests[3].content.dat_upload.data, &p, sizeof(TestParams)) == 0);
 
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     return 0;
 }

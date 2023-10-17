@@ -43,7 +43,7 @@ typedef struct CallbackStruct CallbackStruct;
 struct CallbackStruct
 {
     DvzPresenter* prt;
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzId canvas_id;
     DvzId mvp_id;
     DvzId viewport_id;
@@ -58,7 +58,7 @@ struct CallbackStruct
 typedef struct TexStruct TexStruct;
 struct TexStruct
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzPresenter* prt;
 
     uint32_t width;
@@ -71,7 +71,7 @@ struct TexStruct
 typedef struct PanzoomStruct PanzoomStruct;
 struct PanzoomStruct
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzPresenter* prt;
     DvzId mvp_id;
     DvzMVP mvp;
@@ -83,7 +83,7 @@ struct PanzoomStruct
 typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzPresenter* prt;
     DvzId mvp_id;
     DvzMVP mvp;
@@ -112,11 +112,11 @@ int test_presenter_1(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
 
     // Presenter linking the renderer and the client.
@@ -125,12 +125,12 @@ int test_presenter_1(TstSuite* suite)
     // Start.
 
     // Make a canvas creation request.
-    dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -140,7 +140,7 @@ int test_presenter_1(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -160,15 +160,15 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ANN(s);
 
-    DvzRequester* rqr = s->rqr;
-    ANN(rqr);
+    DvzBatch* batch = s->batch;
+    ANN(batch);
 
     // Submit new recording commands to the client.
-    dvz_record_begin(rqr, s->canvas_id);
-    dvz_record_viewport(rqr, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(rqr, s->canvas_id, s->graphics_id, 0, 3, 0, 1);
-    dvz_record_end(rqr, s->canvas_id);
-    dvz_presenter_submit(s->prt, rqr);
+    dvz_record_begin(batch, s->canvas_id);
+    dvz_record_viewport(batch, s->canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, s->canvas_id, s->graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, s->canvas_id);
+    dvz_presenter_submit(s->prt, batch);
 }
 
 int test_presenter_2(TstSuite* suite)
@@ -186,12 +186,12 @@ int test_presenter_2(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
@@ -201,21 +201,21 @@ int test_presenter_2(TstSuite* suite)
     DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
     {
         // Make a canvas creation request.
-        req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
 
         // Canvas id.
         canvas_id = req.id;
 
         // Create a graphics.
-        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, 0);
         graphics_id = req.id;
 
         // Create the vertex buffer dat.
-        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+        req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
         dat_id = req.id;
 
         // Bind the vertex buffer dat to the graphics pipe.
-        req = dvz_bind_vertex(rqr, graphics_id, 0, dat_id, 0);
+        req = dvz_bind_vertex(batch, graphics_id, 0, dat_id, 0);
 
         // Upload the triangle data.
         DvzVertex data[] = {
@@ -223,44 +223,44 @@ int test_presenter_2(TstSuite* suite)
             {{+1, -1, 0}, {0, 255, 0, 255}},
             {{+0, +1, 0}, {0, 0, 255, 255}},
         };
-        req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
 
         // Binding #0: MVP.
         req = dvz_create_dat(
-            rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+            batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
         mvp_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id, 0, mvp_id, 0);
+        req = dvz_bind_dat(batch, graphics_id, 0, mvp_id, 0);
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
-        req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
 
         // Binding #1: viewport.
-        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+        req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         viewport_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id, 1, viewport_id, 0);
+        req = dvz_bind_dat(batch, graphics_id, 1, viewport_id, 0);
 
         DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
         // dvz_show_base64(sizeof(viewport), &viewport);
-        req = dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+        req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
 
 
         // Command buffer.
-        req = dvz_record_begin(rqr, canvas_id);
+        req = dvz_record_begin(batch, canvas_id);
 
-        req = dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        req = dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
-        req = dvz_record_draw(rqr, canvas_id, graphics_id, 0, 3, 0, 1);
+        req = dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
 
-        req = dvz_record_end(rqr, canvas_id);
+        req = dvz_record_end(batch, canvas_id);
     }
 
     // Resize callback.
     CallbackStruct s = {
         .prt = prt,
-        .rqr = rqr,
+        .batch = batch,
         .canvas_id = canvas_id,
         .graphics_id = graphics_id,
         .mvp_id = mvp_id,
@@ -272,7 +272,7 @@ int test_presenter_2(TstSuite* suite)
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -280,7 +280,7 @@ int test_presenter_2(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -313,8 +313,8 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
     CallbackStruct* s = (CallbackStruct*)ev.user_data;
     ANN(s);
 
-    DvzRequester* rqr = s->rqr;
-    ANN(rqr);
+    DvzBatch* batch = s->batch;
+    ANN(batch);
 
     DvzPresenter* prt = s->prt;
     ANN(prt);
@@ -324,18 +324,19 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
 
     // Update the data.
     _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
-    dvz_upload_dat(rqr, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+    dvz_upload_dat(
+        batch, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
 
     // // Update the command buffer with the new n.
-    // req = dvz_record_begin(rqr, wrapper->canvas_id);
+    // req = dvz_record_begin(batch, wrapper->canvas_id);
     //
-    // req = dvz_record_viewport(rqr, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT,
+    // req = dvz_record_viewport(batch, wrapper->canvas_id, DVZ_DEFAULT_VIEWPORT,
     // DVZ_DEFAULT_VIEWPORT);
-    // req = dvz_record_draw(rqr, wrapper->canvas_id, wrapper->graphics_id, 0, s->n);
+    // req = dvz_record_draw(batch, wrapper->canvas_id, wrapper->graphics_id, 0, s->n);
     //
-    // req = dvz_record_end(rqr, wrapper->canvas_id);
+    // req = dvz_record_end(batch, wrapper->canvas_id);
     //
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 }
 
 int test_presenter_thread(TstSuite* suite)
@@ -353,31 +354,31 @@ int test_presenter_thread(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
     const uint32_t n = 256;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper, 0);
+    graphics_request(batch, n, &wrapper, 0);
     wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
     _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
 
-    dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     CallbackStruct s = {
         .prt = prt,
-        .rqr = rqr,
+        .batch = batch,
         .graphics_wrapper = &wrapper,
         .n = n,
     };
@@ -400,7 +401,7 @@ int test_presenter_thread(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -425,22 +426,22 @@ int test_presenter_deserialize(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
 
     // Load the requests from requests.dvz.
-    dvz_requester_load(rqr, DVZ_DUMP_FILENAME);
+    // dvz_requester_load(batch, DVZ_DUMP_FILENAME);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -448,7 +449,7 @@ int test_presenter_deserialize(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -473,8 +474,8 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
     DvzPresenter* prt = tex_struct->prt;
     ANN(prt);
 
-    DvzRequester* rqr = tex_struct->rqr;
-    ANN(rqr);
+    DvzBatch* batch = tex_struct->batch;
+    ANN(batch);
 
     DvzId tex_id = tex_struct->tex_id;
     ASSERT(tex_id != 0);
@@ -495,11 +496,11 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
     // Upload the texture data.
     dvz_upload_tex(
-        rqr, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
 
     // NOTE: this call needs to be explicit when using the presenter API. The app API automatically
     // calls it so the user doesn't need it.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // Display the texture as an image in the GUI.
     DvzTex* tex = dvz_renderer_tex(tex_struct->prt->rd, tex_struct->tex_id);
@@ -524,12 +525,12 @@ int test_presenter_gui(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, DVZ_CANVAS_FLAGS_IMGUI);
@@ -537,13 +538,13 @@ int test_presenter_gui(TstSuite* suite)
     // Start.
 
     // Make a canvas creation request.
-    req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
+    req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_IMGUI);
     DvzId canvas_id = req.id;
 
     // Texture.
     const uint32_t width = 256, height = 1;
     req = dvz_create_tex(
-        rqr, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, (uvec3){width, height, 1},
+        batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, (uvec3){width, height, 1},
         DVZ_TEX_FLAGS_PERSISTENT_STAGING);
     DvzId tex_id = req.id;
 
@@ -552,12 +553,12 @@ int test_presenter_gui(TstSuite* suite)
     for (uint32_t i = 0; i < width; i++)
         dvz_colormap(DVZ_CMAP_HSV, i * 256 / width, tex_data[i]);
     dvz_upload_tex(
-        rqr, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
 
     // Texture struct.
     TexStruct tex_struct = {
         .prt = prt,
-        .rqr = rqr,
+        .batch = batch,
         .width = width,
         .tex_id = tex_id,
         .tex_data = tex_data,
@@ -566,7 +567,7 @@ int test_presenter_gui(TstSuite* suite)
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // GUI callback.
     dvz_presenter_gui(prt, canvas_id, _gui_callback_1, &tex_struct);
@@ -577,7 +578,7 @@ int test_presenter_gui(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 
@@ -603,12 +604,12 @@ int test_presenter_multi(TstSuite* suite)
 
     // Client-side.
     DvzClient* client = dvz_client(BACKEND);
-    DvzRequester* rqr = dvz_requester();
+    DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
     // NOTE: we need to manually begin recording the requester, otherwise requests won't be
     // automatically recorded in the requester batch.
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
 
     // Presenter linking the renderer and the client.
     DvzPresenter* prt = dvz_presenter(rd, client, 0);
@@ -620,30 +621,30 @@ int test_presenter_multi(TstSuite* suite)
         // Canvas #0.
 
         // Make a canvas creation request.
-        req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
         canvas_id_0 = req.id;
 
-        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, 0);
         graphics_id_0 = req.id;
 
 
         // Canvas #1.
 
         // Make a canvas creation request.
-        req = dvz_create_canvas(rqr, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
+        req = dvz_create_canvas(batch, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
         canvas_id_1 = req.id;
 
-        req = dvz_create_graphics(rqr, DVZ_GRAPHICS_TRIANGLE, 0);
+        req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, 0);
         graphics_id_1 = req.id;
 
 
         // Create the vertex buffer dat.
-        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+        req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
         dat_id = req.id;
 
         // Bind the vertex buffer dat to the graphics pipe.
-        req = dvz_bind_vertex(rqr, graphics_id_0, 0, dat_id, 0);
-        req = dvz_bind_vertex(rqr, graphics_id_1, 0, dat_id, 0);
+        req = dvz_bind_vertex(batch, graphics_id_0, 0, dat_id, 0);
+        req = dvz_bind_vertex(batch, graphics_id_1, 0, dat_id, 0);
 
         // Upload the triangle data.
         DvzVertex data[] = {
@@ -651,46 +652,46 @@ int test_presenter_multi(TstSuite* suite)
             {{+1, -1, 0}, {0, 255, 0, 255}},
             {{+0, +1, 0}, {0, 0, 255, 255}},
         };
-        req = dvz_upload_dat(rqr, dat_id, 0, sizeof(data), data);
+        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
 
         // Binding #0: MVP.
-        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+        req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
         mvp_id = req.id;
 
-        req = dvz_bind_dat(rqr, graphics_id_0, 0, mvp_id, 0);
-        req = dvz_bind_dat(rqr, graphics_id_1, 0, mvp_id, 0);
+        req = dvz_bind_dat(batch, graphics_id_0, 0, mvp_id, 0);
+        req = dvz_bind_dat(batch, graphics_id_1, 0, mvp_id, 0);
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
-        req = dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), &mvp);
+        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
 
         // Binding #1: viewport.
-        req = dvz_create_dat(rqr, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
+        req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
         viewport_id = req.id;
 
-        dvz_bind_dat(rqr, graphics_id_0, 1, viewport_id, 0);
-        dvz_bind_dat(rqr, graphics_id_1, 1, viewport_id, 0);
+        dvz_bind_dat(batch, graphics_id_0, 1, viewport_id, 0);
+        dvz_bind_dat(batch, graphics_id_1, 1, viewport_id, 0);
 
         DvzViewport viewport = dvz_viewport_default(WIDTH / 2, HEIGHT / 2);
         // dvz_show_base64(sizeof(viewport), &viewport);
-        dvz_upload_dat(rqr, viewport_id, 0, sizeof(DvzViewport), &viewport);
+        dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
 
 
         // Command buffer.
-        dvz_record_begin(rqr, canvas_id_0);
-        dvz_record_viewport(rqr, canvas_id_0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-        dvz_record_draw(rqr, canvas_id_0, graphics_id_0, 0, 3, 0, 1);
-        dvz_record_end(rqr, canvas_id_0);
-        dvz_record_begin(rqr, canvas_id_1);
-        dvz_record_viewport(rqr, canvas_id_1, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-        dvz_record_draw(rqr, canvas_id_1, graphics_id_1, 0, 3, 0, 1);
-        dvz_record_end(rqr, canvas_id_1);
+        dvz_record_begin(batch, canvas_id_0);
+        dvz_record_viewport(batch, canvas_id_0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        dvz_record_draw(batch, canvas_id_0, graphics_id_0, 0, 3, 0, 1);
+        dvz_record_end(batch, canvas_id_0);
+        dvz_record_begin(batch, canvas_id_1);
+        dvz_record_viewport(batch, canvas_id_1, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+        dvz_record_draw(batch, canvas_id_1, graphics_id_1, 0, 3, 0, 1);
+        dvz_record_end(batch, canvas_id_1);
     }
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
     // renderer.
-    dvz_presenter_submit(prt, rqr);
+    dvz_presenter_submit(prt, batch);
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);
@@ -698,7 +699,7 @@ int test_presenter_multi(TstSuite* suite)
     // End.
     dvz_client_destroy(client);
     dvz_presenter_destroy(prt);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
     dvz_gpu_destroy(gpu);
 

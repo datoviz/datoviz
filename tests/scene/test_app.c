@@ -54,7 +54,7 @@ struct PanzoomStruct
 typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzId mvp_id;
     DvzMVP mvp;
     DvzArcball* arcball;
@@ -66,7 +66,7 @@ struct ArcballStruct
 typedef struct AnimStruct AnimStruct;
 struct AnimStruct
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzId dat_id;
     DvzSize size;
     uint32_t n;
@@ -89,8 +89,8 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzRequester* rqr = ps->app->rqr;
-    ANN(rqr);
+    DvzBatch* batch = ps->app->batch;
+    ANN(batch);
 
     DvzMVP* mvp = &ps->mvp;
     ANN(mvp);
@@ -105,9 +105,9 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_mvp(pz, mvp);
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_requester_begin(rqr);
-    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_begin(batch);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+    // dvz_requester_end(batch, NULL);
 }
 
 static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
@@ -120,8 +120,8 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzRequester* rqr = ps->app->rqr;
-    ANN(rqr);
+    DvzBatch* batch = ps->app->batch;
+    ANN(batch);
 
     uint32_t width = ev.content.w.screen_width;
     uint32_t height = ev.content.w.screen_height;
@@ -130,9 +130,9 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_resize(pz, width, height);
 
     // Emit updated recording commands.
-    dvz_requester_begin(rqr);
-    graphics_commands(rqr, ps->wrapper);
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_begin(batch);
+    graphics_commands(batch, ps->wrapper);
+    // dvz_requester_end(batch, NULL);
 }
 
 int test_app_scatter(TstSuite* suite)
@@ -141,12 +141,12 @@ int test_app_scatter(TstSuite* suite)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     const uint32_t n = 52;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
-    void* data = graphics_scatter(rqr, wrapper.dat_id, n);
+    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    void* data = graphics_scatter(batch, wrapper.dat_id, n);
 
     // Panzoom callback.
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
@@ -175,8 +175,8 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     DvzArcball* arcball = arc->arcball;
     ANN(arcball);
 
-    DvzRequester* rqr = arc->rqr;
-    ANN(rqr);
+    DvzBatch* batch = arc->batch;
+    ANN(batch);
 
     DvzMVP* mvp = &arc->mvp;
     ANN(mvp);
@@ -226,9 +226,9 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_arcball_mvp(arcball, mvp); // set the model matrix
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_requester_begin(rqr);
-    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_begin(batch);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+    // dvz_requester_end(batch, NULL);
 }
 
 static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
@@ -244,8 +244,8 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     ArcballStruct* arc = (ArcballStruct*)ev.user_data;
     ANN(arc);
 
-    DvzRequester* rqr = arc->rqr;
-    ANN(rqr);
+    DvzBatch* batch = arc->batch;
+    ANN(batch);
 
     DvzMVP* mvp = &arc->mvp;
     ANN(mvp);
@@ -264,7 +264,7 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     dvz_camera_mvp(camera, mvp); // set the model matrix
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_upload_dat(rqr, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
 }
 
 int test_app_arcball(TstSuite* suite)
@@ -273,11 +273,11 @@ int test_app_arcball(TstSuite* suite)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     const uint32_t n = 1000;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
 
     // Upload the data.
     DvzGraphicsPointVertex* data =
@@ -297,7 +297,7 @@ int test_app_arcball(TstSuite* suite)
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
         data[i].color[3] = 128;
     }
-    dvz_upload_dat(rqr, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
 
     // Arcball callback.
     DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
@@ -307,13 +307,13 @@ int test_app_arcball(TstSuite* suite)
         .mvp_id = wrapper.mvp_id,
         .arcball = arcball,
         .cam = camera,
-        .rqr = rqr,
+        .batch = batch,
         .mvp = dvz_mvp_default(),
     };
     dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_upload_dat(rqr, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
+    dvz_upload_dat(batch, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
 
     dvz_app_onmouse(app, _arcball_mouse, &arc);
     dvz_app_onresize(app, _arcball_resize, &arc);
@@ -337,8 +337,8 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     AnimStruct* anim = (AnimStruct*)ev.user_data;
     ANN(anim);
 
-    DvzRequester* rqr = anim->rqr;
-    ANN(rqr);
+    DvzBatch* batch = anim->batch;
+    ANN(batch);
 
     DvzGraphicsPointVertex* data = (DvzGraphicsPointVertex*)anim->data;
     ANN(data);
@@ -353,9 +353,9 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
     }
 
-    dvz_requester_begin(rqr);
-    dvz_upload_dat(rqr, anim->dat_id, 0, anim->size, data);
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_begin(batch);
+    dvz_upload_dat(batch, anim->dat_id, 0, anim->size, data);
+    // dvz_requester_end(batch, NULL);
 }
 
 int test_app_anim(TstSuite* suite)
@@ -364,11 +364,11 @@ int test_app_anim(TstSuite* suite)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
     GraphicsWrapper wrapper = {0};
-    graphics_request(rqr, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
 
     // Upload the data.
     DvzGraphicsPointVertex* data =
@@ -387,9 +387,10 @@ int test_app_anim(TstSuite* suite)
     }
 
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);
-    dvz_upload_dat(rqr, wrapper.dat_id, 0, size, data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, size, data);
 
-    AnimStruct anim = {.data = data, .rqr = rqr, .dat_id = wrapper.dat_id, .n = n, .size = size};
+    AnimStruct anim = {
+        .data = data, .batch = batch, .dat_id = wrapper.dat_id, .n = n, .size = size};
     dvz_app_timer(app, 0, 1. / 60., 0);
     dvz_app_ontimer(app, _anim_timer, &anim);
 
@@ -408,10 +409,10 @@ int test_app_pixel(TstSuite* suite)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create the visual.
-    DvzVisual* pixel = dvz_pixel(rqr, 0);
+    DvzVisual* pixel = dvz_pixel(batch, 0);
     const uint32_t n = 10000;
     dvz_pixel_alloc(pixel, n);
 
@@ -449,14 +450,14 @@ int test_app_pixel(TstSuite* suite)
 
 
     // Create a board.
-    DvzRequest req = dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzRequest req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_id = req.id;
 
     // Record commands.
-    dvz_record_begin(rqr, canvas_id);
-    dvz_record_viewport(rqr, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_begin(batch, canvas_id);
+    dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
     dvz_visual_instance(pixel, canvas_id, 0, 0, n, 0, 1);
-    dvz_record_end(rqr, canvas_id);
+    dvz_record_end(batch, canvas_id);
 
     // Make screenshot.
     dvz_app_run(app, 3);
@@ -486,8 +487,8 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzRequester* rqr = ps->app->rqr;
-    ANN(rqr);
+    DvzBatch* batch = ps->app->batch;
+    ANN(batch);
 
     DvzTransform* tr = ps->tr;
 
@@ -498,9 +499,9 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
 
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(batch);
     dvz_transform_update(tr, *mvp);
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_end(batch, NULL);
 }
 
 int test_app_viewset(TstSuite* suite)
@@ -509,22 +510,22 @@ int test_app_viewset(TstSuite* suite)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
-    DvzRequester* rqr = dvz_app_requester(app);
+    DvzBatch* batch = dvz_app_batch(app);
 
     // Create a canvas.
     DvzRequest req =
-        dvz_create_canvas(rqr, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
     DvzId canvas_id = req.id;
 
     // Create a viewset.
-    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
+    DvzViewset* viewset = dvz_viewset(batch, canvas_id);
 
     // Create a view.
     DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
 
     // Upload the data.
-    DvzVisual* pixel = dvz_pixel(rqr, 0);
+    DvzVisual* pixel = dvz_pixel(batch, 0);
     const uint32_t n = 10000;
     dvz_pixel_alloc(pixel, n);
 
@@ -552,7 +553,7 @@ int test_app_viewset(TstSuite* suite)
 
 
     // MVP transform.
-    DvzTransform* tr = dvz_transform(rqr);
+    DvzTransform* tr = dvz_transform(batch);
 
     // Add the visual to the view.
     dvz_view_add(view, pixel, 0, n, 0, 1, tr, 0);

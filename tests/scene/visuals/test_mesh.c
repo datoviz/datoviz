@@ -40,7 +40,7 @@ int test_mesh_1(TstSuite* suite)
     DvzShape disc = dvz_shape_disc(count, color);
 
     // Create the visual.
-    DvzVisual* visual = dvz_mesh_shape(vt.rqr, &disc);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &disc);
 
     // Light position
     dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});

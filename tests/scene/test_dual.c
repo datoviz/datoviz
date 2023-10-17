@@ -36,12 +36,12 @@
 
 int test_dual_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
     DvzArray* array = dvz_array(16, DVZ_DTYPE_CHAR);
     DvzId dat = 1;
 
-    DvzDual dual = dvz_dual(rqr, array, dat);
+    DvzDual dual = dvz_dual(batch, array, dat);
 
     dvz_dual_dirty(&dual, 2, 3);
     AT(dual.dirty_first == 2);
@@ -81,8 +81,8 @@ int test_dual_1(TstSuite* suite)
         }
     }
 
-    AT(rqr->count == 1);
-    DvzRequest* req = &rqr->requests[0];
+    AT(batch->count == 1);
+    DvzRequest* req = &batch->requests[0];
     AT(req->action == DVZ_REQUEST_ACTION_UPLOAD);
     AT(req->type == DVZ_REQUEST_OBJECT_DAT);
     AT(req->id == dat);
@@ -92,7 +92,7 @@ int test_dual_1(TstSuite* suite)
 
     dvz_array_destroy(array);
     dvz_dual_destroy(&dual);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
 
     return 0;
 }
@@ -101,8 +101,8 @@ int test_dual_1(TstSuite* suite)
 
 int test_dual_2(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
 
     DvzSize item_size = 4 + 8;
     uint32_t count = 12;
@@ -110,7 +110,7 @@ int test_dual_2(TstSuite* suite)
     DvzArray* array = dvz_array_struct(count, item_size);
     DvzId dat = 1;
 
-    DvzDual dual = dvz_dual(rqr, array, dat);
+    DvzDual dual = dvz_dual(batch, array, dat);
 
     char data[8 * 4] = {0};
 
@@ -132,8 +132,8 @@ int test_dual_2(TstSuite* suite)
 
     dvz_dual_update(&dual);
 
-    AT(rqr->count == 1);
-    DvzRequest* req = &rqr->requests[0];
+    AT(batch->count == 1);
+    DvzRequest* req = &batch->requests[0];
 
     AT(req->content.dat_upload.offset == 2 * item_size);
     AT(req->content.dat_upload.size == 6 * item_size);
@@ -174,6 +174,6 @@ int test_dual_2(TstSuite* suite)
 
     dvz_array_destroy(array);
     dvz_dual_destroy(&dual);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     return 0;
 }

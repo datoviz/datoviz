@@ -36,7 +36,7 @@ int test_volume_1(TstSuite* suite)
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
 
     // Volume visual.
-    DvzVisual* visual = dvz_volume(vt.rqr, 0);
+    DvzVisual* visual = dvz_volume(vt.batch, 0);
     dvz_volume_alloc(visual, 1);
 
     // Add the visual to the panel AFTER setting the visual's data.

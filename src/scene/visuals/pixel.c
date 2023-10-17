@@ -34,9 +34,9 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_pixel(DvzRequester* rqr, int flags)
+DvzVisual* dvz_pixel(DvzBatch* batch, int flags)
 {
-    return dvz_basic(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
+    return dvz_basic(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
 }
 
 

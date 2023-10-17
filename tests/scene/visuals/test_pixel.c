@@ -34,7 +34,7 @@ int test_pixel_1(TstSuite* suite)
     const uint32_t n = 10000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_pixel(vt.rqr, 0);
+    DvzVisual* visual = dvz_pixel(vt.batch, 0);
 
     // Visual allocation.
     dvz_pixel_alloc(visual, n);

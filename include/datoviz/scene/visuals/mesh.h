@@ -24,7 +24,7 @@ typedef struct DvzMeshVertex DvzMeshVertex;
 typedef struct DvzMeshParams DvzMeshParams;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzShape DvzShape;
 
@@ -74,7 +74,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_mesh(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzVisual* dvz_mesh(DvzBatch* batch, int flags);
 
 
 
@@ -133,7 +133,7 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape);
+DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape);
 
 
 

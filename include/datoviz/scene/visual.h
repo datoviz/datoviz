@@ -35,7 +35,7 @@ typedef struct DvzVisual DvzVisual;
 typedef struct DvzVisualAttr DvzVisualAttr;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzBaker DvzBaker;
 typedef struct DvzView DvzView;
 typedef struct DvzTransform DvzTransform;
@@ -107,7 +107,7 @@ struct DvzVisualAttr
 struct DvzVisual
 {
     DvzObject obj;
-    DvzRequester* rqr;
+    DvzBatch* batch;
     int flags;
     void* user_data;
 
@@ -149,7 +149,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_visual(DvzRequester* rqr, DvzPrimitiveTopology primitive, int flags);
+DVZ_EXPORT DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags);
 
 
 

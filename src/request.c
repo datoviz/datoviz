@@ -5,6 +5,7 @@
 #include "request.h"
 #include "_debug.h"
 #include "_list.h"
+#include "fifo.h"
 #include "fileio.h"
 
 
@@ -14,14 +15,13 @@
 /*************************************************************************************************/
 
 #define CREATE_REQUEST(_action, _type)                                                            \
-    ANN(rqr);                                                                                     \
+    ANN(batch);                                                                                   \
     DvzRequest req = _request();                                                                  \
     req.action = DVZ_REQUEST_ACTION_##_action;                                                    \
     req.type = DVZ_REQUEST_OBJECT_##_type;
 
 #define RETURN_REQUEST                                                                            \
-    if (rqr->count != UINT32_MAX)                                                                 \
-        dvz_requester_add(rqr, req);                                                              \
+    dvz_batch_add(batch, req);                                                                    \
     return req;
 
 #define IF_REQ(_action, _type)                                                                    \
@@ -49,6 +49,11 @@
 /*************************************************************************************************/
 /*  Util functions                                                                               */
 /*************************************************************************************************/
+
+// Global PRNG for all requests.
+static DvzPrng* PRNG;
+
+
 
 static DvzRequest _request(void)
 {
@@ -811,25 +816,21 @@ static void _print_record_end(DvzRequest* req)
 DvzRequester* dvz_requester(void)
 {
     log_trace("create requester");
-    DvzRequester* rqr = (DvzRequester*)calloc(1, sizeof(DvzRequester));
-    rqr->prng = dvz_prng();
-    rqr->status = dvz_atomic();
 
-    // Initialize the list of requests for batchs.
-    rqr->capacity = DVZ_CONTAINER_DEFAULT_COUNT;
-    rqr->requests = (DvzRequest*)calloc(rqr->capacity, sizeof(DvzRequest));
+    // Initialize the global PRNG.
+    if (!PRNG)
+        PRNG = dvz_prng();
+
+    DvzRequester* rqr = (DvzRequester*)calloc(1, sizeof(DvzRequester));
+
+    // Initialize the FIFO queue of requests.
+    rqr->fifo = dvz_fifo(DVZ_MAX_FIFO_CAPACITY);
 
     rqr->pointers_to_free = dvz_list();
-
-    // NOTE: special value to indicate that requester_begin() as not been called, so requests calls
-    // should not automatically append requests to the batch. One has to call requester_begin() to
-    // initialize count to 1 and make the requests append themselves to the batch.
-    rqr->count = UINT32_MAX;
 
     IF_VERBOSE
     _print_start();
 
-    dvz_obj_init(&rqr->obj);
     return rqr;
 }
 
@@ -849,12 +850,13 @@ void dvz_requester_destroy(DvzRequester* rqr)
         FREE(pointer);
     }
 
-    FREE(rqr->requests);
-    dvz_prng_destroy(rqr->prng);
-    dvz_atomic_destroy(rqr->status);
+    dvz_fifo_destroy(rqr->fifo);
     dvz_list_destroy(rqr->pointers_to_free);
-    dvz_obj_destroyed(&rqr->obj);
     FREE(rqr);
+
+    // Destroy the global PRNG.
+    dvz_prng_destroy(PRNG);
+
     log_trace("requester destroyed");
 }
 
@@ -866,11 +868,24 @@ void dvz_requester_destroy(DvzRequester* rqr)
 
 DvzBatch* dvz_batch()
 {
+    // Initialize the global PRNG.
+    if (!PRNG)
+        PRNG = dvz_prng();
+
     DvzBatch* batch = (DvzBatch*)calloc(1, sizeof(DvzBatch));
     batch->capacity = DVZ_BATCH_DEFAULT_CAPACITY;
     batch->requests = (DvzRequest*)calloc(DVZ_BATCH_DEFAULT_CAPACITY, sizeof(DvzRequest));
+    batch->count = 0;
 
     return batch;
+}
+
+
+
+void dvz_batch_clear(DvzBatch* batch)
+{
+    ANN(batch);
+    batch->count = 0;
 }
 
 
@@ -894,28 +909,26 @@ void dvz_batch_add(DvzBatch* batch, DvzRequest req)
 
 
 
-// NOTE: the caller must free the result
-DvzRequest* dvz_batch_requests(DvzBatch* batch, uint32_t* count)
+// NOTE: the caller must NOT free the result
+DvzRequest* dvz_batch_requests(DvzBatch* batch)
 {
     ANN(batch);
-    ANN(count);
+    // ANN(count);
+    // // Batch size.
+    // uint32_t n = batch->count;
+    // if (n == 0)
+    // {
+    //     return NULL;
+    // }
+    // ASSERT(n > 0);
 
-    // Batch size.
-    uint32_t n = batch->count;
-    if (n == 0)
-    {
-        return NULL;
-    }
-    ASSERT(n > 0);
+    // // Modify the count pointer to the number of returned requests.
+    // *count = n;
 
-    // Modify the count pointer to the number of returned requests.
-    *count = n;
-
-    // Make a copy of the pending requests.
-    DvzRequest* requests = (DvzRequest*)calloc(n, sizeof(DvzRequest));
-    memcpy(requests, batch->requests, n * sizeof(DvzRequest));
-
-    return requests;
+    // // Make a copy of the pending requests.
+    // DvzRequest* requests = (DvzRequest*)calloc(n, sizeof(DvzRequest));
+    // memcpy(requests, batch->requests, n * sizeof(DvzRequest));
+    return batch->requests;
 }
 
 
@@ -940,83 +953,60 @@ void dvz_batch_destroy(DvzBatch* batch)
 /*  Requester functions                                                                          */
 /*************************************************************************************************/
 
-// TODO: REMOVE BELOW
-
-void dvz_requester_begin(DvzRequester* rqr)
+void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch)
 {
     ANN(rqr);
-    log_trace("begin requester");
-    rqr->count = 0;
-    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_BUSY);
+    ANN(batch);
+
+    // TODO
+    // uint32_t count = dvz_batch_size(batch);
+    // DvzRequest* requests = dvz_batch_requests(batch);
+    // ANN(requests);
+    // if (count == 0)
+    //     return;
+    // ASSERT(count > 0);
+
+    // DvzRequest* req = NULL;
+    // for (uint32_t i = 0; i < count; i++)
+    // {
+    //     // NOTE: make a copy of the request.
+    //     req = (DvzRequest*)_cpy(sizeof(DvzRequest), &requests[i]);
+    //     dvz_fifo_enqueue(rqr->fifo, req);
+    // }
 }
 
 
 
-void dvz_requester_add(DvzRequester* rqr, DvzRequest req)
-{
-    ANN(rqr);
-    // Resize the array if needed.
-    if (rqr->count == rqr->capacity)
-    {
-        rqr->capacity *= 2;
-        REALLOC(rqr->requests, rqr->capacity * sizeof(DvzRequest));
-    }
-    ASSERT(rqr->count < rqr->capacity);
+// // NOTE: the caller MUST free the result.
+// DvzRequest* dvz_requester_get(DvzRequester* rqr, uint32_t* count)
+// {
+//     ANN(rqr);
+//     ANN(count);
 
-    // Append the request.
-    rqr->requests[rqr->count++] = req;
-}
+//     uint32_t fifo_count = dvz_fifo_size(rqr->fifo);
+//     *count = fifo_count;
 
+//     DvzRequest* reqs = (DvzRequest*)calloc(fifo_count, sizeof(DvzRequest));
+//     for (uint32_t i = 0; i < fifo_count; i++)
+//     {
+//         memcpy(&reqs[i], dvz_fifo_get(rqr->fifo, i), sizeof(DvzRequest));
+//     }
 
-
-DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count)
-{
-    ANN(rqr);
-    log_trace("end requester");
-    if (count != NULL)
-        *count = rqr->count;
-    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_DIRTY);
-    return rqr->requests;
-}
+//     return reqs;
+// }
 
 
 
 DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 {
     ANN(rqr);
-    ANN(count);
-    if (rqr->count == UINT32_MAX)
-    {
-        log_error("cannot flush requester as dvz_requester_begin() was not called");
-        return NULL;
-    }
-    uint32_t n = rqr->count;
-
-    // Modify the count pointer to the number of returned requests.
-    *count = n;
-
-    // Make a copy of the pending requests.
-    DvzRequest* requests = calloc(n, sizeof(DvzRequest));
-    memcpy(requests, rqr->requests, n * sizeof(DvzRequest));
-
-    if (getenv("DVZ_DUMP") != NULL)
-    {
-        if (dvz_requester_dump(rqr, DVZ_DUMP_FILENAME) == 0)
-            log_info("wrote %d Datoviz requests to `%s`", n, DVZ_DUMP_FILENAME);
-        else
-            log_error("error writing Datoviz requests to dump file `%s`", DVZ_DUMP_FILENAME);
-    }
-
-    // Flush the requests.
-    // NOTE: setting the count to 0 means we're automatically beginning a new batch.
-    rqr->count = 0;
-
-    dvz_atomic_set(rqr->status, (int)DVZ_BUILD_CLEAR);
-
-    return requests;
+    // TODO
+    // DvzRequest* reqs = dvz_requester_get(rqr, count);
+    // dvz_fifo_reset(rqr->fifo);
+    // return reqs;
+    return NULL;
 }
 
-// TODO: REMOVE ABOVE
 
 
 void dvz_request_print(DvzRequest* req)
@@ -1085,14 +1075,16 @@ void dvz_request_print(DvzRequest* req)
 void dvz_requester_print(DvzRequester* rqr)
 {
     ANN(rqr);
+    // TODO: batch_print(), and
 
-    _print_start();
+    // _print_start();
 
-    for (uint32_t i = 0; i < rqr->count; i++)
-    {
-        log_trace("print request %d/%d", i + 1, rqr->count);
-        dvz_request_print(&rqr->requests[i]);
-    }
+    // uint32_t count = dvz_fifo_size(rqr->fifo);
+    // for (uint32_t i = 0; i < count; i++)
+    // {
+    //     log_trace("print request %d/%d", i + 1, count);
+    //     dvz_request_print(dvz_fifo_get(rqr->fifo, i));
+    // }
 }
 
 
@@ -1100,52 +1092,53 @@ void dvz_requester_print(DvzRequester* rqr)
 int dvz_requester_dump(DvzRequester* rqr, const char* filename)
 {
     ANN(rqr);
-    int res = 0;
-    if (rqr->count == 0)
-    {
-        log_error("empty requester, aborting requester dump");
-        return 1;
-    }
-    ANN(rqr->requests);
+    // int res = 0;
+    // uint32_t count = dvz_fifo_size(rqr->fifo);
+    // if (count == 0)
+    // {
+    //     log_error("empty requester, aborting requester dump");
+    //     return 1;
+    // }
+    // ANN(rqr->fifo);
 
-    log_trace("start serializing %d requests", rqr->count);
+    // log_trace("start serializing %d requests", count);
 
-    // Dump the DvzRequest structures.
-    log_trace("saving main dump file `%s`", filename);
-    res = write_file(filename, sizeof(DvzRequest), rqr->count, rqr->requests);
-    if (res != 0)
-        return res;
+    // // Dump the DvzRequest structures.
+    // log_trace("saving main dump file `%s`", filename);
+    // res = write_file(filename, sizeof(DvzRequest), count, rqr->requests);
+    // if (res != 0)
+    //     return res;
 
-    // Write additional files for uploaded data.
-    DvzRequest* req = NULL;
-    DvzRequestContent* c = NULL;
-    char filename_bin[32] = {0};
-    uint32_t k = 1;
-    for (uint32_t i = 0; i < rqr->count; i++)
-    {
-        req = &rqr->requests[i];
-        c = &req->content;
-        ANN(req);
+    // // Write additional files for uploaded data.
+    // DvzRequest* req = NULL;
+    // DvzRequestContent* c = NULL;
+    // char filename_bin[32] = {0};
+    // uint32_t k = 1;
+    // for (uint32_t i = 0; i < rqr->count; i++)
+    // {
+    //     req = &rqr->requests[i];
+    //     c = &req->content;
+    //     ANN(req);
 
-        if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
-        {
-            // Increment the filename.
-            snprintf(filename_bin, 30, "%s.%03d", filename, k++);
-            log_trace("saving secondary dump file `%s`", filename_bin);
+    //     if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
+    //     {
+    //         // Increment the filename.
+    //         snprintf(filename_bin, 30, "%s.%03d", filename, k++);
+    //         log_trace("saving secondary dump file `%s`", filename_bin);
 
-            ANN(c);
-            if (req->type == DVZ_REQUEST_OBJECT_DAT)
-            {
-                if (write_file(filename_bin, c->dat_upload.size, 1, c->dat_upload.data) != 0)
-                    return 1;
-            }
-            else if (req->type == DVZ_REQUEST_OBJECT_TEX)
-            {
-                if (write_file(filename_bin, c->tex_upload.size, 1, c->tex_upload.data) != 0)
-                    return 1;
-            }
-        }
-    }
+    //         ANN(c);
+    //         if (req->type == DVZ_REQUEST_OBJECT_DAT)
+    //         {
+    //             if (write_file(filename_bin, c->dat_upload.size, 1, c->dat_upload.data) != 0)
+    //                 return 1;
+    //         }
+    //         else if (req->type == DVZ_REQUEST_OBJECT_TEX)
+    //         {
+    //             if (write_file(filename_bin, c->tex_upload.size, 1, c->tex_upload.data) != 0)
+    //                 return 1;
+    //         }
+    //     }
+    // }
 
     return 0;
 }
@@ -1156,64 +1149,66 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
 {
     ANN(rqr);
     ANN(filename);
-    ANN(rqr->requests);
 
-    // int res = 0;
-    log_trace("start deserializing requests from file `%s`", filename);
+    // TODO
+    // ANN(rqr->requests);
 
-    // Dump the DvzRequest structures.
-    log_trace("load main dump file `%s`", filename);
+    // // int res = 0;
+    // log_trace("start deserializing requests from file `%s`", filename);
 
-    DvzSize size = 0;
-    DvzRequest* requests = (DvzRequest*)dvz_read_file(filename, &size);
-    if (requests == NULL)
-    {
-        log_error("unable to read `%s`", filename);
-        return;
-    }
-    ASSERT(size > 0);
+    // // Dump the DvzRequest structures.
+    // log_trace("load main dump file `%s`", filename);
 
-    // Number of requests.
-    uint32_t count = size / sizeof(DvzRequest);
+    // DvzSize size = 0;
+    // DvzRequest* requests = (DvzRequest*)dvz_read_file(filename, &size);
+    // if (requests == NULL)
+    // {
+    //     log_error("unable to read `%s`", filename);
+    //     return;
+    // }
+    // ASSERT(size > 0);
+
+    // // Number of requests.
+    // uint32_t count = size / sizeof(DvzRequest);
 
 
-    // Write additional files for uploaded data.
-    DvzRequest* req = NULL;
-    DvzRequestContent* c = NULL;
-    char filename_bin[32] = {0};
-    uint32_t k = 1;
+    // // Write additional files for uploaded data.
+    // DvzRequest* req = NULL;
+    // DvzRequestContent* c = NULL;
+    // char filename_bin[32] = {0};
+    // uint32_t k = 1;
 
-    dvz_requester_begin(rqr);
+    // dvz_requester_begin(rqr);
 
-    for (uint32_t i = 0; i < count; i++)
-    {
-        req = &requests[i];
-        c = &req->content;
-        ANN(req);
+    // for (uint32_t i = 0; i < count; i++)
+    // {
+    //     req = &requests[i];
+    //     c = &req->content;
+    //     ANN(req);
 
-        if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
-        {
-            // Increment the filename.
-            snprintf(filename_bin, 30, "%s.%03d", filename, k++);
-            log_trace("saving secondary dump file `%s`", filename_bin);
+    //     if (req->action == DVZ_REQUEST_ACTION_UPLOAD)
+    //     {
+    //         // Increment the filename.
+    //         snprintf(filename_bin, 30, "%s.%03d", filename, k++);
+    //         log_trace("saving secondary dump file `%s`", filename_bin);
 
-            ANN(c);
-            if (req->type == DVZ_REQUEST_OBJECT_DAT)
-            {
-                c->dat_upload.data = (void*)dvz_read_file(filename_bin, &c->dat_upload.size);
-                dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->dat_upload.data});
-            }
-            else if (req->type == DVZ_REQUEST_OBJECT_TEX)
-            {
-                c->tex_upload.data = (void*)dvz_read_file(filename_bin, &c->tex_upload.size);
-                dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->tex_upload.data});
-            }
-        }
+    //         ANN(c);
+    //         if (req->type == DVZ_REQUEST_OBJECT_DAT)
+    //         {
+    //             c->dat_upload.data = (void*)dvz_read_file(filename_bin, &c->dat_upload.size);
+    //             dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->dat_upload.data});
+    //         }
+    //         else if (req->type == DVZ_REQUEST_OBJECT_TEX)
+    //         {
+    //             c->tex_upload.data = (void*)dvz_read_file(filename_bin, &c->tex_upload.size);
+    //             dvz_list_append(rqr->pointers_to_free, (DvzListItem){.p = c->tex_upload.data});
+    //         }
+    //     }
 
-        dvz_requester_add(rqr, *req);
-    }
+    //     dvz_requester_add(rqr, *req);
+    // }
 
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_end(rqr, NULL);
 }
 
 
@@ -1223,10 +1218,10 @@ void dvz_requester_load(DvzRequester* rqr, const char* filename)
 /*************************************************************************************************/
 
 DvzRequest
-dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
+dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     CREATE_REQUEST(CREATE, BOARD);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
     req.content.board.width = width;
     req.content.board.height = height;
@@ -1240,7 +1235,7 @@ dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 backg
 
 
 
-DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
+DvzRequest dvz_update_board(DvzBatch* batch, DvzId id)
 {
     CREATE_REQUEST(UPDATE, BOARD);
     req.id = id;
@@ -1253,7 +1248,7 @@ DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id)
 
 
 
-DvzRequest dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint32_t height)
+DvzRequest dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32_t height)
 {
     CREATE_REQUEST(RESIZE, BOARD);
     req.id = board;
@@ -1268,7 +1263,7 @@ DvzRequest dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint
 
 
 
-DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background)
+DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background)
 {
     CREATE_REQUEST(SET, BACKGROUND);
     req.id = id;
@@ -1282,7 +1277,7 @@ DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background)
 
 
 
-DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
+DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id)
 {
     CREATE_REQUEST(DELETE, BOARD);
     req.id = id;
@@ -1300,10 +1295,10 @@ DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id)
 /*************************************************************************************************/
 
 DvzRequest
-dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags)
+dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
     CREATE_REQUEST(CREATE, CANVAS);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
     req.content.canvas.screen_width = width;
     req.content.canvas.screen_height = height;
@@ -1320,7 +1315,7 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
 
 
 
-DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
+DvzRequest dvz_delete_canvas(DvzBatch* batch, DvzId id)
 {
     CREATE_REQUEST(DELETE, CANVAS);
     req.id = id;
@@ -1337,10 +1332,10 @@ DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id)
 /*  Dat                                                                                          */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags)
+DvzRequest dvz_create_dat(DvzBatch* batch, DvzBufferType type, DvzSize size, int flags)
 {
     CREATE_REQUEST(CREATE, DAT);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
     req.content.dat.type = type;
     req.content.dat.size = size;
@@ -1353,7 +1348,7 @@ DvzRequest dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, i
 
 
 
-DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
+DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size)
 {
     ASSERT(size > 0);
 
@@ -1369,7 +1364,7 @@ DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
 
 
 
-DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data)
+DvzRequest dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data)
 {
     ASSERT(size > 0);
     ANN(data);
@@ -1396,10 +1391,10 @@ DvzRequest dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize 
 /*************************************************************************************************/
 
 DvzRequest
-dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags)
+dvz_create_tex(DvzBatch* batch, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags)
 {
     CREATE_REQUEST(CREATE, TEX);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
     req.content.tex.dims = dims;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
@@ -1413,7 +1408,7 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape
 
 
 
-DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
+DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape)
 {
     CREATE_REQUEST(RESIZE, TEX);
     req.id = tex;
@@ -1428,7 +1423,7 @@ DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape)
 
 
 DvzRequest
-dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
+dvz_upload_tex(DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
 {
     CREATE_REQUEST(UPLOAD, TEX);
     req.id = tex;
@@ -1453,10 +1448,10 @@ dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize 
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode)
+DvzRequest dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddressMode mode)
 {
     CREATE_REQUEST(CREATE, SAMPLER);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.content.sampler.filter = filter;
     req.content.sampler.mode = mode;
 
@@ -1473,13 +1468,13 @@ DvzRequest dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAdd
 /*************************************************************************************************/
 
 DvzRequest
-dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const char* code)
+dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const char* code)
 {
     ANN(code);
     ASSERT(size > 0);
 
     CREATE_REQUEST(CREATE, SHADER);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.content.shader.type = shader_type;
     req.content.shader.size = size;
     req.content.shader.code = _cpy(size, code); // NOTE: the renderer will need to free it
@@ -1492,13 +1487,13 @@ dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, cons
 
 
 DvzRequest dvz_create_spirv(
-    DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer)
+    DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer)
 {
     ANN(buffer);
     ASSERT(size > 0);
 
     CREATE_REQUEST(CREATE, SHADER);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.content.shader.type = shader_type;
     req.content.shader.size = size;
     req.content.shader.buffer = _cpy(size, buffer); // NOTE: the renderer will need to free it
@@ -1514,10 +1509,10 @@ DvzRequest dvz_create_spirv(
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags)
+DvzRequest dvz_create_graphics(DvzBatch* batch, DvzGraphicsType type, int flags)
 {
     CREATE_REQUEST(CREATE, GRAPHICS);
-    req.id = dvz_prng_uuid(rqr->prng);
+    req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
     req.content.graphics.type = type;
 
@@ -1529,7 +1524,7 @@ DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flag
 
 
 
-DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive)
+DvzRequest dvz_set_primitive(DvzBatch* batch, DvzId graphics, DvzPrimitiveTopology primitive)
 {
     CREATE_REQUEST(SET, PRIMITIVE);
     req.id = graphics;
@@ -1543,7 +1538,7 @@ DvzRequest dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopo
 
 
 
-DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_type)
+DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_type)
 {
     CREATE_REQUEST(SET, BLEND);
     req.id = graphics;
@@ -1557,7 +1552,7 @@ DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_t
 
 
 
-DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_test)
+DvzRequest dvz_set_depth(DvzBatch* batch, DvzId graphics, DvzDepthTest depth_test)
 {
     CREATE_REQUEST(SET, DEPTH);
     req.id = graphics;
@@ -1571,7 +1566,7 @@ DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_t
 
 
 
-DvzRequest dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode polygon_mode)
+DvzRequest dvz_set_polygon(DvzBatch* batch, DvzId graphics, DvzPolygonMode polygon_mode)
 {
     CREATE_REQUEST(SET, POLYGON);
     req.id = graphics;
@@ -1585,7 +1580,7 @@ DvzRequest dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode pol
 
 
 
-DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode)
+DvzRequest dvz_set_cull(DvzBatch* batch, DvzId graphics, DvzCullMode cull_mode)
 {
     CREATE_REQUEST(SET, CULL);
     req.id = graphics;
@@ -1599,7 +1594,7 @@ DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode
 
 
 
-DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_face)
+DvzRequest dvz_set_front(DvzBatch* batch, DvzId graphics, DvzFrontFace front_face)
 {
     CREATE_REQUEST(SET, FRONT);
     req.id = graphics;
@@ -1613,7 +1608,7 @@ DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_f
 
 
 
-DvzRequest dvz_set_shader(DvzRequester* rqr, DvzId graphics, DvzId shader)
+DvzRequest dvz_set_shader(DvzBatch* batch, DvzId graphics, DvzId shader)
 {
     CREATE_REQUEST(SET, SHADER);
     req.id = graphics;
@@ -1628,7 +1623,7 @@ DvzRequest dvz_set_shader(DvzRequester* rqr, DvzId graphics, DvzId shader)
 
 
 DvzRequest dvz_set_vertex(
-    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,
+    DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzSize stride,
     DvzVertexInputRate input_rate)
 {
     CREATE_REQUEST(SET, VERTEX);
@@ -1646,7 +1641,7 @@ DvzRequest dvz_set_vertex(
 
 
 DvzRequest dvz_set_attr(
-    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
+    DvzBatch* batch, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset)
 {
     CREATE_REQUEST(SET, VERTEX_ATTR);
@@ -1664,8 +1659,7 @@ DvzRequest dvz_set_attr(
 
 
 
-DvzRequest
-dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type)
+DvzRequest dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type)
 {
     CREATE_REQUEST(SET, SLOT);
     req.id = graphics;
@@ -1685,7 +1679,7 @@ dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptor
 /*************************************************************************************************/
 
 DvzRequest
-dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
+dvz_bind_vertex(DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
 {
     CREATE_REQUEST(BIND, VERTEX);
     req.id = graphics;
@@ -1701,7 +1695,7 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzId d
 
 
 
-DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize offset)
+DvzRequest dvz_bind_index(DvzBatch* batch, DvzId graphics, DvzId dat, DvzSize offset)
 {
     CREATE_REQUEST(BIND, INDEX);
     req.id = graphics;
@@ -1716,8 +1710,7 @@ DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId graphics, DvzId dat, DvzSize 
 
 
 
-DvzRequest
-dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset)
+DvzRequest dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset)
 {
     CREATE_REQUEST(BIND, DAT);
     req.id = pipe;
@@ -1734,7 +1727,7 @@ dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSiz
 
 
 DvzRequest dvz_bind_tex(
-    DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
+    DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 {
     CREATE_REQUEST(BIND, TEX);
     req.id = pipe;
@@ -1755,7 +1748,7 @@ DvzRequest dvz_bind_tex(
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id)
+DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;
@@ -1769,8 +1762,7 @@ DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id)
 
 
 
-DvzRequest
-dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, vec2 shape)
+DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2 shape)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;
@@ -1787,8 +1779,8 @@ dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, ve
 
 
 DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,                //
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,              //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
@@ -1809,7 +1801,7 @@ DvzRequest dvz_record_draw(
 
 
 DvzRequest dvz_record_draw_indexed(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics,        //
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics,          //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count)
 {
@@ -1832,8 +1824,7 @@ DvzRequest dvz_record_draw_indexed(
 
 
 DvzRequest dvz_record_draw_indirect(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
-    uint32_t draw_count)
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;
@@ -1851,8 +1842,7 @@ DvzRequest dvz_record_draw_indirect(
 
 
 DvzRequest dvz_record_draw_indexed_indirect(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
-    uint32_t draw_count)
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;
@@ -1869,7 +1859,7 @@ DvzRequest dvz_record_draw_indexed_indirect(
 
 
 
-DvzRequest dvz_record_end(DvzRequester* rqr, DvzId canvas_or_board_id)
+DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_or_board_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_or_board_id;

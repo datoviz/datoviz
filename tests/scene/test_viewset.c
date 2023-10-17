@@ -39,37 +39,37 @@
 
 int test_viewset_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
 
     uint32_t n = 10;
 
     // Create a visual.
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
     DvzId canvas_id = 1;
     vec2 offset = {0, 0};
     vec2 shape = {0, 0};
 
     // Create a viewset.
-    DvzViewset* viewset = dvz_viewset(rqr, canvas_id);
+    DvzViewset* viewset = dvz_viewset(batch, canvas_id);
 
     // Create a view.
     DvzView* view = dvz_view(viewset, offset, shape);
     dvz_view_clear(view);
 
     // Add the visual to the view.
-    DvzTransform* tr = dvz_transform(rqr);
+    DvzTransform* tr = dvz_transform(batch);
     dvz_view_add(view, visual, 0, n, 0, 1, tr, 0);
     dvz_visual_visible(visual, true);
 
     dvz_viewset_build(viewset);
-    // dvz_requester_print(rqr);
+    // dvz_requester_print(batch);
 
     dvz_view_destroy(view);
 
     dvz_viewset_destroy(viewset);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     return 0;
 }
 

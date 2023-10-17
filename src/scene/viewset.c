@@ -88,13 +88,13 @@ _normalize_pos(vec2* pos, vec2 offset, vec2 shape, float content_scale, DvzMouse
 /*  Viewset                                                                                      */
 /*************************************************************************************************/
 
-DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id)
+DvzViewset* dvz_viewset(DvzBatch* batch, DvzId canvas_id)
 {
-    ANN(rqr);
+    ANN(batch);
     log_trace("create viewset");
 
     DvzViewset* viewset = (DvzViewset*)calloc(1, sizeof(DvzViewset));
-    viewset->rqr = rqr;
+    viewset->batch = batch;
     viewset->status = dvz_atomic();
     viewset->canvas_id = canvas_id;
     viewset->views = dvz_list();
@@ -138,8 +138,8 @@ void dvz_viewset_build(DvzViewset* viewset)
     // it is set to true whenever a view_*() function is called
     // at every frame, dvz_viewset_build() is called (no op if !is_dirty)
 
-    DvzRequester* rqr = viewset->rqr;
-    dvz_record_begin(rqr, canvas_id);
+    DvzBatch* batch = viewset->batch;
+    dvz_record_begin(batch, canvas_id);
 
     uint64_t view_count = dvz_list_count(viewset->views);
     uint64_t count = 0;
@@ -155,7 +155,7 @@ void dvz_viewset_build(DvzViewset* viewset)
         ANN(view->visuals);
 
         // Set the current viewport, corresponding to the current view.
-        dvz_record_viewport(rqr, canvas_id, view->offset, view->shape);
+        dvz_record_viewport(batch, canvas_id, view->offset, view->shape);
 
         // For each visual in the view
         count = dvz_list_count(view->visuals);
@@ -175,10 +175,11 @@ void dvz_viewset_build(DvzViewset* viewset)
         }
     }
 
-    dvz_record_end(rqr, canvas_id);
+    dvz_record_end(batch, canvas_id);
 
+    // TODO
     // HACK
-    dvz_requester_end(rqr, NULL);
+    // dvz_requester_end(batch, NULL);
 }
 
 
@@ -212,7 +213,7 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
     // NOTE: the view holds the DvzViewport dual.
     log_trace("create view dual");
-    view->dual = dvz_dual_dat(viewset->rqr, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
+    view->dual = dvz_dual_dat(viewset->batch, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
 
     dvz_view_resize(view, offset, shape);
     dvz_list_append(viewset->views, (DvzListItem){.p = view});
@@ -245,17 +246,17 @@ void dvz_view_add(
     // if (transform == NULL)
     // {
     //     log_error("no transform set when adding the view, creating a default one");
-    //     transform = dvz_transform(visual->rqr);
+    //     transform = dvz_transform(visual->batch);
     // }
     // ANN(transform);
     // TODO: use a #define macro instead of hard-coded value 0 here.
     // NOTE: bind the transform's dual to slot idx 0 (=MVP)
-    dvz_bind_dat(visual->rqr, visual->graphics_id, 0, transform->dual.dat, 0);
+    dvz_bind_dat(visual->batch, visual->graphics_id, 0, transform->dual.dat, 0);
 
     // // Viewport.
     // DvzViewport viewport = dvz_viewport_default(view->shape[0], view->shape[1]);
     // dvz_visual_viewport(visual, viewport);
-    dvz_bind_dat(visual->rqr, visual->graphics_id, 1, view->dual.dat, 0);
+    dvz_bind_dat(visual->batch, visual->graphics_id, 1, view->dual.dat, 0);
 }
 
 

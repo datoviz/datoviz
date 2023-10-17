@@ -93,7 +93,7 @@ int test_array_2(TstSuite* suite)
 
     // Fill the array with a constant value.
     float value = 12.0f;
-    ASSERT(arr->item_count == 9);
+    AT(arr->item_count == 9);
     dvz_array_data(arr, 0, 9, 1, &value);
     for (uint32_t i = 0; i < 9; i++)
     {

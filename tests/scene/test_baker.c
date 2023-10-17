@@ -36,8 +36,8 @@
 
 int test_baker_1(TstSuite* suite)
 {
-    DvzRequester* rqr = dvz_requester();
-    dvz_requester_begin(rqr);
+    DvzBatch* batch = dvz_batch();
+    // dvz_requester_begin(batch);
 
     // Vertex attributes:
     // attr0: 1 // binding 0
@@ -48,7 +48,7 @@ int test_baker_1(TstSuite* suite)
     // slot0: 5 // uniform 0
     // slot1: 6 // uniform 1
 
-    DvzBaker* baker = dvz_baker(rqr, 0);
+    DvzBaker* baker = dvz_baker(batch, 0);
 
     // Declare the vertex bindings and attributes.
     dvz_baker_vertex(baker, 0, 3);
@@ -68,19 +68,19 @@ int test_baker_1(TstSuite* suite)
 
     // Check the dat creations.
     {
-        AT(rqr->count == 2)
+        AT(batch->count == 2)
 
-        AT(rqr->requests[0].content.dat.size == 3 * count);
-        AT(rqr->requests[0].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
+        AT(batch->requests[0].content.dat.size == 3 * count);
+        AT(batch->requests[0].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
 
-        AT(rqr->requests[1].content.dat.size == 4 * count);
-        AT(rqr->requests[1].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
+        AT(batch->requests[1].content.dat.size == 4 * count);
+        AT(batch->requests[1].content.dat.type == DVZ_BUFFER_TYPE_VERTEX);
 
-        // AT(rqr->requests[2].content.dat.size == 5);
-        // AT(rqr->requests[2].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+        // AT(batch->requests[2].content.dat.size == 5);
+        // AT(batch->requests[2].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
 
-        // AT(rqr->requests[3].content.dat.size == 6);
-        // AT(rqr->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
+        // AT(batch->requests[3].content.dat.size == 6);
+        // AT(batch->requests[3].content.dat.type == DVZ_BUFFER_TYPE_UNIFORM);
     }
 
 
@@ -131,7 +131,7 @@ int test_baker_1(TstSuite* suite)
     // Show the dual data.
     IF_VERBOSE
     {
-        dvz_requester_print(rqr);
+        // dvz_requester_print(batch);
 
         dvz_show_buffer(3, 3, 6, baker->vertex_bindings[0].dual.array->data);
         dvz_show_buffer(2, 4, 8, baker->vertex_bindings[1].dual.array->data);
@@ -142,8 +142,8 @@ int test_baker_1(TstSuite* suite)
     // Check the dat uploads.
     for (uint32_t i = 2; i < 4; i++)
     {
-        AT(rqr->requests[i].action == DVZ_REQUEST_ACTION_UPLOAD);
-        AT(rqr->requests[i].type == DVZ_REQUEST_OBJECT_DAT);
+        AT(batch->requests[i].action == DVZ_REQUEST_ACTION_UPLOAD);
+        AT(batch->requests[i].type == DVZ_REQUEST_OBJECT_DAT);
     }
 
     // buffer with size 6 bytes:
@@ -151,34 +151,35 @@ int test_baker_1(TstSuite* suite)
     // | 1 2 2 |
     // | 2 4 4 |
     // +-------+
-    AT(rqr->requests[2].content.dat_upload.size == 6);
-    AT(memcmp(rqr->requests[2].content.dat_upload.data, (char[]){1, 2, 2, 2, 4, 4}, 6) == 0);
+    AT(batch->requests[2].content.dat_upload.size == 6);
+    AT(memcmp(batch->requests[2].content.dat_upload.data, (char[]){1, 2, 2, 2, 4, 4}, 6) == 0);
 
     // buffer with size 8 bytes:
     // +-----+-----+
     // | 4 4 | 8 8 |
     // | 4 4 | 8 8 |
     // +-----+-----+
-    AT(rqr->requests[3].content.dat_upload.size == 8);
-    AT(memcmp(rqr->requests[3].content.dat_upload.data, (char[]){4, 4, 8, 8, 4, 4, 8, 8}, 8) == 0);
+    AT(batch->requests[3].content.dat_upload.size == 8);
+    AT(memcmp(batch->requests[3].content.dat_upload.data, (char[]){4, 4, 8, 8, 4, 4, 8, 8}, 8) ==
+       0);
 
     // buffer with size 5 bytes:
     // +-----------+
     // | 5 5 5 5 5 |
     // +-----------+
-    // AT(rqr->requests[6].content.dat_upload.size == 5);
-    // AT(memcmp(rqr->requests[6].content.dat_upload.data, (char[]){5, 5, 5, 5, 5}, 5) == 0);
+    // AT(batch->requests[6].content.dat_upload.size == 5);
+    // AT(memcmp(batch->requests[6].content.dat_upload.data, (char[]){5, 5, 5, 5, 5}, 5) == 0);
 
     // buffer with size 6 bytes:
     // +-------------+
     // | 6 6 6 6 6 6 |
     // +-------------+
-    // AT(rqr->requests[7].content.dat_upload.size == 6);
-    // AT(memcmp(rqr->requests[7].content.dat_upload.data, (char[]){6, 6, 6, 6, 6, 6}, 6) == 0);
+    // AT(batch->requests[7].content.dat_upload.size == 6);
+    // AT(memcmp(batch->requests[7].content.dat_upload.data, (char[]){6, 6, 6, 6, 6, 6}, 6) == 0);
 
     // Cleanup.
     dvz_baker_destroy(baker);
-    dvz_requester_destroy(rqr);
+    dvz_batch_destroy(batch);
     return 0;
 }
 
@@ -186,15 +187,15 @@ int test_baker_1(TstSuite* suite)
 
 int test_baker_2(TstSuite* suite)
 {
-    // DvzRequester* rqr = dvz_requester();
-    // dvz_requester_begin(rqr);
+    // DvzBatch* batch = dvz_requester();
+    // dvz_requester_begin(batch);
 
     // // Declare a descriptor slot.
-    // DvzBaker* baker = dvz_baker(rqr, 0);
+    // DvzBaker* baker = dvz_baker(batch, 0);
     // dvz_baker_slot_dat(baker, 0, 1);
 
     // // Create a dual dat manually.
-    // DvzDual dual = dvz_dual_dat(rqr, 1, 0);
+    // DvzDual dual = dvz_dual_dat(batch, 1, 0);
 
     // // Use it as baker's dat.
     // dvz_baker_share_binding(baker, 0);
@@ -212,7 +213,7 @@ int test_baker_2(TstSuite* suite)
     // // Destroy the objects.
     // dvz_baker_destroy(baker);
     // dvz_dual_destroy(&dual);
-    // dvz_requester_destroy(rqr);
+    // dvz_requester_destroy(batch);
     return 0;
 }
 
@@ -220,11 +221,11 @@ int test_baker_2(TstSuite* suite)
 
 // int test_baker_3(TstSuite* suite)
 // {
-//     DvzRequester* rqr = dvz_requester();
-//     dvz_requester_begin(rqr);
+//     DvzBatch* batch = dvz_requester();
+//     dvz_requester_begin(batch);
 
 //     // Declare a descriptor slot.
-//     DvzBaker* baker = dvz_baker(rqr, 0);
+//     DvzBaker* baker = dvz_baker(batch, 0);
 //     dvz_baker_slot_dat(baker, 0, 6);
 
 //     // Properties.
@@ -242,11 +243,11 @@ int test_baker_2(TstSuite* suite)
 //     dvz_baker_update(baker);
 
 //     // Check the upload data.
-//     AT(memcmp(rqr->requests[1].content.dat_upload.data, (char[]){1, 2, 3, 4, 5, 6}, 6) == 0);
+//     AT(memcmp(batch->requests[1].content.dat_upload.data, (char[]){1, 2, 3, 4, 5, 6}, 6) == 0);
 //     // dvz_show_buffer(2, 6, 6, baker->descriptors[0].dual.array->data);
 
 //     // Destroy the objects.
 //     dvz_baker_destroy(baker);
-//     dvz_requester_destroy(rqr);
+//     dvz_requester_destroy(batch);
 //     return 0;
 // }

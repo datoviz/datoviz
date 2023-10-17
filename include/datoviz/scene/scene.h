@@ -33,7 +33,7 @@ typedef struct DvzArcball DvzArcball;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzList DvzList;
 typedef struct DvzPanzoom DvzPanzoom;
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzTransform DvzTransform;
 typedef struct DvzView DvzView;
 typedef struct DvzViewset DvzViewset;
@@ -53,7 +53,7 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzScene
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzList* figures;
 };
 
@@ -95,7 +95,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzScene* dvz_scene(DvzRequester* rqr);
+DVZ_EXPORT DvzScene* dvz_scene(DvzBatch* batch);
 
 
 /**

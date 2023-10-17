@@ -31,6 +31,7 @@ typedef struct DvzClient DvzClient;
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzTimer DvzTimer;
 typedef struct DvzTimerItem DvzTimerItem;
@@ -55,6 +56,7 @@ struct DvzApp
     DvzRenderer* rd;
     DvzPresenter* prt;
     DvzRequester* rqr;
+    DvzBatch* batch;
     DvzTimer* timer;
 };
 
@@ -76,6 +78,7 @@ DVZ_EXPORT DvzApp* dvz_app(int flags);
  *
  */
 DVZ_EXPORT DvzRequester* dvz_app_requester(DvzApp* app);
+DVZ_EXPORT DvzBatch* dvz_app_batch(DvzApp* app);
 
 
 

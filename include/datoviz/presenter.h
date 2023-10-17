@@ -115,7 +115,7 @@ dvz_presenter_gui(DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, v
 
 
 
-DVZ_EXPORT void dvz_presenter_submit(DvzPresenter* prt, DvzRequester* rqr);
+DVZ_EXPORT void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch);
 
 
 

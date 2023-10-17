@@ -52,6 +52,7 @@ typedef struct DvzBatch DvzBatch;
 
 // Forward declarations.
 typedef struct DvzPipe DvzPipe;
+typedef struct DvzFifo DvzFifo;
 typedef struct DvzList DvzList;
 typedef uint64_t DvzId;
 
@@ -272,14 +273,15 @@ struct DvzBatch
 
 struct DvzRequester
 {
-    DvzObject obj;
-    DvzPrng* prng;
-    DvzAtomic status;
+    // DvzObject obj;
+    // DvzPrng* prng;
+    // DvzAtomic status;
 
     // Used for creating batch requests.
-    uint32_t count;
-    uint32_t capacity;
-    DvzRequest* requests;
+    // uint32_t count;
+    // uint32_t capacity;
+    // DvzBatch* batches;
+    DvzFifo* fifo;
 
     DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
 };
@@ -322,13 +324,20 @@ DVZ_EXPORT DvzBatch* dvz_batch(void);
 
 /**
  */
+DVZ_EXPORT void dvz_batch_clear(DvzBatch* batch);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_batch_add(DvzBatch* batch, DvzRequest req);
 
 
 
 /**
  */
-DVZ_EXPORT DvzRequest* dvz_batch_requests(DvzBatch* batch, uint32_t* count);
+DVZ_EXPORT DvzRequest* dvz_batch_requests(DvzBatch* batch);
+
 
 
 /**
@@ -347,61 +356,15 @@ DVZ_EXPORT void dvz_batch_destroy(DvzBatch* batch);
 /*  Requester functions */
 /*************************************************************************************************/
 
-// NOTE: REMOVE BELOW
-
 /**
- * Start a batch request.
- *
- * @param rqr the requester
  */
-DVZ_EXPORT void dvz_requester_begin(DvzRequester* rqr);
+DVZ_EXPORT void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch);
 
 
 
 /**
- * Add a request to a batch request.
- *
- * @param rqr the requester
- * @param req the request
- */
-DVZ_EXPORT void dvz_requester_add(DvzRequester* rqr, DvzRequest req);
-
-
-
-/**
- * End a request batch.
- *
- * @param rqr the requester
- * @param count a pointer to the number of requests added, that will be set by this function
- * @returns a pointer to the array of requests
- */
-DVZ_EXPORT DvzRequest* dvz_requester_end(DvzRequester* rqr, uint32_t* count);
-
-
-
-/**
- * Return all pending requests and flush the requester.
- *
- * @param rqr the requester
- * @param[out] count the number of requests
- * @returns a pointer to an array of requests (NOTE: must be free-ed by the caller)
  */
 DVZ_EXPORT DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
-
-// NOTE: REMOVE ABOVE
-
-
-
-// TODO:
-/**
- */
-// DVZ_EXPORT void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch);
-
-
-
-/**
- */
-// DVZ_EXPORT DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
 
 
 
@@ -454,7 +417,7 @@ DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
  * @returns the request, containing a newly-generated id for the board to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags);
+dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 
@@ -466,7 +429,7 @@ dvz_create_board(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 backg
  * @param background the background color
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 background);
+DVZ_EXPORT DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background);
 
 
 
@@ -477,7 +440,7 @@ DVZ_EXPORT DvzRequest dvz_set_background(DvzRequester* rqr, DvzId id, cvec4 back
  * @param id the board id
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id);
+DVZ_EXPORT DvzRequest dvz_update_board(DvzBatch* batch, DvzId id);
 
 
 
@@ -491,7 +454,7 @@ DVZ_EXPORT DvzRequest dvz_update_board(DvzRequester* rqr, DvzId id);
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint32_t height);
+dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32_t height);
 
 
 
@@ -502,7 +465,7 @@ dvz_resize_board(DvzRequester* rqr, DvzId board, uint32_t width, uint32_t height
  * @param id the board id
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
+DVZ_EXPORT DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id);
 
 
 
@@ -525,7 +488,7 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzRequester* rqr, DvzId id);
  * @returns the request, containing a newly-generated id for the canvas to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 background, int flags);
+dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags);
 
 
 
@@ -536,7 +499,7 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
  * @param id the canvas id
  * @returns the request
  */
-// DVZ_EXPORT DvzRequest dvz_update_canvas(DvzRequester* rqr, DvzId id);
+// DVZ_EXPORT DvzRequest dvz_update_canvas(DvzBatch* batch, DvzId id);
 
 
 
@@ -547,7 +510,7 @@ dvz_create_canvas(DvzRequester* rqr, uint32_t width, uint32_t height, cvec4 back
  * @param id the canvas id
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id);
+DVZ_EXPORT DvzRequest dvz_delete_canvas(DvzBatch* batch, DvzId id);
 
 
 
@@ -564,8 +527,7 @@ DVZ_EXPORT DvzRequest dvz_delete_canvas(DvzRequester* rqr, DvzId id);
  * @param flags the dat creation flags
  * @returns the request, containing a newly-generated id for the dat to be created
  */
-DVZ_EXPORT DvzRequest
-dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
+DVZ_EXPORT DvzRequest dvz_create_dat(DvzBatch* batch, DvzBufferType type, DvzSize size, int flags);
 
 
 
@@ -577,7 +539,7 @@ dvz_create_dat(DvzRequester* rqr, DvzBufferType type, DvzSize size, int flags);
  * @param size the new dat size, in bytes
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size);
+DVZ_EXPORT DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size);
 
 
 
@@ -595,7 +557,7 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzRequester* rqr, DvzId dat, DvzSize size)
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void* data);
+dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data);
 
 
 
@@ -614,7 +576,7 @@ dvz_upload_dat(DvzRequester* rqr, DvzId dat, DvzSize offset, DvzSize size, void*
  * @returns the request, containing a newly-generated id for the tex to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags);
+dvz_create_tex(DvzBatch* batch, DvzTexDims dims, DvzFormat format, uvec3 shape, int flags);
 
 
 
@@ -626,7 +588,7 @@ dvz_create_tex(DvzRequester* rqr, DvzTexDims dims, DvzFormat format, uvec3 shape
  * @param shape the new tex shape
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape);
+DVZ_EXPORT DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape);
 
 
 
@@ -645,7 +607,7 @@ DVZ_EXPORT DvzRequest dvz_resize_tex(DvzRequester* rqr, DvzId tex, uvec3 shape);
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data);
+dvz_upload_tex(DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
 
 
@@ -662,7 +624,7 @@ dvz_upload_tex(DvzRequester* rqr, DvzId tex, uvec3 offset, uvec3 shape, DvzSize 
  * @returns the request, containing a newly-generated id for the sampler to be created
  */
 DVZ_EXPORT DvzRequest
-dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mode);
+dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddressMode mode);
 
 
 
@@ -671,12 +633,12 @@ dvz_create_sampler(DvzRequester* rqr, DvzFilter filter, DvzSamplerAddressMode mo
 /*************************************************************************************************/
 
 DVZ_EXPORT DvzRequest
-dvz_create_glsl(DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const char* code);
+dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const char* code);
 
 
 
 DVZ_EXPORT DvzRequest dvz_create_spirv(
-    DvzRequester* rqr, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer);
+    DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer);
 
 
 
@@ -693,54 +655,54 @@ DVZ_EXPORT DvzRequest dvz_create_spirv(
  * @param flags the graphics creation flags
  * @returns the request, containing a newly-generated id for the graphics pipe to be created
  */
-DVZ_EXPORT DvzRequest dvz_create_graphics(DvzRequester* rqr, DvzGraphicsType type, int flags);
+DVZ_EXPORT DvzRequest dvz_create_graphics(DvzBatch* batch, DvzGraphicsType type, int flags);
 
 
 
 DVZ_EXPORT DvzRequest
-dvz_set_primitive(DvzRequester* rqr, DvzId graphics, DvzPrimitiveTopology primitive);
+dvz_set_primitive(DvzBatch* batch, DvzId graphics, DvzPrimitiveTopology primitive);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_blend(DvzRequester* rqr, DvzId graphics, DvzBlendType blend_type);
+DVZ_EXPORT DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_type);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_depth(DvzRequester* rqr, DvzId graphics, DvzDepthTest depth_test);
+DVZ_EXPORT DvzRequest dvz_set_depth(DvzBatch* batch, DvzId graphics, DvzDepthTest depth_test);
 
 
 
 DVZ_EXPORT DvzRequest
-dvz_set_polygon(DvzRequester* rqr, DvzId graphics, DvzPolygonMode polygon_mode);
+dvz_set_polygon(DvzBatch* batch, DvzId graphics, DvzPolygonMode polygon_mode);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_cull(DvzRequester* rqr, DvzId graphics, DvzCullMode cull_mode);
+DVZ_EXPORT DvzRequest dvz_set_cull(DvzBatch* batch, DvzId graphics, DvzCullMode cull_mode);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_front(DvzRequester* rqr, DvzId graphics, DvzFrontFace front_face);
+DVZ_EXPORT DvzRequest dvz_set_front(DvzBatch* batch, DvzId graphics, DvzFrontFace front_face);
 
 
 
-DVZ_EXPORT DvzRequest dvz_set_shader(DvzRequester* rqr, DvzId graphics, DvzId shader);
+DVZ_EXPORT DvzRequest dvz_set_shader(DvzBatch* batch, DvzId graphics, DvzId shader);
 
 
 
 DVZ_EXPORT DvzRequest dvz_set_vertex(
-    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, DvzSize stride,
+    DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzSize stride,
     DvzVertexInputRate input_rate);
 
 
 
 DVZ_EXPORT DvzRequest dvz_set_attr(
-    DvzRequester* rqr, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
+    DvzBatch* batch, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset);
 
 
 
 DVZ_EXPORT DvzRequest
-dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
+dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
 
 
 
@@ -758,7 +720,7 @@ dvz_set_slot(DvzRequester* rqr, DvzId graphics, uint32_t slot_idx, DvzDescriptor
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
+dvz_bind_vertex(DvzBatch* batch, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
 
 
 
@@ -771,7 +733,7 @@ dvz_bind_vertex(DvzRequester* rqr, DvzId pipe, uint32_t binding_idx, DvzId dat, 
  * @param offset the offset within the dat
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, DvzSize offset);
+DVZ_EXPORT DvzRequest dvz_bind_index(DvzBatch* batch, DvzId pipe, DvzId dat, DvzSize offset);
 
 
 
@@ -786,7 +748,7 @@ DVZ_EXPORT DvzRequest dvz_bind_index(DvzRequester* rqr, DvzId pipe, DvzId dat, D
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset);
+dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset);
 
 
 
@@ -802,7 +764,7 @@ dvz_bind_dat(DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSiz
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_bind_tex(
-    DvzRequester* rqr, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
+    DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
 
 
 
@@ -817,7 +779,7 @@ DVZ_EXPORT DvzRequest dvz_bind_tex(
  * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_id);
+DVZ_EXPORT DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id);
 
 
 
@@ -831,7 +793,7 @@ DVZ_EXPORT DvzRequest dvz_record_begin(DvzRequester* rqr, DvzId canvas_or_board_
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, vec2 shape);
+dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2 shape);
 
 
 
@@ -848,8 +810,8 @@ dvz_record_viewport(DvzRequester* rqr, DvzId canvas_or_board_id, vec2 offset, ve
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,                //
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,              //
     uint32_t first_instance, uint32_t instance_count);
 
 
@@ -868,7 +830,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw(
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics,        //
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics,          //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count);
 
@@ -885,7 +847,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
     uint32_t draw_count);
 
 
@@ -901,7 +863,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
-    DvzRequester* rqr, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
+    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
     uint32_t draw_count);
 
 
@@ -913,7 +875,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
  * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_end(DvzRequester* rqr, DvzId canvas_or_board_id);
+DVZ_EXPORT DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_or_board_id);
 
 
 

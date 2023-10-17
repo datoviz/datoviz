@@ -111,7 +111,7 @@ int test_alloc_3(TstSuite* suite)
     DvzSize alignment = 16;
     DvzSize offset = 0;
     DvzSize resized = 0;
-    ASSERT(size % alignment == 0);
+    AT(size % alignment == 0);
 
     DvzAlloc* alloc = dvz_alloc(2 * size, alignment);
 

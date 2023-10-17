@@ -46,14 +46,14 @@ static void _visual_callback(
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_mesh(DvzRequester* rqr, int flags)
+DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
     // NOTE: force indexed visual flag.
     // flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -104,8 +104,8 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
     ASSERT(index_count % 3 == 0);
     log_debug("allocating the mesh visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Create the visual.
 
@@ -164,7 +164,7 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 
 
 
-DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
+DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape)
 {
     ANN(shape);
     ANN(shape->pos);
@@ -176,7 +176,7 @@ DvzVisual* dvz_mesh_shape(DvzRequester* rqr, DvzShape* shape)
     // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
     // has an index buffer or not.
     int flags = index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT;
-    DvzVisual* visual = dvz_mesh(rqr, flags);
+    DvzVisual* visual = dvz_mesh(batch, flags);
 
     dvz_mesh_alloc(visual, vertex_count, index_count);
 

@@ -34,7 +34,7 @@ int test_point_1(TstSuite* suite)
     const uint32_t n = 10000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_point(vt.rqr, 0);
+    DvzVisual* visual = dvz_point(vt.batch, 0);
 
     // Visual allocation.
     dvz_point_alloc(visual, n);

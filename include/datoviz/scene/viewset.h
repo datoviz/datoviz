@@ -43,7 +43,7 @@ typedef struct DvzView DvzView;
 typedef struct DvzViewset DvzViewset;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzList DvzList;
 typedef struct DvzTransform DvzTransform;
@@ -67,7 +67,7 @@ struct DvzView
 
 struct DvzViewset
 {
-    DvzRequester* rqr;
+    DvzBatch* batch;
     DvzAtomic status;
     DvzId canvas_id;
     DvzList* views;
@@ -84,7 +84,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzViewset* dvz_viewset(DvzRequester* rqr, DvzId canvas_id);
+DVZ_EXPORT DvzViewset* dvz_viewset(DvzBatch* batch, DvzId canvas_id);
 
 
 

@@ -214,7 +214,7 @@ int test_graphics_line_list(TstSuite* suite)
     // Vertex count and params.
     uint32_t n = 4 * 16;
     DvzSize size = 2 * n * sizeof(DvzVertex);
-    ASSERT(n > 0);
+    AT(n > 0);
 
     // Create the dats.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
@@ -318,7 +318,7 @@ int test_graphics_raster(TstSuite* suite)
     // Vertex count and params.
     uint32_t n = 16;
     DvzSize size = n * n * sizeof(DvzGraphicsRasterVertex);
-    ASSERT(n > 0);
+    AT(n > 0);
 
     // Create the dats.
     DvzDat* dat_vertex = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);

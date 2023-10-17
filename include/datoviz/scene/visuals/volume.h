@@ -24,7 +24,7 @@ typedef struct DvzVolumeVertex DvzVolumeVertex;
 typedef struct DvzVolumeParams DvzVolumeParams;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzShape DvzShape;
 
@@ -67,7 +67,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_volume(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
 
 
 

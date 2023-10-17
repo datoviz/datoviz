@@ -25,7 +25,7 @@ typedef struct DvzPathVertex DvzPathVertex;
 typedef struct DvzPathParams DvzPathParams;
 
 // Forward declarations.
-typedef struct DvzRequester DvzRequester;
+typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
 
 
@@ -70,7 +70,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_path(DvzRequester* rqr, int flags);
+DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
 
 
 

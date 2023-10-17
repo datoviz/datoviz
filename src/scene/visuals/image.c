@@ -33,11 +33,11 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_image(DvzRequester* rqr, int flags)
+DvzVisual* dvz_image(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -65,8 +65,8 @@ void dvz_image_alloc(DvzVisual* visual, uint32_t item_count)
     ANN(visual);
     log_debug("allocating the image visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Create the visual.
     dvz_visual_alloc(visual, item_count, 6 * item_count, 0);
@@ -95,18 +95,18 @@ DvzId dvz_image_texture(
 {
     ANN(visual);
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
-    DvzId tex = dvz_create_tex(rqr, DVZ_TEX_2D, format, shape, 0).id;
-    DvzId sampler = dvz_create_sampler(rqr, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
+    DvzId sampler = dvz_create_sampler(batch, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
 
     // Bind texture to the visual.
     dvz_visual_tex(visual, 2, tex, sampler, DVZ_ZERO_OFFSET);
 
     // Upload the texture data.
     if (size > 0 && data != NULL)
-        dvz_upload_tex(rqr, tex, DVZ_ZERO_OFFSET, shape, size, data);
+        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
 
     return tex;
 }

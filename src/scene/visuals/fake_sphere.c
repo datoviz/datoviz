@@ -33,11 +33,11 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DvzVisual* dvz_fake_sphere(DvzRequester* rqr, int flags)
+DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags)
 {
-    ANN(rqr);
+    ANN(batch);
 
-    DvzVisual* visual = dvz_visual(rqr, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
     ANN(visual);
 
     // Enable depth test.
@@ -76,8 +76,8 @@ void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count)
     ANN(visual);
     log_debug("allocating the fake sphere visual");
 
-    DvzRequester* rqr = visual->rqr;
-    ANN(rqr);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
 
     // Create the visual.
     dvz_visual_alloc(visual, item_count, item_count, 0);
