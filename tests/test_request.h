@@ -21,6 +21,8 @@
 
 int test_request_1(TstSuite*);
 
+int test_requester_1(TstSuite*);
+
 
 
 #endif

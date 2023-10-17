@@ -1175,7 +1175,7 @@ DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 
     int size = dvz_fifo_size(rqr->fifo);
     ASSERT(size >= 0);
-    ASSERT(size < (int)UINT32_MAX);
+    ASSERT(size < (int)UINT16_MAX);
     *count = (uint32_t)size;
 
     DvzBatch* batches = (DvzBatch*)calloc(*count, sizeof(DvzBatch));
