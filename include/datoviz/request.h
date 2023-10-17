@@ -267,23 +267,15 @@ struct DvzBatch
     uint32_t capacity;
     uint32_t count;
     DvzRequest* requests;
+
+    DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
 };
 
 
 
 struct DvzRequester
 {
-    // DvzObject obj;
-    // DvzPrng* prng;
-    // DvzAtomic status;
-
-    // Used for creating batch requests.
-    // uint32_t count;
-    // uint32_t capacity;
-    // DvzBatch* batches;
     DvzFifo* fifo;
-
-    DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
 };
 
 
@@ -347,6 +339,27 @@ DVZ_EXPORT uint32_t dvz_batch_size(DvzBatch* batch);
 
 
 /**
+ * Show information about all pending requests.
+ *
+ * @param rqr the requester
+ */
+DVZ_EXPORT void dvz_batch_print(DvzBatch* batch);
+
+
+
+/**
+ */
+DVZ_EXPORT int dvz_batch_dump(DvzBatch* batch, const char* filename);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_batch_load(DvzBatch* batch, const char* filename);
+
+
+
+/**
  */
 DVZ_EXPORT void dvz_batch_destroy(DvzBatch* batch);
 
@@ -364,7 +377,7 @@ DVZ_EXPORT void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch);
 
 /**
  */
-DVZ_EXPORT DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
+DVZ_EXPORT DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
 
 
 
@@ -374,27 +387,6 @@ DVZ_EXPORT DvzRequest* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
  * @param req the request
  */
 DVZ_EXPORT void dvz_request_print(DvzRequest* req);
-
-
-
-/**
- * Show information about all pending requests.
- *
- * @param rqr the requester
- */
-DVZ_EXPORT void dvz_requester_print(DvzRequester* rqr);
-
-
-
-/**
- */
-DVZ_EXPORT int dvz_requester_dump(DvzRequester* rqr, const char* filename);
-
-
-
-/**
- */
-DVZ_EXPORT void dvz_requester_load(DvzRequester* rqr, const char* filename);
 
 
 
