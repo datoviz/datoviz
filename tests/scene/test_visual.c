@@ -38,7 +38,6 @@
 int test_visual_1(TstSuite* suite)
 {
     DvzBatch* batch = dvz_batch();
-    // dvz_requester_begin(batch);
 
     uint32_t n = 10000;
 

@@ -43,7 +43,6 @@ struct TestParams
 int test_params_1(TstSuite* suite)
 {
     DvzBatch* batch = dvz_batch();
-    // dvz_requester_begin(batch);
 
     DvzParams* params = dvz_params(batch, sizeof(TestParams), false);
     dvz_params_attr(params, 0, offsetof(TestParams, a), sizeof(char));

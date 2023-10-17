@@ -37,7 +37,6 @@
 int test_baker_1(TstSuite* suite)
 {
     DvzBatch* batch = dvz_batch();
-    // dvz_requester_begin(batch);
 
     // Vertex attributes:
     // attr0: 1 // binding 0

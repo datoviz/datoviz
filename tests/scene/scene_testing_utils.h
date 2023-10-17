@@ -34,9 +34,7 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
     dvz_update_board(batch, board);
 
     // Execute the requests.
-    // uint32_t count = 0;
-    // DvzRequest* reqs = dvz_requester_end(batch, &count);
-    // dvz_renderer_requests(rd, count, reqs);
+    dvz_renderer_requests(rd, dvz_batch_size(batch), dvz_batch_requests(batch));
 
     // Retrieve the image.
     DvzSize size = 0;

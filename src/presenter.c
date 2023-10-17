@@ -669,7 +669,15 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
     ANN(batch);
     ANN(prt->client);
 
-    log_trace("submit %d requests to the presenter", dvz_batch_size(batch));
+    uint32_t count = dvz_batch_size(batch);
+    if (count == 0)
+    {
+        log_trace("skip presenter submit for empty batch");
+        return;
+    }
+    ASSERT(count > 0);
+
+    log_error("submit %d requests to the presenter", count);
 
     // Submit the requests to the client's event loop. Will be processed by
     // _requester_callback(), which will also destroy the batch.

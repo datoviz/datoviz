@@ -108,9 +108,6 @@ void dvz_visual_update(DvzVisual* visual)
         if (visual->params[i] != NULL)
             dvz_params_update(visual->params[i]);
     }
-
-    // NOTE: flush the requests queue so that they are sent to the renderer.
-    // dvz_requester_end(visual->batch, NULL);
 }
 
 

@@ -37,7 +37,6 @@
 int test_dual_1(TstSuite* suite)
 {
     DvzBatch* batch = dvz_batch();
-    // dvz_requester_begin(batch);
     DvzArray* array = dvz_array(16, DVZ_DTYPE_CHAR);
     DvzId dat = 1;
 
