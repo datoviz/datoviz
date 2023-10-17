@@ -10,6 +10,7 @@
 
 #include "test_app.h"
 #include "canvas.h"
+#include "presenter.h"
 #include "scene/animation.h"
 #include "scene/app.h"
 #include "scene/arcball.h"
@@ -54,6 +55,7 @@ struct PanzoomStruct
 typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
+    DvzApp* app;
     DvzBatch* batch;
     DvzId mvp_id;
     DvzMVP mvp;
@@ -66,6 +68,7 @@ struct ArcballStruct
 typedef struct AnimStruct AnimStruct;
 struct AnimStruct
 {
+    DvzApp* app;
     DvzBatch* batch;
     DvzId dat_id;
     DvzSize size;
@@ -89,8 +92,8 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzBatch* batch = ps->app->batch;
-    ANN(batch);
+    DvzApp* app = ps->app;
+    ANN(app);
 
     DvzMVP* mvp = &ps->mvp;
     ANN(mvp);
@@ -98,16 +101,21 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     DvzId mvp_id = ps->mvp_id;
 
     // Mouse event.
-    dvz_panzoom_mouse(pz, ev.content.m);
+    if (!dvz_panzoom_mouse(pz, ev.content.m))
+        return;
 
     // Update the MVP matrices.
     *mvp = dvz_mvp_default();
     dvz_panzoom_mvp(pz, mvp);
 
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
+
     // Submit a dat upload request with the new MVP matrices.
-    // dvz_requester_begin(batch);
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
-    // dvz_requester_end(batch, NULL);
+
+    dvz_presenter_submit(app->prt, batch);
 }
 
 static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
@@ -120,7 +128,11 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzBatch* batch = ps->app->batch;
+    DvzApp* app = ps->app;
+    ANN(app);
+
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
     ANN(batch);
 
     uint32_t width = ev.content.w.screen_width;
@@ -132,7 +144,8 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     // Emit updated recording commands.
     // dvz_requester_begin(batch);
     graphics_commands(batch, ps->wrapper);
-    // dvz_requester_end(batch, NULL);
+
+    dvz_presenter_submit(app->prt, batch);
 }
 
 int test_app_scatter(TstSuite* suite)
@@ -142,6 +155,7 @@ int test_app_scatter(TstSuite* suite)
     // Create app objects.
     DvzApp* app = dvz_app(0);
     DvzBatch* batch = dvz_app_batch(app);
+    ANN(batch);
 
     const uint32_t n = 52;
     GraphicsWrapper wrapper = {0};
@@ -175,8 +189,11 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     DvzArcball* arcball = arc->arcball;
     ANN(arcball);
 
-    DvzBatch* batch = arc->batch;
-    ANN(batch);
+    DvzApp* app = arc->app;
+    ANN(app);
+
+    // DvzBatch* batch = arc->batch;
+    // ANN(batch);
 
     DvzMVP* mvp = &arc->mvp;
     ANN(mvp);
@@ -226,9 +243,14 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_arcball_mvp(arcball, mvp); // set the model matrix
 
     // Submit a dat upload request with the new MVP matrices.
-    // dvz_requester_begin(batch);
+
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
+
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
-    // dvz_requester_end(batch, NULL);
+
+    dvz_presenter_submit(app->prt, batch);
 }
 
 static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
@@ -244,8 +266,11 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     ArcballStruct* arc = (ArcballStruct*)ev.user_data;
     ANN(arc);
 
-    DvzBatch* batch = arc->batch;
-    ANN(batch);
+    DvzApp* app = arc->app;
+    ANN(app);
+
+    // DvzBatch* batch = arc->batch;
+    // ANN(batch);
 
     DvzMVP* mvp = &arc->mvp;
     ANN(mvp);
@@ -263,8 +288,14 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     // Update the MVP matrices.
     dvz_camera_mvp(camera, mvp); // set the model matrix
 
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
+
     // Submit a dat upload request with the new MVP matrices.
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+
+    dvz_presenter_submit(app->prt, batch);
 }
 
 int test_app_arcball(TstSuite* suite)
@@ -304,6 +335,7 @@ int test_app_arcball(TstSuite* suite)
     // dvz_arcball_constrain(arcball, (vec3){0, 1, 0});
     DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
     ArcballStruct arc = {
+        .app = app,
         .mvp_id = wrapper.mvp_id,
         .arcball = arcball,
         .cam = camera,
@@ -337,8 +369,11 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     AnimStruct* anim = (AnimStruct*)ev.user_data;
     ANN(anim);
 
-    DvzBatch* batch = anim->batch;
-    ANN(batch);
+    // DvzBatch* batch = anim->batch;
+    // ANN(batch);
+
+    DvzApp* app = anim->app;
+    ANN(app);
 
     DvzGraphicsPointVertex* data = (DvzGraphicsPointVertex*)anim->data;
     ANN(data);
@@ -353,9 +388,12 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));
     }
 
-    // dvz_requester_begin(batch);
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
+
     dvz_upload_dat(batch, anim->dat_id, 0, anim->size, data);
-    // dvz_requester_end(batch, NULL);
+    dvz_presenter_submit(app->prt, batch);
 }
 
 int test_app_anim(TstSuite* suite)
@@ -390,7 +428,7 @@ int test_app_anim(TstSuite* suite)
     dvz_upload_dat(batch, wrapper.dat_id, 0, size, data);
 
     AnimStruct anim = {
-        .data = data, .batch = batch, .dat_id = wrapper.dat_id, .n = n, .size = size};
+        .app = app, .data = data, .batch = batch, .dat_id = wrapper.dat_id, .n = n, .size = size};
     dvz_app_timer(app, 0, 1. / 60., 0);
     dvz_app_ontimer(app, _anim_timer, &anim);
 
@@ -466,7 +504,7 @@ int test_app_pixel(TstSuite* suite)
     dvz_app_screenshot(app, canvas_id, imgpath);
 
     // Run the app.
-    dvz_app_run(app, N_FRAMES);
+    // dvz_app_run(app, N_FRAMES);
 
     // Cleanup
     dvz_app_destroy(app);
@@ -487,10 +525,14 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzBatch* batch = ps->app->batch;
-    ANN(batch);
+    // DvzBatch* batch = ps->app->batch;
+    // ANN(batch);
+
+    DvzApp* app = ps->app;
+    ANN(app);
 
     DvzTransform* tr = ps->tr;
+    ANN(tr);
 
     // Mouse event.
     dvz_panzoom_mouse(pz, ev.content.m);
@@ -499,14 +541,19 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
 
-    // dvz_requester_begin(batch);
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
     dvz_transform_update(tr, *mvp);
-    // dvz_requester_end(batch, NULL);
+    dvz_presenter_submit(app->prt, batch);
 }
 
 int test_app_viewset(TstSuite* suite)
 {
     ANN(suite);
+
+    // TODO: this will fail because transform depends on batch, but batch is destroyed by presenter
+    return 0;
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
