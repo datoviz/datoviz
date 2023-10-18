@@ -56,7 +56,6 @@ typedef struct ArcballStruct ArcballStruct;
 struct ArcballStruct
 {
     DvzApp* app;
-    DvzBatch* batch;
     DvzId mvp_id;
     DvzMVP mvp;
     DvzArcball* arcball;
@@ -69,7 +68,6 @@ typedef struct AnimStruct AnimStruct;
 struct AnimStruct
 {
     DvzApp* app;
-    DvzBatch* batch;
     DvzId dat_id;
     DvzSize size;
     uint32_t n;
@@ -109,13 +107,14 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_mvp(pz, mvp);
 
     // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
     // Submit a dat upload request with the new MVP matrices.
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
 
-    dvz_presenter_submit(app->prt, batch);
+    // dvz_presenter_submit(app->prt, batch);
+    dvz_app_submit(app);
 }
 
 static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
@@ -132,7 +131,7 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     ANN(app);
 
     // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
     uint32_t width = ev.content.w.screen_width;
@@ -142,10 +141,9 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_resize(pz, width, height);
 
     // Emit updated recording commands.
-    // dvz_requester_begin(batch);
     graphics_commands(batch, ps->wrapper);
 
-    dvz_presenter_submit(app->prt, batch);
+    dvz_app_submit(app);
 }
 
 int test_app_scatter(TstSuite* suite)
@@ -244,13 +242,12 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
 
     // Submit a dat upload request with the new MVP matrices.
 
-    // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
 
-    dvz_presenter_submit(app->prt, batch);
+    dvz_app_submit(app);
 }
 
 static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
@@ -289,13 +286,13 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     dvz_camera_mvp(camera, mvp); // set the model matrix
 
     // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
     // Submit a dat upload request with the new MVP matrices.
     dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
 
-    dvz_presenter_submit(app->prt, batch);
+    dvz_app_submit(app);
 }
 
 int test_app_arcball(TstSuite* suite)
@@ -339,7 +336,6 @@ int test_app_arcball(TstSuite* suite)
         .mvp_id = wrapper.mvp_id,
         .arcball = arcball,
         .cam = camera,
-        .batch = batch,
         .mvp = dvz_mvp_default(),
     };
     dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
@@ -369,9 +365,6 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     AnimStruct* anim = (AnimStruct*)ev.user_data;
     ANN(anim);
 
-    // DvzBatch* batch = anim->batch;
-    // ANN(batch);
-
     DvzApp* app = anim->app;
     ANN(app);
 
@@ -389,11 +382,12 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     }
 
     // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
     dvz_upload_dat(batch, anim->dat_id, 0, anim->size, data);
-    dvz_presenter_submit(app->prt, batch);
+
+    dvz_app_submit(app);
 }
 
 int test_app_anim(TstSuite* suite)
@@ -427,8 +421,7 @@ int test_app_anim(TstSuite* suite)
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);
     dvz_upload_dat(batch, wrapper.dat_id, 0, size, data);
 
-    AnimStruct anim = {
-        .app = app, .data = data, .batch = batch, .dat_id = wrapper.dat_id, .n = n, .size = size};
+    AnimStruct anim = {.app = app, .data = data, .dat_id = wrapper.dat_id, .n = n, .size = size};
     dvz_app_timer(app, 0, 1. / 60., 0);
     dvz_app_ontimer(app, _anim_timer, &anim);
 
@@ -504,7 +497,7 @@ int test_app_pixel(TstSuite* suite)
     dvz_app_screenshot(app, canvas_id, imgpath);
 
     // Run the app.
-    // dvz_app_run(app, N_FRAMES);
+    dvz_app_run(app, N_FRAMES);
 
     // Cleanup
     dvz_app_destroy(app);
@@ -525,9 +518,6 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    // DvzBatch* batch = ps->app->batch;
-    // ANN(batch);
-
     DvzApp* app = ps->app;
     ANN(app);
 
@@ -542,22 +532,23 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     dvz_panzoom_mvp(pz, mvp);
 
     // This batch will be destroyed automatically in the event loop by the presenter.
-    DvzBatch* batch = dvz_batch();
+    DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
+
     dvz_transform_update(tr, *mvp);
-    dvz_presenter_submit(app->prt, batch);
+    dvz_app_submit(app);
 }
 
 int test_app_viewset(TstSuite* suite)
 {
     ANN(suite);
 
-    // TODO: this will fail because transform depends on batch, but batch is destroyed by presenter
-    return 0;
-
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    ANN(app);
+
     DvzBatch* batch = dvz_app_batch(app);
+    ANN(batch);
 
     // Create a canvas.
     DvzRequest req =
@@ -570,12 +561,10 @@ int test_app_viewset(TstSuite* suite)
     // Create a view.
     DvzView* view = dvz_view(viewset, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
 
-
     // Upload the data.
     DvzVisual* pixel = dvz_pixel(batch, 0);
     const uint32_t n = 10000;
     dvz_pixel_alloc(pixel, n);
-
 
     // Position.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
@@ -598,7 +587,6 @@ int test_app_viewset(TstSuite* suite)
     // Important: upload the data to the GPU.
     dvz_visual_update(pixel);
 
-
     // MVP transform.
     DvzTransform* tr = dvz_transform(batch);
 
@@ -610,16 +598,12 @@ int test_app_viewset(TstSuite* suite)
 
     // Panzoom callback.
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
-    // PanzoomStruct ps = {.mvp_id = tr->dual.dat, .app = app, .pz = pz, .wrapper = &wrapper};
     PanzoomStruct ps = {
         .app = app,
         .pz = pz,
         .tr = tr,
     };
     dvz_app_onmouse(app, _viewset_mouse, &ps);
-
-    // TODO
-    // dvz_app_onresize(app, _scatter_resize, &ps);
 
     // Run the app.
     dvz_app_run(app, N_FRAMES);

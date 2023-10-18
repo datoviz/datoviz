@@ -938,6 +938,21 @@ DvzBatch* dvz_batch()
 void dvz_batch_clear(DvzBatch* batch)
 {
     ANN(batch);
+
+    if (batch->pointers_to_free != NULL)
+    {
+        // NOTE: free all pointers created when loading requests dumps.
+        uint32_t n = dvz_list_count(batch->pointers_to_free);
+        void* pointer = NULL;
+        for (uint32_t i = 0; i < n; i++)
+        {
+            pointer = dvz_list_get(batch->pointers_to_free, i).p;
+            FREE(pointer);
+        }
+
+        dvz_list_clear(batch->pointers_to_free);
+    }
+
     batch->count = 0;
 }
 
@@ -1144,16 +1159,13 @@ void dvz_batch_destroy(DvzBatch* batch)
 {
     ANN(batch);
 
-    // NOTE: free all pointers created when loading requests dumps.
-    uint32_t n = dvz_list_count(batch->pointers_to_free);
-    void* pointer = NULL;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pointer = dvz_list_get(batch->pointers_to_free, i).p;
-        FREE(pointer);
-    }
+    dvz_batch_clear(batch);
 
-    dvz_list_destroy(batch->pointers_to_free);
+    if (batch->pointers_to_free != NULL)
+    {
+        dvz_list_destroy(batch->pointers_to_free);
+        batch->pointers_to_free = NULL;
+    }
 
     FREE(batch->requests);
     FREE(batch);
