@@ -131,6 +131,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     VisualTest vt = {
         .name = name,
         .app = app,
+        .batch = batch,
         .scene = scene,
         .figure = figure,
         .panel = panel,

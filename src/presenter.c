@@ -676,7 +676,9 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
     ASSERT(count > 0);
 
     log_trace("submit %d requests to the presenter", count);
-    dvz_batch_print(batch);
+
+    // DEBUG: uncomment to see the requests sent to the presenter.
+    // dvz_batch_print(batch);
 
     // Submit the requests to the client's event loop. Will be processed by
     // _requester_callback(), which will also destroy the batch.
