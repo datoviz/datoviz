@@ -53,6 +53,7 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzScene
 {
+    DvzApp* app;
     DvzBatch* batch;
     DvzList* figures;
 };
@@ -208,13 +209,13 @@ DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
 /**
  *
  */
-DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel);
+DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
 
 
 /**
  *
  */
-DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel);
+DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel);
 
 
 

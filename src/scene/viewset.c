@@ -96,6 +96,7 @@ DvzViewset* dvz_viewset(DvzBatch* batch, DvzId canvas_id)
     DvzViewset* viewset = (DvzViewset*)calloc(1, sizeof(DvzViewset));
     viewset->batch = batch;
     viewset->status = dvz_atomic();
+    dvz_atomic_set(viewset->status, (int)DVZ_BUILD_DIRTY);
     viewset->canvas_id = canvas_id;
     viewset->views = dvz_list();
 
@@ -176,10 +177,6 @@ void dvz_viewset_build(DvzViewset* viewset)
     }
 
     dvz_record_end(batch, canvas_id);
-
-    // TODO
-    // HACK
-    // dvz_requester_end(batch, NULL);
 }
 
 
@@ -297,6 +294,8 @@ void dvz_view_clear(DvzView* view)
 void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape)
 {
     ANN(view);
+    log_trace("resize view to %.0fx%.0f -> %.0fx%.0f", offset[0], offset[1], shape[0], shape[1]);
+
     glm_vec2_copy(offset, view->offset);
     glm_vec2_copy(shape, view->shape);
 

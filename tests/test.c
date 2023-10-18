@@ -262,15 +262,6 @@ int dvz_run_tests(const char* match)
     TEARDOWN(teardown_gpu)
 
 
-    // OLD TESTS
-    // Testing builtin graphics.
-    // TEST(test_graphics_point)
-    // TEST(test_graphics_triangle)
-    // TEST(test_graphics_line_list)
-    // TEST(test_graphics_raster)
-    // TEST(test_graphics_image_1)
-
-
 
     /*********************************************************************************************/
     /*  Client                                                                                   */
@@ -342,10 +333,9 @@ int dvz_run_tests(const char* match)
     TEST(test_app_viewset)
 
     // Testing scene.
-    // TODO: not working yet
-    // TEST(test_scene_1)
-    // TEST(test_scene_2)
-    // TEST(test_scene_3)
+    TEST(test_scene_1)
+    TEST(test_scene_2)
+    TEST(test_scene_3)
 
 
     tst_suite_run(&suite, match);

@@ -112,7 +112,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     case VISUAL_TEST_ARCBALL:
 
         // Arcball.
-        arcball = dvz_panel_arcball(app, panel);
+        arcball = dvz_panel_arcball(scene, panel);
         ANN(arcball);
 
         // Perspective camera.
@@ -121,7 +121,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
         break;
 
     case VISUAL_TEST_PANZOOM:
-        panzoom = dvz_panel_panzoom(app, panel);
+        panzoom = dvz_panel_panzoom(scene, panel);
         break;
 
     default:
@@ -131,7 +131,6 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     VisualTest vt = {
         .name = name,
         .app = app,
-        .batch = batch,
         .scene = scene,
         .figure = figure,
         .panel = panel,

@@ -347,9 +347,9 @@ void dvz_panel_destroy(DvzPanel* panel)
 /*  Controllers                                                                                  */
 /*************************************************************************************************/
 
-DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
+DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel)
 {
-    ANN(app);
+    ANN(scene);
     ANN(panel);
     ANN(panel->view);
 
@@ -368,7 +368,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
     log_trace("create a new Panzoom instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(app->batch);
+    panel->transform = dvz_transform(scene->batch);
     panel->transform_to_destroy = true;
 
     return panel->panzoom;
@@ -376,9 +376,9 @@ DvzPanzoom* dvz_panel_panzoom(DvzApp* app, DvzPanel* panel)
 
 
 
-DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
+DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel)
 {
-    ANN(app);
+    ANN(scene);
     ANN(panel);
     ANN(panel->view);
 
@@ -397,7 +397,7 @@ DvzArcball* dvz_panel_arcball(DvzApp* app, DvzPanel* panel)
     log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(app->batch);
+    panel->transform = dvz_transform(scene->batch);
     panel->transform_to_destroy = true;
 
     return panel->arcball;
@@ -481,6 +481,34 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
 /*************************************************************************************************/
 /*  Run                                                                                          */
 /*************************************************************************************************/
+
+static void _scene_build(DvzScene* scene)
+{
+    ANN(scene);
+
+    // Go through all figures.
+    uint32_t n = dvz_list_count(scene->figures);
+    DvzFigure* fig = NULL;
+    DvzBuildStatus status = DVZ_BUILD_CLEAR;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+        ANN(fig);
+        ANN(fig->viewset);
+
+        // Build status.
+        status = (DvzBuildStatus)dvz_atomic_get(fig->viewset->status);
+        // if viewset state == dirty, build viewset, and set the viewset state to clear
+        if (status == DVZ_BUILD_DIRTY)
+        {
+            log_debug("build figure #%d", i);
+            dvz_viewset_build(fig->viewset);
+            dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_CLEAR);
+        }
+    }
+}
+
+
 
 static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
 {
@@ -593,6 +621,8 @@ static void _scene_onresize(DvzClient* client, DvzClientEvent ev)
 
     // Mark the viewset as dirty to trigger a command buffer record at the next frame.
     dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_DIRTY);
+
+    // dvz_app_submit(scene->app);
 }
 
 static void _scene_onframe(DvzClient* client, DvzClientEvent ev)
@@ -602,26 +632,9 @@ static void _scene_onframe(DvzClient* client, DvzClientEvent ev)
     DvzScene* scene = (DvzScene*)ev.user_data;
     ANN(scene);
 
-    // Go through all figures.
-    uint32_t n = dvz_list_count(scene->figures);
-    DvzFigure* fig = NULL;
-    DvzBuildStatus status = DVZ_BUILD_CLEAR;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
-        ANN(fig);
-        ANN(fig->viewset);
+    _scene_build(scene);
 
-        // Build status.
-        status = (DvzBuildStatus)dvz_atomic_get(fig->viewset->status);
-        // if viewset state == dirty, build viewset, and set the viewset state to clear
-        if (status == DVZ_BUILD_DIRTY)
-        {
-            log_debug("build figure #%d", i);
-            dvz_viewset_build(fig->viewset);
-            dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_CLEAR);
-        }
-    }
+    dvz_app_submit(scene->app);
 }
 
 
@@ -631,24 +644,16 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
     ANN(scene);
     ANN(app);
 
-    // Go through all figures, mark them as dirty to trigger command buffer recording for all
-    // figures.
-    uint32_t n = dvz_list_count(scene->figures);
-    DvzFigure* fig = NULL;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
-        ANN(fig);
-        ANN(fig->viewset);
-
-        // NOTE: the frame callback will record the command buffer at the first frame.
-        dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_DIRTY);
-    }
+    // HACK: so that callbacks below have access to the app to submit to the presenter.
+    scene->app = app;
 
     // Scene callbacks.
     dvz_app_onmouse(app, _scene_onmouse, scene);
     dvz_app_onresize(app, _scene_onresize, scene);
     dvz_app_onframe(app, _scene_onframe, scene);
+
+    // Initial build of the scene.
+    _scene_build(scene);
 
     // Run the app.
     dvz_app_run(app, n_frames);

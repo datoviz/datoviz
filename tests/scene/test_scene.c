@@ -67,7 +67,7 @@ int test_scene_1(TstSuite* suite)
     AT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(app, panel);
+    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel);
     ANN(pz);
 
     // Create a visual.
@@ -160,7 +160,7 @@ int test_scene_2(TstSuite* suite)
     // Transforms.
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(app, panel_0);
+    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel_0);
     ANN(pz);
 
     dvz_panel_transform(panel_1, panel_0->transform);
@@ -210,7 +210,7 @@ int test_scene_3(TstSuite* suite)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Arcball.
-    DvzArcball* arcball = dvz_panel_arcball(app, panel);
+    DvzArcball* arcball = dvz_panel_arcball(scene, panel);
     ANN(arcball);
 
     // Create a visual.
