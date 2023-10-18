@@ -41,6 +41,11 @@ int test_request_1(TstSuite* suite)
     AT(memcmp(&reqs[1], &req2, sizeof(DvzRequest)) == 0);
     AT(memcmp(&reqs[2], &req3, sizeof(DvzRequest)) == 0);
 
+    DvzBatch* cpy = dvz_batch_copy(batch);
+    AT(cpy != batch);
+    AT(cpy->requests != batch->requests);
+    AT(memcmp(cpy->requests, batch->requests, batch->count * sizeof(DvzRequest)) == 0);
+
     dvz_batch_destroy(batch);
     return 0;
 }

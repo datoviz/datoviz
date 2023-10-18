@@ -361,6 +361,12 @@ DVZ_EXPORT void dvz_batch_load(DvzBatch* batch, const char* filename);
 
 /**
  */
+DVZ_EXPORT DvzBatch* dvz_batch_copy(DvzBatch* batch);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_batch_destroy(DvzBatch* batch);
 
 

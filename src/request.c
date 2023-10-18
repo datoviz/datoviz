@@ -1129,6 +1129,17 @@ void dvz_batch_load(DvzBatch* batch, const char* filename)
 
 
 
+DvzBatch* dvz_batch_copy(DvzBatch* batch)
+{
+    ANN(batch);
+    DvzBatch* cpy = (DvzBatch*)_cpy(sizeof(DvzBatch), batch);
+    cpy->pointers_to_free = NULL;
+    cpy->requests = (DvzRequest*)_cpy(batch->capacity * sizeof(DvzRequest), batch->requests);
+    return cpy;
+}
+
+
+
 void dvz_batch_destroy(DvzBatch* batch)
 {
     ANN(batch);
