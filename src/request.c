@@ -5,6 +5,7 @@
 #include "request.h"
 #include "_debug.h"
 #include "_list.h"
+#include "_pointer.h"
 #include "fifo.h"
 #include "fileio.h"
 
@@ -60,16 +61,6 @@ static DvzRequest _request(void)
     DvzRequest req = {0};
     req.version = DVZ_REQUEST_VERSION;
     return req;
-}
-
-
-
-// NOTE: the returned pointer will have to be freed.
-static void* _cpy(DvzSize size, const void* data)
-{
-    void* data_cpy = malloc(size);
-    memcpy(data_cpy, data, size);
-    return data_cpy;
 }
 
 

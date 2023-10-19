@@ -1310,13 +1310,12 @@ int test_vklite_specialization(TstSuite* suite)
         &graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
 
     // Specialization constants.
-    float rgb[3] = {.9, .5, .1};
-    // HACK: the data MUST be stored in a data structure, and passed only to the first call.
-    dvz_graphics_specialization(&graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, 0, sizeof(float), &rgb);
     dvz_graphics_specialization(
-        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 1, sizeof(float), sizeof(float), NULL);
+        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(float), (float[]){.2}); // red
     dvz_graphics_specialization(
-        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 2, 2 * sizeof(float), sizeof(float), NULL);
+        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 1, sizeof(float), (float[]){.3}); // green
+    dvz_graphics_specialization(
+        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 2, sizeof(float), (float[]){.7}); // blue
 
     // Create the descriptors.
     DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);

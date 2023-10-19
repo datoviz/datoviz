@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "vklite.h"
+#include "_pointer.h"
 #include "common.h"
 #include "host.h"
 #include "vklite_utils.h"
@@ -2508,7 +2509,7 @@ void dvz_graphics_push(
 
 void dvz_graphics_specialization(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t idx, //
-    VkDeviceSize offset, VkDeviceSize size, void* data)
+    VkDeviceSize size, void* data)
 {
     ANN(graphics);
 
@@ -2528,14 +2529,9 @@ void dvz_graphics_specialization(
     ASSERT(idx < DVZ_MAX_SPECIALIZATION_CONSTANTS);
 
     spec_consts->stage = stage;
-    spec_consts->offsets[idx] = offset;
     spec_consts->sizes[idx] = size;
-    if (idx == 0)
-        spec_consts->data = data;
-    else
-        log_trace(
-            "HACK: ignoring data parameter in dvz_graphics_specialization() for constant idx %d>0",
-            idx);
+    spec_consts->data[idx] =
+        _cpy(size, data); // NOTE: we copy the passed pointer, will have to be freed
     spec_consts->count++;
 }
 
@@ -2592,7 +2588,10 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkSpecializationInfo* spec_info = NULL;
     DvzSpecializationConstants* spec_consts = NULL;
     VkSpecializationMapEntry* spec_entry = NULL;
-    uint32_t spec_count = 0; // number of specialization constants for the current shader.
+    VkDeviceSize alignment = 8; // HACK: ensure proper alignment when creating specialization
+                                // constant buffer with all concatenated values.
+    uint32_t spec_count = 0;    // number of specialization constants for the current shader.
+    VkDeviceSize spec_size = 0;
 
     // Shaders.
     VkPipelineShaderStageCreateInfo shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS] = {0};
@@ -2609,19 +2608,39 @@ void dvz_graphics_create(DvzGraphics* graphics)
         spec_consts = &graphics->spec_consts[i]; // input
         spec_info = &spec_infos[i];              // output
         spec_entry = &spec_entries[i * DVZ_MAX_SPECIALIZATION_CONSTANTS];
+        spec_count = spec_consts->count;
+        spec_size = 0;
+
         ANN(spec_consts);
         ANN(spec_info);
-        spec_count = spec_consts->count;
         ASSERT(spec_count < DVZ_MAX_SPECIALIZATION_CONSTANTS);
+
         if (spec_count > 0)
         {
             spec_info->mapEntryCount = spec_count;
 
             // HACK: we assume the total size of the specialization buffer is determined by
             // the last specialization constant.
-            spec_info->dataSize =
-                spec_consts->offsets[spec_count - 1] + spec_consts->sizes[spec_count - 1];
-            spec_info->pData = spec_consts->data;
+            for (uint32_t j = 0; j < spec_count; j++)
+            {
+                // Compute the specialization constant offsets.
+                spec_consts->offsets[j] = spec_size;
+                // Compute the total size of the buffer containing the concatenated constants.
+                spec_size += aligned_size(spec_consts->sizes[j], alignment);
+            }
+            spec_info->dataSize = spec_size;
+
+            // NOTE: to free after the creation of the pipeline
+            spec_consts->concatenated_constants = calloc(spec_size, 1);
+            spec_info->pData = spec_consts->concatenated_constants;
+
+            // Copy the constants into the concatenated buffer.
+            for (uint32_t j = 0; j < spec_count; j++)
+            {
+                memcpy(
+                    (void*)((uint64_t)spec_info->pData + spec_consts->offsets[j]),
+                    spec_consts->data[j], spec_consts->sizes[j]);
+            }
 
             // Fill in the map entries.
             for (uint32_t c = 0; c < spec_count; c++)
@@ -2688,6 +2707,16 @@ void dvz_graphics_create(DvzGraphics* graphics)
     {
         graphics->obj.status = DVZ_OBJECT_STATUS_INVALID;
     }
+
+    // NOTE: free the specialization constant concatenated array created before pipeline creation.
+    for (uint32_t i = 0; i < graphics->shader_count; i++)
+    {
+        spec_consts = &graphics->spec_consts[i];
+        if (spec_consts->concatenated_constants != NULL)
+        {
+            FREE(spec_consts->concatenated_constants);
+        }
+    }
 }
 
 
@@ -2716,6 +2745,17 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
     {
         vkDestroyPipeline(device, graphics->pipeline, NULL);
         graphics->pipeline = VK_NULL_HANDLE;
+    }
+
+    // Free the copied specialization constants.
+    DvzSpecializationConstants* spec_const = NULL;
+    for (uint32_t i = 0; i < graphics->spec_const_count; i++)
+    {
+        spec_const = &graphics->spec_consts[i];
+        for (uint32_t j = 0; j < spec_const->count; j++)
+        {
+            FREE(spec_const->data[j]);
+        }
     }
 
     // Destroy slots.

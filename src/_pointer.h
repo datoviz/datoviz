@@ -46,6 +46,16 @@ struct DvzPointer
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+// NOTE: the returned pointer will have to be freed.
+static void* _cpy(DvzSize size, const void* data)
+{
+    void* data_cpy = malloc(size);
+    memcpy(data_cpy, data, size);
+    return data_cpy;
+}
+
+
+
 static DvzSize get_alignment(DvzSize alignment, DvzSize min_alignment)
 {
     if (min_alignment > 0)
