@@ -47,6 +47,7 @@ MUTE_OFF
 #define DVZ_MAX_SUBPASSES_PER_RENDERPASS    8
 #define DVZ_MAX_DEPENDENCIES_PER_RENDERPASS 8
 #define DVZ_MAX_FRAMES_IN_FLIGHT            2
+#define DVZ_MAX_SPECIALIZATION_CONSTANTS    8
 
 
 
@@ -78,6 +79,7 @@ typedef struct DvzRenderpass DvzRenderpass;
 typedef struct DvzRenderpassAttachment DvzRenderpassAttachment;
 typedef struct DvzRenderpassSubpass DvzRenderpassSubpass;
 typedef struct DvzRenderpassDependency DvzRenderpassDependency;
+typedef struct DvzSpecializationConstants DvzSpecializationConstants;
 typedef struct DvzFramebuffers DvzFramebuffers;
 typedef struct DvzSubmit DvzSubmit;
 
@@ -127,7 +129,6 @@ typedef enum
 /*************************************************************************************************/
 /*  Renderpass structs                                                                           */
 /*************************************************************************************************/
-
 
 struct DvzRenderpassAttachment
 {
@@ -183,6 +184,21 @@ struct DvzRenderpass
     DvzRenderpassDependency dependencies[DVZ_MAX_DEPENDENCIES_PER_RENDERPASS];
 
     VkRenderPass renderpass;
+};
+
+
+
+/*************************************************************************************************/
+/*  Specialization constants structs                                                             */
+/*************************************************************************************************/
+
+struct DvzSpecializationConstants
+{
+    VkShaderStageFlagBits stage;
+    uint32_t count;
+    VkDeviceSize offsets[DVZ_MAX_SPECIALIZATION_CONSTANTS];
+    VkDeviceSize sizes[DVZ_MAX_SPECIALIZATION_CONSTANTS];
+    void* data[DVZ_MAX_SPECIALIZATION_CONSTANTS];
 };
 
 
@@ -489,6 +505,9 @@ struct DvzGraphics
     uint32_t shader_count;
     VkShaderStageFlagBits shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS];
     VkShaderModule shader_modules[DVZ_MAX_SHADERS_PER_GRAPHICS];
+
+    uint32_t spec_const_count;
+    DvzSpecializationConstants spec_consts[DVZ_MAX_SHADERS_PER_GRAPHICS];
 };
 
 
@@ -1647,6 +1666,20 @@ DVZ_EXPORT void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescrip
  */
 DVZ_EXPORT void dvz_graphics_push(
     DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+
+/**
+ * Declare a specialization constant for a graphics pipeline.
+ *
+ * @param graphics the graphics pipeline
+ * @param stage the shader stage
+ * @param idx the constant index
+ * @param offset the offset of the value within the specialization data buffer
+ * @param size the size of the value within the specialization data buffer
+ * @param data the specialization data buffer
+ */
+DVZ_EXPORT void dvz_graphics_specialization(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t idx, //
+    VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Destroy a graphics pipeline.

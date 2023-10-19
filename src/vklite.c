@@ -2506,6 +2506,36 @@ void dvz_graphics_push(
 
 
 
+void dvz_graphics_specialization(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t idx, //
+    VkDeviceSize offset, VkDeviceSize size, void* data)
+{
+    ANN(graphics);
+
+    // HACK: find the shader index from the shader stage.
+    uint32_t shader_idx = 0;
+    for (shader_idx = 0; shader_idx < DVZ_MAX_SHADERS_PER_GRAPHICS; shader_idx++)
+    {
+        if (graphics->shader_stages[shader_idx] == stage)
+            break;
+    }
+    ASSERT(graphics->shader_stages[shader_idx] == stage);
+    ASSERT(shader_idx < DVZ_MAX_SHADERS_PER_GRAPHICS);
+
+    DvzSpecializationConstants* spec_consts = &graphics->spec_consts[shader_idx];
+    ANN(spec_consts);
+
+    ASSERT(idx < DVZ_MAX_SPECIALIZATION_CONSTANTS);
+
+    spec_consts->stage = stage;
+    spec_consts->offsets[idx] = offset;
+    spec_consts->sizes[idx] = size;
+    spec_consts->data[idx] = data;
+    spec_consts->count++;
+}
+
+
+
 void dvz_graphics_create(DvzGraphics* graphics)
 {
     ANN(graphics);

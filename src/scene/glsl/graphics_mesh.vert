@@ -16,6 +16,8 @@ layout(location = 2) out vec4 out_color;
 // layout(location = ) out float out_clip;
 // layout(location = ) out float out_alpha;
 
+layout(constant_id = 0) const int MESH_MODE = 0;
+
 void main()
 {
     gl_Position = transform(pos);
