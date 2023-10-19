@@ -573,7 +573,6 @@ set(sources
     "src/scene/baker.c"
     "src/scene/params.c"
     "src/scene/graphics.c"
-    "src/scene/graphics_data.c"
     "src/scene/mvp.c"
     "src/scene/panzoom.c"
     "src/scene/viewport.c"

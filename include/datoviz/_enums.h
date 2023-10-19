@@ -421,8 +421,6 @@ typedef enum
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-// TODO: move to scene_enums.h
-
 // Graphics flags.
 typedef enum
 {
@@ -437,31 +435,7 @@ typedef enum
 {
     DVZ_GRAPHICS_NONE,
     DVZ_GRAPHICS_POINT,
-
-    DVZ_GRAPHICS_LINE,
-    DVZ_GRAPHICS_LINE_STRIP,
     DVZ_GRAPHICS_TRIANGLE,
-    DVZ_GRAPHICS_TRIANGLE_STRIP,
-    DVZ_GRAPHICS_TRIANGLE_FAN,
-
-    DVZ_GRAPHICS_RASTER,
-    DVZ_GRAPHICS_MARKER,
-
-    DVZ_GRAPHICS_SEGMENT,
-    DVZ_GRAPHICS_ARROW,
-    DVZ_GRAPHICS_PATH,
-    DVZ_GRAPHICS_TEXT,
-
-    DVZ_GRAPHICS_IMAGE,
-    DVZ_GRAPHICS_IMAGE_CMAP,
-
-    DVZ_GRAPHICS_VOLUME_SLICE,
-    DVZ_GRAPHICS_MESH,
-
-    DVZ_GRAPHICS_FAKE_SPHERE,
-    DVZ_GRAPHICS_VOLUME,
-
-    DVZ_GRAPHICS_COUNT,
     DVZ_GRAPHICS_CUSTOM,
 } DvzGraphicsType;
 
@@ -498,63 +472,63 @@ typedef enum
 
 // TODO: uncomment once graphics.h has been removed
 
-// // Marker type.
-// // NOTE: the numbers need to correspond to markers.glsl at the bottom.
-// typedef enum
-// {
-//     DVZ_MARKER_DISC = 0,
-//     DVZ_MARKER_ASTERISK = 1,
-//     DVZ_MARKER_CHEVRON = 2,
-//     DVZ_MARKER_CLOVER = 3,
-//     DVZ_MARKER_CLUB = 4,
-//     DVZ_MARKER_CROSS = 5,
-//     DVZ_MARKER_DIAMOND = 6,
-//     DVZ_MARKER_ARROW = 7,
-//     DVZ_MARKER_ELLIPSE = 8,
-//     DVZ_MARKER_HBAR = 9,
-//     DVZ_MARKER_HEART = 10,
-//     DVZ_MARKER_INFINITY = 11,
-//     DVZ_MARKER_PIN = 12,
-//     DVZ_MARKER_RING = 13,
-//     DVZ_MARKER_SPADE = 14,
-//     DVZ_MARKER_SQUARE = 15,
-//     DVZ_MARKER_TAG = 16,
-//     DVZ_MARKER_TRIANGLE = 17,
-//     DVZ_MARKER_VBAR = 18,
-//     DVZ_MARKER_COUNT,
-// } DvzMarkerType;
+// Marker type.
+// NOTE: the numbers need to correspond to markers.glsl at the bottom.
+typedef enum
+{
+    DVZ_MARKER_DISC = 0,
+    DVZ_MARKER_ASTERISK = 1,
+    DVZ_MARKER_CHEVRON = 2,
+    DVZ_MARKER_CLOVER = 3,
+    DVZ_MARKER_CLUB = 4,
+    DVZ_MARKER_CROSS = 5,
+    DVZ_MARKER_DIAMOND = 6,
+    DVZ_MARKER_ARROW = 7,
+    DVZ_MARKER_ELLIPSE = 8,
+    DVZ_MARKER_HBAR = 9,
+    DVZ_MARKER_HEART = 10,
+    DVZ_MARKER_INFINITY = 11,
+    DVZ_MARKER_PIN = 12,
+    DVZ_MARKER_RING = 13,
+    DVZ_MARKER_SPADE = 14,
+    DVZ_MARKER_SQUARE = 15,
+    DVZ_MARKER_TAG = 16,
+    DVZ_MARKER_TRIANGLE = 17,
+    DVZ_MARKER_VBAR = 18,
+    DVZ_MARKER_COUNT,
+} DvzMarkerType;
 
 
 
-// // Cap type.
-// typedef enum
-// {
-//     DVZ_CAP_TYPE_NONE = 0,
-//     DVZ_CAP_ROUND = 1,
-//     DVZ_CAP_TRIANGLE_IN = 2,
-//     DVZ_CAP_TRIANGLE_OUT = 3,
-//     DVZ_CAP_SQUARE = 4,
-//     DVZ_CAP_BUTT = 5,
-//     DVZ_CAP_COUNT,
-// } DvzCapType;
+// Cap type.
+typedef enum
+{
+    DVZ_CAP_TYPE_NONE = 0,
+    DVZ_CAP_ROUND = 1,
+    DVZ_CAP_TRIANGLE_IN = 2,
+    DVZ_CAP_TRIANGLE_OUT = 3,
+    DVZ_CAP_SQUARE = 4,
+    DVZ_CAP_BUTT = 5,
+    DVZ_CAP_COUNT,
+} DvzCapType;
 
 
 
-// // Joint type.
-// typedef enum
-// {
-//     DVZ_JOIN_SQUARE = 0,
-//     DVZ_JOIN_ROUND = 1,
-// } DvzJoinType;
+// Joint type.
+typedef enum
+{
+    DVZ_JOIN_SQUARE = 0,
+    DVZ_JOIN_ROUND = 1,
+} DvzJoinType;
 
 
 
-// // Path topology.
-// typedef enum
-// {
-//     DVZ_PATH_OPEN,
-//     DVZ_PATH_CLOSED,
-// } DvzPathTopology;
+// Path topology.
+typedef enum
+{
+    DVZ_PATH_OPEN,
+    DVZ_PATH_CLOSED,
+} DvzPathTopology;
 
 
 

@@ -94,6 +94,7 @@ DvzPipe* dvz_pipelib_graphics(
 
     // Initialize the graphics pipeline.
     DvzGraphics* graphics = dvz_pipe_graphics(pipe);
+    ANN(graphics);
     dvz_graphics_builtin(renderpass, graphics, type, flags);
 
     // Create the first common uniform dat: MVP.
@@ -118,7 +119,6 @@ DvzPipe* dvz_pipelib_graphics(
     // commented.
 
     // dvz_pipe_create(pipe);
-
 
     return pipe;
 }

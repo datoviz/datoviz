@@ -239,7 +239,6 @@ int dvz_run_tests(const char* match)
     TEST(test_renderer_1)
     TEST(test_renderer_graphics)
     TEST(test_renderer_resize)
-    TEST(test_renderer_image)
 
     // Test visuals.
     TEST(test_visual_1)
