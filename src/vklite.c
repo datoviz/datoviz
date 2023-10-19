@@ -2580,6 +2580,15 @@ void dvz_graphics_create(DvzGraphics* graphics)
     vertex_input_info.vertexAttributeDescriptionCount = graphics->vertex_attr_count;
     vertex_input_info.pVertexAttributeDescriptions = attrs_info;
 
+    // Specialization constants.
+    VkSpecializationInfo spec_infos[DVZ_MAX_SHADERS_PER_GRAPHICS] = {0};
+    VkSpecializationMapEntry
+        spec_entries[DVZ_MAX_SHADERS_PER_GRAPHICS * DVZ_MAX_SPECIALIZATION_CONSTANTS] = {0};
+    VkSpecializationInfo* spec_info = NULL;
+    DvzSpecializationConstants* spec_consts = NULL;
+    VkSpecializationMapEntry* spec_entry = NULL;
+    uint32_t spec_count = 0; // number of specialization constants for the current shader.
+
     // Shaders.
     VkPipelineShaderStageCreateInfo shader_stages[DVZ_MAX_SHADERS_PER_GRAPHICS] = {0};
     for (uint32_t i = 0; i < graphics->shader_count; i++)
@@ -2590,6 +2599,37 @@ void dvz_graphics_create(DvzGraphics* graphics)
         ASSERT(graphics->shader_stages[i] != 0);
         ANN(graphics->shader_modules[i]);
         shader_stages[i].pName = "main";
+
+        // Prepare the specialization constant Vulkan data structure.
+        spec_consts = &graphics->spec_consts[i]; // input
+        spec_info = &spec_infos[i];              // output
+        spec_entry = &spec_entries[i * DVZ_MAX_SPECIALIZATION_CONSTANTS];
+        ANN(spec_consts);
+        ANN(spec_info);
+        spec_count = spec_consts->count;
+        ASSERT(spec_count < DVZ_MAX_SPECIALIZATION_CONSTANTS);
+        if (spec_count > 0)
+        {
+            spec_info->mapEntryCount = spec_count;
+
+            // HACK: we assume the total size of the specialization buffer is determined by
+            // the last specialization constant.
+            spec_info->dataSize =
+                spec_consts->offsets[spec_count - 1] + spec_consts->sizes[spec_count - 1];
+            spec_info->pData = spec_consts->data;
+
+            // Fill in the map entries.
+            for (uint32_t c = 0; c < spec_count; c++)
+            {
+                (spec_entry + c)->constantID = c;
+                (spec_entry + c)->offset = spec_consts->offsets[c];
+                (spec_entry + c)->size = spec_consts->sizes[c];
+            }
+            spec_info->pMapEntries = spec_entry;
+
+            // Pass the specialization info structure.
+            shader_stages[i].pSpecializationInfo = spec_info;
+        }
     }
 
     // Pipeline.

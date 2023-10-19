@@ -41,6 +41,7 @@ int test_vklite_indexed(TstSuite*);
 int test_vklite_instanced(TstSuite*);
 int test_vklite_vertex_bindings(TstSuite*);
 int test_vklite_constattr(TstSuite*);
+int test_vklite_specialization(TstSuite*);
 
 
 

@@ -1277,6 +1277,59 @@ int test_vklite_constattr(TstSuite* suite)
 
 
 
+int test_vklite_specialization(TstSuite* suite)
+{
+    ANN(suite);
+    DvzHost* host = get_host(suite);
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_create(gpu, 0);
+
+    // Create an offscreen canvas.
+    TestCanvas canvas = offscreen_canvas(gpu);
+    DvzRenderpass* renderpass = &canvas.renderpass;
+    DvzFramebuffers* framebuffers = &canvas.framebuffers;
+
+    // Make the graphics.
+    DvzGraphics graphics = triangle_graphics(gpu, renderpass);
+
+    // Create the descriptors.
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    dvz_descriptors_update(&descriptors);
+
+    // Create the graphics pipeline.
+    dvz_graphics_create(&graphics);
+
+    // Create the buffer.
+    DvzBuffer buffer = dvz_buffer(gpu);
+    VkDeviceSize size = 3 * sizeof(TestVertex);
+    _make_vertex_buffer(&buffer, size);
+
+    // Upload the triangle data.
+    TestVertex data[] = TRIANGLE_VERTICES;
+    dvz_buffer_upload(&buffer, 0, size, data);
+    dvz_queue_wait(gpu, 0);
+
+    // Create and submit the command buffer.
+    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzBufferRegions br = dvz_buffer_regions(&buffer, 1, 0, buffer.size, 0);
+    triangle_commands(&cmds, 0, renderpass, framebuffers, &graphics, &descriptors, br);
+    dvz_cmd_submit_sync(&cmds, 0);
+
+    // Save a screenshot.
+    _save_screenshot(framebuffers, "vklite_specialization");
+
+    // Cleanup.
+    dvz_graphics_destroy(&graphics);
+    dvz_descriptors_destroy(&descriptors);
+    dvz_buffer_destroy(&buffer);
+    canvas_destroy(&canvas);
+    dvz_gpu_destroy(gpu);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Tests with window                                                                            */
 /*************************************************************************************************/
