@@ -204,7 +204,14 @@ union DvzRequestContent
         DvzDescriptorType type;
     } set_slot;
 
-
+    // Set specialization constant.
+    struct
+    {
+        DvzShaderType shader;
+        uint32_t idx;
+        DvzSize size;
+        void* value;
+    } set_specialization;
 
     // Bind a dat to a vertex binding.
     struct
@@ -701,6 +708,12 @@ DVZ_EXPORT DvzRequest dvz_set_attr(
 
 DVZ_EXPORT DvzRequest
 dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
+
+
+
+DVZ_EXPORT DvzRequest dvz_set_specialization(
+    DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size,
+    void* value);
 
 
 

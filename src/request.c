@@ -635,6 +635,43 @@ static void _print_set_slot(DvzRequest* req)
         req->id, req->content.set_slot.slot_idx, req->content.set_slot.type);
 }
 
+static void _print_set_specialization(DvzRequest* req)
+{
+    log_trace("print_create_specialization");
+    ANN(req);
+
+    uint32_t idx = req->content.set_specialization.idx;
+    DvzShaderType shader = req->content.set_specialization.shader;
+    DvzSize size = req->content.set_specialization.size;
+    void* value = req->content.set_specialization.value;
+
+    ASSERT(size > 0);
+    ANN(value);
+
+    char* encoded = NULL;
+    // NOTE: avoid computing the base64 of large arrays.
+
+    IF_VERBOSE_DATA
+    encoded = show_data((const unsigned char*)value, size);
+    else encoded = "<snip>";
+
+    printf(
+        "- action: set\n"
+        "  type: specialization\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    idx: %d\n"
+        "    shader: %d\n"
+        "    size: %" PRId64 "\n"
+        "    value:\n"
+        "      mode: base64\n"
+        "      buffer: %s\n",
+        req->id, idx, shader, size, encoded);
+
+    IF_VERBOSE_DATA
+    free(encoded);
+}
+
 
 
 static void _print_bind_dat(DvzRequest* req)
@@ -1657,6 +1694,28 @@ DvzRequest dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzD
 
     IF_VERBOSE
     _print_set_slot(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_specialization(
+    DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size, void* value)
+{
+    ASSERT(size > 0);
+    ANN(value);
+
+    CREATE_REQUEST(SET, SPECIALIZATION);
+    req.id = graphics;
+    req.content.set_specialization.shader = shader;
+    req.content.set_specialization.idx = idx;
+    req.content.set_specialization.size = size;
+    req.content.set_specialization.value =
+        _cpy(size, value); // NOTE: the renderer will have to free it.
+
+    IF_VERBOSE
+    _print_set_specialization(&req);
 
     RETURN_REQUEST
 }

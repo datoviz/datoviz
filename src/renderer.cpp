@@ -432,6 +432,26 @@ static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
 
 
 
+static void* _graphics_specialization(DvzRenderer* rd, DvzRequest req)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_SPECIALIZATION);
+
+    // HACK: from DvzShaderType to VkShaderStageFlagBits.
+    VkShaderStageFlagBits stage = req.content.set_specialization.shader == DVZ_SHADER_VERTEX
+                                      ? VK_SHADER_STAGE_VERTEX_BIT
+                                      : VK_SHADER_STAGE_FRAGMENT_BIT;
+    dvz_graphics_specialization(
+        graphics, stage, req.content.set_specialization.idx, //
+        req.content.set_specialization.size, req.content.set_specialization.value);
+    // NOTE: we can safely FREE the data now.
+    FREE(req.content.set_specialization.value);
+
+    return NULL;
+}
+
+
+
 static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
