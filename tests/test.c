@@ -56,6 +56,7 @@
 #include "test_pipe.h"
 #include "test_pipelib.h"
 #include "test_presenter.h"
+#include "test_prng.h"
 #include "test_renderer.h"
 #include "test_request.h"
 #include "test_resources.h"
@@ -88,6 +89,9 @@ int dvz_run_tests(const char* match)
     TEST(test_mutex_1)
     TEST(test_cond_1)
     TEST(test_atomic_1)
+
+    // Test PRNG.
+    TEST(test_prng_1)
 
     // Testing obj.
     TEST(test_obj_1)

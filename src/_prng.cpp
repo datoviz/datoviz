@@ -9,6 +9,7 @@
 
 #include "_prng.h"
 #include "_log.h"
+#include "_mutex.h"
 
 #include <iostream>
 #include <random>
@@ -23,6 +24,7 @@ extern "C" struct DvzPrng
 {
     std::mt19937_64 prng;
     std::uniform_int_distribution<uint64_t> dis;
+    DvzMutex mutex;
 };
 
 
@@ -37,6 +39,7 @@ DvzPrng* dvz_prng(void)
     DvzPrng* prng = new DvzPrng();
     auto seed = std::random_device{}();
     prng->prng.seed(seed);
+    prng->mutex = dvz_mutex();
     return prng;
 }
 
@@ -45,7 +48,10 @@ DvzPrng* dvz_prng(void)
 uint64_t dvz_prng_uuid(DvzPrng* prng)
 {
     ANN(prng);
-    return prng->dis(prng->prng);
+    dvz_mutex_lock(&prng->mutex);
+    auto out = prng->dis(prng->prng);
+    dvz_mutex_unlock(&prng->mutex);
+    return out;
 }
 
 
@@ -54,5 +60,6 @@ void dvz_prng_destroy(DvzPrng* prng)
 {
     ANN(prng);
     log_trace("delete prng");
+    dvz_mutex_destroy(&prng->mutex);
     delete prng;
 }

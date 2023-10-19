@@ -635,6 +635,7 @@ if(DATOVIZ_WITH_CLI)
         # Utils
         "tests/test_thread.c"
         "tests/test_obj.c"
+        "tests/test_prng.c"
         "tests/test_fileio.c"
         "tests/test_fifo.c"
         "tests/test_alloc.c"
