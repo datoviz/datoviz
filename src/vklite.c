@@ -2530,7 +2530,12 @@ void dvz_graphics_specialization(
     spec_consts->stage = stage;
     spec_consts->offsets[idx] = offset;
     spec_consts->sizes[idx] = size;
-    spec_consts->data[idx] = data;
+    if (idx == 0)
+        spec_consts->data = data;
+    else
+        log_trace(
+            "HACK: ignoring data parameter in dvz_graphics_specialization() for constant idx %d>0",
+            idx);
     spec_consts->count++;
 }
 

@@ -198,7 +198,7 @@ struct DvzSpecializationConstants
     uint32_t count;
     VkDeviceSize offsets[DVZ_MAX_SPECIALIZATION_CONSTANTS];
     VkDeviceSize sizes[DVZ_MAX_SPECIALIZATION_CONSTANTS];
-    void* data[DVZ_MAX_SPECIALIZATION_CONSTANTS];
+    void* data; // data buffer containing the data of each specialization constant for each offset
 };
 
 

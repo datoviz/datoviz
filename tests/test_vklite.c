@@ -1291,7 +1291,32 @@ int test_vklite_specialization(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     // Make the graphics.
-    DvzGraphics graphics = triangle_graphics(gpu, renderpass);
+    DvzGraphics graphics = dvz_graphics(gpu);
+
+    dvz_graphics_renderpass(&graphics, renderpass, 0);
+    dvz_graphics_primitive(&graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
+    dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/test_triangle_specialization.vert.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
+    dvz_graphics_shader(&graphics, VK_SHADER_STAGE_FRAGMENT_BIT, path);
+    dvz_graphics_vertex_binding(&graphics, 0, sizeof(TestVertex), VK_VERTEX_INPUT_RATE_VERTEX);
+    dvz_graphics_vertex_attr(
+        &graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(TestVertex, pos));
+    dvz_graphics_vertex_attr(
+        &graphics, 0, 1, VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(TestVertex, color));
+
+    // Specialization constants.
+    float rgb[3] = {.9, .5, .1};
+    // HACK: the data MUST be stored in a data structure, and passed only to the first call.
+    dvz_graphics_specialization(&graphics, VK_SHADER_STAGE_VERTEX_BIT, 0, 0, sizeof(float), &rgb);
+    dvz_graphics_specialization(
+        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 1, sizeof(float), sizeof(float), NULL);
+    dvz_graphics_specialization(
+        &graphics, VK_SHADER_STAGE_VERTEX_BIT, 2, 2 * sizeof(float), sizeof(float), NULL);
 
     // Create the descriptors.
     DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
