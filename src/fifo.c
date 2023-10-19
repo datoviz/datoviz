@@ -192,7 +192,7 @@ int dvz_fifo_size(DvzFifo* fifo)
 
 
 
-void* dvz_fifo_get(DvzFifo* fifo, uint32_t idx)
+void* dvz_fifo_get(DvzFifo* fifo, int32_t idx)
 {
     ANN(fifo);
     idx = (fifo->head + idx) % fifo->capacity;

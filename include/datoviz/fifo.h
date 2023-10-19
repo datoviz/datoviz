@@ -262,7 +262,7 @@ DVZ_EXPORT int dvz_fifo_size(DvzFifo* fifo);
  * @param idx the index of the item to fetch within the queue
  * @returns the item
  */
-DVZ_EXPORT void* dvz_fifo_get(DvzFifo* fifo, uint32_t idx);
+DVZ_EXPORT void* dvz_fifo_get(DvzFifo* fifo, int32_t idx);
 
 
 
