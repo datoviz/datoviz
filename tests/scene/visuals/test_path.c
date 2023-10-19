@@ -116,7 +116,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     {
         for (int32_t i = 0; i < (int32_t)N; i++)
         {
-            colors[k++][3] = 20 * ((-step + i + 7 * j) % 10);
+            colors[k++][3] = (uint8_t)(20 * ((-step + i + 7 * j) % 10));
         }
     }
 
@@ -162,7 +162,7 @@ int test_path_2(TstSuite* suite)
         a = r + (R - r) * j / (double)(n_paths - 1);
         for (int32_t i = 0; i < (int32_t)N; i++)
         {
-            t = M_2PI * i / (double)(N - 1);
+            t = M_2PI * i / (double)(N);
             positions[k][0] = HEIGHT / (double)WIDTH * a * cos(t);
             positions[k][1] = a * sin(t);
 

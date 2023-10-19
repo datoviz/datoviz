@@ -945,7 +945,7 @@ void dvz_requester_destroy(DvzRequester* rqr)
 /*  Request batch                                                                                */
 /*************************************************************************************************/
 
-DvzBatch* dvz_batch()
+DvzBatch* dvz_batch(void)
 {
     // Initialize the global PRNG.
     if (!PRNG)
