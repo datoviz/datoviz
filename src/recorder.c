@@ -99,6 +99,13 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
         pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
         ANN(pipe);
+
+        if (!dvz_pipe_complete(pipe))
+        {
+            log_error("cannot draw pipe with incomplete descriptor bindings");
+            break;
+        }
+
         dvz_pipe_draw(
             pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
         break;
@@ -118,6 +125,13 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
 
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indexed.pipe_id);
         ANN(pipe);
+
+        if (!dvz_pipe_complete(pipe))
+        {
+            log_error("cannot draw pipe with incomplete descriptor bindings");
+            break;
+        }
+
         dvz_pipe_draw_indexed(
             pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
             instance_count);
@@ -128,6 +142,12 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     {
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
+
+        if (!dvz_pipe_complete(pipe))
+        {
+            log_error("cannot draw pipe with incomplete descriptor bindings");
+            break;
+        }
 
         uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
@@ -142,6 +162,12 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
     {
         pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
         ANN(pipe);
+
+        if (!dvz_pipe_complete(pipe))
+        {
+            log_error("cannot draw pipe with incomplete descriptor bindings");
+            break;
+        }
 
         uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
