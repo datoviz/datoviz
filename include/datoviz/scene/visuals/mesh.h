@@ -37,9 +37,9 @@ typedef struct DvzShape DvzShape;
 
 typedef enum
 {
-    DVZ_MESH_FLAGS_NONE = 0x00,
-    DVZ_MESH_FLAGS_TEXTURED = 0x01,
-    DVZ_MESH_FLAGS_LIGHTING = 0x02,
+    DVZ_MESH_FLAGS_NONE = 0x0000,
+    DVZ_MESH_FLAGS_TEXTURED = 0x0010,
+    DVZ_MESH_FLAGS_LIGHTING = 0x0020,
 } DvzMeshFlags;
 
 
@@ -61,7 +61,7 @@ struct DvzMeshTexturedVertex
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
     vec3 pos;    /* position */
     vec3 normal; /* normal vector */
-    vec4 uv_a;   /* uv*a */
+    vec4 uva;    /* uva* */
 };
 
 
@@ -100,6 +100,14 @@ dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values,
  */
 DVZ_EXPORT void
 dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ * vec4: u, v, a, <unused>
+ */
+DVZ_EXPORT void
+dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values, int flags);
 
 
 
@@ -150,7 +158,7 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape);
+DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags);
 
 
 

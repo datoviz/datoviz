@@ -16,6 +16,7 @@ layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 void main()
 {
+
     CLIP;
     // if (in_clip < -eps)
     //     discard;
@@ -43,7 +44,6 @@ void main()
     {
         color = in_uvcolor.xyz; // rgb
     }
-
     // Light position and params.
     lpos = params.light_pos.xyz;
     lpar = params.light_params;
@@ -68,5 +68,5 @@ void main()
 
     // Total color.
     out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-    out_color.a = in_uvcolor.a;
+    out_color.a = in_uvcolor.z; // by convention, alpha channel is in 3rd component of this attr
 }

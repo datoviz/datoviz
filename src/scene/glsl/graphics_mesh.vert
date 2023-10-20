@@ -9,7 +9,7 @@ layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 normal;
 
 // Color or texture.
-layout(location = 2) in vec4 uvcolor; // contains either rgba, or uv*a
+layout(location = 2) in vec4 uvcolor; // contains either rgba, or uva*
 
 // Varying variables.
 layout(location = 0) out vec3 out_pos;

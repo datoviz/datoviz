@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/mesh.h"
+#include "_map.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
@@ -80,7 +81,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 1, FIELD(DvzMeshTexturedVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 2, FIELD(DvzMeshTexturedVertex, uv_a), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
+            visual, 2, FIELD(DvzMeshTexturedVertex, uva), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -169,6 +170,24 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 void dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(visual);
+    if (visual->flags & DVZ_MESH_FLAGS_TEXTURED)
+    {
+        log_error("cannot use dvz_mesh_color() with a textured mesh");
+        return;
+    }
+    dvz_visual_data(visual, 2, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, int flags)
+{
+    ANN(visual);
+    if (!(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
+    {
+        log_error("cannot use dvz_mesh_texcoords() with a color mesh");
+        return;
+    }
     dvz_visual_data(visual, 2, first, count, (void*)values);
 }
 
@@ -178,6 +197,12 @@ DvzId dvz_mesh_texture(
     DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
 {
     ANN(visual);
+
+    if (!(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
+    {
+        log_error("the mesh visual needs to be created with the DVZ_MESH_FLAGS_TEXTURED flag");
+        return DVZ_ID_NONE;
+    }
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
@@ -213,7 +238,7 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 
 
 
-DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape)
+DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
 {
     ANN(shape);
     ANN(shape->pos);
@@ -224,7 +249,7 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape)
 
     // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
     // has an index buffer or not.
-    int flags = index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT;
+    flags |= (index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT);
     DvzVisual* visual = dvz_mesh(batch, flags);
 
     dvz_mesh_alloc(visual, vertex_count, index_count);
@@ -234,8 +259,11 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape)
     if (shape->normal)
         dvz_mesh_normal(visual, 0, vertex_count, shape->normal, 0);
 
-    if (shape->color)
+    if (shape->color && !(flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_color(visual, 0, vertex_count, shape->color, 0);
+
+    if (shape->texcoords && (flags & DVZ_MESH_FLAGS_TEXTURED))
+        dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
 
     if (shape->index_count > 0)
         dvz_mesh_index(visual, 0, index_count, shape->index);
