@@ -54,7 +54,7 @@ struct DvzShape
     vec3* pos;
     vec3* normal;
     cvec4* color;
-    vec4* texcoords;
+    vec4* texcoords; // u, v, *, a
     DvzIndex* index;
 };
 

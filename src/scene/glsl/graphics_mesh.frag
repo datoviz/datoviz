@@ -44,29 +44,41 @@ void main()
     {
         color = in_uvcolor.xyz; // rgb
     }
-    // Light position and params.
-    lpos = params.light_pos.xyz;
-    lpar = params.light_params;
 
-    // Light direction.
-    light_dir = normalize(lpos - in_pos);
+    // Lighting.
+    if (MESH_LIGHTING > 0)
+    {
+        // Light position and params.
+        lpos = params.light_pos.xyz;
+        lpar = params.light_params;
 
-    // Ambient component.
-    ambient = light_color;
+        // Light direction.
+        light_dir = normalize(lpos - in_pos);
 
-    // Diffuse component.
-    // HACK: normals on both faces
-    diff = max(dot(light_dir, normal), 0.0);
-    diff = max(diff, max(dot(light_dir, -normal), 0.0));
-    diffuse = diff * light_color;
+        // Ambient component.
+        ambient = light_color;
 
-    // Specular component.
-    view_dir = normalize(-mvp.view[3].xyz - in_pos);
-    reflect_dir = reflect(-light_dir, normal);
-    spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-    specular = spec * light_color;
+        // Diffuse component.
+        // HACK: normals on both faces
+        diff = max(dot(light_dir, normal), 0.0);
+        diff = max(diff, max(dot(light_dir, -normal), 0.0));
+        diffuse = diff * light_color;
 
-    // Total color.
-    out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-    out_color.a = in_uvcolor.z; // by convention, alpha channel is in 3rd component of this attr
+        // Specular component.
+        view_dir = normalize(-mvp.view[3].xyz - in_pos);
+        reflect_dir = reflect(-light_dir, normal);
+        spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
+        specular = spec * light_color;
+
+        // Total color.
+        out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+        out_color.a =
+            in_uvcolor.a; // by convention, alpha channel is in 4th component of this attr
+    }
+    else
+    {
+        // NOTE: the 4th component of in_uvcolor is always the alpha channel, both in the
+        // color case (rgba) or the uv tex case (uv*a).
+        out_color = vec4(color, in_uvcolor.a);
+    }
 }

@@ -71,6 +71,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Specialization constants.
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &textured);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &lighting);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &lighting);
 
     // Textured vertex.
     if (textured)
@@ -81,7 +83,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 1, FIELD(DvzMeshTexturedVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 2, FIELD(DvzMeshTexturedVertex, uva), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
+            visual, 2, FIELD(DvzMeshTexturedVertex, texcoords), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -225,6 +227,12 @@ DvzId dvz_mesh_texture(
 void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos)
 {
     ANN(visual);
+    if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
+    {
+        log_error(
+            "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
+        return;
+    }
     dvz_visual_param(visual, 2, 0, pos);
 }
 
@@ -233,6 +241,12 @@ void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos)
 void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 {
     ANN(visual);
+    if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
+    {
+        log_error(
+            "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
+        return;
+    }
     dvz_visual_param(visual, 2, 1, params);
 }
 

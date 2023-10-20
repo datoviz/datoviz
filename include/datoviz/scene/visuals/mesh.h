@@ -59,9 +59,9 @@ struct DvzMeshColorVertex
 struct DvzMeshTexturedVertex
 {
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-    vec3 pos;    /* position */
-    vec3 normal; /* normal vector */
-    vec4 uva;    /* uva* */
+    vec3 pos;       /* position */
+    vec3 normal;    /* normal vector */
+    vec4 texcoords; /* u, v, *, a */
 };
 
 
@@ -104,7 +104,7 @@ dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, i
 
 
 /**
- * vec4: u, v, a, <unused>
+ * vec4: u, v, <unused>, a
  */
 DVZ_EXPORT void
 dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values, int flags);

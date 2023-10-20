@@ -43,13 +43,18 @@ int test_mesh_1(TstSuite* suite)
     });
 
     // Create the visual.
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, DVZ_MESH_FLAGS_TEXTURED);
+    int flags = DVZ_MESH_FLAGS_TEXTURED | DVZ_MESH_FLAGS_LIGHTING;
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
-    // Light position
-    dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
 
-    // Light parameters: ambient, diffuse, specular, exponent.
-    dvz_mesh_light_params(visual, (vec4){.2, .5, .3, 32});
+    // Lighting.
+    if (flags & DVZ_MESH_FLAGS_LIGHTING)
+    {
+        dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
+
+        // Light parameters: ambient, diffuse, specular, exponent.
+        dvz_mesh_light_params(visual, (vec4){.2, .5, .3, 32});
+    }
 
 
     // Texture parameters.
@@ -67,9 +72,12 @@ int test_mesh_1(TstSuite* suite)
     }
 
     // Create and upload the texture.
-    dvz_mesh_texture(
-        visual, tex_shape, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, //
-        size * sizeof(cvec4), tex_data);
+    if (flags & DVZ_MESH_FLAGS_TEXTURED)
+    {
+        dvz_mesh_texture(
+            visual, tex_shape, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, //
+            size * sizeof(cvec4), tex_data);
+    }
 
 
     // Add the visual to the panel AFTER setting the visual's data.
