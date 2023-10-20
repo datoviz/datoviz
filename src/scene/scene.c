@@ -45,6 +45,17 @@ DvzScene* dvz_scene(DvzBatch* batch)
     DvzScene* scene = (DvzScene*)calloc(1, sizeof(DvzScene));
     scene->batch = batch;
     scene->figures = dvz_list();
+
+    // HACK: even if we don't use textures, we have to bind an empty texture.
+    // So we create a mock empty texture.
+    dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8_UNORM, (uvec3){1, 1, 1}, 0);
+    dvz_create_sampler(batch, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+
+    // HACK: we don't have a good mechanism to specify IDs manually so we do it here.
+    ASSERT(batch->count >= 2);
+    batch->requests[batch->count - 2].id = DVZ_SCENE_DEFAULT_TEX_ID;
+    batch->requests[batch->count - 1].id = DVZ_SCENE_DEFAULT_SAMPLER_ID;
+
     return scene;
 }
 
