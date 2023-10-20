@@ -203,6 +203,18 @@ void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face)
 
 
 
+void dvz_visual_specialization(
+    DvzVisual* visual, DvzShaderType shader, uint32_t idx, DvzSize size, void* value)
+{
+    ANN(visual);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
+
+    dvz_set_specialization(batch, visual->graphics_id, shader, idx, size, value);
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual declaration                                                                           */
 /*************************************************************************************************/

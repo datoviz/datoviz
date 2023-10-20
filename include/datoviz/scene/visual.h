@@ -212,8 +212,16 @@ DVZ_EXPORT void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face);
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_specialization(
+    DvzVisual* visual, DvzShaderType shader, uint32_t idx, DvzSize size, void* value);
+
+
+
 /*************************************************************************************************/
-/*  Visual declaration                                                                           */
+/*  Visual declaration */
 /*************************************************************************************************/
 
 /**
