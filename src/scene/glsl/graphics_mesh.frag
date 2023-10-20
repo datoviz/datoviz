@@ -3,25 +3,20 @@
 
 #include "params_mesh.glsl"
 
-// layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
+const float eps = .00001;
 
+// Varying variables.
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
-layout(location = 2) in vec4 in_color;
-// layout(location = ) in vec2 in_uv;
-// layout(location = ) in float in_clip;
-// layout(location = ) in float in_alpha;
+layout(location = 2) in vec4 in_uvcolor;
 
 layout(location = 0) out vec4 out_color;
 
-const float eps = .00001;
+layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 void main()
 {
-    out_color = in_color;
-
     CLIP;
-
     // if (in_clip < -eps)
     //     discard;
 
@@ -36,12 +31,18 @@ void main()
     diffuse = vec3(0);
     specular = vec3(0);
 
+
+    // Texture.
+    if (MESH_TEXTURED > 0)
+    {
+        // in this case, in_uvcolor.xy is uv coordinates
+        color = texture(tex, in_uvcolor.xy).xyz;
+    }
     // Color.
-    color = in_color.xyz;
-    // if (in_uv.y >= 0)
-    // {
-    //     // color += params.tex_coefs.x * texture(tex_0, in_uv).xyz;
-    // }
+    else
+    {
+        color = in_uvcolor.xyz; // rgb
+    }
 
     // Light position and params.
     lpos = params.light_pos.xyz;
@@ -67,6 +68,5 @@ void main()
 
     // Total color.
     out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-
-    out_color.a = 1.0; // in_alpha;
+    out_color.a = in_uvcolor.a;
 }

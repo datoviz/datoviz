@@ -12,6 +12,7 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
+#include "scene/scene.h"
 #include "scene/shape.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
@@ -50,11 +51,13 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 {
     ANN(batch);
 
-    // NOTE: force indexed visual flag.
-    // flags |= DVZ_VISUALS_FLAGS_INDEXED;
-
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
+
+    // Parse flags.
+    int textured = (flags & DVZ_MESH_FLAGS_TEXTURED);
+    int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
+    log_trace("create mesh visual, texture: %d, lighting: %d", textured, lighting);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_mesh");
@@ -64,30 +67,53 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_visual_front(visual, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
     dvz_visual_cull(visual, DVZ_CULL_MODE_NONE);
 
-    // Vertex attributes.
-    dvz_visual_attr(visual, 0, FIELD(DvzMeshVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, FIELD(DvzMeshVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 2, FIELD(DvzMeshVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    // Specialization constants.
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &textured);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
 
-    // Vertex stride.
-    dvz_visual_stride(visual, 0, sizeof(DvzMeshVertex));
+    // Textured vertex.
+    if (textured)
+    {
+        // Vertex attributes.
+        dvz_visual_attr( //
+            visual, 0, FIELD(DvzMeshTexturedVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 1, FIELD(DvzMeshTexturedVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 2, FIELD(DvzMeshTexturedVertex, uv_a), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
 
-    // dvz_visual_attr(visual, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
-    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha
-    // TODO: fix alignment
-    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R8_UNORM, 0);         // alpha
+        // Vertex stride.
+        dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
+    }
+    // Color vertex.
+    else
+    {
+        // Vertex attributes.
+        dvz_visual_attr( //
+            visual, 0, FIELD(DvzMeshColorVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 1, FIELD(DvzMeshColorVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+
+        // Vertex stride.
+        dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));
+    }
 
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
-    // dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
+    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
 
     dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
+
+    dvz_visual_tex(
+        visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -144,6 +170,29 @@ void dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* va
 {
     ANN(visual);
     dvz_visual_data(visual, 2, first, count, (void*)values);
+}
+
+
+
+DvzId dvz_mesh_texture(
+    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
+{
+    ANN(visual);
+
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
+
+    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
+    DvzId sampler = dvz_create_sampler(batch, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+
+    // Bind texture to the visual.
+    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+
+    // Upload the texture data.
+    if (size > 0 && data != NULL)
+        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
+
+    return tex;
 }
 
 

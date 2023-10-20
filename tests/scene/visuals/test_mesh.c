@@ -32,15 +32,18 @@ int test_mesh_1(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL);
 
-    // Disc shape parameters.
-    const uint32_t count = 30;
-    cvec4 color = {255, 0, 0, 255};
-
-    // Disc mesh.
-    DvzShape disc = dvz_shape_disc(count, color);
+    // Shape.
+    DvzShape shape = dvz_shape_cube((cvec4[]){
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+        {0, 255, 255, 255},
+        {255, 0, 255, 255},
+        {255, 255, 0, 255},
+    });
 
     // Create the visual.
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &disc);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape);
 
     // Light position
     dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
@@ -55,7 +58,7 @@ int test_mesh_1(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_shape_destroy(&disc);
+    dvz_shape_destroy(&shape);
 
     return 0;
 }
