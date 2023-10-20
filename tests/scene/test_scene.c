@@ -224,7 +224,8 @@ int test_scene_3(TstSuite* suite)
         {255, 0, 255, 255},
         {255, 255, 0, 255},
     });
-    DvzVisual* mesh = dvz_mesh_shape(batch, &disc, 0);
+    int flags = DVZ_MESH_FLAGS_LIGHTING;
+    DvzVisual* mesh = dvz_mesh_shape(batch, &disc, flags);
 
     // Params.
     // ambient, diffuse, specular, specular exponent
