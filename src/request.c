@@ -42,7 +42,7 @@
 #define VERBOSE_MAX_BASE64 1048576
 
 #define IF_VERBOSE_DATA                                                                           \
-    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0) &&               \
+    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0) &&                 \
         (size < VERBOSE_MAX_BASE64))
 
 
@@ -286,9 +286,9 @@ static void _print_upload_dat(DvzRequest* req)
         "    offset: %" PRId64 "\n"
         "    size: %" PRId64 "\n"
         "    data:\n"
-        "      mode: base64\n"
+        "      mode: %s\n"
         "      buffer: %s\n",
-        dat, offset, size, encoded);
+        dat, offset, size, encoded[2] == ' ' ? "hex" : "base64", encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -354,9 +354,10 @@ static void _print_upload_tex(DvzRequest* req)
         "    offset: [%d, %d, %d]\n"
         "    shape: [%d, %d, %d]\n"
         "    data:\n"
-        "      mode: base64\n"
+        "      mode: %s\n"
         "      buffer: %s\n",
-        tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2], encoded);
+        tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
+        encoded[2] == ' ' ? "hex" : "base64", encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -412,10 +413,11 @@ static void _print_create_shader(DvzRequest* req)
         "    format: %s\n"
         "    size: %" PRId64 "\n"
         "    %s:\n"
-        "      mode: base64\n"
+        "      mode: %s\n"
         "      buffer: %s\n",
         req->id, shader_type, format == DVZ_SHADER_SPIRV ? "spirv" : "glsl", //
-        size, format == DVZ_SHADER_SPIRV ? "buffer" : "code", encoded);
+        size, format == DVZ_SHADER_SPIRV ? "buffer" : "code", encoded[2] == ' ' ? "hex" : "base64",
+        encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
@@ -664,9 +666,9 @@ static void _print_set_specialization(DvzRequest* req)
         "    shader: %d\n"
         "    size: %" PRId64 "\n"
         "    value:\n"
-        "      mode: base64\n"
+        "      mode: %s\n"
         "      buffer: %s\n",
-        req->id, idx, shader, size, encoded);
+        req->id, idx, shader, size, encoded[2] == ' ' ? "hex" : "base64", encoded);
 
     IF_VERBOSE_DATA
     free(encoded);
