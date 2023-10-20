@@ -42,7 +42,7 @@
 #define VERBOSE_MAX_BASE64 1048576
 
 #define IF_VERBOSE_DATA                                                                           \
-    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "1", 1) == 0) &&                 \
+    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0) &&               \
         (size < VERBOSE_MAX_BASE64))
 
 
@@ -859,6 +859,7 @@ void dvz_request_print(DvzRequest* req)
     IF_REQ(UPLOAD, TEX) _print_upload_tex(req);
 
     IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
+    IF_REQ(CREATE, SHADER) _print_create_shader(req);
 
     IF_REQ(CREATE, GRAPHICS) _print_create_graphics(req);
 
@@ -875,6 +876,7 @@ void dvz_request_print(DvzRequest* req)
     IF_REQ(SET, VERTEX) _print_set_vertex(req);
     IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
     IF_REQ(SET, SLOT) _print_set_slot(req);
+    IF_REQ(SET, SPECIALIZATION) _print_set_specialization(req);
 
     IF_REQ(BIND, DAT) _print_bind_dat(req);
     IF_REQ(BIND, TEX) _print_bind_tex(req);

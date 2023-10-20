@@ -950,6 +950,7 @@ static void _setup_router(DvzRenderer* rd)
     ROUTE(SET, VERTEX, _graphics_vertex)
     ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
     ROUTE(SET, SLOT, _graphics_slot)
+    ROUTE(SET, SPECIALIZATION, _graphics_specialization)
     ROUTE(DELETE, GRAPHICS, _graphics_delete)
 
     // Shaders.
