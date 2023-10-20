@@ -27,6 +27,7 @@ void dvz_shape_destroy(DvzShape* shape)
     FREE(shape->pos);
     FREE(shape->index);
     FREE(shape->color);
+    FREE(shape->texcoords);
     FREE(shape->normal);
 }
 
@@ -71,6 +72,8 @@ DvzShape dvz_shape_square(cvec4 color)
         memcpy(shape.color[i], color, sizeof(cvec4));
     }
 
+    // TODO: texcoords
+
     return shape;
 }
 
@@ -113,6 +116,8 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
         memcpy(shape.color[i], color, sizeof(cvec4));
     }
 
+    // TODO: texcoords
+
     // Index.
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
     for (uint32_t i = 0; i < triangle_count; i++)
@@ -146,6 +151,7 @@ DvzShape dvz_shape_cube(cvec4* colors)
     shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    shape.texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
 
     float x = .5;
 
@@ -244,45 +250,48 @@ DvzShape dvz_shape_cube(cvec4* colors)
         }
     }
 
-    // TODO later: vertex texture coordinates uv.
-    {
-        // {0, 1}, // front
-        // {1, 1}, //
-        // {1, 0}, //
-        // {1, 0}, //
-        // {0, 0}, //
-        // {0, 1}, //
-        // {0, 1}, // right
-        // {1, 1}, //
-        // {1, 0}, //
-        // {1, 0}, //
-        // {0, 0}, //
-        // {0, 1}, //
-        // {1, 0}, // back
-        // {0, 0}, //
-        // {0, 1}, //
-        // {0, 1}, //
-        // {1, 1}, //
-        // {1, 0}, //
-        // {0, 1}, // left
-        // {1, 1}, //
-        // {1, 0}, //
-        // {1, 0}, //
-        // {0, 0}, //
-        // {0, 1}, //
-        // {0, 1}, // bottom
-        // {1, 1}, //
-        // {1, 0}, //
-        // {1, 0}, //
-        // {0, 0}, //
-        // {0, 1}, //
-        // {0, 1}, // top
-        // {1, 1}, //
-        // {1, 0}, //
-        // {1, 0}, //
-        // {0, 0}, //
-        // {0, 1}, //
-    }
+    // Texture coordinates.
+    memcpy(
+        shape.texcoords,
+        (vec4[]){
+            {0, 1, 1, 0}, // front
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {0, 1, 1, 0}, // right
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {1, 0, 1, 0}, // back
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 1, 1, 0}, // left
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {0, 1, 1, 0}, // bottom
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+            {0, 1, 1, 0}, // top
+            {1, 1, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {1, 0, 1, 0}, //
+            {0, 0, 1, 0}, //
+            {0, 1, 1, 0}, //
+        },
+        vertex_count * sizeof(vec4));
 
     return shape;
 }

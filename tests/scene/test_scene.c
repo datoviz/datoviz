@@ -224,7 +224,7 @@ int test_scene_3(TstSuite* suite)
         {255, 0, 255, 255},
         {255, 255, 0, 255},
     });
-    DvzVisual* mesh = dvz_mesh_shape(batch, &disc);
+    DvzVisual* mesh = dvz_mesh_shape(batch, &disc, 0);
 
     // Params.
     // ambient, diffuse, specular, specular exponent
