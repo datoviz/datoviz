@@ -280,6 +280,9 @@ if(DATOVIZ_WITH_JPEG)
     # Second option: libjpeg-turbo with RGBA support
     # Do `sudo apt install nasm` to enable SIMD support
     ExternalProject_Add(libjpeg-turbo
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ""
         CMAKE_ARGS
         -DENABLE_SHARED=ON
         -DENABLE_STATIC=OFF
