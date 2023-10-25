@@ -8,6 +8,7 @@ enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include("cmake/colormsg.cmake")
 include(FetchContent)
+include(ExternalProject)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz project
@@ -19,6 +20,7 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
+option(DATOVIZ_WITH_JPEG "Build Datoviz with libjpeg" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
@@ -260,6 +262,46 @@ if(HAS_GLSLANG)
     set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
 
+# ---- libjpeg ------------------------------------------------------------------------------------
+set(HAS_JPEG 0)
+
+if(DATOVIZ_WITH_JPEG)
+    set(HAS_JPEG 1)
+
+    # First option: use libjpeg, but not native RGBA support
+    #
+    # find_package(JPEG)
+    # if(${JPEG_FOUND})
+    # set(HAS_JPEG 1)
+    # set(LINK_LIBS ${LINK_LIBS} jpeg)
+    # endif()
+    #
+    #
+    # Second option: libjpeg-turbo with RGBA support
+    # Do `sudo apt install nasm` to enable SIMD support
+    ExternalProject_Add(libjpeg-turbo
+        CMAKE_ARGS
+        -DENABLE_SHARED=ON
+        -DENABLE_STATIC=OFF
+
+        -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
+        -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+        GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
+
+        GIT_TAG main
+    )
+
+    # set(JPEG_LIBNAME "")
+
+    # if(WIN32)
+    # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/jpeg.lib)
+    # else()
+    # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/libjpeg.so)
+    # endif()
+    set(LINK_LIBS ${LINK_LIBS} "jpeg")
+endif()
+
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
@@ -472,13 +514,17 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 # -------------------------------------------------------------------------------------------------
 
 # Color texture.
-set(path_colortex "${CMAKE_BINARY_DIR}/_textures.c")
+set(path_tex "${CMAKE_BINARY_DIR}/_textures.c")
+set(tex_files
+    "${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
+    "${CMAKE_SOURCE_DIR}/data/textures/crate.jpg"
+)
 add_custom_command(
-    OUTPUT ${path_colortex}
+    OUTPUT ${path_tex}
     COMMAND ${CMAKE_COMMAND}
-    -D DIR="${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
+    -D DIR="${tex_files}"
     -D PREFIX="texture"
-    -D OUTPUT=${path_colortex}
+    -D OUTPUT=${path_tex}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
 
@@ -603,7 +649,7 @@ set(sources
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
-add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_colortex} ${path_fonts})
+add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_tex} ${path_fonts})
 set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}

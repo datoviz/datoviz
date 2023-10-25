@@ -104,6 +104,19 @@ dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size,
 
 
 /*************************************************************************************************/
+/*  JPG I/O                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Read a JPG buffer.
+ *
+ */
+DVZ_EXPORT uint8_t* dvz_read_jpg(
+    unsigned long size, unsigned char* jpg_bytes, uint32_t* out_width, uint32_t* out_height);
+
+
+
+/*************************************************************************************************/
 /*  Resources utils (files included in the shared dynamic library)                               */
 /*************************************************************************************************/
 

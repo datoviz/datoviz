@@ -53,30 +53,27 @@ int test_mesh_1(TstSuite* suite)
         dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
 
         // Light parameters: ambient, diffuse, specular, exponent.
-        dvz_mesh_light_params(visual, (vec4){.2, .5, .3, 32});
-    }
-
-
-    // Texture parameters.
-    const uint32_t w = 16;
-    const uint32_t h = 16;
-    uvec3 tex_shape = {w, h, 1};
-    DvzSize size = w * h;
-
-    // Generate the texture data.
-    cvec4* tex_data = (cvec4*)calloc(size, sizeof(cvec4));
-    for (uint32_t i = 0; i < w * h; i++)
-    {
-        ASSERT(i < 256);
-        dvz_colormap(DVZ_CMAP_HSV, i, tex_data[i]);
+        dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
     // Create and upload the texture.
     if (flags & DVZ_MESH_FLAGS_TEXTURED)
     {
+        unsigned long jpg_size = 0;
+        unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
+        ASSERT(jpg_size > 0);
+        ANN(jpg_bytes);
+
+        uint32_t jpg_width = 0, jpg_height = 0;
+        uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
+        ASSERT(jpg_width > 0);
+        ASSERT(jpg_height > 0);
+
         dvz_mesh_texture(
-            visual, tex_shape, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, //
-            size * sizeof(cvec4), tex_data);
+            visual, (uvec3){jpg_width, jpg_height, 1}, DVZ_FORMAT_R8G8B8A8_UNORM,
+            DVZ_FILTER_NEAREST, jpg_size * sizeof(cvec4), crate_data);
+
+        FREE(crate_data);
     }
 
 
@@ -88,7 +85,6 @@ int test_mesh_1(TstSuite* suite)
 
     // Cleanup.
     dvz_shape_destroy(&shape);
-    FREE(tex_data);
 
     return 0;
 }
