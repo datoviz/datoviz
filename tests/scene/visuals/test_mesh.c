@@ -71,7 +71,7 @@ int test_mesh_1(TstSuite* suite)
 
         dvz_mesh_texture(
             visual, (uvec3){jpg_width, jpg_height, 1}, DVZ_FORMAT_R8G8B8A8_UNORM,
-            DVZ_FILTER_NEAREST, jpg_size * sizeof(cvec4), crate_data);
+            DVZ_FILTER_LINEAR, jpg_size * sizeof(cvec4), crate_data);
 
         FREE(crate_data);
     }
