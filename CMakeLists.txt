@@ -312,20 +312,42 @@ set(HAS_MSDF 0)
 
 if(DATOVIZ_WITH_MSDF)
     set(HAS_MSDF 1)
-    set(MSDFGEN_CORE_ONLY ON)
+
+    set(MSDFGEN_CORE_ONLY OFF)
     set(MSDFGEN_BUILD_STANDALONE OFF)
     set(MSDFGEN_USE_SKIA OFF)
+    set(MSDFGEN_DISABLE_SVG ON)
+
+    set(MSDF_ATLAS_BUILD_STANDALONE OFF)
+    set(MSDF_ATLAS_USE_VCPKG OFF)
+    set(MSDF_ATLAS_USE_SKIA OFF)
+    set(MSDF_ATLAS_DYNAMIC_RUNTIME ON)
+    set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF)
+
     set(BUILD_SHARED_LIBS ON)
 
+    # Freetype is required for msdf-atlas-gen
+    # sudo apt install libtinyxml2-dev libfreetype-dev
+    find_package(Freetype REQUIRED)
+
+    # # MSDF
+    # FetchContent_Declare(
+    # msdfgen
+    # GIT_REPOSITORY https://github.com/Chlumsky/msdfgen.git
+    # GIT_TAG master
+    # )
+    # FetchContent_MakeAvailable(msdfgen)
+
+    # MSDF atlas
     FetchContent_Declare(
-        msdfgen
-        GIT_REPOSITORY https://github.com/Chlumsky/msdfgen.git
+        msdfgen-atlas
+        GIT_REPOSITORY https://github.com/Chlumsky/msdf-atlas-gen.git
         GIT_TAG master
     )
+    FetchContent_MakeAvailable(msdfgen-atlas)
 
-    FetchContent_MakeAvailable(msdfgen)
-
-    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-core)
+    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext)
+    set(LINK_LIBS ${LINK_LIBS} msdf-atlas-gen::msdf-atlas-gen)
 endif()
 
 # -------------------------------------------------------------------------------------------------
