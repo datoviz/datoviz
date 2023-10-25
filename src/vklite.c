@@ -1383,14 +1383,14 @@ static void _images_create(DvzImages* img)
     VkImageFormatProperties props = {0};
     if (!img->is_swapchain)
     {
-        VkResult res = vkGetPhysicalDeviceImageFormatProperties(
+        VK_CHECK_RESULT(vkGetPhysicalDeviceImageFormatProperties(
             gpu->physical_device, img->format, img->image_type, img->tiling, //
-            img->usage, 0, &props);
-        if (res != VK_SUCCESS)
-        {
-            log_error("unable to create image, format %d not supported", img->format);
-            return;
-        }
+            img->usage, 0, &props));
+        // if (res != VK_SUCCESS)
+        // {
+        //     log_error("unable to create image, format %d not supported", img->format);
+        //     return;
+        // }
     }
 
     // Create the images.
