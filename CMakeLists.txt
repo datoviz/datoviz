@@ -21,6 +21,7 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_JPEG "Build Datoviz with libjpeg" ON)
+option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
 option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
@@ -33,6 +34,7 @@ option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
+set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -303,6 +305,27 @@ if(DATOVIZ_WITH_JPEG)
     # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/libjpeg.so)
     # endif()
     set(LINK_LIBS ${LINK_LIBS} "jpeg")
+endif()
+
+# ---- msdf ------------------------------------------------------------------------------------
+set(HAS_MSDF 0)
+
+if(DATOVIZ_WITH_MSDF)
+    set(HAS_MSDF 1)
+    set(MSDFGEN_CORE_ONLY ON)
+    set(MSDFGEN_BUILD_STANDALONE OFF)
+    set(MSDFGEN_USE_SKIA OFF)
+    set(BUILD_SHARED_LIBS ON)
+
+    FetchContent_Declare(
+        msdfgen
+        GIT_REPOSITORY https://github.com/Chlumsky/msdfgen.git
+        GIT_TAG master
+    )
+
+    FetchContent_MakeAvailable(msdfgen)
+
+    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-core)
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -634,6 +657,7 @@ set(sources
     "src/scene/viewset.c"
     "src/scene/scene.c"
     "src/scene/transform.c"
+    "src/scene/atlas.cpp"
 
     # Visuals
     "src/scene/visuals/basic.c"
