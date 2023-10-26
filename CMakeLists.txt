@@ -580,7 +580,8 @@ add_custom_command(
 # Fonts.
 set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
 set(font_files
-    "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
+
+    # "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
 add_custom_command(
@@ -680,7 +681,7 @@ set(sources
     "src/scene/viewset.c"
     "src/scene/scene.c"
     "src/scene/transform.c"
-    # "src/scene/atlas.cpp"
+    "src/scene/atlas.cpp"
 
     # Visuals
     "src/scene/visuals/basic.c"
@@ -742,6 +743,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_timer.c"
         "tests/test_input.c"
         "tests/test_client_input.c"
+        "tests/scene/test_atlas.c"
 
         # Renderer
         "tests/test_vklite.c"

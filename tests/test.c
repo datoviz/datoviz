@@ -16,6 +16,7 @@
 #include "scene/test_app.h"
 #include "scene/test_arcball.h"
 #include "scene/test_array.h"
+#include "scene/test_atlas.h"
 #include "scene/test_baker.h"
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
@@ -328,6 +329,9 @@ int dvz_run_tests(const char* match)
     TEST(test_camera_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
+
+    // Testing atlas.
+    TEST(test_atlas_1)
 
     // Testing app.
     TEST(test_app_scatter)
