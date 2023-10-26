@@ -87,6 +87,12 @@ dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* ou
 
 /**
  */
+DVZ_EXPORT int dvz_atlas_generate(DvzAtlas* atlas);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
 
 

@@ -36,6 +36,15 @@ int test_atlas_1(TstSuite* suite)
 
     DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
 
+    // dvz_atlas_string(atlas, "abc");
+
+    dvz_atlas_generate(atlas);
+
+    vec4 coords = {0};
+    dvz_atlas_glyph(atlas, 97, coords);
+
+    glm_vec4_print(coords, stdout);
+
     dvz_atlas_destroy(atlas);
     return 0;
 }
