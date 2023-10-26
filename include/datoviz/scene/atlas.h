@@ -62,7 +62,7 @@ DVZ_EXPORT void dvz_atlas_clear(DvzAtlas* atlas);
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_set(DvzAtlas* atlas, uint32_t count, const uint32_t* codepoints);
+DVZ_EXPORT void dvz_atlas_set(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
 
 
 

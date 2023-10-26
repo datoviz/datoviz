@@ -149,7 +149,10 @@ static DvzPointer aligned_repeat(DvzSize size, const void* data, uint32_t count,
     {
         memcpy((void*)(((int64_t)repeated) + (int64_t)(i * alsize)), data, size);
     }
-    return (DvzPointer){repeated, alignment > 0};
+    DvzPointer out = {0, 0};
+    out.pointer = repeated;
+    out.aligned = alignment > 0;
+    return out;
 }
 
 

@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 
 #include "scene/atlas.h"
+#include "../_pointer.h"
 #include "_macros.h"
 
 #pragma GCC diagnostic push
@@ -42,8 +43,11 @@ extern "C" struct DvzAtlas
 {
     FreetypeHandle* ft;
     FontHandle* font;
+
+    uint32_t codepoints_count;
+    uint32_t* codepoints;
+
     std::vector<GlyphGeometry> glyphs;
-    // FontGeometry fontGeometry;
     TightAtlasPacker packer;
 };
 
@@ -163,11 +167,14 @@ void dvz_atlas_clear(DvzAtlas* atlas)
 
 
 
-void dvz_atlas_set(DvzAtlas* atlas, uint32_t count, const uint32_t* codepoints)
+void dvz_atlas_set(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
 {
     ANN(atlas);
+    ASSERT(count > 0);
+    ANN(codepoints);
 
-    // TODO
+    atlas->codepoints_count = count;
+    atlas->codepoints = (uint32_t*)_cpy((DvzSize)(count * sizeof(uint32_t)), (void*)codepoints);
 }
 
 
@@ -176,7 +183,14 @@ void dvz_atlas_string(DvzAtlas* atlas, const char* string)
 {
     ANN(atlas);
 
-    // TODO
+    atlas->codepoints_count = strnlen(string, 4096);
+    uint32_t* codepoints = (uint32_t*)calloc(atlas->codepoints_count, sizeof(uint32_t));
+    for (uint32_t i = 0; i < atlas->codepoints_count; i++)
+    {
+        codepoints[i] = (uint32_t)string[i];
+    }
+    atlas->codepoints = codepoints;
+    FREE(codepoints);
 }
 
 
@@ -210,7 +224,19 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords)
 
 int dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* out_coords)
 {
-    ANN(atlas); //
+    ANN(atlas);
+    ASSERT(count > 0);
+    ANN(codepoints);
+    ANN(out_coords);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        int result = dvz_atlas_glyph(atlas, codepoints[i], out_coords[i]);
+        if (result != 0)
+        {
+            return result;
+        }
+    }
     return 0;
 }
 
@@ -229,9 +255,14 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // In the last argument, you can specify a charset other than ASCII.
     // To load specific glyph indices, use loadGlyphs instead.
 
-    // NOTE: to specify a range of codepoints, create a manual charset
-    // TODO
-    fontGeometry.loadCharset(atlas->font, 1.0, Charset::ASCII);
+    if (atlas->codepoints_count == 0)
+    {
+        fontGeometry.loadCharset(atlas->font, 1.0, Charset::ASCII);
+    }
+    else
+    {
+        // TODO: create a manual charset
+    }
 
     // Apply MSDF edge coloring. See edge-coloring.h for other coloring strategies.
     const double maxCornerAngle = 3.0;
@@ -289,6 +320,12 @@ int dvz_atlas_generate(DvzAtlas* atlas)
 void dvz_atlas_destroy(DvzAtlas* atlas)
 {
     ANN(atlas);
+
+    if (atlas->codepoints != NULL)
+    {
+        FREE(atlas->codepoints);
+    }
+
     destroyFont(atlas->font);
     deinitializeFreetype(atlas->ft);
     FREE(atlas);
