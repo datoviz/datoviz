@@ -680,7 +680,7 @@ set(sources
     "src/scene/viewset.c"
     "src/scene/scene.c"
     "src/scene/transform.c"
-    "src/scene/atlas.cpp"
+    # "src/scene/atlas.cpp"
 
     # Visuals
     "src/scene/visuals/basic.c"
