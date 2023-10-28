@@ -270,42 +270,45 @@ set(HAS_JPEG 0)
 if(DATOVIZ_WITH_JPEG)
     set(HAS_JPEG 1)
 
-    # First option: use libjpeg, but not native RGBA support
-    #
-    # find_package(JPEG)
-    # if(${JPEG_FOUND})
-    # set(HAS_JPEG 1)
-    # set(LINK_LIBS ${LINK_LIBS} jpeg)
-    # endif()
-    #
-    #
-    # Second option: libjpeg-turbo with RGBA support
-    # Do `sudo apt install nasm` to enable SIMD support
-    ExternalProject_Add(libjpeg-turbo
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        UPDATE_DISCONNECTED 1
-        CMAKE_ARGS
-        -DENABLE_SHARED=ON
-        -DENABLE_STATIC=OFF
+    if(${OS_MACOS})
+        # Use libjpeg, but not native RGBA support
+        find_package(JPEG)
 
-        -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
-        -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
-        -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-        GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
+        if(${JPEG_FOUND})
+            set(HAS_JPEG 1)
+            set(INCL_DIRS ${INCL_DIRS} ${JPEG_INCLUDE_DIRS})
+            set(LINK_LIBS ${LINK_LIBS} ${JPEG_LIBRARIES})
+        endif()
+    else()
+        # libjpeg-turbo with RGBA support
+        # Do `sudo apt install nasm` to enable SIMD support
+        ExternalProject_Add(libjpeg-turbo
+            CONFIGURE_COMMAND ""
+            BUILD_COMMAND ""
+            INSTALL_COMMAND ""
+            UPDATE_DISCONNECTED 1
+            CMAKE_ARGS
+            -DENABLE_SHARED=ON
+            -DENABLE_STATIC=OFF
 
-        GIT_TAG main
-    )
+            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
+            -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
+            GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
 
-    # set(JPEG_LIBNAME "")
+            GIT_TAG main
+        )
 
-    # if(WIN32)
-    # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/jpeg.lib)
-    # else()
-    # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/libjpeg.so)
-    # endif()
-    set(LINK_LIBS ${LINK_LIBS} "jpeg")
+        # set(JPEG_LIBNAME "")
+
+        # if(WIN32)
+        # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/jpeg.lib)
+        # else()
+        # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/libjpeg.so)
+        # endif()
+        # set(INCL_DIRS ${INCL_DIRS} "${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo")
+        set(LINK_LIBS ${LINK_LIBS} "jpeg")
+    endif()
 endif()
 
 # ---- msdf ------------------------------------------------------------------------------------
