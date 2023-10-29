@@ -586,6 +586,7 @@ set(font_files
 
     # "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
+    "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
 add_custom_command(
     OUTPUT ${path_fonts}

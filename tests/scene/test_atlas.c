@@ -36,14 +36,32 @@ int test_atlas_1(TstSuite* suite)
 
     DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
 
-    // dvz_atlas_string(atlas, "abc");
+    // dvz_atlas_string(atlas, "ABCabc"); // By default, ASCII
+    // dvz_atlas_codepoints(atlas, 2, (uint32_t[]){9785, 9786});
 
+    // Generate the atlas.
+    AT(!dvz_atlas_valid(atlas));
     dvz_atlas_generate(atlas);
+    AT(dvz_atlas_valid(atlas));
 
+    // Atlas size.
+    vec2 size = {0};
+    dvz_atlas_size(atlas, size);
+    glm_vec2_print(size, stdout);
+
+    // Save the atlas PNG.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/atlas.png", ARTIFACTS_DIR);
+    dvz_atlas_png(atlas, imgpath);
+
+    // Show a glyph's coordinates.
     vec4 coords = {0};
-    dvz_atlas_glyph(atlas, 97, coords);
-
-    glm_vec4_print(coords, stdout);
+    if (dvz_atlas_glyph(atlas, 97, coords) == 0)
+        glm_vec4_print(coords, stdout);
+    AT(coords[0] > 0);
+    AT(coords[1] > 0);
+    AT(coords[2] > 0);
+    AT(coords[3] > 0);
 
     dvz_atlas_destroy(atlas);
     return 0;
