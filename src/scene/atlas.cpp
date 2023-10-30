@@ -158,7 +158,7 @@ vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
     ASSERT(count > 0);
     ANN(codepoints);
 
-    vec4* out_coords = (vec4*)calloc(count, sizeof(uint32_t));
+    vec4* out_coords = (vec4*)calloc(count, sizeof(vec4));
     for (uint32_t i = 0; i < count; i++)
     {
         int result = dvz_atlas_glyph(atlas, codepoints[i], out_coords[i]);
