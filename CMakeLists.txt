@@ -350,8 +350,8 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
 
-    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext)
-    set(LINK_LIBS ${LINK_LIBS} msdf-atlas-gen::msdf-atlas-gen)
+    set(INCL_DIRS ${INCL_DIRS} ${FREETYPE_INCLUDE_DIR_ft2build})
+    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
 endif()
 
 # -------------------------------------------------------------------------------------------------
