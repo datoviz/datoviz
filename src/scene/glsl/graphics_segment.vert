@@ -2,22 +2,22 @@
 #include "common.glsl"
 #include "constants.glsl"
 
-layout (location = 0) in vec3 P0;
-layout (location = 1) in vec3 P1;
-layout (location = 2) in vec4 shift;
-layout (location = 3) in vec4 color;
-layout (location = 4) in float linewidth;
-layout (location = 5) in int cap0;
-layout (location = 6) in int cap1;
-layout (location = 7) in uint transform_mode;
+layout(location = 0) in vec3 P0;
+layout(location = 1) in vec3 P1;
+layout(location = 2) in vec4 shift;
+layout(location = 3) in vec4 color;
+layout(location = 4) in float linewidth;
+layout(location = 5) in int cap0;
+layout(location = 6) in int cap1;
+layout(location = 7) in uint transform_mode;
 
-layout (location = 0) out vec4  out_color;
-layout (location = 1) out vec2  out_texcoord;
-layout (location = 2) out float out_length;
-layout (location = 3) out float out_linewidth;
-layout (location = 4) out float out_cap;
+layout(location = 0) out vec4 out_color;
+layout(location = 1) out vec2 out_texcoord;
+layout(location = 2) out float out_length;
+layout(location = 3) out float out_linewidth;
+layout(location = 4) out float out_cap;
 
-void main (void)
+void main(void)
 {
     out_color = color;
     out_linewidth = linewidth;
@@ -46,29 +46,33 @@ void main (void)
     float w = linewidth / 2.0 + 1.5 * antialias;
     T = w * normalize(T);
 
-    if (index < 0.5) {
-       position = vec2(p0.x - T.y - T.x, p0.y + T.x - T.y);
-       out_texcoord = vec2(-w, +w);
-       z = p0.z;
-       out_cap = cap0;
+    if (index < 0.5)
+    {
+        position = vec2(p0.x - T.y - T.x, p0.y + T.x - T.y);
+        out_texcoord = vec2(-w, +w);
+        z = p0.z;
+        out_cap = cap0;
     }
-    else if (index < 1.5) {
-       position = vec2(p0.x + T.y - T.x, p0.y - T.x - T.y);
-       out_texcoord = vec2(-w, -w);
-       z = p0.z;
-       out_cap = cap0;
+    else if (index < 1.5)
+    {
+        position = vec2(p0.x + T.y - T.x, p0.y - T.x - T.y);
+        out_texcoord = vec2(-w, -w);
+        z = p0.z;
+        out_cap = cap0;
     }
-    else if (index < 2.5) {
-       position = vec2(p1.x + T.y + T.x, p1.y - T.x + T.y);
-       out_texcoord = vec2(out_length + w, -w);
-       z = p1.z;
-       out_cap = cap1;
+    else if (index < 2.5)
+    {
+        position = vec2(p1.x + T.y + T.x, p1.y - T.x + T.y);
+        out_texcoord = vec2(out_length + w, -w);
+        z = p1.z;
+        out_cap = cap1;
     }
-    else {
-       position = vec2(p1.x - T.y + T.x, p1.y + T.x + T.y);
-       out_texcoord = vec2(out_length + w, +w);
-       z = p1.z;
-       out_cap = cap1;
+    else
+    {
+        position = vec2(p1.x - T.y + T.x, p1.y + T.x + T.y);
+        out_texcoord = vec2(out_length + w, +w);
+        z = p1.z;
+        out_cap = cap1;
     }
 
     gl_Position = ortho * vec4(position, z, 1.0);
