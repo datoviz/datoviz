@@ -10,7 +10,8 @@ layout(location = 4) in vec2 uv;
 layout(location = 5) in float angle;
 layout(location = 6) in vec4 color;
 
-// layout(location = 0) out vec2 out_uv;
+layout(location = 0) out vec2 out_uv;
+layout(location = 1) out vec4 out_color;
 
 int dxs[4] = {0, 1, 1, 0};
 int dys[4] = {0, 0, 1, 1};
@@ -46,7 +47,9 @@ void main()
     tr.z = 0;
 
     gl_Position = tr;
-    gl_PointSize = 5;
+    gl_PointSize = 20;
 
-    // out_uv = uv;
+    // Varying.
+    out_uv = uv;
+    out_color = color;
 }

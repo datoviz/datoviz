@@ -154,6 +154,13 @@ DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
 /**
  *
  */
+DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_glyph_size(DvzVisual* visual, vec2 size);
 
 

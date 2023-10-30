@@ -151,22 +151,23 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords)
 
 
 
-int dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* out_coords)
+// NOTE: the caller must FREE the returned pointer.
+vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
 {
     ANN(atlas);
     ASSERT(count > 0);
     ANN(codepoints);
-    ANN(out_coords);
 
+    vec4* out_coords = (vec4*)calloc(count, sizeof(uint32_t));
     for (uint32_t i = 0; i < count; i++)
     {
         int result = dvz_atlas_glyph(atlas, codepoints[i], out_coords[i]);
         if (result != 0)
         {
-            return result;
+            log_warn("code point %d not found in the font atlas", codepoints[i]);
         }
     }
-    return 0;
+    return out_coords;
 }
 
 
@@ -319,12 +320,24 @@ DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
     dvz_atlas_shape(atlas, shape);
 
     // TODO: mtsdf with 4 channels
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8_UNORM, shape, 0).id;
+    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0).id;
 
     DvzSize size = atlas->width * atlas->height * 3;
 
     ANN(atlas->rgb);
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, atlas->rgb);
+
+    // HACK: Vulkan does not support RGB textures so we create a RGBA texture with a full alpha
+    // channel.
+    cvec4* rgba = (cvec4*)calloc(atlas->width * atlas->height, sizeof(cvec4));
+    for (uint32_t i = 0; i < atlas->width * atlas->height; i++)
+    {
+        rgba[i][0] = atlas->rgb[3 * i + 0];
+        rgba[i][1] = atlas->rgb[3 * i + 1];
+        rgba[i][2] = atlas->rgb[3 * i + 2];
+        rgba[i][3] = 255;
+    }
+    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, rgba);
+    FREE(rgba);
 
     return tex;
 }

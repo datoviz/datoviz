@@ -11,6 +11,7 @@
 #include "scene/visuals/test_glyph.h"
 #include "renderer.h"
 #include "request.h"
+#include "scene/atlas.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
@@ -61,12 +62,22 @@ int test_glyph_1(TstSuite* suite)
     // Position.
     dvz_glyph_position(visual, 0, 1, (vec3[]){{0, 0, 0}}, 0);
 
-    // WARNING: rename to axis
-    dvz_glyph_axis(visual, 0, 1, (vec3[]){{0, 0, 1}}, 0);
     // dvz_glyph_angle(visual, 0, 1, (float[]){M_PI / 4.0}, 0);
+    dvz_glyph_axis(visual, 0, 1, (vec3[]){{0, 0, 1}}, 0);
     dvz_glyph_anchor(visual, 0, 1, (vec2[]){{0, 0}}, 0);
+    dvz_glyph_color(visual, 0, 1, (cvec4[]){{255, 0, 0, 255}}, 0);
+    dvz_glyph_size(visual, (vec2){40, 60});
 
-    dvz_glyph_size(visual, (vec2){20, 40});
+    // Atlas.
+    unsigned long ttf_size = 0;
+    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
+    ASSERT(ttf_size > 0);
+    ANN(ttf_bytes);
+    DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
+    dvz_atlas_generate(atlas);
+    dvz_glyph_atlas(visual, atlas);
+
+    dvz_glyph_ascii(visual, "A");
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
@@ -79,6 +90,9 @@ int test_glyph_1(TstSuite* suite)
 
     // Run the test.
     visual_test_end(vt);
+
+    // Cleanup.
+    dvz_atlas_destroy(atlas);
 
     return 0;
 }

@@ -84,8 +84,7 @@ DVZ_EXPORT int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coo
 
 /**
  */
-DVZ_EXPORT int
-dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* out_coords);
+DVZ_EXPORT vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
 
 
 

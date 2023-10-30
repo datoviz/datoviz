@@ -54,7 +54,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     // NOTE: we force indexed rendering in this visual.
     flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
-    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -159,7 +159,7 @@ void dvz_glyph_texcoords(
     DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags)
 {
     ANN(visual);
-    // coords is u0,v0,u1,v1, need to upload 4 vec2 corresponding to each corner
+    // coords is u0,v0,w,h ; need to upload 4 vec2 corresponding to each corner
 
     vec2* uv = (vec2*)calloc(4 * count, sizeof(vec2));
     float u0, v0, u1, v1; // upper-left, lower-right
@@ -167,23 +167,26 @@ void dvz_glyph_texcoords(
     {
         u0 = coords[i][0];
         v0 = coords[i][1];
-        u1 = coords[i][2];
-        v1 = coords[i][3];
+        u1 = u0 + coords[i][2];
+        v1 = v0 + coords[i][3];
 
         // lower-left
         uv[4 * i + 0][0] = u0;
         uv[4 * i + 0][1] = v1;
+
         // lower-right
         uv[4 * i + 1][0] = u1;
         uv[4 * i + 1][1] = v1;
+
         // upper-right
         uv[4 * i + 2][0] = u1;
         uv[4 * i + 2][1] = v0;
+
         // upper-left
         uv[4 * i + 3][0] = u0;
         uv[4 * i + 3][1] = v0;
     }
-    dvz_visual_data(visual, 4, first, count, (void*)uv);
+    dvz_visual_data(visual, 4, 4 * first, 4 * count, (void*)uv);
     FREE(uv);
 }
 
@@ -225,9 +228,13 @@ void dvz_glyph_texture(DvzVisual* visual, DvzId tex)
 void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 {
     ANN(visual);
+    ANN(atlas);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
+
+    // Store the pointer to the atlas.
+    visual->user_data = (void*)atlas;
 
     // Create the atlas texture.
     DvzId tex = dvz_atlas_texture(atlas, batch);
@@ -235,6 +242,51 @@ void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 
     // Bind the texture to the glyph visual.
     dvz_glyph_texture(visual, tex);
+}
+
+
+
+void dvz_glyph_ascii(DvzVisual* visual, const char* string)
+{
+    ANN(visual);
+    ANN(string);
+
+    DvzAtlas* atlas = (DvzAtlas*)visual->user_data;
+    if (atlas == NULL)
+    {
+        log_error("please call dvz_glyph_atlas() first");
+        return;
+    }
+    ANN(atlas);
+
+    uint32_t n = strnlen(string, 4096);
+
+    uint32_t* codepoints = (uint32_t*)calloc(n, sizeof(uint32_t));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        codepoints[i] = (uint32_t)string[i];
+    }
+
+    uvec3 shape = {0};
+    dvz_atlas_shape(atlas, shape);
+    float w = shape[0];
+    float h = shape[1];
+
+    vec4* texcoords = dvz_atlas_glyphs(atlas, n, codepoints); // to free
+    for (uint32_t i = 0; i < n; i++)
+    {
+        texcoords[i][0] = texcoords[i][0] / w;
+        texcoords[i][1] = texcoords[i][1] / h;
+        texcoords[i][2] = texcoords[i][2] / w;
+        texcoords[i][3] = texcoords[i][3] / h;
+    }
+
+    // Now, we need to divide the texcoords (in pixels) by the atlas shape, to get uv normalized
+    // coordinates.
+    dvz_glyph_texcoords(visual, 0, n, texcoords, 0);
+
+    FREE(texcoords);
+    FREE(codepoints);
 }
 
 
