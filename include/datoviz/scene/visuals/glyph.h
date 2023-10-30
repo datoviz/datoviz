@@ -44,7 +44,7 @@ typedef struct DvzVisual DvzVisual;
 struct DvzGlyphVertex
 {
     vec3 pos;    /* 0: position */
-    vec3 normal; /* 1: normal */
+    vec3 axis;   /* 1: axis */
     vec2 anchor; /* 2: anchor */
     vec2 shift;  /* 3: shift */
     vec2 uv;     /* 4: texture coordinates */
@@ -93,7 +93,7 @@ dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  *
  */
 DVZ_EXPORT void
-dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
 
 
 

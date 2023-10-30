@@ -122,10 +122,10 @@ vec4 to_vulkan(vec4 tr)
 mat4 get_ortho_matrix(vec2 size)
 {
     // The orthographic projection is:
-    //    2/w            -1
-    //          2/h      -1
-    //               1    0
-    //                    1
+    // 2/w            -1
+    //       2/h      -1
+    //            1    0
+    //                 1
     mat4 ortho = mat4(1.0);
 
     // WARNING: column-major order (=FORTRAN order, columns first)
@@ -133,9 +133,46 @@ mat4 get_ortho_matrix(vec2 size)
     ortho[1][1] = 2. / size.y;
     ortho[2][2] = 1.;
 
-    ortho[3] = vec4(-1, -1, 0, 1);
+    // ortho[3] = vec4(-1, -1, 0, 1);
+    ortho[3] = vec4(0, 0, 0, 1);
 
     return ortho;
+}
+
+
+
+mat4 get_translation_matrix(vec2 xy)
+{
+    // The translation matrix is:
+    //  1        x
+    //     1     y
+    //        1  0
+    //           1
+    // NOTE: column-major order
+    return mat4(
+        vec4(1, 0, 0, 0), //
+        vec4(0, 1, 0, 0), //
+        vec4(0, 0, 1, 0), //
+        vec4(xy, 0, 1));
+}
+
+
+
+mat4 get_rotation_matrix(vec3 axis, float angle)
+{
+    axis = normalize(axis);
+    float c = cos(angle);
+    float s = sin(angle);
+    float t = 1.0 - c;
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+
+    return mat4(
+        vec4(t * x * x + c, t * x * y + s * z, t * x * z - s * y, 0.0), //
+        vec4(t * x * y - s * z, t * y * y + c, t * y * z + s * x, 0.0), //
+        vec4(t * x * z + s * y, t * y * z - s * x, t * z * z + c, 0.0), //
+        vec4(0.0, 0.0, 0.0, 1.0));
 }
 
 

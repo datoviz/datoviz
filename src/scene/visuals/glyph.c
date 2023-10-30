@@ -63,7 +63,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     // Vertex attributes.
     int af = DVZ_ATTR_FLAGS_REPEAT_X4;
     dvz_visual_attr(visual, 0, FIELD(DvzGlyphVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, af);
-    dvz_visual_attr(visual, 1, FIELD(DvzGlyphVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 1, FIELD(DvzGlyphVertex, axis), DVZ_FORMAT_R32G32B32_SFLOAT, af);
     dvz_visual_attr(visual, 2, FIELD(DvzGlyphVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 3, FIELD(DvzGlyphVertex, shift), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 4, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
@@ -131,7 +131,7 @@ void dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3*
 
 
 
-void dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, (void*)values);

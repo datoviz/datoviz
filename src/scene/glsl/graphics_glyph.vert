@@ -3,7 +3,7 @@
 #include "params_glyph.glsl"
 
 layout(location = 0) in vec3 pos;
-layout(location = 1) in vec3 normal;
+layout(location = 1) in vec3 axis;
 layout(location = 2) in vec2 anchor;
 layout(location = 3) in vec2 shift;
 layout(location = 4) in vec2 uv;
@@ -21,13 +21,32 @@ void main()
     int idx = gl_VertexIndex % 4;
 
     // Rectangle vertex displacement (one glyph = one rectangle = 6 vertices)
-    float dx = params.size.x * dxs[idx];
-    float dy = params.size.y * dys[idx];
+    // NOTE: the -0.5 is here to recenter the glyph
+    float dx = params.size.x * (dxs[idx] - 0.5);
+    float dy = params.size.y * (dys[idx] - 0.5);
 
-    gl_Position = transform(pos);
-    gl_Position.x += dx;
-    gl_Position.y += dy;
+    // Shift in pixels.
+    vec2 trans = vec2(dx, dy);
+    trans += shift;
+    trans += .5 * anchor * params.size;
 
+    mat4 mvp = mvp.proj * mvp.view * mvp.model;
+    mat4 rot = get_rotation_matrix(axis, angle);
+    mat4 rot_inv = inverse(rot);
+    mat4 tra = get_translation_matrix(trans);
+
+    // NOTE: to store in a uniform for optimization
+    mat4 ortho = get_ortho_matrix(viewport.size);
+    mat4 ortho_inv = inverse(ortho);
+
+    // TODO: refactor with transform() in common.glsl
+    vec4 tr = ortho * rot * tra * rot_inv * ortho_inv * mvp * vec4(pos, 1);
+    tr = to_vulkan(tr);
+    // HACK: without this the z is negative and clipped
+    tr.z = 0;
+
+    gl_Position = tr;
     gl_PointSize = 5;
+
     // out_uv = uv;
 }
