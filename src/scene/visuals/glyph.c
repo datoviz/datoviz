@@ -29,6 +29,18 @@
 /*  Internal functions                                                                           */
 /*************************************************************************************************/
 
+static void _visual_callback(
+    DvzVisual* visual, DvzId canvas, //
+    uint32_t first, uint32_t count,  //
+    uint32_t first_instance, uint32_t instance_count)
+{
+    ANN(visual);
+    ASSERT(count > 0);
+
+    // NOTE: we draw 2 triangles, or 6 indices, for each glyph.
+    dvz_visual_instance(visual, canvas, 6 * first, 0, 6 * count, first_instance, instance_count);
+}
+
 
 
 /*************************************************************************************************/
@@ -42,7 +54,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     // NOTE: we force indexed rendering in this visual.
     flags |= DVZ_VISUALS_FLAGS_INDEXED;
 
-    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
+    DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, flags);
     ANN(visual);
 
     // Visual shaders.
@@ -68,12 +80,15 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
     // Params.
-    DvzParams* params = dvz_visual_params(visual, 3, sizeof(DvzGlyphParams));
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzGlyphParams));
     dvz_params_attr(params, 0, FIELD(DvzGlyphParams, size));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
         visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
+
+    // Visual draw callback.
+    dvz_visual_callback(visual, _visual_callback);
 
     return visual;
 }
@@ -227,5 +242,5 @@ void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 void dvz_glyph_size(DvzVisual* visual, vec2 size)
 {
     ANN(visual);
-    dvz_visual_param(visual, 3, 0, size);
+    dvz_visual_param(visual, 2, 0, size);
 }
