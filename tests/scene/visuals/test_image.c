@@ -30,14 +30,11 @@ int test_image_1(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM);
 
-    // Number of items.
-    const uint32_t n = 10000;
-
     // Create the visual.
     DvzVisual* visual = dvz_image(vt.batch, 0);
 
     // Visual allocation.
-    dvz_image_alloc(visual, n);
+    dvz_image_alloc(visual, 1);
 
     // Image position.
     dvz_image_position(visual, 0, 1, (vec4[]){{-1, +1, +1, -1}}, 0);
