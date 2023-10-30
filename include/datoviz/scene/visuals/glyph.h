@@ -43,13 +43,13 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzGlyphVertex
 {
-    vec3 pos;    /* position */
-    vec3 normal; /* normal */
-    vec2 anchor; /* anchor */
-    vec2 shift;  /* shift */
-    vec2 uv;     /* texture coordinates */
-    float angle; /* angle */
-    cvec4 color; /* color */
+    vec3 pos;    /* 0: position */
+    vec3 normal; /* 1: normal */
+    vec2 anchor; /* 2: anchor */
+    vec2 shift;  /* 3: shift */
+    vec2 uv;     /* 4: texture coordinates */
+    float angle; /* 5: angle */
+    cvec4 color; /* 6: color */
 };
 
 
@@ -93,15 +93,7 @@ dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  *
  */
 DVZ_EXPORT void
-dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* normals, int flags);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void
-dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
 
 
 
@@ -125,6 +117,14 @@ dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values,
  *
  */
 DVZ_EXPORT void
+dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
 dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
 
 
@@ -133,7 +133,7 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
  *
  */
 DVZ_EXPORT void
-dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
+dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
 
 
 

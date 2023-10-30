@@ -49,13 +49,14 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_shader(visual, "graphics_glyph");
 
     // Vertex attributes.
-    dvz_visual_attr(visual, 0, FIELD(DvzGlyphVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, FIELD(DvzGlyphVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 2, FIELD(DvzGlyphVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, 0);
-    dvz_visual_attr(visual, 3, FIELD(DvzGlyphVertex, shift), DVZ_FORMAT_R32G32_SFLOAT, 0);
-    dvz_visual_attr(visual, 4, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0);
-    dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, 0);
-    dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    int af = DVZ_ATTR_FLAGS_REPEAT_X4;
+    dvz_visual_attr(visual, 0, FIELD(DvzGlyphVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 1, FIELD(DvzGlyphVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 2, FIELD(DvzGlyphVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
+    dvz_visual_attr(visual, 3, FIELD(DvzGlyphVertex, shift), DVZ_FORMAT_R32G32_SFLOAT, af);
+    dvz_visual_attr(visual, 4, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
+    dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
+    dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzGlyphVertex));
@@ -110,23 +111,15 @@ void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count)
 void dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(visual);
-    // TODO
+    dvz_visual_data(visual, 0, first, count, (void*)values);
 }
 
 
 
-void dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* normals, int flags)
+void dvz_glyph_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(visual);
-    // TODO
-}
-
-
-
-void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
-{
-    ANN(visual);
-    // TODO
+    dvz_visual_data(visual, 1, first, count, (void*)values);
 }
 
 
@@ -134,7 +127,7 @@ void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* v
 void dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
 {
     ANN(visual);
-    // TODO
+    dvz_visual_data(visual, 2, first, count, (void*)values);
 }
 
 
@@ -142,15 +135,7 @@ void dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* v
 void dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
 {
     ANN(visual);
-    // TODO
-}
-
-
-
-void dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
-{
-    ANN(visual);
-    // TODO
+    dvz_visual_data(visual, 3, first, count, (void*)values);
 }
 
 
@@ -159,7 +144,48 @@ void dvz_glyph_texcoords(
     DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags)
 {
     ANN(visual);
-    // TODO
+    // coords is u0,v0,u1,v1, need to upload 4 vec2 corresponding to each corner
+
+    vec2* uv = (vec2*)calloc(4 * count, sizeof(vec2));
+    float u0, v0, u1, v1; // upper-left, lower-right
+    for (uint32_t i = 0; i < count; i++)
+    {
+        u0 = coords[i][0];
+        v0 = coords[i][1];
+        u1 = coords[i][2];
+        v1 = coords[i][3];
+
+        // lower-left
+        uv[4 * i + 0][0] = u0;
+        uv[4 * i + 0][1] = v1;
+        // lower-right
+        uv[4 * i + 1][0] = u1;
+        uv[4 * i + 1][1] = v1;
+        // upper-right
+        uv[4 * i + 2][0] = u1;
+        uv[4 * i + 2][1] = v0;
+        // upper-left
+        uv[4 * i + 3][0] = u0;
+        uv[4 * i + 3][1] = v0;
+    }
+    dvz_visual_data(visual, 4, first, count, (void*)uv);
+    FREE(uv);
+}
+
+
+
+void dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 5, first, count, (void*)values);
+}
+
+
+
+void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 6, first, count, (void*)values);
 }
 
 
@@ -201,5 +227,5 @@ void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 void dvz_glyph_size(DvzVisual* visual, vec2 size)
 {
     ANN(visual);
-    // TODO
+    dvz_visual_param(visual, 3, 0, size);
 }

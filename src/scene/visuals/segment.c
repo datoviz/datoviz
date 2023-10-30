@@ -58,20 +58,15 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
     dvz_visual_stride(visual, 0, sizeof(DvzSegmentVertex));
 
     // Vertex attributes.
-    int attr_flags = DVZ_ATTR_FLAGS_REPEAT_X4;
-    dvz_visual_attr(
-        visual, 0, FIELD(DvzSegmentVertex, P0), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flags);
-    dvz_visual_attr(
-        visual, 1, FIELD(DvzSegmentVertex, P1), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flags);
-    dvz_visual_attr(
-        visual, 2, FIELD(DvzSegmentVertex, shift), DVZ_FORMAT_R32G32B32A32_SFLOAT, attr_flags);
-    dvz_visual_attr(
-        visual, 3, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, attr_flags);
-    dvz_visual_attr(
-        visual, 4, FIELD(DvzSegmentVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, attr_flags);
-    dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, attr_flags);
-    dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, attr_flags);
-    dvz_visual_attr(visual, 7, FIELD(DvzSegmentVertex, transform), DVZ_FORMAT_R8_UINT, attr_flags);
+    int af = DVZ_ATTR_FLAGS_REPEAT_X4;
+    dvz_visual_attr(visual, 0, FIELD(DvzSegmentVertex, P0), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 1, FIELD(DvzSegmentVertex, P1), DVZ_FORMAT_R32G32B32_SFLOAT, af);
+    dvz_visual_attr(visual, 2, FIELD(DvzSegmentVertex, shift), DVZ_FORMAT_R32G32B32A32_SFLOAT, af);
+    dvz_visual_attr(visual, 3, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
+    dvz_visual_attr(visual, 4, FIELD(DvzSegmentVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, af);
+    dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, af);
+    dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
+    dvz_visual_attr(visual, 7, FIELD(DvzSegmentVertex, transform), DVZ_FORMAT_R8_UINT, af);
 
     // Uniforms.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
