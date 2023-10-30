@@ -16,6 +16,9 @@ void main()
 {
     CLIP;
 
+    // out_color = vec4(1, 1, 1, 1);
+    // return;
+
     // out_color = in_color;
     // out_color = texture(tex, in_uv);
     // out_color = vec4(in_uv, 1, 1);
@@ -25,5 +28,6 @@ void main()
     float sd = median(msd.r, msd.g, msd.b);
     float screenPxDistance = 4 * (sd - 0.5);
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-    out_color = mix(vec4(0), in_color, opacity);
+    vec4 bg_color = vec4(.5, .5, .5, .5);
+    out_color = mix(bg_color, in_color, opacity);
 }

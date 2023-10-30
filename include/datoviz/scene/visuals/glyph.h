@@ -45,11 +45,12 @@ struct DvzGlyphVertex
 {
     vec3 pos;    /* 0: position */
     vec3 axis;   /* 1: axis */
-    vec2 anchor; /* 2: anchor */
-    vec2 shift;  /* 3: shift */
-    vec2 uv;     /* 4: texture coordinates */
-    float angle; /* 5: angle */
-    cvec4 color; /* 6: color */
+    vec2 size;   /* 2: size */
+    vec2 anchor; /* 3: anchor */
+    vec2 shift;  /* 4: shift */
+    vec2 uv;     /* 5: texture coordinates */
+    float angle; /* 6: angle */
+    cvec4 color; /* 7: color */
 };
 
 
@@ -94,6 +95,14 @@ dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  */
 DVZ_EXPORT void
 dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
 
 
 
@@ -161,7 +170,7 @@ DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
 /**
  *
  */
-DVZ_EXPORT void dvz_glyph_size(DvzVisual* visual, vec2 size);
+// DVZ_EXPORT void dvz_glyph_size(DvzVisual* visual, vec2 size);
 
 
 

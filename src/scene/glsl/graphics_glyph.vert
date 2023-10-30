@@ -4,11 +4,12 @@
 
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 axis;
-layout(location = 2) in vec2 anchor;
-layout(location = 3) in vec2 shift;
-layout(location = 4) in vec2 uv;
-layout(location = 5) in float angle;
-layout(location = 6) in vec4 color;
+layout(location = 2) in vec2 size;
+layout(location = 3) in vec2 anchor;
+layout(location = 4) in vec2 shift;
+layout(location = 5) in vec2 uv;
+layout(location = 6) in float angle;
+layout(location = 7) in vec4 color;
 
 layout(location = 0) out vec2 out_uv;
 layout(location = 1) out vec4 out_color;
@@ -23,13 +24,13 @@ void main()
 
     // Rectangle vertex displacement (one glyph = one rectangle = 6 vertices)
     // NOTE: the -0.5 is here to recenter the glyph
-    float dx = params.size.x * (dxs[idx] - 0.5);
-    float dy = params.size.y * (dys[idx] - 0.5);
+    float dx = size.x * (dxs[idx] - 0.5);
+    float dy = size.y * (dys[idx] - 0.5);
 
     // Shift in pixels.
     vec2 trans = vec2(dx, dy);
     trans += shift;
-    trans += .5 * anchor * params.size;
+    trans += .5 * anchor * size;
 
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);
@@ -47,7 +48,7 @@ void main()
     tr.z = 0;
 
     gl_Position = tr;
-    gl_PointSize = 20;
+    // gl_PointSize = 20; // DEBUG
 
     // Varying.
     out_uv = uv;
