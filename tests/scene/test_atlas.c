@@ -45,9 +45,8 @@ int test_atlas_1(TstSuite* suite)
     AT(dvz_atlas_valid(atlas));
 
     // Atlas size.
-    vec2 size = {0};
-    dvz_atlas_size(atlas, size);
-    glm_vec2_print(size, stdout);
+    uvec3 shape = {0};
+    dvz_atlas_shape(atlas, shape);
 
     // Save the atlas PNG.
     char imgpath[1024];

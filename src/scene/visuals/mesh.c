@@ -111,10 +111,10 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
-
     dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
 
+    // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
         visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 

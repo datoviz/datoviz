@@ -26,6 +26,7 @@ typedef struct DvzGlyphParams DvzGlyphParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzAtlas DvzAtlas;
 typedef struct DvzVisual DvzVisual;
 
 
@@ -40,6 +41,24 @@ typedef struct DvzVisual DvzVisual;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzGlyphVertex
+{
+    vec3 pos;    /* position */
+    vec3 normal; /* normal */
+    vec2 anchor; /* anchor */
+    vec2 shift;  /* shift */
+    vec2 uv;     /* texture coordinates */
+    float angle; /* angle */
+    cvec4 color; /* color */
+};
+
+
+
+struct DvzGlyphParams
+{
+    vec2 size; /* glyph size in pixels */
+};
+
 
 
 EXTERN_C_ON
@@ -52,6 +71,13 @@ EXTERN_C_ON
  *
  */
 DVZ_EXPORT DvzVisual* dvz_glyph(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
@@ -107,14 +133,21 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
  *
  */
 DVZ_EXPORT void
-dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec2* coords, int flags);
+dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_glyph_tex(DvzVisual* visual, DvzId tex);
+DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
 
 
 
@@ -122,13 +155,6 @@ DVZ_EXPORT void dvz_glyph_tex(DvzVisual* visual, DvzId tex);
  *
  */
 DVZ_EXPORT void dvz_glyph_size(DvzVisual* visual, vec2 size);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 

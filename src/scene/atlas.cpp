@@ -11,6 +11,7 @@
 #include "../_pointer.h"
 #include "_macros.h"
 #include "fileio.h"
+#include "request.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
@@ -277,11 +278,12 @@ int dvz_atlas_generate(DvzAtlas* atlas)
 
 
 
-void dvz_atlas_size(DvzAtlas* atlas, vec2 size)
+void dvz_atlas_shape(DvzAtlas* atlas, uvec3 shape)
 {
     ANN(atlas);
-    size[0] = atlas->width;
-    size[1] = atlas->height;
+    shape[0] = atlas->width;
+    shape[1] = atlas->height;
+    shape[2] = 1;
 }
 
 
@@ -296,8 +298,35 @@ bool dvz_atlas_valid(DvzAtlas* atlas)
 
 void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename)
 {
+    ANN(atlas);
     ASSERT(dvz_atlas_valid(atlas));
     dvz_write_png(png_filename, atlas->width, atlas->height, atlas->rgb);
+}
+
+
+
+DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
+{
+    ANN(atlas);
+
+    if (atlas->rgb == NULL)
+    {
+        log_error("unable to create the atlas texture, the atlas has not been created yet");
+        return DVZ_ID_NONE;
+    }
+
+    uvec3 shape = {0};
+    dvz_atlas_shape(atlas, shape);
+
+    // TODO: mtsdf with 4 channels
+    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8_UNORM, shape, 0).id;
+
+    DvzSize size = atlas->width * atlas->height * 3;
+
+    ANN(atlas->rgb);
+    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, atlas->rgb);
+
+    return tex;
 }
 
 
