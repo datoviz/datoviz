@@ -160,6 +160,9 @@ mat4 get_translation_matrix(vec2 xy)
 
 mat4 get_rotation_matrix(vec3 axis, float angle)
 {
+    if (length(axis) == 0)
+        return mat4(1);
+
     axis = normalize(axis);
     float c = cos(angle);
     float s = sin(angle);
