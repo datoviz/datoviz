@@ -142,6 +142,11 @@ static void _timer_callback(DvzTimer* timer, DvzTimerEvent ev)
     DvzApp* app = (DvzApp*)ev.user_data;
     ANN(app);
     ANN(app->client);
+    if (!app->is_running)
+    {
+        log_debug("skip timer event because the app is no longer running");
+        return;
+    }
 
     // Emit a client TIMER event.
     DvzClientEvent cev = {
@@ -213,7 +218,9 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
     dvz_app_submit(app);
 
     // Start the event loop.
+    app->is_running = true;
     dvz_client_run(app->client, n_frames);
+    app->is_running = false;
 }
 
 

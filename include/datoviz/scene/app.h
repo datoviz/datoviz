@@ -56,6 +56,7 @@ struct DvzApp
     DvzPresenter* prt;
     DvzBatch* batch;
     DvzTimer* timer;
+    bool is_running;
 };
 
 
