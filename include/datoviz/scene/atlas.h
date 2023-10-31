@@ -107,6 +107,12 @@ DVZ_EXPORT bool dvz_atlas_valid(DvzAtlas* atlas);
 
 /**
  */
+DVZ_EXPORT uint8_t* dvz_atlas_rgb(DvzAtlas* atlas);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
 
 

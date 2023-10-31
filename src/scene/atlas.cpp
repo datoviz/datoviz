@@ -297,6 +297,16 @@ bool dvz_atlas_valid(DvzAtlas* atlas)
 
 
 
+// The caller MUST NOT free the output, it is owned by the atlas and the pointer will be freed on
+// atlas destruction.
+uint8_t* dvz_atlas_rgb(DvzAtlas* atlas)
+{
+    ANN(atlas);
+    return atlas->rgb;
+}
+
+
+
 void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename)
 {
     ANN(atlas);
@@ -318,11 +328,14 @@ DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
 
     uvec3 shape = {0};
     dvz_atlas_shape(atlas, shape);
+    ASSERT(shape[0] > 0);
+    ASSERT(shape[1] > 0);
+    ASSERT(shape[2] == 1);
 
     // TODO: mtsdf with 4 channels
     DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0).id;
 
-    DvzSize size = atlas->width * atlas->height * 3;
+    DvzSize size = atlas->width * atlas->height * 4;
 
     ANN(atlas->rgb);
 
