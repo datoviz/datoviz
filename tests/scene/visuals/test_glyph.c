@@ -82,7 +82,7 @@ int test_glyph_1(TstSuite* suite)
 
     vec2* size = (vec2*)calloc(n, sizeof(vec2));
     vec2* shift = (vec2*)calloc(n, sizeof(vec2));
-    float font_size = 64;
+    float font_size = 96;
     {
         FT_Library library;
         FT_Face face;
@@ -129,8 +129,8 @@ int test_glyph_1(TstSuite* suite)
             int x = pen_x + face->glyph->bitmap_left;
             int y = pen_y - face->glyph->bitmap_top + (int)h;
 
-            shift[i][0] = (float)x;
-            shift[i][1] = -(float)y;
+            shift[i][0] = (float)x - 250;
+            shift[i][1] = -(float)y + 50;
             size[i][0] = (float)w;
             size[i][1] = (float)h;
 
@@ -144,20 +144,24 @@ int test_glyph_1(TstSuite* suite)
     // Set the texture coordinates.
     dvz_glyph_ascii(visual, text);
 
-    // Set the position and color.
+    // Glyph positions.
     vec3* pos = (vec3*)calloc(n, sizeof(vec3));
     dvz_glyph_position(visual, 0, n, pos, 0);
     FREE(pos);
 
+    // Glyph colors.
     cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    memset(color, 255, n * sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n - 1, color[i]);
+    }
     dvz_glyph_color(visual, 0, n, color, 0);
     FREE(color);
 
-    // Set the glyph sizes.
+    // Glyph sizes.
     dvz_glyph_size(visual, 0, n, size, 0);
 
-    // Set the glyph shifts.
+    // Glyph shifts.
     dvz_glyph_shift(visual, 0, n, shift, 0);
 
     // LATER
