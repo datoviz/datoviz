@@ -179,6 +179,9 @@ void dvz_glyph_texcoords(
         v0 = coords[i][1];
         u1 = u0 + coords[i][2];
         v1 = v0 + coords[i][3];
+        // log_error("%.3f %.3f %.3f %.3f", u0, v0, u1, v1);
+        ASSERT(u0 <= u1);
+        ASSERT(v0 <= v1);
 
         // lower-left
         uv[4 * i + 0][0] = u0;
@@ -225,7 +228,6 @@ void dvz_glyph_texture(DvzVisual* visual, DvzId tex)
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
-    // TODO: check if LINEAR ok
     DvzId sampler =
         dvz_create_sampler(batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
 

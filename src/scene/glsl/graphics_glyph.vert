@@ -23,14 +23,13 @@ void main()
     int idx = gl_VertexIndex % 4;
 
     // Rectangle vertex displacement (one glyph = one rectangle = 6 vertices)
-    // NOTE: the -0.5 is here to recenter the glyph
-    float dx = size.x * (dxs[idx] - 0.5);
-    float dy = size.y * (dys[idx] - 0.5);
+    float dx = size.x * dxs[idx];
+    float dy = size.y * dys[idx];
 
     // Shift in pixels.
     vec2 trans = vec2(dx, dy);
     trans += shift;
-    trans += .5 * anchor * size;
+    trans += anchor * size;
 
     mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);

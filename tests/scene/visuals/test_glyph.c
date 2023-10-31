@@ -54,7 +54,10 @@ int test_glyph_1(TstSuite* suite)
     VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM);
 
     // Number of items.
-    const char* text = "HELLO";
+    // DEBUG
+    // const char* text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // const char* text = "abcdefghijklmnopqrstuvwxyz";
+    const char* text = "Hello world!";
     const uint32_t n = strnlen(text, 4096);
     AT(n > 0);
 
@@ -79,7 +82,7 @@ int test_glyph_1(TstSuite* suite)
 
     vec2* size = (vec2*)calloc(n, sizeof(vec2));
     vec2* shift = (vec2*)calloc(n, sizeof(vec2));
-    float font_size = 96;
+    float font_size = 64;
     {
         FT_Library library;
         FT_Face face;
@@ -112,23 +115,29 @@ int test_glyph_1(TstSuite* suite)
                 continue;
             }
 
+            // HACK: ensure the position is (0, 0) for the first glyph.
+            if (i == 0)
+            {
+                pen_x = -face->glyph->bitmap_left;
+                pen_y = +face->glyph->bitmap_top;
+            }
+
             // Render the glyph to your target image at the pen position
             // (This part depends on your rendering target)
-            int x = pen_x + face->glyph->bitmap_left;
-            int y = pen_y - face->glyph->bitmap_top;
             uint32_t w = face->glyph->bitmap.width;
             uint32_t h = face->glyph->bitmap.rows;
+            int x = pen_x + face->glyph->bitmap_left;
+            int y = pen_y - face->glyph->bitmap_top + (int)h;
 
             shift[i][0] = (float)x;
-            shift[i][1] = (float)font_size - (float)y;
+            shift[i][1] = -(float)y;
             size[i][0] = (float)w;
             size[i][1] = (float)h;
 
             // Update the pen position based on the glyph's advance width
             pen_x += (face->glyph->advance.x >> 6); // 1/64 pixel units
 
-            // You can also apply kerning here if desired
-            log_error("%d %d", x, y);
+            // log_error("%d %d", x, y);
         }
     }
 
@@ -151,12 +160,14 @@ int test_glyph_1(TstSuite* suite)
     // Set the glyph shifts.
     dvz_glyph_shift(visual, 0, n, shift, 0);
 
+    // LATER
     // dvz_glyph_axis(visual, 0, n, (vec3[]){{0, 0, 1}}, 0);
     // dvz_glyph_anchor(visual, 0, n, (vec2[]){{0, 0}}, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
 
+    // LATER
     // // Animation.
     // vt.visual = visual;
     // dvz_app_timer(vt.app, 0, 1. / 60., 0);
