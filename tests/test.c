@@ -21,6 +21,7 @@
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
 #include "scene/test_dual.h"
+#include "scene/test_font.h"
 #include "scene/test_graphics.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
@@ -334,6 +335,9 @@ int dvz_run_tests(const char* match)
 
     // Testing atlas.
     TEST(test_atlas_1)
+
+    // Testing font.
+    TEST(test_font_1)
 
     // Testing app.
     TEST(test_app_scatter)
