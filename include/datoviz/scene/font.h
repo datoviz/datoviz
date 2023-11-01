@@ -73,7 +73,7 @@ DVZ_EXPORT vec4* dvz_font_layout(
 /**
  */
 DVZ_EXPORT uint8_t* dvz_font_draw(
-    DvzFont* font, uint32_t length, const uint32_t* codepoints,
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh,
     uvec2 out_size); // return a RGBA array
 
 
