@@ -10,6 +10,7 @@
 #include "scene/font.h"
 #include "../_pointer.h"
 #include "_macros.h"
+#include "_string.h"
 #include "fileio.h"
 #include "request.h"
 
@@ -147,6 +148,19 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     }
 
     return xywh;
+}
+
+
+
+vec4* dvz_font_ascii(DvzFont* font, const char* string)
+{
+    ANN(font);
+    ANN(string);
+
+    uint32_t count = 0;
+    uint32_t* codepoints = _ascii_to_utf32(string, &count);
+
+    return dvz_font_layout(font, count, codepoints);
 }
 
 

@@ -163,6 +163,13 @@ DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
 /**
  *
  */
+DVZ_EXPORT void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
 
 
@@ -170,7 +177,8 @@ DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
 /**
  *
  */
-// DVZ_EXPORT void dvz_glyph_size(DvzVisual* visual, vec2 size);
+DVZ_EXPORT void dvz_glyph_xywh(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags);
 
 
 

@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/glyph.h"
+#include "_string.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/atlas.h"
@@ -258,10 +259,12 @@ void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 
 
 
-void dvz_glyph_ascii(DvzVisual* visual, const char* string)
+void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints)
 {
+
     ANN(visual);
-    ANN(string);
+    ANN(codepoints);
+    ASSERT(count > 0);
 
     DvzAtlas* atlas = (DvzAtlas*)visual->user_data;
     if (atlas == NULL)
@@ -271,21 +274,13 @@ void dvz_glyph_ascii(DvzVisual* visual, const char* string)
     }
     ANN(atlas);
 
-    uint32_t n = strnlen(string, 4096);
-
-    uint32_t* codepoints = (uint32_t*)calloc(n, sizeof(uint32_t));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        codepoints[i] = (uint32_t)string[i];
-    }
-
     uvec3 shape = {0};
     dvz_atlas_shape(atlas, shape);
     float w = shape[0];
     float h = shape[1];
 
-    vec4* texcoords = dvz_atlas_glyphs(atlas, n, codepoints); // to free
-    for (uint32_t i = 0; i < n; i++)
+    vec4* texcoords = dvz_atlas_glyphs(atlas, count, codepoints); // to free
+    for (uint32_t i = 0; i < count; i++)
     {
         texcoords[i][0] = texcoords[i][0] / w;
         texcoords[i][1] = texcoords[i][1] / h;
@@ -295,16 +290,49 @@ void dvz_glyph_ascii(DvzVisual* visual, const char* string)
 
     // Now, we need to divide the texcoords (in pixels) by the atlas shape, to get uv normalized
     // coordinates.
-    dvz_glyph_texcoords(visual, 0, n, texcoords, 0);
+    dvz_glyph_texcoords(visual, 0, count, texcoords, 0);
 
     FREE(texcoords);
-    FREE(codepoints);
 }
 
 
 
-// void dvz_glyph_size(DvzVisual* visual, vec2 size)
-// {
-//     ANN(visual);
-//     dvz_visual_param(visual, 2, 0, size);
-// }
+void dvz_glyph_ascii(DvzVisual* visual, const char* string)
+{
+    ANN(visual);
+    ANN(string);
+
+    // Convert ASCII to Unicode.
+    uint32_t count = 0;
+    uint32_t* codepoints = _ascii_to_utf32(string, &count);
+
+    dvz_glyph_unicode(visual, count, codepoints);
+}
+
+
+
+void dvz_glyph_xywh(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags)
+{
+    ANN(visual);
+    ANN(values);
+    ASSERT(count > 0);
+
+    vec2* size = (vec2*)calloc(count, sizeof(vec2));
+    vec2* shift = (vec2*)calloc(count, sizeof(vec2));
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        size[i][0] = values[i][2]; // w
+        size[i][1] = values[i][3]; // h
+
+        shift[i][0] = values[i][0] + offset[0]; // x
+        shift[i][1] = values[i][1] + offset[1]; // y
+    }
+
+    dvz_glyph_size(visual, first, count, size, 0);
+    dvz_glyph_shift(visual, first, count, shift, 0);
+
+    FREE(size);
+    FREE(shift);
+}

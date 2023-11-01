@@ -12,6 +12,7 @@
 #include "_macros.h"
 #include "fileio.h"
 #include "request.h"
+#include "scene/font.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
@@ -43,6 +44,9 @@ using namespace msdf_atlas;
 
 extern "C" struct DvzAtlas
 {
+    unsigned long ttf_size;
+    unsigned char* ttf_bytes;
+
     // Specified charset.
     uint32_t codepoints_count;
     uint32_t* codepoints;
@@ -71,6 +75,9 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 {
     DvzAtlas* atlas = (DvzAtlas*)calloc(1, sizeof(DvzAtlas));
     ANN(atlas);
+
+    atlas->ttf_size = ttf_size;
+    atlas->ttf_bytes = ttf_bytes;
 
     // Initialize instance of FreeType library
     atlas->ft = initializeFreetype();
