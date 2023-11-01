@@ -104,9 +104,9 @@ int test_glyph_1(TstSuite* suite)
     dvz_font_size(font, font_size);
     vec4* xywh = dvz_font_ascii(font, text);
 
-    // Now we can use the xywh array returnd by the font to set the size and shift properties
+    // Now we can use the xywh array returned by the font to set the size and shift properties
     // of the glyph vsual.
-    dvz_glyph_xywh(visual, 0, n, xywh, (vec2){0, 0}, 0);
+    dvz_glyph_xywh(visual, 0, n, xywh, (vec2){-250, -20}, 0);
     FREE(xywh);
 
 
