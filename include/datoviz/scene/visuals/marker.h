@@ -69,6 +69,12 @@ EXTERN_C_ON
 DVZ_EXPORT DvzVisual* dvz_marker(DvzBatch* batch, int flags);
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_shape(DvzVisual* visual, DvzMarkerShape shape);
+
+
 
 /**
  *

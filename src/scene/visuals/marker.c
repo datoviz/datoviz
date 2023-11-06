@@ -63,17 +63,26 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     dvz_params_attr(params, 1, FIELD(DvzMarkerParams, edge_width));
 
     // Specialization constant #0: mode.
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), (int32_t[]){0});
+    dvz_visual_specialization(
+        visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int32_t), (int32_t[]){DVZ_MARKER_MODE_CODE});
 
     // Specialization constant #1: aspect.
     dvz_visual_specialization(
-        visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), (int32_t[]){DVZ_MARKER_ASPECT_OUTLINE});
+        visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int32_t), (int32_t[]){DVZ_MARKER_ASPECT_OUTLINE});
 
     // Specialization constant #2: shape.
     dvz_visual_specialization(
-        visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), (int32_t[]){DVZ_MARKER_SHAPE_HEART});
+        visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int32_t), (int32_t[]){DVZ_MARKER_SHAPE_DISC});
 
     return visual;
+}
+
+
+
+void dvz_marker_shape(DvzVisual* visual, DvzMarkerShape shape)
+{
+    ANN(visual);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int32_t), (int32_t[]){shape});
 }
 
 
