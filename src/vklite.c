@@ -2528,11 +2528,13 @@ void dvz_graphics_specialization(
 
     ASSERT(idx < DVZ_MAX_SPECIALIZATION_CONSTANTS);
 
+    log_trace("set specialization constant value #%d, %s", idx, pretty_size(size));
+
     spec_consts->stage = stage;
     spec_consts->sizes[idx] = size;
     spec_consts->data[idx] =
         _cpy(size, data); // NOTE: we copy the passed pointer, will have to be freed
-    spec_consts->count++;
+    spec_consts->count = MAX(idx + 1, spec_consts->count);
 }
 
 
