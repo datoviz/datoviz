@@ -174,11 +174,7 @@ void dvz_marker_edge_width(DvzVisual* visual, float value)
 
 
 
-void dvz_marker_tex(DvzVisual* visual, DvzId tex)
+void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler)
 {
-    DvzId sampler = dvz_create_sampler(
-                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                        .id;
-
     dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
 }

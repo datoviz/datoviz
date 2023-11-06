@@ -41,12 +41,12 @@ int test_marker_1(TstSuite* suite)
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
-    // dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF_MONO);
-    // dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_FILLED);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
     dvz_marker_shape(visual, DVZ_MARKER_SHAPE_HEART);
 
     // {
     //     // Texture-based disc SDF.
+    //     dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF_MONO);
     //     uint32_t width = 64;
     //     uint32_t height = 64;
     //     uvec3 shape = {width, height, 1};
@@ -65,6 +65,34 @@ int test_marker_1(TstSuite* suite)
     //     dvz_upload_tex(vt.batch, tex, DVZ_ZERO_OFFSET, shape, texsize, texdata);
     //     FREE(texdata);
     //     dvz_marker_tex(visual, tex);
+    // }
+
+    // {
+    //     // Bitmap marker.
+    //     dvz_marker_mode(visual, DVZ_MARKER_MODE_BITMAP);
+
+    //     unsigned long jpg_size = 0;
+    //     unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
+    //     ASSERT(jpg_size > 0);
+    //     ANN(jpg_bytes);
+
+    //     uint32_t jpg_width = 0, jpg_height = 0;
+    //     uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
+    //     ASSERT(jpg_width > 0);
+    //     ASSERT(jpg_height > 0);
+
+    //     uvec3 shape = {jpg_width, jpg_height, 1};
+    //     DvzSize size = jpg_width * jpg_height * 4;
+    //     DvzId tex = dvz_create_tex(vt.batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape,
+    //     0).id; dvz_upload_tex(vt.batch, tex, DVZ_ZERO_OFFSET, shape, size, crate_data);
+
+    //     DvzId sampler =
+    //         dvz_create_sampler(
+    //             visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+    //             .id;
+
+    //     dvz_marker_tex(visual, tex, sampler);
+    //     FREE(crate_data);
     // }
 
 

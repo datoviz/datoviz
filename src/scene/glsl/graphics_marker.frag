@@ -203,6 +203,13 @@ void main()
         distance = texture(tex, P + vec2(0.5, 0.5)).r;
         break;
 
+    case DVZ_MARKER_MODE_BITMAP:
+        out_color = texture(tex, P + vec2(0.5, 0.5));
+        if (abs(P.x) > .5 || abs(P.y) > .5)
+            discard;
+        return;
+        break;
+
         // NOTE: other modes are not yet implemented.
 
     default:
