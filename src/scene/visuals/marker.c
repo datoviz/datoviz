@@ -12,6 +12,7 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
+#include "scene/scene.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -56,11 +57,16 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMarkerParams));
     dvz_params_attr(params, 0, FIELD(DvzMarkerParams, edge_color));
     dvz_params_attr(params, 1, FIELD(DvzMarkerParams, edge_width));
+
+    // Default texture to avoid Vulkan warning with unbound texture slot.
+    dvz_visual_tex(
+        visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 
     // Default specialization constant values.
     // Specialization constant #0: mode.
@@ -164,4 +170,15 @@ void dvz_marker_edge_color(DvzVisual* visual, cvec4 value)
 void dvz_marker_edge_width(DvzVisual* visual, float value)
 {
     dvz_visual_param(visual, 2, 1, &value);
+}
+
+
+
+void dvz_marker_tex(DvzVisual* visual, DvzId tex)
+{
+    DvzId sampler = dvz_create_sampler(
+                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                        .id;
+
+    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
 }

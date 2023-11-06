@@ -140,6 +140,13 @@ DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
 /**
  *
  */
+DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
 
 

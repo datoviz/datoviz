@@ -53,6 +53,9 @@ layout(binding = USER_BINDING) uniform MarkersParams
 }
 params;
 
+// Textures.
+layout(binding = USER_BINDING + 1) uniform sampler2D tex;
+
 // Attributes.
 layout(location = 0) in vec4 color;
 layout(location = 1) in float size;
@@ -170,7 +173,27 @@ void main()
     P = rot * P;
 
     // Marker SDF.
-    float distance = select_marker(P * (size + 2 * params.edge_width + antialias), size);
+    float distance = 0;
+
+
+    // Marker mode.
+    switch (MARKER_MODE)
+    {
+
+    case DVZ_MARKER_MODE_CODE:
+        distance = select_marker(P * (size + 2 * params.edge_width + antialias), size);
+        break;
+
+    case DVZ_MARKER_MODE_SDF_MONO:
+        // NOTE: with texture-based SDFs and varying marker sizes, when using stroke/outline
+        // aspect, the edge width will be rescaled which is wrong.
+        distance = texture(tex, P + vec2(0.5, 0.5)).r;
+        break;
+
+    default:
+        break;
+    }
+
 
     // Marker aspect.
     switch (MARKER_ASPECT)

@@ -26,6 +26,12 @@
 /*  Marker tests                                                                                 */
 /*************************************************************************************************/
 
+static inline float _sdf(float x, float y, float radius)
+{
+    float distanceToCenter = sqrt(x * x + y * y);
+    return distanceToCenter - radius;
+}
+
 int test_marker_1(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("marker", VISUAL_TEST_PANZOOM);
@@ -35,7 +41,32 @@ int test_marker_1(TstSuite* suite)
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
+    // dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF_MONO);
+    // dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_FILLED);
     dvz_marker_shape(visual, DVZ_MARKER_SHAPE_HEART);
+
+    // {
+    //     // Texture-based disc SDF.
+    //     uint32_t width = 64;
+    //     uint32_t height = 64;
+    //     uvec3 shape = {width, height, 1};
+    //     DvzId tex = dvz_create_tex(vt.batch, DVZ_TEX_2D, DVZ_FORMAT_R32_SFLOAT, shape, 0).id;
+    //     DvzSize texsize = width * height * sizeof(float);
+    //     float* texdata = (float*)calloc(texsize, sizeof(float));
+    //     for (uint32_t i = 0; i < texsize; i++)
+    //     {
+    //         uint32_t x = i % width;
+    //         uint32_t y = i / width;
+    //         float posX = (x - width / 2.0);
+    //         float posY = (y - height / 2.0);
+    //         float value = _sdf(posX, posY, width / 4);
+    //         texdata[i] = value;
+    //     }
+    //     dvz_upload_tex(vt.batch, tex, DVZ_ZERO_OFFSET, shape, texsize, texdata);
+    //     FREE(texdata);
+    //     dvz_marker_tex(visual, tex);
+    // }
+
 
     // Visual allocation.
     dvz_marker_alloc(visual, n);
