@@ -40,10 +40,12 @@
 #define DVZ_MARKER_SHAPE_TRIANGLE 17
 #define DVZ_MARKER_SHAPE_VBAR     18
 
+// Specialization constants.
 layout(constant_id = 0) const int MARKER_MODE = 0;   // code, sdf, bitmap...
 layout(constant_id = 1) const int MARKER_ASPECT = 0; // filled, outline, stroke
 layout(constant_id = 2) const int MARKER_SHAPE = 0;  // when using CODE mode, which shape to use
 
+// Uniform variables.
 layout(binding = USER_BINDING) uniform MarkersParams
 {
     vec4 edge_color;
@@ -51,13 +53,15 @@ layout(binding = USER_BINDING) uniform MarkersParams
 }
 params;
 
+// Attributes.
 layout(location = 0) in vec4 color;
 layout(location = 1) in float size;
 layout(location = 2) in float angle;
 
+// Varyings.
 layout(location = 0) out vec4 out_color;
 
-
+// Functions.
 float select_marker(vec2 P, float size)
 {
     switch (MARKER_SHAPE)
@@ -144,7 +148,7 @@ float select_marker(vec2 P, float size)
     }
 }
 
-
+// Fragment shader.
 void main()
 {
     CLIP;
@@ -168,14 +172,24 @@ void main()
     // Marker SDF.
     float distance = select_marker(P * (size + 2 * params.edge_width + antialias), size);
 
-    // Outline/filled.
-    if (params.edge_width > 0)
+    // Marker aspect.
+    switch (MARKER_ASPECT)
     {
-        out_color = outline(distance, params.edge_width, params.edge_color, color);
-    }
-    else
-    {
+
+    case DVZ_MARKER_ASPECT_FILLED:
         out_color = filled(distance, params.edge_width, color);
+        break;
+
+    case DVZ_MARKER_ASPECT_STROKE:
+        out_color = stroke(distance, params.edge_width, params.edge_color);
+        break;
+
+    case DVZ_MARKER_ASPECT_OUTLINE:
+        out_color = outline(distance, params.edge_width, params.edge_color, color);
+        break;
+
+    default:
+        break;
     }
 
     if (out_color.a < .01)

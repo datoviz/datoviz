@@ -499,6 +499,30 @@ typedef enum
 
 
 
+// Marker mode.
+typedef enum
+{
+    DVZ_MARKER_MODE_NONE = 0,
+    DVZ_MARKER_MODE_CODE = 1,
+    DVZ_MARKER_MODE_BITMAP = 2,
+    DVZ_MARKER_MODE_MSDF = 3,
+    DVZ_MARKER_MODE_MTSDF = 4,
+    DVZ_MARKER_MODE_SDF_MONO = 5,
+    DVZ_MARKER_MODE_SDF_RGBA = 6,
+} DvzMarkerMode;
+
+
+
+// Marker aspect.
+typedef enum
+{
+    DVZ_MARKER_ASPECT_FILLED = 0,
+    DVZ_MARKER_ASPECT_STROKE = 1,
+    DVZ_MARKER_ASPECT_OUTLINE = 2,
+} DvzMarkerAspect;
+
+
+
 // Cap type.
 typedef enum
 {

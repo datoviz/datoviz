@@ -66,7 +66,8 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), (int32_t[]){0});
 
     // Specialization constant #1: aspect.
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), (int32_t[]){0});
+    dvz_visual_specialization(
+        visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), (int32_t[]){DVZ_MARKER_ASPECT_OUTLINE});
 
     // Specialization constant #2: shape.
     dvz_visual_specialization(
