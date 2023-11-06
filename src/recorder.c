@@ -97,6 +97,9 @@ _process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds,
             "(#%d)", //
             first_vertex, vertex_count, instance_count, first_instance, img_idx);
 
+        // NOTE: this function lazily create the pipe if needed, this is when the graphics pipeline
+        // is created on the Vulkan side.
+
         pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
         ANN(pipe);
 
