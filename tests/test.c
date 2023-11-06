@@ -33,6 +33,7 @@
 #include "scene/visuals/test_fake_sphere.h"
 #include "scene/visuals/test_glyph.h"
 #include "scene/visuals/test_image.h"
+#include "scene/visuals/test_marker.h"
 #include "scene/visuals/test_mesh.h"
 #include "scene/visuals/test_path.h"
 #include "scene/visuals/test_pixel.h"
@@ -257,6 +258,7 @@ int dvz_run_tests(const char* match)
     TEST(test_basic_1)
     TEST(test_pixel_1)
     TEST(test_point_1)
+    TEST(test_marker_1)
     TEST(test_segment_1)
     TEST(test_path_1)
     TEST(test_path_2)

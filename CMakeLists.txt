@@ -697,6 +697,7 @@ set(sources
     "src/scene/visuals/path.c"
     "src/scene/visuals/pixel.c"
     "src/scene/visuals/point.c"
+    "src/scene/visuals/marker.c"
     "src/scene/visuals/segment.c"
     "src/scene/visuals/volume.c"
 
@@ -797,6 +798,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/visuals/test_path.c"
         "tests/scene/visuals/test_pixel.c"
         "tests/scene/visuals/test_point.c"
+        "tests/scene/visuals/test_marker.c"
         "tests/scene/visuals/test_segment.c"
         "tests/scene/visuals/test_volume.c"
 
