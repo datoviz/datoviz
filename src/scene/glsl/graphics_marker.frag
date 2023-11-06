@@ -6,13 +6,26 @@
 // NOTE: the values below must correspond to _enums.h
 
 // Marker mode.
-#define DVZ_MARKER_MODE_NONE     0
-#define DVZ_MARKER_MODE_CODE     1
-#define DVZ_MARKER_MODE_BITMAP   2
-#define DVZ_MARKER_MODE_MSDF     3
-#define DVZ_MARKER_MODE_MTSDF    4
+#define DVZ_MARKER_MODE_NONE 0
+
+// code-based SDFs
+#define DVZ_MARKER_MODE_CODE 1
+
+// regular RGBA texture sampling (unused color, combined alpha)
+#define DVZ_MARKER_MODE_BITMAP 2
+
+// 3 channels with MSDF (color+alpha attribute)
+#define DVZ_MARKER_MODE_MSDF 3
+
+// 4 channels with MTSDF (color attribute, combined alpha)
+#define DVZ_MARKER_MODE_MTSDF 4
+
+// 1 channel with SDF (color+alpha attribute)
 #define DVZ_MARKER_MODE_SDF_MONO 5
+
+// 4 channels with SDF for each color/alpha channel (unused color, combined alpha)
 #define DVZ_MARKER_MODE_SDF_RGBA 6
+
 
 // Marker aspect.
 #define DVZ_MARKER_ASPECT_FILLED  0
@@ -189,6 +202,8 @@ void main()
         // aspect, the edge width will be rescaled which is wrong.
         distance = texture(tex, P + vec2(0.5, 0.5)).r;
         break;
+
+        // NOTE: other modes are not yet implemented.
 
     default:
         break;
