@@ -210,7 +210,11 @@ void main()
         return;
         break;
 
-        // NOTE: other modes are not yet implemented.
+        // TODO: these modes are not yet implemented.
+    case DVZ_MARKER_MODE_MSDF:
+    case DVZ_MARKER_MODE_MTSDF:
+    case DVZ_MARKER_MODE_SDF_RGBA:
+        break;
 
     default:
         break;
