@@ -11,6 +11,7 @@ layout(location = 1) out float out_size;
 void main()
 {
     gl_Position = transform(pos);
+
     out_color = color;
     out_size = size;
 

@@ -41,12 +41,13 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     ANN(visual);
 
     // Visual shaders.
-    dvz_visual_shader(visual, "graphics_point");
+    dvz_visual_shader(visual, "graphics_marker");
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzMarkerVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, FIELD(DvzMarkerVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
-    dvz_visual_attr(visual, 2, FIELD(DvzMarkerVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
+    dvz_visual_attr(visual, 1, FIELD(DvzMarkerVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
+    dvz_visual_attr(visual, 2, FIELD(DvzMarkerVertex, angle), DVZ_FORMAT_R32_SFLOAT, 0);
+    dvz_visual_attr(visual, 3, FIELD(DvzMarkerVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzMarkerVertex));
@@ -54,6 +55,12 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     // Uniforms.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+
+    // Params.
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMarkerParams));
+    dvz_params_attr(params, 0, FIELD(DvzMarkerParams, edge_color));
+    dvz_params_attr(params, 1, FIELD(DvzMarkerParams, edge_width));
 
     return visual;
 }
@@ -83,7 +90,7 @@ void dvz_marker_position(
 
 
 
-void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_marker_size(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, (void*)values);
@@ -91,8 +98,35 @@ void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 
-void dvz_marker_size(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+void dvz_marker_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 2, first, count, (void*)values);
+}
+
+
+
+void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 3, first, count, (void*)values);
+}
+
+
+
+void dvz_marker_edge_color(DvzVisual* visual, cvec4 value)
+{
+    // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
+    float r = value[0] / 255.0;
+    float g = value[1] / 255.0;
+    float b = value[2] / 255.0;
+    float a = value[3] / 255.0;
+    dvz_visual_param(visual, 2, 0, (vec4){r, g, b, a});
+}
+
+
+
+void dvz_marker_edge_width(DvzVisual* visual, float value)
+{
+    dvz_visual_param(visual, 2, 1, &value);
 }

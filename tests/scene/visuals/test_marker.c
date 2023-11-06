@@ -31,7 +31,7 @@ int test_marker_1(TstSuite* suite)
     VisualTest vt = visual_test_start("marker", VISUAL_TEST_PANZOOM);
 
     // Number of items.
-    const uint32_t n = 10000;
+    const uint32_t n = 1000;
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
@@ -53,7 +53,7 @@ int test_marker_1(TstSuite* suite)
     for (uint32_t i = 0; i < n; i++)
     {
         dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
+        color[i][3] = 192;
     }
     dvz_marker_color(visual, 0, n, color, 0);
 
@@ -61,9 +61,21 @@ int test_marker_1(TstSuite* suite)
     float* size = (float*)calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
     {
-        size[i] = 1 + 49 * dvz_rand_float();
+        size[i] = 10 + 40 * dvz_rand_float();
     }
     dvz_marker_size(visual, 0, n, size, 0);
+
+    // Angle.
+    float* angle = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        angle[i] = M_2PI * dvz_rand_float();
+    }
+    dvz_marker_angle(visual, 0, n, size, 0);
+
+    // Parameters.
+    dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
+    dvz_marker_edge_width(visual, (float){3.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
@@ -75,6 +87,54 @@ int test_marker_1(TstSuite* suite)
     FREE(pos);
     FREE(color);
     FREE(size);
+    FREE(angle);
+
+    return 0;
+}
+
+
+
+static void _on_timer(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzVisual* visual = vt->visual;
+    ANN(visual);
+    float t = ev.content.t.time;
+
+    dvz_marker_angle(visual, 0, 1, (float[]){.25 * M_PI * t}, 0);
+    dvz_visual_update(visual);
+}
+
+// Check glyph adaptive size depending on the marker rotation.
+int test_marker_2(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("marker_2", VISUAL_TEST_PANZOOM);
+
+    // Create the visual.
+    DvzVisual* visual = dvz_marker(vt.batch, 0);
+
+    // Visual allocation.
+    dvz_marker_alloc(visual, 1);
+
+    dvz_marker_position(visual, 0, 1, (vec3[]){{0, 0, 0}}, 0);
+    dvz_marker_size(visual, 0, 1, (float[]){250}, 0);
+    dvz_marker_angle(visual, 0, 1, (float[]){0}, 0);
+    dvz_marker_color(visual, 0, 1, (cvec4[]){{255, 0, 0, 255}}, 0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
+
+    // Animation.
+    vt.visual = visual;
+    dvz_app_timer(vt.app, 0, 1. / 60., 0);
+    dvz_app_ontimer(vt.app, _on_timer, &vt);
+
+    // Run the test.
+    visual_test_end(vt);
 
     return 0;
 }

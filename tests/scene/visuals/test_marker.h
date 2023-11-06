@@ -21,6 +21,8 @@
 
 int test_marker_1(TstSuite*);
 
+int test_marker_2(TstSuite*);
+
 
 
 #endif

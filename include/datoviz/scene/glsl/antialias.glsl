@@ -1,7 +1,8 @@
 #include "constants.glsl"
 
 
-vec3 compute_distance(float distance, float linewidth) {
+vec3 compute_distance(float distance, float linewidth)
+{
     vec4 frag_color;
     float t = linewidth / 2.0 - antialias;
     float signed_distance = distance;
@@ -12,7 +13,8 @@ vec3 compute_distance(float distance, float linewidth) {
 }
 
 
-vec4 filled(float distance, float linewidth, vec4 bg_color) {
+vec4 filled(float distance, float linewidth, vec4 bg_color)
+{
     vec3 dis = compute_distance(distance, linewidth);
     vec4 frag_color;
 
@@ -27,7 +29,8 @@ vec4 filled(float distance, float linewidth, vec4 bg_color) {
 }
 
 
-vec4 stroke(float distance, float linewidth, vec4 fg_color) {
+vec4 stroke(float distance, float linewidth, vec4 fg_color)
+{
     vec3 dis = compute_distance(distance, linewidth);
     vec4 frag_color;
 
@@ -40,43 +43,64 @@ vec4 stroke(float distance, float linewidth, vec4 fg_color) {
 }
 
 
-vec4 outline(float distance, float linewidth, vec4 fg_color, vec4 bg_color) {
+vec4 outline(float distance, float linewidth, vec4 fg_color, vec4 bg_color)
+{
+    // vec3: signed distance, border distance, alpha.
     vec3 dis = compute_distance(distance, linewidth);
     vec4 frag_color;
 
     if (dis.y < 0.0)
+    {
         frag_color = fg_color;
+    }
     else if (dis.x < 0.0)
+    {
         frag_color = mix(bg_color, fg_color, sqrt(dis.z));
-    else {
-        if (abs(dis.x) < (linewidth/2.0 + antialias)) {
+    }
+    else
+    {
+        if (abs(dis.x) < (linewidth / 2.0 + antialias))
+        {
             frag_color = vec4(fg_color.rgb, fg_color.a * dis.z);
-        } else {
+        }
+        else
+        {
             discard;
         }
     }
+
+    // NOTE: take both the alphas of the bg and fg colors into account for the outline.
+    frag_color.a *= bg_color.a;
+
     return frag_color;
 }
 
 
-vec4 cap(int type, float dx, float dy, float linewidth, vec4 color) {
+vec4 cap(int type, float dx, float dy, float linewidth, vec4 color)
+{
     float d = 0.0;
     dx = abs(dx);
     dy = abs(dy);
     float t = linewidth / 2.0 - antialias;
 
     // None
-    if      (type == 0)  discard;
+    if (type == 0)
+        discard;
     // Round
-    else if (type == 1)  d = sqrt(dx*dx+dy*dy);
+    else if (type == 1)
+        d = sqrt(dx * dx + dy * dy);
     // Triangle out
-    else if (type == 2)  d = max(abs(dy),(t+dx-abs(dy)));
+    else if (type == 2)
+        d = max(abs(dy), (t + dx - abs(dy)));
     // Triangle in
-    else if (type == 3)  d = (dx+abs(dy));
+    else if (type == 3)
+        d = (dx + abs(dy));
     // Square
-    else if (type == 4)  d = max(dx,dy);
+    else if (type == 4)
+        d = max(dx, dy);
     // Butt
-    else if (type == 5)  d = max(dx+t,dy);
+    else if (type == 5)
+        d = max(dx + t, dy);
 
     return stroke(d, linewidth, color);
 }

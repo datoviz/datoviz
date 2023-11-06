@@ -21,6 +21,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzMarkerVertex DvzMarkerVertex;
+typedef struct DvzMarkerParams DvzMarkerParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -41,8 +42,17 @@ typedef struct DvzVisual DvzVisual;
 struct DvzMarkerVertex
 {
     vec3 pos;    /* position */
-    cvec4 color; /* color */
     float size;  /* size */
+    float angle; /* angle */
+    cvec4 color; /* color */
+};
+
+
+
+struct DvzMarkerParams
+{
+    vec4 edge_color;
+    float edge_width;
 };
 
 
@@ -72,7 +82,7 @@ dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* val
  *
  */
 DVZ_EXPORT void
-dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
 
 
 
@@ -80,7 +90,29 @@ dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* value
  *
  */
 DVZ_EXPORT void
-dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
+dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
 
 
 

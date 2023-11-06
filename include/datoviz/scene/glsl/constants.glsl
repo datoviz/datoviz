@@ -1,16 +1,17 @@
 #ifndef GLSL_CONSTANTS
 #define GLSL_CONSTANTS
 
+// antialias = 1 everywhere
 #define ANTIALIAS 1.0
 #define antialias ANTIALIAS
 
 
-const int CAP_NONE         = 0;
-const int CAP_ROUND        = 1;
-const int CAP_TRIANGLE_IN  = 2;
+const int CAP_NONE = 0;
+const int CAP_ROUND = 1;
+const int CAP_TRIANGLE_IN = 2;
 const int CAP_TRIANGLE_OUT = 3;
-const int CAP_SQUARE       = 4;
-const int CAP_BUTT         = 5;
+const int CAP_SQUARE = 4;
+const int CAP_BUTT = 5;
 
 
 // The base of natural logarithms (e)
@@ -55,9 +56,9 @@ const float M_SQRT2 = 1.41421356237309504880168872420969808;
 const float M_SQRT1_2 = 0.707106781186547524400844362104849039;
 
 // 1 degree in radians
-const float degree = 180.0/M_PI;
+const float degree = 180.0 / M_PI;
 
 // 1 radian in degrees
-const float radian = M_PI/180.0;
+const float radian = M_PI / 180.0;
 
 #endif
