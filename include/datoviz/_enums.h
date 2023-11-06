@@ -471,33 +471,31 @@ typedef enum
 /*  Visual-specific enums                                                                        */
 /*************************************************************************************************/
 
-// TODO: uncomment once graphics.h has been removed
-
-// Marker type.
-// NOTE: the numbers need to correspond to markers.glsl at the bottom.
+// Marker shape.
+// NOTE: the numbers need to correspond to graphics_markers.frag.
 typedef enum
 {
-    DVZ_MARKER_DISC = 0,
-    DVZ_MARKER_ASTERISK = 1,
-    DVZ_MARKER_CHEVRON = 2,
-    DVZ_MARKER_CLOVER = 3,
-    DVZ_MARKER_CLUB = 4,
-    DVZ_MARKER_CROSS = 5,
-    DVZ_MARKER_DIAMOND = 6,
-    DVZ_MARKER_ARROW = 7,
-    DVZ_MARKER_ELLIPSE = 8,
-    DVZ_MARKER_HBAR = 9,
-    DVZ_MARKER_HEART = 10,
-    DVZ_MARKER_INFINITY = 11,
-    DVZ_MARKER_PIN = 12,
-    DVZ_MARKER_RING = 13,
-    DVZ_MARKER_SPADE = 14,
-    DVZ_MARKER_SQUARE = 15,
-    DVZ_MARKER_TAG = 16,
-    DVZ_MARKER_TRIANGLE = 17,
-    DVZ_MARKER_VBAR = 18,
-    DVZ_MARKER_COUNT,
-} DvzMarkerType;
+    DVZ_MARKER_SHAPE_DISC = 0,
+    DVZ_MARKER_SHAPE_ASTERISK = 1,
+    DVZ_MARKER_SHAPE_CHEVRON = 2,
+    DVZ_MARKER_SHAPE_CLOVER = 3,
+    DVZ_MARKER_SHAPE_CLUB = 4,
+    DVZ_MARKER_SHAPE_CROSS = 5,
+    DVZ_MARKER_SHAPE_DIAMOND = 6,
+    DVZ_MARKER_SHAPE_ARROW = 7,
+    DVZ_MARKER_SHAPE_ELLIPSE = 8,
+    DVZ_MARKER_SHAPE_HBAR = 9,
+    DVZ_MARKER_SHAPE_HEART = 10,
+    DVZ_MARKER_SHAPE_INFINITY = 11,
+    DVZ_MARKER_SHAPE_PIN = 12,
+    DVZ_MARKER_SHAPE_RING = 13,
+    DVZ_MARKER_SHAPE_SPADE = 14,
+    DVZ_MARKER_SHAPE_SQUARE = 15,
+    DVZ_MARKER_SHAPE_TAG = 16,
+    DVZ_MARKER_SHAPE_TRIANGLE = 17,
+    DVZ_MARKER_SHAPE_VBAR = 18,
+    DVZ_MARKER_SHAPE_COUNT,
+} DvzMarkerShape;
 
 
 
