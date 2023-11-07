@@ -176,6 +176,7 @@ int test_marker_2(TstSuite* suite)
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
+    dvz_marker_shape(visual, DVZ_MARKER_SHAPE_SQUARE);
 
     // Visual allocation.
     dvz_marker_alloc(visual, 1);
