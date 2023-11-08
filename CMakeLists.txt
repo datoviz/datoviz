@@ -320,7 +320,7 @@ if(DATOVIZ_WITH_MSDF)
     set(MSDFGEN_CORE_ONLY OFF)
     set(MSDFGEN_BUILD_STANDALONE OFF)
     set(MSDFGEN_USE_SKIA OFF)
-    set(MSDFGEN_DISABLE_SVG ON)
+    set(MSDFGEN_DISABLE_SVG OFF)
 
     set(MSDF_ATLAS_BUILD_STANDALONE OFF)
     set(MSDF_ATLAS_USE_VCPKG OFF)
@@ -341,6 +341,14 @@ if(DATOVIZ_WITH_MSDF)
     # GIT_TAG master
     # )
     # FetchContent_MakeAvailable(msdfgen)
+
+    # tinyxml2
+    FetchContent_Declare(
+        tinyxml2
+        GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
+        GIT_TAG master
+    )
+    FetchContent_MakeAvailable(tinyxml2)
 
     # MSDF atlas
     FetchContent_Declare(

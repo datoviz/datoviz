@@ -29,7 +29,10 @@
 int test_sdf_1(TstSuite* suite)
 {
     ANN(suite);
-    DvzSdf* sdf = dvz_sdf();
+    DvzSdf* sdf = dvz_sdf(DVZ_SDF_MODE_SDF);
+    const char* svg_path = "<svg><path d=\"M50,50 A45,45 0 1,1 50,50z\" fill=\"blue\" /></svg>";
+    dvz_sdf_svg(sdf, svg_path);
+    dvz_sdf_generate(sdf);
     dvz_sdf_destroy(sdf);
     return 0;
 }

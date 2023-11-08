@@ -13,6 +13,8 @@
 
 #include "_log.h"
 #include "_macros.h"
+#include "_map.h"
+#include "_math.h"
 
 
 
@@ -37,11 +39,26 @@ typedef struct DvzBatch DvzBatch;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_SDF_MODE_NONE = 0,
+    DVZ_SDF_MODE_SDF = 1,
+    DVZ_SDF_MODE_MSDF = 2,
+    DVZ_SDF_MODE_MTSDF = 3,
+} DvzSdfMode;
+
 
 
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzSdf
+{
+    DvzSdfMode mode;
+    DvzSize svg_size;
+    const char* svg_path;
+};
 
 
 
@@ -53,7 +70,37 @@ EXTERN_C_ON
 
 /**
  */
-DVZ_EXPORT DvzSdf* dvz_sdf(void);
+DVZ_EXPORT DvzSdf* dvz_sdf(DvzSdfMode mode);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_sdf_svg(DvzSdf* sdf, const char* svg_data);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_sdf_generate(DvzSdf* sdf);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_sdf_shape(DvzSdf* sdf, uvec3 shape);
+
+
+
+/**
+ */
+DVZ_EXPORT uint8_t* dvz_sdf_data(DvzSdf* sdf, DvzSize* size);
+
+
+
+/**
+ */
+DVZ_EXPORT DvzId dvz_sdf_tex(DvzSdf* sdf);
 
 
 
