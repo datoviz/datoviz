@@ -474,6 +474,64 @@ static inline double dvz_mean(uint32_t n, double* values)
 
 
 /**
+ * Compute the min and max of an array of float values.
+ *
+ * @param n the number of values
+ * @param values an array of float numbers
+ * @param vec2 the min and max
+ * @returns the mean
+ */
+static inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
+{
+    ASSERT(n > 0);
+    ASSERT(values != NULL);
+    float m = 0, M = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        m = MIN(m, values[i]);
+        M = MAX(M, values[i]);
+    }
+    ASSERT(m <= M);
+    out_min_max[0] = m;
+    out_min_max[1] = M;
+}
+
+
+
+/**
+ * Normalize the array.
+ *
+ * @param count the number of values
+ * @param values an array of float numbers
+ * @returns the normalized array
+ */
+static inline uint8_t* dvz_normalize_byte(uint32_t count, float* values)
+{
+    ASSERT(count > 0);
+    ANN(values);
+
+    vec2 min_max = {0};
+    dvz_min_max(count, values, min_max);
+    float m = min_max[0];
+    float M = min_max[1];
+    if (m == M)
+        M = m + 1;
+    ASSERT(m < M);
+    float d = 1. / (M - m);
+
+    uint8_t* out = (uint8_t*)malloc(count * sizeof(uint8_t));
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        out[i] = round((values[i] - m) * d * 255);
+    }
+
+    return out;
+}
+
+
+
+/**
  * Compute the range of an array of double values.
  *
  * @param n the number of values

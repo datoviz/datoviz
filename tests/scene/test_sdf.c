@@ -29,10 +29,20 @@
 int test_sdf_1(TstSuite* suite)
 {
     ANN(suite);
-    DvzSdf* sdf = dvz_sdf(DVZ_SDF_MODE_SDF);
-    const char* svg_path = "<svg><path d=\"M50,50 A45,45 0 1,1 50,50z\" fill=\"blue\" /></svg>";
-    dvz_sdf_svg(sdf, svg_path);
-    dvz_sdf_generate(sdf);
-    dvz_sdf_destroy(sdf);
+    const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
+    uint32_t w = 100;
+    uint32_t h = 100;
+
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/sdf_1.png", ARTIFACTS_DIR);
+    uint8_t* rgb = dvz_svg_sdf(svg_path, w, h);
+    dvz_write_png(imgpath, w, h, rgb);
+
+    snprintf(imgpath, sizeof(imgpath), "%s/sdf_2.png", ARTIFACTS_DIR);
+    uint8_t* rgb2 = dvz_svg_msdf(svg_path, w, h);
+    dvz_write_png(imgpath, w, h, rgb2);
+
+    FREE(rgb);
+    FREE(rgb2);
     return 0;
 }
