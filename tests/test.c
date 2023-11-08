@@ -26,6 +26,7 @@
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
 #include "scene/test_scene.h"
+#include "scene/test_sdf.h"
 #include "scene/test_shape.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
@@ -338,6 +339,9 @@ int dvz_run_tests(const char* match)
 
     // Testing atlas.
     TEST(test_atlas_1)
+
+    // Testing sdf.
+    TEST(test_sdf_1)
 
     // Testing font.
     TEST(test_font_1)
