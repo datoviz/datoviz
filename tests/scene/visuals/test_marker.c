@@ -26,15 +26,9 @@
 /*  Marker tests                                                                                 */
 /*************************************************************************************************/
 
-static inline float _sdf(float x, float y, float radius)
+int test_marker_code(TstSuite* suite)
 {
-    float distanceToCenter = sqrt(x * x + y * y);
-    return distanceToCenter - radius;
-}
-
-int test_marker_1(TstSuite* suite)
-{
-    VisualTest vt = visual_test_start("marker", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("marker_code", VISUAL_TEST_PANZOOM);
 
     // Number of items.
     const uint32_t n = 1000;
@@ -44,57 +38,177 @@ int test_marker_1(TstSuite* suite)
     dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
     dvz_marker_shape(visual, DVZ_MARKER_SHAPE_HEART);
 
-    // {
-    //     // Texture-based disc SDF.
-    //     dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF_MONO);
-    //     uint32_t width = 64;
-    //     uint32_t height = 64;
-    //     uvec3 shape = {width, height, 1};
-    //     DvzId tex = dvz_create_tex(vt.batch, DVZ_TEX_2D, DVZ_FORMAT_R32_SFLOAT, shape, 0).id;
-    //     DvzSize texsize = width * height * sizeof(float);
-    //     float* texdata = (float*)calloc(texsize, sizeof(float));
-    //     for (uint32_t i = 0; i < texsize; i++)
-    //     {
-    //         uint32_t x = i % width;
-    //         uint32_t y = i / width;
-    //         float posX = (x - width / 2.0);
-    //         float posY = (y - height / 2.0);
-    //         float value = _sdf(posX, posY, width / 4);
-    //         texdata[i] = value;
-    //     }
-    //     dvz_upload_tex(vt.batch, tex, DVZ_ZERO_OFFSET, shape, texsize, texdata);
-    //     FREE(texdata);
-    //     dvz_marker_tex(visual, tex);
-    // }
+    // Visual allocation.
+    dvz_marker_alloc(visual, n);
 
-    // {
-    //     // Bitmap marker.
-    //     dvz_marker_mode(visual, DVZ_MARKER_MODE_BITMAP);
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_marker_position(visual, 0, n, pos, 0);
 
-    //     unsigned long jpg_size = 0;
-    //     unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
-    //     ASSERT(jpg_size > 0);
-    //     ANN(jpg_bytes);
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 192;
+    }
+    dvz_marker_color(visual, 0, n, color, 0);
 
-    //     uint32_t jpg_width = 0, jpg_height = 0;
-    //     uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
-    //     ASSERT(jpg_width > 0);
-    //     ASSERT(jpg_height > 0);
+    // Size.
+    float* size = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size[i] = 10 + 40 * dvz_rand_float();
+    }
+    dvz_marker_size(visual, 0, n, size, 0);
 
-    //     uvec3 shape = {jpg_width, jpg_height, 1};
-    //     DvzSize size = jpg_width * jpg_height * 4;
-    //     DvzId tex = dvz_create_tex(vt.batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape,
-    //     0).id; dvz_upload_tex(vt.batch, tex, DVZ_ZERO_OFFSET, shape, size, crate_data);
+    // Angle.
+    float* angle = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        angle[i] = M_2PI * dvz_rand_float();
+    }
+    dvz_marker_angle(visual, 0, n, size, 0);
 
-    //     DvzId sampler =
-    //         dvz_create_sampler(
-    //             visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-    //             .id;
+    // Parameters.
+    dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
+    dvz_marker_edge_width(visual, (float){3.0});
 
-    //     dvz_marker_tex(visual, tex, sampler);
-    //     FREE(crate_data);
-    // }
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
 
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    FREE(pos);
+    FREE(color);
+    FREE(size);
+    FREE(angle);
+
+    return 0;
+}
+
+
+
+int test_marker_bitmap(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("marker_bitmap", VISUAL_TEST_PANZOOM);
+
+    // Number of items.
+    const uint32_t n = 100;
+
+    // Create the visual.
+    DvzVisual* visual = dvz_marker(vt.batch, 0);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
+
+    // Bitmap marker.
+    dvz_marker_mode(visual, DVZ_MARKER_MODE_BITMAP);
+
+    // Create and upload the texture.
+    DvzId tex = load_crate_texture(vt.batch);
+    DvzId sampler = dvz_create_sampler(
+                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                        .id;
+    dvz_marker_tex(visual, tex, sampler);
+
+    // Visual allocation.
+    dvz_marker_alloc(visual, n);
+
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_marker_position(visual, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 128;
+    }
+    dvz_marker_color(visual, 0, n, color, 0);
+
+    // Size.
+    float* size = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size[i] = 50 + 50 * dvz_rand_float();
+    }
+    dvz_marker_size(visual, 0, n, size, 0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    FREE(pos);
+    FREE(color);
+    FREE(size);
+
+    return 0;
+}
+
+
+
+static inline float _sdf(float x, float y, float radius)
+{
+    float distanceToCenter = sqrt(x * x + y * y);
+    return distanceToCenter - radius;
+}
+
+static void _disc_sdf(DvzVisual* visual)
+{
+    ANN(visual);
+    uint32_t width = 64;
+    uint32_t height = 64;
+    DvzSize texsize = width * height * sizeof(float);
+    float* texdata = (float*)calloc(texsize, sizeof(float));
+    for (uint32_t i = 0; i < texsize; i++)
+    {
+        uint32_t x = i % width;
+        uint32_t y = i / width;
+        float posX = (x - width / 2.0);
+        float posY = (y - height / 2.0);
+        float value = _sdf(posX, posY, width / 4);
+        texdata[i] = value;
+    }
+
+    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, width, height, texdata);
+    DvzId sampler = dvz_create_sampler(
+                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                        .id;
+    dvz_marker_tex(visual, tex, sampler);
+    FREE(texdata);
+}
+
+int test_marker_sdf(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("marker_sdf", VISUAL_TEST_PANZOOM);
+
+    // Number of items.
+    const uint32_t n = 1000;
+
+    // Create the visual.
+    DvzVisual* visual = dvz_marker(vt.batch, 0);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
+
+    // Texture-based disc SDF.
+    dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF);
+
+    // Create a SDF texture and assign it to the visual.
+    _disc_sdf(visual);
 
     // Visual allocation.
     dvz_marker_alloc(visual, n);
@@ -170,9 +284,9 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 }
 
 // Check glyph adaptive size depending on the marker rotation.
-int test_marker_2(TstSuite* suite)
+int test_marker_rotation(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_2", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("marker_rotation", VISUAL_TEST_PANZOOM);
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);

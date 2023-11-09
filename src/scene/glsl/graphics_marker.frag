@@ -14,17 +14,14 @@
 // regular RGBA texture sampling (unused color, combined alpha)
 #define DVZ_MARKER_MODE_BITMAP 2
 
+// 1 channel with SDF (color+alpha attribute)
+#define DVZ_MARKER_MODE_SDF 3
+
 // 3 channels with MSDF (color+alpha attribute)
-#define DVZ_MARKER_MODE_MSDF 3
+#define DVZ_MARKER_MODE_MSDF 4
 
 // 4 channels with MTSDF (color attribute, combined alpha)
-#define DVZ_MARKER_MODE_MTSDF 4
-
-// 1 channel with SDF (color+alpha attribute)
-#define DVZ_MARKER_MODE_SDF_MONO 5
-
-// 4 channels with SDF for each color/alpha channel (unused color, combined alpha)
-#define DVZ_MARKER_MODE_SDF_RGBA 6
+#define DVZ_MARKER_MODE_MTSDF 5
 
 
 // Marker aspect.
@@ -164,6 +161,8 @@ float select_marker(vec2 P, float size)
     }
 }
 
+float median(float r, float g, float b) { return max(min(r, g), min(max(r, g), b)); }
+
 // Fragment shader.
 void main()
 {
@@ -197,23 +196,29 @@ void main()
         distance = select_marker(P * (size + 2 * params.edge_width + antialias), size);
         break;
 
-    case DVZ_MARKER_MODE_SDF_MONO:
-        // NOTE: with texture-based SDFs and varying marker sizes, when using stroke/outline
-        // aspect, the edge width will be rescaled which is wrong.
-        distance = texture(tex, P + vec2(0.5, 0.5)).r;
-        break;
-
     case DVZ_MARKER_MODE_BITMAP:
         out_color = texture(tex, P + vec2(0.5, 0.5));
+        // NOTE: take into account the alpha component of the vertex.
+        out_color.a *= color.a;
         if (abs(P.x) > .5 || abs(P.y) > .5)
             discard;
         return;
         break;
 
-        // TODO: these modes are not yet implemented.
+    case DVZ_MARKER_MODE_SDF:
+        // NOTE: with texture-based SDFs and varying marker sizes, when using stroke/outline
+        // aspect, the edge width will be rescaled which is wrong.
+        distance = texture(tex, P + vec2(0.5, 0.5)).r;
+        break;
+
     case DVZ_MARKER_MODE_MSDF:
+        vec3 msd = texture(tex, P + vec2(0.5, 0.5)).rgb;
+        float sd = median(msd.r, msd.g, msd.b);
+        float distance = 4 * (sd - 0.5);
+        // float opacity = clamp(distance + 0.5, 0.0, 1.0);
+
+        // TODO: not yet implemented.
     case DVZ_MARKER_MODE_MTSDF:
-    case DVZ_MARKER_MODE_SDF_RGBA:
         break;
 
     default:
