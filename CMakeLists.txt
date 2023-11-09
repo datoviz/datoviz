@@ -135,6 +135,9 @@ endif()
 # Build dependencies
 # -------------------------------------------------------------------------------------------------
 
+# NOTE: if ON, will avoid fetching git repositories, thereby making builds faster.
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
+
 # ---- cglm ---------------------------------------------------------------------------------------
 FetchContent_Declare(
     cglm
