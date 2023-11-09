@@ -505,7 +505,7 @@ static inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max
  * @param values an array of float numbers
  * @returns the normalized array
  */
-static inline uint8_t* dvz_normalize_byte(uint32_t count, float* values)
+static inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
 {
     ASSERT(count > 0);
     ANN(values);

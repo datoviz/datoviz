@@ -35,15 +35,41 @@ using namespace msdfgen;
 /*  Utility functions                                                                            */
 /*************************************************************************************************/
 
+// NOTE: the returned pointer will have to be freed.
+static void* _cpy(DvzSize size, const void* data)
+{
+    void* data_cpy = malloc(size);
+    memcpy(data_cpy, data, size);
+    return data_cpy;
+}
+
+
+
+static inline void _normalizer(uint32_t count, const float* values, vec2 out)
+{
+    ASSERT(count > 0);
+    ANN(values);
+
+    vec2 min_max = {0};
+    dvz_min_max(count, values, min_max);
+    float m = min_max[0];
+    float M = min_max[1];
+    if (m == M)
+        M = m + 1;
+    ASSERT(m < M);
+    float d = 1. / (M - m);
+    out[0] = d;
+    out[1] = -m;
+}
+
 
 
 /*************************************************************************************************/
 /*  Sdf functions                                                                                */
 /*************************************************************************************************/
 
-
 // NOTE: the caller must FREE the returned pointer.
-uint8_t* dvz_svg_sdf(const char* svg_path, uint32_t width, uint32_t height)
+float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 {
     ANN(svg_path);
     ASSERT(width > 0);
@@ -66,41 +92,14 @@ uint8_t* dvz_svg_sdf(const char* svg_path, uint32_t width, uint32_t height)
     generateSDF(msdf, shape, 4.0, 1.0, Vector2(0.0, 0.0));
     BitmapConstRef<float, 1> bitmap = msdf;
 
-    vec2 min_max = {0};
-    dvz_min_max(w * h, bitmap.pixels, min_max);
-    float m = min_max[0];
-    float M = min_max[1];
-    if (m == M)
-        M = m + 1;
-    ASSERT(m < M);
-    float d = 1. / (M - m);
-
-    DvzSize size = w * h * 3;
-    uint8_t* rgb = (uint8_t*)malloc(size);
-    uint32_t x, y, i, j;
-    uint8_t value = 0;
-
-    for (y = 0; y < h; y++)
-    {
-        for (x = 0; x < w; x++)
-        {
-            i = (y * w + x);
-            j = 3 * ((h - 1 - y) * w + (x));
-
-            value = round((bitmap.pixels[i] - m) * d * 255);
-            rgb[j + 0] = value;
-            rgb[j + 1] = value;
-            rgb[j + 2] = value;
-        }
-    }
-
-    return rgb;
+    DvzSize size = w * h * sizeof(float);
+    return (float*)_cpy(size, bitmap.pixels);
 }
 
 
 
 // NOTE: the caller must FREE the returned pointer.
-uint8_t* dvz_svg_msdf(const char* svg_path, uint32_t width, uint32_t height)
+float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 {
     ANN(svg_path);
     ASSERT(width > 0);
@@ -123,17 +122,59 @@ uint8_t* dvz_svg_msdf(const char* svg_path, uint32_t width, uint32_t height)
     generateMSDF(msdf, shape, 4.0, 1.0, Vector2(0.0, 0.0));
     BitmapConstRef<float, 3> bitmap = msdf;
 
-    vec2 min_max = {0};
-    dvz_min_max(w * h, bitmap.pixels, min_max);
-    float m = min_max[0];
-    float M = min_max[1];
-    if (m == M)
-        M = m + 1;
-    ASSERT(m < M);
-    float d = 1. / (M - m);
+    DvzSize size = w * h * 3 * sizeof(float);
+    return (float*)_cpy(size, bitmap.pixels);
+}
 
-    DvzSize size = w * h * 3;
-    uint8_t* rgb = (uint8_t*)malloc(size);
+
+
+uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height)
+{
+    ANN(sdf);
+
+    uint32_t w = width;
+    uint32_t h = height;
+
+    vec2 ab = {0}; // d, -m
+    _normalizer(w * h, sdf, ab);
+    float a = ab[0] * 255;
+    float b = ab[1];
+
+    uint8_t* rgb = (uint8_t*)calloc(w * h, 3 * sizeof(uint8_t));
+    uint32_t x, y, i, j;
+    uint8_t value = 0;
+
+    for (y = 0; y < h; y++)
+    {
+        for (x = 0; x < w; x++)
+        {
+            i = (y * w + x);
+            j = 3 * ((h - 1 - y) * w + (x));
+            value = round(a * (sdf[i] + b));
+            rgb[j + 0] = value;
+            rgb[j + 1] = value;
+            rgb[j + 2] = value;
+        }
+    }
+
+    return rgb;
+}
+
+
+
+uint8_t* dvz_msdf_to_rgb(float* msdf, uint32_t width, uint32_t height)
+{
+    ANN(msdf);
+
+    uint32_t w = width;
+    uint32_t h = height;
+
+    vec2 ab = {0}; // d, -m
+    _normalizer(w * h, msdf, ab);
+    float a = ab[0] * 255;
+    float b = ab[1];
+
+    uint8_t* rgb = (uint8_t*)calloc(w * h, 3 * sizeof(uint8_t));
     uint32_t x, y, i, j;
 
     for (y = 0; y < h; y++)
@@ -142,10 +183,9 @@ uint8_t* dvz_svg_msdf(const char* svg_path, uint32_t width, uint32_t height)
         {
             i = 3 * (y * w + x);
             j = 3 * ((h - 1 - y) * w + (x));
-
-            rgb[j + 0] = round((bitmap.pixels[i + 0] - m) * d * 255);
-            rgb[j + 1] = round((bitmap.pixels[i + 1] - m) * d * 255);
-            rgb[j + 2] = round((bitmap.pixels[i + 2] - m) * d * 255);
+            rgb[j + 0] = round(a * (msdf[i + 0] + b));
+            rgb[j + 1] = round(a * (msdf[i + 1] + b));
+            rgb[j + 2] = round(a * (msdf[i + 2] + b));
         }
     }
 

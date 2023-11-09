@@ -60,13 +60,25 @@ EXTERN_C_ON
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_svg_sdf(const char* svg_path, uint32_t width, uint32_t height);
+DVZ_EXPORT float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_svg_msdf(const char* svg_path, uint32_t width, uint32_t height);
+DVZ_EXPORT float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
+
+
+
+/**
+ */
+DVZ_EXPORT uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
+
+
+
+/**
+ */
+DVZ_EXPORT uint8_t* dvz_msdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
 
 
 

@@ -26,23 +26,42 @@
 /*  Sdf tests                                                                                    */
 /*************************************************************************************************/
 
-int test_sdf_1(TstSuite* suite)
+int test_sdf_single(TstSuite* suite)
 {
     ANN(suite);
     const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
     uint32_t w = 100;
     uint32_t h = 100;
 
+    float* sdf = dvz_sdf_from_svg(svg_path, w, h);
+    uint8_t* rgb = dvz_sdf_to_rgb(sdf, w, h);
+
     char imgpath[1024];
-    snprintf(imgpath, sizeof(imgpath), "%s/sdf_1.png", ARTIFACTS_DIR);
-    uint8_t* rgb = dvz_svg_sdf(svg_path, w, h);
+    snprintf(imgpath, sizeof(imgpath), "%s/sdf_single.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, w, h, rgb);
 
-    snprintf(imgpath, sizeof(imgpath), "%s/sdf_2.png", ARTIFACTS_DIR);
-    uint8_t* rgb2 = dvz_svg_msdf(svg_path, w, h);
-    dvz_write_png(imgpath, w, h, rgb2);
-
+    FREE(sdf);
     FREE(rgb);
-    FREE(rgb2);
+    return 0;
+}
+
+
+
+int test_sdf_multi(TstSuite* suite)
+{
+    ANN(suite);
+    const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
+    uint32_t w = 100;
+    uint32_t h = 100;
+
+    float* msdf = dvz_msdf_from_svg(svg_path, w, h);
+    uint8_t* rgb = dvz_msdf_to_rgb(msdf, w, h);
+
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/sdf_multi.png", ARTIFACTS_DIR);
+    dvz_write_png(imgpath, w, h, rgb);
+
+    FREE(msdf);
+    FREE(rgb);
     return 0;
 }
