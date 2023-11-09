@@ -45,28 +45,13 @@ int test_image_1(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
 
-    // Texture parameters.
-    const uint32_t w = 16;
-    const uint32_t h = 8;
-    uvec3 shape = {w, h, 1};
-    DvzSize size = w * h;
-
-    // Generate the texture data.
-    cvec4* tex_data = (cvec4*)calloc(size, sizeof(cvec4));
-    for (uint32_t i = 0; i < w * h; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i * 256 / (w * h), tex_data[i]);
-    }
-
     // Create and upload the texture.
-    DvzId tex = dvz_tex_image(vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, w, h, tex_data);
-    dvz_image_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    DvzId tex = load_crate_texture(vt.batch);
+
+    dvz_image_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     // Run the test.
     visual_test_end(vt);
-
-    // Cleanup.
-    FREE(tex_data);
 
     return 0;
 }

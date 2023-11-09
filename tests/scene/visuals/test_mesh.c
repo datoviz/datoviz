@@ -59,21 +59,8 @@ int test_mesh_1(TstSuite* suite)
     // Create and upload the texture.
     if (flags & DVZ_MESH_FLAGS_TEXTURED)
     {
-        unsigned long jpg_size = 0;
-        unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
-        ASSERT(jpg_size > 0);
-        ANN(jpg_bytes);
-
-        uint32_t jpg_width = 0, jpg_height = 0;
-        uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
-        ASSERT(jpg_width > 0);
-        ASSERT(jpg_height > 0);
-
-        dvz_mesh_texture(
-            visual, (uvec3){jpg_width, jpg_height, 1}, DVZ_FORMAT_R8G8B8A8_UNORM,
-            DVZ_FILTER_LINEAR, jpg_size * sizeof(cvec4), crate_data);
-
-        FREE(crate_data);
+        DvzId tex = load_crate_texture(vt.batch);
+        dvz_mesh_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
 

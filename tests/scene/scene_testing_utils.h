@@ -15,6 +15,7 @@
 #include "_math.h"
 #include "board.h"
 #include "fileio.h"
+#include "scene/visuals/image.h"
 #include "testing.h"
 
 
@@ -53,6 +54,27 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
     dvz_renderer_destroy(rd);
 
     return 0;
+}
+
+
+
+static DvzId load_crate_texture(DvzBatch* batch)
+{
+    unsigned long jpg_size = 0;
+    unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
+    ASSERT(jpg_size > 0);
+    ANN(jpg_bytes);
+
+    uint32_t jpg_width = 0, jpg_height = 0;
+    uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
+    ASSERT(jpg_width > 0);
+    ASSERT(jpg_height > 0);
+
+    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, jpg_width, jpg_height, crate_data);
+
+    FREE(crate_data);
+
+    return tex;
 }
 
 

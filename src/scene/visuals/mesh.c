@@ -195,31 +195,24 @@ void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4*
 
 
 
-DvzId dvz_mesh_texture(
-    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
+void dvz_mesh_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
 {
     ANN(visual);
 
     if (!(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
     {
         log_error("the mesh visual needs to be created with the DVZ_MESH_FLAGS_TEXTURED flag");
-        return DVZ_ID_NONE;
+        return;
     }
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
-    DvzId sampler = dvz_create_sampler(batch, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
 
     // Bind texture to the visual.
     dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
-
-    // Upload the texture data.
-    if (size > 0 && data != NULL)
-        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
-
-    return tex;
 }
 
 

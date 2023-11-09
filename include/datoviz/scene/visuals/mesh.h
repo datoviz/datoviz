@@ -122,8 +122,8 @@ void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* valu
 /**
  *
  */
-DVZ_EXPORT DvzId dvz_mesh_texture(
-    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data);
+DVZ_EXPORT void dvz_mesh_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
 
 
 
