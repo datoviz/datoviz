@@ -9,6 +9,8 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/image.h"
+#include "../src/resources_utils.h"
+#include "_map.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
@@ -103,23 +105,33 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
 
 
 
-DvzId dvz_image_texture(
-    DvzVisual* visual, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data)
+void dvz_image_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
 {
     ANN(visual);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
-    DvzId sampler = dvz_create_sampler(batch, filter, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
 
     // Bind texture to the visual.
     dvz_visual_tex(visual, 2, tex, sampler, DVZ_ZERO_OFFSET);
+}
 
-    // Upload the texture data.
-    if (size > 0 && data != NULL)
-        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
+
+
+DvzId dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data)
+{
+    ANN(batch);
+    ANN(data);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
+
+    uvec3 shape = {width, height, 1};
+    DvzSize size = width * height * _format_size(format);
+    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
+    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
 
     return tex;
 }

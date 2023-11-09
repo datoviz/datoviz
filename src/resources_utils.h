@@ -5,6 +5,7 @@
 #ifndef DVZ_HEADER_RESOURCES_UTILS
 #define DVZ_HEADER_RESOURCES_UTILS
 
+#include "_enums.h"
 #include "alloc.h"
 #include "context.h"
 #include "datalloc.h"
@@ -570,45 +571,6 @@ _tex_alloc(DvzResources* res, DvzTex* tex, DvzTexDims dims, DvzFormat format, uv
 
     // Create a new image for the tex.
     tex->img = dvz_resources_image(res, dims, shape, format);
-}
-
-
-
-static inline DvzSize _format_size(DvzFormat format)
-{
-    switch (format)
-    {
-    case DVZ_FORMAT_R8_UNORM:
-    case DVZ_FORMAT_R8_SNORM:
-        return 1;
-        break;
-
-    case DVZ_FORMAT_R16_UNORM:
-    case DVZ_FORMAT_R16_SNORM:
-        return 2;
-        break;
-
-    case DVZ_FORMAT_R32_UINT:
-    case DVZ_FORMAT_R32_SINT:
-    case DVZ_FORMAT_R32_SFLOAT:
-        return 4;
-        break;
-
-    case DVZ_FORMAT_R8G8B8_UNORM:
-        return 3;
-        break;
-
-    case DVZ_FORMAT_R8G8B8A8_UNORM:
-    case DVZ_FORMAT_R8G8B8A8_UINT:
-    case DVZ_FORMAT_B8G8R8A8_UNORM:
-        return 4;
-        break;
-
-    default:
-        break;
-    }
-    log_error("unknown DvzFormat %d", format);
-    return 0;
 }
 
 

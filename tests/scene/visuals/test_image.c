@@ -59,9 +59,8 @@ int test_image_1(TstSuite* suite)
     }
 
     // Create and upload the texture.
-    dvz_image_texture(
-        visual, shape, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, //
-        size * sizeof(cvec4), tex_data);
+    DvzId tex = dvz_tex_image(vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, w, h, tex_data);
+    dvz_image_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     // Run the test.
     visual_test_end(vt);

@@ -48,8 +48,7 @@ int test_volume_1(TstSuite* suite)
     uint32_t c = a;
     uint32_t a0 = a / 2;
     uint32_t d0 = 1;
-    uvec3 shape = {a, b, c};
-    DvzSize size = a * b * c;
+    DvzSize size = a * b * c * sizeof(uint8_t);
 
     // Generate the texture data.
     uint8_t* tex_data = (uint8_t*)calloc(size, sizeof(uint8_t));
@@ -61,9 +60,11 @@ int test_volume_1(TstSuite* suite)
                 tex_data[b * c * i + c * j + k] = 10;
             }
 
-    // Create and upload the texture.
-    dvz_volume_texture(
-        visual, shape, DVZ_FORMAT_R8_UNORM, DVZ_FILTER_NEAREST, size * sizeof(uint8_t), tex_data);
+    // Create the texture and upload the volume data.
+    DvzId tex = dvz_tex_volume(vt.batch, DVZ_FORMAT_R8_UNORM, a, b, c, tex_data);
+
+    // Bind the volume texture to the visual.
+    dvz_volume_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     visual_test_end(vt);
 

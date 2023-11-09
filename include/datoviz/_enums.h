@@ -8,6 +8,16 @@
 
 
 /*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+
+#include "_log.h"
+#include "_math.h"
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
@@ -590,6 +600,83 @@ typedef enum
 
     DVZ_PANEL_RESIZE_FIXED = 0xF3,
 } DvzPanelResizing;
+
+
+
+/*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+static inline DvzSize _format_size(DvzFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FORMAT_R8_UNORM:
+    case DVZ_FORMAT_R8_SNORM:
+        return 1;
+        break;
+
+    case DVZ_FORMAT_R16_UNORM:
+    case DVZ_FORMAT_R16_SNORM:
+        return 2;
+        break;
+
+    case DVZ_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_SINT:
+    case DVZ_FORMAT_R32_SFLOAT:
+        return 4;
+        break;
+
+    case DVZ_FORMAT_R8G8B8_UNORM:
+        return 3;
+        break;
+
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_B8G8R8A8_UNORM:
+        return 4;
+        break;
+
+    default:
+        break;
+    }
+    log_error("unknown DvzFormat %d", format);
+    return 0;
+}
+
+
+
+static inline uint32_t _format_components(DvzFormat format)
+{
+    switch (format)
+    {
+    case DVZ_FORMAT_R8_UNORM:
+    case DVZ_FORMAT_R8_SNORM:
+    case DVZ_FORMAT_R16_UNORM:
+    case DVZ_FORMAT_R16_SNORM:
+    case DVZ_FORMAT_R32_UINT:
+    case DVZ_FORMAT_R32_SINT:
+    case DVZ_FORMAT_R32_SFLOAT:
+        return 1;
+        break;
+        break;
+
+    case DVZ_FORMAT_R8G8B8_UNORM:
+        return 3;
+        break;
+
+    case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_B8G8R8A8_UNORM:
+        return 4;
+        break;
+
+    default:
+        break;
+    }
+    log_error("unknown DvzFormat %d", format);
+    return 0;
+}
 
 
 

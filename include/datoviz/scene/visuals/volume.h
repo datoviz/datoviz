@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "../../_enums.h"
 #include "../viewport.h"
 #include "../visual.h"
 
@@ -81,8 +82,17 @@ DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
 /**
  *
  */
-DVZ_EXPORT DvzId dvz_volume_texture(
-    DvzVisual* image, uvec3 shape, DvzFormat format, DvzFilter filter, DvzSize size, void* data);
+DVZ_EXPORT void dvz_volume_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzId dvz_tex_volume(
+    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
+    void* data);
 
 
 
