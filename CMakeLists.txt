@@ -576,7 +576,7 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 # Other binary resources
 # -------------------------------------------------------------------------------------------------
 
-# Color texture.
+# Textures.
 set(path_tex "${CMAKE_BINARY_DIR}/_textures.c")
 set(tex_files
     "${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
@@ -605,6 +605,20 @@ add_custom_command(
     -D DIR="${font_files}"
     -D PREFIX="font"
     -D OUTPUT=${path_fonts}
+    -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
+)
+
+# Test data.
+set(path_testdata "${CMAKE_BINARY_DIR}/_testdata.c")
+set(testdata_files
+    "${CMAKE_SOURCE_DIR}/data/textures/crate.jpg"
+)
+add_custom_command(
+    OUTPUT ${path_testdata}
+    COMMAND ${CMAKE_COMMAND}
+    -D DIR="${testdata_files}"
+    -D PREFIX="testdata"
+    -D OUTPUT=${path_testdata}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
 
@@ -821,7 +835,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/test.c"
     )
 
-    add_executable(datovizcli ${cli})
+    add_executable(datovizcli ${cli} ${path_testdata})
     set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
     target_compile_definitions(datovizcli PUBLIC ${COMPILE_DEFINITIONS})
     target_include_directories(datovizcli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)

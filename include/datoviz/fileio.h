@@ -135,6 +135,12 @@ DVZ_EXPORT unsigned char* dvz_resource_font(const char* name, unsigned long* siz
 
 
 
+// Defined in cmake-generated file build/_testdata.c
+// NOTE: only built in the CLI, not in libdatoviz.
+DVZ_EXPORT unsigned char* dvz_resource_testdata(const char* name, unsigned long* size);
+
+
+
 EXTERN_C_OFF
 
 #endif
