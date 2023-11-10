@@ -13,6 +13,7 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/font.h"
+#include "scene/sdf.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
@@ -348,14 +349,7 @@ DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
 
     // HACK: Vulkan does not support RGB textures so we create a RGBA texture with a full alpha
     // channel.
-    cvec4* rgba = (cvec4*)calloc(atlas->width * atlas->height, sizeof(cvec4));
-    for (uint32_t i = 0; i < atlas->width * atlas->height; i++)
-    {
-        rgba[i][0] = atlas->rgb[3 * i + 0];
-        rgba[i][1] = atlas->rgb[3 * i + 1];
-        rgba[i][2] = atlas->rgb[3 * i + 2];
-        rgba[i][3] = 255;
-    }
+    uint8_t* rgba = dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb);
     dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, rgba);
     FREE(rgba);
 
