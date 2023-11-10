@@ -58,7 +58,7 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
 
 
 
-static DvzId load_crate_texture(DvzBatch* batch)
+static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
 {
     unsigned long jpg_size = 0;
     unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
@@ -69,6 +69,9 @@ static DvzId load_crate_texture(DvzBatch* batch)
     uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
     ASSERT(jpg_width > 0);
     ASSERT(jpg_height > 0);
+    out_shape[0] = jpg_width;
+    out_shape[1] = jpg_height;
+    out_shape[2] = 1;
 
     DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, jpg_width, jpg_height, crate_data);
 

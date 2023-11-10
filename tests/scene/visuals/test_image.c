@@ -46,7 +46,8 @@ int test_image_1(TstSuite* suite)
     dvz_panel_visual(vt.panel, visual);
 
     // Create and upload the texture.
-    DvzId tex = load_crate_texture(vt.batch);
+    uvec3 tex_shape = {0};
+    DvzId tex = load_crate_texture(vt.batch, tex_shape);
 
     dvz_image_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 

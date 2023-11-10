@@ -59,7 +59,8 @@ int test_mesh_1(TstSuite* suite)
     // Create and upload the texture.
     if (flags & DVZ_MESH_FLAGS_TEXTURED)
     {
-        DvzId tex = load_crate_texture(vt.batch);
+        uvec3 tex_shape = {0};
+        DvzId tex = load_crate_texture(vt.batch, tex_shape);
         dvz_mesh_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
