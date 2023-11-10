@@ -612,28 +612,36 @@ static inline DvzSize _format_size(DvzFormat format)
     {
     case DVZ_FORMAT_R8_UNORM:
     case DVZ_FORMAT_R8_SNORM:
-        return 1;
+        return 1 * sizeof(uint8_t);
         break;
 
     case DVZ_FORMAT_R16_UNORM:
     case DVZ_FORMAT_R16_SNORM:
-        return 2;
+        return 2 * sizeof(uint16_t);
         break;
 
     case DVZ_FORMAT_R32_UINT:
     case DVZ_FORMAT_R32_SINT:
     case DVZ_FORMAT_R32_SFLOAT:
-        return 4;
+        return 4 * sizeof(uint8_t);
         break;
 
     case DVZ_FORMAT_R8G8B8_UNORM:
-        return 3;
+        return 3 * sizeof(uint8_t);
         break;
 
     case DVZ_FORMAT_R8G8B8A8_UNORM:
     case DVZ_FORMAT_R8G8B8A8_UINT:
     case DVZ_FORMAT_B8G8R8A8_UNORM:
-        return 4;
+        return 4 * sizeof(uint8_t);
+        break;
+
+    case DVZ_FORMAT_R32G32B32_SFLOAT:
+        return 3 * sizeof(float);
+        break;
+
+    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
+        return 4 * sizeof(float);
         break;
 
     default:
@@ -661,12 +669,14 @@ static inline uint32_t _format_components(DvzFormat format)
         break;
 
     case DVZ_FORMAT_R8G8B8_UNORM:
+    case DVZ_FORMAT_R32G32B32_SFLOAT:
         return 3;
         break;
 
     case DVZ_FORMAT_R8G8B8A8_UNORM:
     case DVZ_FORMAT_R8G8B8A8_UINT:
     case DVZ_FORMAT_B8G8R8A8_UNORM:
+    case DVZ_FORMAT_R32G32B32A32_SFLOAT:
         return 4;
         break;
 
