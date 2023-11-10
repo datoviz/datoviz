@@ -128,6 +128,7 @@ float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 
 
 
+// NOTE: the caller must FREE the returned pointer.
 uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height)
 {
     ANN(sdf);
@@ -162,6 +163,7 @@ uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height)
 
 
 
+// NOTE: the caller must FREE the returned pointer.
 uint8_t* dvz_msdf_to_rgb(float* msdf, uint32_t width, uint32_t height)
 {
     ANN(msdf);
@@ -190,4 +192,46 @@ uint8_t* dvz_msdf_to_rgb(float* msdf, uint32_t width, uint32_t height)
     }
 
     return rgb;
+}
+
+
+
+/*************************************************************************************************/
+/*  Image utils                                                                                  */
+/*************************************************************************************************/
+
+// NOTE: the caller must FREE the returned pointer.
+uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb)
+{
+    ASSERT(count > 0);
+    ANN(rgb);
+    DvzSize size = 4 * count * sizeof(uint8_t);
+    uint8_t* rgba = (uint8_t*)malloc(size);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        rgba[4 * i + 0] = rgb[3 * i + 0];
+        rgba[4 * i + 1] = rgb[3 * i + 1];
+        rgba[4 * i + 2] = rgb[3 * i + 2];
+        rgba[4 * i + 3] = 255;
+    }
+    return rgba;
+}
+
+
+
+// NOTE: the caller must FREE the returned pointer.
+float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb)
+{
+    ASSERT(count > 0);
+    ANN(rgb);
+    DvzSize size = 4 * count * sizeof(float);
+    float* rgba = (float*)malloc(size);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        rgba[4 * i + 0] = rgb[3 * i + 0];
+        rgba[4 * i + 1] = rgb[3 * i + 1];
+        rgba[4 * i + 2] = rgb[3 * i + 2];
+        rgba[4 * i + 3] = 1;
+    }
+    return rgba;
 }
