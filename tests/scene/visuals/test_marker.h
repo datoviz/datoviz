@@ -25,6 +25,8 @@ int test_marker_bitmap(TstSuite*);
 
 int test_marker_sdf(TstSuite*);
 
+int test_marker_msdf(TstSuite*);
+
 int test_marker_rotation(TstSuite*);
 
 

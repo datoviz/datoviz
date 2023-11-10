@@ -63,6 +63,7 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMarkerParams));
     dvz_params_attr(params, 0, FIELD(DvzMarkerParams, edge_color));
     dvz_params_attr(params, 1, FIELD(DvzMarkerParams, edge_width));
+    dvz_params_attr(params, 2, FIELD(DvzMarkerParams, tex_scale));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
@@ -177,4 +178,11 @@ void dvz_marker_edge_width(DvzVisual* visual, float value)
 void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler)
 {
     dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+}
+
+
+
+void dvz_marker_tex_scale(DvzVisual* visual, float value)
+{
+    dvz_visual_param(visual, 2, 2, &value);
 }

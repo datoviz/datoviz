@@ -60,6 +60,7 @@ layout(binding = USER_BINDING) uniform MarkersParams
 {
     vec4 edge_color;
     float edge_width;
+    float tex_scale;
 }
 params;
 
@@ -187,7 +188,8 @@ void main()
 
     // Marker SDF.
     float distance = 0;
-
+    float sd = 0;
+    float size_ = 0;
 
     // Marker mode.
     switch (MARKER_MODE)
@@ -207,14 +209,20 @@ void main()
         break;
 
     case DVZ_MARKER_MODE_SDF:
-        distance = (size + 2 * params.edge_width + antialias) * texture(tex, uv).r;
+        sd = texture(tex, uv).r;
+
+        size_ = size + 2 * params.edge_width + antialias;
+        distance = 4 * sd * size_ / params.tex_scale - 2;
+        // distance = size_ * sd;
         break;
 
     case DVZ_MARKER_MODE_MSDF:
         vec3 msd = texture(tex, uv).rgb;
-        float sd = median(msd.r, msd.g, msd.b);
-        float distance = 4 * (sd - 0.5);
-        // float opacity = clamp(distance + 0.5, 0.0, 1.0);
+        sd = median(msd.r, msd.g, msd.b);
+
+        size_ = size + 2 * params.edge_width + antialias;
+        distance = 4 * sd * size_ / params.tex_scale - 2;
+        break;
 
         // TODO: not yet implemented.
     case DVZ_MARKER_MODE_MTSDF:

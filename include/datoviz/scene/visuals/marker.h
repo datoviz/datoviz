@@ -53,6 +53,7 @@ struct DvzMarkerParams
 {
     vec4 edge_color;
     float edge_width;
+    float tex_scale;
 };
 
 
@@ -141,6 +142,13 @@ DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
  *
  */
 DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
 
 
 

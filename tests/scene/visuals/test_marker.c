@@ -12,6 +12,7 @@
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"
+#include "scene/sdf.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/marker.h"
@@ -111,7 +112,8 @@ int test_marker_bitmap(TstSuite* suite)
     dvz_marker_mode(visual, DVZ_MARKER_MODE_BITMAP);
 
     // Create and upload the texture.
-    DvzId tex = load_crate_texture(vt.batch);
+    uvec3 tex_shape = {0};
+    DvzId tex = load_crate_texture(vt.batch, tex_shape);
     DvzId sampler = dvz_create_sampler(
                         visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                         .id;
@@ -164,28 +166,27 @@ int test_marker_bitmap(TstSuite* suite)
 
 static inline float _sdf(float x, float y, float radius)
 {
-    float distanceToCenter = sqrt(x * x + y * y);
-    return distanceToCenter - radius;
+    float d = sqrt(x * x + y * y);
+    return d - radius;
 }
 
-static void _disc_sdf(DvzVisual* visual)
+static void _disc_sdf(DvzVisual* visual, uint32_t size)
 {
     ANN(visual);
-    uint32_t width = 64;
-    uint32_t height = 64;
-    DvzSize texsize = width * height * sizeof(float);
+    DvzSize texsize = size * size * sizeof(float);
     float* texdata = (float*)calloc(texsize, sizeof(float));
     for (uint32_t i = 0; i < texsize; i++)
     {
-        uint32_t x = i % width;          // [0, w]
-        uint32_t y = i / width;          // [0, w]
-        float posX = (x - width / 2.0);  // [-w/2, +w/2]
-        float posY = (y - height / 2.0); // [-w/2, +w/2]
-        float value = _sdf(posX / width, posY / height, .25);
+        uint32_t x = i % size;         // [0, w]
+        uint32_t y = i / size;         // [0, w]
+        float posX = (x - size / 2.0); // [-w/2, +w/2]
+        float posY = (y - size / 2.0); // [-w/2, +w/2]
+        float k = 4;
+        float value = _sdf(posX / k, posY / k, .25 * size / k);
         texdata[i] = value;
     }
 
-    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, width, height, texdata);
+    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, size, size, texdata);
     DvzId sampler = dvz_create_sampler(
                         visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                         .id;
@@ -208,7 +209,8 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_mode(visual, DVZ_MARKER_MODE_SDF);
 
     // Create a SDF texture and assign it to the visual.
-    _disc_sdf(visual);
+    uint32_t tex_size = 100;
+    _disc_sdf(visual, tex_size);
 
     // Visual allocation.
     dvz_marker_alloc(visual, n);
@@ -250,6 +252,8 @@ int test_marker_sdf(TstSuite* suite)
     // Parameters.
     dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
     dvz_marker_edge_width(visual, (float){2.0});
+    // IMPORTANT: need to specify the size of the texture when using SDFs.
+    dvz_marker_tex_scale(visual, (float){(float)tex_size});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
@@ -262,6 +266,98 @@ int test_marker_sdf(TstSuite* suite)
     FREE(color);
     FREE(size);
     FREE(angle);
+
+    return 0;
+}
+
+
+
+int test_marker_msdf(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("marker_msdf", VISUAL_TEST_PANZOOM);
+
+    // Number of items.
+    const uint32_t n = 1000;
+
+    // Create the visual.
+    DvzVisual* visual = dvz_marker(vt.batch, 0);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
+
+    // Bitmap marker.
+    dvz_marker_mode(visual, DVZ_MARKER_MODE_MSDF);
+
+    // Create the MSDF image.
+    const char* svg_path =
+        "M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z";
+    uint32_t w = 100;
+    uint32_t h = 100;
+    float* msdf = dvz_msdf_from_svg(svg_path, w, h); // 3 floats per pixel, need 4 for Vulkan
+
+    // Save the MSDF to a PNG file.
+    // {
+    //     uint8_t* rgb = dvz_msdf_to_rgb(msdf, w, h);
+    //     char imgpath[1024];
+    //     snprintf(imgpath, sizeof(imgpath), "%s/msdf.png", ARTIFACTS_DIR);
+    //     dvz_write_png(imgpath, w, h, rgb);
+    //     FREE(rgb);
+    // }
+
+    float* msdf_alpha = dvz_rgb_to_rgba_float(w * h * 3, msdf);
+    FREE(msdf);
+
+    // Upload the MSDF image to a texture.
+    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, w, h, msdf_alpha);
+    DvzId sampler = dvz_create_sampler(
+                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+                        .id;
+    dvz_marker_tex(visual, tex, sampler);
+    FREE(msdf_alpha);
+
+    // Visual allocation.
+    dvz_marker_alloc(visual, n);
+
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_marker_position(visual, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 192;
+    }
+    dvz_marker_color(visual, 0, n, color, 0);
+
+    // Size.
+    float* size = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size[i] = 50 + 50 * dvz_rand_float();
+    }
+    dvz_marker_size(visual, 0, n, size, 0);
+
+    // Parameters.
+    dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
+    dvz_marker_edge_width(visual, (float){3.0});
+    // IMPORTANT: need to specify the size of the texture when using SDFs.
+    dvz_marker_tex_scale(visual, (float){w});
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    FREE(pos);
+    FREE(color);
+    FREE(size);
 
     return 0;
 }
