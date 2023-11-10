@@ -50,7 +50,10 @@ int test_sdf_single(TstSuite* suite)
 int test_sdf_multi(TstSuite* suite)
 {
     ANN(suite);
-    const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
+
+    // const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
+    const char* svg_path =
+        "M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z";
     uint32_t w = 100;
     uint32_t h = 100;
 
