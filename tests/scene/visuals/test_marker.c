@@ -177,11 +177,11 @@ static void _disc_sdf(DvzVisual* visual)
     float* texdata = (float*)calloc(texsize, sizeof(float));
     for (uint32_t i = 0; i < texsize; i++)
     {
-        uint32_t x = i % width;
-        uint32_t y = i / width;
-        float posX = (x - width / 2.0);
-        float posY = (y - height / 2.0);
-        float value = _sdf(posX, posY, width / 4);
+        uint32_t x = i % width;          // [0, w]
+        uint32_t y = i / width;          // [0, w]
+        float posX = (x - width / 2.0);  // [-w/2, +w/2]
+        float posY = (y - height / 2.0); // [-w/2, +w/2]
+        float value = _sdf(posX / width, posY / height, .25);
         texdata[i] = value;
     }
 
@@ -235,7 +235,7 @@ int test_marker_sdf(TstSuite* suite)
     float* size = (float*)calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
     {
-        size[i] = 10 + 40 * dvz_rand_float();
+        size[i] = 25 + 75 * dvz_rand_float();
     }
     dvz_marker_size(visual, 0, n, size, 0);
 
@@ -249,7 +249,7 @@ int test_marker_sdf(TstSuite* suite)
 
     // Parameters.
     dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
-    dvz_marker_edge_width(visual, (float){3.0});
+    dvz_marker_edge_width(visual, (float){2.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);

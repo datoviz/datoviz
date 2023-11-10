@@ -173,7 +173,8 @@ void main()
     float s = sin(angle);
 
     // Pixel coordinates in [-0.5, -0.5, +0.5, +0.5].
-    vec2 P = gl_PointCoord.xy - vec2(0.5, 0.5);
+    vec2 uv = gl_PointCoord.xy; // in [0, 1]
+    vec2 P = uv - 0.5;          // in [-0.5, +0.5]
 
     // NOTE: rescale according to the rotation, to keep the marker size fixed while
     // the underlying square marker container is bigger to account for the rotation
@@ -197,7 +198,7 @@ void main()
         break;
 
     case DVZ_MARKER_MODE_BITMAP:
-        out_color = texture(tex, P + vec2(0.5, 0.5));
+        out_color = texture(tex, uv);
         // NOTE: take into account the alpha component of the vertex.
         out_color.a *= color.a;
         if (abs(P.x) > .5 || abs(P.y) > .5)
@@ -206,13 +207,11 @@ void main()
         break;
 
     case DVZ_MARKER_MODE_SDF:
-        // NOTE: with texture-based SDFs and varying marker sizes, when using stroke/outline
-        // aspect, the edge width will be rescaled which is wrong.
-        distance = texture(tex, P + vec2(0.5, 0.5)).r;
+        distance = (size + 2 * params.edge_width + antialias) * texture(tex, uv).r;
         break;
 
     case DVZ_MARKER_MODE_MSDF:
-        vec3 msd = texture(tex, P + vec2(0.5, 0.5)).rgb;
+        vec3 msd = texture(tex, uv).rgb;
         float sd = median(msd.r, msd.g, msd.b);
         float distance = 4 * (sd - 0.5);
         // float opacity = clamp(distance + 0.5, 0.0, 1.0);
