@@ -302,7 +302,8 @@ int test_marker_msdf(TstSuite* suite)
     //     FREE(rgb);
     // }
 
-    float* msdf_alpha = dvz_rgb_to_rgba_float(w * h * 3, msdf);
+    // NOTE: the first argument is the number of vec3 items, not the number of floats.
+    float* msdf_alpha = dvz_rgb_to_rgba_float(w * h, msdf);
     FREE(msdf);
 
     // Upload the MSDF image to a texture.
