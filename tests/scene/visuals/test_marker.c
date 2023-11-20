@@ -282,6 +282,7 @@ int test_marker_msdf(TstSuite* suite)
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
     dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
+    // dvz_visual_depth(visual, DVZ_DEPTH_TEST_ENABLE);
 
     // Bitmap marker.
     dvz_marker_mode(visual, DVZ_MARKER_MODE_MSDF);
@@ -323,6 +324,7 @@ int test_marker_msdf(TstSuite* suite)
     {
         pos[i][0] = .25 * dvz_rand_normal();
         pos[i][1] = .25 * dvz_rand_normal();
+        pos[i][2] = .25 * dvz_rand_normal();
     }
     dvz_marker_position(visual, 0, n, pos, 0);
 
