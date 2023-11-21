@@ -961,6 +961,7 @@ DvzBatch* dvz_batch(void)
     batch->count = 0;
 
     batch->pointers_to_free = dvz_list();
+    // log_trace("create batch %u", batch);
 
     return batch;
 }
@@ -1182,6 +1183,7 @@ DvzBatch* dvz_batch_copy(DvzBatch* batch)
     DvzBatch* cpy = (DvzBatch*)_cpy(sizeof(DvzBatch), batch);
     cpy->pointers_to_free = NULL;
     cpy->requests = (DvzRequest*)_cpy(batch->capacity * sizeof(DvzRequest), batch->requests);
+    // log_trace("copy batch %u (from %u)", cpy, batch);
     return cpy;
 }
 
@@ -1198,7 +1200,7 @@ void dvz_batch_destroy(DvzBatch* batch)
         dvz_list_destroy(batch->pointers_to_free);
         batch->pointers_to_free = NULL;
     }
-
+    // log_trace("destroy batch %u", batch);
     FREE(batch->requests);
     FREE(batch);
 }

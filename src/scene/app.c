@@ -197,6 +197,16 @@ void dvz_app_submit(DvzApp* app)
     DvzBatch* batch = app->batch;
     ANN(batch);
 
+    // NOTE: this fixes a memory leak because we make a copy of the batch, expecting it
+    // to be freed by the event loop, but empty batches are NOT freed. So we don't make a
+    // useless copy for empty batches, and we don't submit them at all.
+    if (dvz_batch_size(batch) == 0)
+    {
+        return;
+    }
+
+    // NOTE: we copy the application batch because it will be destroyed and freed by
+    // _requester_callback() in presenter.c, after it is processed by the renderer.
     dvz_presenter_submit(app->prt, dvz_batch_copy(batch));
     dvz_batch_clear(batch);
 }
