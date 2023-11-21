@@ -21,6 +21,8 @@
 #include "testing.h"
 #include "testing_utils.h"
 
+// #include "_profile.h"
+
 
 
 /*************************************************************************************************/
@@ -380,6 +382,9 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
     dvz_marker_angle(visual, 0, 1, (float[]){.25 * M_PI * t}, 0);
     dvz_visual_update(visual);
+
+    // uint32_t mem = dvz_memory();
+    // log_info("%s", pretty_size(mem));
 }
 
 // Check glyph adaptive size depending on the marker rotation.

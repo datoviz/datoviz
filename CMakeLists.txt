@@ -631,6 +631,7 @@ set(external_sources
     "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
     "external/fpng.cpp"
+    "external/memorymeasure.c"
 
     "external/b64/buffer.c"
     "external/b64/encode.c"
