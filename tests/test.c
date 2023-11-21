@@ -28,6 +28,7 @@
 #include "scene/test_scene.h"
 #include "scene/test_sdf.h"
 #include "scene/test_shape.h"
+#include "scene/test_ticks.h"
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_basic.h"
@@ -339,6 +340,9 @@ int dvz_run_tests(const char* match)
     TEST(test_camera_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
+
+    // Ticks and axes.
+    TEST(test_ticks_1)
 
     // Testing atlas.
     TEST(test_atlas_1)

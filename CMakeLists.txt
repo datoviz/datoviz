@@ -710,6 +710,7 @@ set(sources
     "src/scene/scene.c"
     "src/scene/sdf.cpp"
     "src/scene/shape.c"
+    "src/scene/ticks.c"
     "src/scene/transform.c"
     "src/scene/viewport.c"
     "src/scene/viewset.c"
@@ -814,6 +815,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_params.c"
         "tests/scene/test_sdf.c"
         "tests/scene/test_shape.c"
+        "tests/scene/test_ticks.c"
         "tests/scene/test_viewset.c"
         "tests/scene/test_visual.c"
 
