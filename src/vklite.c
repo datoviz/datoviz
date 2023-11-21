@@ -187,6 +187,10 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
     ASSERT(gpu->allocator != VK_NULL_HANDLE);
 
     dvz_obj_created(&gpu->obj);
+
+    // HACK: use queue 0 for transfers (convention).
+    gpu->cmd = dvz_commands(gpu, 0, 1);
+
     log_trace("GPU #%d created", gpu->idx);
 }
 
@@ -256,6 +260,8 @@ void dvz_gpu_destroy(DvzGpu* gpu)
         vkDestroyDevice(gpu->device, NULL);
         gpu->device = VK_NULL_HANDLE;
     }
+
+    dvz_commands_destroy(&gpu->cmd);
 
     // dvz_obj_destroyed(&gpu->obj);
     dvz_obj_init(&gpu->obj);
@@ -875,8 +881,8 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     // old buffer to the new, by flushing the corresponding queue and waiting for completion.
 
     // HACK: use queue 0 for transfers (convention)
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &gpu->cmd;
     if (proceed)
     {
         uint32_t queue_idx = cmds->queue_idx;
@@ -1206,8 +1212,9 @@ void dvz_buffer_regions_copy(
     ASSERT(size > 0);
 
     // HACK: use queue 0 for transfers (convention)
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
 
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
@@ -1518,19 +1525,20 @@ void dvz_images_transition(DvzImages* img)
 
     // Start the image transition command buffer.
     // HACK: use queue 0 for transfer (convention)
-    DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    // DvzCommands cmds = dvz_commands(gpu, 0, 1);
+    DvzCommands* cmds = &gpu->cmd;
     DvzBarrier barrier = dvz_barrier(gpu);
 
-    dvz_cmd_begin(&cmds, 0);
+    dvz_cmd_begin(cmds, 0);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_images(&barrier, img);
     dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, img->layout);
     // dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
-    dvz_cmd_barrier(&cmds, 0, &barrier);
-    dvz_cmd_end(&cmds, 0);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+    dvz_cmd_end(cmds, 0);
 
     dvz_gpu_wait(gpu);
-    dvz_cmd_submit_sync(&cmds, 0);
+    dvz_cmd_submit_sync(cmds, 0);
 }
 
 
@@ -1669,8 +1677,9 @@ void dvz_images_copy(
     ANN(gpu);
 
     // Take transfer cmd buf.
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
@@ -1784,8 +1793,9 @@ void dvz_images_copy_from_buffer(
     log_debug("copy buffer to image (%s)", pretty_size(size));
 
     // Take transfer cmd buf.
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
@@ -1845,8 +1855,9 @@ void dvz_images_copy_to_buffer(
     log_debug("copy image to buffer (%s)", pretty_size(size));
 
     // Take transfer cmd buf.
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 

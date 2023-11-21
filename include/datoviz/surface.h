@@ -23,6 +23,9 @@
 
 typedef struct DvzSurface DvzSurface;
 
+// Forward declarations.
+typedef struct DvzGpu DvzGpu;
+
 
 
 /*************************************************************************************************/

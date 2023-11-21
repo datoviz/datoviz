@@ -271,8 +271,9 @@ static void _transition_image(DvzImages* img)
     DvzGpu* gpu = img->gpu;
     ANN(gpu);
 
-    DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    DvzCommands* cmds = &cmds_;
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
 
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);

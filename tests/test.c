@@ -255,7 +255,7 @@ int dvz_run_tests(const char* match)
     TEST(test_viewset_1)
     TEST(test_viewset_mouse)
 
-    // TODO: these depend on the scene and are not working yet, after the requester refactoring
+    // Visual tests.
     TEST(test_basic_1)
     TEST(test_pixel_1)
     TEST(test_point_1)

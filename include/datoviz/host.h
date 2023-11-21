@@ -24,7 +24,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzHost DvzHost;
-typedef struct DvzGpu DvzGpu;
 
 
 

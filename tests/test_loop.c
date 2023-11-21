@@ -203,7 +203,7 @@ int test_loop_cube(TstSuite* suite)
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, 0);
     // DvzCanvas* canvas = &loop->canvas;
 
-    bool use_builtin = true;
+    bool use_builtin = false;
 
     // Create a graphics pipe.
     DvzPipe* pipe = dvz_pipelib_graphics(
@@ -251,7 +251,8 @@ int test_loop_cube(TstSuite* suite)
     }
 
     // Create a MVP dat manually.
-    DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
+    DvzDat* dat_mvp =
+        dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     DvzMVP mvp = dvz_mvp_default();
     dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);
     dvz_pipe_dat(pipe, 0, dat_mvp);

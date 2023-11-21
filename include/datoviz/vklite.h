@@ -239,6 +239,19 @@ struct DvzQueues
 
 
 
+struct DvzCommands
+{
+    DvzObject obj;
+    DvzGpu* gpu;
+
+    uint32_t queue_idx;
+    uint32_t count;
+    VkCommandBuffer cmds[DVZ_MAX_COMMAND_BUFFERS_PER_SET];
+    bool blocked[DVZ_MAX_COMMAND_BUFFERS_PER_SET]; // if true, no need to refill it in the FRAME
+};
+
+
+
 struct DvzGpu
 {
     DvzObject obj;
@@ -263,6 +276,8 @@ struct DvzGpu
     VkDevice device;
 
     VmaAllocator allocator;
+
+    DvzCommands cmd; // Command buffer for transfers.
 
     // Renderpasses.
     // DvzRenderpass renderpass; // default renderpass
@@ -290,19 +305,6 @@ struct DvzSwapchain
 
     // The actual framebuffer size in pixels is found in the images size
     DvzImages* images;
-};
-
-
-
-struct DvzCommands
-{
-    DvzObject obj;
-    DvzGpu* gpu;
-
-    uint32_t queue_idx;
-    uint32_t count;
-    VkCommandBuffer cmds[DVZ_MAX_COMMAND_BUFFERS_PER_SET];
-    bool blocked[DVZ_MAX_COMMAND_BUFFERS_PER_SET]; // if true, no need to refill it in the FRAME
 };
 
 
