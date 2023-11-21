@@ -84,11 +84,8 @@ DVZ_EXPORT void dvz_ticks_size(DvzTicks* ticks, double range_size, double glyph_
 
 
 
-DVZ_EXPORT bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax);
-
-
-
-DVZ_EXPORT double dvz_ticks_score(DvzTicks* ticks);
+DVZ_EXPORT bool
+dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t requested_count);
 
 
 
@@ -105,6 +102,10 @@ DVZ_EXPORT uint32_t dvz_ticks_precision(DvzTicks* ticks);
 
 
 DVZ_EXPORT bool dvz_ticks_dirty(DvzTicks* ticks, double dmin, double dmax);
+
+
+
+DVZ_EXPORT void dvz_ticks_print(DvzTicks* ticks);
 
 
 
