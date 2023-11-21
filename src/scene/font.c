@@ -194,7 +194,7 @@ uint8_t* dvz_font_draw(
     }
     ASSERT(ymin <= ymax);
     height += 2 * margin + (ymax - ymin);
-    log_error("render the text in an image with size %dx%d", width, height);
+    log_debug("render the text in an image with size %dx%d", width, height);
     out_size[0] = (uint32_t)width;
     out_size[1] = (uint32_t)height;
 
