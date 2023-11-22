@@ -77,13 +77,11 @@ DvzLabels* dvz_labels(void)
 
 
 
-uint32_t dvz_labels_generate(DvzLabels* labels, double lmin, double lmax, double lstep)
+uint32_t dvz_labels_generate(
+    DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
+    double lmin, double lmax, double lstep)
 {
     ANN(labels);
-
-    // TODO
-    DvzTicksFormat format = DVZ_TICKS_FORMAT_DECIMAL;
-    uint32_t precision = 3;
 
     char tick_format[12] = {0};
     _get_tick_format(format, precision, tick_format);

@@ -13,6 +13,7 @@
 
 #include "_log.h"
 #include "_math.h"
+#include "ticks.h"
 
 
 
@@ -60,7 +61,9 @@ DVZ_EXPORT DvzLabels* dvz_labels(void);
 
 
 
-DVZ_EXPORT uint32_t dvz_labels_generate(DvzLabels* labels, double lmin, double lmax, double lstep);
+DVZ_EXPORT uint32_t dvz_labels_generate(
+    DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
+    double lmin, double lmax, double lstep);
 
 
 

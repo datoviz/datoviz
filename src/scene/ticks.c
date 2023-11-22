@@ -214,6 +214,7 @@ static inline double legibility(DvzTicks* ticks)
         f += leg(ticks->format, x);
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
+    f += .1;
     // NOTE: need to add 0.1 if all ticks are extended with 0 such that all
     // have the same number of decimals.
 
