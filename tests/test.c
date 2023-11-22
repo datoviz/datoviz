@@ -23,6 +23,7 @@
 #include "scene/test_dual.h"
 #include "scene/test_font.h"
 #include "scene/test_graphics.h"
+#include "scene/test_labels.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
 #include "scene/test_scene.h"
@@ -343,6 +344,7 @@ int dvz_run_tests(const char* match)
 
     // Ticks and axes.
     TEST(test_ticks_1)
+    TEST(test_labels_1)
 
     // Testing atlas.
     TEST(test_atlas_1)
