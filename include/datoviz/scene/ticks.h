@@ -71,7 +71,7 @@ struct DvzTicks
 
     double lmin, lmax, lstep; // computed min and max of the ticks
     DvzTicksFormat format;    // computed tick format
-    uint32_t precision;       // computed tick precision
+    // uint32_t precision;       // computed tick precision
 };
 
 
@@ -114,7 +114,7 @@ DVZ_EXPORT DvzTicksFormat dvz_ticks_format(DvzTicks* ticks);
 
 
 
-DVZ_EXPORT uint32_t dvz_ticks_precision(DvzTicks* ticks);
+// DVZ_EXPORT uint32_t dvz_ticks_precision(DvzTicks* ticks);
 
 
 

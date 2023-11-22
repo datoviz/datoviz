@@ -20,6 +20,7 @@
 #define J_MAX          10
 #define K_MAX          50
 #define Z_MAX          18
+#define PRECISION      2
 #define TARGET_DENSITY .2
 #define SCORE_WEIGHTS                                                                             \
     {                                                                                             \
@@ -52,6 +53,33 @@ struct Q
 /*************************************************************************************************/
 /*  Scoring functions                                                                            */
 /*************************************************************************************************/
+
+DVZ_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
+{
+    double eps = 1e-10;
+    int64_t n = q.len;
+    int32_t i = q.i + 1;
+    int32_t v = 0;
+    if ((fmod(lmin, lstep) < eps) ||
+        (((fmod(lstep - lmin, lstep)) < eps) && (lmin <= 0) && (lmax >= 0)))
+        v = 1;
+    else
+        v = 0;
+
+    return (n - i) / (n - 1.0) + v - j;
+}
+
+
+
+DVZ_INLINE double simplicity_max(Q q, int32_t j)
+{
+    int64_t n = q.len;
+    int32_t i = q.i + 1;
+    int32_t v = 1;
+    return (n - i) / (n - 1.0) + v - j;
+}
+
+
 
 DVZ_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
 {
@@ -90,38 +118,11 @@ DVZ_INLINE double density_max(int32_t k, int32_t m)
 
 
 
-DVZ_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
-{
-    double eps = 1e-10;
-    int64_t n = q.len;
-    int32_t i = q.i + 1;
-    int32_t v = 0;
-    if ((fmod(lmin, lstep) < eps) ||
-        (((fmod(lstep - lmin, lstep)) < eps) && (lmin <= 0) && (lmax >= 0)))
-        v = 1;
-    else
-        v = 0;
-
-    return (n - i) / (n - 1.0) + v - j;
-}
-
-
-
-DVZ_INLINE double simplicity_max(Q q, int32_t j)
-{
-    int64_t n = q.len;
-    int32_t i = q.i + 1;
-    int32_t v = 1;
-    return (n - i) / (n - 1.0) + v - j;
-}
-
-
-
 /*************************************************************************************************/
-/*  Format                                                                                       */
+/*  Legibility                                                                                   */
 /*************************************************************************************************/
 
-DVZ_INLINE double leg(DvzTicksFormat format, uint32_t precision, double x)
+DVZ_INLINE double leg(DvzTicksFormat format, double x)
 {
     double ax = fabs(x);
     double l = 0;
@@ -129,7 +130,6 @@ DVZ_INLINE double leg(DvzTicksFormat format, uint32_t precision, double x)
     {
     case DVZ_TICKS_FORMAT_DECIMAL:
         l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
-        l = (int)floor(log10(ax)) < -(int)precision ? 0 : l;
         break;
 
     case DVZ_TICKS_FORMAT_SCIENTIFIC:
@@ -146,13 +146,60 @@ DVZ_INLINE double leg(DvzTicksFormat format, uint32_t precision, double x)
 
 
 
-static inline double legibility(DvzTicks* ticks)
+DVZ_INLINE double overlap(double d)
 {
-    uint32_t n = 0; // TODO
+    if (d >= DIST_MIN)
+        return 1;
+    else if (d <= 0)
+        return -INF;
+    else
+    {
+        ASSERT(d >= 0);
+        ASSERT(d < DIST_MIN);
+        return 2 - DIST_MIN / d;
+    }
+}
+
+
+
+DVZ_INLINE double min_distance_labels(DvzTicks* ticks)
+{
+    ANN(ticks);
+    // double d = 0; // distance between label i and i+1
+    // double min_d = INF; //
+    double size = ticks->range_size;
+    ASSERT(size > 0);
+
+    double glyph = ticks->glyph_size;
+    ASSERT(glyph > 0);
+
     double lmin = ticks->lmin;
     double lmax = ticks->lmax;
     double lstep = ticks->lstep;
+    if (lmin >= lmax)
+        return 0;
+    ASSERT(lmax - lmin > 0);
 
+    uint32_t n = tick_count(lmin, lmax, lstep); // number of labels
+    const uint32_t label_length = 6;            // average number of glyphs per label
+
+    // minimum distance between two labels under the simplifying assumption that all labels have
+    // the same size.
+    return (n - 1) * lstep / (lmax - lmin) * size - label_length * glyph;
+}
+
+
+
+static inline double legibility(DvzTicks* ticks)
+{
+    double lmin = ticks->lmin;
+    double lmax = ticks->lmax;
+    double lstep = ticks->lstep;
+    uint32_t n = tick_count(lmin, lmax, lstep);
+    if (n == 0)
+        return -INF;
+
+    ASSERT(n > 0);
     ASSERT(lmin < lmax);
     ASSERT(lstep > 0);
 
@@ -164,27 +211,19 @@ static inline double legibility(DvzTicks* ticks)
     {
         x = lmin + i * lstep;
         ASSERT(x <= lmax + .5 * lstep);
-        f += leg(ticks->format, ticks->precision, x);
+        f += leg(ticks->format, x);
     }
     f = .9 * f / MAX(1, n); // TODO: 0-extended?
-
-    // // Compute the labels.
-    // ticks->lmin_ex = ticks->lmin_in;
-    // ticks->lmax_ex = ticks->lmax_in;
-    // make_labels(ticks, ctx, false);
+    // NOTE: need to add 0.1 if all ticks are extended with 0 such that all
+    // have the same number of decimals.
 
     // Overlap part.
-    // double o = dist_overlap(min_distance_labels(ticks, ctx));
-
-    // Duplicates part.
-    // double d = duplicate_labels(ticks, ctx) ? -INF : 1;
+    double o = overlap(min_distance_labels(ticks));
 
     ASSERT(f <= 1);
-    // ASSERT(o <= 1);
-    // ASSERT(d <= 1);
+    ASSERT(o <= 1);
 
-    // double out = (f + o + d) / 3.0;
-    double out = f;
+    double out = (f + o) / 2.0;
     if (out < -INF / 10)
         out = -INF;
     return out;
@@ -193,7 +232,7 @@ static inline double legibility(DvzTicks* ticks)
 
 
 /*************************************************************************************************/
-/*  Algorithm                                                                                    */
+/*  Score                                                                                        */
 /*************************************************************************************************/
 
 static inline double
@@ -208,33 +247,29 @@ score(dvec4 weights, double simplicity, double coverage, double density, double 
 
 
 
-// Optimize ticks->format|precision wrt to legibility.
+/*************************************************************************************************/
+/*  Algorithm                                                                                    */
+/*************************************************************************************************/
+
+// Optimize format for legibility.
 static inline void opt_format(DvzTicks* ticks)
 {
     double l = -INF, best_l = -INF;
     DvzTicksFormat best_format = DVZ_TICKS_FORMAT_UNDEFINED;
-    uint32_t best_precision = 0;
     for (uint32_t f = 1; f <= 2; f++)
     {
         ticks->format = (DvzTicksFormat)f;
-        for (uint32_t p = 1; p <= PRECISION_MAX; p++)
+        l = legibility(ticks);
+        if (l > best_l)
         {
-            ticks->precision = p;
-            l = legibility(ticks);
-            if (l > best_l)
-            {
-                best_format = ticks->format;
-                best_precision = p;
-                best_l = l;
-            }
+            best_format = ticks->format;
+            best_l = l;
         }
+        // }
     }
     if (best_format != DVZ_TICKS_FORMAT_UNDEFINED)
     {
-        ASSERT(best_precision > 0);
         ticks->format = best_format;
-        ticks->precision = best_precision;
-        // log_debug("%d", duplicate_labels(ticks, ctx));
     }
 }
 
@@ -307,7 +342,7 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
                 if (score(W, sm, 1, dm, 1) <= best_score)
                     break;
 
-                delta = (dmax - dmin) / (k + 1.) / j / q.value;
+                delta = (dmax - dmin) / (k + 1.) / (j * q.value);
                 z = ceil(log10(delta));
 
                 while (z < Z_MAX)
@@ -348,7 +383,7 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
                         if (score(W, s, c, d, 1) <= best_score)
                             continue;
 
-                        // The following optimized ticks.format|precision in-place.
+                        // The following optimizes format in-place.
                         opt_format(ticks);
                         l = legibility(ticks);
 
@@ -361,9 +396,8 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
                             best_ticks.lmax = lmax;
                             best_ticks.lstep = lstep;
 
-                            // Best format and precision are stored in the ticks struct.
+                            // Best format is stored in the ticks struct.
                             best_ticks.format = ticks->format;
-                            best_ticks.precision = ticks->precision;
                         }
                     }
                     z++;
@@ -375,18 +409,16 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
     }
 
     bool has_changed =
-        ((best_ticks.lmin != ticks->lmin) ||        //
-         (best_ticks.lmax != ticks->lmax) ||        //
-         (best_ticks.lstep != ticks->lstep) ||      //
-         (best_ticks.format != ticks->format) ||    //
-         (best_ticks.precision != ticks->precision) //
+        ((best_ticks.lmin != ticks->lmin) ||   //
+         (best_ticks.lmax != ticks->lmax) ||   //
+         (best_ticks.lstep != ticks->lstep) || //
+         (best_ticks.format != ticks->format)  //
         );
 
     ticks->lmin = best_ticks.lmin;
     ticks->lmax = best_ticks.lmax;
     ticks->lstep = best_ticks.lstep;
     ticks->format = best_ticks.format;
-    ticks->precision = best_ticks.precision;
 
     return has_changed;
 }
@@ -452,12 +484,12 @@ DvzTicksFormat dvz_ticks_format(DvzTicks* ticks)
 
 
 
-uint32_t dvz_ticks_precision(DvzTicks* ticks)
-{
-    // number of digits after the dot
-    ANN(ticks);
-    return ticks->precision;
-}
+// uint32_t dvz_ticks_precision(DvzTicks* ticks)
+// {
+//     // number of digits after the dot
+//     ANN(ticks);
+//     return ticks->precision;
+// }
 
 
 
@@ -488,8 +520,8 @@ void dvz_ticks_print(DvzTicks* ticks)
 {
     ANN(ticks);
     log_info(
-        "%.6f -> %.6f (step %.6f), format %d, precision %d", //
-        ticks->lmin, ticks->lmax, ticks->lstep, ticks->format, ticks->precision);
+        "%.6f -> %.6f (step %.6f), format %d", //
+        ticks->lmin, ticks->lmax, ticks->lstep, ticks->format);
 }
 
 
