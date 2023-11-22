@@ -16,15 +16,11 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define INF                 1000000000
-#define J_MAX               10
-#define K_MAX               50
-#define Z_MAX               18
-#define PRECISION_MAX       9
-#define DIST_MIN            50
-#define MAX_GLYPHS_PER_TICK 24
-#define MAX_LABELS          256
-#define TARGET_DENSITY      .2
+#define INF            1000000000
+#define J_MAX          10
+#define K_MAX          50
+#define Z_MAX          18
+#define TARGET_DENSITY .2
 #define SCORE_WEIGHTS                                                                             \
     {                                                                                             \
         0.2, 0.25, 0.5, 0.05                                                                      \
@@ -56,13 +52,6 @@ struct Q
 /*************************************************************************************************/
 /*  Scoring functions                                                                            */
 /*************************************************************************************************/
-
-DVZ_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
-{
-    return floor(1 + (lmax - lmin) / lstep);
-}
-
-
 
 DVZ_INLINE double coverage(double dmin, double dmax, double lmin, double lmax)
 {

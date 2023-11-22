@@ -29,5 +29,9 @@
 int test_labels_1(TstSuite* suite)
 {
     ANN(suite);
+    DvzLabels* labels = dvz_labels();
+    dvz_labels_generate(labels, -10.0, 10.0, 2.5);
+    dvz_labels_print(labels);
+    dvz_labels_destroy(labels);
     return 0;
 }

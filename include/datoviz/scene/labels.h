@@ -42,7 +42,10 @@ typedef struct DvzLabels DvzLabels;
 
 struct DvzLabels
 {
-    char* labels;
+    uint32_t count;   // number of labels
+    char* labels;     // concatenation of all null-terminated strings
+    uint32_t* index;  // index of the first glyph of each label
+    uint32_t* length; // the length of each label
 };
 
 
@@ -70,6 +73,10 @@ DVZ_EXPORT uint32_t* dvz_labels_index(DvzLabels* labels);
 
 
 DVZ_EXPORT uint32_t* dvz_labels_length(DvzLabels* labels);
+
+
+
+DVZ_EXPORT void dvz_labels_print(DvzLabels* labels);
 
 
 

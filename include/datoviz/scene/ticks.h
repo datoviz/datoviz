@@ -20,6 +20,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define PRECISION_MAX        9
+#define DIST_MIN             50
+#define MAX_GLYPHS_PER_LABEL 24
+#define MAX_LABELS           256
+
+
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
@@ -67,6 +73,17 @@ struct DvzTicks
     DvzTicksFormat format;    // computed tick format
     uint32_t precision;       // computed tick precision
 };
+
+
+
+/*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+DVZ_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
+{
+    return floor(1 + (lmax - lmin) / lstep);
+}
 
 
 
