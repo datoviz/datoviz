@@ -31,8 +31,13 @@ int test_ticks_1(TstSuite* suite)
     ANN(suite);
     DvzTicks* ticks = dvz_ticks(0);
     dvz_ticks_size(ticks, 500, 10);
+
     dvz_ticks_compute(ticks, 0.123, 0.456, 10);
     dvz_ticks_print(ticks);
+
+    dvz_ticks_compute(ticks, 1.23e6, 1.24e6, 10);
+    dvz_ticks_print(ticks);
+
     dvz_ticks_destroy(ticks);
     return 0;
 }

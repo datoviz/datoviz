@@ -122,26 +122,34 @@ DVZ_INLINE double density_max(int32_t k, int32_t m)
 /*  Legibility                                                                                   */
 /*************************************************************************************************/
 
+#define BETWEEN(min, max) (ax > (min) && ax < (max) ? 1 : 0)
+
 DVZ_INLINE double leg(DvzTicksFormat format, double x)
 {
     double ax = fabs(x);
-    double l = 0;
     switch (format)
     {
     case DVZ_TICKS_FORMAT_DECIMAL:
-        l = ax > 1e-4 && ax < 1e6 ? 1 : 0;
-        break;
-
+        return BETWEEN(1e-4, 1e+6);
+    case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+        return .5;
+    case DVZ_TICKS_FORMAT_THOUSANDS:
+        return .75 * BETWEEN(1e+3, 1e+6);
+    case DVZ_TICKS_FORMAT_THOUSANDS_FACTORED:
+        return .4 * BETWEEN(1e+3, 1e+6);
+    case DVZ_TICKS_FORMAT_MILLIONS:
+        return .75 * BETWEEN(1e+6, 1e+9);
+    case DVZ_TICKS_FORMAT_MILLIONS_FACTORED:
+        return .4 * BETWEEN(1e+6, 1e+9);
     case DVZ_TICKS_FORMAT_SCIENTIFIC:
-        l = .25;
-        break;
-
+        return .25;
+    case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
+        return .3;
     default:
-        l = 0;
-        break;
+        log_error("unknown format %d", format);
+        return 0;
     }
-
-    return l;
+    return 0;
 }
 
 
@@ -162,11 +170,41 @@ DVZ_INLINE double overlap(double d)
 
 
 
+DVZ_INLINE double estimate_label_length(DvzTicksFormat format, double x)
+{
+    if (x == 0)
+        return 0;
+
+    switch (format)
+    {
+    case DVZ_TICKS_FORMAT_DECIMAL:
+        return 1 + log10(fabs(x));
+    case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+        return 3;
+    case DVZ_TICKS_FORMAT_THOUSANDS:
+        return 4;
+    case DVZ_TICKS_FORMAT_THOUSANDS_FACTORED:
+        return 3;
+    case DVZ_TICKS_FORMAT_MILLIONS:
+        return 4;
+    case DVZ_TICKS_FORMAT_MILLIONS_FACTORED:
+        return 3;
+    case DVZ_TICKS_FORMAT_SCIENTIFIC:
+        return 5;
+    case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
+        return 3;
+    default:
+        log_error("unknown format %d", format);
+        return 0;
+    }
+    return 0;
+}
+
+
+
 DVZ_INLINE double min_distance_labels(DvzTicks* ticks)
 {
     ANN(ticks);
-    // double d = 0; // distance between label i and i+1
-    // double min_d = INF; //
     double size = ticks->range_size;
     ASSERT(size > 0);
 
@@ -181,10 +219,18 @@ DVZ_INLINE double min_distance_labels(DvzTicks* ticks)
     ASSERT(lmax - lmin > 0);
 
     uint32_t n = tick_count(lmin, lmax, lstep); // number of labels
-    const uint32_t label_length = 6;            // average number of glyphs per label
+    ASSERT(n > 0);
+    double label_length = 0, x = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        x = lmin + i * lstep;
+        label_length += estimate_label_length(ticks->format, x); // number of glyphs per label
+    }
+    label_length /= n;
 
     // minimum distance between two labels under the simplifying assumption that all labels have
     // the same size.
+    // TODO: make the actual computation instead.
     return (n - 1) * lstep / (lmax - lmin) * size - label_length * glyph;
 }
 
@@ -213,7 +259,7 @@ static inline double legibility(DvzTicks* ticks)
         ASSERT(x <= lmax + .5 * lstep);
         f += leg(ticks->format, x);
     }
-    f = .9 * f / MAX(1, n); // TODO: 0-extended?
+    f = .9 * f / MAX(1, n);
     f += .1;
     // NOTE: need to add 0.1 if all ticks are extended with 0 such that all
     // have the same number of decimals.
@@ -257,7 +303,7 @@ static inline void opt_format(DvzTicks* ticks)
 {
     double l = -INF, best_l = -INF;
     DvzTicksFormat best_format = DVZ_TICKS_FORMAT_UNDEFINED;
-    for (uint32_t f = 1; f <= 2; f++)
+    for (uint32_t f = 1; f < DVZ_TICKS_FORMAT_COUNT; f++)
     {
         ticks->format = (DvzTicksFormat)f;
         l = legibility(ticks);
@@ -266,7 +312,6 @@ static inline void opt_format(DvzTicks* ticks)
             best_format = ticks->format;
             best_l = l;
         }
-        // }
     }
     if (best_format != DVZ_TICKS_FORMAT_UNDEFINED)
     {
