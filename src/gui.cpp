@@ -104,50 +104,6 @@ static void _imgui_setup()
 
 
 
-static void _imgui_fonts_upload(DvzGpu* gpu)
-{
-    ANN(ImGui::GetCurrentContext());
-
-    log_trace("uploading Dear ImGui fonts");
-
-    // Load Fonts.
-    // Load first font.
-    {
-        // float font_size = 14.0f;
-        // ASSERT(font_size > 0);
-        // ImFontConfig config = {0};
-        // config.FontDataOwnedByAtlas = false; // Important!
-        // ImGuiIO* io = ImGui::GetIO();
-        // unsigned long file_size = 0;
-        // unsigned char* buffer = dvz_resource_font("Roboto_Medium", &file_size);
-        // ASSERT(file_size > 0);
-        // ANN(buffer);
-        // ImFontAtlas_AddFontDefault(io.Fonts, NULL);
-        // font = ImFontAtlas_AddFontFromMemoryTTF(
-        //     io.Fonts, buffer, file_size, font_size, &config, NULL);
-        // ANN(font);
-        // ASSERT(ImFont_IsLoaded(font));
-    }
-
-    // NOTE: not the TRANSFER queue, otherwise the following warning occurs:
-    // dstStageMask flag VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT is not compatible with the queue
-    // family properties (VK_QUEUE_TRANSFER_BIT|VK_QUEUE_SPARSE_BINDING_BIT) of this command
-    // buffer.
-    // HACK: we may use this code when the DVZ_DEFAULT_QUEUE_RENDER is not defined, ie when there
-    // is a single queue (offscreen tests, for example).
-    DvzCommands cmd =
-        dvz_commands(gpu, MIN(((int)DVZ_DEFAULT_QUEUE_RENDER), (gpu->queues.queue_count - 1)), 1);
-    dvz_cmd_begin(&cmd, 0);
-    ImGui_ImplVulkan_CreateFontsTexture(cmd.cmds[0]);
-    dvz_cmd_end(&cmd, 0);
-    dvz_cmd_submit_sync(&cmd, 0);
-
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
-    dvz_commands_destroy(&cmd);
-}
-
-
-
 static void _imgui_set_window(DvzWindow* window)
 {
     ANN(window);
@@ -320,7 +276,6 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);
     _imgui_setup();
-    _imgui_fonts_upload(gpu);
     return gui;
 }
 
