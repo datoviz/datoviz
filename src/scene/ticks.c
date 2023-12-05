@@ -175,6 +175,7 @@ DVZ_INLINE double estimate_label_length(DvzTicksFormat format, double x)
     if (x == 0)
         return 0;
 
+    // TODO: improve these estimates.
     switch (format)
     {
     case DVZ_TICKS_FORMAT_DECIMAL:

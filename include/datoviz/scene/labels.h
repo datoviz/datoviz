@@ -63,6 +63,10 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+void _find_exponent_offset(double lmin, double lmax, int32_t* exponent, double* offset);
+
+
+
 DVZ_EXPORT DvzLabels* dvz_labels(void);
 
 

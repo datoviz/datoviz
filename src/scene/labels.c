@@ -78,6 +78,44 @@ static inline bool _is_format_factored(DvzTicksFormat format)
 
 
 
+void _find_exponent_offset(double lmin, double lmax, int32_t* exponent, double* offset)
+{
+    if (lmin == lmax)
+        return;
+
+    // TODO: improve
+    double threshold = .99;
+    double almin = fabs(lmin);
+    double almax = fabs(lmax);
+    almin = MIN(almin, almax);
+    almax = MAX(almin, almax);
+
+    if (almin == 0)
+    {
+        return;
+    }
+
+    if ((almin / almax) > threshold)
+    {
+        *offset = lmin;
+    }
+    else
+    {
+        *offset = 0;
+    }
+
+    almin = 0;
+    almax -= almin;
+    ASSERT(almax > 0);
+    double l = log10(almax);
+    // NOTE: symmetric version of floor around 0.
+    l = copysign(1, l) * floor(fabs(l));
+
+    *exponent = (int32_t)l;
+}
+
+
+
 /*************************************************************************************************/
 /*  Labels functions                                                                             */
 /*************************************************************************************************/

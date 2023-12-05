@@ -21,6 +21,8 @@
 
 int test_labels_1(TstSuite*);
 
+int test_labels_exponent_offset(TstSuite*);
+
 
 
 #endif

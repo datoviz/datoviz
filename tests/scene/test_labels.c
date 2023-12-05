@@ -50,3 +50,17 @@ int test_labels_1(TstSuite* suite)
     dvz_labels_destroy(labels);
     return 0;
 }
+
+
+
+int test_labels_exponent_offset(TstSuite* suite)
+{
+    double offset = 0;
+    int32_t exponent = 0;
+    double lmin = 1e9;
+    double lmax = 1.0001e9;
+    _find_exponent_offset(lmin, lmax, &exponent, &offset);
+    printf("exponent : %d\n", exponent);
+    printf("offset   : %f\n", offset);
+    return 0;
+}
