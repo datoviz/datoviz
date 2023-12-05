@@ -31,6 +31,8 @@ static inline void _get_tick_format(DvzTicksFormat format, uint32_t precision, c
     switch (format)
     {
     case DVZ_TICKS_FORMAT_DECIMAL:
+    case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+    case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
         fmt[offset + 1] = 'f';
         break;
     case DVZ_TICKS_FORMAT_SCIENTIFIC:
@@ -59,6 +61,23 @@ static inline void _tick_label(double x, char* tick_format, char* out)
 
 
 
+static inline bool _is_format_factored(DvzTicksFormat format)
+{
+    switch (format)
+    {
+    case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+    case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
+    case DVZ_TICKS_FORMAT_MILLIONS_FACTORED:
+    case DVZ_TICKS_FORMAT_THOUSANDS_FACTORED:
+        return true;
+    default:
+        return false;
+    }
+    return false;
+}
+
+
+
 /*************************************************************************************************/
 /*  Labels functions                                                                             */
 /*************************************************************************************************/
@@ -79,6 +98,7 @@ DvzLabels* dvz_labels(void)
 
 uint32_t dvz_labels_generate(
     DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
+    int32_t exponent, double offset,                              //
     double lmin, double lmax, double lstep)
 {
     ANN(labels);
@@ -97,9 +117,18 @@ uint32_t dvz_labels_generate(
 
     char* s = NULL;
     uint32_t k = 0, n = 0;
+    double exp = pow(10, exponent);
     for (uint32_t i = 0; i < count; i++)
     {
         x = x0 + i * lstep;
+
+        // Take offset and exponent into account.
+        if (_is_format_factored(format))
+        {
+            x -= offset;
+            x /= exp;
+        }
+
         s = &labels->labels[k];
         _tick_label(x, tick_format, s);
 
@@ -110,6 +139,14 @@ uint32_t dvz_labels_generate(
         labels->index[i] = k;
         k += (n + 1); // NOTE: 0-terminated strings
     }
+
+    // Display the exponent.
+    if (_is_format_factored(format))
+    {
+        snprintf(labels->exponent, DVZ_LABELS_MAX_EXPONENT_LENGTH, "1e%d", exponent);
+        snprintf(labels->offset, DVZ_LABELS_MAX_OFFSET_LENGTH, "%e", offset);
+    }
+
     return count;
 }
 
@@ -146,12 +183,35 @@ uint32_t* dvz_labels_length(DvzLabels* labels)
 
 
 
+// the output must not be freed
+char* dvz_labels_exponent(DvzLabels* labels)
+{
+    ANN(labels);
+    return labels->exponent;
+}
+
+
+
+// the output must not be freed
+char* dvz_labels_offset(DvzLabels* labels)
+{
+    ANN(labels);
+    return labels->offset;
+}
+
+
+
 void dvz_labels_print(DvzLabels* labels)
 {
     ANN(labels);
     for (uint32_t i = 0; i < labels->count; i++)
     {
         printf("%02d\t%s\n", i, &labels->labels[labels->index[i]]);
+    }
+    if (strnlen(labels->exponent, DVZ_LABELS_MAX_EXPONENT_LENGTH) > 0)
+    {
+        printf("exponent : %s\n", labels->exponent);
+        printf("offset   : %s\n", labels->offset);
     }
 }
 

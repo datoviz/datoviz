@@ -21,6 +21,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_LABELS_MAX_EXPONENT_LENGTH 16
+#define DVZ_LABELS_MAX_OFFSET_LENGTH   24
+
 
 
 /*************************************************************************************************/
@@ -47,6 +50,9 @@ struct DvzLabels
     char* labels;     // concatenation of all null-terminated strings
     uint32_t* index;  // index of the first glyph of each label
     uint32_t* length; // the length of each label
+
+    char exponent[DVZ_LABELS_MAX_EXPONENT_LENGTH];
+    char offset[DVZ_LABELS_MAX_OFFSET_LENGTH];
 };
 
 
@@ -63,6 +69,7 @@ DVZ_EXPORT DvzLabels* dvz_labels(void);
 
 DVZ_EXPORT uint32_t dvz_labels_generate(
     DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
+    int32_t exponent, double offset,                              //
     double lmin, double lmax, double lstep);
 
 
@@ -76,6 +83,14 @@ DVZ_EXPORT uint32_t* dvz_labels_index(DvzLabels* labels);
 
 
 DVZ_EXPORT uint32_t* dvz_labels_length(DvzLabels* labels);
+
+
+
+DVZ_EXPORT char* dvz_labels_exponent(DvzLabels* labels);
+
+
+
+DVZ_EXPORT char* dvz_labels_offset(DvzLabels* labels);
 
 
 
