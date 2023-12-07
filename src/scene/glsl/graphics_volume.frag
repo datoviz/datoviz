@@ -27,6 +27,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 box_size; /* size of the box containing the volume, in NDC */
     vec4 uvw0;     /* texture coordinates of the 2 corner points */
     vec4 uvw1;     /* texture coordinates of the 2 corner points */
+    vec4 transfer;
 }
 params;
 layout(binding = (USER_BINDING + 1)) uniform sampler3D tex_density; // 3D vol with vox R density
@@ -73,6 +74,10 @@ vec4 fetch_color(vec3 uvw)
     {
         color = texture(tex_density, uvw);
     }
+
+    // Transfer function.
+    color.a *= params.transfer.x;
+
     return color;
 }
 

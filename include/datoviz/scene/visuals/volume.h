@@ -59,10 +59,7 @@ struct DvzVolumeParams
     vec4 box_size; /* size of the box containing the volume, in NDC */
     vec4 uvw0;     /* texture coordinates of the 2 corner points */
     vec4 uvw1;     /* texture coordinates of the 2 corner points */
-    // vec4 clip;            /* plane normal vector for volume slicing */
-    // vec2 transfer_xrange; /* x coords of the endpoints of the transfer function */
-    // float color_coef;     /* scaling coefficient when fetching voxel color */
-    // int32_t cmap;         /* colormap */
+    vec4 transfer;
 };
 
 

@@ -9,6 +9,8 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_volume.h"
+#include "gui.h"
+#include "presenter.h"
 #include "renderer.h"
 #include "request.h"
 #include "scene/app.h"
@@ -43,7 +45,7 @@
 
 int test_volume_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
+    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Volume visual.
     DvzVisual* visual =
@@ -110,9 +112,30 @@ static DvzId _load_brain_volume(VisualTest* vt, bool use_rgb_volume)
     return tex;
 }
 
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
+{
+    DvzVisual* visual = (DvzVisual*)user_data;
+    ANN(visual);
+
+    dvz_gui_dialog_begin("Parameters", (vec2){50, 50}, (vec2){250, 80}, 0);
+    // dvz_gui_text("Hello world");
+
+    float* param = visual->user_data;
+    ANN(param);
+
+    if (dvz_gui_slider("param", 0, 10, param))
+    {
+        dvz_visual_param(visual, 2, 3, (vec4){*param, 0, 0, 0});
+        dvz_visual_update(visual);
+    }
+
+    dvz_gui_dialog_end();
+}
+
 int test_volume_2(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
+    VisualTest vt = visual_test_start(
+        "volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC | DVZ_CANVAS_FLAGS_IMGUI);
 
     // Volume visual.
     DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
@@ -131,6 +154,12 @@ int test_volume_2(TstSuite* suite)
     // Bind the volume texture to the visual.
     dvz_volume_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 
+    // GUI callback.
+    float param = 1.0;
+    visual->user_data = &param;
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+
+    // Run the test.
     visual_test_end(vt);
 
     return 0;
