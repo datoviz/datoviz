@@ -52,6 +52,7 @@ struct DvzWindow
     uint32_t width, height;                         // screen size
     uint32_t framebuffer_width, framebuffer_height; // framebuffer size
     DvzGuiWindow* gui_window;
+    bool is_captured; // true when ImGui is processing user events
 
     // Forward pointer.
     DvzInput* input;

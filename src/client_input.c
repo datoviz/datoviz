@@ -32,6 +32,10 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     DvzWindow* window = (DvzWindow*)ev.user_data;
     ANN(window);
 
+    // Do not process input events if the window is being captured by ImGui.
+    if (window->is_captured)
+        return;
+
     DvzClient* client = window->client;
     ANN(client);
 
@@ -55,6 +59,10 @@ static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
 
     DvzWindow* window = (DvzWindow*)ev.user_data;
     ANN(window);
+
+    // Do not process input events if the window is being captured by ImGui.
+    if (window->is_captured)
+        return;
 
     DvzClient* client = window->client;
     ANN(client);
