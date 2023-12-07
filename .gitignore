@@ -77,3 +77,4 @@ experimental
 *.dvz*
 *.yml
 *.zst
+_old*

@@ -19,8 +19,14 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define VOLUME_TYPE_SCALAR 0
+#define VOLUME_TYPE_RGBA   1
+
+#define VOLUME_COLOR_DIRECT   0
+#define VOLUME_COLOR_COLORMAP 1
 
 
 
@@ -47,9 +53,6 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
 {
     ANN(batch);
 
-    // NOTE: force indexed visual flag.
-    // flags |= DVZ_VISUALS_FLAGS_INDEXED;
-
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 
@@ -58,19 +61,19 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
 
     // Enable depth test.
     dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
-    // dvz_visual_front(visual, DVZ_FRONT_FACE_COUNTER_CLOCKWISE);
-    // dvz_visual_cull(visual, DVZ_CULL_MODE_NONE);
+
+    // Specialization constants.
+    int volume_type = VOLUME_TYPE_RGBA;
+    int volume_color = VOLUME_COLOR_DIRECT;
+
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &volume_type);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &volume_color);
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzVolumeVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzVolumeVertex));
-
-    // dvz_visual_attr(visual, 2, DVZ_FORMAT_R32G32_SFLOAT, 0);    // uv
-    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R32_SFLOAT, 0); // alpha
-    // TODO: fix alignment
-    // dvz_visual_attr(visual, 3, DVZ_FORMAT_R8_UNORM, 0);         // alpha
 
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
@@ -84,9 +87,6 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
     dvz_params_attr(params, 0, FIELD(DvzVolumeParams, box_size));
     dvz_params_attr(params, 1, FIELD(DvzVolumeParams, uvw0));
     dvz_params_attr(params, 2, FIELD(DvzVolumeParams, uvw1));
-
-    // float u = .5;
-    // float x0 = -u, x1 = +u, y0 = -u, y1 = +u, z0 = -u, z1 = +u;
 
     dvz_visual_param(visual, 2, 0, (vec4){1, 1, 1, 0});
     dvz_visual_param(visual, 2, 1, (vec4){0, 0, 0, 0});
