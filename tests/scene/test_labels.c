@@ -58,9 +58,20 @@ int test_labels_exponent_offset(TstSuite* suite)
     double offset = 0;
     int32_t exponent = 0;
     double lmin = 1e9;
-    double lmax = 1.0001e9;
+    double lmax = lmin + 1;
+    double lstep = (lmax - lmin) / 10;
+
     _find_exponent_offset(lmin, lmax, &exponent, &offset);
-    printf("exponent : %d\n", exponent);
-    printf("offset   : %f\n", offset);
+    printf("lmin, lmax : %e, %e\n", lmin, lmax);
+    printf("exponent   : %d\n", exponent);
+    printf("offset     : %e\n\n", offset);
+
+    // exponent = 0;
+    DvzLabels* labels = dvz_labels();
+    dvz_labels_generate(
+        labels, DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED, 2, exponent, offset, lmin, lmax, lstep);
+    dvz_labels_print(labels);
+    dvz_labels_destroy(labels);
+
     return 0;
 }

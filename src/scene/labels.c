@@ -78,40 +78,125 @@ static inline bool _is_format_factored(DvzTicksFormat format)
 
 
 
-void _find_exponent_offset(double lmin, double lmax, int32_t* exponent, double* offset)
+void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, double* out_offset)
 {
     if (lmin == lmax)
         return;
 
-    // TODO: improve
-    double threshold = .99;
-    double almin = fabs(lmin);
-    double almax = fabs(lmax);
-    almin = MIN(almin, almax);
-    almax = MAX(almin, almax);
+    // Loose translation of:
+    // https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/ticker.py#L708
 
-    if (almin == 0)
+    // # min, max comparing absolute values (we want division to round towards
+    // # zero so we work on absolute values).
+    // abs_min, abs_max = sorted([abs(float(lmin)), abs(float(lmax))])
+    double abs_min = fabs(lmin);
+    double abs_max = fabs(lmax);
+    abs_min = MIN(abs_min, abs_max);
+    abs_max = MAX(abs_min, abs_max);
+
+    // sign = math.copysign(1, lmin)
+    double sign = copysign(1, lmin);
+
+    // # What is the smallest power of ten such that abs_min and abs_max are
+    // # equal up to that precision?
+    // # Note: Internally using oom instead of 10 ** oom avoids some numerical
+    // # accuracy issues.
+    // oom_max = np.ceil(math.log10(abs_max))
+    // oom = 1 + next(oom for oom in itertools.count(oom_max, -1)
+    //                if abs_min // 10 ** oom != abs_max // 10 ** oom)
+    int32_t oom_max = (int32_t)ceil(log10(abs_max));
+
+    int32_t oom = oom_max;
+    for (; oom >= 0; oom--)
     {
-        return;
+        if (abs_min / pow(10, oom) != abs_max / pow(10, oom))
+            break;
+    }
+    oom += 1;
+
+    // if (abs_max - abs_min) / 10 ** oom <= 1e-2:
+    //     # Handle the case of straddling a multiple of a large power of ten
+    //     # (relative to the span).
+    if ((abs_max - abs_min) / pow(10, oom) <= 1e-2)
+    {
+        // # What is the smallest power of ten such that abs_min and abs_max
+        // # are no more than 1 apart at that precision?
+        // oom = 1 + next(oom for oom in itertools.count(oom_max, -1)
+        //                if abs_max // 10 ** oom - abs_min // 10 ** oom > 1)
+        oom = oom_max;
+        for (; oom >= 0; oom--)
+        {
+            if ((abs_max / pow(10, oom) - abs_min / pow(10, oom)) > 1)
+                break;
+        }
+        oom += 1;
     }
 
-    if ((almin / almax) > threshold)
+    // see eg: https://github.com/matplotlib/matplotlib/issues/7104
+    int32_t offset_threshold = 4;
+
+    // # Only use offset if it saves at least _offset_threshold digits.
+    // n = self._offset_threshold - 1
+    int32_t n = offset_threshold - 1;
+
+    // self.offset = (sign * (abs_max // 10 ** oom) * 10 ** oom
+    //                if abs_max // 10 ** oom >= 10**n
+    //                else 0)
+    double offset =
+        abs_max / pow(10, oom) >= pow(10, n) ? sign * (abs_max / pow(10, oom) * pow(10, oom)) : 0;
+
+    // if self.offset:
+    //     oom = math.floor(math.log10(vmax - vmin))
+    if (offset)
     {
-        *offset = lmin;
+        // NOTE: this should be dmax and dmin but we don't have them in this function
+        // at the moment. TODO FIXME?
+        oom = floor(log10(lmax - lmin));
     }
+    // else:
+    //     val = locs.max()
+    //     if val == 0:
+    //         oom = 0
+    //     else:
+    //         oom = math.floor(math.log10(val))
     else
     {
-        *offset = 0;
+        double val = lmax; // TODO: should be dmax?
+        if (val == 0)
+        {
+            oom = 0;
+        }
+        else
+        {
+            oom = floor(log10(val));
+        }
     }
 
-    almin = 0;
-    almax -= almin;
-    ASSERT(almax > 0);
-    double l = log10(almax);
-    // NOTE: symmetric version of floor around 0.
-    l = copysign(1, l) * floor(fabs(l));
+    *out_offset = offset;
+    *out_exponent = oom;
 
-    *exponent = (int32_t)l;
+    // if (almin == 0)
+    // {
+    //     return;
+    // }
+
+    // if ((almin / almax) > threshold)
+    // {
+    //     *offset = lmin;
+    // }
+    // else
+    // {
+    //     *offset = 0;
+    // }
+
+    // almin = 0;
+    // almax -= almin;
+    // ASSERT(almax > 0);
+    // double l = log10(almax);
+    // // NOTE: symmetric version of floor around 0.
+    // l = copysign(1, l) * floor(fabs(l));
+
+    // *exponent = (int32_t)l;
 }
 
 
@@ -179,7 +264,7 @@ uint32_t dvz_labels_generate(
     }
 
     // Display the exponent.
-    if (_is_format_factored(format))
+    if (_is_format_factored(format) && (labels->exponent != 0))
     {
         snprintf(labels->exponent, DVZ_LABELS_MAX_EXPONENT_LENGTH, "1e%d", exponent);
         snprintf(labels->offset, DVZ_LABELS_MAX_OFFSET_LENGTH, "%e", offset);
