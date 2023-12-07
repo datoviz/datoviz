@@ -272,6 +272,7 @@ int dvz_run_tests(const char* match)
     TEST(test_glyph_1)
     TEST(test_mesh_1)
     TEST(test_volume_1)
+    TEST(test_volume_2)
     TEST(test_image_1)
     TEST(test_fake_sphere_1)
 

@@ -71,3 +71,39 @@ int test_volume_1(TstSuite* suite)
     FREE(tex_data);
     return 0;
 }
+
+
+
+int test_volume_2(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
+
+    // Volume visual.
+    DvzVisual* visual = dvz_volume(vt.batch, 0);
+    dvz_volume_alloc(visual, 1);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
+
+    // Create the texture and upload the volume data.
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/%s", DATA_DIR, "allen_mouse_brain.npy");
+    DvzSize size = 0;
+    char* volume = dvz_read_npy(path, &size);
+    if (!volume)
+    {
+        log_error("file not found: %s", path);
+        visual_test_end(vt);
+        return 0;
+    }
+    log_info("load the Allen Mouse Brain volume (%s)", pretty_size(size));
+    DvzId tex = dvz_tex_volume(vt.batch, DVZ_FORMAT_R16_UNORM, 320, 456, 528, volume);
+
+    // Bind the volume texture to the visual.
+    dvz_volume_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+
+    visual_test_end(vt);
+
+    FREE(volume);
+    return 0;
+}

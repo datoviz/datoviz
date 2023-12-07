@@ -617,13 +617,13 @@ static inline DvzSize _format_size(DvzFormat format)
 
     case DVZ_FORMAT_R16_UNORM:
     case DVZ_FORMAT_R16_SNORM:
-        return 2 * sizeof(uint16_t);
+        return 1 * sizeof(uint16_t);
         break;
 
     case DVZ_FORMAT_R32_UINT:
     case DVZ_FORMAT_R32_SINT:
     case DVZ_FORMAT_R32_SFLOAT:
-        return 4 * sizeof(uint8_t);
+        return 1 * sizeof(uint32_t);
         break;
 
     case DVZ_FORMAT_R8G8B8_UNORM:

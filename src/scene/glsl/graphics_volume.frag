@@ -60,7 +60,7 @@ vec4 fetch_color(vec3 uvw)
     // Color component.
     // vec4 color = params.color_coef * texture(tex_colors, uvw);
     // vec4 color = params.color_coef * colormap(params.cmap, v);
-    vec4 color = colormap(DVZ_CMAP_HSV, v);
+    vec4 color = vec4(1, 1, 1, v); // colormap(DVZ_CMAP_HSV, v);
 
     // Alpha value: value.
     color.a = v;
@@ -100,12 +100,14 @@ void main()
     vec3 d = vec3(1) / (b1 - b0);
     intersect_box(o, u, b0, b1, t0, t1);
 
-    // // DEBUG
-    // out_color.r = t0;
-    // // out_color.g = 1;
-    // out_color.b = 1;
-    // out_color.a = 1;
-    // return;
+    {
+        // // DEBUG
+        // out_color.r = t0;
+        // // out_color.g = 1;
+        // out_color.b = 1;
+        // out_color.a = 1;
+        // return;
+    }
 
     if (t0 < 0 || t1 < 0)
         discard;
@@ -145,17 +147,19 @@ void main()
         // Normalize 3D pos within cube in [0,1]^3
         uvw = (pos - b0) * d;
 
-        // // Determine the position of the fragment compared to the clipping plane.
-        // if (dot(vec4(uvw, 1), params.clip) < 0)
-        // {
-        //     in_clip = true;
-        //     continue;
-        // }
-        // else if (i == 0)
-        // {
-        //     clip_front = true;
-        // }
-        // uvw_pick = uvw;
+        {
+            // // Determine the position of the fragment compared to the clipping plane.
+            // if (dot(vec4(uvw, 1), params.clip) < 0)
+            // {
+            //     in_clip = true;
+            //     continue;
+            // }
+            // else if (i == 0)
+            // {
+            //     clip_front = true;
+            // }
+            // uvw_pick = uvw;
+        }
 
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
@@ -172,22 +176,24 @@ void main()
         }
     }
 
-    // Remove fragments outside the clipping plane.
-    // if (dot(uvw_pick, uvw_pick) == 0)
-    //     discard;
+    {
+        // Remove fragments outside the clipping plane.
+        // if (dot(uvw_pick, uvw_pick) == 0)
+        //     discard;
 
-    // Clipping slice image.
-    // if (in_clip && clip_front)
-    // {
-    //     out_color = texture(tex_colors, uvw_pick);
+        // Clipping slice image.
+        // if (in_clip && clip_front)
+        // {
+        //     out_color = texture(tex_colors, uvw_pick);
 
-    //     // NOTE: if color alpha is zero, do not fetch from the clipping plane but use the
-    //     // previously computed value from the volume
-    //     if (out_color.a > .001)
-    //     {
-    //         acc = .25 * acc + .75 * out_color;
-    //     }
-    // }
+        //     // NOTE: if color alpha is zero, do not fetch from the clipping plane but use the
+        //     // previously computed value from the volume
+        //     if (out_color.a > .001)
+        //     {
+        //         acc = .25 * acc + .75 * out_color;
+        //     }
+        // }
+    }
 
     out_color = acc;
     // out_pick = ivec4(255 * uvw_pick, 0);

@@ -21,6 +21,8 @@
 
 int test_volume_1(TstSuite*);
 
+int test_volume_2(TstSuite*);
+
 
 
 #endif
