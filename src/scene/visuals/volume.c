@@ -88,9 +88,9 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
     dvz_params_attr(params, 1, FIELD(DvzVolumeParams, uvw0));
     dvz_params_attr(params, 2, FIELD(DvzVolumeParams, uvw1));
 
-    dvz_visual_param(visual, 2, 0, (vec4){1, 1, 1, 0});
-    dvz_visual_param(visual, 2, 1, (vec4){0, 0, 0, 0});
-    dvz_visual_param(visual, 2, 2, (vec4){1, 1, 1, 0});
+    dvz_visual_param(visual, 2, 0, (vec4){1, 1, 1, 0}); // box_size
+    dvz_visual_param(visual, 2, 1, (vec4){0, 0, 0, 0}); // uvw0
+    dvz_visual_param(visual, 2, 2, (vec4){1, 1, 1, 0}); // uvw1
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -186,6 +186,14 @@ void dvz_volume_texture(
 
     // Bind the texture to the visual.
     dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+}
+
+
+
+void dvz_volume_size(DvzVisual* visual, float w, float h, float d)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, (vec4){w, h, d, 0});
 }
 
 

@@ -90,6 +90,13 @@ DVZ_EXPORT void dvz_volume_texture(
 /**
  *
  */
+DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzId dvz_tex_volume(
     DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
     void* data);
