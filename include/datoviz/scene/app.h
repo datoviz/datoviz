@@ -15,6 +15,8 @@
 #include "../_log.h"
 #include "../_math.h"
 #include "../client.h"
+#include "../gui.h"
+#include "../presenter.h"
 #include "../timer.h"
 
 
@@ -24,16 +26,21 @@
 /*************************************************************************************************/
 
 typedef struct DvzApp DvzApp;
+typedef struct DvzAppGuiPayload DvzAppGuiPayload;
 
 // Forward declarations.
 typedef struct DvzHost DvzHost;
 typedef struct DvzClient DvzClient;
+typedef struct DvzList DvzList;
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzPresenter DvzPresenter;
 typedef struct DvzTimer DvzTimer;
 typedef struct DvzTimerItem DvzTimerItem;
+
+// Callback types.
+typedef void (*DvzAppGui)(DvzApp* app, DvzId canvas_id, void* user_data);
 
 
 
@@ -47,6 +54,16 @@ typedef struct DvzTimerItem DvzTimerItem;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzAppGuiPayload
+{
+    DvzApp* app;
+    DvzId canvas_id;
+    DvzAppGui callback;
+    void* user_data;
+};
+
+
+
 struct DvzApp
 {
     DvzHost* host;
@@ -56,6 +73,7 @@ struct DvzApp
     DvzPresenter* prt;
     DvzBatch* batch;
     DvzTimer* timer;
+    DvzList* callbacks;
     bool is_running;
 };
 
@@ -127,6 +145,13 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
  *
  */
 DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data);
 
 
 

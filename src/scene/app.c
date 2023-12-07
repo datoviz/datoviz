@@ -11,6 +11,7 @@
 #include "../render_utils.h"
 #include "client.h"
 #include "fileio.h"
+#include "gui.h"
 #include "host.h"
 #include "presenter.h"
 #include "renderer.h"
@@ -72,6 +73,9 @@ DvzApp* dvz_app(int flags)
 
     app->timer = dvz_timer();
     ANN(app->timer);
+
+    // List of GUI callbacks.
+    app->callbacks = dvz_list();
 
     // Send the pending requests to the presenter at every frame.
     dvz_app_onframe(app, _on_frame, app);
@@ -213,6 +217,39 @@ void dvz_app_submit(DvzApp* app)
 
 
 
+static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payload)
+{
+    ANN(gui_window);
+
+    DvzAppGuiPayload* payload = (DvzAppGuiPayload*)internal_payload;
+    ANN(payload);
+
+    DvzApp* app = payload->app;
+    DvzId canvas_id = payload->canvas_id;
+    DvzAppGui callback = payload->callback;
+    void* user_data = payload->user_data;
+
+    callback(app, canvas_id, user_data);
+}
+
+void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data)
+{
+    ANN(app);
+
+    DvzPresenter* prt = app->prt;
+    ANN(prt);
+
+    DvzAppGuiPayload* payload = (DvzAppGuiPayload*)calloc(1, sizeof(DvzAppGuiPayload));
+    payload->canvas_id = canvas_id;
+    payload->callback = callback;
+    payload->user_data = user_data;
+    dvz_list_append(app->callbacks, (DvzListItem){.p = (void*)payload});
+
+    dvz_presenter_gui(prt, canvas_id, _gui_callback, payload);
+}
+
+
+
 void dvz_app_run(DvzApp* app, uint64_t n_frames)
 {
     ANN(app);
@@ -265,4 +302,18 @@ void dvz_app_destroy(DvzApp* app)
     dvz_renderer_destroy(app->rd);
     dvz_gpu_destroy(app->gpu);
     dvz_host_destroy(app->host);
+
+    // Free the callback payloads.
+    DvzAppGuiPayload* payload = NULL;
+    for (uint32_t i = 0; i < app->callbacks->count; i++)
+    {
+        payload = (DvzAppGuiPayload*)(dvz_list_get(app->callbacks, i).p);
+        ANN(payload);
+        FREE(payload);
+    }
+
+    // Destroy the list of GUI callbacks.
+    dvz_list_destroy(app->callbacks);
+
+    FREE(app);
 }
