@@ -48,8 +48,13 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
 
 vec4 fetch_color(vec3 uvw)
 {
-    float v = texture(tex_density, uvw).r;
-    v = clamp(v, 0, .9999);
+    // float v = texture(tex_density, uvw).r;
+    // v = clamp(v, 0, .9999);
+    // vec4 color = vec4(1, 1, 1, v); // colormap(DVZ_CMAP_HSV, v);
+    // color.a = v;
+
+    vec4 color = texture(tex_density, uvw).rgba;
+    // color.a = clamp(color.a, 0, .9999);
 
     // // Transfer function.
     // float x0 = params.transfer_xrange.x;
@@ -60,10 +65,7 @@ vec4 fetch_color(vec3 uvw)
     // Color component.
     // vec4 color = params.color_coef * texture(tex_colors, uvw);
     // vec4 color = params.color_coef * colormap(params.cmap, v);
-    vec4 color = vec4(1, 1, 1, v); // colormap(DVZ_CMAP_HSV, v);
 
-    // Alpha value: value.
-    color.a = v;
     return color;
 }
 
@@ -130,14 +132,20 @@ void main()
     vec3 ray_start = o + u * t0;
     vec3 ray_stop = o + u * t1;
 
-    vec3 pos = ray_stop;
-    vec3 dl = normalize(ray_start - ray_stop) * STEP_SIZE;
+    vec3 pos = ray_start;
+    vec3 dl = -normalize(ray_start - ray_stop) * STEP_SIZE;
     float travel = distance(ray_start, ray_stop);
     float max_intensity = 0.0;
     vec3 uvw = vec3(0);
-    vec4 s = vec4(0);
-    vec4 acc = vec4(0);
+
+    vec3 rgbVoxel = vec3(0);
+    vec3 rgbAcc = vec3(0);
+    float intensity = 0;
     float alpha = 0;
+    float alphaAcc = 0;
+    vec4 fetched = vec4(0);
+
+    // float acci = 0;
     // vec3 uvw_pick = vec3(0);
     // bool in_clip = false;
     // bool clip_front = false;
@@ -160,20 +168,19 @@ void main()
             // }
             // uvw_pick = uvw;
         }
-
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
 
         // Fetch the color from the 3D texture.
-        s = fetch_color(uvw);
-        alpha = s.a;
-        acc = s + (1 - alpha) * acc;
+        fetched = fetch_color(uvw);
 
-        // MIP
-        if (s.a > max_intensity)
-        {
-            max_intensity = s.a;
-        }
+        rgbVoxel = fetched.rgb;
+        intensity = fetched.a * .025;
+        alpha = intensity;
+        rgbAcc = (1 - alpha) * rgbAcc + alpha * rgbVoxel;
+        alphaAcc += alpha;
+        if (alphaAcc >= 1)
+            break;
     }
 
     {
@@ -195,6 +202,8 @@ void main()
         // }
     }
 
-    out_color = acc;
+    rgbAcc /= max(alphaAcc, 1e-6);
+    out_color.rgb = rgbAcc.rgb;
+    out_color.a = alphaAcc;
     // out_pick = ivec4(255 * uvw_pick, 0);
 }
