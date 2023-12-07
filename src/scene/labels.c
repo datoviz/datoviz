@@ -14,14 +14,16 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
+/*  Macros                                                                                       */
 /*************************************************************************************************/
+
+#define IDIV(x) ((int32_t)(x) / pow(10, oom))
+
 
 
 /*************************************************************************************************/
 /*  Util functions                                                                               */
 /*************************************************************************************************/
-
 
 static inline void _get_tick_format(DvzTicksFormat format, uint32_t precision, char* fmt)
 {
@@ -80,11 +82,11 @@ static inline bool _is_format_factored(DvzTicksFormat format)
 
 void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, double* out_offset)
 {
-    if (lmin == lmax)
-        return;
-
     // Loose translation of:
     // https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/ticker.py#L708
+
+    if (lmin == lmax)
+        return;
 
     // # min, max comparing absolute values (we want division to round towards
     // # zero so we work on absolute values).
@@ -109,7 +111,7 @@ void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, doub
     int32_t oom = oom_max;
     for (; oom >= 0; oom--)
     {
-        if (abs_min / pow(10, oom) != abs_max / pow(10, oom))
+        if (IDIV(abs_min) != IDIV(abs_max))
             break;
     }
     oom += 1;
@@ -126,7 +128,7 @@ void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, doub
         oom = oom_max;
         for (; oom >= 0; oom--)
         {
-            if ((abs_max / pow(10, oom) - abs_min / pow(10, oom)) > 1)
+            if ((IDIV(abs_max) - IDIV(abs_min)) > 1)
                 break;
         }
         oom += 1;
@@ -142,8 +144,7 @@ void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, doub
     // self.offset = (sign * (abs_max // 10 ** oom) * 10 ** oom
     //                if abs_max // 10 ** oom >= 10**n
     //                else 0)
-    double offset =
-        abs_max / pow(10, oom) >= pow(10, n) ? sign * (abs_max / pow(10, oom) * pow(10, oom)) : 0;
+    double offset = IDIV(abs_max) >= pow(10, n) ? sign * (IDIV(abs_max) * pow(10, oom)) : 0;
 
     // if self.offset:
     //     oom = math.floor(math.log10(vmax - vmin))
@@ -202,6 +203,50 @@ void _find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, doub
 
 
 /*************************************************************************************************/
+/*  Label format                                                                                 */
+/*************************************************************************************************/
+
+DvzLabelFormat
+dvz_label_format(DvzTicksFormat format, uint32_t precision, int32_t exponent, double offset)
+{
+    DvzLabelFormat f = {
+        .format = format,
+        .precision = precision,
+        .exponent = exponent,
+        .offset = offset,
+    };
+    _get_tick_format(format, precision, f.tick_format);
+    return f;
+}
+
+
+
+static inline uint32_t format_label(DvzLabelFormat* fmt, double value, char* out)
+{
+    ANN(fmt);
+    ANN(out);
+
+    int32_t exponent = fmt->exponent;
+    double exp = pow(10, exponent);
+
+    // Take offset and exponent into account.
+    if (_is_format_factored(fmt->format))
+    {
+        value -= fmt->offset;
+        value /= exp;
+    }
+
+    _tick_label(value, fmt->tick_format, out);
+
+    uint32_t n = strnlen(out, MAX_GLYPHS_PER_LABEL * 2);
+    ASSERT(n < MAX_GLYPHS_PER_LABEL);
+
+    return n;
+}
+
+
+
+/*************************************************************************************************/
 /*  Labels functions                                                                             */
 /*************************************************************************************************/
 
@@ -220,14 +265,15 @@ DvzLabels* dvz_labels(void)
 
 
 uint32_t dvz_labels_generate(
-    DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
-    int32_t exponent, double offset,                              //
+    DvzLabels* labels,
+    // label format
+    DvzTicksFormat format, uint32_t precision, int32_t exponent, double offset, //
+    // ticks positions spec
     double lmin, double lmax, double lstep)
 {
     ANN(labels);
 
-    char tick_format[12] = {0};
-    _get_tick_format(format, precision, tick_format);
+    DvzLabelFormat fmt = dvz_label_format(format, precision, exponent, offset);
 
     ASSERT(lstep > 0);
     double x0 = lmin;
@@ -240,23 +286,13 @@ uint32_t dvz_labels_generate(
 
     char* s = NULL;
     uint32_t k = 0, n = 0;
-    double exp = pow(10, exponent);
     for (uint32_t i = 0; i < count; i++)
     {
         x = x0 + i * lstep;
-
-        // Take offset and exponent into account.
-        if (_is_format_factored(format))
-        {
-            x -= offset;
-            x /= exp;
-        }
-
         s = &labels->labels[k];
-        _tick_label(x, tick_format, s);
 
-        n = strnlen(s, MAX_GLYPHS_PER_LABEL * 2);
-        ASSERT(n < MAX_GLYPHS_PER_LABEL);
+        // Generate the label string.
+        n = format_label(&fmt, x, s);
 
         labels->length[i] = n;
         labels->index[i] = k;
@@ -264,10 +300,20 @@ uint32_t dvz_labels_generate(
     }
 
     // Display the exponent.
-    if (_is_format_factored(format) && (labels->exponent != 0))
+    if (_is_format_factored(format))
     {
-        snprintf(labels->exponent, DVZ_LABELS_MAX_EXPONENT_LENGTH, "1e%d", exponent);
-        snprintf(labels->offset, DVZ_LABELS_MAX_OFFSET_LENGTH, "%e", offset);
+        // Exponent.
+
+        if (exponent != 0)
+            _tick_label(pow(10, exponent), "x%g", labels->exponent);
+        else
+            labels->exponent[0] = 0;
+
+        // Offset.
+        if (offset != 0)
+            _tick_label(offset, fmt.tick_format, labels->offset);
+        else
+            labels->offset[0] = 0;
     }
 
     return count;
@@ -331,11 +377,15 @@ void dvz_labels_print(DvzLabels* labels)
     {
         printf("%02d\t%s\n", i, &labels->labels[labels->index[i]]);
     }
-    if (strnlen(labels->exponent, DVZ_LABELS_MAX_EXPONENT_LENGTH) > 0)
-    {
+    printf("\n");
+
+    // Display the exponent if there is one.
+    if (labels->exponent[0])
         printf("exponent : %s\n", labels->exponent);
+
+    // Display the offset if there is one.
+    if (labels->offset[0])
         printf("offset   : %s\n", labels->offset);
-    }
 }
 
 

@@ -31,6 +31,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzLabels DvzLabels;
+typedef struct DvzLabelFormat DvzLabelFormat;
 
 
 
@@ -57,6 +58,17 @@ struct DvzLabels
 
 
 
+struct DvzLabelFormat
+{
+    DvzTicksFormat format;
+    uint32_t precision;
+    int32_t exponent;
+    double offset;
+    char tick_format[12];
+};
+
+
+
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -64,6 +76,11 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 void _find_exponent_offset(double lmin, double lmax, int32_t* exponent, double* offset);
+
+
+
+DVZ_EXPORT DvzLabelFormat
+dvz_label_format(DvzTicksFormat format, uint32_t precision, int32_t exponent, double offset);
 
 
 

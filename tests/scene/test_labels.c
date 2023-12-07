@@ -53,25 +53,40 @@ int test_labels_1(TstSuite* suite)
 
 
 
-int test_labels_exponent_offset(TstSuite* suite)
+static inline void _test_factored(DvzLabels* labels, double lmin, double lmax)
 {
+    ANN(labels);
+
+    double lstep = (lmax - lmin) / 10;
     double offset = 0;
     int32_t exponent = 0;
-    double lmin = 1e9;
-    double lmax = lmin + 1;
-    double lstep = (lmax - lmin) / 10;
+    uint32_t precision = 4;
 
     _find_exponent_offset(lmin, lmax, &exponent, &offset);
-    printf("lmin, lmax : %e, %e\n", lmin, lmax);
+    printf("TICK LABELS\n");
+    printf("----------------------------\n");
+    printf("lmin       : %e\n", lmin);
+    printf("lmax       : %e\n", lmax);
+    printf("lstep      : %e\n", lstep);
     printf("exponent   : %d\n", exponent);
     printf("offset     : %e\n\n", offset);
-
-    // exponent = 0;
-    DvzLabels* labels = dvz_labels();
     dvz_labels_generate(
-        labels, DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED, 2, exponent, offset, lmin, lmax, lstep);
+        labels, DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED, precision, exponent, offset, lmin, lmax,
+        lstep);
     dvz_labels_print(labels);
-    dvz_labels_destroy(labels);
 
+    printf("\n\n");
+}
+
+int test_labels_factored(TstSuite* suite)
+{
+    DvzLabels* labels = dvz_labels();
+
+    _test_factored(labels, 0, 1);
+    _test_factored(labels, -10, +10);
+    _test_factored(labels, 0, 10);
+    _test_factored(labels, 1e3 - 1, 1e3 + 1);
+
+    dvz_labels_destroy(labels);
     return 0;
 }
