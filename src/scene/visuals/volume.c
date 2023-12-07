@@ -64,7 +64,9 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
 
     // Specialization constants.
     int volume_type = VOLUME_TYPE_RGBA;
-    int volume_color = VOLUME_COLOR_DIRECT;
+    if ((flags & DVZ_VOLUME_FLAGS_RGBA) != 0)
+        volume_type = VOLUME_TYPE_RGBA;
+    int volume_color = VOLUME_COLOR_DIRECT; // TODO: make it a flag
 
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &volume_type);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &volume_color);

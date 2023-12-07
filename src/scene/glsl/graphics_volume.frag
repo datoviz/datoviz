@@ -119,7 +119,7 @@ void main()
         fetched = fetch_color(uvw);
 
         rgbVoxel = fetched.rgb;
-        intensity = fetched.a * .025;
+        intensity = fetched.a;
         alpha = intensity;
         rgbAcc = (1 - alpha) * rgbAcc + alpha * rgbVoxel;
         alphaAcc += alpha;

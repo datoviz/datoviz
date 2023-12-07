@@ -114,7 +114,7 @@ int test_volume_2(TstSuite* suite)
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL);
 
     // Volume visual.
-    DvzVisual* visual = dvz_volume(vt.batch, 0);
+    DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
     dvz_volume_alloc(visual, 1);
 
     // Volume parameters.
