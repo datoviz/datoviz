@@ -16,6 +16,11 @@ layout(constant_id = 0) const int VOLUME_TYPE = VOLUME_TYPE_SCALAR;
 #define VOLUME_COLOR_COLORMAP 1
 layout(constant_id = 1) const int VOLUME_COLOR = VOLUME_COLOR_DIRECT;
 
+// Volume front to back or back to front.
+#define VOLUME_DIR_FRONT_BACK 0
+#define VOLUME_DIR_BACK_FRONT 1
+layout(constant_id = 2) const int VOLUME_DIR = VOLUME_DIR_FRONT_BACK;
+
 // Uniform variables.
 layout(std140, binding = USER_BINDING) uniform Params
 {
@@ -96,6 +101,14 @@ void main()
 
     vec3 pos = ray_start;
     vec3 dl = -normalize(ray_start - ray_stop) * STEP_SIZE;
+
+    // Direction: back to front or front to back.
+    if (VOLUME_DIR == VOLUME_DIR_BACK_FRONT)
+    {
+        pos = ray_stop;
+        dl = -dl;
+    }
+
     float travel = distance(ray_start, ray_stop);
     float max_intensity = 0.0;
     vec3 uvw = vec3(0);
