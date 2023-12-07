@@ -71,12 +71,12 @@ struct VisualTest
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-static VisualTest visual_test_start(const char* name, VisualTestType type)
+static VisualTest visual_test_start(const char* name, VisualTestType type, int flags)
 {
 
     // NOTE: use as follows:
 
-    // VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL);
+    // VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
 
     // // Volume visual.
     // DvzVisual* volume = dvz_volume(vt.batch, 0);
@@ -98,7 +98,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type)
     DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, flags);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);

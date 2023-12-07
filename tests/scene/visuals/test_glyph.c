@@ -49,7 +49,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
 int test_glyph_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     // DEBUG

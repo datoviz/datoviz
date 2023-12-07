@@ -28,7 +28,7 @@
 
 int test_pixel_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("pixel", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("pixel", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     const uint32_t n = 10000;

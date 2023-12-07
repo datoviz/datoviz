@@ -31,7 +31,7 @@
 
 int test_marker_code(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_code", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("marker_code", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     const uint32_t n = 1000;
@@ -101,7 +101,8 @@ int test_marker_code(TstSuite* suite)
 
 int test_marker_bitmap(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_bitmap", VISUAL_TEST_PANZOOM);
+    VisualTest vt =
+        visual_test_start("marker_bitmap", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     const uint32_t n = 100;
@@ -198,7 +199,7 @@ static void _disc_sdf(DvzVisual* visual, uint32_t size)
 
 int test_marker_sdf(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_sdf", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("marker_sdf", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     const uint32_t n = 1000;
@@ -276,7 +277,7 @@ int test_marker_sdf(TstSuite* suite)
 
 int test_marker_msdf(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_msdf", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("marker_msdf", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     const uint32_t n = 1000;
@@ -390,7 +391,8 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 // Check glyph adaptive size depending on the marker rotation.
 int test_marker_rotation(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("marker_rotation", VISUAL_TEST_PANZOOM);
+    VisualTest vt =
+        visual_test_start("marker_rotation", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);

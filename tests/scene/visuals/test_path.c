@@ -28,7 +28,7 @@
 
 int test_path_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     uint32_t N = 100; // size of each path
@@ -127,7 +127,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
 int test_path_2(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM);
+    VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.
     uint32_t N = 100; // size of each path

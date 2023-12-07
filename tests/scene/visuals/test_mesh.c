@@ -30,7 +30,7 @@
 
 int test_mesh_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL);
+    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Shape.
     DvzShape shape = dvz_shape_cube((cvec4[]){
