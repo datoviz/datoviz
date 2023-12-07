@@ -204,6 +204,14 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
 
 
 
+/**
+ */
+DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
 
 

@@ -380,10 +380,14 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
     DvzCommands* cmds = &gui_window->cmds;
     ANN(cmds);
 
+    // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
+    ImGuiIO& io = ImGui::GetIO();
+    if (gui_window->window)
+        gui_window->window->is_captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
+
     DvzGui* gui = gui_window->gui;
     ANN(gui);
 
-    ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize.x = gui_window->width;
     io.DisplaySize.y = gui_window->height;
 
@@ -472,6 +476,13 @@ void dvz_gui_text(const char* fmt, ...)
     va_start(args, fmt);
     ImGui::TextV(fmt, args);
     va_end(args);
+}
+
+
+
+bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
+{
+    return ImGui::SliderFloat(name, value, vmin, vmax, "%.5f", 0);
 }
 
 
