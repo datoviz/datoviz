@@ -48,6 +48,7 @@ struct DvzArcball
     int flags;
 
     mat4 mat;        // current model
+    vec3 init;       // initial Euler angles
     versor rotation; // current rotation (while dragging), to be applied to mat after dragging
     vec3 constrain;  // constrain axis, null if no constraint
 };
@@ -62,6 +63,8 @@ EXTERN_C_ON
 
 DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
 
+DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
+
 DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
 
 DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
@@ -70,7 +73,9 @@ DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
 
 DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
 
-DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 angles);
+DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
+
+DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
 DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 

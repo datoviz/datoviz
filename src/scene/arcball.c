@@ -89,14 +89,22 @@ DvzArcball* dvz_arcball(float width, float height, int flags)
 
 
 
+void dvz_arcball_initial(DvzArcball* arcball, vec3 angles)
+{
+    ANN(arcball);
+    glm_vec3_copy(angles, arcball->init);
+    dvz_arcball_reset(arcball);
+}
+
+
+
 void dvz_arcball_reset(DvzArcball* arcball)
 {
     ANN(arcball);
 
-    dvz_arcball_angles(arcball, (vec3){0});
+    dvz_arcball_set(arcball, arcball->init); // this sets arcball->mat
 
-    glm_mat4_identity(arcball->mat);
-    // glm_mat4_identity(arcball->mat_inv);
+    // glm_mat4_identity(arcball->mat);
     glm_quat_identity(arcball->rotation);
 }
 
@@ -134,18 +142,18 @@ void dvz_arcball_constrain(DvzArcball* arcball, vec3 constrain)
 
 
 
-void dvz_arcball_angles(DvzArcball* arcball, vec3 angles)
+void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
 {
     ANN(arcball);
+    glm_euler(angles, arcball->mat);
+}
 
-    mat4 m4;
-    glm_vec3_negate(angles);
-    glm_euler(angles, m4);
-    mat3 m;
-    glm_mat4_pick3(m4, m);
-    glm_mat3_transpose(m);
-    glm_mat3_quat(m, arcball->rotation);
-    glm_quat_normalize(arcball->rotation);
+
+
+void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles)
+{
+    ANN(arcball);
+    glm_euler_angles(arcball->mat, out_angles);
 }
 
 

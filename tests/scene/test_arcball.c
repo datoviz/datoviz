@@ -36,7 +36,7 @@ int test_arcball_1(TstSuite* suite)
     vec3 angles = {0, 0, 0};
 
     // Identity.
-    dvz_arcball_angles(arcball, angles);
+    dvz_arcball_set(arcball, angles);
     dvz_arcball_print(arcball);
 
     dvz_arcball_rotate(arcball, cur_pos, last_pos);
@@ -44,7 +44,7 @@ int test_arcball_1(TstSuite* suite)
 
     // From angles.
     angles[0] = M_PI / 4;
-    dvz_arcball_angles(arcball, angles);
+    dvz_arcball_set(arcball, angles);
     dvz_arcball_print(arcball);
 
     // Reset
@@ -55,6 +55,13 @@ int test_arcball_1(TstSuite* suite)
     last_pos[1] = -10;
     dvz_arcball_rotate(arcball, cur_pos, last_pos);
     dvz_arcball_print(arcball);
+
+    dvz_arcball_reset(arcball);
+    dvz_arcball_set(arcball, (vec3){.1, .2, .3});
+    dvz_arcball_angles(arcball, angles);
+    AC(angles[0], .1, 1e-3);
+    AC(angles[1], .2, 1e-3);
+    AC(angles[2], .3, 1e-3);
 
     dvz_arcball_destroy(arcball);
     return 0;
