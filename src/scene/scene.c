@@ -458,6 +458,17 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 /*  Camera                                                                                       */
 /*************************************************************************************************/
 
+static void _camera_zoom(DvzCamera* camera, float dz)
+{
+    ANN(camera);
+    vec3 pos = {0};
+    _vec3_copy(camera->pos, pos);
+    pos[2] *= (1 + .01 * dz);
+    dvz_camera_position(camera, pos);
+}
+
+
+
 DvzCamera* dvz_panel_camera(DvzPanel* panel)
 {
     ANN(panel);
@@ -485,6 +496,85 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
     dvz_transform_update(panel->transform, *mvp);
 
     return panel->camera;
+}
+
+
+
+/*************************************************************************************************/
+/*  Updates                                                                                      */
+/*************************************************************************************************/
+
+static void _update_panzoom(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzPanzoom* pz = panel->panzoom;
+    ANN(pz);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    dvz_panzoom_mvp(pz, mvp);
+
+    // dvz_transform_update(tr, *mvp);
+}
+
+
+static void _update_arcball(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzArcball* arcball = panel->arcball;
+    ANN(arcball);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    dvz_arcball_mvp(arcball, mvp);
+
+    // dvz_transform_update(tr, *mvp);
+}
+
+
+static void _update_camera(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    DvzCamera* camera = panel->camera;
+    ANN(camera);
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    dvz_camera_mvp(camera, mvp); // set the model matrix
+
+    // dvz_transform_update(tr, *mvp);
+}
+
+
+
+void dvz_panel_update(DvzPanel* panel)
+{
+    ANN(panel);
+
+    if (panel->camera)
+        _update_camera(panel);
+    if (panel->panzoom)
+        _update_panzoom(panel);
+    if (panel->arcball)
+        _update_arcball(panel);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    ANN(mvp);
+    dvz_transform_update(tr, *mvp);
 }
 
 
@@ -557,10 +647,8 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         // Pass the mouse event to the panzoom object.
         if (dvz_panzoom_mouse(pz, mev))
         {
-            // Update the MVP matrices.
+            _update_panzoom(panel);
             DvzMVP* mvp = dvz_transform_mvp(tr);
-            dvz_panzoom_mvp(pz, mvp);
-
             dvz_transform_update(tr, *mvp);
         }
     }
@@ -578,26 +666,18 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         // Pass the mouse event to the arcball object.
         if (dvz_arcball_mouse(arcball, mev))
         {
-            // Update the MVP matrices.
-            DvzMVP* mvp = dvz_transform_mvp(tr);
-            dvz_arcball_mvp(arcball, mvp);
-
-            dvz_transform_update(tr, *mvp);
+            _update_arcball(panel);
         }
 
+        // Camera zoom.
         if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
         {
-            vec3 pos = {0};
-            _vec3_copy(panel->camera->pos, pos);
-            pos[2] *= (1 + .01 * ev.content.m.content.w.dir[1]);
-            dvz_camera_position(panel->camera, pos);
-
-            // Update the MVP matrices.
-            DvzMVP* mvp = dvz_transform_mvp(tr);
-            dvz_camera_mvp(panel->camera, mvp); // set the model matrix
-
-            dvz_transform_update(tr, *mvp);
+            _camera_zoom(panel->camera, ev.content.m.content.w.dir[1]);
+            _update_camera(panel);
         }
+
+        DvzMVP* mvp = dvz_transform_mvp(tr);
+        dvz_transform_update(tr, *mvp);
     }
 }
 
