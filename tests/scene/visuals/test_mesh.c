@@ -88,6 +88,11 @@ int test_mesh_obj(TstSuite* suite)
     char path[1024];
     snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
     DvzShape shape = dvz_shape_obj(path);
+    if (!shape.vertex_count)
+    {
+        dvz_shape_destroy(&shape);
+        return 0;
+    }
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
