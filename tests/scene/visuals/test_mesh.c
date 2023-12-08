@@ -11,10 +11,13 @@
 #include "scene/visuals/test_mesh.h"
 #include "renderer.h"
 #include "request.h"
+#include "scene/arcball.h"
 #include "scene/dual.h"
 #include "scene/meshobj.h"
+#include "scene/scene.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/shape.h"
+#include "scene/transform.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/mesh.h"
@@ -80,6 +83,18 @@ int test_mesh_1(TstSuite* suite)
 
 
 
+static void _onmouse(DvzClient* client, DvzClientEvent ev)
+{
+    // Display arcball Euler angles when rotating the model.
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+    DvzArcball* arcball = (DvzArcball*)vt->arcball;
+    ANN(arcball);
+    vec3 angles = {0};
+    dvz_arcball_angles(arcball, angles);
+    // glm_vec3_print(angles, stdout);
+}
+
 int test_mesh_obj(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
@@ -107,6 +122,11 @@ int test_mesh_obj(TstSuite* suite)
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
+
+    dvz_app_onmouse(vt.app, _onmouse, &vt);
+
+    dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
+    dvz_panel_update(vt.panel);
 
     // Run the test.
     visual_test_end(vt);
