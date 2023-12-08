@@ -21,6 +21,8 @@
 
 int test_shape_1(TstSuite*);
 
+int test_shape_obj(TstSuite*);
+
 
 
 #endif

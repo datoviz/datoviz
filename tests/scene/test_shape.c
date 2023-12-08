@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Testing animation                                                                            */
+/*  Testing shape                                                                                */
 /*************************************************************************************************/
 
 
@@ -9,9 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_shape.h"
-#include "presenter.h"
-#include "renderer.h"
-#include "scene/app.h"
+#include "scene/meshobj.h"
 #include "scene/shape.h"
 #include "test.h"
 #include "testing.h"
@@ -20,7 +18,7 @@
 
 
 /*************************************************************************************************/
-/*  Animation tests                                                                              */
+/*  Shape tests                                                                                  */
 /*************************************************************************************************/
 
 int test_shape_1(TstSuite* suite)
@@ -35,5 +33,20 @@ int test_shape_1(TstSuite* suite)
 
     dvz_shape_destroy(&disc);
     dvz_shape_destroy(&square);
+    return 0;
+}
+
+
+
+int test_shape_obj(TstSuite* suite)
+{
+    ANN(suite);
+
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
+
+    DvzShape shape = dvz_shape_obj(path);
+    dvz_shape_print(&shape);
+    dvz_shape_destroy(&shape);
     return 0;
 }

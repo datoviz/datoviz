@@ -705,6 +705,7 @@ set(sources
     "src/scene/font.c"
     "src/scene/graphics.c"
     "src/scene/labels.c"
+    "src/scene/meshobj.cpp"
     "src/scene/mvp.c"
     "src/scene/panzoom.c"
     "src/scene/params.c"

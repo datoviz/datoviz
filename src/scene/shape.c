@@ -21,6 +21,16 @@
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
 
+void dvz_shape_print(DvzShape* shape)
+{
+    ANN(shape);
+    log_info(
+        "shape type %d, %d vertices, %d indices", //
+        shape->type, shape->vertex_count, shape->index_count);
+}
+
+
+
 void dvz_shape_destroy(DvzShape* shape)
 {
     ANN(shape);

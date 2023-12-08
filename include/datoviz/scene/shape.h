@@ -37,6 +37,7 @@ typedef enum
     DVZ_SHAPE_SPHERE,
     DVZ_SHAPE_CYLINDER,
     DVZ_SHAPE_CONE,
+    DVZ_SHAPE_OBJ,
     DVZ_SHAPE_OTHER,
 } DvzShapeType;
 
@@ -65,6 +66,8 @@ EXTERN_C_ON
 /*************************************************************************************************/
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
+
+DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
 DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
 
