@@ -48,6 +48,25 @@ DvzCamera* dvz_camera(float width, float height, int flags)
 
 
 
+void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat)
+{
+    ANN(camera);
+    glm_vec3_copy(pos, camera->pos_init);
+    glm_vec3_copy(lookat, camera->lookat_init);
+
+    dvz_camera_reset(camera);
+}
+
+
+void dvz_camera_reset(DvzCamera* camera)
+{
+    ANN(camera);
+    glm_vec3_copy(camera->pos_init, camera->pos);
+    glm_vec3_copy(camera->lookat_init, camera->lookat);
+}
+
+
+
 void dvz_camera_zrange(DvzCamera* camera, float near, float far)
 {
     ANN(camera);

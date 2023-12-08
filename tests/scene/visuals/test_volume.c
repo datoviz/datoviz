@@ -14,6 +14,7 @@
 #include "renderer.h"
 #include "request.h"
 #include "scene/app.h"
+#include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/dual.h"
 #include "scene/scene.h"
@@ -158,6 +159,10 @@ int test_volume_2(TstSuite* suite)
     float param = 1.0;
     visual->user_data = &param;
     dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+
+    dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
+    dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat);
+    dvz_panel_update(vt.panel);
 
     // Run the test.
     visual_test_end(vt);

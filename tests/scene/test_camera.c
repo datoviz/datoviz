@@ -36,6 +36,12 @@ int test_camera_1(TstSuite* suite)
 
     dvz_camera_print(camera);
 
+    vec3 pos = {1, 2, 3};
+    vec3 lookat = {4, 5, 6};
+    dvz_camera_initial(camera, pos, lookat);
+    AT(glm_vec3_eqv(camera->pos, pos));
+    AT(glm_vec3_eqv(camera->lookat, lookat));
+
     dvz_camera_destroy(camera);
     return 0;
 }

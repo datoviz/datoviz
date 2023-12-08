@@ -676,6 +676,13 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             _update_camera(panel);
         }
 
+        // Reset the camera after a double-click.
+        if (mev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+        {
+            dvz_camera_reset(panel->camera);
+            _update_camera(panel);
+        }
+
         DvzMVP* mvp = dvz_transform_mvp(tr);
         dvz_transform_update(tr, *mvp);
     }
