@@ -256,6 +256,8 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
     ANN(app->client);
     ANN(app->batch);
     ANN(app->prt);
+    ANN(app->prt->rd);
+    ANN(app->prt->rd->ctx);
 
     // Emit a window init event.
     dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
@@ -268,6 +270,8 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
     app->is_running = true;
     dvz_client_run(app->client, n_frames);
     app->is_running = false;
+
+    dvz_context_wait(app->prt->rd->ctx);
 }
 
 

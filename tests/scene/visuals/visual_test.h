@@ -154,6 +154,7 @@ static void visual_test_end(VisualTest vt)
 
     // Run the scene.
     dvz_scene_run(vt.scene, vt.app, N_FRAMES);
+    dvz_app_destroy(vt.app);
 
     // Cleanup.
     if (vt.camera != NULL)
@@ -163,7 +164,6 @@ static void visual_test_end(VisualTest vt)
     dvz_panel_destroy(vt.panel);
     dvz_figure_destroy(vt.figure);
     dvz_scene_destroy(vt.scene);
-    dvz_app_destroy(vt.app);
 }
 
 

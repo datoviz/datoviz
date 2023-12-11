@@ -253,6 +253,7 @@ int dvz_client_frame(DvzClient* client)
 void dvz_client_run(DvzClient* client, uint64_t n_frames)
 {
     ANN(client);
+    dvz_atomic_set(client->to_stop, 0);
     log_trace("start client event loop with %d frames", n_frames);
     int window_count = 0;
     client->n_frames = n_frames;
