@@ -265,6 +265,8 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
         if (window_count == 0)
             break;
     }
+
+    dvz_client_stop(client);
     log_trace("stop client event loop after %d/%d frames", client->frame_idx + 1, n);
 }
 
