@@ -127,6 +127,7 @@ int test_glyph_1(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
+    dvz_font_destroy(font);
     dvz_atlas_destroy(atlas);
 
     return 0;

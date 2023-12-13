@@ -17,6 +17,7 @@
 #include "scene/test_arcball.h"
 #include "scene/test_array.h"
 #include "scene/test_atlas.h"
+#include "scene/test_axis.h"
 #include "scene/test_baker.h"
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
@@ -276,6 +277,7 @@ int dvz_run_tests(const char* match)
     TEST(test_volume_2)
     TEST(test_image_1)
     TEST(test_fake_sphere_1)
+    TEST(test_axis_1)
 
     // Teardown the gpu fixture.
     TEARDOWN(teardown_gpu)
