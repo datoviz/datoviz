@@ -312,7 +312,7 @@ DVZ_EXPORT void dvz_visual_alloc(
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr);
+DVZ_EXPORT void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr);
 
 
 

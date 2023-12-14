@@ -584,6 +584,16 @@ void dvz_visual_alloc(
 
 
 
+void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr)
+{
+    ANN(visual);
+    ANN(tr);
+    ASSERT(vertex_attr < DVZ_MAX_VERTEX_ATTRS);
+    visual->transforms[vertex_attr] = tr;
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual common bindings                                                                       */
 /*  NOTE: only for tests. Otherwise will use scene API with transforms and viewsets.             */
