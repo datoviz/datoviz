@@ -21,6 +21,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define MINOR_TICKS_PER_INTERVAL 4
+
 
 
 /*************************************************************************************************/
@@ -94,6 +96,13 @@ static inline uint32_t _glyph_count(DvzAxis* axis)
 
 
 
+static inline uint32_t _minor_tick_count(uint32_t tick_count)
+{
+    return (tick_count - 1) * MINOR_TICKS_PER_INTERVAL;
+}
+
+
+
 // NOTE: the caller must FREE the output
 static inline void* _repeat(uint32_t item_count, DvzSize item_size, void* value)
 {
@@ -144,7 +153,11 @@ set_groups(DvzAxis* axis, uint32_t glyph_count, uint32_t tick_count, uint32_t* g
     axis->tick_count = tick_count;
     axis->group_size = group_size;
 
-    dvz_segment_alloc(axis->segment, tick_count);
+    uint32_t n_major = axis->tick_count;
+    uint32_t n_minor = _minor_tick_count(n_major);
+    uint32_t n_total = n_major + n_minor;
+
+    dvz_segment_alloc(axis->segment, n_total);
     dvz_glyph_alloc(axis->glyph, glyph_count);
 }
 
@@ -197,20 +210,63 @@ static inline vec3* make_tick_positions(DvzAxis* axis, double* values)
 static inline void set_segment_pos(DvzAxis* axis, vec3* positions)
 {
     ANN(axis);
+
     DvzVisual* segment = axis->segment;
     ANN(segment);
-    dvz_segment_position(segment, 0, axis->tick_count, positions, positions, 0);
+
+    uint32_t n_major = axis->tick_count;
+    uint32_t n_minor = _minor_tick_count(n_major);
+    uint32_t n_total = n_major + n_minor;
+
+    // Concatenation of major and minor ticks.
+    vec3* pos = (vec3*)calloc(n_total, sizeof(vec3));
+    memcpy(pos, positions, n_major * sizeof(vec3));
+
+    // Generate the minor ticks.
+    uint32_t major = 0;
+    uint32_t minor = 0;
+    vec3* target = &pos[n_major];
+    float dx = (positions[1][0] - positions[0][0]) / (MINOR_TICKS_PER_INTERVAL + 1);
+    float dy = (positions[1][1] - positions[0][1]) / (MINOR_TICKS_PER_INTERVAL + 1);
+    float dz = (positions[1][2] - positions[0][2]) / (MINOR_TICKS_PER_INTERVAL + 1);
+    for (uint32_t i = 0; i < n_minor; i++)
+    {
+        major = i / MINOR_TICKS_PER_INTERVAL;
+        minor = i % MINOR_TICKS_PER_INTERVAL;
+        target[i][0] = positions[major][0] + (minor + 1) * dx;
+        target[i][1] = positions[major][1] + (minor + 1) * dy;
+        target[i][2] = positions[major][2] + (minor + 1) * dz;
+    }
+
+    dvz_segment_position(segment, 0, n_total, pos, pos, 0);
+    FREE(pos);
 }
 
 
 
-static inline void set_segment_color(DvzAxis* axis, cvec4 color)
+static inline void set_segment_color(DvzAxis* axis)
 {
     ANN(axis);
+
     DvzVisual* segment = axis->segment;
     ANN(segment);
-    cvec4* colors = (cvec4*)_repeat(axis->tick_count, sizeof(cvec4), (void*)color);
-    dvz_segment_color(segment, 0, axis->tick_count, colors, 0);
+
+    uint32_t n_major = axis->tick_count;
+    uint32_t n_minor = _minor_tick_count(n_major);
+    uint32_t n_total = n_major + n_minor;
+
+    // Colors of the major and minor ticks.
+    cvec4* colors = (cvec4*)calloc(n_total, sizeof(cvec4));
+    for (uint32_t i = 0; i < n_major; i++)
+    {
+        memcpy(colors[i], axis->color_major, sizeof(cvec4));
+    }
+    for (uint32_t i = 0; i < n_minor; i++)
+    {
+        memcpy(colors[n_major + i], axis->color_minor, sizeof(cvec4));
+    }
+
+    dvz_segment_color(segment, 0, n_total, colors, 0);
     FREE(colors);
 }
 
@@ -219,17 +275,38 @@ static inline void set_segment_color(DvzAxis* axis, cvec4 color)
 static inline void set_segment_shift(DvzAxis* axis)
 {
     ANN(axis);
+
     DvzVisual* segment = axis->segment;
     ANN(segment);
-    vec4* shift = (vec4*)calloc(axis->tick_count, sizeof(vec4));
-    for (uint32_t i = 0; i < axis->tick_count; i++)
+
+    uint32_t n_major = axis->tick_count;
+    uint32_t n_minor = _minor_tick_count(n_major);
+    uint32_t n_total = n_major + n_minor;
+
+    // Vector pointing from p0 to p1.
+    vec3 u = {0};
+    glm_vec3_sub(axis->p1, axis->p0, u);
+    glm_vec3_normalize(u);
+    // NOTE: this only works in 2D.
+
+    // Tick length.
+    float major_length = axis->tick_length[2];
+    float minor_length = axis->tick_length[3];
+
+    // Major and minor ticks.
+    vec4* shift = (vec4*)calloc(n_total, sizeof(vec4));
+    for (uint32_t i = 0; i < n_major; i++)
     {
-        // TODO: proper shift.
-        shift[i][2] = 0;
-        shift[i][3] = 20;
+        shift[i][2] = -u[1] * major_length;
+        shift[i][3] = +u[0] * major_length;
+    }
+    for (uint32_t i = 0; i < n_minor; i++)
+    {
+        shift[n_major + i][2] = -u[1] * minor_length;
+        shift[n_major + i][3] = +u[0] * minor_length;
     }
     // NOTE: this only works in 2D. In 3D, need to use end positions and shift=0.
-    dvz_segment_shift(segment, 0, axis->tick_count, shift, 0);
+    dvz_segment_shift(segment, 0, n_total, shift, 0);
     FREE(shift);
 }
 
@@ -239,13 +316,25 @@ static inline void set_segment_width(DvzAxis* axis)
 {
     ANN(axis);
 
-    float* width = (float*)calloc(axis->tick_count, sizeof(float));
-    for (uint32_t i = 0; i < axis->tick_count; i++)
+    DvzVisual* segment = axis->segment;
+    ANN(segment);
+
+    uint32_t n_major = axis->tick_count;
+    uint32_t n_minor = _minor_tick_count(n_major);
+    uint32_t n_total = n_major + n_minor;
+
+    // Widths of the major and minor ticks.
+    float* width = (float*)calloc(n_total, sizeof(float));
+    for (uint32_t i = 0; i < n_major; i++)
     {
-        width[i] = axis->width[0]; // TODO: proper ticks
+        width[i] = axis->tick_width[2]; // major
     }
-    // TODO
-    dvz_segment_linewidth(axis->segment, 0, axis->tick_count, width, 0);
+    for (uint32_t i = 0; i < n_minor; i++)
+    {
+        width[n_major + i] = axis->tick_width[3]; // minor
+    }
+
+    dvz_segment_linewidth(segment, 0, n_total, width, 0);
     FREE(width);
 }
 
@@ -282,7 +371,7 @@ static inline void set_glyph_pos(DvzAxis* axis, vec3* positions)
 
 
 
-static inline void set_glyph_color(DvzAxis* axis, cvec4 color)
+static inline void set_glyph_color(DvzAxis* axis)
 {
     ANN(axis);
 
@@ -293,10 +382,9 @@ static inline void set_glyph_color(DvzAxis* axis, cvec4 color)
     ASSERT(glyph_count > 0);
     ASSERT(group_count > 0);
     ANN(group_size);
-    ANN(color);
     DvzVisual* glyph = axis->glyph;
-    cvec4* colors =
-        _repeat_group(sizeof(cvec4), glyph_count, group_count, group_size, (void*)color, true);
+    cvec4* colors = _repeat_group(
+        sizeof(cvec4), glyph_count, group_count, group_size, (void*)axis->color_glyph, true);
     dvz_glyph_color(glyph, 0, glyph_count, colors, 0);
     FREE(colors);
 }
@@ -415,21 +503,33 @@ void dvz_axis_size(DvzAxis* axis, float font_size)
 void dvz_axis_width(DvzAxis* axis, float lim, float grid, float major, float minor)
 {
     ANN(axis);
-    axis->width[0] = lim;
-    axis->width[1] = grid;
-    axis->width[2] = major;
-    axis->width[3] = minor;
+    axis->tick_width[0] = lim;
+    axis->tick_width[1] = grid;
+    axis->tick_width[2] = major;
+    axis->tick_width[3] = minor;
 }
 
 
 
-void dvz_axis_color(DvzAxis* axis, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor)
+void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float minor)
 {
     ANN(axis);
-    memcpy(axis->lim, lim, sizeof(cvec4));
-    memcpy(axis->grid, grid, sizeof(cvec4));
-    memcpy(axis->major, major, sizeof(cvec4));
-    memcpy(axis->minor, minor, sizeof(cvec4));
+    axis->tick_length[0] = lim;
+    axis->tick_length[1] = grid;
+    axis->tick_length[2] = major;
+    axis->tick_length[3] = minor;
+}
+
+
+
+void dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor)
+{
+    ANN(axis);
+    memcpy(axis->color_glyph, glyph, sizeof(cvec4));
+    memcpy(axis->color_lim, lim, sizeof(cvec4));
+    memcpy(axis->color_grid, grid, sizeof(cvec4));
+    memcpy(axis->color_major, major, sizeof(cvec4));
+    memcpy(axis->color_minor, minor, sizeof(cvec4));
 }
 
 
@@ -470,11 +570,15 @@ void dvz_axis_set(
     vec3* tick_positions = make_tick_positions(axis, values);
     set_glyph_pos(axis, tick_positions);
     set_segment_pos(axis, tick_positions);
-    set_segment_shift(axis);
     FREE(tick_positions);
 
-    set_segment_color(axis, axis->major); // TODO
-    set_glyph_color(axis, axis->major);   // TODO: proper colors
+    // Tick width and length.
+    set_segment_width(axis);
+    set_segment_shift(axis);
+
+    // Colors.
+    set_segment_color(axis);
+    set_glyph_color(axis);
 
     set_text(axis, glyphs);
 }

@@ -24,6 +24,9 @@ void main()
     // from https://github.com/Chlumsky/msdfgen#using-a-multi-channel-distance-field
     vec3 msd = texture(tex, in_uv).rgb;
     float sd = median(msd.r, msd.g, msd.b);
+    if (sd < .01)
+        discard;
+
     float screenPxDistance = 4 * (sd - 0.5);
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
     vec4 bg_color = vec4(0, 0, 0, 1);

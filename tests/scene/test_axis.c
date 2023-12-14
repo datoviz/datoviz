@@ -40,36 +40,52 @@ int test_axis_1(TstSuite* suite)
     DvzVisual* segment = dvz_axis_segment(axis);
     DvzVisual* glyph = dvz_axis_glyph(axis);
 
+
     // Global parameters.
-    float font_size = 32;
+    float font_size = 64;
 
     vec3 p0 = {-.9, 0, 0};
     vec3 p1 = {+.9, 0, 0};
     vec3 p2 = {-.9, +.9, 0};
     vec3 p3 = {+.9, +.9, 0};
 
-    cvec4 lim = {255, 0, 0, 255};
-    cvec4 grid = {0, 255, 0, 255};
-    cvec4 major = {255, 255, 255, 255};
-    cvec4 minor = {255, 255, 0, 255};
+    cvec4 color_glyph = {255, 255, 0, 255};
+    cvec4 color_lim = {255, 0, 0, 255};
+    cvec4 color_grid = {0, 255, 0, 255};
+    cvec4 color_major = {255, 255, 255, 255};
+    cvec4 color_minor = {255, 255, 0, 255};
+
+    float width_lim = 4;
+    float width_grid = 2;
+    float width_major = 4;
+    float width_minor = 2;
+
+    float length_lim = 1;
+    float length_grid = 1;
+    float length_major = 40;
+    float length_minor = 20;
 
     dvz_axis_size(axis, font_size);
-    dvz_axis_width(axis, 4, 8, 12, 16);
-    dvz_axis_color(axis, lim, grid, major, minor);
+    dvz_axis_width(axis, width_lim, width_grid, width_major, width_minor);
+    dvz_axis_length(axis, length_lim, length_grid, length_major, length_minor);
+    dvz_axis_color(axis, color_glyph, color_lim, color_grid, color_major, color_minor);
+
 
     // Set the ticks and labels.
-    uint32_t tick_count = 3;
-    uint32_t glyph_count = 3;
-    uint32_t index[3] = {0, 1, 2};
-    uint32_t length[3] = {1, 1, 1};
-
-    char* glyphs = "012";
-    double values[3] = {0, 1, 2};
     double dmin = 0;
-    double dmax = 2;
+    double dmax = 7;
+
+    uint32_t tick_count = 8;
+    double values[] = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    char* glyphs = "01234567";
+    uint32_t glyph_count = strnlen(glyphs, 1024);
+    uint32_t index[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    uint32_t length[] = {1, 1, 1, 1, 1, 1, 1, 1};
 
     dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);
     dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, segment);

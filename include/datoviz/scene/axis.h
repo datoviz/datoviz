@@ -65,14 +65,15 @@ struct DvzAxis
     vec3 p3;
 
     // Color.
-    cvec4 lim;
-    cvec4 grid;
-    cvec4 major;
-    cvec4 minor;
+    cvec4 color_glyph;
+    cvec4 color_lim;
+    cvec4 color_grid;
+    cvec4 color_major;
+    cvec4 color_minor;
 
     // Tick width.
-    vec4 width;  // lim, grid, major, minor
-    vec4 length; // lim, grid, major, minor
+    vec4 tick_width;  // lim, grid, major, minor
+    vec4 tick_length; // lim, grid, major, minor
 
     // Glyphs
     uint32_t tick_count; // = group_count
@@ -133,7 +134,15 @@ DVZ_EXPORT void dvz_axis_width(DvzAxis* axis, float lim, float grid, float major
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_color(DvzAxis* axis, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
+DVZ_EXPORT void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float minor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
 
 
 
