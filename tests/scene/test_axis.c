@@ -10,6 +10,7 @@
 
 #include "test_axis.h"
 #include "scene/axis.h"
+#include "scene/panzoom.h"
 #include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
@@ -32,6 +33,8 @@ int test_axis_1(TstSuite* suite)
     ANN(suite);
 
     VisualTest vt = visual_test_start("axis", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS);
+
+    dvz_panzoom_flags(vt.panzoom, DVZ_PANZOOM_FLAGS_FIXED_Y);
 
     // Create the visual.
     int flags = 0;

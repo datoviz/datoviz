@@ -34,6 +34,8 @@ typedef enum
 {
     DVZ_PANZOOM_FLAGS_NONE = 0x00,
     DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 0x01,
+    DVZ_PANZOOM_FLAGS_FIXED_X = 0x10,
+    DVZ_PANZOOM_FLAGS_FIXED_Y = 0x20,
 } DvzPanzoomFlags;
 
 

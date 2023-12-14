@@ -204,8 +204,10 @@ void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float x0 = pz->pan_center[0];
     float y0 = pz->pan_center[1];
 
-    pz->pan[0] = x0 + shift[0] / zx;
-    pz->pan[1] = y0 + shift[1] / zy;
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
+        pz->pan[0] = x0 + shift[0] / zx;
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
+        pz->pan[1] = y0 + shift[1] / zy;
 }
 
 
@@ -246,8 +248,10 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float x0 = pz->pan_center[0];
     float y0 = pz->pan_center[1];
 
-    pz->pan[0] = x0 - px / zx;
-    pz->pan[1] = y0 - py / zy;
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
+        pz->pan[0] = x0 - px / zx;
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
+        pz->pan[1] = y0 - py / zy;
 }
 
 
