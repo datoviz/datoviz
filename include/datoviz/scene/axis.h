@@ -79,6 +79,8 @@ struct DvzAxis
     uint32_t tick_count; // = group_count
     uint32_t glyph_count;
     uint32_t* group_size;
+
+    void* user_data;
 };
 
 
