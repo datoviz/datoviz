@@ -640,8 +640,6 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         if (dvz_panzoom_mouse(pz, mev))
         {
             _update_panzoom(panel);
-            // DvzMVP* mvp = dvz_transform_mvp(tr);
-            // dvz_transform_set(tr, *mvp);
             dvz_transform_update(tr);
         }
     }
