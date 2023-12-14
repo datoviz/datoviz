@@ -145,6 +145,8 @@ void main()
             break;
     }
 
+    gl_FragDepth = pos.z;
+
     rgbAcc /= max(alphaAcc, 1e-6);
     out_color.rgb = rgbAcc.rgb;
     out_color.a = alphaAcc;

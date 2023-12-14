@@ -22,6 +22,7 @@
 #include "scene/shape.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
+#include "scene/visuals/basic.h"
 #include "scene/visuals/visual_test.h"
 #include "scene/visuals/volume.h"
 #include "test.h"
@@ -139,26 +140,52 @@ int test_volume_2(TstSuite* suite)
         "volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC | DVZ_CANVAS_FLAGS_IMGUI);
 
     // Volume visual.
-    DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
-    dvz_volume_alloc(visual, 1);
-
-    // Volume parameters.
-    double scaling = 1 / (float)MOUSE_D;
-    dvz_volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1);
-
-    // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
-
-    // Create the texture and upload the volume data.
-    DvzId tex = _load_brain_volume(&vt, true);
-
-    // Bind the volume texture to the visual.
-    dvz_volume_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
-
-    // GUI callback.
     float param = 1.0;
-    visual->user_data = &param;
-    dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+    {
+        DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
+        dvz_volume_alloc(visual, 1);
+
+        // Volume parameters.
+        double scaling = 1 / (float)MOUSE_D;
+        dvz_volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1);
+
+        // Add the visual to the panel AFTER setting the visual's data.
+        dvz_panel_visual(vt.panel, visual);
+
+        // Create the texture and upload the volume data.
+        DvzId tex = _load_brain_volume(&vt, true);
+
+        // Bind the volume texture to the visual.
+        dvz_volume_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+
+        // GUI callback.
+        visual->user_data = &param;
+        dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+    }
+
+    // Image visual.
+    {
+        DvzVisual* image = dvz_image(vt.batch, 0);
+
+        // Visual allocation.
+        dvz_image_alloc(image, 1);
+
+        // Image position.
+        float a = .25;
+        dvz_image_position(image, 0, 1, (vec4[]){{-a, +a, +a, -a}}, 0);
+
+        // Image texture coordinates.
+        dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+
+        // Add the visual to the panel AFTER setting the visual's data.
+        dvz_panel_visual(vt.panel, image);
+
+        // Create and upload the texture.
+        uvec3 tex_shape = {0};
+        DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
+
+        dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    }
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
     dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat);
