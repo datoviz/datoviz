@@ -78,9 +78,10 @@ int test_axis_1(TstSuite* suite)
     uint32_t tick_count = 8;
     double values[] = {0, 1, 2, 3, 4, 5, 6, 7};
 
-    char* glyphs = "01234567";
-    uint32_t glyph_count = strnlen(glyphs, 1024);
-    uint32_t index[] = {0, 1, 2, 3, 4, 5, 6, 7};
+    char* glyphs = "0 1 2 3 4 5 6 7 ";
+    uint32_t glyph_count = strnlen(glyphs, 1024) / 2;
+    AT(glyph_count == tick_count);
+    uint32_t index[] = {0, 2, 4, 6, 8, 10, 12, 14};
     uint32_t length[] = {1, 1, 1, 1, 1, 1, 1, 1};
 
     dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);

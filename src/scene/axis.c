@@ -391,14 +391,15 @@ static inline void set_glyph_color(DvzAxis* axis)
 
 
 
-static inline void set_text(DvzAxis* axis, const char* glyphs)
+static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index)
 {
     // NOTE: text is the concatenation of all group strings, without trailing zeros
     ANN(axis);
+    ANN(glyphs);
+    ANN(index);
 
     // Set the size and shift properties of the glyph vsual by using the font to compute the
     // layout.
-    uint32_t n = strnlen(glyphs, 65536); // NOTE: hard-coded maximal text size
     vec4* xywh = dvz_font_ascii(axis->font, glyphs);
 
     // NOTE: remove the x0 offset for each group.
@@ -408,23 +409,38 @@ static inline void set_text(DvzAxis* axis, const char* glyphs)
     ASSERT(glyph_count > 0);
     ASSERT(group_count > 0);
     ANN(group_size);
+
+    // Prepare a copy of the string with all glyphs concatenated, but without the spaces
+    // between the groups.
+    vec4* xywh_trimmed = (vec4*)calloc(glyph_count, sizeof(vec4));
+    char* glyphs_trimmed = (char*)calloc(glyph_count, sizeof(char));
+
     float x0 = 0.0;
+    uint32_t idx = 0;
     uint32_t k = 0;
     for (uint32_t i = 0; i < group_count; i++)
     {
-        x0 = xywh[k][0];
+        idx = index[i];
+        x0 = xywh[idx][0];
         for (uint32_t j = 0; j < group_size[i]; j++)
         {
-            ASSERT(k < n);
-            xywh[k++][0] -= x0;
+            xywh_trimmed[k][0] = xywh[idx + j][0] - x0;
+            xywh_trimmed[k][1] = xywh[idx + j][1];
+            xywh_trimmed[k][2] = xywh[idx + j][2];
+            xywh_trimmed[k][3] = xywh[idx + j][3];
+
+            glyphs_trimmed[k] = glyphs[idx];
+
+            k++;
         }
     }
     ASSERT(k == glyph_count);
 
-    dvz_glyph_xywh(axis->glyph, 0, n, xywh, (vec2){0, 0}, 0); // TODO: offset
+    dvz_glyph_xywh(axis->glyph, 0, glyph_count, xywh_trimmed, (vec2){0, 0}, 0); // TODO: offset
     FREE(xywh);
 
-    dvz_glyph_ascii(axis->glyph, glyphs);
+    dvz_glyph_ascii(axis->glyph, glyphs_trimmed);
+    FREE(glyphs_trimmed);
 }
 
 
@@ -580,7 +596,7 @@ void dvz_axis_set(
     set_segment_color(axis);
     set_glyph_color(axis);
 
-    set_text(axis, glyphs);
+    set_glyphs(axis, glyphs, index);
 }
 
 
