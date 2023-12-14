@@ -42,7 +42,7 @@ int test_axis_1(TstSuite* suite)
 
 
     // Global parameters.
-    float font_size = 64;
+    float font_size = 48;
 
     vec3 p0 = {-.9, 0, 0};
     vec3 p1 = {+.9, 0, 0};
@@ -53,7 +53,7 @@ int test_axis_1(TstSuite* suite)
     cvec4 color_lim = {255, 0, 0, 255};
     cvec4 color_grid = {0, 255, 0, 255};
     cvec4 color_major = {255, 255, 255, 255};
-    cvec4 color_minor = {255, 255, 0, 255};
+    cvec4 color_minor = {255, 0, 255, 255};
 
     float width_lim = 4;
     float width_grid = 2;

@@ -24,7 +24,7 @@ void main()
     // from https://github.com/Chlumsky/msdfgen#using-a-multi-channel-distance-field
     vec3 msd = texture(tex, in_uv).rgb;
     float sd = median(msd.r, msd.g, msd.b);
-    if (sd < .01)
+    if (sd < .05)
         discard;
 
     float screenPxDistance = 4 * (sd - 0.5);

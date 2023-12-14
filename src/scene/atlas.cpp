@@ -224,8 +224,8 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // setScale for a fixed size or setMinimumScale to use the largest that fits
     packer.setMinimumScale(48.0);
 
-    // setPixelRange or setUnitRange
-    packer.setPixelRange(2.0);
+    packer.setPadding(4.0);
+    packer.setPixelRange(4.0);
     packer.setMiterLimit(1.0);
 
     // Compute atlas layout - pack glyphs
