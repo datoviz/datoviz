@@ -535,7 +535,8 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
-    dvz_transform_update(tr, *mvp);
+    dvz_transform_set(tr, *mvp);
+    dvz_transform_update(tr);
     dvz_app_submit(app);
 }
 

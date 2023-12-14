@@ -283,7 +283,7 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         // projection matrix depends on the panel's aspect ratio.
         DvzMVP* mvp = dvz_transform_mvp(panel->transform);
         dvz_camera_mvp(panel->camera, mvp); // set the view and proj matrices
-        dvz_transform_update(panel->transform, *mvp);
+        dvz_transform_update(panel->transform);
     }
 }
 
@@ -493,7 +493,7 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
     // GPU.
     DvzMVP* mvp = dvz_transform_mvp(panel->transform);
     dvz_camera_mvp(panel->camera, mvp); // set the view and proj matrices
-    dvz_transform_update(panel->transform, *mvp);
+    dvz_transform_update(panel->transform);
 
     return panel->camera;
 }
@@ -517,8 +517,6 @@ static void _update_panzoom(DvzPanel* panel)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
-
-    // dvz_transform_update(tr, *mvp);
 }
 
 
@@ -535,8 +533,6 @@ static void _update_arcball(DvzPanel* panel)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_arcball_mvp(arcball, mvp);
-
-    // dvz_transform_update(tr, *mvp);
 }
 
 
@@ -553,8 +549,6 @@ static void _update_camera(DvzPanel* panel)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_camera_mvp(camera, mvp); // set the model matrix
-
-    // dvz_transform_update(tr, *mvp);
 }
 
 
@@ -572,9 +566,7 @@ void dvz_panel_update(DvzPanel* panel)
 
     DvzTransform* tr = panel->transform;
     ANN(tr);
-    DvzMVP* mvp = dvz_transform_mvp(tr);
-    ANN(mvp);
-    dvz_transform_update(tr, *mvp);
+    dvz_transform_update(tr);
 }
 
 
@@ -648,8 +640,9 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         if (dvz_panzoom_mouse(pz, mev))
         {
             _update_panzoom(panel);
-            DvzMVP* mvp = dvz_transform_mvp(tr);
-            dvz_transform_update(tr, *mvp);
+            // DvzMVP* mvp = dvz_transform_mvp(tr);
+            // dvz_transform_set(tr, *mvp);
+            dvz_transform_update(tr);
         }
     }
 
@@ -683,8 +676,7 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
             _update_camera(panel);
         }
 
-        DvzMVP* mvp = dvz_transform_mvp(tr);
-        dvz_transform_update(tr, *mvp);
+        dvz_transform_update(tr);
     }
 }
 

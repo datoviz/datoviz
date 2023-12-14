@@ -69,7 +69,14 @@ DVZ_EXPORT DvzTransform* dvz_transform(DvzBatch* batch, int flags);
 /**
  *
  */
-DVZ_EXPORT void dvz_transform_update(DvzTransform* tr, DvzMVP mvp);
+DVZ_EXPORT void dvz_transform_set(DvzTransform* tr, DvzMVP mvp);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_transform_update(DvzTransform* tr);
 
 
 
