@@ -221,7 +221,7 @@ DVZ_EXPORT void dvz_visual_specialization(
 
 
 /*************************************************************************************************/
-/*  Visual declaration */
+/*  Visual declaration                                                                           */
 /*************************************************************************************************/
 
 /**
@@ -306,6 +306,13 @@ void dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampl
  */
 DVZ_EXPORT void dvz_visual_alloc(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr);
 
 
 

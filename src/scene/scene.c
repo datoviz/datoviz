@@ -379,7 +379,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel)
     log_trace("create a new Panzoom instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(scene->batch);
+    panel->transform = dvz_transform(scene->batch, 0);
     panel->transform_to_destroy = true;
 
     return panel->panzoom;
@@ -408,7 +408,7 @@ DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel)
     log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(scene->batch);
+    panel->transform = dvz_transform(scene->batch, 0);
     panel->transform_to_destroy = true;
 
     return panel->arcball;

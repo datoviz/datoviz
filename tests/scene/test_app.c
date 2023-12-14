@@ -588,7 +588,7 @@ int test_app_viewset(TstSuite* suite)
     dvz_visual_update(pixel);
 
     // MVP transform.
-    DvzTransform* tr = dvz_transform(batch);
+    DvzTransform* tr = dvz_transform(batch, 0);
 
     // Add the visual to the view.
     dvz_view_add(view, pixel, 0, n, 0, 1, tr, 0);

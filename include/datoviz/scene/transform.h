@@ -29,11 +29,24 @@ typedef struct DvzBatch DvzBatch;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_TRANSFORM_FLAGS_LINEAR = 0x0000,
+    DVZ_TRANSFORM_FLAGS_PANEL = 0x0010,
+} DvzTransformFlags;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
 struct DvzTransform
 {
+    int flags;
     DvzDual dual;       // Dual array with a DvzMVP struct.
     DvzTransform* next; // NOTE: transform chaining not implemented yet
 };
@@ -49,7 +62,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzTransform* dvz_transform(DvzBatch* batch);
+DVZ_EXPORT DvzTransform* dvz_transform(DvzBatch* batch, int flags);
 
 
 
@@ -60,6 +73,16 @@ DVZ_EXPORT void dvz_transform_update(DvzTransform* tr, DvzMVP mvp);
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_transform_next(DvzTransform* tr, DvzTransform* next);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzMVP* dvz_transform_mvp(DvzTransform* tr);
 
 

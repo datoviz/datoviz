@@ -21,11 +21,12 @@
 /*  Transform                                                                                    */
 /*************************************************************************************************/
 
-DvzTransform* dvz_transform(DvzBatch* batch)
+DvzTransform* dvz_transform(DvzBatch* batch, int flags)
 {
     ANN(batch);
 
     DvzTransform* tr = (DvzTransform*)calloc(1, sizeof(DvzTransform));
+    tr->flags = flags;
 
     // TODO: chaining of transforms, in which case there should really be only one dual.
 
@@ -53,6 +54,15 @@ void dvz_transform_update(DvzTransform* tr, DvzMVP mvp)
 
     // Emit the dat upload request.
     dvz_dual_update(&tr->dual);
+}
+
+
+
+void dvz_transform_next(DvzTransform* tr, DvzTransform* next)
+{
+    ANN(tr);
+    ANN(next);
+    tr->next = next;
 }
 
 
