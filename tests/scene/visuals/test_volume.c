@@ -188,7 +188,7 @@ int test_volume_2(TstSuite* suite)
     }
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
-    dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat);
+    dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat, vt.camera->up);
     dvz_panel_update(vt.panel);
 
     // Run the test.

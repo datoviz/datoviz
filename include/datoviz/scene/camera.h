@@ -62,7 +62,7 @@ struct DvzCamera
 
     // for perspective camera
     vec3 pos, lookat, up;
-    vec3 pos_init, lookat_init; // initial camera parameters
+    vec3 pos_init, lookat_init, up_init; // initial camera parameters
     float fov;
 };
 
@@ -78,7 +78,7 @@ DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
 
 
 
-DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat);
+DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up);
 
 
 DVZ_EXPORT void dvz_camera_reset(DvzCamera* camera);

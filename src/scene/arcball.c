@@ -110,6 +110,14 @@ void dvz_arcball_reset(DvzArcball* arcball)
 
 
 
+void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
+{
+    ANN(arcball);
+    glm_euler(angles, arcball->mat);
+}
+
+
+
 void dvz_arcball_resize(DvzArcball* arcball, float width, float height)
 {
     ANN(arcball);
@@ -138,14 +146,6 @@ void dvz_arcball_constrain(DvzArcball* arcball, vec3 constrain)
     glm_vec3_normalize(arcball->constrain);
     glm_vec3_copy(constrain, arcball->constrain);
     arcball->flags |= DVZ_ARCBALL_FLAGS_CONSTRAIN;
-}
-
-
-
-void dvz_arcball_set(DvzArcball* arcball, vec3 angles)
-{
-    ANN(arcball);
-    glm_euler(angles, arcball->mat);
 }
 
 

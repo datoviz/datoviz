@@ -673,6 +673,7 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         if (mev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
         {
             dvz_camera_reset(panel->camera);
+            dvz_arcball_reset(panel->arcball);
             _update_camera(panel);
         }
 

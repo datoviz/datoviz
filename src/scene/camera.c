@@ -38,21 +38,23 @@ DvzCamera* dvz_camera(float width, float height, int flags)
 
     dvz_camera_zrange(camera, DVZ_CAMERA_DEFAULT_ZRANGE);
     dvz_camera_perspective(camera, DVZ_CAMERA_DEFAULT_FOV);
-
-    dvz_camera_position(camera, (vec3){DVZ_CAMERA_DEFAULT_POSITION});
-    dvz_camera_lookat(camera, (vec3){DVZ_CAMERA_DEFAULT_LOOKAT});
-    dvz_camera_up(camera, (vec3){DVZ_CAMERA_DEFAULT_UP});
+    dvz_camera_initial(
+        camera,                              //
+        (vec3){DVZ_CAMERA_DEFAULT_POSITION}, //
+        (vec3){DVZ_CAMERA_DEFAULT_LOOKAT},   //
+        (vec3){DVZ_CAMERA_DEFAULT_UP});
 
     return camera;
 }
 
 
 
-void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat)
+void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up)
 {
     ANN(camera);
     glm_vec3_copy(pos, camera->pos_init);
     glm_vec3_copy(lookat, camera->lookat_init);
+    glm_vec3_copy(up, camera->up_init);
 
     dvz_camera_reset(camera);
 }
@@ -63,6 +65,7 @@ void dvz_camera_reset(DvzCamera* camera)
     ANN(camera);
     glm_vec3_copy(camera->pos_init, camera->pos);
     glm_vec3_copy(camera->lookat_init, camera->lookat);
+    glm_vec3_copy(camera->up_init, camera->up);
 }
 
 
