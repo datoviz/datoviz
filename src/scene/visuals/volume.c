@@ -19,21 +19,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define VOLUME_TYPE_SCALAR 0
-#define VOLUME_TYPE_RGBA   1
-
-#define VOLUME_COLOR_DIRECT   0
-#define VOLUME_COLOR_COLORMAP 1
-
-#define VOLUME_DIR_FRONT_BACK 0
-#define VOLUME_DIR_BACK_FRONT 1
-
-
-
-/*************************************************************************************************/
 /*  Internal functions                                                                           */
 /*************************************************************************************************/
 
@@ -43,7 +28,7 @@ static void _visual_callback(
     uint32_t first_instance, uint32_t instance_count)
 {
     ANN(visual);
-    dvz_visual_instance(visual, canvas, first, 0, 36 * count, first_instance, instance_count);
+    dvz_visual_instance(visual, canvas, 36 * first, 0, 36 * count, first_instance, instance_count);
 }
 
 
@@ -62,25 +47,11 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_volume");
 
-    // Enable depth test.
+    // Disable depth test.
     dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
 
-    // Specialization constants.
-    int volume_type = VOLUME_TYPE_SCALAR;
-    if ((flags & DVZ_VOLUME_FLAGS_RGBA) != 0)
-        volume_type = VOLUME_TYPE_RGBA;
-
-    int volume_color = VOLUME_COLOR_DIRECT;
-    if ((flags & DVZ_VOLUME_FLAGS_COLORMAP) != 0)
-        volume_color = VOLUME_COLOR_COLORMAP;
-
-    int volume_dir = VOLUME_DIR_FRONT_BACK;
-    if ((flags & DVZ_VOLUME_FLAGS_BACK_FRONT) != 0)
-        volume_dir = VOLUME_DIR_BACK_FRONT;
-
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &volume_type);
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &volume_color);
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &volume_dir);
+    // Volume specialization constants.
+    volume_specialization(visual);
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzVolumeVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
