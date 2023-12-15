@@ -12,11 +12,23 @@
 /*************************************************************************************************/
 
 #include "../testing_utils.h"
+#include "_map.h"
 #include "_math.h"
 #include "board.h"
 #include "fileio.h"
 #include "scene/visuals/image.h"
+#include "scene/visuals/volume.h"
 #include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MOUSE_W 320
+#define MOUSE_H 456
+#define MOUSE_D 528
 
 
 
@@ -76,6 +88,32 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
     DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, jpg_width, jpg_height, crate_data);
 
     FREE(crate_data);
+
+    return tex;
+}
+
+
+
+static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_volume)
+{
+    char path[1024];
+    snprintf(
+        path, sizeof(path), "%s/%s%s.npy", DATA_DIR, "allen_mouse_brain",
+        use_rgb_volume ? "_rgba" : "");
+
+    DvzSize size = 0;
+    char* volume = dvz_read_npy(path, &size);
+
+    if (!volume)
+    {
+        log_error("file not found: %s", path);
+        return DVZ_ID_NONE;
+    }
+
+    log_info("load the Allen Mouse Brain volume (%s)", pretty_size(size));
+    DvzFormat format = use_rgb_volume ? DVZ_FORMAT_R8G8B8A8_UNORM : DVZ_FORMAT_R16_UNORM;
+    DvzId tex = dvz_tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume);
+    FREE(volume);
 
     return tex;
 }

@@ -89,31 +89,6 @@ int test_volume_1(TstSuite* suite)
 
 
 
-static DvzId _load_brain_volume(VisualTest* vt, bool use_rgb_volume)
-{
-    char path[1024];
-    snprintf(
-        path, sizeof(path), "%s/%s%s.npy", DATA_DIR, "allen_mouse_brain",
-        use_rgb_volume ? "_rgba" : "");
-
-    DvzSize size = 0;
-    char* volume = dvz_read_npy(path, &size);
-
-    if (!volume)
-    {
-        log_error("file not found: %s", path);
-        visual_test_end(*vt);
-        return 0;
-    }
-
-    log_info("load the Allen Mouse Brain volume (%s)", pretty_size(size));
-    DvzFormat format = use_rgb_volume ? DVZ_FORMAT_R8G8B8A8_UNORM : DVZ_FORMAT_R16_UNORM;
-    DvzId tex = dvz_tex_volume(vt->batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume);
-    FREE(volume);
-
-    return tex;
-}
-
 static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
 {
     DvzVisual* visual = (DvzVisual*)user_data;
@@ -153,7 +128,8 @@ int test_volume_2(TstSuite* suite)
         dvz_panel_visual(vt.panel, visual);
 
         // Create the texture and upload the volume data.
-        DvzId tex = _load_brain_volume(&vt, true);
+        uvec3 shape = {0};
+        DvzId tex = load_brain_volume(vt.batch, shape, true);
 
         // Bind the volume texture to the visual.
         dvz_volume_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
