@@ -529,7 +529,7 @@ void dvz_baker_quads(
         quads[6 * i + 5][0] = x0; // upper left
         quads[6 * i + 5][1] = y0;
     }
-    dvz_baker_repeat(baker, attr_idx, first, 6 * count, 1, quads);
+    dvz_baker_repeat(baker, attr_idx, 6 * first, 6 * count, 1, quads);
     FREE(quads);
 }
 
