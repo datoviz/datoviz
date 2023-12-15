@@ -1,24 +1,19 @@
 #version 450
 #include "colormaps.glsl"
 #include "common.glsl"
+#include "utils_volume.glsl"
 
 // Constants.
 #define STEP_SIZE 0.01
 #define MAX_ITER  10 / STEP_SIZE
 
 // Volume type specialization constant.
-#define VOLUME_TYPE_SCALAR 0
-#define VOLUME_TYPE_RGBA   1
 layout(constant_id = 0) const int VOLUME_TYPE = VOLUME_TYPE_SCALAR;
 
 // Volume color specialization constant.
-#define VOLUME_COLOR_DIRECT   0
-#define VOLUME_COLOR_COLORMAP 1
 layout(constant_id = 1) const int VOLUME_COLOR = VOLUME_COLOR_DIRECT;
 
 // Volume front to back or back to front.
-#define VOLUME_DIR_FRONT_BACK 0
-#define VOLUME_DIR_BACK_FRONT 1
 layout(constant_id = 2) const int VOLUME_DIR = VOLUME_DIR_FRONT_BACK;
 
 // Uniform variables.
@@ -30,6 +25,8 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 transfer;
 }
 params;
+
+// Texture.
 layout(binding = (USER_BINDING + 1)) uniform sampler3D tex_density; // 3D vol with vox R density
 
 // Varying variables.
@@ -50,35 +47,6 @@ bool intersect_box(vec3 origin, vec3 dir, vec3 box_min, vec3 box_max, out float 
     t = min(tmax.xx, tmax.yz);
     t1 = min(t.x, t.y);
     return t0 <= t1;
-}
-
-vec4 fetch_color(vec3 uvw)
-{
-    vec4 color = vec4(0);
-    if (VOLUME_TYPE == VOLUME_TYPE_SCALAR)
-    {
-        float v = texture(tex_density, uvw).r;
-        v = clamp(v, 0, .9999);
-
-        if (VOLUME_COLOR == VOLUME_COLOR_DIRECT)
-        {
-            color = vec4(1, 1, 1, v);
-        }
-        else if (VOLUME_COLOR == VOLUME_COLOR_COLORMAP)
-        {
-            color = colormap(DVZ_CMAP_HSV, v);
-            color.a = v;
-        }
-    }
-    else if (VOLUME_TYPE == VOLUME_TYPE_RGBA)
-    {
-        color = texture(tex_density, uvw);
-    }
-
-    // Transfer function.
-    color.a *= params.transfer.x;
-
-    return color;
 }
 
 // Entry-point.
@@ -124,6 +92,7 @@ void main()
     float alpha = 0;
     float alphaAcc = 0;
     vec4 fetched = vec4(0);
+    ivec2 modes = ivec2(VOLUME_TYPE, VOLUME_COLOR);
 
     for (int i = 0; i < MAX_ITER && travel > 0.0; ++i, pos += dl, travel -= STEP_SIZE)
     {
@@ -134,7 +103,7 @@ void main()
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
 
         // Fetch the color from the 3D texture.
-        fetched = fetch_color(uvw);
+        fetched = fetch_color(modes, tex_density, uvw, params.transfer.x);
 
         rgbVoxel = fetched.rgb;
         intensity = fetched.a;
