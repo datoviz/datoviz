@@ -184,6 +184,8 @@ int dvz_run_tests(const char* match)
     TEST(test_vklite_vertex_bindings)
     TEST(test_vklite_constattr)
     TEST(test_vklite_specialization)
+    TEST(test_vklite_sync_full)
+    TEST(test_vklite_sync_fail)
 
 
     // Testing canvas.
