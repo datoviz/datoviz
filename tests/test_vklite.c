@@ -1413,3 +1413,91 @@ int test_vklite_swapchain(TstSuite* suite)
     // dvz_host_destroy(host);
     return 0;
 }
+
+
+
+int test_vklite_sync(TstSuite* suite)
+{
+    ANN(suite);
+#if !HAS_GLFW
+    return 0;
+#endif
+
+    DvzHost* host = get_host(suite);
+
+    // Window.
+    DvzWindow window = dvz_window(host->backend, 100, 100, 0);
+    DvzSurface surface = dvz_window_surface(host, &window);
+    AT(surface.surface != VK_NULL_HANDLE);
+
+    // GPU.
+    DvzGpu* gpu = dvz_gpu_best(host);
+    dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
+    dvz_gpu_queue(gpu, 1, DVZ_QUEUE_PRESENT);
+    dvz_gpu_create(gpu, surface.surface);
+
+    // Swapchain.
+    DvzSwapchain swapchain = dvz_swapchain(gpu, surface.surface, 3);
+    dvz_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
+    dvz_swapchain_present_mode(&swapchain, VK_PRESENT_MODE_FIFO_KHR);
+    dvz_swapchain_create(&swapchain);
+
+    // Renderpass.
+    VkImageLayout layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    DvzRenderpass renderpass = dvz_gpu_renderpass(gpu, DVZ_DEFAULT_CLEAR_COLOR, layout);
+
+    // Framebuffers.
+    DvzFramebuffers framebuffers = dvz_framebuffers(gpu);
+    dvz_framebuffers_attachment(&framebuffers, 0, swapchain.images);
+    dvz_framebuffers_create(&framebuffers, &renderpass);
+
+    // Semaphores.
+    uint32_t img_count = swapchain.img_count;
+    uint32_t frames_in_flight = DVZ_MAX_FRAMES_IN_FLIGHT;
+    DvzSemaphores sem_img_available = dvz_semaphores(gpu, frames_in_flight);
+    DvzSemaphores sem_render_finished = dvz_semaphores(gpu, frames_in_flight);
+    // DvzSemaphores present_semaphores = sem_render_finished;
+
+    // Fences.
+    // DvzFences fences_render_finished = dvz_fences(gpu, frames_in_flight, true);
+    // DvzFences fences_flight = {.gpu = gpu, .count = img_count};
+    DvzFences* fences = NULL; // &fences_render_finished;
+    // DvzFences* fences_bak = &fences_flight;
+
+    // Command buffers.
+    DvzCommands cmds = dvz_commands(gpu, 0, swapchain.img_count);
+    for (uint32_t idx = 0; idx < img_count; idx++)
+    {
+        dvz_cmd_begin(&cmds, idx);
+        dvz_cmd_begin_renderpass(&cmds, idx, &renderpass, &framebuffers);
+        dvz_cmd_end_renderpass(&cmds, idx);
+        dvz_cmd_end(&cmds, idx);
+    }
+
+    // Submit.
+    uint64_t cur_frame = 0;
+    dvz_swapchain_acquire(&swapchain, &sem_img_available, cur_frame, NULL, 0);
+    // dvz_fences_wait(fences, cur_frame);
+    // dvz_fences_copy(fences, cur_frame, fences_bak, swapchain.img_idx);
+    DvzSubmit submit = dvz_submit(gpu);
+    dvz_submit_commands(&submit, &cmds);
+    dvz_submit_wait_semaphores(
+        &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, &sem_img_available, cur_frame);
+    dvz_submit_signal_semaphores(&submit, &sem_render_finished, cur_frame);
+    dvz_submit_send(&submit, swapchain.img_idx, fences, cur_frame);
+
+    // dvz_swapchain_present(swapchain, 1, sem_render_finished, canvas->cur_frame);
+
+    // Cleanup.
+    dvz_semaphores_destroy(&sem_img_available);
+    dvz_semaphores_destroy(&sem_render_finished);
+    // dvz_fences_destroy(&fences_render_finished);
+    dvz_framebuffers_destroy(&framebuffers);
+    dvz_renderpass_destroy(&renderpass);
+    dvz_swapchain_destroy(&swapchain);
+    dvz_surface_destroy(host, surface);
+    dvz_window_destroy(&window);
+    dvz_gpu_destroy(gpu);
+
+    return 0;
+}
