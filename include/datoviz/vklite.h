@@ -26,7 +26,7 @@ MUTE_OFF
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_VULKAN_API VK_API_VERSION_1_1
+#define DVZ_VULKAN_API VK_API_VERSION_1_3
 
 #define DVZ_MAX_DESCRIPTOR_SETS             1024
 #define DVZ_MAX_PRESENT_MODES               16

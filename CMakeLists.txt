@@ -142,7 +142,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 FetchContent_Declare(
     cglm
     GIT_REPOSITORY https://github.com/recp/cglm/
-    GIT_TAG v0.8.8
+    GIT_TAG v0.9.2
 )
 FetchContent_MakeAvailable(cglm)
 
@@ -158,7 +158,7 @@ if(DATOVIZ_WITH_GLFW)
     FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw/
-        GIT_TAG 3.3.8
+        GIT_TAG 3.3.9
     )
     FetchContent_MakeAvailable(glfw)
 
