@@ -256,9 +256,6 @@ static void create_instance(
     if (has_validation)
         extensions[extension_count++] = VK_EXT_DEBUG_UTILS_EXTENSION_NAME;
 
-    // Portability.
-    extensions[extension_count++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
-
     // Required + validation and portability.
     ASSERT(extension_count <= required_extension_count + 2);
 
@@ -274,9 +271,15 @@ static void create_instance(
     VkInstanceCreateInfo info_inst = {0};
     info_inst.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     info_inst.pApplicationInfo = &appInfo;
+
+// Portability.
+#if OS_MACOS || OS_WIN32
+    extensions[extension_count++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+    info_inst.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+#endif
+
     info_inst.enabledExtensionCount = extension_count;
     info_inst.ppEnabledExtensionNames = (const char* const*)extensions;
-    info_inst.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 
     // Validation layers.
     VkDebugUtilsMessengerCreateInfoEXT info_debug = {0};

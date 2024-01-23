@@ -1539,6 +1539,7 @@ int test_vklite_sync_fail(TstSuite* suite)
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, surface.surface);
+
     // Swapchain.
     DvzSwapchain swapchain = dvz_swapchain(gpu, surface.surface, 3);
     dvz_swapchain_format(&swapchain, VK_FORMAT_B8G8R8A8_UNORM);
@@ -1564,7 +1565,6 @@ int test_vklite_sync_fail(TstSuite* suite)
 
     // Semaphores.
     DvzSemaphores sem_img_available = dvz_semaphores(gpu, 1);
-    DvzSemaphores sem_render_finished = dvz_semaphores(gpu, 1);
 
     // Command buffers.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
@@ -1573,19 +1573,22 @@ int test_vklite_sync_fail(TstSuite* suite)
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
 
-    // Submit.
+    // Acquire the swapchain image.
     dvz_swapchain_acquire(&swapchain, &sem_img_available, 0, NULL, 0);
+    AT(swapchain.img_idx == 0);
+
+    // Submit.
     DvzSubmit submit = dvz_submit(gpu);
     dvz_submit_commands(&submit, &cmds);
-    dvz_submit_wait_semaphores(&submit, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, &sem_img_available, 0);
-    dvz_submit_signal_semaphores(&submit, &sem_render_finished, 0);
+    dvz_submit_wait_semaphores(
+        &submit, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, &sem_img_available, 0);
     dvz_submit_send(&submit, swapchain.img_idx, NULL, 0);
-    dvz_swapchain_present(&swapchain, 0, &sem_render_finished, 0);
+
+    // Wait.
     dvz_gpu_wait(gpu);
 
     // Cleanup.
     dvz_semaphores_destroy(&sem_img_available);
-    dvz_semaphores_destroy(&sem_render_finished);
     dvz_framebuffers_destroy(&framebuffers);
     dvz_renderpass_destroy(&renderpass);
     dvz_swapchain_destroy(&swapchain);
