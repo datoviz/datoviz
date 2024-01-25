@@ -734,7 +734,7 @@ int test_vklite_offscreen(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    blank_commands(&canvas.renderpass, &canvas.framebuffers, &cmds, 0, NULL);
+    blank_commands(&canvas.renderpass, &canvas.swapchain, &canvas.framebuffers, &cmds, 0, NULL);
     dvz_cmd_submit_sync(&cmds, 0);
 
     uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
@@ -1569,6 +1569,23 @@ int test_vklite_sync_fail(TstSuite* suite)
     // Command buffers.
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
+
+    // NOTE: since Vulkan 1.3, we need to introduce this barrier before starting the renderpass in
+    // order to avoid a Vulkan validaation bug.
+    // See:
+    // - https://stackoverflow.com/q/77871832/1595060
+    // - https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/7348
+
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(
+        &barrier, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+    dvz_barrier_images(&barrier, swapchain.images);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+    dvz_cmd_barrier(&cmds, 0, &barrier);
+
     dvz_cmd_begin_renderpass(&cmds, 0, &renderpass, &framebuffers);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);

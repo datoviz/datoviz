@@ -63,8 +63,8 @@ static void canvas_render(DvzCanvas* canvas)
         log_debug("empty command buffers, filling with blank color");
         for (uint32_t i = 0; i < canvas->render.swapchain.img_count; i++)
             blank_commands(
-                canvas->render.renderpass, &canvas->render.framebuffers, &canvas->cmds, i,
-                canvas->refill_data);
+                canvas->render.renderpass, &canvas->render.swapchain, &canvas->render.framebuffers,
+                &canvas->cmds, i, canvas->refill_data);
     }
 
     ASSERT(canvas->cmds.obj.status == DVZ_OBJECT_STATUS_CREATED);

@@ -203,7 +203,8 @@ int dvz_loop_frame(DvzLoop* loop)
         dvz_submit_send(submit, swapchain->img_idx, fences, canvas->cur_frame);
 
         // Once the image is rendered, we present the swapchain image.
-        dvz_swapchain_present(swapchain, 1, sem_render_finished, canvas->cur_frame);
+        dvz_swapchain_present(
+            swapchain, DVZ_DEFAULT_QUEUE_PRESENT, sem_render_finished, canvas->cur_frame);
 
         canvas->cur_frame = (canvas->cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT;
     }
