@@ -239,21 +239,6 @@ static void blank_commands(
     dvz_cmd_begin_renderpass(cmds, cmd_idx, renderpass, framebuffers);
     dvz_cmd_end_renderpass(cmds, cmd_idx);
 
-
-    DvzBarrier barrier2 = dvz_barrier(images->gpu);
-    dvz_barrier_stages(
-        &barrier2, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
-    dvz_barrier_images(&barrier2, depth);
-    dvz_barrier_images_layout(
-        &barrier2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-    dvz_barrier_images_access(
-        &barrier2, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-    dvz_barrier_images_aspect(&barrier2, VK_IMAGE_ASPECT_DEPTH_BIT);
-    dvz_cmd_barrier(cmds, cmd_idx, &barrier2);
-
-
     dvz_cmd_end(cmds, cmd_idx);
 }
 
