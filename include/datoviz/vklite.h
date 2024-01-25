@@ -533,6 +533,7 @@ struct DvzBarrierImage
 {
     DvzImages* images;
     bool queue_transfer;
+    VkImageAspectFlags aspect;
 
     VkAccessFlags src_access;
     uint32_t src_queue;
@@ -1759,6 +1760,14 @@ DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img);
  */
 DVZ_EXPORT void
 dvz_barrier_images_layout(DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
+
+/**
+ * Set the barrier images aspect.
+ *
+ * @param barrier the barrier
+ * @param aspect the aspect
+ */
+DVZ_EXPORT void dvz_barrier_images_aspect(DvzBarrier* barrier, VkImageAspectFlags aspect);
 
 /**
  * Set the barrier images queue.

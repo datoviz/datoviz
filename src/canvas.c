@@ -20,8 +20,8 @@ static void _blank_refill(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, vo
     ANN(canvas)
     ANN(cmds)
     blank_commands(
-        canvas->render.renderpass, &canvas->render.swapchain, &canvas->render.framebuffers, cmds,
-        idx, user_data);
+        canvas->render.renderpass, &canvas->render.framebuffers, canvas->render.swapchain.images,
+        &canvas->render.depth, cmds, idx, user_data);
 }
 
 DvzCanvas

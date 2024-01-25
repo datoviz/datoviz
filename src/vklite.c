@@ -2882,6 +2882,18 @@ void dvz_barrier_images_access(
 
 
 
+void dvz_barrier_images_aspect(DvzBarrier* barrier, VkImageAspectFlags aspect)
+{
+    ANN(barrier);
+
+    DvzBarrierImage* b = &barrier->image_barriers[barrier->image_barrier_count - 1];
+    ANN(b->images);
+
+    b->aspect = aspect;
+}
+
+
+
 void dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue)
 {
     ANN(barrier);
@@ -3716,7 +3728,9 @@ void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier)
             image_barrier->srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             image_barrier->dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         }
-        image_barrier->subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+        image_barrier->subresourceRange.aspectMask =
+            image_info->aspect ? image_info->aspect : VK_IMAGE_ASPECT_COLOR_BIT;
         image_barrier->subresourceRange.baseMipLevel = 0;
         image_barrier->subresourceRange.levelCount = 1;
         image_barrier->subresourceRange.baseArrayLayer = 0;

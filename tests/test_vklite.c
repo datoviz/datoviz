@@ -734,7 +734,8 @@ int test_vklite_offscreen(TstSuite* suite)
     DvzFramebuffers* framebuffers = &canvas.framebuffers;
 
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
-    blank_commands(&canvas.renderpass, &canvas.swapchain, &canvas.framebuffers, &cmds, 0, NULL);
+    blank_commands(
+        &canvas.renderpass, &canvas.framebuffers, canvas.images, canvas.depth, &cmds, 0, NULL);
     dvz_cmd_submit_sync(&cmds, 0);
 
     uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);

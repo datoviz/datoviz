@@ -197,19 +197,40 @@ static DvzBarrier make_barrier(DvzImages* images)
 }
 
 
+static DvzBarrier make_depth_barrier(DvzImages* images)
+{
+    ANN(images);
+    DvzBarrier barrier = dvz_barrier(images->gpu);
+    dvz_barrier_stages(
+        &barrier, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+    dvz_barrier_images(&barrier, images);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_images_aspect(&barrier, VK_IMAGE_ASPECT_DEPTH_BIT);
+
+    return barrier;
+}
+
+
 
 static void blank_commands(
-    DvzRenderpass* renderpass, DvzSwapchain* swapchain, DvzFramebuffers* framebuffers,
+    DvzRenderpass* renderpass, DvzFramebuffers* framebuffers, DvzImages* images, DvzImages* depth,
     DvzCommands* cmds, uint32_t cmd_idx, void* user_data)
 {
     ANN(renderpass);
     ANN(framebuffers);
+    ANN(images);
+    ANN(depth);
     ANN(cmds);
 
-    DvzBarrier barrier = make_barrier(swapchain->images);
+    DvzBarrier barrier = make_barrier(images);
+    DvzBarrier barrier_depth = make_depth_barrier(depth);
 
     dvz_cmd_begin(cmds, cmd_idx);
     dvz_cmd_barrier(cmds, cmd_idx, &barrier);
+    dvz_cmd_barrier(cmds, cmd_idx, &barrier_depth);
     dvz_cmd_begin_renderpass(cmds, cmd_idx, renderpass, framebuffers);
     dvz_cmd_end_renderpass(cmds, cmd_idx);
     dvz_cmd_end(cmds, cmd_idx);
