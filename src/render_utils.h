@@ -71,15 +71,17 @@ make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, ui
 
 
 
-static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t height)
+static void
+make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t img_count, uint32_t width, uint32_t height)
 {
     ANN(gpu);
     ANN(depth);
     ASSERT(width > 0);
     ASSERT(height > 0);
+    ASSERT(img_count >= 1);
 
     log_trace("making depth image");
-    *depth = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    *depth = dvz_images(gpu, VK_IMAGE_TYPE_2D, img_count);
 
     dvz_images_format(depth, VK_FORMAT_D32_SFLOAT);
     dvz_images_size(depth, (uvec3){width, height, 1});
@@ -97,6 +99,7 @@ static void make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t width, uint32_t h
     //     depth->vma[i].usage = VMA_MEMORY_USAGE_GPU_LAZILY_ALLOCATED;
 
     dvz_images_create(depth);
+    log_trace("done making depth image");
 }
 
 
@@ -197,13 +200,13 @@ static DvzBarrier make_barrier(DvzImages* images)
 }
 
 
+
 static DvzBarrier make_depth_barrier(DvzImages* images)
 {
     ANN(images);
     DvzBarrier barrier = dvz_barrier(images->gpu);
     dvz_barrier_stages(
-        &barrier, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
-        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
+        &barrier, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
     dvz_barrier_images(&barrier, images);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
@@ -229,10 +232,28 @@ static void blank_commands(
     DvzBarrier barrier_depth = make_depth_barrier(depth);
 
     dvz_cmd_begin(cmds, cmd_idx);
+
     dvz_cmd_barrier(cmds, cmd_idx, &barrier);
     dvz_cmd_barrier(cmds, cmd_idx, &barrier_depth);
+
     dvz_cmd_begin_renderpass(cmds, cmd_idx, renderpass, framebuffers);
     dvz_cmd_end_renderpass(cmds, cmd_idx);
+
+
+    DvzBarrier barrier2 = dvz_barrier(images->gpu);
+    dvz_barrier_stages(
+        &barrier2, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+        VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+    dvz_barrier_images(&barrier2, depth);
+    dvz_barrier_images_layout(
+        &barrier2, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+    dvz_barrier_images_access(
+        &barrier2, VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+    dvz_barrier_images_aspect(&barrier2, VK_IMAGE_ASPECT_DEPTH_BIT);
+    dvz_cmd_barrier(cmds, cmd_idx, &barrier2);
+
+
     dvz_cmd_end(cmds, cmd_idx);
 }
 

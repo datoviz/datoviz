@@ -69,7 +69,7 @@ void dvz_board_create(DvzBoard* board)
     make_images(gpu, &board->images, board->format, board->width, board->height);
 
     // Make depth buffer image.
-    make_depth(gpu, &board->depth, board->width, board->height);
+    make_depth(gpu, &board->depth, 1, board->width, board->height);
 
     // Make staging image.
     make_staging(gpu, &board->staging, board->format, board->width, board->height);

@@ -81,8 +81,11 @@ void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
     make_swapchain(
         gpu, canvas->surface, &canvas->render.swapchain, DVZ_MIN_SWAPCHAIN_IMAGE_COUNT, vsync);
 
+    // Number of swapchain images.
+    uint32_t img_count = canvas->render.swapchain.img_count;
+
     // Make depth buffer image.
-    make_depth(gpu, &canvas->render.depth, width, height);
+    make_depth(gpu, &canvas->render.depth, img_count, width, height);
 
     // Make staging image.
     make_staging(gpu, &canvas->render.staging, canvas->format, width, height);
@@ -98,11 +101,10 @@ void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface)
         canvas->render.swapchain.images, &canvas->render.depth);
 
     // Make synchronization objects.
-    make_sync(gpu, &canvas->sync, canvas->render.swapchain.img_count);
+    make_sync(gpu, &canvas->sync, img_count);
 
     // Command buffer.
-    canvas->cmds =
-        dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, canvas->render.swapchain.img_count);
+    canvas->cmds = dvz_commands(canvas->gpu, DVZ_DEFAULT_QUEUE_RENDER, img_count);
     // for (uint32_t i = 0; i < canvas->cmds.count; i++)
     //     canvas->refill(canvas, &canvas->cmds, i);
 

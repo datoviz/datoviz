@@ -1416,7 +1416,8 @@ static void _images_create(DvzImages* img)
         ASSERT(depth <= props.maxExtent.depth);
     }
 
-    log_trace("create image %dD %dx%dx%d", img->image_type + 1, width, height, depth);
+    log_trace(
+        "create %d image(s) %dD %dx%dx%d", img->count, img->image_type + 1, width, height, depth);
     ASSERT(width > 0);
 
     VkImageCreateInfo info = {0};

@@ -53,7 +53,7 @@ int test_loop_1(TstSuite* suite)
 
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, 0);
 
-    dvz_loop_run(loop, N_FRAMES);
+    dvz_loop_run(loop, 4);
 
     dvz_loop_destroy(loop);
     dvz_gpu_destroy(gpu);

@@ -171,7 +171,7 @@ static TestCanvas offscreen_canvas(DvzGpu* gpu)
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     ANN(depth);
     *depth = depth_struct;
-    make_depth(gpu, depth, WIDTH, HEIGHT);
+    make_depth(gpu, depth, 1, WIDTH, HEIGHT);
     canvas.depth = depth;
 
     // Create renderpass.
@@ -211,7 +211,8 @@ static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, DvzSurface surf
     // Make the renderpass.
     canvas.renderpass = desktop_renderpass(gpu);
 
-    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface.surface, 3);
+    uint32_t img_count = 3;
+    canvas.swapchain = dvz_swapchain(canvas.renderpass.gpu, canvas.surface.surface, img_count);
     dvz_swapchain_format(&canvas.swapchain, VK_FORMAT_B8G8R8A8_UNORM);
     dvz_swapchain_present_mode(&canvas.swapchain, PRESENT_MODE);
     dvz_swapchain_create(&canvas.swapchain);
@@ -222,7 +223,7 @@ static TestCanvas desktop_canvas(DvzGpu* gpu, DvzWindow* window, DvzSurface surf
     DvzImages* depth = (DvzImages*)calloc(1, sizeof(DvzImages));
     ANN(depth);
     *depth = depth_struct;
-    make_depth(gpu, depth, canvas.images->shape[0], canvas.images->shape[1]);
+    make_depth(gpu, depth, img_count, canvas.images->shape[0], canvas.images->shape[1]);
     canvas.depth = depth;
 
     // Create renderpass.
