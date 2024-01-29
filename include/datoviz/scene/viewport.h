@@ -83,7 +83,7 @@ struct DvzViewport
     int flags; // used by the GPU for viewport clipping
 
     // Used to discard transform on one axis
-    int32_t interact_axis;
+    // int32_t transform_flags;
 
     // TODO: aspect ratio
 };

@@ -2,6 +2,8 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
+// layout(constant_id = 7) const int TRANSFORM_FLAGS = 0;
+
 const uint DVZ_VIEWPORT_FLAGS_NONE = 0x00;
 
 // whether to integrate the margins in the transform or not
@@ -15,16 +17,16 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20;
 const uint DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30;
 const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 
-// TODO: refactor
-#define DVZ_INTERACT_FIXED_AXIS_DEFAULT 0x0
-#define DVZ_INTERACT_FIXED_AXIS_X       0x1
-#define DVZ_INTERACT_FIXED_AXIS_Y       0x2
-#define DVZ_INTERACT_FIXED_AXIS_Z       0x4
-#define DVZ_INTERACT_FIXED_AXIS_XY      0x3
-#define DVZ_INTERACT_FIXED_AXIS_XZ      0x5
-#define DVZ_INTERACT_FIXED_AXIS_YZ      0x6
-#define DVZ_INTERACT_FIXED_AXIS_ALL     0x7
-#define DVZ_INTERACT_FIXED_AXIS_NONE    0x8
+// Fixed transforms.
+#define DVZ_TRANSFORM_FIXED_AXIS_DEFAULT 0x0
+#define DVZ_TRANSFORM_FIXED_AXIS_X       0x1
+#define DVZ_TRANSFORM_FIXED_AXIS_Y       0x2
+#define DVZ_TRANSFORM_FIXED_AXIS_Z       0x4
+#define DVZ_TRANSFORM_FIXED_AXIS_XY      0x3
+#define DVZ_TRANSFORM_FIXED_AXIS_XZ      0x5
+#define DVZ_TRANSFORM_FIXED_AXIS_YZ      0x6
+#define DVZ_TRANSFORM_FIXED_AXIS_ALL     0x7
+#define DVZ_TRANSFORM_FIXED_AXIS_NONE    0x8
 
 // colormaps
 #define CPAL032_OFS     240
@@ -34,7 +36,7 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 // number of common bindings
 #define USER_BINDING 2
 
-// NOTE:needs to be a macro and not a function so that it can be safely included in both
+// NOTE: needs to be a macro and not a function so that it can be safely included in both
 // vertex and fragment shaders (discard is forbidden in the vertex shader)
 // TODO
 #define CLIP                                                                                      \
@@ -98,7 +100,6 @@ layout(std140, binding = 1) uniform Viewport
 
     // Options
     int flags;
-    int interact_axis;
 }
 viewport;
 
@@ -184,41 +185,41 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 /*  Transforms                                                                                   */
 /*************************************************************************************************/
 
-vec4 transform(vec3 pos, vec2 shift, uint transform_mode)
+vec4 transform(vec3 pos, vec2 shift)
 {
-    mat4 mvp = mvp.proj * mvp.view * mvp.model;
-    vec4 tr = vec4(pos, 1.0);
+    mat4 MVP = mvp.proj * mvp.view * mvp.model;
+    vec4 tr = MVP * vec4(pos, 1.0);
 
-    // By default, take the viewport transform.
-    if (transform_mode == DVZ_INTERACT_FIXED_AXIS_DEFAULT)
-        transform_mode = uint(viewport.interact_axis);
-    // Default: transform all
-    if (transform_mode == DVZ_INTERACT_FIXED_AXIS_DEFAULT)
-        transform_mode = DVZ_INTERACT_FIXED_AXIS_NONE;
+    // // By default, take the viewport transform.
+    // if (transform_flags == DVZ_TRANSFORM_FIXED_AXIS_DEFAULT)
+    //     transform_flags = uint(viewport.transform_flags);
+    // // Default: transform all
+    // if (transform_flags == DVZ_TRANSFORM_FIXED_AXIS_DEFAULT)
+    //     transform_flags = DVZ_TRANSFORM_FIXED_AXIS_NONE;
 
-    // Transform.
-    switch (transform_mode)
-    {
-    case DVZ_INTERACT_FIXED_AXIS_ALL:
-        break;
-    case DVZ_INTERACT_FIXED_AXIS_NONE:
-        tr = mvp * tr;
-        break;
-    case DVZ_INTERACT_FIXED_AXIS_X:
-        tr = mvp * tr;
-        tr.x = pos.x;
-        break;
-    case DVZ_INTERACT_FIXED_AXIS_Y:
-        tr = mvp * tr;
-        tr.y = pos.y;
-        break;
-    case DVZ_INTERACT_FIXED_AXIS_Z:
-        tr = mvp * tr;
-        tr.z = pos.z;
-        break;
-    default:
-        break;
-    }
+    // // Transform.
+    // switch (transform_flags)
+    // {
+    // case DVZ_TRANSFORM_FIXED_AXIS_ALL:
+    //     break;
+    // case DVZ_TRANSFORM_FIXED_AXIS_NONE:
+    //     tr = mvp * tr;
+    //     break;
+    // case DVZ_TRANSFORM_FIXED_AXIS_X:
+    //     tr = mvp * tr;
+    //     tr.x = pos.x;
+    //     break;
+    // case DVZ_TRANSFORM_FIXED_AXIS_Y:
+    //     tr = mvp * tr;
+    //     tr.y = pos.y;
+    //     break;
+    // case DVZ_TRANSFORM_FIXED_AXIS_Z:
+    //     tr = mvp * tr;
+    //     tr.z = pos.z;
+    //     break;
+    // default:
+    //     break;
+    // }
 
     // Margins
     float w = viewport.size.x;
@@ -256,18 +257,18 @@ vec4 transform(vec3 pos, vec2 shift, uint transform_mode)
 
 
 
-vec4 transform(vec3 pos, vec2 shift) { return transform(pos, shift, 0); }
+// vec4 transform(vec3 pos, vec2 shift) { return transform(pos, shift, 0); }
 
 
 
-vec4 transform(vec3 pos, uint transform_mode)
-{
-    return transform(pos, vec2(0, 0), transform_mode);
-}
+// vec4 transform(vec3 pos, uint transform_flags)
+// {
+//     return transform(pos, vec2(0, 0), transform_flags);
+// }
 
 
 
-vec4 transform(vec3 pos) { return transform(pos, vec2(0, 0), 0); }
+vec4 transform(vec3 pos) { return transform(pos, vec2(0, 0)); }
 
 
 
