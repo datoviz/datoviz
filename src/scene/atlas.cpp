@@ -224,7 +224,7 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // setScale for a fixed size or setMinimumScale to use the largest that fits
     packer.setMinimumScale(48.0);
 
-    packer.setPadding(4.0);
+    packer.setPadding(5.0);
     packer.setPixelRange(4.0);
     packer.setMiterLimit(1.0);
 
