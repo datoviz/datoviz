@@ -19,6 +19,7 @@ int dys[4] = {0, 0, 1, 1};
 
 void main()
 {
+
     // Which vertex within the triangle strip forming the rectangle.
     int idx = gl_VertexIndex % 4;
 
@@ -37,7 +38,7 @@ void main()
     mat4 tra = get_translation_matrix(trans);
 
     // TODO: store in a uniform for optimization
-    mat4 ortho = get_ortho_matrix(viewport.size);
+    mat4 ortho = get_ortho_matrix();
     mat4 ortho_inv = inverse(ortho);
 
     // NOTE: manual transform.

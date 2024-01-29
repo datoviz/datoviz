@@ -227,6 +227,13 @@ DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, 
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip);
+
+
+
 /*************************************************************************************************/
 /*  Visual declaration                                                                           */
 /*************************************************************************************************/

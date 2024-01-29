@@ -26,8 +26,9 @@ void main(void)
     vec4 P0_ = transform(P0, shift.xy);
     vec4 P1_ = transform(P1, shift.zw);
 
+
     // Viewport coordinates.
-    mat4 ortho = get_ortho_matrix(viewport.size);
+    mat4 ortho = get_ortho_matrix();
     mat4 ortho_inv = inverse(ortho);
 
     vec4 p0 = ortho_inv * P0_;

@@ -11,6 +11,7 @@
 #include "test_axis.h"
 #include "scene/axis.h"
 #include "scene/panzoom.h"
+#include "scene/viewport.h"
 #include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
@@ -41,10 +42,11 @@ int test_axis_1(TstSuite* suite)
     // Global parameters.
     float font_size = 48;
 
-    vec3 p0 = {-.9, 0, 0};
-    vec3 p1 = {+.9, 0, 0};
-    vec3 p2 = {-.9, +.9, 0};
-    vec3 p3 = {+.9, +.9, 0};
+    float a = .8;
+    vec3 p0 = {-a, -a, 0};
+    vec3 p1 = {+a, -a, 0};
+    vec3 p2 = {-a, +a, 0};
+    vec3 p3 = {+a, +a, 0};
 
     cvec4 color_glyph = {255, 255, 0, 255};
     cvec4 color_lim = {255, 0, 0, 255};
@@ -86,7 +88,10 @@ int test_axis_1(TstSuite* suite)
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
 
-    dvz_panel_margins(vt.panel, 100, 100, 100, 100);
+    float m = 50;
+    dvz_panel_margins(vt.panel, m, m, m, m);
+    dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_OUTER);
+    dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_OUTER);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);

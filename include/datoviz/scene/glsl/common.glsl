@@ -10,30 +10,14 @@
 
 // Viewport flags.
 #define DVZ_SPECIALIZATION_VIEWPORT 17
+#define DVZ_VIEWPORT_CLIP_INNER     0x1
+#define DVZ_VIEWPORT_CLIP_OUTER     0x2
+#define DVZ_VIEWPORT_CLIP_BOTTOM    0x4
+#define DVZ_VIEWPORT_CLIP_LEFT      0x8
 
 // Specialization constants.
 layout(constant_id = DVZ_SPECIALIZATION_TRANSFORM) const int TRANSFORM_FLAGS = 0;
 layout(constant_id = DVZ_SPECIALIZATION_VIEWPORT) const int VIEWPORT_FLAGS = 0;
-
-
-const uint DVZ_VIEWPORT_FLAGS_NONE = 0x00;
-
-// whether to integrate the margins in the transform or not
-const uint DVZ_VIEWPORT_FLAGS_WITH_MARGINS = 0x00;
-const uint DVZ_VIEWPORT_FLAGS_WITHOUT_MARGINS = 0x01;
-
-// clipping strategy
-const uint DVZ_VIEWPORT_FLAGS_CLIP_NONE = 0x00;
-const uint DVZ_VIEWPORT_FLAGS_CLIP_INNER = 0x10;
-const uint DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20;
-const uint DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30;
-const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
-
-// Fixed transforms.
-// #define DVZ_TRANSFORM_FIXED_DEFAULT 0x0
-// #define DVZ_TRANSFORM_FIXED_ALL     0x7
-// #define DVZ_TRANSFORM_FIXED_NONE    0x8
-
 
 
 // colormaps
@@ -46,31 +30,19 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 
 // NOTE: needs to be a macro and not a function so that it can be safely included in both
 // vertex and fragment shaders (discard is forbidden in the vertex shader)
-// TODO
 #define CLIP                                                                                      \
-    switch (viewport.flags)                                                                       \
-    {                                                                                             \
-    case DVZ_VIEWPORT_FLAGS_CLIP_NONE:                                                            \
-        break;                                                                                    \
-                                                                                                  \
-    case DVZ_VIEWPORT_FLAGS_CLIP_INNER:                                                           \
+    if ((VIEWPORT_FLAGS & DVZ_VIEWPORT_CLIP_INNER) > 0)                                           \
+        if (!clip_viewport(gl_FragCoord.xy))                                                      \
+            discard;                                                                              \
+    if ((VIEWPORT_FLAGS & DVZ_VIEWPORT_CLIP_OUTER) > 0)                                           \
         if (clip_viewport(gl_FragCoord.xy))                                                       \
             discard;                                                                              \
-        break;                                                                                    \
-                                                                                                  \
-    case DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM:                                                          \
+    if ((VIEWPORT_FLAGS & DVZ_VIEWPORT_CLIP_BOTTOM) > 0)                                          \
         if (clip_viewport(gl_FragCoord.xy, 0))                                                    \
             discard;                                                                              \
-        break;                                                                                    \
-                                                                                                  \
-    case DVZ_VIEWPORT_FLAGS_CLIP_LEFT:                                                            \
+    if ((VIEWPORT_FLAGS & DVZ_VIEWPORT_CLIP_LEFT) > 0)                                            \
         if (clip_viewport(gl_FragCoord.xy, 1))                                                    \
-            discard;                                                                              \
-        break;                                                                                    \
-                                                                                                  \
-    default:                                                                                      \
-        break;                                                                                    \
-    }
+            discard;
 
 
 #define sum(x) (dot(x, vec4(1, 1, 1, 1)))
@@ -146,6 +118,22 @@ mat4 get_ortho_matrix(vec2 size)
     ortho[3] = vec4(0, 0, 0, 1);
 
     return ortho;
+}
+
+
+
+mat4 get_ortho_matrix()
+{
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+    float mt = viewport.margins.x;
+    float mr = viewport.margins.y;
+    float mb = viewport.margins.z;
+    float ml = viewport.margins.w;
+
+    vec2 size = vec2(w - ml - mr, h - mt - mb);
+
+    return get_ortho_matrix(size);
 }
 
 

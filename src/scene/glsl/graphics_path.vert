@@ -60,7 +60,8 @@ void main()
 
     int index = gl_VertexIndex % 4;
 
-    mat4 ortho = get_ortho_matrix(viewport.size);
+
+    mat4 ortho = get_ortho_matrix();
     mat4 ortho_inv = inverse(ortho);
 
     // Screen coordinates.

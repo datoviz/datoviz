@@ -19,24 +19,14 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Viewport type.
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    DVZ_VIEWPORT_FLAGS_NONE = 0x00,
-
-    // whether to integrate the margins in the transform or not
-    DVZ_VIEWPORT_FLAGS_WITH_MARGINS = 0x00,
-    DVZ_VIEWPORT_FLAGS_WITHOUT_MARGINS = 0x01,
-
-    // clipping strategy
-    // DVZ_VIEWPORT_FLAGS_CLIP_NONE = 0x00,
-    DVZ_VIEWPORT_FLAGS_CLIP_INNER = 0x10,
-    DVZ_VIEWPORT_FLAGS_CLIP_OUTER = 0x20,
-    DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30,
-    DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40,
-
-} DvzViewportFlags;
+    DVZ_VIEWPORT_CLIP_INNER = 0x1,
+    DVZ_VIEWPORT_CLIP_OUTER = 0x2,
+    DVZ_VIEWPORT_CLIP_BOTTOM = 0x4,
+    DVZ_VIEWPORT_CLIP_LEFT = 0x8,
+} DvzViewportClip;
 
 
 
@@ -78,13 +68,8 @@ struct DvzViewport
     uvec2 offset_framebuffer;
     uvec2 size_framebuffer;
 
-    // Options
-    // Viewport clipping.
-    int flags; // used by the GPU for viewport clipping
-
-    // Used to discard transform on one axis
-    // int32_t transform_flags;
-
+    // NOTE: obsolete?
+    int flags;
     // TODO: aspect ratio
 };
 

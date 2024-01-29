@@ -233,6 +233,15 @@ void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_
 
 
 
+void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip)
+{
+    ANN(visual);
+    dvz_visual_specialization(
+        visual, DVZ_SHADER_FRAGMENT, DVZ_SPECIALIZATION_VIEWPORT, sizeof(int), &clip);
+}
+
+
+
 /*************************************************************************************************/
 /*  Visual declaration                                                                           */
 /*************************************************************************************************/
