@@ -193,11 +193,17 @@ mat4 get_rotation_matrix(vec3 axis, float angle)
 /*  Transforms                                                                                   */
 /*************************************************************************************************/
 
-vec4 transform(vec3 pos, vec2 shift)
+vec4 transform_mvp(vec3 pos)
 {
     mat4 MVP = mvp.proj * mvp.view * mvp.model;
     vec4 tr = MVP * vec4(pos, 1.0);
+    return tr;
+}
 
+
+
+vec4 transform_fixed(vec4 tr, vec3 pos)
+{
     // Fixed axes.
     if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_X) > 0)
         tr.x = pos.x;
@@ -205,7 +211,12 @@ vec4 transform(vec3 pos, vec2 shift)
         tr.y = pos.y;
     if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Z) > 0)
         tr.z = pos.z;
+    return tr;
+}
 
+
+vec4 transform_margins(vec4 tr)
+{
     // Margins
     float w = viewport.size.x;
     float h = viewport.size.y;
@@ -232,10 +243,30 @@ vec4 transform(vec3 pos, vec2 shift)
         tr.y = a * tr.y + b;
     }
 
+    return tr;
+}
+
+
+
+vec4 transform_shift(vec4 tr, vec2 shift)
+{
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+
     // pixel shift.
     if (w > 0 && h > 0)
         tr.xy += (2 * shift / viewport.size);
+    return tr;
+}
 
+
+
+vec4 transform(vec3 pos, vec2 shift)
+{
+    vec4 tr = transform_mvp(pos);
+    tr = transform_fixed(tr, pos);
+    tr = transform_margins(tr);
+    tr = transform_shift(tr, shift);
     tr = to_vulkan(tr);
     return tr;
 }

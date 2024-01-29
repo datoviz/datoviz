@@ -31,17 +31,21 @@ void main()
     trans += shift;
     trans += anchor * size;
 
-    mat4 mvp = mvp.proj * mvp.view * mvp.model;
+    // mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);
     mat4 rot_inv = inverse(rot);
     mat4 tra = get_translation_matrix(trans);
 
-    // NOTE: to store in a uniform for optimization
+    // TODO: store in a uniform for optimization
     mat4 ortho = get_ortho_matrix(viewport.size);
     mat4 ortho_inv = inverse(ortho);
 
-    // TODO: refactor with transform() in common.glsl
-    vec4 tr = ortho * rot * tra * rot_inv * ortho_inv * mvp * vec4(pos, 1);
+    // NOTE: manual transform.
+    vec4 tr = transform_mvp(pos);
+    tr = transform_fixed(tr, pos);
+    // NOTE: custom rotation, this need to be improved
+    tr = ortho * rot * tra * rot_inv * ortho_inv * tr;
+    tr = transform_margins(tr);
     tr = to_vulkan(tr);
     // HACK: without this the z is negative and clipped
     tr.z = 0;
