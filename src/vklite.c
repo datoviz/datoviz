@@ -2520,7 +2520,7 @@ void dvz_graphics_push(
 
 
 void dvz_graphics_specialization(
-    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t idx, //
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t constant_id, //
     VkDeviceSize size, void* data)
 {
     ANN(graphics);
@@ -2538,15 +2538,31 @@ void dvz_graphics_specialization(
     DvzSpecializationConstants* spec_consts = &graphics->spec_consts[shader_idx];
     ANN(spec_consts);
 
+    // If a specialization constant with the given constant_id has already been set, use it,
+    // otherwise, append a new specialization constant.
+    uint32_t idx = UINT32_MAX;
+    for (uint32_t i = 0; i < spec_consts->count; i++)
+    {
+        if (spec_consts->ids[i] == constant_id)
+        {
+            idx = i;
+            break;
+        }
+    }
+    if (idx == UINT32_MAX)
+        // Add a new specialization constant.
+        idx = spec_consts->count++;
+
+    // NOTE: we append the specialization constants independently of their constant_id.
     ASSERT(idx < DVZ_MAX_SPECIALIZATION_CONSTANTS);
 
     log_trace("set specialization constant value #%d, %s", idx, pretty_size(size));
 
     spec_consts->stage = stage;
+    spec_consts->ids[idx] = constant_id;
     spec_consts->sizes[idx] = size;
-    spec_consts->data[idx] =
-        _cpy(size, data); // NOTE: we copy the passed pointer, will have to be freed
-    spec_consts->count = MAX(idx + 1, spec_consts->count);
+    // NOTE: we copy the passed pointer, will have to be freed
+    spec_consts->data[idx] = _cpy(size, data);
 }
 
 
@@ -2659,7 +2675,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
             // Fill in the map entries.
             for (uint32_t c = 0; c < spec_count; c++)
             {
-                (spec_entry + c)->constantID = c;
+                (spec_entry + c)->constantID = spec_consts->ids[c];
                 (spec_entry + c)->offset = spec_consts->offsets[c];
                 (spec_entry + c)->size = spec_consts->sizes[c];
             }

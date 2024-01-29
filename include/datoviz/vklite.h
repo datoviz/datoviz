@@ -196,6 +196,7 @@ struct DvzSpecializationConstants
 {
     VkShaderStageFlagBits stage;
     uint32_t count;
+    uint32_t ids[DVZ_MAX_SPECIALIZATION_CONSTANTS];         // specialization constant IDs
     VkDeviceSize offsets[DVZ_MAX_SPECIALIZATION_CONSTANTS]; // NOTE: will be computed
     VkDeviceSize sizes[DVZ_MAX_SPECIALIZATION_CONSTANTS];
     void* data[DVZ_MAX_SPECIALIZATION_CONSTANTS];
@@ -1676,12 +1677,12 @@ DVZ_EXPORT void dvz_graphics_push(
  *
  * @param graphics the graphics pipeline
  * @param stage the shader stage
- * @param idx the constant index
+ * @param constant_id the constant ID
  * @param size the size of the value within the specialization data buffer
  * @param data the specialization data buffer
  */
 DVZ_EXPORT void dvz_graphics_specialization(
-    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t idx, //
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t constant_id, //
     VkDeviceSize size, void* data);
 
 /**
