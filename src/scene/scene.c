@@ -289,6 +289,14 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
 
 
 
+void dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float left)
+{
+    ANN(panel);
+    dvz_view_margins(panel->view, (vec4){top, right, bottom, left});
+}
+
+
+
 bool dvz_panel_contains(DvzPanel* panel, vec2 pos)
 {
     ANN(panel);

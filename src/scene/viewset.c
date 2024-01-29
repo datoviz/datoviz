@@ -84,6 +84,17 @@ _normalize_pos(vec2* pos, vec2 offset, vec2 shape, float content_scale, DvzMouse
 
 
 
+static inline void _update_viewport(DvzView* view)
+{
+    ANN(view);
+    DvzViewport viewport = dvz_viewport(view->offset, view->shape, 0);
+    dvz_viewport_margins(&viewport, view->margins);
+    dvz_dual_data(&view->dual, 0, 1, &viewport);
+    dvz_dual_update(&view->dual);
+}
+
+
+
 /*************************************************************************************************/
 /*  Viewset                                                                                      */
 /*************************************************************************************************/
@@ -291,19 +302,22 @@ void dvz_view_clear(DvzView* view)
 
 
 
+void dvz_view_margins(DvzView* view, vec4 margins)
+{
+    ANN(view);
+    glm_vec4_copy(margins, view->margins);
+    _update_viewport(view);
+}
+
+
+
 void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape)
 {
     ANN(view);
     log_trace("resize view to %.0fx%.0f -> %.0fx%.0f", offset[0], offset[1], shape[0], shape[1]);
-
     glm_vec2_copy(offset, view->offset);
     glm_vec2_copy(shape, view->shape);
-
-    // Update the DvzViewport structure.
-    // TODO: viewport flags
-    DvzViewport viewport = dvz_viewport(offset, shape, 0);
-    dvz_dual_data(&view->dual, 0, 1, &viewport);
-    dvz_dual_update(&view->dual);
+    _update_viewport(view);
 }
 
 

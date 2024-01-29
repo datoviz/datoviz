@@ -59,8 +59,9 @@ struct DvzView
     DvzViewset* viewset; // reference to the parent viewset
     DvzDual dual;
     vec2 offset, shape; // in framebuffer pixels
-    float scale;        // scale (multiplied by the window's content scale)
-    DvzList* visuals;   // list of visuals in the view
+    vec4 margins;
+    float scale;      // scale (multiplied by the window's content scale)
+    DvzList* visuals; // list of visuals in the view
 };
 
 
@@ -150,6 +151,13 @@ DVZ_EXPORT void dvz_view_clear(DvzView* view);
  *
  */
 DVZ_EXPORT void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_view_margins(DvzView* view, vec4 margins);
 
 
 

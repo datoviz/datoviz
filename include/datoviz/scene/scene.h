@@ -183,6 +183,14 @@ DVZ_EXPORT void dvz_panel_resize(DvzPanel* panel, float x, float y, float width,
 /**
  *
  */
+DVZ_EXPORT void
+dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float left);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
 
 

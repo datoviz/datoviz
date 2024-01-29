@@ -108,6 +108,12 @@ DvzViewport dvz_viewport(vec2 offset, vec2 shape, int flags);
 
 
 /**
+ */
+DVZ_EXPORT void dvz_viewport_margins(DvzViewport* viewport, vec4 margins);
+
+
+
+/**
  * Return a default viewport
  *
  * @param width the viewport width, in framebuffer pixels

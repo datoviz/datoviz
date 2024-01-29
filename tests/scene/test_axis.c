@@ -86,6 +86,8 @@ int test_axis_1(TstSuite* suite)
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
 
+    dvz_panel_margins(vt.panel, 100, 100, 100, 100);
+
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);
 
