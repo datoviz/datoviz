@@ -40,10 +40,6 @@ int test_axis_1(TstSuite* suite)
     int flags = 0;
     DvzAxis* axis = dvz_axis(vt.batch, flags);
 
-    DvzVisual* segment = dvz_axis_segment(axis);
-    DvzVisual* glyph = dvz_axis_glyph(axis);
-
-
     // Global parameters.
     float font_size = 48;
 
@@ -73,7 +69,6 @@ int test_axis_1(TstSuite* suite)
     dvz_axis_length(axis, length_lim, length_grid, length_major, length_minor);
     dvz_axis_color(axis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-
     // Set the ticks and labels.
     double dmin = 0;
     double dmax = 7;
@@ -90,10 +85,8 @@ int test_axis_1(TstSuite* suite)
     dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);
     dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
 
-
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, segment);
-    dvz_panel_visual(vt.panel, glyph);
+    dvz_axis_panel(axis, vt.panel);
 
     // Run the test.
     visual_test_end(vt);

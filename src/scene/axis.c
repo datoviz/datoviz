@@ -12,6 +12,7 @@
 #include "scene/atlas.h"
 #include "scene/colormaps.h"
 #include "scene/font.h"
+#include "scene/scene.h"
 #include "scene/visuals/glyph.h"
 #include "scene/visuals/segment.h"
 
@@ -606,6 +607,16 @@ void dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, vec2 out_d)
     ANN(axis);
     // TODO
     // compute dmin, dmax of the visible viewbox
+}
+
+
+
+void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
+{
+    ANN(axis);
+    ANN(panel);
+    dvz_panel_visual(panel, axis->segment);
+    dvz_panel_visual(panel, axis->glyph);
 }
 
 

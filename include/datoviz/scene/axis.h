@@ -34,6 +34,7 @@ typedef struct DvzVisual DvzVisual;
 typedef struct DvzAtlas DvzAtlas;
 typedef struct DvzFont DvzFont;
 typedef struct DvzMVP DvzMVP;
+typedef struct DvzPanel DvzPanel;
 
 
 
@@ -180,6 +181,13 @@ DVZ_EXPORT int dvz_axis_direction(
     DvzAxis* axis,
     DvzMVP* mvp); // returns 0 for horizontal, 1 for vertical. depends on the intersection or not
                   // of two projected boxes with maximal label length
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
 
 
 
