@@ -220,6 +220,13 @@ DVZ_EXPORT void dvz_visual_specialization(
 
 
 
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z);
+
+
+
 /*************************************************************************************************/
 /*  Visual declaration                                                                           */
 /*************************************************************************************************/

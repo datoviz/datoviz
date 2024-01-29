@@ -34,8 +34,6 @@ int test_axis_1(TstSuite* suite)
 
     VisualTest vt = visual_test_start("axis", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS);
 
-    dvz_panzoom_flags(vt.panzoom, DVZ_PANZOOM_FLAGS_FIXED_Y);
-
     // Create the visual.
     int flags = 0;
     DvzAxis* axis = dvz_axis(vt.batch, flags);
@@ -84,6 +82,9 @@ int test_axis_1(TstSuite* suite)
 
     dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);
     dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
+    dvz_visual_fixed(axis->glyph, false, true, false);
+    dvz_visual_fixed(axis->segment, false, true, false);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);

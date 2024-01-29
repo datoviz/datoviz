@@ -66,14 +66,10 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 4, FIELD(DvzSegmentVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, af);
     dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, af);
     dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
-    // dvz_visual_attr(visual, 7, FIELD(DvzSegmentVertex, transform), DVZ_FORMAT_R8_UINT, af);
 
     // Uniforms.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
-
-    // int transform_flags = 16;
-    // dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 7, sizeof(int), &transform_flags);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);

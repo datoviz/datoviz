@@ -16,6 +16,21 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+// NOTE: must correspond to values in common.glsl
+#define DVZ_SPECIALIZATION_TRANSFORM 16
+#define DVZ_TRANSFORM_FIXED_X        0x1
+#define DVZ_TRANSFORM_FIXED_Y        0x2
+#define DVZ_TRANSFORM_FIXED_Z        0x4
+#define DVZ_TRANSFORM_FIXED_ALL      0x7
+
+#define DVZ_SPECIALIZATION_VIEWPORT 17
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 

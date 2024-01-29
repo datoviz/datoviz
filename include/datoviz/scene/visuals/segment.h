@@ -61,7 +61,6 @@ struct DvzSegmentVertex
     float linewidth; /* line width, in pixels */
     DvzCapType cap0; /* start cap enum */
     DvzCapType cap1; /* end cap enum */
-    // uint8_t transform; /* transform enum */
 };
 
 

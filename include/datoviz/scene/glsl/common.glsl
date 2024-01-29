@@ -2,7 +2,19 @@
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
 
-// layout(constant_id = 7) const int TRANSFORM_FLAGS = 0;
+// Transform flags.
+#define DVZ_SPECIALIZATION_TRANSFORM 16
+#define DVZ_TRANSFORM_FIXED_X        0x1
+#define DVZ_TRANSFORM_FIXED_Y        0x2
+#define DVZ_TRANSFORM_FIXED_Z        0x4
+
+// Viewport flags.
+#define DVZ_SPECIALIZATION_VIEWPORT 17
+
+// Specialization constants.
+layout(constant_id = DVZ_SPECIALIZATION_TRANSFORM) const int TRANSFORM_FLAGS = 0;
+layout(constant_id = DVZ_SPECIALIZATION_VIEWPORT) const int VIEWPORT_FLAGS = 0;
+
 
 const uint DVZ_VIEWPORT_FLAGS_NONE = 0x00;
 
@@ -18,15 +30,11 @@ const uint DVZ_VIEWPORT_FLAGS_CLIP_BOTTOM = 0x30;
 const uint DVZ_VIEWPORT_FLAGS_CLIP_LEFT = 0x40;
 
 // Fixed transforms.
-#define DVZ_TRANSFORM_FIXED_AXIS_DEFAULT 0x0
-#define DVZ_TRANSFORM_FIXED_AXIS_X       0x1
-#define DVZ_TRANSFORM_FIXED_AXIS_Y       0x2
-#define DVZ_TRANSFORM_FIXED_AXIS_Z       0x4
-#define DVZ_TRANSFORM_FIXED_AXIS_XY      0x3
-#define DVZ_TRANSFORM_FIXED_AXIS_XZ      0x5
-#define DVZ_TRANSFORM_FIXED_AXIS_YZ      0x6
-#define DVZ_TRANSFORM_FIXED_AXIS_ALL     0x7
-#define DVZ_TRANSFORM_FIXED_AXIS_NONE    0x8
+// #define DVZ_TRANSFORM_FIXED_DEFAULT 0x0
+// #define DVZ_TRANSFORM_FIXED_ALL     0x7
+// #define DVZ_TRANSFORM_FIXED_NONE    0x8
+
+
 
 // colormaps
 #define CPAL032_OFS     240
@@ -190,36 +198,13 @@ vec4 transform(vec3 pos, vec2 shift)
     mat4 MVP = mvp.proj * mvp.view * mvp.model;
     vec4 tr = MVP * vec4(pos, 1.0);
 
-    // // By default, take the viewport transform.
-    // if (transform_flags == DVZ_TRANSFORM_FIXED_AXIS_DEFAULT)
-    //     transform_flags = uint(viewport.transform_flags);
-    // // Default: transform all
-    // if (transform_flags == DVZ_TRANSFORM_FIXED_AXIS_DEFAULT)
-    //     transform_flags = DVZ_TRANSFORM_FIXED_AXIS_NONE;
-
-    // // Transform.
-    // switch (transform_flags)
-    // {
-    // case DVZ_TRANSFORM_FIXED_AXIS_ALL:
-    //     break;
-    // case DVZ_TRANSFORM_FIXED_AXIS_NONE:
-    //     tr = mvp * tr;
-    //     break;
-    // case DVZ_TRANSFORM_FIXED_AXIS_X:
-    //     tr = mvp * tr;
-    //     tr.x = pos.x;
-    //     break;
-    // case DVZ_TRANSFORM_FIXED_AXIS_Y:
-    //     tr = mvp * tr;
-    //     tr.y = pos.y;
-    //     break;
-    // case DVZ_TRANSFORM_FIXED_AXIS_Z:
-    //     tr = mvp * tr;
-    //     tr.z = pos.z;
-    //     break;
-    // default:
-    //     break;
-    // }
+    // Fixed axes.
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_X) > 0)
+        tr.x = pos.x;
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Y) > 0)
+        tr.y = pos.y;
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Z) > 0)
+        tr.z = pos.z;
 
     // Margins
     float w = viewport.size.x;
