@@ -12,6 +12,7 @@
 #include "scene/axis.h"
 #include "scene/panzoom.h"
 #include "scene/viewport.h"
+#include "scene/visuals/marker.h"
 #include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
@@ -114,6 +115,7 @@ int test_axis_2(TstSuite* suite)
     VisualTest vt = visual_test_start(
         "axis_2", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
 
+
     // Set the ticks and labels.
     double dmin = 0;
     double dmax = 7;
@@ -127,10 +129,12 @@ int test_axis_2(TstSuite* suite)
     uint32_t index[] = {0, 2, 4, 6, 8, 10, 12, 14};
     uint32_t length[] = {1, 1, 1, 1, 1, 1, 1, 1};
 
+
     // Create the visual.
     int flags = 0;
     DvzAxis* haxis = dvz_axis(vt.batch, flags);
     DvzAxis* vaxis = dvz_axis(vt.batch, flags);
+
 
     // Global parameters.
     float font_size = 32;
@@ -150,6 +154,7 @@ int test_axis_2(TstSuite* suite)
     float length_grid = 1;
     float length_major = 40;
     float length_minor = 20;
+
 
     // Horizontal
     float ha = 1.0;
@@ -201,8 +206,62 @@ int test_axis_2(TstSuite* suite)
     dvz_visual_clip(vaxis->segment, DVZ_VIEWPORT_CLIP_LEFT);
 
 
+
+    // Number of items.
+    const uint32_t n = 1000000;
+
+    // Create the visual.
+    DvzVisual* visual = dvz_marker(vt.batch, 0);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_FILLED);
+    dvz_marker_shape(visual, DVZ_MARKER_SHAPE_DISC);
+
+    // Visual allocation.
+    dvz_marker_alloc(visual, n);
+
+    // Position.
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos[i][0] = .25 * dvz_rand_normal();
+        pos[i][1] = .25 * dvz_rand_normal();
+    }
+    dvz_marker_position(visual, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
+        color[i][3] = 192;
+    }
+    dvz_marker_color(visual, 0, n, color, 0);
+
+    // Size.
+    float* size = (float*)calloc(n, sizeof(float));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        size[i] = 20 + 30 * dvz_rand_float();
+    }
+    dvz_marker_size(visual, 0, n, size, 0);
+
+    // Parameters.
+    dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
+    dvz_marker_edge_width(visual, (float){3.0});
+
+    dvz_visual_clip(visual, DVZ_VIEWPORT_CLIP_OUTER);
+
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_margins(vt.panel, 60, 60, 120, 120);
+    dvz_panel_visual(vt.panel, visual);
+
+    // Cleanup.
+    FREE(pos);
+    FREE(color);
+    FREE(size);
+
+
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_margins(vt.panel, 20, 20, 120, 120);
     dvz_axis_panel(haxis, vt.panel);
     dvz_axis_panel(vaxis, vt.panel);
 
