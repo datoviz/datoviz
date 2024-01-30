@@ -288,7 +288,24 @@ static inline void set_segment_shift(DvzAxis* axis)
     vec3 u = {0};
     glm_vec3_sub(axis->p1, axis->p0, u);
     glm_vec3_normalize(u);
+
+    // Vector pointing from p0 to p2.
+    vec3 v = {0};
+    glm_vec3_sub(axis->p2, axis->p0, v);
+    glm_vec3_normalize(v);
+
     // NOTE: this only works in 2D.
+    // Rotation.
+    float a = -u[1];
+    float b = +u[0];
+
+    // Find the right orientation.
+    float det = u[0] * v[1] - u[1] * v[0];
+    if (det > 0)
+    {
+        a = -a;
+        b = -b;
+    }
 
     // Tick length.
     float major_length = axis->tick_length[2];
@@ -298,13 +315,13 @@ static inline void set_segment_shift(DvzAxis* axis)
     vec4* shift = (vec4*)calloc(n_total, sizeof(vec4));
     for (uint32_t i = 0; i < n_major; i++)
     {
-        shift[i][2] = -u[1] * major_length;
-        shift[i][3] = +u[0] * major_length;
+        shift[i][2] = a * major_length;
+        shift[i][3] = b * major_length;
     }
     for (uint32_t i = 0; i < n_minor; i++)
     {
-        shift[n_major + i][2] = -u[1] * minor_length;
-        shift[n_major + i][3] = +u[0] * minor_length;
+        shift[n_major + i][2] = a * minor_length;
+        shift[n_major + i][3] = b * minor_length;
     }
     // NOTE: this only works in 2D. In 3D, need to use end positions and shift=0.
     dvz_segment_shift(segment, 0, n_total, shift, 0);

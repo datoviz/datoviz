@@ -153,10 +153,10 @@ int test_axis_2(TstSuite* suite)
 
     // Horizontal
     float ha = 1.0;
-    vec3 hp0 = {+ha, -ha, 0};
-    vec3 hp1 = {-ha, -ha, 0};
-    vec3 hp2 = {+ha, +ha, 0};
-    vec3 hp3 = {-ha, +ha, 0};
+    vec3 hp0 = {-ha, -ha, 0};
+    vec3 hp1 = {+ha, -ha, 0};
+    vec3 hp2 = {-ha, +ha, 0};
+    vec3 hp3 = {+ha, +ha, 0};
     vec2 hanchor = {-.5, -1.25};
     vec2 hoffset = {0, -50};
 
