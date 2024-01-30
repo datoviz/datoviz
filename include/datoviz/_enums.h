@@ -459,8 +459,8 @@ typedef enum
 // Renderer flags.
 typedef enum
 {
-    DVZ_RENDERER_FLAGS_NONE = 0,
-    DVZ_RENDERER_FLAGS_WHITE_BACKGROUND = 1,
+    DVZ_RENDERER_FLAGS_NONE = 0x000000,
+    DVZ_RENDERER_FLAGS_WHITE_BACKGROUND = 0x100000,
 } DvzRendererFlags;
 
 

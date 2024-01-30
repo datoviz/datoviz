@@ -57,7 +57,8 @@ struct DvzGlyphVertex
 
 struct DvzGlyphParams
 {
-    vec2 size; /* glyph size in pixels */
+    vec2 size;    /* glyph size in pixels */
+    vec4 bgcolor; /* background color for glyph antialiasing*/
 };
 
 

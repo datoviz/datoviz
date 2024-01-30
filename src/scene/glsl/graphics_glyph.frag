@@ -29,6 +29,5 @@ void main()
 
     float screenPxDistance = 4 * (sd - 0.5);
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
-    vec4 bg_color = vec4(0, 0, 0, 1);
-    out_color = mix(bg_color, in_color, opacity);
+    out_color = mix(params.bgcolor, in_color, opacity);
 }

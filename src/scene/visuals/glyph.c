@@ -82,9 +82,10 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
     // Params.
-    // TODO: to remove?
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzGlyphParams));
     dvz_params_attr(params, 0, FIELD(DvzGlyphParams, size));
+    dvz_params_attr(params, 1, FIELD(DvzGlyphParams, bgcolor));
+    dvz_params_set(params, 1, (vec4){1, 1, 1, 1}); // bgcolor
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
