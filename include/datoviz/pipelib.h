@@ -11,8 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/graphics.h"
 #include "pipe.h"
+#include "scene/graphics.h"
 
 
 
@@ -28,9 +28,9 @@
 
 typedef enum
 {
-    DVZ_PIPELIB_FLAGS_NONE = 0x0000,
-    DVZ_PIPELIB_FLAGS_CREATE_MVP = 0x0001,
-    DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT = 0x0002,
+    DVZ_PIPELIB_FLAGS_NONE = 0x000000,
+    DVZ_PIPELIB_FLAGS_CREATE_MVP = 0x100000,
+    DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT = 0x200000,
 } DvzPipelibFlags;
 
 

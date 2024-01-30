@@ -435,8 +435,8 @@ typedef enum
 // Graphics flags.
 typedef enum
 {
-    DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x0100,
-    DVZ_GRAPHICS_FLAGS_PICK = 0x0200,
+    DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x40000,
+    DVZ_GRAPHICS_FLAGS_PICK = 0x80000,
 } DvzGraphicsFlags;
 
 

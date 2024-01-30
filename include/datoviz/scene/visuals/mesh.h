@@ -38,8 +38,8 @@ typedef struct DvzShape DvzShape;
 typedef enum
 {
     DVZ_MESH_FLAGS_NONE = 0x0000,
-    DVZ_MESH_FLAGS_TEXTURED = 0x0010,
-    DVZ_MESH_FLAGS_LIGHTING = 0x0020,
+    DVZ_MESH_FLAGS_TEXTURED = 0x0001,
+    DVZ_MESH_FLAGS_LIGHTING = 0x0002,
 } DvzMeshFlags;
 
 

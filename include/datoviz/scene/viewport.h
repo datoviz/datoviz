@@ -22,10 +22,10 @@
 // NOTE: must correspond to values in common.glsl
 typedef enum
 {
-    DVZ_VIEWPORT_CLIP_INNER = 0x1,
-    DVZ_VIEWPORT_CLIP_OUTER = 0x2,
-    DVZ_VIEWPORT_CLIP_BOTTOM = 0x4,
-    DVZ_VIEWPORT_CLIP_LEFT = 0x8,
+    DVZ_VIEWPORT_CLIP_INNER = 0x0001,
+    DVZ_VIEWPORT_CLIP_OUTER = 0x0002,
+    DVZ_VIEWPORT_CLIP_BOTTOM = 0x0004,
+    DVZ_VIEWPORT_CLIP_LEFT = 0x0008,
 } DvzViewportClip;
 
 
