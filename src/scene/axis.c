@@ -56,7 +56,7 @@ static AtlasFont _load_font(void)
 {
     // Load the font ttf bytes.
     unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
+    unsigned char* ttf_bytes = dvz_resource_font("NotoSansMono_Light", &ttf_size);
     ASSERT(ttf_size > 0);
     ANN(ttf_bytes);
 
@@ -414,7 +414,6 @@ static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index
     // layout.
     vec4* xywh = dvz_font_ascii(axis->font, glyphs);
 
-    // NOTE: remove the x0 offset for each group.
     uint32_t glyph_count = axis->glyph_count;
     uint32_t group_count = axis->tick_count;
     uint32_t* group_size = axis->group_size;
@@ -436,6 +435,7 @@ static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index
         x0 = xywh[idx][0];
         for (uint32_t j = 0; j < group_size[i]; j++)
         {
+            // NOTE: remove the x0 offset for each group.
             xywh_trimmed[k][0] = xywh[idx + j][0] - x0;
             xywh_trimmed[k][1] = xywh[idx + j][1];
             xywh_trimmed[k][2] = xywh[idx + j][2];
@@ -448,7 +448,7 @@ static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index
     }
     ASSERT(k == glyph_count);
 
-    dvz_glyph_xywh(axis->glyph, 0, glyph_count, xywh_trimmed, (vec2){0, 0}, 0); // TODO: offset
+    dvz_glyph_xywh(axis->glyph, 0, glyph_count, xywh_trimmed, axis->offset, 0);
     FREE(xywh);
 
     dvz_glyph_ascii(axis->glyph, glyphs_trimmed);
@@ -566,6 +566,14 @@ void dvz_axis_anchor(DvzAxis* axis, vec2 anchor)
 {
     ANN(axis);
     glm_vec2_copy(anchor, axis->anchor);
+}
+
+
+
+void dvz_axis_offset(DvzAxis* axis, vec2 offset)
+{
+    ANN(axis);
+    glm_vec2_copy(offset, axis->offset);
 }
 
 

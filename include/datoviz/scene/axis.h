@@ -81,6 +81,7 @@ struct DvzAxis
     uint32_t glyph_count;
     uint32_t* group_size;
     vec2 anchor;
+    vec2 offset;
 
     void* user_data;
 };
@@ -154,6 +155,13 @@ dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, c
  *
  */
 DVZ_EXPORT void dvz_axis_anchor(DvzAxis* axis, vec2 anchor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
 
 
 

@@ -41,7 +41,7 @@ int test_axis_1(TstSuite* suite)
 
     // Global parameters.
     float font_size = 48;
-    vec2 anchor = {-.5, -1.5};
+    vec2 anchor = {-.5, -1.25};
 
     float a = .8;
     vec3 p0 = {-a, -a, 0};
@@ -90,7 +90,7 @@ int test_axis_1(TstSuite* suite)
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
 
-    float m = 50;
+    float m = 40;
     dvz_panel_margins(vt.panel, m, m, m, m);
     dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_OUTER);
     dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_OUTER);
@@ -119,9 +119,10 @@ int test_axis_2(TstSuite* suite)
 
     // Global parameters.
     float font_size = 48;
-    vec2 anchor = {-.5, -1.5};
+    vec2 anchor = {-1, 0};
+    vec2 offset = {-50, -18};
 
-    float a = .8;
+    float a = 1.05;
     vec3 p0 = {-a, -a, 0};
     vec3 p1 = {-a, +a, 0};
     vec3 p2 = {+a, -a, 0};
@@ -144,6 +145,7 @@ int test_axis_2(TstSuite* suite)
     float length_minor = 20;
 
     dvz_axis_anchor(axis, anchor);
+    dvz_axis_offset(axis, offset);
     dvz_axis_size(axis, font_size);
     dvz_axis_width(axis, width_lim, width_grid, width_major, width_minor);
     dvz_axis_length(axis, length_lim, length_grid, length_major, length_minor);
@@ -165,13 +167,13 @@ int test_axis_2(TstSuite* suite)
     dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);
     dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
 
-    dvz_visual_fixed(axis->glyph, false, true, false);
-    dvz_visual_fixed(axis->segment, false, true, false);
+    dvz_visual_fixed(axis->glyph, true, false, false);
+    dvz_visual_fixed(axis->segment, true, false, false);
 
-    float m = 50;
+    float m = 100;
     dvz_panel_margins(vt.panel, m, m, m, m);
-    dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_OUTER);
-    dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_OUTER);
+    dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_INNER);
+    dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_INNER);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);
