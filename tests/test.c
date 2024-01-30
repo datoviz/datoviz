@@ -379,6 +379,7 @@ int dvz_run_tests(const char* match)
     TEST(test_slice_1)
     TEST(test_fake_sphere_1)
     TEST(test_axis_1)
+    TEST(test_axis_2)
 
 
     tst_suite_run(&suite, match);

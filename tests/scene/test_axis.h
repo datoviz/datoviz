@@ -21,6 +21,8 @@
 
 int test_axis_1(TstSuite*);
 
+int test_axis_2(TstSuite*);
+
 
 
 #endif

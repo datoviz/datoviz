@@ -364,10 +364,21 @@ static inline void set_glyph_pos(DvzAxis* axis, vec3* positions)
         _repeat_group(sizeof(vec3), glyph_count, group_count, group_size, (void*)positions, false);
     dvz_glyph_position(glyph, 0, glyph_count, pos, 0);
     FREE(pos);
+}
 
-    vec2* anchor = (vec2*)_repeat(glyph_count, sizeof(vec2), (vec2){-.5, -1.5});
-    dvz_glyph_anchor(glyph, 0, glyph_count, anchor, 0);
-    FREE(anchor)
+
+
+static inline void set_glyph_anchor(DvzAxis* axis)
+{
+    ANN(axis);
+
+    uint32_t glyph_count = axis->glyph_count;
+    ASSERT(glyph_count > 0);
+    DvzVisual* glyph = axis->glyph;
+
+    vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), axis->anchor);
+    dvz_glyph_anchor(glyph, 0, glyph_count, anchors, 0);
+    FREE(anchors)
 }
 
 
@@ -551,6 +562,14 @@ void dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 maj
 
 
 
+void dvz_axis_anchor(DvzAxis* axis, vec2 anchor)
+{
+    ANN(axis);
+    glm_vec2_copy(anchor, axis->anchor);
+}
+
+
+
 void dvz_axis_pos(DvzAxis* axis, double dmin, double dmax, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
 {
     ANN(axis);
@@ -586,6 +605,7 @@ void dvz_axis_set(
     // Tick positions.
     vec3* tick_positions = make_tick_positions(axis, values);
     set_glyph_pos(axis, tick_positions);
+    set_glyph_anchor(axis);
     set_segment_pos(axis, tick_positions);
     FREE(tick_positions);
 

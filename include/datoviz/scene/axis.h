@@ -80,6 +80,7 @@ struct DvzAxis
     uint32_t tick_count; // = group_count
     uint32_t glyph_count;
     uint32_t* group_size;
+    vec2 anchor;
 
     void* user_data;
 };
@@ -146,6 +147,13 @@ DVZ_EXPORT void dvz_axis_length(DvzAxis* axis, float lim, float grid, float majo
  */
 DVZ_EXPORT void
 dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_anchor(DvzAxis* axis, vec2 anchor);
 
 
 
