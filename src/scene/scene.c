@@ -24,14 +24,27 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
 
+static void _panzoom_size(DvzPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->view);
 
+    // NOTE: need to take margins into account when setting the panzoom size.
+    float t = panel->view->margins[0];
+    float r = panel->view->margins[1];
+    float b = panel->view->margins[2];
+    float l = panel->view->margins[3];
+    float w = panel->view->shape[0] - r - l;
+    float h = panel->view->shape[1] - t - b;
 
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
+    if (panel->panzoom)
+    {
+        dvz_panzoom_resize(panel->panzoom, w, h);
+    }
+}
 
 
 
@@ -265,10 +278,8 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
 
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
-    if (panel->panzoom)
-    {
-        dvz_panzoom_resize(panel->panzoom, width, height);
-    }
+    // NOTE: need to resize the panzoom as well.
+    _panzoom_size(panel);
 
     if (panel->arcball)
     {
@@ -293,6 +304,9 @@ void dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, fl
 {
     ANN(panel);
     dvz_view_margins(panel->view, (vec4){top, right, bottom, left});
+
+    // NOTE: need to resize the panzoom if needed.
+    _panzoom_size(panel);
 }
 
 
@@ -387,8 +401,14 @@ DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel)
     ASSERT(panel->view->shape[1] > 0);
 
     log_trace("create a new Panzoom instance");
+
+    float w = panel->view->shape[0];
+    float h = panel->view->shape[1];
+
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
-    panel->panzoom = dvz_panzoom(panel->view->shape[0], panel->view->shape[1], 0);
+    panel->panzoom = dvz_panzoom(w, h, 0);
+    _panzoom_size(panel); // Takes panel margins into account.
+
     panel->transform = dvz_transform(scene->batch, 0);
     panel->transform_to_destroy = true;
 
