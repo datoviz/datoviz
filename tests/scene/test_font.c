@@ -38,10 +38,15 @@ int test_font_1(TstSuite* suite)
 
     // Create the font object.
     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
+    dvz_font_size(font, 64);
 
     // Compute the layout of the text.
-    const uint32_t n = 4;
-    uint32_t codepoints[] = {97, 98, 99, 100};
+    const uint32_t n = 26;
+    uint32_t codepoints[26] = {0};
+    for (uint32_t i = 0; i < n; i++)
+    {
+        codepoints[i] = 97 + i;
+    }
     vec4* xywh = dvz_font_layout(font, n, codepoints);
     for (uint32_t i = 0; i < n; i++)
     {

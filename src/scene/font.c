@@ -15,6 +15,8 @@
 #include "request.h"
 
 #include <ft2build.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include FT_FREETYPE_H
 
 
@@ -107,7 +109,6 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     }
 
     int pen_x = 0;
-    int pen_y = 0;
     int x = 0;
     int y = 0;
     uint32_t w = 0;
@@ -128,18 +129,17 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
         w = face->glyph->bitmap.width;
         h = face->glyph->bitmap.rows;
 
-        // HACK: ensure the position is (0, 0) for the first glyph.
+        // HACK: ensure the x position is 0 for the first glyph.
         if (i == 0)
         {
             pen_x = -face->glyph->bitmap_left;
-            pen_y = +face->glyph->bitmap_top - (int)h;
         }
 
         x = pen_x + face->glyph->bitmap_left;
-        y = pen_y - face->glyph->bitmap_top + (int)h;
+        y = face->glyph->bitmap_top - (int)h;
 
         xywh[i][0] = (float)x;
-        xywh[i][1] = -(float)y;
+        xywh[i][1] = (float)y;
         xywh[i][2] = (float)w;
         xywh[i][3] = (float)h;
 
@@ -184,16 +184,44 @@ uint8_t* dvz_font_draw(
     // Compute the size of the image.
     int margin = 5;
     int width = 2 * margin + xywh[length - 1][0] + xywh[length - 1][2]; // x_last + w_last
-    int height = 0, hmax = 0;
-    int ymin = 0, ymax = 0;
+    ASSERT(width > 0);
+
+    int top = -1000000, bottom = +1000000;
+    int x = 0, y = 0, w = 0, h = 0;
+    uint32_t itop = 0;
+
     for (uint32_t i = 0; i < length; i++)
     {
-        height = hmax = MAX(height, xywh[i][3]);
-        ymin = MIN(ymin, xywh[i][1]);
-        ymax = MAX(ymax, xywh[i][1]);
+        x = (int)round(xywh[i][0]);
+        y = (int)round(xywh[i][1]);
+        w = (int)round(xywh[i][2]);
+        h = (int)round(xywh[i][3]);
+
+        // Maximum height from the baseline.
+        if (y + h > top)
+        {
+            top = y + h;
+            itop = i;
+        }
+
+        // Minimum vertical position from the baseline.
+        if (y < bottom)
+        {
+            bottom = y;
+        }
     }
-    ASSERT(ymin <= ymax);
-    height += 2 * margin + (ymax - ymin);
+
+    int ytop = (int)round(xywh[itop][1]);
+    int htop = (int)round(xywh[itop][3]);
+
+    int baseline = margin + ytop + htop; // origin at the top row
+    ASSERT(baseline > 0);
+
+    int height = baseline + abs(bottom) + margin;
+    ASSERT(height > 0);
+    ASSERT(height >= 2 * margin);
+    ASSERT(baseline < height);
+
     log_debug("render the text in an image with size %dx%d", width, height);
     out_size[0] = (uint32_t)width;
     out_size[1] = (uint32_t)height;
@@ -210,14 +238,19 @@ uint8_t* dvz_font_draw(
         }
 
         // Determine the upper-left corner of the glyph.
-        int x = round(xywh[i][0]);
-        int y = round(xywh[i][1]);
-        int w = round(xywh[i][2]);
-        int h = round(xywh[i][3]);
+        x = round(xywh[i][0]);
+        y = round(xywh[i][1]);
+        w = round(xywh[i][2]);
+        h = round(xywh[i][3]);
 
-        y = margin + hmax - h;
-        // log_info("%d %d", x, y);
+        // Convert to the coordinate space of the final image.
+        x += margin;
+        ASSERT(x >= margin);
+        ASSERT(x + w <= width - margin);
+
+        y = baseline - y - h;
         ASSERT(y >= margin);
+        ASSERT(y + h <= height - margin);
 
         // Copy the glyph's bitmap into the final bitmap.
         for (int u = 0; u < w; u++)
@@ -226,7 +259,9 @@ uint8_t* dvz_font_draw(
             {
                 uint32_t idx = (uint32_t)((y + v) * width + x + u);
                 ASSERT((int)idx < width * height * 1);
+                // NOTE: in red for now.
                 bitmap[3 * idx + 0] = face->glyph->bitmap.buffer[w * v + u];
+                // bitmap[3 * idx + 1] = 255; // DEBUG
             }
         }
     }
