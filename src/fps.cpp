@@ -24,7 +24,7 @@ static void compute_hist(uint32_t count, double* values, dvec2 min_max, uint32_t
 
     if (min_max[0] == 0 && min_max[1] == 0)
         dvz_range(count, values, min_max);
-    double min = 0;
+    double min = min_max[0];
     double max = min_max[1];
     double diff = min < max ? max - min : 1;
 
@@ -86,14 +86,14 @@ void dvz_fps_histogram(DvzFps* fps)
     ANN(fps);
 
     // Compute the min and max of the values.
-    dvec2 min_max = {0};
+    dvec2 min_max = {1000000, -1000000};
     dvz_range(fps->count, fps->values, min_max);
 
     // Keep the absolute maximum value.
-    fps->min_max[1] = MAX(fps->min_max[1], min_max[1]);
+    // fps->min_max[1] = MAX(fps->min_max[1], min_max[1]);
 
     // Compute the FPS histogram.
-    compute_hist(fps->count, fps->values, fps->min_max, DVZ_FPS_BINS, fps->hist);
+    compute_hist(fps->count, fps->values, min_max, DVZ_FPS_BINS, fps->hist);
 
     // Compute the average FPS.
     double mean = fps->count >= 2 ? dvz_mean(fps->count, fps->values) : 1.0;
