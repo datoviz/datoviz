@@ -223,6 +223,14 @@ void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* v
 
 
 
+void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 1, bgcolor);
+}
+
+
+
 void dvz_glyph_texture(DvzVisual* visual, DvzId tex)
 {
     ANN(visual);

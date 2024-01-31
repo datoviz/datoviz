@@ -150,6 +150,13 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
 /**
  *
  */
+DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
 
 
