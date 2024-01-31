@@ -12,6 +12,7 @@
 #include "scene/axis.h"
 #include "scene/panzoom.h"
 #include "scene/viewport.h"
+#include "scene/visuals/glyph.h"
 #include "scene/visuals/marker.h"
 #include "scene/visuals/visual_test.h"
 #include "test.h"
@@ -41,10 +42,11 @@ int test_axis_1(TstSuite* suite)
     DvzAxis* axis = dvz_axis(vt.batch, flags);
 
     // Global parameters.
-    float font_size = 48;
-    vec2 anchor = {-.5, -1.25};
+    float font_size = 36;
+    vec2 anchor = {+.5, 0};
+    vec2 offset = {0, -80};
 
-    float a = .8;
+    float a = 1;
     vec3 p0 = {-a, -a, 0};
     vec3 p1 = {+a, -a, 0};
     vec3 p2 = {-a, +a, 0};
@@ -68,6 +70,7 @@ int test_axis_1(TstSuite* suite)
 
     dvz_axis_size(axis, font_size);
     dvz_axis_anchor(axis, anchor);
+    dvz_axis_offset(axis, offset);
     dvz_axis_width(axis, width_lim, width_grid, width_major, width_minor);
     dvz_axis_length(axis, length_lim, length_grid, length_major, length_minor);
     dvz_axis_color(axis, color_glyph, color_lim, color_grid, color_major, color_minor);
@@ -90,11 +93,12 @@ int test_axis_1(TstSuite* suite)
 
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
+    // dvz_glyph_bgcolor(axis->glyph, (vec4){1, 0, 0, 1});
 
-    float m = 40;
+    float m = 100;
     dvz_panel_margins(vt.panel, m, m, m, m);
-    dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_OUTER);
-    dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_OUTER);
+    dvz_visual_clip(axis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
+    dvz_visual_clip(axis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);
@@ -162,8 +166,8 @@ int test_axis_2(TstSuite* suite)
     vec3 hp1 = {+ha, -ha, 0};
     vec3 hp2 = {-ha, +ha, 0};
     vec3 hp3 = {+ha, +ha, 0};
-    vec2 hanchor = {-.5, -1.25};
-    vec2 hoffset = {0, -50};
+    vec2 hanchor = {+.5, 0};
+    vec2 hoffset = {0, -80};
 
     dvz_axis_size(haxis, font_size);
     dvz_axis_anchor(haxis, hanchor);
@@ -179,6 +183,7 @@ int test_axis_2(TstSuite* suite)
     dvz_visual_fixed(haxis->segment, false, true, false);
     dvz_visual_clip(haxis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
     dvz_visual_clip(haxis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
+    dvz_glyph_bgcolor(haxis->glyph, (vec4){1, 1, 1, 1});
 
 
     // Vertical.
@@ -187,8 +192,8 @@ int test_axis_2(TstSuite* suite)
     vec3 vp1 = {-va, +va, 0};
     vec3 vp2 = {+va, -va, 0};
     vec3 vp3 = {+va, +va, 0};
-    vec2 vanchor = {-1, 0};
-    vec2 voffset = {-50, -18};
+    vec2 vanchor = {+1, 0};
+    vec2 voffset = {-50, -10};
 
     dvz_axis_size(vaxis, font_size);
     dvz_axis_anchor(vaxis, vanchor);
@@ -204,6 +209,7 @@ int test_axis_2(TstSuite* suite)
     dvz_visual_fixed(vaxis->segment, true, false, false);
     dvz_visual_clip(vaxis->glyph, DVZ_VIEWPORT_CLIP_LEFT);
     dvz_visual_clip(vaxis->segment, DVZ_VIEWPORT_CLIP_LEFT);
+    dvz_glyph_bgcolor(vaxis->glyph, (vec4){1, 1, 1, 1});
 
 
 
@@ -212,7 +218,7 @@ int test_axis_2(TstSuite* suite)
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
-    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_FILLED);
+    dvz_marker_aspect(visual, DVZ_MARKER_ASPECT_OUTLINE);
     dvz_marker_shape(visual, DVZ_MARKER_SHAPE_DISC);
 
     // Visual allocation.
@@ -232,7 +238,7 @@ int test_axis_2(TstSuite* suite)
     for (uint32_t i = 0; i < n; i++)
     {
         dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 192;
+        // color[i][3] = 192;
     }
     dvz_marker_color(visual, 0, n, color, 0);
 
@@ -240,13 +246,13 @@ int test_axis_2(TstSuite* suite)
     float* size = (float*)calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
     {
-        size[i] = 20 + 30 * dvz_rand_float();
+        size[i] = 15 + 35 * dvz_rand_float();
     }
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Parameters.
-    dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
-    dvz_marker_edge_width(visual, (float){3.0});
+    dvz_marker_edge_color(visual, (cvec4){0, 0, 0, 255});
+    dvz_marker_edge_width(visual, (float){1.0});
 
     dvz_visual_clip(visual, DVZ_VIEWPORT_CLIP_OUTER);
 

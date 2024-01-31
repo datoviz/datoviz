@@ -56,7 +56,7 @@ static AtlasFont _load_font(void)
 {
     // Load the font ttf bytes.
     unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("NotoSansMono_Light", &ttf_size);
+    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
     ASSERT(ttf_size > 0);
     ANN(ttf_bytes);
 
