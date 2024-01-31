@@ -55,7 +55,8 @@ int test_glyph_1(TstSuite* suite)
     // DEBUG
     // const char* text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     // const char* text = "abcdefghijklmnopqrstuvwxyz";
-    const char* text = "Hello world!";
+    // const char* text = "dfghijkl!01234";
+    const char* text = "Hello world! gih";
     float font_size = 96;
     const uint32_t n = strnlen(text, 4096);
     AT(n > 0);
@@ -81,6 +82,9 @@ int test_glyph_1(TstSuite* suite)
     dvz_glyph_color(visual, 0, n, color, 0);
     FREE(color);
 
+    // Background color.
+    // dvz_glyph_bgcolor(visual, (vec4){1, 1, 1, .5});
+
 
     // Create the atlas.
     unsigned long ttf_size = 0;
@@ -103,6 +107,12 @@ int test_glyph_1(TstSuite* suite)
     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
     dvz_font_size(font, font_size);
     vec4* xywh = dvz_font_ascii(font, text);
+    // for (uint32_t i = 0; i < n; i++)
+    // {
+    //     log_info(
+    //         "%c: %.1f\t%.1f\t%.1f\t%.1f", text[i], xywh[i][0], xywh[i][1], xywh[i][2],
+    //         xywh[i][3]);
+    // }
 
     // Now we can use the xywh array returned by the font to set the size and shift properties
     // of the glyph vsual.

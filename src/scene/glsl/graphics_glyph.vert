@@ -30,7 +30,7 @@ void main()
     // Shift in pixels.
     vec2 trans = vec2(dx, dy);
     trans += shift;
-    trans += anchor * size;
+    trans -= anchor * size;
 
     // mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);

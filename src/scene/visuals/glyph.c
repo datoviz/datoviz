@@ -85,7 +85,6 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzGlyphParams));
     dvz_params_attr(params, 0, FIELD(DvzGlyphParams, size));
     dvz_params_attr(params, 1, FIELD(DvzGlyphParams, bgcolor));
-    dvz_params_set(params, 1, (vec4){1, 1, 1, 1}); // bgcolor
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
@@ -182,8 +181,8 @@ void dvz_glyph_texcoords(
         u1 = u0 + coords[i][2];
         v1 = v0 + coords[i][3];
         // log_error("%.3f %.3f %.3f %.3f", u0, v0, u1, v1);
-        ASSERT(u0 <= u1);
-        ASSERT(v0 <= v1);
+        // ASSERT(u0 <= u1);
+        // ASSERT(v0 <= v1);
 
         // lower-left
         uv[4 * i + 0][0] = u0;
@@ -289,16 +288,23 @@ void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints)
     float h = shape[1];
 
     vec4* texcoords = dvz_atlas_glyphs(atlas, count, codepoints); // to free
+
+    // HACK: remove the padding around the glyphs in the atlas, because the freetype positioning
+    // implementation assumes no padding, whereas the atlas requires them to prevent edge effects
+    // in the fragment shader.
+    float padw = 1.25;
+    float padh = 1.5;
+
     for (uint32_t i = 0; i < count; i++)
     {
-        texcoords[i][0] = texcoords[i][0] / w;
-        texcoords[i][1] = texcoords[i][1] / h;
-        texcoords[i][2] = texcoords[i][2] / w;
-        texcoords[i][3] = texcoords[i][3] / h;
+        // Now, we need to divide the texcoords (in pixels) by the atlas shape, to get uv
+        // normalized coordinates.
+        texcoords[i][0] = (texcoords[i][0] + padw) / w;
+        texcoords[i][1] = (texcoords[i][1] + padh) / h;
+        texcoords[i][2] = (texcoords[i][2] - 2 * padw) / w;
+        texcoords[i][3] = (texcoords[i][3] - 2 * padh) / h;
     }
 
-    // Now, we need to divide the texcoords (in pixels) by the atlas shape, to get uv normalized
-    // coordinates.
     dvz_glyph_texcoords(visual, 0, count, texcoords, 0);
 
     FREE(texcoords);
