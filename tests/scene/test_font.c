@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_font.h"
+#include "_string.h"
 #include "scene/font.h"
 #include "test.h"
 #include "testing.h"
@@ -41,13 +42,10 @@ int test_font_1(TstSuite* suite)
     dvz_font_size(font, 64);
 
     // Compute the layout of the text.
-    const uint32_t n = 26;
-    uint32_t codepoints[26] = {0};
-    for (uint32_t i = 0; i < n; i++)
-    {
-        codepoints[i] = 97 + i;
-    }
-    vec4* xywh = dvz_font_layout(font, n, codepoints);
+    // const char* text = "dfghijkl!01234";
+    const char* text = "Hello world! abcdefhijklm";
+    vec4* xywh = dvz_font_ascii(font, text);
+    uint32_t n = strnlen(text, 1024);
     for (uint32_t i = 0; i < n; i++)
     {
         glm_vec4_print(xywh[i], stdout);
@@ -55,6 +53,8 @@ int test_font_1(TstSuite* suite)
 
     // Render the text.
     uvec2 out_size;
+    uint32_t count = 0;
+    uint32_t* codepoints = _ascii_to_utf32(text, &count);
     uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, out_size);
 
     char imgpath[1024];

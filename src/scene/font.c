@@ -259,9 +259,9 @@ uint8_t* dvz_font_draw(
             {
                 uint32_t idx = (uint32_t)((y + v) * width + x + u);
                 ASSERT((int)idx < width * height * 1);
-                // NOTE: in red for now.
-                bitmap[3 * idx + 0] = face->glyph->bitmap.buffer[w * v + u];
-                // bitmap[3 * idx + 1] = 255; // DEBUG
+                for (uint32_t k = 0; k < 3; k++)
+                    bitmap[3 * idx + k] = face->glyph->bitmap.buffer[w * v + u];
+                // bitmap[3 * idx + 1] += 64; // DEBUG
             }
         }
     }
