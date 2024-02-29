@@ -25,6 +25,7 @@
 #include "scene/test_font.h"
 #include "scene/test_graphics.h"
 #include "scene/test_labels.h"
+#include "scene/test_mvp.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
 #include "scene/test_scene.h"
@@ -327,6 +328,7 @@ int dvz_run_tests(const char* match)
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
     TEST(test_camera_1)
+    TEST(test_mvp_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
     TEST(test_shape_obj)

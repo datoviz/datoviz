@@ -819,6 +819,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_font.c"
         "tests/scene/test_graphics.c"
         "tests/scene/test_labels.c"
+        "tests/scene/test_mvp.c"
         "tests/scene/test_panzoom.c"
         "tests/scene/test_params.c"
         "tests/scene/test_sdf.c"

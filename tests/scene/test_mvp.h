@@ -1,36 +1,26 @@
 /*************************************************************************************************/
-/*  MVP                                                                                          */
+/*  Tests                                                                                        */
 /*************************************************************************************************/
+
+#ifndef DVZ_HEADER_TEST_MVP
+#define DVZ_HEADER_TEST_MVP
+
 
 
 /*************************************************************************************************/
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/mvp.h"
+#include "testing.h"
 
 
 
 /*************************************************************************************************/
-/*  MVP functions                                                                                */
+/*  Mvp tests                                                                                 */
 /*************************************************************************************************/
 
-DvzMVP dvz_mvp_default(void)
-{
-    DvzMVP mvp = {0};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    return mvp;
-}
+int test_mvp_1(TstSuite*);
 
 
 
-void dvz_mvp_apply(DvzMVP* mvp, vec4 point, vec4 out)
-{
-    ANN(mvp);
-
-    glm_mat4_mulv(mvp->proj, point, out);
-    glm_mat4_mulv(mvp->view, out, out);
-    glm_mat4_mulv(mvp->model, out, out);
-}
+#endif

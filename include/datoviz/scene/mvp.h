@@ -67,6 +67,10 @@ DVZ_EXPORT DvzMVP dvz_mvp_default(void);
 
 
 
+DVZ_EXPORT void dvz_mvp_apply(DvzMVP* mvp, vec4 point, vec4 out);
+
+
+
 EXTERN_C_OFF
 
 #endif
