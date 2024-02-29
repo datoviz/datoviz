@@ -647,11 +647,45 @@ void dvz_axis_set(
 
 
 
-void dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, vec2 out_d)
+void dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, dvec2 out_d)
 {
     ANN(axis);
-    // TODO
-    // compute dmin, dmax of the visible viewbox
+    ANN(mvp);
+
+    // float px = -mvp->view[3][0];
+    // float py = -mvp->view[3][1];
+    // float zx = 1.0f / mvp->proj[0][0];
+    // float zy = 1.0f / mvp->proj[1][1];
+
+    // Compute q0=mvp*p0 and q1=mvp*p1.
+    vec4 q0, q1;
+    glm_vec3_copy(axis->p0, q0);
+    glm_vec3_copy(axis->p1, q1);
+    q0[3] = 1;
+    q1[3] = 1;
+
+    dvz_mvp_apply(mvp, q0, q0);
+    dvz_mvp_apply(mvp, q1, q1);
+
+    // glm_vec4_print(q0, stdout);
+    // glm_vec4_print(q1, stdout);
+
+    // Direction vector, from p0 to p1.
+    vec3 u;
+    glm_vec3_sub(axis->p1, axis->p0, u);
+    glm_vec3_normalize(u);
+
+    double dmin = axis->dmin;
+    double dmax = axis->dmax;
+
+    double p0_ = glm_vec3_dot(axis->p0, u);
+    double p1_ = glm_vec3_dot(axis->p1, u);
+    double q0_ = glm_vec3_dot(q0, u);
+    double q1_ = glm_vec3_dot(q1, u);
+
+    double denom = 1. / (q1_ - q0_);
+    out_d[0] = dmin + (dmax - dmin) * (p0_ - q0_) * denom;
+    out_d[1] = dmin + (dmax - dmin) * (p1_ - q0_) * denom;
 }
 
 

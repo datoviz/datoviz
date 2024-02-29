@@ -186,7 +186,7 @@ DVZ_EXPORT void dvz_axis_set(
  *
  */
 DVZ_EXPORT void
-dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, vec2 out_d); // compute dmin, dmax of the visible viewbox
+dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, dvec2 out_d); // compute dmin, dmax of the visible viewbox
 
 
 

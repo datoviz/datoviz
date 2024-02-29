@@ -112,6 +112,54 @@ int test_axis_1(TstSuite* suite)
 
 
 
+int test_axis_get(TstSuite* suite)
+{
+    double dmin = -10;
+    double dmax = +10;
+
+    DvzAxis axis = {
+        .p0 = {-1, 0, 0},
+        .p1 = {+1, 0, 0},
+        .dmin = dmin,
+        .dmax = dmax,
+    };
+
+    DvzMVP mvp = dvz_mvp_default();
+    dvec2 d = {0, 0};
+    dvz_axis_get(&axis, &mvp, d);
+    AT(d[0] == dmin);
+    AT(d[1] == dmax);
+
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    dvz_panzoom_zoom(pz, (vec2){2, 2});
+    dvz_panzoom_mvp(pz, &mvp);
+
+    dvz_axis_get(&axis, &mvp, d);
+    AT(d[0] == dmin / 2);
+    AT(d[1] == dmax / 2);
+
+    dvz_panzoom_destroy(pz);
+    return 0;
+}
+
+
+
+static void _onframe(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_panzoom_mvp(vt->panzoom, &mvp);
+
+    double d[2] = {0};
+    dvz_axis_get(vt->haxis, &mvp, d);
+
+    log_error("%f %f", d[0], d[1]);
+}
+
 int test_axis_2(TstSuite* suite)
 {
     ANN(suite);
@@ -169,21 +217,23 @@ int test_axis_2(TstSuite* suite)
     vec2 hanchor = {+.5, 0};
     vec2 hoffset = {0, -80};
 
-    dvz_axis_size(haxis, font_size);
-    dvz_axis_anchor(haxis, hanchor);
-    dvz_axis_offset(haxis, hoffset);
-    dvz_axis_width(haxis, width_lim, width_grid, width_major, width_minor);
-    dvz_axis_length(haxis, length_lim, length_grid, length_major, length_minor);
-    dvz_axis_color(haxis, color_glyph, color_lim, color_grid, color_major, color_minor);
+    {
+        dvz_axis_size(haxis, font_size);
+        dvz_axis_anchor(haxis, hanchor);
+        dvz_axis_offset(haxis, hoffset);
+        dvz_axis_width(haxis, width_lim, width_grid, width_major, width_minor);
+        dvz_axis_length(haxis, length_lim, length_grid, length_major, length_minor);
+        dvz_axis_color(haxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-    dvz_axis_pos(haxis, dmin, dmax, hp0, hp1, hp2, hp3);
-    dvz_axis_set(haxis, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_pos(haxis, dmin, dmax, hp0, hp1, hp2, hp3);
+        dvz_axis_set(haxis, tick_count, values, glyph_count, glyphs, index, length);
 
-    dvz_visual_fixed(haxis->glyph, false, true, false);
-    dvz_visual_fixed(haxis->segment, false, true, false);
-    dvz_visual_clip(haxis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
-    dvz_visual_clip(haxis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
-    dvz_glyph_bgcolor(haxis->glyph, (vec4){1, 1, 1, 1});
+        dvz_visual_fixed(haxis->glyph, false, true, false);
+        dvz_visual_fixed(haxis->segment, false, true, false);
+        dvz_visual_clip(haxis->glyph, DVZ_VIEWPORT_CLIP_BOTTOM);
+        dvz_visual_clip(haxis->segment, DVZ_VIEWPORT_CLIP_BOTTOM);
+        dvz_glyph_bgcolor(haxis->glyph, (vec4){1, 1, 1, 1});
+    }
 
 
     // Vertical.
@@ -195,26 +245,27 @@ int test_axis_2(TstSuite* suite)
     vec2 vanchor = {+1, 0};
     vec2 voffset = {-50, -10};
 
-    dvz_axis_size(vaxis, font_size);
-    dvz_axis_anchor(vaxis, vanchor);
-    dvz_axis_offset(vaxis, voffset);
-    dvz_axis_width(vaxis, width_lim, width_grid, width_major, width_minor);
-    dvz_axis_length(vaxis, length_lim, length_grid, length_major, length_minor);
-    dvz_axis_color(vaxis, color_glyph, color_lim, color_grid, color_major, color_minor);
+    {
+        dvz_axis_size(vaxis, font_size);
+        dvz_axis_anchor(vaxis, vanchor);
+        dvz_axis_offset(vaxis, voffset);
+        dvz_axis_width(vaxis, width_lim, width_grid, width_major, width_minor);
+        dvz_axis_length(vaxis, length_lim, length_grid, length_major, length_minor);
+        dvz_axis_color(vaxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-    dvz_axis_pos(vaxis, dmin, dmax, vp0, vp1, vp2, vp3);
-    dvz_axis_set(vaxis, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_pos(vaxis, dmin, dmax, vp0, vp1, vp2, vp3);
+        dvz_axis_set(vaxis, tick_count, values, glyph_count, glyphs, index, length);
 
-    dvz_visual_fixed(vaxis->glyph, true, false, false);
-    dvz_visual_fixed(vaxis->segment, true, false, false);
-    dvz_visual_clip(vaxis->glyph, DVZ_VIEWPORT_CLIP_LEFT);
-    dvz_visual_clip(vaxis->segment, DVZ_VIEWPORT_CLIP_LEFT);
-    dvz_glyph_bgcolor(vaxis->glyph, (vec4){1, 1, 1, 1});
-
+        dvz_visual_fixed(vaxis->glyph, true, false, false);
+        dvz_visual_fixed(vaxis->segment, true, false, false);
+        dvz_visual_clip(vaxis->glyph, DVZ_VIEWPORT_CLIP_LEFT);
+        dvz_visual_clip(vaxis->segment, DVZ_VIEWPORT_CLIP_LEFT);
+        dvz_glyph_bgcolor(vaxis->glyph, (vec4){1, 1, 1, 1});
+    }
 
 
     // Number of items.
-    const uint32_t n = 1000000;
+    const uint32_t n = 1000;
 
     // Create the visual.
     DvzVisual* visual = dvz_marker(vt.batch, 0);
@@ -270,6 +321,12 @@ int test_axis_2(TstSuite* suite)
     dvz_panel_margins(vt.panel, 20, 20, 120, 120);
     dvz_axis_panel(haxis, vt.panel);
     dvz_axis_panel(vaxis, vt.panel);
+
+    vt.haxis = haxis;
+    vt.vaxis = vaxis;
+    vt.panzoom = vt.panel->panzoom;
+
+    dvz_app_onframe(vt.app, _onframe, &vt);
 
     // Run the test.
     visual_test_end(vt);

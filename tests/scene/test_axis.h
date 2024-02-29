@@ -23,6 +23,8 @@ int test_axis_1(TstSuite*);
 
 int test_axis_2(TstSuite*);
 
+int test_axis_get(TstSuite* suite);
+
 
 
 #endif

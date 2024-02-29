@@ -13,6 +13,7 @@
 
 #include "request.h"
 #include "scene/app.h"
+#include "scene/axis.h"
 #include "scene/camera.h"
 #include "scene/dual.h"
 #include "scene/scene.h"
@@ -61,6 +62,8 @@ struct VisualTest
     DvzArcball* arcball;
     DvzCamera* camera;
     DvzVisual* volume;
+    DvzAxis* haxis;
+    DvzAxis* vaxis;
     uint32_t n, m, p;
     void* user_data;
 };

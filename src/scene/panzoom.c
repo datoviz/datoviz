@@ -331,7 +331,8 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
 {
     ANN(pz);
 
-    // DvzMVP* mvp = &pz->mvp;
+    // WARNING: this does not affect the model matrix, so ensure it is properly initialized to the
+    // identity (not all zeros).
 
     // View matrix (depends on the pan).
     {
@@ -346,8 +347,6 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
         float zy = pz->zoom[1];
         glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, mvp->proj);
     }
-
-    // return mvp;
 }
 
 
