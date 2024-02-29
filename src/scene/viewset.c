@@ -274,14 +274,27 @@ dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseRef
 {
     ANN(view);
 
-    _normalize_pos(&ev.pos, view->offset, view->shape, content_scale, ref);
+    float mt = view->margins[0];
+    float mr = view->margins[1];
+    float mb = view->margins[2];
+    float ml = view->margins[3];
+
+    vec2 offset = {0};
+    offset[0] = view->offset[0] + ml;
+    offset[1] = view->offset[1] + mt; // TODO: CHECK
+
+    vec2 shape = {0};
+    shape[0] = view->shape[0] - ml - mr;
+    shape[1] = view->shape[1] - mt - mb;
+
+    _normalize_pos(&ev.pos, offset, shape, content_scale, ref);
 
     switch (ev.type)
     {
     case DVZ_MOUSE_EVENT_DRAG_START:
     case DVZ_MOUSE_EVENT_DRAG_STOP:
     case DVZ_MOUSE_EVENT_DRAG:
-        _normalize_pos(&ev.content.d.cur_pos, view->offset, view->shape, content_scale, ref);
+        _normalize_pos(&ev.content.d.cur_pos, offset, shape, content_scale, ref);
         break;
     default:
         break;
