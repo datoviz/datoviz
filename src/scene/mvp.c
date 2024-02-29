@@ -30,7 +30,7 @@ void dvz_mvp_apply(DvzMVP* mvp, vec4 point, vec4 out)
 {
     ANN(mvp);
 
-    glm_mat4_mulv(mvp->proj, point, out);
+    glm_mat4_mulv(mvp->model, point, out);
     glm_mat4_mulv(mvp->view, out, out);
-    glm_mat4_mulv(mvp->model, out, out);
+    glm_mat4_mulv(mvp->proj, out, out);
 }
