@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/* Labels                                                                                        */
+/* Axes                                                                                          */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_LABELS
-#define DVZ_HEADER_LABELS
+#ifndef DVZ_HEADER_AXES
+#define DVZ_HEADER_AXES
 
 
 
@@ -13,7 +13,6 @@
 
 #include "_log.h"
 #include "_math.h"
-#include "ticks.h"
 
 
 
@@ -21,17 +20,19 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_LABELS_MAX_EXPONENT_LENGTH 16
-#define DVZ_LABELS_MAX_OFFSET_LENGTH   24
-
 
 
 /*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzAxes DvzAxes;
+
+// Forward declarations.
+typedef struct DvzPanel DvzPanel;
+typedef struct DvzTicks DvzTicks;
+typedef struct DvzAxis DvzAxis;
 typedef struct DvzLabels DvzLabels;
-typedef struct DvzLabelFormat DvzLabelFormat;
 
 
 
@@ -45,29 +46,27 @@ typedef struct DvzLabelFormat DvzLabelFormat;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzLabels
+struct DvzAxes
 {
-    uint32_t count;   // number of labels
-    double* values;   // tick values
-    char* labels;     // concatenation of all null-terminated strings
-    uint32_t* index;  // index of the first glyph of each label
-    uint32_t* length; // the length of each label
+    DvzPanel* panel;
+    DvzTicks* xticks;
+    DvzTicks* yticks;
+    DvzAxis* xaxis;
+    DvzAxis* yaxis;
+    DvzLabels* xlabels;
+    DvzLabels* ylabels;
 
-    char exponent[DVZ_LABELS_MAX_EXPONENT_LENGTH];
-    char offset[DVZ_LABELS_MAX_OFFSET_LENGTH];
+    dvec2 xref, yref;
+
+    int flags;
+    void* user_data;
 };
 
 
 
-struct DvzLabelFormat
-{
-    DvzTicksFormat format;
-    uint32_t precision;
-    int32_t exponent;
-    double offset;
-    char tick_format[12];
-};
-
+/*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
 
 
 EXTERN_C_ON
@@ -76,56 +75,66 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void _find_exponent_offset(double lmin, double lmax, int32_t* exponent, double* offset);
+/**
+ *
+ */
+DVZ_EXPORT DvzAxes* dvz_axes(DvzPanel* panel, int flags);
 
 
 
-DVZ_EXPORT DvzLabelFormat
-dvz_label_format(DvzTicksFormat format, uint32_t precision, int32_t exponent, double offset);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_xref(DvzAxes* axes, dvec2 range);
 
 
 
-DVZ_EXPORT DvzLabels* dvz_labels(void);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_yref(DvzAxes* axes, dvec2 range);
 
 
 
-// Return the total number of glyphs.
-DVZ_EXPORT uint32_t dvz_labels_generate(
-    DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
-    int32_t exponent, double offset,                              //
-    double lmin, double lmax, double lstep);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_xset(DvzAxes* axes, dvec2 range);
 
 
 
-DVZ_EXPORT char* dvz_labels_string(DvzLabels* labels);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_xget(DvzAxes* axes, dvec2 range);
 
 
 
-DVZ_EXPORT uint32_t* dvz_labels_index(DvzLabels* labels);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_yget(DvzAxes* axes, dvec2 range);
 
 
 
-DVZ_EXPORT double* dvz_labels_values(DvzLabels* labels);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_yset(DvzAxes* axes, dvec2 range);
 
 
 
-DVZ_EXPORT uint32_t* dvz_labels_length(DvzLabels* labels);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_update(DvzAxes* axes);
 
 
 
-DVZ_EXPORT char* dvz_labels_exponent(DvzLabels* labels);
-
-
-
-DVZ_EXPORT char* dvz_labels_offset(DvzLabels* labels);
-
-
-
-DVZ_EXPORT void dvz_labels_print(DvzLabels* labels);
-
-
-
-DVZ_EXPORT void dvz_labels_destroy(DvzLabels* labels);
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axes_destroy(DvzAxes* axes);
 
 
 

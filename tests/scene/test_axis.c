@@ -157,7 +157,7 @@ static void _onframe(DvzClient* client, DvzClientEvent ev)
     double d[2] = {0};
     dvz_axis_get(vt->haxis, &mvp, d);
 
-    log_error("%f %f", d[0], d[1]);
+    // log_error("%f %f", d[0], d[1]);
 }
 
 int test_axis_2(TstSuite* suite)

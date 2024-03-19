@@ -256,6 +256,7 @@ DvzLabels* dvz_labels(void)
 
     // NOTE: each label is 0-terminated.
     labels->labels = (char*)calloc(MAX_LABELS * MAX_GLYPHS_PER_LABEL, sizeof(char));
+    labels->values = (double*)calloc(MAX_LABELS, sizeof(double));
     labels->index = (uint32_t*)calloc(MAX_LABELS, sizeof(uint32_t));
     labels->length = (uint32_t*)calloc(MAX_LABELS, sizeof(uint32_t));
 
@@ -279,16 +280,20 @@ uint32_t dvz_labels_generate(
     double x0 = lmin;
     double x = x0;
     uint32_t count = tick_count(lmin, lmax, lstep);
-    labels->count = count;
+    labels->count = count; // tick count.
     if (count == 0)
         return 0;
     ASSERT(count > 0);
 
     char* s = NULL;
     uint32_t k = 0, n = 0;
+    uint32_t glyph_count = 0;
     for (uint32_t i = 0; i < count; i++)
     {
+        // Tick value, assuming linear range.
         x = x0 + i * lstep;
+
+        // Pointer to the current tick string.
         s = &labels->labels[k];
 
         // Generate the label string.
@@ -296,6 +301,10 @@ uint32_t dvz_labels_generate(
 
         labels->length[i] = n;
         labels->index[i] = k;
+        labels->values[i] = x;
+
+        // Keep track of the total number of glyphs for all labels.
+        glyph_count += n;
         k += (n + 1); // NOTE: 0-terminated strings
     }
 
@@ -316,7 +325,7 @@ uint32_t dvz_labels_generate(
             labels->offset[0] = 0;
     }
 
-    return count;
+    return glyph_count;
 }
 
 
@@ -338,6 +347,15 @@ uint32_t* dvz_labels_index(DvzLabels* labels)
     // the size is the output of generate(), each number is the index of the first
     // character of that tick
     return labels->index;
+}
+
+
+
+// the output must not be freed
+double* dvz_labels_values(DvzLabels* labels)
+{
+    ANN(labels);
+    return labels->values;
 }
 
 
@@ -407,6 +425,11 @@ void dvz_labels_destroy(DvzLabels* labels)
     if (labels->length)
     {
         FREE(labels->length);
+    }
+
+    if (labels->values)
+    {
+        FREE(labels->values);
     }
 
     FREE(labels);

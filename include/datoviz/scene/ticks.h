@@ -113,7 +113,7 @@ dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t requested_
 
 
 
-DVZ_EXPORT uint32_t dvz_ticks_range(DvzTicks* ticks, dvec3 range);
+DVZ_EXPORT uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep);
 
 
 

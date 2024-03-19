@@ -508,16 +508,18 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
 
 
 
-// lmin, lmax, lstep, returns the number of ticks
-uint32_t dvz_ticks_range(DvzTicks* ticks, dvec3 range)
+uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep)
 {
     ANN(ticks);
-    range[0] = ticks->lmin;
-    range[1] = ticks->lmax;
-    range[2] = ticks->lstep;
+    ANN(lmin);
+    ANN(lmax);
+    ANN(lstep);
 
-    // TODO: return number of ticks
-    return 0;
+    *lmin = ticks->lmin;
+    *lmax = ticks->lmax;
+    *lstep = ticks->lstep;
+
+    return tick_count(*lmin, *lmax, *lstep);
 }
 
 
