@@ -315,6 +315,14 @@ uint8_t* dvz_atlas_rgb(DvzAtlas* atlas)
 
 
 
+DvzSize dvz_atlas_size(DvzAtlas* atlas)
+{
+    ANN(atlas);
+    return atlas->width * atlas->height * 3;
+}
+
+
+
 void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename)
 {
     ANN(atlas);
@@ -374,4 +382,93 @@ void dvz_atlas_destroy(DvzAtlas* atlas)
     destroyFont(atlas->font);
     deinitializeFreetype(atlas->ft);
     FREE(atlas);
+}
+
+
+
+/*************************************************************************************************/
+/*  File util functions                                                                          */
+/*************************************************************************************************/
+
+DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
+{
+    ANN(font_name);
+
+    // Load the font ttf bytes.
+    unsigned long ttf_size = 0;
+    unsigned char* ttf_bytes = dvz_resource_font(font_name, &ttf_size);
+    ASSERT(ttf_size > 0);
+    ANN(ttf_bytes);
+
+    // Create the font.
+    DvzFont* font = dvz_font(ttf_size, ttf_bytes);
+
+    // Create the atlas.
+    DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
+
+    // Generate the atlas.
+    dvz_atlas_generate(atlas);
+
+    DvzSize size = dvz_atlas_size(atlas);
+    uint8_t* rgb = dvz_atlas_rgb(atlas);
+
+    // HACK: the first 8 bytes contain the width and height of the image.
+    uint32_t header[2] = {atlas->width, atlas->height};
+    dvz_write_bytes(output_file, "wb", 2 * sizeof(uint32_t), (uint8_t*)header);
+    dvz_write_bytes(output_file, "ab", size, rgb);
+
+    DvzAtlasFont af = {};
+    af.ttf_size = ttf_size;
+    af.ttf_bytes = ttf_bytes;
+    af.atlas = atlas;
+    af.font = font;
+    return af;
+}
+
+
+
+DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
+{
+    ANN(atlas_name);
+
+    // Load the font ttf bytes.
+    unsigned long ttf_size = 0;
+    unsigned char* ttf_bytes = dvz_resource_font(font_name, &ttf_size);
+    ASSERT(ttf_size > 0);
+    ANN(ttf_bytes);
+
+    // Create the font.
+    DvzFont* font = dvz_font(ttf_size, ttf_bytes);
+
+    // Create the atlas.
+    DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
+
+    // Load the atlas image bytes.
+    unsigned long atlas_size = 0;
+    unsigned char* atlas_bytes = dvz_resource_font(atlas_name, &atlas_size);
+    uint32_t header_size = 2 * sizeof(uint32_t);
+    ASSERT(atlas_size > 0);
+    ASSERT(atlas_size > header_size);
+    // HACK: the first 8 bytes contain the width and height of the image.
+    atlas_size -= header_size;
+    ANN(atlas_bytes);
+
+    uint32_t shape[2] = {0};
+    memcpy(shape, atlas_bytes, header_size);
+    ASSERT(shape[0] * shape[1] * 3 == atlas_size);
+
+    // NOTE: we need to make a copy as the atlas will free the rgb pointer upon atlas destruction.
+    // atlas_bytes MUST NOT be freed as it's a static resource.
+    memcpy(&atlas->width, atlas_bytes + 0, sizeof(uint32_t));
+    memcpy(&atlas->height, atlas_bytes + sizeof(uint32_t), sizeof(uint32_t));
+
+    atlas->rgb = (uint8_t*)malloc(atlas_size);
+    memcpy(atlas->rgb, atlas_bytes + header_size, atlas_size);
+
+    DvzAtlasFont af = {};
+    af.ttf_size = ttf_size;
+    af.ttf_bytes = ttf_bytes;
+    af.atlas = atlas;
+    af.font = font;
+    return af;
 }

@@ -28,8 +28,10 @@
 /*************************************************************************************************/
 
 typedef struct DvzAtlas DvzAtlas;
+typedef struct DvzAtlasFont DvzAtlasFont;
 
 // Forward declarations.
+typedef struct DvzFont DvzFont;
 typedef struct DvzBatch DvzBatch;
 
 
@@ -43,6 +45,14 @@ typedef struct DvzBatch DvzBatch;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzAtlasFont
+{
+    unsigned long ttf_size;
+    unsigned char* ttf_bytes;
+    DvzAtlas* atlas;
+    DvzFont* font;
+};
 
 
 
@@ -113,6 +123,12 @@ DVZ_EXPORT uint8_t* dvz_atlas_rgb(DvzAtlas* atlas);
 
 /**
  */
+DVZ_EXPORT DvzSize dvz_atlas_size(DvzAtlas* atlas);
+
+
+
+/**
+ */
 DVZ_EXPORT void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
 
 
@@ -126,6 +142,23 @@ DVZ_EXPORT DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
 /**
  */
 DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
+
+
+
+/*************************************************************************************************/
+/*  File util functions                                                                          */
+/*************************************************************************************************/
+
+/**
+ */
+DVZ_EXPORT DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file);
+
+
+
+/**
+ */
+DVZ_EXPORT
+DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name);
 
 
 
