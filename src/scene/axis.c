@@ -27,55 +27,6 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef struct AtlasFont AtlasFont;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct AtlasFont
-{
-    unsigned long ttf_size;
-    unsigned char* ttf_bytes;
-    DvzAtlas* atlas;
-    DvzFont* font;
-};
-
-
-
-/*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
-static AtlasFont _load_font(void)
-{
-    // Load the font ttf bytes.
-    unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
-    ASSERT(ttf_size > 0);
-    ANN(ttf_bytes);
-
-    // Create the font.
-    DvzFont* font = dvz_font(ttf_size, ttf_bytes);
-
-    // Create the atlas.
-    DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
-
-    // Generate the atlas.
-    dvz_atlas_generate(atlas);
-
-    AtlasFont af = {.ttf_size = ttf_size, .ttf_bytes = ttf_bytes, .atlas = atlas, .font = font};
-    return af;
-}
-
-
-
-/*************************************************************************************************/
 /*  Allocation functions                                                                         */
 /*************************************************************************************************/
 
@@ -487,7 +438,8 @@ DvzAxis* dvz_axis(DvzBatch* batch, int flags)
     axis->glyph = dvz_glyph(batch, 0);
 
     // Load the font and generate the atlas.
-    AtlasFont af = _load_font();
+    // DvzAtlasFont af = dvz_atlas_export("Roboto_Medium", "Roboto_Medium_atlas.bin");
+    DvzAtlasFont af = dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas");
     axis->atlas = af.atlas;
     axis->font = af.font;
 
