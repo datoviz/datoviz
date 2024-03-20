@@ -180,7 +180,7 @@ vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
 
 
 
-int dvz_atlas_generate(DvzAtlas* atlas)
+void dvz_atlas_load(DvzAtlas* atlas)
 {
     ANN(atlas);
 
@@ -208,6 +208,15 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // In the last argument, you can specify a charset other than ASCII.
     // To load specific glyph indices, use loadGlyphs instead.
     fontGeometry.loadCharset(atlas->font, 1.0, charset);
+}
+
+
+
+int dvz_atlas_generate(DvzAtlas* atlas)
+{
+    ANN(atlas);
+
+    dvz_atlas_load(atlas);
 
     // Apply MSDF edge coloring. See edge-coloring.h for other coloring strategies.
     const double maxCornerAngle = 3.0;
@@ -442,6 +451,9 @@ DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
 
     // Create the atlas.
     DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
+
+    // Load the charset, glyphs, etc.
+    dvz_atlas_load(atlas);
 
     // Load the atlas image bytes.
     unsigned long atlas_size = 0;

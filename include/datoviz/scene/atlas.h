@@ -100,6 +100,12 @@ DVZ_EXPORT vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* cod
 
 /**
  */
+DVZ_EXPORT void dvz_atlas_load(DvzAtlas* atlas);
+
+
+
+/**
+ */
 DVZ_EXPORT int dvz_atlas_generate(DvzAtlas* atlas);
 
 
