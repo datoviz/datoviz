@@ -48,6 +48,19 @@ DVZ_EXPORT char* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 
+/**
+ * Save a binary file.
+ *
+ * @param filename path to the PPM file to create
+ * @param mode typically "wb" or "ab"
+ * @param size size of the buffer
+ * @param bytes buffer
+ */
+DVZ_EXPORT int
+dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
+
+
+
 /*************************************************************************************************/
 /*  Image file I/O utils                                                                         */
 /*************************************************************************************************/

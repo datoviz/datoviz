@@ -109,6 +109,19 @@ error:
 
 
 
+int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes)
+{
+    FILE* fp;
+    fp = fopen(filename, mode);
+    if (fp == NULL)
+        return 1;
+    fwrite(bytes, size, 1, fp);
+    fclose(fp);
+    return 0;
+}
+
+
+
 /*************************************************************************************************/
 /*  Image file I/O utils                                                                         */
 /*************************************************************************************************/
