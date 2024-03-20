@@ -597,6 +597,7 @@ set(font_files
 
     # "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto_Medium_atlas.bin" # font atlas
 
     "${CMAKE_SOURCE_DIR}/data/fonts/NotoSansMono-Light.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
