@@ -120,10 +120,6 @@ int test_glyph_1(TstSuite* suite)
     FREE(xywh);
 
 
-    // LATER
-    // dvz_glyph_axis(visual, 0, n, (vec3[]){{0, 0, 1}}, 0);
-    // dvz_glyph_anchor(visual, 0, n, (vec2[]){{0, 0}}, 0);
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual);
 

@@ -71,6 +71,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
     dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
     dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
+    dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, group_size), DVZ_FORMAT_R32_SFLOAT, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzGlyphVertex));
@@ -222,6 +223,15 @@ void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* v
 
 
 
+void dvz_glyph_groupsize(
+    DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 8, first, count, (void*)values);
+}
+
+
+
 void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor)
 {
     ANN(visual);
@@ -347,6 +357,43 @@ void dvz_glyph_xywh(
 
     dvz_glyph_size(visual, first, count, size, 0);
     dvz_glyph_shift(visual, first, count, shift, 0);
+
+    // Compute the width of each group.
+    uint32_t group_count = visual->group_count;
+    uint32_t* group_size = visual->group_sizes;
+
+    if (group_count > 0)
+    {
+        float* group_widths = (float*)calloc(group_count, sizeof(float));
+        uint32_t k = 0;
+        float group_width = 0.0;
+
+        // Loop over the groups.
+        for (uint32_t i = 0; i < group_count; i++)
+        {
+            // Reset the width of the current group.
+            group_width = 0;
+
+            // Loop over the glyphs in each group.
+            for (uint32_t j = 0; j < group_size[i]; j++)
+            {
+                group_width += size[k][0];
+                k++;
+            }
+
+            group_widths[i] = group_width;
+        }
+
+        // We need to pass the group size to each glyph, so that the vertex shader can compute
+        // the displacement in pixels, relative to the group size (the coefficient is the
+        // anchor).
+        float* groupsize = _repeat_group(
+            sizeof(float), count, group_count, group_size, (void*)group_widths, false);
+        dvz_glyph_groupsize(visual, first, count, groupsize, 0);
+        FREE(groupsize);
+
+        FREE(group_widths);
+    }
 
     FREE(size);
     FREE(shift);

@@ -10,6 +10,7 @@ layout(location = 4) in vec2 shift;
 layout(location = 5) in vec2 uv;
 layout(location = 6) in float angle;
 layout(location = 7) in vec4 color;
+layout(location = 8) in float group_size; // width, in pixels of the group this vertex belongs to
 
 layout(location = 0) out vec2 out_uv;
 layout(location = 1) out vec4 out_color;
@@ -30,7 +31,9 @@ void main()
     // Shift in pixels.
     vec2 trans = vec2(dx, dy);
     trans += shift;
-    trans -= anchor * size;
+
+    // NOTE: the x anchor is relative to the group size
+    trans -= anchor * vec2(group_size != 0 ? group_size : size.x, size.y);
 
     // mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);

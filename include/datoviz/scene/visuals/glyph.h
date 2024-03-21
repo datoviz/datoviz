@@ -43,14 +43,15 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzGlyphVertex
 {
-    vec3 pos;    /* 0: position */
-    vec3 axis;   /* 1: axis */
-    vec2 size;   /* 2: size */
-    vec2 anchor; /* 3: anchor */
-    vec2 shift;  /* 4: shift */
-    vec2 uv;     /* 5: texture coordinates */
-    float angle; /* 6: angle */
-    cvec4 color; /* 7: color */
+    vec3 pos;         /* 0: position */
+    vec3 axis;        /* 1: axis */
+    vec2 size;        /* 2: size */
+    vec2 anchor;      /* 3: anchor */
+    vec2 shift;       /* 4: shift */
+    vec2 uv;          /* 5: texture coordinates */
+    float angle;      /* 6: angle */
+    cvec4 color;      /* 7: color */
+    float group_size; /* 8: group_size */
 };
 
 
@@ -144,6 +145,14 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
  */
 DVZ_EXPORT void
 dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
 
 
 
