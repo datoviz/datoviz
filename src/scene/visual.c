@@ -313,18 +313,19 @@ void dvz_visual_groups(DvzVisual* visual, uint32_t group_count, uint32_t* group_
     if (visual->group_sizes == NULL)
     {
         visual->group_sizes = (uint32_t*)calloc(group_count, sizeof(uint32_t));
+        visual->group_count = group_count;
     }
 
     // Ensure the group_sizes array is large enough to hold all group sizes.
-    if (group_count > visual->group_count)
+    else if (group_count > visual->group_count)
     {
         REALLOC(visual->group_sizes, group_count * sizeof(uint32_t));
+        visual->group_count = group_count;
     }
     ASSERT(visual->group_count >= group_count);
 
     // Copy the group sizes.
     memcpy(visual->group_sizes, group_sizes, group_count * sizeof(uint32_t));
-    visual->group_count = group_count;
 }
 
 

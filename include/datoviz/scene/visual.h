@@ -429,6 +429,48 @@ DVZ_EXPORT void dvz_visual_visible(DvzVisual* visual, bool is_visible);
 
 
 
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+// NOTE: the caller must FREE the output
+static inline void* _repeat(uint32_t item_count, DvzSize item_size, void* value)
+{
+    void* out = (vec3*)calloc(item_count, item_size);
+    for (uint32_t i = 0; i < item_count; i++)
+    {
+        memcpy((void*)((uint64_t)out + i * item_size), value, item_size);
+    }
+    return out;
+}
+
+
+
+// NOTE: the caller must FREE the output
+static inline void* _repeat_group(
+    DvzSize item_size, uint32_t item_count, uint32_t group_count, uint32_t* group_size,
+    void* group_values, bool uniform)
+{
+    void* out = (vec3*)calloc(item_count, item_size);
+    uint32_t k = 0;
+    DvzSize item_size_src = uniform ? 0 : item_size;
+    for (uint32_t i = 0; i < group_count; i++)
+    {
+        for (uint32_t j = 0; j < group_size[i]; j++)
+        {
+            ASSERT(k < item_count);
+            memcpy(
+                (void*)((uint64_t)out + (k++) * item_size),
+                (void*)((uint64_t)group_values + i * item_size_src), //
+                item_size);
+        }
+    }
+    ASSERT(k == item_count);
+    return out;
+}
+
+
+
 EXTERN_C_OFF
 
 #endif
