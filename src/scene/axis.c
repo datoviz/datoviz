@@ -515,18 +515,24 @@ void dvz_axis_offset(DvzAxis* axis, vec2 offset)
 
 
 
-void dvz_axis_pos(DvzAxis* axis, double dmin, double dmax, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
+void dvz_axis_pos(DvzAxis* axis, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
+{
+    ANN(axis);
+    _vec3_copy(p0, axis->p0);
+    _vec3_copy(p1, axis->p1);
+    _vec3_copy(p2, axis->p2);
+    _vec3_copy(p3, axis->p3);
+}
+
+
+
+void dvz_axis_range(DvzAxis* axis, double dmin, double dmax)
 {
     ANN(axis);
     ASSERT(dmin < dmax);
 
     axis->dmin = dmin;
     axis->dmax = dmax;
-
-    _vec3_copy(p0, axis->p0);
-    _vec3_copy(p1, axis->p1);
-    _vec3_copy(p2, axis->p2);
-    _vec3_copy(p3, axis->p3);
 }
 
 

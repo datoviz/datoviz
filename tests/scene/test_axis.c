@@ -84,11 +84,11 @@ int test_axis_1(TstSuite* suite)
 
     char* glyphs = "0 1 2 3 4 5 6 hello ";
     uint32_t glyph_count = tick_count + 4;
-    // AT(glyph_count == tick_count);
     uint32_t index[] = {0, 2, 4, 6, 8, 10, 12, 14};
     uint32_t length[] = {1, 1, 1, 1, 1, 1, 1, 5};
 
-    dvz_axis_pos(axis, dmin, dmax, p0, p1, p2, p3);
+    dvz_axis_pos(axis, p0, p1, p2, p3);
+    dvz_axis_range(axis, dmin, dmax);
     dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
 
     dvz_visual_fixed(axis->glyph, false, true, false);
@@ -225,7 +225,8 @@ int test_axis_2(TstSuite* suite)
         dvz_axis_length(haxis, length_lim, length_grid, length_major, length_minor);
         dvz_axis_color(haxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-        dvz_axis_pos(haxis, dmin, dmax, hp0, hp1, hp2, hp3);
+        dvz_axis_pos(haxis, hp0, hp1, hp2, hp3);
+        dvz_axis_range(haxis, dmin, dmax);
         dvz_axis_set(haxis, tick_count, values, glyph_count, glyphs, index, length);
 
         dvz_visual_fixed(haxis->glyph, false, true, false);
@@ -253,7 +254,8 @@ int test_axis_2(TstSuite* suite)
         dvz_axis_length(vaxis, length_lim, length_grid, length_major, length_minor);
         dvz_axis_color(vaxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-        dvz_axis_pos(vaxis, dmin, dmax, vp0, vp1, vp2, vp3);
+        dvz_axis_pos(vaxis, vp0, vp1, vp2, vp3);
+        dvz_axis_range(vaxis, dmin, dmax);
         dvz_axis_set(vaxis, tick_count, values, glyph_count, glyphs, index, length);
 
         dvz_visual_fixed(vaxis->glyph, true, false, false);

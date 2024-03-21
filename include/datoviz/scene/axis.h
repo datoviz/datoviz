@@ -168,8 +168,14 @@ DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
 /**
  *
  */
-DVZ_EXPORT void
-dvz_axis_pos(DvzAxis* axis, double dmin, double dmax, vec3 p0, vec3 p1, vec3 p2, vec3 p3);
+DVZ_EXPORT void dvz_axis_pos(DvzAxis* axis, vec3 p0, vec3 p1, vec3 p2, vec3 p3);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_range(DvzAxis* axis, double dmin, double dmax);
 
 
 
