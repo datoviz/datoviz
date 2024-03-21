@@ -67,6 +67,8 @@ set_groups(DvzAxis* axis, uint32_t glyph_count, uint32_t tick_count, uint32_t* g
     axis->tick_count = tick_count;
     axis->group_size = group_size;
 
+    dvz_visual_groups(axis->glyph, tick_count, group_size);
+
     uint32_t n_major = axis->tick_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
@@ -560,6 +562,9 @@ void dvz_axis_set(
     set_segment_color(axis);
     set_glyph_color(axis);
 
+    // NOTE: set_groups() needs to be called BEFORE this function, which calls dvz_glyph_xywh().
+    // The latter uses the group information to compute the width of each group, necessary
+    // to compute the anchor relative to each group's size in the vertex shader.
     set_glyphs(axis, glyphs, index);
 }
 
