@@ -18,6 +18,7 @@ void main()
 
     // DEBUG
     // out_color = vec4(1, 1, 1, 1);
+    // return;
     // out_color = in_color;
     // out_color = vec4(in_uv, 1, 1);
 

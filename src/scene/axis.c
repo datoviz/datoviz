@@ -344,7 +344,8 @@ static inline void set_glyph_anchor(DvzAxis* axis)
     ASSERT(glyph_count > 0);
     DvzVisual* glyph = axis->glyph;
 
-    vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), axis->anchor);
+    // NOTE: the axis currently only supports a uniform vec2 anchor.
+    vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), (void*)axis->anchor);
     dvz_glyph_anchor(glyph, 0, glyph_count, anchors, 0);
     FREE(anchors)
 }
@@ -362,6 +363,7 @@ static inline void set_glyph_color(DvzAxis* axis)
     ASSERT(glyph_count > 0);
     ASSERT(group_count > 0);
     ANN(group_size);
+
     DvzVisual* glyph = axis->glyph;
     cvec4* colors = _repeat_group(
         sizeof(cvec4), glyph_count, group_count, group_size, (void*)axis->color_glyph, true);
@@ -373,7 +375,7 @@ static inline void set_glyph_color(DvzAxis* axis)
 
 static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index)
 {
-    // NOTE: text is the concatenation of all group strings, without trailing zeros
+    // NOTE: glyphs is the concatenation of all group strings, without trailing zeros
     ANN(axis);
     ANN(glyphs);
     ANN(index);
@@ -409,8 +411,7 @@ static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index
             xywh_trimmed[k][2] = xywh[idx + j][2];
             xywh_trimmed[k][3] = xywh[idx + j][3];
 
-            glyphs_trimmed[k] = glyphs[idx];
-
+            glyphs_trimmed[k] = glyphs[idx + j];
             k++;
         }
     }
@@ -438,10 +439,13 @@ DvzAxis* dvz_axis(DvzBatch* batch, int flags)
     axis->glyph = dvz_glyph(batch, 0);
 
     // Load the font and generate the atlas.
-    // DvzAtlasFont af = dvz_atlas_export("Roboto_Medium", "Roboto_Medium_atlas.bin");
+    // DvzAtlasFont af = dvz_atlas_export("Roboto_Medium", "data/fonts/Roboto_Medium_atlas.bin");
     DvzAtlasFont af = dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas");
     axis->atlas = af.atlas;
     axis->font = af.font;
+
+    // DEBUG
+    // dvz_atlas_png(axis->atlas, "atlas.png");
 
     // Upload the atlas texture to the glyph visual.
     dvz_glyph_atlas(axis->glyph, axis->atlas);
