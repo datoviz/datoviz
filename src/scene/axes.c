@@ -128,8 +128,7 @@ static bool axis_labels(
     if (!has_changed)
         return false;
 
-    // DEBUG
-    log_error("ticks have changed, updating tick visual");
+    log_info("ticks have changed, updating tick visual");
 
     // Get the calculated number of ticks and lmin, lmax, lstep.
     uint32_t tick_count = dvz_ticks_range(ticks, &lmin, &lmax, &lstep);

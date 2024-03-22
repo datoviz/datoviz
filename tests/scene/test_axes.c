@@ -25,6 +25,16 @@
 /*  Axes tests                                                                                   */
 /*************************************************************************************************/
 
+static void _axes_onkeyboard(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    DvzAxes* axes = (DvzAxes*)ev.user_data;
+    ANN(axes);
+
+    dvz_axes_update(axes);
+}
+
 int test_axes_1(TstSuite* suite)
 {
     ANN(suite);
@@ -36,6 +46,8 @@ int test_axes_1(TstSuite* suite)
     int flags = 0;
     DvzAxes* axes = dvz_axes(vt.panel, flags);
 
+    // Keyboard event.
+    dvz_app_onkeyboard(vt.app, _axes_onkeyboard, axes);
 
     // Run the test.
     visual_test_end(vt);

@@ -332,10 +332,14 @@ z : 10-exponent of the step size
 static bool wilk_ext(DvzTicks* ticks, int32_t m)
 {
     ANN(ticks);
+
     double dmin = ticks->dmin;
     double dmax = ticks->dmax;
     double range_size = ticks->range_size;
     double glyph_size = ticks->glyph_size;
+
+    log_debug(
+        "starting extended Wilkinson algorithm for tick positioning: [%.3f, %.3f]", dmin, dmax);
 
     ASSERT(dmin <= dmax);
     ASSERT(range_size > 0);
@@ -461,6 +465,10 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
          (best_ticks.lstep != ticks->lstep) || //
          (best_ticks.format != ticks->format)  //
         );
+
+    log_info(
+        "extended Wilkinson algorithm finished (changed %d): lmin=%.3f, lmax=%.3f, lstep=%.3f",
+        has_changed, best_ticks.lmin, best_ticks.lmax, best_ticks.lstep);
 
     ticks->lmin = best_ticks.lmin;
     ticks->lmax = best_ticks.lmax;
