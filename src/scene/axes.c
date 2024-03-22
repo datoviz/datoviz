@@ -14,6 +14,7 @@
 #include "scene/scene.h"
 #include "scene/ticks.h"
 #include "scene/transform.h"
+#include "scene/viewset.h"
 #include "scene/visuals.h"
 #include "scene/visuals/glyph.h"
 
@@ -23,6 +24,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+// TODO: customizable parameters
+#define DVZ_AXES_FONT_SIZE          24
+#define DVZ_AXES_DEFAULT_TICK_COUNT 8
+
 
 
 /*************************************************************************************************/
@@ -31,7 +36,7 @@
 
 static void axis_common_params(DvzAxis* axis)
 {
-    float font_size = 24;
+    float font_size = DVZ_AXES_FONT_SIZE;
 
     cvec4 color_glyph = {0, 0, 0, 255};
     cvec4 color_lim = {0, 0, 0, 255};
@@ -53,7 +58,6 @@ static void axis_common_params(DvzAxis* axis)
     dvz_axis_width(axis, width_lim, width_grid, width_major, width_minor);
     dvz_axis_length(axis, length_lim, length_grid, length_major, length_minor);
     dvz_axis_color(axis, color_glyph, color_lim, color_grid, color_major, color_minor);
-
 
     dvz_glyph_bgcolor(axis->glyph, (vec4){1, 1, 1, 1});
 }
@@ -210,7 +214,8 @@ static bool set_axis(DvzAxes* axes, DvzTicksFlags which, double dmin, double dma
 
     dvz_axis_range(axis, dmin, dmax);
 
-    uint32_t requested_count = 10; // TODO
+    // TODO: dependent on viewport size?
+    uint32_t requested_count = DVZ_AXES_DEFAULT_TICK_COUNT;
     return axis_labels(axis, ticks, labels, dmin, dmax, requested_count);
 }
 
@@ -230,6 +235,7 @@ DvzAxes* dvz_axes(DvzPanel* panel, int flags)
     ANN(batch);
 
     DvzAxes* axes = (DvzAxes*)calloc(1, sizeof(DvzAxes));
+    axes->panel = panel;
     axes->flags = flags;
 
     // Axis visuals.
@@ -244,9 +250,8 @@ DvzAxes* dvz_axes(DvzPanel* panel, int flags)
     axes->xlabels = dvz_labels();
     axes->ylabels = dvz_labels();
 
-    // TODO: size as a function of font size and viewport size.
-    dvz_ticks_size(axes->xticks, 500, 10);
-    dvz_ticks_size(axes->yticks, 500, 10);
+    // Set the viewport size.
+    dvz_axes_resize(axes);
 
     // Common parameters.
     axis_common_params(axes->xaxis);
@@ -328,6 +333,24 @@ void dvz_axes_yset(DvzAxes* axes, dvec2 range)
 
 
 
+void dvz_axes_resize(DvzAxes* axes)
+{
+    // Size is given in framebuffer pixels.
+
+    ANN(axes);
+
+    DvzPanel* panel = axes->panel;
+    ANN(panel);
+
+    DvzView* view = panel->view;
+    ANN(view);
+
+    dvz_ticks_size(axes->xticks, view->shape[0], DVZ_AXES_FONT_SIZE);
+    dvz_ticks_size(axes->yticks, view->shape[1], DVZ_AXES_FONT_SIZE);
+}
+
+
+
 void dvz_axes_update(DvzAxes* axes)
 {
     ANN(axes);
@@ -338,6 +361,9 @@ void dvz_axes_update(DvzAxes* axes)
 
     dvz_axes_xget(axes, xrange);
     dvz_axes_yget(axes, yrange);
+
+    // Use the current viewport size in the axes before the computation of the ticks.
+    dvz_axes_resize(axes);
 
     // Compute the ticks and update the visuals if the ticks have changed.
     set_axis(axes, DVZ_TICKS_HORIZONTAL, xrange[0], xrange[1]);

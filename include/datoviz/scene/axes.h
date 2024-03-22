@@ -127,6 +127,14 @@ DVZ_EXPORT void dvz_axes_yset(DvzAxes* axes, dvec2 range);
 /**
  *
  */
+DVZ_EXPORT void dvz_axes_resize(DvzAxes* axes);
+//, uint32_t viewport_width, uint32_t viewport_height);
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_axes_update(DvzAxes* axes);
 
 
