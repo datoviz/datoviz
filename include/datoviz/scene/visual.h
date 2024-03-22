@@ -448,11 +448,53 @@ static inline void* _repeat(uint32_t item_count, DvzSize item_size, void* value)
 
 
 
+static inline bool _check_groups(uint32_t item_count, uint32_t group_count, uint32_t* group_size)
+{
+    if (item_count == 0)
+    {
+        ASSERT(group_count == 0);
+        return true;
+    }
+    if (!group_size)
+    {
+        ASSERT(group_count == 0);
+        return true;
+    }
+
+    ANN(group_size);
+    ASSERT(item_count > 0);
+    ASSERT(group_count > 0);
+
+    // Check that the group sizes are consistent with the number of items.
+    uint32_t total_count = 0;
+    for (uint32_t i = 0; i < group_count; i++)
+    {
+        total_count += group_size[i];
+    }
+    if (total_count != item_count)
+    {
+        log_error("inconsistent group size: %d != %d", total_count, item_count);
+        return false;
+    }
+    return true;
+}
+
+
+
 // NOTE: the caller must FREE the output
 static inline void* _repeat_group(
     DvzSize item_size, uint32_t item_count, uint32_t group_count, uint32_t* group_size,
     void* group_values, bool uniform)
 {
+    ASSERT(item_size > 0);
+    ASSERT(item_count > 0);
+    ASSERT(group_count > 0);
+    ASSERT(group_size != NULL);
+    ANN(group_values);
+
+    if (!_check_groups(item_count, group_count, group_size))
+        return NULL;
+
     void* out = (vec3*)calloc(item_count, item_size);
     uint32_t k = 0;
     DvzSize item_size_src = uniform ? 0 : item_size;
