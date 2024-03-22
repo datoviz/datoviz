@@ -124,6 +124,7 @@ struct DvzVisual
     // Data.
     uint32_t item_count;
     uint32_t vertex_count;
+    uint32_t index_count;
     uint32_t group_count;
     uint32_t* group_sizes;
 
@@ -256,7 +257,8 @@ DVZ_EXPORT void dvz_visual_shader(DvzVisual* visual, const char* name);
 /**
  *
  */
-DVZ_EXPORT void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count);
+DVZ_EXPORT void dvz_visual_resize(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
 
 
 

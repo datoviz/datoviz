@@ -286,7 +286,8 @@ void dvz_visual_shader(DvzVisual* visual, const char* name)
 
 
 
-void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_count)
+void dvz_visual_resize(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count)
 {
     ANN(visual);
     ASSERT(item_count > 0);
@@ -294,10 +295,10 @@ void dvz_visual_resize(DvzVisual* visual, uint32_t item_count, uint32_t vertex_c
     // Mark the new item count.
     visual->item_count = item_count;
     visual->vertex_count = vertex_count;
+    visual->index_count = index_count;
 
     // Resize the baker, resize the underlying arrays, emit the dat resize commands.
-    // TODO: write tests, NOT TESTED YET
-    dvz_baker_resize(visual->baker, vertex_count);
+    dvz_baker_resize(visual->baker, vertex_count, index_count);
 
     // TODO: resize the groups?
 }
@@ -430,6 +431,8 @@ void dvz_visual_alloc(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count)
 {
     ANN(visual);
+
+    // Check input variable
     ASSERT(vertex_count > 0);
     if (item_count == 0)
     {
@@ -439,6 +442,21 @@ void dvz_visual_alloc(
         item_count = vertex_count;
     }
     ASSERT(item_count > 0);
+
+    // Handle indexing.
+    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+
+    // NOTE: if index_count is not specified, item_count is the number of FACES (number of
+    // indices / 3).
+    index_count = index_count > 0 ? index_count : (indexed ? (item_count * 3) : 0);
+
+    // Allocate the first time, resize afterwards.
+    if (dvz_obj_is_created(&visual->obj))
+    {
+        log_debug("visual allocation has already been done, calling dvz_visual_resize() instead");
+        dvz_visual_resize(visual, item_count, vertex_count, index_count);
+        return;
+    }
 
     DvzBaker* baker = visual->baker;
     ANN(baker);
@@ -543,18 +561,6 @@ void dvz_visual_alloc(
 
     visual->item_count = item_count;
 
-    // NOTE: we declare the common bindings (mvp and viewport) as shared to prevent the baker from
-    // handling them. They will be handled by the panel in scene.c.
-    // TODO: use #define instead of hard-coded values here
-    // dvz_baker_share_binding(baker, 0);
-    // dvz_baker_share_binding(baker, 1);
-
-    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
-
-    // NOTE: if index_count is not specified, , item_count is the number of FACES (number of
-    // indices / 3).
-    index_count = index_count > 0 ? index_count : (indexed ? (item_count * 3) : 0);
-
     dvz_baker_create(baker, index_count, vertex_count);
 
     // Bind the index buffer.
@@ -602,6 +608,7 @@ void dvz_visual_alloc(
     // NOTE: when using the scene API (viewset.c), these are handled automatically.
     // But when using visuals directly, in order for dvz_visual_record() to work,
     // we need to set these as sensible defaults.
+    visual->index_count = index_count;
     visual->draw_first = 0;
     visual->draw_count = item_count;
     visual->first_instance = 0;
