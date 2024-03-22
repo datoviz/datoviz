@@ -384,6 +384,7 @@ int dvz_run_tests(const char* match)
     TEST(test_axis_1)
     TEST(test_axis_2)
     TEST(test_axis_get)
+    TEST(test_axis_update)
     TEST(test_axes_1)
 
 

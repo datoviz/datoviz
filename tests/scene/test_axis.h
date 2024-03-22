@@ -25,6 +25,8 @@ int test_axis_2(TstSuite*);
 
 int test_axis_get(TstSuite* suite);
 
+int test_axis_update(TstSuite* suite);
+
 
 
 #endif
