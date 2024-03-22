@@ -77,9 +77,9 @@ struct DvzAxis
     vec4 tick_length; // lim, grid, major, minor
 
     // Glyphs
-    uint32_t tick_count; // = group_count
-    uint32_t glyph_count;
-    uint32_t* group_size;
+    // uint32_t tick_count; // = glyph->group_count
+    // uint32_t glyph_count; // = glyph->item_count
+    // uint32_t* group_size; // = glyph->group_sizes
     vec2 anchor;
     vec2 offset;
 

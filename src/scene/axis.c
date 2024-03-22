@@ -60,16 +60,18 @@ set_groups(DvzAxis* axis, uint32_t glyph_count, uint32_t tick_count, uint32_t* g
 {
     ANN(axis);
     ANN(group_size);
+    ANN(axis->glyph);
+    ANN(axis->segment);
+
     ASSERT(glyph_count > 0);
     ASSERT(tick_count > 0);
+    ASSERT(glyph_count >= tick_count);
 
-    axis->glyph_count = glyph_count;
-    axis->tick_count = tick_count;
-    axis->group_size = group_size;
+    _check_groups(glyph_count, tick_count, group_size);
 
     dvz_visual_groups(axis->glyph, tick_count, group_size);
 
-    uint32_t n_major = axis->tick_count;
+    uint32_t n_major = axis->glyph->group_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
 
@@ -87,7 +89,10 @@ static inline vec3* make_tick_positions(DvzAxis* axis, double* values)
 {
     ANN(axis);
     ANN(values);
-    uint32_t tick_count = axis->tick_count;
+
+    ANN(axis->glyph);
+
+    uint32_t tick_count = axis->glyph->group_count;
 
     // axis->p0 corresponds to axis->dmin
     // axis->p1 corresponds to axis->dmax
@@ -126,11 +131,12 @@ static inline vec3* make_tick_positions(DvzAxis* axis, double* values)
 static inline void set_segment_pos(DvzAxis* axis, vec3* positions)
 {
     ANN(axis);
+    ANN(axis->glyph);
 
     DvzVisual* segment = axis->segment;
     ANN(segment);
 
-    uint32_t n_major = axis->tick_count;
+    uint32_t n_major = axis->glyph->group_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
 
@@ -163,11 +169,12 @@ static inline void set_segment_pos(DvzAxis* axis, vec3* positions)
 static inline void set_segment_color(DvzAxis* axis)
 {
     ANN(axis);
+    ANN(axis->glyph);
 
     DvzVisual* segment = axis->segment;
     ANN(segment);
 
-    uint32_t n_major = axis->tick_count;
+    uint32_t n_major = axis->glyph->group_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
 
@@ -191,11 +198,12 @@ static inline void set_segment_color(DvzAxis* axis)
 static inline void set_segment_shift(DvzAxis* axis)
 {
     ANN(axis);
+    ANN(axis->glyph);
 
     DvzVisual* segment = axis->segment;
     ANN(segment);
 
-    uint32_t n_major = axis->tick_count;
+    uint32_t n_major = axis->glyph->group_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
 
@@ -248,11 +256,12 @@ static inline void set_segment_shift(DvzAxis* axis)
 static inline void set_segment_width(DvzAxis* axis)
 {
     ANN(axis);
+    ANN(axis->glyph);
 
     DvzVisual* segment = axis->segment;
     ANN(segment);
 
-    uint32_t n_major = axis->tick_count;
+    uint32_t n_major = axis->glyph->group_count;
     uint32_t n_minor = _minor_tick_count(n_major);
     uint32_t n_total = n_major + n_minor;
 
@@ -282,15 +291,17 @@ static inline void set_glyph_pos(DvzAxis* axis, vec3* positions)
 {
     ANN(axis);
 
-    uint32_t glyph_count = axis->glyph_count;
-    uint32_t group_count = axis->tick_count;
-    uint32_t* group_size = axis->group_size;
+    DvzVisual* glyph = axis->glyph;
+    ANN(glyph);
+
+    uint32_t glyph_count = glyph->item_count;
+    uint32_t group_count = glyph->group_count;
+    uint32_t* group_size = glyph->group_sizes;
 
     ASSERT(glyph_count > 0);
     ASSERT(group_count > 0);
     ANN(group_size);
     ANN(positions);
-    DvzVisual* glyph = axis->glyph;
 
     vec3* pos =
         _repeat_group(sizeof(vec3), glyph_count, group_count, group_size, (void*)positions, false);
@@ -304,14 +315,16 @@ static inline void set_glyph_anchor(DvzAxis* axis)
 {
     ANN(axis);
 
-    uint32_t glyph_count = axis->glyph_count;
-    ASSERT(glyph_count > 0);
     DvzVisual* glyph = axis->glyph;
+    ANN(glyph);
+
+    uint32_t glyph_count = glyph->item_count;
+    ASSERT(glyph_count > 0);
 
     // NOTE: the axis currently only supports a uniform vec2 anchor.
     vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), (void*)axis->anchor);
     dvz_glyph_anchor(glyph, 0, glyph_count, anchors, 0);
-    FREE(anchors)
+    FREE(anchors);
 }
 
 
@@ -320,17 +333,12 @@ static inline void set_glyph_color(DvzAxis* axis)
 {
     ANN(axis);
 
-    uint32_t glyph_count = axis->glyph_count;
-    uint32_t group_count = axis->tick_count;
-    uint32_t* group_size = axis->group_size;
-
+    uint32_t glyph_count = axis->glyph->item_count;
     ASSERT(glyph_count > 0);
-    ASSERT(group_count > 0);
-    ANN(group_size);
-
     DvzVisual* glyph = axis->glyph;
-    cvec4* colors = _repeat_group(
-        sizeof(cvec4), glyph_count, group_count, group_size, (void*)axis->color_glyph, true);
+
+    // NOTE: the axis currently only supports a uniform vec2 anchor.
+    cvec4* colors = (cvec4*)_repeat(glyph_count, sizeof(cvec4), (void*)axis->color_glyph);
     dvz_glyph_color(glyph, 0, glyph_count, colors, 0);
     FREE(colors);
 }
@@ -348,9 +356,9 @@ static inline void set_glyphs(DvzAxis* axis, const char* glyphs, uint32_t* index
     // layout.
     vec4* xywh = dvz_font_ascii(axis->font, glyphs);
 
-    uint32_t glyph_count = axis->glyph_count;
-    uint32_t group_count = axis->tick_count;
-    uint32_t* group_size = axis->group_size;
+    uint32_t glyph_count = axis->glyph->item_count;
+    uint32_t group_count = axis->glyph->group_count;
+    uint32_t* group_size = axis->glyph->group_sizes;
     ASSERT(glyph_count > 0);
     ASSERT(group_count > 0);
     ANN(group_size);
