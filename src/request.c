@@ -43,7 +43,7 @@
 
 #define IF_VERBOSE_DATA                                                                           \
     if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0) &&                 \
-        (size < VERBOSE_MAX_BASE64))
+        (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) != 0) && (size < VERBOSE_MAX_BASE64))
 
 
 
