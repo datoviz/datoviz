@@ -183,7 +183,7 @@ static bool axis_labels(
     // {
     //     printf("%d ", index[i]);
     // }
-    // printf("\nlength:\n");
+    // printf("\nlength %d:\n", tick_count);
     // for (uint32_t i = 0; i < tick_count; i++)
     // {
     //     printf("%d ", length[i]);
