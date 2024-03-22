@@ -249,7 +249,7 @@ dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t coun
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count);
+DVZ_EXPORT void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count, uint32_t index_count);
 
 
 
