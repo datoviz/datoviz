@@ -96,7 +96,7 @@ struct DvzAxis
 EXTERN_C_ON
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  General functions                                                                            */
 /*************************************************************************************************/
 
 /**
@@ -119,6 +119,24 @@ DVZ_EXPORT DvzVisual* dvz_axis_segment(DvzAxis* axis);
 DVZ_EXPORT DvzVisual* dvz_axis_glyph(DvzAxis* axis);
 
 
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_update(DvzAxis* axis);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
+
+
+
+/*************************************************************************************************/
+/*  Global parameters                                                                            */
+/*************************************************************************************************/
 
 /**
  *
@@ -179,6 +197,10 @@ DVZ_EXPORT void dvz_axis_range(DvzAxis* axis, double dmin, double dmax);
 
 
 
+/*************************************************************************************************/
+/*  Ticks and glyphs                                                                             */
+/*************************************************************************************************/
+
 /**
  *
  */
@@ -210,13 +232,6 @@ DVZ_EXPORT int dvz_axis_direction(
  *
  */
 DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
 
 
 

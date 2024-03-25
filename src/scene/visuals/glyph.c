@@ -102,7 +102,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
 void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count)
 {
     ANN(visual);
-    log_debug("allocating the glyph visual");
+    log_debug("allocating the glyph visual: %d items", item_count);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);

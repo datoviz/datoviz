@@ -367,6 +367,11 @@ void dvz_axes_update(DvzAxes* axes)
     // Compute the ticks and update the visuals if the ticks have changed.
     set_axis(axes, DVZ_TICKS_HORIZONTAL, xrange[0], xrange[1]);
     set_axis(axes, DVZ_TICKS_VERTICAL, yrange[0], yrange[1]);
+
+    dvz_axis_update(axes->xaxis);
+    dvz_axis_update(axes->yaxis);
+
+    dvz_atomic_set(axes->panel->figure->viewset->status, (int)DVZ_BUILD_DIRTY);
 }
 
 

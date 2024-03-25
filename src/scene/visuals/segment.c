@@ -82,7 +82,7 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
 void dvz_segment_alloc(DvzVisual* visual, uint32_t item_count)
 {
     ANN(visual);
-    log_debug("allocating the segment visual");
+    log_debug("allocating the segment visual: %d items", item_count);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);

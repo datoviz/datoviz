@@ -443,6 +443,16 @@ DvzVisual* dvz_axis_glyph(DvzAxis* axis)
 
 
 
+void dvz_axis_update(DvzAxis* axis)
+{
+    ANN(axis);
+
+    dvz_visual_update(axis->segment);
+    dvz_visual_update(axis->glyph);
+}
+
+
+
 void dvz_axis_destroy(DvzAxis* axis)
 {
     ANN(axis);
