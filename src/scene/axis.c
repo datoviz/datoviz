@@ -590,6 +590,8 @@ void dvz_axis_set(
     // The latter uses the group information to compute the width of each group, necessary
     // to compute the anchor relative to each group's size in the vertex shader.
     set_glyphs(axis, glyphs, index);
+
+    dvz_axis_update(axis);
 }
 
 

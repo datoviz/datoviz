@@ -394,9 +394,25 @@ int test_axis_update(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_axis_panel(axis, vt.panel);
 
-    // Run the test.
-    // dvz_app_submit(vt.app);
-    visual_test_end(vt);
+    // visual_test_end(vt);
+    char imgpath[1024];
+
+    dvz_scene_run(vt.scene, vt.app, 3);
+    snprintf(imgpath, sizeof(imgpath), "%s/visual_axis_update_1.png", ARTIFACTS_DIR);
+    dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
+
+
+    {
+        char* glyphs = "0.000 1.000";
+        uint32_t glyph_count = 5 * tick_count;
+        uint32_t index[] = {0, 6};
+        uint32_t length[] = {5, 5};
+        dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+    }
+
+    dvz_scene_run(vt.scene, vt.app, 10);
+    snprintf(imgpath, sizeof(imgpath), "%s/visual_axis_update_2.png", ARTIFACTS_DIR);
+    dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
 
     // Cleanup.
     dvz_axis_destroy(axis);
