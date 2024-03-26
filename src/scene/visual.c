@@ -292,6 +292,14 @@ void dvz_visual_resize(
     ANN(visual);
     ASSERT(item_count > 0);
 
+    if ((visual->item_count == item_count) &&     //
+        (visual->vertex_count == vertex_count) && //
+        (visual->index_count == index_count))
+    {
+        log_error("skipping unneeded visual resize");
+        return;
+    }
+
     // Mark the new item count.
     visual->item_count = item_count;
     visual->vertex_count = vertex_count;
@@ -459,6 +467,11 @@ void dvz_visual_alloc(
         return;
     }
 
+    // Save the counts.
+    visual->item_count = item_count;
+    visual->vertex_count = vertex_count;
+    visual->index_count = index_count;
+
     DvzBaker* baker = visual->baker;
     ANN(baker);
 
@@ -559,9 +572,6 @@ void dvz_visual_alloc(
 
     // The baker slots are declared directly in dvz_visual_params() and dvz_visual_tex().
     // Now, we can create the baker. This will create the arrays and dats.
-
-    visual->item_count = item_count;
-
     dvz_baker_create(baker, index_count, vertex_count);
 
     // Bind the index buffer.
@@ -609,7 +619,6 @@ void dvz_visual_alloc(
     // NOTE: when using the scene API (viewset.c), these are handled automatically.
     // But when using visuals directly, in order for dvz_visual_record() to work,
     // we need to set these as sensible defaults.
-    visual->index_count = index_count;
     visual->draw_first = 0;
     visual->draw_count = item_count;
     visual->first_instance = 0;
