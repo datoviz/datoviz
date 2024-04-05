@@ -307,8 +307,6 @@ void dvz_visual_resize(
 
     // Resize the baker, resize the underlying arrays, emit the dat resize commands.
     dvz_baker_resize(visual->baker, vertex_count, index_count);
-
-    // TODO: resize the groups?
 }
 
 
@@ -440,6 +438,9 @@ void dvz_visual_alloc(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count)
 {
     ANN(visual);
+    log_debug(
+        "allocating visual with %d items, %d vertices, %d indices", //
+        item_count, vertex_count, index_count);
 
     // Check input variable
     ASSERT(vertex_count > 0);
@@ -459,10 +460,16 @@ void dvz_visual_alloc(
     // indices / 3).
     index_count = index_count > 0 ? index_count : (indexed ? (item_count * 3) : 0);
 
+    // Update the draw spec.
+    dvz_visual_drawspec(visual, 0, item_count, 0, 1);
+
     // Allocate the first time, resize afterwards.
     if (dvz_obj_is_created(&visual->obj))
     {
-        log_debug("visual allocation has already been done, calling dvz_visual_resize() instead");
+        log_debug(
+            "visual allocation has already been done, calling dvz_visual_resize() instead "
+            "(%d items, %d vertices, %d indices)",
+            item_count, vertex_count, index_count);
         dvz_visual_resize(visual, item_count, vertex_count, index_count);
         return;
     }
@@ -619,10 +626,7 @@ void dvz_visual_alloc(
     // NOTE: when using the scene API (viewset.c), these are handled automatically.
     // But when using visuals directly, in order for dvz_visual_record() to work,
     // we need to set these as sensible defaults.
-    visual->draw_first = 0;
-    visual->draw_count = item_count;
-    visual->first_instance = 0;
-    visual->instance_count = 1;
+    dvz_visual_drawspec(visual, 0, item_count, 0, 1);
 
     dvz_obj_created(&visual->obj);
 }
@@ -771,6 +775,19 @@ void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, v
 /*************************************************************************************************/
 /*  Visual drawing internal functions                                                            */
 /*************************************************************************************************/
+
+void dvz_visual_drawspec(
+    DvzVisual* visual, uint32_t draw_first, uint32_t draw_count, //
+    uint32_t first_instance, uint32_t instance_count)
+{
+    ANN(visual);
+    visual->draw_first = draw_first;
+    visual->draw_count = draw_count;
+    visual->first_instance = first_instance;
+    visual->instance_count = instance_count;
+}
+
+
 
 void dvz_visual_instance(
     DvzVisual* visual, DvzId canvas, uint32_t first, uint32_t vertex_offset, uint32_t count,

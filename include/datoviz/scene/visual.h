@@ -108,6 +108,7 @@ struct DvzVisual
 {
     DvzObject obj;
     DvzBatch* batch;
+    DvzView* view;
     int flags;
     void* user_data;
 
@@ -389,6 +390,15 @@ dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* 
 /*************************************************************************************************/
 /*  Visual drawing internal functions                                                            */
 /*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_drawspec(
+    DvzVisual* visual, uint32_t draw_first, uint32_t draw_count, //
+    uint32_t first_instance, uint32_t instance_count);
+
+
 
 /**
  *
