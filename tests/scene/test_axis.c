@@ -12,6 +12,7 @@
 #include "scene/axis.h"
 #include "scene/panzoom.h"
 #include "scene/viewport.h"
+#include "scene/viewset.h"
 #include "scene/visuals/glyph.h"
 #include "scene/visuals/marker.h"
 #include "scene/visuals/visual_test.h"
@@ -379,10 +380,10 @@ int test_axis_update(TstSuite* suite)
     }
 
     {
-        char* glyphs = "0.0 1.0";
-        uint32_t glyph_count = 3 * tick_count;
-        uint32_t index[] = {0, 4};
-        uint32_t length[] = {3, 3};
+        char* glyphs = "0.00 1.00";
+        uint32_t glyph_count = 4 * tick_count;
+        uint32_t index[] = {0, 5};
+        uint32_t length[] = {4, 4};
         dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
     }
 
@@ -408,11 +409,16 @@ int test_axis_update(TstSuite* suite)
         uint32_t index[] = {0, 6};
         uint32_t length[] = {5, 5};
         dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
+        // HACK: trigger command buffer recording to update the number of items to draw
+        dvz_atomic_set(vt.figure->viewset->status, (int)DVZ_BUILD_DIRTY);
     }
 
     dvz_scene_run(vt.scene, vt.app, 10);
     snprintf(imgpath, sizeof(imgpath), "%s/visual_axis_update_2.png", ARTIFACTS_DIR);
     dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
+
+    visual_test_end(vt);
 
     // Cleanup.
     dvz_axis_destroy(axis);

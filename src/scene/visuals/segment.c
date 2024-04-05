@@ -29,7 +29,7 @@
 
 static void _visual_callback(
     DvzVisual* visual, DvzId canvas, //
-    uint32_t first, uint32_t count,  //
+    uint32_t first, uint32_t count,  // in items, not vertices/indices
     uint32_t first_instance, uint32_t instance_count)
 {
     ANN(visual);

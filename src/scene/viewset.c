@@ -247,6 +247,7 @@ void dvz_view_add(
     visual->draw_count = count;
     visual->first_instance = first_instance;
     visual->instance_count = instance_count;
+    visual->view = view;
 
     dvz_list_append(view->visuals, (DvzListItem){.p = visual});
 
