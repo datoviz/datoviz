@@ -350,6 +350,32 @@ int test_axis_2(TstSuite* suite)
 
 
 
+static void _on_timer(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzAxis* axis = (DvzAxis*)vt->user_data;
+    ANN(axis);
+
+    uint64_t idx = ev.content.t.step_idx;
+
+    // uint32_t tick_count = 2;
+    // double values[] = {0, 1};
+    // char* glyphs = "0.000000 1.000000";
+    // uint32_t glyph_count = 5 * tick_count;
+    // uint32_t index[] = {0, 9};
+
+    // uint32_t n = (2 + idx % 4);
+    // uint32_t length[] = {n, n};
+    // dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
+    // // HACK: trigger command buffer recording to update the number of items to draw
+    // dvz_atomic_set(vt->figure->viewset->status, (int)DVZ_BUILD_DIRTY);
+}
+
 int test_axis_update(TstSuite* suite)
 {
     ANN(suite);
@@ -417,6 +443,10 @@ int test_axis_update(TstSuite* suite)
     dvz_scene_run(vt.scene, vt.app, 10);
     snprintf(imgpath, sizeof(imgpath), "%s/visual_axis_update_2.png", ARTIFACTS_DIR);
     dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
+
+    // vt.user_data = (void*)axis;
+    // dvz_app_timer(vt.app, 0, .5, 0);
+    // dvz_app_ontimer(vt.app, _on_timer, &vt);
 
     visual_test_end(vt);
 
