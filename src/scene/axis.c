@@ -441,6 +441,28 @@ DvzVisual* dvz_axis_glyph(DvzAxis* axis)
 
 
 
+void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
+{
+    ANN(axis);
+    ANN(panel);
+
+    dvz_panel_visual(panel, axis->segment);
+    dvz_panel_visual(panel, axis->glyph);
+}
+
+
+
+int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp)
+{
+    ANN(axis);
+    // TODO
+    // returns 0 for horizontal, 1 for vertical. depends on the intersection or not
+    // of two projected boxes with maximal label length
+    return 0;
+}
+
+
+
 void dvz_axis_update(DvzAxis* axis)
 {
     ANN(axis);
@@ -467,7 +489,7 @@ void dvz_axis_destroy(DvzAxis* axis)
 
 
 /*************************************************************************************************/
-/*  Global parameters                                                                            */
+/*  Visual properties                                                                            */
 /*************************************************************************************************/
 
 void dvz_axis_size(DvzAxis* axis, float font_size)
@@ -527,6 +549,52 @@ void dvz_axis_offset(DvzAxis* axis, vec2 offset)
 {
     ANN(axis);
     glm_vec2_copy(offset, axis->offset);
+}
+
+
+
+/*************************************************************************************************/
+/*  MVP                                                                                          */
+/*************************************************************************************************/
+
+void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc)
+{
+    ANN(axis);
+    ANN(mvp);
+
+    // Compute q0=mvp*p0 and q1=mvp*p1.
+    vec4 q0, q1;
+    glm_vec3_copy(axis->p0_ref, q0);
+    glm_vec3_copy(axis->p1_ref, q1);
+    q0[3] = 1;
+    q1[3] = 1;
+
+    dvz_mvp_apply(mvp, q0, q0);
+    dvz_mvp_apply(mvp, q1, q1);
+
+    // glm_vec4_print(q0, stdout);
+    // glm_vec4_print(q1, stdout);
+
+    // Direction vector, from p0 to p1.
+    vec3 u;
+    glm_vec3_sub(axis->p1_ref, axis->p0_ref, u);
+    ASSERT(glm_vec3_norm(u) > 0);
+    glm_vec3_normalize(u);
+
+    double dmin = axis->tick_spec.dmin;
+    double dmax = axis->tick_spec.dmax;
+
+    double p0_ = glm_vec3_dot(axis->tick_spec.p0, u);
+    double p1_ = glm_vec3_dot(axis->tick_spec.p1, u);
+    double q0_ = glm_vec3_dot(q0, u);
+    double q1_ = glm_vec3_dot(q1, u);
+
+    double denom = 1. / (q1_ - q0_);
+    range_data[0] = dmin + (dmax - dmin) * (p0_ - q0_) * denom;
+    range_data[1] = dmin + (dmax - dmin) * (p1_ - q0_) * denom;
+
+    range_ndc[0] = -1 + 2 * (p0_ - q0_) * denom;
+    range_ndc[1] = -1 + 2 * (p1_ - q0_) * denom;
 }
 
 
@@ -606,68 +674,4 @@ void dvz_axis_ticks(DvzAxis* axis, DvzTickSpec* tick_spec)
     set_glyphs(axis, tick_spec->glyphs, tick_spec->index);
 
     dvz_axis_update(axis);
-}
-
-
-
-void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc)
-{
-    ANN(axis);
-    ANN(mvp);
-
-    // Compute q0=mvp*p0 and q1=mvp*p1.
-    vec4 q0, q1;
-    glm_vec3_copy(axis->p0_ref, q0);
-    glm_vec3_copy(axis->p1_ref, q1);
-    q0[3] = 1;
-    q1[3] = 1;
-
-    dvz_mvp_apply(mvp, q0, q0);
-    dvz_mvp_apply(mvp, q1, q1);
-
-    // glm_vec4_print(q0, stdout);
-    // glm_vec4_print(q1, stdout);
-
-    // Direction vector, from p0 to p1.
-    vec3 u;
-    glm_vec3_sub(axis->p1_ref, axis->p0_ref, u);
-    ASSERT(glm_vec3_norm(u) > 0);
-    glm_vec3_normalize(u);
-
-    double dmin = axis->tick_spec.dmin;
-    double dmax = axis->tick_spec.dmax;
-
-    double p0_ = glm_vec3_dot(axis->tick_spec.p0, u);
-    double p1_ = glm_vec3_dot(axis->tick_spec.p1, u);
-    double q0_ = glm_vec3_dot(q0, u);
-    double q1_ = glm_vec3_dot(q1, u);
-
-    double denom = 1. / (q1_ - q0_);
-    range_data[0] = dmin + (dmax - dmin) * (p0_ - q0_) * denom;
-    range_data[1] = dmin + (dmax - dmin) * (p1_ - q0_) * denom;
-
-    range_ndc[0] = -1 + 2 * (p0_ - q0_) * denom;
-    range_ndc[1] = -1 + 2 * (p1_ - q0_) * denom;
-}
-
-
-
-void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
-{
-    ANN(axis);
-    ANN(panel);
-
-    dvz_panel_visual(panel, axis->segment);
-    dvz_panel_visual(panel, axis->glyph);
-}
-
-
-
-int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp)
-{
-    ANN(axis);
-    // TODO
-    // returns 0 for horizontal, 1 for vertical. depends on the intersection or not
-    // of two projected boxes with maximal label length
-    return 0;
 }
