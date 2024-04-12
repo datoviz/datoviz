@@ -99,28 +99,28 @@ DVZ_EXPORT void dvz_axes_yref(DvzAxes* axes, dvec2 range);
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_xset(DvzAxes* axes, dvec2 range);
+DVZ_EXPORT void dvz_axes_xget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_xget(DvzAxes* axes, dvec2 range);
+DVZ_EXPORT void dvz_axes_yget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_yget(DvzAxes* axes, dvec2 range);
+DVZ_EXPORT bool dvz_axes_xset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_yset(DvzAxes* axes, dvec2 range);
+DVZ_EXPORT bool dvz_axes_yset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 

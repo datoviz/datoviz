@@ -11,6 +11,8 @@
 #include "test_axes.h"
 #include "scene/axes.h"
 #include "scene/panzoom.h"
+#include "scene/ticks.h"
+#include "scene/transform.h"
 #include "scene/viewport.h"
 #include "scene/visuals/glyph.h"
 #include "scene/visuals/marker.h"
@@ -32,7 +34,10 @@ static void _axes_onkeyboard(DvzClient* client, DvzClientEvent ev)
     DvzAxes* axes = (DvzAxes*)ev.user_data;
     ANN(axes);
 
-    dvz_axes_update(axes);
+    if (ev.content.k.type == DVZ_KEYBOARD_EVENT_RELEASE)
+    {
+        dvz_axes_update(axes);
+    }
 }
 
 int test_axes_1(TstSuite* suite)
@@ -47,10 +52,36 @@ int test_axes_1(TstSuite* suite)
     DvzAxes* axes = dvz_axes(vt.panel, flags);
 
     // Keyboard event.
-    dvz_app_onkeyboard(vt.app, _axes_onkeyboard, axes);
+    // dvz_app_onkeyboard(vt.app, _axes_onkeyboard, axes);
+
+    // Manual pan.
+    DvzPanzoom* pz = vt.panel->panzoom;
+    ANN(pz);
+    dvz_panzoom_pan(pz, (vec2){1, 0});
+    dvz_panel_update(vt.panel);
+    dvz_scene_run(vt.scene, vt.app, 10);
+
+    dvec2 xrange = {0};
+    // dvec2 yrange = {0};
+    vec2 xrange_ndc = {0};
+    // vec2 yrange_ndc = {0};
+
+    dvz_axes_xget(axes, xrange, xrange_ndc);
+    log_error("%f %f", xrange[0], xrange[1]);
+    dvz_axes_xset(axes, xrange, xrange_ndc);
+    dvz_axes_xget(axes, xrange, xrange_ndc);
+    log_error("%f %f", xrange[0], xrange[1]);
+
+    // Run the scene.
+    // dvz_scene_run(vt.scene, vt.app, 10);
+    dvz_app_destroy(vt.app);
+
+    dvz_panel_destroy(vt.panel);
+    dvz_figure_destroy(vt.figure);
+    dvz_scene_destroy(vt.scene);
 
     // Run the test.
-    visual_test_end(vt);
+    // visual_test_end(vt);
 
     dvz_axes_destroy(axes);
     return 0;
