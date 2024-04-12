@@ -10,6 +10,8 @@
 #include "scene/ticks.h"
 #include "_macros.h"
 
+#include "_debug.h"
+
 
 
 /*************************************************************************************************/
@@ -27,6 +29,7 @@
     {                                                                                             \
         0.2, 0.25, 0.5, 0.05                                                                      \
     }
+#define CLOSE(x, y) (fabs((x) - (y)) < EPS)
 
 
 
@@ -330,7 +333,7 @@ q : nice number
 j : skip, amount among a sequence of nice numbers
 z : 10-exponent of the step size
 */
-static bool wilk_ext(DvzTicks* ticks, int32_t m)
+static void wilk_ext(DvzTicks* ticks, int32_t m)
 {
     ANN(ticks);
 
@@ -349,7 +352,7 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
     if (range_size < 10 * glyph_size)
     {
         log_debug("degenerate axes context, return a trivial tick range");
-        return false;
+        return;
     }
 
     double DEFAULT_Q[] = {1, 5, 2, 2.5, 4, 3};
@@ -460,23 +463,10 @@ static bool wilk_ext(DvzTicks* ticks, int32_t m)
         j++;
     }
 
-    bool has_changed =
-        ((best_ticks.lmin != ticks->lmin) ||   //
-         (best_ticks.lmax != ticks->lmax) ||   //
-         (best_ticks.lstep != ticks->lstep) || //
-         (best_ticks.format != ticks->format)  //
-        );
-
-    log_info(
-        "extended Wilkinson algorithm finished (changed %d): lmin=%.3f, lmax=%.3f, lstep=%.3f",
-        has_changed, best_ticks.lmin, best_ticks.lmax, best_ticks.lstep);
-
     ticks->lmin = best_ticks.lmin;
     ticks->lmax = best_ticks.lmax;
     ticks->lstep = best_ticks.lstep;
     ticks->format = best_ticks.format;
-
-    return has_changed;
 }
 
 
@@ -511,8 +501,30 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     ticks->dmin = dmin;
     ticks->dmax = dmax;
 
+    // Keep track of the initial parameters.
+    double lmin = ticks->lmin;
+    double lmax = ticks->lmax;
+    double lstep = ticks->lstep;
+    DvzTicksFormat format = ticks->format;
+
+    // Run the algorithm.
     int32_t m = (int32_t)requested_count;
-    return wilk_ext(ticks, m);
+    wilk_ext(ticks, m);
+
+    // Determine whether the parameters are different.
+    bool has_changed =
+        (!CLOSE(lmin, ticks->lmin) ||   //
+         !CLOSE(lmax, ticks->lmax) ||   //
+         !CLOSE(lstep, ticks->lstep) || //
+         (format != ticks->format)      //
+        );
+
+    log_info(
+        "extended Wilkinson algorithm finished (changed %d): "
+        "lmin=%.3f, lmax=%.3f, lstep=%.3f",
+        has_changed, lmin, lmax, lstep);
+
+    return has_changed;
 }
 
 
