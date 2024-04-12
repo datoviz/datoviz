@@ -27,6 +27,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzAxis DvzAxis;
+typedef struct DvzTickSpec DvzTickSpec;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -48,6 +49,23 @@ typedef struct DvzPanel DvzPanel;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzTickSpec
+{
+    vec3 p0, p1, vector;
+
+    uint32_t tick_count;
+    uint32_t glyph_count;
+
+    double dmin, dmax;
+    double* values;
+
+    char* glyphs;
+    uint32_t* index;
+    uint32_t* length;
+};
+
+
+
 struct DvzAxis
 {
     int flags;
@@ -57,13 +75,8 @@ struct DvzAxis
     DvzAtlas* atlas;
     DvzFont* font;
 
-    // Pos.
-    double dmin;
-    double dmax;
-    vec3 p0;
-    vec3 p1;
-    vec3 p2;
-    vec3 p3;
+    vec3 p0_ref, p1_ref;
+    DvzTickSpec tick_spec;
 
     // Color.
     cvec4 color_glyph;
@@ -119,6 +132,21 @@ DVZ_EXPORT DvzVisual* dvz_axis_segment(DvzAxis* axis);
 DVZ_EXPORT DvzVisual* dvz_axis_glyph(DvzAxis* axis);
 
 
+/**
+ *
+ */
+DVZ_EXPORT int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp);
+// returns 0 for horizontal, 1 for vertical. depends on the intersection or not
+// of two projected boxes with maximal label length
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
+
+
 
 /**
  *
@@ -135,7 +163,7 @@ DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
 
 
 /*************************************************************************************************/
-/*  Global parameters                                                                            */
+/*  Visual properties                                                                            */
 /*************************************************************************************************/
 
 /**
@@ -183,17 +211,15 @@ DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
 
 
 
-/**
- *
- */
-DVZ_EXPORT void dvz_axis_pos(DvzAxis* axis, vec3 p0, vec3 p1, vec3 p2, vec3 p3);
-
-
+/*************************************************************************************************/
+/*  MVP                                                                                          */
+/*************************************************************************************************/
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_range(DvzAxis* axis, double dmin, double dmax);
+DVZ_EXPORT void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc);
+// compute dmin, dmax of the visible viewbox
 
 
 
@@ -204,34 +230,17 @@ DVZ_EXPORT void dvz_axis_range(DvzAxis* axis, double dmin, double dmax);
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_set(
-    DvzAxis* axis, uint32_t tick_count, double* values, //
-    uint32_t glyph_count, char* glyphs, uint32_t* index, uint32_t* length);
+DVZ_EXPORT DvzTickSpec dvz_tick_spec(
+    vec3 p0, vec3 p1, vec3 vector,                                 // positions in NDC
+    double dmin, double dmax, uint32_t tick_count, double* values, // tick positions and values
+    uint32_t glyph_count, char* glyphs, uint32_t* index, uint32_t* length); // tick labels
 
 
 
 /**
  *
  */
-DVZ_EXPORT void
-dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, dvec2 out_d); // compute dmin, dmax of the visible viewbox
-
-
-
-/**
- *
- */
-DVZ_EXPORT int dvz_axis_direction(
-    DvzAxis* axis,
-    DvzMVP* mvp); // returns 0 for horizontal, 1 for vertical. depends on the intersection or not
-                  // of two projected boxes with maximal label length
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
+DVZ_EXPORT void dvz_axis_ticks(DvzAxis* axis, DvzTickSpec* tick_spec);
 
 
 

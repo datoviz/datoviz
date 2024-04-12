@@ -85,28 +85,26 @@ set_groups(DvzAxis* axis, uint32_t glyph_count, uint32_t tick_count, uint32_t* g
 /*  Tick computation                                                                             */
 /*************************************************************************************************/
 
-static inline vec3* make_tick_positions(DvzAxis* axis, double* values)
+static inline vec3*
+make_tick_positions(DvzAxis* axis, double dmin, double dmax, double* values, vec3 p0, vec3 p1)
 {
     ANN(axis);
     ANN(values);
-
     ANN(axis->glyph);
+    ASSERT(dmin < dmax);
 
     uint32_t tick_count = axis->glyph->group_count;
 
     // axis->p0 corresponds to axis->dmin
     // axis->p1 corresponds to axis->dmax
-    double dmin = axis->dmin;
-    double dmax = axis->dmax;
-    ASSERT(dmin < dmax);
     double denom = 1. / (dmax - dmin);
     ASSERT(denom > 0);
     double d = 0;
     double a = 0; // rescaled value between 0 and 1
 
-    float px = axis->p1[0] - axis->p0[0];
-    float py = axis->p1[1] - axis->p0[1];
-    float pz = axis->p1[2] - axis->p0[2];
+    float px = p1[0] - p0[0];
+    float py = p1[1] - p0[1];
+    float pz = p1[2] - p0[2];
 
     vec3* tick_positions = (vec3*)calloc(tick_count, sizeof(vec3));
     for (uint32_t i = 0; i < tick_count; i++)
@@ -114,9 +112,9 @@ static inline vec3* make_tick_positions(DvzAxis* axis, double* values)
         d = values[i];
         a = (d - dmin) * denom;
 
-        tick_positions[i][0] = axis->p0[0] + px * a;
-        tick_positions[i][1] = axis->p0[1] + py * a;
-        tick_positions[i][2] = axis->p0[2] + pz * a;
+        tick_positions[i][0] = p0[0] + px * a;
+        tick_positions[i][1] = p0[1] + py * a;
+        tick_positions[i][2] = p0[2] + pz * a;
     }
 
     return tick_positions;
@@ -209,12 +207,12 @@ static inline void set_segment_shift(DvzAxis* axis)
 
     // Vector pointing from p0 to p1.
     vec3 u = {0};
-    glm_vec3_sub(axis->p1, axis->p0, u);
+    glm_vec3_sub(axis->tick_spec.p1, axis->tick_spec.p0, u);
     glm_vec3_normalize(u);
 
     // Vector pointing from p0 to p2.
     vec3 v = {0};
-    glm_vec3_sub(axis->p2, axis->p0, v);
+    glm_vec3_copy(axis->tick_spec.vector, v);
     glm_vec3_normalize(v);
 
     // NOTE: this only works in 2D.
@@ -533,46 +531,62 @@ void dvz_axis_offset(DvzAxis* axis, vec2 offset)
 
 
 
-void dvz_axis_pos(DvzAxis* axis, vec3 p0, vec3 p1, vec3 p2, vec3 p3)
-{
-    ANN(axis);
-    _vec3_copy(p0, axis->p0);
-    _vec3_copy(p1, axis->p1);
-    _vec3_copy(p2, axis->p2);
-    _vec3_copy(p3, axis->p3);
-}
-
-
-
-void dvz_axis_range(DvzAxis* axis, double dmin, double dmax)
-{
-    ANN(axis);
-    ASSERT(dmin < dmax);
-
-    axis->dmin = dmin;
-    axis->dmax = dmax;
-}
-
-
-
 /*************************************************************************************************/
 /*  Ticks and glyphs                                                                             */
 /*************************************************************************************************/
 
-void dvz_axis_set(
-    DvzAxis* axis, uint32_t tick_count, double* values, //
-    uint32_t glyph_count, char* glyphs, uint32_t* index, uint32_t* length)
+DvzTickSpec dvz_tick_spec(
+    vec3 p0, vec3 p1, vec3 vector,                                 // positions in NDC
+    double dmin, double dmax, uint32_t tick_count, double* values, // tick positions and values
+    uint32_t glyph_count, char* glyphs, uint32_t* index, uint32_t* length) // tick labels
+{
+    ASSERT(dmin < dmax);
+    ASSERT(tick_count > 0);
+    ASSERT(glyph_count > 0);
+
+    ANN(values);
+    ANN(glyphs);
+    ANN(index);
+    ANN(length);
+
+    DvzTickSpec spec = {
+        .p0 = {p0[0], p0[1], p0[2]},
+        .p1 = {p1[0], p1[1], p1[2]},
+        .vector = {vector[0], vector[1], vector[2]},
+        .dmin = dmin,
+        .dmax = dmax,
+        .tick_count = tick_count,
+        .values = values,
+        .glyph_count = glyph_count,
+        .glyphs = glyphs,
+        .index = index,
+        .length = length,
+    };
+    return spec;
+}
+
+
+
+void dvz_axis_ticks(DvzAxis* axis, DvzTickSpec* tick_spec)
 {
     ANN(axis);
+    memcpy(&axis->tick_spec, tick_spec, sizeof(DvzTickSpec));
+
+    // HACK: copy p0, p1 to reference values if they have not been set before.
+    if (glm_vec3_norm(axis->p0_ref) == 0)
+        glm_vec3_copy(tick_spec->p0, axis->p0_ref);
+    if (glm_vec3_norm(axis->p1_ref) == 0)
+        glm_vec3_copy(tick_spec->p1, axis->p1_ref);
 
     // Allocation.
-    set_groups(axis, glyph_count, tick_count, length);
+    set_groups(axis, tick_spec->glyph_count, tick_spec->tick_count, tick_spec->length);
 
     // Segment.
     set_segment_width(axis);
 
     // Tick positions.
-    vec3* tick_positions = make_tick_positions(axis, values);
+    vec3* tick_positions = make_tick_positions(
+        axis, tick_spec->dmin, tick_spec->dmax, tick_spec->values, tick_spec->p0, tick_spec->p1);
     set_glyph_pos(axis, tick_positions);
     set_glyph_anchor(axis);
     set_segment_pos(axis, tick_positions);
@@ -589,27 +603,22 @@ void dvz_axis_set(
     // NOTE: set_groups() needs to be called BEFORE this function, which calls dvz_glyph_xywh().
     // The latter uses the group information to compute the width of each group, necessary
     // to compute the anchor relative to each group's size in the vertex shader.
-    set_glyphs(axis, glyphs, index);
+    set_glyphs(axis, tick_spec->glyphs, tick_spec->index);
 
     dvz_axis_update(axis);
 }
 
 
 
-void dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, dvec2 out_d)
+void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc)
 {
     ANN(axis);
     ANN(mvp);
 
-    // float px = -mvp->view[3][0];
-    // float py = -mvp->view[3][1];
-    // float zx = 1.0f / mvp->proj[0][0];
-    // float zy = 1.0f / mvp->proj[1][1];
-
     // Compute q0=mvp*p0 and q1=mvp*p1.
     vec4 q0, q1;
-    glm_vec3_copy(axis->p0, q0);
-    glm_vec3_copy(axis->p1, q1);
+    glm_vec3_copy(axis->p0_ref, q0);
+    glm_vec3_copy(axis->p1_ref, q1);
     q0[3] = 1;
     q1[3] = 1;
 
@@ -621,20 +630,24 @@ void dvz_axis_get(DvzAxis* axis, DvzMVP* mvp, dvec2 out_d)
 
     // Direction vector, from p0 to p1.
     vec3 u;
-    glm_vec3_sub(axis->p1, axis->p0, u);
+    glm_vec3_sub(axis->p1_ref, axis->p0_ref, u);
+    ASSERT(glm_vec3_norm(u) > 0);
     glm_vec3_normalize(u);
 
-    double dmin = axis->dmin;
-    double dmax = axis->dmax;
+    double dmin = axis->tick_spec.dmin;
+    double dmax = axis->tick_spec.dmax;
 
-    double p0_ = glm_vec3_dot(axis->p0, u);
-    double p1_ = glm_vec3_dot(axis->p1, u);
+    double p0_ = glm_vec3_dot(axis->tick_spec.p0, u);
+    double p1_ = glm_vec3_dot(axis->tick_spec.p1, u);
     double q0_ = glm_vec3_dot(q0, u);
     double q1_ = glm_vec3_dot(q1, u);
 
     double denom = 1. / (q1_ - q0_);
-    out_d[0] = dmin + (dmax - dmin) * (p0_ - q0_) * denom;
-    out_d[1] = dmin + (dmax - dmin) * (p1_ - q0_) * denom;
+    range_data[0] = dmin + (dmax - dmin) * (p0_ - q0_) * denom;
+    range_data[1] = dmin + (dmax - dmin) * (p1_ - q0_) * denom;
+
+    range_ndc[0] = -1 + 2 * (p0_ - q0_) * denom;
+    range_ndc[1] = -1 + 2 * (p1_ - q0_) * denom;
 }
 
 

@@ -35,12 +35,6 @@ static void _common_axis_params(DvzAxis* axis)
     vec2 anchor = {+.5, 0};
     vec2 offset = {0, -80};
 
-    float a = 1;
-    vec3 p0 = {-a, -a, 0};
-    vec3 p1 = {+a, -a, 0};
-    vec3 p2 = {-a, +a, 0};
-    vec3 p3 = {+a, +a, 0};
-
     cvec4 color_glyph = {255, 255, 0, 255};
     cvec4 color_lim = {255, 0, 0, 255};
     cvec4 color_grid = {0, 255, 0, 255};
@@ -57,7 +51,6 @@ static void _common_axis_params(DvzAxis* axis)
     float length_major = 40;
     float length_minor = 20;
 
-    dvz_axis_pos(axis, p0, p1, p2, p3);
     dvz_axis_size(axis, font_size);
     dvz_axis_anchor(axis, anchor);
     dvz_axis_offset(axis, offset);
@@ -85,6 +78,11 @@ int test_axis_1(TstSuite* suite)
     // Common axis parameters.
     _common_axis_params(axis);
 
+    float a = 1;
+    vec3 p0 = {-a, -a, 0};
+    vec3 p1 = {+a, -a, 0};
+    vec3 vector = {0, +1, 0};
+
     // Set the ticks and labels.
     double dmin = 0;
     double dmax = 7;
@@ -94,8 +92,9 @@ int test_axis_1(TstSuite* suite)
     uint32_t glyph_count = tick_count + 4;
     uint32_t index[] = {0, 2, 4, 6, 8, 10, 12, 14};
     uint32_t length[] = {1, 1, 1, 1, 1, 1, 1, 5};
-    dvz_axis_range(axis, dmin, dmax);
-    dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+    DvzTickSpec spec = dvz_tick_spec(
+        p0, p1, vector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+    dvz_axis_ticks(axis, &spec);
 
     // Fixed panzoom.
     dvz_visual_fixed(axis->glyph, false, true, false);
@@ -128,25 +127,55 @@ int test_axis_get(TstSuite* suite)
     double dmax = +10;
 
     DvzAxis axis = {
-        .p0 = {-1, 0, 0},
-        .p1 = {+1, 0, 0},
-        .dmin = dmin,
-        .dmax = dmax,
+        .p0_ref = {-1, 0, 0},
+        .p1_ref = {+1, 0, 0},
+        .tick_spec =
+            {
+                .p0 = {-1, 0, 0},
+                .p1 = {+1, 0, 0},
+                .vector = {0, 1, 0},
+                .dmin = dmin,
+                .dmax = dmax,
+            },
     };
 
     DvzMVP mvp = dvz_mvp_default();
     dvec2 d = {0, 0};
-    dvz_axis_get(&axis, &mvp, d);
+    vec2 dn = {0, 0};
+    dvz_axis_mvp(&axis, &mvp, d, dn);
     AT(d[0] == dmin);
     AT(d[1] == dmax);
 
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
-    dvz_panzoom_zoom(pz, (vec2){2, 2});
-    dvz_panzoom_mvp(pz, &mvp);
 
-    dvz_axis_get(&axis, &mvp, d);
-    AT(d[0] == dmin / 2);
-    AT(d[1] == dmax / 2);
+    {
+        dvz_panzoom_zoom(pz, (vec2){2, 2});
+        dvz_panzoom_mvp(pz, &mvp);
+
+        dvz_axis_mvp(&axis, &mvp, d, dn);
+        AT(d[0] == dmin / 2);
+        AT(d[1] == dmax / 2);
+    }
+
+    {
+        dvz_panzoom_reset(pz);
+        dvz_panzoom_pan(pz, (vec2){1, 0});
+        dvz_panzoom_mvp(pz, &mvp);
+
+        for (uint32_t i = 0; i < 3; i++)
+        {
+            dvz_axis_mvp(&axis, &mvp, d, dn);
+            AT(d[0] == -2 * dmax);
+            AT(d[1] == 0);
+        }
+
+        // TODO: implement and test dvz_axis_dset() which updates
+        // dvz_axis_range(&axis, d[0], d[1]);
+        // dvz_axis_mvp(&axis, &mvp, d, dn);
+        // log_error("%f %f", d[0], d[1]);
+        // AT(d[0] == dmin / 2);
+        // AT(d[1] == dmax / 2);
+    }
 
     dvz_panzoom_destroy(pz);
     return 0;
@@ -164,8 +193,9 @@ static void _onframe(DvzClient* client, DvzClientEvent ev)
     DvzMVP mvp = dvz_mvp_default();
     dvz_panzoom_mvp(vt->panzoom, &mvp);
 
-    double d[2] = {0};
-    dvz_axis_get(vt->haxis, &mvp, d);
+    dvec2 d = {0};
+    vec2 dn = {0};
+    dvz_axis_mvp(vt->haxis, &mvp, d, dn);
 
     // log_error("%f %f", d[0], d[1]);
 }
@@ -222,8 +252,7 @@ int test_axis_2(TstSuite* suite)
     float ha = 1.0;
     vec3 hp0 = {-ha, -ha, 0};
     vec3 hp1 = {+ha, -ha, 0};
-    vec3 hp2 = {-ha, +ha, 0};
-    vec3 hp3 = {+ha, +ha, 0};
+    vec3 hvector = {0, +1, 0};
     vec2 hanchor = {+.5, 0};
     vec2 hoffset = {0, -80};
 
@@ -235,9 +264,9 @@ int test_axis_2(TstSuite* suite)
         dvz_axis_length(haxis, length_lim, length_grid, length_major, length_minor);
         dvz_axis_color(haxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-        dvz_axis_pos(haxis, hp0, hp1, hp2, hp3);
-        dvz_axis_range(haxis, dmin, dmax);
-        dvz_axis_set(haxis, tick_count, values, glyph_count, glyphs, index, length);
+        DvzTickSpec spec = dvz_tick_spec(
+            hp0, hp1, hvector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_ticks(haxis, &spec);
 
         dvz_visual_fixed(haxis->glyph, false, true, false);
         dvz_visual_fixed(haxis->segment, false, true, false);
@@ -251,8 +280,7 @@ int test_axis_2(TstSuite* suite)
     float va = 1.0;
     vec3 vp0 = {-va, -va, 0};
     vec3 vp1 = {-va, +va, 0};
-    vec3 vp2 = {+va, -va, 0};
-    vec3 vp3 = {+va, +va, 0};
+    vec3 vvector = {0, +1, 0};
     vec2 vanchor = {+1, 0};
     vec2 voffset = {-50, -10};
 
@@ -264,9 +292,9 @@ int test_axis_2(TstSuite* suite)
         dvz_axis_length(vaxis, length_lim, length_grid, length_major, length_minor);
         dvz_axis_color(vaxis, color_glyph, color_lim, color_grid, color_major, color_minor);
 
-        dvz_axis_pos(vaxis, vp0, vp1, vp2, vp3);
-        dvz_axis_range(vaxis, dmin, dmax);
-        dvz_axis_set(vaxis, tick_count, values, glyph_count, glyphs, index, length);
+        DvzTickSpec spec = dvz_tick_spec(
+            vp0, vp1, vvector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_ticks(vaxis, &spec);
 
         dvz_visual_fixed(vaxis->glyph, true, false, false);
         dvz_visual_fixed(vaxis->segment, true, false, false);
@@ -371,7 +399,12 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
     uint32_t length[] = {n, n};
     uint32_t glyph_count = 2 * n;
-    dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
+    DvzTickSpec spec = dvz_tick_spec(
+        axis->tick_spec.p0, axis->tick_spec.p1, axis->tick_spec.vector, //
+        axis->tick_spec.dmin, axis->tick_spec.dmax,                     //
+        tick_count, values, glyph_count, glyphs, index, length);
+    dvz_axis_ticks(axis, &spec);
 
     // HACK: trigger command buffer recording to update the number of items to draw
     dvz_atomic_set(vt->figure->viewset->status, (int)DVZ_BUILD_DIRTY);
@@ -381,7 +414,7 @@ int test_axis_update(TstSuite* suite)
 {
     ANN(suite);
 
-    VisualTest vt = visual_test_start("axis_update", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS);
+    VisualTest vt = visual_test_start("axis_update", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Create the visual.
     int flags = 0;
@@ -391,19 +424,23 @@ int test_axis_update(TstSuite* suite)
     _common_axis_params(axis);
 
     // Set the ticks and labels.
-    double dmin = 0;
-    double dmax = 1;
-    dvz_axis_range(axis, dmin, dmax);
-
     uint32_t tick_count = 2;
     double values[] = {0, 1};
+
+    vec3 p0 = {-1, -1, 0};
+    vec3 p1 = {+1, -1, 0};
+    vec3 vector = {0, 1, 0};
+    double dmin = 0;
+    double dmax = 1;
 
     {
         char* glyphs = "0 1";
         uint32_t glyph_count = tick_count;
         uint32_t index[] = {0, 2};
         uint32_t length[] = {1, 1};
-        dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+        DvzTickSpec spec = dvz_tick_spec(
+            p0, p1, vector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_ticks(axis, &spec);
     }
 
     {
@@ -411,7 +448,9 @@ int test_axis_update(TstSuite* suite)
         uint32_t glyph_count = 4 * tick_count;
         uint32_t index[] = {0, 5};
         uint32_t length[] = {4, 4};
-        dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+        DvzTickSpec spec = dvz_tick_spec(
+            p0, p1, vector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_ticks(axis, &spec);
     }
 
 
@@ -435,7 +474,10 @@ int test_axis_update(TstSuite* suite)
         uint32_t glyph_count = 5 * tick_count;
         uint32_t index[] = {0, 6};
         uint32_t length[] = {5, 5};
-        dvz_axis_set(axis, tick_count, values, glyph_count, glyphs, index, length);
+
+        DvzTickSpec spec = dvz_tick_spec(
+            p0, p1, vector, dmin, dmax, tick_count, values, glyph_count, glyphs, index, length);
+        dvz_axis_ticks(axis, &spec);
 
         // HACK: trigger command buffer recording to update the number of items to draw
         dvz_atomic_set(vt.figure->viewset->status, (int)DVZ_BUILD_DIRTY);
