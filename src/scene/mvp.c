@@ -34,3 +34,14 @@ void dvz_mvp_apply(DvzMVP* mvp, vec4 point, vec4 out)
     glm_mat4_mulv(mvp->view, out, out);
     glm_mat4_mulv(mvp->proj, out, out);
 }
+
+
+
+void dvz_mvp_print(DvzMVP* mvp)
+{
+    ANN(mvp);
+
+    glm_mat4_print(mvp->model, stdout);
+    glm_mat4_print(mvp->view, stdout);
+    glm_mat4_print(mvp->proj, stdout);
+}
