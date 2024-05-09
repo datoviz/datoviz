@@ -23,7 +23,7 @@ function build {
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/ &&
     mkdir -p build &&
     cd build && \
-    cmake .. -GNinja && \
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja && \
     ninja && \
     cd ..
 }
