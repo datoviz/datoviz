@@ -17,8 +17,9 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
 #pragma GCC diagnostic ignored "-Wsign-conversion"
-#include "msdfgen-ext.h"
 #include "msdfgen.h"
+
+#include "msdfgen-ext.h"
 #pragma GCC diagnostic pop
 
 using namespace msdfgen;

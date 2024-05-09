@@ -77,17 +77,19 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
     ASSERT(jpg_size > 0);
     ANN(jpg_bytes);
 
-    uint32_t jpg_width = 0, jpg_height = 0;
-    uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
-    ASSERT(jpg_width > 0);
-    ASSERT(jpg_height > 0);
-    out_shape[0] = jpg_width;
-    out_shape[1] = jpg_height;
+    // uint32_t jpg_width = 0, jpg_height = 0;
+    // uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
+    // ASSERT(jpg_width > 0);
+    // ASSERT(jpg_height > 0);
+    // out_shape[0] = jpg_width;
+    // out_shape[1] = jpg_height;
+    out_shape[0] = 10;
+    out_shape[1] = 10;
     out_shape[2] = 1;
 
-    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, jpg_width, jpg_height, crate_data);
+    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], NULL);
 
-    FREE(crate_data);
+    // FREE(crate_data);
 
     return tex;
 }

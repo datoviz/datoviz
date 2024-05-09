@@ -20,7 +20,8 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
-option(DATOVIZ_WITH_JPEG "Build Datoviz with libjpeg" ON)
+
+# option(DATOVIZ_WITH_JPEG "Build Datoviz with libjpeg" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
@@ -142,7 +143,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 FetchContent_Declare(
     cglm
     GIT_REPOSITORY https://github.com/recp/cglm/
-    GIT_TAG v0.9.2
+    GIT_TAG v0.9.4
 )
 FetchContent_MakeAvailable(cglm)
 
@@ -154,11 +155,12 @@ if(DATOVIZ_WITH_GLFW)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
 
     FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw/
-        GIT_TAG 3.3.9
+        GIT_TAG 3.4
     )
     FetchContent_MakeAvailable(glfw)
 
@@ -189,7 +191,7 @@ if(Vulkan_FOUND)
         FetchContent_Declare(
             glslang
             GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-            GIT_TAG 11.7.1
+            GIT_TAG 14.2.0
         )
         FetchContent_MakeAvailable(glslang)
         set(HAS_GLSLANG 1)
@@ -199,7 +201,7 @@ else()
     FetchContent_Declare(
         vulkan-headers
         GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-        GIT_TAG v1.2.195 # main
+        GIT_TAG vulkan-sdk-1.3.280.0
     )
     FetchContent_MakeAvailable(vulkan-headers)
 
@@ -207,7 +209,7 @@ else()
     FetchContent_Declare(
         vulkan-loader
         GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-        GIT_TAG v1.2.195 # master
+        GIT_TAG vulkan-sdk-1.3.280.0
     )
     FetchContent_MakeAvailable(vulkan-loader)
 
@@ -215,7 +217,7 @@ else()
     FetchContent_Declare(
         SPIRV-Headers
         GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-        GIT_TAG master # 1.5.4.raytracing.fixed
+        GIT_TAG vulkan-sdk-1.3.280.0
     )
     FetchContent_MakeAvailable(SPIRV-Headers)
 
@@ -223,11 +225,7 @@ else()
     FetchContent_Declare(
         SPIRV-Tools
         GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-        GIT_TAG master # v2021.3
-
-        # # TEMPORARY FIX https://github.com/KhronosGroup/SPIRV-Tools/issues/4565
-        # GIT_REPOSITORY  https://github.com/jaebaek/SPIRV-Tools.git
-        # GIT_TAG         fix_ci_failure
+        GIT_TAG vulkan-sdk-1.3.280.0
     )
     FetchContent_MakeAvailable(SPIRV-Tools)
 
@@ -235,7 +233,7 @@ else()
     FetchContent_Declare(
         glslang
         GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-        GIT_TAG master # 11.6.0
+        GIT_TAG 14.2.0
     )
     FetchContent_MakeAvailable(glslang)
 
@@ -243,10 +241,11 @@ else()
     set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
     set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
     set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_COPYRIGHT_CHECK ON CACHE BOOL "" FORCE)
     FetchContent_Declare(
         glslc
         GIT_REPOSITORY https://github.com/google/shaderc
-        GIT_TAG main # v2021.2
+        GIT_TAG v2024.1
     )
     FetchContent_MakeAvailable(glslc)
 
@@ -258,6 +257,7 @@ endif()
 if(Vulkan_FOUND)
     set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
 else()
+    set(INCL_DIRS ${INCL_DIRS} ${vulkan-headers_SOURCE_DIR}/include)
     set(LINK_LIBS ${LINK_LIBS} vulkan)
 endif()
 
@@ -267,52 +267,50 @@ if(HAS_GLSLANG)
     set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
 endif()
 
-# ---- libjpeg ------------------------------------------------------------------------------------
-set(HAS_JPEG 0)
+# # ---- libjpeg ------------------------------------------------------------------------------------
+# set(HAS_JPEG 0)
 
-if(DATOVIZ_WITH_JPEG)
-    set(HAS_JPEG 1)
+# if(DATOVIZ_WITH_JPEG)
+# set(HAS_JPEG 1)
 
-    if(${OS_MACOS})
-        # Use libjpeg, but not native RGBA support
-        find_package(JPEG)
+# if(${OS_MACOS})
+# # Use libjpeg, but not native RGBA support
+# find_package(JPEG)
 
-        if(${JPEG_FOUND})
-            set(HAS_JPEG 1)
-            set(INCL_DIRS ${INCL_DIRS} ${JPEG_INCLUDE_DIRS})
-            set(LINK_LIBS ${LINK_LIBS} ${JPEG_LIBRARIES})
-        endif()
-    else()
-        # libjpeg-turbo with RGBA support
-        # Do `sudo apt install nasm` to enable SIMD support
-        ExternalProject_Add(libjpeg-turbo
-            CONFIGURE_COMMAND ""
-            BUILD_COMMAND ""
-            INSTALL_COMMAND ""
-            UPDATE_DISCONNECTED 1
-            CMAKE_ARGS
-            -DENABLE_SHARED=ON
-            -DENABLE_STATIC=OFF
+# if(${JPEG_FOUND})
+# set(HAS_JPEG 1)
+# set(INCL_DIRS ${INCL_DIRS} ${JPEG_INCLUDE_DIRS})
+# set(LINK_LIBS ${LINK_LIBS} ${JPEG_LIBRARIES})
+# endif()
+# else()
+# # libjpeg-turbo with RGBA support
+# # Do `sudo apt install nasm` to enable SIMD support
+# ExternalProject_Add(libjpeg-turbo
+# BUILD_COMMAND ""
+# INSTALL_COMMAND ""
+# UPDATE_DISCONNECTED 1
+# CMAKE_ARGS
+# -DENABLE_SHARED=ON
+# -DENABLE_STATIC=OFF
 
-            -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
-            -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
-            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-            GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
+# -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
+# -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
+# -DCMAKE_POSITION_INDEPENDENT_CODE=ON
 
-            GIT_TAG main
-        )
+# # PREFIX ${CMAKE_BINARY_DIR}/libjpeg-turbo
+# GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
+# GIT_TAG 3.0.3
+# CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/libjpeg-turbo
+# )
 
-        # set(JPEG_LIBNAME "")
+# set(INCL_DIRS ${INCL_DIRS}
+# ${CMAKE_BINARY_DIR}/libjpeg-turbo/src/libjpeg-turbo/
+# ${CMAKE_BINARY_DIR}/libjpeg-turbo/src/libjpeg-turbo-build/)
+# set(LINK_LIBS ${LINK_LIBS} jpeg)
 
-        # if(WIN32)
-        # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/jpeg.lib)
-        # else()
-        # set(JPEG_LIBNAME ${CMAKE_BINARY_DIR}/bin/libjpeg.so)
-        # endif()
-        # set(INCL_DIRS ${INCL_DIRS} "${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo")
-        set(LINK_LIBS ${LINK_LIBS} "jpeg")
-    endif()
-endif()
+# # ${CMAKE_BINARY_DIR}/libjpeg-turbo/lib/libjpeg.so)
+# endif()
+# endif()
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -349,7 +347,7 @@ if(DATOVIZ_WITH_MSDF)
     FetchContent_Declare(
         tinyxml2
         GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
-        GIT_TAG master
+        GIT_TAG 10.0.0
     )
     FetchContent_MakeAvailable(tinyxml2)
 
@@ -420,6 +418,7 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wno-unused-function \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
+    -Wno-stringop-overread \
     ")
 
 # -Wno-missing-field-initializers

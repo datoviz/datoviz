@@ -10,15 +10,20 @@
 // #include "spirv.h"
 #include "vklite.h"
 
+#define BEGIN_IGNORE_STRICT_PROTOTYPES _Pragma("GCC diagnostic ignored \"-Wstrict-prototypes\"")
+#define END_IGNORE_STRICT_PROTOTYPES   _Pragma("GCC diagnostic pop")
+
 #if HAS_GLSLANG
-#include <StandAlone/resource_limits_c.h>
+BEGIN_IGNORE_STRICT_PROTOTYPES
 #include <glslang/Include/glslang_c_interface.h>
+#include <glslang/Public/resource_limits_c.h>
+END_IGNORE_STRICT_PROTOTYPES
 #endif
 
 
 
 /*************************************************************************************************/
-/*  Functions                                                                                    */
+/*  Functions */
 /*************************************************************************************************/
 
 VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage)

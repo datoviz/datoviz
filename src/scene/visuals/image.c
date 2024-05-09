@@ -128,14 +128,15 @@ void dvz_image_texture(
 DvzId dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data)
 {
     ANN(batch);
-    ANN(data);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
     uvec3 shape = {width, height, 1};
     DvzSize size = width * height * _format_size(format);
     DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
+
+    if (data != NULL)
+        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
 
     return tex;
 }

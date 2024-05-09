@@ -46,7 +46,9 @@
 
 #ifdef __cplusplus
 #define LANG_CPP
-#define EXTERN_C_ON  extern "C" {
+#define EXTERN_C_ON                                                                               \
+    extern "C"                                                                                    \
+    {
 #define EXTERN_C_OFF }
 #else
 #define LANG_C

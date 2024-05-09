@@ -23,6 +23,7 @@
 #pragma GCC diagnostic ignored "-Wsign-conversion"
 // #include "msdfgen.h"
 #include <msdf-atlas-gen/msdf-atlas-gen.h>
+#include <msdf-atlas-gen/types.h>
 #pragma GCC diagnostic pop
 
 using namespace msdfgen;
@@ -229,12 +230,12 @@ int dvz_atlas_generate(DvzAtlas* atlas)
 
     // Set atlas parameters:
     // setDimensions or setDimensionsConstraint to find the best value
-    packer.setDimensionsConstraint(TightAtlasPacker::DimensionsConstraint::SQUARE);
+    packer.setDimensionsConstraint(DimensionsConstraint::SQUARE);
 
     // setScale for a fixed size or setMinimumScale to use the largest that fits
     packer.setMinimumScale(48.0);
 
-    packer.setPadding(5.0);
+    // packer.setPadding(5.0);
     packer.setPixelRange(4.0);
     packer.setMiterLimit(1.0);
 

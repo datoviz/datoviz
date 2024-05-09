@@ -303,7 +303,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
         {
             if (strncmp(
                     ext[i].extensionName, "VK_KHR_portability_subset",
-                    strnlen("VK_KHR_portability_subset", 32)) == 0)
+                    strnlen("VK_KHR_portability_subset", 26)) == 0)
             {
                 log_trace("found portability subset, will need to add extension "
                           "VK_KHR_portability_subset");
