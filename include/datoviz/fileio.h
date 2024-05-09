@@ -116,6 +116,20 @@ dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size,
 
 
 
+/**
+ * Load a PNG image.
+ *
+ * @param size pointer to a variable that will contain the size of the buffer
+ * @param png_buffer pointer to an array of 24-bit RGB values
+ * @param width width of the image
+ * @param height height of the image
+ * @returns RGB buffer
+ */
+DVZ_EXPORT uint8_t*
+dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
+
+
+
 /*************************************************************************************************/
 /*  JPG I/O                                                                                      */
 /*************************************************************************************************/

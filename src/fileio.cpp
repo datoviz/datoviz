@@ -6,9 +6,6 @@
 #include "common.h"
 #include "fpng.h"
 
-// #include <jerror.h>
-// #include <jpeglib.h>
-
 
 
 /*************************************************************************************************/
@@ -252,49 +249,51 @@ int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* s
 
 
 
-/*************************************************************************************************/
-/*  JPG I/O                                                                                      */
-/*************************************************************************************************/
+uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height)
+{
+    ASSERT(size > 0);
+    ANN(bytes);
+    ANN(width);
+    ANN(height);
 
-// uint8_t* dvz_read_jpg(
-//     unsigned long size, unsigned char* jpg_bytes, uint32_t* out_width, uint32_t* out_height)
-// {
-//     struct jpeg_decompress_struct cinfo;
-//     struct jpeg_error_mgr jerr;
-//     uint8_t* image_data = NULL;
+    // Decode the image from memory
+    std::vector<uint8_t> image_data;
+    uint32_t img_width, img_height;
+    uint32_t channels;
+    bool success =
+        fpng::fpng_decode_memory(bytes, size, image_data, img_width, img_height, channels, 3);
 
-//     // Set up error handling
-//     cinfo.err = jpeg_std_error(&jerr);
-//     jpeg_create_decompress(&cinfo);
+    if (!success)
+    {
+        fprintf(stderr, "Failed to decode PNG image\n");
+        return NULL;
+    }
 
-//     // Specify the source of the JPEG data (in-memory buffer)
-//     jpeg_mem_src(&cinfo, jpg_bytes, size);
+    ASSERT(img_width > 0);
+    ASSERT(img_height > 0);
+    ASSERT(image_data.size() > 0);
 
-//     // Read JPEG header and set image parameters
-//     (void)jpeg_read_header(&cinfo, TRUE);
+    // Assign the width and height to the pointers provided
+    *width = img_width;
+    *height = img_height;
 
-//     // Set the output color space to JCS_EXT_RGBX for 32-bit RGBA format
-//     cinfo.out_color_space = JCS_EXT_RGBX;
+    // Check if the decoded image format is RGB (3 channels)
+    if (channels != 3)
+    {
+        fprintf(stderr, "Decoded image is not in RGB format\n");
+        return NULL;
+    }
 
-//     jpeg_start_decompress(&cinfo);
+    // Allocate memory for the decoded image
+    uint8_t* output = (uint8_t*)malloc(img_width * img_height * channels);
+    if (output == NULL)
+    {
+        fprintf(stderr, "Failed to allocate memory for the decoded image\n");
+        return NULL;
+    }
 
-//     *out_width = cinfo.output_width;
-//     *out_height = cinfo.output_height;
+    // Copy the decoded data to the allocated buffer
+    memcpy(output, image_data.data(), img_width * img_height * channels);
 
-//     // Allocate memory for the image data in 32-bit RGBA format
-//     image_data = (uint8_t*)malloc(cinfo.output_width * cinfo.output_height * 4);
-
-//     // Read scanlines and decode the image into 32-bit RGBA format
-//     uint8_t* row_pointer[1];
-//     while (cinfo.output_scanline < cinfo.output_height)
-//     {
-//         row_pointer[0] = &image_data[cinfo.output_scanline * cinfo.output_width * 4];
-//         jpeg_read_scanlines(&cinfo, row_pointer, 1);
-//     }
-
-//     // Clean up and return the image data
-//     jpeg_finish_decompress(&cinfo);
-//     jpeg_destroy_decompress(&cinfo);
-
-//     return image_data;
-// }
+    return output;
+}
