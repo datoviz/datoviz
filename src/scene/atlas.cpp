@@ -196,6 +196,7 @@ void dvz_atlas_load(DvzAtlas* atlas)
     {
         // By default, use the ASCII charset.
         charset = Charset::ASCII;
+        // atlas->codepoints_count = charset.size();
     }
     else
     {
@@ -217,6 +218,7 @@ void dvz_atlas_load(DvzAtlas* atlas)
 int dvz_atlas_generate(DvzAtlas* atlas)
 {
     ANN(atlas);
+    log_debug("starting atlas generation");
 
     dvz_atlas_load(atlas);
 
@@ -245,6 +247,8 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // Get final atlas dimensions
     int width = 0, height = 0;
     packer.getDimensions(width, height);
+    ASSERT(width > 0);
+    ASSERT(height > 0);
 
     // The ImmediateAtlasGenerator class facilitates the generation of the atlas bitmap.
     ImmediateAtlasGenerator<
@@ -268,9 +272,14 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // The glyphs array (or fontGeometry) contains positioning data for typesetting text.
     BitmapConstRef<unsigned char, 3> bitmap = generator.atlasStorage();
 
+    log_debug("atlas generation done!");
+
     uint32_t w = atlas->width = (uint32_t)bitmap.width;
     uint32_t h = atlas->height = (uint32_t)bitmap.height;
     DvzSize size = atlas->width * atlas->height * 3;
+    ASSERT(w > 0);
+    ASSERT(h > 0);
+    ASSERT(size > 0);
 
     // Make a copy of the buffer in the DvzAtlas structure.
     if (atlas->rgb != NULL)
@@ -278,6 +287,7 @@ int dvz_atlas_generate(DvzAtlas* atlas)
         FREE(atlas->rgb);
     }
     atlas->rgb = (uint8_t*)malloc(size);
+    ANN(atlas->rgb);
 
     uint32_t x, y, u, i, j;
     for (y = 0; y < h; y++)
@@ -403,39 +413,57 @@ void dvz_atlas_destroy(DvzAtlas* atlas)
 
 static void serializeDvzAtlas(const DvzAtlas& atlas, const std::string& filename)
 {
+    ASSERT(atlas.width > 0);
+    ASSERT(atlas.height > 0);
+    log_debug("starting serialization of font atlas");
+    uint32_t w = atlas.width;
+    uint32_t h = atlas.height;
+
     std::ofstream file(filename, std::ios::binary);
     if (!file.is_open())
     {
         throw std::runtime_error("Failed to open file for writing");
     }
 
-    // Serialize the basic types directly.
-    file.write(
-        reinterpret_cast<const char*>(&atlas.codepoints_count), sizeof(atlas.codepoints_count));
+    // Glyphs count.
+    uint32_t glyphs_count = static_cast<uint32_t>(atlas.glyphs.size());
+    ASSERT(glyphs_count > 0);
+
+    // Codepoints count.
+    file.write(reinterpret_cast<const char*>(&atlas.codepoints_count), sizeof(uint32_t));
+    // Glyph count.
+    file.write(reinterpret_cast<const char*>(&glyphs_count), sizeof(uint32_t));
+    // Bitmap dimensions.
+    file.write(reinterpret_cast<const char*>(&w), sizeof(uint32_t));
+    file.write(reinterpret_cast<const char*>(&h), sizeof(uint32_t));
+
+    log_trace(
+        "wrote sizes: %d codepoints, %d glyphs, width %d, height %d", //
+        atlas.codepoints_count, glyphs_count, w, h);
 
     // Serialize the codepoints array.
-    for (uint32_t i = 0; i < atlas.codepoints_count; ++i)
+    if (atlas.codepoints_count)
     {
-        file.write(reinterpret_cast<const char*>(&atlas.codepoints[i]), sizeof(uint32_t));
+        log_trace("writing %d code points", atlas.codepoints_count);
+        for (uint32_t i = 0; i < atlas.codepoints_count; ++i)
+        {
+            file.write(reinterpret_cast<const char*>(&atlas.codepoints[i]), sizeof(uint32_t));
+        }
     }
 
-    // Serialize the glyphs vector.
-    uint32_t glyphs_count = static_cast<uint32_t>(atlas.glyphs.size());
-    file.write(reinterpret_cast<const char*>(&glyphs_count), sizeof(glyphs_count));
+    log_trace("writing %d glyphs", glyphs_count);
     for (const auto& glyph : atlas.glyphs)
     {
         file.write(reinterpret_cast<const char*>(&glyph), sizeof(GlyphGeometry));
     }
 
-    // Serialize the atlas bitmap dimensions.
-    file.write(reinterpret_cast<const char*>(&atlas.width), sizeof(atlas.width));
-    file.write(reinterpret_cast<const char*>(&atlas.height), sizeof(atlas.height));
-
     // Calculate and serialize the atlas bitmap data.
     uint32_t bitmap_size = atlas.width * atlas.height * 3; // Assuming RGB format.
+    log_trace("writing %d pixels", bitmap_size);
     file.write(reinterpret_cast<const char*>(atlas.rgb), bitmap_size);
 
     file.close();
+    log_debug("done serialization of font atlas");
 }
 
 static void
@@ -445,10 +473,12 @@ deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* at
     {
         throw std::runtime_error("Invalid input buffer");
     }
+    log_debug("starting deserialization of font atlas");
 
     // Use a pointer to navigate through the byte array.
     unsigned char* ptr = atlas_bytes;
     unsigned long remaining_size = atlas_size;
+    uint32_t glyphs_count;
 
     auto readBytes = [&ptr, &remaining_size](void* dest, size_t size) {
         if (size > remaining_size)
@@ -461,18 +491,28 @@ deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* at
     };
 
     // Deserialize the basic types directly.
-    readBytes(&atlas.codepoints_count, sizeof(atlas.codepoints_count));
+    readBytes(&atlas.codepoints_count, sizeof(uint32_t));
+    readBytes(&glyphs_count, sizeof(uint32_t));
+    readBytes(&atlas.width, sizeof(uint32_t));
+    readBytes(&atlas.height, sizeof(uint32_t));
+
+    log_trace(
+        "read sizes: %d codepoints, %d glyphs, width %d, height %d", //
+        atlas.codepoints_count, glyphs_count, atlas.width, atlas.height);
 
     // Deserialize the codepoints array.
-    atlas.codepoints = new uint32_t[atlas.codepoints_count];
-    for (uint32_t i = 0; i < atlas.codepoints_count; ++i)
+    if (atlas.codepoints_count > 0)
     {
-        readBytes(&atlas.codepoints[i], sizeof(uint32_t));
+        log_trace("reading %d code points", atlas.codepoints_count);
+        atlas.codepoints = new uint32_t[atlas.codepoints_count];
+        for (uint32_t i = 0; i < atlas.codepoints_count; ++i)
+        {
+            readBytes(&atlas.codepoints[i], sizeof(uint32_t));
+        }
     }
 
     // Deserialize the glyphs vector.
-    uint32_t glyphs_count;
-    readBytes(&glyphs_count, sizeof(glyphs_count));
+    log_trace("reading %d glyphs", glyphs_count);
     atlas.glyphs.resize(glyphs_count);
     for (uint32_t i = 0; i < glyphs_count; ++i)
     {
@@ -480,17 +520,22 @@ deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* at
     }
 
     // Deserialize the atlas bitmap dimensions.
-    readBytes(&atlas.width, sizeof(atlas.width));
-    readBytes(&atlas.height, sizeof(atlas.height));
+    log_trace("found atlas %dx%d", atlas.width, atlas.height);
+
+    ASSERT(atlas.width > 0);
+    ASSERT(atlas.height > 0);
 
     // Calculate and deserialize the atlas bitmap data.
-    uint32_t bitmap_size = atlas.width * atlas.height * 3; // Assuming RGB format.
+    uint32_t bitmap_size = atlas.width * atlas.height * 3;
     if (bitmap_size > remaining_size)
     {
         throw std::runtime_error("Buffer overflow detected");
     }
+    log_trace("reading %d pixels", bitmap_size);
     atlas.rgb = new uint8_t[bitmap_size];
     readBytes(atlas.rgb, bitmap_size);
+
+    log_debug("done deserialization of font atlas");
 }
 
 DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
@@ -512,6 +557,8 @@ DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
 
     // Generate the atlas.
     dvz_atlas_generate(atlas);
+    ASSERT(atlas->width > 0);
+    ASSERT(atlas->height > 0);
 
     // Serialize to a binary file.
     serializeDvzAtlas(*atlas, output_file);
@@ -527,12 +574,14 @@ DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
 DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
 {
     ANN(atlas_name);
+    log_debug("importing from font %s, atlas %s", font_name, atlas_name);
 
     // Load the font ttf bytes.
     unsigned long ttf_size = 0;
     unsigned char* ttf_bytes = dvz_resource_font(font_name, &ttf_size);
     ASSERT(ttf_size > 0);
     ANN(ttf_bytes);
+    log_debug("imported TTF font (%s)", pretty_size(ttf_size));
 
     // Create the font.
     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
@@ -545,6 +594,7 @@ DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
     unsigned char* atlas_bytes = dvz_resource_font(atlas_name, &atlas_size);
     ASSERT(atlas_size > 0);
     ANN(atlas_bytes);
+    log_debug("imported font atlas (%s)", pretty_size(atlas_size));
 
     deserializeDvzAtlas(*atlas, atlas_size, atlas_bytes);
 
