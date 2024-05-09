@@ -2,7 +2,6 @@
 # CMake build script
 # -------------------------------------------------------------------------------------------------
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
 cmake_minimum_required(VERSION 3.10)
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -19,13 +18,9 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # -------------------------------------------------------------------------------------------------
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
-option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
-
-# option(DATOVIZ_WITH_JPEG "Build Datoviz with libjpeg" ON)
-option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
-option(DATOVIZ_WITH_VULKAN_SDK "Build Datoviz with Vulkan SDK" ON)
-option(DATOVIZ_WITH_GLSLANG "Build Datoviz with glslang support" OFF)
+option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
+option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -168,149 +163,12 @@ if(DATOVIZ_WITH_GLFW)
     set(LINK_LIBS ${LINK_LIBS} glfw)
 endif()
 
-# ---- Vulkan (SDK or bundled) --------------------------------------------------------------------
+# ---- Vulkan -------------------------------------------------------------------------------------
 set(HAS_GLSLANG 0)
 
-if(DATOVIZ_WITH_VULKAN_SDK)
-    find_package(Vulkan)
-endif()
-
-if(Vulkan_FOUND)
-    message(STATUS "Found Vulkan")
-
-    find_program(GLSLC glslc)
-
-    if(NOT GLSLC)
-        message(FATAL_ERROR "-- glslc executable NOT found")
-    endif()
-
-    # glslang
-    set(glslangValidator "")
-
-    if(DATOVIZ_WITH_GLSLANG)
-        FetchContent_Declare(
-            glslang
-            GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-            GIT_TAG 14.2.0
-        )
-        FetchContent_MakeAvailable(glslang)
-        set(HAS_GLSLANG 1)
-    endif()
-else()
-    # Vulkan headers
-    FetchContent_Declare(
-        vulkan-headers
-        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Headers.git
-        GIT_TAG vulkan-sdk-1.3.280.0
-    )
-    FetchContent_MakeAvailable(vulkan-headers)
-
-    # Vulkan loader
-    FetchContent_Declare(
-        vulkan-loader
-        GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Loader.git
-        GIT_TAG vulkan-sdk-1.3.280.0
-    )
-    FetchContent_MakeAvailable(vulkan-loader)
-
-    # SPIRV-Headers
-    FetchContent_Declare(
-        SPIRV-Headers
-        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-        GIT_TAG vulkan-sdk-1.3.280.0
-    )
-    FetchContent_MakeAvailable(SPIRV-Headers)
-
-    # SPIRV-Tools
-    FetchContent_Declare(
-        SPIRV-Tools
-        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-        GIT_TAG vulkan-sdk-1.3.280.0
-    )
-    FetchContent_MakeAvailable(SPIRV-Tools)
-
-    # glslang
-    FetchContent_Declare(
-        glslang
-        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-        GIT_TAG 14.2.0
-    )
-    FetchContent_MakeAvailable(glslang)
-
-    # glslc
-    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_COPYRIGHT_CHECK ON CACHE BOOL "" FORCE)
-    FetchContent_Declare(
-        glslc
-        GIT_REPOSITORY https://github.com/google/shaderc
-        GIT_TAG v2024.1
-    )
-    FetchContent_MakeAvailable(glslc)
-
-    set(HAS_GLSLANG 1)
-    set(GLSLC glslc_exe)
-endif()
-
-# Link with Vulkan.
-if(Vulkan_FOUND)
-    set(LINK_LIBS ${LINK_LIBS} Vulkan::Vulkan)
-else()
-    set(INCL_DIRS ${INCL_DIRS} ${vulkan-headers_SOURCE_DIR}/include)
-    set(LINK_LIBS ${LINK_LIBS} vulkan)
-endif()
-
-# Link with glslang.
-if(HAS_GLSLANG)
-    set(INCL_DIRS ${INCL_DIRS} ${glslang_SOURCE_DIR})
-    set(LINK_LIBS ${LINK_LIBS} glslang SPIRV glslang-default-resource-limits)
-endif()
-
-# # ---- libjpeg ------------------------------------------------------------------------------------
-# set(HAS_JPEG 0)
-
-# if(DATOVIZ_WITH_JPEG)
-# set(HAS_JPEG 1)
-
-# if(${OS_MACOS})
-# # Use libjpeg, but not native RGBA support
-# find_package(JPEG)
-
-# if(${JPEG_FOUND})
-# set(HAS_JPEG 1)
-# set(INCL_DIRS ${INCL_DIRS} ${JPEG_INCLUDE_DIRS})
-# set(LINK_LIBS ${LINK_LIBS} ${JPEG_LIBRARIES})
-# endif()
-# else()
-# # libjpeg-turbo with RGBA support
-# # Do `sudo apt install nasm` to enable SIMD support
-# ExternalProject_Add(libjpeg-turbo
-# BUILD_COMMAND ""
-# INSTALL_COMMAND ""
-# UPDATE_DISCONNECTED 1
-# CMAKE_ARGS
-# -DENABLE_SHARED=ON
-# -DENABLE_STATIC=OFF
-
-# -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo
-# -DCMAKE_INSTALL_LIBDIR=${CMAKE_BINARY_DIR}/_deps/libjpeg-turbo-build
-# -DCMAKE_POSITION_INDEPENDENT_CODE=ON
-
-# # PREFIX ${CMAKE_BINARY_DIR}/libjpeg-turbo
-# GIT_REPOSITORY https://github.com/libjpeg-turbo/libjpeg-turbo.git
-# GIT_TAG 3.0.3
-# CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/libjpeg-turbo
-# )
-
-# set(INCL_DIRS ${INCL_DIRS}
-# ${CMAKE_BINARY_DIR}/libjpeg-turbo/src/libjpeg-turbo/
-# ${CMAKE_BINARY_DIR}/libjpeg-turbo/src/libjpeg-turbo-build/)
-# set(LINK_LIBS ${LINK_LIBS} jpeg)
-
-# # ${CMAKE_BINARY_DIR}/libjpeg-turbo/lib/libjpeg.so)
-# endif()
-# endif()
+find_library(Vulkan_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" "${CMAKE_SOURCE_DIR}/libs/vulkan" REQUIRED)
+find_program(GLSLC glslc HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
+set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.so")
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -335,14 +193,6 @@ if(DATOVIZ_WITH_MSDF)
     # sudo apt install libtinyxml2-dev libfreetype-dev
     find_package(Freetype REQUIRED)
 
-    # # MSDF
-    # FetchContent_Declare(
-    # msdfgen
-    # GIT_REPOSITORY https://github.com/Chlumsky/msdfgen.git
-    # GIT_TAG master
-    # )
-    # FetchContent_MakeAvailable(msdfgen)
-
     # tinyxml2
     FetchContent_Declare(
         tinyxml2
@@ -359,7 +209,7 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
 
-    set(INCL_DIRS ${INCL_DIRS} ${FREETYPE_INCLUDE_DIR_ft2build})
+    set(INCL_DIRS ${INCL_DIRS} ${msdfgen-atlas_SOURCE_DIR}/msdfgen ${FREETYPE_INCLUDE_DIR_ft2build})
     set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
 endif()
 
@@ -524,7 +374,6 @@ endif("${isSystemDir}" STREQUAL "-1")
 # -------------------------------------------------------------------------------------------------
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
-find_program(GLSLC glslc)
 file(GLOB shader_sources
     "*/glsl/*.vert"
     "*/glsl/*.geom"

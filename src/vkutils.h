@@ -42,6 +42,9 @@ static const char* VALIDATION_IGNORES[] = {
     "but only supports loader interface version 4",
 
     "VkImageMemoryBarrier is being submitted with oldLayout VK_IMAGE_LAYOUT_UNDEFINED",
+
+    // HACK: see https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/7348
+    "vkQueueSubmit():  Hazard WRITE_AFTER_READ for entry 0, VkCommandBuffer",
 };
 
 
