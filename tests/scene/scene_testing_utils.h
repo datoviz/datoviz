@@ -72,25 +72,26 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
 
 static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
 {
-    unsigned long jpg_size = 0;
-    unsigned char* jpg_bytes = dvz_resource_texture("crate", &jpg_size);
-    ASSERT(jpg_size > 0);
-    ANN(jpg_bytes);
+    unsigned long png_size = 0;
+    unsigned char* png_bytes = dvz_resource_testdata("crate", &png_size);
+    ASSERT(png_size > 0);
+    uint32_t w = 512;
+    ASSERT(png_size == w * w * 4);
+    ANN(png_bytes);
 
-    // uint32_t jpg_width = 0, jpg_height = 0;
-    // uint8_t* crate_data = dvz_read_jpg(jpg_size, jpg_bytes, &jpg_width, &jpg_height);
-    // ASSERT(jpg_width > 0);
-    // ASSERT(jpg_height > 0);
-    // out_shape[0] = jpg_width;
-    // out_shape[1] = jpg_height;
-    out_shape[0] = 10;
-    out_shape[1] = 10;
-    out_shape[2] = 1;
+    // dvz_write_png("crate.png", WIDTH, HEIGHT, rgb);
 
-    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], NULL);
+    // uint32_t png_width = 0, png_height = 0;
+    // uint8_t* crate_data = dvz_load_png(png_size, png_bytes, &png_width, &png_height);
+    // ASSERT(png_width > 0);
+    // ASSERT(png_height > 0);
+    out_shape[0] = w;
+    out_shape[1] = w;
+
+    DvzId tex =
+        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], png_bytes);
 
     // FREE(crate_data);
-
     return tex;
 }
 

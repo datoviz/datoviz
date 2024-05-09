@@ -428,7 +428,6 @@ add_custom_target(shaders DEPENDS ${path_shadersc})
 set(path_tex "${CMAKE_BINARY_DIR}/_textures.c")
 set(tex_files
     "${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
-    "${CMAKE_SOURCE_DIR}/data/textures/crate.jpg"
 )
 add_custom_command(
     OUTPUT ${path_tex}
@@ -443,9 +442,8 @@ add_custom_command(
 set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
 set(font_files
 
-    # "${CMAKE_SOURCE_DIR}/data/textures/font_inconsolata.png"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
-    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto_Medium_atlas.bin" # font atlas
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto_Medium_atlas.bin" # serialized font atlas
 
     "${CMAKE_SOURCE_DIR}/data/fonts/NotoSansMono-Light.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
@@ -462,7 +460,7 @@ add_custom_command(
 # Test data.
 set(path_testdata "${CMAKE_BINARY_DIR}/_testdata.c")
 set(testdata_files
-    "${CMAKE_SOURCE_DIR}/data/textures/crate.jpg"
+    "${CMAKE_SOURCE_DIR}/data/textures/crate.rgba"
 )
 add_custom_command(
     OUTPUT ${path_testdata}
