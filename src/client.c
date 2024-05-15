@@ -273,13 +273,13 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
 
 
 
-static int client_thread(void* user_data)
+static void* client_thread(void* user_data)
 {
     DvzClient* client = (DvzClient*)user_data;
     ANN(client);
     log_trace("start client event loop in background thread");
     dvz_client_run(client, client->n_frames);
-    return 0;
+    return NULL;
 }
 
 void dvz_client_thread(DvzClient* client, uint64_t n_frames)

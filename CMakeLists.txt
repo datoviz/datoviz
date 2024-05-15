@@ -167,8 +167,14 @@ endif()
 set(HAS_GLSLANG 0)
 
 find_library(Vulkan_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" "${CMAKE_SOURCE_DIR}/libs/vulkan" REQUIRED)
-find_program(GLSLC glslc HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
-set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.so")
+
+if(${OS_MACOS})
+    find_program(GLSLC "glslc.osx-arm64" HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
+    set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.dylib")
+else()
+    find_program(GLSLC "glslc.linux64" HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
+    set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.so")
+endif()
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -268,9 +274,9 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wno-unused-function \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
-    -Wno-stringop-overread \
     ")
 
+# -Wno-stringop-overread \
 # -Wno-missing-field-initializers
 # -Wno-unused-result \
 # -Wno-variadic-macros")
@@ -477,7 +483,8 @@ add_custom_command(
 
 # These files will be compiled with no warnings.
 set(external_sources
-    "external/tinycthread.c"
+
+    # "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
     "external/fpng.cpp"
     "external/memorymeasure.c"

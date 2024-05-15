@@ -22,13 +22,13 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-static int _thread_callback(void* user_data)
+static void* _thread_callback(void* user_data)
 {
     ANN(user_data);
     dvz_sleep(10);
     *((int*)user_data) = 42;
     log_debug("from thread");
-    return 0;
+    return NULL;
 }
 
 int test_thread_1(TstSuite* suite)
@@ -44,13 +44,13 @@ int test_thread_1(TstSuite* suite)
 
 
 
-static int _mutex_callback(void* user_data)
+static void* _mutex_callback(void* user_data)
 {
     ANN(user_data);
     DvzMutex* mutex = (DvzMutex*)user_data;
     dvz_sleep(10);
     dvz_mutex_lock(mutex);
-    return 0;
+    return NULL;
 }
 
 int test_mutex_1(TstSuite* suite)
@@ -70,13 +70,13 @@ int test_mutex_1(TstSuite* suite)
 
 
 
-static int _cond_callback(void* user_data)
+static void* _cond_callback(void* user_data)
 {
     ANN(user_data);
     DvzCond* cond = (DvzCond*)user_data;
     dvz_sleep(10);
     dvz_cond_signal(cond);
-    return 0;
+    return NULL;
 }
 
 int test_cond_1(TstSuite* suite)

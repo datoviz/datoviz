@@ -11,12 +11,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+// #include "tinycthread.h"
+
 #include "_atomic.h"
 #include "_macros.h"
 #include "_mutex.h"
 #include "_obj.h"
-
-#include "tinycthread.h"
 
 
 
@@ -26,7 +26,7 @@
 
 typedef struct DvzThread DvzThread;
 
-typedef int (*DvzThreadCallback)(void*);
+typedef void* (*DvzThreadCallback)(void*);
 
 
 
@@ -37,7 +37,8 @@ typedef int (*DvzThreadCallback)(void*);
 struct DvzThread
 {
     DvzObject obj;
-    tct_thrd_t thread;
+    // tct_thrd_t thread;
+    pthread_t thread;
     DvzMutex lock;
     DvzAtomic lock_idx; // used to allow nested callbacks and avoid deadlocks: only 1 lock
 };

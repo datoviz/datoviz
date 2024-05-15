@@ -11,10 +11,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+// #include "tinycthread.h"
+#include <pthread.h>
+
 #include "_macros.h"
 #include "_time.h"
-
-#include "tinycthread.h"
 
 
 
@@ -22,7 +23,8 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef tct_cnd_t DvzCond;
+// typedef tct_cnd_t DvzCond;
+typedef pthread_cond_t DvzCond;
 
 
 
@@ -30,7 +32,8 @@ typedef tct_cnd_t DvzCond;
 /*  Macros                                                                                       */
 /*************************************************************************************************/
 
-typedef tct_mtx_t DvzMutex;
+// typedef tct_mtx_t DvzMutex;
+typedef pthread_mutex_t DvzMutex;
 
 
 

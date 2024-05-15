@@ -34,19 +34,19 @@ static bool _is_empty(DvzFifo* fifo)
 /*  FIFO tests                                                                                   */
 /*************************************************************************************************/
 
-static int _fifo_thread_1(void* arg)
+static void* _fifo_thread_1(void* arg)
 {
     DvzFifo* fifo = arg;
     uint8_t* data = dvz_fifo_dequeue(fifo, true);
-    AT(*data == 12);
+    ASSERT(*data == 12);
     // Signal to the caller thread that the dequeue was successfull.
     fifo->user_data = data;
-    return 0;
+    return NULL;
 }
 
 
 
-static int _fifo_thread_2(void* arg)
+static void* _fifo_thread_2(void* arg)
 {
     DvzFifo* fifo = arg;
     // NOTE: this pointer will be FREE-ed by the main thread (as user_data).
@@ -59,7 +59,7 @@ static int _fifo_thread_2(void* arg)
         dvz_sleep(10);
     }
     dvz_fifo_enqueue(fifo, NULL);
-    return 0;
+    return NULL;
 }
 
 

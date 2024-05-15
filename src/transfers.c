@@ -23,12 +23,12 @@
 /*************************************************************************************************/
 
 // Process for the deq proc #0, which encompasses the two queues UPLOAD and DOWNLOAD.
-static int _thread_transfers(void* user_data)
+static void* _thread_transfers(void* user_data)
 {
     DvzTransfers* transfers = (DvzTransfers*)user_data;
     ANN(transfers);
     dvz_deq_dequeue_loop(transfers->deq, DVZ_TRANSFER_PROC_UD);
-    return 0;
+    return NULL;
 }
 
 
