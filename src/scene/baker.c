@@ -26,7 +26,9 @@ static void _check_sizes(DvzBaker* baker)
     // Compute the sum of the sizes of all attributes in each vertex binding.
     for (uint32_t attr_idx = 0; attr_idx < baker->attr_count; attr_idx++)
     {
-        sizes[attr_idx] += baker->vertex_attrs[attr_idx].item_size;
+        uint32_t binding_idx = baker->vertex_attrs[attr_idx].binding_idx;
+        ASSERT(binding_idx < DVZ_MAX_VERTEX_BINDINGS);
+        sizes[binding_idx] += baker->vertex_attrs[attr_idx].item_size;
     }
 
     // The vertex binding stride should be larger than, or equal, to that sum.
