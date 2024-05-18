@@ -73,6 +73,15 @@ struct DvzViewport
     // TODO: aspect ratio
 };
 
+static void dvz_viewport_print(DvzViewport* viewport)
+{
+    printf(
+        "viewport: screen %dx%d, fb %dx%d, margins %.0f %.0f %.0f %.0f\n", //
+        viewport->size_screen[0], viewport->size_screen[1],                //
+        viewport->size_framebuffer[0], viewport->size_framebuffer[1],      //
+        viewport->margins[0], viewport->margins[1], viewport->margins[2], viewport->margins[3]);
+}
+
 
 
 EXTERN_C_ON
