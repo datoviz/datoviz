@@ -265,6 +265,7 @@ struct DvzRequest
     DvzRequestContent content; // details on the action
     int tag;                   // optional tag
     int flags;                 // custom flags
+    const char* desc;          // optional string
 };
 
 
@@ -330,6 +331,13 @@ DVZ_EXPORT void dvz_batch_clear(DvzBatch* batch);
 /**
  */
 DVZ_EXPORT void dvz_batch_add(DvzBatch* batch, DvzRequest req);
+
+
+
+/**
+ * Set the description of the last added request.
+ */
+DVZ_EXPORT void dvz_batch_desc(DvzBatch* batch, const char* desc);
 
 
 

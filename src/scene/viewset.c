@@ -89,7 +89,7 @@ static inline void _update_viewport(DvzView* view)
     ANN(view);
     DvzViewport viewport = dvz_viewport(view->offset, view->shape, 0);
     dvz_viewport_margins(&viewport, view->margins);
-    dvz_viewport_print(&viewport);
+    // dvz_viewport_print(&viewport);
     dvz_dual_data(&view->dual, 0, 1, &viewport);
     dvz_dual_update(&view->dual);
 }
@@ -223,6 +223,7 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
     // NOTE: the view holds the DvzViewport dual.
     log_trace("create view dual");
     view->dual = dvz_dual_dat(viewset->batch, sizeof(DvzViewport), DVZ_DAT_FLAGS_MAPPABLE);
+    dvz_batch_desc(viewset->batch, "viewport");
 
     dvz_view_resize(view, offset, shape);
     dvz_list_append(viewset->views, (DvzListItem){.p = view});

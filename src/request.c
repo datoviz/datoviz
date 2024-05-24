@@ -240,12 +240,13 @@ static void _print_create_dat(DvzRequest* req)
     printf(
         "- action: create\n"
         "  type: dat\n"
+        "  desc: %s\n"
         "  id: 0x%" PRIx64 "\n"
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n"
         "    size: %" PRId64 "\n",
-        req->id, req->flags, req->content.dat.type, req->content.dat.size);
+        req->desc, req->id, req->flags, req->content.dat.type, req->content.dat.size);
 }
 
 static void _print_resize_dat(DvzRequest* req)
@@ -432,11 +433,12 @@ static void _print_create_graphics(DvzRequest* req)
     printf(
         "- action: create\n"
         "  type: graphics\n"
+        "  desc: %s\n"
         "  id: 0x%" PRIx64 "\n"
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n",
-        req->id, req->flags, req->content.graphics.type);
+        req->desc, req->id, req->flags, req->content.graphics.type);
 }
 
 
@@ -1006,6 +1008,21 @@ void dvz_batch_add(DvzBatch* batch, DvzRequest req)
 
     // Append the request.
     batch->requests[batch->count++] = req;
+}
+
+
+
+void dvz_batch_desc(DvzBatch* batch, const char* desc)
+{
+    // Set the description of the last added request (because the DvzRequest struct returned by the
+    // request functions is a copy of the structure saved to the batch, so we can't update the
+    // description by modifying this copy).
+
+    ANN(batch);
+    if (desc != NULL && batch->requests != NULL && batch->count >= 1)
+    {
+        batch->requests[batch->count - 1].desc = desc;
+    }
 }
 
 

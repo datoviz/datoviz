@@ -33,6 +33,7 @@ DvzTransform* dvz_transform(DvzBatch* batch, int flags)
     // NOTE: the transform holds the DvzMVP dual.
     log_trace("create transform dual");
     tr->dual = dvz_dual_dat(batch, sizeof(DvzMVP), DVZ_DAT_FLAGS_MAPPABLE);
+    dvz_batch_desc(batch, "MVP");
 
     // Initialize the MVP on initialization.
     dvz_transform_set(tr, dvz_mvp_default());

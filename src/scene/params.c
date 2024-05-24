@@ -33,6 +33,7 @@ DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared)
 
     // Create the dual for the uniform with the params.
     params->dual = dvz_dual_dat(batch, struct_size, DVZ_DAT_FLAGS_MAPPABLE);
+    dvz_batch_desc(batch, "params");
 
     return params;
 }

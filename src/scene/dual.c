@@ -167,8 +167,10 @@ DvzDual dvz_dual_vertex(DvzBatch* batch, uint32_t vertex_count, DvzSize vertex_s
     ASSERT(vertex_count > 0);
     ASSERT(vertex_size > 0);
 
-    DvzId dat_id =
-        dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, flags).id;
+    DvzRequest req =
+        dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, vertex_count * vertex_size, flags);
+    dvz_batch_desc(batch, "vertex");
+    DvzId dat_id = req.id;
     DvzArray* array = dvz_array_struct(vertex_count, vertex_size);
 
     DvzDual dual = dvz_dual(batch, array, dat_id);
@@ -184,8 +186,9 @@ DvzDual dvz_dual_index(DvzBatch* batch, uint32_t index_count, int flags)
     ASSERT(index_count > 0);
 
     DvzSize index_size = sizeof(DvzIndex);
-    DvzId dat_id =
-        dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, flags).id;
+    DvzRequest req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDEX, index_count * index_size, flags);
+    dvz_batch_desc(batch, "index");
+    DvzId dat_id = req.id;
     DvzArray* array = dvz_array_struct(index_count, index_size);
 
     DvzDual dual = dvz_dual(batch, array, dat_id);
@@ -201,7 +204,9 @@ DvzDual dvz_dual_indirect(DvzBatch* batch, bool indexed)
 
     DvzSize size =
         indexed ? sizeof(DvzDrawIndexedIndirectCommand) : sizeof(DvzDrawIndirectCommand);
-    DvzId dat_id = dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDIRECT, size, 0).id;
+    DvzRequest req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_INDIRECT, size, 0);
+    dvz_batch_desc(batch, "indirect");
+    DvzId dat_id = req.id;
     DvzArray* array = dvz_array_struct(1, size);
 
     DvzDual dual = dvz_dual(batch, array, dat_id);
@@ -220,7 +225,9 @@ DvzDual dvz_dual_dat(DvzBatch* batch, DvzSize vertex_size, int flags)
     // struct.
     const uint32_t n_items = 1;
 
-    DvzId dat_id = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, n_items * vertex_size, flags).id;
+    DvzRequest req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, n_items * vertex_size, flags);
+    dvz_batch_desc(batch, "uniform");
+    DvzId dat_id = req.id;
     DvzArray* array = dvz_array_struct(n_items, vertex_size);
 
     DvzDual dual = dvz_dual(batch, array, dat_id);
