@@ -276,18 +276,17 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wno-format-nonliteral \
     ")
 
-# -Wno-stringop-overread \
-# -Wno-missing-field-initializers
-# -Wno-unused-result \
+    # -Wno-missing-field-initializers
+    # -Wno-unused-result \
 # -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------
 if(CC_GCC)
-    # gcc
+# gcc
 
-    # # for fpng
-    # set(GCC_COMPILE_FLAGS "\
-    # -fvisibility=hidden
+# # for fpng
+# set(GCC_COMPILE_FLAGS "\
+# -fvisibility=hidden
     # -fPIC \
     # -fno-strict-aliasing \
     # -fno-omit-frame-pointer \
@@ -298,6 +297,7 @@ if(CC_GCC)
     # -Isrc")
     set(COMMON_FLAGS "${COMMON_FLAGS} \
         -Wlogical-op \
+        -Wno-stringop-overread \
         -fdiagnostics-color=always \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
 
