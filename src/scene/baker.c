@@ -78,7 +78,7 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         log_trace("skipping creation of dat for shared index buffer");
         return;
     }
-    baker->index = dvz_dual_index(baker->batch, index_count, 0);
+    baker->index = dvz_dual_index(baker->batch, index_count, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->index.need_destroy = true;
 }
