@@ -125,6 +125,7 @@ int dvz_run_tests(const char* match)
     TEST(test_alloc_1)
     TEST(test_alloc_2)
     TEST(test_alloc_3)
+    TEST(test_alloc_4)
 
 
     // Testing map.
@@ -225,6 +226,7 @@ int dvz_run_tests(const char* match)
     TEST(test_resources_dat_1)
     TEST(test_resources_tex_1)
     TEST(test_datalloc_1)
+    TEST(test_datalloc_2)
 
     // Testing transfers.
     TEST(test_transfers_buffer_mappable)

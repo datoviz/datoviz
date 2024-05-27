@@ -90,11 +90,49 @@ int test_datalloc_1(TstSuite* suite)
     AT(dat_3->br.offsets[0] >= 128 + 192);
     AT(dat_3->br.size == new_size);
 
-    dvz_datalloc_stats(&ctx->datalloc);
+    // dvz_datalloc_stats(&ctx->datalloc);
 
     // NOTE: resources destruction MUST occur before datalloc destruction.
     // dvz_resources_destroy(&res);
     // dvz_datalloc_destroy(&datalloc);
+    dvz_context_destroy(ctx);
+    return 0;
+}
+
+
+
+int test_datalloc_2(TstSuite* suite)
+{
+    ANN(suite);
+    DvzGpu* gpu = get_gpu(suite);
+    ANN(gpu);
+
+    // Create the resources object.
+    DvzContext* ctx = dvz_context(gpu);
+
+    DvzDat* dat_1 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, 64, 0);
+    ANN(dat_1);
+    // log_error("%d", dat_1->br.offsets[0]);
+
+    // Resize the buffer.
+    dvz_dat_resize(dat_1, 128);
+    // log_error("%d", dat_1->br.offsets[0]);
+
+    // Resize the buffer.
+    dvz_dat_resize(dat_1, 256);
+    // log_error("%d", dat_1->br.offsets[0]);
+
+    DvzDat* dat_2 = dvz_dat(ctx, DVZ_BUFFER_TYPE_STAGING, 64, 0);
+    ANN(dat_2);
+
+    dvz_dat_resize(dat_1, 64);
+    dvz_dat_resize(dat_1, 128);
+    dvz_dat_resize(dat_1, 256);
+    dvz_dat_resize(dat_1, 512);
+
+    log_info("destroy");
+
+    // NOTE: resources destruction MUST occur before datalloc destruction.
     dvz_context_destroy(ctx);
     return 0;
 }
