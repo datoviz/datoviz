@@ -25,6 +25,8 @@ int test_alloc_2(TstSuite*);
 
 int test_alloc_3(TstSuite*);
 
+int test_alloc_4(TstSuite*);
+
 
 
 #endif

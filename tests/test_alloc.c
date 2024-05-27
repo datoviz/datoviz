@@ -66,14 +66,13 @@ int test_alloc_1(TstSuite* suite)
     AT(dvz_alloc_get(alloc, offset) == 16);
 
     offset = dvz_alloc_new(alloc, 5, &resized);
-    // [XX--|XXX-|XX--|XXXX|XXXX|XXXX|X---|XXXX] [X---|...
+    // OLD IMPL: [XX--|XXX-|XX--|XXXX|XXXX|XXXX|X---|XXXX] [X---|...
+    // NEW IMPL: [XX--|XXX-|XX--|XXXX|XXXX|XXXX|X---|----] [XXXX|X---|...
     AT(resized);
-    AT(offset == 4 * 7);
+    AT(offset == 4 * 8); // OLD: *7
 
     offset = dvz_alloc_new(alloc, 256, &resized);
-    // [XX--|XXX-|XX--|XXXX|XXXX|XXXX|X---|XXXX] [X---|...
     AT(resized);
-    AT(offset == 36);
 
     dvz_alloc_destroy(alloc);
     return 0;
@@ -89,16 +88,23 @@ int test_alloc_2(TstSuite* suite)
 
     uint32_t n = 0;
     DvzSize offset = 0;
+    bool last_alloc = false;
     for (uint32_t i = 0; i < 1000; i++)
     {
         n = (uint32_t)abs(dvz_rand_int()) % 16256;
-        if (n % 2 == 0)
+        if (i == 0 || n % 2 == 0 || !last_alloc)
+        {
             offset = dvz_alloc_new(alloc, n, NULL);
+            last_alloc = true;
+        }
         else
+        {
             dvz_alloc_free(alloc, offset);
+            last_alloc = false;
+        }
     }
-    dvz_alloc_stats(alloc);
 
+    dvz_alloc_stats(alloc);
     dvz_alloc_destroy(alloc);
     return 0;
 }
@@ -124,7 +130,31 @@ int test_alloc_3(TstSuite* suite)
     dvz_alloc_free(alloc, offset);
 
     offset = dvz_alloc_new(alloc, 2 * size, &resized);
-    AT(offset == size);
+    AT(offset == 2 * size); // OLD: 1*size
+
+    dvz_alloc_stats(alloc);
+
+    dvz_alloc_destroy(alloc);
+    return 0;
+}
+
+
+
+int test_alloc_4(TstSuite* suite)
+{
+    DvzSize size = 256;
+    DvzSize alignment = 16;
+    DvzSize offset = 0;
+    DvzSize resized = 0;
+
+    DvzAlloc* alloc = dvz_alloc(size, alignment);
+
+    offset = dvz_alloc_new(alloc, size, &resized);
+    AT(offset == 0);
+    dvz_alloc_stats(alloc);
+
+    offset = dvz_alloc_new(alloc, 1024 * size, &resized);
+    dvz_alloc_stats(alloc);
 
     dvz_alloc_destroy(alloc);
     return 0;

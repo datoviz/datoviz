@@ -85,6 +85,7 @@ void dvz_datalloc_stats(DvzDatAlloc* datalloc)
     ANN(datalloc);
     for (uint32_t i = 0; i < sizeof(datalloc->allocators) / sizeof(DvzAlloc*); i++)
     {
+        printf("Buffer type: %d\n", (i / 2 + 2));
         dvz_alloc_stats(datalloc->allocators[i]);
     }
 }
