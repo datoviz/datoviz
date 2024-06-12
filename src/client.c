@@ -209,6 +209,8 @@ int dvz_client_frame(DvzClient* client)
         frame_ev.window_id = window2id(window);
         frame_ev.content.f.frame_idx = client->frame_idx;
         frame_ev.content.f.time = dvz_clock_get(&client->clock);
+        frame_ev.content.f.interval = dvz_clock_interval(&client->clock);
+        dvz_clock_tick(&client->clock);
         dvz_client_event(client, frame_ev);
 
         // Count the number of active windows.

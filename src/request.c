@@ -996,6 +996,8 @@ void dvz_batch_clear(DvzBatch* batch)
 void dvz_batch_add(DvzBatch* batch, DvzRequest req)
 {
     ANN(batch);
+    ANN(batch->requests);
+
     ASSERT(batch->count <= batch->capacity);
 
     // Resize the array if needed.
@@ -1062,6 +1064,7 @@ uint32_t dvz_batch_size(DvzBatch* batch)
 void dvz_batch_print(DvzBatch* batch)
 {
     ANN(batch);
+    ANN(batch->requests);
 
     _print_start();
 
@@ -1078,6 +1081,7 @@ void dvz_batch_print(DvzBatch* batch)
 int dvz_batch_dump(DvzBatch* batch, const char* filename)
 {
     ANN(batch);
+    ANN(batch->requests);
     ANN(filename);
 
     int res = 0;

@@ -53,6 +53,9 @@ typedef struct TestVertex TestVertex;
 
 typedef void (*FillCallback)(TestCanvas* canvas, DvzCommands* cmds, uint32_t cmd_idx);
 
+// Forward declarations.
+typedef struct DvzPresenter DvzPresenter;
+
 
 
 /*************************************************************************************************/
@@ -126,6 +129,7 @@ struct TestVertex
 
 struct GraphicsWrapper
 {
+    DvzPresenter* prt;
     DvzId canvas_id, graphics_id, dat_id, mvp_id, viewport_id;
     DvzViewport viewport;
     DvzMVP mvp;
@@ -357,6 +361,9 @@ static void graphics_commands(DvzBatch* batch, GraphicsWrapper* wrapper)
 static void
 graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, int flags)
 {
+    ANN(batch);
+    ANN(wrapper);
+
     // Make a canvas creation request.
     DvzRequest req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, flags);
 

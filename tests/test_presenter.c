@@ -23,6 +23,7 @@
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
+#include "timer.h"
 
 
 /*************************************************************************************************/
@@ -277,6 +278,16 @@ int test_presenter_2(TstSuite* suite)
 
 
 
+// static unsigned int g_seed;
+
+// static inline void fast_srand(int seed) { g_seed = seed; }
+
+// static inline int fast_rand(void)
+// {
+//     g_seed = (214013 * g_seed + 2531011);
+//     return (g_seed >> 16) & 0x7FFF;
+// }
+
 static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
 {
     ASSERT(n > 0);
@@ -284,11 +295,12 @@ static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
 
     for (uint32_t i = 0; i < n; i++)
     {
-        data[i].pos[0] = -1 + 2 * dvz_rand_float();
-        data[i].pos[1] = -1 + 2 * dvz_rand_float();
+
+        data[i].pos[0] = -1 + 2 * dvz_rand_float(); // 6.1e-5 * fast_rand();
+        data[i].pos[1] = -1 + 2 * dvz_rand_float(); // 6.1e-5 * fast_rand();
         data[i].size = 5;
         dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
-        data[i].color[3] = 224;
+        data[i].color[3] = 255;
     }
 }
 
@@ -394,6 +406,138 @@ int test_presenter_thread(TstSuite* suite)
     dvz_gpu_destroy(gpu);
 
     FREE(wrapper.data);
+    return 0;
+}
+
+
+
+static void _on_frame(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    DvzTimer* timer = (DvzTimer*)ev.user_data;
+    ANN(timer);
+
+    // The timer callbacks are called here.
+    dvz_timer_tick(timer, ev.content.f.time);
+
+    log_info("interval %.6f s", ev.content.f.interval);
+}
+
+static void _timer_callback(DvzTimer* timer, DvzTimerEvent ev)
+{
+    ANN(timer);
+    ANN(ev.item);
+
+    DvzClient* client = (DvzClient*)ev.user_data;
+    ANN(client);
+
+    // Emit a client TIMER event.
+    DvzClientEvent cev = {
+        .type = DVZ_CLIENT_EVENT_TIMER,
+        .content =
+            {
+                .t =
+                    {
+                        .timer_item = ev.item,
+                        .timer_idx = ev.item->timer_idx,
+                        .time = ev.time,
+                        .step_idx = ev.item->count,
+                    },
+            },
+    };
+    dvz_client_event(client, cev);
+}
+
+static void _client_timer_callback(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+
+    GraphicsWrapper* wrapper = (GraphicsWrapper*)ev.user_data;
+    ANN(wrapper);
+    ANN(wrapper->prt);
+    ANN(wrapper->data);
+    ASSERT(wrapper->dat_id != DVZ_ID_NONE);
+    ASSERT(wrapper->n > 0);
+
+    log_info("timer event");
+
+    // This batch will be destroyed automatically in the event loop by the presenter.
+    DvzBatch* batch = dvz_batch();
+    ANN(batch);
+
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        // _random_data(wrapper->n, (DvzGraphicsPointVertex*)wrapper->data);
+        dvz_upload_dat(
+            batch, wrapper->dat_id, 0, //
+            wrapper->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+    }
+    dvz_presenter_submit(wrapper->prt, batch);
+}
+
+int test_presenter_updates(TstSuite* suite)
+{
+    ANN(suite);
+
+    // GPU-side.
+    DvzHost* host = get_host(suite);
+
+    DvzGpu* gpu = make_gpu(host);
+    ANN(gpu);
+
+    // Create a renderer.
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+
+    // Client-side.
+    DvzClient* client = dvz_client(BACKEND);
+    DvzBatch* batch = dvz_batch();
+
+    // Presenter linking the renderer and the client.
+    DvzPresenter* prt = dvz_presenter(rd, client, 0);
+
+    // Batch.
+    const uint32_t n = 1024 * 64;
+    GraphicsWrapper wrapper = {0};
+    wrapper.prt = prt;
+    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_VSYNC);
+    wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
+    _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_presenter_submit(prt, batch);
+
+
+    // Timer.
+    DvzTimer* timer = dvz_timer();
+    ANN(timer);
+
+    DvzTimerItem* item = dvz_timer_new(timer, 0, .1, 0);
+
+    // Calls timer tick at every frame.
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, _on_frame, timer);
+
+    // Push a regular timer event.
+    dvz_timer_callback(timer, item, _timer_callback, client);
+
+    // React to the timer event.
+    dvz_client_callback(
+        client, DVZ_CLIENT_EVENT_TIMER, DVZ_CLIENT_CALLBACK_SYNC, _client_timer_callback,
+        &wrapper);
+
+
+    // Event loop.
+    dvz_client_run(client, N_FRAMES);
+
+
+    // End.
+    dvz_client_destroy(client);
+    dvz_presenter_destroy(prt);
+    // dvz_batch_destroy(batch);
+    dvz_renderer_destroy(rd);
+    dvz_gpu_destroy(gpu);
+
+    // FREE(wrapper.data);
     return 0;
 }
 

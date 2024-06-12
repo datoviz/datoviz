@@ -101,6 +101,7 @@ struct DvzClientFrameEvent
 {
     uint64_t frame_idx;
     double time;
+    double interval;
 };
 
 struct DvzClientTimerEvent

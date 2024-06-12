@@ -30,6 +30,8 @@ int test_presenter_multi(TstSuite*);
 
 int test_presenter_thread(TstSuite*);
 
+int test_presenter_updates(TstSuite*);
+
 int test_presenter_deserialize(TstSuite*);
 
 
