@@ -52,6 +52,11 @@ DvzSize dvz_datalloc_alloc(
 
     DvzSize resized = 0; // will be non-zero if the buffer must be resized
     DvzAlloc** alloc = _get_alloc(datalloc, type, mappable);
+    if (!alloc)
+    {
+        log_error("could not find alloc type %d %s", type, mappable ? "mappable" : "");
+        return 0;
+    }
     // Make the allocation.
     DvzSize offset = dvz_alloc_new(*alloc, req_size, &resized);
 
@@ -85,9 +90,39 @@ void dvz_datalloc_stats(DvzDatAlloc* datalloc)
     ANN(datalloc);
     for (uint32_t i = 0; i < sizeof(datalloc->allocators) / sizeof(DvzAlloc*); i++)
     {
-        printf("Buffer type: %d\n", (i / 2 + 2));
+        printf("Buffer #%d\n", i);
         dvz_alloc_stats(datalloc->allocators[i]);
     }
+}
+
+
+
+void dvz_datalloc_monitoring(DvzDatAlloc* datalloc, DvzAllocMonitor* out)
+{
+    ANN(datalloc);
+
+    DvzAlloc* alloc = NULL;
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_STAGING, true);
+    dvz_alloc_size(alloc, &out->staging[0], &out->staging[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_VERTEX, false);
+    dvz_alloc_size(alloc, &out->vertex[0], &out->vertex[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_VERTEX, true);
+    dvz_alloc_size(alloc, &out->vertex_map[0], &out->vertex_map[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_INDEX, false);
+    dvz_alloc_size(alloc, &out->index[0], &out->index[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_INDEX, true);
+    dvz_alloc_size(alloc, &out->index_map[0], &out->index_map[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_STORAGE, false);
+    dvz_alloc_size(alloc, &out->storage[0], &out->storage[1]);
+
+    alloc = *_get_alloc(datalloc, DVZ_BUFFER_TYPE_STORAGE, true);
+    dvz_alloc_size(alloc, &out->storage_map[0], &out->storage_map[1]);
 }
 
 

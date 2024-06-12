@@ -169,10 +169,13 @@ DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset)
 
 
 
-DvzSize dvz_alloc_size(DvzAlloc* alloc)
+void dvz_alloc_size(DvzAlloc* alloc, DvzSize* out_alloc, DvzSize* out_total)
 {
     ANN(alloc);
-    return alloc->allocated_size;
+    if (out_alloc)
+        *out_alloc = alloc->allocated_size;
+    if (out_total)
+        *out_total = alloc->total_size;
 }
 
 

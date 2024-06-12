@@ -105,9 +105,10 @@ DVZ_EXPORT DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset);
  * Return the total allocated size.
  *
  * @param alloc the DvzAlloc pointer
- * @returns the total allocated size
+ * @param out_alloc the allocated size
+ * @param out_total the total size
  */
-DVZ_EXPORT DvzSize dvz_alloc_size(DvzAlloc* alloc);
+DVZ_EXPORT void dvz_alloc_size(DvzAlloc* alloc, DvzSize* out_alloc, DvzSize* out_total);
 
 /**
  * Show information about the allocations.

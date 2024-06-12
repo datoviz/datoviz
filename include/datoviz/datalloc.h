@@ -20,7 +20,9 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef DvzSize DvzSizePair[2];
 typedef struct DvzDatAlloc DvzDatAlloc;
+typedef struct DvzAllocMonitor DvzAllocMonitor;
 
 
 
@@ -35,6 +37,19 @@ struct DvzDatAlloc
 
     // one dat allocator for each buffer (each type may be mappable or not)
     DvzAlloc* allocators[2 * DVZ_BUFFER_TYPE_COUNT - 1];
+};
+
+
+
+struct DvzAllocMonitor
+{
+    DvzSizePair staging;
+    DvzSizePair vertex;
+    DvzSizePair vertex_map;
+    DvzSizePair index;
+    DvzSizePair index_map;
+    DvzSizePair storage;
+    DvzSizePair storage_map;
 };
 
 
@@ -66,6 +81,10 @@ DVZ_EXPORT DvzSize dvz_datalloc_alloc(
 
 DVZ_EXPORT void
 dvz_datalloc_dealloc(DvzDatAlloc* datalloc, DvzBufferType type, bool mappable, DvzSize offset);
+
+
+
+DVZ_EXPORT void dvz_datalloc_monitoring(DvzDatAlloc* datalloc, DvzAllocMonitor* out);
 
 
 
