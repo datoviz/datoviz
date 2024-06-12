@@ -19,6 +19,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#define DVZ_DIALOG_DEFAULT_PIVOT                                                                  \
+    (vec2) { 0, 0 }
+
 
 
 /*************************************************************************************************/
@@ -56,8 +59,19 @@ typedef enum
 typedef enum
 {
     DVZ_DIALOG_FLAGS_NONE = 0x0000,
-    DVZ_DIALOG_FLAGS_FPS = 0x0007,
+    DVZ_DIALOG_FLAGS_OVERLAY = 0x0001,
+    DVZ_DIALOG_FLAGS_FPS = 0x0003,
 } DvzDialogFlags;
+
+
+
+typedef enum
+{
+    DVZ_DIALOG_CORNER_UPPER_LEFT = 0,
+    DVZ_DIALOG_CORNER_UPPER_RIGHT = 1,
+    DVZ_DIALOG_CORNER_LOWER_LEFT = 2,
+    DVZ_DIALOG_CORNER_LOWER_RIGHT = 3,
+} DvzCorner;
 
 
 
@@ -184,14 +198,50 @@ DVZ_EXPORT void dvz_gui_window_destroy(DvzGuiWindow* gui_window);
 /*************************************************************************************************/
 
 /**
+ *
+ */
+DVZ_EXPORT void dvz_gui_pos(vec2 pos, vec2 pivot);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_gui_corner(DvzCorner corner, vec2 pad);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_gui_size(vec2 size);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT int dvz_gui_flags(int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_gui_alpha(float alpha);
+
+
+
+/**
  * Start a new dialog.
  *
  * @param title the dialog title
  * @param pos the dialog position
  * @param size the dialog size
+ * @param size the pivot
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_gui_dialog_begin(const char* title, vec2 pos, vec2 size, int flags);
+DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);
 
 
 
@@ -207,6 +257,12 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
 /**
  */
 DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value);
+
+
+
+/**
+ */
+DVZ_EXPORT void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...);
 
 
 
@@ -230,7 +286,7 @@ DVZ_EXPORT void dvz_gui_demo(void);
  *
  * @param gui the GUI
  */
-DVZ_EXPORT void dvz_gui_dialog_end(void);
+DVZ_EXPORT void dvz_gui_end(void);
 
 
 

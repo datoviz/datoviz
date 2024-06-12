@@ -46,9 +46,13 @@ int test_gui_offscreen(TstSuite* suite)
     dvz_gui_window_begin(gui_window, 0);
 
     // The GUI code goes here.
-    dvz_gui_dialog_begin("Hello", (vec2){100, 100}, (vec2){200, 200}, 0);
+
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){200, 200});
+    dvz_gui_begin("Hello", 0);
+
     dvz_gui_text("Hello offscreen");
-    dvz_gui_dialog_end();
+    dvz_gui_end();
     // dvz_gui_demo();
 
     // Stop the recording of the GUI code.

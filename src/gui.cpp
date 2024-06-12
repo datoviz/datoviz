@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #include "canvas.h"
+#include "fileio.h"
 #include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"
@@ -59,6 +60,17 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = NULL;
 
+    // Load a font.
+    unsigned long ttf_size = 0;
+    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
+    ASSERT(ttf_size > 0);
+    ANN(ttf_bytes);
+    ImFontConfig font_cfg;
+    font_cfg.FontDataOwnedByAtlas = false;
+    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, ttf_size, 16, &font_cfg);
+
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
+
     INIT(ImGui_ImplVulkan_InitInfo, init_info)
     init_info.Instance = gpu->host->instance;
     init_info.PhysicalDevice = gpu->physical_device;
@@ -67,6 +79,9 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     init_info.QueueFamily = gpu->queues.queue_families[queue_idx];
     init_info.Queue = gpu->queues.queues[queue_idx];
     init_info.DescriptorPool = gpu->dset_pool;
+
+    ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
+    init_info.RenderPass = renderpass->renderpass;
     // init_info.PipelineCache = gpu->pipeline_cache;
     // init_info.Allocator = gpu->allocator;
 
@@ -75,31 +90,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     init_info.ImageCount = 2;
 
     init_info.CheckVkResultFn = _imgui_check_vk_result;
-
-    ASSERT(renderpass->renderpass != VK_NULL_HANDLE);
-    ImGui_ImplVulkan_Init(&init_info, renderpass->renderpass);
-}
-
-
-
-static void _imgui_setup()
-{
-    // ImGuiIO* io = ImGui::GetIO();
-    // int flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar |
-    //             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoNav
-    //             | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoNavInputs |
-    //             ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-    //             ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing;
-    // ImGui::SetNextWindowBgAlpha(0.5f);
-
-    // float distance = 0;
-    // int corner = 0;
-    // ASSERT(corner >= 0);
-    // ImVec2 window_pos = (ImVec2){
-    //     (corner & 1) ? io.DisplaySize.x - distance : distance,
-    //     (corner & 2) ? io.DisplaySize.y - distance : distance};
-    // ImVec2 window_pos_pivot = (ImVec2){(corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f};
-    // ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    ImGui_ImplVulkan_Init(&init_info); //, renderpass->renderpass);
 }
 
 
@@ -166,41 +157,6 @@ static void _imgui_framebuffers(
     *framebuffers = dvz_framebuffers(gpu);
     dvz_framebuffers_attachment(framebuffers, 0, images);
     dvz_framebuffers_create(framebuffers, renderpass);
-}
-
-
-
-static int _imgui_styling(int flags)
-{
-    const ImGuiIO& io = ImGui::GetIO();
-    int imgui_flags = ImGuiWindowFlags_NoSavedSettings;
-
-    if ((flags & DVZ_DIALOG_FLAGS_FPS) != 0)
-    {
-        imgui_flags |= ImGuiWindowFlags_NoTitleBar |        //
-                       ImGuiWindowFlags_NoScrollbar |       //
-                       ImGuiWindowFlags_NoResize |          //
-                       ImGuiWindowFlags_NoCollapse |        //
-                       ImGuiWindowFlags_NoNav |             //
-                       ImGuiWindowFlags_NoNavInputs |       //
-                       ImGuiWindowFlags_NoDecoration |      //
-                       ImGuiWindowFlags_NoMove |            //
-                       ImGuiWindowFlags_NoSavedSettings |   //
-                       ImGuiWindowFlags_NoFocusOnAppearing; //
-        ImGui::SetNextWindowBgAlpha(0.5f);
-
-        // 0 = TL, 1 = TR, 2 = LL, 3 = LR
-        // NOTE: by default, always top right
-        int corner = 1;
-        float distance = 0;
-        ImVec2 window_pos = ImVec2(
-            (corner & 1) ? io.DisplaySize.x - distance : distance,
-            (corner & 2) ? io.DisplaySize.y - distance : distance);
-        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    }
-
-    return imgui_flags;
 }
 
 
@@ -275,7 +231,6 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);
-    _imgui_setup();
     return gui;
 }
 
@@ -454,18 +409,73 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 /*  DearImGui Wrappers                                                                           */
 /*************************************************************************************************/
 
-void dvz_gui_dialog_begin(const char* title, vec2 pos, vec2 size, int flags)
+void dvz_gui_pos(vec2 pos, vec2 pivot)
 {
-    ANN(title);
+    ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Always, ImVec2(pivot[0], pivot[1]));
+}
 
-    // WARNING: the title should be unique for each different dialog!
-    ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_FirstUseEver, ImVec2(0, 0));
+
+void dvz_gui_corner(DvzCorner corner, vec2 pad)
+{
+    // 0 = TL, 1 = TR, 2 = LL, 3 = LR
+    // NOTE: by default, always top right
+    const ImGuiIO& io = ImGui::GetIO();
+    ImVec2 pos = ImVec2(
+        (corner & 1) ? io.DisplaySize.x - pad[0] : pad[0],
+        (corner & 2) ? io.DisplaySize.y - pad[1] : pad[1]);
+    ImVec2 pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+
+    vec2 pos_ = {pos.x, pos.y};
+    vec2 pivot_ = {pivot.x, pivot.y};
+    dvz_gui_pos(pos_, pivot_);
+}
+
+
+
+void dvz_gui_size(vec2 size)
+{
     ImGui::SetNextWindowSize(ImVec2(size[0], size[1]), ImGuiCond_FirstUseEver);
+}
 
-    int imgui_flags = _imgui_styling(flags);
 
+
+int dvz_gui_flags(int flags)
+{
+    int imgui_flags = ImGuiWindowFlags_NoSavedSettings;
+
+    // Overlay.
+    if ((flags & DVZ_DIALOG_FLAGS_OVERLAY) != 0)
+    {
+        imgui_flags |= ImGuiWindowFlags_NoTitleBar |        //
+                       ImGuiWindowFlags_NoScrollbar |       //
+                       ImGuiWindowFlags_NoResize |          //
+                       ImGuiWindowFlags_NoCollapse |        //
+                       ImGuiWindowFlags_NoNav |             //
+                       ImGuiWindowFlags_NoNavInputs |       //
+                       ImGuiWindowFlags_NoDecoration |      //
+                       ImGuiWindowFlags_NoMove |            //
+                       ImGuiWindowFlags_NoFocusOnAppearing; //
+        dvz_gui_alpha(0.5f);
+    }
+
+    return imgui_flags;
+}
+
+
+
+void dvz_gui_alpha(float alpha)
+{
+    ImGui::SetNextWindowBgAlpha(alpha); //
+}
+
+
+
+void dvz_gui_begin(const char* title, int gui_flags)
+{
+    // WARNING: the title should be unique for each different dialog!
+    ANN(title);
     bool open = true;
-    ImGui::Begin(title, &open, imgui_flags);
+    ImGui::Begin(title, &open, gui_flags);
 }
 
 
@@ -483,6 +493,18 @@ void dvz_gui_text(const char* fmt, ...)
 bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
 {
     return ImGui::SliderFloat(name, value, vmin, vmax, "%.5f", 0);
+}
+
+
+
+void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    char overlay[1024] = {0};
+    vsprintf(overlay, fmt, args);
+    ImGui::ProgressBar(fraction, ImVec2(width, height), overlay);
+    va_end(args);
 }
 
 
@@ -514,7 +536,10 @@ void dvz_gui_image(DvzTex* tex, float width, float height)
 
 
 
-void dvz_gui_dialog_end() { ImGui::End(); }
+void dvz_gui_end()
+{
+    ImGui::End(); //
+}
 
 
 
