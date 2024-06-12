@@ -105,7 +105,7 @@ static inline char* pretty_size(DvzSize size)
     {
         u = "bytes";
     }
-    snprintf(_PRETTY_SIZE, 64, "%.3f %s", s, u);
+    snprintf(_PRETTY_SIZE, 64, "%.1f %s", s, u);
     return _PRETTY_SIZE;
 }
 
