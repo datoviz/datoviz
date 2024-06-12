@@ -59,8 +59,7 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         log_trace("skipping creation of shared dat for vertex binding #%d", binding_idx);
         return;
     }
-    bv->dual =
-        dvz_dual_vertex(baker->batch, vertex_count, bv->stride, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+    bv->dual = dvz_dual_vertex(baker->batch, vertex_count, bv->stride, DVZ_DAT_FLAGS_MAPPABLE);
     // NOTE; mark the dual as needing to be destroyed by the library
     bv->dual.need_destroy = true;
 }
@@ -78,7 +77,7 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         log_trace("skipping creation of dat for shared index buffer");
         return;
     }
-    baker->index = dvz_dual_index(baker->batch, index_count, DVZ_DAT_FLAGS_PERSISTENT_STAGING);
+    baker->index = dvz_dual_index(baker->batch, index_count, DVZ_DAT_FLAGS_MAPPABLE);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->index.need_destroy = true;
 }

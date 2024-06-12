@@ -197,15 +197,16 @@ static void _onframe(DvzClient* client, DvzClientEvent ev)
     vec2 dn = {0};
     dvz_axis_mvp(vt->haxis, &mvp, d, dn);
 
-    // log_error("%f %f", d[0], d[1]);
+    log_info("%f %f", d[0], d[1]);
 }
 
 int test_axis_2(TstSuite* suite)
 {
     ANN(suite);
 
-    VisualTest vt = visual_test_start(
-        "axis_2", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
+    int flags =
+        DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_MONITOR | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND;
+    VisualTest vt = visual_test_start("axis_2", VISUAL_TEST_PANZOOM, flags);
 
 
     // Set the ticks and labels.
@@ -223,7 +224,7 @@ int test_axis_2(TstSuite* suite)
 
 
     // Create the visual.
-    int flags = 0;
+    flags = 0;
     DvzAxis* haxis = dvz_axis(vt.batch, flags);
     DvzAxis* vaxis = dvz_axis(vt.batch, flags);
 
@@ -414,10 +415,11 @@ int test_axis_update(TstSuite* suite)
 {
     ANN(suite);
 
-    VisualTest vt = visual_test_start("axis_update", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
+    int flags = DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_MONITOR;
+    VisualTest vt = visual_test_start("axis_update", VISUAL_TEST_PANZOOM, flags);
 
     // Create the visual.
-    int flags = 0;
+    flags = 0;
     DvzAxis* axis = dvz_axis(vt.batch, flags);
 
     // Common axis parameters.
@@ -488,7 +490,7 @@ int test_axis_update(TstSuite* suite)
     dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
 
     vt.user_data = (void*)axis;
-    dvz_app_timer(vt.app, 0, .25, 0);
+    dvz_app_timer(vt.app, 0, .05, 0);
     dvz_app_ontimer(vt.app, _on_timer, &vt);
 
     // visual_test_end(vt);
