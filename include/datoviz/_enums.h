@@ -181,9 +181,10 @@ typedef enum
 {
     DVZ_CANVAS_FLAGS_NONE = 0x0000,
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
-    DVZ_CANVAS_FLAGS_FPS = 0x0003, // NOTE: 1 bit for ImGUI, 1 bit for FPS
-    DVZ_CANVAS_FLAGS_VSYNC = 0x0004,
-    DVZ_CANVAS_FLAGS_PICK = 0x0010,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
+    DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
+    DVZ_CANVAS_FLAGS_PICK = 0x0020,
 } DvzCanvasFlags;
 
 

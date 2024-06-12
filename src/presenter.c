@@ -16,34 +16,13 @@
 #include "surface.h"
 #include "vklite.h"
 #include "vklite_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
+#include "widgets.h"
 
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
-
-static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
-{
-    ANN(gui_window);
-    DvzFps* fps = (DvzFps*)user_data;
-    ANN(fps);
-
-    dvz_gui_dialog_begin("FPS", (vec2){100, 100}, (vec2){140, 70}, DVZ_DIALOG_FLAGS_FPS);
-
-    dvz_fps_tick(fps);
-    dvz_fps_histogram(fps);
-
-    dvz_gui_dialog_end();
-}
-
-
 
 static void _create_canvas(DvzPresenter* prt, DvzRequest req)
 {
@@ -54,12 +33,18 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
 
     DvzRenderer* rd = prt->rd;
     ANN(rd);
+    ANN(rd->ctx);
 
     DvzGpu* gpu = rd->gpu;
     ANN(gpu);
 
     DvzHost* host = gpu->host;
     ANN(host);
+
+    // Flags.
+    bool has_gui = ((req.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
+    bool has_fps = ((req.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
+    bool has_monitor = ((req.flags & (DVZ_CANVAS_FLAGS_MONITOR ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
 
     // When the client receives a REQUEST event with a canvas creation command, it will *also*
     // create a window in the client with the same id and size. The canvas and window will be
@@ -113,7 +98,6 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     rd->ctx->res.img_count = MAX(canvas->render.swapchain.img_count, rd->ctx->res.img_count);
 
     // Create the associated GUI window if requested.
-    bool has_gui = ((req.flags & DVZ_CANVAS_FLAGS_IMGUI) != 0);
     if (has_gui)
     {
         ANN(prt->gui);
@@ -129,10 +113,14 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
         dvz_map_add(prt->maps.guis, req.id, 0, (void*)gui_window);
     }
 
-    bool has_fps = ((req.flags & (DVZ_CANVAS_FLAGS_FPS ^ DVZ_CANVAS_FLAGS_IMGUI)) != 0);
     if (has_fps)
     {
         dvz_presenter_gui(prt, req.id, _gui_callback_fps, &prt->fps);
+    }
+
+    if (has_monitor)
+    {
+        dvz_presenter_gui(prt, req.id, _gui_callback_monitoring, &rd->ctx->datalloc);
     }
 }
 
