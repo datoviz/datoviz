@@ -357,10 +357,12 @@ static void _gui_callback(DvzLoop* loop, void* user_data)
 {
     ANN(loop);
 
-    dvz_gui_dialog_begin("Hello", (vec2){100, 100}, (vec2){400, 400}, 0);
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){400, 400});
+    dvz_gui_begin("Hello", 0);
     // dvz_gui_text("Hello");
     dvz_gui_demo();
-    dvz_gui_dialog_end();
+    dvz_gui_end();
 }
 
 int test_loop_gui(TstSuite* suite)

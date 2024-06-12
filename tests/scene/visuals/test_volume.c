@@ -94,8 +94,9 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
     DvzVisual* visual = (DvzVisual*)user_data;
     ANN(visual);
 
-    dvz_gui_dialog_begin("Parameters", (vec2){50, 50}, (vec2){250, 80}, 0);
-    // dvz_gui_text("Hello world");
+    dvz_gui_pos((vec2){50, 50}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){250, 80});
+    dvz_gui_begin("Parameters", 0);
 
     float* param = visual->user_data;
     ANN(param);
@@ -106,7 +107,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
         dvz_visual_update(visual);
     }
 
-    dvz_gui_dialog_end();
+    dvz_gui_end();
 }
 
 int test_volume_2(TstSuite* suite)

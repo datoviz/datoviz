@@ -448,7 +448,10 @@ int test_presenter_deserialize(TstSuite* suite)
 
 static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 {
-    dvz_gui_dialog_begin("Window title", (vec2){100, 100}, (vec2){400, 200}, 0);
+
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){400, 200});
+    dvz_gui_begin("Window title", 0);
     dvz_gui_text("Hello world");
 
     // NOTE: ImGui code can be called but need C++, unless one uses cimgui and builds it along
@@ -496,7 +499,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
     ANN(tex);
     dvz_gui_image(tex, 300, 50);
 
-    dvz_gui_dialog_end();
+    dvz_gui_end();
 }
 
 int test_presenter_gui(TstSuite* suite)
