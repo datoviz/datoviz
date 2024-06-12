@@ -591,6 +591,7 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzDat, dat, req.id)
     ANN(dat->br.buffer);
     ASSERT(dat->br.size > 0);
+    ANN(req.content.dat_upload.data);
     ASSERT(req.content.dat_upload.size > 0);
 
     // Make sure the target dat is large enough to hold the uploaded data.
@@ -627,7 +628,10 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     }
 
     // We free the copy of the data that had been done by the requester in dvz_upload_dat().
-    FREE(req.content.dat_upload.data);
+    if ((req.flags & DVZ_UPLOAD_FLAGS_NOCOPY) == 0)
+    {
+        FREE(req.content.dat_upload.data);
+    }
     // TODO: if we do not wait, the freeing must wait until the transfer is done.
 
     return NULL;

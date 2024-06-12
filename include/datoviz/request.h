@@ -570,7 +570,7 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size);
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data);
+dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data, int flags);
 
 
 
@@ -619,8 +619,8 @@ DVZ_EXPORT DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape);
  * @param data a pointer to the data to upload
  * @returns the request
  */
-DVZ_EXPORT DvzRequest
-dvz_upload_tex(DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data);
+DVZ_EXPORT DvzRequest dvz_upload_tex(
+    DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, int flags);
 
 
 

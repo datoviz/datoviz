@@ -136,7 +136,7 @@ DvzId dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t 
     DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, 0).id;
 
     if (data != NULL)
-        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
+        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data, 0);
 
     return tex;
 }

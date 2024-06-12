@@ -86,7 +86,7 @@ int test_renderer_1(TstSuite* suite)
         {{+1, -1, 0}, {0, 255, 0, 255}},
         {{+0, +1, 0}, {0, 0, 255, 255}},
     };
-    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data, 0);
 
     // Binding #0: MVP.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
@@ -96,7 +96,7 @@ int test_renderer_1(TstSuite* suite)
 
     DvzMVP mvp = dvz_mvp_default();
     // dvz_show_base64(sizeof(mvp), &mvp);
-    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
+    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
     // Binding #1: viewport.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
@@ -106,7 +106,7 @@ int test_renderer_1(TstSuite* suite)
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     // dvz_show_base64(sizeof(viewport), &viewport);
-    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
+    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
     // Commands.
     dvz_record_begin(batch, board_id);
@@ -202,7 +202,7 @@ int test_renderer_graphics(TstSuite* suite)
         {{+1, -1, 0}, {0, 255, 0, 255}},
         {{+0, +1, 0}, {0, 0, 255, 255}},
     };
-    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data, 0);
 
     // Binding #0: MVP.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
@@ -211,7 +211,7 @@ int test_renderer_graphics(TstSuite* suite)
 
     DvzMVP mvp = dvz_mvp_default();
     // dvz_show_base64(sizeof(mvp), &mvp);
-    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
+    req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
     // Binding #1: viewport.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
@@ -220,7 +220,7 @@ int test_renderer_graphics(TstSuite* suite)
 
     DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
     // dvz_show_base64(sizeof(viewport), &viewport);
-    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
+    req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
     // Commands.
     dvz_record_begin(batch, board_id);
@@ -294,7 +294,7 @@ int test_renderer_resize(TstSuite* suite)
     for (uint32_t i = 0; i < size; i++)
         data[i] = i % 256;
     // NOTE: upload a buffer larger than the dat, checking that automatic resize will work.
-    req = dvz_upload_dat(batch, dat_id, 0, size, data);
+    req = dvz_upload_dat(batch, dat_id, 0, size, data, 0);
     dvz_renderer_request(rd, req);
     FREE(data);
 

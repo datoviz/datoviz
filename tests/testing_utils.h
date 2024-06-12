@@ -376,6 +376,8 @@ graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, in
     wrapper->graphics_id = req.id;
 
     // Create the vertex buffer dat.
+    // NOTE: avoid copy for the vertex buffer, assume the data buffer will stay alive during the
+    // duration of the test.
     req = dvz_create_dat(
         batch, DVZ_BUFFER_TYPE_VERTEX, n * sizeof(DvzGraphicsPointVertex),
         DVZ_DAT_FLAGS_PERSISTENT_STAGING);
@@ -391,7 +393,7 @@ graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, in
     req = dvz_bind_dat(batch, wrapper->graphics_id, 0, wrapper->mvp_id, 0);
 
     wrapper->mvp = dvz_mvp_default();
-    req = dvz_upload_dat(batch, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp);
+    req = dvz_upload_dat(batch, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp, 0);
 
     // Binding #1: viewport.
     req = dvz_create_dat(
@@ -401,7 +403,8 @@ graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, in
     req = dvz_bind_dat(batch, wrapper->graphics_id, 1, wrapper->viewport_id, 0);
 
     wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
-    req = dvz_upload_dat(batch, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport);
+    req =
+        dvz_upload_dat(batch, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport, 0);
 
     // Command buffer.
     graphics_commands(batch, wrapper);
@@ -429,7 +432,7 @@ static void* graphics_scatter(DvzBatch* batch, DvzId dat_id, const uint32_t n)
         data[i].color[3] = 128;
     }
 
-    dvz_upload_dat(batch, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+    dvz_upload_dat(batch, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);
     return data;
 }
 

@@ -111,7 +111,7 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     ANN(batch);
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp, 0);
 
     // dvz_presenter_submit(app->prt, batch);
     dvz_app_submit(app);
@@ -245,7 +245,7 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
-    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp, 0);
 
     dvz_app_submit(app);
 }
@@ -290,7 +290,7 @@ static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
     ANN(batch);
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp);
+    dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), mvp, 0);
 
     dvz_app_submit(app);
 }
@@ -325,7 +325,7 @@ int test_app_arcball(TstSuite* suite)
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
         data[i].color[3] = 128;
     }
-    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);
 
     // Arcball callback.
     DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);
@@ -341,7 +341,7 @@ int test_app_arcball(TstSuite* suite)
     dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
 
     // Submit a dat upload request with the new MVP matrices.
-    dvz_upload_dat(batch, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp);
+    dvz_upload_dat(batch, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp, 0);
 
     dvz_app_onmouse(app, _arcball_mouse, &arc);
     dvz_app_onresize(app, _arcball_resize, &arc);
@@ -385,7 +385,7 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
-    dvz_upload_dat(batch, anim->dat_id, 0, anim->size, data);
+    dvz_upload_dat(batch, anim->dat_id, 0, anim->size, data, 0);
 
     dvz_app_submit(app);
 }
@@ -419,7 +419,7 @@ int test_app_anim(TstSuite* suite)
     }
 
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);
-    dvz_upload_dat(batch, wrapper.dat_id, 0, size, data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, size, data, 0);
 
     AnimStruct anim = {.app = app, .data = data, .dat_id = wrapper.dat_id, .n = n, .size = size};
     dvz_app_timer(app, 0, 1. / 60., 0);

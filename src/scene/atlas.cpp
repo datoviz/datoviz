@@ -379,7 +379,7 @@ DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
     // HACK: Vulkan does not support RGB textures so we create a RGBA texture with a full alpha
     // channel.
     uint8_t* rgba = dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb);
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, rgba);
+    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, rgba, 0);
     FREE(rgba);
 
     return tex;

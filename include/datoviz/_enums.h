@@ -409,6 +409,15 @@ typedef enum
 
 
 
+// Dat upload flags.
+typedef enum
+{
+    DVZ_UPLOAD_FLAGS_NOCOPY = 0x0800, // (avoid data copy/free)
+
+} DvzUploadFlags;
+
+
+
 // Tex dims.
 typedef enum
 {

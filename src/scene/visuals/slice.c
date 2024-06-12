@@ -275,7 +275,7 @@ DvzId dvz_tex_slice(
     uvec3 shape = {width, height, depth};
     DvzSize size = width * height * depth * _format_size(format);
     DvzId tex = dvz_create_tex(batch, DVZ_TEX_3D, format, shape, 0).id;
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data);
+    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data, 0);
 
     return tex;
 }

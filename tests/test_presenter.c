@@ -219,7 +219,7 @@ int test_presenter_2(TstSuite* suite)
             {{+1, -1, 0}, {0, 255, 0, 255}},
             {{+0, +1, 0}, {0, 0, 255, 255}},
         };
-        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
+        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data, 0);
 
         // Binding #0: MVP.
         req = dvz_create_dat(
@@ -229,7 +229,7 @@ int test_presenter_2(TstSuite* suite)
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
-        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
+        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
         // Binding #1: viewport.
         req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
@@ -238,7 +238,7 @@ int test_presenter_2(TstSuite* suite)
 
         DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
         // dvz_show_base64(sizeof(viewport), &viewport);
-        req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
+        req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
         // Command buffer.
         req = dvz_record_begin(batch, canvas_id);
@@ -326,7 +326,7 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
     // Update the data.
     _random_data(s->n, (DvzGraphicsPointVertex*)wrapper->data);
     dvz_upload_dat(
-        batch, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+        batch, wrapper->dat_id, 0, s->n * sizeof(DvzGraphicsPointVertex), wrapper->data, 0);
 
     // // Update the command buffer with the new n.
     // req = dvz_record_begin(batch, wrapper->canvas_id);
@@ -370,7 +370,7 @@ int test_presenter_thread(TstSuite* suite)
     wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
     _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
 
-    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data, 0);
 
     // Submit a client event with type REQUESTS and with a pointer to the requester.
     // The Presenter will register a REQUESTS callback sending the requests to the underlying
@@ -471,7 +471,7 @@ static void _client_timer_callback(DvzClient* client, DvzClientEvent ev)
         // _random_data(wrapper->n, (DvzGraphicsPointVertex*)wrapper->data);
         dvz_upload_dat(
             batch, wrapper->dat_id, 0, //
-            wrapper->n * sizeof(DvzGraphicsPointVertex), wrapper->data);
+            wrapper->n * sizeof(DvzGraphicsPointVertex), wrapper->data, DVZ_UPLOAD_FLAGS_NOCOPY);
     }
     dvz_presenter_submit(wrapper->prt, batch);
 }
@@ -503,7 +503,7 @@ int test_presenter_updates(TstSuite* suite)
     graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_VSYNC);
     wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
     _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
-    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data);
+    dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data, 0);
     dvz_presenter_submit(prt, batch);
 
 
@@ -632,7 +632,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
     // Upload the texture data.
     dvz_upload_tex(
-        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data, 0);
 
     // NOTE: this call needs to be explicit when using the presenter API. The app API automatically
     // calls it so the user doesn't need it.
@@ -689,7 +689,7 @@ int test_presenter_gui(TstSuite* suite)
     for (uint32_t i = 0; i < width; i++)
         dvz_colormap(DVZ_CMAP_HSV, i * 256 / width, tex_data[i]);
     dvz_upload_tex(
-        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data);
+        batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data, 0);
 
     // Texture struct.
     TexStruct tex_struct = {
@@ -787,7 +787,7 @@ int test_presenter_multi(TstSuite* suite)
             {{+1, -1, 0}, {0, 255, 0, 255}},
             {{+0, +1, 0}, {0, 0, 255, 255}},
         };
-        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data);
+        req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data, 0);
 
         // Binding #0: MVP.
         req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
@@ -798,7 +798,7 @@ int test_presenter_multi(TstSuite* suite)
 
         DvzMVP mvp = dvz_mvp_default();
         // dvz_show_base64(sizeof(mvp), &mvp);
-        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp);
+        req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
         // Binding #1: viewport.
         req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
@@ -809,7 +809,7 @@ int test_presenter_multi(TstSuite* suite)
 
         DvzViewport viewport = dvz_viewport_default(WIDTH / 2, HEIGHT / 2);
         // dvz_show_base64(sizeof(viewport), &viewport);
-        dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport);
+        dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
 
         // Command buffer.

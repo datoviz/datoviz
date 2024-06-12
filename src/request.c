@@ -1221,6 +1221,7 @@ void dvz_batch_destroy(DvzBatch* batch)
         dvz_list_destroy(batch->pointers_to_free);
         batch->pointers_to_free = NULL;
     }
+
     // log_trace("destroy batch %u", batch);
     FREE(batch->requests);
     FREE(batch);
@@ -1417,19 +1418,25 @@ DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size)
 
 
 
-DvzRequest dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data)
+DvzRequest
+dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* data, int flags)
 {
     ASSERT(size > 0);
     ANN(data);
 
     CREATE_REQUEST(UPLOAD, DAT);
     req.id = dat;
+    req.flags = flags;
     req.content.dat_upload.offset = offset;
     req.content.dat_upload.size = size;
 
     // NOTE: we make a copy of the data to ensure it lives until the renderer has done processing
     // it.
-    req.content.dat_upload.data = _cpy(size, data);
+    if ((flags & DVZ_UPLOAD_FLAGS_NOCOPY) == 0)
+    {
+        data = _cpy(size, data);
+    }
+    req.content.dat_upload.data = data;
 
     IF_VERBOSE
     _print_upload_dat(&req);
@@ -1475,11 +1482,12 @@ DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape)
 
 
 
-DvzRequest
-dvz_upload_tex(DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data)
+DvzRequest dvz_upload_tex(
+    DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, int flags)
 {
     CREATE_REQUEST(UPLOAD, TEX);
     req.id = tex;
+    req.flags = flags;
 
     memcpy(req.content.tex_upload.offset, offset, sizeof(uvec3));
     memcpy(req.content.tex_upload.shape, shape, sizeof(uvec3));

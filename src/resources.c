@@ -238,6 +238,7 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait)
 {
     ANN(dat);
+    ANN(data);
 
     DvzResources* res = dat->res;
     ANN(res);
