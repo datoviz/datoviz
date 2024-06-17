@@ -143,6 +143,10 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_delete_dat(batch, dat_id);
     dvz_renderer_request(rd, req);
 
+    // Create a graphics deletion request.
+    req = dvz_delete_graphics(batch, graphics_id);
+    dvz_renderer_request(rd, req);
+
     // Destroy the requester and renderer.
     dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
@@ -318,6 +322,11 @@ int test_renderer_resize(TstSuite* suite)
     dvz_renderer_request(rd, req);
     DvzId tex_id = req.id;
 
+    // Create a sampler.
+    req = dvz_create_sampler(batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER);
+    dvz_renderer_request(rd, req);
+    DvzId sampler_id = req.id;
+
     // Resize the tex.
     req = dvz_resize_tex(batch, tex_id, (uvec3){20, 30, 40});
     dvz_renderer_request(rd, req);
@@ -332,6 +341,10 @@ int test_renderer_resize(TstSuite* suite)
 
     // Create a tex deletion request.
     req = dvz_delete_tex(batch, tex_id);
+    dvz_renderer_request(rd, req);
+
+    // Create a sampler deletion request.
+    req = dvz_delete_sampler(batch, sampler_id);
     dvz_renderer_request(rd, req);
 
     // Destroy the requester and renderer.

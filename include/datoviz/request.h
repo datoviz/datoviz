@@ -663,6 +663,17 @@ dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddressMode mode
 
 
 
+/**
+ * Create a request for sampler deletion.
+ *
+ * @param rqr the requester
+ * @param id the sampler id
+ * @returns the deletion request
+ */
+DVZ_EXPORT DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id);
+
+
+
 /*************************************************************************************************/
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
@@ -744,6 +755,17 @@ dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorTy
 DVZ_EXPORT DvzRequest dvz_set_specialization(
     DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size,
     void* value);
+
+
+
+/**
+ * Create a request for graphics deletion.
+ *
+ * @param rqr the requester
+ * @param id the graphics id
+ * @returns the deletion request
+ */
+DVZ_EXPORT DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id);
 
 
 

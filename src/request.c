@@ -404,6 +404,17 @@ static void _print_create_sampler(DvzRequest* req)
         req->content.sampler.filter, req->content.sampler.mode);
 }
 
+static void _print_delete_sampler(DvzRequest* req)
+{
+    log_trace("print_delete_sampler");
+    ANN(req);
+    printf(
+        "- action: delete\n"
+        "  type: sampler\n"
+        "  id: 0x%" PRIx64 "\n",
+        req->id);
+}
+
 
 
 static void _print_create_shader(DvzRequest* req)
@@ -461,6 +472,17 @@ static void _print_create_graphics(DvzRequest* req)
         "  content:\n"
         "    type: %d\n",
         req->desc, req->id, req->flags, req->content.graphics.type);
+}
+
+static void _print_delete_graphics(DvzRequest* req)
+{
+    log_trace("print_delete_graphics");
+    ANN(req);
+    printf(
+        "- action: delete\n"
+        "  type: graphics\n"
+        "  id: 0x%" PRIx64 "\n",
+        req->id);
 }
 
 
@@ -1572,6 +1594,19 @@ DvzRequest dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddre
 
 
 
+DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id)
+{
+    CREATE_REQUEST(DELETE, SAMPLER);
+    req.id = id;
+
+    IF_VERBOSE
+    _print_delete_sampler(&req);
+
+    RETURN_REQUEST
+}
+
+
+
 /*************************************************************************************************/
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
@@ -1799,6 +1834,19 @@ DvzRequest dvz_set_specialization(
 
     IF_VERBOSE
     _print_set_specialization(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id)
+{
+    CREATE_REQUEST(DELETE, GRAPHICS);
+    req.id = id;
+
+    IF_VERBOSE
+    _print_delete_graphics(&req);
 
     RETURN_REQUEST
 }
