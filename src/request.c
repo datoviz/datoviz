@@ -295,6 +295,17 @@ static void _print_upload_dat(DvzRequest* req)
     free(encoded);
 }
 
+static void _print_delete_dat(DvzRequest* req)
+{
+    log_trace("print_delete_dat");
+    ANN(req);
+    printf(
+        "- action: delete\n"
+        "  type: dat\n"
+        "  id: 0x%" PRIx64 "\n",
+        req->id);
+}
+
 
 
 static void _print_create_tex(DvzRequest* req)
@@ -362,6 +373,17 @@ static void _print_upload_tex(DvzRequest* req)
 
     IF_VERBOSE_DATA
     free(encoded);
+}
+
+static void _print_delete_tex(DvzRequest* req)
+{
+    log_trace("print_delete_tex");
+    ANN(req);
+    printf(
+        "- action: delete\n"
+        "  type: tex\n"
+        "  id: 0x%" PRIx64 "\n",
+        req->id);
 }
 
 
@@ -1446,6 +1468,19 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
 
 
 
+DvzRequest dvz_delete_dat(DvzBatch* batch, DvzId id)
+{
+    CREATE_REQUEST(DELETE, DAT);
+    req.id = id;
+
+    IF_VERBOSE
+    _print_delete_dat(&req);
+
+    RETURN_REQUEST
+}
+
+
+
 /*************************************************************************************************/
 /*  Tex                                                                                          */
 /*************************************************************************************************/
@@ -1499,6 +1534,19 @@ DvzRequest dvz_upload_tex(
 
     IF_VERBOSE
     _print_upload_tex(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_delete_tex(DvzBatch* batch, DvzId id)
+{
+    CREATE_REQUEST(DELETE, TEX);
+    req.id = id;
+
+    IF_VERBOSE
+    _print_delete_tex(&req);
 
     RETURN_REQUEST
 }

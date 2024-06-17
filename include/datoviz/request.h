@@ -574,6 +574,17 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
 
 
 
+/**
+ * Create a request for dat deletion.
+ *
+ * @param rqr the requester
+ * @param id the dat id
+ * @returns the deletion request
+ */
+DVZ_EXPORT DvzRequest dvz_delete_dat(DvzBatch* batch, DvzId id);
+
+
+
 /*************************************************************************************************/
 /*  Tex                                                                                          */
 /*************************************************************************************************/
@@ -621,6 +632,17 @@ DVZ_EXPORT DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape);
  */
 DVZ_EXPORT DvzRequest dvz_upload_tex(
     DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, int flags);
+
+
+
+/**
+ * Create a request for tex deletion.
+ *
+ * @param rqr the requester
+ * @param id the tex id
+ * @returns the deletion request
+ */
+DVZ_EXPORT DvzRequest dvz_delete_tex(DvzBatch* batch, DvzId id);
 
 
 

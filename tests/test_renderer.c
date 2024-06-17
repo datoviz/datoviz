@@ -139,6 +139,10 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_delete_board(batch, board_id);
     dvz_renderer_request(rd, req);
 
+    // Create a dat deletion request.
+    req = dvz_delete_dat(batch, dat_id);
+    dvz_renderer_request(rd, req);
+
     // Destroy the requester and renderer.
     dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
@@ -325,6 +329,10 @@ int test_renderer_resize(TstSuite* suite)
     AT(tex->shape[2] == 40);
 
     // NOTE: the board should be automatically destroyed when destroying the renderer.
+
+    // Create a tex deletion request.
+    req = dvz_delete_tex(batch, tex_id);
+    dvz_renderer_request(rd, req);
 
     // Destroy the requester and renderer.
     dvz_batch_destroy(batch);
