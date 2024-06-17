@@ -26,42 +26,6 @@
 
 
 /*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
-// static DvzSize get_attr_size(DvzFormat format)
-// {
-//     switch (format)
-//     {
-//     case DVZ_FORMAT_R32_SFLOAT:
-//         return sizeof(float);
-
-//     case DVZ_FORMAT_R32G32_SFLOAT:
-//         return sizeof(vec2);
-
-//     case DVZ_FORMAT_R32G32B32_SFLOAT:
-//         return sizeof(vec3);
-
-//     case DVZ_FORMAT_R32G32B32A32_SFLOAT:
-//         return sizeof(vec4);
-
-//     case DVZ_FORMAT_R8G8B8A8_UNORM:
-//         return sizeof(cvec4);
-
-//     case DVZ_FORMAT_R8_UNORM:
-//         return sizeof(uint8_t);
-
-//     default:
-//         log_error("DvzFormat %d has not yet been implemented in get_attr_size()", format);
-//         return 0;
-//     }
-//     // TODO: other formats
-//     return 0;
-// }
-
-
-
-/*************************************************************************************************/
 /*  Visual lifecycle                                                                             */
 /*************************************************************************************************/
 
@@ -77,7 +41,8 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     // No callback by default, will just use dvz_visual_instance().
     visual->callback = NULL;
 
-    visual->baker = dvz_baker(batch, 0);
+    // Baker flags: DVZ_BAKER_FLAGS_VERTEX_NONMAPPABLE / DVZ_BAKER_FLAGS_INDEX_NONMAPPABLE.
+    visual->baker = dvz_baker(batch, flags & 0xF00000);
 
     // Create the graphics object.
     DvzRequest req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, 0);

@@ -59,7 +59,10 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         log_trace("skipping creation of shared dat for vertex binding #%d", binding_idx);
         return;
     }
-    bv->dual = dvz_dual_vertex(baker->batch, vertex_count, bv->stride, DVZ_DAT_FLAGS_MAPPABLE);
+    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_VERTEX_NONMAPPABLE) != 0)
+                         ? DVZ_DAT_FLAGS_PERSISTENT_STAGING
+                         : DVZ_DAT_FLAGS_MAPPABLE;
+    bv->dual = dvz_dual_vertex(baker->batch, vertex_count, bv->stride, dual_flags);
     // NOTE; mark the dual as needing to be destroyed by the library
     bv->dual.need_destroy = true;
 }
@@ -77,7 +80,10 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         log_trace("skipping creation of dat for shared index buffer");
         return;
     }
-    baker->index = dvz_dual_index(baker->batch, index_count, DVZ_DAT_FLAGS_MAPPABLE);
+    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_INDEX_NONMAPPABLE) != 0)
+                         ? DVZ_DAT_FLAGS_PERSISTENT_STAGING
+                         : DVZ_DAT_FLAGS_MAPPABLE;
+    baker->index = dvz_dual_index(baker->batch, index_count, dual_flags);
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->index.need_destroy = true;
 }
@@ -93,36 +99,6 @@ static void _create_indirect(DvzBaker* baker, bool indexed)
     // NOTE; mark the dual as needing to be destroyed by the library
     baker->indirect.need_destroy = true;
 }
-
-
-
-// static void _create_descriptor(DvzBaker* baker, uint32_t slot_idx)
-// {
-//     ANN(baker);
-//     ASSERT(slot_idx < baker->slot_count);
-//     log_trace("create baker descriptor #%d, create dat and array", slot_idx);
-//     DvzBakerDescriptor* bd = &baker->descriptors[slot_idx];
-//     ANN(bd);
-
-//     if (bd->shared)
-//     {
-//         log_trace("skipping creation of dat for shared descriptor #%d", slot_idx);
-//         return;
-//     }
-
-//     if (bd->type == DVZ_SLOT_DAT)
-//     {
-//         log_trace("baker create dual dat");
-//         bd->u.dat.dual = dvz_dual_dat(baker->batch, bd->u.dat.item_size,
-//         DVZ_DAT_FLAGS_MAPPABLE);
-//         // NOTE; mark the dual as needing to be destroyed by the library
-//         bd->u.dat.dual.need_destroy = true;
-//     }
-//     else if (bd->type == DVZ_SLOT_TEX)
-//     {
-//         // NOTE: do nothing for now, this is handled by the visual directly
-//     }
-// }
 
 
 
@@ -285,48 +261,6 @@ void dvz_baker_attr(
 
 
 
-// // declare a descriptor slot for a dat
-// void dvz_baker_slot_dat(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size)
-// {
-//     ANN(baker);
-//     baker->descriptors[slot_idx].type = DVZ_SLOT_DAT;
-//     baker->descriptors[slot_idx].slot_idx = slot_idx;
-//     baker->descriptors[slot_idx].u.dat.item_size = item_size;
-//     baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
-
-//     log_trace("declare slot #%d for a dat with an item size %d", slot_idx, item_size);
-// }
-
-
-
-// // declare a descriptor slot for a tex
-// void dvz_baker_slot_tex(DvzBaker* baker, uint32_t slot_idx)
-// {
-//     // NOTE: this is a no op for now, the baker does not yet use the information that a texture
-//     is
-//     // in a given slot.
-
-//     ANN(baker);
-//     baker->descriptors[slot_idx].type = DVZ_SLOT_TEX;
-//     baker->descriptors[slot_idx].slot_idx = slot_idx;
-//     baker->slot_count = MAX(baker->slot_count, slot_idx + 1);
-
-//     log_trace("declare slot #%d for a tex", slot_idx);
-// }
-
-
-
-// void dvz_baker_property(
-//     DvzBaker* baker, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size)
-// {
-//     ANN(baker);
-//     ASSERT(prop_idx < DVZ_MAX_PARAMS);
-//     baker->params[prop_idx] = (DvzBakerParam){
-//         .prop_idx = prop_idx, .slot_idx = slot_idx, .offset = offset, .size = size};
-// }
-
-
-
 void dvz_baker_indirect(DvzBaker* baker)
 {
     ANN(baker);
@@ -339,7 +273,7 @@ void dvz_baker_indirect(DvzBaker* baker)
 /*  Baker sharing                                                                                */
 /*************************************************************************************************/
 
-void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
+void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx)
 {
     ANN(baker);
     // ANN(dual);
@@ -355,23 +289,7 @@ void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* 
 
 
 
-// void dvz_baker_share_binding(DvzBaker* baker, uint32_t binding_idx) //, DvzDual* dual)
-// {
-//     ANN(baker);
-//     // ANN(dual);
-//     ASSERT(binding_idx < baker->slot_count);
-
-//     DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
-//     ANN(bd);
-
-//     log_trace("set shared dual for descriptor binding #%d", binding_idx);
-//     // bd->dual = *dual;
-//     bd->shared = true;
-// }
-
-
-
-void dvz_baker_share_index(DvzBaker* baker) //, DvzDual* dual)
+void dvz_baker_share_index(DvzBaker* baker)
 {
     ANN(baker);
     // ANN(dual);
@@ -541,75 +459,3 @@ void dvz_baker_quads(
     dvz_baker_repeat(baker, attr_idx, 6 * first, 6 * count, 1, quads);
     FREE(quads);
 }
-
-
-
-// void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void* data)
-// {
-//     // NOTE: the data is immediately copied into the baker's dual
-
-//     ANN(baker);
-//     ASSERT(binding_idx < baker->slot_count);
-//     ASSERT(size > 0);
-//     ANN(data);
-
-//     ASSERT(binding_idx < baker->slot_count);
-//     DvzBakerDescriptor* descriptor = &baker->descriptors[binding_idx];
-
-//     DvzDual* dual = &descriptor->u.dat.dual;
-//     if (dual == NULL)
-//     {
-//         log_error("dual is null, please call dvz_baker_create()");
-//         return;
-//     }
-//     ANN(dual);
-
-//     dvz_dual_data(dual, 0, 1, data);
-// }
-
-
-
-// void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data)
-// {
-//     ANN(baker);
-//     ANN(data);
-
-//     ASSERT(prop_idx < DVZ_MAX_PARAMS);
-//     DvzBakerParam* param = &baker->params[prop_idx];
-
-//     uint32_t slot_idx = param->slot_idx;
-//     ASSERT(slot_idx < DVZ_MAX_BINDINGS);
-
-//     DvzSize offset = param->offset;
-//     DvzSize size = param->size;
-
-//     dvz_dual_column(&baker->descriptors[slot_idx].u.dat.dual, offset, size, 0, 1, 1, data);
-// }
-
-
-
-// void dvz_baker_tex(
-//     DvzBaker* baker, uint32_t binding_idx, DvzTexDims dims, DvzFormat format, uvec3 shape,
-//     int flags)
-// {
-
-//     ANN(baker);
-//     ASSERT(binding_idx < baker->slot_count);
-//     // ASSERT(size > 0);
-//     // ANN(data);
-
-//     ASSERT(binding_idx < baker->slot_count);
-//     DvzBakerDescriptor* bd = &baker->descriptors[binding_idx];
-
-//     if (bd->type != DVZ_SLOT_TEX)
-//     {
-//         log_error("descriptor #%d is not a tex", binding_idx);
-//         return;
-//     }
-
-//     bd->u.tex.dims = dims;
-//     bd->u.tex.format = format;
-//     bd->flags = flags;
-//     memcpy(bd->u.tex.shape, shape, sizeof(uvec3));
-//     bd->u.tex.tex = dvz_create_tex(baker->batch, dims, format, shape, flags).id;
-// }

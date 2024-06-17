@@ -38,6 +38,13 @@ typedef struct DvzArray DvzArray;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_BAKER_FLAGS_DEFAULT = 0x00000,
+    DVZ_BAKER_FLAGS_VERTEX_NONMAPPABLE = 0x400000,
+    DVZ_BAKER_FLAGS_INDEX_NONMAPPABLE = 0x500000,
+} DvzBakerFlags;
+
 
 
 /*************************************************************************************************/
