@@ -374,11 +374,11 @@ static void _destroy_resources(DvzResources* res)
     log_trace("context destroy sets of images");
     CONTAINER_DESTROY_ITEMS(DvzImages, res->images, dvz_images_destroy)
 
-    log_trace("context destroy dats");
-    CONTAINER_DESTROY_ITEMS(DvzDat, res->dats, dvz_dat_destroy)
-
     log_trace("context destroy texs");
     CONTAINER_DESTROY_ITEMS(DvzTex, res->texs, dvz_tex_destroy)
+
+    log_trace("context destroy dats");
+    CONTAINER_DESTROY_ITEMS(DvzDat, res->dats, dvz_dat_destroy)
 
     log_trace("context destroy samplers");
     CONTAINER_DESTROY_ITEMS(DvzSampler, res->samplers, dvz_sampler_destroy)
@@ -512,7 +512,9 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
 static void _dat_dealloc(DvzDat* dat)
 {
     ANN(dat);
-    log_debug("deallocate dat, offset %d, size %s", dat->br.offsets[0], pretty_size(dat->br.size));
+    log_debug(
+        "deallocate dat %u, offset %d, size %s", //
+        dat, dat->br.offsets[0], pretty_size(dat->br.size));
 
     bool shared = !_dat_is_standalone(dat);
     bool mappable = !_dat_has_staging(dat);
