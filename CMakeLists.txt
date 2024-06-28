@@ -166,13 +166,13 @@ endif()
 # ---- Vulkan -------------------------------------------------------------------------------------
 set(HAS_GLSLANG 0)
 
-find_library(Vulkan_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" "${CMAKE_SOURCE_DIR}/libs/vulkan" REQUIRED)
+find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${CMAKE_SOURCE_DIR}/libs/vulkan" "$ENV{VULKAN_SDK}/lib" REQUIRED)
 
 if(${OS_MACOS})
-    find_program(GLSLC "glslc.osx-arm64" HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
+    find_program(GLSLC "glslc.osx-arm64" HINTS "${CMAKE_SOURCE_DIR}/bin/vulkan" "$ENV{VULKAN_SDK}/bin" REQUIRED)
     set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.dylib")
 else()
-    find_program(GLSLC "glslc.linux64" HINTS "$ENV{VULKAN_SDK}/bin" "${CMAKE_SOURCE_DIR}/bin/vulkan" REQUIRED)
+    find_program(GLSLC "glslc.linux-64" HINTS "${CMAKE_SOURCE_DIR}/bin/vulkan" "$ENV{VULKAN_SDK}/bin" REQUIRED)
     set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.so")
 endif()
 
@@ -451,8 +451,8 @@ set(font_files
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto_Medium_atlas.bin" # serialized font atlas
 
-    "${CMAKE_SOURCE_DIR}/data/fonts/NotoSansMono-Light.ttf"
-    "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
+    # "${CMAKE_SOURCE_DIR}/data/fonts/NotoSansMono-Light.ttf"
+    # "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")
 add_custom_command(
     OUTPUT ${path_fonts}

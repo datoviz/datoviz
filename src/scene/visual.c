@@ -261,7 +261,7 @@ void dvz_visual_resize(
         (visual->vertex_count == vertex_count) && //
         (visual->index_count == index_count))
     {
-        log_error("skipping unneeded visual resize");
+        log_trace("skipping unneeded visual resize");
         return;
     }
 
