@@ -7,7 +7,13 @@ Upcoming version of Datoviz, an open-source high-performance interactive scienti
 Ubuntu 24.04 notes:
 
 ```bash
+# Install the build and system dependencies.
 sudo apt install build-essential cmake gcc ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
+
+# Install just, see https://github.com/casey/just
+curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+
+# Clone the Datoviz repo and build.
 git clone https://github.com/datoviz/datoviz.git@v0.2x
 cd datoviz
 git submodule update --init
@@ -15,4 +21,3 @@ git submodule update --init
                   # see https://github.com/Chlumsky/msdf-atlas-gen/issues/98
 ./manage.sh build # that one should suceed
 ```
-
