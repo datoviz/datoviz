@@ -125,8 +125,9 @@ int test_slice_1(TstSuite* suite)
     uvec3 shape = {0};
     DvzId tex = load_brain_volume(vt.batch, shape, true);
 
-    // Bind the volume texture to the visual.
-    dvz_slice_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+    if (tex != DVZ_ID_NONE)
+        // Bind the volume texture to the visual.
+        dvz_slice_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 
     // Run the test.
     visual_test_end(vt);
