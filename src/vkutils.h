@@ -321,7 +321,7 @@ static void create_instance(
     }
     else
     {
-        log_warn("disable Vulkan validation layer");
+        log_debug("disable Vulkan validation layer");
         info_inst.enabledLayerCount = 0;
         info_inst.pNext = NULL;
     }

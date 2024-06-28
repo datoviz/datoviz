@@ -222,9 +222,15 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Compile definitions
 # -------------------------------------------------------------------------------------------------
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(ENABLE_VALIDATION_LAYERS 1)
+else()
+    set(ENABLE_VALIDATION_LAYERS 0)
+endif()
+
 set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     LOG_USE_COLOR
-    ENABLE_VALIDATION_LAYERS=1
+    ENABLE_VALIDATION_LAYERS=${ENABLE_VALIDATION_LAYERS}
 
     # Directories.
     ROOT_DIR=\"${CMAKE_SOURCE_DIR}\"
@@ -268,16 +274,18 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wmissing-include-dirs \
     -Wshadow \
     -Wsign-conversion \
-    -Wstrict-overflow=5 \
     -Wundef \
     -Wformat=2 -Winit-self \
+    -Wno-unused-result \
     -Wno-unused-function \
+    -Wno-unused-variable \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
+    -Wno-unused-but-set-variable \
+    -Wno-strict-overflow \
     ")
 
 # -Wno-missing-field-initializers
-# -Wno-unused-result \
 # -Wno-variadic-macros")
 
 # ---- compiler-specific options ------------------------------------------------------------------

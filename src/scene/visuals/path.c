@@ -113,10 +113,12 @@ void dvz_path_position(
     ANN(visual);
     ANN(positions);
     ASSERT(vertex_count > 0);
+
+    uint32_t path_lengths_1[1] = {vertex_count};
     if (path_count <= 1)
     {
         path_count = 1;
-        path_lengths = (uint32_t[]){vertex_count};
+        path_lengths = path_lengths_1;
     }
 
     // Compute the total number of vertices, which is the sum of all path lengths.
