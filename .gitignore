@@ -58,7 +58,7 @@ __pycache__
 datoviz/*.c
 
 # Datoviz-specific
-build
+build*
 screenshots
 .vs
 .vscode

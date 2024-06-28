@@ -12,5 +12,7 @@ git clone https://github.com/datoviz/datoviz.git@v0.2x
 cd datoviz
 git submodule update --init
 ./manage.sh build # there will be an error, you need to call it a second time, fix welcome
+                  # see https://github.com/Chlumsky/msdf-atlas-gen/issues/98
 ./manage.sh build # that one should suceed
 ```
+
