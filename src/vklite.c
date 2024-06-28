@@ -30,7 +30,7 @@
     VkCommandBuffer cb = {0};                                                                     \
     uint32_t iclip = 0;                                                                           \
     uint32_t i = idx;                                                                             \
-    iclip = (cnt) == 1 ? 0 : (MIN(i, (cnt)-1));                                                   \
+    iclip = (cnt) == 1 ? 0 : (MIN(i, (cnt) - 1));                                                 \
     ASSERT(iclip < (cnt));                                                                        \
     cb = cmds->cmds[i];
 

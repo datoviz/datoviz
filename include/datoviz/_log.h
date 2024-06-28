@@ -9,7 +9,8 @@
 #define LOG_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include <stdarg.h>
@@ -19,17 +20,17 @@ extern "C" {
 
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
-typedef void (*log_LockFn)(void* udata, int lock);
+    typedef void (*log_LockFn)(void* udata, int lock);
 
-enum
-{
-    LOG_TRACE,
-    LOG_DEBUG,
-    LOG_INFO,
-    LOG_WARN,
-    LOG_ERROR,
-    LOG_FATAL
-};
+    enum
+    {
+        LOG_TRACE,
+        LOG_DEBUG,
+        LOG_INFO,
+        LOG_WARN,
+        LOG_ERROR,
+        LOG_FATAL
+    };
 
 #ifdef DEBUG
 #define DVZ_DEFAULT_LOG_LEVEL LOG_TRACE
@@ -44,15 +45,15 @@ enum
 #define log_error(...) log_log(LOG_ERROR, __FILENAME__, __LINE__, __VA_ARGS__)
 #define log_fatal(...) log_log(LOG_FATAL, __FILENAME__, __LINE__, __VA_ARGS__)
 
-DVZ_EXPORT void log_set_udata(void* udata);
-DVZ_EXPORT void log_set_lock(log_LockFn fn);
-DVZ_EXPORT void log_set_fp(FILE* fp);
-DVZ_EXPORT void log_set_level(int level);
-DVZ_EXPORT void log_set_quiet(int enable);
+    DVZ_EXPORT void log_set_udata(void* udata);
+    DVZ_EXPORT void log_set_lock(log_LockFn fn);
+    DVZ_EXPORT void log_set_fp(FILE* fp);
+    DVZ_EXPORT void log_set_level(int level);
+    DVZ_EXPORT void log_set_quiet(int enable);
 
-DVZ_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
+    DVZ_EXPORT void log_log(int level, const char* file, int line, const char* fmt, ...);
 
-DVZ_EXPORT void log_set_level_env(void);
+    DVZ_EXPORT void log_set_level_env(void);
 
 #ifdef __cplusplus
 }

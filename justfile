@@ -48,7 +48,7 @@ build_cython:
 # -------------------------------------------------------------------------------------------------
 
 format:
-    find examples/ tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
+    find tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
 
 valgrind args="":
     # NOTE: need to remove -pg compiler option before running valgrind
