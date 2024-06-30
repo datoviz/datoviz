@@ -9,6 +9,8 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/pixel.h"
+#include "datoviz.h"
+#include "datoviz_enums.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"

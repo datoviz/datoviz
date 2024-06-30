@@ -11,8 +11,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../_enums.h"
-#include "../_obj.h"
+#include "_enums.h"
+#include "_obj.h"
+#include "datoviz_enums.h"
 #include "mvp.h"
 #include "params.h"
 #include "viewport.h"

@@ -13,6 +13,7 @@
 
 #include "_enums.h"
 #include "common.h"
+#include "datoviz_enums.h"
 
 #include <vulkan/vulkan.h>
 
