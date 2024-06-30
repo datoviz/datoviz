@@ -9,9 +9,9 @@
 /*************************************************************************************************/
 
 #include "test_animation.h"
+#include "datoviz.h"
 #include "presenter.h"
 #include "renderer.h"
-#include "scene/animation.h"
 #include "scene/app.h"
 #include "test.h"
 #include "testing.h"

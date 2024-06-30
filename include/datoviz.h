@@ -1015,4 +1015,25 @@ DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 
 
 
+/*************************************************************************************************/
+/*  Animations                                                                                   */
+/*************************************************************************************************/
+
+DVZ_EXPORT double dvz_resample(double t0, double t1, double t);
+
+DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
+
+DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
+
+DVZ_EXPORT void
+dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
+
+DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
+
+DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
+
+DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
+
+
+
 #endif
