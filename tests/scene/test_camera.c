@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_camera.h"
+#include "datoviz.h"
 #include "scene/camera.h"
 #include "test.h"
 #include "testing.h"

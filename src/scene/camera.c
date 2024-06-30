@@ -9,6 +9,7 @@
 
 #include "scene/camera.h"
 #include "_macros.h"
+#include "datoviz.h"
 
 
 
