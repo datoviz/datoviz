@@ -248,8 +248,14 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
 
 
@@ -258,8 +264,16 @@ DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
 /*  2D shapes                                                                                    */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 
 
@@ -268,12 +282,30 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 /*  3D shapes                                                                                    */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
 
 
@@ -1020,19 +1052,52 @@ DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 /*  Animations                                                                                   */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT double dvz_resample(double t0, double t1, double t);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void
 dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 
 
@@ -1041,36 +1106,106 @@ DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
+
+
 
 // DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
 // DVZ_EXPORT void dvz_arcball_lock(DvzArcball* arcball, vec3 dir);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 
 
@@ -1079,59 +1214,102 @@ DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 /*  Camera                                                                                       */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up);
 
 
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_reset(DvzCamera* camera);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_zrange(DvzCamera* camera, float near, float far);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void
 dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float top);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_position(DvzCamera* camera, vec3 pos);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_lookat(DvzCamera* camera, vec3 lookat);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_up(DvzCamera* camera, vec3 up);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_perspective(DvzCamera* camera, float fov);
 // field of view angle (in radians)
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_viewproj(DvzCamera* camera, mat4 view, mat4 proj);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_print(DvzCamera* camera);
 
 
 
+/**
+ *
+ */
 DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 
 
@@ -1140,39 +1318,122 @@ DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
+/**
+ *
+ */
 DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_flags(DvzPanzoom* pz, int flags);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim); // FLOAT_MIN/MAX=no lim
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan); // in NDC, gets or sets
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom); // in NDC
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz); // end of pan or zoom interaction
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
 // if (0, 0), gets the xrange, otherwise sets it
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
+
+
+/**
+ *
+ */
 DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 
 
