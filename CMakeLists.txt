@@ -31,6 +31,7 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -190,10 +191,10 @@ if(DATOVIZ_WITH_MSDF)
     set(MSDF_ATLAS_BUILD_STANDALONE OFF)
     set(MSDF_ATLAS_USE_VCPKG OFF)
     set(MSDF_ATLAS_USE_SKIA OFF)
-    set(MSDF_ATLAS_DYNAMIC_RUNTIME ON)
+    set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF)
     set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF)
 
-    set(BUILD_SHARED_LIBS ON)
+    set(BUILD_SHARED_LIBS OFF)
 
     # Freetype is required for msdf-atlas-gen
     # sudo apt install libtinyxml2-dev libfreetype-dev
@@ -207,6 +208,8 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(tinyxml2)
 
+    set_target_properties(tinyxml2 PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
     # MSDF atlas
     FetchContent_Declare(
         msdfgen-atlas
@@ -214,6 +217,25 @@ if(DATOVIZ_WITH_MSDF)
         GIT_TAG master
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
+
+    # Correctly set the target properties for msdfgen targets
+    add_library(msdfgen_ext STATIC IMPORTED)
+    set_target_properties(msdfgen_ext PROPERTIES
+        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-ext.a"
+        POSITION_INDEPENDENT_CODE ON
+    )
+
+    add_library(msdfgen_core STATIC IMPORTED)
+    set_target_properties(msdfgen_core PROPERTIES
+        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
+        POSITION_INDEPENDENT_CODE ON
+    )
+
+    add_library(msdf_atlas_gen STATIC IMPORTED)
+    set_target_properties(msdf_atlas_gen PROPERTIES
+        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/build/libmsdf-atlas-gen.a"
+        POSITION_INDEPENDENT_CODE ON
+    )
 
     set(INCL_DIRS ${INCL_DIRS} ${msdfgen-atlas_SOURCE_DIR}/msdfgen ${FREETYPE_INCLUDE_DIR_ft2build})
     set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
