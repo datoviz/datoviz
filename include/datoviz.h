@@ -312,6 +312,82 @@ DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
 
 
 /*************************************************************************************************/
+/*  Pixel                                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_pixel(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
+/*  Point                                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_point(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_point_alloc(DvzVisual* point, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
 /*  Marker                                                                                       */
 /*************************************************************************************************/
 
@@ -407,6 +483,107 @@ DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
  *
  */
 DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
+/*  Segment                                                                                      */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_segment(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_segment_position(
+    DvzVisual* segment, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_segment_shift(DvzVisual* segment, uint32_t first, uint32_t count, vec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_segment_color(DvzVisual* segment, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_segment_linewidth(
+    DvzVisual* segment, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_segment_cap(
+    DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* initial, DvzCapType* terminal,
+    int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_segment_alloc(DvzVisual* segment, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
+/*  Path                                                                                         */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_path_position(
+    DvzVisual* visual, uint32_t vertex_count, vec3* positions, //
+    uint32_t path_count, uint32_t* path_lengths, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
 
 
 
@@ -725,6 +902,108 @@ DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
  *
  */
 DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
+
+
+
+/*************************************************************************************************/
+/*  Volume                                                                                       */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_volume_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzId dvz_tex_volume(
+    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
+    void* data);
+
+
+
+/*************************************************************************************************/
+/*  Slice                                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_slice_position(
+    DvzVisual* slice, uint32_t first, uint32_t count, //
+    vec3* p0, vec3* p1, vec3* p2, vec3* p3, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_slice_texcoords(
+    DvzVisual* slice, uint32_t first, uint32_t count, //
+    vec3* uvw0, vec3* uvw1, vec3* uvw2, vec3* uvw3, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_slice_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_slice_alloc(DvzVisual* slice, uint32_t item_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzId dvz_tex_slice(
+    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
+    void* data);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 
 
 

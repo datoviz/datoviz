@@ -10,6 +10,7 @@
 
 #include "test_app.h"
 #include "canvas.h"
+#include "datoviz.h"
 #include "presenter.h"
 #include "scene/animation.h"
 #include "scene/app.h"

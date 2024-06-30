@@ -80,12 +80,6 @@ struct DvzVolumeParams
 
 
 
-EXTERN_C_ON
-
-/*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
 static void volume_specialization(DvzVisual* visual)
 {
     ANN(visual);
@@ -110,49 +104,5 @@ static void volume_specialization(DvzVisual* visual)
 }
 
 
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
-/**
- *
- */
-DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_volume_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
-
-
-
-/**
- *
- */
-DVZ_EXPORT DvzId dvz_tex_volume(
-    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
-    void* data);
-
-
-
-EXTERN_C_OFF
 
 #endif
