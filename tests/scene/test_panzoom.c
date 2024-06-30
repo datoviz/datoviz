@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_panzoom.h"
+#include "datoviz.h"
 #include "scene/panzoom.h"
 #include "test.h"
 #include "testing.h"
