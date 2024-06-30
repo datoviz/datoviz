@@ -10,6 +10,7 @@
 #include "scene/scene.h"
 #include "_list.h"
 #include "common.h"
+#include "datoviz.h"
 #include "request.h"
 #include "scene/app.h"
 #include "scene/arcball.h"

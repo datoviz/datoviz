@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz.h"
 #include "request.h"
 #include "scene/app.h"
 #include "scene/axis.h"

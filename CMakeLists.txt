@@ -97,6 +97,7 @@ file(MAKE_DIRECTORY "${ARTIFACTS_DIR}")
 # Include directories
 # -------------------------------------------------------------------------------------------------
 set(INCL_DIRS
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/datoviz
     ${CMAKE_SOURCE_DIR}/external
     ${CMAKE_SOURCE_DIR}/external/imgui
