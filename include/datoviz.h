@@ -54,6 +54,25 @@ typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
 
+typedef struct DvzAtlas DvzAtlas;
+
+// NOTE: we duplicate these common types here for simplicity, best would probably be to
+// define them in a common file such as datoviz_enums.h, used both by the public API header file
+// include/datoviz.h, and by the common internal file _math.h
+typedef uint64_t DvzId;
+
+typedef uint8_t cvec2[2];
+typedef uint8_t cvec3[3];
+typedef uint8_t cvec4[4];
+
+typedef float vec2[2];
+typedef float vec3[3];
+typedef float vec4[4];
+
+typedef double dvec2[2];
+typedef double dvec3[3];
+typedef double dvec4[4];
+
 
 
 /*************************************************************************************************/
@@ -254,6 +273,238 @@ dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values,
  *
  */
 DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
+/*  Glyph                                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_glyph(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_glyph_xywh(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags);
+
+
+
+/*************************************************************************************************/
+/*  Image                                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_image(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_image_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_image_alloc(DvzVisual* image, uint32_t item_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzId
+dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data);
+
+
+
+/*************************************************************************************************/
+/*  Fake sphere                                                                                  */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 
 
 

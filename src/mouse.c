@@ -4,6 +4,7 @@
 
 #include "mouse.h"
 #include "common.h"
+#include "datoviz_enums.h"
 
 
 

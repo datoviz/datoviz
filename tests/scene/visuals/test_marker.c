@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_marker.h"
+#include "datoviz.h"
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"

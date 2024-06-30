@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/volume.h"
+#include "../src/resources_utils.h"
 #include "datoviz.h"
 #include "datoviz_enums.h"
 #include "fileio.h"

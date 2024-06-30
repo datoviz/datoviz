@@ -9,6 +9,8 @@
 
 #include "scene/axis.h"
 #include "_macros.h"
+#include "datoviz.h"
+#include "datoviz_enums.h"
 #include "scene/atlas.h"
 #include "scene/colormaps.h"
 #include "scene/font.h"

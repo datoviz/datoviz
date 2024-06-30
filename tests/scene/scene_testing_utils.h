@@ -15,6 +15,7 @@
 #include "_map.h"
 #include "_math.h"
 #include "board.h"
+#include "datoviz.h"
 #include "fileio.h"
 #include "scene/visuals/image.h"
 #include "scene/visuals/volume.h"

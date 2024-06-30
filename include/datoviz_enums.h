@@ -8,12 +8,16 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                     */
+/*  Types                                                                                        */
 /*************************************************************************************************/
 
+typedef uint64_t DvzSize;
+
+
 
 /*************************************************************************************************/
-/*  Vklite, also used by request.h                                                               */
+/*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
+/*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
 /*************************************************************************************************/
 
 // Buffer type.
@@ -92,10 +96,6 @@ typedef enum
 
 
 
-/*************************************************************************************************/
-/*  Visual-specific enums                                                                        */
-/*************************************************************************************************/
-
 // VkPrimitiveTopology wrapper.
 typedef enum
 {
@@ -109,6 +109,55 @@ typedef enum
 } DvzPrimitiveTopology;
 
 
+
+// VkFormat wrapper.
+typedef enum
+{
+    DVZ_FORMAT_NONE = 0,
+    DVZ_FORMAT_R8_UNORM = 9,
+    DVZ_FORMAT_R8_SNORM = 10,
+    DVZ_FORMAT_R8_UINT = 13,
+    DVZ_FORMAT_R8G8B8_UNORM = 23,
+    DVZ_FORMAT_R8G8B8A8_UNORM = 37,
+    DVZ_FORMAT_R8G8B8A8_UINT = 41,
+    DVZ_FORMAT_B8G8R8A8_UNORM = 44,
+    DVZ_FORMAT_R16_UNORM = 70,
+    DVZ_FORMAT_R16_SNORM = 71,
+    DVZ_FORMAT_R32_UINT = 98,
+    DVZ_FORMAT_R32_SINT = 99,
+    DVZ_FORMAT_R32_SFLOAT = 100,
+    DVZ_FORMAT_R32G32_SFLOAT = 103,
+    DVZ_FORMAT_R32G32B32_SFLOAT = 106,
+    DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,
+} DvzFormat;
+
+
+
+// VkFilter wrapper.
+typedef enum
+{
+    DVZ_FILTER_NEAREST = 0,
+    DVZ_FILTER_LINEAR = 1,
+    DVZ_FILTER_CUBIC_IMG = 1000015000,
+} DvzFilter;
+
+
+
+// VkSamplerAddressMode wrapper.
+typedef enum
+{
+    DVZ_SAMPLER_ADDRESS_MODE_REPEAT = 0,
+    DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+    DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+    DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+} DvzSamplerAddressMode;
+
+
+
+/*************************************************************************************************/
+/*  Visual-specific enums                                                                        */
+/*************************************************************************************************/
 
 // Marker shape.
 // NOTE: the numbers need to correspond to graphics_markers.frag.
