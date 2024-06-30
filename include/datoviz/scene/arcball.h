@@ -55,54 +55,8 @@ struct DvzArcball
 
 
 
-EXTERN_C_ON
-
-/*************************************************************************************************/
-/*  Functions                                                                                    */
-/*************************************************************************************************/
-
-DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
-
-DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
-
-DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
-
-DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
-
-DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
-
-DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
-
-DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
-
-DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
-
-DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
-
-// DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
-
-// DVZ_EXPORT void dvz_arcball_lock(DvzArcball* arcball, vec3 dir);
-
-DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
-
-DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
-
-DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
-
-DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
-
-DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
-
-
-
-/*************************************************************************************************/
-/*  Arcball event functions                                                                      */
-/*************************************************************************************************/
-
 DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
 
 
-
-EXTERN_C_OFF
 
 #endif

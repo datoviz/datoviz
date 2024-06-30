@@ -40,6 +40,14 @@ typedef double dvec2[2];
 typedef double dvec3[3];
 typedef double dvec4[4];
 
+typedef vec2 mat2[2];
+typedef vec3 mat3[3];
+typedef vec4 mat4[4];
+
+typedef dvec2 dmat2[2];
+typedef dvec3 dmat3[3];
+typedef dvec4 dmat4[4];
+
 
 
 /*************************************************************************************************/

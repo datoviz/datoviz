@@ -50,6 +50,7 @@ typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzTransform DvzTransform;
+typedef struct DvzMVP DvzMVP;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
@@ -1033,6 +1034,44 @@ DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
 DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
 DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
+
+DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
+
+DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
+
+DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
+
+DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
+
+DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
+
+DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
+
+DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
+
+DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
+
+// DVZ_EXPORT void dvz_arcball_pan(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
+
+// DVZ_EXPORT void dvz_arcball_lock(DvzArcball* arcball, vec3 dir);
+
+DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
+
+DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
+
+DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
+
+DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
+
+DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 
 
 

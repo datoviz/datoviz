@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_arcball.h"
+#include "datoviz.h"
 #include "scene/arcball.h"
 #include "test.h"
 #include "testing.h"
