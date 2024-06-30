@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_mesh.h"
+#include "datoviz.h"
 #include "renderer.h"
 #include "request.h"
 #include "scene/arcball.h"
@@ -16,7 +17,6 @@
 #include "scene/meshobj.h"
 #include "scene/scene.h"
 #include "scene/scene_testing_utils.h"
-#include "scene/shape.h"
 #include "scene/transform.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"

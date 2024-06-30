@@ -7,7 +7,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/shape.h"
+#include "_log.h"
+#include "_macros.h"
+#include "_math.h"
+
+#include "datoviz.h"
+#include "datoviz_enums.h"
 
 
 

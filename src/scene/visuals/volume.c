@@ -15,7 +15,6 @@
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"
-#include "scene/shape.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 

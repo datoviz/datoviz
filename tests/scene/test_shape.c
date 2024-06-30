@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #include "test_shape.h"
+#include "datoviz.h"
 #include "scene/meshobj.h"
-#include "scene/shape.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"

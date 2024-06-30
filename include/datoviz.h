@@ -54,24 +54,26 @@ typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
 
+typedef struct DvzShape DvzShape;
 typedef struct DvzAtlas DvzAtlas;
 
-// NOTE: we duplicate these common types here for simplicity, best would probably be to
-// define them in a common file such as datoviz_enums.h, used both by the public API header file
-// include/datoviz.h, and by the common internal file _math.h
-typedef uint64_t DvzId;
 
-typedef uint8_t cvec2[2];
-typedef uint8_t cvec3[3];
-typedef uint8_t cvec4[4];
 
-typedef float vec2[2];
-typedef float vec3[3];
-typedef float vec4[4];
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
 
-typedef double dvec2[2];
-typedef double dvec3[3];
-typedef double dvec4[4];
+struct DvzShape
+{
+    DvzShapeType type;
+    uint32_t vertex_count;
+    uint32_t index_count;
+    vec3* pos;
+    vec3* normal;
+    cvec4* color;
+    vec4* texcoords; // u, v, *, a
+    DvzIndex* index;
+};
 
 
 
@@ -81,7 +83,6 @@ typedef double dvec4[4];
 /*************************************************************************************************/
 /*************************************************************************************************/
 
-EXTERN_C_ON
 
 /*************************************************************************************************/
 /*  Scene                                                                                        */
@@ -243,6 +244,40 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
 
 /*************************************************************************************************/
+/*  Shape functions                                                                              */
+/*************************************************************************************************/
+
+DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
+
+DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
+
+
+
+/*************************************************************************************************/
+/*  2D shapes                                                                                    */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
+
+DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
+
+
+
+/*************************************************************************************************/
+/*  3D shapes                                                                                    */
+/*************************************************************************************************/
+
+DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
+
+DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
+
+DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
+
+DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
+
+
+
+/*************************************************************************************************/
 /*  Basic visual                                                                                 */
 /*************************************************************************************************/
 
@@ -273,6 +308,105 @@ dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values,
  *
  */
 DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
+/*  Marker                                                                                       */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_marker(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_mode(DvzVisual* visual, DvzMarkerMode mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_aspect(DvzVisual* visual, DvzMarkerAspect aspect);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_shape(DvzVisual* visual, DvzMarkerShape shape);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
 
 
 
@@ -460,6 +594,92 @@ dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height
 
 
 /*************************************************************************************************/
+/*  Mesh                                                                                         */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_mesh(DvzBatch* batch, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ * vec4: u, v, <unused>, a
+ */
+DVZ_EXPORT void
+dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT
+void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_index(DvzVisual* mesh, uint32_t first, uint32_t count, DvzIndex* values);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags);
+
+
+
+/*************************************************************************************************/
 /*  Fake sphere                                                                                  */
 /*************************************************************************************************/
 
@@ -515,7 +735,5 @@ DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 /*************************************************************************************************/
 
 
-
-EXTERN_C_OFF
 
 #endif

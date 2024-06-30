@@ -18,7 +18,6 @@
 #include "scene/camera.h"
 #include "scene/dual.h"
 #include "scene/scene.h"
-#include "scene/shape.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "testing_utils.h"

@@ -16,7 +16,6 @@
 #include "request.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
-#include "scene/shape.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 

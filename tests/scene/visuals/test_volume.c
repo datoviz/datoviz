@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_volume.h"
+#include "datoviz.h"
 #include "gui.h"
 #include "presenter.h"
 #include "renderer.h"
@@ -19,7 +20,6 @@
 #include "scene/dual.h"
 #include "scene/scene.h"
 #include "scene/scene_testing_utils.h"
-#include "scene/shape.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/basic.h"

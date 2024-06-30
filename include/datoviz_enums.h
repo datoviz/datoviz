@@ -8,10 +8,37 @@
 
 
 /*************************************************************************************************/
+/*  Includes                                                                                     */
+/*************************************************************************************************/
+
+#include <inttypes.h>
+#include <stdbool.h>
+#include <string.h>
+
+
+
+/*************************************************************************************************/
 /*  Types                                                                                        */
 /*************************************************************************************************/
 
+// NOTE: we duplicate these common types here for simplicity, best would probably be to
+// define them in a common file such as datoviz_enums.h, used both by the public API header file
+// include/datoviz.h, and by the common internal file _math.h
 typedef uint64_t DvzSize;
+typedef uint32_t DvzIndex;
+typedef uint64_t DvzId;
+
+typedef uint8_t cvec2[2];
+typedef uint8_t cvec3[3];
+typedef uint8_t cvec4[4];
+
+typedef float vec2[2];
+typedef float vec3[3];
+typedef float vec4[4];
+
+typedef double dvec2[2];
+typedef double dvec3[3];
+typedef double dvec4[4];
 
 
 
@@ -239,6 +266,21 @@ typedef enum
     DVZ_PATH_OPEN,
     DVZ_PATH_CLOSED,
 } DvzPathTopology;
+
+
+
+typedef enum
+{
+    DVZ_SHAPE_NONE,
+    DVZ_SHAPE_SQUARE,
+    DVZ_SHAPE_DISC,
+    DVZ_SHAPE_CUBE,
+    DVZ_SHAPE_SPHERE,
+    DVZ_SHAPE_CYLINDER,
+    DVZ_SHAPE_CONE,
+    DVZ_SHAPE_OBJ,
+    DVZ_SHAPE_OTHER,
+} DvzShapeType;
 
 
 

@@ -14,7 +14,6 @@
 #include "scene/app.h"
 #include "scene/camera.h"
 #include "scene/scene.h"
-#include "scene/shape.h"
 #include "scene/transform.h"
 #include "scene/viewset.h"
 #include "scene/visuals/mesh.h"
