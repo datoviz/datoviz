@@ -47,82 +47,6 @@ typedef double dvec4[4];
 /*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
 /*************************************************************************************************/
 
-// Buffer type.
-// NOTE: the enum index should correspond to the buffer index in the context->buffers container
-typedef enum
-{
-    DVZ_BUFFER_TYPE_UNDEFINED,
-    DVZ_BUFFER_TYPE_STAGING,  // 1
-    DVZ_BUFFER_TYPE_VERTEX,   // 2
-    DVZ_BUFFER_TYPE_INDEX,    // 3
-    DVZ_BUFFER_TYPE_STORAGE,  // 4
-    DVZ_BUFFER_TYPE_UNIFORM,  // 5
-    DVZ_BUFFER_TYPE_INDIRECT, // 6
-} DvzBufferType;
-
-#define DVZ_BUFFER_TYPE_COUNT 6
-
-
-
-// Canvas creation flags.
-typedef enum
-{
-    DVZ_CANVAS_FLAGS_NONE = 0x0000,
-    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
-    DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
-    DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
-    DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
-    DVZ_CANVAS_FLAGS_PICK = 0x0020,
-} DvzCanvasFlags;
-
-
-
-// Shader format.
-typedef enum
-{
-    DVZ_SHADER_SPIRV,
-    DVZ_SHADER_GLSL,
-} DvzShaderFormat;
-
-
-
-// Texture axis.
-typedef enum
-{
-    DVZ_SAMPLER_AXIS_U,
-    DVZ_SAMPLER_AXIS_V,
-    DVZ_SAMPLER_AXIS_W,
-} DvzSamplerAxis;
-
-
-
-// Filter type.
-typedef enum
-{
-    DVZ_SAMPLER_FILTER_MIN,
-    DVZ_SAMPLER_FILTER_MAG,
-} DvzSamplerFilter;
-
-
-
-// Blend type.
-typedef enum
-{
-    DVZ_BLEND_DISABLE,
-    DVZ_BLEND_ENABLE,
-} DvzBlendType;
-
-
-
-// Depth test.
-typedef enum
-{
-    DVZ_DEPTH_TEST_DISABLE,
-    DVZ_DEPTH_TEST_ENABLE,
-} DvzDepthTest;
-
-
-
 // VkPrimitiveTopology wrapper.
 typedef enum
 {
@@ -269,6 +193,7 @@ typedef enum
 
 
 
+// Shape type.
 typedef enum
 {
     DVZ_SHAPE_NONE,
@@ -281,44 +206,6 @@ typedef enum
     DVZ_SHAPE_OBJ,
     DVZ_SHAPE_OTHER,
 } DvzShapeType;
-
-
-
-/*************************************************************************************************/
-/*  Scene                                                                                        */
-/*************************************************************************************************/
-
-// Build status
-typedef enum
-{
-    DVZ_BUILD_CLEAR,
-    DVZ_BUILD_BUSY,
-    DVZ_BUILD_DIRTY,
-} DvzBuildStatus;
-
-
-
-// Panel resizing.
-typedef enum
-{
-    DVZ_PANEL_RESIZE_STRETCH = 0x00,
-
-    DVZ_PANEL_RESIZE_FIXED_WIDTH = 0x01,
-    DVZ_PANEL_RESIZE_FIXED_HEIGHT = 0x02,
-
-    // if these 2 flags are set, FIXED_WIDTH should not be set
-    DVZ_PANEL_RESIZE_FIXED_TOP_LEFT = 0x10,
-    DVZ_PANEL_RESIZE_FIXED_TOP_RIGHT = 0x20,
-
-    // if these 2 flags are set, FIXED_HEIGHT should not be set
-    DVZ_PANEL_RESIZE_FIXED_BOTTOM_LEFT = 0x40,
-    DVZ_PANEL_RESIZE_FIXED_BOTTOM_RIGHT = 0x80,
-
-    DVZ_PANEL_RESIZE_FIXED_SHAPE = 0x03,
-    DVZ_PANEL_RESIZE_FIXED_OFFSET = 0xF0,
-
-    DVZ_PANEL_RESIZE_FIXED = 0xF3,
-} DvzPanelResizing;
 
 
 
