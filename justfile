@@ -69,7 +69,8 @@ cppcheck:
 
 prof:
     gprof build/datoviz gmon.out
-
+exports:
+    nm -D --defined-only build/libdatoviz.so
 
 # -------------------------------------------------------------------------------------------------
 # Tests

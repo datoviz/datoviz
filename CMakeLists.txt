@@ -33,6 +33,7 @@ set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -638,6 +639,9 @@ set_target_properties(libdatoviz PROPERTIES
     # PUBLIC_HEADER include/datoviz/datoviz.h
     OUTPUT_NAME "datoviz"
 )
+
+set_target_properties(libdatoviz PROPERTIES
+    LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map")
 
 if(${OS_WIN32})
     set_target_properties(
