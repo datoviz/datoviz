@@ -468,14 +468,16 @@ DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
  * @param batch the batch
  * @param topology the primitive topology
  * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags);
 
 
 
 /**
- * Set the 3D positions of the visual's vertices.
+ * Set the vertex positions.
  *
+ * @param basic the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
  * @param values the 3D positions of the items to update
@@ -487,8 +489,9 @@ dvz_basic_position(DvzVisual* basic, uint32_t first, uint32_t count, vec3* value
 
 
 /**
- * Set the colors of the visual's vertices.
+ * Set the vertex colors.
  *
+ * @param basic the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
  * @param values the colors of the items to update
@@ -514,14 +517,24 @@ DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
 /*************************************************************************************************/
 
 /**
+ * Create a pixel visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_pixel(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the pixel positions.
  *
+ * @param pixel the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -529,13 +542,13 @@ dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* value
 
 
 /**
- * Function.
+ * Set the pixel colors.
  *
- * @param pixel the pixel
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param pixel the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -543,10 +556,10 @@ dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param pixel the pixel
- * @param item_count the item_count
+ * @param pixel the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count);
 
@@ -557,14 +570,24 @@ DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count);
 /*************************************************************************************************/
 
 /**
+ * Create a point visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_point(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the point positions.
  *
+ * @param point the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -572,13 +595,13 @@ dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* value
 
 
 /**
- * Function.
+ * Set the point colors.
  *
- * @param point the point
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param point the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -586,13 +609,13 @@ dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
- * Function.
+ * Set the point sizes.
  *
- * @param point the point
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param point the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the sizes of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, int flags);
@@ -600,10 +623,10 @@ dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, 
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param point the point
- * @param item_count the item_count
+ * @param pixel the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_point_alloc(DvzVisual* point, uint32_t item_count);
 
@@ -614,47 +637,56 @@ DVZ_EXPORT void dvz_point_alloc(DvzVisual* point, uint32_t item_count);
 /*************************************************************************************************/
 
 /**
+ * Create a marker visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_marker(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the marker mode.
  *
+ * @param visual the visual
+ * @param mode the marker mode, one of DVZ_MARKER_MODE_CODE, DVZ_MARKER_MODE_BITMAP,
+ * DVZ_MARKER_MODE_SDF, DVZ_MARKER_MODE_MSDF, DVZ_MARKER_MODE_MTSDF.
  */
 DVZ_EXPORT void dvz_marker_mode(DvzVisual* visual, DvzMarkerMode mode);
 
 
 
 /**
- * Function.
+ * Set the marker aspect.
  *
  * @param visual the visual
- * @param aspect the aspect
+ * @param aspect the marker aspect, one of DVZ_MARKER_ASPECT_FILLED, DVZ_MARKER_ASPECT_STROKE,
+ * DVZ_MARKER_ASPECT_OUTLINE.
  */
 DVZ_EXPORT void dvz_marker_aspect(DvzVisual* visual, DvzMarkerAspect aspect);
 
 
 
 /**
- * Function.
+ * Set the marker shape.
  *
  * @param visual the visual
- * @param shape the shape
+ * @param shape the marker shape
  */
 DVZ_EXPORT void dvz_marker_shape(DvzVisual* visual, DvzMarkerShape shape);
 
 
 
 /**
- * Function.
+ * Set the marker positions.
  *
- * @param marker the marker
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -662,13 +694,13 @@ dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* val
 
 
 /**
- * Function.
+ * Set the marker sizes.
  *
- * @param marker the marker
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
@@ -676,13 +708,13 @@ dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values
 
 
 /**
- * Function.
+ * Set the marker angles.
  *
- * @param marker the marker
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param point the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the angles of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
@@ -690,13 +722,13 @@ dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* value
 
 
 /**
- * Function.
+ * Set the marker colors.
  *
- * @param marker the marker
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -704,51 +736,51 @@ dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* value
 
 
 /**
- * Function.
+ * Set the marker edge color.
  *
  * @param visual the visual
- * @param value the value
+ * @param value the edge color
  */
 DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
 
 
 
 /**
- * Function.
+ * Set the marker edge width.
  *
  * @param visual the visual
- * @param value the value
+ * @param value the edge width
  */
 DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
 
 
 
 /**
- * Function.
+ * Set the marker's texture.
  *
  * @param visual the visual
- * @param tex the tex
- * @param sampler the sampler
+ * @param tex the texture ID
+ * @param sampler the sampler ID
  */
 DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
 
 
 
 /**
- * Function.
+ * Set the texture scale.
  *
  * @param visual the visual
- * @param value the value
+ * @param value the texture scale
  */
 DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
 
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param marker the marker
- * @param item_count the item_count
+ * @param pixel the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
 
@@ -759,14 +791,25 @@ DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
 /*************************************************************************************************/
 
 /**
+ * Create a segment visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_segment(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the segment positions.
  *
+ * @param segment the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param initial the initial 3D positions of the segments
+ * @param terminal the terminal 3D positions of the segments
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_segment_position(
     DvzVisual* segment, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags);
@@ -774,13 +817,13 @@ DVZ_EXPORT void dvz_segment_position(
 
 
 /**
- * Function.
+ * Set the segment shift.
  *
- * @param segment the segment
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param segment the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_segment_shift(DvzVisual* segment, uint32_t first, uint32_t count, vec4* values, int flags);
@@ -788,13 +831,13 @@ dvz_segment_shift(DvzVisual* segment, uint32_t first, uint32_t count, vec4* valu
 
 
 /**
- * Function.
+ * Set the segment colors.
  *
- * @param segment the segment
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param segment the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_segment_color(DvzVisual* segment, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -802,13 +845,13 @@ dvz_segment_color(DvzVisual* segment, uint32_t first, uint32_t count, cvec4* val
 
 
 /**
- * Function.
+ * Set the segment line widths.
  *
- * @param segment the segment
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param segment the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the segment line widths
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_segment_linewidth(
     DvzVisual* segment, uint32_t first, uint32_t count, float* values, int flags);
@@ -816,26 +859,26 @@ DVZ_EXPORT void dvz_segment_linewidth(
 
 
 /**
- * Function.
+ * Set the segment cap types.
  *
- * @param segment the segment
- * @param first the first
- * @param count the count
- * @param initial the initial
- * @param terminal the terminal
- * @param flags the flags
+ * @param segment the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param initial the initial segment cap types
+ * @param terminal the terminal segment cap types
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_segment_cap(
-    DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* initial, DvzCapType* terminal,
-    int flags);
+    DvzVisual* segment, uint32_t first, uint32_t count, //
+    DvzCapType* initial, DvzCapType* terminal, int flags);
 
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param segment the segment
- * @param item_count the item_count
+ * @param segment the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_segment_alloc(DvzVisual* segment, uint32_t item_count);
 
@@ -846,14 +889,25 @@ DVZ_EXPORT void dvz_segment_alloc(DvzVisual* segment, uint32_t item_count);
 /*************************************************************************************************/
 
 /**
+ * Create a path visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the path positions. Note: all path point positions must be updated at once for now.
  *
+ * @param visual the visual
+ * @param vertex_count the total number of points across all paths
+ * @param positions the path point positions
+ * @param path_count the number of different paths
+ * @param path_lengths the number of points in each path
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_path_position(
     DvzVisual* visual, uint32_t vertex_count, vec3* positions, //
@@ -862,13 +916,13 @@ DVZ_EXPORT void dvz_path_position(
 
 
 /**
- * Function.
+ * Set the path colors.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -876,20 +930,20 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
- * Function.
+ * Set the path line width.
  *
  * @param visual the visual
- * @param value the value
+ * @param value the line width
  */
 DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
 
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
  * @param visual the visual
- * @param total_vertex_count the total_vertex_count
+ * @param item_count the total number of points to allocate for this visual
  */
 DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
 
@@ -900,27 +954,34 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
 /*************************************************************************************************/
 
 /**
+ * Create a glyph visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_glyph(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Allocate memory for a visual.
  *
+ * @param pixel the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
 /**
- * Function.
+ * Set the glyph positions.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -928,13 +989,13 @@ dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
 
 
 /**
- * Function.
+ * Set the glyph axes.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D axis vectors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -942,13 +1003,13 @@ dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, 
 
 
 /**
- * Function.
+ * Set the glyph sizes.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the sizes (width and height) of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -956,13 +1017,13 @@ dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
 
 
 /**
- * Function.
+ * Set the glyph anchors.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the anchors (x and y) of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -970,13 +1031,13 @@ dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values
 
 
 /**
- * Function.
+ * Set the glyph shifts.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the shifts (x and y) of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -984,13 +1045,13 @@ dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values,
 
 
 /**
- * Function.
+ * Set the glyph texture coordinates.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param coords the coords
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param cors the x,y,w,h texture coordinates
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
@@ -998,13 +1059,13 @@ dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coo
 
 
 /**
- * Function.
+ * Set the glyph angles.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the angles of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
@@ -1012,13 +1073,13 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
 
 
 /**
- * Function.
+ * Set the glyph colors.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -1026,7 +1087,7 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
 
 
 /**
- * Function.
+ * Set the glyph group size.
  *
  * @param visual the visual
  * @param first the first
@@ -1040,27 +1101,27 @@ dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* va
 
 
 /**
- * Function.
+ * Set the glyph background color.
  *
  * @param visual the visual
- * @param bgcolor the bgcolor
+ * @param bgcolor the background color
  */
 DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
 
 
 
 /**
- * Function.
+ * Assign a texture to a glyph visual.
  *
  * @param visual the visual
- * @param tex the tex
+ * @param tex the texture ID
  */
 DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
 
 
 
 /**
- * Function.
+ * Associate an atlas with a glyph visual.
  *
  * @param visual the visual
  * @param atlas the atlas
@@ -1070,34 +1131,34 @@ DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
 
 
 /**
- * Function.
+ * Set the glyph unicode code points.
  *
  * @param visual the visual
- * @param count the count
- * @param codepoints the codepoints
+ * @param count the number of glyphs
+ * @param codepoints the unicode codepoints
  */
 DVZ_EXPORT void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints);
 
 
 
 /**
- * Function.
+ * Set the glyph ascii characters.
  *
  * @param visual the visual
- * @param char the char
+ * @param string the characters
  */
 DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
 
 
 
 /**
- * Function.
+ * Set the xywh parameters of each glyph.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param offset the offset
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the xywh values of each glyph
+ * @param offset the xy offsets of each glyph
  * @param flags the flags
  */
 DVZ_EXPORT void dvz_glyph_xywh(
