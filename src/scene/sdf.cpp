@@ -13,6 +13,7 @@
 #include "fileio.h"
 #include "request.h"
 
+#if HAS_MSDF
 // Include msdfgen
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
@@ -22,6 +23,7 @@
 #pragma GCC diagnostic pop
 
 using namespace msdfgen;
+#endif
 
 
 
@@ -77,6 +79,7 @@ float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
     uint32_t w = width;
     uint32_t h = height;
 
+#if HAS_MSDF
     // Build the Shape.
     Shape shape;
     buildShapeFromSvgPath(shape, svg_path);
@@ -94,6 +97,10 @@ float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 
     DvzSize size = w * h * sizeof(float);
     return (float*)_cpy(size, bitmap.pixels);
+
+#else
+    return NULL;
+#endif
 }
 
 
@@ -107,6 +114,7 @@ float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
     uint32_t w = width;
     uint32_t h = height;
 
+#if HAS_MSDF
     // Build the Shape.
     Shape shape;
     buildShapeFromSvgPath(shape, svg_path);
@@ -124,6 +132,10 @@ float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 
     DvzSize size = w * h * 3 * sizeof(float);
     return (float*)_cpy(size, bitmap.pixels);
+
+#else
+    return NULL;
+#endif
 }
 
 
@@ -131,6 +143,8 @@ float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height)
 // NOTE: the caller must FREE the returned pointer.
 uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height)
 {
+    if (sdf == NULL)
+        return NULL;
     ANN(sdf);
 
     uint32_t w = width;

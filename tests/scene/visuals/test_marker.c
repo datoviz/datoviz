@@ -278,6 +278,9 @@ int test_marker_sdf(TstSuite* suite)
 
 int test_marker_msdf(TstSuite* suite)
 {
+#if !HAS_MSDF
+    return 1;
+#endif
     VisualTest vt = visual_test_start("marker_msdf", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.

@@ -42,6 +42,9 @@ static void _axes_onkeyboard(DvzClient* client, DvzClientEvent ev)
 
 int test_axes_1(TstSuite* suite)
 {
+#if !HAS_MSDF
+    return 1;
+#endif
     ANN(suite);
 
     VisualTest vt = visual_test_start(

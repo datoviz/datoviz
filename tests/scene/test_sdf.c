@@ -34,6 +34,11 @@ int test_sdf_single(TstSuite* suite)
     uint32_t h = 100;
 
     float* sdf = dvz_sdf_from_svg(svg_path, w, h);
+    if (sdf == NULL)
+    {
+        log_error("SDF generation failed");
+        return 1;
+    }
     uint8_t* rgb = dvz_sdf_to_rgb(sdf, w, h);
 
     char imgpath[1024];
@@ -58,6 +63,11 @@ int test_sdf_multi(TstSuite* suite)
     uint32_t h = 100;
 
     float* msdf = dvz_msdf_from_svg(svg_path, w, h);
+    if (msdf == NULL)
+    {
+        log_error("SDF generation failed");
+        return 1;
+    }
     uint8_t* rgb = dvz_msdf_to_rgb(msdf, w, h);
 
     char imgpath[1024];

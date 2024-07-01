@@ -49,6 +49,11 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
 int test_glyph_1(TstSuite* suite)
 {
+    ANN(suite);
+
+#if !HAS_MSDF
+    return 1;
+#endif
     VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
 
     // Number of items.

@@ -18,6 +18,7 @@
 #include <fstream>
 #include <vector>
 
+#if HAS_MSDF
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow" //
 #pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -28,6 +29,7 @@
 
 using namespace msdfgen;
 using namespace msdf_atlas;
+#endif
 
 
 
@@ -56,12 +58,14 @@ extern "C" struct DvzAtlas
     uint32_t codepoints_count;
     uint32_t* codepoints;
 
+#if HAS_MSDF
     // Information about the glyph positions in the atlas.
     std::vector<GlyphGeometry> glyphs;
 
     // Internal objects.
     FreetypeHandle* ft;
     FontHandle* font;
+#endif
 
     // Atlas bitmap.
     uint32_t width;
@@ -83,11 +87,13 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
     atlas->ttf_size = ttf_size;
     atlas->ttf_bytes = ttf_bytes;
 
+#if HAS_MSDF
     // Initialize instance of FreeType library
     atlas->ft = initializeFreetype();
 
     // Load font file
     atlas->font = loadFontData(atlas->ft, ttf_bytes, ttf_size);
+#endif
 
     return atlas;
 }
@@ -97,8 +103,10 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 void dvz_atlas_clear(DvzAtlas* atlas)
 {
     ANN(atlas);
+#if HAS_MSDF
     auto glyphs = atlas->glyphs;
     glyphs.clear();
+#endif
 }
 
 
@@ -139,6 +147,8 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords)
     ANN(atlas);
     int x, y, w, h;
     bool found = false;
+
+#if HAS_MSDF
     for (const GlyphGeometry& glyph : atlas->glyphs)
     {
         if ((uint32_t)glyph.getCodepoint() == codepoint)
@@ -155,6 +165,7 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords)
     out_coords[1] = (float)((int)atlas->height - h - y);
     out_coords[2] = (float)w;
     out_coords[3] = (float)h;
+#endif
 
     return 0;
 }
@@ -186,6 +197,7 @@ void dvz_atlas_load(DvzAtlas* atlas)
 {
     ANN(atlas);
 
+#if HAS_MSDF
     // FontGeometry is a helper class that loads a set of glyphs from a single font.
     // It can also be used to get additional font metrics, kerning information, etc.
     FontGeometry fontGeometry(&atlas->glyphs);
@@ -211,6 +223,7 @@ void dvz_atlas_load(DvzAtlas* atlas)
     // In the last argument, you can specify a charset other than ASCII.
     // To load specific glyph indices, use loadGlyphs instead.
     fontGeometry.loadCharset(atlas->font, 1.0, charset);
+#endif
 }
 
 
@@ -222,6 +235,7 @@ int dvz_atlas_generate(DvzAtlas* atlas)
 
     dvz_atlas_load(atlas);
 
+#if HAS_MSDF
     // Apply MSDF edge coloring. See edge-coloring.h for other coloring strategies.
     const double maxCornerAngle = 3.0;
     for (GlyphGeometry& glyph : atlas->glyphs)
@@ -303,6 +317,8 @@ int dvz_atlas_generate(DvzAtlas* atlas)
             }
         }
     }
+
+#endif
     return 0;
 }
 
@@ -400,8 +416,11 @@ void dvz_atlas_destroy(DvzAtlas* atlas)
         FREE(atlas->rgb);
     }
 
+#if HAS_MSDF
     destroyFont(atlas->font);
     deinitializeFreetype(atlas->ft);
+#endif
+
     FREE(atlas);
 }
 
@@ -411,6 +430,7 @@ void dvz_atlas_destroy(DvzAtlas* atlas)
 /*  File util functions                                                                          */
 /*************************************************************************************************/
 
+#if HAS_MSDF
 static void serializeDvzAtlas(const DvzAtlas& atlas, const std::string& filename)
 {
     ASSERT(atlas.width > 0);
@@ -537,6 +557,17 @@ deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* at
 
     log_debug("done deserialization of font atlas");
 }
+
+#else
+
+static void serializeDvzAtlas(const DvzAtlas& atlas, const std::string& filename) {}
+
+static void
+deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* atlas_bytes)
+{
+}
+
+#endif
 
 DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
 {

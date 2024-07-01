@@ -14,11 +14,12 @@
 #include "fileio.h"
 #include "request.h"
 
+#if HAS_MSDF
 #include <ft2build.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include FT_FREETYPE_H
-
+#endif
 
 
 /*************************************************************************************************/
@@ -39,8 +40,10 @@
 
 struct DvzFont
 {
+#if HAS_MSDF
     FT_Library library;
     FT_Face face;
+#endif
     double size;
 };
 
@@ -52,9 +55,14 @@ struct DvzFont
 
 DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes)
 {
+#if !HAS_MSDF
+    return NULL;
+#endif
+
     DvzFont* font = (DvzFont*)calloc(1, sizeof(DvzFont));
     ANN(font);
 
+#if HAS_MSDF
     if (FT_Init_FreeType(&font->library))
     {
         log_error("could not initialize freetype");
@@ -64,6 +72,10 @@ DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes)
         log_error("freetype could not load ttf font");
         // FT_Done_FreeType(&font->library);
     }
+#else
+    log_error("Datoviz has not been compiled with freetype support, ensure it was built with "
+              "HAS_MSDF=1");
+#endif
 
     dvz_font_size(font, DVZ_DEFAULT_FONT_SIZE);
 
@@ -77,6 +89,7 @@ void dvz_font_size(DvzFont* font, double size)
     ANN(font);
     font->size = size;
 
+#if HAS_MSDF
     if (!font->face)
     {
         log_error("font was not initialized");
@@ -90,6 +103,7 @@ void dvz_font_size(DvzFont* font, double size)
     }
 
     FT_Set_Pixel_Sizes(font->face, 0, (uint32_t)size);
+#endif
 }
 
 
@@ -101,6 +115,7 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     ANN(codepoints);
     ASSERT(length > 0);
 
+#if HAS_MSDF
     FT_Face face = font->face;
     if (!face)
     {
@@ -148,6 +163,9 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     }
 
     return xywh;
+#else
+    return NULL;
+#endif
 }
 
 
@@ -174,6 +192,7 @@ uint8_t* dvz_font_draw(
     ANN(xywh);
     ASSERT(length > 0);
 
+#if HAS_MSDF
     FT_Face face = font->face;
     if (!face)
     {
@@ -267,6 +286,9 @@ uint8_t* dvz_font_draw(
     }
 
     return bitmap;
+#else
+    return NULL;
+#endif
 }
 
 
@@ -275,11 +297,13 @@ void dvz_font_destroy(DvzFont* font)
 {
     ANN(font);
 
+#if HAS_MSDF
     if (font->face)
         FT_Done_Face(font->face);
 
     if (font->library)
         FT_Done_FreeType(font->library);
+#endif
 
     FREE(font);
 }

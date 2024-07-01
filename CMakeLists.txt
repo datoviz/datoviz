@@ -32,6 +32,7 @@ set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -274,6 +275,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
     HAS_GLSLANG=${HAS_GLSLANG}
+    HAS_MSDF=${HAS_MSDF}
 
     # HAS_PNG=${HAS_PNG}
 )

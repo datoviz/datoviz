@@ -39,6 +39,8 @@ int test_font_1(TstSuite* suite)
 
     // Create the font object.
     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
+    if (!font)
+        return 1;
     dvz_font_size(font, 64);
 
     // Compute the layout of the text.

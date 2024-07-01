@@ -271,7 +271,11 @@ void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
 
     // Create the atlas texture.
     DvzId tex = dvz_atlas_texture(atlas, batch);
-    ASSERT(tex != DVZ_ID_NONE);
+    if (tex == DVZ_ID_NONE)
+    {
+        log_error("failed creating atlas texture");
+        return;
+    }
 
     // Bind the texture to the glyph visual.
     dvz_glyph_texture(visual, tex);
@@ -342,6 +346,8 @@ void dvz_glyph_xywh(
     DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags)
 {
     ANN(visual);
+    if (values == NULL)
+        return;
     ANN(values);
     ASSERT(count > 0);
 

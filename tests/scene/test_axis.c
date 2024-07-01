@@ -68,6 +68,9 @@ static void _common_axis_params(DvzAxis* axis)
 int test_axis_1(TstSuite* suite)
 {
     ANN(suite);
+#if !HAS_MSDF
+    return 1;
+#endif
 
     VisualTest vt = visual_test_start("axis_1", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS);
 
@@ -202,6 +205,9 @@ static void _onframe(DvzClient* client, DvzClientEvent ev)
 
 int test_axis_2(TstSuite* suite)
 {
+#if !HAS_MSDF
+    return 1;
+#endif
     ANN(suite);
 
     int flags =
@@ -413,6 +419,9 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
 
 int test_axis_update(TstSuite* suite)
 {
+#if !HAS_MSDF
+    return 1;
+#endif
     ANN(suite);
 
     int flags = DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_MONITOR;
