@@ -20,7 +20,7 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
-option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" OFF)
+option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -287,6 +287,9 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     HAS_MSDF=${HAS_MSDF}
 
     # HAS_PNG=${HAS_PNG}
+
+    # HACK: this apparently fixes the msdfgen-config.h not found bug
+    MSDFGEN_PUBLIC=
 )
 
 # -------------------------------------------------------------------------------------------------
@@ -668,6 +671,9 @@ target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
 
 target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
+target_link_libraries(datoviz_scene
+    ${LINK_LIBS} ${FREETYPE_LIBRARIES}
+)
 
 # set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 target_include_directories(external_sources PRIVATE ${INCL_DIRS})
@@ -694,7 +700,8 @@ endif()
 add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
-target_link_libraries(libdatoviz ${LINK_LIBS}
+target_link_libraries(libdatoviz
+    ${LINK_LIBS}
     datoviz_core
     datoviz_requests
     datoviz_app
