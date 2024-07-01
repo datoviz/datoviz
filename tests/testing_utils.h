@@ -13,9 +13,9 @@
 
 #include "../src/render_utils.h"
 #include "../src/vklite_utils.h"
+#include "datoviz.h"
 #include "glfw_utils.h"
 #include "request.h"
-#include "scene/colormaps.h"
 #include "scene/graphics.h"
 #include "surface.h"
 #include "test_resources.h"

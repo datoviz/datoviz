@@ -10,7 +10,6 @@
 #include "scene/meshobj.h"
 #include "_macros.h"
 #include "datoviz.h"
-#include "scene/colormaps.h"
 
 // #define MUTE_MISSING_PROTOTYPES _Pragma("GCC diagnostic ignored \"-Wmissing-prototypes\"")
 

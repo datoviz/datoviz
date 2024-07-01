@@ -50,6 +50,8 @@ static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
 #define MAX(a, b)     (((a) > (b)) ? (a) : (b))
 #define CLIP(x, a, b) MAX(MIN((x), (b)), (a))
 
+#define TO_BYTE(x) (uint8_t) round(CLIP((x), 0, 1) * 255)
+
 #define _DMAT4_IDENTITY_INIT                                                                      \
     {                                                                                             \
         {1.0, 0.0, 0.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {0.0, 0.0, 1.0, 0.0}, { 0.0, 0.0, 0.0, 1.0 }  \

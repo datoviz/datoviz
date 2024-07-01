@@ -12,7 +12,6 @@
 #include "datoviz.h"
 #include "datoviz_enums.h"
 #include "scene/atlas.h"
-#include "scene/colormaps.h"
 #include "scene/font.h"
 #include "scene/scene.h"
 #include "scene/visuals/glyph.h"

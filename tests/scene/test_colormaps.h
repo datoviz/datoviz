@@ -19,19 +19,9 @@
 /*  Colormaps tests                                                                              */
 /*************************************************************************************************/
 
-int test_colormaps_idx(TstSuite*);
-
-int test_colormaps_uv(TstSuite*);
-
-int test_colormaps_extent(TstSuite*);
-
 int test_colormaps_default(TstSuite*);
 
 int test_colormaps_scale(TstSuite*);
-
-int test_colormaps_packuv(TstSuite*);
-
-int test_colormaps_array(TstSuite*);
 
 
 

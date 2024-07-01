@@ -245,6 +245,35 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
 
 /*************************************************************************************************/
+/*  Colormap functions                                                                           */
+/*************************************************************************************************/
+
+/**
+ * Fetch a color from a colormap and a value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param[out] color the fetched color
+ */
+DVZ_EXPORT void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color);
+
+
+
+/**
+ * Fetch a color from a colormap and an interpolated value.
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] color the fetched color
+ */
+DVZ_EXPORT void
+dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cvec4 color);
+
+
+
+/*************************************************************************************************/
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
 

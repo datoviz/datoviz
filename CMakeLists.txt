@@ -611,6 +611,7 @@ add_library(datoviz_scene STATIC
     "src/scene/axes.c"
     "src/scene/baker.c"
     "src/scene/camera.c"
+    "src/scene/colormaps.c"
     "src/scene/dual.c"
     "src/scene/font.c"
     "src/scene/graphics.c"

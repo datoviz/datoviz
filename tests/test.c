@@ -320,13 +320,8 @@ int dvz_run_tests(const char* match)
     // TEST(test_baker_3)
 
     // Testing colormaps.
-    TEST(test_colormaps_idx)
-    TEST(test_colormaps_uv)
-    TEST(test_colormaps_extent)
     TEST(test_colormaps_default)
     TEST(test_colormaps_scale)
-    TEST(test_colormaps_packuv)
-    TEST(test_colormaps_array)
 
     // Testing scene elements.
     TEST(test_panzoom_1)
