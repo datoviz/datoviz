@@ -516,7 +516,7 @@ add_custom_command(
 # -------------------------------------------------------------------------------------------------
 
 # These files will be compiled with no warnings.
-set(external_sources
+add_library(external_sources STATIC
 
     # "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
@@ -623,20 +623,28 @@ set(sources
     "src/scene/visuals/marker.c"
     "src/scene/visuals/segment.c"
     "src/scene/visuals/volume.c"
-
-    ${external_sources}
 )
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
-add_library(libdatoviz SHARED ${sources} ${path_shadersc} ${path_tex} ${path_fonts})
-set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
+add_library(libdatoviz SHARED
+    ${sources}
+    ${path_shadersc}
+    ${path_tex}
+    ${path_fonts}
+    ${external_sources}
+)
+
+# set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
+target_include_directories(external_sources PRIVATE ${INCL_DIRS})
+target_compile_options(external_sources PRIVATE -w)
+
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 2
 
-    # PUBLIC_HEADER include/datoviz/datoviz.h
+    PUBLIC_HEADER include/datoviz.h
     OUTPUT_NAME "datoviz"
 )
 
@@ -653,7 +661,7 @@ endif()
 add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
-target_link_libraries(libdatoviz ${LINK_LIBS})
+target_link_libraries(libdatoviz ${LINK_LIBS} external_sources)
 
 # -------------------------------------------------------------------------------------------------
 # CLI tool
@@ -661,6 +669,7 @@ target_link_libraries(libdatoviz ${LINK_LIBS})
 if(DATOVIZ_WITH_CLI)
     set(cli
         "cli/main.c"
+        "src/log.c" # NOTE: required because log_* are not exported in libdatoviz
 
         # Utils
         "tests/test_alloc.c"

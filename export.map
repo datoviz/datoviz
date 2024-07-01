@@ -2,15 +2,7 @@
     global:
         dvz*;
         DVZ*;
-        b64*;
-        log*;
-        _find*;
-        getM*;
-        bufc;
 
     local:
-        *tinyxml2*;
-        glfw*;
-        _glfw*;
-        _Z*;
+        *;
 };
