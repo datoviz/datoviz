@@ -368,14 +368,16 @@ dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cve
 /*************************************************************************************************/
 
 /**
+ * Show information about a shape.
  *
+ * @param shape the shape
  */
 DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
 
 
 /**
- * Function.
+ * Destroy a shape.
  *
  * @param shape the shape
  */
@@ -388,18 +390,21 @@ DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
 /*************************************************************************************************/
 
 /**
+ * Create a square shape.
  *
+ * @param color the square color
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
 
 
 
 /**
- * Function.
+ * Create a disc shape.
  *
- * @param count the count
- * @param color the color
- * @returns DvzShape
+ * @param count the number of points along the disc's border
+ * @param color the disc color
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 
@@ -410,41 +415,44 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 /*************************************************************************************************/
 
 /**
+ * Create a cube shape.
  *
+ * @param colors the colors of the six faces
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
 
 
 
 /**
- * Function.
+ * Create a sphere shape.
  *
- * @param rows the rows
- * @param cols the cols
- * @param color the color
- * @returns DvzShape
+ * @param rows the number of rows
+ * @param cols the number of columns
+ * @param color the sphere color
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
 
 
 
 /**
- * Function.
+ * Create a cone shape.
  *
- * @param count the count
- * @param color the color
- * @returns DvzShape
+ * @param count the number of points along the disc's border
+ * @param color the cone color
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
 
 
 
 /**
- * Function.
+ * Create a cylinder shape.
  *
- * @param count the count
- * @param color the color
- * @returns DvzShape
+ * @param count the number of points along the cylinder's border
+ * @param color the cylinder color
+ * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
 
@@ -455,14 +463,23 @@ DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
 /*************************************************************************************************/
 
 /**
+ * Create a basic visual using the few GPU visual primitives (point, line, triangles).
  *
+ * @param batch the batch
+ * @param topology the primitive topology
+ * @param flags the visual creation flags
  */
 DVZ_EXPORT DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags);
 
 
 
 /**
+ * Set the 3D positions of the visual's vertices.
  *
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_basic_position(DvzVisual* basic, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -470,13 +487,12 @@ dvz_basic_position(DvzVisual* basic, uint32_t first, uint32_t count, vec3* value
 
 
 /**
- * Function.
+ * Set the colors of the visual's vertices.
  *
- * @param basic the basic
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -484,10 +500,10 @@ dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param basic the basic
- * @param item_count the item_count
+ * @param basic the visual
+ * @param item_count the total number of items to allocate for this visual
  */
 DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
 
