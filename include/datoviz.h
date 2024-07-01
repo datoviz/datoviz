@@ -1,3 +1,20 @@
+/**************************************************************************************************
+
+ * DATOVIZ PUBLIC API HEADER FILE
+ * ==============================
+ * 2024-07-01
+ * Cyrille Rossant
+ * cyrille dot rossant at gmail com
+
+This file exposes the public API of Datoviz, a C/C++ library for high-performance GPU scientific
+visualization.
+
+Datoviz is still an early stage library and the API may change at any time.
+
+**************************************************************************************************/
+
+
+
 /*************************************************************************************************/
 /*  Public API                                                                                   */
 /*************************************************************************************************/
@@ -90,21 +107,30 @@ struct DvzShape
 /*************************************************************************************************/
 
 /**
+ * Create a scene.
  *
+ * @param batch the batch
+ * @returns the scene
  */
 DVZ_EXPORT DvzScene* dvz_scene(DvzBatch* batch);
 
 
 
 /**
+ * Start the event loop and render the scene in a window.
  *
+ * @param scene the scene
+ * @param app the app
+ * @param n_frames the maximum number of frames, 0 for infinite loop
  */
 DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames);
 
 
 
 /**
+ * Destroy a scene.
  *
+ * @param scene the scene
  */
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 
@@ -168,14 +194,26 @@ DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr);
 
 
 /**
+ * Function.
  *
+ * @param panel the panel
+ * @param x the x
+ * @param y the y
+ * @param width the width
+ * @param height the height
  */
 DVZ_EXPORT void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float height);
 
 
 
 /**
+ * Function.
  *
+ * @param panel the panel
+ * @param top the top
+ * @param right the right
+ * @param bottom the bottom
+ * @param left the left
  */
 DVZ_EXPORT void
 dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float left);
@@ -183,7 +221,11 @@ dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float l
 
 
 /**
+ * Function.
  *
+ * @param panel the panel
+ * @param pos the pos
+ * @returns bool
  */
 DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
 
@@ -223,14 +265,19 @@ DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
 
 
 /**
+ * Function.
  *
+ * @param panel the panel
+ * @param visual the visual
  */
 DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
 
 
 
 /**
+ * Function.
  *
+ * @param panel the panel
  */
 DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 
@@ -282,8 +329,12 @@ dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cve
  */
 DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
+
+
 /**
+ * Function.
  *
+ * @param shape the shape
  */
 DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
 
@@ -301,7 +352,11 @@ DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
 
 
 /**
+ * Function.
  *
+ * @param count the count
+ * @param color the color
+ * @returns DvzShape
  */
 DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 
@@ -319,21 +374,34 @@ DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
 
 
 /**
+ * Function.
  *
+ * @param rows the rows
+ * @param cols the cols
+ * @param color the color
+ * @returns DvzShape
  */
 DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
 
 
 
 /**
+ * Function.
  *
+ * @param count the count
+ * @param color the color
+ * @returns DvzShape
  */
 DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
 
 
 
 /**
+ * Function.
  *
+ * @param count the count
+ * @param color the color
+ * @returns DvzShape
  */
 DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
 
@@ -359,7 +427,13 @@ dvz_basic_position(DvzVisual* basic, uint32_t first, uint32_t count, vec3* value
 
 
 /**
+ * Function.
  *
+ * @param basic the basic
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -367,7 +441,10 @@ dvz_basic_color(DvzVisual* basic, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
+ * Function.
  *
+ * @param basic the basic
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_basic_alloc(DvzVisual* basic, uint32_t item_count);
 
@@ -393,7 +470,13 @@ dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* value
 
 
 /**
+ * Function.
  *
+ * @param pixel the pixel
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -401,7 +484,10 @@ dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
+ * Function.
  *
+ * @param pixel the pixel
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* pixel, uint32_t item_count);
 
@@ -427,7 +513,13 @@ dvz_point_position(DvzVisual* point, uint32_t first, uint32_t count, vec3* value
 
 
 /**
+ * Function.
  *
+ * @param point the point
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -435,7 +527,13 @@ dvz_point_color(DvzVisual* point, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
+ * Function.
  *
+ * @param point the point
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, int flags);
@@ -443,7 +541,10 @@ dvz_point_size(DvzVisual* point, uint32_t first, uint32_t count, float* values, 
 
 
 /**
+ * Function.
  *
+ * @param point the point
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_point_alloc(DvzVisual* point, uint32_t item_count);
 
@@ -468,21 +569,33 @@ DVZ_EXPORT void dvz_marker_mode(DvzVisual* visual, DvzMarkerMode mode);
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param aspect the aspect
  */
 DVZ_EXPORT void dvz_marker_aspect(DvzVisual* visual, DvzMarkerAspect aspect);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param shape the shape
  */
 DVZ_EXPORT void dvz_marker_shape(DvzVisual* visual, DvzMarkerShape shape);
 
 
 
 /**
+ * Function.
  *
+ * @param marker the marker
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -490,7 +603,13 @@ dvz_marker_position(DvzVisual* marker, uint32_t first, uint32_t count, vec3* val
 
 
 /**
+ * Function.
  *
+ * @param marker the marker
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
@@ -498,7 +617,13 @@ dvz_marker_size(DvzVisual* marker, uint32_t first, uint32_t count, float* values
 
 
 /**
+ * Function.
  *
+ * @param marker the marker
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* values, int flags);
@@ -506,7 +631,13 @@ dvz_marker_angle(DvzVisual* marker, uint32_t first, uint32_t count, float* value
 
 
 /**
+ * Function.
  *
+ * @param marker the marker
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -514,35 +645,51 @@ dvz_marker_color(DvzVisual* marker, uint32_t first, uint32_t count, cvec4* value
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param value the value
  */
 DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param value the value
  */
 DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
+ * @param sampler the sampler
  */
 DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param value the value
  */
 DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
 
 
 
 /**
+ * Function.
  *
+ * @param marker the marker
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_marker_alloc(DvzVisual* marker, uint32_t item_count);
 
@@ -568,7 +715,13 @@ DVZ_EXPORT void dvz_segment_position(
 
 
 /**
+ * Function.
  *
+ * @param segment the segment
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_segment_shift(DvzVisual* segment, uint32_t first, uint32_t count, vec4* values, int flags);
@@ -576,7 +729,13 @@ dvz_segment_shift(DvzVisual* segment, uint32_t first, uint32_t count, vec4* valu
 
 
 /**
+ * Function.
  *
+ * @param segment the segment
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_segment_color(DvzVisual* segment, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -584,7 +743,13 @@ dvz_segment_color(DvzVisual* segment, uint32_t first, uint32_t count, cvec4* val
 
 
 /**
+ * Function.
  *
+ * @param segment the segment
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_segment_linewidth(
     DvzVisual* segment, uint32_t first, uint32_t count, float* values, int flags);
@@ -592,7 +757,14 @@ DVZ_EXPORT void dvz_segment_linewidth(
 
 
 /**
+ * Function.
  *
+ * @param segment the segment
+ * @param first the first
+ * @param count the count
+ * @param initial the initial
+ * @param terminal the terminal
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_segment_cap(
     DvzVisual* segment, uint32_t first, uint32_t count, DvzCapType* initial, DvzCapType* terminal,
@@ -601,7 +773,10 @@ DVZ_EXPORT void dvz_segment_cap(
 
 
 /**
+ * Function.
  *
+ * @param segment the segment
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_segment_alloc(DvzVisual* segment, uint32_t item_count);
 
@@ -628,7 +803,13 @@ DVZ_EXPORT void dvz_path_position(
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -636,14 +817,20 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values,
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param value the value
  */
 DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param total_vertex_count the total_vertex_count
  */
 DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
 
@@ -668,7 +855,13 @@ DVZ_EXPORT void dvz_glyph_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -676,7 +869,13 @@ dvz_glyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -684,7 +883,13 @@ dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -692,7 +897,13 @@ dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -700,7 +911,13 @@ dvz_glyph_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
@@ -708,7 +925,13 @@ dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values,
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param coords the coords
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coords, int flags);
@@ -716,7 +939,13 @@ dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coo
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
@@ -724,7 +953,13 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -732,7 +967,13 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
@@ -740,42 +981,65 @@ dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* va
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param bgcolor the bgcolor
  */
 DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
  */
 DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param atlas the atlas
  */
 DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param count the count
+ * @param codepoints the codepoints
  */
 DVZ_EXPORT void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param char the char
  */
 DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param offset the offset
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_glyph_xywh(
     DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags);
@@ -802,7 +1066,13 @@ dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr
 
 
 /**
+ * Function.
  *
+ * @param image the image
+ * @param first the first
+ * @param count the count
+ * @param ul_lr the ul_lr
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
@@ -810,7 +1080,12 @@ dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_l
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
+ * @param filter the filter
+ * @param address_mode the address_mode
  */
 DVZ_EXPORT void dvz_image_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -818,14 +1093,24 @@ DVZ_EXPORT void dvz_image_texture(
 
 
 /**
+ * Function.
  *
+ * @param image the image
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_image_alloc(DvzVisual* image, uint32_t item_count);
 
 
 
 /**
+ * Function.
  *
+ * @param batch the batch
+ * @param format the format
+ * @param width the width
+ * @param height the height
+ * @param data the data
+ * @returns DvzId
  */
 DVZ_EXPORT DvzId
 dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data);
@@ -852,7 +1137,13 @@ dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values,
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -868,7 +1159,13 @@ dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param first the first
+ * @param count the count
+ * @param values the values
+ * @param flags the flags
  */
 DVZ_EXPORT
 void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -876,7 +1173,12 @@ void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* valu
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
+ * @param filter the filter
+ * @param address_mode the address_mode
  */
 DVZ_EXPORT void dvz_mesh_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -884,28 +1186,43 @@ DVZ_EXPORT void dvz_mesh_texture(
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param first the first
+ * @param count the count
+ * @param values the values
  */
 DVZ_EXPORT void dvz_mesh_index(DvzVisual* mesh, uint32_t first, uint32_t count, DvzIndex* values);
 
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param vertex_count the vertex_count
+ * @param index_count the index_count
  */
 DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count);
 
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param pos the pos
  */
 DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos);
 
 
 
 /**
+ * Function.
  *
+ * @param mesh the mesh
+ * @param params the params
  */
 DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
 
@@ -938,7 +1255,13 @@ dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param color the color
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
@@ -946,7 +1269,13 @@ dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param first the first
+ * @param count the count
+ * @param size the size
+ * @param flags the flags
  */
 DVZ_EXPORT void
 dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, int flags);
@@ -954,14 +1283,20 @@ dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* s
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param pos the pos
  */
 DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 
@@ -986,7 +1321,12 @@ DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
+ * @param filter the filter
+ * @param address_mode the address_mode
  */
 DVZ_EXPORT void dvz_volume_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -994,14 +1334,27 @@ DVZ_EXPORT void dvz_volume_texture(
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param w the w
+ * @param h the h
+ * @param d the d
  */
 DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
 
 
 
 /**
+ * Function.
  *
+ * @param batch the batch
+ * @param format the format
+ * @param width the width
+ * @param height the height
+ * @param depth the depth
+ * @param data the data
+ * @returns DvzId
  */
 DVZ_EXPORT DvzId dvz_tex_volume(
     DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
@@ -1030,7 +1383,15 @@ DVZ_EXPORT void dvz_slice_position(
 
 
 /**
+ * Function.
  *
+ * @param slice the slice
+ * @param first the first
+ * @param count the count
+ * @param uvw1 the uvw1
+ * @param uvw2 the uvw2
+ * @param uvw3 the uvw3
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_slice_texcoords(
     DvzVisual* slice, uint32_t first, uint32_t count, //
@@ -1039,7 +1400,12 @@ DVZ_EXPORT void dvz_slice_texcoords(
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param tex the tex
+ * @param filter the filter
+ * @param address_mode the address_mode
  */
 DVZ_EXPORT void dvz_slice_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -1047,14 +1413,25 @@ DVZ_EXPORT void dvz_slice_texture(
 
 
 /**
+ * Function.
  *
+ * @param slice the slice
+ * @param item_count the item_count
  */
 DVZ_EXPORT void dvz_slice_alloc(DvzVisual* slice, uint32_t item_count);
 
 
 
 /**
+ * Function.
  *
+ * @param batch the batch
+ * @param format the format
+ * @param width the width
+ * @param height the height
+ * @param depth the depth
+ * @param data the data
+ * @returns DvzId
  */
 DVZ_EXPORT DvzId dvz_tex_slice(
     DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
@@ -1063,7 +1440,10 @@ DVZ_EXPORT DvzId dvz_tex_slice(
 
 
 /**
+ * Function.
  *
+ * @param visual the visual
+ * @param alpha the alpha
  */
 DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 
@@ -1089,21 +1469,39 @@ DVZ_EXPORT double dvz_resample(double t0, double t1, double t);
 
 
 /**
+ * Function.
  *
+ * @param easing the easing
+ * @param t the t
+ * @returns double
  */
 DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
 
 
 
 /**
+ * Function.
  *
+ * @param center the center
+ * @param radius the radius
+ * @param angle the angle
+ * @param t the t
+ * @param out the out
  */
 DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
 
 
 
 /**
+ * Function.
  *
+ * @param center the center
+ * @param u the u
+ * @param v the v
+ * @param radius the radius
+ * @param angle the angle
+ * @param t the t
+ * @param out the out
  */
 DVZ_EXPORT void
 dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
@@ -1111,21 +1509,36 @@ dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t,
 
 
 /**
+ * Function.
  *
+ * @param p0 the p0
+ * @param p1 the p1
+ * @param t the t
+ * @returns float
  */
 DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
 
 
 
 /**
+ * Function.
  *
+ * @param p0 the p0
+ * @param p1 the p1
+ * @param t the t
+ * @param out the out
  */
 DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
 
 
 /**
+ * Function.
  *
+ * @param p0 the p0
+ * @param p1 the p1
+ * @param t the t
+ * @param out the out
  */
 DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 
@@ -1150,49 +1563,71 @@ DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
  */
 DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param width the width
+ * @param height the height
  */
 DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param constrain the constrain
  */
 DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
 
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
+ * @param angles the angles
  */
 DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
+ * @param out_angles the out_angles
  */
 DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
+ * @param cur_pos the cur_pos
+ * @param last_pos the last_pos
  */
 DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
@@ -1205,35 +1640,47 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
+ * @param model the model
  */
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
  */
 DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param mvp the mvp
  */
 DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
 
 
 
 /**
+ * Function.
  *
+ * @param arcball the arcball
  */
 DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
  */
 DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 
@@ -1258,21 +1705,33 @@ DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
  */
 DVZ_EXPORT void dvz_camera_reset(DvzCamera* camera);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param near the near
+ * @param far the far
  */
 DVZ_EXPORT void dvz_camera_zrange(DvzCamera* camera, float near, float far);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param left the left
+ * @param right the right
+ * @param bottom the bottom
+ * @param top the top
  */
 DVZ_EXPORT void
 dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float top);
@@ -1280,35 +1739,51 @@ dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param width the width
+ * @param height the height
  */
 DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param pos the pos
  */
 DVZ_EXPORT void dvz_camera_position(DvzCamera* camera, vec3 pos);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param lookat the lookat
  */
 DVZ_EXPORT void dvz_camera_lookat(DvzCamera* camera, vec3 lookat);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param up the up
  */
 DVZ_EXPORT void dvz_camera_up(DvzCamera* camera, vec3 up);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param fov the fov
  */
 DVZ_EXPORT void dvz_camera_perspective(DvzCamera* camera, float fov);
 // field of view angle (in radians)
@@ -1316,28 +1791,39 @@ DVZ_EXPORT void dvz_camera_perspective(DvzCamera* camera, float fov);
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param view the view
+ * @param proj the proj
  */
 DVZ_EXPORT void dvz_camera_viewproj(DvzCamera* camera, mat4 view, mat4 proj);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
+ * @param mvp the mvp
  */
 DVZ_EXPORT void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
  */
 DVZ_EXPORT void dvz_camera_print(DvzCamera* camera);
 
 
 
 /**
+ * Function.
  *
+ * @param camera the camera
  */
 DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 
@@ -1362,84 +1848,123 @@ DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param width the width
+ * @param height the height
  */
 DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_panzoom_flags(DvzPanzoom* pz, int flags);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param xlim the xlim
  */
 DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim); // FLOAT_MIN/MAX=no lim
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param ylim the ylim
  */
 DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param zlim the zlim
  */
 DVZ_EXPORT void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param pan the pan
  */
 DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan); // in NDC, gets or sets
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param zoom the zoom
  */
 DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom); // in NDC
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param shift_px the shift_px
+ * @param center_px the center_px
  */
 DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param shift_px the shift_px
+ * @param center_px the center_px
  */
 DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
  */
 DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz); // end of pan or zoom interaction
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param dir the dir
+ * @param center_px the center_px
  */
 DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param xrange the xrange
  */
 DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
 // if (0, 0), gets the xrange, otherwise sets it
@@ -1447,21 +1972,29 @@ DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param yrange the yrange
  */
 DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
+ * @param mvp the mvp
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 
 
 /**
+ * Function.
  *
+ * @param pz the pz
  */
 DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 
