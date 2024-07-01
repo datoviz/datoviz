@@ -20,7 +20,7 @@ project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
-option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
+option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" OFF)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -145,6 +145,7 @@ FetchContent_Declare(
     GIT_TAG v0.9.4
 )
 FetchContent_MakeAvailable(cglm)
+set(INCL_DIRS ${INCL_DIRS} ${cglm_SOURCE_DIR}/include)
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(HAS_GLFW 0)
@@ -196,6 +197,7 @@ if(DATOVIZ_WITH_MSDF)
     set(MSDF_ATLAS_USE_SKIA OFF)
     set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF)
     set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF)
+    set(MSDF_ATLAS_INSTALL OFF)
 
     set(BUILD_SHARED_LIBS OFF)
 
@@ -240,7 +242,13 @@ if(DATOVIZ_WITH_MSDF)
         POSITION_INDEPENDENT_CODE ON
     )
 
-    set(INCL_DIRS ${INCL_DIRS} ${msdfgen-atlas_SOURCE_DIR}/msdfgen ${FREETYPE_INCLUDE_DIR_ft2build})
+    set(INCL_DIRS ${INCL_DIRS}
+        ${msdfgen_SOURCE_DIR}
+        ${msdfgen-atlas_SOURCE_DIR}
+        ${msdfgen-atlas_SOURCE_DIR}/msdfgen
+        ${msdfgen-atlas_SOURCE_DIR}/msdf-atlas-gen
+        ${FREETYPE_INCLUDE_DIR_ft2build}
+    )
     set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
 endif()
 
@@ -536,7 +544,7 @@ add_library(external_sources STATIC
     "external/imgui/backends/imgui_impl_vulkan.cpp"
 )
 
-set(sources
+add_library(datoviz_core STATIC
 
     # Utils
     "src/_atomic.cpp"
@@ -576,16 +584,23 @@ set(sources
     # Client
     "src/client.c"
     "src/presenter.c"
-    "src/request.c"
     "src/window.c"
 
     # GUI
     "src/gui.cpp"
     "src/fps.cpp"
+)
 
-    # Scene
-    "src/scene/animation.c"
+add_library(datoviz_requests STATIC
+    "src/request.c"
+)
+
+add_library(datoviz_app STATIC
     "src/scene/app.c"
+)
+
+add_library(datoviz_scene STATIC
+    "src/scene/animation.c"
     "src/scene/arcball.c"
     "src/scene/array.c"
     "src/scene/atlas.cpp"
@@ -623,18 +638,36 @@ set(sources
     "src/scene/visuals/marker.c"
     "src/scene/visuals/segment.c"
     "src/scene/visuals/volume.c"
+
+    # ${msdfgen_ext}
+    # ${msdfgen_core}
+    # ${msdf_atlas_gen}
 )
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
 add_library(libdatoviz SHARED
-    ${sources}
+    ${datoviz_core}
+    ${datoviz_requests}
+    ${datoviz_app}
+    ${datoviz_scene}
     ${path_shadersc}
     ${path_tex}
     ${path_fonts}
     ${external_sources}
 )
+target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
+
+target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
 
 # set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
 target_include_directories(external_sources PRIVATE ${INCL_DIRS})
@@ -661,13 +694,19 @@ endif()
 add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
-target_link_libraries(libdatoviz ${LINK_LIBS} external_sources)
+target_link_libraries(libdatoviz ${LINK_LIBS}
+    datoviz_core
+    datoviz_requests
+    datoviz_app
+    datoviz_scene
+    external_sources
+)
 
 # -------------------------------------------------------------------------------------------------
 # CLI tool
 # -------------------------------------------------------------------------------------------------
 if(DATOVIZ_WITH_CLI)
-    set(cli
+    add_executable(cli
         "cli/main.c"
         "src/log.c" # NOTE: required because log_* are not exported in libdatoviz
 
@@ -748,11 +787,15 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_scene.c"
 
         "tests/test.c"
-    )
 
-    add_executable(datovizcli ${cli} ${path_testdata})
-    set_target_properties(datovizcli PROPERTIES OUTPUT_NAME "datoviz")
-    target_compile_definitions(datovizcli PUBLIC ${COMPILE_DEFINITIONS})
-    target_include_directories(datovizcli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
-    target_link_libraries(datovizcli libdatoviz)
+        ${path_testdata}
+        ${datoviz_core}
+        ${datoviz_app}
+        ${datoviz_scene}
+        ${datoviz_requests}
+    )
+    target_include_directories(cli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
+    target_compile_definitions(cli PUBLIC ${COMPILE_DEFINITIONS})
+    set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
+    target_link_libraries(cli libdatoviz)
 endif()
