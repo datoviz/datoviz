@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_labels.h"
+#include "../../src/scene/labels_utils.h"
 #include "scene/labels.h"
 #include "test.h"
 #include "testing.h"
