@@ -141,28 +141,44 @@ DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 /*************************************************************************************************/
 
 /**
+ * Create a figure, a desktop window with panels and visuals.
  *
+ * @param scene the scene
+ * @param width the window's width
+ * @param height the window's height
+ * @param flags the figure creation flags (not yet stabilized)
+ * @returns the figure
  */
 DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flags);
 
 
 
 /**
+ * Resize a figure.
  *
+ * @param scene the scene
+ * @param width the window's width
+ * @param height the window's height
  */
 DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height);
 
 
 
 /**
+ * Get a figure from its id.
  *
+ * @param scene the scene
+ * @param id the figure's id
+ * @returns the figure
  */
 DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
 
 
 
 /**
+ * Destroy a figure.
  *
+ * @param figure the figure
  */
 DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
@@ -173,47 +189,59 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 /*************************************************************************************************/
 
 /**
+ * Create a panel in a figure (partial or complete rectangular portion of a figure).
  *
+ * @param fig the figure
+ * @param x the x coordinate of the top-left corner, in pixels
+ * @param y the y coordinate of the top-left corner, in pixels
+ * @param width the panel's width, in pixels
+ * @param height the panel's height, in pixels
  */
-DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h);
+DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height);
 
 
 
 /**
+ * Return the default full panel spanning an entire figure.
  *
+ * @param fig the figure
+ * @returns the panel spanning the entire figure
  */
 DVZ_EXPORT DvzPanel* dvz_panel_default(DvzFigure* fig);
 
 
 
 /**
+ * Assign a transform to a panel.
  *
+ * @param panel the panel
+ * @param tr the transform
  */
 DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr);
 
 
 
 /**
- * Function.
+ * Resize a panel.
  *
  * @param panel the panel
- * @param x the x
- * @param y the y
- * @param width the width
- * @param height the height
+ * @param x the x coordinate of the top-left corner, in pixels
+ * @param y the y coordinate of the top-left corner, in pixels
+ * @param width the panel's width, in pixels
+ * @param height the panel's height, in pixels
  */
 DVZ_EXPORT void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float height);
 
 
 
 /**
- * Function.
+ * Set the margins of a panel.
  *
  * @param panel the panel
- * @param top the top
- * @param right the right
- * @param bottom the bottom
- * @param left the left
+ * @param top the top margin, in pixels
+ * @param right the right margin, in pixels
+ * @param bottom the bottom margin, in pixels
+ * @param left the left margin, in pixels
  */
 DVZ_EXPORT void
 dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float left);
@@ -221,51 +249,66 @@ dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, float l
 
 
 /**
- * Function.
+ * Return whether a point is inside a panel.
  *
  * @param panel the panel
- * @param pos the pos
- * @returns bool
+ * @param pos the position
+ * @returns true if the position lies within the panel
  */
 DVZ_EXPORT bool dvz_panel_contains(DvzPanel* panel, vec2 pos);
 
 
 
 /**
+ * Return the panel containing a given point.
  *
+ * @param figure the figure
+ * @param pos the position
+ * @returns the panel containing the point, or NULL if there is none
  */
 DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
 
 
 
 /**
+ * Return the Camera of a panel, if there is one.
  *
+ * @param panel the panel
+ * @returns the camera, or NULL if there is none
  */
 DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
 
 
 /**
+ * Return the Panzoom of a panel, if there is one.
  *
+ * @param panel the panel
+ * @returns the panzoom, or NULL if there is none
  */
 DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
 
 
 /**
+ * Return the Arcball of a panel, if there is one.
  *
+ * @param panel the panel
+ * @returns the panzoom, or NULL if there is none
  */
 DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel);
 
 
 
 /**
+ * Trigger a panel update.
  *
+ * @param panel the panel
  */
 DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
 
 
 
 /**
- * Function.
+ * Add a visual to a panel.
  *
  * @param panel the panel
  * @param visual the visual
@@ -275,7 +318,7 @@ DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
 
 
 /**
- * Function.
+ * Destroy a panel.
  *
  * @param panel the panel
  */

@@ -221,7 +221,7 @@ void dvz_figure_destroy(DvzFigure* fig)
 /*  Panel                                                                                        */
 /*************************************************************************************************/
 
-DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h)
+DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
 {
     ANN(fig);
     ANN(fig->scene);
@@ -233,11 +233,11 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float w, float h)
 
     panel->offset_init[0] = x;
     panel->offset_init[1] = y;
-    panel->shape_init[0] = w;
-    panel->shape_init[1] = h;
+    panel->shape_init[0] = width;
+    panel->shape_init[1] = height;
 
     // Create a view.
-    panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){w, h});
+    panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){width, height});
 
     // Append the figure to the scene's figures.
     dvz_list_append(fig->panels, (DvzListItem){.p = (void*)panel});
