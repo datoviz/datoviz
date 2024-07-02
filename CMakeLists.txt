@@ -553,6 +553,7 @@ add_library(datoviz_core STATIC
     "src/_atomic.cpp"
     "src/_list.c"
     "src/_map.cpp"
+    "src/_math.c"
     "src/_mutex.c"
     "src/_prng.cpp"
     "src/_thread.c"

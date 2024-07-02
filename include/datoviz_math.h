@@ -523,14 +523,12 @@ static inline void _dmat4_inv(dmat4 mat, dmat4 dest)
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
+
+
 // Smallest power of 2 larger or equal than a positive integer.
-static inline uint64_t dvz_next_pow2(uint64_t x)
-{
-    uint64_t p = 1;
-    while (p < x)
-        p *= 2;
-    return p;
-}
+DVZ_EXPORT uint64_t dvz_next_pow2(uint64_t x);
 
 
 
@@ -541,17 +539,7 @@ static inline uint64_t dvz_next_pow2(uint64_t x)
  * @param values an array of double numbers
  * @returns the mean
  */
-static inline double dvz_mean(uint32_t n, double* values)
-{
-    ASSERT(n > 0);
-    ASSERT(values != NULL);
-    double mean = 0;
-    for (uint32_t i = 0; i < n; i++)
-        mean += values[i];
-    mean /= n;
-    ASSERT(mean >= 0);
-    return mean;
-}
+DVZ_EXPORT double dvz_mean(uint32_t n, double* values);
 
 
 
@@ -563,20 +551,7 @@ static inline double dvz_mean(uint32_t n, double* values)
  * @param vec2 the min and max
  * @returns the mean
  */
-static inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
-{
-    ASSERT(n > 0);
-    ASSERT(values != NULL);
-    float m = 0, M = 0;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        m = MIN(m, values[i]);
-        M = MAX(M, values[i]);
-    }
-    ASSERT(m <= M);
-    out_min_max[0] = m;
-    out_min_max[1] = M;
-}
+DVZ_EXPORT void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max);
 
 
 
@@ -587,29 +562,7 @@ static inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max
  * @param values an array of float numbers
  * @returns the normalized array
  */
-static inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
-{
-    ASSERT(count > 0);
-    ANN(values);
-
-    vec2 min_max = {0};
-    dvz_min_max(count, values, min_max);
-    float m = min_max[0];
-    float M = min_max[1];
-    if (m == M)
-        M = m + 1;
-    ASSERT(m < M);
-    float d = 1. / (M - m);
-
-    uint8_t* out = (uint8_t*)malloc(count * sizeof(uint8_t));
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        out[i] = round((values[i] - m) * d * 255);
-    }
-
-    return out;
-}
+DVZ_EXPORT uint8_t* dvz_normalize_bytes(uint32_t count, float* values);
 
 
 
@@ -620,26 +573,7 @@ static inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
  * @param values an array of double numbers
  * @param[out] the min and max values
  */
-static inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
-{
-    if (n == 0)
-        return;
-    ASSERT(n > 0);
-    ASSERT(values != NULL);
-    min_max[0] = FLT_MAX;
-    min_max[1] = FLT_MIN;
-    double val = 0;
-    for (uint32_t i = 0; i < n; i++)
-    {
-        val = values[i];
-        if (val < min_max[0])
-            min_max[0] = val;
-
-        if (val > min_max[1])
-            min_max[1] = val;
-    }
-}
-
+DVZ_EXPORT void dvz_range(uint32_t n, double* values, dvec2 min_max);
 
 
 /*************************************************************************************************/
@@ -651,7 +585,7 @@ static inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
  *
  * @returns random number
  */
-static inline uint8_t dvz_rand_byte(void) { return (uint8_t)(rand() % 256); }
+DVZ_EXPORT uint8_t dvz_rand_byte(void);
 
 
 
@@ -660,7 +594,7 @@ static inline uint8_t dvz_rand_byte(void) { return (uint8_t)(rand() % 256); }
  *
  * @returns random number
  */
-static inline int dvz_rand_int(void) { return rand(); }
+DVZ_EXPORT int dvz_rand_int(void);
 
 
 
@@ -669,7 +603,7 @@ static inline int dvz_rand_int(void) { return rand(); }
  *
  * @returns random number
  */
-static inline float dvz_rand_float(void) { return (float)rand() / (float)(RAND_MAX); }
+DVZ_EXPORT float dvz_rand_float(void);
 
 
 
@@ -678,7 +612,7 @@ static inline float dvz_rand_float(void) { return (float)rand() / (float)(RAND_M
  *
  * @returns random number
  */
-static inline double dvz_rand_double(void) { return (double)rand() / (double)(RAND_MAX); }
+DVZ_EXPORT double dvz_rand_double(void);
 
 
 
@@ -687,11 +621,10 @@ static inline double dvz_rand_double(void) { return (double)rand() / (double)(RA
  *
  * @returns random number
  */
-static inline double dvz_rand_normal(void)
-{
-    return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * M_PI * dvz_rand_double());
-}
+DVZ_EXPORT double dvz_rand_normal(void);
 
 
+
+EXTERN_C_OFF
 
 #endif
