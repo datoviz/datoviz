@@ -271,28 +271,28 @@ DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
 
 
 /**
- * Return the Camera of a panel, if there is one.
+ * Set a camera for a panel.
  *
  * @param panel the panel
- * @returns the camera, or NULL if there is none
+ * @returns the camera
  */
 DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
 
 
 /**
- * Return the Panzoom of a panel, if there is one.
+ * Set panzoom interactivity for a panel.
  *
  * @param panel the panel
- * @returns the panzoom, or NULL if there is none
+ * @returns the panzoom
  */
 DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
 
 
 /**
- * Return the Arcball of a panel, if there is one.
+ * Set arcball interactivity for a panel.
  *
  * @param panel the panel
- * @returns the panzoom, or NULL if there is none
+ * @returns the arcball
  */
 DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel);
 
