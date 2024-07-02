@@ -35,7 +35,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
 
     if (width == 0 && height == 0)
     {
-        log_warn("The canvas size is null, it will have to be set correctly before creation.");
+        log_debug("The canvas size is null, it will have to be set correctly before creation.");
     }
 
     DvzCanvas canvas = {0};

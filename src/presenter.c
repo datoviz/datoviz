@@ -71,7 +71,7 @@ static void _create_canvas(DvzPresenter* prt, DvzRequest req)
     canvas->width = window->framebuffer_width;
     canvas->height = window->framebuffer_height;
     canvas->scale = (float)canvas->width / (float)screen_width;
-    log_info("canvas size is %dx%d, scale is %.2f", canvas->width, canvas->height, canvas->scale);
+    log_debug("canvas size is %dx%d, scale is %.2f", canvas->width, canvas->height, canvas->scale);
 
     // Create a surface (requires the renderer's GPU).
     DvzSurface surface = dvz_window_surface(host, window);
