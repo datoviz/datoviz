@@ -343,6 +343,7 @@ if(CC_GCC)
     set(COMMON_FLAGS "${COMMON_FLAGS} \
         -Wlogical-op \
         -Wno-stringop-overread \
+        -fvisibility=hidden \
         -fdiagnostics-color=always \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
 
@@ -713,16 +714,15 @@ set_target_properties(libdatoviz PROPERTIES
     OUTPUT_NAME "datoviz"
 )
 
-set_target_properties(libdatoviz PROPERTIES
-    LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
-)
-
-if(${OS_WIN32})
-    set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
-endif()
-
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
+
+# Select list of exported symbols.
+# set_target_properties(libdatoviz PROPERTIES
+# LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
+# )
+target_link_options(libdatoviz PRIVATE -Wl,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map)
+
 target_link_libraries(libdatoviz
     ${LINK_LIBS}
     external_sources
@@ -732,6 +732,12 @@ target_link_libraries(libdatoviz
     datoviz_scene
     datoviz_resources
 )
+
+set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
+
+if(${OS_WIN32})
+    set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
+endif()
 
 # -------------------------------------------------------------------------------------------------
 # CLI tool
