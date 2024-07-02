@@ -10,6 +10,7 @@
 
 #include "input.h"
 #include "common.h"
+#include "datoviz_types.h"
 #include "glfw_utils.h"
 #include "keyboard.h"
 #include "mouse.h"

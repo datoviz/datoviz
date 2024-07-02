@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_input.h"
+#include "datoviz_types.h"
 #include "glfw_utils.h"
 #include "input.h"
 #include "keyboard.h"

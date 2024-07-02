@@ -13,11 +13,11 @@
 
 #include "_atomic.h"
 #include "_enums.h"
-#include "_input.h"
 #include "_map.h"
 #include "_obj.h"
 #include "_thread.h"
 #include "_time.h"
+#include "datoviz_types.h"
 
 
 
@@ -68,10 +68,6 @@ typedef struct DvzClientPayload DvzClientPayload;
 typedef struct DvzClientEvent DvzClientEvent;
 
 typedef union DvzClientEventUnion DvzClientEventUnion;
-typedef struct DvzWindowEvent DvzWindowEvent;
-typedef struct DvzFrameEvent DvzFrameEvent;
-typedef struct DvzTimerEvent DvzTimerEvent;
-typedef struct DvzRequestsEvent DvzRequestsEvent;
 
 // Forward declarations.
 typedef uint64_t DvzId;
@@ -87,41 +83,6 @@ typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev);
 /*************************************************************************************************/
 /*  Event structs                                                                                */
 /*************************************************************************************************/
-
-struct DvzWindowEvent
-{
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t screen_width;
-    uint32_t screen_height;
-    int flags;
-    void* user_data;
-};
-
-struct DvzFrameEvent
-{
-    uint64_t frame_idx;
-    double time;
-    double interval;
-    void* user_data;
-};
-
-struct DvzTimerEvent
-{
-    uint32_t timer_idx;
-    DvzTimerItem* timer_item;
-    uint64_t step_idx;
-    double time;
-    void* user_data;
-};
-
-struct DvzRequestsEvent
-{
-    // uint32_t request_count;
-    // void* requests;
-    DvzBatch* batch;
-    void* user_data;
-};
 
 union DvzClientEventUnion
 {

@@ -13,8 +13,8 @@
 
 #include "../_atomic.h"
 #include "../_enums.h"
-#include "../_input.h"
 #include "../_obj.h"
+#include "datoviz_types.h"
 #include "dual.h"
 #include "mvp.h"
 #include "viewport.h"

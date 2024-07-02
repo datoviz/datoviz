@@ -28,7 +28,8 @@ Datoviz is still an early stage library and the API may change at any time.
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
-#include "datoviz_enums.h"
+#include "datoviz_keycodes.h"
+#include "datoviz_types.h"
 
 
 

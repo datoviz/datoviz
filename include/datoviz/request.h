@@ -13,7 +13,7 @@
 
 #include "_atomic.h"
 #include "_prng.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 #include "recorder.h"
 
 

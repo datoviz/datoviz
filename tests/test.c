@@ -12,6 +12,7 @@
 
 #include "_thread.h"
 #include "fileio.h"
+#include "input.h"
 #include "scene/test_animation.h"
 #include "scene/test_app.h"
 #include "scene/test_arcball.h"

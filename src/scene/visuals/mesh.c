@@ -11,7 +11,7 @@
 #include "scene/visuals/mesh.h"
 #include "_map.h"
 #include "datoviz.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/graphics.h"

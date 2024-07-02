@@ -12,7 +12,7 @@
 #include "_math.h"
 
 #include "datoviz.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 
 
 

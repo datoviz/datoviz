@@ -11,7 +11,7 @@
 #include "scene/visuals/glyph.h"
 #include "_string.h"
 #include "datoviz.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/atlas.h"

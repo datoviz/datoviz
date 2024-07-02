@@ -10,7 +10,7 @@
 #include "scene/axis.h"
 #include "_macros.h"
 #include "datoviz.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 #include "scene/atlas.h"
 #include "scene/font.h"
 #include "scene/scene.h"

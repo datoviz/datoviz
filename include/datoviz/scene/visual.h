@@ -13,7 +13,7 @@
 
 #include "_enums.h"
 #include "_obj.h"
-#include "datoviz_enums.h"
+#include "datoviz_types.h"
 #include "mvp.h"
 #include "params.h"
 #include "viewport.h"

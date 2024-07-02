@@ -12,6 +12,7 @@
 #include "client.h"
 #include "client_utils.h"
 #include "common.h"
+#include "datoviz_types.h"
 #include "fifo.h"
 #include "glfw_utils.h"
 #include "input.h"
