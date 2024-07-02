@@ -51,7 +51,7 @@ struct DvzSurface
  * @param window the window
  * @returns a surface
  */
-DVZ_EXPORT DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window);
+DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window);
 
 
 
@@ -60,7 +60,7 @@ DVZ_EXPORT DvzSurface dvz_window_surface(DvzHost* host, DvzWindow* window);
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT void dvz_gpu_create_with_surface(DvzGpu* gpu);
+void dvz_gpu_create_with_surface(DvzGpu* gpu);
 
 
 
@@ -69,7 +69,7 @@ DVZ_EXPORT void dvz_gpu_create_with_surface(DvzGpu* gpu);
  *
  * @param surface the surface to destroy
  */
-DVZ_EXPORT void dvz_surface_destroy(DvzHost* host, DvzSurface surface);
+void dvz_surface_destroy(DvzHost* host, DvzSurface surface);
 
 
 

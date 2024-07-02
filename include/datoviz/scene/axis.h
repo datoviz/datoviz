@@ -115,27 +115,27 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzAxis* dvz_axis(DvzBatch* batch, int flags);
+DvzAxis* dvz_axis(DvzBatch* batch, int flags);
 
 
 
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_axis_segment(DvzAxis* axis);
+DvzVisual* dvz_axis_segment(DvzAxis* axis);
 
 
 
 /**
  *
  */
-DVZ_EXPORT DvzVisual* dvz_axis_glyph(DvzAxis* axis);
+DvzVisual* dvz_axis_glyph(DvzAxis* axis);
 
 
 /**
  *
  */
-DVZ_EXPORT int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp);
+int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp);
 // returns 0 for horizontal, 1 for vertical. depends on the intersection or not
 // of two projected boxes with maximal label length
 
@@ -144,21 +144,21 @@ DVZ_EXPORT int dvz_axis_direction(DvzAxis* axis, DvzMVP* mvp);
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
+void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_update(DvzAxis* axis);
+void dvz_axis_update(DvzAxis* axis);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
+void dvz_axis_destroy(DvzAxis* axis);
 
 
 
@@ -169,7 +169,7 @@ DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_size(DvzAxis* axis, float font_size);
+void dvz_axis_size(DvzAxis* axis, float font_size);
 
 
 // voir old datoviz params: number of minor ticks, disable grid
@@ -178,36 +178,35 @@ DVZ_EXPORT void dvz_axis_size(DvzAxis* axis, float font_size);
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_width(DvzAxis* axis, float lim, float grid, float major, float minor);
+void dvz_axis_width(DvzAxis* axis, float lim, float grid, float major, float minor);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float minor);
+void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float minor);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void
-dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
+void dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_anchor(DvzAxis* axis, vec2 anchor);
+void dvz_axis_anchor(DvzAxis* axis, vec2 anchor);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
+void dvz_axis_offset(DvzAxis* axis, vec2 offset);
 
 
 
@@ -218,7 +217,7 @@ DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc);
+void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 range_ndc);
 // compute dmin, dmax of the visible viewbox
 
 
@@ -230,7 +229,7 @@ DVZ_EXPORT void dvz_axis_mvp(DvzAxis* axis, DvzMVP* mvp, dvec2 range_data, vec2 
 /**
  *
  */
-DVZ_EXPORT DvzTickSpec dvz_tick_spec(
+DvzTickSpec dvz_tick_spec(
     vec3 p0, vec3 p1, vec3 vector,                                 // positions in NDC
     double dmin, double dmax, uint32_t tick_count, double* values, // tick positions and values
     uint32_t glyph_count, char* glyphs, uint32_t* index, uint32_t* length); // tick labels
@@ -240,7 +239,7 @@ DVZ_EXPORT DvzTickSpec dvz_tick_spec(
 /**
  *
  */
-DVZ_EXPORT void dvz_axis_ticks(DvzAxis* axis, DvzTickSpec* tick_spec);
+void dvz_axis_ticks(DvzAxis* axis, DvzTickSpec* tick_spec);
 
 
 

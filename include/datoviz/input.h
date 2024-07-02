@@ -45,13 +45,13 @@ struct DvzInput
 /*  Window input functions                                                                       */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzInput* dvz_input(DvzWindow* window);
+DvzInput* dvz_input(DvzWindow* window);
 
-DVZ_EXPORT DvzMouse* dvz_input_mouse(DvzInput* input);
+DvzMouse* dvz_input_mouse(DvzInput* input);
 
-DVZ_EXPORT DvzKeyboard* dvz_input_keyboard(DvzInput* input);
+DvzKeyboard* dvz_input_keyboard(DvzInput* input);
 
-DVZ_EXPORT void dvz_input_destroy(DvzInput* input);
+void dvz_input_destroy(DvzInput* input);
 
 
 

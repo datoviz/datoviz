@@ -141,7 +141,7 @@ EXTERN_C_ON
  *
  * @returns a canvas
  */
-DVZ_EXPORT DvzCanvas
+DvzCanvas
 dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags);
 
 
@@ -151,7 +151,7 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
  *
  * @param canvas a canvas
  */
-DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface);
+void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface);
 
 
 
@@ -160,7 +160,7 @@ DVZ_EXPORT void dvz_canvas_create(DvzCanvas* canvas, DvzSurface surface);
  *
  * @param canvas a canvas
  */
-DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
+void dvz_canvas_reset(DvzCanvas* canvas);
 
 
 
@@ -169,7 +169,7 @@ DVZ_EXPORT void dvz_canvas_reset(DvzCanvas* canvas);
  *
  * @param canvas a canvas
  */
-DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
+void dvz_canvas_recreate(DvzCanvas* canvas);
 
 
 
@@ -181,7 +181,7 @@ DVZ_EXPORT void dvz_canvas_recreate(DvzCanvas* canvas);
  * @param canvas a canvas
  * @param refill refill callback
  */
-DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data);
+void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, void* user_data);
 
 
 
@@ -192,7 +192,7 @@ DVZ_EXPORT void dvz_canvas_refill(DvzCanvas* canvas, DvzCanvasRefill refill, voi
  * @param cmds the commands instance
  * @param idx the command buffer index with the commands instance
  */
-DVZ_EXPORT void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
+void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
 
 
 
@@ -205,7 +205,7 @@ DVZ_EXPORT void dvz_canvas_begin(DvzCanvas* canvas, DvzCommands* cmds, uint32_t 
  * @param offset the viewport offset (x, y)
  * @param size the viewport size (w, h)
  */
-DVZ_EXPORT void dvz_canvas_viewport( //
+void dvz_canvas_viewport( //
     DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size);
 
 
@@ -217,13 +217,13 @@ DVZ_EXPORT void dvz_canvas_viewport( //
  * @param cmds the commands instance
  * @param idx the command buffer index with the commands instance
  */
-DVZ_EXPORT void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
+void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_canvas_download(DvzCanvas* canvas);
+uint8_t* dvz_canvas_download(DvzCanvas* canvas);
 
 
 
@@ -232,7 +232,7 @@ DVZ_EXPORT uint8_t* dvz_canvas_download(DvzCanvas* canvas);
  *
  * @param canvas the canvas to destroy
  */
-DVZ_EXPORT void dvz_canvas_destroy(DvzCanvas* canvas);
+void dvz_canvas_destroy(DvzCanvas* canvas);
 
 
 

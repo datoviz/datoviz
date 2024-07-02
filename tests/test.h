@@ -97,7 +97,7 @@ static DvzHost* get_host(TstSuite* suite)
 /*  Entry-point                                                                                  */
 /*************************************************************************************************/
 
-DVZ_EXPORT int dvz_run_tests(const char* match);
+int dvz_run_tests(const char* match);
 
 
 

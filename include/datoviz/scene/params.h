@@ -77,50 +77,49 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared);
+DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void
-dvz_params_attr(DvzParams* params, uint32_t idx, DvzSize offset, DvzSize item_size);
+void dvz_params_attr(DvzParams* params, uint32_t idx, DvzSize offset, DvzSize item_size);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_params_data(DvzParams* params, void* data);
+void dvz_params_data(DvzParams* params, void* data);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_params_set(DvzParams* params, uint32_t idx, void* item);
+void dvz_params_set(DvzParams* params, uint32_t idx, void* item);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_params_bind(DvzParams* params, DvzId graphics_id, uint32_t slot_idx);
+void dvz_params_bind(DvzParams* params, DvzId graphics_id, uint32_t slot_idx);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_params_update(DvzParams* params);
+void dvz_params_update(DvzParams* params);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_params_destroy(DvzParams* params);
+void dvz_params_destroy(DvzParams* params);
 
 
 

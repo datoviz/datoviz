@@ -33,7 +33,7 @@ EXTERN_C_ON
  * @param[out] size of the file
  * @returns pointer to a byte buffer with the file contents
  */
-DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
+void* dvz_read_file(const char* filename, DvzSize* size);
 
 
 
@@ -44,7 +44,7 @@ DVZ_EXPORT void* dvz_read_file(const char* filename, DvzSize* size);
  * @param[out] size of the file
  * @returns pointer to a buffer containing the array elements
  */
-DVZ_EXPORT char* dvz_read_npy(const char* filename, DvzSize* size);
+char* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 
@@ -56,8 +56,7 @@ DVZ_EXPORT char* dvz_read_npy(const char* filename, DvzSize* size);
  * @param size size of the buffer
  * @param bytes buffer
  */
-DVZ_EXPORT int
-dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
+int dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint8_t* bytes);
 
 
 
@@ -73,8 +72,7 @@ dvz_write_bytes(const char* filename, const char* mode, DvzSize size, const uint
  * @param height height of the image
  * @param image pointer to an array of 24-bit RGB values
  */
-DVZ_EXPORT int
-dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
+int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8_t* image);
 
 
 
@@ -86,7 +84,7 @@ dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param[out] height of the image
  * @returns pointer to a buffer with the loaded RGBA pixel colors
  */
-DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
+uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 
 /**
@@ -97,8 +95,7 @@ DVZ_EXPORT uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
  * @param height height of the image
  * @param image pointer to an array of 24-bit RGB values
  */
-DVZ_EXPORT int
-dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb);
+int dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8_t* rgb);
 
 
 
@@ -111,8 +108,7 @@ dvz_write_png(const char* filename, uint32_t width, uint32_t height, const uint8
  * @param size pointer to a variable that will contain the size of the buffer
  * @param out pointer to a variable that will contain a pointer to the recorded image
  */
-DVZ_EXPORT int
-dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
+int dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size, void** out);
 
 
 
@@ -125,8 +121,7 @@ dvz_make_png(uint32_t width, uint32_t height, const uint8_t* rgb, DvzSize* size,
  * @param height height of the image
  * @returns RGB buffer
  */
-DVZ_EXPORT uint8_t*
-dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
+uint8_t* dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* height);
 
 
 
@@ -138,7 +133,7 @@ dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* heig
  * Read a JPG buffer.
  *
  */
-// DVZ_EXPORT uint8_t* dvz_read_jpg(
+// uint8_t* dvz_read_jpg(
 //     unsigned long size, unsigned char* jpg_bytes, uint32_t* out_width, uint32_t* out_height);
 
 
@@ -148,23 +143,23 @@ dvz_load_png(DvzSize size, unsigned char* bytes, uint32_t* width, uint32_t* heig
 /*************************************************************************************************/
 
 // Defined in cmake-generated file build/_shaders.c
-DVZ_EXPORT unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
+unsigned char* dvz_resource_shader(const char* name, unsigned long* size);
 
 
 
 // Defined in cmake-generated file build/_textures.c
-DVZ_EXPORT unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
+unsigned char* dvz_resource_texture(const char* name, unsigned long* size);
 
 
 
 // Defined in cmake-generated file build/_fonts.c
-DVZ_EXPORT unsigned char* dvz_resource_font(const char* name, unsigned long* size);
+unsigned char* dvz_resource_font(const char* name, unsigned long* size);
 
 
 
 // Defined in cmake-generated file build/_testdata.c
 // NOTE: only built in the CLI, not in libdatoviz.
-DVZ_EXPORT unsigned char* dvz_resource_testdata(const char* name, unsigned long* size);
+unsigned char* dvz_resource_testdata(const char* name, unsigned long* size);
 
 
 

@@ -61,22 +61,22 @@ EXTERN_C_ON
 /*  FPS functions                                                                                */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzFps dvz_fps(void);
+DvzFps dvz_fps(void);
 
 
 
-DVZ_EXPORT void dvz_fps_tick(DvzFps* fps);
+void dvz_fps_tick(DvzFps* fps);
 
 
 
-DVZ_EXPORT void dvz_fps_destroy(DvzFps* fps);
+void dvz_fps_destroy(DvzFps* fps);
 
 
 
 /**
  * Display a FPS histogram.
  */
-DVZ_EXPORT void dvz_fps_histogram(DvzFps* fps);
+void dvz_fps_histogram(DvzFps* fps);
 
 
 

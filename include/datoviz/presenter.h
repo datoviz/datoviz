@@ -102,24 +102,24 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags);
+DvzPresenter* dvz_presenter(DvzRenderer* rd, DvzClient* client, int flags);
 
 
 
-DVZ_EXPORT void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id);
+void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id);
 
 
 
-DVZ_EXPORT void
-dvz_presenter_gui(DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data);
+void dvz_presenter_gui(
+    DvzPresenter* prt, DvzId window_id, DvzGuiCallback callback, void* user_data);
 
 
 
-DVZ_EXPORT void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch);
+void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch);
 
 
 
-DVZ_EXPORT void dvz_presenter_destroy(DvzPresenter* prt);
+void dvz_presenter_destroy(DvzPresenter* prt);
 
 
 

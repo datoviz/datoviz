@@ -137,24 +137,23 @@ EXTERN_C_ON
 /*  Recorder functions                                                                           */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzRecorder* dvz_recorder(int flags);
+DvzRecorder* dvz_recorder(int flags);
 
-DVZ_EXPORT void dvz_recorder_clear(DvzRecorder* recorder);
+void dvz_recorder_clear(DvzRecorder* recorder);
 
-DVZ_EXPORT void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc);
+void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc);
 
-DVZ_EXPORT uint32_t dvz_recorder_size(DvzRecorder* recorder);
+uint32_t dvz_recorder_size(DvzRecorder* recorder);
 
-DVZ_EXPORT void
-dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx);
+void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx);
 
-DVZ_EXPORT void dvz_recorder_cache(DvzRecorder* recorder, bool activate);
+void dvz_recorder_cache(DvzRecorder* recorder, bool activate);
 
-DVZ_EXPORT bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx);
+bool dvz_recorder_is_dirty(DvzRecorder* recorder, uint32_t img_idx);
 
-DVZ_EXPORT void dvz_recorder_set_dirty(DvzRecorder* recorder);
+void dvz_recorder_set_dirty(DvzRecorder* recorder);
 
-DVZ_EXPORT void dvz_recorder_destroy(DvzRecorder* recorder);
+void dvz_recorder_destroy(DvzRecorder* recorder);
 
 
 

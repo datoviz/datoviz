@@ -77,7 +77,7 @@ struct DvzWindow
  * @param height the window height, in pixels
  * @returns the window
  */
-DVZ_EXPORT DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int flags);
+DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int flags);
 
 
 
@@ -86,7 +86,7 @@ DVZ_EXPORT DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t hei
  *
  * @param window the window
  */
-DVZ_EXPORT void dvz_window_poll_size(DvzWindow* window);
+void dvz_window_poll_size(DvzWindow* window);
 
 
 
@@ -97,7 +97,7 @@ DVZ_EXPORT void dvz_window_poll_size(DvzWindow* window);
  * @param width the width, in pixels
  * @param height the height, in pixels
  */
-DVZ_EXPORT void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
+void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height);
 
 
 
@@ -109,7 +109,7 @@ DVZ_EXPORT void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t 
  *
  * @param window the window
  */
-DVZ_EXPORT void dvz_window_destroy(DvzWindow* window);
+void dvz_window_destroy(DvzWindow* window);
 
 
 

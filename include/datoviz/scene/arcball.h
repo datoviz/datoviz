@@ -63,14 +63,14 @@ struct DvzArcball
 /**
  *
  */
-DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
+DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
 
 
 
 /**
  *
  */
-DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
+bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
 
 
 
@@ -79,7 +79,7 @@ DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
  *
  * @param arcball the arcball
  */
-DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* arcball);
+void dvz_arcball_destroy(DvzArcball* arcball);
 
 
 

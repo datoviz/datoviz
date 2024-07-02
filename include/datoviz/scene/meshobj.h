@@ -40,9 +40,9 @@ EXTERN_C_ON
 /*  MeshObj functions                                                                            */
 /*************************************************************************************************/
 
-DVZ_EXPORT void dvz_shape_normalize(DvzShape* shape);
+void dvz_shape_normalize(DvzShape* shape);
 
-DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
+DvzShape dvz_shape_obj(const char* file_path);
 
 
 

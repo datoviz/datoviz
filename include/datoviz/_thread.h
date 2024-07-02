@@ -60,7 +60,7 @@ EXTERN_C_ON
  * @param user_data a pointer to arbitrary user data
  * @returns thread object
  */
-DVZ_EXPORT DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
+DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
 
 
 
@@ -69,7 +69,7 @@ DVZ_EXPORT DvzThread* dvz_thread(DvzThreadCallback callback, void* user_data);
  *
  * @param thread the thread
  */
-DVZ_EXPORT void dvz_thread_lock(DvzThread* thread);
+void dvz_thread_lock(DvzThread* thread);
 
 
 
@@ -78,7 +78,7 @@ DVZ_EXPORT void dvz_thread_lock(DvzThread* thread);
  *
  * @param thread the thread
  */
-DVZ_EXPORT void dvz_thread_unlock(DvzThread* thread);
+void dvz_thread_unlock(DvzThread* thread);
 
 
 
@@ -87,7 +87,7 @@ DVZ_EXPORT void dvz_thread_unlock(DvzThread* thread);
  *
  * @param thread the thread
  */
-DVZ_EXPORT void dvz_thread_join(DvzThread* thread);
+void dvz_thread_join(DvzThread* thread);
 
 
 

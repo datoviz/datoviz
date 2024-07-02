@@ -78,56 +78,56 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzAxes* dvz_axes(DvzPanel* panel, int flags);
+DvzAxes* dvz_axes(DvzPanel* panel, int flags);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_xref(DvzAxes* axes, dvec2 range);
+void dvz_axes_xref(DvzAxes* axes, dvec2 range);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_yref(DvzAxes* axes, dvec2 range);
+void dvz_axes_yref(DvzAxes* axes, dvec2 range);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_xget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
+void dvz_axes_xget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_yget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
+void dvz_axes_yget(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT bool dvz_axes_xset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
+bool dvz_axes_xset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT bool dvz_axes_yset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
+bool dvz_axes_yset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_resize(DvzAxes* axes);
+void dvz_axes_resize(DvzAxes* axes);
 //, uint32_t viewport_width, uint32_t viewport_height);
 
 
@@ -135,14 +135,14 @@ DVZ_EXPORT void dvz_axes_resize(DvzAxes* axes);
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_update(DvzAxes* axes);
+void dvz_axes_update(DvzAxes* axes);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_axes_destroy(DvzAxes* axes);
+void dvz_axes_destroy(DvzAxes* axes);
 
 
 

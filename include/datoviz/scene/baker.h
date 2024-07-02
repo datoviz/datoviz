@@ -137,7 +137,7 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzBaker* dvz_baker(DvzBatch* batch, int flags);
+DvzBaker* dvz_baker(DvzBatch* batch, int flags);
 
 
 
@@ -145,7 +145,7 @@ DVZ_EXPORT DvzBaker* dvz_baker(DvzBatch* batch, int flags);
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count);
+void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t vertex_count);
 
 
 
@@ -153,14 +153,14 @@ DVZ_EXPORT void dvz_baker_create(DvzBaker* baker, uint32_t index_count, uint32_t
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_update(DvzBaker* baker);
+void dvz_baker_update(DvzBaker* baker);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_destroy(DvzBaker* baker);
+void dvz_baker_destroy(DvzBaker* baker);
 
 
 
@@ -172,7 +172,7 @@ DVZ_EXPORT void dvz_baker_destroy(DvzBaker* baker);
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride);
+void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize stride);
 
 
 
@@ -180,7 +180,7 @@ DVZ_EXPORT void dvz_baker_vertex(DvzBaker* baker, uint32_t binding_idx, DvzSize 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_attr(
+void dvz_baker_attr(
     DvzBaker* baker, uint32_t attr_idx, uint32_t binding_idx, DvzSize offset, DvzSize item_size);
 
 
@@ -189,7 +189,7 @@ DVZ_EXPORT void dvz_baker_attr(
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_slot_dat(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
+// void dvz_baker_slot_dat(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
 
 
 
@@ -197,14 +197,14 @@ DVZ_EXPORT void dvz_baker_attr(
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_slot_tex(DvzBaker* baker, uint32_t slot_idx);
+// void dvz_baker_slot_tex(DvzBaker* baker, uint32_t slot_idx);
 
 
 
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_property(
+// void dvz_baker_property(
 //     DvzBaker* baker, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size);
 
 
@@ -212,7 +212,7 @@ DVZ_EXPORT void dvz_baker_attr(
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_indirect(DvzBaker* baker);
+void dvz_baker_indirect(DvzBaker* baker);
 
 
 
@@ -223,21 +223,21 @@ DVZ_EXPORT void dvz_baker_indirect(DvzBaker* baker);
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx);
+void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx);
 
 
 
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_share_binding(DvzBaker* baker, uint32_t binding_idx);
+// void dvz_baker_share_binding(DvzBaker* baker, uint32_t binding_idx);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker);
+void dvz_baker_share_index(DvzBaker* baker);
 
 
 
@@ -248,22 +248,22 @@ DVZ_EXPORT void dvz_baker_share_index(DvzBaker* baker);
 /**
  *
  */
-DVZ_EXPORT void
-dvz_baker_data(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
+void dvz_baker_data(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count, uint32_t index_count);
+void dvz_baker_resize(DvzBaker* baker, uint32_t vertex_count, uint32_t index_count);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_repeat(
+void dvz_baker_repeat(
     DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, uint32_t repeats,
     void* data);
 
@@ -272,22 +272,22 @@ DVZ_EXPORT void dvz_baker_repeat(
 /**
  *
  */
-DVZ_EXPORT void
-dvz_baker_quads(DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
+void dvz_baker_quads(
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* data);
+void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* data);
 
 
 
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void*
+// void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void*
 // data);
 
 
@@ -295,7 +295,7 @@ DVZ_EXPORT void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count,
 /**
  *
  */
-// DVZ_EXPORT void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data);
+// void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data);
 
 
 

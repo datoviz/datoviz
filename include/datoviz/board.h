@@ -68,7 +68,7 @@ EXTERN_C_ON
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzBoard
+DvzBoard
 dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags);
 
 
@@ -79,7 +79,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
  * @param board the board
  * @param format the image format
  */
-DVZ_EXPORT void dvz_board_format(DvzBoard* board, DvzFormat format);
+void dvz_board_format(DvzBoard* board, DvzFormat format);
 
 
 
@@ -89,7 +89,7 @@ DVZ_EXPORT void dvz_board_format(DvzBoard* board, DvzFormat format);
 //  * @param board the board
 //  * @param color the color as an array of 4 bytes
 //  */
-// DVZ_EXPORT void dvz_board_clear_color(DvzBoard* board, cvec4 color);
+// void dvz_board_clear_color(DvzBoard* board, cvec4 color);
 
 
 
@@ -98,7 +98,7 @@ DVZ_EXPORT void dvz_board_format(DvzBoard* board, DvzFormat format);
  *
  * @param board the board
  */
-DVZ_EXPORT void dvz_board_create(DvzBoard* board);
+void dvz_board_create(DvzBoard* board);
 
 
 
@@ -107,7 +107,7 @@ DVZ_EXPORT void dvz_board_create(DvzBoard* board);
  *
  * @param board the board
  */
-DVZ_EXPORT void dvz_board_recreate(DvzBoard* board);
+void dvz_board_recreate(DvzBoard* board);
 
 
 
@@ -118,7 +118,7 @@ DVZ_EXPORT void dvz_board_recreate(DvzBoard* board);
  * @param width the width, in framebuffer pixels
  * @param height the height, in framebuffer pixels
  */
-DVZ_EXPORT void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height);
+void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height);
 
 
 
@@ -129,7 +129,7 @@ DVZ_EXPORT void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t heigh
  * @param cmds the commands instance
  * @param idx the command buffer index with the commands instance
  */
-DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
+void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
 
 
 
@@ -142,7 +142,7 @@ DVZ_EXPORT void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx
  * @param offset the viewport offset (x, y)
  * @param size the viewport size (w, h)
  */
-DVZ_EXPORT void dvz_board_viewport( //
+void dvz_board_viewport( //
     DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size);
 
 
@@ -154,7 +154,7 @@ DVZ_EXPORT void dvz_board_viewport( //
  * @param cmds the commands instance
  * @param idx the command buffer index with the commands instance
  */
-DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
+void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
 
 
 
@@ -163,7 +163,7 @@ DVZ_EXPORT void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx);
  *
  * @param board the board
  */
-DVZ_EXPORT uint8_t* dvz_board_alloc(DvzBoard* board);
+uint8_t* dvz_board_alloc(DvzBoard* board);
 
 
 
@@ -172,7 +172,7 @@ DVZ_EXPORT uint8_t* dvz_board_alloc(DvzBoard* board);
  *
  * @param board the board
  */
-DVZ_EXPORT void dvz_board_free(DvzBoard* board);
+void dvz_board_free(DvzBoard* board);
 
 
 
@@ -183,7 +183,7 @@ DVZ_EXPORT void dvz_board_free(DvzBoard* board);
  * @param size the image buffer size (should always be equal to width*height*4)
  * @param rgb an alread-allocated buffer that will contain the downloaded image
  */
-DVZ_EXPORT void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb);
+void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb);
 
 
 
@@ -192,7 +192,7 @@ DVZ_EXPORT void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb);
  *
  * @param board the board
  */
-DVZ_EXPORT void dvz_board_destroy(DvzBoard* board);
+void dvz_board_destroy(DvzBoard* board);
 
 
 

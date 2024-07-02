@@ -210,7 +210,7 @@ EXTERN_C_ON
  * @param capacity the maximum size
  * @returns a FIFO queue
  */
-DVZ_EXPORT DvzFifo* dvz_fifo(int32_t capacity);
+DvzFifo* dvz_fifo(int32_t capacity);
 
 
 
@@ -220,7 +220,7 @@ DVZ_EXPORT DvzFifo* dvz_fifo(int32_t capacity);
  * @param fifo the FIFO queue
  * @param item the pointer to the object to enqueue
  */
-DVZ_EXPORT void dvz_fifo_enqueue(DvzFifo* fifo, void* item);
+void dvz_fifo_enqueue(DvzFifo* fifo, void* item);
 
 
 
@@ -230,7 +230,7 @@ DVZ_EXPORT void dvz_fifo_enqueue(DvzFifo* fifo, void* item);
  * @param fifo the FIFO queue
  * @param item the pointer to the object to enqueue
  */
-DVZ_EXPORT void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item);
+void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item);
 
 
 
@@ -241,7 +241,7 @@ DVZ_EXPORT void dvz_fifo_enqueue_first(DvzFifo* fifo, void* item);
  * @param wait whether to return immediately, or wait until the queue is non-empty
  * @returns a pointer to the dequeued object, or NULL if the queue is empty
  */
-DVZ_EXPORT void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait);
+void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait);
 
 
 
@@ -251,7 +251,7 @@ DVZ_EXPORT void* dvz_fifo_dequeue(DvzFifo* fifo, bool wait);
  * @param fifo the FIFO queue
  * @returns the number of elements in the queue
  */
-DVZ_EXPORT int dvz_fifo_size(DvzFifo* fifo);
+int dvz_fifo_size(DvzFifo* fifo);
 
 
 
@@ -262,7 +262,7 @@ DVZ_EXPORT int dvz_fifo_size(DvzFifo* fifo);
  * @param idx the index of the item to fetch within the queue
  * @returns the item
  */
-DVZ_EXPORT void* dvz_fifo_get(DvzFifo* fifo, int32_t idx);
+void* dvz_fifo_get(DvzFifo* fifo, int32_t idx);
 
 
 
@@ -274,7 +274,7 @@ DVZ_EXPORT void* dvz_fifo_get(DvzFifo* fifo, int32_t idx);
  * @param fifo the FIFO queue
  * @param max_size the number of items to keep in the queue.
  */
-DVZ_EXPORT void dvz_fifo_discard(DvzFifo* fifo, int max_size);
+void dvz_fifo_discard(DvzFifo* fifo, int max_size);
 
 
 
@@ -283,7 +283,7 @@ DVZ_EXPORT void dvz_fifo_discard(DvzFifo* fifo, int max_size);
  *
  * @param fifo the FIFO queue
  */
-DVZ_EXPORT void dvz_fifo_reset(DvzFifo* fifo);
+void dvz_fifo_reset(DvzFifo* fifo);
 
 
 
@@ -292,7 +292,7 @@ DVZ_EXPORT void dvz_fifo_reset(DvzFifo* fifo);
  *
  * @param fifo the FIFO queue
  */
-DVZ_EXPORT void dvz_fifo_destroy(DvzFifo* fifo);
+void dvz_fifo_destroy(DvzFifo* fifo);
 
 
 
@@ -324,7 +324,7 @@ DVZ_EXPORT void dvz_fifo_destroy(DvzFifo* fifo);
  * @param capacity the maximum size
  * @returns a Deq
  */
-DVZ_EXPORT DvzDeq* dvz_deq(uint32_t nq, DvzSize item_size);
+DvzDeq* dvz_deq(uint32_t nq, DvzSize item_size);
 
 
 
@@ -336,7 +336,7 @@ DVZ_EXPORT DvzDeq* dvz_deq(uint32_t nq, DvzSize item_size);
  * @param type the type to register the callback to
  * @param user_data pointer to arbitrary data to be passed to the callback
  */
-DVZ_EXPORT void dvz_deq_callback(
+void dvz_deq_callback(
     DvzDeq* deq, uint32_t deq_idx, int type, DvzDeqCallback callback, void* user_data);
 
 
@@ -347,7 +347,7 @@ DVZ_EXPORT void dvz_deq_callback(
  * @param deq the Deq
  * @param type the type of the callbacks to clear
  */
-DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
+void dvz_deq_callback_clear(DvzDeq* deq, int type);
 
 
 
@@ -358,7 +358,7 @@ DVZ_EXPORT void dvz_deq_callback_clear(DvzDeq* deq, int type);
  * @param type the event type
  * @param order the callback order (normal or reverse)
  */
-DVZ_EXPORT void dvz_deq_order(DvzDeq* deq, int type, DvzDeqOrder order);
+void dvz_deq_order(DvzDeq* deq, int type, DvzDeqOrder order);
 
 
 
@@ -370,8 +370,7 @@ DVZ_EXPORT void dvz_deq_order(DvzDeq* deq, int type, DvzDeqOrder order);
  * @param queue_count the number of queues in the Proc
  * @param queue_ids the indices of the queues in the Proc
  */
-DVZ_EXPORT void
-dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* queue_ids);
+void dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* queue_ids);
 
 
 
@@ -387,7 +386,7 @@ dvz_deq_proc(DvzDeq* deq, uint32_t proc_idx, uint32_t queue_count, uint32_t* que
  * @param type the item type
  * @param item a pointer to the item
  */
-DVZ_EXPORT void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
+void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
 
 
 
@@ -399,7 +398,7 @@ DVZ_EXPORT void dvz_deq_enqueue(DvzDeq* deq, uint32_t deq_idx, int type, void* i
  * @param type the item type
  * @param item a pointer to the item
  */
-DVZ_EXPORT void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
+void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, void* item);
 
 
 
@@ -410,8 +409,7 @@ DVZ_EXPORT void dvz_deq_enqueue_first(DvzDeq* deq, uint32_t deq_idx, int type, v
  * @param type the type
  * @param item the item
  */
-DVZ_EXPORT DvzDeqItem*
-dvz_deq_enqueue_custom(uint32_t deq_idx, int type, DvzSize item_size, void* item);
+DvzDeqItem* dvz_deq_enqueue_custom(uint32_t deq_idx, int type, DvzSize item_size, void* item);
 
 
 
@@ -422,7 +420,7 @@ dvz_deq_enqueue_custom(uint32_t deq_idx, int type, DvzSize item_size, void* item
  * @param next the second task, that will have to be enqueued after the first task's callbacks
  * @param enqueue_first whether the second task need to be enqueued at the start of the queue
  */
-DVZ_EXPORT void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next, bool enqueue_first);
+void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next, bool enqueue_first);
 
 
 
@@ -433,7 +431,7 @@ DVZ_EXPORT void dvz_deq_enqueue_next(DvzDeqItem* deq_item, DvzDeqItem* next, boo
  * @param deq_item the item to enqueue
  * @param enqueue_first whether to enqueue the task at the start of the queue or not
  */
-DVZ_EXPORT void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_first);
+void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool enqueue_first);
 
 
 
@@ -444,7 +442,7 @@ DVZ_EXPORT void dvz_deq_enqueue_submit(DvzDeq* deq, DvzDeqItem* deq_item, bool e
  * @param deq_idx the queue index
  * @param max_size the maximum number of items to delete
  */
-DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size);
+void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size);
 
 
 
@@ -455,7 +453,7 @@ DVZ_EXPORT void dvz_deq_discard(DvzDeq* deq, uint32_t deq_idx, int max_size);
  * @param deq_idx the queue index
  * @returns the item
  */
-DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
+DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
 
 
 
@@ -466,7 +464,7 @@ DVZ_EXPORT DvzDeqItem dvz_deq_peek_first(DvzDeq* deq, uint32_t deq_idx);
  * @param deq_idx the queue index
  * @returns the item
  */
-DVZ_EXPORT DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
+DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
 
 
 
@@ -477,7 +475,7 @@ DVZ_EXPORT DvzDeqItem dvz_deq_peek_last(DvzDeq* deq, uint32_t deq_idx);
  * @param proc_idx the Proc index
  * @param wait whether this call should be blocking
  */
-DVZ_EXPORT void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait);
+void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait);
 
 
 
@@ -489,7 +487,7 @@ DVZ_EXPORT void dvz_deq_dequeue(DvzDeq* deq, uint32_t proc_idx, bool wait);
  * @param wait whether this call should be blocking
  * @returns the dequeue-ed item if a queue was non-empty, or an empty item
  */
-DVZ_EXPORT DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait);
+DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, bool wait);
 
 
 
@@ -503,7 +501,7 @@ DVZ_EXPORT DvzDeqItem dvz_deq_dequeue_return(DvzDeq* deq, uint32_t proc_idx, boo
  * @param deq the Deq
  * @param proc_idx the Proc index
  */
-DVZ_EXPORT void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx);
+void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx);
 
 
 
@@ -520,7 +518,7 @@ DVZ_EXPORT void dvz_deq_dequeue_loop(DvzDeq* deq, uint32_t proc_idx);
  * @param deq the Deq
  * @param proc_idx the Proc index
  */
-DVZ_EXPORT void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx);
+void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx);
 
 
 
@@ -530,7 +528,7 @@ DVZ_EXPORT void dvz_deq_dequeue_batch(DvzDeq* deq, uint32_t proc_idx);
  * @param deq the Deq
  * @param proc_idx the Proc index
  */
-DVZ_EXPORT void dvz_deq_wait(DvzDeq* deq, uint32_t proc_idx);
+void dvz_deq_wait(DvzDeq* deq, uint32_t proc_idx);
 
 
 
@@ -539,7 +537,7 @@ DVZ_EXPORT void dvz_deq_wait(DvzDeq* deq, uint32_t proc_idx);
  *
  * @param deq the Deq
  */
-DVZ_EXPORT void dvz_deq_stats(DvzDeq* deq);
+void dvz_deq_stats(DvzDeq* deq);
 
 
 
@@ -548,7 +546,7 @@ DVZ_EXPORT void dvz_deq_stats(DvzDeq* deq);
  *
  * @param deq the Deq
  */
-DVZ_EXPORT void dvz_deq_destroy(DvzDeq* deq);
+void dvz_deq_destroy(DvzDeq* deq);
 
 
 

@@ -68,37 +68,37 @@ EXTERN_C_ON
 /*  Keyboard functions                                                                           */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzKeyboard* dvz_keyboard(void);
+DvzKeyboard* dvz_keyboard(void);
 
 
 
-DVZ_EXPORT void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key);
+void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key);
 
 
 
-DVZ_EXPORT void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key);
+void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key);
 
 
 
-DVZ_EXPORT DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx);
+DvzKeyCode dvz_keyboard_get(DvzKeyboard* keyboard, uint32_t key_idx);
 
 
 
-DVZ_EXPORT bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods);
+bool dvz_keyboard_is_pressed(DvzKeyboard* keyboard, DvzKeyCode key, int mods);
 
 
 
-DVZ_EXPORT int dvz_keyboard_mods(DvzKeyboard* keyboard);
+int dvz_keyboard_mods(DvzKeyboard* keyboard);
 
 
 
-DVZ_EXPORT void dvz_keyboard_callback(
+void dvz_keyboard_callback(
     DvzKeyboard* keyboard, DvzKeyboardEventType type, DvzKeyboardCallback callback,
     void* user_data);
 
 
 
-DVZ_EXPORT void dvz_keyboard_destroy(DvzKeyboard* keyboard);
+void dvz_keyboard_destroy(DvzKeyboard* keyboard);
 
 
 

@@ -62,42 +62,42 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzTransform* dvz_transform(DvzBatch* batch, int flags);
+DvzTransform* dvz_transform(DvzBatch* batch, int flags);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_transform_set(DvzTransform* tr, DvzMVP mvp);
+void dvz_transform_set(DvzTransform* tr, DvzMVP mvp);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_transform_update(DvzTransform* tr);
+void dvz_transform_update(DvzTransform* tr);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_transform_next(DvzTransform* tr, DvzTransform* next);
+void dvz_transform_next(DvzTransform* tr, DvzTransform* next);
 
 
 
 /**
  *
  */
-DVZ_EXPORT DvzMVP* dvz_transform_mvp(DvzTransform* tr);
+DvzMVP* dvz_transform_mvp(DvzTransform* tr);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_transform_destroy(DvzTransform* tr);
+void dvz_transform_destroy(DvzTransform* tr);
 
 
 

@@ -60,37 +60,37 @@ EXTERN_C_ON
 
 /**
  */
-DVZ_EXPORT float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
+float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
 
 
 
 /**
  */
-DVZ_EXPORT float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
+float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
+uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_msdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
+uint8_t* dvz_msdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb);
+uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb);
 
 
 
 /**
  */
-DVZ_EXPORT float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb);
+float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb);
 
 
 

@@ -28,8 +28,7 @@ typedef struct DvzGpu DvzGpu;
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT VkShaderModule
-dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
+VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 

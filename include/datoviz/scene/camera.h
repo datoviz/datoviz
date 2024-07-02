@@ -76,7 +76,7 @@ struct DvzCamera
 /**
  *
  */
-DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
+DvzCamera* dvz_camera(float width, float height, int flags);
 
 
 
@@ -85,7 +85,7 @@ DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
  *
  * @param camera the camera
  */
-DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
+void dvz_camera_destroy(DvzCamera* camera);
 
 
 

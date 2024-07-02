@@ -70,21 +70,21 @@ EXTERN_C_ON
  * @param res the DvzResources object
  * @param datalloc the DatAlloc object
  */
-DVZ_EXPORT void dvz_datalloc(DvzGpu* gpu, DvzResources* res, DvzDatAlloc* datalloc);
+void dvz_datalloc(DvzGpu* gpu, DvzResources* res, DvzDatAlloc* datalloc);
 
 
 
-DVZ_EXPORT DvzSize dvz_datalloc_alloc(
+DvzSize dvz_datalloc_alloc(
     DvzDatAlloc* datalloc, DvzResources* res, DvzBufferType type, bool mappable, DvzSize req_size);
 
 
 
-DVZ_EXPORT void
-dvz_datalloc_dealloc(DvzDatAlloc* datalloc, DvzBufferType type, bool mappable, DvzSize offset);
+void dvz_datalloc_dealloc(
+    DvzDatAlloc* datalloc, DvzBufferType type, bool mappable, DvzSize offset);
 
 
 
-DVZ_EXPORT void dvz_datalloc_monitoring(DvzDatAlloc* datalloc, DvzAllocMonitor* out);
+void dvz_datalloc_monitoring(DvzDatAlloc* datalloc, DvzAllocMonitor* out);
 
 
 
@@ -93,7 +93,7 @@ DVZ_EXPORT void dvz_datalloc_monitoring(DvzDatAlloc* datalloc, DvzAllocMonitor* 
  *
  * @param datalloc the DvzDatalloc pointer
  */
-DVZ_EXPORT void dvz_datalloc_stats(DvzDatAlloc* datalloc);
+void dvz_datalloc_stats(DvzDatAlloc* datalloc);
 
 
 
@@ -102,7 +102,7 @@ DVZ_EXPORT void dvz_datalloc_stats(DvzDatAlloc* datalloc);
  *
  * @param datalloc the datalloc
  */
-DVZ_EXPORT void dvz_datalloc_destroy(DvzDatAlloc* datalloc);
+void dvz_datalloc_destroy(DvzDatAlloc* datalloc);
 
 
 

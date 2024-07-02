@@ -230,7 +230,7 @@ struct DvzTransfers
  *
  * @param transfers the DvzTransfers pointer
  */
-DVZ_EXPORT void dvz_transfers(DvzGpu* gpu, DvzTransfers* transfers);
+void dvz_transfers(DvzGpu* gpu, DvzTransfers* transfers);
 
 
 
@@ -246,7 +246,7 @@ DVZ_EXPORT void dvz_transfers(DvzGpu* gpu, DvzTransfers* transfers);
  *
  * @param transfers the DvzTransfers pointer
  */
-DVZ_EXPORT void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx);
+void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx);
 
 
 
@@ -255,7 +255,7 @@ DVZ_EXPORT void dvz_transfers_frame(DvzTransfers* transfers, uint32_t img_idx);
  *
  * @param transfers the DvzTransfers pointer
  */
-DVZ_EXPORT void dvz_transfers_destroy(DvzTransfers* transfers);
+void dvz_transfers_destroy(DvzTransfers* transfers);
 
 
 
@@ -277,7 +277,7 @@ DVZ_EXPORT void dvz_transfers_destroy(DvzTransfers* transfers);
  * @param size the size of the data to upload, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-DVZ_EXPORT void dvz_upload_buffer(
+void dvz_upload_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
     DvzSize offset, DvzSize size, void* data);
 
@@ -295,7 +295,7 @@ DVZ_EXPORT void dvz_upload_buffer(
  * @param size the size of the data to upload, in bytes
  * @param[out] data pointer to a buffer already allocated to contain `size` bytes
  */
-DVZ_EXPORT void dvz_download_buffer(
+void dvz_download_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
     DvzSize offset, DvzSize size, void* data);
 
@@ -314,7 +314,7 @@ DVZ_EXPORT void dvz_download_buffer(
  * @param dst_offset the offset within the target buffer region
  * @param size the size of the data to copy
  */
-DVZ_EXPORT void dvz_copy_buffer(
+void dvz_copy_buffer(
     DvzTransfers* transfers, DvzBufferRegions src, DvzSize src_offset, //
     DvzBufferRegions dst, DvzSize dst_offset, DvzSize size);
 
@@ -333,7 +333,7 @@ DVZ_EXPORT void dvz_copy_buffer(
  * @param size the size of the uploaded data, in bytes
  * @param data pointer to the data to upload to the GPU
  */
-DVZ_EXPORT void dvz_upload_image(
+void dvz_upload_image(
     DvzTransfers* transfers, DvzImages* img, //
     uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
@@ -352,7 +352,7 @@ DVZ_EXPORT void dvz_upload_image(
  * @param size the size of the downloaded data, in bytes
  * @param[out] data pointer to the buffer that will hold the downloaded data
  */
-DVZ_EXPORT void dvz_download_image(
+void dvz_download_image(
     DvzTransfers* transfers, DvzImages* img, //
     uvec3 offset, uvec3 shape, DvzSize size, void* data);
 
@@ -372,7 +372,7 @@ DVZ_EXPORT void dvz_download_image(
  * @param shape the shape of the part of the image to copy
  * @param size the corresponding size of that part, in bytes
  */
-DVZ_EXPORT void dvz_copy_image(
+void dvz_copy_image(
     DvzTransfers* transfers,          //
     DvzImages* src, uvec3 src_offset, //
     DvzImages* dst, uvec3 dst_offset, //

@@ -165,41 +165,41 @@ EXTERN_C_ON
  *
  * @returns a client pointer
  */
-DVZ_EXPORT DvzClient* dvz_client(DvzBackend backend);
+DvzClient* dvz_client(DvzBackend backend);
 
 
 
-DVZ_EXPORT void dvz_client_event(DvzClient* client, DvzClientEvent ev);
+void dvz_client_event(DvzClient* client, DvzClientEvent ev);
 
 
 
-DVZ_EXPORT void dvz_client_callback(
+void dvz_client_callback(
     DvzClient* client, DvzClientEventType type, DvzClientCallbackMode mode,
     DvzClientCallback callback, void* user_data);
 
 
 
-DVZ_EXPORT void dvz_client_process(DvzClient* client);
+void dvz_client_process(DvzClient* client);
 
 
 
-DVZ_EXPORT int dvz_client_frame(DvzClient* client);
+int dvz_client_frame(DvzClient* client);
 
 
 
-DVZ_EXPORT void dvz_client_run(DvzClient* client, uint64_t n_frames);
+void dvz_client_run(DvzClient* client, uint64_t n_frames);
 
 
 
-DVZ_EXPORT void dvz_client_thread(DvzClient* client, uint64_t n_frames);
+void dvz_client_thread(DvzClient* client, uint64_t n_frames);
 
 
 
-DVZ_EXPORT void dvz_client_join(DvzClient* client);
+void dvz_client_join(DvzClient* client);
 
 
 
-DVZ_EXPORT void dvz_client_stop(DvzClient* client);
+void dvz_client_stop(DvzClient* client);
 
 
 

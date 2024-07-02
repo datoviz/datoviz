@@ -100,40 +100,39 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzTicks* dvz_ticks(int flags);
+DvzTicks* dvz_ticks(int flags);
 
 
 
-DVZ_EXPORT void dvz_ticks_size(DvzTicks* ticks, double range_size, double glyph_size);
+void dvz_ticks_size(DvzTicks* ticks, double range_size, double glyph_size);
 
 
 
-DVZ_EXPORT bool
-dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t requested_count);
+bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t requested_count);
 
 
 
-DVZ_EXPORT uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep);
+uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep);
 
 
 
-DVZ_EXPORT DvzTicksFormat dvz_ticks_format(DvzTicks* ticks);
+DvzTicksFormat dvz_ticks_format(DvzTicks* ticks);
 
 
 
-// DVZ_EXPORT uint32_t dvz_ticks_precision(DvzTicks* ticks);
+// uint32_t dvz_ticks_precision(DvzTicks* ticks);
 
 
 
-DVZ_EXPORT bool dvz_ticks_dirty(DvzTicks* ticks, double dmin, double dmax);
+bool dvz_ticks_dirty(DvzTicks* ticks, double dmin, double dmax);
 
 
 
-DVZ_EXPORT void dvz_ticks_print(DvzTicks* ticks);
+void dvz_ticks_print(DvzTicks* ticks);
 
 
 
-DVZ_EXPORT void dvz_ticks_destroy(DvzTicks* ticks);
+void dvz_ticks_destroy(DvzTicks* ticks);
 
 
 

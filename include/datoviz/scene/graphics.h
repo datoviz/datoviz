@@ -77,7 +77,7 @@ EXTERN_C_ON
  * @param type the graphics type
  * @param flags the creation flags for the graphics
  */
-DVZ_EXPORT void dvz_graphics_builtin(
+void dvz_graphics_builtin(
     DvzRenderpass* renderpass, DvzGraphics* graphics, DvzGraphicsType type, int flags);
 
 

@@ -72,7 +72,7 @@ EXTERN_C_ON
  * @param ctx the context
  * @returns the pipelib
  */
-DVZ_EXPORT DvzPipelib* dvz_pipelib(DvzContext* ctx);
+DvzPipelib* dvz_pipelib(DvzContext* ctx);
 
 
 
@@ -86,7 +86,7 @@ DVZ_EXPORT DvzPipelib* dvz_pipelib(DvzContext* ctx);
  * @param flags the graphics creation flags
  * @returns the pipe
  */
-DVZ_EXPORT DvzPipe* dvz_pipelib_graphics(
+DvzPipe* dvz_pipelib_graphics(
     DvzPipelib* lib, DvzContext* ctx, DvzRenderpass* renderpass, DvzGraphicsType type, int flags);
 
 
@@ -98,7 +98,7 @@ DVZ_EXPORT DvzPipe* dvz_pipelib_graphics(
  * @param shader_path the path to the .spv shader file
  * @returns the pipe
  */
-DVZ_EXPORT DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path);
+DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path);
 
 
 
@@ -108,7 +108,7 @@ DVZ_EXPORT DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader
 //  * @param lib the pipelib instance
 //  * @param pipe the pipe to destroy
 //  */
-// DVZ_EXPORT void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe);
+// void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe);
 
 
 
@@ -117,7 +117,7 @@ DVZ_EXPORT DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader
  *
  * @param lib the pipelib instance
  */
-DVZ_EXPORT void dvz_pipelib_destroy(DvzPipelib* lib);
+void dvz_pipelib_destroy(DvzPipelib* lib);
 
 
 EXTERN_C_OFF

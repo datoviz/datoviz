@@ -551,6 +551,7 @@ add_library(external_sources STATIC
 )
 target_include_directories(external_sources PRIVATE ${INCL_DIRS})
 target_compile_options(external_sources PRIVATE -w)
+set_target_properties(external_sources PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz core
@@ -606,6 +607,7 @@ add_library(datoviz_core OBJECT
 target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})
 target_link_libraries(datoviz_core ${LINK_LIBS})
+set_target_properties(datoviz_core PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz requests
@@ -616,6 +618,7 @@ add_library(datoviz_requests OBJECT
 
 target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
+set_target_properties(datoviz_requests PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz app
@@ -626,6 +629,7 @@ add_library(datoviz_app OBJECT
 
 target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
+set_target_properties(datoviz_app PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz scene
@@ -670,15 +674,12 @@ add_library(datoviz_scene OBJECT
     "src/scene/visuals/marker.c"
     "src/scene/visuals/segment.c"
     "src/scene/visuals/volume.c"
-
-    # ${msdfgen_ext}
-    # ${msdfgen_core}
-    # ${msdf_atlas_gen}
 )
 
 target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
 target_link_libraries(datoviz_scene ${LINK_LIBS} ${FREETYPE_LIBRARIES})
+set_target_properties(datoviz_scene PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz resources
@@ -691,6 +692,7 @@ add_library(datoviz_resources OBJECT
 
 target_include_directories(datoviz_resources PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_resources PRIVATE ${COMPILE_DEFINITIONS})
+set_target_properties(datoviz_resources PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
@@ -721,7 +723,8 @@ target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 # set_target_properties(libdatoviz PROPERTIES
 # LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
 # )
-target_link_options(libdatoviz PRIVATE -Wl,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map)
+target_link_options(libdatoviz PRIVATE
+    -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
 
 target_link_libraries(libdatoviz
     ${LINK_LIBS}

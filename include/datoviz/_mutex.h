@@ -48,7 +48,7 @@ EXTERN_C_ON
  *
  * @param mutex the mutex to initialize
  */
-DVZ_EXPORT int dvz_mutex_init(DvzMutex* mutex);
+int dvz_mutex_init(DvzMutex* mutex);
 
 
 
@@ -57,7 +57,7 @@ DVZ_EXPORT int dvz_mutex_init(DvzMutex* mutex);
  *
  * @returns mutex
  */
-DVZ_EXPORT DvzMutex dvz_mutex(void);
+DvzMutex dvz_mutex(void);
 
 
 
@@ -66,7 +66,7 @@ DVZ_EXPORT DvzMutex dvz_mutex(void);
  *
  * @param mutex the mutex
  */
-DVZ_EXPORT int dvz_mutex_lock(DvzMutex* mutex);
+int dvz_mutex_lock(DvzMutex* mutex);
 
 
 
@@ -75,7 +75,7 @@ DVZ_EXPORT int dvz_mutex_lock(DvzMutex* mutex);
  *
  * @param mutex the mutex
  */
-DVZ_EXPORT int dvz_mutex_unlock(DvzMutex* mutex);
+int dvz_mutex_unlock(DvzMutex* mutex);
 
 
 
@@ -84,7 +84,7 @@ DVZ_EXPORT int dvz_mutex_unlock(DvzMutex* mutex);
  *
  * @param mutex the mutex to destroy
  */
-DVZ_EXPORT void dvz_mutex_destroy(DvzMutex* mutex);
+void dvz_mutex_destroy(DvzMutex* mutex);
 
 
 
@@ -97,7 +97,7 @@ DVZ_EXPORT void dvz_mutex_destroy(DvzMutex* mutex);
  *
  * @param cond the cond to initialize
  */
-DVZ_EXPORT int dvz_cond_init(DvzCond* cond);
+int dvz_cond_init(DvzCond* cond);
 
 
 
@@ -106,7 +106,7 @@ DVZ_EXPORT int dvz_cond_init(DvzCond* cond);
  *
  * @returns cond
  */
-DVZ_EXPORT DvzCond dvz_cond(void);
+DvzCond dvz_cond(void);
 
 
 /**
@@ -114,7 +114,7 @@ DVZ_EXPORT DvzCond dvz_cond(void);
  *
  * @param cond the cond
  */
-DVZ_EXPORT int dvz_cond_signal(DvzCond* cond);
+int dvz_cond_signal(DvzCond* cond);
 
 
 
@@ -123,7 +123,7 @@ DVZ_EXPORT int dvz_cond_signal(DvzCond* cond);
  *
  * @param cond the cond
  */
-DVZ_EXPORT int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex);
+int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex);
 
 
 
@@ -133,7 +133,7 @@ DVZ_EXPORT int dvz_cond_wait(DvzCond* cond, DvzMutex* mutex);
  * @param cond the cond
  * @param wait waiting limit
  */
-DVZ_EXPORT int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait);
+int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespec* wait);
 
 
 
@@ -142,7 +142,7 @@ DVZ_EXPORT int dvz_cond_timedwait(DvzCond* cond, DvzMutex* mutex, struct timespe
  *
  * @param cond the cond
  */
-DVZ_EXPORT void dvz_cond_destroy(DvzCond* cond);
+void dvz_cond_destroy(DvzCond* cond);
 
 
 

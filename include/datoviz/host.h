@@ -66,7 +66,7 @@ struct DvzHost
  * @param backend the backend
  * @returns a pointer to the created host
  */
-DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
+DvzHost* dvz_host(DvzBackend backend);
 
 
 
@@ -78,7 +78,7 @@ DVZ_EXPORT DvzHost* dvz_host(DvzBackend backend);
  *
  * @param host the host
  */
-DVZ_EXPORT void dvz_host_wait(DvzHost* host);
+void dvz_host_wait(DvzHost* host);
 
 
 
@@ -89,7 +89,7 @@ DVZ_EXPORT void dvz_host_wait(DvzHost* host);
  *
  * @param host the host to destroy
  */
-DVZ_EXPORT int dvz_host_destroy(DvzHost* host);
+int dvz_host_destroy(DvzHost* host);
 
 
 

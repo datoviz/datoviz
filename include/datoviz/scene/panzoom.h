@@ -73,14 +73,14 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
+DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
 
 
 
 /**
  *
  */
-DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
+bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
 
 
 
@@ -89,7 +89,7 @@ DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
  *
  * @param pz the pz
  */
-DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
+void dvz_panzoom_destroy(DvzPanzoom* pz);
 
 
 

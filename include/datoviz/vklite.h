@@ -640,7 +640,7 @@ EXTERN_C_ON
  * @param idx the GPU index among the system's GPUs
  * @returns a pointer to the created GPU object
  */
-DVZ_EXPORT DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx);
+DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx);
 
 /**
  * Find the "best" GPU on the system.
@@ -651,7 +651,7 @@ DVZ_EXPORT DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx);
  * @param host the host
  * @returns a pointer to the best GPU object
  */
-DVZ_EXPORT DvzGpu* dvz_gpu_best(DvzHost* host);
+DvzGpu* dvz_gpu_best(DvzHost* host);
 
 /**
  * Make a renderpass for a GPU.
@@ -664,7 +664,7 @@ DVZ_EXPORT DvzGpu* dvz_gpu_best(DvzHost* host);
  * @param layout the Vulkan image layout
  * @returns a renderpass structure
  */
-DVZ_EXPORT DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout layout);
+DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkImageLayout layout);
 
 /**
  * Request some features before creating the GPU instance.
@@ -674,7 +674,7 @@ DVZ_EXPORT DvzRenderpass dvz_gpu_renderpass(DvzGpu* gpu, cvec4 clear_color, VkIm
  * @param gpu the GPU
  * @param requested_features the list of requested features
  */
-DVZ_EXPORT void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features);
+void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_features);
 
 /**
  * Request a new Vulkan queue before creating the GPU.
@@ -683,7 +683,7 @@ DVZ_EXPORT void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures r
  * @param idx the queue index (should be regularly increasing: 0, 1, 2...)
  * @param type the queue type
  */
-DVZ_EXPORT void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type);
+void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type);
 
 /**
  * Create a GPU once the features and queues have been set up.
@@ -691,7 +691,7 @@ DVZ_EXPORT void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type);
  * @param gpu the GPU
  * @param surface the surface on which the GPU will need to render
  */
-DVZ_EXPORT void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface);
+void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface);
 
 /**
  * Wait for a queue to be idle.
@@ -702,7 +702,7 @@ DVZ_EXPORT void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface);
  * @param gpu the GPU
  * @param queue_idx the queue index
  */
-DVZ_EXPORT void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx);
+void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx);
 
 /**
  * Full synchronization on a given GPU.
@@ -711,14 +711,14 @@ DVZ_EXPORT void dvz_queue_wait(DvzGpu* gpu, uint32_t queue_idx);
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT void dvz_gpu_wait(DvzGpu* gpu);
+void dvz_gpu_wait(DvzGpu* gpu);
 
 /**
  * Destroy the resources associated to a GPU.
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT void dvz_gpu_destroy(DvzGpu* gpu);
+void dvz_gpu_destroy(DvzGpu* gpu);
 
 
 
@@ -734,7 +734,7 @@ DVZ_EXPORT void dvz_gpu_destroy(DvzGpu* gpu);
  * @param min_img_count the minimum acceptable number of images in the swapchain
  * @returns the swapchain
  */
-DVZ_EXPORT DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_count);
+DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_t min_img_count);
 
 /**
  * Set the swapchain image format.
@@ -742,7 +742,7 @@ DVZ_EXPORT DvzSwapchain dvz_swapchain(DvzGpu* gpu, VkSurfaceKHR surface, uint32_
  * @param swapchain the swapchain
  * @param format the format
  */
-DVZ_EXPORT void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format);
+void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format);
 
 /**
  * Set the swapchain present mode.
@@ -750,7 +750,7 @@ DVZ_EXPORT void dvz_swapchain_format(DvzSwapchain* swapchain, VkFormat format);
  * @param swapchain the swapchain
  * @param present_mode the present mode
  */
-DVZ_EXPORT void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR present_mode);
+void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentModeKHR present_mode);
 
 /**
  * Set the swapchain requested image size.
@@ -759,8 +759,7 @@ DVZ_EXPORT void dvz_swapchain_present_mode(DvzSwapchain* swapchain, VkPresentMod
  * @param width the requested width
  * @param height the requested height
  */
-DVZ_EXPORT void
-dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t height);
+void dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t height);
 
 /**
  * Create the swapchain once it has been set up.
@@ -770,14 +769,14 @@ dvz_swapchain_requested_size(DvzSwapchain* swapchain, uint32_t width, uint32_t h
  *
  * @param swapchain the swapchain
  */
-DVZ_EXPORT void dvz_swapchain_create(DvzSwapchain* swapchain);
+void dvz_swapchain_create(DvzSwapchain* swapchain);
 
 /**
  * Recreate a swapchain (for example after a window resize).
  *
  * @param swapchain the swapchain
  */
-DVZ_EXPORT void dvz_swapchain_recreate(DvzSwapchain* swapchain);
+void dvz_swapchain_recreate(DvzSwapchain* swapchain);
 
 /**
  * Acquire a swapchain image.
@@ -788,7 +787,7 @@ DVZ_EXPORT void dvz_swapchain_recreate(DvzSwapchain* swapchain);
  * @param fences the set of signal fences
  * @param fence_idx the index of the fence to signal after image acquisition
  */
-DVZ_EXPORT void dvz_swapchain_acquire(
+void dvz_swapchain_acquire(
     DvzSwapchain* swapchain, DvzSemaphores* semaphores, uint32_t semaphore_idx, DvzFences* fences,
     uint32_t fence_idx);
 
@@ -800,7 +799,7 @@ DVZ_EXPORT void dvz_swapchain_acquire(
  * @param semaphores the set of waiting semaphores
  * @param semaphore_idx the index of the semaphore to wait on before presentation
  */
-DVZ_EXPORT void dvz_swapchain_present(
+void dvz_swapchain_present(
     DvzSwapchain* swapchain, uint32_t queue_idx, DvzSemaphores* semaphores,
     uint32_t semaphore_idx);
 
@@ -812,7 +811,7 @@ DVZ_EXPORT void dvz_swapchain_present(
  *
  * @param swapchain the swapchain
  */
-DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
+void dvz_swapchain_destroy(DvzSwapchain* swapchain);
 
 
 
@@ -836,7 +835,7 @@ DVZ_EXPORT void dvz_swapchain_destroy(DvzSwapchain* swapchain);
  * @param count the number of command buffers to create
  * @returns the set of command buffers
  */
-DVZ_EXPORT DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count);
+DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count);
 
 /**
  * Start recording a command buffer.
@@ -844,7 +843,7 @@ DVZ_EXPORT DvzCommands dvz_commands(DvzGpu* gpu, uint32_t queue, uint32_t count)
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to begin recording on
  */
-DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
+void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Stop recording a command buffer.
@@ -852,7 +851,7 @@ DVZ_EXPORT void dvz_cmd_begin(DvzCommands* cmds, uint32_t idx);
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to stop the recording on
  */
-DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
+void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Reset a command buffer.
@@ -860,14 +859,14 @@ DVZ_EXPORT void dvz_cmd_end(DvzCommands* cmds, uint32_t idx);
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to reset
  */
-DVZ_EXPORT void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx);
+void dvz_cmd_reset(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Free a set of command buffers.
  *
  * @param cmds the set of command buffers
  */
-DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
+void dvz_cmd_free(DvzCommands* cmds);
 
 /**
  * Submit a command buffer on its queue with inefficient full synchronization.
@@ -877,14 +876,14 @@ DVZ_EXPORT void dvz_cmd_free(DvzCommands* cmds);
  * @param cmds the set of command buffers
  * @param idx the index of the command buffer to submit
  */
-DVZ_EXPORT void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx);
+void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Destroy a set of command buffers.
  *
  * @param cmds the set of command buffers
  */
-DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
+void dvz_commands_destroy(DvzCommands* cmds);
 
 
 
@@ -898,7 +897,7 @@ DVZ_EXPORT void dvz_commands_destroy(DvzCommands* cmds);
  * @param gpu the GPU
  * @returns the buffer
  */
-DVZ_EXPORT DvzBuffer dvz_buffer(DvzGpu* gpu);
+DvzBuffer dvz_buffer(DvzGpu* gpu);
 
 /**
  * Set the buffer size.
@@ -906,7 +905,7 @@ DVZ_EXPORT DvzBuffer dvz_buffer(DvzGpu* gpu);
  * @param buffer the buffer
  * @param size the buffer size, in bytes
  */
-DVZ_EXPORT void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size);
+void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size);
 
 /**
  * Set the buffer type.
@@ -914,7 +913,7 @@ DVZ_EXPORT void dvz_buffer_size(DvzBuffer* buffer, VkDeviceSize size);
  * @param buffer the buffer
  * @param type the buffer type
  */
-DVZ_EXPORT void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type);
+void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type);
 
 /**
  * Set the buffer usage.
@@ -922,7 +921,7 @@ DVZ_EXPORT void dvz_buffer_type(DvzBuffer* buffer, DvzBufferType type);
  * @param buffer the buffer
  * @param usage the buffer usage
  */
-DVZ_EXPORT void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
+void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
 
 /**
  * Set the buffer VMA usage.
@@ -930,7 +929,7 @@ DVZ_EXPORT void dvz_buffer_usage(DvzBuffer* buffer, VkBufferUsageFlags usage);
  * @param buffer the buffer
  * @param usage the buffer usage
  */
-DVZ_EXPORT void dvz_buffer_vma_usage(DvzBuffer* buffer, VmaMemoryUsage vma_usage);
+void dvz_buffer_vma_usage(DvzBuffer* buffer, VmaMemoryUsage vma_usage);
 
 /**
  * Set the buffer memory properties.
@@ -938,7 +937,7 @@ DVZ_EXPORT void dvz_buffer_vma_usage(DvzBuffer* buffer, VmaMemoryUsage vma_usage
  * @param buffer the buffer
  * @param memory the memory properties
  */
-DVZ_EXPORT void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory);
+void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memory);
 
 /**
  * Set the buffer queue access.
@@ -946,14 +945,14 @@ DVZ_EXPORT void dvz_buffer_memory(DvzBuffer* buffer, VkMemoryPropertyFlags memor
  * @param buffer the buffer
  * @param queue_idx the queue index
  */
-DVZ_EXPORT void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx);
+void dvz_buffer_queue_access(DvzBuffer* buffer, uint32_t queue_idx);
 
 /**
  * Create the buffer after it has been set.
  *
  * @param buffer the buffer
  */
-DVZ_EXPORT void dvz_buffer_create(DvzBuffer* buffer);
+void dvz_buffer_create(DvzBuffer* buffer);
 
 /**
  * Resize a buffer.
@@ -961,7 +960,7 @@ DVZ_EXPORT void dvz_buffer_create(DvzBuffer* buffer);
  * @param buffer the buffer
  * @param size the new buffer size, in bytes
  */
-DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size);
+void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size);
 
 /**
  * Memory-map a buffer.
@@ -970,14 +969,14 @@ DVZ_EXPORT void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size);
  * @param offset the offset within the buffer, in bytes
  * @param size the size to map, in bytes
  */
-DVZ_EXPORT void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
+void* dvz_buffer_map(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Unmap a buffer.
  *
  * @param buffer the buffer
  */
-DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
+void dvz_buffer_unmap(DvzBuffer* buffer);
 
 /**
  * Download a buffer data to the CPU.
@@ -993,8 +992,7 @@ DVZ_EXPORT void dvz_buffer_unmap(DvzBuffer* buffer);
  * @param size the size of the region to download, in bytes
  * @param[out] data the buffer to download on (must be allocated with the appropriate size)
  */
-DVZ_EXPORT void
-dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
+void dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
  * Upload data to a GPU buffer.
@@ -1010,15 +1008,15 @@ dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, v
  * @param size the buffer size, in bytes
  * @param data the data to upload
  */
-DVZ_EXPORT void
-dvz_buffer_upload(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
+void dvz_buffer_upload(
+    DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 /**
  * Destroy a buffer
  *
  * @param buffer the buffer
  */
-DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
+void dvz_buffer_destroy(DvzBuffer* buffer);
 
 
 
@@ -1031,7 +1029,7 @@ DVZ_EXPORT void dvz_buffer_destroy(DvzBuffer* buffer);
  * @param size the size of each region, in bytes
  * @param alignment the alignment requirement for the region offsets
  */
-DVZ_EXPORT DvzBufferRegions dvz_buffer_regions(
+DvzBufferRegions dvz_buffer_regions(
     DvzBuffer* buffer, uint32_t count, //
     VkDeviceSize offset, VkDeviceSize size, VkDeviceSize alignment);
 
@@ -1043,15 +1041,15 @@ DVZ_EXPORT DvzBufferRegions dvz_buffer_regions(
  * @param offset the offset
  * @param size the size
  */
-DVZ_EXPORT void*
-dvz_buffer_regions_map(DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
+void* dvz_buffer_regions_map(
+    DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Unmap a set of buffer regions.
  *
  * @param br the buffer regions
  */
-DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
+void dvz_buffer_regions_unmap(DvzBufferRegions* br);
 
 /**
  * Upload data to a mappable buffer region.
@@ -1062,7 +1060,7 @@ DVZ_EXPORT void dvz_buffer_regions_unmap(DvzBufferRegions* br);
  * @param size the size
  * @param data the data to upload
  */
-DVZ_EXPORT void dvz_buffer_regions_upload(
+void dvz_buffer_regions_upload(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 /**
@@ -1074,7 +1072,7 @@ DVZ_EXPORT void dvz_buffer_regions_upload(
  * @param size the size
  * @param data pointer to the buffer where to download to
  */
-DVZ_EXPORT void dvz_buffer_regions_download(
+void dvz_buffer_regions_download(
     DvzBufferRegions* br, uint32_t idx, VkDeviceSize offset, VkDeviceSize size, void* data);
 
 /**
@@ -1087,7 +1085,7 @@ DVZ_EXPORT void dvz_buffer_regions_download(
  * @param size the size, in bytes
  * @param the region idx to copy, or -1 if all regions must be copied
  */
-DVZ_EXPORT void dvz_buffer_regions_copy(
+void dvz_buffer_regions_copy(
     DvzBufferRegions* src, uint32_t src_idx, VkDeviceSize src_offset, //
     DvzBufferRegions* dst, uint32_t dst_idx, VkDeviceSize dst_offset, VkDeviceSize size);
 
@@ -1105,7 +1103,7 @@ DVZ_EXPORT void dvz_buffer_regions_copy(
  * @param count the number of images
  * @returns the images
  */
-DVZ_EXPORT DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count);
+DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count);
 
 /**
  * Set the images format.
@@ -1113,7 +1111,7 @@ DVZ_EXPORT DvzImages dvz_images(DvzGpu* gpu, VkImageType type, uint32_t count);
  * @param images the images
  * @param format the image format
  */
-DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
+void dvz_images_format(DvzImages* img, VkFormat format);
 
 /**
  * Set the images layout.
@@ -1121,7 +1119,7 @@ DVZ_EXPORT void dvz_images_format(DvzImages* img, VkFormat format);
  * @param images the images
  * @param layout the image layout
  */
-DVZ_EXPORT void dvz_images_layout(DvzImages* img, VkImageLayout layout);
+void dvz_images_layout(DvzImages* img, VkImageLayout layout);
 
 /**
  * Set the images shape.
@@ -1129,7 +1127,7 @@ DVZ_EXPORT void dvz_images_layout(DvzImages* img, VkImageLayout layout);
  * @param images the images
  * @param shape the image shape (width, height, depth)
  */
-DVZ_EXPORT void dvz_images_size(DvzImages* img, uvec3 shape);
+void dvz_images_size(DvzImages* img, uvec3 shape);
 
 /**
  * Set the images tiling.
@@ -1137,7 +1135,7 @@ DVZ_EXPORT void dvz_images_size(DvzImages* img, uvec3 shape);
  * @param images the images
  * @param tiling the image tiling
  */
-DVZ_EXPORT void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
+void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
 
 /**
  * Set the images usage.
@@ -1145,7 +1143,7 @@ DVZ_EXPORT void dvz_images_tiling(DvzImages* img, VkImageTiling tiling);
  * @param images the images
  * @param usage the image usage
  */
-DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
+void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
 
 /**
  * Set the images VMA usage.
@@ -1153,7 +1151,7 @@ DVZ_EXPORT void dvz_images_usage(DvzImages* img, VkImageUsageFlags usage);
  * @param images the images
  * @param usage the memory usage
  */
-DVZ_EXPORT void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage);
+void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage);
 
 /**
  * Set the images memory properties.
@@ -1161,7 +1159,7 @@ DVZ_EXPORT void dvz_images_vma_usage(DvzImages* img, VmaMemoryUsage vma_usage);
  * @param images the images
  * @param memory the memory properties
  */
-DVZ_EXPORT void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory);
+void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory);
 
 /**
  * Set the images aspect.
@@ -1169,7 +1167,7 @@ DVZ_EXPORT void dvz_images_memory(DvzImages* img, VkMemoryPropertyFlags memory);
  * @param images the images
  * @param aspect the image aspect
  */
-DVZ_EXPORT void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect);
+void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect);
 
 /**
  * Set the images queue access.
@@ -1180,14 +1178,14 @@ DVZ_EXPORT void dvz_images_aspect(DvzImages* img, VkImageAspectFlags aspect);
  * @param images the images
  * @param queue_idx the queue index
  */
-DVZ_EXPORT void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx);
+void dvz_images_queue_access(DvzImages* img, uint32_t queue_idx);
 
 /**
  * Create the images after they have been set up.
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_create(DvzImages* img);
+void dvz_images_create(DvzImages* img);
 
 /**
  * Resize images.
@@ -1198,7 +1196,7 @@ DVZ_EXPORT void dvz_images_create(DvzImages* img);
  * @param images the images
  * @param new_shape the new shape
  */
-DVZ_EXPORT void dvz_images_resize(DvzImages* img, uvec3 shape);
+void dvz_images_resize(DvzImages* img, uvec3 shape);
 
 /**
  * Transition the images to their layout after creation.
@@ -1208,7 +1206,7 @@ DVZ_EXPORT void dvz_images_resize(DvzImages* img, uvec3 shape);
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_transition(DvzImages* img);
+void dvz_images_transition(DvzImages* img);
 
 /**
  * Download the data from a staging GPU image.
@@ -1220,7 +1218,7 @@ DVZ_EXPORT void dvz_images_transition(DvzImages* img);
  * @param has_alpha whether there is an Alpha component in the output buffer
  * @param[out] out the buffer that will be filled with the image data (must be already allocated)
  */
-DVZ_EXPORT void dvz_images_download(
+void dvz_images_download(
     DvzImages* staging, uint32_t idx, VkDeviceSize bytes_per_component, bool swizzle,
     bool has_alpha, void* out);
 
@@ -1235,8 +1233,8 @@ DVZ_EXPORT void dvz_images_download(
  * @param dst_offset offset within the target texture
  * @param shape shape of the part of the texture to copy
  */
-DVZ_EXPORT void
-dvz_images_copy(DvzImages* src, uvec3 src_offset, DvzImages* dst, uvec3 dst_offset, uvec3 shape);
+void dvz_images_copy(
+    DvzImages* src, uvec3 src_offset, DvzImages* dst, uvec3 dst_offset, uvec3 shape);
 
 /**
  * Copy a buffer to an image.
@@ -1248,7 +1246,7 @@ dvz_images_copy(DvzImages* src, uvec3 src_offset, DvzImages* dst, uvec3 dst_offs
  * @param buf_offset the offset within the buffer region
  * @param size the size of the data to copy
  */
-DVZ_EXPORT void dvz_images_copy_from_buffer(
+void dvz_images_copy_from_buffer(
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size);
 
@@ -1262,7 +1260,7 @@ DVZ_EXPORT void dvz_images_copy_from_buffer(
  * @param buf_offset the offset within the buffer region
  * @param size the size of the data to copy
  */
-DVZ_EXPORT void dvz_images_copy_to_buffer(
+void dvz_images_copy_to_buffer(
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size);
 
@@ -1271,7 +1269,7 @@ DVZ_EXPORT void dvz_images_copy_to_buffer(
  *
  * @param images the images
  */
-DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
+void dvz_images_destroy(DvzImages* img);
 
 
 
@@ -1285,7 +1283,7 @@ DVZ_EXPORT void dvz_images_destroy(DvzImages* img);
  * @param gpu the GPU
  * @returns the sampler object
  */
-DVZ_EXPORT DvzSampler dvz_sampler(DvzGpu* gpu);
+DvzSampler dvz_sampler(DvzGpu* gpu);
 
 /**
  * Set the sampler min filter.
@@ -1293,7 +1291,7 @@ DVZ_EXPORT DvzSampler dvz_sampler(DvzGpu* gpu);
  * @param sampler the sampler
  * @param filter the filter
  */
-DVZ_EXPORT void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter);
+void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter);
 
 /**
  * Set the sampler mag filter.
@@ -1301,7 +1299,7 @@ DVZ_EXPORT void dvz_sampler_min_filter(DvzSampler* sampler, VkFilter filter);
  * @param sampler the sampler
  * @param filter the filter
  */
-DVZ_EXPORT void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter);
+void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter);
 
 /**
  * Set the sampler address mode
@@ -1310,7 +1308,7 @@ DVZ_EXPORT void dvz_sampler_mag_filter(DvzSampler* sampler, VkFilter filter);
  * @param axis the sampler axis
  * @param address_mode the address mode
  */
-DVZ_EXPORT void dvz_sampler_address_mode(
+void dvz_sampler_address_mode(
     DvzSampler* sampler, DvzSamplerAxis axis, VkSamplerAddressMode address_mode);
 
 /**
@@ -1318,14 +1316,14 @@ DVZ_EXPORT void dvz_sampler_address_mode(
  *
  * @param sampler the sampler
  */
-DVZ_EXPORT void dvz_sampler_create(DvzSampler* sampler);
+void dvz_sampler_create(DvzSampler* sampler);
 
 /**
  * Destroy a sampler
  *
  * @param sampler the sampler
  */
-DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
+void dvz_sampler_destroy(DvzSampler* sampler);
 
 
 
@@ -1339,7 +1337,7 @@ DVZ_EXPORT void dvz_sampler_destroy(DvzSampler* sampler);
  * @param gpu the GPU
  * @returns the slots
  */
-DVZ_EXPORT DvzSlots dvz_slots(DvzGpu* gpu);
+DvzSlots dvz_slots(DvzGpu* gpu);
 
 /**
  * Set the slots descriptor.
@@ -1348,7 +1346,7 @@ DVZ_EXPORT DvzSlots dvz_slots(DvzGpu* gpu);
  * @param idx the slot index to set up
  * @param type the descriptor type for that slot
  */
-DVZ_EXPORT void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type);
+void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set up push constants.
@@ -1358,7 +1356,7 @@ DVZ_EXPORT void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorTyp
  * @param size the push constant size, in bytes
  * @param shaders the shader stages that will access the push constant
  */
-DVZ_EXPORT void dvz_slots_push(
+void dvz_slots_push(
     DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
@@ -1366,14 +1364,14 @@ DVZ_EXPORT void dvz_slots_push(
  *
  * @param slots the slots
  */
-DVZ_EXPORT void dvz_slots_create(DvzSlots* slots);
+void dvz_slots_create(DvzSlots* slots);
 
 /**
  * Destroy the slots
  *
  * @param slots the slots
  */
-DVZ_EXPORT void dvz_slots_destroy(DvzSlots* slots);
+void dvz_slots_destroy(DvzSlots* slots);
 
 
 
@@ -1387,7 +1385,7 @@ DVZ_EXPORT void dvz_slots_destroy(DvzSlots* slots);
  * @param slots the slots
  * @param dset_count the number of descriptor sets (number of swapchain images)
  */
-DVZ_EXPORT DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count);
+DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count);
 
 /**
  * Bind a buffer to a slot.
@@ -1396,8 +1394,7 @@ DVZ_EXPORT DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count);
  * @param idx the slot index
  * @param br the buffer regions to bind to that slot
  */
-DVZ_EXPORT void
-dvz_descriptors_buffer(DvzDescriptors* descriptors, uint32_t idx, DvzBufferRegions br);
+void dvz_descriptors_buffer(DvzDescriptors* descriptors, uint32_t idx, DvzBufferRegions br);
 
 /**
  * Bind a texture to a slot.
@@ -1406,7 +1403,7 @@ dvz_descriptors_buffer(DvzDescriptors* descriptors, uint32_t idx, DvzBufferRegio
  * @param idx the slot index
  * @param br the texture to bind to that slot
  */
-DVZ_EXPORT void dvz_descriptors_texture(
+void dvz_descriptors_texture(
     DvzDescriptors* descriptors, uint32_t idx, DvzImages* img, DvzSampler* sampler);
 
 /**
@@ -1414,14 +1411,14 @@ DVZ_EXPORT void dvz_descriptors_texture(
  *
  * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_descriptors_update(DvzDescriptors* descriptors);
+void dvz_descriptors_update(DvzDescriptors* descriptors);
 
 /**
  * Destroy descriptors.
  *
  * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_descriptors_destroy(DvzDescriptors* descriptors);
+void dvz_descriptors_destroy(DvzDescriptors* descriptors);
 
 
 
@@ -1436,14 +1433,14 @@ DVZ_EXPORT void dvz_descriptors_destroy(DvzDescriptors* descriptors);
  * @param shader_path (optional) the path to the `.spirv` file with the compute shader
  * @returns the compute pipeline
  */
-DVZ_EXPORT DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path);
+DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path);
 
 /**
  * Create a compute pipeline after it has been set up.
  *
  * @param compute the compute pipeline
  */
-DVZ_EXPORT void dvz_compute_create(DvzCompute* compute);
+void dvz_compute_create(DvzCompute* compute);
 
 /**
  * Set the GLSL code directly (the library will compile it automatically to SPIRV).
@@ -1451,7 +1448,7 @@ DVZ_EXPORT void dvz_compute_create(DvzCompute* compute);
  * @param compute the compute pipeline
  * @param code the GLSL code defining the compute shader
  */
-DVZ_EXPORT void dvz_compute_code(DvzCompute* compute, const char* code);
+void dvz_compute_code(DvzCompute* compute, const char* code);
 
 /**
  * Declare a slot for the compute pipeline.
@@ -1460,7 +1457,7 @@ DVZ_EXPORT void dvz_compute_code(DvzCompute* compute, const char* code);
  * @param idx the slot index
  * @param type the descriptor type
  */
-DVZ_EXPORT void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type);
+void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set up push constant.
@@ -1470,7 +1467,7 @@ DVZ_EXPORT void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptor
  * @param size the push constant size, in bytes
  * @param shaders the shaders that will need to access the push constant
  */
-DVZ_EXPORT void dvz_compute_push(
+void dvz_compute_push(
     DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
@@ -1479,14 +1476,14 @@ DVZ_EXPORT void dvz_compute_push(
  * @param compute the compute pipeline
  * @param descriptors the descriptors
  */
-DVZ_EXPORT void dvz_compute_descriptors(DvzCompute* compute, DvzDescriptors* descriptors);
+void dvz_compute_descriptors(DvzCompute* compute, DvzDescriptors* descriptors);
 
 /**
  * Destroy a compute pipeline.
  *
  * @param compute the compute pipeline
  */
-DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
+void dvz_compute_destroy(DvzCompute* compute);
 
 
 
@@ -1494,8 +1491,7 @@ DVZ_EXPORT void dvz_compute_destroy(DvzCompute* compute);
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-DVZ_EXPORT VkShaderModule
-dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
+VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 
@@ -1509,7 +1505,7 @@ dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
  * @param gpu the GPU
  * @returns the graphics pipeline
  */
-DVZ_EXPORT DvzGraphics dvz_graphics(DvzGpu* gpu);
+DvzGraphics dvz_graphics(DvzGpu* gpu);
 
 /**
  * Set the renderpass of a graphics pipeline.
@@ -1518,8 +1514,7 @@ DVZ_EXPORT DvzGraphics dvz_graphics(DvzGpu* gpu);
  * @param renderpass the render pass
  * @param subpass the subpass index
  */
-DVZ_EXPORT void
-dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass);
+void dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32_t subpass);
 
 /**
  * NOTE: useless, to delete?
@@ -1528,7 +1523,7 @@ dvz_graphics_renderpass(DvzGraphics* graphics, DvzRenderpass* renderpass, uint32
  * @param graphics the graphics pipeline
  * @param drawing the drawing flags: direct/indirect, flat/indexed
  */
-DVZ_EXPORT void dvz_graphics_drawing(DvzGraphics* graphics, int drawing);
+void dvz_graphics_drawing(DvzGraphics* graphics, int drawing);
 
 /**
  * Set the graphics pipeline primitive topology
@@ -1536,7 +1531,7 @@ DVZ_EXPORT void dvz_graphics_drawing(DvzGraphics* graphics, int drawing);
  * @param graphics the graphics pipeline
  * @param topology the primitive topology
  */
-DVZ_EXPORT void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology);
+void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopology topology);
 
 /**
  * Set the GLSL code of a graphics pipeline.
@@ -1545,8 +1540,8 @@ DVZ_EXPORT void dvz_graphics_primitive(DvzGraphics* graphics, VkPrimitiveTopolog
  * @param stage the shader stage
  * @param code the GLSL code of the shader
  */
-DVZ_EXPORT void
-dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
+void dvz_graphics_shader_glsl(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* code);
 
 /**
  * Set the SPIRV code of a graphics pipeline.
@@ -1556,7 +1551,7 @@ dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage, con
  * @param size the size of the SPIRV buffer, in bytes
  * @param buffer the binary buffer with the SPIRV code
  */
-DVZ_EXPORT void dvz_graphics_shader_spirv(
+void dvz_graphics_shader_spirv(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, VkDeviceSize size, const uint32_t* buffer);
 
 /**
@@ -1566,8 +1561,8 @@ DVZ_EXPORT void dvz_graphics_shader_spirv(
  * @param stage the shader stage
  * @param shader_path the path to the `.spirv` shader file
  */
-DVZ_EXPORT void
-dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
+void dvz_graphics_shader(
+    DvzGraphics* graphics, VkShaderStageFlagBits stage, const char* shader_path);
 
 /**
  * Set the vertex binding.
@@ -1577,7 +1572,7 @@ dvz_graphics_shader(DvzGraphics* graphics, VkShaderStageFlagBits stage, const ch
  * @param stride the stride in the vertex buffer, in bytes
  * @param input_rate the vertex input rate, VK_VERTEX_INPUT_RATE_VERTEX|INSTANCE
  */
-DVZ_EXPORT void dvz_graphics_vertex_binding(
+void dvz_graphics_vertex_binding(
     DvzGraphics* graphics, uint32_t binding, VkDeviceSize stride, VkVertexInputRate input_rate);
 
 /**
@@ -1589,7 +1584,7 @@ DVZ_EXPORT void dvz_graphics_vertex_binding(
  * @param format the format
  * @param offset the offset, in bytes
  */
-DVZ_EXPORT void dvz_graphics_vertex_attr(
+void dvz_graphics_vertex_attr(
     DvzGraphics* graphics, uint32_t binding, uint32_t location, VkFormat format,
     VkDeviceSize offset);
 
@@ -1599,7 +1594,7 @@ DVZ_EXPORT void dvz_graphics_vertex_attr(
  * @param graphics the graphics pipeline
  * @param blend_type the blend type
  */
-DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type);
+void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type);
 
 /**
  * Set the graphics depth test.
@@ -1607,7 +1602,7 @@ DVZ_EXPORT void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_typ
  * @param graphics the graphics pipeline
  * @param depth_test the depth test
  */
-DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test);
+void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest depth_test);
 
 /**
  * Set whether the graphics pipeline supports picking.
@@ -1620,7 +1615,7 @@ DVZ_EXPORT void dvz_graphics_depth_test(DvzGraphics* graphics, DvzDepthTest dept
  * @param graphics the graphics pipeline
  * @param support_pick whether the graphics pipeline supports picking
  */
-DVZ_EXPORT void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick);
+void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick);
 
 /**
  * Set the graphics polygon mode.
@@ -1628,7 +1623,7 @@ DVZ_EXPORT void dvz_graphics_pick(DvzGraphics* graphics, bool support_pick);
  * @param graphics the graphics pipeline
  * @param polygon_mode the polygon mode
  */
-DVZ_EXPORT void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode);
+void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode polygon_mode);
 
 /**
  * Set the graphics cull mode.
@@ -1636,7 +1631,7 @@ DVZ_EXPORT void dvz_graphics_polygon_mode(DvzGraphics* graphics, VkPolygonMode p
  * @param graphics the graphics pipeline
  * @param cull_mode the cull mode
  */
-DVZ_EXPORT void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode);
+void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cull_mode);
 
 /**
  * Set the graphics front face.
@@ -1644,14 +1639,14 @@ DVZ_EXPORT void dvz_graphics_cull_mode(DvzGraphics* graphics, VkCullModeFlags cu
  * @param graphics the graphics pipeline
  * @param front_face the front face
  */
-DVZ_EXPORT void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face);
+void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face);
 
 /**
  * Create a graphics pipeline after it has been set up.
  *
  * @param graphics the graphics pipeline
  */
-DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
+void dvz_graphics_create(DvzGraphics* graphics);
 
 /**
  * Set a descriptor slot for a graphics pipeline.
@@ -1660,7 +1655,7 @@ DVZ_EXPORT void dvz_graphics_create(DvzGraphics* graphics);
  * @param idx the slot index
  * @param type the descriptor type
  */
-DVZ_EXPORT void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type);
+void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set a graphics pipeline push constant.
@@ -1670,7 +1665,7 @@ DVZ_EXPORT void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescrip
  * @param offset the push size, in bytes
  * @param shaders the shader stages that will access the push constant
  */
-DVZ_EXPORT void dvz_graphics_push(
+void dvz_graphics_push(
     DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
@@ -1682,7 +1677,7 @@ DVZ_EXPORT void dvz_graphics_push(
  * @param size the size of the value within the specialization data buffer
  * @param data the specialization data buffer
  */
-DVZ_EXPORT void dvz_graphics_specialization(
+void dvz_graphics_specialization(
     DvzGraphics* graphics, VkShaderStageFlagBits stage, uint32_t constant_id, //
     VkDeviceSize size, void* data);
 
@@ -1691,7 +1686,7 @@ DVZ_EXPORT void dvz_graphics_specialization(
  *
  * @param graphics the graphics pipeline
  */
-DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
+void dvz_graphics_destroy(DvzGraphics* graphics);
 
 
 
@@ -1705,7 +1700,7 @@ DVZ_EXPORT void dvz_graphics_destroy(DvzGraphics* graphics);
  * @param gpu the GPU
  * @returns the barrier
  */
-DVZ_EXPORT DvzBarrier dvz_barrier(DvzGpu* gpu);
+DvzBarrier dvz_barrier(DvzGpu* gpu);
 
 /**
  * Set the barrier stages.
@@ -1714,7 +1709,7 @@ DVZ_EXPORT DvzBarrier dvz_barrier(DvzGpu* gpu);
  * @param src_stage the source stage
  * @param dst_stage the destination stage
  */
-DVZ_EXPORT void dvz_barrier_stages(
+void dvz_barrier_stages(
     DvzBarrier* barrier, VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
 /**
@@ -1723,7 +1718,7 @@ DVZ_EXPORT void dvz_barrier_stages(
  * @param barrier the barrier
  * @param br the buffer regions
  */
-DVZ_EXPORT void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br);
+void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br);
 
 /**
  * Set the barrier buffer queue.
@@ -1732,8 +1727,7 @@ DVZ_EXPORT void dvz_barrier_buffer(DvzBarrier* barrier, DvzBufferRegions br);
  * @param src_queue the source queue index
  * @param dst_queue the destination queue index
  */
-DVZ_EXPORT void
-dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+void dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
 /**
  * Set the barrier buffer access.
@@ -1742,8 +1736,8 @@ dvz_barrier_buffer_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_q
  * @param src_access the source access flags
  * @param dst_access the destination access flags
  */
-DVZ_EXPORT void
-dvz_barrier_buffer_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+void dvz_barrier_buffer_access(
+    DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
 /**
  * Set the barrier images.
@@ -1751,7 +1745,7 @@ dvz_barrier_buffer_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @param barrier the barrier
  * @param images the images
  */
-DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img);
+void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img);
 
 /**
  * Set the barrier images layout.
@@ -1760,8 +1754,8 @@ DVZ_EXPORT void dvz_barrier_images(DvzBarrier* barrier, DvzImages* img);
  * @param src_layout the source layout
  * @param dst_layout the destination layout
  */
-DVZ_EXPORT void
-dvz_barrier_images_layout(DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
+void dvz_barrier_images_layout(
+    DvzBarrier* barrier, VkImageLayout src_layout, VkImageLayout dst_layout);
 
 /**
  * Set the barrier images aspect.
@@ -1769,7 +1763,7 @@ dvz_barrier_images_layout(DvzBarrier* barrier, VkImageLayout src_layout, VkImage
  * @param barrier the barrier
  * @param aspect the aspect
  */
-DVZ_EXPORT void dvz_barrier_images_aspect(DvzBarrier* barrier, VkImageAspectFlags aspect);
+void dvz_barrier_images_aspect(DvzBarrier* barrier, VkImageAspectFlags aspect);
 
 /**
  * Set the barrier images queue.
@@ -1778,8 +1772,7 @@ DVZ_EXPORT void dvz_barrier_images_aspect(DvzBarrier* barrier, VkImageAspectFlag
  * @param src_queue the source queue index
  * @param dst_queue the destination queue index
  */
-DVZ_EXPORT void
-dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
+void dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_queue);
 
 /**
  * Set the barrier images access.
@@ -1788,8 +1781,8 @@ dvz_barrier_images_queue(DvzBarrier* barrier, uint32_t src_queue, uint32_t dst_q
  * @param src_access the source access flags
  * @param dst_access the destination access flags
  */
-DVZ_EXPORT void
-dvz_barrier_images_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
+void dvz_barrier_images_access(
+    DvzBarrier* barrier, VkAccessFlags src_access, VkAccessFlags dst_access);
 
 
 
@@ -1804,21 +1797,21 @@ dvz_barrier_images_access(DvzBarrier* barrier, VkAccessFlags src_access, VkAcces
  * @param count the number of semaphores
  * @returns the semaphores
  */
-DVZ_EXPORT DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count);
+DvzSemaphores dvz_semaphores(DvzGpu* gpu, uint32_t count);
 
 /**
  * Recreate semaphores.
  *
  * @param semaphores the semaphores
  */
-DVZ_EXPORT void dvz_semaphores_recreate(DvzSemaphores* semaphores);
+void dvz_semaphores_recreate(DvzSemaphores* semaphores);
 
 /**
  * Destroy semaphores.
  *
  * @param semaphores the semaphores
  */
-DVZ_EXPORT void dvz_semaphores_destroy(DvzSemaphores* semaphores);
+void dvz_semaphores_destroy(DvzSemaphores* semaphores);
 
 
 
@@ -1834,7 +1827,7 @@ DVZ_EXPORT void dvz_semaphores_destroy(DvzSemaphores* semaphores);
  * @param signaled whether the fences are created in the signaled state or not
  * @returns the fences
  */
-DVZ_EXPORT DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled);
+DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled);
 
 /**
  * Copy a fence from a set of fences to another.
@@ -1844,8 +1837,8 @@ DVZ_EXPORT DvzFences dvz_fences(DvzGpu* gpu, uint32_t count, bool signaled);
  * @param dst_fences the destination fences
  * @param dst_idx the fence index within the destination fences
  */
-DVZ_EXPORT void
-dvz_fences_copy(DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, uint32_t dst_idx);
+void dvz_fences_copy(
+    DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, uint32_t dst_idx);
 
 /**
  * Wait on the GPU until a fence is signaled.
@@ -1853,7 +1846,7 @@ dvz_fences_copy(DvzFences* src_fences, uint32_t src_idx, DvzFences* dst_fences, 
  * @param fences the fences
  * @param idx the fence index
  */
-DVZ_EXPORT void dvz_fences_wait(DvzFences* fences, uint32_t idx);
+void dvz_fences_wait(DvzFences* fences, uint32_t idx);
 
 /**
  * Return whether a fence is ready.
@@ -1861,7 +1854,7 @@ DVZ_EXPORT void dvz_fences_wait(DvzFences* fences, uint32_t idx);
  * @param fences the fences
  * @param idx the fence index
  */
-DVZ_EXPORT bool dvz_fences_ready(DvzFences* fences, uint32_t idx);
+bool dvz_fences_ready(DvzFences* fences, uint32_t idx);
 
 /**
  * Rset the state of a fence.
@@ -1869,14 +1862,14 @@ DVZ_EXPORT bool dvz_fences_ready(DvzFences* fences, uint32_t idx);
  * @param fences the fences
  * @param idx the fence index
  */
-DVZ_EXPORT void dvz_fences_reset(DvzFences* fences, uint32_t idx);
+void dvz_fences_reset(DvzFences* fences, uint32_t idx);
 
 /**
  * Destroy fences.
  *
  * @param fences the fences
  */
-DVZ_EXPORT void dvz_fences_destroy(DvzFences* fences);
+void dvz_fences_destroy(DvzFences* fences);
 
 
 
@@ -1890,7 +1883,7 @@ DVZ_EXPORT void dvz_fences_destroy(DvzFences* fences);
  * @param gpu the GPU
  * @returns the render pass
  */
-DVZ_EXPORT DvzRenderpass dvz_renderpass(DvzGpu* gpu);
+DvzRenderpass dvz_renderpass(DvzGpu* gpu);
 
 /**
  * Set the clear value of a render pass.
@@ -1898,7 +1891,7 @@ DVZ_EXPORT DvzRenderpass dvz_renderpass(DvzGpu* gpu);
  * @param renderpass the render pass
  * @param value the clear value
  */
-DVZ_EXPORT void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue value);
+void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue value);
 
 /**
  * Specify a render pass attachment.
@@ -1909,7 +1902,7 @@ DVZ_EXPORT void dvz_renderpass_clear(DvzRenderpass* renderpass, VkClearValue val
  * @param format the attachment image format
  * @param ref_layout the image layout
  */
-DVZ_EXPORT void dvz_renderpass_attachment(
+void dvz_renderpass_attachment(
     DvzRenderpass* renderpass, uint32_t idx, DvzRenderpassAttachmentType type, VkFormat format,
     VkImageLayout ref_layout);
 
@@ -1921,7 +1914,7 @@ DVZ_EXPORT void dvz_renderpass_attachment(
  * @param src_layout the source layout
  * @param dst_layout the destination layout
  */
-DVZ_EXPORT void dvz_renderpass_attachment_layout(
+void dvz_renderpass_attachment_layout(
     DvzRenderpass* renderpass, uint32_t idx, VkImageLayout src_layout, VkImageLayout dst_layout);
 
 /**
@@ -1932,7 +1925,7 @@ DVZ_EXPORT void dvz_renderpass_attachment_layout(
  * @param load_op the load operation
  * @param store_op the store operation
  */
-DVZ_EXPORT void dvz_renderpass_attachment_ops(
+void dvz_renderpass_attachment_ops(
     DvzRenderpass* renderpass, uint32_t idx, //
     VkAttachmentLoadOp load_op, VkAttachmentStoreOp store_op);
 
@@ -1943,7 +1936,7 @@ DVZ_EXPORT void dvz_renderpass_attachment_ops(
  * @param subpass_idx the subpass index
  * @param attachment_idx the attachment index
  */
-DVZ_EXPORT void dvz_renderpass_subpass_attachment(
+void dvz_renderpass_subpass_attachment(
     DvzRenderpass* renderpass, uint32_t subpass_idx, uint32_t attachment_idx);
 
 /**
@@ -1954,7 +1947,7 @@ DVZ_EXPORT void dvz_renderpass_subpass_attachment(
  * @param src_subpass the source subpass index
  * @param dst_subpass the destination subpass index
  */
-DVZ_EXPORT void dvz_renderpass_subpass_dependency(
+void dvz_renderpass_subpass_dependency(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     uint32_t src_subpass, uint32_t dst_subpass);
 
@@ -1966,7 +1959,7 @@ DVZ_EXPORT void dvz_renderpass_subpass_dependency(
  * @param src_access the source access flags
  * @param dst_access the destinationaccess flags
  */
-DVZ_EXPORT void dvz_renderpass_subpass_dependency_access(
+void dvz_renderpass_subpass_dependency_access(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkAccessFlags src_access, VkAccessFlags dst_access);
 
@@ -1978,7 +1971,7 @@ DVZ_EXPORT void dvz_renderpass_subpass_dependency_access(
  * @param src_stage the source pipeline stages
  * @param dst_stage the destination pipeline stages
  */
-DVZ_EXPORT void dvz_renderpass_subpass_dependency_stage(
+void dvz_renderpass_subpass_dependency_stage(
     DvzRenderpass* renderpass, uint32_t dependency_idx, //
     VkPipelineStageFlags src_stage, VkPipelineStageFlags dst_stage);
 
@@ -1987,14 +1980,14 @@ DVZ_EXPORT void dvz_renderpass_subpass_dependency_stage(
  *
  * @param renderpass the render pass
  */
-DVZ_EXPORT void dvz_renderpass_create(DvzRenderpass* renderpass);
+void dvz_renderpass_create(DvzRenderpass* renderpass);
 
 /**
  * Destroy a render pass.
  *
  * @param renderpass the render pass
  */
-DVZ_EXPORT void dvz_renderpass_destroy(DvzRenderpass* renderpass);
+void dvz_renderpass_destroy(DvzRenderpass* renderpass);
 
 
 
@@ -2008,7 +2001,7 @@ DVZ_EXPORT void dvz_renderpass_destroy(DvzRenderpass* renderpass);
  * @param gpu the GPU
  * @returns the framebuffers
  */
-DVZ_EXPORT DvzFramebuffers dvz_framebuffers(DvzGpu* gpu);
+DvzFramebuffers dvz_framebuffers(DvzGpu* gpu);
 
 /**
  * Set framebuffers attachment.
@@ -2018,7 +2011,7 @@ DVZ_EXPORT DvzFramebuffers dvz_framebuffers(DvzGpu* gpu);
  * @param images the images
  */
 
-DVZ_EXPORT void dvz_framebuffers_attachment(
+void dvz_framebuffers_attachment(
     DvzFramebuffers* framebuffers, uint32_t attachment_idx, DvzImages* img);
 
 /**
@@ -2027,14 +2020,14 @@ DVZ_EXPORT void dvz_framebuffers_attachment(
  * @param framebuffers the framebuffers
  * @param renderpass the render pass
  */
-DVZ_EXPORT void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* renderpass);
+void dvz_framebuffers_create(DvzFramebuffers* framebuffers, DvzRenderpass* renderpass);
 
 /**
  * Destroy a set of framebuffers.
  *
  * @param framebuffers the framebuffers
  */
-DVZ_EXPORT void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers);
+void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers);
 
 
 
@@ -2048,7 +2041,7 @@ DVZ_EXPORT void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers);
  * @param gpu the GPU
  * @returns the submit
  */
-DVZ_EXPORT DvzSubmit dvz_submit(DvzGpu* gpu);
+DvzSubmit dvz_submit(DvzGpu* gpu);
 
 /**
  * Set the command buffers to submit.
@@ -2056,7 +2049,7 @@ DVZ_EXPORT DvzSubmit dvz_submit(DvzGpu* gpu);
  * @param submit the submit object
  * @param cmds the set of command buffers
  */
-DVZ_EXPORT void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands);
+void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands);
 
 /**
  * Set the wait semaphores
@@ -2066,7 +2059,7 @@ DVZ_EXPORT void dvz_submit_commands(DvzSubmit* submit, DvzCommands* commands);
  * @param semaphores the set of semaphores to wait on
  * @param idx the semaphore index to wait on
  */
-DVZ_EXPORT void dvz_submit_wait_semaphores(
+void dvz_submit_wait_semaphores(
     DvzSubmit* submit, VkPipelineStageFlags stage, DvzSemaphores* semaphores, uint32_t idx);
 
 /**
@@ -2076,8 +2069,7 @@ DVZ_EXPORT void dvz_submit_wait_semaphores(
  * @param semaphores the set of semaphores to signal after the commands have completed
  * @param idx the semaphore index to signal
  */
-DVZ_EXPORT void
-dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint32_t idx);
+void dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint32_t idx);
 
 /**
  * Submit the command buffers to their queue.
@@ -2087,15 +2079,14 @@ dvz_submit_signal_semaphores(DvzSubmit* submit, DvzSemaphores* semaphores, uint3
  * @param fences the fences to signal after completion
  * @param fence_idx the fence index to signal
  */
-DVZ_EXPORT void
-dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx);
+void dvz_submit_send(DvzSubmit* submit, uint32_t cmd_idx, DvzFences* fences, uint32_t fence_idx);
 
 /**
  * Reset a submit object.
  *
  * @param submit the submit object
  */
-DVZ_EXPORT void dvz_submit_reset(DvzSubmit* submit);
+void dvz_submit_reset(DvzSubmit* submit);
 
 
 
@@ -2111,7 +2102,7 @@ DVZ_EXPORT void dvz_submit_reset(DvzSubmit* submit);
  * @param renderpass the render pass
  * @param framebuffers the framebuffers
  */
-DVZ_EXPORT void dvz_cmd_begin_renderpass(
+void dvz_cmd_begin_renderpass(
     DvzCommands* cmds, uint32_t idx, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers);
 
 /**
@@ -2120,7 +2111,7 @@ DVZ_EXPORT void dvz_cmd_begin_renderpass(
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  */
-DVZ_EXPORT void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx);
+void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx);
 
 /**
  * Launch a compute task.
@@ -2130,7 +2121,7 @@ DVZ_EXPORT void dvz_cmd_end_renderpass(DvzCommands* cmds, uint32_t idx);
  * @param compute the computer pipeline
  * @param size the task shape
  */
-DVZ_EXPORT void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size);
+void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3 size);
 
 /**
  * Register a barrier.
@@ -2139,7 +2130,7 @@ DVZ_EXPORT void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* com
  * @param idx the index of the command buffer to record
  * @param barrier the barrier
  */
-DVZ_EXPORT void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier);
+void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* barrier);
 
 /**
  * Copy a GPU buffer to a GPU image.
@@ -2152,7 +2143,7 @@ DVZ_EXPORT void dvz_cmd_barrier(DvzCommands* cmds, uint32_t idx, DvzBarrier* bar
  * @param tex_offset the texture offset
  * @param shape the texture shape
  */
-DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
+void dvz_cmd_copy_buffer_to_image(
     DvzCommands* cmds, uint32_t idx,            //
     DvzBuffer* buffer, VkDeviceSize buf_offset, //
     DvzImages* img, uvec3 tex_offset, uvec3 shape);
@@ -2168,7 +2159,7 @@ DVZ_EXPORT void dvz_cmd_copy_buffer_to_image(
  * @param buffer the buffer
  * @param buf_offset the buffer offset
  */
-DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
+void dvz_cmd_copy_image_to_buffer(
     DvzCommands* cmds, uint32_t idx,               //
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBuffer* buffer, VkDeviceSize buf_offset);
@@ -2184,7 +2175,7 @@ DVZ_EXPORT void dvz_cmd_copy_image_to_buffer(
  * @param dst_offset the offset in the target image
  * @param shape the shape of the region to copy
  */
-DVZ_EXPORT void dvz_cmd_copy_image_region(
+void dvz_cmd_copy_image_region(
     DvzCommands* cmds, uint32_t idx,      //
     DvzImages* src_img, ivec3 src_offset, //
     DvzImages* dst_img, ivec3 dst_offset, //
@@ -2198,8 +2189,7 @@ DVZ_EXPORT void dvz_cmd_copy_image_region(
  * @param src_img the source image
  * @param dst_img the destination image
  */
-DVZ_EXPORT void
-dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img);
+void dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImages* dst_img);
 
 /**
  * Set the viewport.
@@ -2208,7 +2198,7 @@ dvz_cmd_copy_image(DvzCommands* cmds, uint32_t idx, DvzImages* src_img, DvzImage
  * @param idx the index of the command buffer to record
  * @param viewport the viewport
  */
-DVZ_EXPORT void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport);
+void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport);
 
 /**
  * Bind a graphics pipeline.
@@ -2217,7 +2207,7 @@ DVZ_EXPORT void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport vie
  * @param idx the index of the command buffer to record
  * @param graphics the graphics pipeline
  */
-DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics);
+void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics);
 
 /**
  * Bind descriptors.
@@ -2227,7 +2217,7 @@ DVZ_EXPORT void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphi
  * @param descriptors the descriptors associated to the pipeline
  * @param dynamic_idx the dynamic uniform buffer index
  */
-DVZ_EXPORT void dvz_cmd_bind_descriptors(
+void dvz_cmd_bind_descriptors(
     DvzCommands* cmds, uint32_t idx, DvzDescriptors* descriptors, uint32_t dynamic_idx);
 
 /**
@@ -2238,7 +2228,7 @@ DVZ_EXPORT void dvz_cmd_bind_descriptors(
  * @param br the buffer regions
  * @param offset the offset within the buffer regions, in bytes
  */
-DVZ_EXPORT void dvz_cmd_bind_vertex_buffer(
+void dvz_cmd_bind_vertex_buffer(
     DvzCommands* cmds, uint32_t idx, uint32_t binding_count, DvzBufferRegions* brs,
     VkDeviceSize* offsets);
 
@@ -2250,7 +2240,7 @@ DVZ_EXPORT void dvz_cmd_bind_vertex_buffer(
  * @param br the buffer regions
  * @param offset the offset within the buffer regions, in bytes
  */
-DVZ_EXPORT void dvz_cmd_bind_index_buffer(
+void dvz_cmd_bind_index_buffer(
     DvzCommands* cmds, uint32_t idx, DvzBufferRegions br, VkDeviceSize offset);
 
 /**
@@ -2261,7 +2251,7 @@ DVZ_EXPORT void dvz_cmd_bind_index_buffer(
  * @param first_vertex index of the first vertex
  * @param vertex_count number of vertices to draw
  */
-DVZ_EXPORT void dvz_cmd_draw(
+void dvz_cmd_draw(
     DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
     uint32_t first_instance, uint32_t instance_count);
 
@@ -2274,7 +2264,7 @@ DVZ_EXPORT void dvz_cmd_draw(
  * @param vertex_offset offset of the vertex
  * @param index_count number of indices to draw
  */
-DVZ_EXPORT void dvz_cmd_draw_indexed(
+void dvz_cmd_draw_indexed(
     DvzCommands* cmds, uint32_t idx, uint32_t first_index, uint32_t vertex_offset,
     uint32_t index_count, uint32_t first_instance, uint32_t instance_count);
 
@@ -2285,7 +2275,7 @@ DVZ_EXPORT void dvz_cmd_draw_indexed(
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-DVZ_EXPORT void dvz_cmd_draw_indirect(
+void dvz_cmd_draw_indirect(
     DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count);
 
 /**
@@ -2295,7 +2285,7 @@ DVZ_EXPORT void dvz_cmd_draw_indirect(
  * @param idx the index of the command buffer to record
  * @param indirect buffer regions with the indirect draw info
  */
-DVZ_EXPORT void dvz_cmd_draw_indexed_indirect(
+void dvz_cmd_draw_indexed_indirect(
     DvzCommands* cmds, uint32_t idx, DvzBufferRegions indirect, uint32_t draw_count);
 
 /**
@@ -2309,7 +2299,7 @@ DVZ_EXPORT void dvz_cmd_draw_indexed_indirect(
  * @param dst_offset the offset in the destination buffer, in bytes
  * @param size the size of the region to copy, in bytes
  */
-DVZ_EXPORT void dvz_cmd_copy_buffer(
+void dvz_cmd_copy_buffer(
     DvzCommands* cmds, uint32_t idx,             //
     DvzBuffer* src_buf, VkDeviceSize src_offset, //
     DvzBuffer* dst_buf, VkDeviceSize dst_offset, //
@@ -2326,7 +2316,7 @@ DVZ_EXPORT void dvz_cmd_copy_buffer(
  * @param size the size in the push constant, in bytes
  * @param data the data to send via the push constant
  */
-DVZ_EXPORT void dvz_cmd_push(
+void dvz_cmd_push(
     DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 

@@ -85,28 +85,28 @@ EXTERN_C_ON
 /**
  *
  */
-DVZ_EXPORT DvzViewset* dvz_viewset(DvzBatch* batch, DvzId canvas_id);
+DvzViewset* dvz_viewset(DvzBatch* batch, DvzId canvas_id);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_viewset_clear(DvzViewset* viewset);
+void dvz_viewset_clear(DvzViewset* viewset);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_viewset_build(DvzViewset* viewset);
+void dvz_viewset_build(DvzViewset* viewset);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_viewset_destroy(DvzViewset* viewset);
+void dvz_viewset_destroy(DvzViewset* viewset);
 
 
 
@@ -117,14 +117,14 @@ DVZ_EXPORT void dvz_viewset_destroy(DvzViewset* viewset);
 /**
  *
  */
-DVZ_EXPORT DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape);
+DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_view_add(
+void dvz_view_add(
     DvzView* view, DvzVisual* visual,                 //
     uint32_t first, uint32_t count,                   // items
     uint32_t first_instance, uint32_t instance_count, // instances
@@ -135,7 +135,7 @@ DVZ_EXPORT void dvz_view_add(
 /**
  *
  */
-DVZ_EXPORT DvzMouseEvent
+DvzMouseEvent
 dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseReference ref);
 
 
@@ -143,28 +143,28 @@ dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseRef
 /**
  *
  */
-DVZ_EXPORT void dvz_view_clear(DvzView* view);
+void dvz_view_clear(DvzView* view);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape);
+void dvz_view_resize(DvzView* view, vec2 offset, vec2 shape);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_view_margins(DvzView* view, vec4 margins);
+void dvz_view_margins(DvzView* view, vec4 margins);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_view_destroy(DvzView* view);
+void dvz_view_destroy(DvzView* view);
 
 
 

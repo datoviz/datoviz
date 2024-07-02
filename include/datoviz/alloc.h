@@ -72,7 +72,7 @@ EXTERN_C_ON
  * @param size the total size of the underlying buffer
  * @param alignment the required alignment for allocations
  */
-DVZ_EXPORT DvzAlloc* dvz_alloc(DvzSize size, DvzSize alignment);
+DvzAlloc* dvz_alloc(DvzSize size, DvzSize alignment);
 
 /**
  * Make a new allocation.
@@ -82,7 +82,7 @@ DVZ_EXPORT DvzAlloc* dvz_alloc(DvzSize size, DvzSize alignment);
  * @param[out] resized if the underlying virtual buffer had to be resized, the new size
  * @returns the offset of the allocated item within the virtual buffer
  */
-DVZ_EXPORT DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized);
+DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* resized);
 
 /**
  * Remove an allocated item.
@@ -90,7 +90,7 @@ DVZ_EXPORT DvzSize dvz_alloc_new(DvzAlloc* alloc, DvzSize req_size, DvzSize* res
  * @param alloc the DvzAlloc pointer
  * @param offset the offset of the allocated item to be removed
  */
-DVZ_EXPORT void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset);
+void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset);
 
 /**
  * Return the size of one allocation at a given offset.
@@ -99,7 +99,7 @@ DVZ_EXPORT void dvz_alloc_free(DvzAlloc* alloc, DvzSize offset);
  * @param offset the offset of the allocation
  * @returns the size of the allocation
  */
-DVZ_EXPORT DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset);
+DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset);
 
 /**
  * Return the total allocated size.
@@ -108,21 +108,21 @@ DVZ_EXPORT DvzSize dvz_alloc_get(DvzAlloc* alloc, DvzSize offset);
  * @param out_alloc the allocated size
  * @param out_total the total size
  */
-DVZ_EXPORT void dvz_alloc_size(DvzAlloc* alloc, DvzSize* out_alloc, DvzSize* out_total);
+void dvz_alloc_size(DvzAlloc* alloc, DvzSize* out_alloc, DvzSize* out_total);
 
 /**
  * Show information about the allocations.
  *
  * @param alloc the DvzAlloc pointer
  */
-DVZ_EXPORT void dvz_alloc_stats(DvzAlloc* alloc);
+void dvz_alloc_stats(DvzAlloc* alloc);
 
 /**
  * Clear all allocations.
  *
  * @param alloc the DvzAlloc pointer
  */
-DVZ_EXPORT void dvz_alloc_clear(DvzAlloc* alloc);
+void dvz_alloc_clear(DvzAlloc* alloc);
 
 
 /**
@@ -130,7 +130,7 @@ DVZ_EXPORT void dvz_alloc_clear(DvzAlloc* alloc);
  *
  * @param alloc the DvzAlloc pointer
  */
-DVZ_EXPORT void dvz_alloc_destroy(DvzAlloc* alloc);
+void dvz_alloc_destroy(DvzAlloc* alloc);
 
 
 

@@ -100,7 +100,7 @@ EXTERN_C_ON
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzPipe dvz_pipe(DvzGpu* gpu);
+DvzPipe dvz_pipe(DvzGpu* gpu);
 
 
 
@@ -110,7 +110,7 @@ DVZ_EXPORT DvzPipe dvz_pipe(DvzGpu* gpu);
  * @param pipe the pipe
  * @param graphics the graphics
  */
-DVZ_EXPORT DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe);
+DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe);
 
 
 
@@ -120,7 +120,7 @@ DVZ_EXPORT DvzGraphics* dvz_pipe_graphics(DvzPipe* pipe);
  * @param pipe the pipe
  * @param compute the compute
  */
-DVZ_EXPORT DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path);
+DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path);
 
 
 
@@ -130,8 +130,7 @@ DVZ_EXPORT DvzCompute* dvz_pipe_compute(DvzPipe* pipe, const char* shader_path);
  * @param pipe the pipe
  * @param dat the dat with the vertex buffer
  */
-DVZ_EXPORT void
-dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize offset);
+void dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize offset);
 
 
 
@@ -141,7 +140,7 @@ dvz_pipe_vertex(DvzPipe* pipe, uint32_t binding_idx, DvzDat* dat_vertex, DvzSize
  * @param pipe the pipe
  * @param dat the dat with the index buffer
  */
-DVZ_EXPORT void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset);
+void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset);
 
 
 
@@ -152,7 +151,7 @@ DVZ_EXPORT void dvz_pipe_index(DvzPipe* pipe, DvzDat* dat_index, DvzSize offset)
  * @param idx the slot index
  * @param dat the dat with the uniform data
  */
-DVZ_EXPORT void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat);
+void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat);
 
 
 
@@ -164,7 +163,7 @@ DVZ_EXPORT void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat);
  * @param tex the tex
  * @param sampler the sampler
  */
-DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler);
+void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler);
 
 
 
@@ -174,7 +173,7 @@ DVZ_EXPORT void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSample
  * @param pipe the pipe
  * @returns whether all descriptors been set or not
  */
-DVZ_EXPORT bool dvz_pipe_complete(DvzPipe* pipe);
+bool dvz_pipe_complete(DvzPipe* pipe);
 
 
 
@@ -183,7 +182,7 @@ DVZ_EXPORT bool dvz_pipe_complete(DvzPipe* pipe);
  *
  * @param pipe the pipe
  */
-DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
+void dvz_pipe_create(DvzPipe* pipe);
 
 
 
@@ -198,7 +197,7 @@ DVZ_EXPORT void dvz_pipe_create(DvzPipe* pipe);
  * @param first_instance index of the first instance
  * @param instance_count number of instances to draw
  */
-DVZ_EXPORT void dvz_pipe_draw( //
+void dvz_pipe_draw( //
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uint32_t first_vertex, uint32_t vertex_count,
     uint32_t first_instance, uint32_t instance_count);
 
@@ -217,7 +216,7 @@ DVZ_EXPORT void dvz_pipe_draw( //
  * @param first_instance index of the first instance
  * @param instance_count number of instances to draw
  */
-DVZ_EXPORT void dvz_pipe_draw_indexed(                                  //
+void dvz_pipe_draw_indexed(                                             //
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx,                     //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count);
@@ -233,7 +232,7 @@ DVZ_EXPORT void dvz_pipe_draw_indexed(                                  //
  * @param dat_indirect dat with the indirect draw info
  * @param draw_count the number of indirect draw calls to make
  */
-DVZ_EXPORT void dvz_pipe_draw_indirect( //
+void dvz_pipe_draw_indirect( //
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count);
 
 
@@ -247,7 +246,7 @@ DVZ_EXPORT void dvz_pipe_draw_indirect( //
  * @param dat_indirect dat with the indirect draw info
  * @param draw_count the number of indirect draw calls to make
  */
-DVZ_EXPORT void dvz_pipe_draw_indexed_indirect( //
+void dvz_pipe_draw_indexed_indirect( //
     DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, DvzDat* dat_indirect, uint32_t draw_count);
 
 
@@ -259,7 +258,7 @@ DVZ_EXPORT void dvz_pipe_draw_indexed_indirect( //
  * @param cmds the command buffers
  * @param idx the command buffer index
  */
-DVZ_EXPORT void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size);
+void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uvec3 size);
 
 
 
@@ -268,7 +267,7 @@ DVZ_EXPORT void dvz_pipe_run(DvzPipe* pipe, DvzCommands* cmds, uint32_t idx, uve
  *
  * @param pipe the pipe
  */
-DVZ_EXPORT void dvz_pipe_destroy(DvzPipe* pipe);
+void dvz_pipe_destroy(DvzPipe* pipe);
 
 
 

@@ -76,52 +76,52 @@ EXTERN_C_ON
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzLabelFormat
+DvzLabelFormat
 dvz_label_format(DvzTicksFormat format, uint32_t precision, int32_t exponent, double offset);
 
 
 
-DVZ_EXPORT DvzLabels* dvz_labels(void);
+DvzLabels* dvz_labels(void);
 
 
 
 // Return the total number of glyphs.
-DVZ_EXPORT uint32_t dvz_labels_generate(
+uint32_t dvz_labels_generate(
     DvzLabels* labels, DvzTicksFormat format, uint32_t precision, //
     int32_t exponent, double offset,                              //
     double lmin, double lmax, double lstep);
 
 
 
-DVZ_EXPORT char* dvz_labels_string(DvzLabels* labels);
+char* dvz_labels_string(DvzLabels* labels);
 
 
 
-DVZ_EXPORT uint32_t* dvz_labels_index(DvzLabels* labels);
+uint32_t* dvz_labels_index(DvzLabels* labels);
 
 
 
-DVZ_EXPORT double* dvz_labels_values(DvzLabels* labels);
+double* dvz_labels_values(DvzLabels* labels);
 
 
 
-DVZ_EXPORT uint32_t* dvz_labels_length(DvzLabels* labels);
+uint32_t* dvz_labels_length(DvzLabels* labels);
 
 
 
-DVZ_EXPORT char* dvz_labels_exponent(DvzLabels* labels);
+char* dvz_labels_exponent(DvzLabels* labels);
 
 
 
-DVZ_EXPORT char* dvz_labels_offset(DvzLabels* labels);
+char* dvz_labels_offset(DvzLabels* labels);
 
 
 
-DVZ_EXPORT void dvz_labels_print(DvzLabels* labels);
+void dvz_labels_print(DvzLabels* labels);
 
 
 
-DVZ_EXPORT void dvz_labels_destroy(DvzLabels* labels);
+void dvz_labels_destroy(DvzLabels* labels);
 
 
 

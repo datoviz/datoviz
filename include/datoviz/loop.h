@@ -69,27 +69,27 @@ EXTERN_C_ON
  * @param gpu the GPU
  * @param flags the flags
  */
-DVZ_EXPORT DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
+DvzLoop* dvz_loop(DvzGpu* gpu, uint32_t width, uint32_t height, int flags);
 
 /**
  */
-DVZ_EXPORT void dvz_loop_refill(DvzLoop* loop, DvzCanvasRefill callback, void* user_data);
+void dvz_loop_refill(DvzLoop* loop, DvzCanvasRefill callback, void* user_data);
 
 /**
  */
-DVZ_EXPORT void dvz_loop_overlay(DvzLoop* loop, DvzLoopOverlay callback, void* user_data);
+void dvz_loop_overlay(DvzLoop* loop, DvzLoopOverlay callback, void* user_data);
 
 /**
  */
-DVZ_EXPORT int dvz_loop_frame(DvzLoop* loop);
+int dvz_loop_frame(DvzLoop* loop);
 
 /**
  */
-DVZ_EXPORT void dvz_loop_run(DvzLoop* loop, uint64_t n_frames);
+void dvz_loop_run(DvzLoop* loop, uint64_t n_frames);
 
 /**
  */
-DVZ_EXPORT void dvz_loop_destroy(DvzLoop* loop);
+void dvz_loop_destroy(DvzLoop* loop);
 
 
 

@@ -95,7 +95,7 @@ EXTERN_C_ON
  * @param flags renderer creation flags
  * @returns the renderer
  */
-DVZ_EXPORT DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags);
+DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags);
 
 
 
@@ -105,7 +105,7 @@ DVZ_EXPORT DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags);
  * @param rd the renderer
  * @param req the request
  */
-DVZ_EXPORT void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
+void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
 
 
 
@@ -116,7 +116,7 @@ DVZ_EXPORT void dvz_renderer_request(DvzRenderer* rd, DvzRequest req);
  * @param count the number of requests to submit
  * @param reqs an array of requests
  */
-DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
+void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
 
 
 
@@ -127,7 +127,7 @@ DVZ_EXPORT void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzReques
  * @param id the board id
  * @returns the board
  */
-DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
+DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
 
 
 
@@ -138,7 +138,7 @@ DVZ_EXPORT DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
  * @param id the canvas id
  * @returns the canvas
  */
-DVZ_EXPORT DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);
+DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);
 
 
 
@@ -149,7 +149,7 @@ DVZ_EXPORT DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id);
  * @param id the dat id
  * @returns the dat
  */
-DVZ_EXPORT DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id);
+DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id);
 
 
 
@@ -160,7 +160,7 @@ DVZ_EXPORT DvzDat* dvz_renderer_dat(DvzRenderer* rd, DvzId id);
  * @param id the tex id
  * @returns the tex
  */
-DVZ_EXPORT DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id);
+DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id);
 
 
 
@@ -171,7 +171,7 @@ DVZ_EXPORT DvzTex* dvz_renderer_tex(DvzRenderer* rd, DvzId id);
  * @param id the pipe id
  * @returns the pipe
  */
-DVZ_EXPORT DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
+DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
 
 
 
@@ -184,7 +184,7 @@ DVZ_EXPORT DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
  * @param rgb a pointer to the image, or NULL if this array should be handled by datoviz
  * @returns a pointer to the image
  */
-DVZ_EXPORT uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb);
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb);
 
 
 
@@ -193,7 +193,7 @@ DVZ_EXPORT uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* si
  *
  * @param rd the renderer
  */
-DVZ_EXPORT void dvz_renderer_destroy(DvzRenderer* rd);
+void dvz_renderer_destroy(DvzRenderer* rd);
 
 
 

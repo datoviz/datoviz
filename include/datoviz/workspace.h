@@ -74,7 +74,7 @@ EXTERN_C_ON
  * @param flags the flags
  * @returns the workspace
  */
-DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
+DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
 
 
 
@@ -86,8 +86,7 @@ DVZ_EXPORT DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
  * @param height the board height
  * @param flags the board creation flags
  */
-DVZ_EXPORT DvzBoard*
-dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
+DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
 
 
 
@@ -99,7 +98,7 @@ dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, in
  * @param height the canvas height
  * @param flags the canvas creation flags
  */
-DVZ_EXPORT DvzCanvas*
+DvzCanvas*
 dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
 
 
@@ -109,7 +108,7 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
  *
  * @param workspace the workspace
  */
-DVZ_EXPORT void dvz_workspace_destroy(DvzWorkspace* workspace);
+void dvz_workspace_destroy(DvzWorkspace* workspace);
 
 
 

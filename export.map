@@ -1,0 +1,8 @@
+{
+    global:
+    	dvz*;
+    local:
+        _Z*;
+        vk*;
+        *;
+};

@@ -64,90 +64,90 @@ EXTERN_C_ON
 
 /**
  */
-DVZ_EXPORT DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes);
+DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_clear(DvzAtlas* atlas);
+void dvz_atlas_clear(DvzAtlas* atlas);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_codepoints(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
+void dvz_atlas_codepoints(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_string(DvzAtlas* atlas, const char* string);
+void dvz_atlas_string(DvzAtlas* atlas, const char* string);
 
 
 
 /**
  */
-DVZ_EXPORT int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords);
+int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords);
 
 
 
 /**
  */
-DVZ_EXPORT vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
+vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_load(DvzAtlas* atlas);
+void dvz_atlas_load(DvzAtlas* atlas);
 
 
 
 /**
  */
-DVZ_EXPORT int dvz_atlas_generate(DvzAtlas* atlas);
+int dvz_atlas_generate(DvzAtlas* atlas);
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_shape(DvzAtlas* atlas, uvec3 shape);
-
-
-
-/**
- */
-DVZ_EXPORT bool dvz_atlas_valid(DvzAtlas* atlas);
+void dvz_atlas_shape(DvzAtlas* atlas, uvec3 shape);
 
 
 
 /**
  */
-DVZ_EXPORT uint8_t* dvz_atlas_rgb(DvzAtlas* atlas);
+bool dvz_atlas_valid(DvzAtlas* atlas);
 
 
 
 /**
  */
-DVZ_EXPORT DvzSize dvz_atlas_size(DvzAtlas* atlas);
+uint8_t* dvz_atlas_rgb(DvzAtlas* atlas);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
+DvzSize dvz_atlas_size(DvzAtlas* atlas);
 
 
 
 /**
  */
-DVZ_EXPORT DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
+void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
 
 
 
 /**
  */
-DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
+DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
+
+
+
+/**
+ */
+void dvz_atlas_destroy(DvzAtlas* atlas);
 
 
 
@@ -157,7 +157,7 @@ DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
 
 /**
  */
-DVZ_EXPORT DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file);
+DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file);
 
 
 

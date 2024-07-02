@@ -71,36 +71,36 @@ EXTERN_C_ON
 /*  Mouse functions                                                                              */
 /*************************************************************************************************/
 
-DVZ_EXPORT DvzMouse* dvz_mouse(void);
+DvzMouse* dvz_mouse(void);
 
 
 
-DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
+void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
 
 
 
-DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
+void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
-DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
+void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
-DVZ_EXPORT void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
+void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
 
 
 
-DVZ_EXPORT void dvz_mouse_tick(DvzMouse* mouse, double time);
+void dvz_mouse_tick(DvzMouse* mouse, double time);
 
 
 
-DVZ_EXPORT void dvz_mouse_callback(
+void dvz_mouse_callback(
     DvzMouse* mouse, DvzMouseEventType type, DvzMouseCallback callback, void* user_data);
 
 
 
-DVZ_EXPORT void dvz_mouse_destroy(DvzMouse* mouse);
+void dvz_mouse_destroy(DvzMouse* mouse);
 
 
 

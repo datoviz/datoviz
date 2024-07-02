@@ -123,7 +123,7 @@ EXTERN_C_ON
  * @param gpu the GPU
  * @param res the DvzResources pointer
  */
-DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
+void dvz_resources(DvzGpu* gpu, DvzResources* res);
 
 
 
@@ -135,7 +135,7 @@ DVZ_EXPORT void dvz_resources(DvzGpu* gpu, DvzResources* res);
  * @param mappable whether the buffer should be mappable
  * @param mappable the buffer size
  */
-DVZ_EXPORT DvzBuffer*
+DvzBuffer*
 dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSize size);
 
 
@@ -148,8 +148,7 @@ dvz_resources_buffer(DvzResources* res, DvzBufferType type, bool mappable, DvzSi
  * @param shape the width, height, and depth
  * @param format the image format
  */
-DVZ_EXPORT DvzImages*
-dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format);
+DvzImages* dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat format);
 
 
 
@@ -161,8 +160,7 @@ dvz_resources_image(DvzResources* res, DvzTexDims dims, uvec3 shape, DvzFormat f
  * @param filter the sampler filtering
  * @param mode the address mode (along all dimensions)
  */
-DVZ_EXPORT DvzSampler*
-dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode);
+DvzSampler* dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode mode);
 
 
 
@@ -171,7 +169,7 @@ dvz_resources_sampler(DvzResources* res, DvzFilter filter, DvzSamplerAddressMode
  *
  * @param res the DvzResources pointer
  */
-DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
+void dvz_resources_destroy(DvzResources* res);
 
 
 
@@ -205,7 +203,7 @@ DVZ_EXPORT void dvz_resources_destroy(DvzResources* res);
  * @param flags the flags
  * @returns the newly-allocated Dat
  */
-DVZ_EXPORT DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags);
+DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags);
 
 
 
@@ -221,7 +219,7 @@ DVZ_EXPORT DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, in
  * @param dat the Dat
  * @param new_size the new size
  */
-DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
+void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
 
 
 
@@ -240,7 +238,7 @@ DVZ_EXPORT void dvz_dat_resize(DvzDat* dat, DvzSize new_size);
  * @param size the size of the data to upload to the Dat
  * @param wait whether this function should wait until the upload is complete or not
  */
-DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
+void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
 
 
@@ -252,7 +250,7 @@ DVZ_EXPORT void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* 
  * @param size the size of the data to download from the Dat
  * @param wait whether this function should wait until the download is complete or not
  */
-DVZ_EXPORT void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
+void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool wait);
 
 
 
@@ -264,7 +262,7 @@ DVZ_EXPORT void dvz_dat_download(DvzDat* dat, DvzSize offset, DvzSize size, void
  *
  * @param dat the dat
  */
-DVZ_EXPORT void dvz_dat_destroy(DvzDat* dat);
+void dvz_dat_destroy(DvzDat* dat);
 
 
 
@@ -288,8 +286,7 @@ DVZ_EXPORT void dvz_dat_destroy(DvzDat* dat);
  * @param flags the flags
  * @returns the Tex
  */
-DVZ_EXPORT DvzTex*
-dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
+DvzTex* dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int flags);
 
 
 
@@ -302,7 +299,7 @@ dvz_tex(DvzContext* ctx, DvzTexDims dims, uvec3 shape, DvzFormat format, int fla
  * @param tex the Tex
  * @param new_shape the new width, height, depth
  */
-DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape);
+void dvz_tex_resize(DvzTex* tex, uvec3 new_shape);
 
 
 
@@ -316,8 +313,7 @@ DVZ_EXPORT void dvz_tex_resize(DvzTex* tex, uvec3 new_shape);
  * @param data the data
  * @param wait whether this function should wait until the upload is complete or not
  */
-DVZ_EXPORT void
-dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
+void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
 
 
 
@@ -331,8 +327,7 @@ dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data,
  * @param data the data
  * @param wait whether this function should wait until the download is complete or not
  */
-DVZ_EXPORT void
-dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
+void dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, bool wait);
 
 
 
@@ -344,7 +339,7 @@ dvz_tex_download(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* dat
  *
  * @param tex the tex
  */
-DVZ_EXPORT void dvz_tex_destroy(DvzTex* tex);
+void dvz_tex_destroy(DvzTex* tex);
 
 
 

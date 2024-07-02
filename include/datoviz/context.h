@@ -54,7 +54,7 @@ EXTERN_C_ON
  *
  * @param gpu the GPU
  */
-DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu);
+DvzContext* dvz_context(DvzGpu* gpu);
 
 
 
@@ -63,7 +63,7 @@ DVZ_EXPORT DvzContext* dvz_context(DvzGpu* gpu);
  *
  * @param ctx the Context
  */
-DVZ_EXPORT void dvz_context_wait(DvzContext* ctx);
+void dvz_context_wait(DvzContext* ctx);
 
 
 
@@ -72,7 +72,7 @@ DVZ_EXPORT void dvz_context_wait(DvzContext* ctx);
  *
  * @param context the context
  */
-DVZ_EXPORT void dvz_context_destroy(DvzContext* ctx);
+void dvz_context_destroy(DvzContext* ctx);
 
 
 
@@ -85,7 +85,7 @@ DVZ_EXPORT void dvz_context_destroy(DvzContext* ctx);
 //  *
 //  * @param returns the GPU
 //  */
-// DVZ_EXPORT DvzGpu* dvz_init_offscreen(void);
+// DvzGpu* dvz_init_offscreen(void);
 
 
 
@@ -94,7 +94,7 @@ DVZ_EXPORT void dvz_context_destroy(DvzContext* ctx);
 //  *
 //  * @param returns the GPU
 //  */
-// DVZ_EXPORT DvzGpu* dvz_init_glfw(void);
+// DvzGpu* dvz_init_glfw(void);
 
 
 
