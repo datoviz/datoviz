@@ -14,7 +14,7 @@
 #include "_log.h"
 #include "_macros.h"
 #include "_map.h"
-#include "_math.h"
+#include "datoviz_math.h"
 
 
 

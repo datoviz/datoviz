@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/viewset.h"
+#include "_cglm.h"
 #include "_list.h"
 #include "_map.h"
 #include "common.h"

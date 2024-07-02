@@ -28,32 +28,13 @@ Datoviz is still an early stage library and the API may change at any time.
 /*  Includes                                                                                    */
 /*************************************************************************************************/
 
+#include <math.h>
+#include <stdlib.h>
+
 #include "datoviz_keycodes.h"
+#include "datoviz_macros.h"
+#include "datoviz_math.h"
 #include "datoviz_types.h"
-
-
-
-/*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define DATOVIZ_VERSION_MAJOR 0
-#define DATOVIZ_VERSION_MINOR 2
-#define DATOVIZ_VERSION_PATCH 0
-
-#ifndef DVZ_EXPORT
-#if CC_MSVC
-#ifdef DVZ_SHARED
-#define DVZ_EXPORT __declspec(dllexport)
-#else
-#define DVZ_EXPORT __declspec(dllimport)
-#endif
-#define DVZ_INLINE __forceinline
-#else
-#define DVZ_EXPORT __attribute__((visibility("default")))
-#define DVZ_INLINE static inline __attribute((always_inline))
-#endif
-#endif
 
 
 
@@ -101,6 +82,153 @@ struct DvzShape
 /*  Scene API                                                                                    */
 /*************************************************************************************************/
 /*************************************************************************************************/
+
+/**
+ * Create an app.
+ *
+ * @param flags the app creation flags
+ * @returns the app
+ */
+DVZ_EXPORT DvzApp* dvz_app(int flags);
+
+
+
+/**
+ * Return the app's batch.
+ *
+ * @param app the app
+ * @returns the batch
+ */
+DVZ_EXPORT DvzBatch* dvz_app_batch(DvzApp* app);
+
+
+
+/**
+ * Run one frame.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_frame(DvzApp* app);
+
+
+
+/**
+ * Register a frame callback.
+ *
+ * @param app the app
+ * @param callback the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback callback, void* user_data);
+
+
+
+/**
+ * Register a mouse callback.
+ *
+ * @param app the app
+ * @param callback the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback callback, void* user_data);
+
+
+
+/**
+ * Register a keyboard callback.
+ *
+ * @param app the app
+ * @param callback the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback callback, void* user_data);
+
+
+
+/**
+ * Register a resize callback.
+ *
+ * @param app the app
+ * @param callback the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback callback, void* user_data);
+
+
+
+/**
+ * Create a timer.
+ *
+ * @param app the app
+ * @param delay the delay, in seconds, until the first event
+ * @param period the period, in seconds, between two events
+ * @param max_count the maximum number of events
+ * @returns the timer
+ */
+DVZ_EXPORT DvzTimerItem*
+dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
+
+
+
+/**
+ * Register a timer callback.
+ *
+ * @param app the app
+ * @param on_frame the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback callback, void* user_data);
+
+
+
+/**
+ * Register a GUI callback.
+ *
+ * @param app the app
+ * @param on_frame the callback
+ * @param user_data the user data
+ */
+DVZ_EXPORT void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data);
+
+
+
+/**
+ * Start the application event loop.
+ *
+ * @param app the app
+ * @param n_frames the maximum number of frames, 0 for infinite loop
+ */
+DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t n_frames);
+
+
+
+/**
+ * Submit the current batch to the application.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_submit(DvzApp* app);
+
+
+
+/**
+ * Make a screenshot of a canvas.
+ *
+ * @param app the app
+ * @param canvas_id the ID of the canvas
+ * @param filename the path to the PNG file with the screenshot
+ */
+DVZ_EXPORT void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename);
+
+
+
+/**
+ * Destroy the app.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
+
 
 
 /*************************************************************************************************/

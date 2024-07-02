@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_graphics.h"
+#include "_cglm.h"
 #include "board.h"
 #include "context.h"
 #include "datoviz.h"

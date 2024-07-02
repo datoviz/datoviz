@@ -11,7 +11,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../_math.h"
+#include "datoviz_macros.h"
+#include "datoviz_math.h"
 
 
 

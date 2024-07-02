@@ -13,7 +13,7 @@
 
 #include "_enums.h"
 #include "_log.h"
-#include "_math.h"
+#include "datoviz_math.h"
 #include "scene/dual.h"
 
 

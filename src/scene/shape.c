@@ -9,7 +9,7 @@
 
 #include "_log.h"
 #include "_macros.h"
-#include "_math.h"
+#include "datoviz_math.h"
 
 #include "datoviz.h"
 #include "datoviz_types.h"

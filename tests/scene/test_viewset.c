@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/test_viewset.h"
+#include "_cglm.h"
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"

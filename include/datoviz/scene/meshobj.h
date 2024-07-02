@@ -12,8 +12,8 @@
 /*************************************************************************************************/
 
 #include "_log.h"
-#include "_math.h"
 #include "datoviz.h"
+#include "datoviz_macros.h"
 
 
 

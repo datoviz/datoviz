@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "scene/test_array.h"
+#include "_cglm.h"
 #include "scene/array.h"
 #include "test.h"
 #include "testing.h"

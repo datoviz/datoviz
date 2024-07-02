@@ -9,7 +9,7 @@
 
 #include "scene/sdf.h"
 #include "_macros.h"
-#include "_math.h"
+#include "datoviz_math.h"
 #include "fileio.h"
 #include "request.h"
 

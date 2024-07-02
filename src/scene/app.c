@@ -10,6 +10,7 @@
 #include "scene/app.h"
 #include "../render_utils.h"
 #include "client.h"
+#include "datoviz.h"
 #include "fileio.h"
 #include "gui.h"
 #include "host.h"

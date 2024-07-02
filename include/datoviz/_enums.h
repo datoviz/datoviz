@@ -13,7 +13,7 @@
 
 
 #include "_log.h"
-#include "_math.h"
+#include "datoviz_math.h"
 
 
 
@@ -345,19 +345,6 @@ typedef enum
 
 
 
-// Canvas creation flags.
-typedef enum
-{
-    DVZ_CANVAS_FLAGS_NONE = 0x0000,
-    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
-    DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
-    DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
-    DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
-    DVZ_CANVAS_FLAGS_PICK = 0x0020,
-} DvzCanvasFlags;
-
-
-
 // Shader format.
 typedef enum
 {
@@ -377,12 +364,12 @@ typedef enum
 
 
 
-// Filter type.
-typedef enum
-{
-    DVZ_SAMPLER_FILTER_MIN,
-    DVZ_SAMPLER_FILTER_MAG,
-} DvzSamplerFilter;
+// // Filter type.
+// typedef enum
+// {
+//     DVZ_SAMPLER_FILTER_MIN,
+//     DVZ_SAMPLER_FILTER_MAG,
+// } DvzSamplerFilter;
 
 
 

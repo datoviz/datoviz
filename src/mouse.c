@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "mouse.h"
+#include "_cglm.h"
 #include "common.h"
 #include "datoviz_types.h"
 

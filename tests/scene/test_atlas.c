@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_atlas.h"
+#include "_cglm.h"
 #include "scene/atlas.h"
 #include "test.h"
 #include "testing.h"

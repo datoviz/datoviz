@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_font.h"
+#include "_cglm.h"
 #include "_string.h"
 #include "scene/font.h"
 #include "test.h"

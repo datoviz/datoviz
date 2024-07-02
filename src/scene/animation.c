@@ -7,9 +7,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_cglm.h"
 #include "_log.h"
-#include "_math.h"
 #include "datoviz.h"
+#include "datoviz_math.h"
 
 
 

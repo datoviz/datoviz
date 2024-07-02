@@ -3,7 +3,7 @@
 /*************************************************************************************************/
 
 #include "fps.h"
-#include "_math.h"
+#include "datoviz_math.h"
 #include "gui.h"
 #include "imgui.h"
 

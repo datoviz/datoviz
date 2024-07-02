@@ -4,6 +4,7 @@
 
 #include "keyboard.h"
 #include "common.h"
+#include "datoviz_types.h"
 
 
 

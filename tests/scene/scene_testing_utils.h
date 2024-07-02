@@ -13,9 +13,9 @@
 
 #include "../testing_utils.h"
 #include "_map.h"
-#include "_math.h"
 #include "board.h"
 #include "datoviz.h"
+#include "datoviz_math.h"
 #include "fileio.h"
 #include "scene/visuals/image.h"
 #include "scene/visuals/volume.h"

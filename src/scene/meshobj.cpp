@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 
 #include "scene/meshobj.h"
+#include "_cglm.h"
 #include "_macros.h"
 #include "datoviz.h"
 

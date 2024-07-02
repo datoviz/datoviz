@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "datoviz_keycodes.h"
+#include "datoviz_math.h"
 
 
 
@@ -26,29 +27,21 @@
 // NOTE: we duplicate these common types here for simplicity, best would probably be to
 // define them in a common file such as datoviz_types.h, used both by the public API header file
 // include/datoviz.h, and by the common internal file _math.h
-typedef uint64_t DvzSize;
-typedef uint32_t DvzIndex;
-typedef uint64_t DvzId;
+// typedef uint64_t DvzSize;
+// typedef uint32_t DvzIndex;
+// typedef uint64_t DvzId;
 
-typedef uint8_t cvec2[2];
-typedef uint8_t cvec3[3];
-typedef uint8_t cvec4[4];
+// typedef uint8_t cvec2[2];
+// typedef uint8_t cvec3[3];
+// typedef uint8_t cvec4[4];
 
-typedef float vec2[2];
-typedef float vec3[3];
-typedef float vec4[4];
+// typedef double dvec2[2];
+// typedef double dvec3[3];
+// typedef double dvec4[4];
 
-typedef double dvec2[2];
-typedef double dvec3[3];
-typedef double dvec4[4];
-
-typedef vec2 mat2[2];
-typedef vec3 mat3[3];
-typedef vec4 mat4[4];
-
-typedef dvec2 dmat2[2];
-typedef dvec3 dmat3[3];
-typedef dvec4 dmat4[4];
+// typedef dvec2 dmat2[2];
+// typedef dvec3 dmat3[3];
+// typedef dvec4 dmat4[4];
 
 
 /*************************************************************************************************/
@@ -71,12 +64,34 @@ typedef struct DvzRequestsEvent DvzRequestsEvent;
 // Forward declarations.
 typedef struct DvzTimerItem DvzTimerItem;
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzApp DvzApp;
+
+// Callback types.
+typedef void (*DvzAppGui)(DvzApp* app, DvzId canvas_id, void* user_data);
+typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent ev);
+typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboardEvent ev);
+typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent ev);
+typedef void (*DvzAppTimerCallback)(DvzApp* app, DvzId window_id, DvzTimerEvent ev);
+typedef void (*DvzAppResizeCallback)(DvzApp* app, DvzId window_id, DvzWindowEvent ev);
 
 
 
 /*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
+
+// Canvas creation flags.
+typedef enum
+{
+    DVZ_CANVAS_FLAGS_NONE = 0x0000,
+    DVZ_CANVAS_FLAGS_IMGUI = 0x0001,
+    DVZ_CANVAS_FLAGS_FPS = 0x0003,     // NOTE: 1 bit for ImGUI, 1 bit for FPS
+    DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
+    DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
+    DVZ_CANVAS_FLAGS_PICK = 0x0020,
+} DvzCanvasFlags;
+
+
 
 // Keyboard mods
 // NOTE: must match GLFW values! no mapping is done as of now

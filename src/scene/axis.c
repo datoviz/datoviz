@@ -8,6 +8,7 @@
 /*************************************************************************************************/
 
 #include "scene/axis.h"
+#include "_cglm.h"
 #include "_macros.h"
 #include "datoviz.h"
 #include "datoviz_types.h"

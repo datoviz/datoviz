@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include "request.h"
+#include "_cglm.h"
 #include "_debug.h"
 #include "_list.h"
 #include "_pointer.h"

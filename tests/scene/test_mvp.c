@@ -9,6 +9,7 @@
 /*************************************************************************************************/
 
 #include "test_mvp.h"
+#include "_cglm.h"
 #include "scene/mvp.h"
 #include "test.h"
 #include "testing.h"
