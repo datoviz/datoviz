@@ -1171,14 +1171,24 @@ DVZ_EXPORT void dvz_glyph_xywh(
 /*************************************************************************************************/
 
 /**
+ * Create an image visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_image(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the image positions.
  *
+ * @param image the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param ul_lr the 2D positions of the upper-left and lower-right corners (vec4 x0,y0,x1,y1)
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
@@ -1186,13 +1196,13 @@ dvz_image_position(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr
 
 
 /**
- * Function.
+ * Set the image texture coordinates.
  *
- * @param image the image
- * @param first the first
- * @param count the count
- * @param ul_lr the ul_lr
- * @param flags the flags
+ * @param image the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param ul_lr the tex coordinates of the upper-left and lower-right corners (vec4 u0,v0,u1,v1)
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
@@ -1200,12 +1210,12 @@ dvz_image_texcoords(DvzVisual* image, uint32_t first, uint32_t count, vec4* ul_l
 
 
 /**
- * Function.
+ * Assign a texture to an image visual.
  *
  * @param visual the visual
- * @param tex the tex
- * @param filter the filter
- * @param address_mode the address_mode
+ * @param tex the texture ID
+ * @param filter the texture filtering mode
+ * @param address_mode the texture address mode
  */
 DVZ_EXPORT void dvz_image_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -1213,24 +1223,24 @@ DVZ_EXPORT void dvz_image_texture(
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param image the image
- * @param item_count the item_count
+ * @param image the visual
+ * @param item_count the total number of images to allocate for this visual
  */
 DVZ_EXPORT void dvz_image_alloc(DvzVisual* image, uint32_t item_count);
 
 
 
 /**
- * Function.
+ * Create a 2D texture to be used in an image visual.
  *
  * @param batch the batch
- * @param format the format
- * @param width the width
- * @param height the height
- * @param data the data
- * @returns DvzId
+ * @param format the texture format
+ * @param width the texture width
+ * @param height the texture height
+ * @param data the texture data to upload
+ * @returns the texture ID
  */
 DVZ_EXPORT DvzId
 dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data);
@@ -1242,14 +1252,24 @@ dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height
 /*************************************************************************************************/
 
 /**
+ * Create a mesh visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_mesh(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the mesh vertex positions.
  *
+ * @param mesh the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D vertex positions
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -1257,13 +1277,13 @@ dvz_mesh_position(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values,
 
 
 /**
- * Function.
+ * Set the mesh colors.
  *
- * @param mesh the mesh
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the vertex colors
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, int flags);
@@ -1271,7 +1291,13 @@ dvz_mesh_color(DvzVisual* mesh, uint32_t first, uint32_t count, cvec4* values, i
 
 
 /**
- * vec4: u, v, <unused>, a
+ * Set the mesh texture coordinates.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the vertex texture coordinates (vec4 u,v,*,alpha)
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values, int flags);
@@ -1279,13 +1305,13 @@ dvz_mesh_texcoords(DvzVisual* mesh, uint32_t first, uint32_t count, vec4* values
 
 
 /**
- * Function.
+ * Set the mesh normals.
  *
- * @param mesh the mesh
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the vertex normal vectors
+ * @param flags the data update flags
  */
 DVZ_EXPORT
 void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* values, int flags);
@@ -1293,12 +1319,12 @@ void dvz_mesh_normal(DvzVisual* mesh, uint32_t first, uint32_t count, vec3* valu
 
 
 /**
- * Function.
+ * Assign a 2D texture to a mesh visual.
  *
  * @param visual the visual
- * @param tex the tex
- * @param filter the filter
- * @param address_mode the address_mode
+ * @param tex the texture ID
+ * @param filter the texture filtering mode
+ * @param address_mode the texture address mode
  */
 DVZ_EXPORT void dvz_mesh_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -1306,50 +1332,56 @@ DVZ_EXPORT void dvz_mesh_texture(
 
 
 /**
- * Function.
+ * Set the mesh indices.
  *
- * @param mesh the mesh
- * @param first the first
- * @param count the count
- * @param values the values
+ * @param mesh the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the face indices (three vertex indices per triangle)
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_mesh_index(DvzVisual* mesh, uint32_t first, uint32_t count, DvzIndex* values);
 
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param mesh the mesh
- * @param vertex_count the vertex_count
- * @param index_count the index_count
+ * @param image the visual
+ * @param vertex_count the number of vertices
+ * @param index_count the number of indices
  */
 DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* mesh, uint32_t vertex_count, uint32_t index_count);
 
 
 
 /**
- * Function.
+ * Set the mesh light position.
  *
  * @param mesh the mesh
- * @param pos the pos
+ * @param pos the light position
  */
 DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* mesh, vec4 pos);
 
 
 
 /**
- * Function.
+ * Set the mesh light parameters.
  *
  * @param mesh the mesh
- * @param params the params
+ * @param pos the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
 DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* mesh, vec4 params);
 
 
 
 /**
+ * Create a mesh out of a shape.
  *
+ * @param batch the batch
+ * @param shape the shape
+ * @param flags the visual creation flags
+ * @returns the mesh
  */
 DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags);
 
@@ -1360,14 +1392,24 @@ DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags
 /*************************************************************************************************/
 
 /**
+ * Create a fake sphere visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the fake sphere positions.
  *
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param pos the 3D positions of the sphere centers
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos, int flags);
@@ -1375,13 +1417,13 @@ dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3
 
 
 /**
- * Function.
+ * Set the fake sphere colors.
  *
- * @param visual the visual
- * @param first the first
- * @param count the count
- * @param color the color
- * @param flags the flags
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param color the sphere colors
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
@@ -1389,13 +1431,13 @@ dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 /**
- * Function.
+ * Set the fake sphere sizes.
  *
- * @param visual the visual
- * @param first the first
- * @param count the count
- * @param size the size
- * @param flags the flags
+ * @param marker the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param size the radius of the spheres
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, int flags);
@@ -1403,20 +1445,20 @@ dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* s
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param visual the visual
- * @param item_count the item_count
+ * @param pixel the visual
+ * @param item_count the total number of spheres to allocate for this visual
  */
 DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
 /**
- * Function.
+ * Set the sphere light position.
  *
- * @param visual the visual
- * @param pos the pos
+ * @param mesh the mesh
+ * @param pos the light position
  */
 DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 
@@ -1427,26 +1469,33 @@ DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 /*************************************************************************************************/
 
 /**
+ * Create a volume visual.
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Allocate memory for a visual.
  *
+ * @param pixel the visual
+ * @param item_count the total number of volumes to allocate for this visual
  */
 DVZ_EXPORT void dvz_volume_alloc(DvzVisual* volume, uint32_t item_count);
 
 
 
 /**
- * Function.
+ * Assign a 3D texture to a volume visual.
  *
  * @param visual the visual
- * @param tex the tex
- * @param filter the filter
- * @param address_mode the address_mode
+ * @param tex the texture ID
+ * @param filter the texture filtering mode
+ * @param address_mode the texture address mode
  */
 DVZ_EXPORT void dvz_volume_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -1454,31 +1503,31 @@ DVZ_EXPORT void dvz_volume_texture(
 
 
 /**
- * Function.
+ * Set the volume size.
  *
  * @param visual the visual
- * @param w the w
- * @param h the h
- * @param d the d
+ * @param w the texture width
+ * @param h the texture height
+ * @param d the texture depth
  */
 DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
 
 
 
 /**
- * Function.
+ * Create a 3D texture to be used in a volume visual.
  *
  * @param batch the batch
- * @param format the format
- * @param width the width
- * @param height the height
- * @param depth the depth
- * @param data the data
- * @returns DvzId
+ * @param format the texture format
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth
+ * @param data the texture data to upload
+ * @returns the texture ID
  */
 DVZ_EXPORT DvzId dvz_tex_volume(
-    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
-    void* data);
+    DvzBatch* batch, DvzFormat format, //
+    uint32_t width, uint32_t height, uint32_t depth, void* data);
 
 
 
@@ -1487,14 +1536,27 @@ DVZ_EXPORT DvzId dvz_tex_volume(
 /*************************************************************************************************/
 
 /**
+ * Create a slice visual (multiple 2D images with slices of a 3D texture).
  *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
 
 
 
 /**
+ * Set the slice positions.
  *
+ * @param slice the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param p0 the 3D positions of the upper-left corner
+ * @param p1 the 3D positions of the upper-right corner
+ * @param p2 the 3D positions of the lower-left corner
+ * @param p3 the 3D positions of the lower-right corner
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_position(
     DvzVisual* slice, uint32_t first, uint32_t count, //
@@ -1503,15 +1565,16 @@ DVZ_EXPORT void dvz_slice_position(
 
 
 /**
- * Function.
+ * Set the slice texture coordinates.
  *
- * @param slice the slice
- * @param first the first
- * @param count the count
- * @param uvw1 the uvw1
- * @param uvw2 the uvw2
- * @param uvw3 the uvw3
- * @param flags the flags
+ * @param slice the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param uvw0 the 3D texture coordinates of the upper-left corner
+ * @param uvw1 the 3D texture coordinates of the upper-right corner
+ * @param uvw2 the 3D texture coordinates of the lower-left corner
+ * @param uvw3 the 3D texture coordinates of the lower-right corner
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_texcoords(
     DvzVisual* slice, uint32_t first, uint32_t count, //
@@ -1520,12 +1583,12 @@ DVZ_EXPORT void dvz_slice_texcoords(
 
 
 /**
- * Function.
+ * Assign a texture to a slice visual.
  *
  * @param visual the visual
- * @param tex the tex
- * @param filter the filter
- * @param address_mode the address_mode
+ * @param tex the texture ID
+ * @param filter the texture filtering mode
+ * @param address_mode the texture address mode
  */
 DVZ_EXPORT void dvz_slice_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
@@ -1533,25 +1596,25 @@ DVZ_EXPORT void dvz_slice_texture(
 
 
 /**
- * Function.
+ * Allocate memory for a visual.
  *
- * @param slice the slice
- * @param item_count the item_count
+ * @param image the visual
+ * @param item_count the total number of slices to allocate for this visual
  */
 DVZ_EXPORT void dvz_slice_alloc(DvzVisual* slice, uint32_t item_count);
 
 
 
 /**
- * Function.
+ * Create a 3D texture to be used in a slice visual.
  *
  * @param batch the batch
- * @param format the format
- * @param width the width
- * @param height the height
- * @param depth the depth
- * @param data the data
- * @returns DvzId
+ * @param format the texture format
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth
+ * @param data the texture data to upload
+ * @returns the texture ID
  */
 DVZ_EXPORT DvzId dvz_tex_slice(
     DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth,
@@ -1560,10 +1623,10 @@ DVZ_EXPORT DvzId dvz_tex_slice(
 
 
 /**
- * Function.
+ * Set the slice transparency alpha value.
  *
  * @param visual the visual
- * @param alpha the alpha
+ * @param alpha the alpha value
  */
 DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 
