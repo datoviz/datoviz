@@ -88,8 +88,8 @@ pytest:
 # -------------------------------------------------------------------------------------------------
 
 example name="":
-    gcc -o build/example_{{name}} -Iinclude/ -Lbuild/ -lm -ldatoviz examples/{{name}}.c
-
+    gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -lm -ldatoviz
+    LD_LIBRARY_PATH=build ./build/example_scatter
 
 # -------------------------------------------------------------------------------------------------
 # Entry-point
