@@ -34,11 +34,11 @@
 /*  Internal includes                                                                            */
 /*************************************************************************************************/
 
+#include "../datoviz_math.h"
 #include "_log.h"
 #include "_obj.h"
 #include "_thread.h"
 #include "_time.h"
-#include "datoviz_math.h"
 
 #include "_debug.h"
 

@@ -18,10 +18,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../datoviz_math.h"
 #include "_enums.h"
 #include "_log.h"
 #include "_macros.h"
-#include "datoviz_math.h"
 
 
 

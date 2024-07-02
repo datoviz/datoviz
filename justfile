@@ -88,7 +88,7 @@ pytest:
 # -------------------------------------------------------------------------------------------------
 
 example name="":
-    gcc -Iinclude/ -Lbuild/ -lm -ldatoviz examples/{{name}}.c
+    gcc -o build/example_{{name}} -Iinclude/ -Lbuild/ -lm -ldatoviz examples/{{name}}.c
 
 
 # -------------------------------------------------------------------------------------------------

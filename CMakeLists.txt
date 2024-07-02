@@ -472,10 +472,8 @@ add_custom_command(
 add_custom_target(shaders DEPENDS ${path_shadersc})
 
 # -------------------------------------------------------------------------------------------------
-# Other binary resources
+# Texture resources
 # -------------------------------------------------------------------------------------------------
-
-# Textures.
 set(path_tex "${CMAKE_BINARY_DIR}/_textures.c")
 set(tex_files
     "${CMAKE_SOURCE_DIR}/data/textures/cmap_atlas.img"
@@ -488,8 +486,11 @@ add_custom_command(
     -D OUTPUT=${path_tex}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
+add_custom_target(textures DEPENDS ${path_tex})
 
-# Fonts.
+# -------------------------------------------------------------------------------------------------
+# Font resources
+# -------------------------------------------------------------------------------------------------
 set(path_fonts "${CMAKE_BINARY_DIR}/_fonts.c")
 set(font_files
 
@@ -507,8 +508,11 @@ add_custom_command(
     -D OUTPUT=${path_fonts}
     -P "${CMAKE_SOURCE_DIR}/cmake/embed_resources.cmake"
 )
+add_custom_target(fonts DEPENDS ${path_fonts})
 
-# Test data.
+# -------------------------------------------------------------------------------------------------
+# Test data resources
+# -------------------------------------------------------------------------------------------------
 set(path_testdata "${CMAKE_BINARY_DIR}/_testdata.c")
 set(testdata_files
     "${CMAKE_SOURCE_DIR}/data/textures/crate.rgba"
@@ -523,13 +527,11 @@ add_custom_command(
 )
 
 # -------------------------------------------------------------------------------------------------
-# Source files
+# External sources
 # -------------------------------------------------------------------------------------------------
 
 # These files will be compiled with no warnings.
 add_library(external_sources STATIC
-
-    # "external/tinycthread.c"
     "external/vk_mem_alloc.cpp"
     "external/fpng.cpp"
     "external/memorymeasure.c"
@@ -546,8 +548,13 @@ add_library(external_sources STATIC
     "external/imgui/backends/imgui_impl_glfw.cpp"
     "external/imgui/backends/imgui_impl_vulkan.cpp"
 )
+target_include_directories(external_sources PRIVATE ${INCL_DIRS})
+target_compile_options(external_sources PRIVATE -w)
 
-add_library(datoviz_core STATIC
+# -------------------------------------------------------------------------------------------------
+# Datoviz core
+# -------------------------------------------------------------------------------------------------
+add_library(datoviz_core OBJECT
 
     # Utils
     "src/_atomic.cpp"
@@ -595,15 +602,34 @@ add_library(datoviz_core STATIC
     "src/fps.cpp"
 )
 
-add_library(datoviz_requests STATIC
+target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})
+target_link_libraries(datoviz_core ${LINK_LIBS})
+
+# -------------------------------------------------------------------------------------------------
+# Datoviz requests
+# -------------------------------------------------------------------------------------------------
+add_library(datoviz_requests OBJECT
     "src/request.c"
 )
 
-add_library(datoviz_app STATIC
+target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
+
+# -------------------------------------------------------------------------------------------------
+# Datoviz app
+# -------------------------------------------------------------------------------------------------
+add_library(datoviz_app OBJECT
     "src/scene/app.c"
 )
 
-add_library(datoviz_scene STATIC
+target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
+
+# -------------------------------------------------------------------------------------------------
+# Datoviz scene
+# -------------------------------------------------------------------------------------------------
+add_library(datoviz_scene OBJECT
     "src/scene/animation.c"
     "src/scene/arcball.c"
     "src/scene/array.c"
@@ -649,66 +675,62 @@ add_library(datoviz_scene STATIC
     # ${msdf_atlas_gen}
 )
 
+target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
+target_link_libraries(datoviz_scene ${LINK_LIBS} ${FREETYPE_LIBRARIES})
+
+# -------------------------------------------------------------------------------------------------
+# Datoviz resources
+# -------------------------------------------------------------------------------------------------
+add_library(datoviz_resources OBJECT
+    ${path_shadersc}
+    ${path_tex}
+    ${path_fonts}
+)
+
+target_include_directories(datoviz_resources PRIVATE ${INCL_DIRS})
+target_compile_definitions(datoviz_resources PRIVATE ${COMPILE_DEFINITIONS})
+
 # -------------------------------------------------------------------------------------------------
 # Datoviz shared library
 # -------------------------------------------------------------------------------------------------
 add_library(libdatoviz SHARED
-    ${datoviz_core}
-    ${datoviz_requests}
-    ${datoviz_app}
-    ${datoviz_scene}
-    ${path_shadersc}
-    ${path_tex}
-    ${path_fonts}
+    $<TARGET_OBJECTS:datoviz_core>
+    $<TARGET_OBJECTS:datoviz_requests>
+    $<TARGET_OBJECTS:datoviz_app>
+    $<TARGET_OBJECTS:datoviz_scene>
+    $<TARGET_OBJECTS:datoviz_resources>
+
     ${external_sources}
 )
-target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})
 
-target_include_directories(datoviz_requests PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_requests PRIVATE ${COMPILE_DEFINITIONS})
-
-target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_app PRIVATE ${COMPILE_DEFINITIONS})
-
-target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
-target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
-target_link_libraries(datoviz_scene
-    ${LINK_LIBS} ${FREETYPE_LIBRARIES}
-)
-
-# set_source_files_properties(${external_sources} PROPERTIES COMPILE_FLAGS -w)
-target_include_directories(external_sources PRIVATE ${INCL_DIRS})
-target_compile_options(external_sources PRIVATE -w)
+add_dependencies(libdatoviz shaders fonts textures)
 
 set_target_properties(libdatoviz PROPERTIES
     VERSION ${DATOVIZ_VERSION}
     SOVERSION 2
-
     PUBLIC_HEADER include/datoviz.h
     OUTPUT_NAME "datoviz"
 )
 
 set_target_properties(libdatoviz PROPERTIES
-    LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map")
+    LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
+)
 
 if(${OS_WIN32})
-    set_target_properties(
-        libdatoviz PROPERTIES
-        OUTPUT_NAME "libdatoviz"
-    )
+    set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
 endif()
 
-add_dependencies(libdatoviz shaders)
 target_compile_definitions(libdatoviz PUBLIC ${COMPILE_DEFINITIONS})
 target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 target_link_libraries(libdatoviz
     ${LINK_LIBS}
+    external_sources
     datoviz_core
     datoviz_requests
     datoviz_app
     datoviz_scene
-    external_sources
+    datoviz_resources
 )
 
 # -------------------------------------------------------------------------------------------------
@@ -717,7 +739,6 @@ target_link_libraries(libdatoviz
 if(DATOVIZ_WITH_CLI)
     add_executable(cli
         "cli/main.c"
-        "src/log.c" # NOTE: required because log_* are not exported in libdatoviz
 
         # Utils
         "tests/test_alloc.c"
@@ -798,13 +819,17 @@ if(DATOVIZ_WITH_CLI)
         "tests/test.c"
 
         ${path_testdata}
-        ${datoviz_core}
-        ${datoviz_app}
-        ${datoviz_scene}
-        ${datoviz_requests}
+
+        $<TARGET_OBJECTS:datoviz_core>
+        $<TARGET_OBJECTS:datoviz_requests>
+        $<TARGET_OBJECTS:datoviz_app>
+        $<TARGET_OBJECTS:datoviz_scene>
+        $<TARGET_OBJECTS:datoviz_resources>
     )
+
     target_include_directories(cli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
     target_compile_definitions(cli PUBLIC ${COMPILE_DEFINITIONS})
-    set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
     target_link_libraries(cli libdatoviz)
+
+    set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
 endif()

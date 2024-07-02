@@ -1,7 +1,6 @@
 {
     global:
-        dvz*;
-        DVZ*;
+        dvz;
 
     local:
         *;

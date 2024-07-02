@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "datoviz_macros.h"
+#include "../datoviz_macros.h"
 
 
 
