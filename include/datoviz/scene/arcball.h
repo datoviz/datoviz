@@ -55,6 +55,20 @@ struct DvzArcball
 
 
 
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
 
 

@@ -1645,46 +1645,51 @@ DVZ_EXPORT void dvz_slice_alpha(DvzVisual* visual, float alpha);
 /*************************************************************************************************/
 
 /**
+ * Normalize a value in an interval.
  *
+ * @param t0 the interval start
+ * @param t1 the interval end
+ * @param t the value within the interval
+ * @returns the normalized value between 0 and 1
  */
 DVZ_EXPORT double dvz_resample(double t0, double t1, double t);
 
 
 
 /**
- * Function.
+ * Apply an easing function to a normalized value.
  *
- * @param easing the easing
- * @param t the t
- * @returns double
+ * @param easing the easing mode
+ * @param t the normalized value
+ * @returns the eased value
  */
 DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
 
 
 
 /**
- * Function.
+ * Generate a 2D circular motion.
  *
- * @param center the center
- * @param radius the radius
- * @param angle the angle
- * @param t the t
- * @param out the out
+ * @param center the circle center
+ * @param radius the circle radius
+ * @param angle the initial angle
+ * @param t the normalized value
+ * @param[out] out the 2D position
  */
 DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
 
 
 
 /**
- * Function.
+ * Generate a 3D circular motion.
  *
- * @param center the center
- * @param u the u
- * @param v the v
- * @param radius the radius
- * @param angle the angle
- * @param t the t
- * @param out the out
+ * @param center the circle center
+ * @param u the first 3D vector defining the plane containing the circle
+ * @param v the second 3D vector defining the plane containing the circle
+ * @param radius the circle radius
+ * @param angle the initial angle
+ * @param t the normalized value
+ * @param[out] out the 3D position
  */
 DVZ_EXPORT void
 dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t, vec3 out);
@@ -1692,36 +1697,36 @@ dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, float t,
 
 
 /**
- * Function.
+ * Make a linear interpolation between two scalar value.
  *
- * @param p0 the p0
- * @param p1 the p1
- * @param t the t
- * @returns float
+ * @param p0 the first value
+ * @param p1 the second value
+ * @param t the normalized value
+ * @returns the interpolated value
  */
 DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
 
 
 
 /**
- * Function.
+ * Make a linear interpolation between two 2D points.
  *
- * @param p0 the p0
- * @param p1 the p1
- * @param t the t
- * @param out the out
+ * @param p0 the first point
+ * @param p1 the second point
+ * @param t the normalized value
+ * @returns the interpolated point
  */
 DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
 
 
 /**
- * Function.
+ * Make a linear interpolation between two 3D points.
  *
- * @param p0 the p0
- * @param p1 the p1
- * @param t the t
- * @param out the out
+ * @param p0 the first point
+ * @param p1 the second point
+ * @param t the normalized value
+ * @returns the interpolated point
  */
 DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 
@@ -1730,13 +1735,6 @@ DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
-
-/**
- *
- */
-DVZ_EXPORT DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport size
-
-
 
 /**
  *
@@ -1876,13 +1874,6 @@ DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 /**
  *
  */
-DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
-
-
-
-/**
- *
- */
 DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up);
 
 
@@ -2015,13 +2006,6 @@ DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 /*************************************************************************************************/
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
-
-/**
- *
- */
-DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
-
-
 
 /**
  *

@@ -69,6 +69,16 @@ EXTERN_C_ON
 /*  Panzoom event functions                                                                      */
 /*************************************************************************************************/
 
+/**
+ *
+ */
+DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
+
+
+
+/**
+ *
+ */
 DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
 
 
