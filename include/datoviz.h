@@ -976,7 +976,7 @@ DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
  * @param visual the visual
  * @param item_count the total number of points to allocate for this visual
  */
-DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count);
+DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
 
 
 
@@ -1121,10 +1121,10 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
  * Set the glyph group size.
  *
  * @param visual the visual
- * @param first the first
- * @param count the count
- * @param values the values
- * @param flags the flags
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the glyph group sizes
+ * @param flags the data update flags
  */
 DVZ_EXPORT void
 dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
@@ -1190,7 +1190,7 @@ DVZ_EXPORT void dvz_glyph_ascii(DvzVisual* visual, const char* string);
  * @param count the number of items to update
  * @param values the xywh values of each glyph
  * @param offset the xy offsets of each glyph
- * @param flags the flags
+ * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_glyph_xywh(
     DvzVisual* visual, uint32_t first, uint32_t count, vec4* values, vec2 offset, int flags);

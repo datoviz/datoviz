@@ -94,7 +94,7 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
 
 
 
-void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count)
+void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count)
 {
     ANN(visual);
     log_debug("allocating the path visual");
@@ -103,7 +103,7 @@ void dvz_path_alloc(DvzVisual* visual, uint32_t total_vertex_count)
     ANN(batch);
 
     // Allocate the visual.
-    dvz_visual_alloc(visual, total_vertex_count, 4 * total_vertex_count, 0);
+    dvz_visual_alloc(visual, total_point_count, 4 * total_point_count, 0);
 }
 
 
