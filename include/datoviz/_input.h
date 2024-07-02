@@ -154,6 +154,7 @@ struct DvzMouseEvent
     DvzMouseEventUnion content;
     vec2 pos;
     int mods;
+    float content_scale;
     void* user_data;
 };
 

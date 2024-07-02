@@ -80,9 +80,9 @@ struct AnimStruct
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
+static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
     ANN(ps);
@@ -90,16 +90,13 @@ static void _scatter_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzApp* app = ps->app;
-    ANN(app);
-
     DvzMVP* mvp = &ps->mvp;
     ANN(mvp);
 
     DvzId mvp_id = ps->mvp_id;
 
     // Mouse event.
-    if (!dvz_panzoom_mouse(pz, ev.content.m))
+    if (!dvz_panzoom_mouse(pz, ev))
         return;
 
     // Update the MVP matrices.
@@ -177,18 +174,15 @@ int test_app_scatter(TstSuite* suite)
 
 
 
-static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
+static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     ArcballStruct* arc = (ArcballStruct*)ev.user_data;
     ANN(arc);
 
     DvzArcball* arcball = arc->arcball;
     ANN(arcball);
-
-    DvzApp* app = arc->app;
-    ANN(app);
 
     // DvzBatch* batch = arc->batch;
     // ANN(batch);
@@ -199,40 +193,40 @@ static void _arcball_mouse(DvzClient* client, DvzClientEvent ev)
     DvzId mvp_id = arc->mvp_id;
 
     // Dragging: pan.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG)
+    if (ev.type == DVZ_MOUSE_EVENT_DRAG)
     {
-        if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
         {
             float width = arcball->viewport_size[0];
             float height = arcball->viewport_size[1];
 
             vec2 cur_pos, last_pos;
-            cur_pos[0] = -1 + 2 * ev.content.m.content.d.cur_pos[0] / width;
-            cur_pos[1] = +1 - 2 * ev.content.m.content.d.cur_pos[1] / height;
-            last_pos[0] = -1 + 2 * ev.content.m.pos[0] / width; // press position
-            last_pos[1] = +1 - 2 * ev.content.m.pos[1] / height;
+            cur_pos[0] = -1 + 2 * ev.content.d.cur_pos[0] / width;
+            cur_pos[1] = +1 - 2 * ev.content.d.cur_pos[1] / height;
+            last_pos[0] = -1 + 2 * ev.pos[0] / width; // press position
+            last_pos[1] = +1 - 2 * ev.pos[1] / height;
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
-        // else if (ev.content.m.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        // else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
         // {
         // }
     }
 
     // Stop dragging.
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    if (ev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
     {
         dvz_arcball_end(arcball);
     }
 
     // // Mouse wheel.
-    // if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+    // if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
     // {
-    //     dvz_panzoom_zoom_wheel(pz, ev.content.m.content.w.dir, ev.content.m.content.w.pos);
+    //     dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.content.w.pos);
     // }
 
     // Double-click
-    if (ev.content.m.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    if (ev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
     {
         dvz_arcball_reset(arcball);
     }
@@ -508,9 +502,9 @@ int test_app_pixel(TstSuite* suite)
 
 
 
-static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
+static void _viewset_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
     ANN(ps);
@@ -518,14 +512,11 @@ static void _viewset_mouse(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzApp* app = ps->app;
-    ANN(app);
-
     DvzTransform* tr = ps->tr;
     ANN(tr);
 
     // Mouse event.
-    dvz_panzoom_mouse(pz, ev.content.m);
+    dvz_panzoom_mouse(pz, ev);
 
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);

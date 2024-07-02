@@ -46,6 +46,73 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
 
 
 /*************************************************************************************************/
+/*  Callback utils                                                                               */
+/*************************************************************************************************/
+
+// Generic function pointer.
+typedef void (*function_pointer)(void);
+
+// Callback payload to convert from client callback to app callback.
+typedef struct Payload Payload;
+struct Payload
+{
+    DvzClientEventType et;
+    DvzApp* app;
+    function_pointer callback;
+    void* user_data;
+};
+
+static Payload*
+_make_payload(DvzClientEventType et, DvzApp* app, function_pointer callback, void* user_data)
+{
+    Payload* payload = (Payload*)calloc(1, sizeof(Payload));
+    payload->et = et;
+    payload->app = app;
+    payload->callback = callback;
+    payload->user_data = user_data;
+
+    // NOTE: keep track of the heap-allocated payload so that the app destructor can free it at the
+    // end.
+    dvz_list_append(app->payloads, (DvzListItem){.p = (void*)payload});
+
+    return payload;
+}
+
+// Conversion from client callback to app callback.
+static void _client_callback(DvzClient* client, DvzClientEvent ev)
+{
+    ANN(client);
+    ANN(ev.user_data);
+
+    Payload payload = *(Payload*)ev.user_data;
+    // FREE(ev.user_data);
+
+    if (payload.et != ev.type)
+        return;
+
+    DvzApp* app = payload.app;
+    ANN(app);
+
+    function_pointer callback = payload.callback;
+    ANN(callback);
+
+    DvzId window_id = ev.window_id;
+    ASSERT(window_id != DVZ_ID_NONE);
+
+    // Mouse callback.
+    if (ev.type == DVZ_CLIENT_EVENT_MOUSE)
+    {
+        DvzAppMouseCallback cb = (DvzAppMouseCallback)callback;
+        // Pass the user_data to the mouse event.
+        ev.content.m.user_data = payload.user_data;
+        // Call the mouse callback.
+        cb(app, window_id, ev.content.m);
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  App functions                                                                                */
 /*************************************************************************************************/
 
@@ -74,8 +141,8 @@ DvzApp* dvz_app(int flags)
     app->timer = dvz_timer();
     ANN(app->timer);
 
-    // List of GUI callbacks.
-    app->callbacks = dvz_list();
+    // List of callback payloads we need to allocate on the heap and to destroy at the end.
+    app->payloads = dvz_list();
 
     // Send the pending requests to the presenter at every frame.
     dvz_app_onframe(app, _on_frame, app);
@@ -110,11 +177,13 @@ void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data)
 
 
 
-void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data)
+void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
 {
     ANN(app);
+    Payload* payload =
+        _make_payload(DVZ_CLIENT_EVENT_MOUSE, app, (function_pointer)on_mouse, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, on_mouse, user_data);
+        app->client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _client_callback, payload);
 }
 
 
@@ -243,7 +312,7 @@ void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_da
     payload->canvas_id = canvas_id;
     payload->callback = callback;
     payload->user_data = user_data;
-    dvz_list_append(app->callbacks, (DvzListItem){.p = (void*)payload});
+    dvz_list_append(app->payloads, (DvzListItem){.p = (void*)payload});
 
     dvz_presenter_gui(prt, canvas_id, _gui_callback, payload);
 }
@@ -308,16 +377,16 @@ void dvz_app_destroy(DvzApp* app)
     dvz_host_destroy(app->host);
 
     // Free the callback payloads.
-    DvzAppGuiPayload* payload = NULL;
-    for (uint32_t i = 0; i < app->callbacks->count; i++)
+    void* payload = NULL;
+    for (uint32_t i = 0; i < app->payloads->count; i++)
     {
-        payload = (DvzAppGuiPayload*)(dvz_list_get(app->callbacks, i).p);
+        payload = dvz_list_get(app->payloads, i).p;
         ANN(payload);
         FREE(payload);
     }
 
-    // Destroy the list of GUI callbacks.
-    dvz_list_destroy(app->callbacks);
+    // Destroy the list of callback payloads.
+    dvz_list_destroy(app->payloads);
 
     FREE(app);
 }

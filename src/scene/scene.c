@@ -634,9 +634,9 @@ static void _scene_build(DvzScene* scene)
 
 
 
-static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
+static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     DvzScene* scene = (DvzScene*)ev.user_data;
     ANN(scene);
@@ -644,10 +644,10 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
     DvzBatch* batch = scene->batch;
     ANN(batch);
 
-    DvzFigure* fig = dvz_scene_figure(scene, ev.window_id);
+    DvzFigure* fig = dvz_scene_figure(scene, window_id);
     ANN(fig);
 
-    DvzPanel* panel = dvz_panel_at(fig, ev.content.m.pos);
+    DvzPanel* panel = dvz_panel_at(fig, ev.pos);
     if (panel == NULL)
     {
         return;
@@ -655,7 +655,7 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
 
     // Localize the mouse event (viewport offset).
     DvzMouseEvent mev =
-        dvz_view_mouse(panel->view, ev.content.m, ev.content_scale, DVZ_MOUSE_REFERENCE_LOCAL);
+        dvz_view_mouse(panel->view, ev, ev.content_scale, DVZ_MOUSE_REFERENCE_LOCAL);
 
     // Panzoom.
     DvzPanzoom* pz = panel->panzoom;
@@ -692,9 +692,9 @@ static void _scene_onmouse(DvzClient* client, DvzClientEvent ev)
         }
 
         // Camera zoom.
-        if (ev.content.m.type == DVZ_MOUSE_EVENT_WHEEL)
+        if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
         {
-            _camera_zoom(panel->camera, ev.content.m.content.w.dir[1]);
+            _camera_zoom(panel->camera, ev.content.w.dir[1]);
             _update_camera(panel);
         }
 
@@ -765,6 +765,7 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
     ANN(app);
 
     // HACK: so that callbacks below have access to the app to submit to the presenter.
+    // TODO: remove, no longer needed
     scene->app = app;
 
     // Scene callbacks.

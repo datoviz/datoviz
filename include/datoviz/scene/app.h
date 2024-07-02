@@ -41,6 +41,7 @@ typedef struct DvzTimerItem DvzTimerItem;
 
 // Callback types.
 typedef void (*DvzAppGui)(DvzApp* app, DvzId canvas_id, void* user_data);
+typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent ev);
 
 
 
@@ -73,7 +74,7 @@ struct DvzApp
     DvzPresenter* prt;
     DvzBatch* batch;
     DvzTimer* timer;
-    DvzList* callbacks;
+    DvzList* payloads;
     bool is_running;
 };
 
@@ -115,7 +116,7 @@ DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* u
 /**
  *
  */
-DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzClientCallback on_mouse, void* user_data);
+DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data);
 
 
 

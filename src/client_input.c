@@ -46,7 +46,7 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 
     // Content scale, used for mouse event localization.
     if (window->width > 0)
-        cev.content_scale = window->framebuffer_width / window->width;
+        ev.content_scale = cev.content_scale = window->framebuffer_width / window->width;
 
     dvz_client_event(client, cev);
 }

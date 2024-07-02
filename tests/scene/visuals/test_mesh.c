@@ -83,13 +83,17 @@ int test_mesh_1(TstSuite* suite)
 
 
 
-static void _onmouse(DvzClient* client, DvzClientEvent ev)
+static void _onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
+    ANN(app);
+
     // Display arcball Euler angles when rotating the model.
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
+
     DvzArcball* arcball = (DvzArcball*)vt->arcball;
     ANN(arcball);
+
     vec3 angles = {0};
     dvz_arcball_angles(arcball, angles);
     // glm_vec3_print(angles, stdout);
