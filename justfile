@@ -127,9 +127,9 @@ deb:
     Description: {{DESCRIPTION}}" > $DEB/DEBIAN/control
 
     # Copy libdatoviz
-    cp build/libdatoviz.so $DEB/usr/local/lib/
+    cp build/libdatoviz.so* $DEB/usr/local/lib/
     # Copy libvulkan
-    cp libs/vulkan/libvulkan.so $DEB/usr/local/lib/
+    cp libs/vulkan/libvulkan.so* $DEB/usr/local/lib/
     # Copy the datoviz header files
     cp include/datoviz*.h $DEB/usr/local/include/
 
@@ -138,6 +138,52 @@ deb:
 
     # Move it.
     mv packaging/deb.deb packaging/datoviz_0.2.0_amd64.deb
+
+testdeb:
+    #!/usr/bin/env sh
+
+    # Check if the deb package exists, if not, build it
+    if [ ! -f packaging/datoviz_*_amd64.deb ]; then
+        just deb
+    fi
+
+    # Create a Dockerfile for testing
+    echo "FROM ubuntu:24.04
+
+    RUN apt-get update && apt-get install -y build-essential
+    RUN apt-get install -y \
+        libx11-dev \
+        libxrandr-dev \
+        libxinerama-dev \
+        libxcursor-dev \
+        libxi-dev \
+        vulkan-tools \
+        mesa-utils \
+        nvidia-driver-460 \
+        nvidia-utils-460 \
+        x11-apps
+
+    ENV NVIDIA_DRIVER_CAPABILITIES=all
+    ENV NVIDIA_VISIBLE_DEVICES=all
+
+    COPY packaging/datoviz_*_amd64.deb /tmp/
+    RUN dpkg -i /tmp/datoviz_*_amd64.deb || apt-get install -f -y
+
+    COPY examples/scatter.c /root/
+    WORKDIR /root
+
+    RUN gcc -o example_scatter scatter.c -I/usr/local/include/ -L/usr/local/lib/ -Wl,-rpath,/usr/local/lib -lm -ldatoviz
+    CMD ./example_scatter
+
+    " > Dockerfile
+
+    # Build the Docker image
+    docker build -t datoviz_test .
+
+    # Run the Docker container
+    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_test
+
+    rm Dockerfile
 
 
 # -------------------------------------------------------------------------------------------------
