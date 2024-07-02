@@ -10,6 +10,7 @@
 
 #include "scene/visual.h"
 #include "_map.h"
+#include "datoviz.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/baker.h"
@@ -844,7 +845,7 @@ void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback)
 /*  Visual drawing                                                                               */
 /*************************************************************************************************/
 
-void dvz_visual_visible(DvzVisual* visual, bool is_visible)
+void dvz_visual_show(DvzVisual* visual, bool is_visible)
 {
     ANN(visual);
     visual->is_visible = is_visible;

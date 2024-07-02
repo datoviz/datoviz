@@ -226,20 +226,6 @@ DVZ_EXPORT void dvz_visual_specialization(
 
 
 
-/**
- *
- */
-DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z);
-
-
-
-/**
- *
- */
-DVZ_EXPORT void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip);
-
-
-
 /*************************************************************************************************/
 /*  Visual declaration                                                                           */
 /*************************************************************************************************/
@@ -431,17 +417,6 @@ DVZ_EXPORT void dvz_visual_record(DvzVisual* visual, DvzId canvas);
  *
  */
 DVZ_EXPORT void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback);
-
-
-
-/*************************************************************************************************/
-/*  Visual drawing                                                                               */
-/*************************************************************************************************/
-
-/**
- *
- */
-DVZ_EXPORT void dvz_visual_visible(DvzVisual* visual, bool is_visible);
 
 
 

@@ -333,6 +333,37 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 /*************************************************************************************************/
 
 
+/**
+ * Fix some axes in a visual.
+ *
+ * @param visual the visual
+ * @param fixed_x whether the x axis should be fixed
+ * @param fixed_y whether the y axis should be fixed
+ * @param fixed_z whether the z axis should be fixed
+ */
+DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_z);
+
+
+
+/**
+ * Set the visual clipping.
+ *
+ * @param visual the visual
+ * @param clip the viewport clipping
+ */
+DVZ_EXPORT void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip);
+
+
+
+/**
+ * Set the visibility of a visual.
+ *
+ * @param visual the visual
+ * @param is_visible the visual visibility
+ */
+DVZ_EXPORT void dvz_visual_show(DvzVisual* visual, bool is_visible);
+
+
 
 /*************************************************************************************************/
 /*  Colormap functions                                                                           */

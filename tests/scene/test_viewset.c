@@ -60,7 +60,7 @@ int test_viewset_1(TstSuite* suite)
     // Add the visual to the view.
     DvzTransform* tr = dvz_transform(batch, 0);
     dvz_view_add(view, visual, 0, n, 0, 1, tr, 0);
-    dvz_visual_visible(visual, true);
+    dvz_visual_show(visual, true);
 
     dvz_viewset_build(viewset);
     // dvz_requester_print(batch);
