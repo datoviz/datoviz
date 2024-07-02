@@ -59,7 +59,7 @@ static bool _timer_item_firing(DvzTimerItem* item)
 
 
 
-static void _callbacks(DvzTimer* timer, DvzTimerEvent event)
+static void _callbacks(DvzTimer* timer, DvzInternalTimerEvent event)
 {
     DvzTimerPayload* payload = NULL;
     uint32_t n = dvz_list_count(timer->callbacks);
@@ -189,7 +189,7 @@ void dvz_timer_tick(DvzTimer* timer, double time)
     // Go through all timer items.
     uint64_t n = dvz_list_count(timer->items);
     DvzTimerItem* item = NULL;
-    DvzTimerEvent ev = {0};
+    DvzInternalTimerEvent ev = {0};
     for (uint64_t i = 0; i < n; i++)
     {
         item = (DvzTimerItem*)dvz_list_get(timer->items, i).p;

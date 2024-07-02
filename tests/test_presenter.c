@@ -424,7 +424,7 @@ static void _on_frame(DvzClient* client, DvzClientEvent ev)
     log_info("interval %.6f s", ev.content.f.interval);
 }
 
-static void _timer_callback(DvzTimer* timer, DvzTimerEvent ev)
+static void _timer_callback(DvzTimer* timer, DvzInternalTimerEvent ev)
 {
     ANN(timer);
     ANN(ev.item);

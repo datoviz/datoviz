@@ -32,15 +32,12 @@
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-static void _on_frame(DvzClient* client, DvzClientEvent ev)
+static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
 {
-    ANN(client);
-
-    DvzApp* app = (DvzApp*)ev.user_data;
     ANN(app);
 
     // The timer callbacks are called here.
-    dvz_timer_tick(app->timer, ev.content.f.time);
+    dvz_timer_tick(app->timer, ev.time);
 }
 
 
@@ -97,7 +94,9 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
     ANN(callback);
 
     DvzId window_id = ev.window_id;
-    ASSERT(window_id != DVZ_ID_NONE);
+    // NOTE: the window_id should be set except for timer events (global to all windows).
+    if (ev.type != DVZ_CLIENT_EVENT_TIMER)
+        ASSERT(window_id != DVZ_ID_NONE);
 
     // Mouse callback.
     if (ev.type == DVZ_CLIENT_EVENT_MOUSE)
@@ -107,6 +106,46 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
         ev.content.m.user_data = payload.user_data;
         // Call the mouse callback.
         cb(app, window_id, ev.content.m);
+    }
+
+    // Keyboard callback.
+    if (ev.type == DVZ_CLIENT_EVENT_KEYBOARD)
+    {
+        DvzAppKeyboardCallback cb = (DvzAppKeyboardCallback)callback;
+        // Pass the user_data to the keyboard event.
+        ev.content.k.user_data = payload.user_data;
+        // Call the keyboard callback.
+        cb(app, window_id, ev.content.k);
+    }
+
+    // Resize callback.
+    if (ev.type == DVZ_CLIENT_EVENT_WINDOW_RESIZE)
+    {
+        DvzAppResizeCallback cb = (DvzAppResizeCallback)callback;
+        // Pass the user_data to the resize event.
+        ev.content.w.user_data = payload.user_data;
+        // Call the keyboard callback.
+        cb(app, window_id, ev.content.w);
+    }
+
+    // Frame callback.
+    if (ev.type == DVZ_CLIENT_EVENT_FRAME)
+    {
+        DvzAppFrameCallback cb = (DvzAppFrameCallback)callback;
+        // Pass the user_data to the frame event.
+        ev.content.f.user_data = payload.user_data;
+        // Call the frame callback.
+        cb(app, window_id, ev.content.f);
+    }
+
+    // Timer callback.
+    if (ev.type == DVZ_CLIENT_EVENT_TIMER)
+    {
+        DvzAppTimerCallback cb = (DvzAppTimerCallback)callback;
+        // Pass the user_data to the timer event.
+        ev.content.t.user_data = payload.user_data;
+        // Call the timer callback.
+        cb(app, window_id, ev.content.t);
     }
 }
 
@@ -168,11 +207,14 @@ void dvz_app_frame(DvzApp* app)
 
 
 
-void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data)
+void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 {
     ANN(app);
+    Payload* payload =
+        _make_payload(DVZ_CLIENT_EVENT_FRAME, app, (function_pointer)on_frame, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, on_frame, user_data);
+        app->client, DVZ_CLIENT_EVENT_FRAME, DVZ_CLIENT_CALLBACK_SYNC, //
+        _client_callback, payload);
 }
 
 
@@ -183,31 +225,37 @@ void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
     Payload* payload =
         _make_payload(DVZ_CLIENT_EVENT_MOUSE, app, (function_pointer)on_mouse, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, _client_callback, payload);
+        app->client, DVZ_CLIENT_EVENT_MOUSE, DVZ_CLIENT_CALLBACK_SYNC, //
+        _client_callback, payload);
 }
 
 
 
-void dvz_app_onkeyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data)
+void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* user_data)
 {
     ANN(app);
+    Payload* payload =
+        _make_payload(DVZ_CLIENT_EVENT_KEYBOARD, app, (function_pointer)on_keyboard, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_KEYBOARD, DVZ_CLIENT_CALLBACK_SYNC, on_keyboard, user_data);
+        app->client, DVZ_CLIENT_EVENT_KEYBOARD, DVZ_CLIENT_CALLBACK_SYNC, //
+        _client_callback, payload);
 }
 
 
 
-void dvz_app_onresize(DvzApp* app, DvzClientCallback on_resize, void* user_data)
+void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_data)
 {
     ANN(app);
+    Payload* payload =
+        _make_payload(DVZ_CLIENT_EVENT_WINDOW_RESIZE, app, (function_pointer)on_resize, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, on_resize,
-        user_data);
+        app->client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, //
+        _client_callback, payload);
 }
 
 
 
-static void _timer_callback(DvzTimer* timer, DvzTimerEvent ev)
+static void _timer_callback(DvzTimer* timer, DvzInternalTimerEvent ev)
 {
     ANN(timer);
     ANN(ev.item);
@@ -251,13 +299,16 @@ DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t m
 
 
 
-void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data)
+void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
 {
     ANN(app);
     ANN(app->client);
 
+    Payload* payload =
+        _make_payload(DVZ_CLIENT_EVENT_TIMER, app, (function_pointer)on_timer, user_data);
     dvz_client_callback(
-        app->client, DVZ_CLIENT_EVENT_TIMER, DVZ_CLIENT_CALLBACK_SYNC, on_timer, user_data);
+        app->client, DVZ_CLIENT_EVENT_TIMER, DVZ_CLIENT_CALLBACK_SYNC, //
+        _client_callback, payload);
 }
 
 

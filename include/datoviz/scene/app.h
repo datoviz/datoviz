@@ -42,6 +42,10 @@ typedef struct DvzTimerItem DvzTimerItem;
 // Callback types.
 typedef void (*DvzAppGui)(DvzApp* app, DvzId canvas_id, void* user_data);
 typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent ev);
+typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboardEvent ev);
+typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent ev);
+typedef void (*DvzAppTimerCallback)(DvzApp* app, DvzId window_id, DvzTimerEvent ev);
+typedef void (*DvzAppResizeCallback)(DvzApp* app, DvzId window_id, DvzWindowEvent ev);
 
 
 
@@ -109,7 +113,7 @@ DVZ_EXPORT void dvz_app_frame(DvzApp* app);
 /**
  *
  */
-DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzClientCallback on_frame, void* user_data);
+DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data);
 
 
 
@@ -123,14 +127,15 @@ DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void*
 /**
  *
  */
-DVZ_EXPORT void dvz_app_onkeyboard(DvzApp* app, DvzClientCallback on_keyboard, void* user_data);
+DVZ_EXPORT void
+dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* user_data);
 
 
 
 /**
  *
  */
-DVZ_EXPORT void dvz_app_onresize(DvzApp* app, DvzClientCallback on_resize, void* user_data);
+DVZ_EXPORT void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_data);
 
 
 
@@ -145,7 +150,7 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
 /**
  *
  */
-DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzClientCallback on_timer, void* user_data);
+DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data);
 
 
 

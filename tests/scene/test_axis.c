@@ -186,9 +186,9 @@ int test_axis_get(TstSuite* suite)
 
 
 
-static void _onframe(DvzClient* client, DvzClientEvent ev)
+static void _onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
@@ -385,9 +385,9 @@ int test_axis_2(TstSuite* suite)
 
 
 
-static void _on_timer(DvzClient* client, DvzClientEvent ev)
+static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
@@ -395,7 +395,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     DvzAxis* axis = (DvzAxis*)vt->user_data;
     ANN(axis);
 
-    uint64_t idx = ev.content.t.step_idx;
+    uint64_t idx = ev.step_idx;
 
     uint32_t tick_count = 2;
     uint32_t n = (3 + idx % 4);

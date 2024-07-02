@@ -10,6 +10,7 @@
 
 #include "test_app.h"
 #include "canvas.h"
+#include "client.h"
 #include "datoviz.h"
 #include "presenter.h"
 #include "scene/app.h"
@@ -114,9 +115,9 @@ static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     dvz_app_submit(app);
 }
 
-static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
+static void _scatter_resize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
     ANN(ps);
@@ -124,16 +125,13 @@ static void _scatter_resize(DvzClient* client, DvzClientEvent ev)
     DvzPanzoom* pz = ps->pz;
     ANN(pz);
 
-    DvzApp* app = ps->app;
-    ANN(app);
-
     // This batch will be destroyed automatically in the event loop by the presenter.
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
-    uint32_t width = ev.content.w.screen_width;
-    uint32_t height = ev.content.w.screen_height;
-    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
+    uint32_t width = ev.screen_width;
+    uint32_t height = ev.screen_height;
+    log_info("window 0x%" PRIx64 " resized to %dx%d", window_id, width, height);
 
     dvz_panzoom_resize(pz, width, height);
 
@@ -244,24 +242,16 @@ static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     dvz_app_submit(app);
 }
 
-static void _arcball_resize(DvzClient* client, DvzClientEvent ev)
+static void _arcball_resize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
-    uint32_t width = ev.content.w.screen_width;
-    uint32_t height = ev.content.w.screen_height;
-    log_info("window 0x%" PRIx64 " resized to %dx%d", ev.window_id, width, height);
-
-    ANN(client);
+    uint32_t width = ev.screen_width;
+    uint32_t height = ev.screen_height;
+    log_info("window 0x%" PRIx64 " resized to %dx%d", window_id, width, height);
 
     ArcballStruct* arc = (ArcballStruct*)ev.user_data;
     ANN(arc);
-
-    DvzApp* app = arc->app;
-    ANN(app);
-
-    // DvzBatch* batch = arc->batch;
-    // ANN(batch);
 
     DvzMVP* mvp = &arc->mvp;
     ANN(mvp);
@@ -352,15 +342,12 @@ int test_app_arcball(TstSuite* suite)
 
 
 
-static void _anim_timer(DvzClient* client, DvzClientEvent ev)
+static void _anim_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     AnimStruct* anim = (AnimStruct*)ev.user_data;
     ANN(anim);
-
-    DvzApp* app = anim->app;
-    ANN(app);
 
     DvzGraphicsPointVertex* data = (DvzGraphicsPointVertex*)anim->data;
     ANN(data);
@@ -369,7 +356,7 @@ static void _anim_timer(DvzClient* client, DvzClientEvent ev)
     ASSERT(n > 0);
 
     const double dur = 2.0;
-    double t = fmod(ev.content.t.time / dur, 1);
+    double t = fmod(ev.time / dur, 1);
     for (uint32_t i = 0; i < n; i++)
     {
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));

@@ -109,7 +109,7 @@ int test_timer_1(TstSuite* suite)
 
 
 
-static void _on_timer(DvzTimer* timer, DvzTimerEvent ev)
+static void _on_timer(DvzTimer* timer, DvzInternalTimerEvent ev)
 {
     ANN(timer);
 

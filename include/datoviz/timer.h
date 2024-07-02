@@ -36,10 +36,10 @@
 
 typedef struct DvzTimer DvzTimer;
 typedef struct DvzTimerItem DvzTimerItem;
-typedef struct DvzTimerEvent DvzTimerEvent;
+typedef struct DvzInternalTimerEvent DvzInternalTimerEvent;
 typedef struct DvzTimerPayload DvzTimerPayload;
 
-typedef void (*DvzTimerCallback)(DvzTimer* timer, DvzTimerEvent ev);
+typedef void (*DvzTimerCallback)(DvzTimer* timer, DvzInternalTimerEvent ev);
 
 
 
@@ -71,7 +71,7 @@ struct DvzTimer
 
 
 
-struct DvzTimerEvent
+struct DvzInternalTimerEvent
 {
     DvzTimerItem* item;
     double time;

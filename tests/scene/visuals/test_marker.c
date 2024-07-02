@@ -374,16 +374,16 @@ int test_marker_msdf(TstSuite* suite)
 
 
 
-static void _on_timer(DvzClient* client, DvzClientEvent ev)
+static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
 {
-    ANN(client);
+    ANN(app);
 
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
 
     DvzVisual* visual = vt->visual;
     ANN(visual);
-    float t = ev.content.t.time;
+    float t = ev.time;
 
     dvz_marker_angle(visual, 0, 1, (float[]){.25 * M_PI * t}, 0);
     dvz_visual_update(visual);
