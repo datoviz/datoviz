@@ -21,3 +21,10 @@ git submodule update --init --recursive
                   # see https://github.com/Chlumsky/msdf-atlas-gen/issues/98
 ./manage.sh build # that one should suceed
 ```
+
+## Packaging
+
+```bash
+sudo apt-get install dpkg-dev fakeroot
+
+```

@@ -78,3 +78,4 @@ experimental
 *.yml
 *.zst
 _old*
+packaging

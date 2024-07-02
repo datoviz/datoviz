@@ -1,4 +1,14 @@
 # -------------------------------------------------------------------------------------------------
+# Constants
+# TODO: move these elsewhere?
+# -------------------------------------------------------------------------------------------------
+
+VERSION := "0.2.0"
+MAINTAINER := "Cyrille Rossant <cyrille.rossant@gmail.com>"
+DESCRIPTION := "A C library for high-performance GPU scientific visualization"
+
+
+# -------------------------------------------------------------------------------------------------
 # Management script
 # -------------------------------------------------------------------------------------------------
 
@@ -72,6 +82,7 @@ prof:
 exports:
     nm -D --defined-only build/libdatoviz.so
 
+
 # -------------------------------------------------------------------------------------------------
 # Tests
 # -------------------------------------------------------------------------------------------------
@@ -90,6 +101,44 @@ pytest:
 example name="":
     gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
     ./build/example_scatter
+
+
+# -------------------------------------------------------------------------------------------------
+# Packaging
+# -------------------------------------------------------------------------------------------------
+
+deb:
+    #!/usr/bin/env sh
+    DEB="packaging/deb/"
+
+    # Clean up and prepare the directory structure.
+    rm -rf $DEB
+    mkdir -p $DEB/DEBIAN
+    mkdir -p $DEB/usr/local/include
+    mkdir -p $DEB/usr/local/lib
+
+    # Create the control file.
+    echo "Package: datoviz
+    Version: {{VERSION}}
+    Section: libs
+    Priority: optional
+    Architecture: amd64
+    Maintainer: {{MAINTAINER}}
+    Description: {{DESCRIPTION}}" > $DEB/DEBIAN/control
+
+    # Copy libdatoviz
+    cp build/libdatoviz.so $DEB/usr/local/lib/
+    # Copy libvulkan
+    cp libs/vulkan/libvulkan.so $DEB/usr/local/lib/
+    # Copy the datoviz header files
+    cp include/datoviz*.h $DEB/usr/local/include/
+
+    # Build the package.
+    fakeroot dpkg-deb --build $DEB
+
+    # Move it.
+    mv packaging/deb.deb packaging/datoviz_0.2.0_amd64.deb
+
 
 # -------------------------------------------------------------------------------------------------
 # Entry-point
