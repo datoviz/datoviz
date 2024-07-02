@@ -79,4 +79,13 @@ DVZ_EXPORT DvzCamera* dvz_camera(float width, float height, int flags);
 
 
 
+/**
+ * Function.
+ *
+ * @param camera the camera
+ */
+DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
+
+
+
 #endif

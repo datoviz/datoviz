@@ -73,4 +73,13 @@ DVZ_EXPORT bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
 
 
 
+/**
+ * Destroy an arcball.
+ *
+ * @param arcball the arcball
+ */
+DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* arcball);
+
+
+
 #endif

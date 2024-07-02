@@ -1737,54 +1737,57 @@ DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 /*************************************************************************************************/
 
 /**
+ * Set the initial arcball angles.
  *
+ * @param arcball the arcball
+ * @param angles the initial angles
  */
 DVZ_EXPORT void dvz_arcball_initial(DvzArcball* arcball, vec3 angles);
 
 
 
 /**
- * Function.
+ * Reset an arcball to its initial position.
  *
- * @param pz the pz
+ * @param arcball the arcball
  */
-DVZ_EXPORT void dvz_arcball_reset(DvzArcball* pz);
+DVZ_EXPORT void dvz_arcball_reset(DvzArcball* arcball);
 
 
 
 /**
- * Function.
+ * Inform an arcball of a panel resize.
  *
- * @param pz the pz
- * @param width the width
- * @param height the height
+ * @param arcball the arcball
+ * @param width the panel width
+ * @param height the panel height
  */
-DVZ_EXPORT void dvz_arcball_resize(DvzArcball* pz, float width, float height);
+DVZ_EXPORT void dvz_arcball_resize(DvzArcball* arcball, float width, float height);
 
 
 
 /**
- * Function.
+ * Set the arcball flags.
  *
- * @param pz the pz
+ * @param arcball the arcball
  * @param flags the flags
  */
-DVZ_EXPORT void dvz_arcball_flags(DvzArcball* pz, int flags);
+DVZ_EXPORT void dvz_arcball_flags(DvzArcball* arcball, int flags);
 
 
 
 /**
- * Function.
+ * Add arcball constraints.
  *
- * @param pz the pz
- * @param constrain the constrain
+ * @param arcball the arcball
+ * @param constrain the constrain values
  */
-DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* pz, vec3 constrain);
+DVZ_EXPORT void dvz_arcball_constrain(DvzArcball* arcball, vec3 constrain);
 
 
 
 /**
- * Function.
+ * Set the arcball angles.
  *
  * @param arcball the arcball
  * @param angles the angles
@@ -1794,21 +1797,21 @@ DVZ_EXPORT void dvz_arcball_set(DvzArcball* arcball, vec3 angles);
 
 
 /**
- * Function.
+ * Get the current arcball angles.
  *
  * @param arcball the arcball
- * @param out_angles the out_angles
+ * @param[out] out_angles the arcball angles
  */
 DVZ_EXPORT void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles);
 
 
 
 /**
- * Function.
+ * Apply a rotation to an arcball.
  *
  * @param arcball the arcball
- * @param cur_pos the cur_pos
- * @param last_pos the last_pos
+ * @param cur_pos the initial position
+ * @param last_pos the final position
  */
 DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos);
 
@@ -1821,17 +1824,17 @@ DVZ_EXPORT void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_
 
 
 /**
- * Function.
+ * Return the model matrix of an arcball.
  *
  * @param arcball the arcball
- * @param model the model
+ * @param[out] model the model
  */
 DVZ_EXPORT void dvz_arcball_model(DvzArcball* arcball, mat4 model);
 
 
 
 /**
- * Function.
+ * Finalize arcball position update.
  *
  * @param arcball the arcball
  */
@@ -1840,30 +1843,21 @@ DVZ_EXPORT void dvz_arcball_end(DvzArcball* arcball);
 
 
 /**
- * Function.
+ * Apply an MVP matrix to an arcball (only the model matrix).
  *
- * @param pz the pz
- * @param mvp the mvp
+ * @param arcball the arcball
+ * @param mvp the MVP
  */
-DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* pz, DvzMVP* mvp);
+DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
 
 
 
 /**
- * Function.
+ * Display information about an arcball.
  *
  * @param arcball the arcball
  */
 DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
-
-
-
-/**
- * Function.
- *
- * @param pz the pz
- */
-DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 
 
 
@@ -1872,14 +1866,19 @@ DVZ_EXPORT void dvz_arcball_destroy(DvzArcball* pz);
 /*************************************************************************************************/
 
 /**
+ * Set the initial camera parameters.
  *
+ * @param camera the camera
+ * @param pos the initial position
+ * @param lookat the lookat position
+ * @param up the up vector
  */
 DVZ_EXPORT void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up);
 
 
 
 /**
- * Function.
+ * Reset a camera.
  *
  * @param camera the camera
  */
@@ -1888,24 +1887,24 @@ DVZ_EXPORT void dvz_camera_reset(DvzCamera* camera);
 
 
 /**
- * Function.
+ * Set the camera zrange.
  *
  * @param camera the camera
- * @param near the near
- * @param far the far
+ * @param near the near value
+ * @param far the far value
  */
 DVZ_EXPORT void dvz_camera_zrange(DvzCamera* camera, float near, float far);
 
 
 
 /**
- * Function.
+ * Make an orthographic camera.
  *
  * @param camera the camera
- * @param left the left
- * @param right the right
- * @param bottom the bottom
- * @param top the top
+ * @param left the left value
+ * @param right the right value
+ * @param bottom the bottom value
+ * @param top the top value
  */
 DVZ_EXPORT void
 dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float top);
@@ -1913,18 +1912,18 @@ dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, float
 
 
 /**
- * Function.
+ * Inform a camera of a panel resize.
  *
  * @param camera the camera
- * @param width the width
- * @param height the height
+ * @param width the panel width
+ * @param height the panel height
  */
 DVZ_EXPORT void dvz_camera_resize(DvzCamera* camera, float width, float height);
 
 
 
 /**
- * Function.
+ * Set a camera position.
  *
  * @param camera the camera
  * @param pos the pos
@@ -1934,72 +1933,62 @@ DVZ_EXPORT void dvz_camera_position(DvzCamera* camera, vec3 pos);
 
 
 /**
- * Function.
+ * Set a camera lookat position.
  *
  * @param camera the camera
- * @param lookat the lookat
+ * @param lookat the lookat position
  */
 DVZ_EXPORT void dvz_camera_lookat(DvzCamera* camera, vec3 lookat);
 
 
 
 /**
- * Function.
+ * Set a camera up vector.
  *
  * @param camera the camera
- * @param up the up
+ * @param up the up vector
  */
 DVZ_EXPORT void dvz_camera_up(DvzCamera* camera, vec3 up);
 
 
 
 /**
- * Function.
+ * Set a camera perspective.
  *
  * @param camera the camera
- * @param fov the fov
+ * @param fov the field of view angle (in radians)
  */
 DVZ_EXPORT void dvz_camera_perspective(DvzCamera* camera, float fov);
-// field of view angle (in radians)
 
 
 
 /**
- * Function.
+ * Return the view and proj matrices of the camera.
  *
  * @param camera the camera
- * @param view the view
- * @param proj the proj
+ * @param[out] view the view matrix
+ * @param[out] proj the proj matrix
  */
 DVZ_EXPORT void dvz_camera_viewproj(DvzCamera* camera, mat4 view, mat4 proj);
 
 
 
 /**
- * Function.
+ * Apply an MVP to a camera.
  *
  * @param camera the camera
- * @param mvp the mvp
+ * @param mvp the MVP
  */
 DVZ_EXPORT void dvz_camera_mvp(DvzCamera* camera, DvzMVP* mvp);
 
 
 
 /**
- * Function.
+ * Display information about a camera.
  *
  * @param camera the camera
  */
 DVZ_EXPORT void dvz_camera_print(DvzCamera* camera);
-
-
-
-/**
- * Function.
- *
- * @param camera the camera
- */
-DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 
 
 
@@ -2008,27 +1997,29 @@ DVZ_EXPORT void dvz_camera_destroy(DvzCamera* camera);
 /*************************************************************************************************/
 
 /**
+ * Reset a panzoom.
  *
+ * @param pz the panzoom
  */
 DVZ_EXPORT void dvz_panzoom_reset(DvzPanzoom* pz);
 
 
 
 /**
- * Function.
+ * Inform a panzoom of a panel resize.
  *
- * @param pz the pz
- * @param width the width
- * @param height the height
+ * @param pz the panzoom
+ * @param width the panel width
+ * @param height the panel height
  */
 DVZ_EXPORT void dvz_panzoom_resize(DvzPanzoom* pz, float width, float height);
 
 
 
 /**
- * Function.
+ * Set the panzoom flags.
  *
- * @param pz the pz
+ * @param pz the panzoom
  * @param flags the flags
  */
 DVZ_EXPORT void dvz_panzoom_flags(DvzPanzoom* pz, int flags);
@@ -2036,134 +2027,124 @@ DVZ_EXPORT void dvz_panzoom_flags(DvzPanzoom* pz, int flags);
 
 
 /**
- * Function.
+ * Set a panzoom x limits.
  *
- * @param pz the pz
- * @param xlim the xlim
+ * @param pz the panzoom
+ * @param xlim the xlim (FLOAT_MIN/MAX=no lim)
  */
-DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim); // FLOAT_MIN/MAX=no lim
+DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim);
 
 
 
 /**
- * Function.
+ * Set a panzoom y limits.
  *
- * @param pz the pz
- * @param ylim the ylim
+ * @param pz the panzoom
+ * @param xlim the ylim (FLOAT_MIN/MAX=no lim)
  */
 DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
 
 
 
 /**
- * Function.
+ * Set a panzoom z limits.
  *
- * @param pz the pz
- * @param zlim the zlim
+ * @param pz the panzoom
+ * @param xlim the zlim (FLOAT_MIN/MAX=no lim)
  */
 DVZ_EXPORT void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim);
 
 
 
 /**
- * Function.
+ * Apply a pan value to a panzoom.
  *
- * @param pz the pz
- * @param pan the pan
+ * @param pz the panzoom
+ * @param pan the pan, in NDC
  */
-DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan); // in NDC, gets or sets
+DVZ_EXPORT void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan);
 
 
 
 /**
- * Function.
+ * Apply a zoom value to a panzoom.
  *
- * @param pz the pz
- * @param zoom the zoom
+ * @param pz the panzoom
+ * @param zoom the zoom, in NDC
  */
-DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom); // in NDC
+DVZ_EXPORT void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom);
 
 
 
 /**
- * Function.
+ * Apply a pan shift to a panzoom.
  *
- * @param pz the pz
- * @param shift_px the shift_px
- * @param center_px the center_px
+ * @param pz the panzoom
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
  */
 DVZ_EXPORT void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
- * Function.
+ * Apply a zoom shift to a panzoom.
  *
- * @param pz the pz
- * @param shift_px the shift_px
- * @param center_px the center_px
+ * @param pz the panzoom
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
  */
 DVZ_EXPORT void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px);
 
 
 
 /**
- * Function.
+ * End a panzoom interaction.
  *
- * @param pz the pz
+ * @param pz the panzoom
  */
-DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz); // end of pan or zoom interaction
+DVZ_EXPORT void dvz_panzoom_end(DvzPanzoom* pz);
 
 
 
 /**
- * Function.
+ * Apply a wheel zoom to a panzoom.
  *
- * @param pz the pz
- * @param dir the dir
- * @param center_px the center_px
+ * @param pz the panzoom
+ * @param dir the wheel direction
+ * @param center_px the center position, in pixels
  */
 DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px);
 
 
 
 /**
- * Function.
+ * Get or set the xrange.
  *
- * @param pz the pz
- * @param xrange the xrange
+ * @param pz the panzoom
+ * @param xrange the xrange (get if (0,0), set otherwise)
  */
 DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
-// if (0, 0), gets the xrange, otherwise sets it
 
 
 
 /**
- * Function.
+ * Get or set the yrange.
  *
- * @param pz the pz
- * @param yrange the yrange
+ * @param pz the panzoom
+ * @param yrange the yrange (get if (0,0), set otherwise)
  */
 DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
 
 
 
 /**
- * Function.
+ * Apply an MVP matrix to a panzoom.
  *
- * @param pz the pz
- * @param mvp the mvp
+ * @param pz the panzoom
+ * @param mvp the MVP
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
-
-
-
-/**
- * Function.
- *
- * @param pz the pz
- */
-DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 
 
 

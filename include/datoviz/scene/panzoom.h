@@ -83,6 +83,15 @@ DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
 
 
 
+/**
+ * Function.
+ *
+ * @param pz the pz
+ */
+DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
+
+
+
 EXTERN_C_OFF
 
 #endif
