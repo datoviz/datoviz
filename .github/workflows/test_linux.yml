@@ -6,9 +6,17 @@ on:
     branches:
       - "v0.2x"
 
+env:
+  NVIDIA_DRIVER_CAPABILITIES: all
+  NVIDIA_VISIBLE_DEVICES: all
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
 
     steps:
     - name: Checkout repository
@@ -19,22 +27,22 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
+        sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev xvfb \
+          libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev vulkan-tools mesa-utils nvidia-driver-460 nvidia-utils-460 x11-apps
         curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
     - name: Add just to PATH
-      run: echo "/home/runner/bin" >> $GITHUB_PATH
+      run: echo "$HOME/bin" >> $GITHUB_PATH
 
     - name: Setup Vulkan
       run: |
         sudo mkdir -p /usr/local/lib/
-        sudo cp libs/vulkan/libvulkan.so* /usr/local/lib/
+        sudo cp -P libs/vulkan/libvulkan.so* /usr/local/lib/
         echo "/usr/local/lib/" | sudo tee /etc/ld.so.conf.d/vulkan.conf
         sudo ldconfig
 
     - name: Start Xvfb
       run: |
-        sudo apt install -y xvfb
         Xvfb :1 -screen 0 1024x768x24 &
         export DISPLAY=:1
 
@@ -45,4 +53,4 @@ jobs:
 
     - name: Run tests
       run: |
-        just test
+        DISPLAY=:1 just test
