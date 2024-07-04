@@ -24,12 +24,12 @@ jobs:
 
     - name: Build the library
       run: |
-        just build
-        just build
+        /home/runner/bin/just build
+        /home/runner/bin/just build
 
     - name: Create Debian package
       run: |
-        just deb
+        /home/runner/bin/just deb
 
     - name: Upload Debian package
       uses: actions/upload-artifact@v3
