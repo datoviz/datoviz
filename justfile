@@ -82,6 +82,12 @@ prof:
 exports:
     nm -D --defined-only build/libdatoviz.so
 
+tree:
+    tree -I external -I "build*" -I data -I bin -I libs -I tools -I "packaging*" -I docs -I cmake -I "*.py" -I "*.pxd" -I "*.pyx" -I "*.json" -I "*.out"
+
+cloc:
+    cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
