@@ -22,10 +22,12 @@ jobs:
         sudo apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev dpkg-dev fakeroot curl
         curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
+    - name: Add just to PATH
+      run: echo "/home/runner/bin" >> $GITHUB_PATH
+
     - name: Build the library
-      continue-on-error: true
       run: |
-        /home/runner/bin/just build
+        /home/runner/bin/just build || true
         /home/runner/bin/just build
 
     - name: Create Debian package
