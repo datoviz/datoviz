@@ -9,9 +9,9 @@ The main components are the following:
 
 * **vklite** (`include/datoviz/vklite.h`): a thin C Vulkan wrapper that provides the main GPU compute/visualization functionality required for scientific visualization.
 * **Renderer** (`include/datoviz/renderer.h`): a C/C++, Vulkan-based GPU visualization engine that provides a glfw-based event loop receiving and processing visualization requests in real time.
-* **Requests** (`include/datoviz/requests.h`): a C API that generates the visualization requests to be sent to the renderer in real time
+* **Requests** (`include/datoviz/requests.h`): a C API that generates the visualization requests to be sent to the renderer in real time.
 * **Visuals** (`includes/datoviz/scene/visuals/`): a rich C/GLSL library of common high-quality GPU graphical primitives such as points, markers, paths, images, glyphs, meshes, volumes...
-* **Scene** (`include/datoviz.h`): a C/C++ library that provides scientific visualization functionality that generates visualization requests to be sent to the renderer in real time.
+* **Scene** (`include/datoviz.h`): a C/C++ library that provides scientific visualization functionality that generates visualization requests to be sent to the renderer.
 
 These components are organized around the **Datoviz Intermediate Protocol**, an **intermediate-level message-based visualization protocol** that decouples the high-level scientific visualization logic from the low-level Vulkan rendering implementation.
 
@@ -28,7 +28,7 @@ The bottomest layer is the raw Vulkan C API, which is known for its extreme verb
 
 ### vklite
 
-We built vklite, a thin wrapper on top of the Vulkan C API, which provides the most essential Vulkan functionality (`vklite.h`):
+We built vklite, a thin wrapper on top of the Vulkan C API, that provides the most essential Vulkan functionality (`vklite.h`):
 
 * **Device control and event loops:**
   * Device discovery (`dvz_gpu`)
@@ -87,7 +87,7 @@ The **Datoviz Intermediate Protocol** is entirely defined in `request.h`.
 
 It provides a generic intermediate-level GPU visualization library that is somewhat similar to the WebGPU API. It deals exclusively with **GPU objects**, NOT visual objects. The protocol comes with NO graphical primitives, it supports arbitrary shaders and graphics pipelines. Graphical primitives and higher-level visualization constructs are implemented in the Visuals library and the Scene API described below
 
-*Note*: although compute shaders are already mostly supported in the renderer, they are not yet implemented in the Datoviz Intermediate Protocol. They will be in the future, depending on user feedback. This should be fairly straightforward (adding functions in `requests.h`, implementing them in `renderer.cpp`, writing tests and documentation...).
+> *Note*: although compute shaders are already mostly supported in the renderer, they are not yet implemented in the Datoviz Intermediate Protocol. They will be in the future, depending on user feedback. This should be fairly straightforward (adding functions in `requests.h`, implementing them in `renderer.cpp`, writing tests and documentation...).
 
 Requests are linearly collected in a **batch**, which is then sent to the renderer for dynamic processing at the next event loop iteration.
 
@@ -106,14 +106,14 @@ The main objects and notions defined in the Datoviz Intermediate Protocol are:
 
 ## Scene API
 
-The Scene API provides higher-level scientific visualization constructs that are directly used by users of the Datoviz C API (the underlying machinery is not exposed to the user).
+The Scene API provides higher-level scientific visualization constructs that are directly exposed to users of the Datoviz C API (contrary to the underlying machinery).
 
 
 ### Visuals API
 
 A **Visual** is an abstraction representing a graphical object, or a collection of similar objects, and encapsulating a graphics pipeline defined by pair of vertex and fragment shaders, along with descriptor bindings for uniform buffers, an associated vertex buffer, and custom visual-specific logic for CPU-based data "baking".
 
-Visuals typically support natively collections of objects: points, markers, glyphs, images, meshes, and so on (see the Visuals library below for more details). This is a crucially important notion: **batch-rendering** of many objects of the same type, but with various data attributes (positions, colors, sizes...), is the key to achieving high-performance rendering.
+Visuals typically support natively collections of objects: points, markers, glyphs, images, meshes, and so on (see the Visuals library below for more details). This is a crucially important notion: **batch-rendering** of many objects of the same type, but with various data attributes (positions, colors, sizes...), is the key to achieving high-performance rendering on the GPU.
 
 Each visual comes with a pair of custom shaders (vertex shader and fragment shader), originally contributed by [Nicolas Rougier](https://www.labri.fr/perso/nrougier/)'s research in computer graphics (rendering high-quality visual primitives efficiently on the GPU is an active area of research). The vertex shader typically requires preprocessing of the data to make it amenable to GPU rendering: this is the so-called **"baking"** of the data.
 
@@ -123,7 +123,7 @@ A visual involves several consecutive abstractions:
 * The **dual** associates a CPU-based array with a GPU-based **dat** (chunk of a GPU buffer). It handles synchronization between the two and emits a data upload request when the CPU part of the array changes.
 * The **baker** provides facilities for generating one (or several) multiplexed vertex buffer(s) from the original user-supplied visual data (positions, colors, other attributes).
 * The **generic visual** provides facilities for creating a visual bundling together a graphics primitive, shaders, a baker, a vertex buffer, optional uniform-based parameters.
-* The **custom visual** leverages the generic visual to define a dedicated visual API to create a visual, set its data, and render it when rendering a command buffer.
+* The **custom visual** leverages the generic visual to define a dedicated visual API to create a specific visual (marker, image, mesh...), set its data, and render it when rendering a command buffer.
 
 
 ### Visuals library
@@ -180,8 +180,12 @@ The **viewset** takes care of tracking all of these objects and building a comma
 The Scene API also comes with a set of specialized components that are used by some visuals or transforms.
 
 * **Text components**:
-    * The **Font** wraps the freetype library to handle text composition on the basis of a builtin or custom TTF font.
-    * The **Atlas** wraps the msdfgen-atlas library to generate an atlas texture with multi-channel signed distance field (MSDF) representing font glyphs to be rendered on the GPU in the fragment shader.
+    * The **Font** wraps the [freetype library](https://freetype.org/) to handle text composition on the basis of a builtin or custom TTF font.
+    * The **Atlas** wraps
+Viktor Chlumský's [msdfgen-atlas library](https://github.com/Chlumsky/msdf-atlas-gen/) to generate an atlas texture with multi-channel signed distance field (MSDF) representing font glyphs to be rendered on the GPU in the fragment shader.
+
+* **GUI components**:
+    * The **GUI** wraps [Omar Cornut's Dear ImGui library](https://github.com/ocornut/imgui/) to provide basic interactive GUI components. It should be straightforward to support the entire Dear ImGui API when using Datoviz in C++ (testing required).
 
 * **Axis components**: (*note*: work in progress)
     * **Ticks**: implement an automatic tick positioning system (extended Wilkinson algorithm)
