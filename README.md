@@ -108,6 +108,19 @@ It is funded notably by [Chan Zuckerberg Initiative](https://chanzuckerberg.com/
 
 Work in progress.
 
+### Ubuntu 24.04
+
+* Download the .deb package.
+* Install the .deb package to your system:
+
+    sudo dpkg -i libdatoviz*.deb
+
+* Test the library with the built-in demo:
+
+    # The .deb package should have installed the shared library libdatoviz.so into /usr/local/lib
+    # This line loads this shared library and calls the exposed dvz_demo() C function from Python.
+    python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
+
 
 
 

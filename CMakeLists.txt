@@ -653,6 +653,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/panzoom.c"
     "src/scene/params.c"
     "src/scene/scene.c"
+    "src/scene/demo.c"
     "src/scene/sdf.cpp"
     "src/scene/shape.c"
     "src/scene/ticks.c"

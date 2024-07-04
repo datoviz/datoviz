@@ -12,6 +12,7 @@ dvz_app_run
 dvz_app_submit
 dvz_app_screenshot
 dvz_app_destroy
+dvz_demo
 dvz_scene
 dvz_scene_run
 dvz_scene_destroy
