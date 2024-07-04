@@ -144,7 +144,7 @@ This section provides instructions for building the library, if packages are not
 
 ```bash
 # Install the build and system dependencies.
-sudo apt install build-essential cmake gcc ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
+sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
 
 # Install just, see https://github.com/casey/just
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash

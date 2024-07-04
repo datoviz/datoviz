@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y build-essential cmake gcc ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev dpkg-dev fakeroot curl
+        sudo apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev dpkg-dev fakeroot curl
         curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
     - name: Build the library
