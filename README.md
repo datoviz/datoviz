@@ -6,8 +6,8 @@
 
 Datoviz is currently being developed mostly by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
-!!! note
-    Datoviz is at an early stage of development and the API is not yet stabilized. Use at your own risks, but feel free to share your feedback, suggestions, use-cases, feature requests on GitHub.
+> **Note**: Although its inception and development occurred over a long history spanning more than a decade, Datoviz is still an **early stage library** that would now benefit from increased community feedback. The current [**v0.1x version**](https://datoviz.org/) was released in 2021 and is available in this main branch. The upcoming **v0.2x version** is now available (in a [separate git branch](https://github.com/datoviz/datoviz/tree/v0.2x)) to audacious users for early testing and community feedback.
+
 
 
 ## Screenshots
