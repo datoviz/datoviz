@@ -24,7 +24,7 @@ jobs:
 
     - name: Build the library
       run: |
-        /home/runner/bin/just build
+        -/home/runner/bin/just build
         /home/runner/bin/just build
 
     - name: Create Debian package
