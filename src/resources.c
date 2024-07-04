@@ -227,7 +227,10 @@ void dvz_dat_resize(DvzDat* dat, DvzSize new_size)
 
     // Resize the persistent staging dat if there is one.
     if (dat->stg != NULL)
+    {
+        log_debug("resize the staging buffer too");
         dvz_dat_resize(dat->stg, new_size);
+    }
 
     _dat_alloc(dat->res, dat, dat->br.buffer->type, dat->br.count, new_size);
     dat->size = new_size;

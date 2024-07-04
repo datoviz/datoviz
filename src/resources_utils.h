@@ -201,7 +201,7 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
     DvzBuffer* buffer = _find_shared_buffer(res, type, mappable);
     if (buffer == NULL)
     {
-        log_trace("count not find shared buffer with type %d, so creating a new one", type);
+        log_trace("could not find shared buffer with type %d, so creating a new one", type);
         buffer = _make_standalone_buffer(res, type, mappable, DVZ_BUFFER_DEFAULT_SIZE);
     }
     ANN(buffer);
@@ -402,6 +402,18 @@ static inline bool _dat_has_staging(DvzDat* dat)
 {
     ANN(dat);
     return (dat->flags & DVZ_DAT_FLAGS_MAPPABLE) == 0;
+
+    // OLD NOTE: there might be a mismatch between DVZ_DAT_FLAGS_MAPPABLE (whether we intend
+    // the dat to be mappable), and buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT
+    // (whether the underlyling buffer is actually mappable or not), for example with a software
+    // rendered such as swiftshader where ALL buffers are mappable.
+    // Therefore this function should really return whether the dat needs a staging buffer
+    // (because the underlying buffer is not mappable) and not whether we intended the dat
+    // to be mappable or not.
+    // if (dat->br.buffer == NULL)
+    //     return (dat->flags & DVZ_DAT_FLAGS_MAPPABLE) == 0;
+    // else
+    //     return !_is_buffer_mappable(dat->br.buffer);
 }
 
 

@@ -163,17 +163,24 @@ int test_resources_dat_resize(TstSuite* suite)
     uint8_t data[16] = {0};
     for (uint32_t i = 0; i < size; i++)
         data[i] = i;
-    uint8_t data1[32] = {0};
 
     // Upload.
-    DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, 0);
+
+    // NOTE: we need to set DVZ_DAT_FLAGS_MAPPABLE in case the Vulkan implementation has all
+    // buffers mappable (like swiftshader). Otherwise there will be a mismatch between the intended
+    // mappable flag, and the actual mappable property of the underlying buffer. The library
+    // will find the wrong buffer and the resize will trigger the creation of a new buffer
+    // that will no longer hold the data, and the test will fail.
+    DvzDat* dat = dvz_dat(ctx, DVZ_BUFFER_TYPE_VERTEX, size, DVZ_DAT_FLAGS_MAPPABLE);
     dvz_dat_upload(dat, 0, sizeof(data), data, true);
 
     // Resize.
     DvzSize new_size = 32;
+    // should reuse the same underlying buffer so the data should still be there
     dvz_dat_resize(dat, new_size);
 
     // Download back the data.
+    uint8_t data1[32] = {0};
     dvz_dat_download(dat, 0, sizeof(data1), data1, true);
 
     AT(memcmp(data1, data, size) == 0);
