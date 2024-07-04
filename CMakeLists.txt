@@ -724,8 +724,10 @@ target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 # set_target_properties(libdatoviz PROPERTIES
 # LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
 # )
-target_link_options(libdatoviz PRIVATE
-    -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
+if(${OS_LINUX})
+    target_link_options(libdatoviz PRIVATE
+        -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
+endif()
 
 target_link_libraries(libdatoviz
     ${LINK_LIBS}

@@ -16,7 +16,7 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-void dvz_demo()
+void dvz_demo(void)
 {
     // Create app object.
     DvzApp* app = dvz_app(0);
