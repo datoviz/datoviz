@@ -1,0 +1,35 @@
+name: Debian package build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake gcc ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev dpkg-dev fakeroot curl
+        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+
+    - name: Build the library
+      run: |
+        just build
+        just build
+
+    - name: Create Debian package
+      run: |
+        just deb
+
+    - name: Upload Debian package
+      uses: actions/upload-artifact@v3
+      with:
+        name: datoviz_deb_package
+        path: packaging/datoviz_0.2.0_amd64.deb
