@@ -1,6 +1,6 @@
 # Datoviz code architecture overview
 
-This document provides a high-level overview of the Datoviz code architecture.
+This document provides a high-level overview of the Datoviz v0.2x code architecture.
 
 
 ## Main components
@@ -17,7 +17,7 @@ These components are organized around the **Datoviz Intermediate Protocol**, an 
 
 While the former may be maintained and contributed by research software engineers and scientists, the former requires deep technical expertise that is more common within the video game industry and among game engine developers than in science.
 
-Another benefit of this architecture is that it ensures the high-level scientific visualization logic can be developed independently from the constant innovations in graphics hardware and graphics APIs (OpenGL, Vulkan, Metal, DirectX, WebGPU, wgpu...). In particular, thanks to a Chan Zuckerberg Initiative (CZI) grant attributed to the VisPy project in 2024, this architecture will allow us in the next couple of years to port the Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+Another benefit of this architecture is that it ensures the high-level scientific visualization logic can be developed independently from the constant innovations in graphics hardware and graphics APIs (OpenGL, Vulkan, Metal, DirectX, WebGPU, wgpu...). In particular, thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to the VisPy project in 2024, this architecture will allow us in the next couple of years to port the Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
 This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** will be available in local and remote multi-platform environments (distributed rendering, web-based visualization), working with either local or cloud-based data, with language-agnostic visualization code (C/C++, Python, Julia, Rust...).
 
@@ -185,7 +185,7 @@ The Scene API also comes with a set of specialized components that are used by s
 Viktor Chlumský's [msdfgen-atlas library](https://github.com/Chlumsky/msdf-atlas-gen/) to generate an atlas texture with multi-channel signed distance field (MSDF) representing font glyphs to be rendered on the GPU in the fragment shader.
 
 * **GUI components**:
-    * The **GUI** wraps [Omar Cornut's Dear ImGui library](https://github.com/ocornut/imgui/) to provide basic interactive GUI components. It should be straightforward to support the entire Dear ImGui API when using Datoviz in C++ (testing required).
+    * The **GUI** wraps Omar Cornut's [Dear ImGui library](https://github.com/ocornut/imgui/) to provide basic interactive GUI components. It should be straightforward to support the entire Dear ImGui API when using Datoviz in C++ (testing required).
 
 * **Axis components**: (*note*: work in progress)
     * **Ticks**: implement an automatic tick positioning system (extended Wilkinson algorithm)
