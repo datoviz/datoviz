@@ -1,0 +1,48 @@
+name: Build and test datoviz on Linux
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "v0.2x"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
+        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+
+    - name: Add just to PATH
+      run: echo "/home/runner/bin" >> $GITHUB_PATH
+
+    - name: Setup Vulkan
+      run: |
+        mkdir -p /usr/local/lib/
+        cp libs/vulkan/libvulkan.so* /usr/local/lib/
+        echo "/usr/local/lib/" | sudo tee /etc/ld.so.conf.d/vulkan.conf
+        sudo ldconfig
+
+    - name: Start Xvfb
+      run: |
+        sudo apt install -y xvfb
+        Xvfb :1 -screen 0 1024x768x24 &
+        export DISPLAY=:1
+
+    - name: Build the library
+      run: |
+        just build || true
+        just build
+
+    - name: Run tests
+      run: |
+        just test
