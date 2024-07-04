@@ -27,8 +27,8 @@ jobs:
 
     - name: Setup Vulkan
       run: |
-        mkdir -p /usr/local/lib/
-        cp libs/vulkan/libvulkan.so* /usr/local/lib/
+        sudo mkdir -p /usr/local/lib/
+        sudo cp libs/vulkan/libvulkan.so* /usr/local/lib/
         echo "/usr/local/lib/" | sudo tee /etc/ld.so.conf.d/vulkan.conf
         sudo ldconfig
 

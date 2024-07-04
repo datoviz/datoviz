@@ -2,9 +2,6 @@ name: Debian package build
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - "v0.2x"
 
 jobs:
   build:
