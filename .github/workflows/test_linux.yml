@@ -11,7 +11,7 @@ env:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     defaults:
       run:
@@ -26,7 +26,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo DEBIAN_FRONTEND=noninteractive apt install -y build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev xvfb
+        sudo DEBIAN_FRONTEND=noninteractive apt install -y tree build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev xvfb
         curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
     - name: Add just to PATH
@@ -42,7 +42,9 @@ jobs:
     - name: Install SwiftShader
       run: |
         # Copy the swiftshader library from the data submodule to the main tree.
-        cp ./data/swiftshader/linux/libvk_swiftshader.so libs/swiftshader/
+        cp ./data/swiftshader/linux/libvk_swiftshader.so libs/swiftshader/libvk_swiftshader.so
+        cp ./data/swiftshader/linux/libvk_swiftshader.so libs/swiftshader/libvulkan.so.1
+        tree libs
 
     - name: Start Xvfb
       run: |
@@ -56,4 +58,7 @@ jobs:
 
     - name: Run tests
       run: |
-        VK_ICD_FILENAMES=libs/swiftshader/vk_swiftshader_icd.json DISPLAY=:1 just test
+        LD_LIBRARY_PATH=libs/swiftshader/ \
+        VK_ICD_FILENAMES=libs/swiftshader/vk_swiftshader_icd.json \
+        DISPLAY=:1 \
+        just test
