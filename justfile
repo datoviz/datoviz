@@ -21,13 +21,13 @@ default:
 # Building
 # -------------------------------------------------------------------------------------------------
 
-build:
+build release="Debug":
     @unset CC
     @unset CXX
     mkdir -p docs/images
     ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
     mkdir -p build
-    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja
+    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     cd build/ && ninja
 
 rmbuild:
