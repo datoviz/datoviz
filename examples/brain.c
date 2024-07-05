@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, 800, 600, 0);
+    DvzFigure* figure = dvz_figure(scene, 800, 600, DVZ_CANVAS_FLAGS_FPS);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);
@@ -53,6 +53,7 @@ int main(int argc, char** argv)
     DvzCamera* camera = dvz_panel_camera(panel);
 
     // File path to a .obj file.
+    // This is a 3D mesh reconstruction of a mouse brain, provided by the Allen Institute.
     char path[1024];
     snprintf(path, sizeof(path), "data/mesh/brain.obj");
 
