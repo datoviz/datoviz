@@ -158,13 +158,39 @@ git submodule update --init --recursive
 # Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
 just build
 
-# That one should suceed.
+# That one should succeed.
 just build
 
 # Compile and run an example.
 just example scatter
 ```
 
+
+### macOS (ARM)
+
+```bash
+# Install brew if you don't have it already.
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/cyrille/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Install build dependencies.
+brew install just cmake ccache ninja freetype
+
+# Clone the Datoviz repo.
+git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
+cd datoviz
+
+# This call will fail, but the build will succeed the second time.
+# Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
+just build
+
+# That one should succeed.
+just build
+
+# Compile and run an example.
+just example scatter
+```
 
 
 
@@ -174,7 +200,7 @@ just example scatter
 
 This section provides instructions for maintainers who need to create binary packages.
 
-### Debian
+### Ubuntu 24.04
 
 ```bash
 sudo apt-get install dpkg-dev fakeroot
@@ -185,3 +211,9 @@ just deb
 # Test .deb installation in a Docker container
 just testdeb
 ```
+
+### macOS
+
+Coming soon.
+
+Note: in addition to `libvulkan.dylib`, the package should also save both `libs/vulkan/macos/MoltenVK_icd.json` and `libMoltenVK.dylib` to a [standard system location](https://vulkan.lunarg.com/doc/view/1.3.243.0/mac/LoaderDriverInterface.html#user-content-example-macos-driver-search-path).
