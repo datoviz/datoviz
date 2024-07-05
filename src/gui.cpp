@@ -502,7 +502,7 @@ void dvz_gui_progress(float fraction, float width, float height, const char* fmt
     va_list args;
     va_start(args, fmt);
     char overlay[1024] = {0};
-    vsprintf(overlay, fmt, args);
+    vsnprintf(overlay, 1024, fmt, args);
     ImGui::ProgressBar(fraction, ImVec2(width, height), overlay);
     va_end(args);
 }

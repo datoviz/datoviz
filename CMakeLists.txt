@@ -223,22 +223,9 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
 
-    # Correctly set the target properties for msdfgen targets
-    add_library(msdfgen_ext STATIC IMPORTED)
-    set_target_properties(msdfgen_ext PROPERTIES
-        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-ext.a"
-        POSITION_INDEPENDENT_CODE ON
-    )
-
     add_library(msdfgen_core STATIC IMPORTED)
     set_target_properties(msdfgen_core PROPERTIES
         IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
-        POSITION_INDEPENDENT_CODE ON
-    )
-
-    add_library(msdf_atlas_gen STATIC IMPORTED)
-    set_target_properties(msdf_atlas_gen PROPERTIES
-        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/build/libmsdf-atlas-gen.a"
         POSITION_INDEPENDENT_CODE ON
     )
 
