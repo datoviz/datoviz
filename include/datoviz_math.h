@@ -527,7 +527,12 @@ EXTERN_C_ON
 
 
 
-// Smallest power of 2 larger or equal than a positive integer.
+/**
+ * Return the smallest power of 2 larger or equal than a positive integer.
+ *
+ * @param x the value
+ * @returns the power of 2
+ */
 DVZ_EXPORT uint64_t dvz_next_pow2(uint64_t x);
 
 
@@ -622,6 +627,55 @@ DVZ_EXPORT double dvz_rand_double(void);
  * @returns random number
  */
 DVZ_EXPORT double dvz_rand_normal(void);
+
+
+
+/*************************************************************************************************/
+/*  Mock random data                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Generate a set of random 2D positions.
+ *
+ * @param count the number of positions to generate
+ * @param std the standard deviation
+ * @returns the positions
+ */
+DVZ_EXPORT vec3* dvz_mock_pos2D(uint32_t count, float std);
+
+
+
+/**
+ * Generate a set of random 3D positions.
+ *
+ * @param count the number of positions to generate
+ * @param std the standard deviation
+ * @returns the positions
+ */
+DVZ_EXPORT vec3* dvz_mock_pos3D(uint32_t count, float std);
+
+
+
+/**
+ * Generate a set of uniformly random scalar values.
+ *
+ * @param count the number of values to generate
+ * @param vmin the minimum value of the interval
+ * @param vmax the maximum value of the interval
+ * @returns the values
+ */
+DVZ_EXPORT float* dvz_mock_uniform(uint32_t count, float vmin, float vmax);
+
+
+
+/**
+ * Generate a set of random colors.
+ *
+ * @param count the number of colors to generate
+ * @param alpha the alpha value
+ * @returns random colors
+ */
+DVZ_EXPORT cvec4* dvz_mock_color(uint32_t count, uint8_t alpha);
 
 
 

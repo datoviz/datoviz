@@ -20,8 +20,7 @@
 #include <string.h>
 
 #include "_cglm.h"
-#include "datoviz_macros.h"
-#include "datoviz_math.h"
+#include "datoviz.h"
 
 
 
@@ -29,7 +28,6 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// Smallest power of 2 larger or equal than a positive integer.
 inline uint64_t dvz_next_pow2(uint64_t x)
 {
     uint64_t p = 1;
@@ -40,13 +38,6 @@ inline uint64_t dvz_next_pow2(uint64_t x)
 
 
 
-/**
- * Compute the mean of an array of double values.
- *
- * @param n the number of values
- * @param values an array of double numbers
- * @returns the mean
- */
 inline double dvz_mean(uint32_t n, double* values)
 {
     ASSERT(n > 0);
@@ -61,14 +52,6 @@ inline double dvz_mean(uint32_t n, double* values)
 
 
 
-/**
- * Compute the min and max of an array of float values.
- *
- * @param n the number of values
- * @param values an array of float numbers
- * @param vec2 the min and max
- * @returns the mean
- */
 inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
 {
     ASSERT(n > 0);
@@ -86,13 +69,6 @@ inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
 
 
 
-/**
- * Normalize the array.
- *
- * @param count the number of values
- * @param values an array of float numbers
- * @returns the normalized array
- */
 inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
 {
     ASSERT(count > 0);
@@ -119,13 +95,6 @@ inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
 
 
 
-/**
- * Compute the range of an array of double values.
- *
- * @param n the number of values
- * @param values an array of double numbers
- * @param[out] the min and max values
- */
 inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
 {
     if (n == 0)
@@ -152,50 +121,87 @@ inline void dvz_range(uint32_t n, double* values, dvec2 min_max)
 /*  Random number generation                                                                     */
 /*************************************************************************************************/
 
-/**
- * Return a random integer number between 0 and 255.
- *
- * @returns random number
- */
 inline uint8_t dvz_rand_byte(void) { return (uint8_t)(rand() % 256); }
 
 
 
-/**
- * Return a random integer number.
- *
- * @returns random number
- */
 inline int dvz_rand_int(void) { return rand(); }
 
 
 
-/**
- * Return a random floating-point number between 0 and 1.
- *
- * @returns random number
- */
 inline float dvz_rand_float(void) { return (float)rand() / (float)(RAND_MAX); }
 
 
 
-/**
- * Return a random floating-point number between 0 and 1.
- *
- * @returns random number
- */
 inline double dvz_rand_double(void) { return (double)rand() / (double)(RAND_MAX); }
 
 
 
-/**
- * Return a random normal floating-point number.
- *
- * @returns random number
- */
 inline double dvz_rand_normal(void)
 {
     return sqrt(-2.0 * log(dvz_rand_double())) * cos(2 * M_PI * dvz_rand_double());
+}
+
+
+
+/*************************************************************************************************/
+/*  Mock random data                                                                             */
+/*************************************************************************************************/
+
+vec3* dvz_mock_pos2D(uint32_t count, float std)
+{
+    ASSERT(count > 0);
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = std * dvz_rand_normal();
+        pos[i][1] = std * dvz_rand_normal();
+    }
+    return pos;
+}
+
+
+
+vec3* dvz_mock_pos3D(uint32_t count, float std)
+{
+    ASSERT(count > 0);
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = std * dvz_rand_normal();
+        pos[i][1] = std * dvz_rand_normal();
+        pos[i][2] = std * dvz_rand_normal();
+    }
+    return pos;
+}
+
+
+
+float* dvz_mock_uniform(uint32_t count, float vmin, float vmax)
+{
+    ASSERT(count > 0);
+    ASSERT(vmin < vmax);
+    float* size = (float*)calloc(count, sizeof(float));
+    float a = vmax - vmin;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        size[i] = vmin + a * dvz_rand_float();
+    }
+    return size;
+}
+
+
+
+cvec4* dvz_mock_color(uint32_t count, uint8_t alpha)
+{
+    ASSERT(count > 0);
+    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_colormap(DVZ_CMAP_HSV, i % 256, color[i]);
+        color[i][3] = alpha;
+    }
+    return color;
 }
 
 
