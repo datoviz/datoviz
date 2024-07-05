@@ -89,6 +89,10 @@ DvzHost* dvz_host(DvzBackend backend)
     create_instance(
         required_extension_count, required_extensions, &host->instance, &host->debug_messenger,
         &host->n_errors);
+    if (host->instance == VK_NULL_HANDLE){
+        log_error("unable to create Vulkan instance");
+        exit(1);
+    }
     // debug_messenger != VK_NULL_HANDLE means validation enabled
     dvz_obj_created(&host->obj);
 
