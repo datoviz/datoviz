@@ -121,8 +121,13 @@ example name="":
 # Swiftshader
 # -------------------------------------------------------------------------------------------------
 
+[linux]
 swiftshader +args:
-    @VK_ICD_FILENAMES="libs/swiftshader/vk_swiftshader_icd.json" {{args}}
+    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
+
+[macos]
+swiftshader +args:
+    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
 
 
 # -------------------------------------------------------------------------------------------------
