@@ -40,29 +40,15 @@ int test_point_1(TstSuite* suite)
     dvz_point_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_point_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
+    cvec4* color = dvz_mock_color(n, 128);
     dvz_point_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 1 + 49 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 1, 50);
     dvz_point_size(visual, 0, n, size, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.

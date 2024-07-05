@@ -40,21 +40,11 @@ int test_basic_1(TstSuite* suite)
     dvz_basic_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_basic_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
+    cvec4* color = dvz_mock_color(n, 128);
     dvz_basic_color(visual, 0, n, color, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.

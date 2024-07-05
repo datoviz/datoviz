@@ -429,21 +429,11 @@ int test_app_pixel(TstSuite* suite)
     dvz_pixel_alloc(pixel, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
+    cvec4* color = dvz_mock_color(n, 128);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Important: upload the data to the GPU.
@@ -546,21 +536,11 @@ int test_app_viewset(TstSuite* suite)
     dvz_pixel_alloc(pixel, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
+    cvec4* color = dvz_mock_color(n, 128);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Important: upload the data to the GPU.

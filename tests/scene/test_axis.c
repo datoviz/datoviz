@@ -323,29 +323,15 @@ int test_axis_2(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        // color[i][3] = 192;
-    }
+    cvec4* color = dvz_mock_color(n, 255);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 15 + 35 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 15, 50);
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Parameters.

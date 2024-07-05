@@ -46,37 +46,19 @@ int test_marker_code(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 192;
-    }
+    cvec4* color = dvz_mock_color(n, 192);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 10 + 40 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 10, 50);
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Angle.
-    float* angle = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        angle[i] = M_2PI * dvz_rand_float();
-    }
+    float* angle = dvz_mock_uniform(n, 0, M_2PI);
     dvz_marker_angle(visual, 0, n, size, 0);
 
     // Parameters.
@@ -127,29 +109,15 @@ int test_marker_bitmap(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 128;
-    }
+    cvec4* color = dvz_mock_color(n, 128);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 50 + 50 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 50, 100);
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -220,38 +188,20 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 192;
-    }
+    cvec4* color = dvz_mock_color(n, 192);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 25 + 75 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 25, 100);
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Angle.
-    float* angle = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        angle[i] = M_2PI * dvz_rand_float();
-    }
-    dvz_marker_angle(visual, 0, n, size, 0);
+    float* angle = dvz_mock_uniform(n, 0, M_2PI);
+    dvz_marker_angle(visual, 0, n, angle, 0);
 
     // Parameters.
     dvz_marker_edge_color(visual, (cvec4){255, 255, 255, 255});
@@ -326,30 +276,15 @@ int test_marker_msdf(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        pos[i][0] = .25 * dvz_rand_normal();
-        pos[i][1] = .25 * dvz_rand_normal();
-        pos[i][2] = .25 * dvz_rand_normal();
-    }
+    vec3* pos = dvz_mock_pos3D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap(DVZ_CMAP_HSV, i % n, color[i]);
-        color[i][3] = 192;
-    }
+    cvec4* color = dvz_mock_color(n, 192);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = (float*)calloc(n, sizeof(float));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        size[i] = 50 + 50 * dvz_rand_float();
-    }
+    float* size = dvz_mock_uniform(n, 50, 100);
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Parameters.

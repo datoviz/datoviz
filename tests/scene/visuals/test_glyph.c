@@ -74,16 +74,12 @@ int test_glyph_1(TstSuite* suite)
 
 
     // Glyph positions.
-    vec3* pos = (vec3*)calloc(n, sizeof(vec3));
+    vec3* pos = (vec3*)calloc(n, sizeof(vec3)); // all zeros
     dvz_glyph_position(visual, 0, n, pos, 0);
     FREE(pos);
 
     // Glyph colors.
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
-    for (uint32_t i = 0; i < n; i++)
-    {
-        dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n - 1, color[i]);
-    }
+    cvec4* color = dvz_mock_color(n, 255);
     dvz_glyph_color(visual, 0, n, color, 0);
     FREE(color);
 
