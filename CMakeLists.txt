@@ -27,7 +27,9 @@ option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 # -------------------------------------------------------------------------------------------------
 # Build type
 # -------------------------------------------------------------------------------------------------
-set(CMAKE_BUILD_TYPE Debug)
+
+# set(CMAKE_BUILD_TYPE Debug)
+message("Build type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
 set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
@@ -171,15 +173,19 @@ endif()
 # ---- Vulkan -------------------------------------------------------------------------------------
 set(HAS_GLSLANG 0)
 
-find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${CMAKE_SOURCE_DIR}/libs/vulkan" "$ENV{VULKAN_SDK}/lib" REQUIRED)
-
 if(${OS_MACOS})
-    find_program(GLSLC "glslc.osx-arm64" HINTS "${CMAKE_SOURCE_DIR}/bin/vulkan" "$ENV{VULKAN_SDK}/bin" REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.dylib")
+    set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/macos")
+    set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/macos")
+    set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.dylib")
 else()
-    find_program(GLSLC "glslc.linux-64" HINTS "${CMAKE_SOURCE_DIR}/bin/vulkan" "$ENV{VULKAN_SDK}/bin" REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} "${CMAKE_SOURCE_DIR}/libs/vulkan/libvulkan.so")
+    set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/linux")
+    set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/linux")
+    set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.so")
 endif()
+
+find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${VULKAN_DIR}" "$ENV{VULKAN_SDK}/lib" REQUIRED)
+find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
