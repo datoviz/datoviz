@@ -77,6 +77,8 @@ struct DvzShape
 
 
 
+EXTERN_C_ON
+
 /*************************************************************************************************/
 /*************************************************************************************************/
 /*  Scene API                                                                                    */
@@ -615,6 +617,25 @@ DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
  * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
+
+
+
+/**
+ * Normalize a shape.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_normalize(DvzShape* shape);
+
+
+
+/**
+ * Load a .obj shape.
+ *
+ * @param file_path the path to the .obj file
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
 
 
 
@@ -2321,5 +2342,7 @@ DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 DVZ_EXPORT void dvz_demo(void);
 
 
+
+EXTERN_C_OFF
 
 #endif

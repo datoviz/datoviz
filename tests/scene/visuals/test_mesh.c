@@ -14,7 +14,6 @@
 #include "request.h"
 #include "scene/arcball.h"
 #include "scene/dual.h"
-#include "scene/meshobj.h"
 #include "scene/scene.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/transform.h"

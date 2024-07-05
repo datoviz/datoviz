@@ -114,7 +114,7 @@ demo:
 
 example name="":
     gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-    ./build/example_scatter
+    ./build/example_{{name}}
 
 
 # -------------------------------------------------------------------------------------------------

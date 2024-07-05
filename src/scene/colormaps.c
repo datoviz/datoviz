@@ -33,8 +33,6 @@ static unsigned char* DVZ_COLORMAP_ARRAY;
 
 
 
-EXTERN_C_ON
-
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
@@ -264,7 +262,5 @@ void dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax
 // }
 
 
-
-EXTERN_C_OFF
 
 #endif
