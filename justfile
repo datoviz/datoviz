@@ -93,8 +93,13 @@ cloc:
 # Tests
 # -------------------------------------------------------------------------------------------------
 
+[linux]
 test test_name="":
     ./build/datoviz test {{test_name}}
+
+[macos]
+test test_name="":
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
 
 pytest:
     DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
@@ -104,17 +109,30 @@ pytest:
 # Demo
 # -------------------------------------------------------------------------------------------------
 
+[linux]
 demo:
     @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
+
+[macos]
+demo:
+    @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 
 
 # -------------------------------------------------------------------------------------------------
 # Example
 # -------------------------------------------------------------------------------------------------
 
+[linux]
+runexample name="":
+    ./build/example_{{name}}
+
+[macos]
+runexample name="":
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
+
 example name="":
     gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-    ./build/example_{{name}}
+    just runexample {{name}}
 
 
 # -------------------------------------------------------------------------------------------------
