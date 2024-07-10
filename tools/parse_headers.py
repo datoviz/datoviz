@@ -24,9 +24,7 @@ from pyparsing import (
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-HEADER_DIR = (ROOT_DIR / 'include/datoviz').resolve()
-INTERNAL_HEADER_DIR = (ROOT_DIR / 'src').resolve()
-EXTERNAL_HEADER_DIR = ROOT_DIR / 'external'
+HEADER_DIR = (ROOT_DIR / 'include').resolve()
 CACHE_PATH = ROOT_DIR / 'tools/headers.json'
 
 LPAR, RPAR, LBRACE, RBRACE, LBRACKET, RBRACKET, COMMA, SEMICOLON, EQ, SPACE = \
@@ -75,15 +73,13 @@ def _resolve_defines(defines):
 # File explorer and manipulation
 # -------------------------------------------------------------------------------------------------
 
-def count_header_files():
-    return len(list(HEADER_DIR.rglob('*.h')) + list(INTERNAL_HEADER_DIR.rglob('*.h')))
-
-
 def iter_header_files():
-    for h in sorted(HEADER_DIR.rglob('*.h')):
+    for h in sorted(HEADER_DIR.glob('*.h')):
         yield h
-    for h in sorted(INTERNAL_HEADER_DIR.rglob('*.h')):
-        yield h
+
+
+def count_header_files():
+    return len(list(iter_header_files()))
 
 
 def remove_comments(text):
