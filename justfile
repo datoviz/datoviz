@@ -43,13 +43,13 @@ clang:
 # Cython
 # -------------------------------------------------------------------------------------------------
 
-parse_headers:
+headers:
     python tools/parse_headers.py
 
-make_ctypes:
+ctypes:
     python tools/generate_ctypes.py
 
-build_cython:
+cython:
     rm -rf datoviz/*.c datoviz/*.so datoviz/__pycache__ &&
     python tools/generate_cython.py &&
     python setup.py build_ext -i &&

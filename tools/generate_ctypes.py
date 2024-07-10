@@ -10,12 +10,16 @@ ENUMS = set()
 HEADER = """
 import ctypes
 from enum import IntEnum
+import faulthandler
 import pathlib
+
+faulthandler.enable
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
 
 dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.so')
 
+# see https://v4.chriskrycho.com/2015/ctypes-structures-and-dll-exports.html
 class CtypesEnum(IntEnum):
     @classmethod
     def from_param(cls, obj):
@@ -132,7 +136,12 @@ def generate_ctypes_bindings(headers_json_path, output_path):
     for fn in data:
         functions = data.get(fn, {}).get("functions", {})
         for func_name, func_info in functions.items():
-            out += f'{func_name} = dvz.{func_name}\n'
+            orig_name = func_name
+            # Remove dvz_ prefix.
+            if func_name.startswith("dvz_"):
+                func_name = func_name[4:]
+
+            out += f'{func_name} = dvz.{orig_name}\n'
             out += f'{func_name}.argtypes = [\n'
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
@@ -154,6 +163,6 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
 if __name__ == "__main__":
     headers_json_path = ROOT_DIR / 'tools/headers.json'
-    output_path = ROOT_DIR / 'datoviz/__ctypes.py'
+    output_path = ROOT_DIR / 'datoviz/ctypes_wrapper.py'
 
     generate_ctypes_bindings(headers_json_path, output_path)
