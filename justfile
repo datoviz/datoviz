@@ -46,6 +46,9 @@ clang:
 parse_headers:
     python tools/parse_headers.py
 
+make_ctypes:
+    python tools/generate_ctypes.py
+
 build_cython:
     rm -rf datoviz/*.c datoviz/*.so datoviz/__pycache__ &&
     python tools/generate_cython.py &&

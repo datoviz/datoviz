@@ -178,7 +178,7 @@ def parse_functions(text):
     static = Keyword("static")
     inline = Keyword("inline")
     dtype = Word(alphanums + "_*")
-    identifier = Word(alphanums + "_")
+    identifier = Word(alphanums, alphanums + "_")
     argDecl = Group(
         Optional(const("const")) +
         Optional(unsigned("unsigned")) +

@@ -302,7 +302,7 @@ DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t heigh
  * @param id the figure's id
  * @returns the figure
  */
-DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
+DVZ_EXPORT DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
 
 
 
