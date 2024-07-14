@@ -7,9 +7,12 @@ WARNING: DO NOT EDIT: automatically-generated file
 # ===============================================================================
 
 import ctypes
-from enum import IntEnum
 import faulthandler
+import os
 import pathlib
+import platform
+
+from enum import IntEnum
 
 
 # ===============================================================================
@@ -30,7 +33,12 @@ ROOT_DIR = pathlib.Path(__file__).parent.parent
 # Loading the dynamic library
 # ===============================================================================
 
-dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.so')
+if platform.system() == "Linux":
+    dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.so')
+elif platform.system() == "Darwin":
+    os.environ['VK_DRIVER_FILES'] = str(
+        ROOT_DIR / "libs/vulkan/macos/MoltenVK_icd.json")
+    dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.dylib')
 
 
 # ===============================================================================
@@ -2381,3 +2389,4 @@ mock_color.argtypes = [
     ctypes.c_uint8,  # uint8_t alpha
 ]
 mock_color.restype = ctypes.POINTER(ctypes.c_uint8)
+
