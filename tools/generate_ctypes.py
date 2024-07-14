@@ -1,5 +1,6 @@
 import ctypes
 import json
+from textwrap import dedent
 from pathlib import Path
 
 
@@ -7,17 +8,44 @@ ROOT_DIR = Path(__file__).parent.parent
 TYPES = set()
 ENUMS = set()
 
-HEADER = """
+HEADER = """'''
+WARNING: DO NOT EDIT: automatically-generated file
+'''
+
+# ===============================================================================
+# Imports
+# ===============================================================================
+
 import ctypes
 from enum import IntEnum
 import faulthandler
 import pathlib
 
-faulthandler.enable
+
+# ===============================================================================
+# Fault handler
+# ===============================================================================
+
+faulthandler.enable()
+
+
+# ===============================================================================
+# Global variables
+# ===============================================================================
 
 ROOT_DIR = pathlib.Path(__file__).parent.parent
 
+
+# ===============================================================================
+# Loading the dynamic library
+# ===============================================================================
+
 dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.so')
+
+
+# ===============================================================================
+# Util classes
+# ===============================================================================
 
 # see https://v4.chriskrycho.com/2015/ctypes-structures-and-dll-exports.html
 class CtypesEnum(IntEnum):
@@ -102,7 +130,17 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
     out = ""
 
+    def delim(name):
+        nonlocal out
+        out += dedent(f"""
+        # {'=' * 79}
+        # {name}
+        # {'=' * 79}
+
+        """)
+
     # Handle defines
+    delim("DEFINES")
     for fn in data:
         defines = data.get(fn, {}).get("defines", {})
         for define_name, define_value in defines.items():
@@ -110,6 +148,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
     out += "\n"
 
     # Handle enums
+    delim("ENUMERATIONS")
     for fn in data:
         enums = data.get(fn, {}).get("enums", {})
         for enum_name, enum_info in enums.items():
@@ -119,9 +158,11 @@ def generate_ctypes_bindings(headers_json_path, output_path):
                 out += f'    {value[0]} = {value[1]}\n'
             out += '\n'
 
+    delim("FORWARD DECLARATIONS")
     out += "{forward}"
 
     # Generate ctypes structures
+    delim("STRUCTURES")
     for fn in data:
         structs = data.get(fn, {}).get("structs", {})
         for struct_name, struct_info in structs.items():
@@ -133,6 +174,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             out += '    ]\n\n'
 
     # Generate ctypes function bindings
+    delim("FUNCTIONS")
     for fn in data:
         functions = data.get(fn, {}).get("functions", {})
         for func_name, func_info in functions.items():
@@ -141,14 +183,18 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             if func_name.startswith("dvz_"):
                 func_name = func_name[4:]
 
+            out += f'# Function {orig_name}()\n'
             out += f'{func_name} = dvz.{orig_name}\n'
             out += f'{func_name}.argtypes = [\n'
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    out += f'    {map_ctype(arg["dtype"])},\n'
+                    out += f'    {map_ctype(arg["dtype"])
+                                  }, # {arg["dtype"]} {arg["name"]}\n'
             out += ']\n'
             restype = map_ctype(func_info["returns"])
-            out += f'{func_name}.restype = {restype}\n\n'
+            if restype != "None":
+                out += f'{func_name}.restype = {restype}\n'
+            out += '\n'
 
     # Forward declarations.
     forward = ""
