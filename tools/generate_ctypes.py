@@ -53,6 +53,7 @@ class CtypesEnum(IntEnum):
     def from_param(cls, obj):
         return int(obj)
 
+
 """
 
 
@@ -132,8 +133,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
     def delim(name):
         nonlocal out
-        out += dedent(f"""
-        # {'=' * 79}
+        out += dedent(f"""        # {'=' * 79}
         # {name}
         # {'=' * 79}
 
@@ -145,7 +145,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
         defines = data.get(fn, {}).get("defines", {})
         for define_name, define_value in defines.items():
             out += f'{define_name} = {define_value}\n'
-    out += "\n"
+    out += "\n\n"
 
     # Handle enums
     delim("ENUMERATIONS")
@@ -156,7 +156,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             out += f'class {enum_name}(CtypesEnum):\n'
             for value in enum_info.get('values', []):
                 out += f'    {value[0]} = {value[1]}\n'
-            out += '\n'
+            out += '\n\n'
 
     delim("FORWARD DECLARATIONS")
     out += "{forward}"
@@ -171,7 +171,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             for field in struct_info.get('fields', []):
                 dtype = map_ctype(field["dtype"], enum_int=True)
                 out += f'        ("{field["name"]}", {dtype}),\n'
-            out += '    ]\n\n'
+            out += '    ]\n\n\n'
 
     # Generate ctypes function bindings
     delim("FUNCTIONS")
@@ -188,8 +188,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             out += f'{func_name}.argtypes = [\n'
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    out += f'    {map_ctype(arg["dtype"])
-                                  }, # {arg["dtype"]} {arg["name"]}\n'
+                    out += f'    {map_ctype(arg["dtype"])},  # {arg["dtype"]} {arg["name"]}\n'
             out += ']\n'
             restype = map_ctype(func_info["returns"])
             if restype != "None":
@@ -199,7 +198,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
     # Forward declarations.
     forward = ""
     for dtype in sorted(TYPES):
-        forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n"
+        forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
     with open(output_path, 'w') as file:
