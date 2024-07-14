@@ -807,6 +807,12 @@ app_destroy.argtypes = [
     ctypes.POINTER(DvzApp), # DvzApp* app
 ]
 
+# Function dvz_free()
+free = dvz.dvz_free
+free.argtypes = [
+    ctypes.c_void_p, # void* pointer
+]
+
 # Function dvz_scene()
 scene = dvz.dvz_scene
 scene.argtypes = [

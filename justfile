@@ -46,7 +46,7 @@ clang:
 headers:
     python tools/parse_headers.py
 
-ctypes:
+ctypes: headers
     python tools/generate_ctypes.py
 
 cython:

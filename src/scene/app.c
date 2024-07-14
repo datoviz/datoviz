@@ -442,3 +442,7 @@ void dvz_app_destroy(DvzApp* app)
 
     FREE(app);
 }
+
+
+
+void dvz_free(void* pointer) { FREE(pointer); }

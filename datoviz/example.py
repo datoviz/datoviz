@@ -4,7 +4,9 @@ import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
 
 
-def _c(x, dtype=np.float32):
+def array_pointer(x, dtype=np.float32):
+    if not isinstance(x, np.ndarray):
+        return x
     x = x.astype(dtype)
     return x.ctypes.data_as(ctypes.POINTER(_ctype(dtype)))
 
@@ -27,16 +29,18 @@ n = 10000
 dvz.point_alloc(visual, n)
 
 # Positions.
-pos = np.random.normal(size=(n, 3), scale=.25)
-dvz.point_position(visual, 0, n, _c(pos), 0)
+# pos = dvz.mock_pos2D(n, .25)  # C version
+pos = np.random.normal(size=(n, 3), scale=.25)  # NumPy version
+dvz.point_position(visual, 0, n, array_pointer(pos), 0)
+# dvz.free(array_pointer(pos))  # only for C version, DO NOT call on NumPy version
 
 # Colors.
 color = np.random.uniform(size=(n, 4), low=50, high=240)
-dvz.point_color(visual, 0, n, _c(color, np.uint8), 0)
+dvz.point_color(visual, 0, n, array_pointer(color, np.uint8), 0)
 
 # Sizes.
 size = np.random.uniform(size=(n,), low=25, high=50)
-dvz.point_size(visual, 0, n, _c(size), 0)
+dvz.point_size(visual, 0, n, array_pointer(size), 0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual)
