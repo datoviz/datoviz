@@ -52,6 +52,13 @@ Future work:
 
 ## Overview
 
+### Current status
+
+In 2021, a [first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/).
+
+In 2024, the v0.2x version is released. Redesigned from the ground-up for increased modularity, it is now architectured in a way that makes the underlying technology more stable with respect to the constant innovations on GPU hardware and graphics rendering APIs.
+
+
 ### History and status
 
 In **2012**, several developers of GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) joined forces and created [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library in Python.
@@ -60,7 +67,7 @@ In **2015**, [**Vulkan**]((https://www.khronos.org/vulkan/)), successor of OpenG
 
 In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, started experiments with Vulkan.
 
-In **2021**, [a first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/). The underlying technology continued to mature for three years, notably thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to VisPy in 2021.
+After an experimental release in **2021**, the underlying technology continued to mature for three years, notably thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to VisPy in 2021.
 
 In **2024**, a redesigned **v0.2x** version is available for testing and community feedback.
 
@@ -69,36 +76,10 @@ In **2024**, a redesigned **v0.2x** version is available for testing and communi
 
 ### New v0.2x version and long-term vision
 
-The v0.2x version has been redesigned from the ground-up for increased modularity and independence with respect to the underlying GPU technology and constant innovations on hardware technology and graphics rendering APIs.
 
 Thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to the VisPy project in 2024, this redesigned architecture will let us port the Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
 This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** is uniformly available on multiple platforms, multiple environments (desktop, web, cloud-based remote visualization), and multiple programming languages (C/C++, Python, Julia, Rust...).
-
-
-<!-- STAGED RELEASE PROCESS -->
-
-### Staged release process for gathering community testing and feedback
-
-We plan a slow, staged release process that aims at **improving the quality and stability** of the rendering engine, improving **hardware support**, and testing the user API via **community feedback**.
-
-We plan to release the v0.2x in the following steps:
-
-1. [Summer 2024] **C shared library** on **Linux**
-2. [TBD] **C shared library** on the **three main platforms** (Linux, macOS, Windows)
-3. [TBD] **Python wrapper** on **Linux**
-4. [TBD] **Python wrapper** on the **three main platforms**
-
-In the meantime, experienced users can try to build the library themselves on their preferred platform and contribute to the project via issues or pull requests.
-
-
-<!-- FUNDING -->
-
-### Funding
-
-Datoviz is developed at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
-
-It is funded notably by [Chan Zuckerberg Initiative](https://chanzuckerberg.com/)'s [Essential Open Source Software for Science program](https://chanzuckerberg.com/eoss/).
 
 
 
@@ -110,18 +91,37 @@ Work in progress.
 
 ### Ubuntu 24.04
 
-* Download the .deb package.
-* Install the .deb package to your system:
+1. Download the .deb package.
+2. Install the .deb package on your system:
 
+    ```bash
     sudo dpkg -i libdatoviz*.deb
+    ```
 
-* Test the library with the built-in demo:
+3. Try to run the built-in demo:
 
+    ```bash
     # The .deb package should have installed the shared library libdatoviz.so into /usr/local/lib
     # This line loads this shared library and calls the exposed dvz_demo() C function from Python.
     python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
+    ```
 
 
+<!-- INSTALLATION -->
+
+## Installation instructions
+
+### Ubuntu 24.04
+
+TODO.
+
+### macOS (arm64)
+
+TODO.
+
+### Windows
+
+TODO.
 
 
 <!-- DOCUMENTATION -->
@@ -166,7 +166,7 @@ just example scatter
 ```
 
 
-### macOS (ARM)
+### macOS (arm64)
 
 ```bash
 # Install brew if you don't have it already.
@@ -192,6 +192,9 @@ just build
 just example scatter
 ```
 
+### Windows
+
+TODO.
 
 
 <!-- PACKAGING -->
@@ -212,8 +215,28 @@ just deb
 just testdeb
 ```
 
-### macOS
+### macOS (arm64)
 
-Coming soon.
+```bash
+# Generate a .pkg package in packaging/
+just pkg
+
+# Test .pkg installation in an UTM virtual machine
+just testpkg
+```
 
 Note: in addition to `libvulkan.dylib`, the package should also save both `libs/vulkan/macos/MoltenVK_icd.json` and `libMoltenVK.dylib` to a [standard system location](https://vulkan.lunarg.com/doc/view/1.3.243.0/mac/LoaderDriverInterface.html#user-content-example-macos-driver-search-path).
+
+
+### Windows
+
+TODO.
+
+
+<!-- FUNDING -->
+
+## Funding
+
+Datoviz is developed by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
+
+It is partly funded by [Chan Zuckerberg Initiative](https://chanzuckerberg.com/)'s [Essential Open Source Software for Science program](https://chanzuckerberg.com/eoss/).
