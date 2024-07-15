@@ -174,11 +174,8 @@ deb:
     Maintainer: {{MAINTAINER}}
     Description: {{DESCRIPTION}}" > $DEB/DEBIAN/control
 
-    # Copy libdatoviz
     cp build/libdatoviz.so* $DEB/usr/local/lib/
-    # Copy libvulkan
-    cp libs/vulkan/libvulkan.so* $DEB/usr/local/lib/
-    # Copy the datoviz header files
+    cp libs/vulkan/linux/libvulkan.so* $DEB/usr/local/lib/
     cp include/datoviz*.h $DEB/usr/local/include/
 
     # Build the package.
@@ -186,6 +183,7 @@ deb:
 
     # Move it.
     mv packaging/deb.deb packaging/datoviz_0.2.0_amd64.deb
+    rm -rf $DEB
 
 testdeb:
     #!/usr/bin/env sh
