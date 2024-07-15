@@ -40,7 +40,7 @@ clang:
 
 
 # -------------------------------------------------------------------------------------------------
-# Cython
+# Python
 # -------------------------------------------------------------------------------------------------
 
 headers:
@@ -226,10 +226,62 @@ testdeb:
     " > Dockerfile
 
     # Build the Docker image
-    docker build -t datoviz_test .
+    docker build -t datoviz_deb_test .
 
     # Run the Docker container
-    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_test
+    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_deb_test
+
+    rm Dockerfile
+
+
+# -------------------------------------------------------------------------------------------------
+# Python packaging
+# -------------------------------------------------------------------------------------------------
+
+wheel:
+    @python setup.py bdist_wheel
+
+testwheel:
+    #!/usr/bin/env sh
+
+    if [ ! -f dist/datoviz-*-py3-none-any.whl ]; then
+        just deb
+    fi
+
+    # Create a Dockerfile for testing
+    echo "FROM ubuntu:24.04
+
+    RUN apt-get update
+    RUN apt-get install -y \
+        libx11-dev \
+        libxrandr-dev \
+        libxinerama-dev \
+        libxcursor-dev \
+        libxi-dev \
+        vulkan-tools \
+        mesa-utils \
+        nvidia-driver-460 \
+        nvidia-utils-460 \
+        x11-apps
+    RUN apt-get install -y python3 python3-pip python3-venv
+
+    ENV NVIDIA_DRIVER_CAPABILITIES=all
+    ENV NVIDIA_VISIBLE_DEVICES=all
+
+    COPY dist/datoviz-*-py3-none-any.whl /tmp/
+    RUN python3 -m venv /tmp/venv
+    RUN /tmp/venv/bin/pip install /tmp/datoviz-*-py3-none-any.whl
+
+    WORKDIR /root
+    CMD /tmp/venv/bin/python3 -c \"import datoviz; datoviz.demo()\"
+
+    " > Dockerfile
+
+    # Build the Docker image
+    docker build -t datoviz_wheel_test .
+
+    # Run the Docker container
+    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
 

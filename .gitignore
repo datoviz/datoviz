@@ -79,3 +79,4 @@ experimental
 *.zst
 _old*
 packaging
+dist
