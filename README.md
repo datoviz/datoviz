@@ -127,7 +127,7 @@ If packages are not available on your system, you can build Datoviz yourself.
 
 ```bash
 # Install the build and system dependencies.
-sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-format libtinyxml2-dev libfreetype-dev
+sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-format patchelf tree libtinyxml2-dev libfreetype-dev
 
 # Install just, see https://github.com/casey/just
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
@@ -186,6 +186,8 @@ TODO.
 This section provides instructions for maintainers who need to create binary packages.
 
 ### Ubuntu 24.04
+
+You need to install Docker to test the created deb package in an isolated virtual environment.
 
 ```bash
 sudo apt-get install dpkg-dev fakeroot
