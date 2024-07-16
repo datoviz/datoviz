@@ -35,19 +35,48 @@ faulthandler.enable()
 # Global variables
 # ===============================================================================
 
-ROOT_DIR = pathlib.Path(__file__).parent.parent
+PLATFORMS = {
+    "Linux": "linux",
+    "Darwin": "macos",
+    "Windows": "windows",
+}
+PLATFORM = PLATFORMS.get(platform.system(), None)
+
+LIB_NAMES = {
+    "linux": "libdatoviz.so",
+    "macos": "libdatoviz.dylib",
+    "windows": "libdatoviz.dll",
+}
+LIB_NAME = LIB_NAMES.get(PLATFORM, "")
+
+FILE_DIR = pathlib.Path(__file__).parent.resolve()
+
+# Package paths: this Python file is stored alongside the dynamic libraries.
+DATOVIZ_DIR = FILE_DIR
+LIB_DIR = FILE_DIR
+
+# Development paths: the libraries are in build/ and libs/
+if not DATOVIZ_DIR.exists():
+    DATOVIZ_DIR = (FILE_DIR / "../build/").resolve()
+
+if not LIB_DIR.exists():
+    LIB_DIR = (FILE_DIR / f"../libs/vulkan/{PLATFORM}/").resolve()
+
+LIB_PATH = DATOVIZ_DIR / LIB_NAME
+if not LIB_PATH.exists():
+    raise RuntimeError(f"Unable to find `{LIB_PATH}`.")
 
 
 # ===============================================================================
 # Loading the dynamic library
 # ===============================================================================
 
-if platform.system() == "Linux":
-    dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.so')
-elif platform.system() == "Darwin":
-    os.environ['VK_DRIVER_FILES'] = str(
-        ROOT_DIR / "libs/vulkan/macos/MoltenVK_icd.json")
-    dvz = ctypes.cdll.LoadLibrary(ROOT_DIR / 'build/libdatoviz.dylib')
+assert LIB_PATH.exists()
+dvz = ctypes.cdll.LoadLibrary(LIB_PATH)
+
+# on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
+if PLATFORM == "macos":
+    os.environ['VK_DRIVER_FILES'] = str(LIB_DIR / "MoltenVK_icd.json")
 
 
 # ===============================================================================
@@ -195,7 +224,8 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             out += f'{func_name}.argtypes = [\n'
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    out += f'    {map_ctype(arg["dtype"])},  # {arg["dtype"]} {arg["name"]}\n'
+                    out += (f'    {map_ctype(arg["dtype"])},  '
+                            f'# {arg["dtype"]} {arg["name"]}\n')
             out += ']\n'
             restype = map_ctype(func_info["returns"])
             if restype != "None":
