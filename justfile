@@ -163,6 +163,7 @@ swiftshader +args:
 # Packaging
 # -------------------------------------------------------------------------------------------------
 
+[linux]
 deb:
     #!/usr/bin/env sh
     DEB="packaging/deb/"
@@ -193,6 +194,7 @@ deb:
     mv packaging/deb.deb packaging/datoviz_0.2.0_amd64.deb
     rm -rf $DEB
 
+[linux]
 testdeb:
     #!/usr/bin/env sh
 
@@ -291,6 +293,7 @@ testwheel:
 
     rm Dockerfile
 
+[macos]
 pkg:
     #!/usr/bin/env sh
     PKGROOT="packaging/pkgroot"
@@ -340,6 +343,7 @@ pkg:
     mv $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
     # rm -rf $PKGROOT $PKG
 
+[macos]
 testpkg vm_ip_address:
     #!/usr/bin/env sh
     IP="{{vm_ip_address}}"
