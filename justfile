@@ -171,12 +171,14 @@ swiftshader +args:
 deb:
     #!/usr/bin/env sh
     DEB="packaging/deb/"
+    INCLUDEDIR="/usr/local/include/datoviz"
+    LIBDIR="/usr/local/lib/datoviz"
 
     # Clean up and prepare the directory structure.
     rm -rf $DEB
     mkdir -p $DEB/DEBIAN
-    mkdir -p $DEB/usr/local/include
-    mkdir -p $DEB/usr/local/lib
+    mkdir -p $DEB$INCLUDEDIR
+    mkdir -p $DEB$LIBDIR
 
     # Create the control file.
     echo "Package: datoviz
@@ -187,9 +189,22 @@ deb:
     Maintainer: {{MAINTAINER}}
     Description: {{DESCRIPTION}}" > $DEB/DEBIAN/control
 
-    cp build/libdatoviz.so* $DEB/usr/local/lib/
-    cp libs/vulkan/linux/libvulkan.so* $DEB/usr/local/lib/
-    cp include/datoviz*.h $DEB/usr/local/include/
+    # Copy the header files.
+    cp -a include/datoviz*.h $DEB$INCLUDEDIR
+
+    # Copy the libraries.
+    cp -a build/libdatoviz.so* $DEB$LIBDIR
+    cp -a libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
+
+    # Copy the Python ctypes wrapper/
+    cp -a datoviz/ctypes_wrapper.py $DEB$LIBDIR/__init__.py
+
+    # Create the post-install script.
+    echo "#!/usr/bin/env sh
+    SITE_PACKAGES=\$(python3 -m site --user-site)
+    mkdir -p \$SITE_PACKAGES
+    ln -sf /usr/local/lib/datoviz \$SITE_PACKAGES/datoviz" > $DEB/DEBIAN/postinst
+    chmod 755 $DEB/DEBIAN/postinst
 
     # Build the package.
     fakeroot dpkg-deb --build $DEB
@@ -232,8 +247,15 @@ testdeb:
     COPY examples/scatter.c /root/
     WORKDIR /root
 
-    RUN gcc -o example_scatter scatter.c -I/usr/local/include/ -L/usr/local/lib/ -Wl,-rpath,/usr/local/lib -lm -ldatoviz
-    CMD ./example_scatter
+    # Build a C standalone file depending on libdatoviz.
+    RUN gcc -o example_scatter scatter.c \
+        -DOS_LINUX=1 \
+        -I/usr/local/include/datoviz \
+        -L/usr/local/lib/datoviz \
+        -Wl,-rpath,/usr/local/lib/datoviz \
+        -lm -ldatoviz
+    # Run the compiled C example and also try the Python import.
+    CMD ./example_scatter && python3 -c 'import datoviz; datoviz.demo()'
 
     " > Dockerfile
 
