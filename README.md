@@ -49,45 +49,37 @@ Future work:
 
 
 <!-- HISTORY AND STATUS -->
-
 ## Overview
 
-### Current status
+### Current Status
 
-In 2021, a [first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/).
+In 2021, the [first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/).
 
-In 2024, the v0.2x version is released. Redesigned from the ground-up for increased modularity, it is now architectured in a way that makes the underlying technology more stable with respect to the constant innovations on GPU hardware and graphics rendering APIs.
+In 2024, version **v0.2x** was released. This version has been redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
 
+### History and Status
 
-### History and status
+In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
 
-In **2012**, several developers of GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) joined forces and created [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library in Python.
+In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [inspiring the idea of a future Vulkan-based visualization library](https://cyrille.rossant.net/compiler-data-visualization/).
 
-In **2015**, [**Vulkan**]((https://www.khronos.org/vulkan/)), successor of OpenGL, was announced by Khronos, [spurring ideas on a future, Vulkan-based visualization library.](https://cyrille.rossant.net/compiler-data-visualization/)
+In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, began experimenting with Vulkan.
 
-In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, started experiments with Vulkan.
-
-After an experimental release in **2021**, the underlying technology continued to mature for three years, notably thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to VisPy in 2021.
-
-In **2024**, a redesigned **v0.2x** version is available for testing and community feedback.
-
+Following an experimental release in **2021**, the technology matured over the next three years, thanks in part to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in 2021.
 
 <!-- NEW VERSION -->
 
-### New v0.2x version and long-term vision
+### New v0.2x Version and Long-term Vision
+
+In **2024**, thanks to a second [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to the VisPy project in 2024, a redesigned **v0.2x** version was released for testing and community feedback. It features a redesigned architecture that will allow us to port Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+
+This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** is uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
 
 
-Thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to the VisPy project in 2024, this redesigned architecture will let us port the Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
-This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** is uniformly available on multiple platforms, multiple environments (desktop, web, cloud-based remote visualization), and multiple programming languages (C/C++, Python, Julia, Rust...).
+<!-- INSTALLATION -->
 
-
-
-<!-- QUICK START -->
-
-## Getting started
-
-Work in progress.
+## Installation instructions
 
 ### Ubuntu 24.04
 
@@ -105,15 +97,6 @@ Work in progress.
     # This line loads this shared library and calls the exposed dvz_demo() C function from Python.
     python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
     ```
-
-
-<!-- INSTALLATION -->
-
-## Installation instructions
-
-### Ubuntu 24.04
-
-TODO.
 
 ### macOS (arm64)
 
@@ -138,7 +121,7 @@ Work in progress.
 
 ## Building instructions
 
-This section provides instructions for building the library, if packages are not yet available.
+If packages are not available on your system, you can build Datoviz yourself.
 
 ### Ubuntu 24.04
 
@@ -150,9 +133,8 @@ sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-for
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
 # Clone the Datoviz repo and build.
-git clone https://github.com/datoviz/datoviz.git@v0.2x
+git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
 cd datoviz
-git submodule update --init --recursive
 
 # This call will fail, but the build will succeed the second time.
 # Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
@@ -174,7 +156,7 @@ just example scatter
 (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/cyrille/.zprofile
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Install build dependencies.
+# Install dependencies.
 brew install just cmake ccache ninja freetype
 
 # Clone the Datoviz repo.
