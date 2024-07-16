@@ -38,6 +38,14 @@ clang:
     export CXX=/usr/bin/clang++
     just build
 
+[macos]
+deps:
+    @otool -L build/libdatoviz.dylib | sort -r
+
+[linux]
+deps:
+    @ldd build/libdatoviz.so
+
 
 # -------------------------------------------------------------------------------------------------
 # Python
@@ -282,6 +290,86 @@ testwheel:
     docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
+
+pkg:
+    #!/usr/bin/env sh
+    PKGROOT="packaging/pkgroot"
+    PKG="packaging/pkg"
+    INCLUDEDIR="/usr/local/include/datoviz"
+    LIBDIR="/usr/local/lib/datoviz"
+
+    # Clean up and prepare the directory structure.
+    mkdir -p $PKGROOT $PKG
+    rm -rf $PKGROOT/* $PKG/*
+    mkdir -p $PKGROOT$INCLUDEDIR
+    mkdir -p $PKGROOT$LIBDIR
+
+    # Copy the header files.
+    cp include/datoviz*.h $PKGROOT$INCLUDEDIR
+    cp libs/vulkan/macos/MoltenVK_icd.json $PKGROOT$LIBDIR
+
+    # Copy the shared libraries.
+    cp -a build/libdatoviz.*dylib $PKGROOT$LIBDIR
+    cp -a libs/vulkan/macos/libvulkan.*dylib $PKGROOT$LIBDIR
+    cp -a libs/vulkan/macos/libMoltenVK.*dylib $PKGROOT$LIBDIR
+
+    # Copy the dependencies and adjust their rpaths.
+    # cp -a $(otool -L build/libdatoviz.dylib | grep brew | awk '{print $1}') $PKGROOT$LIBDIR
+    # Path to libdatoviz.
+    LIB=$PKGROOT$LIBDIR/libdatoviz.dylib
+    # List all Homebrew dependencies, copy them to the package tree, and update the rpath of
+    # libdatoviz to point to these local copies.
+    otool -L $LIB | grep brew | awk '{print $1}' | while read -r dep; do
+        filename=$(basename "$dep")
+        cp -a $dep $PKGROOT$LIBDIR/
+        echo $PKGROOT$LIBDIR/$filename
+        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
+    done
+    # Show the dependencies of the packaged datoviz library.
+    otool -L $LIB | sort -r
+
+    # Build the package.
+    pkgbuild --root $PKGROOT --identifier com.datoviz --version {{VERSION}} --install-location / $PKG/datoviz.pkg
+
+    # Display information about the contents of the .pkg file.
+    pkgutil --expand $PKG/datoviz.pkg $PKG/extracted
+    cd $PKG/extracted && cat Payload | gunzip -dc | cpio -i
+    tree . -ugh && cd -
+
+    # Move it.
+    mv $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
+    # rm -rf $PKGROOT $PKG
+
+testpkg vm_ip_address:
+    #!/usr/bin/env sh
+    IP="{{vm_ip_address}}"
+    TMPDIR=/tmp/datoviz_example
+
+    # Check if the pkg package exists, if not, build it
+    if [ ! -f packaging/datoviz_{{VERSION}}.pkg ]; then
+        just pkg
+    fi
+
+    # Copy the .pkg file to the VM
+    ssh -T $USER@$IP "mkdir -p $TMPDIR && rm -rf $TMPDIR/*"
+    scp packaging/datoviz_{{VERSION}}.pkg \
+        examples/scatter.c \
+        $USER@$IP:$TMPDIR
+
+    # Connect to the VM and install the .pkg file
+    ssh -T $USER@$IP << 'EOF'
+    # Install the .pkg package
+    TMPDIR=/tmp/datoviz_example
+    echo "$USER" | sudo -S installer -pkg $TMPDIR/datoviz_{{VERSION}}.pkg -target /
+    cd $TMPDIR
+    ls -la $TMPDIR
+    clang -o $TMPDIR/example_scatter $TMPDIR/scatter.c \
+        -I/usr/local/include/datoviz/ -L/usr/local/lib/datoviz/ \
+        -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
+
+    echo "Compilation finished. The example executable is located at $TMPDIR/example_scatter"
+    EOF
+
 
 
 # -------------------------------------------------------------------------------------------------

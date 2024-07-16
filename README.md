@@ -199,16 +199,67 @@ just testdeb
 
 ### macOS (arm64)
 
+Building a `.pkg` package file with Datoviz and its dependencies is straightforward with the `just pkg` command on macOS (arm64).
+
+#### Preparing a virtual machine for testing in an isolated environment
+
+However, testing this package file in a virtual machine is currently more complicated that on Linux.
+Before calling `just testpkg`, you need to follow several steps to prepare a virtual machine manually.
+
+1.  Install sshpass:
+
+    ```bash
+    brew install sshpass
+    ```
+
+2. Install UTM.
+3. Create a new macOS virtual machine (VM) with **at least 64 GB storage** (for Xcode).
+4. Install macOS in the virtual machine. For simplicity, use your $USER as the login and password.
+5. Once installed, find the IP address in the VM system preferences and write it down (for example, 192.168.64.4).
+6. Set up remote access via SSH in the VM system preferences to set up a SSH server.
+7. Open a terminal in the VM and type:
+
+    ```bash
+    type: xcode-select --install
+    ```
+
+#### Build and test the macOS package
+
 ```bash
 # Generate a .pkg package in packaging/
 just pkg
 
-# Test .pkg installation in an UTM virtual machine
-just testpkg
+# Test the .pkg installation in an UTM virtual machine, using the IP address you wrote down earlier.
+just testpkg 192.168.64.4
+
+# In the virtual machine, run in a terminal `/tmp/datoviz_example/example_scatter`.
 ```
 
-Note: in addition to `libvulkan.dylib`, the package should also save both `libs/vulkan/macos/MoltenVK_icd.json` and `libMoltenVK.dylib` to a [standard system location](https://vulkan.lunarg.com/doc/view/1.3.243.0/mac/LoaderDriverInterface.html#user-content-example-macos-driver-search-path).
 
+### Windows
+
+TODO.
+
+
+<!-- DEVELOPER -->
+
+## Developer instructions
+
+This section provides general instructions for C/C++ developers who want to use Datoviz in their library or application.
+
+### Ubuntu
+
+TODO.
+
+### macOS (arm64)
+
+Looking at the [.justfile](.justfile) (`pkg` and `testpkg` commands) may be helpful.
+To build an application using Datoviz:
+
+1. You need to link your application to `libdatoviz.dylib`, that you can build yourself or find in the provided `.pkg` installation file.
+2. You also need to link to the non-system dependencies of Datoviz, for now they are `libvulkan`, `libMoltenVK` ("emulating" Vulkan on top of Apple Metal), `libpng` and `freetype`. You can see the dependencies with `just deps` (which uses `otool` on `libdatoviz.dylib`). You'll find these dependencies in [`libs/vulkan/macos`](libs/vulkan/macos) in the GitHub repository.
+3. You should bundle these `dylib` dependencies alongside your application, and that will depend on how your application is built and distributed.
+4. Another thing to keep in mind is that, for now, the `VK_DRIVER_FILES` environment variable needs to be set to the absolute path to [`MoltenVK_icd.json`](libs/vulkan/macos/MoltenVK_icd.json). The `.pkg` package installs it to `/usr/local/lib/datoviz/MoltenVK_icd.json`. Right now, [`datoviz.h`](include/datoviz.h) automatically sets this environment variable if it's included in the source file implementing your `main()` entry-point.
 
 ### Windows
 

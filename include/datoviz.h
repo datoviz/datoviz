@@ -38,6 +38,15 @@ Datoviz is still an early stage library and the API may change at any time.
 
 
 
+#if OS_MACOS
+__attribute__((constructor)) static void set_vk_driver_files(void)
+{
+    setenv("VK_DRIVER_FILES", "/usr/local/lib/datoviz/MoltenVK_icd.json", 1);
+}
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Types                                                                                        */
 /*************************************************************************************************/
