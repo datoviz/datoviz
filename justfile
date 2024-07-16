@@ -360,9 +360,11 @@ pkg:
         install_name_tool -change "$dep" "@loader_path/$filename" $LIB
     done
 
-    # Remove the first rpath
-    first_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; print $2; exit}')
-    install_name_tool -delete_rpath "$first_rpath" $LIB
+    # Remove the rpath that links to a build directory.
+    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
+    if [ -n "$target_rpath" ]; then
+        install_name_tool -delete_rpath "$target_rpath" $LIB
+    fi
 
     # Show the dependencies of the packaged datoviz library.
     echo "Dependencies:"
