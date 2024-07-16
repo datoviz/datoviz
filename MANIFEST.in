@@ -1,4 +1,0 @@
-include datoviz/ctypes_wrapper.py
-include datoviz/__init__.py
-include libs/vulkan/linux/libvulkan.so
-include build/libdatoviz.so

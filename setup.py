@@ -1,4 +1,23 @@
+import platform
 from setuptools import setup, find_packages
+
+packages = [
+    'ctypes_wrapper.py',
+]
+
+packages.extend(
+    {
+        "Darwin": [
+            "../build/libdatoviz*.dylib",
+            "../libs/vulkan/macos/libvulkan*.dylib",
+        ],
+        "Linux": [
+            "../build/libdatoviz*.so",
+            "../libs/vulkan/linux/libvulkan*.so",
+        ],
+        "Windows": [],
+    }.get(platform.system(), [])
+)
 
 setup(
     name='datoviz',
@@ -6,11 +25,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     package_data={
-        'datoviz': [
-            'ctypes_wrapper.py',
-            '../libs/vulkan/linux/libvulkan.so',
-            '../build/libdatoviz.so',
-        ],
+        'datoviz': packages,
     },
     zip_safe=False,
 )

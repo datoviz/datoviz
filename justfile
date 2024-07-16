@@ -426,7 +426,11 @@ testpkg vm_ip_address:
 # -------------------------------------------------------------------------------------------------
 
 wheel:
-    @python setup.py bdist_wheel
+    @pip wheel . -w dist/
+    @ls -lah dist/
+
+showwheel:
+    @unzip -l dist/*.whl
 
 testwheel:
     #!/usr/bin/env sh
