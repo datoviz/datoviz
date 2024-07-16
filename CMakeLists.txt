@@ -118,8 +118,6 @@ endif()
 # -------------------------------------------------------------------------------------------------
 # Linking libraries
 # -------------------------------------------------------------------------------------------------
-set(LINK_LIBS cglm)
-
 # Link with system libraries.
 if(NOT ${WIN32})
     set(LINK_LIBS m dl pthread ${LINK_LIBS})
@@ -141,6 +139,7 @@ endif()
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 # ---- cglm ---------------------------------------------------------------------------------------
+option(CGLM_STATIC "Static build" ON)
 FetchContent_Declare(
     cglm
     GIT_REPOSITORY https://github.com/recp/cglm/
