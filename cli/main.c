@@ -8,6 +8,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#if OS_MACOS
+#define INCLUDE_VK_DRIVER_FILES
+#endif
+
 #include "main.h"
 #include "_macros.h"
 #include "common.h"

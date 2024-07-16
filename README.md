@@ -157,7 +157,7 @@ just example scatter
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Install dependencies.
-brew install just cmake ccache ninja freetype
+brew install just cmake ccache ninja freetype clang-format
 
 # Clone the Datoviz repo.
 git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
