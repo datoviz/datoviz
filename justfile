@@ -46,6 +46,10 @@ deps:
 deps:
     @ldd build/libdatoviz.so
 
+[macos]
+rpath:
+    @otool -l build/libdatoviz.dylib | awk '/LC_RPATH/ {getline; getline; print $2}'
+
 
 # -------------------------------------------------------------------------------------------------
 # Python
@@ -296,19 +300,28 @@ testwheel:
 [macos]
 pkg:
     #!/usr/bin/env sh
-    PKGROOT="packaging/pkgroot"
-    PKG="packaging/pkg"
+    PKGROOT="packaging/pkgroot/Payload"
+    PKGSCRIPTS="packaging/pkgroot/Scripts"
     INCLUDEDIR="/usr/local/include/datoviz"
     LIBDIR="/usr/local/lib/datoviz"
+    PKG="packaging/pkg"
 
     # Clean up and prepare the directory structure.
-    mkdir -p $PKGROOT $PKG
+    mkdir -p $PKGROOT $PKGSCRIPTS $PKG
     rm -rf $PKGROOT/* $PKG/*
     mkdir -p $PKGROOT$INCLUDEDIR
     mkdir -p $PKGROOT$LIBDIR
 
     # Copy the header files.
     cp include/datoviz*.h $PKGROOT$INCLUDEDIR
+
+    # Define INCLUDE_VK_DRIVER_FILES in the header file so that the VK_DRIVER_FILES env variable
+    # is set to the correct file installed by the pkg package.
+    sed -i '' '1i\
+    #define INCLUDE_VK_DRIVER_FILES
+    ' "$PKGROOT$INCLUDEDIR/datoviz.h"
+
+    cp datoviz/ctypes_wrapper.py $PKGROOT$LIBDIR/__init__.py
     cp libs/vulkan/macos/MoltenVK_icd.json $PKGROOT$LIBDIR
 
     # Copy the shared libraries.
@@ -316,23 +329,54 @@ pkg:
     cp -a libs/vulkan/macos/libvulkan.*dylib $PKGROOT$LIBDIR
     cp -a libs/vulkan/macos/libMoltenVK.*dylib $PKGROOT$LIBDIR
 
+    # Post-install script for Python installation
+    # Create a symlink from the local site-packages to /usr/local/lib/datoviz so that
+    # one can do "import datoviz" in Python, it will load /usr/local/lib/datoviz/__init__.py
+    # which contains the ctypes bindings.
+    cat << 'EOF' > $PKGSCRIPTS/postinstall
+    #!/bin/bash
+    echo "Starting postinstall script"
+    PYTHON_SITE_PACKAGES=$(python3 -c 'import site; print(site.getusersitepackages())')
+    mkdir -p $PYTHON_SITE_PACKAGES
+    echo "Creating symlink to $PYTHON_SITE_PACKAGES"
+    ln -sf /usr/local/lib/datoviz "$PYTHON_SITE_PACKAGES/datoviz"
+    EOF
+
+    # Make the postinstall script executable
+    chmod +x $PKGSCRIPTS/postinstall
+
     # Copy the dependencies and adjust their rpaths.
+    # ALTERNATIVE:
     # cp -a $(otool -L build/libdatoviz.dylib | grep brew | awk '{print $1}') $PKGROOT$LIBDIR
     # Path to libdatoviz.
     LIB=$PKGROOT$LIBDIR/libdatoviz.dylib
-    # List all Homebrew dependencies, copy them to the package tree, and update the rpath of
+    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
     # libdatoviz to point to these local copies.
-    otool -L $LIB | grep brew | awk '{print $1}' | while read -r dep; do
+    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
         filename=$(basename "$dep")
-        cp -a $dep $PKGROOT$LIBDIR/
-        echo $PKGROOT$LIBDIR/$filename
+        echo $filename
+        if [[ "$dep" != *"rpath"* ]]; then
+            cp -a $dep $PKGROOT$LIBDIR/
+        fi
         install_name_tool -change "$dep" "@loader_path/$filename" $LIB
     done
+
+    # Remove the first rpath
+    first_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; print $2; exit}')
+    install_name_tool -delete_rpath "$first_rpath" $LIB
+
     # Show the dependencies of the packaged datoviz library.
+    echo "Dependencies:"
     otool -L $LIB | sort -r
 
+    # Show the rpath.
+    echo "rpath:"
+    otool -l "$LIB" | awk '/LC_RPATH/ {getline; getline; print $2}'
+
     # Build the package.
-    pkgbuild --root $PKGROOT --identifier com.datoviz --version {{VERSION}} --install-location / $PKG/datoviz.pkg
+    pkgbuild --root $PKGROOT --scripts $PKGSCRIPTS --identifier com.datoviz --version {{VERSION}} --install-location / $PKG/datoviz.pkg
+    # NOTE: unneeded:
+    # productbuild --package-path $PKG --package $PKG/datoviz.pkg $PKG/datoviz_installer.pkg
 
     # Display information about the contents of the .pkg file.
     pkgutil --expand $PKG/datoviz.pkg $PKG/extracted
@@ -340,8 +384,8 @@ pkg:
     tree . -ugh && cd -
 
     # Move it.
-    mv $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
-    # rm -rf $PKGROOT $PKG
+    cp $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
+    rm -rf $PKGROOT $PKG
 
 [macos]
 testpkg vm_ip_address:
@@ -368,6 +412,7 @@ testpkg vm_ip_address:
     cd $TMPDIR
     ls -la $TMPDIR
     clang -o $TMPDIR/example_scatter $TMPDIR/scatter.c \
+        -DOS_MACOS=1 \
         -I/usr/local/include/datoviz/ -L/usr/local/lib/datoviz/ \
         -Wl,-rpath,/usr/local/lib/datoviz -lm -ldatoviz
 
