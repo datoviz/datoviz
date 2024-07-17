@@ -41,6 +41,83 @@ clang:
     just build
 #
 
+buildmany release="Debug":
+    #!/usr/bin/env sh
+    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
+    BUILD_DIR="build_many"
+    CONTAINER_NAME="datoviz-buildmany"
+
+    # Create the build directory
+    mkdir -p $BUILD_DIR $BUILD_DIR/$BUILD_DIR
+    # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
+    rsync -a -v --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
+        bin cli cmake data external include libs src tests tools \
+        CMakeLists.txt *.map "$BUILD_DIR/"
+
+    # Create a temporary Dockerfile
+    cat <<EOF > $BUILD_DIR/Dockerfile
+    FROM $DOCKER_IMAGE
+
+    # Install dependencies
+    RUN yum install -y epel-release
+    RUN dnf config-manager --set-enabled powertools && \
+        dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+        dnf --enablerepo=epel group
+    RUN yum install --enablerepo=raven-extras -y \
+        ccache \
+        cmake \
+        ninja-build \
+        gcc \
+        gcc-c++ \
+        libXrandr-devel \
+        libXinerama-devel \
+        libXcursor-devel \
+        libXi-devel \
+        freetype-devel \
+        vulkan \
+        vulkan-tools \
+        vulkan-headers \
+        vulkan-loader \
+        glslc
+
+    # Set up environment variables
+    ENV CCACHE_DIR=/ccache
+    ENV PATH=/usr/lib/ccache:\$PATH
+
+    # Copy source files into the container
+    COPY . /workspace
+
+    # Set the working directory
+    WORKDIR /workspace
+
+    # Build the project
+    RUN mkdir -p $BUILD_DIR && \
+        cd $BUILD_DIR && \
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release || true && \
+        ninja || true
+    RUN cd $BUILD_DIR && \
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
+        ninja
+
+    EOF
+
+    # Build the Docker image
+    docker build -t $CONTAINER_NAME $BUILD_DIR
+
+    # Run the Docker container and keep it running after the build
+    docker run --name $CONTAINER_NAME-container $CONTAINER_NAME
+
+    # Copy the built files from the container to the host directory
+    docker cp -L $CONTAINER_NAME-container:/workspace/$BUILD_DIR/libdatoviz.so $BUILD_DIR/
+    docker cp -L $CONTAINER_NAME-container:/usr/lib64/libvulkan.so.1 $BUILD_DIR/libvulkan.so
+    docker cp -L $CONTAINER_NAME-container:/usr/bin/glslc $BUILD_DIR/
+
+    # Clean up the container
+    docker rm $CONTAINER_NAME-container
+
+    # Clean up the temporary Dockerfile
+    rm $BUILD_DIR/Dockerfile
+
 
 # -------------------------------------------------------------------------------------------------
 # Shared library
@@ -472,7 +549,7 @@ wheelmany:
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
     DISTDIR="dist"
-    DOCKER_IMAGE="quay.io/pypa/manylinux2014_x86_64"
+    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
 
     # Clean up and prepare the directory structure.
     mkdir -p $PKGROOT $DISTDIR
@@ -481,8 +558,8 @@ wheelmany:
     # Copy the header files.
     cp datoviz/__init__.py $DVZDIR
     cp pyproject.toml $PKGROOT/
-    cp build/libdatoviz.so $DVZDIR
-    cp libs/vulkan/linux/libvulkan.so $DVZDIR
+    cp build_many/libdatoviz.so $DVZDIR
+    cp build_many/libvulkan.so $DVZDIR
 
     # Create a temporary Dockerfile
     cat <<EOF > $PKGROOT/Dockerfile
@@ -505,8 +582,8 @@ wheelmany:
     EOF
 
     # Build the Docker image and create the wheel
-    docker build -t datoviz-builder $PKGROOT
-    docker run --rm -v $(pwd)/$DISTDIR:/pkg/dist datoviz-builder
+    docker build -t datoviz-wheelmany $PKGROOT
+    docker run --rm -v $(pwd)/$DISTDIR:/pkg/dist datoviz-wheelmany
     ls -lah $(pwd)/$DISTDIR
 
     # Clean up

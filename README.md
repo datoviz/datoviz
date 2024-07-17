@@ -243,9 +243,34 @@ just testpkg 192.168.64.4
 TODO.
 
 
+<!-- PYTHON PACKAGING -->
+
+## Python packaging instructions
+
+This section provides instructions for maintainers who need to create Python wheel packages.
+
+### Ubuntu 24.04
+
+You need to install Docker to generate the wheels on a manylinux container. We have only used manylinux_2_28_x86_64 so far (based on AlmaLinux 8).
+
+```bash
+# First, build Datoviz in the manylinux container.
+just buildmany
+
+# Then, build a Python wheel in a manylinux container (saved in dist/).
+just wheelmany
+
+# Show the contents of the wheel.
+just showwheel
+
+# Try installing and running the wheel in an Ubuntu container.
+just testwheel
+```
+
+
 <!-- DEVELOPER -->
 
-## Developer instructions
+## Application developer instructions
 
 This section provides general instructions for C/C++ developers who want to use Datoviz in their library or application.
 

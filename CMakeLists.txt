@@ -182,8 +182,13 @@ else()
     set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.so")
 endif()
 
-find_library(Vulkan_LIBRARY NAMES vulkan HINTS "${VULKAN_DIR}" "$ENV{VULKAN_SDK}/lib" REQUIRED)
-find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+# HACK for manylinux almalinux 8
+if(NOT EXISTS "${VULKAN_LIB}")
+    set(VULKAN_LIB "/usr/lib64/libvulkan.so.1")
+endif()
+
+find_program(GLSLC "glslc"
+    HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
 set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
 
 # ---- msdf ------------------------------------------------------------------------------------
