@@ -523,9 +523,12 @@ showwheel:
 [linux]
 wheel:
     #!/usr/bin/env sh
+    set -e
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
     DISTDIR="dist"
+    PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+    TAG="cp3-none-$PLATFORM_TAG"
 
     # Clean up and prepare the directory structure.
     mkdir -p $PKGROOT $DISTDIR
@@ -537,9 +540,15 @@ wheel:
     cp build/libdatoviz.so $DVZDIR
     cp libs/vulkan/linux/libvulkan.so $DVZDIR
 
+    # Build the wheel.
     cd $PKGROOT
     pip wheel . -w "../../$DISTDIR"
     cd -
+
+    # Rename the wheel depending on the current platform.
+    WHEELPATH=$(ls $DISTDIR/*any.whl)
+    python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    rm $WHEELPATH
     rm -rf $PKGROOT
 #
 
