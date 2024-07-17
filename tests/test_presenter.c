@@ -500,7 +500,7 @@ int test_presenter_updates(TstSuite* suite)
     const uint32_t n = 1024 * 64;
     GraphicsWrapper wrapper = {0};
     wrapper.prt = prt;
-    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_VSYNC);
+    graphics_request(batch, n, &wrapper, 0);
     wrapper.data = calloc(n, sizeof(DvzGraphicsPointVertex));
     _random_data(n, (DvzGraphicsPointVertex*)wrapper.data);
     dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), wrapper.data, 0);

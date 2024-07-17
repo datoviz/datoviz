@@ -28,7 +28,7 @@
 
 int test_slice_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("slice", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("slice", VISUAL_TEST_ARCBALL, 0);
 
     // Create the visual.
     DvzVisual* visual = dvz_slice(vt.batch, DVZ_VOLUME_FLAGS_RGBA);

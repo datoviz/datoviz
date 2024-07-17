@@ -28,7 +28,7 @@
 
 int test_image_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM, 0);
 
     // Create the visual.
     DvzVisual* visual = dvz_image(vt.batch, 0);

@@ -33,7 +33,7 @@
 
 int test_mesh_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
 
     // Shape.
     DvzShape shape = dvz_shape_cube((cvec4[]){
@@ -100,7 +100,7 @@ static void _onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 
 int test_mesh_obj(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
     // Load obj shape.
     char path[1024];

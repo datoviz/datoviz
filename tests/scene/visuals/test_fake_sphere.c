@@ -28,7 +28,7 @@
 
 int test_fake_sphere_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("fake_sphere", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("fake_sphere", VISUAL_TEST_ARCBALL, 0);
 
     // Number of items.
     const uint32_t n = 1000;

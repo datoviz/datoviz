@@ -94,6 +94,14 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     ASSERT(width > 0);
     ASSERT(height > 0);
 
+    // Environment variable.
+    if (checkenv("DVZ_FPS"))
+        flags |= DVZ_CANVAS_FLAGS_FPS;
+    if (checkenv("DVZ_MONITOR"))
+        flags |= DVZ_CANVAS_FLAGS_MONITOR;
+    if (checkenv("DVZ_VSYNC"))
+        flags |= DVZ_CANVAS_FLAGS_VSYNC;
+
     // Initialize the structure.
     DvzFigure* fig = (DvzFigure*)calloc(1, sizeof(DvzFigure));
     fig->scene = scene;

@@ -28,7 +28,7 @@
 
 int test_segment_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("segment", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("segment", VISUAL_TEST_PANZOOM, 0);
 
     // Number of items.
     const uint32_t n = 32;

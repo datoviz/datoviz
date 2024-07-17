@@ -54,7 +54,7 @@ int test_glyph_1(TstSuite* suite)
 #if !HAS_MSDF
     return 1;
 #endif
-    VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, 0);
 
     // Number of items.
     // DEBUG

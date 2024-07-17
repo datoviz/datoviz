@@ -13,6 +13,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -47,6 +48,12 @@
 #endif
 
 #define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0))
+
+static inline bool checkenv(const char* x)
+{
+    char* env = getenv(x);
+    return env && (strncmp(env, "0", 1) != 0);
+}
 
 #define fsizeof(type, member) sizeof(((type*)0)->member)
 

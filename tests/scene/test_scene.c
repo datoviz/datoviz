@@ -55,7 +55,7 @@ int test_scene_1(TstSuite* suite)
     DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);
@@ -116,7 +116,7 @@ int test_scene_2(TstSuite* suite)
     DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
 
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(batch, 0);
@@ -184,7 +184,7 @@ int test_scene_3(TstSuite* suite)
     DvzScene* scene = dvz_scene(batch);
 
     // Create a figure.
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_VSYNC);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
 
     // Create a panel.
     DvzPanel* panel = dvz_panel_default(figure);

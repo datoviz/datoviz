@@ -79,7 +79,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
 
     // NOTE: use as follows:
 
-    // VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    // VisualTest vt = visual_test_start(VISUAL_TEST_ARCBALL, 0);
 
     // // Volume visual.
     // DvzVisual* volume = dvz_volume(vt.batch, 0);

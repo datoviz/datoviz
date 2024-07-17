@@ -47,7 +47,7 @@
 
 int test_volume_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC);
+    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, 0);
 
     // Volume visual.
     DvzVisual* visual =
@@ -112,8 +112,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
 
 int test_volume_2(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start(
-        "volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_VSYNC | DVZ_CANVAS_FLAGS_IMGUI);
+    VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Volume visual.
     float param = 1.0;
