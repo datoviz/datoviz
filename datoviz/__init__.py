@@ -7,12 +7,21 @@ WARNING: DO NOT EDIT: automatically-generated file
 # ===============================================================================
 
 import ctypes
+from ctypes import POINTER as P_
 import faulthandler
 import os
 import pathlib
 import platform
 
 from enum import IntEnum
+
+try:
+    import numpy as np
+    from numpy import float32
+    from numpy.ctypeslib import as_ctypes_type as _ctype
+except ImportError:
+    float32 = object
+    print("NumPy is not available")
 
 
 # ===============================================================================
@@ -79,6 +88,15 @@ class CtypesEnum(IntEnum):
     def from_param(cls, obj):
         return int(obj)
 
+
+def array_pointer(x, dtype=float32):
+    if not isinstance(x, np.ndarray):
+        return x
+    x = x.astype(dtype)
+    return x.ctypes.data_as(P_(_ctype(dtype)))
+
+
+DvzId = ctypes.c_uint64
 
 # ===============================================================================
 # DEFINES
@@ -722,7 +740,7 @@ class DvzMouseClickEvent(ctypes.Structure):
     ]
 
 
-class DvzMouseEventUnion(ctypes.Structure):
+class DvzMouseEventUnion(ctypes.Union):
     _fields_ = [
         ("b", DvzMouseButtonEvent),
         ("w", DvzMouseWheelEvent),
@@ -815,7 +833,8 @@ app_onframe.argtypes = [
 app_onmouse = dvz.dvz_app_onmouse
 app_onmouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppMouseCallback callback
+    # DvzAppMouseCallback callback
+    ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent),
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -1396,7 +1415,7 @@ segment.restype = ctypes.POINTER(DvzVisual)
 # Function dvz_segment_position()
 segment_position = dvz.dvz_segment_position
 segment_position.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* segment
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(ctypes.c_float),  # vec3* initial
@@ -1427,7 +1446,7 @@ segment_color.argtypes = [
 # Function dvz_segment_linewidth()
 segment_linewidth = dvz.dvz_segment_linewidth
 segment_linewidth.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* segment
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(ctypes.c_float),  # float* values
@@ -1437,7 +1456,7 @@ segment_linewidth.argtypes = [
 # Function dvz_segment_cap()
 segment_cap = dvz.dvz_segment_cap
 segment_cap.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* segment
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(DvzCapType),  # DvzCapType* initial
@@ -1766,6 +1785,7 @@ mesh_index.argtypes = [
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(ctypes.c_uint32),  # DvzIndex* values
+    ctypes.c_int,  # int flags
 ]
 
 # Function dvz_mesh_alloc()
@@ -1907,7 +1927,7 @@ slice.restype = ctypes.POINTER(DvzVisual)
 # Function dvz_slice_position()
 slice_position = dvz.dvz_slice_position
 slice_position.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* slice
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(ctypes.c_float),  # vec3* p0
@@ -1920,7 +1940,7 @@ slice_position.argtypes = [
 # Function dvz_slice_texcoords()
 slice_texcoords = dvz.dvz_slice_texcoords
 slice_texcoords.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* slice
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(ctypes.c_float),  # vec3* uvw0

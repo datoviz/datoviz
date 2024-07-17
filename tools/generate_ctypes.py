@@ -16,12 +16,21 @@ WARNING: DO NOT EDIT: automatically-generated file
 # ===============================================================================
 
 import ctypes
+from ctypes import POINTER as P_
 import faulthandler
 import os
 import pathlib
 import platform
 
 from enum import IntEnum
+
+try:
+    import numpy as np
+    from numpy import float32
+    from numpy.ctypeslib import as_ctypes_type as _ctype
+except ImportError:
+    float32 = object
+    print("NumPy is not available")
 
 
 # ===============================================================================
@@ -54,15 +63,14 @@ FILE_DIR = pathlib.Path(__file__).parent.resolve()
 # Package paths: this Python file is stored alongside the dynamic libraries.
 DATOVIZ_DIR = FILE_DIR
 LIB_DIR = FILE_DIR
+LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
 # Development paths: the libraries are in build/ and libs/
-if not DATOVIZ_DIR.exists():
+if not LIB_PATH.exists():
     DATOVIZ_DIR = (FILE_DIR / "../build/").resolve()
-
-if not LIB_DIR.exists():
     LIB_DIR = (FILE_DIR / f"../libs/vulkan/{PLATFORM}/").resolve()
+    LIB_PATH = DATOVIZ_DIR / LIB_NAME
 
-LIB_PATH = DATOVIZ_DIR / LIB_NAME
 if not LIB_PATH.exists():
     raise RuntimeError(f"Unable to find `{LIB_PATH}`.")
 
@@ -89,6 +97,15 @@ class CtypesEnum(IntEnum):
     def from_param(cls, obj):
         return int(obj)
 
+
+def array_pointer(x, dtype=float32):
+    if not isinstance(x, np.ndarray):
+        return x
+    x = x.astype(dtype)
+    return x.ctypes.data_as(P_(_ctype(dtype)))
+
+
+DvzId = ctypes.c_uint64
 
 """
 
@@ -202,7 +219,9 @@ def generate_ctypes_bindings(headers_json_path, output_path):
     for fn in data:
         structs = data.get(fn, {}).get("structs", {})
         for struct_name, struct_info in structs.items():
-            out += f'class {struct_name}(ctypes.Structure):\n'
+            is_union = struct_info["type"] == "union"
+            cls = "Structure" if not is_union else "Union"
+            out += f'class {struct_name}(ctypes.{cls}):\n'
             out += '    _fields_ = [\n'
             for field in struct_info.get('fields', []):
                 dtype = map_ctype(field["dtype"], enum_int=True)
@@ -245,6 +264,6 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
 if __name__ == "__main__":
     headers_json_path = ROOT_DIR / 'tools/headers.json'
-    output_path = ROOT_DIR / 'datoviz/ctypes_wrapper.py'
+    output_path = ROOT_DIR / 'datoviz/__init__.py'
 
     generate_ctypes_bindings(headers_json_path, output_path)

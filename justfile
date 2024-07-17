@@ -120,6 +120,10 @@ buildmany release="Debug":
     rm $BUILD_DIR/Dockerfile
 #
 
+pydev: # install the Python binding on a development machine
+    @pip install -e .
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
