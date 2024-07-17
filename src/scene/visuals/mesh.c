@@ -146,7 +146,7 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
 
 
 
-void dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values)
+void dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values, int flags)
 {
     ANN(visual);
     dvz_visual_index(visual, first, count, values);
