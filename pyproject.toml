@@ -21,8 +21,8 @@ classifiers = [
 [tool.setuptools]
 packages = ["datoviz"]
 package-data = {"datoviz" = [
-    "libdatoviz*",
-    "libvulkan*",
+    "lib*",
+    "*.json",
 ]}
 
 [project.urls]

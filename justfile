@@ -470,7 +470,7 @@ pkg:
 
     # Move it.
     cp $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
-    rm -rf $PKGROOT $PKG
+    rm -rf $PKGROOT $PKG $PKGSCRIPTS
 #
 
 [macos]
@@ -617,6 +617,90 @@ testwheel:
     docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Python packaging: macOS
+# -------------------------------------------------------------------------------------------------
+
+[macos]
+wheel:
+    #!/usr/bin/env sh
+    PKGROOT="packaging/wheel"
+    DVZDIR="$PKGROOT/datoviz"
+    DISTDIR="dist"
+
+    # Clean up and prepare the directory structure.
+    mkdir -p $PKGROOT $DISTDIR
+    mkdir -p $DVZDIR
+
+    # Copy the header files.
+    cp datoviz/__init__.py $DVZDIR
+    cp pyproject.toml $PKGROOT/
+    cp build/libdatoviz.dylib $DVZDIR
+    cp libs/vulkan/macos/libvulkan.1.dylib $DVZDIR
+    cp libs/vulkan/macos/libMoltenVK.dylib $DVZDIR
+    cp libs/vulkan/macos/MoltenVK_icd.json $DVZDIR
+
+    # Copy the dependencies and adjust their rpaths.
+    # Path to libdatoviz.
+    LIB=$DVZDIR/libdatoviz.dylib
+    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
+    # libdatoviz to point to these local copies.
+    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
+        filename=$(basename "$dep")
+        if [[ "$dep" != *"rpath"* ]]; then
+            cp -a $dep $DVZDIR
+        fi
+        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
+    done
+
+    # Remove the rpath that links to a build directory.
+    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
+    if [ -n "$target_rpath" ]; then
+        install_name_tool -delete_rpath "$target_rpath" $LIB
+    fi
+
+    # Create the wheel.
+    cd $PKGROOT
+    pip wheel . -w "../../$DISTDIR"
+
+    # Cleanup.
+    cd -
+    rm -rf $PKGROOT
+
+    # Show the wheel contents.
+    just showwheel
+#
+
+
+[macos]
+testwheel vm_ip_address:
+    #!/usr/bin/env sh
+    IP="{{vm_ip_address}}"
+    TMPDIR=/tmp/datoviz_example
+
+    # Check if the pkg package exists, if not, build it
+    if ! ls dist/datoviz*.whl 1> /dev/null 2>&1; then
+        echo "Wheel file not found in dist/"
+        exit
+    fi
+    WHEEL_PATH=$(ls dist/datoviz*.whl)
+
+    # Copy the .wheel file to the VM
+    ssh -T $USER@$IP "mkdir -p "$TMPDIR/" && rm -rf $TMPDIR/*"
+    scp $WHEEL_PATH $USER@$IP:$TMPDIR
+
+    # Connect to the VM and install the .pkg file
+    ssh -T $USER@$IP << 'EOF'
+    TMPDIR=/tmp/datoviz_example
+    WHEEL_FILENAME="datoviz-0.2.0-py3-none-any.whl"
+    PYTHONPATH=~/.local/lib/python3.8/site-packages
+    mkdir -p $PYTHONPATH
+    python3 -m pip install "$TMPDIR/$WHEEL_FILENAME" --upgrade --target $PYTHONPATH
+    PYTHONPATH=$PYTHONPATH python3 -c "import datoviz; import datoviz; datoviz.demo()"
+    EOF
 #
 
 
