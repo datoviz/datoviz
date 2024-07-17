@@ -425,9 +425,27 @@ testpkg vm_ip_address:
 # Python packaging
 # -------------------------------------------------------------------------------------------------
 
+[linux]
 wheel:
-    @pip wheel . -w dist/
-    @ls -lah dist/
+    #!/usr/bin/env sh
+    PKGROOT="packaging/wheel"
+    DVZDIR="$PKGROOT/datoviz"
+    DISTDIR="dist"
+
+    # Clean up and prepare the directory structure.
+    mkdir -p $PKGROOT $DISTDIR
+    mkdir -p $DVZDIR
+
+    # Copy the header files.
+    cp -a datoviz/__init__.py $DVZDIR
+    cp -a pyproject.toml $PKGROOT/
+    cp -a build/libdatoviz.so* $DVZDIR
+    cp -a libs/vulkan/linux/libvulkan.so* $DVZDIR
+
+    cd $PKGROOT
+    pip wheel . -w "../../$DISTDIR"
+    cd -
+    rm -rf $PKGROOT
 
 showwheel:
     @unzip -l dist/*.whl
@@ -435,8 +453,8 @@ showwheel:
 testwheel:
     #!/usr/bin/env sh
 
-    if [ ! -f dist/datoviz-*-py3-none-any.whl ]; then
-        just deb
+    if [ ! -f dist/datoviz-*.whl ]; then
+        just wheel
     fi
 
     # Create a Dockerfile for testing
@@ -459,9 +477,9 @@ testwheel:
     ENV NVIDIA_DRIVER_CAPABILITIES=all
     ENV NVIDIA_VISIBLE_DEVICES=all
 
-    COPY dist/datoviz-*-py3-none-any.whl /tmp/
+    COPY dist/datoviz-*.whl /tmp/
     RUN python3 -m venv /tmp/venv
-    RUN /tmp/venv/bin/pip install /tmp/datoviz-*-py3-none-any.whl
+    RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
 
     WORKDIR /root
     CMD /tmp/venv/bin/python3 -c \"import datoviz; datoviz.demo()\"
