@@ -714,5 +714,5 @@ clean:
 
 rebuild:
     just rmbuild
-    just build
+    just build || just build
 #

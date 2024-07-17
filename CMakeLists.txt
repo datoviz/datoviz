@@ -3,6 +3,7 @@
 # -------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_MESSAGE_LOG_LEVEL INFO)
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include("cmake/colormsg.cmake")
@@ -424,14 +425,8 @@ endif()
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
 file(GLOB shader_sources
-    "*/glsl/*.vert"
-    "*/glsl/*.geom"
-    "*/glsl/*.comp"
-    "*/glsl/*.frag"
-    "*/*/glsl/*.vert"
-    "*/*/glsl/*.geom"
-    "*/*/glsl/*.comp"
-    "*/*/glsl/*.frag"
+    "src/scene/glsl/*.*"
+    "tests/glsl/*.*"
 )
 
 foreach(shader_source ${shader_sources})
