@@ -47,6 +47,13 @@
 #define INIT(t, n) t n = {0};
 #endif
 
+#define fsizeof(type, member) sizeof(((type*)0)->member)
+
+
+/*************************************************************************************************/
+/*  Environment variables                                                                        */
+/*************************************************************************************************/
+
 #define IF_VERBOSE if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "req", 3) == 0))
 
 static inline bool checkenv(const char* x)
@@ -55,7 +62,14 @@ static inline bool checkenv(const char* x)
     return env && (strncmp(env, "0", 1) != 0);
 }
 
-#define fsizeof(type, member) sizeof(((type*)0)->member)
+static inline int32_t getenvint(const char* x)
+{
+    char* env = getenv(x);
+    if (env == NULL)
+        return -1;
+    return atoi(env);
+}
+
 
 
 #endif

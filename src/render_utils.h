@@ -35,7 +35,13 @@ static DvzGpu* make_gpu(DvzHost* host)
 {
     ANN(host);
 
-    DvzGpu* gpu = dvz_gpu_best(host);
+    DvzGpu* gpu = NULL;
+    int32_t gpu_idx = getenvint("DVZ_GPU");
+    if (gpu_idx >= 0)
+        gpu = dvz_gpu(host, (uint32_t)gpu_idx);
+    else
+        gpu = dvz_gpu_best(host);
+
     _default_queues(gpu, true);
     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
     dvz_gpu_create_with_surface(gpu);
