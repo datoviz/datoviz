@@ -15,6 +15,7 @@ DESCRIPTION := "A C library for high-performance GPU scientific visualization"
 default:
     @echo "No arguments supplied"
     @exit 1
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -117,11 +118,50 @@ buildmany release="Debug":
 
     # Clean up the temporary Dockerfile
     rm $BUILD_DIR/Dockerfile
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Tests
+# -------------------------------------------------------------------------------------------------
+
+[linux]
+test test_name="":
+    ./build/datoviz test {{test_name}}
+#
+
+[macos]
+test test_name="":
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
+#
+
+pytest:
+    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Demo
+# -------------------------------------------------------------------------------------------------
+
+[linux]
+demo:
+    @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
+#
+
+[macos]
+demo:
+    @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
+#
 
 
 # -------------------------------------------------------------------------------------------------
 # Shared library
 # -------------------------------------------------------------------------------------------------
+
+headers:
+    python tools/parse_headers.py
+#
 
 exports:
     @nm -D --defined-only build/libdatoviz.so
@@ -149,15 +189,17 @@ rpath:
 
 
 # -------------------------------------------------------------------------------------------------
-# Python
+# Swiftshader
 # -------------------------------------------------------------------------------------------------
 
-headers:
-    python tools/parse_headers.py
+[linux]
+swiftshader +args:
+    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
 #
 
-ctypes: headers
-    python tools/generate_ctypes.py
+[macos]
+swiftshader +args:
+    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
 #
 
 
@@ -198,75 +240,6 @@ tree:
 
 cloc:
     cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Tests
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-test test_name="":
-    ./build/datoviz test {{test_name}}
-#
-
-[macos]
-test test_name="":
-    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
-#
-
-pytest:
-    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Demo
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-demo:
-    @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
-#
-
-[macos]
-demo:
-    @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Example
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-runexample name="":
-    ./build/example_{{name}}
-#
-
-[macos]
-runexample name="":
-    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
-#
-
-example name="":
-    gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-    just runexample {{name}}
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Swiftshader
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
-#
-
-[macos]
-swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
 #
 
 
@@ -508,6 +481,15 @@ testpkg vm_ip_address:
 
 
 # -------------------------------------------------------------------------------------------------
+# Python ctypes wrapper generation
+# -------------------------------------------------------------------------------------------------
+
+ctypes: headers
+    python tools/generate_ctypes.py
+#
+
+
+# -------------------------------------------------------------------------------------------------
 # Python packaging: generic
 # -------------------------------------------------------------------------------------------------
 
@@ -735,6 +717,27 @@ testwheel vm_ip_address:
 
 doc: headers
     @python tools/generate_doc.py
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Examples
+# -------------------------------------------------------------------------------------------------
+
+[linux]
+runexample name="":
+    ./build/example_{{name}}
+#
+
+[macos]
+runexample name="":
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
+#
+
+example name="":
+    gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+    just runexample {{name}}
+#
 
 
 # -------------------------------------------------------------------------------------------------
