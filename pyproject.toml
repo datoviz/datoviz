@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datoviz"
+version = "0.2.0"
+description = "Datoviz: A visualization library."
+authors = [
+    { name = "Cyrille Rossant", email = "cyrille.rossant@datoviz.com" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+keywords = ["visualization", "scientific visualization", "vulkan", "gpu", "datoviz"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[tool.setuptools]
+packages = ["datoviz"]
+package-data = {"datoviz" = [
+    "libdatoviz*",
+    "libvulkan*",
+]}
+
+[project.urls]
+"Homepage" = "https://datoviz.com"
+"Documentation" = "https://datoviz.com/docs"
+"Source" = "https://github.com/datoviz/datoviz"
