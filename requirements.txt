@@ -1,4 +1,0 @@
-numpy
-ipython
-imageio
-colorcet

@@ -33,7 +33,7 @@ option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 message("Build type: ${CMAKE_BUILD_TYPE}")
 set(CMAKE_C_STANDARD)
 set(CMAKE_C_STANDARD_REQUIRED True)
-set(CMAKE_CXX_STANDARD 17) # Adjust the version to your project's requirements
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
