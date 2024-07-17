@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datoviz"
+dependencies = []
 version = "0.2.0"
 description = "Datoviz: A visualization library."
 authors = [
