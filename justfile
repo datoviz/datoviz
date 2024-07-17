@@ -247,23 +247,7 @@ testdeb:
     fi
 
     # Create a Dockerfile for testing
-    echo "FROM ubuntu:24.04
-
-    RUN apt-get update && apt-get install -y build-essential
-    RUN apt-get install -y \
-        libx11-dev \
-        libxrandr-dev \
-        libxinerama-dev \
-        libxcursor-dev \
-        libxi-dev \
-        vulkan-tools \
-        mesa-utils \
-        nvidia-driver-460 \
-        nvidia-utils-460 \
-        x11-apps
-
-    ENV NVIDIA_DRIVER_CAPABILITIES=all
-    ENV NVIDIA_VISIBLE_DEVICES=all
+    echo "$(cat Dockerfile_ubuntu)
 
     COPY packaging/datoviz_*_amd64.deb /tmp/
     RUN dpkg -i /tmp/datoviz_*_amd64.deb || apt-get install -f -y
@@ -278,6 +262,7 @@ testdeb:
         -L/usr/local/lib/datoviz \
         -Wl,-rpath,/usr/local/lib/datoviz \
         -lm -ldatoviz
+
     # Run the compiled C example and also try the Python import.
     CMD ./example_scatter && python3 -c 'import datoviz; datoviz.demo()'
 
@@ -437,10 +422,10 @@ wheel:
     mkdir -p $DVZDIR
 
     # Copy the header files.
-    cp -a datoviz/__init__.py $DVZDIR
-    cp -a pyproject.toml $PKGROOT/
-    cp -a build/libdatoviz.so* $DVZDIR
-    cp -a libs/vulkan/linux/libvulkan.so* $DVZDIR
+    cp datoviz/__init__.py $DVZDIR
+    cp pyproject.toml $PKGROOT/
+    cp build/libdatoviz.so $DVZDIR
+    cp libs/vulkan/linux/libvulkan.so $DVZDIR
 
     cd $PKGROOT
     pip wheel . -w "../../$DISTDIR"
@@ -450,6 +435,7 @@ wheel:
 showwheel:
     @unzip -l dist/*.whl
 
+[linux]
 testwheel:
     #!/usr/bin/env sh
 
@@ -458,24 +444,7 @@ testwheel:
     fi
 
     # Create a Dockerfile for testing
-    echo "FROM ubuntu:24.04
-
-    RUN apt-get update
-    RUN apt-get install -y \
-        libx11-dev \
-        libxrandr-dev \
-        libxinerama-dev \
-        libxcursor-dev \
-        libxi-dev \
-        vulkan-tools \
-        mesa-utils \
-        nvidia-driver-460 \
-        nvidia-utils-460 \
-        x11-apps
-    RUN apt-get install -y python3 python3-pip python3-venv
-
-    ENV NVIDIA_DRIVER_CAPABILITIES=all
-    ENV NVIDIA_VISIBLE_DEVICES=all
+    echo "$(cat Dockerfile_ubuntu)
 
     COPY dist/datoviz-*.whl /tmp/
     RUN python3 -m venv /tmp/venv
