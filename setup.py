@@ -2,7 +2,7 @@ import platform
 from setuptools import setup, find_packages
 
 packages = [
-    'ctypes_wrapper.py',
+    '__init__.py',
 ]
 
 packages.extend(

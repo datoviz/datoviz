@@ -1,5 +1,5 @@
 import ctypes
-import ctypes_wrapper as dvz
+import __init__ as dvz
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
 

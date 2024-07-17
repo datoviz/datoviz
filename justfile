@@ -208,7 +208,7 @@ deb:
     cp -a libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
 
     # Copy the Python ctypes wrapper/
-    cp -a datoviz/ctypes_wrapper.py $DEB$LIBDIR/__init__.py
+    cp -a datoviz/__init__.py $DEB$LIBDIR/__init__.py
 
     # Remove the first rpath
     patchelf --remove-rpath $LIB
@@ -320,8 +320,8 @@ pkg:
     #define INCLUDE_VK_DRIVER_FILES
     ' "$PKGROOT$INCLUDEDIR/datoviz.h"
 
-    cp datoviz/ctypes_wrapper.py $PKGROOT$LIBDIR/__init__.py
-    cp libs/vulkan/macos/MoltenVK_icd.json $PKGROOT$LIBDIR
+    cp -a datoviz/__init__.py $PKGROOT$LIBDIR/__init__.py
+    cp -a libs/vulkan/macos/MoltenVK_icd.json $PKGROOT$LIBDIR
 
     # Copy the shared libraries.
     cp -a build/libdatoviz.*dylib $PKGROOT$LIBDIR
