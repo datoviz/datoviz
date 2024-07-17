@@ -298,6 +298,35 @@ def generate_examples():
         dst.write_text(doc)
 
 
+def parse_doxygen_docstring(docstring):
+    # Regular expression patterns for different components of the docstring
+    description_pattern = re.compile(r'/\*\*\s*\n\s*([^\n]+)', re.DOTALL)
+    param_pattern = re.compile(r'@param\s+(\w+)\s+([^\n]+)', re.DOTALL)
+    returns_pattern = re.compile(r'@returns\s+([^\n]+)', re.DOTALL)
+
+    # Extract the description
+    description_match = description_pattern.search(docstring)
+    description = description_match.group(
+        1).strip() if description_match else ''
+
+    # Extract parameters
+    params = []
+    for param_match in param_pattern.finditer(docstring):
+        param_name = param_match.group(1).strip()
+        param_description = param_match.group(2).strip()
+        params.append((param_name, param_description))
+
+    # Extract return value
+    returns_match = returns_pattern.search(docstring)
+    returns = returns_match.group(1).strip() if returns_match else ''
+
+    return {
+        'description': description,
+        'params': params,
+        'returns': returns
+    }
+
+
 def generate_api():
     with open(HEADERS_FILE, 'r') as f:
         objects = json.load(f)
@@ -307,16 +336,27 @@ def generate_api():
     """).lstrip()
     for filename, items in objects.items():
         for func_name, func_info in items["functions"].items():
-            md += f"### `{func_name}`\n\n"
+
+            md += f"### `{func_name}()`\n\n"
 
             docstring = func_info["docstring"]
-            docstring = docstring.replace('/**\n', '')
-            docstring = docstring.replace(' */', '')
-            docstring = docstring.replace(' *', '')
-            md += f"{docstring}\n\n"
+            parsed_docstring = parse_doxygen_docstring(docstring)
 
-            # for arg in func_info["args"]:
-            #     md += f"* {arg['name']} ({arg['dtype']})\n"
+            return_type = func_info["returns"]
+            return_type = return_type + " " if return_type else ""
+
+            return_desc = parsed_docstring["returns"]
+            return_desc = f"  // returns: {return_desc}" if return_desc else ""
+            dtypes = {_["name"]: _["dtype"] for _ in func_info["args"]}
+
+            args = "\n".join(
+                f"    {dtypes.get(arg_name, '')} {arg_name},  // {arg_desc}"
+                for (arg_name, arg_desc) in parsed_docstring["params"])
+
+            func_desc = (
+                f"{parsed_docstring['description'].replace('* ', '')}\n\n"
+                f"```c\n{return_type}{func_name}({return_desc}\n{args}\n)\n```") + "\n\n"
+            md += func_desc
 
     with open(API_OUTPUT, 'w') as f:
         f.write(md)
