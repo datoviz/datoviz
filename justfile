@@ -520,6 +520,24 @@ showwheel:
 # Python packaging: Linux
 # -------------------------------------------------------------------------------------------------
 
+renamewheel:
+    #!/usr/bin/env sh
+    set -e
+
+    # Rename the wheel depending on the current platform.
+    if [ ! -f dist/*any.whl ]; then
+        echo "No universal wheel to rename in dist/"
+        exit 1
+    fi
+
+    WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
+    PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+    TAG="cp3-none-$PLATFORM_TAG"
+
+    python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
+    rm $WHEELPATH
+#
+
 [linux]
 wheel:
     #!/usr/bin/env sh
@@ -527,8 +545,6 @@ wheel:
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
     DISTDIR="dist"
-    PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
-    TAG="cp3-none-$PLATFORM_TAG"
 
     # Clean up and prepare the directory structure.
     mkdir -p $PKGROOT $DISTDIR
@@ -544,11 +560,8 @@ wheel:
     cd $PKGROOT
     pip wheel . -w "../../$DISTDIR"
     cd -
+    just renamewheel
 
-    # Rename the wheel depending on the current platform.
-    WHEELPATH=$(ls $DISTDIR/*any.whl)
-    python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
-    rm $WHEELPATH
     rm -rf $PKGROOT
 #
 
@@ -678,6 +691,9 @@ wheel:
     # Cleanup.
     cd -
     rm -rf $PKGROOT
+
+    # Rename the wheel.
+    just renamewheel
 
     # Show the wheel contents.
     just showwheel
