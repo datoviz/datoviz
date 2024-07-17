@@ -553,7 +553,7 @@ DVZ_EXPORT double dvz_mean(uint32_t n, double* values);
  *
  * @param n the number of values
  * @param values an array of float numbers
- * @param vec2 the min and max
+ * @param out_min_max the min and max
  * @returns the mean
  */
 DVZ_EXPORT void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max);

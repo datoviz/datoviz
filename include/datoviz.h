@@ -96,7 +96,7 @@ DVZ_EXPORT DvzApp* dvz_app(int flags);
 
 
 /**
- * Return the app's batch.
+ * Return the app batch.
  *
  * @param app the app
  * @returns the batch
@@ -176,7 +176,7 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
  * Register a timer callback.
  *
  * @param app the app
- * @param on_frame the callback
+ * @param callback the timer callback
  * @param user_data the user data
  */
 DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback callback, void* user_data);
@@ -187,7 +187,8 @@ DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback callback, void*
  * Register a GUI callback.
  *
  * @param app the app
- * @param on_frame the callback
+ * @param canvas_id the canvas ID
+ * @param callback the GUI callback
  * @param user_data the user data
  */
 DVZ_EXPORT void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data);
@@ -284,8 +285,8 @@ DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
  * Create a figure, a desktop window with panels and visuals.
  *
  * @param scene the scene
- * @param width the window's width
- * @param height the window's height
+ * @param width the window width
+ * @param height the window height
  * @param flags the figure creation flags (not yet stabilized)
  * @returns the figure
  */
@@ -296,9 +297,9 @@ DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t heigh
 /**
  * Resize a figure.
  *
- * @param scene the scene
- * @param width the window's width
- * @param height the window's height
+ * @param fig the figure
+ * @param width the window width
+ * @param height the window height
  */
 DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height);
 
@@ -308,7 +309,7 @@ DVZ_EXPORT void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t heigh
  * Get a figure from its id.
  *
  * @param scene the scene
- * @param id the figure's id
+ * @param id the figure id
  * @returns the figure
  */
 DVZ_EXPORT DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
@@ -334,8 +335,8 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
  * @param fig the figure
  * @param x the x coordinate of the top-left corner, in pixels
  * @param y the y coordinate of the top-left corner, in pixels
- * @param width the panel's width, in pixels
- * @param height the panel's height, in pixels
+ * @param width the panel width, in pixels
+ * @param height the panel height, in pixels
  */
 DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height);
 
@@ -367,8 +368,8 @@ DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr);
  * @param panel the panel
  * @param x the x coordinate of the top-left corner, in pixels
  * @param y the y coordinate of the top-left corner, in pixels
- * @param width the panel's width, in pixels
- * @param height the panel's height, in pixels
+ * @param width the panel width, in pixels
+ * @param height the panel height, in pixels
  */
 DVZ_EXPORT void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float height);
 
@@ -573,7 +574,7 @@ DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
 /**
  * Create a disc shape.
  *
- * @param count the number of points along the disc's border
+ * @param count the number of points along the disc border
  * @param color the disc color
  * @returns the shape
  */
@@ -610,7 +611,7 @@ DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
 /**
  * Create a cone shape.
  *
- * @param count the number of points along the disc's border
+ * @param count the number of points along the disc border
  * @param color the cone color
  * @returns the shape
  */
@@ -621,7 +622,7 @@ DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
 /**
  * Create a cylinder shape.
  *
- * @param count the number of points along the cylinder's border
+ * @param count the number of points along the cylinder border
  * @param color the cylinder color
  * @returns the shape
  */
@@ -657,7 +658,7 @@ DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
  *
  * @param batch the batch
  * @param topology the primitive topology
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags);
@@ -710,7 +711,7 @@ DVZ_EXPORT void dvz_basic_alloc(DvzVisual* visual, uint32_t item_count);
  * Create a pixel visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_pixel(DvzBatch* batch, int flags);
@@ -763,7 +764,7 @@ DVZ_EXPORT void dvz_pixel_alloc(DvzVisual* visual, uint32_t item_count);
  * Create a point visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_point(DvzBatch* batch, int flags);
@@ -830,7 +831,7 @@ DVZ_EXPORT void dvz_point_alloc(DvzVisual* visual, uint32_t item_count);
  * Create a marker visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_marker(DvzBatch* batch, int flags);
@@ -946,7 +947,7 @@ DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
 
 
 /**
- * Set the marker's texture.
+ * Set the marker texture.
  *
  * @param visual the visual
  * @param tex the texture ID
@@ -984,7 +985,7 @@ DVZ_EXPORT void dvz_marker_alloc(DvzVisual* visual, uint32_t item_count);
  * Create a segment visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_segment(DvzBatch* batch, int flags);
@@ -1002,7 +1003,7 @@ DVZ_EXPORT DvzVisual* dvz_segment(DvzBatch* batch, int flags);
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_segment_position(
-    DvzVisual* segment, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags);
+    DvzVisual* visual, uint32_t first, uint32_t count, vec3* initial, vec3* terminal, int flags);
 
 
 
@@ -1043,8 +1044,8 @@ dvz_segment_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* valu
  * @param values the segment line widths
  * @param flags the data update flags
  */
-DVZ_EXPORT void dvz_segment_linewidth(
-    DvzVisual* segment, uint32_t first, uint32_t count, float* values, int flags);
+DVZ_EXPORT void
+dvz_segment_linewidth(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
 
 
 
@@ -1059,7 +1060,7 @@ DVZ_EXPORT void dvz_segment_linewidth(
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_segment_cap(
-    DvzVisual* segment, uint32_t first, uint32_t count, //
+    DvzVisual* visual, uint32_t first, uint32_t count, //
     DvzCapType* initial, DvzCapType* terminal, int flags);
 
 
@@ -1082,7 +1083,7 @@ DVZ_EXPORT void dvz_segment_alloc(DvzVisual* visual, uint32_t item_count);
  * Create a path visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
@@ -1133,7 +1134,7 @@ DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
  * Allocate memory for a visual.
  *
  * @param visual the visual
- * @param item_count the total number of points to allocate for this visual
+ * @param total_point_count the total number of points to allocate for this visual
  */
 DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
 
@@ -1147,7 +1148,7 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
  * Create a glyph visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_glyph(DvzBatch* batch, int flags);
@@ -1240,7 +1241,7 @@ dvz_glyph_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values,
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param cors the x,y,w,h texture coordinates
+ * @param coords the x,y,w,h texture coordinates
  * @param flags the data update flags
  */
 DVZ_EXPORT void
@@ -1364,7 +1365,7 @@ DVZ_EXPORT void dvz_glyph_xywh(
  * Create an image visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_image(DvzBatch* batch, int flags);
@@ -1445,7 +1446,7 @@ dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height
  * Create a mesh visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_mesh(DvzBatch* batch, int flags);
@@ -1531,7 +1532,7 @@ DVZ_EXPORT void dvz_mesh_texture(
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values);
+dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values, int flags);
 
 
 
@@ -1549,7 +1550,7 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
 /**
  * Set the mesh light position.
  *
- * @param mesh the mesh
+ * @param visual the mesh
  * @param pos the light position
  */
 DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos);
@@ -1559,8 +1560,8 @@ DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos);
 /**
  * Set the mesh light parameters.
  *
- * @param mesh the mesh
- * @param pos the light parameters (vec4 ambient, diffuse, specular, exponent)
+ * @param visual the mesh
+ * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
 DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
 
@@ -1571,7 +1572,7 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
  *
  * @param batch the batch
  * @param shape the shape
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the mesh
  */
 DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags);
@@ -1586,7 +1587,7 @@ DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags
  * Create a fake sphere visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
@@ -1648,7 +1649,7 @@ DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 /**
  * Set the sphere light position.
  *
- * @param mesh the mesh
+ * @param visual the visual
  * @param pos the light position
  */
 DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
@@ -1663,7 +1664,7 @@ DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
  * Create a volume visual.
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
@@ -1730,7 +1731,7 @@ DVZ_EXPORT DvzId dvz_tex_volume(
  * Create a slice visual (multiple 2D images with slices of a 3D texture).
  *
  * @param batch the batch
- * @param visual the visual creation flags
+ * @param flags the visual creation flags
  * @returns the visual
  */
 DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
@@ -1750,7 +1751,7 @@ DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_position(
-    DvzVisual* slice, uint32_t first, uint32_t count, //
+    DvzVisual* visual, uint32_t first, uint32_t count, //
     vec3* p0, vec3* p1, vec3* p2, vec3* p3, int flags);
 
 
@@ -1768,7 +1769,7 @@ DVZ_EXPORT void dvz_slice_position(
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_texcoords(
-    DvzVisual* slice, uint32_t first, uint32_t count, //
+    DvzVisual* visual, uint32_t first, uint32_t count, //
     vec3* uvw0, vec3* uvw1, vec3* uvw2, vec3* uvw3, int flags);
 
 
@@ -2231,7 +2232,7 @@ DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim);
  * Set a panzoom y limits.
  *
  * @param pz the panzoom
- * @param xlim the ylim (FLOAT_MIN/MAX=no lim)
+ * @param ylim the ylim (FLOAT_MIN/MAX=no lim)
  */
 DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
 
@@ -2241,7 +2242,7 @@ DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
  * Set a panzoom z limits.
  *
  * @param pz the panzoom
- * @param xlim the zlim (FLOAT_MIN/MAX=no lim)
+ * @param zlim the zlim (FLOAT_MIN/MAX=no lim)
  */
 DVZ_EXPORT void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim);
 
