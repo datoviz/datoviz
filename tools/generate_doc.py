@@ -3,6 +3,8 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from textwrap import dedent
+import json
 import itertools
 from pathlib import Path
 import re
@@ -13,6 +15,7 @@ from textwrap import indent
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
+HEADERS_FILE = ROOT_DIR / 'tools/headers.json'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
 EXAMPLES_DIR = ROOT_DIR / 'docs/examples/'
 PYTHON_EXAMPLES_DIR = ROOT_DIR / 'examples/'
@@ -295,5 +298,30 @@ def generate_examples():
         dst.write_text(doc)
 
 
+def generate_api():
+    with open(HEADERS_FILE, 'r') as f:
+        objects = json.load(f)
+    md = dedent("""
+    # API Reference
+
+    """).lstrip()
+    for filename, items in objects.items():
+        for func_name, func_info in items["functions"].items():
+            md += f"### `{func_name}`\n\n"
+
+            docstring = func_info["docstring"]
+            docstring = docstring.replace('/**\n', '')
+            docstring = docstring.replace(' */', '')
+            docstring = docstring.replace(' *', '')
+            md += f"{docstring}\n\n"
+
+            # for arg in func_info["args"]:
+            #     md += f"* {arg['name']} ({arg['dtype']})\n"
+
+    with open(API_OUTPUT, 'w') as f:
+        f.write(md)
+
+
 if __name__ == '__main__':
-    generate_examples()
+    # generate_examples()
+    generate_api()
