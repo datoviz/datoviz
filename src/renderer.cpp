@@ -159,8 +159,8 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
     // will occur in the presenter (client-side), not on the renderer (server-side).
 
     DvzCanvas* canvas = dvz_workspace_canvas(
-        rd->workspace, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height,
-        req.flags);
+        rd->workspace, //
+        req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height, req.flags);
     ANN(canvas);
     SET_ID(canvas)
 
@@ -232,7 +232,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
     DvzPipe* pipe = NULL;
 
-    bool is_offscreen = (req.flags & DVZ_REQUEST_FLAGS_OFFSCREEN) != 0;
+    bool is_offscreen = (req.flags & DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN) != 0;
     if (gpu->host->backend && !is_offscreen)
     {
         log_debug("non-offscreen graphics pipeline creation was requested with an offscreen "

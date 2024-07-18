@@ -26,6 +26,8 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// Pipelib flags.
+// NOTE: these flags are also passed to graphics flags.
 typedef enum
 {
     DVZ_PIPELIB_FLAGS_NONE = 0x000000,

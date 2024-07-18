@@ -33,12 +33,13 @@
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
-// Request flags.
+// Graphics request flags.
+// NOTE: these flags are also passed to PipelibFlags.
 typedef enum
 {
-    DVZ_REQUEST_FLAGS_NONE = 0x0000,
-    DVZ_REQUEST_FLAGS_OFFSCREEN = 0x1000,
-} DvzRequestFlags;
+    DVZ_GRAPHICS_REQUEST_FLAGS_NONE = 0x0000,
+    DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000,
+} DvzGraphicsRequestFlags;
 
 
 

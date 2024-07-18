@@ -70,7 +70,7 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
 
     // Create a graphics.
-    req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
 
     // Create the vertex buffer dat.
@@ -173,7 +173,7 @@ int test_renderer_graphics(TstSuite* suite)
 
 
     // Create a custom graphics.
-    req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, DVZ_REQUEST_FLAGS_OFFSCREEN);
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
 
     // Load shaders.

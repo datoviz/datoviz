@@ -176,6 +176,7 @@ typedef enum
 
 
 // Visual flags.
+// NOTE: these flags are also passed to BakerFlags
 typedef enum
 {
     DVZ_VISUAL_FLAGS_DEFAULT = 0x00000,
@@ -483,6 +484,7 @@ typedef enum
 
 
 // Mesh flags.
+// NOTE: these flags are also passed as VisualFlags and then BakerFlags
 typedef enum
 {
     DVZ_MESH_FLAGS_NONE = 0x0000,
