@@ -170,7 +170,7 @@ demo:
 # -------------------------------------------------------------------------------------------------
 
 headers:
-    python tools/parse_headers.py
+    @python tools/parse_headers.py
 #
 
 exports:
@@ -494,8 +494,12 @@ testpkg vm_ip_address:
 # Python ctypes wrapper generation
 # -------------------------------------------------------------------------------------------------
 
-ctypes: headers
+ctypes:
     @python tools/generate_ctypes.py
+#
+
+fullctypes: headers
+    @just ctypes
     @just checkstructs
 #
 

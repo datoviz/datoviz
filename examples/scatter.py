@@ -12,7 +12,7 @@ import numpy as np
 import datoviz as dvz
 
 
-@ctypes.CFUNCTYPE(None, P_(dvz.DvzApp), dvz.DvzId, dvz.DvzMouseEvent)
+@dvz.mouse
 def onmouse(app, fid, ev):
     print(ev.pos[0], ev.pos[1])
 

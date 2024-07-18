@@ -1,6 +1,5 @@
-'''
-WARNING: DO NOT EDIT: automatically-generated file
-'''
+"""WARNING: DO NOT EDIT: automatically-generated file"""
+
 
 # ===============================================================================
 # Imports
@@ -115,7 +114,14 @@ def _check_struct_sizes(json_path):
     print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
 
 
+# ===============================================================================
+# Base types
+# ===============================================================================
+
+# Typedefs.
 DvzId = ctypes.c_uint64
+
+
 # ===============================================================================
 # DEFINES
 # ===============================================================================
@@ -816,6 +822,18 @@ class DvzRequestsEvent(ctypes.Structure):
 
 
 # ===============================================================================
+# FUNCTION CALLBACK TYPES
+# ===============================================================================
+
+gui = DvzAppGui = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
+keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
+frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
+timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
+resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
+
+
+# ===============================================================================
 # FUNCTIONS
 # ===============================================================================
 
@@ -843,7 +861,7 @@ app_frame.argtypes = [
 app_onframe = dvz.dvz_app_onframe
 app_onframe.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppFrameCallback callback
+    DvzAppFrameCallback,  # DvzAppFrameCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -851,7 +869,7 @@ app_onframe.argtypes = [
 app_onmouse = dvz.dvz_app_onmouse
 app_onmouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppMouseCallback callback
+    DvzAppMouseCallback,  # DvzAppMouseCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -859,7 +877,7 @@ app_onmouse.argtypes = [
 app_onkeyboard = dvz.dvz_app_onkeyboard
 app_onkeyboard.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppKeyboardCallback callback
+    DvzAppKeyboardCallback,  # DvzAppKeyboardCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -867,7 +885,7 @@ app_onkeyboard.argtypes = [
 app_onresize = dvz.dvz_app_onresize
 app_onresize.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppResizeCallback callback
+    DvzAppResizeCallback,  # DvzAppResizeCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -885,7 +903,7 @@ app_timer.restype = ctypes.POINTER(DvzTimerItem)
 app_ontimer = dvz.dvz_app_ontimer
 app_ontimer.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_void_p,  # DvzAppTimerCallback callback
+    DvzAppTimerCallback,  # DvzAppTimerCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -894,7 +912,7 @@ app_gui = dvz.dvz_app_gui
 app_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     ctypes.c_uint64,  # DvzId canvas_id
-    ctypes.c_void_p,  # DvzAppGui callback
+    DvzAppGui,  # DvzAppGui callback
     ctypes.c_void_p,  # void* user_data
 ]
 

@@ -1,6 +1,8 @@
-'''
-WARNING: DO NOT EDIT: automatically-generated file
-'''
+"""
+This file is automatically included at the top of __init__.py during the ctypes wrapper generation.
+This is handled by `just ctypes`.
+"""
+
 
 # ===============================================================================
 # Imports
@@ -115,4 +117,9 @@ def _check_struct_sizes(json_path):
     print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
 
 
+# ===============================================================================
+# Base types
+# ===============================================================================
+
+# Typedefs.
 DvzId = ctypes.c_uint64

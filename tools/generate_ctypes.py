@@ -53,8 +53,8 @@ def map_ctype(dtype, enum_int=False):
         return "ctypes.c_void_p"
 
     # TODO HACK: fix callbacks
-    if dtype.endswith("Callback") or dtype == "DvzAppGui":
-        return "ctypes.c_void_p"
+    # if dtype.endswith("Callback") or dtype == "DvzAppGui":
+    #     return "ctypes.c_void_p"
 
     if enum_int and dtype in ENUMS:
         return "ctypes.c_int32"
@@ -90,7 +90,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
         """)
 
-    # Handle defines
+    # Handle defines.
     delim("DEFINES")
     for fn in data:
         defines = data.get(fn, {}).get("defines", {})
@@ -98,7 +98,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
             out += f'{define_name} = {define_value}\n'
     out += "\n\n"
 
-    # Handle enums
+    # Handle enums.
     delim("ENUMERATIONS")
     for fn in data:
         enums = data.get(fn, {}).get("enums", {})
@@ -109,10 +109,11 @@ def generate_ctypes_bindings(headers_json_path, output_path):
                 out += f'    {value[0]} = {value[1]}\n'
             out += '\n\n'
 
+    # Forward declarations.
     delim("FORWARD DECLARATIONS")
     out += "{forward}"
 
-    # Generate ctypes structures
+    # Generate ctypes structures.
     delim("STRUCTURES")
     for fn in data:
         structs = data.get(fn, {}).get("structs", {})
@@ -126,7 +127,19 @@ def generate_ctypes_bindings(headers_json_path, output_path):
                 out += f'        ("{field["name"]}", {dtype}),\n'
             out += '    ]\n\n\n'
 
-    # Generate ctypes function bindings
+    # Function callbacks.
+    delim("FUNCTION CALLBACK TYPES")
+    out += dedent("""    gui = DvzAppGui = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+    mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
+    keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
+    frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
+    timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
+    resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
+
+
+    """)
+
+    # Generate ctypes function bindings.
     delim("FUNCTIONS")
     for fn in data:
         functions = data.get(fn, {}).get("functions", {})
@@ -155,10 +168,18 @@ def generate_ctypes_bindings(headers_json_path, output_path):
         forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
+    # Write the __init__.py file.
     with open(output_path, 'w') as file:
-        with open(ROOT_DIR / "tools/header.py", "r") as f:
-            file.write(f.read())
-        file.write(f"{out}")
+        def _include_py(file, filename, skip=4):
+            with open(ROOT_DIR / "tools" / filename, "r") as f:
+                for _ in range(skip):
+                    f.readline()
+                file.write(f.read())
+
+        file.write('"""WARNING: DO NOT EDIT: automatically-generated file"""\n')
+        _include_py(file, "ctypes_header.py")
+        file.write(f"\n\n{out}")
+        _include_py(file, "ctypes_footer.py")
 
 
 if __name__ == "__main__":
