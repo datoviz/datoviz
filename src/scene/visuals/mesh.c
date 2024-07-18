@@ -274,7 +274,7 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
 
     if (shape->index_count > 0)
-        dvz_mesh_index(visual, 0, index_count, shape->index);
+        dvz_mesh_index(visual, 0, index_count, shape->index, 0);
 
     return visual;
 }

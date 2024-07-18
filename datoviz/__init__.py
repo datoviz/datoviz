@@ -833,8 +833,7 @@ app_onframe.argtypes = [
 app_onmouse = dvz.dvz_app_onmouse
 app_onmouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    # DvzAppMouseCallback callback
-    ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent),
+    ctypes.c_void_p,  # DvzAppMouseCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
@@ -2437,3 +2436,4 @@ mock_color.argtypes = [
     ctypes.c_uint8,  # uint8_t alpha
 ]
 mock_color.restype = ctypes.POINTER(ctypes.c_uint8)
+
