@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #include "canvas.h"
+#include "datoviz.h"
 #include "fileio.h"
 #include "glfw_utils.h"
 #include "gui.h"
@@ -482,6 +483,7 @@ void dvz_gui_begin(const char* title, int gui_flags)
 
 void dvz_gui_text(const char* fmt, ...)
 {
+    ANN(fmt);
     va_list args;
     va_start(args, fmt);
     ImGui::TextV(fmt, args);
@@ -492,6 +494,8 @@ void dvz_gui_text(const char* fmt, ...)
 
 bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
 {
+    ANN(name);
+    ANN(value);
     return ImGui::SliderFloat(name, value, vmin, vmax, "%.5f", 0);
 }
 
@@ -499,6 +503,7 @@ bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
 
 void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...)
 {
+    ANN(fmt);
     va_list args;
     va_start(args, fmt);
     char overlay[1024] = {0};

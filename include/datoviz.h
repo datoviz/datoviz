@@ -56,6 +56,7 @@ typedef struct DvzPanzoom DvzPanzoom;
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzAtlas DvzAtlas;
+typedef struct DvzTex DvzTex;
 
 
 
@@ -2361,6 +2362,133 @@ DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
  * Demo.
  */
 DVZ_EXPORT void dvz_demo(void);
+
+
+
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  GUI functions                                                                                */
+/*************************************************************************************************/
+/*************************************************************************************************/
+
+/**
+ * Set the position of the next GUI dialog.
+ *
+ * @param pos the dialog position
+ * @param pivot the pivot
+ *
+ */
+DVZ_EXPORT void dvz_gui_pos(vec2 pos, vec2 pivot);
+
+
+
+/**
+ * Set the corner position of the next GUI dialog.
+ *
+ * @param corner which corner
+ * @param pad the pad
+ *
+ */
+DVZ_EXPORT void dvz_gui_corner(DvzCorner corner, vec2 pad);
+
+
+
+/**
+ * Set the size of the next GUI dialog.
+ *
+ * @param size the size
+ *
+ */
+DVZ_EXPORT void dvz_gui_size(vec2 size);
+
+
+
+/**
+ * Set the flags of the next GUI dialog.
+ *
+ * @param flags the flags
+ *
+ */
+DVZ_EXPORT int dvz_gui_flags(int flags);
+
+
+
+/**
+ * Set the alpha transparency of the next GUI dialog.
+ *
+ * @param alpha the alpha transparency value
+ *
+ */
+DVZ_EXPORT void dvz_gui_alpha(float alpha);
+
+
+
+/**
+ * Start a new dialog.
+ *
+ * @param title the dialog title
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_gui_begin(const char* title, int flags);
+
+
+
+/**
+ * Add a text item in a dialog.
+ *
+ * @param fmt the format string
+ */
+DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
+
+
+
+/**
+ * Add a slider.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value);
+
+
+
+/**
+ * Add a progress widget.
+ *
+ * @param fraction the fraction between 0 and 1
+ * @param width the widget width
+ * @param height the widget height
+ * @param fmt the format string
+ */
+DVZ_EXPORT void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...);
+
+
+
+/**
+ * Add an image in a GUI dialog.
+ *
+ * @param tex the texture
+ * @param width the image width
+ * @param height the image height
+ */
+DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
+
+
+
+/**
+ * Show the demo GUI.
+ */
+DVZ_EXPORT void dvz_gui_demo(void);
+
+
+
+/**
+ * Stop the creation of the dialog.
+ */
+DVZ_EXPORT void dvz_gui_end(void);
 
 
 
