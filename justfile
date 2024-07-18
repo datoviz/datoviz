@@ -155,18 +155,21 @@ test test_name="":
 # Demo
 # -------------------------------------------------------------------------------------------------
 
-[linux]
 demo:
+    ./build/datoviz demo
+
+[linux]
+libdemo:
     @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
 #
 
 [macos]
-demo:
+libdemo:
     @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 #
 
 [windows]
-demo:
+libdemo:
     python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
 #
 

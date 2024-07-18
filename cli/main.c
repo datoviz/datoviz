@@ -15,6 +15,7 @@
 #include "main.h"
 #include "_macros.h"
 #include "common.h"
+#include "datoviz.h"
 #include "test.h"
 
 
@@ -50,6 +51,14 @@ static int info(int argc, char** argv)
 
 
 
+static int demo(int argc, char** argv)
+{
+    dvz_demo();
+    return 0;
+}
+
+
+
 int main(int argc, char** argv)
 {
     log_set_level_env();
@@ -63,7 +72,7 @@ int main(int argc, char** argv)
 
     SWITCH_CLI_ARG(info)
     SWITCH_CLI_ARG(test)
-    // SWITCH_CLI_ARG(demo)
+    SWITCH_CLI_ARG(demo)
 
     return res;
 }
