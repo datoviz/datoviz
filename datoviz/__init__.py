@@ -89,11 +89,54 @@ class CtypesEnum(IntEnum):
         return int(obj)
 
 
+class WrappedValue:
+    def __init__(self, initial_value, ctype_type=ctypes.c_float):
+        self._value = ctype_type(initial_value)
+        self.python_value = initial_value
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.python_value = self._value.value
+
+    @property
+    def P_(self):
+        return ctypes.byref(self._value)
+
+    @property
+    def value(self):
+        return self._value.value
+
+    @value.setter
+    def value(self, new_value):
+        self._value.value = new_value
+
+    def __repr__(self):
+        return str(self.value)
+
+
 def array_pointer(x, dtype=float32):
     if not isinstance(x, np.ndarray):
         return x
     x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
+
+
+def char_pointer(s):
+    return s.encode('utf-8')
+
+
+def vec2(x: float, y: float):
+    return (ctypes.c_float * 2)(x, y)
+
+
+def vec3(x: float, y: float, z: float):
+    return (ctypes.c_float * 3)(x, y, z)
+
+
+def vec4(x: float, y: float, z: float, w: float):
+    return (ctypes.c_float * 4)(x, y, z, w)
 
 
 def _check_struct_sizes(json_path):
@@ -115,11 +158,14 @@ def _check_struct_sizes(json_path):
 
 
 # ===============================================================================
-# Base types
+# Aliases
 # ===============================================================================
 
-# Typedefs.
 DvzId = ctypes.c_uint64
+
+A_ = array_pointer
+S_ = char_pointer
+V_ = WrappedValue
 
 
 # ===============================================================================
@@ -336,6 +382,24 @@ class DvzMouseEventType(CtypesEnum):
     DVZ_MOUSE_EVENT_DRAG_STOP = 12
     DVZ_MOUSE_EVENT_WHEEL = 20
     DVZ_MOUSE_EVENT_ALL = 255
+
+
+class DvzGuiFlags(CtypesEnum):
+    DVZ_GUI_FLAGS_NONE = 0
+    DVZ_GUI_FLAGS_OFFSCREEN = 1
+
+
+class DvzDialogFlags(CtypesEnum):
+    DVZ_DIALOG_FLAGS_NONE = 0x0000
+    DVZ_DIALOG_FLAGS_OVERLAY = 0x0001
+    DVZ_DIALOG_FLAGS_FPS = 0x0003
+
+
+class DvzCorner(CtypesEnum):
+    DVZ_DIALOG_CORNER_UPPER_LEFT = 0
+    DVZ_DIALOG_CORNER_UPPER_RIGHT = 1
+    DVZ_DIALOG_CORNER_LOWER_LEFT = 2
+    DVZ_DIALOG_CORNER_LOWER_RIGHT = 3
 
 
 class DvzPrimitiveTopology(CtypesEnum):
@@ -697,6 +761,10 @@ class DvzScene(ctypes.Structure):
 
 
 class DvzShape(ctypes.Structure):
+    pass
+
+
+class DvzTex(ctypes.Structure):
     pass
 
 
@@ -2382,6 +2450,74 @@ panzoom_mvp.argtypes = [
 # Function dvz_demo()
 demo = dvz.dvz_demo
 demo.argtypes = [
+]
+
+# Function dvz_gui_pos()
+gui_pos = dvz.dvz_gui_pos
+gui_pos.argtypes = [
+    ctypes.c_float * 2,  # vec2 pos
+    ctypes.c_float * 2,  # vec2 pivot
+]
+
+# Function dvz_gui_corner()
+gui_corner = dvz.dvz_gui_corner
+gui_corner.argtypes = [
+    DvzCorner,  # DvzCorner corner
+    ctypes.c_float * 2,  # vec2 pad
+]
+
+# Function dvz_gui_size()
+gui_size = dvz.dvz_gui_size
+gui_size.argtypes = [
+    ctypes.c_float * 2,  # vec2 size
+]
+
+# Function dvz_gui_flags()
+gui_flags = dvz.dvz_gui_flags
+gui_flags.argtypes = [
+    ctypes.c_int,  # int flags
+]
+gui_flags.restype = ctypes.c_int
+
+# Function dvz_gui_alpha()
+gui_alpha = dvz.dvz_gui_alpha
+gui_alpha.argtypes = [
+    ctypes.c_float,  # float alpha
+]
+
+# Function dvz_gui_begin()
+gui_begin = dvz.dvz_gui_begin
+gui_begin.argtypes = [
+    ctypes.c_char_p,  # char* title
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_gui_slider()
+gui_slider = dvz.dvz_gui_slider
+gui_slider.argtypes = [
+    ctypes.c_char_p,  # char* name
+    ctypes.c_float,  # float vmin
+    ctypes.c_float,  # float vmax
+    ctypes.POINTER(ctypes.c_float),  # float* value
+]
+gui_slider.restype = ctypes.c_bool
+
+# Function dvz_gui_image()
+gui_image = dvz.dvz_gui_image
+gui_image.argtypes = [
+    ctypes.POINTER(DvzTex),  # DvzTex* tex
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+]
+
+# Function dvz_gui_demo()
+gui_demo = dvz.dvz_gui_demo
+gui_demo.argtypes = [
+]
+
+# Function dvz_gui_end()
+gui_end = dvz.dvz_gui_end
+gui_end.argtypes = [
 ]
 
 # Function dvz_next_pow2()

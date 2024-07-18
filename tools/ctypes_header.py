@@ -92,11 +92,54 @@ class CtypesEnum(IntEnum):
         return int(obj)
 
 
+class WrappedValue:
+    def __init__(self, initial_value, ctype_type=ctypes.c_float):
+        self._value = ctype_type(initial_value)
+        self.python_value = initial_value
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.python_value = self._value.value
+
+    @property
+    def P_(self):
+        return ctypes.byref(self._value)
+
+    @property
+    def value(self):
+        return self._value.value
+
+    @value.setter
+    def value(self, new_value):
+        self._value.value = new_value
+
+    def __repr__(self):
+        return str(self.value)
+
+
 def array_pointer(x, dtype=float32):
     if not isinstance(x, np.ndarray):
         return x
     x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
+
+
+def char_pointer(s):
+    return s.encode('utf-8')
+
+
+def vec2(x: float, y: float):
+    return (ctypes.c_float * 2)(x, y)
+
+
+def vec3(x: float, y: float, z: float):
+    return (ctypes.c_float * 3)(x, y, z)
+
+
+def vec4(x: float, y: float, z: float, w: float):
+    return (ctypes.c_float * 4)(x, y, z, w)
 
 
 def _check_struct_sizes(json_path):
@@ -118,8 +161,11 @@ def _check_struct_sizes(json_path):
 
 
 # ===============================================================================
-# Base types
+# Aliases
 # ===============================================================================
 
-# Typedefs.
 DvzId = ctypes.c_uint64
+
+A_ = array_pointer
+S_ = char_pointer
+V_ = WrappedValue

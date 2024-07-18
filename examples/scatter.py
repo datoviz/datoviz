@@ -5,11 +5,16 @@ This is a scatter plot example.
 """
 
 import ctypes
-from ctypes import POINTER as P_
 
 import numpy as np
 
 import datoviz as dvz
+from datoviz import (
+    A_,  # NumPy array to ctypes raw data pointer
+    S_,  # Python string to ctypes char*
+    V_,  # Wrapper to handle pointers to scalar values
+    vec2,  # Python tuple to ctypes vec2
+)
 
 
 @dvz.mouse
@@ -17,12 +22,16 @@ def onmouse(app, fid, ev):
     print(ev.pos[0], ev.pos[1])
 
 
+slider_value = V_(3.14)
+
+
 @dvz.gui
 def ongui(app, fid, ev):
-    # dvz.gui_pos((vec2){50, 50}, 0)
-    # dvz.gui_size((vec2){250, 80})
-    dvz.gui_begin("Hello world", 0)
-    # dvz.gui_slider("param", 0, 10, param)
+    dvz.gui_size(vec2(250.0, 80.0))
+    dvz.gui_begin(S_("Hello world"), 0)
+    with slider_value:
+        if dvz.gui_slider(S_("Some slider"), 0, 10, slider_value.P_):
+            print(f"The value is: {slider_value.value:.2f}.")
     dvz.gui_end()
 
 
