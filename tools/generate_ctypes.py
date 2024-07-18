@@ -43,7 +43,6 @@ def map_ctype(dtype, enum_int=False):
         "cvec4*": "POINTER(ctypes.c_uint8)",
         "vec4*": "POINTER(ctypes.c_float)",
 
-        "DvzId": "c_uint64",
         "DvzIndex*": "POINTER(ctypes.c_uint32)",
 
         "char*": "c_char_p",
@@ -125,7 +124,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
     # Function callbacks.
     delim("FUNCTION CALLBACK TYPES")
-    out += dedent("""    gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+    out += dedent("""    gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
     mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
     keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
     frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)

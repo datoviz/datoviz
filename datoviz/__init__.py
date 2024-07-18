@@ -806,7 +806,6 @@ class DvzFrameEvent(ctypes.Structure):
 
 class DvzGuiEvent(ctypes.Structure):
     _fields_ = [
-        ("canvas_id", ctypes.c_uint64),
         ("user_data", ctypes.c_void_p),
     ]
 
@@ -832,7 +831,7 @@ class DvzRequestsEvent(ctypes.Structure):
 # FUNCTION CALLBACK TYPES
 # ===============================================================================
 
-gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
 mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
 keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
 frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
@@ -918,7 +917,7 @@ app_ontimer.argtypes = [
 app_gui = dvz.dvz_app_gui
 app_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_uint64,  # DvzId canvas_id
+    DvzId,  # DvzId canvas_id
     DvzAppGuiCallback,  # DvzAppGuiCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
@@ -940,7 +939,7 @@ app_submit.argtypes = [
 app_screenshot = dvz.dvz_app_screenshot
 app_screenshot.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_uint64,  # DvzId canvas_id
+    DvzId,  # DvzId canvas_id
     ctypes.c_char_p,  # char* filename
 ]
 
@@ -987,6 +986,13 @@ figure.argtypes = [
 ]
 figure.restype = ctypes.POINTER(DvzFigure)
 
+# Function dvz_figure_id()
+figure_id = dvz.dvz_figure_id
+figure_id.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* figure
+]
+figure_id.restype = DvzId
+
 # Function dvz_figure_resize()
 figure_resize = dvz.dvz_figure_resize
 figure_resize.argtypes = [
@@ -999,7 +1005,7 @@ figure_resize.argtypes = [
 scene_figure = dvz.dvz_scene_figure
 scene_figure.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
-    ctypes.c_uint64,  # DvzId id
+    DvzId,  # DvzId id
 ]
 scene_figure.restype = ctypes.POINTER(DvzFigure)
 
@@ -1428,8 +1434,8 @@ marker_edge_width.argtypes = [
 marker_tex = dvz.dvz_marker_tex
 marker_tex.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
-    ctypes.c_uint64,  # DvzId sampler
+    DvzId,  # DvzId tex
+    DvzId,  # DvzId sampler
 ]
 
 # Function dvz_marker_tex_scale()
@@ -1672,7 +1678,7 @@ glyph_bgcolor.argtypes = [
 glyph_texture = dvz.dvz_glyph_texture
 glyph_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
+    DvzId,  # DvzId tex
 ]
 
 # Function dvz_glyph_atlas()
@@ -1740,7 +1746,7 @@ image_texcoords.argtypes = [
 image_texture = dvz.dvz_image_texture
 image_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
+    DvzId,  # DvzId tex
     DvzFilter,  # DvzFilter filter
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
@@ -1761,7 +1767,7 @@ tex_image.argtypes = [
     ctypes.c_uint32,  # uint32_t height
     ctypes.c_void_p,  # void* data
 ]
-tex_image.restype = ctypes.c_uint64
+tex_image.restype = DvzId
 
 # Function dvz_mesh()
 mesh = dvz.dvz_mesh
@@ -1815,7 +1821,7 @@ mesh_normal.argtypes = [
 mesh_texture = dvz.dvz_mesh_texture
 mesh_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
+    DvzId,  # DvzId tex
     DvzFilter,  # DvzFilter filter
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
@@ -1932,7 +1938,7 @@ volume_alloc.argtypes = [
 volume_texture = dvz.dvz_volume_texture
 volume_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
+    DvzId,  # DvzId tex
     DvzFilter,  # DvzFilter filter
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
@@ -1956,7 +1962,7 @@ tex_volume.argtypes = [
     ctypes.c_uint32,  # uint32_t depth
     ctypes.c_void_p,  # void* data
 ]
-tex_volume.restype = ctypes.c_uint64
+tex_volume.restype = DvzId
 
 # Function dvz_slice()
 slice = dvz.dvz_slice
@@ -1996,7 +2002,7 @@ slice_texcoords.argtypes = [
 slice_texture = dvz.dvz_slice_texture
 slice_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint64,  # DvzId tex
+    DvzId,  # DvzId tex
     DvzFilter,  # DvzFilter filter
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
@@ -2018,7 +2024,7 @@ tex_slice.argtypes = [
     ctypes.c_uint32,  # uint32_t depth
     ctypes.c_void_p,  # void* data
 ]
-tex_slice.restype = ctypes.c_uint64
+tex_slice.restype = DvzId
 
 # Function dvz_slice_alpha()
 slice_alpha = dvz.dvz_slice_alpha

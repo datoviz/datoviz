@@ -17,13 +17,22 @@ def onmouse(app, fid, ev):
     print(ev.pos[0], ev.pos[1])
 
 
+@dvz.gui
+def ongui(app, fid, ev):
+    # dvz.gui_pos((vec2){50, 50}, 0)
+    # dvz.gui_size((vec2){250, 80})
+    dvz.gui_begin("Hello world", 0)
+    # dvz.gui_slider("param", 0, 10, param)
+    dvz.gui_end()
+
+
 # Boilerplate.
 app = dvz.app(0)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
 # Create a figure.
-figure = dvz.figure(scene, 800, 600, 0)
+figure = dvz.figure(scene, 800, 600, dvz.DvzCanvasFlags.DVZ_CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(scene, panel)
 
@@ -52,7 +61,10 @@ dvz.point_size(visual, 0, n, dvz.array_pointer(size), 0)
 dvz.panel_visual(panel, visual)
 
 # Callback.
-dvz.app_onmouse(app, onmouse, None)
+# dvz.app_onmouse(app, onmouse, None)
+
+# GUI.
+dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)
