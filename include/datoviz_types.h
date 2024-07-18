@@ -234,7 +234,6 @@ struct DvzFrameEvent
 
 struct DvzGuiEvent
 {
-    DvzId canvas_id;
     void* user_data;
 };
 

@@ -135,6 +135,14 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 
 
 
+DvzId dvz_figure_id(DvzFigure* figure)
+{
+    ANN(figure);
+    return figure->canvas_id;
+}
+
+
+
 void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 {
     ANN(fig);

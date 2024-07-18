@@ -351,7 +351,6 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
     void* user_data = payload->user_data;
 
     DvzGuiEvent ev = {
-        .canvas_id = canvas_id,
         .user_data = user_data,
     };
     callback(app, canvas_id, ev);

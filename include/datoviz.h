@@ -296,6 +296,16 @@ DVZ_EXPORT DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t heigh
 
 
 /**
+ * Return a figure ID.
+ *
+ * @param figure the figure
+ * @returns the figure ID
+ */
+DVZ_EXPORT DvzId dvz_figure_id(DvzFigure* figure);
+
+
+
+/**
  * Resize a figure.
  *
  * @param fig the figure
