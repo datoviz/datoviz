@@ -89,9 +89,9 @@ int test_volume_1(TstSuite* suite)
 
 
 
-static inline void _gui_callback(DvzApp* app, DvzId canvas_id, void* user_data)
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
-    DvzVisual* visual = (DvzVisual*)user_data;
+    DvzVisual* visual = (DvzVisual*)ev.user_data;
     ANN(visual);
 
     dvz_gui_pos((vec2){50, 50}, DVZ_DIALOG_DEFAULT_PIVOT);

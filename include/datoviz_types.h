@@ -58,6 +58,7 @@ typedef struct DvzMouseClickEvent DvzMouseClickEvent;
 
 typedef struct DvzWindowEvent DvzWindowEvent;
 typedef struct DvzFrameEvent DvzFrameEvent;
+typedef struct DvzGuiEvent DvzGuiEvent;
 typedef struct DvzTimerEvent DvzTimerEvent;
 typedef struct DvzRequestsEvent DvzRequestsEvent;
 
@@ -67,7 +68,7 @@ typedef struct DvzBatch DvzBatch;
 typedef struct DvzApp DvzApp;
 
 // Callback types.
-typedef void (*DvzAppGui)(DvzApp* app, DvzId canvas_id, void* user_data);
+typedef void (*DvzAppGuiCallback)(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev);
 typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent ev);
 typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboardEvent ev);
 typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent ev);
@@ -228,6 +229,12 @@ struct DvzFrameEvent
     uint64_t frame_idx;
     double time;
     double interval;
+    void* user_data;
+};
+
+struct DvzGuiEvent
+{
+    DvzId canvas_id;
     void* user_data;
 };
 

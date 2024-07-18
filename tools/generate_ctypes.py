@@ -52,10 +52,6 @@ def map_ctype(dtype, enum_int=False):
     if "void*" in dtype:
         return "ctypes.c_void_p"
 
-    # TODO HACK: fix callbacks
-    # if dtype.endswith("Callback") or dtype == "DvzAppGui":
-    #     return "ctypes.c_void_p"
-
     if enum_int and dtype in ENUMS:
         return "ctypes.c_int32"
 
@@ -129,7 +125,7 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 
     # Function callbacks.
     delim("FUNCTION CALLBACK TYPES")
-    out += dedent("""    gui = DvzAppGui = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+    out += dedent("""    gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
     mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
     keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
     frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)

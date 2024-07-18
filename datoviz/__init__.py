@@ -804,6 +804,13 @@ class DvzFrameEvent(ctypes.Structure):
     ]
 
 
+class DvzGuiEvent(ctypes.Structure):
+    _fields_ = [
+        ("canvas_id", ctypes.c_uint64),
+        ("user_data", ctypes.c_void_p),
+    ]
+
+
 class DvzTimerEvent(ctypes.Structure):
     _fields_ = [
         ("timer_idx", ctypes.c_uint32),
@@ -825,7 +832,7 @@ class DvzRequestsEvent(ctypes.Structure):
 # FUNCTION CALLBACK TYPES
 # ===============================================================================
 
-gui = DvzAppGui = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
+gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, ctypes.c_void_p)
 mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
 keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
 frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
@@ -912,7 +919,7 @@ app_gui = dvz.dvz_app_gui
 app_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     ctypes.c_uint64,  # DvzId canvas_id
-    DvzAppGui,  # DvzAppGui callback
+    DvzAppGuiCallback,  # DvzAppGuiCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 

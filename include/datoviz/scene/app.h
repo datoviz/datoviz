@@ -55,7 +55,7 @@ struct DvzAppGuiPayload
 {
     DvzApp* app;
     DvzId canvas_id;
-    DvzAppGui callback;
+    DvzAppGuiCallback callback;
     void* user_data;
 };
 

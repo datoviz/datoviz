@@ -8,6 +8,7 @@ int main(void);
 int main(void)
 {
     printf("{\n");
+    printf("  \"DvzGuiEvent\": %zu,\n", sizeof(DvzGuiEvent));
     printf("  \"DvzKeyboardEvent\": %zu,\n", sizeof(DvzKeyboardEvent));
     printf("  \"DvzMouseButtonEvent\": %zu,\n", sizeof(DvzMouseButtonEvent));
     printf("  \"DvzMouseWheelEvent\": %zu,\n", sizeof(DvzMouseWheelEvent));

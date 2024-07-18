@@ -347,13 +347,17 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
 
     DvzApp* app = payload->app;
     DvzId canvas_id = payload->canvas_id;
-    DvzAppGui callback = payload->callback;
+    DvzAppGuiCallback callback = payload->callback;
     void* user_data = payload->user_data;
 
-    callback(app, canvas_id, user_data);
+    DvzGuiEvent ev = {
+        .canvas_id = canvas_id,
+        .user_data = user_data,
+    };
+    callback(app, canvas_id, ev);
 }
 
-void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data)
+void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void* user_data)
 {
     ANN(app);
 

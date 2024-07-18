@@ -191,7 +191,8 @@ DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback callback, void*
  * @param callback the GUI callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGui callback, void* user_data);
+DVZ_EXPORT void
+dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void* user_data);
 
 
 
