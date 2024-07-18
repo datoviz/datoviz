@@ -176,27 +176,14 @@ just example scatter
 
 ### Windows
 
-git for windows with git bash
-
-??
-https://cmake.org/download/
-Windows x64 Installer
-
-https://winlibs.com/
-latest gcc ucrt with posix threads
-
-https://github.com/casey/just/releases
-copy just.exe in C:\mingw64\bin
-
-?? disabled msdf build for now
-https://download.savannah.gnu.org/releases/freetype/
-
-install vulkan sdk
-
-just build
-
-vulkan-1.dll needs to be in build
-
+1. Install Git for Windows. You'll use the Git Bash console later.
+2. Install [WinLibs](https://winlibs.com/). Download and install the latest gcc UCRT version with POSIX threads.
+3. Download and decompress [just](https://github.com/casey/just/releases).
+4. Copy the decompressed `just.exe` into `C:\mingw64\bin` (which should have been created by WinLibs).
+5. Install the LunarG Vulkan SDK for Windows.
+6. Open a Git Bash terminal, go to the Datoviz GitHub repository, and type `just build` twice.
+7. Install the Vulkan Runtime for Windows, and copy the decompressed `vulkan-1.dll` into `build/`.
+8. Open a bash terminal, go to `build/`, and type `./datoviz.exe demo`.
 
 
 <!-- PACKAGING -->
