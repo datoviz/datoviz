@@ -499,7 +499,7 @@ ctypes:
     @python tools/generate_ctypes.py
 #
 
-fullctypes: headers
+fullctypes: build headers
     @just ctypes
     @just checkstructs
 #
