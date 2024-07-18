@@ -90,7 +90,7 @@ static uint64_t get_thread_idx(void)
     pthread_threadid_np(NULL, &tid);
 #elif OS_WIN32
     // Windows
-    // TODO: how to get the thread idx
+    tid = pthread_self();
 #else
     // Linux
     tid = (uint64_t)(syscall(__NR_gettid));

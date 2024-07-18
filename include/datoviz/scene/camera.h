@@ -54,9 +54,11 @@ struct DvzCamera
     vec2 viewport_size;
     int flags;
 
-    float near, far; // zrange
-    float aspect;
+    // zrange
+    float near;
+    float far; 
 
+    float aspect;
     // TODO: use type and union?
     // for orthographic camera
     float left, right, bottom, top;

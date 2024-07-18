@@ -176,7 +176,27 @@ just example scatter
 
 ### Windows
 
-TODO.
+git for windows with git bash
+
+??
+https://cmake.org/download/
+Windows x64 Installer
+
+https://winlibs.com/
+latest gcc ucrt with posix threads
+
+https://github.com/casey/just/releases
+copy just.exe in C:\mingw64\bin
+
+?? disabled msdf build for now
+https://download.savannah.gnu.org/releases/freetype/
+
+install vulkan sdk
+
+just build
+
+vulkan-1.dll needs to be in build
+
 
 
 <!-- PACKAGING -->

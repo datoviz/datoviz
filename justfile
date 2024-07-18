@@ -32,7 +32,7 @@ build release="Debug":
     @unset CC
     @unset CXX
     @mkdir -p docs/images
-    @ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
+    #@ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
     @mkdir -p build
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
@@ -145,6 +145,11 @@ test test_name="":
     @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
 #
 
+[windows]
+test test_name="":
+    ./build/datoviz.exe test {{test_name}}
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Demo
@@ -158,6 +163,11 @@ demo:
 [macos]
 demo:
     @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
+#
+
+[windows]
+demo:
+    python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
 #
 
 python *args:
