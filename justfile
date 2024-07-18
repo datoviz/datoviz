@@ -22,14 +22,20 @@ default:
 # Building
 # -------------------------------------------------------------------------------------------------
 
+checkstructs:
+    @python -c "from datoviz import _check_struct_sizes; _check_struct_sizes('build/struct_sizes.json');"
+#
+
+
 build release="Debug":
+    @set -e
     @unset CC
     @unset CXX
-    mkdir -p docs/images
-    ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
-    mkdir -p build
-    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
-    cd build/ && ninja
+    @mkdir -p docs/images
+    @ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
+    @mkdir -p build
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && ninja
 #
 
 rmbuild:
@@ -252,7 +258,7 @@ cloc:
 # -------------------------------------------------------------------------------------------------
 
 [linux]
-deb:
+deb: checkstructs
     #!/usr/bin/env sh
     DEB="packaging/deb/"
     INCLUDEDIR="/usr/local/include/datoviz"
@@ -358,7 +364,7 @@ testdeb:
 # -------------------------------------------------------------------------------------------------
 
 [macos]
-pkg:
+pkg: checkstructs
     #!/usr/bin/env sh
     PKGROOT="packaging/pkgroot/Payload"
     PKGSCRIPTS="packaging/pkgroot/Scripts"
@@ -489,7 +495,8 @@ testpkg vm_ip_address:
 # -------------------------------------------------------------------------------------------------
 
 ctypes: headers
-    python tools/generate_ctypes.py
+    @python tools/generate_ctypes.py
+    @just checkstructs
 #
 
 
@@ -525,7 +532,7 @@ renamewheel:
 # -------------------------------------------------------------------------------------------------
 
 [linux]
-wheel:
+wheel: checkstructs
     #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
@@ -552,7 +559,7 @@ wheel:
 #
 
 [linux]
-wheelmany:
+wheelmany: checkstructs
     #!/usr/bin/env sh
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
@@ -633,7 +640,7 @@ testwheel:
 # -------------------------------------------------------------------------------------------------
 
 [macos]
-wheel:
+wheel: checkstructs
     #!/usr/bin/env sh
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"

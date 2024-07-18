@@ -6,6 +6,7 @@ WARNING: DO NOT EDIT: automatically-generated file
 # Imports
 # ===============================================================================
 
+import json
 import ctypes
 from ctypes import POINTER as P_
 import faulthandler
@@ -96,8 +97,25 @@ def array_pointer(x, dtype=float32):
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
 
-DvzId = ctypes.c_uint64
+def _check_struct_sizes(json_path):
+    """Check the size of the ctypes structs and unions with respect to the sizes output by
+    the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
+    """
+    with open(json_path, "r") as f:
+        sizes = json.load(f)
+    for name, size_c in sizes.items():
+        obj = globals().get(name)
+        assert obj
+        size_ctypes = ctypes.sizeof(obj)
+        # print(name, size_c, size_ctypes)
+        if size_c != size_ctypes:
+            raise ValueError(
+                f"Mismatch struct/union size error with {name}, "
+                f"C struct/union size is {size_c} whereas the ctypes size is {size_ctypes}")
+    print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
 
+
+DvzId = ctypes.c_uint64
 # ===============================================================================
 # DEFINES
 # ===============================================================================

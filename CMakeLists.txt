@@ -837,3 +837,24 @@ if(DATOVIZ_WITH_CLI)
 
     set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
 endif()
+
+
+# -------------------------------------------------------------------------------------------------
+# Struct sizes check tool
+# -------------------------------------------------------------------------------------------------
+add_executable(struct_sizes tools/struct_sizes.c)
+target_include_directories(struct_sizes PUBLIC "${CMAKE_SOURCE_DIR}/include")
+set_target_properties(struct_sizes PROPERTIES OUTPUT_NAME "struct_sizes")
+target_compile_definitions(struct_sizes PUBLIC ${COMPILE_DEFINITIONS})
+add_custom_command(
+    OUTPUT ${CMAKE_BINARY_DIR}/struct_sizes.json
+    COMMAND struct_sizes > ${CMAKE_BINARY_DIR}/struct_sizes.json
+    DEPENDS struct_sizes
+    COMMENT "Generating struct_sizes.json"
+)
+
+# Add a custom target to execute the command
+add_custom_target(generate_struct_sizes_json
+    ALL
+    DEPENDS ${CMAKE_BINARY_DIR}/struct_sizes.json
+)
