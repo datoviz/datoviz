@@ -54,18 +54,6 @@ typedef void (*DvzVisualCallback)(
 
 typedef enum
 {
-    DVZ_VISUALS_FLAGS_DEFAULT = 0x00000,
-    DVZ_VISUALS_FLAGS_INDEXED = 0x10000,
-    DVZ_VISUALS_FLAGS_INDIRECT = 0x20000,
-
-    DVZ_VISUALS_FLAGS_VERTEX_NONMAPPABLE = 0x400000,
-    DVZ_VISUALS_FLAGS_INDEX_NONMAPPABLE = 0x500000,
-} DvzVisualFlags;
-
-
-
-typedef enum
-{
     DVZ_ATTR_FLAGS_DEFAULT = 0x0000,
     DVZ_ATTR_FLAGS_DYNAMIC = 0x0011, // the N in 0x000N indicates the binding idx
     DVZ_ATTR_FLAGS_CONSTANT = 0x0020,

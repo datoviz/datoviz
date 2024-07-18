@@ -21,30 +21,6 @@
 
 
 /*************************************************************************************************/
-/*  Types                                                                                        */
-/*************************************************************************************************/
-
-// NOTE: we duplicate these common types here for simplicity, best would probably be to
-// define them in a common file such as datoviz_types.h, used both by the public API header file
-// include/datoviz.h, and by the common internal file _math.h
-// typedef uint64_t DvzSize;
-// typedef uint32_t DvzIndex;
-// typedef uint64_t DvzId;
-
-// typedef uint8_t cvec2[2];
-// typedef uint8_t cvec3[3];
-// typedef uint8_t cvec4[4];
-
-// typedef double dvec2[2];
-// typedef double dvec3[3];
-// typedef double dvec4[4];
-
-// typedef dvec2 dmat2[2];
-// typedef dvec3 dmat3[3];
-// typedef dvec4 dmat4[4];
-
-
-/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -185,6 +161,68 @@ typedef enum
     DVZ_DIALOG_CORNER_LOWER_LEFT = 2,
     DVZ_DIALOG_CORNER_LOWER_RIGHT = 3,
 } DvzCorner;
+
+
+
+// Arcball flags.
+typedef enum
+{
+    DVZ_ARCBALL_FLAGS_NONE,
+    DVZ_ARCBALL_FLAGS_CONSTRAIN,
+} DvzArcballFlags;
+
+
+
+// Panzoom flags.
+typedef enum
+{
+    DVZ_PANZOOM_FLAGS_NONE = 0x00,
+    DVZ_PANZOOM_FLAGS_KEEP_ASPECT = 0x01,
+    DVZ_PANZOOM_FLAGS_FIXED_X = 0x10,
+    DVZ_PANZOOM_FLAGS_FIXED_Y = 0x20,
+} DvzPanzoomFlags;
+
+
+
+// Visual flags.
+typedef enum
+{
+    DVZ_VISUALS_FLAGS_DEFAULT = 0x00000,
+    DVZ_VISUALS_FLAGS_INDEXED = 0x10000,
+    DVZ_VISUALS_FLAGS_INDIRECT = 0x20000,
+
+    DVZ_VISUALS_FLAGS_VERTEX_NONMAPPABLE = 0x400000,
+    DVZ_VISUALS_FLAGS_INDEX_NONMAPPABLE = 0x500000,
+} DvzVisualFlags;
+
+
+
+// Dat flags.
+typedef enum
+{
+    DVZ_DAT_FLAGS_NONE = 0x0000,               // default: shared, with staging, single copy
+    DVZ_DAT_FLAGS_STANDALONE = 0x0100,         // (or shared)
+    DVZ_DAT_FLAGS_MAPPABLE = 0x0200,           // (or non-mappable = need staging buffer)
+    DVZ_DAT_FLAGS_DUP = 0x0400,                // (or single copy)
+    DVZ_DAT_FLAGS_KEEP_ON_RESIZE = 0x1000,     // (or loose the data when resizing the buffer)
+    DVZ_DAT_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
+} DvzDatFlags;
+
+
+// Dat upload flags.
+typedef enum
+{
+    DVZ_UPLOAD_FLAGS_NOCOPY = 0x0800, // (avoid data copy/free)
+
+} DvzUploadFlags;
+
+
+// Tex flags.
+typedef enum
+{
+    DVZ_TEX_FLAGS_NONE = 0x0000,               // default
+    DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
+} DvzTexFlags;
 
 
 
@@ -463,6 +501,17 @@ typedef enum
 
 
 
+// Volume flags.
+typedef enum
+{
+    DVZ_VOLUME_FLAGS_NONE = 0x0000,
+    DVZ_VOLUME_FLAGS_RGBA = 0x0001,
+    DVZ_VOLUME_FLAGS_COLORMAP = 0x0002,
+    DVZ_VOLUME_FLAGS_BACK_FRONT = 0x0004,
+} DvzVolumeFlags;
+
+
+
 // Easing.
 typedef enum
 {
@@ -514,7 +563,7 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Colormaps enums                                                                              */
+/*  Colormap enums                                                                               */
 /*************************************************************************************************/
 
 // Colormaps: native, user-defined, total.
