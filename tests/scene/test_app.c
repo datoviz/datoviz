@@ -152,7 +152,7 @@ int test_app_scatter(TstSuite* suite)
 
     const uint32_t n = 52;
     GraphicsWrapper wrapper = {0};
-    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    graphics_request(batch, n, &wrapper, 0);
     void* data = graphics_scatter(batch, wrapper.dat_id, n);
 
     // Panzoom callback.
@@ -289,7 +289,7 @@ int test_app_arcball(TstSuite* suite)
 
     const uint32_t n = 1000;
     GraphicsWrapper wrapper = {0};
-    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    graphics_request(batch, n, &wrapper, 0);
 
     // Upload the data.
     DvzGraphicsPointVertex* data =
@@ -381,7 +381,7 @@ int test_app_anim(TstSuite* suite)
 
     const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
     GraphicsWrapper wrapper = {0};
-    graphics_request(batch, n, &wrapper, DVZ_CANVAS_FLAGS_FPS);
+    graphics_request(batch, n, &wrapper, 0);
 
     // Upload the data.
     DvzGraphicsPointVertex* data =
@@ -520,8 +520,7 @@ int test_app_viewset(TstSuite* suite)
     ANN(batch);
 
     // Create a canvas.
-    DvzRequest req =
-        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_CANVAS_FLAGS_FPS);
+    DvzRequest req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_id = req.id;
 
     // Create a viewset.

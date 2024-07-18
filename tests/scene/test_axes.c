@@ -47,8 +47,8 @@ int test_axes_1(TstSuite* suite)
 #endif
     ANN(suite);
 
-    VisualTest vt = visual_test_start(
-        "axes_1", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
+    VisualTest vt =
+        visual_test_start("axes_1", VISUAL_TEST_PANZOOM, DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
 
     // Create the axes.
     int flags = 0;

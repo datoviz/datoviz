@@ -72,7 +72,7 @@ int test_axis_1(TstSuite* suite)
     return 1;
 #endif
 
-    VisualTest vt = visual_test_start("axis_1", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_FPS);
+    VisualTest vt = visual_test_start("axis_1", VISUAL_TEST_PANZOOM, 0);
 
     // Create the visual.
     int flags = 0;
@@ -210,8 +210,7 @@ int test_axis_2(TstSuite* suite)
 #endif
     ANN(suite);
 
-    int flags =
-        DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_MONITOR | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND;
+    int flags = DVZ_CANVAS_FLAGS_MONITOR | DVZ_RENDERER_FLAGS_WHITE_BACKGROUND;
     VisualTest vt = visual_test_start("axis_2", VISUAL_TEST_PANZOOM, flags);
 
 
@@ -410,7 +409,7 @@ int test_axis_update(TstSuite* suite)
 #endif
     ANN(suite);
 
-    int flags = DVZ_CANVAS_FLAGS_FPS | DVZ_CANVAS_FLAGS_MONITOR;
+    int flags = DVZ_CANVAS_FLAGS_MONITOR;
     VisualTest vt = visual_test_start("axis_update", VISUAL_TEST_PANZOOM, flags);
 
     // Create the visual.
