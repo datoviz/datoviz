@@ -454,6 +454,7 @@ pkg: checkstructs
     # Move it.
     cp $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
     rm -rf $PKGROOT $PKG $PKGSCRIPTS
+    rmdir packaging/pkgroot
 #
 
 [macos]
