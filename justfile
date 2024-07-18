@@ -145,10 +145,6 @@ test test_name="":
     @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
 #
 
-pytest:
-    DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$(pwd)/build pytest datoviz/tests/ -vv
-#
-
 
 # -------------------------------------------------------------------------------------------------
 # Demo
@@ -163,6 +159,9 @@ demo:
 demo:
     @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 #
+
+python *args:
+    @PYTHONPATH=. python {{args}}
 
 
 # -------------------------------------------------------------------------------------------------
