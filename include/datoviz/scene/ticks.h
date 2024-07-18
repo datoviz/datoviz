@@ -41,9 +41,9 @@ typedef struct DvzTicks DvzTicks;
 
 typedef enum
 {
-    DVZ_TICKS_HORIZONTAL = 0x0000,
-    DVZ_TICKS_VERTICAL = 0x0001,
-    DVZ_TICKS_LOG = 0x0010,
+    DVZ_TICKS_FLAGS_HORIZONTAL = 0x0000,
+    DVZ_TICKS_FLAGS_VERTICAL = 0x0001,
+    DVZ_TICKS_FLAGS_LOG = 0x0010,
 } DvzTicksFlags;
 
 

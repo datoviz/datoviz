@@ -420,7 +420,7 @@ void dvz_visual_alloc(
     ASSERT(item_count > 0);
 
     // Handle indexing.
-    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+    bool indexed = (visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0;
 
     // NOTE: if index_count is not specified, item_count is the number of FACES (number of
     // indices / 3).
@@ -761,8 +761,8 @@ void dvz_visual_instance(
 {
     ANN(visual);
 
-    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
-    bool indirect = (visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0;
+    bool indexed = (visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0;
+    bool indirect = (visual->flags & DVZ_VISUAL_FLAGS_INDIRECT) != 0;
     ASSERT(!indirect);
 
     if (indexed)
@@ -784,7 +784,7 @@ void dvz_visual_instance(
 void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
 {
     ANN(visual);
-    ASSERT((visual->flags & DVZ_VISUALS_FLAGS_INDIRECT) != 0);
+    ASSERT((visual->flags & DVZ_VISUAL_FLAGS_INDIRECT) != 0);
 
     DvzBaker* baker = visual->baker;
     ANN(baker);
@@ -792,7 +792,7 @@ void dvz_visual_indirect(DvzVisual* visual, DvzId canvas, uint32_t draw_count)
     DvzId indirect = baker->indirect.dat;
     ASSERT(indirect != DVZ_ID_NONE);
 
-    bool indexed = (visual->flags & DVZ_VISUALS_FLAGS_INDEXED) != 0;
+    bool indexed = (visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0;
 
     if (indexed)
     {

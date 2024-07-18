@@ -257,7 +257,7 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
 
     // NOTE: set the visual flag to indexed or non-indexed (default) depending on whether the shape
     // has an index buffer or not.
-    flags |= (index_count > 0 ? DVZ_VISUALS_FLAGS_INDEXED : DVZ_VISUALS_FLAGS_DEFAULT);
+    flags |= (index_count > 0 ? DVZ_VISUAL_FLAGS_INDEXED : DVZ_VISUAL_FLAGS_DEFAULT);
     DvzVisual* visual = dvz_mesh(batch, flags);
 
     dvz_mesh_alloc(visual, vertex_count, index_count);

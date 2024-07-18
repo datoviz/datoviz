@@ -49,7 +49,7 @@ pz = dvz.panel_panzoom(scene, panel)
 visual = dvz.point(batch, 0)
 
 # Visual data allocation.
-n = 10000
+n = 100_000
 dvz.point_alloc(visual, n)
 
 # Positions.
@@ -63,7 +63,7 @@ color = np.random.uniform(size=(n, 4), low=50, high=240)
 dvz.point_color(visual, 0, n, dvz.array_pointer(color, np.uint8), 0)
 
 # Sizes.
-size = np.random.uniform(size=(n,), low=25, high=50)
+size = np.random.uniform(size=(n,), low=10, high=30)
 dvz.point_size(visual, 0, n, dvz.array_pointer(size), 0)
 
 # Add the visual.

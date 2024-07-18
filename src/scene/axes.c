@@ -146,7 +146,7 @@ compute_ticks(DvzAxes* axes, DvzTicksFlags which, double dmin, double dmax, floa
 {
     ANN(axes);
 
-    bool horizontal = which == DVZ_TICKS_HORIZONTAL;
+    bool horizontal = which == DVZ_TICKS_FLAGS_HORIZONTAL;
 
     log_error("compute axis %d: %f %f, %f %f", !horizontal, dmin, dmax, vmin, vmax);
 
@@ -284,8 +284,8 @@ DvzAxes* dvz_axes(DvzPanel* panel, int flags)
     axis_vertical_params(axes->yaxis);
 
     // Initial.
-    compute_ticks(axes, DVZ_TICKS_HORIZONTAL, -1, 1, -1, 1);
-    compute_ticks(axes, DVZ_TICKS_VERTICAL, -1, 1, -1, 1);
+    compute_ticks(axes, DVZ_TICKS_FLAGS_HORIZONTAL, -1, 1, -1, 1);
+    compute_ticks(axes, DVZ_TICKS_FLAGS_VERTICAL, -1, 1, -1, 1);
 
     // TODO: margins.
     dvz_panel_margins(panel, 20, 20, 120, 120);
@@ -342,7 +342,7 @@ bool dvz_axes_xset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc)
     // TODO: set the MVP so that the visible range is the one specified, given the ref
     ANN(axes);
     return compute_ticks(
-        axes, DVZ_TICKS_HORIZONTAL, //
+        axes, DVZ_TICKS_FLAGS_HORIZONTAL, //
         range_data[0], range_data[1], range_ndc[0], range_ndc[1]);
 }
 
@@ -353,7 +353,7 @@ bool dvz_axes_yset(DvzAxes* axes, dvec2 range_data, vec2 range_ndc)
     // TODO: set the MVP so that the visible range is the one specified, given the ref
     ANN(axes);
     return compute_ticks(
-        axes, DVZ_TICKS_VERTICAL, //
+        axes, DVZ_TICKS_FLAGS_VERTICAL, //
         range_data[0], range_data[1], range_ndc[0], range_ndc[1]);
 }
 

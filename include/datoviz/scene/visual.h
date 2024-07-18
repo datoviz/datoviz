@@ -69,18 +69,6 @@ typedef enum
 
 
 
-typedef enum
-{
-    DVZ_PROP_NONE = 0x00,
-
-    // use instance vertex rate so that the same value is used for all vertices
-    DVZ_PROP_CONSTANT = 0x01,
-
-    DVZ_PROP_DYNAMIC = 0x02,
-} DvzPropFlags;
-
-
-
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/

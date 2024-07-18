@@ -49,7 +49,7 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
 {
     ANN(batch);
 
-    flags |= DVZ_VISUALS_FLAGS_INDEXED;
+    flags |= DVZ_VISUAL_FLAGS_INDEXED;
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
 

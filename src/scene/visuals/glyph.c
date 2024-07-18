@@ -55,7 +55,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     ANN(batch);
 
     // NOTE: we force indexed rendering in this visual.
-    flags |= DVZ_VISUALS_FLAGS_INDEXED;
+    flags |= DVZ_VISUAL_FLAGS_INDEXED;
 
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, flags);
     ANN(visual);
