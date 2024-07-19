@@ -16,4 +16,4 @@
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-const char* dvz_version(void) { return (DATOVIZ_VERSION); }
+const char* dvz_version(void) { return (DVZ_VERSION); }

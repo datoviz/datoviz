@@ -1,3 +1,4 @@
+import re
 import json
 from textwrap import dedent
 from pathlib import Path
@@ -71,7 +72,22 @@ def map_ctype(dtype, enum_int=False):
         return dtype
 
 
-def generate_ctypes_bindings(headers_json_path, output_path):
+def extract_version(version_path):
+    with open(version_path, 'r') as f:
+        version_contents = f.read()
+    major = int(re.compile(
+        r"#define DVZ_VERSION_MAJOR ([0-9a-z\.]+)").search(version_contents).group(1))
+    minor = int(re.compile(
+        r"#define DVZ_VERSION_MINOR ([0-9a-z\.]+)").search(version_contents).group(1))
+    patch = int(re.compile(
+        r"#define DVZ_VERSION_PATCH ([0-9a-z\.]+)").search(version_contents).group(1))
+    version = f"{major}.{minor}.{patch}"
+    return version
+
+
+def generate_ctypes_bindings(headers_json_path, output_path, version_path):
+    version = extract_version(version_path)
+
     with open(headers_json_path, 'r') as file:
         data = json.load(file)
 
@@ -171,7 +187,8 @@ def generate_ctypes_bindings(headers_json_path, output_path):
                     f.readline()
                 file.write(f.read())
 
-        file.write('"""WARNING: DO NOT EDIT: automatically-generated file"""\n')
+        file.write('"""WARNING: DO NOT EDIT: automatically-generated file"""\n\n')
+        file.write(f'__version__ = "{version}"\n')
         _include_py(file, "ctypes_header.py")
         file.write(f"\n\n{out}")
         _include_py(file, "ctypes_footer.py")
@@ -180,5 +197,6 @@ def generate_ctypes_bindings(headers_json_path, output_path):
 if __name__ == "__main__":
     headers_json_path = ROOT_DIR / 'tools/headers.json'
     output_path = ROOT_DIR / 'datoviz/__init__.py'
+    version_path = ROOT_DIR / 'include/datoviz_version.h'
 
-    generate_ctypes_bindings(headers_json_path, output_path)
+    generate_ctypes_bindings(headers_json_path, output_path, version_path)

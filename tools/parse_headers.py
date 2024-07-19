@@ -190,6 +190,7 @@ def parse_functions(text):
         Optional(Suppress("DVZ_INLINE"))
     signature = Optional(static("static")) + \
         Optional(inline("inline")) + \
+        Optional(const("const")) + \
         dtype("out") + \
         identifier("name") + \
         LPAR + args("args") + RPAR + \

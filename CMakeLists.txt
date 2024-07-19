@@ -13,8 +13,8 @@ include(ExternalProject)
 # -------------------------------------------------------------------------------------------------
 # Datoviz project
 # -------------------------------------------------------------------------------------------------
-set(DATOVIZ_VERSION 0.2.0)
-project(datoviz VERSION ${DATOVIZ_VERSION} DESCRIPTION "datoviz")
+set(DVZ_VERSION 0.2.0)
+project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 
 # -------------------------------------------------------------------------------------------------
 # Datoviz options
@@ -717,7 +717,7 @@ add_library(libdatoviz SHARED
 add_dependencies(libdatoviz shaders fonts textures)
 
 set_target_properties(libdatoviz PROPERTIES
-    VERSION ${DATOVIZ_VERSION}
+    VERSION ${DVZ_VERSION}
     SOVERSION 2
     PUBLIC_HEADER include/datoviz.h
     OUTPUT_NAME "datoviz"

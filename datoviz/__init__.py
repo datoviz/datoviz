@@ -1,5 +1,7 @@
 """WARNING: DO NOT EDIT: automatically-generated file"""
 
+__version__ = "0.2.0"
+
 
 # ===============================================================================
 # Imports
@@ -172,7 +174,6 @@ V_ = WrappedValue
 # DEFINES
 # ===============================================================================
 
-DATOVIZ_VERSION_MINOR = 2
 M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
 M_PI2 = 1.5707963267948966
@@ -200,6 +201,7 @@ CMAP_COUNT = 256
 CMAP_CUSTOM_COUNT = 16
 CMAP_CUSTOM = 160
 CPAL256_CUSTOM = 224
+DVZ_VERSION_MINOR = 2
 
 
 # ===============================================================================
@@ -949,6 +951,17 @@ resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWin
 # ===============================================================================
 # FUNCTIONS
 # ===============================================================================
+
+# Function dvz_demo()
+demo = dvz.dvz_demo
+demo.argtypes = [
+]
+
+# Function dvz_version()
+version = dvz.dvz_version
+version.argtypes = [
+]
+version.restype = ctypes.c_char_p
 
 # Function dvz_app()
 app = dvz.dvz_app
@@ -2484,11 +2497,6 @@ panzoom_mvp = dvz.dvz_panzoom_mvp
 panzoom_mvp.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
-]
-
-# Function dvz_demo()
-demo = dvz.dvz_demo
-demo.argtypes = [
 ]
 
 # Function dvz_gui_pos()

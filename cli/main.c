@@ -45,7 +45,7 @@ static int test(int argc, char** argv)
 
 static int info(int argc, char** argv)
 {
-    // TODO
+    printf("%s version %s\n", DVZ_NAME, dvz_version());
     return 0;
 }
 
