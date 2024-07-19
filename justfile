@@ -193,6 +193,9 @@ bump version:
     rm $TOML_FILE.bak
     echo "Updated $TOML_FILE"
 
+    just ctypes
+    echo "Updated ctypes wrapper"
+
 #
 
 
