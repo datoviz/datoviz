@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "datoviz"
 dependencies = []
 version = "0.2.0"
-description = "Datoviz: A visualization library."
+description = "A C library for high-performance GPU scientific visualization"
 authors = [
     { name = "Cyrille Rossant", email = "cyrille.rossant@datoviz.com" }
 ]
