@@ -1,9 +1,7 @@
 # -------------------------------------------------------------------------------------------------
 # Constants
-# TODO: move these elsewhere?
 # -------------------------------------------------------------------------------------------------
 
-VERSION := "0.2.0"
 MAINTAINER := "Cyrille Rossant <cyrille.rossant@gmail.com>"
 DESCRIPTION := "A C library for high-performance GPU scientific visualization"
 
@@ -130,6 +128,73 @@ pydev: # install the Python binding on a development machine
     @pip install -e .
 #
 
+getversion:
+    #!/usr/bin/env sh
+    VERSION=$(awk '
+    /#define DVZ_VERSION_MAJOR/ { major = $3 }
+    /#define DVZ_VERSION_MINOR/ { minor = $3 }
+    /#define DVZ_VERSION_PATCH/ { patch = $3 }
+    END { print major "." minor "." patch }
+    ' "include/datoviz_version.h")
+    echo ${VERSION}
+#
+
+bump version:
+    #!/usr/bin/env sh
+    # x@="$(just getversion)"
+    IFS='.' read -r -a VERSION_PARTS <<< "{{version}}"
+    MAJOR=${VERSION_PARTS[0]}
+    MINOR=${VERSION_PARTS[1]}
+    PATCH=${VERSION_PARTS[2]}
+
+    # Update the include file with the new version numbers
+    INCLUDE_FILE="include/datoviz_version.h"
+    cp $INCLUDE_FILE $INCLUDE_FILE.bak
+    awk -v major=$MAJOR -v minor=$MINOR -v patch=$PATCH '
+    {
+    if ($2 == "DVZ_VERSION_MAJOR") {
+    print "#define DVZ_VERSION_MAJOR " major;
+    } else if ($2 == "DVZ_VERSION_MINOR") {
+    print "#define DVZ_VERSION_MINOR " minor;
+    } else if ($2 == "DVZ_VERSION_PATCH") {
+    print "#define DVZ_VERSION_PATCH " patch;
+    } else {
+    print $0;
+    }
+    }' $INCLUDE_FILE.bak > $INCLUDE_FILE
+    rm $INCLUDE_FILE.bak
+    echo "Updated $INCLUDE_FILE"
+
+    # Update the CITATION.cff file with the new version number
+    CITATION_FILE="CITATION.cff"
+    cp $CITATION_FILE $CITATION_FILE.bak
+    awk -v version="{{version}}" '
+    {
+        if ($1 == "version:") {
+            print "version: " version;
+        } else {
+            print $0;
+        }
+    }' $CITATION_FILE.bak > $CITATION_FILE
+    rm $CITATION_FILE.bak
+    echo "Updated $CITATION_FILE"
+
+    # Update the pyproject.toml file with the new version number
+    TOML_FILE="pyproject.toml"
+    cp $TOML_FILE $TOML_FILE.bak
+    awk -v version="{{version}}" '
+    {
+        if ($1 == "version" && $2 == "=") {
+            print "version = \"" version "\"";
+        } else {
+            print $0;
+        }
+    }' $TOML_FILE.bak > $TOML_FILE
+    rm $TOML_FILE.bak
+    echo "Updated $TOML_FILE"
+
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
@@ -185,6 +250,7 @@ libdemo:
 
 python *args:
     @PYTHONPATH=. python {{args}}
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -295,7 +361,7 @@ deb: checkstructs
 
     # Create the control file.
     echo "Package: datoviz
-    Version: {{VERSION}}
+    Version: $(just getversion)
     Section: libs
     Priority: optional
     Architecture: amd64
@@ -336,7 +402,7 @@ deb: checkstructs
     rm -rf "$TEMP_DIR"
 
     # Move it.
-    mv packaging/deb.deb packaging/datoviz_{{VERSION}}_amd64.deb
+    mv packaging/deb.deb packaging/datoviz_$(just getversion)_amd64.deb
     rm -rf $DEB
 #
 
@@ -464,7 +530,7 @@ pkg: checkstructs
     otool -l "$LIB" | awk '/LC_RPATH/ {getline; getline; print $2}'
 
     # Build the package.
-    pkgbuild --root $PKGROOT --scripts $PKGSCRIPTS --identifier com.datoviz --version {{VERSION}} --install-location / $PKG/datoviz.pkg
+    pkgbuild --root $PKGROOT --scripts $PKGSCRIPTS --identifier com.datoviz --version $(just getversion) --install-location / $PKG/datoviz.pkg
     # NOTE: unneeded:
     # productbuild --package-path $PKG --package $PKG/datoviz.pkg $PKG/datoviz_installer.pkg
 
@@ -474,7 +540,7 @@ pkg: checkstructs
     tree . -ugh && cd -
 
     # Move it.
-    cp $PKG/datoviz.pkg packaging/datoviz_{{VERSION}}.pkg
+    cp $PKG/datoviz.pkg packaging/datoviz_$(just getversion).pkg
     rm -rf $PKGROOT $PKG $PKGSCRIPTS
     rmdir packaging/pkgroot
 #
@@ -486,13 +552,13 @@ testpkg vm_ip_address:
     TMPDIR=/tmp/datoviz_example
 
     # Check if the pkg package exists, if not, build it
-    if [ ! -f packaging/datoviz_{{VERSION}}.pkg ]; then
+    if [ ! -f packaging/datoviz_$(just getversion).pkg ]; then
         just pkg
     fi
 
     # Copy the .pkg file to the VM
     ssh -T $USER@$IP "mkdir -p $TMPDIR && rm -rf $TMPDIR/*"
-    scp packaging/datoviz_{{VERSION}}.pkg \
+    scp packaging/datoviz_$(just getversion).pkg \
         examples/scatter.c \
         $USER@$IP:$TMPDIR
 
@@ -500,7 +566,7 @@ testpkg vm_ip_address:
     ssh -T $USER@$IP << 'EOF'
     # Install the .pkg package
     TMPDIR=/tmp/datoviz_example
-    echo "$USER" | sudo -S installer -pkg $TMPDIR/datoviz_{{VERSION}}.pkg -target /
+    echo "$USER" | sudo -S installer -pkg $TMPDIR/datoviz_$(just getversion).pkg -target /
     cd $TMPDIR
     ls -la $TMPDIR
     clang -o $TMPDIR/example_scatter $TMPDIR/scatter.c \
@@ -740,7 +806,7 @@ testwheel vm_ip_address:
     # Connect to the VM and install the .pkg file
     ssh -T $USER@$IP << 'EOF'
     TMPDIR=/tmp/datoviz_example
-    WHEEL_FILENAME="datoviz-{{VERSION}}-py3-none-any.whl"
+    WHEEL_FILENAME="datoviz-$(just getversion)-py3-none-any.whl"
     PYTHONPATH=~/.local/lib/python3.8/site-packages
     mkdir -p $PYTHONPATH
     python3 -m pip install "$TMPDIR/$WHEEL_FILENAME" --upgrade --target $PYTHONPATH
