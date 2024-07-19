@@ -326,7 +326,7 @@ deb: checkstructs
     rm -rf "$TEMP_DIR"
 
     # Move it.
-    mv packaging/deb.deb packaging/datoviz_0.2.0_amd64.deb
+    mv packaging/deb.deb packaging/datoviz_{{VERSION}}_amd64.deb
     rm -rf $DEB
 #
 
@@ -730,7 +730,7 @@ testwheel vm_ip_address:
     # Connect to the VM and install the .pkg file
     ssh -T $USER@$IP << 'EOF'
     TMPDIR=/tmp/datoviz_example
-    WHEEL_FILENAME="datoviz-0.2.0-py3-none-any.whl"
+    WHEEL_FILENAME="datoviz-{{VERSION}}-py3-none-any.whl"
     PYTHONPATH=~/.local/lib/python3.8/site-packages
     mkdir -p $PYTHONPATH
     python3 -m pip install "$TMPDIR/$WHEEL_FILENAME" --upgrade --target $PYTHONPATH

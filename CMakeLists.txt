@@ -177,35 +177,33 @@ if(${OS_MACOS})
     set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/macos")
     set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/macos")
     set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.dylib")
-    
+
     find_program(GLSLC "glslc"
         HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
 elseif(${OS_WIN32})
-    #set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/windows")
-    #set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/windows")
-    #set(VULKAN_LIB "${VULKAN_DIR}/vulkan-1.dll")
+    # set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/windows")
+    # set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/windows")
+    # set(VULKAN_LIB "${VULKAN_DIR}/vulkan-1.dll")
     find_package(Vulkan REQUIRED)
     set(LINK_LIBS ${LINK_LIBS} "$ENV{VULKAN_SDK}/lib/vulkan-1.lib")
-    
+
     find_program(GLSLC "glslc"
         HINTS "$ENV{VULKAN_SDK}/bin" REQUIRED)
 else()
     set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/linux")
     set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/linux")
     set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.so")
-    
+
     # HACK for manylinux almalinux 8
     if(NOT EXISTS "${VULKAN_LIB}")
         set(VULKAN_LIB "/usr/lib64/libvulkan.so.1")
     endif()
-    
+
     find_program(GLSLC "glslc"
         HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
 endif()
 
-
 set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
-
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -566,6 +564,7 @@ set_target_properties(external_sources PROPERTIES C_VISIBILITY_PRESET hidden)
 add_library(datoviz_core OBJECT
 
     # Utils
+    "src/_version.c"
     "src/_atomic.cpp"
     "src/_list.c"
     "src/_map.cpp"
@@ -748,10 +747,9 @@ target_link_libraries(libdatoviz
 
 set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
 
-#if(${OS_WIN32})
-#    set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
-#endif()
-
+# if(${OS_WIN32})
+# set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
+# endif()
 
 # -------------------------------------------------------------------------------------------------
 # CLI tool
@@ -853,7 +851,6 @@ if(DATOVIZ_WITH_CLI)
 
     set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
 endif()
-
 
 # -------------------------------------------------------------------------------------------------
 # Struct sizes check tool

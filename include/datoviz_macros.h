@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "datoviz_version.h"
+
 
 
 /*************************************************************************************************/
@@ -47,10 +49,6 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
-
-#define DATOVIZ_VERSION_MAJOR 0
-#define DATOVIZ_VERSION_MINOR 2
-#define DATOVIZ_VERSION_PATCH 0
 
 #ifndef DVZ_EXPORT
 #if CC_MSVC
