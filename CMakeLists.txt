@@ -11,9 +11,31 @@ include(FetchContent)
 include(ExternalProject)
 
 # -------------------------------------------------------------------------------------------------
+# Extract version number from include/datoviz_version.h
+# -------------------------------------------------------------------------------------------------
+
+# Read the version header file
+set(VERSION_HEADER_FILE "${CMAKE_SOURCE_DIR}/include/datoviz_version.h")
+file(READ "${VERSION_HEADER_FILE}" VERSION_CONTENTS)
+
+# Extract major version
+string(REGEX MATCH "#define DVZ_VERSION_MAJOR ([0-9]+)" _ ${VERSION_CONTENTS})
+set(DVZ_VERSION_MAJOR ${CMAKE_MATCH_1})
+
+# Extract minor version
+string(REGEX MATCH "#define DVZ_VERSION_MINOR ([0-9]+)" _ ${VERSION_CONTENTS})
+set(DVZ_VERSION_MINOR ${CMAKE_MATCH_1})
+
+# Extract patch version
+string(REGEX MATCH "#define DVZ_VERSION_PATCH ([0-9]+)" _ ${VERSION_CONTENTS})
+set(DVZ_VERSION_PATCH ${CMAKE_MATCH_1})
+
+# Optionally, you can set the project version
+set(DVZ_VERSION "${DVZ_VERSION_MAJOR}.${DVZ_VERSION_MINOR}.${DVZ_VERSION_PATCH}")
+
+# -------------------------------------------------------------------------------------------------
 # Datoviz project
 # -------------------------------------------------------------------------------------------------
-set(DVZ_VERSION 0.2.0)
 project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 
 # -------------------------------------------------------------------------------------------------
