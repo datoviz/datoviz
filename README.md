@@ -2,14 +2,15 @@
 
 <!-- INTRODUCTION -->
 
-**Datoviz** is an open-source **high-performance GPU scientific data visualization C/C++ library**. Designed for speed, visual quality, and scalability for interactive exploration of large datasets, it supports 2D/3D rendering and GUIs.
+**Datoviz** is an open-source, high-performance GPU scientific data visualization library written in C/C++. Designed for speed, visual quality, and scalability, it supports 2D/3D interactive rendering of large datasets and GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-Although its inception and development occurred over a long history spanning more than a decade, Datoviz is still an **early stage library** that would now benefit from increased community feedback.
+Despite its roots dating back over 10 years, Datoviz remains an early-stage library that would greatly benefit from increased community feedback.
 
-The experimental [**v0.1x version**](https://datoviz.org/) was released in 2021. The **v0.2x version** is now available (in a separate git branch) to audacious users for early testing and community feedback.
+The experimental [**v0.1x version**](https://datoviz.org/) was released in 2021.
 
-The medium-term plan is to **rebuild VisPy 2.0 on top of Datoviz** (and possibly other renderers via a shared intermediate-level graphics protocol).
+The **v0.2x version** is now available (in a separate Git branch) for adventurous users to test and provide feedback.
 
+Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API that supports a Datoviz renderer, as well as a Matplotlib renderer and potentially others.
 
 
 <!-- SCREENSHOTS -->
@@ -32,13 +33,13 @@ The medium-term plan is to **rebuild VisPy 2.0 on top of Datoviz** (and possibly
 * **High-level interactivity**: pan & zoom, mouse arcball
 * **Subplots** organized in a grid layout
 
-Work in progress:
+Work in progress (currently planned for **v0.3**):
 
 * **Axes**: ticks, grids, labels
 * **GUIs**
 * **Custom visuals**, with custom shaders and/or custom data transformations
 
-Future work:
+Future work (planned for **v0.4+**):
 
 * **More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs...
 * **Picking**
@@ -49,15 +50,16 @@ Future work:
 
 
 <!-- HISTORY AND STATUS -->
+
 ## Overview
 
-### Current Status
+### Current status
 
 In 2021, the [first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/).
 
-In 2024, version **v0.2x** was released. This version has been redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
+In 2024, version **v0.2x** was released. This version has been redesigned from the ground up to enhance modularity and stability, and ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
 
-### History and Status
+### History and status
 
 In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
 
@@ -69,7 +71,7 @@ Following an experimental release in **2021**, the technology matured over the n
 
 <!-- NEW VERSION -->
 
-### New v0.2x Version and Long-term Vision
+### New v0.2x version and long-term Vision
 
 In **2024**, thanks to a second [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to the VisPy project in 2024, a redesigned **v0.2x** version was released for testing and community feedback. It features a redesigned architecture that will allow us to port Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
@@ -114,6 +116,8 @@ TODO.
 Work in progress.
 
 * [Architecture overview](ARCHITECTURE.md)
+* [API reference](docs/api.md)
+* [Examples](examples/)
 
 
 
@@ -176,6 +180,8 @@ just example scatter
 
 ### Windows
 
+_Note_: we have less experience with Windows, improvements welcome.
+
 1. Install Git for Windows. You'll use the Git Bash console later.
 2. Install [WinLibs](https://winlibs.com/). Download and install the latest gcc UCRT version with POSIX threads.
 3. Download and decompress [just](https://github.com/casey/just/releases).
@@ -221,11 +227,11 @@ Before calling `just testpkg`, you need to follow several steps to prepare a vir
     brew install sshpass
     ```
 
-2. Install UTM.
+2. Install [UTM](https://mac.getutm.app/).
 3. Create a new macOS virtual machine (VM) with **at least 64 GB storage** (for Xcode).
 4. Install macOS in the virtual machine. For simplicity, use your $USER as the login and password.
-5. Once installed, find the IP address in the VM system preferences and write it down (for example, 192.168.64.4).
-6. Set up remote access via SSH in the VM system preferences to set up a SSH server.
+5. Once installed, find the IP address in the VM macOS system preferences and write it down (for example, 192.168.64.4).
+6. Set up remote access via SSH in the VM macOS system preferences to set up a SSH server.
 7. Open a terminal in the VM and type:
 
     ```bash
@@ -234,6 +240,8 @@ Before calling `just testpkg`, you need to follow several steps to prepare a vir
 
 #### Build and test the macOS package
 
+Go back to the host machine and type:
+
 ```bash
 # Generate a .pkg package in packaging/
 just pkg
@@ -241,7 +249,7 @@ just pkg
 # Test the .pkg installation in an UTM virtual machine, using the IP address you wrote down earlier.
 just testpkg 192.168.64.4
 
-# In the virtual machine, run in a terminal `/tmp/datoviz_example/example_scatter`.
+# Go to the virtual machine, and run in a terminal `/tmp/datoviz_example/example_scatter`.
 ```
 
 
@@ -254,11 +262,11 @@ TODO.
 
 ## Python packaging instructions
 
-This section provides instructions for maintainers who need to create Python wheel packages.
+This section provides instructions for maintainers who want to create Python wheel packages.
 
 ### Ubuntu 24.04
 
-You need to install Docker to generate the wheels on a manylinux container. We have only used manylinux_2_28_x86_64 so far (based on AlmaLinux 8).
+You need to install Docker to generate the wheels on a manylinux container. We have only used `manylinux_2_28_x86_64` so far (based on AlmaLinux 8).
 
 ```bash
 # First, build Datoviz in the manylinux container.
@@ -273,6 +281,15 @@ just showwheel
 # Try installing and running the wheel in an Ubuntu container.
 just testwheel
 ```
+
+### macOS (arm46)
+
+TODO.
+
+
+### Windows
+
+TODO.
 
 
 <!-- DEVELOPER -->
