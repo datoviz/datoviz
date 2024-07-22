@@ -36,7 +36,8 @@ DvzTransform* dvz_transform(DvzBatch* batch, int flags)
     dvz_batch_desc(batch, "MVP");
 
     // Initialize the MVP on initialization.
-    dvz_transform_set(tr, dvz_mvp_default());
+    DvzMVP mvp = dvz_mvp_default();
+    dvz_transform_set(tr, &mvp);
     dvz_transform_update(tr);
 
     return tr;
@@ -44,14 +45,14 @@ DvzTransform* dvz_transform(DvzBatch* batch, int flags)
 
 
 
-void dvz_transform_set(DvzTransform* tr, DvzMVP mvp)
+void dvz_transform_set(DvzTransform* tr, DvzMVP* mvp)
 {
     // This function sets the DvzMVP structure on the CPU.
 
     ANN(tr);
 
     // NOTE: this is safe, &mvp is immediately copied internally in the dual.
-    dvz_dual_data(&tr->dual, 0, 1, &mvp);
+    dvz_dual_data(&tr->dual, 0, 1, mvp);
 }
 
 

@@ -14,6 +14,7 @@
 #include "_cglm.h"
 #include "_log.h"
 #include "datoviz_math.h"
+#include "datoviz_types.h"
 #include "scene/camera.h"
 #include "scene/mvp.h"
 
@@ -56,7 +57,7 @@ struct DvzCamera
 
     // zrange
     float near;
-    float far; 
+    float far;
 
     float aspect;
     // TODO: use type and union?

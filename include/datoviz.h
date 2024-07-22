@@ -359,6 +359,22 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
 
 /*************************************************************************************************/
+/*  MVP                                                                                          */
+/*************************************************************************************************/
+
+/**
+ * Create a MVP structure.
+ *
+ * @param model the model matrix
+ * @param view the view matrix
+ * @param proj the projection matrix
+ * @returns the MVP structure
+ */
+DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
+
+
+
+/*************************************************************************************************/
 /*  Panel                                                                                        */
 /*************************************************************************************************/
 
@@ -392,6 +408,28 @@ DVZ_EXPORT DvzPanel* dvz_panel_default(DvzFigure* fig);
  * @param tr the transform
  */
 DVZ_EXPORT void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr);
+
+
+
+/**
+ * Assign a MVP structure to a panel.
+ *
+ * @param panel the panel
+ * @param mvp a pointer to the MVP structure
+ */
+DVZ_EXPORT void dvz_panel_mvp(DvzPanel* panel, DvzMVP* mvp);
+
+
+
+/**
+ * Assign the model-view-proj matrices to a panel.
+ *
+ * @param panel the panel
+ * @param model the model matrix
+ * @param view the view matrix
+ * @param proj the projection matrix
+ */
+DVZ_EXPORT void dvz_panel_mvpmat(DvzPanel* panel, mat4 model, mat4 view, mat4 proj);
 
 
 
@@ -453,6 +491,7 @@ DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
 DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
 
 
+
 /**
  * Set panzoom interactivity for a panel.
  *
@@ -460,6 +499,7 @@ DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
  * @returns the panzoom
  */
 DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
+
 
 
 /**

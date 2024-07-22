@@ -14,6 +14,7 @@
 #include "_cglm.h"
 #include "_log.h"
 #include "datoviz_math.h"
+#include "datoviz_types.h"
 #include "scene/mvp.h"
 #include "scene/panzoom.h"
 

@@ -24,6 +24,8 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzMVP DvzMVP;
+
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
 typedef union DvzMouseEventUnion DvzMouseEventUnion;
@@ -221,6 +223,16 @@ typedef enum
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzMVP
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+    float time;
+};
+
+
 
 struct DvzKeyboardEvent
 {

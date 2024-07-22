@@ -280,6 +280,25 @@ void dvz_panel_transform(DvzPanel* panel, DvzTransform* tr)
 
 
 
+void dvz_panel_mvp(DvzPanel* panel, DvzMVP* mvp)
+{
+    ANN(panel);
+    ANN(panel->transform);
+    ANN(mvp);
+    dvz_transform_set(panel->transform, mvp);
+}
+
+
+
+void dvz_panel_mvpmat(DvzPanel* panel, mat4 model, mat4 view, mat4 proj)
+{
+    ANN(panel);
+    DvzMVP mvp = dvz_mvp(model, view, proj);
+    dvz_panel_mvp(panel, &mvp);
+}
+
+
+
 void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float height)
 {
     ANN(panel);

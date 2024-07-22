@@ -838,6 +838,15 @@ class DvzShape(ctypes.Structure):
     ]
 
 
+class DvzMVP(ctypes.Structure):
+    _fields_ = [
+        ("model", ctypes.c_float * 16),
+        ("view", ctypes.c_float * 16),
+        ("proj", ctypes.c_float * 16),
+        ("time", ctypes.c_float),
+    ]
+
+
 class DvzKeyboardEvent(ctypes.Structure):
     _fields_ = [
         ("type", ctypes.c_int32),
@@ -1135,6 +1144,15 @@ figure_destroy.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
 ]
 
+# Function dvz_mvp()
+mvp = dvz.dvz_mvp
+mvp.argtypes = [
+    ctypes.c_float * 16,  # mat4 model
+    ctypes.c_float * 16,  # mat4 view
+    ctypes.c_float * 16,  # mat4 proj
+]
+mvp.restype = DvzMVP
+
 # Function dvz_panel()
 panel = dvz.dvz_panel
 panel.argtypes = [
@@ -1158,6 +1176,22 @@ panel_transform = dvz.dvz_panel_transform
 panel_transform.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.POINTER(DvzTransform),  # DvzTransform* tr
+]
+
+# Function dvz_panel_mvp()
+panel_mvp = dvz.dvz_panel_mvp
+panel_mvp.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
+]
+
+# Function dvz_panel_mvpmat()
+panel_mvpmat = dvz.dvz_panel_mvpmat
+panel_mvpmat.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_float * 16,  # mat4 model
+    ctypes.c_float * 16,  # mat4 view
+    ctypes.c_float * 16,  # mat4 proj
 ]
 
 # Function dvz_panel_resize()

@@ -9,12 +9,24 @@
 
 #include "scene/mvp.h"
 #include "_cglm.h"
+#include "datoviz.h"
 
 
 
 /*************************************************************************************************/
 /*  MVP functions                                                                                */
 /*************************************************************************************************/
+
+DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj)
+{
+    DvzMVP mvp = {0};
+    glm_mat4_copy(model, mvp.model);
+    glm_mat4_copy(view, mvp.view);
+    glm_mat4_copy(proj, mvp.proj);
+    return mvp;
+}
+
+
 
 DvzMVP dvz_mvp_default(void)
 {

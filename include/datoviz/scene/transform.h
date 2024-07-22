@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz_types.h"
 #include "dual.h"
 #include "mvp.h"
 
@@ -69,7 +70,7 @@ DvzTransform* dvz_transform(DvzBatch* batch, int flags);
 /**
  *
  */
-void dvz_transform_set(DvzTransform* tr, DvzMVP mvp);
+void dvz_transform_set(DvzTransform* tr, DvzMVP* mvp);
 
 
 

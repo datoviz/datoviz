@@ -14,6 +14,7 @@
 #include "../_enums.h"
 #include "../_log.h"
 #include "datoviz_math.h"
+#include "datoviz_types.h"
 #include "mvp.h"
 #include "viewport.h"
 
