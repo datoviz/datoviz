@@ -359,6 +359,7 @@ int dvz_run_tests(const char* match)
     TEST(test_scene_1)
     TEST(test_scene_2)
     TEST(test_scene_3)
+    TEST(test_scene_offscreen)
 
     // Visual tests.
     TEST(test_basic_1)

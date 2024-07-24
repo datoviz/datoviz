@@ -59,6 +59,19 @@ typedef void (*DvzAppResizeCallback)(DvzApp* app, DvzId window_id, DvzWindowEven
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+// App creation flags.
+typedef enum
+{
+    DVZ_APP_FLAGS_NONE = 0x000000,
+    DVZ_APP_FLAGS_OFFSCREEN = 0x000001,
+
+    // NOTE: must match DVZ_RENDERER_FLAGS_WHITE_BACKGROUND
+    DVZ_APP_FLAGS_WHITE_BACKGROUND = 0x100000,
+
+} DvzAppFlags;
+
+
+
 // Canvas creation flags.
 typedef enum
 {

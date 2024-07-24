@@ -334,6 +334,12 @@ class DvzKeyCode(CtypesEnum):
     DVZ_KEY_LAST = 348
 
 
+class DvzAppFlags(CtypesEnum):
+    DVZ_APP_FLAGS_NONE = 0x000000
+    DVZ_APP_FLAGS_OFFSCREEN = 0x000001
+    DVZ_APP_FLAGS_WHITE_BACKGROUND = 0x100000
+
+
 class DvzCanvasFlags(CtypesEnum):
     DVZ_CANVAS_FLAGS_NONE = 0x0000
     DVZ_CANVAS_FLAGS_IMGUI = 0x0001

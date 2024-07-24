@@ -451,7 +451,7 @@ int test_app_pixel(TstSuite* suite)
     dvz_visual_viewport(pixel, &viewport);
 
 
-    // Create a board.
+    // Create a canvas.
     DvzRequest req = dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
     DvzId canvas_id = req.id;
 

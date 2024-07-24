@@ -25,6 +25,8 @@ int test_scene_2(TstSuite*);
 
 int test_scene_3(TstSuite*);
 
+int test_scene_offscreen(TstSuite*);
+
 
 
 #endif

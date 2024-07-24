@@ -136,7 +136,7 @@ To build an application using Datoviz:
 
 TODO.
 
-### Technical notes to C/C++ developers
+### Technical notes for C/C++ developers
 
 * **🧠 Memory management.** Datoviz uses opaque pointers and manages its own memory. While we have taken great care in proper memory allocation, C is inherently unsafe. Porting the relatively light high-level code of Datoviz (scene API) to a more modern and safer language may be considered in the future.
 * **💻 C/C++ usage.** Datoviz employs a restricted and straightforward usage of C, with very limited C++ functionality (mostly common dynamic data structures, in ~10% of the code).

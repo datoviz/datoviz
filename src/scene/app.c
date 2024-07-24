@@ -9,6 +9,7 @@
 
 #include "scene/app.h"
 #include "../render_utils.h"
+#include "board.h"
 #include "client.h"
 #include "datoviz.h"
 #include "fileio.h"
@@ -160,7 +161,12 @@ DvzApp* dvz_app(int flags)
 {
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
 
-    app->host = dvz_host(BACKEND);
+    DvzBackend backend = BACKEND;
+    if ((flags & DVZ_APP_FLAGS_OFFSCREEN) != 0)
+    {
+        backend = DVZ_BACKEND_OFFSCREEN;
+    }
+    app->host = dvz_host(backend);
     ANN(app->host);
 
     app->gpu = make_gpu(app->host);
@@ -169,7 +175,7 @@ DvzApp* dvz_app(int flags)
     app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
 
-    app->client = dvz_client(BACKEND);
+    app->client = dvz_client(backend);
     ANN(app->client);
 
     app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
@@ -177,6 +183,7 @@ DvzApp* dvz_app(int flags)
 
     app->batch = dvz_batch();
     ANN(app->batch);
+    app->batch->flags = flags; // Pass the app flags to the batch flags.
 
     app->timer = dvz_timer();
     ANN(app->timer);
@@ -408,14 +415,30 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
     DvzRenderer* rd = app->rd;
     ANN(rd);
 
-    DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
-    ANN(canvas);
+    if (app->host->backend == DVZ_BACKEND_GLFW)
+    {
+        DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
+        ANN(canvas);
 
-    // Get the canvas image buffer.
-    uint8_t* rgb = dvz_canvas_download(canvas);
+        // Get the canvas image buffer.
+        uint8_t* rgb = dvz_canvas_download(canvas);
 
-    // Save to a PNG.
-    dvz_write_png(filename, canvas->width, canvas->height, rgb);
+        // Save to a PNG.
+        dvz_write_png(filename, canvas->width, canvas->height, rgb);
+    }
+    else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        DvzBoard* board = dvz_renderer_board(rd, canvas_id);
+        ANN(board);
+
+        // Get the board image buffer.
+        uint8_t* rgb = dvz_board_alloc(board);
+        dvz_board_download(board, board->size, rgb);
+
+        // Save to a PNG.
+        dvz_write_png(filename, board->width, board->height, rgb);
+        dvz_board_free(board);
+    }
 }
 
 

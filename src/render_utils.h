@@ -44,7 +44,15 @@ static DvzGpu* make_gpu(DvzHost* host)
 
     _default_queues(gpu, true);
     dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
-    dvz_gpu_create_with_surface(gpu);
+
+    if (host->backend == DVZ_BACKEND_GLFW)
+    {
+        dvz_gpu_create_with_surface(gpu);
+    }
+    else if (host->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        dvz_gpu_create(gpu, NULL);
+    }
 
     return gpu;
 }

@@ -120,8 +120,18 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     DvzBatch* batch = scene->batch;
     ANN(batch);
 
-    // Create the canvas.
-    DvzRequest req = dvz_create_canvas(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
+    // Check if the batch/app is offscreen.
+    DvzRequest req = {0};
+    if ((batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0)
+    {
+        // Create the board.
+        req = dvz_create_board(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
+    }
+    else
+    {
+        // Create the canvas.
+        req = dvz_create_canvas(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
+    }
     fig->canvas_id = req.id;
 
     // Create the viewset;

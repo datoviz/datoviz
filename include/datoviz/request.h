@@ -279,6 +279,7 @@ struct DvzBatch
     DvzRequest* requests;
 
     DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
+    int flags;
 };
 
 

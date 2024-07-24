@@ -232,3 +232,60 @@ int test_scene_3(TstSuite* suite)
     dvz_app_destroy(app);
     return 0;
 }
+
+
+
+int test_scene_offscreen(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app object.
+    DvzApp* app = dvz_app(DVZ_APP_FLAGS_OFFSCREEN);
+    DvzBatch* batch = dvz_app_batch(app);
+
+    // Create a scene.
+    DvzScene* scene = dvz_scene(batch);
+
+    // Create a figure.
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
+
+    // Create a panel.
+    DvzPanel* panel = dvz_panel_default(figure);
+
+    // Create a visual.
+    DvzVisual* pixel = dvz_pixel(batch, 0);
+    const uint32_t n = 100000;
+    dvz_pixel_alloc(pixel, n);
+
+    // Position.
+    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    dvz_pixel_position(pixel, 0, n, pos, 0);
+
+    // Color.
+    cvec4* color = dvz_mock_color(n, 128);
+    dvz_pixel_color(pixel, 0, n, color, 0);
+
+    // Panzoom.
+    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel);
+    ANN(pz);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(panel, pixel);
+
+    // Run the app.
+    dvz_scene_run(scene, app, 100);
+
+    // Screenshot.
+    char imgpath[1024];
+    snprintf(imgpath, sizeof(imgpath), "%s/scene_offscreen.png", ARTIFACTS_DIR);
+    dvz_app_screenshot(app, figure->canvas_id, imgpath);
+
+    // Cleanup.
+    dvz_panel_destroy(panel);
+    dvz_figure_destroy(figure);
+    dvz_scene_destroy(scene);
+    dvz_app_destroy(app);
+    FREE(pos);
+    FREE(color);
+    return 0;
+}
