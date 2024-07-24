@@ -2,11 +2,11 @@
 
 <!-- INTRODUCTION -->
 
-**Datoviz** is an open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the **Vulkan** graphics API. It provides raw ctypes bindings in **Python**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
+**⚡️ Datoviz** is an open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the **Vulkan** graphics API. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
 
-Designed for speed, visual quality, and scalability to datasets comprising up to $10^6$-$10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
+Designed for speed, visual quality, and scalability to datasets comprising up to $10^6-10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-**Warning:** Datoviz is still in its early stages and would greatly benefit from increased community feedback, especially regarding binaries, packaging, and hardware compatibility. The API is still in flux, so expect regular (but hopefully minimal) breaking changes for now. The current working version is **v0.2** and documentation is only available on GitHub for now. The documentation website is still about the **deprecated v0.1**.
+**⚠️ Warning:** Datoviz is still in its **early stages** and would greatly benefit from increased **community feedback**, especially regarding binaries, packaging, and hardware compatibility. The API is still in flux, so expect regular (but hopefully minimal) **breaking changes** for now. The current working version is **v0.2** and documentation is only available on GitHub for now. The `datoviz.org` documentation website is still about the **deprecated v0.1**. The current version only provides common 2D/3D visuals and basic interactivity for now, no axes yet (coming soon, 90% done).
 
 
 <!-- SCREENSHOTS -->
@@ -22,29 +22,29 @@ Designed for speed, visual quality, and scalability to datasets comprising up to
 
 ## Features
 
-* **High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
-* **3D visuals**: meshes, volumes, volume slices
-* **Mixing 2D and 3D** plots seamlessly in the same window
-* **150 colormaps** included (from matplotlib, colorcet, MATLAB)
-* **High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
-* **Manual control of cameras**: custom interactivity
-* **Subplots** organized in a grid layout
-* **Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
+* **📊 High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
+* **🌐 3D visuals**: meshes, volumes, volume slices
+<!-- * **📊🌐 Mixing 2D and 3D** plots seamlessly in the same window -->
+* **🌈 150 colormaps** included (from matplotlib, colorcet, MATLAB)
+* **🖱️ High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
+* **🎥 Manual control of cameras**: custom interactivity
+* **𓈈 Subplots** organized in a grid layout
+* **🖥️ Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 Work in progress (currently planned for **v0.3**):
 
-* **Axes**: ticks, grids, labels
-* **Color bars**
+* **➕ Axes**: ticks, grids, labels
+* **🎨 Color bars**
 
 Future work (planned for **v0.4+**):
 
-* **More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
-* **Picking**
-* **Nonlinear transforms**
-* **Dynamic shaders**
-* **Compute shaders**
-* **Qt integration**
-* **IPython/Jupyter integration**
+* **📐 More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
+* **🎯 Picking**
+* **📈 Nonlinear transforms**
+* **🖌️ Dynamic shaders**
+* **🧮 Compute shaders**
+* **🖥️ Qt integration**
+* **🐍 IPython/Jupyter integration**
 
 
 ## History and current status
@@ -103,13 +103,13 @@ TODO.
 
 Work in progress.
 
-* [**User guide**](docs/userguide.md)
-* [**API** reference](docs/api.md)
-* [**Examples**](examples/)
-* [**Architecture** overview](ARCHITECTURE.md)
-* [**Build** instructions](BUILD.md)
-* [**Contributors** instructions](CONTRIBUTING.md)
-* [**Maintainers** instructions](MAINTAINERS.md)
+* [**📖 User guide**](docs/userguide.md)
+* [**📚 API** reference](docs/api.md)
+* [**🐍 Examples**](examples/)
+* [**🏛️ Architecture** overview](ARCHITECTURE.md)
+* [**🏗️ Build** instructions](BUILD.md)
+* [**👥 Contributors** instructions](CONTRIBUTING.md)
+* [**🛠️ Maintainers** instructions](MAINTAINERS.md)
 
 
 
@@ -138,12 +138,12 @@ TODO.
 
 ### Technical notes to C/C++ developers
 
-* **Memory management.** Datoviz uses opaque pointers and manages its own memory. While we have taken great care in proper memory allocation, C is inherently unsafe. Porting the relatively light high-level code of Datoviz (scene API) to a more modern and safer language may be considered in the future.
-* **C/C++ usage.** Datoviz employs a restricted and straightforward usage of C, with very limited C++ functionality (mostly common dynamic data structures, in ~10% of the code).
-* **Data copies.** When passing data to visuals, data is copied by default to Datoviz for memory safety reasons. This might impact performance and memory usage when handling large datasets (tens of millions of points). We will soon document how to avoid these extra copies and prevent crashes related to Datoviz accessing deallocated memory.
-* **Modular architecture.** Datoviz v0.2+ features a modular architecture where the low-level Vulkan-specific rendering engine is decoupled from the higher-level visual and interactive logic. A private asynchronous message-based protocol is used internally, enabling a future Javascript/WebAssembly/WebGPU port of Datoviz, which we plan to work on in the coming years.
-* **Contributing.** This modular architecture allows C/C++ contributors without GPU knowledge to propose improvements and new functionality in the higher-level parts.
-* **Bindings.** While we provide raw ctypes bindings in Python to the Datoviz C API, our goal is to implement as much functionality in C/C++ to offer the same functionality to other languages that may provide Datoviz bindings in the future (Julia, Rust, R, MATLAB...).
+* **🧠 Memory management.** Datoviz uses opaque pointers and manages its own memory. While we have taken great care in proper memory allocation, C is inherently unsafe. Porting the relatively light high-level code of Datoviz (scene API) to a more modern and safer language may be considered in the future.
+* **💻 C/C++ usage.** Datoviz employs a restricted and straightforward usage of C, with very limited C++ functionality (mostly common dynamic data structures, in ~10% of the code).
+* **📂 Data copies.** When passing data to visuals, data is copied by default to Datoviz for memory safety reasons. This might impact performance and memory usage when handling large datasets (tens of millions of points). We will soon document how to avoid these extra copies and prevent crashes related to Datoviz accessing deallocated memory.
+* **🏗️ Modular architecture.** Datoviz v0.2+ features a modular architecture where the low-level Vulkan-specific rendering engine is decoupled from the higher-level visual and interactive logic. A private asynchronous message-based protocol is used internally, enabling a future Javascript/WebAssembly/WebGPU port of Datoviz, which we plan to work on in the coming years.
+* **👥 Contributing.** This modular architecture allows C/C++ contributors without GPU knowledge to propose improvements and new functionality in the higher-level parts.
+* **🔗 Bindings.** While we provide raw ctypes bindings in Python to the Datoviz C API, our goal is to implement as much functionality in C/C++ to offer the same functionality to other languages that may provide Datoviz bindings in the future (Julia, Rust, R, MATLAB...).
 
 
 <!-- FUNDING -->
