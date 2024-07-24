@@ -2,20 +2,16 @@
 
 <!-- INTRODUCTION -->
 
-**Datoviz** is an open-source, high-performance GPU scientific data visualization library written in C/C++. Designed for speed, visual quality, and scalability, it supports 2D/3D interactive rendering of large datasets and GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
+**Datoviz** is an open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the **Vulkan** graphics API. It provides raw ctypes bindings in **Python**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
 
-Despite its roots dating back over 10 years, Datoviz remains an early-stage library that would greatly benefit from increased community feedback.
+Designed for speed, visual quality, and scalability to datasets comprising up to $10^6$-$10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-The experimental [**v0.1x version**](https://datoviz.org/) was released in 2021.
-
-The **v0.2x version** is now available (in a separate Git branch) for adventurous users to test and provide feedback.
-
-Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API that supports a Datoviz renderer, as well as a Matplotlib renderer and potentially others.
+**Warning:** Datoviz is still in its early stages and would greatly benefit from increased community feedback, especially regarding binaries, packaging, and hardware compatibility. The API is still in flux, so expect regular (but hopefully minimal) breaking changes for now. The current working version is **v0.2** and documentation is only available on GitHub for now. The documentation website is still about the **deprecated v0.1**.
 
 
 <!-- SCREENSHOTS -->
 
-## Screenshots from the v0.1x version
+## Screenshots from the v0.1 version
 
 ![](https://raw.githubusercontent.com/datoviz/data/master/screenshots/datoviz.jpg)
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
@@ -30,52 +26,44 @@ Datoviz is closely related to **VisPy**, as it is being developed by one of the 
 * **3D visuals**: meshes, volumes, volume slices
 * **Mixing 2D and 3D** plots seamlessly in the same window
 * **150 colormaps** included (from matplotlib, colorcet, MATLAB)
-* **High-level interactivity**: pan & zoom, mouse arcball
+* **High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
+* **Manual control of cameras**: custom interactivity
 * **Subplots** organized in a grid layout
+* **Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 Work in progress (currently planned for **v0.3**):
 
 * **Axes**: ticks, grids, labels
-* **GUIs**
-* **Custom visuals**, with custom shaders and/or custom data transformations
+* **Color bars**
 
 Future work (planned for **v0.4+**):
 
-* **More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs...
+* **More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
 * **Picking**
-* **IPython/Jupyter integration**
 * **Nonlinear transforms**
+* **Dynamic shaders**
 * **Compute shaders**
 * **Qt integration**
+* **IPython/Jupyter integration**
 
 
-<!-- HISTORY AND STATUS -->
-
-## Overview
-
-### Current status
-
-In 2021, the [first experimental version of Datoviz **v0.1x** was released](https://cyrille.rossant.net/datoviz/).
-
-In 2024, version **v0.2x** was released. This version has been redesigned from the ground up to enhance modularity and stability, and ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
-
-### History and status
+## History and current status
 
 In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
 
-In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [inspiring the idea of a future Vulkan-based visualization library](https://cyrille.rossant.net/compiler-data-visualization/).
+In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [sparking the idea of a future Vulkan-based visualization library]((https://cyrille.rossant.net/compiler-data-visualization/)).
 
 In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, began experimenting with Vulkan.
 
-Following an experimental release in **2021**, the technology matured over the next three years, thanks in part to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in 2021.
+In **2021**, the [first experimental version of Datoviz **v0.1** was released](https://cyrille.rossant.net/datoviz/). This initial release laid the groundwork for further development.
 
-<!-- NEW VERSION -->
+Over the next three years, the technology matured, aided by a [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in **2021**.
 
-### New v0.2x version and long-term Vision
+In **2024**, a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/) facilitated the release of Datoviz **v0.2**. This version was redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs. It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
-In **2024**, thanks to a second [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to the VisPy project in 2024, a redesigned **v0.2x** version was released for testing and community feedback. It features a redesigned architecture that will allow us to port Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API that supports a Datoviz renderer, as well as a Matplotlib renderer and potentially others.
 
-This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** is uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
+The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
 
 
 
@@ -115,184 +103,15 @@ TODO.
 
 Work in progress.
 
-* [Architecture overview](ARCHITECTURE.md)
-* [API reference](docs/api.md)
-* [Examples](examples/)
+* [**User guide**](docs/userguide.md)
+* [**API** reference](docs/api.md)
+* [**Examples**](examples/)
+* [**Architecture** overview](ARCHITECTURE.md)
+* [**Build** instructions](BUILD.md)
+* [**Contributors** instructions](CONTRIBUTING.md)
+* [**Maintainers** instructions](MAINTAINERS.md)
 
 
-
-<!-- BUILDING -->
-
-## Building instructions
-
-If packages are not available on your system, you can build Datoviz yourself.
-
-### Ubuntu 24.04
-
-```bash
-# Install the build and system dependencies.
-sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-format patchelf tree libtinyxml2-dev libfreetype-dev
-
-# Install just, see https://github.com/casey/just
-curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
-
-# Clone the Datoviz repo and build.
-git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
-cd datoviz
-
-# This call will fail, but the build will succeed the second time.
-# Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
-just build
-
-# That one should succeed.
-just build
-
-# Compile and run an example.
-just example scatter
-```
-
-
-### macOS (arm64)
-
-```bash
-# Install brew if you don't have it already.
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/cyrille/.zprofile
-    eval "$(/opt/homebrew/bin/brew shellenv)"
-
-# Install dependencies.
-brew install just cmake ccache ninja freetype clang-format tree
-
-# Clone the Datoviz repo.
-git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
-cd datoviz
-
-# This call will fail, but the build will succeed the second time.
-# Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
-just build
-
-# That one should succeed.
-just build
-
-# Compile and run an example.
-just example scatter
-```
-
-### Windows
-
-_Note_: we have less experience with Windows, improvements welcome.
-
-1. Install Git for Windows. You'll use the Git Bash console later.
-2. Install [WinLibs](https://winlibs.com/). Download and install the latest gcc UCRT version with POSIX threads.
-3. Download and decompress [just](https://github.com/casey/just/releases).
-4. Copy the decompressed `just.exe` into `C:\mingw64\bin` (which should have been created by WinLibs).
-5. Install the LunarG Vulkan SDK for Windows.
-6. Open a Git Bash terminal, go to the Datoviz GitHub repository, and type `just build` twice.
-7. Install the Vulkan Runtime for Windows, and copy the decompressed `vulkan-1.dll` into `build/`.
-8. Open a bash terminal, go to `build/`, and type `./datoviz.exe demo`.
-
-
-<!-- PACKAGING -->
-
-## Packaging instructions
-
-This section provides instructions for maintainers who need to create binary packages.
-
-### Ubuntu 24.04
-
-You need to install Docker to test the created deb package in an isolated virtual environment.
-
-```bash
-sudo apt-get install dpkg-dev fakeroot
-
-# Generate a .deb package in packaging/
-just deb
-
-# Test .deb installation in a Docker container
-just testdeb
-```
-
-### macOS (arm64)
-
-Building a `.pkg` package file with Datoviz and its dependencies is straightforward with the `just pkg` command on macOS (arm64).
-
-#### Preparing a virtual machine for testing in an isolated environment
-
-However, testing this package file in a virtual machine is currently more complicated that on Linux.
-Before calling `just testpkg`, you need to follow several steps to prepare a virtual machine manually.
-
-1.  Install sshpass:
-
-    ```bash
-    brew install sshpass
-    ```
-
-2. Install [UTM](https://mac.getutm.app/).
-3. Create a new macOS virtual machine (VM) with **at least 64 GB storage** (for Xcode).
-4. Install macOS in the virtual machine. For simplicity, use your $USER as the login and password.
-5. Once installed, find the IP address in the VM macOS system preferences and write it down (for example, 192.168.64.4).
-6. Set up remote access via SSH in the VM macOS system preferences to set up a SSH server.
-7. Open a terminal in the VM and type:
-
-    ```bash
-    type: xcode-select --install
-    ```
-
-#### Build and test the macOS package
-
-Go back to the host machine and type:
-
-```bash
-# Generate a .pkg package in packaging/
-just pkg
-
-# Test the .pkg installation in an UTM virtual machine, using the IP address you wrote down earlier.
-just testpkg 192.168.64.4
-
-# Go to the virtual machine, and run in a terminal `/tmp/datoviz_example/example_scatter`.
-```
-
-
-### Windows
-
-TODO.
-
-
-<!-- PYTHON PACKAGING -->
-
-## Python packaging instructions
-
-This section provides instructions for maintainers who want to create Python wheel packages.
-
-### Ubuntu 24.04
-
-You need to install Docker to generate the wheels on a manylinux container. We have only used `manylinux_2_28_x86_64` so far (based on AlmaLinux 8).
-
-```bash
-# First, build Datoviz in the manylinux container.
-just buildmany
-
-# Then, build a Python wheel in a manylinux container (saved in dist/).
-just wheelmany
-
-# Show the contents of the wheel.
-just showwheel
-
-# Try installing and running the wheel in an Ubuntu container.
-just testwheel
-```
-
-### macOS (arm46)
-
-TODO.
-
-
-### Windows
-
-TODO.
-
-
-<!-- DEVELOPER -->
 
 ## Application developer instructions
 
@@ -304,7 +123,7 @@ TODO.
 
 ### macOS (arm64)
 
-Looking at the [.justfile](.justfile) (`pkg` and `testpkg` commands) may be helpful.
+Looking at the [justfile](justfile) (`pkg` and `testpkg` commands) may be helpful.
 To build an application using Datoviz:
 
 1. You need to link your application to `libdatoviz.dylib`, that you can build yourself or find in the provided `.pkg` installation file.
@@ -316,6 +135,15 @@ To build an application using Datoviz:
 ### Windows
 
 TODO.
+
+### Technical notes to C/C++ developers
+
+* **Memory management.** Datoviz uses opaque pointers and manages its own memory. While we have taken great care in proper memory allocation, C is inherently unsafe. Porting the relatively light high-level code of Datoviz (scene API) to a more modern and safer language may be considered in the future.
+* **C/C++ usage.** Datoviz employs a restricted and straightforward usage of C, with very limited C++ functionality (mostly common dynamic data structures, in ~10% of the code).
+* **Data copies.** When passing data to visuals, data is copied by default to Datoviz for memory safety reasons. This might impact performance and memory usage when handling large datasets (tens of millions of points). We will soon document how to avoid these extra copies and prevent crashes related to Datoviz accessing deallocated memory.
+* **Modular architecture.** Datoviz v0.2+ features a modular architecture where the low-level Vulkan-specific rendering engine is decoupled from the higher-level visual and interactive logic. A private asynchronous message-based protocol is used internally, enabling a future Javascript/WebAssembly/WebGPU port of Datoviz, which we plan to work on in the coming years.
+* **Contributing.** This modular architecture allows C/C++ contributors without GPU knowledge to propose improvements and new functionality in the higher-level parts.
+* **Bindings.** While we provide raw ctypes bindings in Python to the Datoviz C API, our goal is to implement as much functionality in C/C++ to offer the same functionality to other languages that may provide Datoviz bindings in the future (Julia, Rust, R, MATLAB...).
 
 
 <!-- FUNDING -->
