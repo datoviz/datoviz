@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
     // File path to a .obj file.
     // This is a 3D mesh reconstruction of a mouse brain, provided by the Allen Institute.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "data/mesh/brain.obj");
 
     // Load the obj file.

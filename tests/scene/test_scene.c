@@ -277,7 +277,7 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Screenshot.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/scene_offscreen.png", ARTIFACTS_DIR);
     dvz_app_screenshot(app, figure->canvas_id, imgpath);
 
