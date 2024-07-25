@@ -2,7 +2,7 @@
 
 <!-- INTRODUCTION -->
 
-**⚡️ Datoviz** is an open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the **Vulkan** graphics API. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
+**⚡️ Datoviz** is a cross-platform, open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the [**Khronos Vulkan**](https://www.vulkan.org/) graphics API and the [**glfw**](https://www.glfw.org/) window library. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
 
 Designed for speed, visual quality, and scalability to datasets comprising up to $10^6-10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
@@ -44,7 +44,7 @@ Future work (planned for **v0.4+**):
 * **🖌️ Dynamic shaders**
 * **🧮 Compute shaders**
 * **🖥️ Qt integration**
-* **🐍 IPython/Jupyter integration**
+* **🐍 Jupyter integration**
 
 
 ## History and current status
