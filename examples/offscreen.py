@@ -48,7 +48,7 @@ dvz.panel_visual(panel, visual)
 dvz.scene_run(scene, app, 0)
 
 # Screenshot to ./offscreen.png.
-dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen.png"))
+dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
 
 # Cleanup.
 dvz.scene_destroy(scene)

@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     dvz_scene_run(scene, app, 0);
 
     // Screenshot.
-    dvz_app_screenshot(app, dvz_figure_id(figure), "example_offscreen.png");
+    dvz_app_screenshot(app, dvz_figure_id(figure), "offscreen_example.png");
 
     // Cleanup.
     dvz_scene_destroy(scene);

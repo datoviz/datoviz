@@ -503,6 +503,9 @@ DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel)
 void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
 {
     ANN(panel);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+    ANN(panel->figure->scene->batch);
     ANN(visual);
     ANN(visual->baker);
 
@@ -519,8 +522,9 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
     // Panel transform must be set.
     if (panel->transform == NULL)
     {
-        log_error("the panel transform must be set before calling dvz_panel_visual()");
-        return;
+        log_debug("the panel had no transform, creating one");
+        panel->transform = dvz_transform(panel->figure->scene->batch, 0);
+        panel->transform_to_destroy = true;
     }
 
     ANN(panel->transform);

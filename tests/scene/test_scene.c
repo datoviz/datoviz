@@ -265,10 +265,6 @@ int test_scene_offscreen(TstSuite* suite)
     cvec4* color = dvz_mock_color(n, 128);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
-    // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel);
-    ANN(pz);
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, pixel);
 
@@ -278,7 +274,7 @@ int test_scene_offscreen(TstSuite* suite)
 
     // Screenshot.
     char imgpath[1024] = {0};
-    snprintf(imgpath, sizeof(imgpath), "%s/scene_offscreen.png", ARTIFACTS_DIR);
+    snprintf(imgpath, sizeof(imgpath), "%s/offscreen_scene.png", ARTIFACTS_DIR);
     dvz_app_screenshot(app, figure->canvas_id, imgpath);
 
     // Cleanup.
