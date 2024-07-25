@@ -103,7 +103,7 @@ int test_mesh_obj(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
     // Load obj shape.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
     DvzShape shape = dvz_shape_obj(path);
     if (!shape.vertex_count)

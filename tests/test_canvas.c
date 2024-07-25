@@ -72,7 +72,7 @@ int test_canvas_1(TstSuite* suite)
     ANN(rgb);
 
     // Save it to a file.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/canvas.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 

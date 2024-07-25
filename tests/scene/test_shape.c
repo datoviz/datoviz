@@ -41,7 +41,7 @@ int test_shape_obj(TstSuite* suite)
 {
     ANN(suite);
 
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
 
     DvzShape shape = dvz_shape_obj(path);

@@ -253,7 +253,7 @@ int test_marker_msdf(TstSuite* suite)
     // Save the MSDF to a PNG file.
     // {
     //     uint8_t* rgb = dvz_msdf_to_rgb(msdf, w, h);
-    //     char imgpath[1024];
+    //     char imgpath[1024] = {0};
     //     snprintf(imgpath, sizeof(imgpath), "%s/msdf.png", ARTIFACTS_DIR);
     //     dvz_write_png(imgpath, w, h, rgb);
     //     FREE(rgb);

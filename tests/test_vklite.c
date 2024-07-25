@@ -62,7 +62,7 @@ static inline void _make_index_buffer(DvzBuffer* buffer, VkDeviceSize size)
 
 static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
 {
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/%s.ppm", ARTIFACTS_DIR, name);
     log_info("saving screenshot to %s", path);
     DvzImages* images = framebuffers->attachments[0];
@@ -261,7 +261,7 @@ int test_vklite_compute(TstSuite* suite)
     dvz_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
@@ -334,7 +334,7 @@ int test_vklite_push(TstSuite* suite)
     dvz_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_pow.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
@@ -484,7 +484,7 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     dvz_queue_wait(gpu, 0);
 
     // Create the compute pipeline.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
@@ -618,7 +618,7 @@ int test_vklite_submit(TstSuite* suite)
     dvz_gpu_create(gpu, 0);
 
     // Create the compute pipeline.
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute1 = dvz_compute(gpu, path);
 
@@ -1031,7 +1031,7 @@ int test_vklite_instanced(TstSuite* suite)
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle_instanced.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
@@ -1111,7 +1111,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
@@ -1202,7 +1202,7 @@ int test_vklite_constattr(TstSuite* suite)
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
@@ -1299,7 +1299,7 @@ int test_vklite_specialization(TstSuite* suite)
     dvz_graphics_polygon_mode(&graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(&graphics, DVZ_DEPTH_TEST_ENABLE);
 
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle_specialization.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(&graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);

@@ -65,7 +65,7 @@
 #define GRAPHICS_SCREENSHOT(name)                                                                 \
     uint8_t* rgb = dvz_board_alloc(&board);                                                       \
     dvz_board_download(&board, board.size, rgb);                                                  \
-    char imgpath[1024];                                                                           \
+    char imgpath[1024] = {0};                                                                     \
     snprintf(imgpath, sizeof(imgpath), "%s/graphics_%s.png", ARTIFACTS_DIR, (name));              \
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);                                                   \
     dvz_board_free(&board);

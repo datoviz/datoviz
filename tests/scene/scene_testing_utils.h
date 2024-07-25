@@ -58,7 +58,7 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
     DvzBoard* b = dvz_renderer_board(rd, board);
 
     // Save to a PNG.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/%s.png", ARTIFACTS_DIR, name);
     dvz_write_png(imgpath, b->width, b->height, rgb);
     AT(!dvz_is_empty(b->width * b->height * 3, rgb));
@@ -100,7 +100,7 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
 
 static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_volume)
 {
-    char path[1024];
+    char path[1024] = {0};
     snprintf(
         path, sizeof(path), "%s/%s%s.npy", DATA_DIR, "allen_mouse_brain",
         use_rgb_volume ? "_rgba" : "");

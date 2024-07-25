@@ -151,7 +151,7 @@ static void visual_test_end(VisualTest vt)
 {
     // Make screenshot.
     dvz_scene_run(vt.scene, vt.app, 10);
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/visual_%s.png", ARTIFACTS_DIR, vt.name);
     dvz_app_screenshot(vt.app, vt.figure->canvas_id, imgpath);
 

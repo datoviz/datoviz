@@ -130,7 +130,7 @@ int test_renderer_1(TstSuite* suite)
     uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
 
     // Save to a PNG.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/renderer_1.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
@@ -253,7 +253,7 @@ int test_renderer_graphics(TstSuite* suite)
     uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
 
     // Save to a PNG.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/renderer_graphics.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));

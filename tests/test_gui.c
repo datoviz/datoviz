@@ -61,7 +61,7 @@ int test_gui_offscreen(TstSuite* suite)
 
     // Save a screenshot.
     uint8_t* rgb = screenshot(framebuffers->attachments[0], 1);
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/imgui.ppm", ARTIFACTS_DIR);
     log_debug("saving screenshot to %s", path);
     dvz_write_ppm(path, WIDTH, HEIGHT, rgb);

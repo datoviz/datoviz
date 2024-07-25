@@ -60,7 +60,7 @@ int test_font_1(TstSuite* suite)
     uint32_t* codepoints = _ascii_to_utf32(text, &count);
     uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, out_size);
 
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/font.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, out_size[0], out_size[1], bitmap);
 

@@ -54,7 +54,7 @@ int test_atlas_1(TstSuite* suite)
     AT(h > 0);
 
     // Save the atlas PNG.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/atlas.png", ARTIFACTS_DIR);
     dvz_atlas_png(atlas, imgpath);
 

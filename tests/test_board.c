@@ -73,7 +73,7 @@ int test_board_1(TstSuite* suite)
     uint8_t* rgb = dvz_board_alloc(&board);
     dvz_board_download(&board, board.size, rgb);
     // Save it to a file.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/board.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     dvz_board_free(&board);

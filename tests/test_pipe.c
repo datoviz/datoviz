@@ -53,7 +53,7 @@ int test_pipe_1(TstSuite* suite)
     dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     dvz_graphics_polygon_mode(graphics, VK_POLYGON_MODE_FILL);
     dvz_graphics_depth_test(graphics, DVZ_DEPTH_TEST_ENABLE);
-    char path[1024];
+    char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle.vert.spv", SPIRV_DIR);
     dvz_graphics_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, path);
     snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
@@ -80,7 +80,7 @@ int test_pipe_1(TstSuite* suite)
     uint8_t* rgb = dvz_board_alloc(&board);
     dvz_board_download(&board, board.size, rgb);
     // Save it to a file.
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/pipe.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     dvz_board_free(&board);

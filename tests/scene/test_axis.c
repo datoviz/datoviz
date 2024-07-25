@@ -458,7 +458,7 @@ int test_axis_update(TstSuite* suite)
     dvz_axis_panel(axis, vt.panel);
 
     // visual_test_end(vt);
-    char imgpath[1024];
+    char imgpath[1024] = {0};
 
     dvz_scene_run(vt.scene, vt.app, 3);
     snprintf(imgpath, sizeof(imgpath), "%s/visual_axis_update_1.png", ARTIFACTS_DIR);

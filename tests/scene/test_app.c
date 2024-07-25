@@ -463,7 +463,7 @@ int test_app_pixel(TstSuite* suite)
 
     // Make screenshot.
     dvz_app_run(app, 3);
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/app_pixel.png", ARTIFACTS_DIR);
     dvz_app_screenshot(app, canvas_id, imgpath);
 

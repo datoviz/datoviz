@@ -41,7 +41,7 @@ int test_sdf_single(TstSuite* suite)
     }
     uint8_t* rgb = dvz_sdf_to_rgb(sdf, w, h);
 
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/sdf_single.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, w, h, rgb);
 
@@ -70,7 +70,7 @@ int test_sdf_multi(TstSuite* suite)
     }
     uint8_t* rgb = dvz_msdf_to_rgb(msdf, w, h);
 
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/sdf_multi.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, w, h, rgb);
 

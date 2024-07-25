@@ -42,7 +42,7 @@ int test_workspace_1(TstSuite* suite)
     // Retrieve the rendered image.
     uint8_t* rgb = dvz_board_alloc(board);
     dvz_board_download(board, board->size, rgb);
-    char imgpath[1024];
+    char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/workspace.png", ARTIFACTS_DIR);
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 
