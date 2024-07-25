@@ -243,7 +243,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
         is_offscreen ? &rd->workspace->renderpass_offscreen : &rd->workspace->renderpass_desktop;
 
     // Create the pipe.
-    log_trace("create pipelib graphics");
+    log_trace("create pipelib graphics, offscreen=%d", is_offscreen);
     pipe = dvz_pipelib_graphics(
         rd->pipelib, rd->ctx, renderpass, req.content.graphics.type, req.flags);
     ANN(pipe);

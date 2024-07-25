@@ -263,6 +263,7 @@ uint8_t* dvz_canvas_download(DvzCanvas* canvas)
     ASSERT(canvas->size > 0);
 
     // Start the image transition command buffers.
+    log_trace("starting canvas download");
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
     dvz_cmd_begin(&cmds, 0);
 

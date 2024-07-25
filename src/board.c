@@ -204,6 +204,7 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
     ANN(gpu);
 
     // Start the image transition command buffers.
+    log_trace("starting board download");
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_TRANSFER, 1);
     dvz_cmd_begin(&cmds, 0);
 

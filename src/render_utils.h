@@ -245,6 +245,7 @@ static void blank_commands(
     DvzBarrier barrier = make_barrier(images);
     DvzBarrier barrier_depth = make_depth_barrier(depth);
 
+    log_trace("starting blank commands");
     dvz_cmd_begin(cmds, cmd_idx);
 
     dvz_cmd_barrier(cmds, cmd_idx, &barrier);
@@ -280,6 +281,7 @@ static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
     dvz_images_create(staging);
 
     // Start the image transition command buffers.
+    log_trace("starting screenshot");
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
 

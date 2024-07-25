@@ -273,7 +273,8 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_panel_visual(panel, pixel);
 
     // Run the app.
-    dvz_scene_run(scene, app, 100);
+    // NOTE: with offscreen rendering, N_FRAMES is ignored, the scene is just rendered once.
+    dvz_scene_run(scene, app, N_FRAMES);
 
     // Screenshot.
     char imgpath[1024];

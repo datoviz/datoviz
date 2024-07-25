@@ -278,11 +278,15 @@ static void _transition_image(DvzImages* img)
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
+    log_trace("starting image transition");
+    VkAccessFlagBits access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT |
+                              VK_ACCESS_2_SHADER_STORAGE_READ_BIT |
+                              VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR;
     DvzBarrier barrier = dvz_barrier(gpu);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_images(&barrier, img);
     dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_UNDEFINED, img->layout);
-    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_READ_BIT);
+    dvz_barrier_images_access(&barrier, 0, access);
     dvz_cmd_barrier(cmds, 0, &barrier);
 
     dvz_cmd_end(cmds, 0);
@@ -295,6 +299,7 @@ static void
 _make_image(DvzGpu* gpu, DvzImages* img, DvzTexDims dims, uvec3 shape, DvzFormat format)
 {
     ANN(img);
+    log_trace("make images %dx%d%x", shape[0], shape[1], shape[2]);
     *img = dvz_images(gpu, _image_type_from_dims(dims), 1);
 
     // Create the image.

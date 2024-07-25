@@ -126,6 +126,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     {
         // Create the board.
         req = dvz_create_board(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
+
+        // HACK: when using offscreen rendering, we need the board ID to append a board update
+        // request before running the app.
+        batch->board_id = req.id;
     }
     else
     {

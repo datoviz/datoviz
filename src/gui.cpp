@@ -214,6 +214,7 @@ static void _imgui_destroy(DvzGui* gui)
 DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 {
     ANN(gpu);
+    ANN(gpu->host);
 
     if (_imgui_has_context())
     {
@@ -228,7 +229,9 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
     gui->gui_windows = dvz_container(
         DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGuiWindow), DVZ_OBJECT_TYPE_GUI_WINDOW);
 
-    gui->renderpass = _imgui_renderpass(gpu, flags == DVZ_GUI_FLAGS_OFFSCREEN);
+    bool offscreen =
+        (flags & DVZ_GUI_FLAGS_OFFSCREEN) != 0 || gpu->host->backend == DVZ_BACKEND_OFFSCREEN;
+    gui->renderpass = _imgui_renderpass(gpu, offscreen);
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);

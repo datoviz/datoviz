@@ -162,7 +162,8 @@ DvzApp* dvz_app(int flags)
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
 
     DvzBackend backend = BACKEND;
-    if ((flags & DVZ_APP_FLAGS_OFFSCREEN) != 0)
+    bool offscreen = (flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+    if (offscreen)
     {
         backend = DVZ_BACKEND_OFFSCREEN;
     }
@@ -175,11 +176,14 @@ DvzApp* dvz_app(int flags)
     app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
 
-    app->client = dvz_client(backend);
-    ANN(app->client);
+    if (!offscreen)
+    {
+        app->client = dvz_client(backend);
+        ANN(app->client);
 
-    app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
-    ANN(app->prt);
+        app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
+        ANN(app->prt);
+    }
 
     app->batch = dvz_batch();
     ANN(app->batch);
@@ -210,7 +214,8 @@ DvzBatch* dvz_app_batch(DvzApp* app)
 void dvz_app_frame(DvzApp* app)
 {
     ANN(app);
-    dvz_client_frame(app->client);
+    if (app->client)
+        dvz_client_frame(app->client);
 }
 
 
@@ -218,6 +223,8 @@ void dvz_app_frame(DvzApp* app)
 void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 {
     ANN(app);
+    if (!app->client)
+        return;
     Payload* payload =
         _make_payload(DVZ_CLIENT_EVENT_FRAME, app, (function_pointer)on_frame, user_data);
     dvz_client_callback(
@@ -230,6 +237,8 @@ void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
 {
     ANN(app);
+    if (!app->client)
+        return;
     Payload* payload =
         _make_payload(DVZ_CLIENT_EVENT_MOUSE, app, (function_pointer)on_mouse, user_data);
     dvz_client_callback(
@@ -242,6 +251,8 @@ void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
 void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* user_data)
 {
     ANN(app);
+    if (!app->client)
+        return;
     Payload* payload =
         _make_payload(DVZ_CLIENT_EVENT_KEYBOARD, app, (function_pointer)on_keyboard, user_data);
     dvz_client_callback(
@@ -254,6 +265,8 @@ void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* u
 void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_data)
 {
     ANN(app);
+    if (!app->client)
+        return;
     Payload* payload =
         _make_payload(DVZ_CLIENT_EVENT_WINDOW_RESIZE, app, (function_pointer)on_resize, user_data);
     dvz_client_callback(
@@ -297,6 +310,9 @@ static void _timer_callback(DvzTimer* timer, DvzInternalTimerEvent ev)
 DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count)
 {
     ANN(app);
+    if (!app->client)
+        return NULL;
+
     ANN(app->timer);
 
     DvzTimerItem* item = dvz_timer_new(app->timer, delay, period, max_count);
@@ -310,6 +326,8 @@ DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t m
 void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
 {
     ANN(app);
+    if (!app->client)
+        return;
     ANN(app->client);
 
     Payload* payload =
@@ -324,6 +342,8 @@ void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
 void dvz_app_submit(DvzApp* app)
 {
     ANN(app);
+    if (!app->prt)
+        return;
     ANN(app->prt);
 
     DvzBatch* batch = app->batch;
@@ -366,6 +386,8 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
 void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void* user_data)
 {
     ANN(app);
+    if (!app->prt)
+        return;
 
     DvzPresenter* prt = app->prt;
     ANN(prt);
@@ -384,25 +406,57 @@ void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void*
 void dvz_app_run(DvzApp* app, uint64_t n_frames)
 {
     ANN(app);
-    ANN(app->client);
     ANN(app->batch);
-    ANN(app->prt);
-    ANN(app->prt->rd);
-    ANN(app->prt->rd->ctx);
+    ANN(app->host);
 
-    // Emit a window init event.
-    dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
+    if (app->client)
+    {
+        ANN(app->prt);
+        ANN(app->prt->rd);
+        ANN(app->prt->rd->ctx);
 
-    // Submit all pending requests that were emitted during the initialization of the application,
-    // before calling dvz_app_run().
-    dvz_app_submit(app);
+        // Emit a window init event.
+        dvz_client_event(app->client, (DvzClientEvent){.type = DVZ_CLIENT_EVENT_INIT});
 
-    // Start the event loop.
-    app->is_running = true;
-    dvz_client_run(app->client, n_frames);
-    app->is_running = false;
+        // Submit all pending requests that were emitted during the initialization of the
+        // application, before calling dvz_app_run().
+        dvz_app_submit(app);
 
-    dvz_context_wait(app->prt->rd->ctx);
+        // Start the event loop.
+        app->is_running = true;
+        dvz_client_run(app->client, n_frames);
+        app->is_running = false;
+
+        dvz_context_wait(app->prt->rd->ctx);
+    }
+
+    // Offscreen mini event loop.
+    else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_trace("run offscreen app, discarding n_frames=%d in dvz_app_run()", n_frames);
+
+        DvzRenderer* rd = app->rd;
+        ANN(rd);
+
+        DvzBatch* batch = app->batch;
+        ANN(batch);
+
+        // Append a board update request before processing the requests.
+
+        // HACK: we take the board ID from the batch.
+        if (batch->board_id == DVZ_ID_NONE)
+        {
+            log_warn("no board was defined in the application");
+        }
+        else
+        {
+            dvz_update_board(batch, batch->board_id);
+        }
+
+        // Now that we appended the board update request to the batch, we can have the renderer
+        // process the requests.
+        dvz_renderer_requests(app->rd, dvz_batch_size(batch), dvz_batch_requests(batch));
+    }
 }
 
 
@@ -446,8 +500,13 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
 void dvz_app_destroy(DvzApp* app)
 {
     ANN(app);
-    dvz_client_destroy(app->client);
-    dvz_presenter_destroy(app->prt);
+
+    if (app->client)
+    {
+        dvz_client_destroy(app->client);
+        dvz_presenter_destroy(app->prt);
+    }
+
     dvz_timer_destroy(app->timer);
     dvz_batch_destroy(app->batch);
     dvz_renderer_destroy(app->rd);
