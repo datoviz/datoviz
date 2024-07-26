@@ -760,6 +760,32 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 /*************************************************************************************************/
 
 /**
+ * Create a grid shape.
+ *
+ * @param row_count number of rows
+ * @param col_count number of cols
+ * @param o the origin
+ * @param u the unit vector parallel to each column
+ * @param v the unit vector parallel to each row
+ * @param flags the flags
+ * @returns the shape
+ */
+DVZ_EXPORT
+DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, vec3 v, int flags);
+
+
+
+/**
+ * Create a surface shape.
+ *
+ * @param shape the shape
+ * @param heights the vertex heights
+ */
+DVZ_EXPORT void dvz_shape_surface(DvzShape* shape, float* heights);
+
+
+
+/**
  * Create a cube shape.
  *
  * @param colors the colors of the six faces

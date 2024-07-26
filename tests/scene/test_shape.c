@@ -37,6 +37,24 @@ int test_shape_1(TstSuite* suite)
 
 
 
+int test_shape_grid(TstSuite* suite)
+{
+    ANN(suite);
+
+    uint32_t row_count = 8;
+    uint32_t col_count = 12;
+    vec3 o = {0};
+    vec3 u = {1, 0, 0};
+    vec3 v = {0, 1, 0};
+    DvzShape shape = dvz_shape_grid(row_count, col_count, o, u, v, 0);
+
+    dvz_shape_print(&shape);
+
+    dvz_shape_destroy(&shape);
+    return 0;
+}
+
+
 int test_shape_transform(TstSuite* suite)
 {
     ANN(suite);

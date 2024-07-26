@@ -281,6 +281,88 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 /*  3D shapes                                                                                    */
 /*************************************************************************************************/
 
+DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, vec3 v, int flags)
+{
+    // TODO: flag for closed surface
+
+    ASSERT(row_count > 0);
+    ASSERT(col_count > 0);
+
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_GRID;
+
+    const uint32_t vertex_count = col_count * row_count;
+    const uint32_t index_count = 6 * (col_count - 1) * (row_count - 1);
+
+    shape.vertex_count = vertex_count;
+    shape.index_count = index_count;
+
+    shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+
+    uint32_t point_idx = 0;
+    uint32_t index = 0;
+
+    vec3 normal = {0};
+    glm_vec3_crossn(u, v, normal);
+
+    for (uint32_t i = 0; i < row_count; i++)
+    {
+        for (uint32_t j = 0; j < col_count; j++)
+        {
+            ASSERT(point_idx == col_count * i + j);
+
+            // Position.
+            shape.pos[point_idx][0] = o[0] + i * u[0] + j * v[0];
+            shape.pos[point_idx][1] = o[1] + i * u[1] + j * v[1];
+            shape.pos[point_idx][2] = o[2] + i * u[2] + j * v[2];
+
+            // Index.
+            // TODO: shape topology (flags) to implement here
+            if ((i < row_count - 1) && (j < col_count - 1))
+            {
+                ASSERT(index + 5 < index_count);
+                shape.index[index++] = col_count * (i + 0) + (j + 0);
+                shape.index[index++] = col_count * (i + 1) + (j + 0);
+                shape.index[index++] = col_count * (i + 0) + (j + 1);
+                shape.index[index++] = col_count * (i + 1) + (j + 1);
+                shape.index[index++] = col_count * (i + 0) + (j + 1);
+                shape.index[index++] = col_count * (i + 1) + (j + 0);
+            }
+
+            point_idx++;
+        }
+    }
+
+    // Normal.
+    shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        shape.normal[i][0] = normal[0];
+        shape.normal[i][1] = normal[1];
+        shape.normal[i][2] = normal[2];
+    }
+
+    return shape;
+}
+
+
+
+void dvz_shape_surface(DvzShape* shape, float* heights)
+{
+    ANN(shape);
+    ANN(heights);
+
+    // for (uint32_t i = 0; i < shape->row_count; i++)
+    // {
+    //     for (uint32_t j = 0; j < shape->col_count; j++)
+    //     {
+    //     }
+    // }
+}
+
+
+
 DvzShape dvz_shape_cube(cvec4* colors)
 {
     ANN(colors); // 6 colors, one per face
