@@ -279,9 +279,9 @@ static void _transition_image(DvzImages* img)
     dvz_cmd_begin(cmds, 0);
 
     log_trace("starting image transition");
-    VkAccessFlagBits access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT |
-                              VK_ACCESS_2_SHADER_STORAGE_READ_BIT |
-                              VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR;
+    VkAccessFlagBits2 access = VK_ACCESS_2_SHADER_SAMPLED_READ_BIT |
+                               VK_ACCESS_2_SHADER_STORAGE_READ_BIT |
+                               VK_ACCESS_2_SHADER_BINDING_TABLE_READ_BIT_KHR;
     DvzBarrier barrier = dvz_barrier(gpu);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_images(&barrier, img);
