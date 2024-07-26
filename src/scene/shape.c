@@ -82,7 +82,7 @@ DvzShape dvz_shape_square(cvec4 color)
 
     // Color.
     shape.color = (cvec4*)calloc(shape.vertex_count, sizeof(cvec4));
-    for (uint32_t i = 1; i < shape.vertex_count; i++)
+    for (uint32_t i = 0; i < shape.vertex_count; i++)
     {
         memcpy(shape.color[i], color, sizeof(cvec4));
     }
