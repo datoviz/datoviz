@@ -4,15 +4,10 @@ This is a scatter plot example.
 
 """
 
-import ctypes
-
 import numpy as np
-
 import datoviz as dvz
 from datoviz import (
-    A_,  # NumPy array to ctypes raw data pointer
     S_,  # Python string to ctypes char*
-    V_,  # Wrapper to handle pointers to scalar values
     vec2,  # Python tuple to ctypes vec2
 )
 
@@ -22,16 +17,15 @@ def onmouse(app, fid, ev):
     print(ev.pos[0], ev.pos[1])
 
 
-slider_value = V_(3.14)
+slider_value = np.array([3.14], dtype=np.float32)
 
 
 @dvz.gui
 def ongui(app, fid, ev):
     dvz.gui_size(vec2(250.0, 80.0))
     dvz.gui_begin(S_("Hello world"), 0)
-    with slider_value:
-        if dvz.gui_slider(S_("Some slider"), 0, 10, slider_value.P_):
-            print(f"The value is: {slider_value.value:.2f}.")
+    if dvz.gui_slider(S_("Some slider"), 0, 10, slider_value):
+        print(f"The value is: {slider_value[0]:.2f}.")
     dvz.gui_end()
 
 
@@ -53,18 +47,16 @@ n = 100_000
 dvz.point_alloc(visual, n)
 
 # Positions.
-# pos = dvz.mock_pos2D(n, .25)  # C version
-pos = np.random.normal(size=(n, 3), scale=.25)  # NumPy version
-dvz.point_position(visual, 0, n, dvz.array_pointer(pos), 0)
-# dvz.free(dvz.array_pointer(pos))  # only for C version, DO NOT call on NumPy version
+pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+dvz.point_position(visual, 0, n, pos, 0)
 
 # Colors.
-color = np.random.uniform(size=(n, 4), low=50, high=240)
-dvz.point_color(visual, 0, n, dvz.array_pointer(color, np.uint8), 0)
+color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
+dvz.point_color(visual, 0, n, color, 0)
 
 # Sizes.
-size = np.random.uniform(size=(n,), low=10, high=30)
-dvz.point_size(visual, 0, n, dvz.array_pointer(size), 0)
+size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
+dvz.point_size(visual, 0, n, size, 0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual)
