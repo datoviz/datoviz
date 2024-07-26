@@ -112,7 +112,11 @@ void dvz_list_remove_pointer(DvzList* list, const void* pointer)
 DvzListItem dvz_list_get(DvzList* list, uint64_t index)
 {
     ANN(list);
-    ANN(list->values);
+    if (list->values == NULL)
+    {
+        log_warn("trying to access data on an empty list");
+        return (DvzListItem){0};
+    }
     ASSERT(index < list->count);
     return list->values[index];
 }
