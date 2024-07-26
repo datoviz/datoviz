@@ -119,9 +119,10 @@ class WrappedValue:
         return str(self.value)
 
 
-def array_pointer(x, dtype=float32):
+def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
+    dtype = dtype or x.dtype
     x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 

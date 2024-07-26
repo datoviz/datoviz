@@ -118,9 +118,10 @@ class WrappedValue:
         return str(self.value)
 
 
-def array_pointer(x, dtype=float32):
+def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
+    dtype = dtype or x.dtype
     x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
@@ -836,11 +837,11 @@ class DvzShape(ctypes.Structure):
         ("type", ctypes.c_int32),
         ("vertex_count", ctypes.c_uint32),
         ("index_count", ctypes.c_uint32),
-        ("pos", ctypes.POINTER(ctypes.c_float)),
-        ("normal", ctypes.POINTER(ctypes.c_float)),
-        ("color", ctypes.POINTER(ctypes.c_uint8)),
-        ("texcoords", ctypes.POINTER(ctypes.c_float)),
-        ("index", ctypes.POINTER(ctypes.c_uint32)),
+        ("pos", np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")),
+        ("normal", np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")),
+        ("color", np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS")),
+        ("texcoords", np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")),
+        ("index", np.ctypeslib.ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS")),
     ]
 
 
@@ -1306,7 +1307,7 @@ colormap = dvz.dvz_colormap
 colormap.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint8,  # uint8_t value
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 
 # Function dvz_colormap_scale()
@@ -1316,7 +1317,18 @@ colormap_scale.argtypes = [
     ctypes.c_double,  # double value
     ctypes.c_double,  # double vmin
     ctypes.c_double,  # double vmax
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
+]
+
+# Function dvz_colormap_array()
+colormap_array = dvz.dvz_colormap_array
+colormap_array.argtypes = [
+    DvzColormap,  # DvzColormap cmap
+    ctypes.c_uint32,  # uint32_t count
+    np.ctypeslib.ndpointer(dtype=np.double, flags="C_CONTIGUOUS"),  # double* values
+    ctypes.c_double,  # double vmin
+    ctypes.c_double,  # double vmax
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* out
 ]
 
 # Function dvz_shape_print()
@@ -1334,7 +1346,7 @@ shape_destroy.argtypes = [
 # Function dvz_shape_square()
 shape_square = dvz.dvz_shape_square
 shape_square.argtypes = [
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_square.restype = DvzShape
 
@@ -1342,14 +1354,14 @@ shape_square.restype = DvzShape
 shape_disc = dvz.dvz_shape_disc
 shape_disc.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_disc.restype = DvzShape
 
 # Function dvz_shape_cube()
 shape_cube = dvz.dvz_shape_cube
 shape_cube.argtypes = [
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* colors
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* colors
 ]
 shape_cube.restype = DvzShape
 
@@ -1358,7 +1370,7 @@ shape_sphere = dvz.dvz_shape_sphere
 shape_sphere.argtypes = [
     ctypes.c_uint32,  # uint32_t rows
     ctypes.c_uint32,  # uint32_t cols
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_sphere.restype = DvzShape
 
@@ -1366,7 +1378,7 @@ shape_sphere.restype = DvzShape
 shape_cone = dvz.dvz_shape_cone
 shape_cone.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_cone.restype = DvzShape
 
@@ -1374,7 +1386,7 @@ shape_cone.restype = DvzShape
 shape_cylinder = dvz.dvz_shape_cylinder
 shape_cylinder.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_int8 * 4,  # cvec4 color
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_cylinder.restype = DvzShape
 
@@ -1406,7 +1418,7 @@ basic_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1416,7 +1428,7 @@ basic_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1441,7 +1453,7 @@ pixel_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1451,7 +1463,7 @@ pixel_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1476,7 +1488,7 @@ point_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1486,7 +1498,7 @@ point_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1496,7 +1508,7 @@ point_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1542,7 +1554,7 @@ marker_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1552,7 +1564,7 @@ marker_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1562,7 +1574,7 @@ marker_angle.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1572,7 +1584,7 @@ marker_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1580,7 +1592,7 @@ marker_color.argtypes = [
 marker_edge_color = dvz.dvz_marker_edge_color
 marker_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_int8 * 4,  # cvec4 value
+    ctypes.c_uint8 * 4,  # cvec4 value
 ]
 
 # Function dvz_marker_edge_width()
@@ -1626,8 +1638,8 @@ segment_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* initial
-    ctypes.POINTER(ctypes.c_float),  # vec3* terminal
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* initial
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* terminal
     ctypes.c_int,  # int flags
 ]
 
@@ -1637,7 +1649,7 @@ segment_shift.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1647,7 +1659,7 @@ segment_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1657,7 +1669,7 @@ segment_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1691,10 +1703,10 @@ path.restype = ctypes.POINTER(DvzVisual)
 path_position = dvz.dvz_path_position
 path_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint32,  # uint32_t vertex_count
-    ctypes.POINTER(ctypes.c_float),  # vec3* positions
+    ctypes.c_uint32,  # uint32_t point_count
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* positions
     ctypes.c_uint32,  # uint32_t path_count
-    ctypes.POINTER(ctypes.c_uint32),  # uint32_t* path_lengths
+    np.ctypeslib.ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS"),  # uint32_t* path_lengths
     ctypes.c_int,  # int flags
 ]
 
@@ -1704,7 +1716,7 @@ path_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1743,7 +1755,7 @@ glyph_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1753,7 +1765,7 @@ glyph_axis.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1763,7 +1775,7 @@ glyph_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float * 2),  # vec2* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec2* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1773,7 +1785,7 @@ glyph_anchor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float * 2),  # vec2* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec2* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1783,7 +1795,7 @@ glyph_shift.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float * 2),  # vec2* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec2* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1793,7 +1805,7 @@ glyph_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* coords
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* coords
     ctypes.c_int,  # int flags
 ]
 
@@ -1803,7 +1815,7 @@ glyph_angle.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1813,7 +1825,7 @@ glyph_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1823,7 +1835,7 @@ glyph_groupsize.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1853,7 +1865,7 @@ glyph_unicode = dvz.dvz_glyph_unicode
 glyph_unicode.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint32),  # uint32_t* codepoints
+    np.ctypeslib.ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
 ]
 
 # Function dvz_glyph_ascii()
@@ -1869,7 +1881,7 @@ glyph_xywh.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* values
     ctypes.c_float * 2,  # vec2 offset
     ctypes.c_int,  # int flags
 ]
@@ -1888,7 +1900,7 @@ image_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* ul_lr
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* ul_lr
     ctypes.c_int,  # int flags
 ]
 
@@ -1898,7 +1910,7 @@ image_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* ul_lr
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* ul_lr
     ctypes.c_int,  # int flags
 ]
 
@@ -1943,7 +1955,7 @@ mesh_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1953,7 +1965,7 @@ mesh_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* values
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1963,7 +1975,7 @@ mesh_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec4* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1973,7 +1985,7 @@ mesh_normal.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* values
     ctypes.c_int,  # int flags
 ]
 
@@ -1992,7 +2004,7 @@ mesh_index.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint32),  # DvzIndex* values
+    np.ctypeslib.ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS"),  # DvzIndex* values
     ctypes.c_int,  # int flags
 ]
 
@@ -2041,7 +2053,7 @@ fake_sphere_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* pos
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* pos
     ctypes.c_int,  # int flags
 ]
 
@@ -2051,7 +2063,7 @@ fake_sphere_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_uint8),  # cvec4* color
+    np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* color
     ctypes.c_int,  # int flags
 ]
 
@@ -2061,7 +2073,7 @@ fake_sphere_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* size
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* size
     ctypes.c_int,  # int flags
 ]
 
@@ -2138,10 +2150,10 @@ slice_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* p0
-    ctypes.POINTER(ctypes.c_float),  # vec3* p1
-    ctypes.POINTER(ctypes.c_float),  # vec3* p2
-    ctypes.POINTER(ctypes.c_float),  # vec3* p3
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* p0
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* p1
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* p2
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* p3
     ctypes.c_int,  # int flags
 ]
 
@@ -2151,10 +2163,10 @@ slice_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # vec3* uvw0
-    ctypes.POINTER(ctypes.c_float),  # vec3* uvw1
-    ctypes.POINTER(ctypes.c_float),  # vec3* uvw2
-    ctypes.POINTER(ctypes.c_float),  # vec3* uvw3
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* uvw0
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* uvw1
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* uvw2
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec3* uvw3
     ctypes.c_int,  # int flags
 ]
 
@@ -2585,7 +2597,7 @@ gui_slider.argtypes = [
     ctypes.c_char_p,  # char* name
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    ctypes.POINTER(ctypes.c_float),  # float* value
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* value
 ]
 gui_slider.restype = ctypes.c_bool
 
@@ -2618,7 +2630,7 @@ next_pow2.restype = ctypes.c_uint64
 mean = dvz.dvz_mean
 mean.argtypes = [
     ctypes.c_uint32,  # uint32_t n
-    ctypes.POINTER(ctypes.c_double),  # double* values
+    np.ctypeslib.ndpointer(dtype=np.double, flags="C_CONTIGUOUS"),  # double* values
 ]
 mean.restype = ctypes.c_double
 
@@ -2626,7 +2638,7 @@ mean.restype = ctypes.c_double
 min_max = dvz.dvz_min_max
 min_max.argtypes = [
     ctypes.c_uint32,  # uint32_t n
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_float * 2,  # vec2 out_min_max
 ]
 
@@ -2634,15 +2646,15 @@ min_max.argtypes = [
 normalize_bytes = dvz.dvz_normalize_bytes
 normalize_bytes.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_float),  # float* values
+    np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* values
 ]
-normalize_bytes.restype = ctypes.POINTER(ctypes.c_uint8)
+normalize_bytes.restype = np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS")
 
 # Function dvz_range()
 range = dvz.dvz_range
 range.argtypes = [
     ctypes.c_uint32,  # uint32_t n
-    ctypes.POINTER(ctypes.c_double),  # double* values
+    np.ctypeslib.ndpointer(dtype=np.double, flags="C_CONTIGUOUS"),  # double* values
     ctypes.c_double * 2,  # dvec2 min_max
 ]
 
@@ -2682,7 +2694,7 @@ mock_pos2D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
 ]
-mock_pos2D.restype = ctypes.POINTER(ctypes.c_float)
+mock_pos2D.restype = np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_pos3D()
 mock_pos3D = dvz.dvz_mock_pos3D
@@ -2690,7 +2702,7 @@ mock_pos3D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
 ]
-mock_pos3D.restype = ctypes.POINTER(ctypes.c_float)
+mock_pos3D.restype = np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_uniform()
 mock_uniform = dvz.dvz_mock_uniform
@@ -2699,7 +2711,7 @@ mock_uniform.argtypes = [
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
 ]
-mock_uniform.restype = ctypes.POINTER(ctypes.c_float)
+mock_uniform.restype = np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_color()
 mock_color = dvz.dvz_mock_color
@@ -2707,5 +2719,5 @@ mock_color.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8,  # uint8_t alpha
 ]
-mock_color.restype = ctypes.POINTER(ctypes.c_uint8)
+mock_color.restype = np.ctypeslib.ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS")
 

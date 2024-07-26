@@ -1,3 +1,4 @@
+import ctypes
 import re
 import json
 from textwrap import dedent
@@ -9,67 +10,116 @@ TYPES = set()
 ENUMS = set()
 
 
-def map_ctype(dtype, enum_int=False):
-    """Map C type from JSON to ctypes."""
-    type_mappings = {
-        "int": "c_int",
+def _extract_int(s):
+    try:
+        return int(list(filter(str.isdigit, s))[0])
+    except IndexError:
+        return 1
 
-        "uint8_t": "c_uint8",
-        "uint16_t": "c_uint16",
-        "uint32_t": "c_uint32",
-        "uint64_t": "c_uint64",
 
-        "bool": "c_bool",
-        "float": "c_float",
-        "double": "c_double",
+# Original C type to ctype, no pointers.
+def c_to_ctype(type, enum_int=False):
+    assert '*' not in type
+    n = _extract_int(type)
+    type_ = type if not type.endswith('_t') else type[:-2]
 
-        "vec2": "c_float * 2",
-        "vec3": "c_float * 3",
-        "vec4": "c_float * 4",
-        "mat4": "c_float * 16",
+    if type.startswith('vec'):
+        return f'ctypes.c_float * {n}'
 
-        "cvec2": "c_int8 * 2",
-        "cvec3": "c_int8 * 3",
-        "cvec4": "c_int8 * 4",
+    if type.startswith('mat'):
+        return f'ctypes.c_float * {n * n}'
 
-        "uvec2": "c_uint32 * 2",
-        "uvec3": "c_uint32 * 3",
-        "uvec4": "c_uint32 * 4",
+    elif type.startswith('cvec'):
+        return f'ctypes.c_uint8 * {n}'
 
-        "dvec2": "c_double * 2",
-        "dvec3": "c_double * 3",
-        "dvec4": "c_double * 4",
+    elif type.startswith('uvec'):
+        return f'ctypes.c_uint32 * {n}'
 
-        "vec3*": "POINTER(ctypes.c_float)",
-        "cvec4*": "POINTER(ctypes.c_uint8)",
-        "vec4*": "POINTER(ctypes.c_float)",
+    elif type.startswith('dvec'):
+        return f'ctypes.c_double * {n}'
 
-        "DvzIndex*": "POINTER(ctypes.c_uint32)",
+    elif type == 'DvzIndex':
+        return 'ctypes.c_uint32'
 
-        "char*": "c_char_p",
-    }
-
-    if "void*" in dtype:
-        return "ctypes.c_void_p"
-
-    if enum_int and dtype in ENUMS:
+    elif enum_int and type in ENUMS:
         return "ctypes.c_int32"
 
-    if dtype == "void":
-        return "None"
+    elif hasattr(ctypes, f'c_{type_}'):
+        return f"ctypes.c_{type_}"
 
-    if dtype in type_mappings:
-        return f"ctypes.{type_mappings.get(dtype)}"
-    elif dtype.endswith('*'):
-        base_type = dtype[:-1]
-        if dtype.startswith("Dvz"):
-            TYPES.add(base_type)
-        p = type_mappings.get(base_type, base_type)
-        if base_type in type_mappings:
-            p = "ctypes." + p
-        return f"ctypes.POINTER({p})"
+    elif type == 'void':
+        return 'None'
+
+    elif type.startswith('Dvz'):
+        return type
+
     else:
-        return dtype
+        return None
+
+
+# Original C type to np.dtype, no pointers.
+def c_to_dtype(type, enum_int=False):
+    import numpy as np
+    assert '*' not in type
+    type_ = type if not type.endswith('_t') else type[:-2]
+
+    if type.startswith(('vec', 'mat')):
+        return 'np.float32'
+
+    elif type.startswith('cvec'):
+        return 'np.uint8'
+
+    elif type.startswith('uvec'):
+        return 'np.uint32'
+
+    elif type.startswith('dvec'):
+        return 'np.double'
+
+    elif type == 'DvzIndex':
+        return 'np.uint32'
+
+    elif type == 'float':
+        return 'np.float32'
+
+    elif hasattr(np, type):
+        return f'np.{type}'
+
+    elif hasattr(np, type_):
+        return f'np.{type_}'
+
+    else:
+        return None
+
+
+# Original C pointer to ndpointer.
+def cpointer_to_ndpointer(type):
+    assert '*' in type
+    assert type.endswith('*')
+    btype = type[:-1]
+    dtype = c_to_dtype(btype)
+    if dtype:
+        return f'np.ctypeslib.ndpointer(dtype={dtype}, flags="C_CONTIGUOUS")'
+    else:
+        if btype.startswith("Dvz"):
+            TYPES.add(btype)
+        ctype = c_to_ctype(btype) or btype
+        return f'ctypes.POINTER({ctype})'
+
+
+# Final type mapping.
+def map_type(type, enum_int=False):
+    assert type
+    if type == 'char*':
+        return 'ctypes.c_char_p'
+
+    elif type == "void*":
+        return "ctypes.c_void_p"
+
+    elif type.endswith('*'):
+        return cpointer_to_ndpointer(type)
+
+    else:
+        return c_to_ctype(type, enum_int=enum_int)
 
 
 def extract_version(version_path):
@@ -134,7 +184,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += f'class {struct_name}(ctypes.{cls}):\n'
             out += '    _fields_ = [\n'
             for field in struct_info.get('fields', []):
-                dtype = map_ctype(field["dtype"], enum_int=True)
+                dtype = map_type(field["dtype"], enum_int=True)
                 out += f'        ("{field["name"]}", {dtype}),\n'
             out += '    ]\n\n\n'
 
@@ -165,11 +215,11 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += f'{func_name}.argtypes = [\n'
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    out += (f'    {map_ctype(arg["dtype"])},  '
+                    out += (f'    {map_type(arg["dtype"])},  '
                             f'# {arg["dtype"]} {arg["name"]}\n')
             out += ']\n'
-            restype = map_ctype(func_info["returns"])
-            if restype != "None":
+            restype = map_type(func_info["returns"])
+            if restype and restype != "None":
                 out += f'{func_name}.restype = {restype}\n'
             out += '\n'
 
