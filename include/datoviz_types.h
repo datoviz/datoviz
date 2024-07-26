@@ -24,6 +24,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzShape DvzShape;
 typedef struct DvzMVP DvzMVP;
 
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
@@ -230,114 +231,6 @@ typedef enum
     DVZ_TEX_FLAGS_NONE = 0x0000,               // default
     DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000, // (or recreate the staging buffer every time)
 } DvzTexFlags;
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzMVP
-{
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-    float time;
-};
-
-
-
-struct DvzKeyboardEvent
-{
-    DvzKeyboardEventType type;
-    DvzKeyCode key;
-    int mods;
-    void* user_data;
-};
-
-
-
-struct DvzMouseButtonEvent
-{
-    DvzMouseButton button;
-};
-
-struct DvzMouseWheelEvent
-{
-    vec2 dir;
-};
-
-struct DvzMouseDragEvent
-{
-    DvzMouseButton button;
-    vec2 cur_pos; // press_pos is in the mouse event itself
-    vec2 shift;
-};
-
-struct DvzMouseClickEvent
-{
-    DvzMouseButton button;
-};
-
-union DvzMouseEventUnion
-{
-    DvzMouseButtonEvent b;
-    DvzMouseWheelEvent w;
-    DvzMouseDragEvent d;
-    DvzMouseClickEvent c;
-};
-
-struct DvzMouseEvent
-{
-    DvzMouseEventType type;
-    DvzMouseEventUnion content;
-    vec2 pos;
-    int mods;
-    float content_scale;
-    void* user_data;
-};
-
-
-
-struct DvzWindowEvent
-{
-    uint32_t framebuffer_width;
-    uint32_t framebuffer_height;
-    uint32_t screen_width;
-    uint32_t screen_height;
-    int flags;
-    void* user_data;
-};
-
-struct DvzFrameEvent
-{
-    uint64_t frame_idx;
-    double time;
-    double interval;
-    void* user_data;
-};
-
-struct DvzGuiEvent
-{
-    void* user_data;
-};
-
-struct DvzTimerEvent
-{
-    uint32_t timer_idx;
-    DvzTimerItem* timer_item;
-    uint64_t step_idx;
-    double time;
-    void* user_data;
-};
-
-struct DvzRequestsEvent
-{
-    // uint32_t request_count;
-    // void* requests;
-    DvzBatch* batch;
-    void* user_data;
-};
 
 
 
@@ -577,6 +470,135 @@ typedef enum
     DVZ_VIEWPORT_CLIP_BOTTOM = 0x0004,
     DVZ_VIEWPORT_CLIP_LEFT = 0x0008,
 } DvzViewportClip;
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct DvzMVP
+{
+    mat4 model;
+    mat4 view;
+    mat4 proj;
+
+    // float time;
+};
+
+
+
+struct DvzShape
+{
+    // Transform variables during transform begin/end.
+    mat4 transform; // transformation matrix
+    uint32_t first; // first vertex to transform
+    uint32_t count; // number of vertices to transform
+
+    DvzShapeType type;
+    uint32_t vertex_count;
+    uint32_t index_count;
+
+    vec3* pos;
+    vec3* normal;
+    cvec4* color;
+    vec4* texcoords; // u, v, *, a
+    DvzIndex* index;
+};
+
+
+
+struct DvzKeyboardEvent
+{
+    DvzKeyboardEventType type;
+    DvzKeyCode key;
+    int mods;
+    void* user_data;
+};
+
+
+
+struct DvzMouseButtonEvent
+{
+    DvzMouseButton button;
+};
+
+struct DvzMouseWheelEvent
+{
+    vec2 dir;
+};
+
+struct DvzMouseDragEvent
+{
+    DvzMouseButton button;
+    vec2 cur_pos; // press_pos is in the mouse event itself
+    vec2 shift;
+};
+
+struct DvzMouseClickEvent
+{
+    DvzMouseButton button;
+};
+
+union DvzMouseEventUnion
+{
+    DvzMouseButtonEvent b;
+    DvzMouseWheelEvent w;
+    DvzMouseDragEvent d;
+    DvzMouseClickEvent c;
+};
+
+struct DvzMouseEvent
+{
+    DvzMouseEventType type;
+    DvzMouseEventUnion content;
+    vec2 pos;
+    int mods;
+    float content_scale;
+    void* user_data;
+};
+
+
+
+struct DvzWindowEvent
+{
+    uint32_t framebuffer_width;
+    uint32_t framebuffer_height;
+    uint32_t screen_width;
+    uint32_t screen_height;
+    int flags;
+    void* user_data;
+};
+
+struct DvzFrameEvent
+{
+    uint64_t frame_idx;
+    double time;
+    double interval;
+    void* user_data;
+};
+
+struct DvzGuiEvent
+{
+    void* user_data;
+};
+
+struct DvzTimerEvent
+{
+    uint32_t timer_idx;
+    DvzTimerItem* timer_item;
+    uint64_t step_idx;
+    double time;
+    void* user_data;
+};
+
+struct DvzRequestsEvent
+{
+    // uint32_t request_count;
+    // void* requests;
+    DvzBatch* batch;
+    void* user_data;
+};
 
 
 

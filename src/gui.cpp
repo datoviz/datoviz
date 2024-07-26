@@ -504,6 +504,14 @@ bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
 
 
 
+bool dvz_gui_button(const char* name, float width, float height)
+{
+    ANN(name);
+    return ImGui::Button(name, ImVec2(width, height));
+}
+
+
+
 void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...)
 {
     ANN(fmt);

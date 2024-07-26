@@ -61,24 +61,6 @@ typedef struct DvzTex DvzTex;
 
 
 
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct DvzShape
-{
-    DvzShapeType type;
-    uint32_t vertex_count;
-    uint32_t index_count;
-    vec3* pos;
-    vec3* normal;
-    cvec4* color;
-    vec4* texcoords; // u, v, *, a
-    DvzIndex* index;
-};
-
-
-
 EXTERN_C_ON
 
 /*************************************************************************************************/
@@ -546,6 +528,14 @@ DVZ_EXPORT void dvz_panel_destroy(DvzPanel* panel);
 /*************************************************************************************************/
 /*************************************************************************************************/
 
+/**
+ * Update a visual after its data has changed.
+ *
+ * @param visual the visual
+ */
+DVZ_EXPORT void dvz_visual_update(DvzVisual* visual);
+
+
 
 /**
  * Fix some axes in a visual.
@@ -642,6 +632,101 @@ DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
  * @param shape the shape
  */
 DVZ_EXPORT void dvz_shape_destroy(DvzShape* shape);
+
+
+
+/*************************************************************************************************/
+/*  Shape transforms                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Start a transformation sequence.
+ *
+ * @param shape the shape
+ * @param first the first vertex to modify
+ * @param count the number of vertices to modify
+ */
+DVZ_EXPORT void dvz_shape_begin(DvzShape* shape, uint32_t first, uint32_t count);
+
+
+
+/**
+ * Append a scaling transform to a shape.
+ *
+ * @param shape the shape
+ * @param scale the scaling factors
+ */
+DVZ_EXPORT void dvz_shape_scale(DvzShape* shape, vec3 scale);
+
+
+
+/**
+ * Append a translation to a shape.
+ *
+ * @param shape the shape
+ * @param translate the translation vector
+ */
+DVZ_EXPORT void dvz_shape_translate(DvzShape* shape, vec3 translate);
+
+
+
+/**
+ * Append a rotation to a shape.
+ *
+ * @param shape the shape
+ * @param angle the rotation angle
+ * @param axis the rotation axis
+ */
+DVZ_EXPORT void dvz_shape_rotate(DvzShape* shape, float angle, vec3 axis);
+
+
+
+/**
+ * Append an arbitrary transformation.
+ *
+ * @param shape the shape
+ * @param transform the transform mat4 matrix
+ */
+DVZ_EXPORT void dvz_shape_transform(DvzShape* shape, mat4 transform);
+
+
+
+/**
+ * Compute the rescaling factor to renormalize a shape.
+ *
+ * @param shape the shape
+ * @param flags the rescaling flags
+ * @param[out] out_scale the computed scaling factors
+ */
+DVZ_EXPORT float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale);
+
+
+
+/**
+ * Recompute the face normals.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
+
+
+
+/**
+ * Apply the transformation sequence and reset it.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_end(DvzShape* shape);
+
+
+
+/**
+ * Merge two shapes.
+ *
+ * @param merged the shape to append the other shape to
+ * @param to_merge the shape appended to the first shape
+ */
+DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
 
 
 
@@ -2525,6 +2610,18 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
  * @returns whether the value has changed
  */
 DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value);
+
+
+
+/**
+ * Add a button.
+ *
+ * @param name the button name
+ * @param width the button width
+ * @param height the button height
+ * @returns whether the button was pressed
+ */
+DVZ_EXPORT bool dvz_gui_button(const char* name, float width, float height);
 
 
 

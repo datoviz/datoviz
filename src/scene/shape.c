@@ -7,6 +7,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_cglm.h"
 #include "_log.h"
 #include "_macros.h"
 #include "datoviz_math.h"
@@ -32,6 +33,10 @@ void dvz_shape_print(DvzShape* shape)
     log_info(
         "shape type %d, %d vertices, %d indices", //
         shape->type, shape->vertex_count, shape->index_count);
+    // for (uint32_t i = 0; i < shape->vertex_count; i++)
+    // {
+    //     log_info("%.3f %.3f %.3f", shape->pos[i][0], shape->pos[i][1], shape->pos[i][2]);
+    // }
 }
 
 
@@ -44,6 +49,130 @@ void dvz_shape_destroy(DvzShape* shape)
     FREE(shape->color);
     FREE(shape->texcoords);
     FREE(shape->normal);
+}
+
+
+
+/*************************************************************************************************/
+/*  Shape transforms                                                                             */
+/*************************************************************************************************/
+
+static inline void transform_pos(mat4 transform, vec3 pos)
+{
+    glm_mat4_mulv3(transform, pos, 1, pos);
+}
+
+
+
+static inline void transform_normal(mat4 transform, vec3 normal)
+{
+    mat4 tr;
+    glm_mat4_copy(transform, tr);
+    glm_mat4_inv(tr, tr);
+    glm_mat4_transpose(tr);
+    glm_mat4_mulv3(tr, normal, 1, normal);
+}
+
+
+
+void dvz_shape_begin(DvzShape* shape, uint32_t first, uint32_t count)
+{
+    ANN(shape);
+    glm_mat4_identity(shape->transform);
+
+    count = count > 0 ? count : shape->vertex_count;
+    first = CLIP(first, 0, shape->vertex_count - 1);
+    ASSERT(first < shape->vertex_count);
+    count = CLIP(count, 1, shape->vertex_count - first);
+
+    ASSERT(first < shape->vertex_count);
+    ASSERT(first + count <= shape->vertex_count);
+
+    shape->first = first;
+    shape->count = count;
+}
+
+
+
+void dvz_shape_scale(DvzShape* shape, vec3 scale)
+{
+    ANN(shape);
+    mat4 tr;
+    glm_scale_make(tr, scale);
+    dvz_shape_transform(shape, tr);
+}
+
+
+
+void dvz_shape_translate(DvzShape* shape, vec3 translate)
+{
+    ANN(shape);
+    mat4 tr;
+    glm_translate_make(tr, translate);
+    dvz_shape_transform(shape, tr);
+}
+
+
+
+void dvz_shape_rotate(DvzShape* shape, float angle, vec3 axis)
+{
+    ANN(shape);
+    mat4 tr;
+    glm_rotate_make(tr, angle, axis);
+    dvz_shape_transform(shape, tr);
+}
+
+
+
+void dvz_shape_transform(DvzShape* shape, mat4 transform)
+{
+    ANN(shape);
+    glm_mat4_mul(transform, shape->transform, shape->transform);
+}
+
+
+
+float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale)
+{
+    ANN(shape);
+    // TODO: compute the scaling factors.
+
+    return 1.0;
+}
+
+
+
+void dvz_shape_normals(DvzShape* shape)
+{
+    ANN(shape);
+    // TODO: recompute the face normals
+}
+
+
+
+void dvz_shape_end(DvzShape* shape)
+{
+    ANN(shape);
+
+    // Apply the transformation to the vertex positions and normals.
+    for (uint32_t i = shape->first; i < shape->count; i++)
+    {
+        ASSERT(i < shape->vertex_count);
+        transform_pos(shape->transform, shape->pos[i]);
+        transform_normal(shape->transform, shape->normal[i]);
+    }
+
+    // Reset the transformation matrix.
+    glm_mat4_identity(shape->transform);
+}
+
+
+
+void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge)
+{
+    ANN(merged);
+    ANN(to_merge);
+    // TODO
 }
 
 

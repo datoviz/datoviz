@@ -332,6 +332,7 @@ int dvz_run_tests(const char* match)
     TEST(test_mvp_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
+    TEST(test_shape_transform)
     TEST(test_shape_obj)
 
     // Ticks and axes.

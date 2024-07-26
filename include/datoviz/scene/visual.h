@@ -138,13 +138,6 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
 /**
  *
  */
-void dvz_visual_update(DvzVisual* visual);
-
-
-
-/**
- *
- */
 void dvz_visual_destroy(DvzVisual* visual);
 
 

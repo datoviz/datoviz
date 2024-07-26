@@ -37,6 +37,26 @@ int test_shape_1(TstSuite* suite)
 
 
 
+int test_shape_transform(TstSuite* suite)
+{
+    ANN(suite);
+
+    cvec4 color = {255, 0, 0, 255};
+    const uint32_t count = 30;
+
+    DvzShape square = dvz_shape_square(color);
+
+    dvz_shape_begin(&square, 0, 0);
+    dvz_shape_scale(&square, (vec3){2, .5, 1});
+    dvz_shape_end(&square);
+    dvz_shape_print(&square);
+
+    dvz_shape_destroy(&square);
+    return 0;
+}
+
+
+
 int test_shape_obj(TstSuite* suite)
 {
     ANN(suite);

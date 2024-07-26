@@ -368,6 +368,11 @@ static void _frame_callback(DvzClient* client, DvzClientEvent ev)
 static void
 _gui_callback(DvzPresenter* prt, DvzGuiWindow* gui_window, DvzSubmit* submit, uint32_t img_idx)
 {
+    if (!prt || !gui_window || !submit || !prt->callbacks)
+    {
+        return;
+    }
+
     ANN(prt);
     ANN(gui_window);
     ANN(submit);
