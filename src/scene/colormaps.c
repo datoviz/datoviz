@@ -128,6 +128,19 @@ void dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax
 
 
 
+void dvz_colormap_array(
+    DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
+{
+    ANN(values);
+    ANN(out);
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
+    }
+}
+
+
+
 // /**
 //  * Get the texture normalized coordinates corresponding to a colormap and value.
 //  *
@@ -165,27 +178,6 @@ void dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax
 //     uvuv[1] = (row + .5) / 256.;
 //     uvuv[2] = (col1 + .5) / 256.;
 //     uvuv[3] = (row + .5) / 256.;
-// }
-
-
-
-// /**
-//  * Fetch colors from a colormap and an array of values.
-//  *
-//  * @param cmap the colormap
-//  * @param count the number of values
-//  * @param values pointer to the array of double numbers
-//  * @param vmin the minimum value
-//  * @param vmax the maximum value
-//  * @param[out] out the fetched colors
-//  */
-// DVZ_INLINE void dvz_colormap_array(
-//     DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
-// {
-//     ANN(values);
-//     ANN(out);
-//     for (uint32_t i = 0; i < count; i++)
-//         dvz_colormap_scale(cmap, values[i], vmin, vmax, out[i]);
 // }
 
 

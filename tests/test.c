@@ -323,6 +323,7 @@ int dvz_run_tests(const char* match)
     // Testing colormaps.
     TEST(test_colormaps_default)
     TEST(test_colormaps_scale)
+    TEST(test_colormaps_array)
 
     // Testing scene elements.
     TEST(test_panzoom_1)

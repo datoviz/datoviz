@@ -608,6 +608,21 @@ dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cve
 
 
 
+/**
+ * Fetch colors from a colormap and an array of values.
+ *
+ * @param cmap the colormap
+ * @param count the number of values
+ * @param values pointer to the array of double numbers
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] out the fetched colors
+ */
+DVZ_EXPORT void dvz_colormap_array(
+    DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out);
+
+
+
 /*************************************************************************************************/
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
@@ -1174,7 +1189,7 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_path_position(
-    DvzVisual* visual, uint32_t vertex_count, vec3* positions, //
+    DvzVisual* visual, uint32_t point_count, vec3* positions, //
     uint32_t path_count, uint32_t* path_lengths, int flags);
 
 

@@ -80,6 +80,37 @@ int test_colormaps_scale(TstSuite* suite)
 
 
 
+int test_colormaps_array(TstSuite* suite)
+{
+    ANN(suite);
+
+    DvzColormap cmap = DVZ_CMAP_HSV;
+
+    uint32_t n = 100;
+
+    double* values = (double*)calloc(n, sizeof(double));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        values[i] = -1 + 2.0 / (n - 1) * i;
+    }
+    cvec4* colors = (cvec4*)calloc(n, sizeof(cvec4));
+    double vmin = -1, vmax = +1;
+
+    dvz_colormap_array(cmap, n, values, vmin, vmax, colors);
+    // for (uint32_t i = 0; i < n; i++)
+    // {
+    //     printf("%d %d %d %d \n", colors[i][0], colors[i][1], colors[i][2], colors[i][3]);
+    // }
+    AT(memcmp(colors[0], (uint8_t[]){255, 0, 0, 255}, sizeof(cvec4)) == 0);
+    AT(memcmp(colors[n - 1], (uint8_t[]){255, 0, 23, 255}, sizeof(cvec4)) == 0);
+
+    FREE(colors);
+    FREE(values);
+    return 0;
+}
+
+
+
 // int test_colormaps_uv(TstSuite* suite)
 // {
 //     ANN(suite);

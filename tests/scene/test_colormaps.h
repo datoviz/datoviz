@@ -23,6 +23,8 @@ int test_colormaps_default(TstSuite*);
 
 int test_colormaps_scale(TstSuite*);
 
+int test_colormaps_array(TstSuite*);
+
 
 
 #endif

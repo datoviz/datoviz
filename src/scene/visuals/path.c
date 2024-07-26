@@ -109,14 +109,14 @@ void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count)
 
 
 void dvz_path_position(
-    DvzVisual* visual, uint32_t vertex_count, vec3* positions, //
+    DvzVisual* visual, uint32_t point_count, vec3* positions, //
     uint32_t path_count, uint32_t* path_lengths, int flags)
 {
     ANN(visual);
     ANN(positions);
-    ASSERT(vertex_count > 0);
+    ASSERT(point_count > 0);
 
-    uint32_t path_lengths_1[1] = {vertex_count};
+    uint32_t path_lengths_1[1] = {point_count};
     if (path_count <= 1)
     {
         path_count = 1;
