@@ -8,20 +8,47 @@ import numpy as np
 import datoviz as dvz
 from datoviz import (
     S_,  # Python string to ctypes char*
-    vec2,  # Python tuple to ctypes vec2
+    vec2,
+    vec3,
 )
 
 
-square_size = np.array([1.0], dtype=np.float32)
-
-
+# GUI callback function.
 @dvz.gui
 def ongui(app, fid, ev):
-    dvz.gui_size(vec2(250.0, 80.0))
+    # Set the size of the next GUI dialog.
+    dvz.gui_size(vec2(170, 110))
+
+    # Start a GUI dialog with a dialog title.
     dvz.gui_begin(S_("My GUI"), 0)
-    # if dvz.gui_slider(S_("Square size"), 0, 10, square_size):
-    #     dvz.shape_scale(shape, square_size)
-    #     dvz.mesh_reshape(visual, shape)
+
+    # Add two buttons. The functions return whether the button was pressed.
+    incr = dvz.gui_button(S_("Increase"), 150, 30)
+    decr = dvz.gui_button(S_("Decrease"), 150, 30)
+
+    # Scaling factor.
+    scale = 1.0
+    if incr:
+        scale = 1.1
+    elif decr:
+        scale = 0.9
+    if incr or decr:
+
+        # Start recording a set of shape transforms spanning the entire shape (0, 0).
+        dvz.shape_begin(shape, 0, 0)
+
+        dvz.shape_scale(shape, vec3(scale, scale, scale))
+
+        # Stop recording the shape transforms.
+        dvz.shape_end(shape)
+
+        # Update the mesh visual data with the new shape's data.
+        dvz.mesh_reshape(visual, shape)
+
+        # Update the visual after its data has changed.
+        dvz.visual_update(visual)
+
+    # End the GUI dialog.
     dvz.gui_end()
 
 
@@ -31,6 +58,7 @@ batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
 # Create a figure.
+# NOTE: to use a GUI, use this flag. Don't use it if there is no GUI.
 figure = dvz.figure(scene, 800, 800, dvz.DvzCanvasFlags.DVZ_CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(scene, panel)
@@ -45,7 +73,7 @@ visual = dvz.mesh_shape(batch, shape, 0)
 # Add the visual.
 dvz.panel_visual(panel, visual)
 
-# GUI.
+# Associate a GUI callback function with a figure.
 dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
 
 # Run the application.
