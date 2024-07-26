@@ -143,6 +143,10 @@ def vec4(x: float, y: float, z: float, w: float):
     return (ctypes.c_float * 4)(x, y, z, w)
 
 
+def cvec4(r: int, g: int, b: int, a: int):
+    return (ctypes.c_uint8 * 4)(r, g, b, a)
+
+
 def _check_struct_sizes(json_path):
     """Check the size of the ctypes structs and unions with respect to the sizes output by
     the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
