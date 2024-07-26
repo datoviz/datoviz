@@ -836,8 +836,21 @@ class DvzVisual(ctypes.Structure):
 # STRUCTURES
 # ===============================================================================
 
-class DvzShape(ctypes.Structure):
+class DvzMVP(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
+        ("model", ctypes.c_float * 16),
+        ("view", ctypes.c_float * 16),
+        ("proj", ctypes.c_float * 16),
+    ]
+
+
+class DvzShape(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("transform", ctypes.c_float * 16),
+        ("first", ctypes.c_uint32),
+        ("count", ctypes.c_uint32),
         ("type", ctypes.c_int32),
         ("vertex_count", ctypes.c_uint32),
         ("index_count", ctypes.c_uint32),
@@ -849,16 +862,8 @@ class DvzShape(ctypes.Structure):
     ]
 
 
-class DvzMVP(ctypes.Structure):
-    _fields_ = [
-        ("model", ctypes.c_float * 16),
-        ("view", ctypes.c_float * 16),
-        ("proj", ctypes.c_float * 16),
-        ("time", ctypes.c_float),
-    ]
-
-
 class DvzKeyboardEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("type", ctypes.c_int32),
         ("key", ctypes.c_int32),
@@ -868,18 +873,21 @@ class DvzKeyboardEvent(ctypes.Structure):
 
 
 class DvzMouseButtonEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("button", ctypes.c_int32),
     ]
 
 
 class DvzMouseWheelEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("dir", ctypes.c_float * 2),
     ]
 
 
 class DvzMouseDragEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("button", ctypes.c_int32),
         ("cur_pos", ctypes.c_float * 2),
@@ -888,12 +896,14 @@ class DvzMouseDragEvent(ctypes.Structure):
 
 
 class DvzMouseClickEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("button", ctypes.c_int32),
     ]
 
 
 class DvzMouseEventUnion(ctypes.Union):
+    _pack_ = 8
     _fields_ = [
         ("b", DvzMouseButtonEvent),
         ("w", DvzMouseWheelEvent),
@@ -903,6 +913,7 @@ class DvzMouseEventUnion(ctypes.Union):
 
 
 class DvzMouseEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("type", ctypes.c_int32),
         ("content", DvzMouseEventUnion),
@@ -914,6 +925,7 @@ class DvzMouseEvent(ctypes.Structure):
 
 
 class DvzWindowEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("framebuffer_width", ctypes.c_uint32),
         ("framebuffer_height", ctypes.c_uint32),
@@ -925,6 +937,7 @@ class DvzWindowEvent(ctypes.Structure):
 
 
 class DvzFrameEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("frame_idx", ctypes.c_uint64),
         ("time", ctypes.c_double),
@@ -934,12 +947,14 @@ class DvzFrameEvent(ctypes.Structure):
 
 
 class DvzGuiEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("user_data", ctypes.c_void_p),
     ]
 
 
 class DvzTimerEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("timer_idx", ctypes.c_uint32),
         ("timer_item", ctypes.POINTER(DvzTimerItem)),
@@ -950,6 +965,7 @@ class DvzTimerEvent(ctypes.Structure):
 
 
 class DvzRequestsEvent(ctypes.Structure):
+    _pack_ = 8
     _fields_ = [
         ("batch", ctypes.POINTER(DvzBatch)),
         ("user_data", ctypes.c_void_p),
@@ -1283,6 +1299,12 @@ panel_destroy.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 
+# Function dvz_visual_update()
+visual_update = dvz.dvz_visual_update
+visual_update.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+]
+
 # Function dvz_visual_fixed()
 visual_fixed = dvz.dvz_visual_fixed
 visual_fixed.argtypes = [
@@ -1345,6 +1367,71 @@ shape_print.argtypes = [
 shape_destroy = dvz.dvz_shape_destroy
 shape_destroy.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+# Function dvz_shape_begin()
+shape_begin = dvz.dvz_shape_begin
+shape_begin.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+]
+
+# Function dvz_shape_scale()
+shape_scale = dvz.dvz_shape_scale
+shape_scale.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_float * 3,  # vec3 scale
+]
+
+# Function dvz_shape_translate()
+shape_translate = dvz.dvz_shape_translate
+shape_translate.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_float * 3,  # vec3 translate
+]
+
+# Function dvz_shape_rotate()
+shape_rotate = dvz.dvz_shape_rotate
+shape_rotate.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_float,  # float angle
+    ctypes.c_float * 3,  # vec3 axis
+]
+
+# Function dvz_shape_transform()
+shape_transform = dvz.dvz_shape_transform
+shape_transform.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_float * 16,  # mat4 transform
+]
+
+# Function dvz_shape_rescaling()
+shape_rescaling = dvz.dvz_shape_rescaling
+shape_rescaling.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_int,  # int flags
+    ctypes.c_float * 3,  # vec3 out_scale
+]
+shape_rescaling.restype = ctypes.c_float
+
+# Function dvz_shape_normals()
+shape_normals = dvz.dvz_shape_normals
+shape_normals.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+# Function dvz_shape_end()
+shape_end = dvz.dvz_shape_end
+shape_end.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+# Function dvz_shape_merge()
+shape_merge = dvz.dvz_shape_merge
+shape_merge.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* merged
+    ctypes.POINTER(DvzShape),  # DvzShape* to_merge
 ]
 
 # Function dvz_shape_square()
@@ -2043,6 +2130,13 @@ mesh_shape.argtypes = [
 ]
 mesh_shape.restype = ctypes.POINTER(DvzVisual)
 
+# Function dvz_mesh_reshape()
+mesh_reshape = dvz.dvz_mesh_reshape
+mesh_reshape.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
 # Function dvz_fake_sphere()
 fake_sphere = dvz.dvz_fake_sphere
 fake_sphere.argtypes = [
@@ -2604,6 +2698,15 @@ gui_slider.argtypes = [
     np.ctypeslib.ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # float* value
 ]
 gui_slider.restype = ctypes.c_bool
+
+# Function dvz_gui_button()
+gui_button = dvz.dvz_gui_button
+gui_button.argtypes = [
+    ctypes.c_char_p,  # char* name
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+]
+gui_button.restype = ctypes.c_bool
 
 # Function dvz_gui_image()
 gui_image = dvz.dvz_gui_image

@@ -3,11 +3,15 @@
 
 #include "datoviz_types.h"
 
+
+
 int main(void);
 
 int main(void)
 {
     printf("{\n");
+    printf("  \"DvzShape\": %zu,\n", sizeof(DvzShape));
+    printf("  \"DvzMVP\": %zu,\n", sizeof(DvzMVP));
     printf("  \"DvzGuiEvent\": %zu,\n", sizeof(DvzGuiEvent));
     printf("  \"DvzKeyboardEvent\": %zu,\n", sizeof(DvzKeyboardEvent));
     printf("  \"DvzMouseButtonEvent\": %zu,\n", sizeof(DvzMouseButtonEvent));

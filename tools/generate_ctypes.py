@@ -182,6 +182,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             is_union = struct_info["type"] == "union"
             cls = "Structure" if not is_union else "Union"
             out += f'class {struct_name}(ctypes.{cls}):\n'
+            out += '    _pack_ = 8\n'
             out += '    _fields_ = [\n'
             for field in struct_info.get('fields', []):
                 dtype = map_type(field["dtype"], enum_int=True)
