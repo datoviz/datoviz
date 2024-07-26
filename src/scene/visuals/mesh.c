@@ -248,6 +248,7 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 
 DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
 {
+    ANN(batch);
     ANN(shape);
     ANN(shape->pos);
 
@@ -260,6 +261,23 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
     flags |= (index_count > 0 ? DVZ_VISUAL_FLAGS_INDEXED : DVZ_VISUAL_FLAGS_DEFAULT);
     DvzVisual* visual = dvz_mesh(batch, flags);
 
+    dvz_mesh_reshape(visual, shape);
+
+    return visual;
+}
+
+
+
+void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape)
+{
+    ANN(visual);
+    ANN(shape);
+    ANN(shape->pos);
+
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t index_count = shape->index_count;
+    ASSERT(vertex_count > 0);
+
     dvz_mesh_alloc(visual, vertex_count, index_count);
 
     dvz_mesh_position(visual, 0, vertex_count, shape->pos, 0);
@@ -267,14 +285,12 @@ DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
     if (shape->normal)
         dvz_mesh_normal(visual, 0, vertex_count, shape->normal, 0);
 
-    if (shape->color && !(flags & DVZ_MESH_FLAGS_TEXTURED))
+    if (shape->color && !(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_color(visual, 0, vertex_count, shape->color, 0);
 
-    if (shape->texcoords && (flags & DVZ_MESH_FLAGS_TEXTURED))
+    if (shape->texcoords && (visual->flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
 
     if (shape->index_count > 0)
         dvz_mesh_index(visual, 0, index_count, shape->index, 0);
-
-    return visual;
 }

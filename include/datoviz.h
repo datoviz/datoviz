@@ -1667,6 +1667,16 @@ DVZ_EXPORT DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags
 
 
 
+/**
+ * Update a mesh once a shape has been updated.
+ *
+ * @param visual the mesh
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape);
+
+
+
 /*************************************************************************************************/
 /*  Fake sphere                                                                                  */
 /*************************************************************************************************/
