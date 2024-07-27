@@ -44,18 +44,18 @@ int test_fake_sphere_1(TstSuite* suite)
     dvz_fake_sphere_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    cvec4* color = dvz_mock_color(n, 255);
     dvz_fake_sphere_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = dvz_mock_uniform(n, 0.1, 0.3);
+    float* size = dvz_mock_uniform(n, 50, 100);
     dvz_fake_sphere_size(visual, 0, n, size, 0);
-
-    // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
 
     // Light position
     dvz_fake_sphere_light_pos(visual, (vec3){-1, +1, +10});
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual);
 
     // Run the test.
     visual_test_end(vt);

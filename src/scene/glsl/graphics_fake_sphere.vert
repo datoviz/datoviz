@@ -4,7 +4,6 @@
 layout(binding = 2) uniform FakeParams { vec4 light_pos; }
 params;
 
-// TODO: rename in_
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec4 color;
 layout(location = 2) in float radius;
@@ -16,20 +15,19 @@ layout(location = 3) out vec4 out_eye_pos;
 
 void main()
 {
-    gl_Position = transform(pos);
-
+    out_pos = pos;
     out_radius = radius;
     out_color = color;
 
-    mat4 MV = mvp.view * mvp.model;
-    mat4 P = mvp.proj;
+    // Calculate the eye-space position
+    vec4 world_pos = mvp.model * vec4(pos, 1.0);
+    vec4 eye_pos = mvp.view * world_pos;
+    out_eye_pos = eye_pos;
 
-    // https://stackoverflow.com/a/8609184/1595060
-    vec4 eyePos = MV * vec4(pos, 1);
-    vec4 projCorner = P * vec4(0.5 * radius, 0.5 * radius, eyePos.z, eyePos.w);
+    // Project the position to clip space using the transform function
+    gl_Position = transform(pos);
 
-    gl_PointSize = viewport.size[1] * projCorner.x / projCorner.w;
-
-    out_pos = gl_Position.xyz;
-    out_eye_pos = eyePos;
+    // Set the point size to the diameter of the sphere in pixels
+    float distance_to_camera = length(eye_pos.xyz);
+    gl_PointSize = (2.0 * radius) / distance_to_camera;
 }

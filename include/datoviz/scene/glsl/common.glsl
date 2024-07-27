@@ -58,7 +58,7 @@ layout(std140, binding = 0) uniform MVP
     mat4 model;
     mat4 view;
     mat4 proj;
-    float time;
+    // float time;
 }
 mvp;
 
