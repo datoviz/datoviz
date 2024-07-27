@@ -131,7 +131,7 @@ void dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, c
 
 
 void dvz_colormap_array(
-    DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out)
+    DvzColormap cmap, uint32_t count, float* values, float vmin, float vmax, cvec4* out)
 {
     ANN(values);
     ANN(out);

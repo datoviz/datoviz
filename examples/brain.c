@@ -49,9 +49,6 @@ int main(int argc, char** argv)
     dvz_arcball_initial(arcball, (vec3){+0.6, -1.2, +3.0});
     dvz_panel_update(panel); // IMPORTANT after changing the interactivity parameters
 
-    // Perspective camera.
-    DvzCamera* camera = dvz_panel_camera(panel);
-
     // File path to a .obj file.
     // This is a 3D mesh reconstruction of a mouse brain, provided by the Allen Institute.
     char path[1024] = {0};

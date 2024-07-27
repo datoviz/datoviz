@@ -603,13 +603,13 @@ dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, cvec4 
  *
  * @param cmap the colormap
  * @param count the number of values
- * @param values pointer to the array of double numbers
+ * @param values pointer to the array of float numbers
  * @param vmin the minimum value
  * @param vmax the maximum value
  * @param[out] out the fetched colors
  */
 DVZ_EXPORT void dvz_colormap_array(
-    DvzColormap cmap, uint32_t count, double* values, double vmin, double vmax, cvec4* out);
+    DvzColormap cmap, uint32_t count, float* values, float vmin, float vmax, cvec4* out);
 
 
 

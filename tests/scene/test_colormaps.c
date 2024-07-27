@@ -88,13 +88,13 @@ int test_colormaps_array(TstSuite* suite)
 
     uint32_t n = 100;
 
-    double* values = (double*)calloc(n, sizeof(double));
+    float* values = (float*)calloc(n, sizeof(float));
     for (uint32_t i = 0; i < n; i++)
     {
         values[i] = -1 + 2.0 / (n - 1) * i;
     }
     cvec4* colors = (cvec4*)calloc(n, sizeof(cvec4));
-    double vmin = -1, vmax = +1;
+    float vmin = -1, vmax = +1;
 
     dvz_colormap_array(cmap, n, values, vmin, vmax, colors);
     // for (uint32_t i = 0; i < n; i++)
