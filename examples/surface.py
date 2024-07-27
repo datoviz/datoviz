@@ -26,7 +26,6 @@ arcball = dvz.panel_arcball(scene, panel)
 row_count = 250
 col_count = row_count
 n = row_count * col_count
-
 o = vec3(-1, 0, -1)
 u = vec3(2.0 / (row_count - 1), 0, 0)
 v = vec3(0, 0, 2.0 / (col_count - 1))
@@ -52,7 +51,6 @@ b = 3.0 * 2*np.pi / col_count
 c = .5
 hmin = -.5
 hmax = +.5
-
 heights = np.exp(-.0001 * d ** 2) * np.sin(a*xv) * np.cos(b*yv)
 heights = heights.astype(np.float32)
 
@@ -64,15 +62,15 @@ dvz.colormap_array(
 # Create the surface shape.
 shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
 
-# Create the visual.
+# Create the mesh visual from the surface shape.
 flags = dvz.DvzMeshFlags.DVZ_MESH_FLAGS_LIGHTING
 visual = dvz.mesh_shape(batch, shape, flags)
 
-# Lighting.
+# Lighting parameters.
 dvz.mesh_light_pos(visual, vec4(-1, +1, +10, 0))
 dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
-# Add the visual.
+# Add the visual to the panel.
 dvz.panel_visual(panel, visual)
 
 # Initial arcball angles.
@@ -82,6 +80,7 @@ dvz.arcball_set(arcball, vec3(0.42339, angle, -0.00554))
 dvz.panel_update(panel)
 
 
+# Timer callback: update the arcball angles in real time.
 @dvz.timer
 def _on_timer(app, window_id, ev):
     global angle
@@ -90,7 +89,10 @@ def _on_timer(app, window_id, ev):
     dvz.panel_update(panel)
 
 
+# Create a timer (60 events per second).
 dvz.app_timer(app, 0, 1. / 60., 0)
+
+# Register a timer callback.
 dvz.app_ontimer(app, _on_timer, None)
 
 # Run the application.
