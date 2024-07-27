@@ -378,7 +378,14 @@ bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
         }
         else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
         {
-            dvz_panzoom_zoom_shift(pz, ev.content.d.shift, ev.pos);
+            vec2 shift = {0};
+            glm_vec2_copy(ev.content.d.shift, shift);
+
+            // Flag: keep aspect ratio.
+            if ((pz->flags & DVZ_PANZOOM_FLAGS_KEEP_ASPECT) != 0)
+                shift[1] = -shift[0];
+
+            dvz_panzoom_zoom_shift(pz, shift, ev.pos);
         }
         break;
 
