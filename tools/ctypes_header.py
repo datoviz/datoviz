@@ -22,6 +22,7 @@ try:
     import numpy as np
     from numpy import float32
     from numpy.ctypeslib import as_ctypes_type as _ctype
+    from numpy.ctypeslib import ndpointer as ndpointer_
 except ImportError:
     float32 = object
     print("NumPy is not available")
@@ -125,6 +126,18 @@ def array_pointer(x, dtype=None):
     dtype = dtype or x.dtype
     x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
+
+
+# HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
+def ndpointer(*args, **kwargs):
+    base = ndpointer_(*args, **kwargs)
+
+    @classmethod
+    def from_param(cls, obj):
+        if obj is None:
+            return obj
+        return base.from_param(obj)
+    return type(base.__name__, (base,), {'from_param': from_param})
 
 
 def char_pointer(s):

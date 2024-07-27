@@ -98,7 +98,8 @@ def cpointer_to_ndpointer(type):
     btype = type[:-1]
     dtype = c_to_dtype(btype)
     if dtype:
-        return f'np.ctypeslib.ndpointer(dtype={dtype}, flags="C_CONTIGUOUS")'
+        # NOTE: redefined in ctypes_header.py to support None arguments
+        return f'ndpointer(dtype={dtype}, flags="C_CONTIGUOUS")'
     else:
         if btype.startswith("Dvz"):
             TYPES.add(btype)
