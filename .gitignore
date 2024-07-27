@@ -82,3 +82,4 @@ packaging
 dist
 docs/examples
 api.md
+venv
