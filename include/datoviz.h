@@ -480,7 +480,7 @@ DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
  * @param panel the panel
  * @returns the panzoom
  */
-DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
+DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
 
 
 
@@ -490,7 +490,7 @@ DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel);
  * @param panel the panel
  * @returns the arcball
  */
-DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel);
+DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
 
 
 
@@ -1747,7 +1747,7 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
  * @param visual the mesh
  * @param pos the light position
  */
-DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos);
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos);
 
 
 

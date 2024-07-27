@@ -67,7 +67,7 @@ int test_scene_1(TstSuite* suite)
     AT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel);
     ANN(pz);
 
     // Create a visual.
@@ -140,7 +140,7 @@ int test_scene_2(TstSuite* suite)
     // Transforms.
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(scene, panel_0);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel_0);
     ANN(pz);
 
     dvz_panel_transform(panel_1, panel_0->transform);
@@ -190,7 +190,7 @@ int test_scene_3(TstSuite* suite)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Arcball.
-    DvzArcball* arcball = dvz_panel_arcball(scene, panel);
+    DvzArcball* arcball = dvz_panel_arcball(panel);
     ANN(arcball);
 
     // Create a visual.
@@ -209,7 +209,7 @@ int test_scene_3(TstSuite* suite)
 
     // Params.
     // ambient, diffuse, specular, specular exponent
-    dvz_mesh_light_pos(mesh, (vec4){-1, +1, +5, 0});
+    dvz_mesh_light_pos(mesh, (vec3){-1, +1, +5});
     dvz_mesh_light_params(mesh, (vec4){.25, .25, .5, 16});
 
     // Important: upload the data to the GPU for both the vertex buffer and the params dat.

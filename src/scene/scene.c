@@ -432,11 +432,14 @@ void dvz_panel_destroy(DvzPanel* panel)
 /*  Controllers                                                                                  */
 /*************************************************************************************************/
 
-DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel)
+DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
 {
-    ANN(scene);
     ANN(panel);
     ANN(panel->view);
+    ANN(panel->figure);
+
+    DvzScene* scene = panel->figure->scene;
+    ANN(scene);
 
     if (panel->panzoom)
         return panel->panzoom;
@@ -467,11 +470,14 @@ DvzPanzoom* dvz_panel_panzoom(DvzScene* scene, DvzPanel* panel)
 
 
 
-DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel)
+DvzArcball* dvz_panel_arcball(DvzPanel* panel)
 {
-    ANN(scene);
     ANN(panel);
     ANN(panel->view);
+    ANN(panel->figure);
+
+    DvzScene* scene = panel->figure->scene;
+    ANN(scene);
 
     if (panel->arcball)
         return panel->arcball;

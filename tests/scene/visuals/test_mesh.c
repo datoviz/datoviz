@@ -75,7 +75,7 @@ int test_mesh_1(TstSuite* suite)
     // Lighting.
     if (flags & DVZ_MESH_FLAGS_LIGHTING)
     {
-        dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
+        dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
 
         // Light parameters: ambient, diffuse, specular, exponent.
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
@@ -152,7 +152,7 @@ int test_mesh_surface(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Lighting.
-    dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
+    dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
     dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -197,7 +197,7 @@ int test_mesh_obj(TstSuite* suite)
     // Lighting.
     if (flags & DVZ_MESH_FLAGS_LIGHTING)
     {
-        dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});
+        dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
