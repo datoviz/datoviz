@@ -18,7 +18,7 @@ def _extract_int(s):
 
 
 # Original C type to ctype, no pointers.
-def c_to_ctype(type, enum_int=False):
+def c_to_ctype(type, enum_int=False, unsigned=None):
     assert '*' not in type
     n = _extract_int(type)
     type_ = type if not type.endswith('_t') else type[:-2]
@@ -44,8 +44,11 @@ def c_to_ctype(type, enum_int=False):
     elif enum_int and type in ENUMS:
         return "ctypes.c_int32"
 
+    elif type == 'char' and unsigned:
+        return 'ctypes.c_ubyte'
+
     elif hasattr(ctypes, f'c_{type_}'):
-        return f"ctypes.c_{type_}"
+        return f"ctypes.c_{'u' if unsigned else ''}{type_}"
 
     elif type == 'void':
         return 'None'
@@ -58,7 +61,7 @@ def c_to_ctype(type, enum_int=False):
 
 
 # Original C type to np.dtype, no pointers.
-def c_to_dtype(type, enum_int=False):
+def c_to_dtype(type, enum_int=False, unsigned=None):
     import numpy as np
     assert '*' not in type
     type_ = type if not type.endswith('_t') else type[:-2]
@@ -81,6 +84,9 @@ def c_to_dtype(type, enum_int=False):
     elif type == 'float':
         return 'np.float32'
 
+    elif type == 'char' and unsigned:
+        return 'np.ubyte'
+
     elif hasattr(np, type):
         return f'np.{type}'
 
@@ -92,11 +98,11 @@ def c_to_dtype(type, enum_int=False):
 
 
 # Original C pointer to ndpointer.
-def cpointer_to_ndpointer(type):
+def cpointer_to_ndpointer(type, unsigned=None):
     assert '*' in type
     assert type.endswith('*')
     btype = type[:-1]
-    dtype = c_to_dtype(btype)
+    dtype = c_to_dtype(btype, unsigned=unsigned)
     if dtype:
         # NOTE: redefined in ctypes_header.py to support None arguments
         return f'ndpointer(dtype={dtype}, flags="C_CONTIGUOUS")'
@@ -108,19 +114,19 @@ def cpointer_to_ndpointer(type):
 
 
 # Final type mapping.
-def map_type(type, enum_int=False):
+def map_type(type, enum_int=False, unsigned=None):
     assert type
-    if type == 'char*':
+    if type == 'char*' and not unsigned:
         return 'ctypes.c_char_p'
 
     elif type == "void*":
         return "ctypes.c_void_p"
 
     elif type.endswith('*'):
-        return cpointer_to_ndpointer(type)
+        return cpointer_to_ndpointer(type, unsigned=unsigned)
 
     else:
-        return c_to_ctype(type, enum_int=enum_int)
+        return c_to_ctype(type, enum_int=enum_int, unsigned=unsigned)
 
 
 def extract_version(version_path):
@@ -186,7 +192,8 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += '    _pack_ = 8\n'
             out += '    _fields_ = [\n'
             for field in struct_info.get('fields', []):
-                dtype = map_type(field["dtype"], enum_int=True)
+                dtype = map_type(
+                    field["dtype"], enum_int=True, unsigned=field.get("unsigned", None))
                 out += f'        ("{field["name"]}", {dtype}),\n'
             out += '    ]\n\n\n'
 

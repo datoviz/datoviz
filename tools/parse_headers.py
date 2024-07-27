@@ -138,11 +138,13 @@ def parse_structs(text):
     # LBRACE, RBRACE, LBRACKET, RBRACKET, COMMA, SEMICOLON = map(Suppress, "{}[],;")
     _struct = Literal("struct") ^ Literal("union")
     const = Keyword("const")
+    unsigned = Keyword("unsigned")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums + "_")
     array = LBRACKET + identifier("array_name") + RBRACKET
     structDecl = Group(
         Optional(const("const")) +
+        Optional(unsigned("unsigned")) +
         dtype("dtype") +
         identifier("name") +
         Optional(array("array")) +
@@ -159,6 +161,8 @@ def parse_structs(text):
                 dtype=entry.dtype,
                 name=entry.name,
             )
+            if entry.unsigned:
+                b.unsigned = True
             if entry.const:
                 b.const = entry.const
             if entry.array_name:
