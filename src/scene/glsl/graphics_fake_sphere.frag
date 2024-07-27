@@ -76,7 +76,18 @@ void main()
     // Depth.
     vec4 vm = mvp.view * mvp.model * vec4(in_pos, 1);
     float d = length(vm.xyz);
-    vm += in_radius / (d * viewport.size.x) * vec4(normal, 1);
+
+    // Viewport size.
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+    float a = w / h;
+    float v = w;
+    // float point_size_clip_space_x = in_point_size / viewport.size.x;
+    // float point_size_clip_space_y = in_point_size / viewport.size.y;
+    // float point_size_clip_space =
+    //     max(point_size_clip_space_x, point_size_clip_space_y * aspect_ratio);
+
+    vm += in_radius / (d * v) * vec4(normal, 1);
     vec4 clipPos = mvp.proj * vm;
     clipPos.z /= clipPos.w;
     gl_FragDepth = clipPos.z;
