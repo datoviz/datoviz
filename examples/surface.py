@@ -6,7 +6,7 @@ Show a surface in 3D.
 
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, vec4
+from datoviz import vec3, vec4
 
 # Boilerplate.
 app = dvz.app(dvz.DvzAppFlags.DVZ_APP_FLAGS_WHITE_BACKGROUND)
@@ -20,7 +20,7 @@ figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
 
 # Arcball interactivity.
-arcball = dvz.panel_arcball(scene, panel)
+arcball = dvz.panel_arcball(panel)
 
 # Grid parameters.
 row_count = 250
@@ -67,7 +67,7 @@ flags = dvz.DvzMeshFlags.DVZ_MESH_FLAGS_LIGHTING
 visual = dvz.mesh_shape(batch, shape, flags)
 
 # Lighting parameters.
-dvz.mesh_light_pos(visual, vec4(-1, +1, +10, 0))
+dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
 dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.

@@ -18,7 +18,7 @@ figure = dvz.figure(scene, 600, 1200, 0)
 panel = dvz.panel_default(figure)
 
 # Panzoom interactivity.
-pz = dvz.panel_panzoom(scene, panel)
+pz = dvz.panel_panzoom(panel)
 
 # Path visual.
 
@@ -49,7 +49,7 @@ pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
 dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
 
 # Colors.
-t = np.linspace(0, 1, n_paths)
+t = np.linspace(0, 1, n_paths).astype(np.float32)
 color = np.full((n_paths, 4), 255, dtype=np.uint8)
 dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_HSV, n_paths, t, 0, 1, color)
 color = np.repeat(color, path_size, axis=0)

@@ -7,7 +7,7 @@ Show a 3D mesh.
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, vec4, S_, A_
+from datoviz import vec3, vec4, S_
 
 # Boilerplate.
 app = dvz.app(0)
@@ -21,7 +21,7 @@ figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
 
 # Arcball interactivity.
-arcball = dvz.panel_arcball(scene, panel)
+arcball = dvz.panel_arcball(panel)
 
 # Load a .OBJ mesh file.
 CURDIR = Path(__file__).parent
@@ -44,7 +44,7 @@ dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_BWR, nv, t, 0, 1, colors)
 dvz.mesh_color(visual, 0, nv, colors, 0)
 
 # Lighting parameters.
-dvz.mesh_light_pos(visual, vec4(-1, +1, +10, 0))
+dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
 dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.

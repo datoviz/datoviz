@@ -1281,7 +1281,6 @@ panel_camera.restype = ctypes.POINTER(DvzCamera)
 # Function dvz_panel_panzoom()
 panel_panzoom = dvz.dvz_panel_panzoom
 panel_panzoom.argtypes = [
-    ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_panzoom.restype = ctypes.POINTER(DvzPanzoom)
@@ -1289,7 +1288,6 @@ panel_panzoom.restype = ctypes.POINTER(DvzPanzoom)
 # Function dvz_panel_arcball()
 panel_arcball = dvz.dvz_panel_arcball
 panel_arcball.argtypes = [
-    ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_arcball.restype = ctypes.POINTER(DvzArcball)
@@ -1371,6 +1369,19 @@ colormap_array.argtypes = [
     ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS"),  # cvec4* out
 ]
 
+# Function dvz_shape_normals()
+shape_normals = dvz.dvz_shape_normals
+shape_normals.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
+# Function dvz_shape_merge()
+shape_merge = dvz.dvz_shape_merge
+shape_merge.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* merged
+    ctypes.POINTER(DvzShape),  # DvzShape* to_merge
+]
+
 # Function dvz_shape_print()
 shape_print = dvz.dvz_shape_print
 shape_print.argtypes = [
@@ -1429,23 +1440,10 @@ shape_rescaling.argtypes = [
 ]
 shape_rescaling.restype = ctypes.c_float
 
-# Function dvz_shape_normals()
-shape_normals = dvz.dvz_shape_normals
-shape_normals.argtypes = [
-    ctypes.POINTER(DvzShape),  # DvzShape* shape
-]
-
 # Function dvz_shape_end()
 shape_end = dvz.dvz_shape_end
 shape_end.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
-]
-
-# Function dvz_shape_merge()
-shape_merge = dvz.dvz_shape_merge
-shape_merge.argtypes = [
-    ctypes.POINTER(DvzShape),  # DvzShape* merged
-    ctypes.POINTER(DvzShape),  # DvzShape* to_merge
 ]
 
 # Function dvz_shape_square()
@@ -2139,7 +2137,7 @@ mesh_alloc.argtypes = [
 mesh_light_pos = dvz.dvz_mesh_light_pos
 mesh_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 4,  # vec4 pos
+    ctypes.c_float * 3,  # vec3 pos
 ]
 
 # Function dvz_mesh_light_params()

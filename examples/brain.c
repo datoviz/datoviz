@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Arcball.
-    DvzArcball* arcball = dvz_panel_arcball(scene, panel);
+    DvzArcball* arcball = dvz_panel_arcball(panel);
 
     // Set the initial arcball angles.
     dvz_arcball_initial(arcball, (vec3){+0.6, -1.2, +3.0});
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     DvzVisual* visual = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
 
     // Mesh lighting parameters.
-    dvz_mesh_light_pos(visual, (vec4){-1, +1, +10, 0});    // Light position
+    dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});       // Light position
     dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16}); // Ambient, diffuse, specular, exponent.
 
     // Add the visual to the panel AFTER setting the visual's data.

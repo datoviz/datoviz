@@ -62,7 +62,7 @@ scene = dvz.scene(batch)
 # NOTE: to use a GUI, use this flag. Don't use it if there is no GUI.
 figure = dvz.figure(scene, 800, 800, dvz.DvzCanvasFlags.DVZ_CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
-pz = dvz.panel_panzoom(scene, panel)
+pz = dvz.panel_panzoom(panel)
 
 # Create a square shape.
 color = dvz.cvec4(64, 128, 255, 255)

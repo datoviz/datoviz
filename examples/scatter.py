@@ -19,7 +19,7 @@ figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
 
 # Panzoom interactivity.
-pz = dvz.panel_panzoom(scene, panel)
+pz = dvz.panel_panzoom(panel)
 
 # Point visual.
 visual = dvz.point(batch, 0)

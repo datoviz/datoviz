@@ -218,7 +218,7 @@ void dvz_mesh_texture(
 
 
 
-void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos)
+void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -227,7 +227,8 @@ void dvz_mesh_light_pos(DvzVisual* visual, vec4 pos)
             "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
         return;
     }
-    dvz_visual_param(visual, 2, 0, pos);
+    vec4 pos_ = {pos[0], pos[1], pos[2], 0};
+    dvz_visual_param(visual, 2, 0, pos_);
 }
 
 
