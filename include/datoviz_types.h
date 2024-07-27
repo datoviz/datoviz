@@ -26,6 +26,7 @@
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzMVP DvzMVP;
+typedef struct DvzAtlasFont DvzAtlasFont;
 
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
@@ -45,6 +46,8 @@ typedef struct DvzRequestsEvent DvzRequestsEvent;
 typedef struct DvzTimerItem DvzTimerItem;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzApp DvzApp;
+typedef struct DvzAtlas DvzAtlas;
+typedef struct DvzFont DvzFont;
 
 // Callback types.
 typedef void (*DvzAppGuiCallback)(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev);
@@ -104,6 +107,7 @@ typedef enum
 {
     DVZ_KEYBOARD_EVENT_NONE,
     DVZ_KEYBOARD_EVENT_PRESS,
+    DVZ_KEYBOARD_EVENT_REPEAT,
     DVZ_KEYBOARD_EVENT_RELEASE,
 } DvzKeyboardEventType;
 
@@ -477,6 +481,16 @@ typedef enum
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzAtlasFont
+{
+    unsigned long ttf_size;
+    unsigned char* ttf_bytes;
+    DvzAtlas* atlas;
+    DvzFont* font;
+};
+
+
 
 struct DvzMVP
 {

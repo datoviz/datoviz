@@ -84,6 +84,18 @@ DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
+// DvzFont* dvz_font_default()
+// {
+//     unsigned long ttf_size = 0;
+//     unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
+//     ASSERT(ttf_size > 0);
+//     ANN(ttf_bytes);
+//     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
+//     return font;
+// }
+
+
+
 void dvz_font_size(DvzFont* font, double size)
 {
     ANN(font);

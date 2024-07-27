@@ -56,6 +56,7 @@ typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
 
 typedef struct DvzShape DvzShape;
+typedef struct DvzFont DvzFont;
 typedef struct DvzAtlas DvzAtlas;
 typedef struct DvzTex DvzTex;
 
@@ -1337,6 +1338,20 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
 /*************************************************************************************************/
 /*  Glyph                                                                                        */
 /*************************************************************************************************/
+
+/**
+ * Load the default font.
+ */
+// DVZ_EXPORT DvzFont* dvz_font_default(void);
+
+
+
+/**
+ * Load the default atlas.
+ */
+DVZ_EXPORT DvzAtlasFont dvz_atlas_font(void);
+
+
 
 /**
  * Create a glyph visual.

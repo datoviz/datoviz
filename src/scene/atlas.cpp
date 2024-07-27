@@ -100,6 +100,10 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
+DvzAtlasFont dvz_atlas_font() { return dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas"); }
+
+
+
 void dvz_atlas_clear(DvzAtlas* atlas)
 {
     ANN(atlas);
