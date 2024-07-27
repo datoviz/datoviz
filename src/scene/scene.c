@@ -494,8 +494,8 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel)
     log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
-    panel->transform = dvz_transform(scene->batch, 0);
-    panel->transform_to_destroy = true;
+    // panel->transform = dvz_transform(scene->batch, 0);
+    // panel->transform_to_destroy = true;
 
     // Also create a perspective camera.
     DvzCamera* camera = dvz_panel_camera(panel);
@@ -566,14 +566,21 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
 {
     ANN(panel);
     ANN(panel->view);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+
+    DvzBatch* batch = panel->figure->scene->batch;
+    ANN(batch);
 
     if (panel->camera)
         return panel->camera;
 
     if (!panel->transform)
     {
-        log_error("need to set up a panel transform before creating a camera");
-        return NULL;
+        // log_error("need to set up a panel transform before creating a camera");
+        // return NULL;
+        panel->transform = dvz_transform(batch, 0);
+        panel->transform_to_destroy = true;
     }
     ANN(panel->transform);
 
