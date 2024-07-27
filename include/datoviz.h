@@ -594,7 +594,7 @@ DVZ_EXPORT void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color);
  * @param[out] color the fetched color
  */
 DVZ_EXPORT void
-dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cvec4 color);
+dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, cvec4 color);
 
 
 

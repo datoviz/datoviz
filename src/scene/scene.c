@@ -491,6 +491,9 @@ DvzArcball* dvz_panel_arcball(DvzScene* scene, DvzPanel* panel)
     panel->transform = dvz_transform(scene->batch, 0);
     panel->transform_to_destroy = true;
 
+    // Also create a perspective camera.
+    DvzCamera* camera = dvz_panel_camera(panel);
+
     return panel->arcball;
 }
 

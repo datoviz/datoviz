@@ -31,23 +31,25 @@
 static unsigned char* DVZ_COLORMAP_ARRAY;
 #pragma GCC visibility pop
 
+#define EPS 0.000001
 
 
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-// Rescale a double value to a byte.
-static uint8_t _scale_uint8(double value, double vmin, double vmax)
+// Rescale a float value to a byte.
+static uint8_t _scale_uint8(float value, float vmin, float vmax)
 {
     if (vmin == vmax)
     {
         log_warn("error in colormap_value(): vmin=vmax");
         return 0;
     }
-    double x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
-    if (x == 1)
-        x = 0.99999999;
+    float x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
+    // printf("%f %f %f %f\n", value, vmin, vmax, x);
+    if (x >= 1 - EPS)
+        x = 1 - EPS;
     ASSERT(0 <= x && x < 1);
     return (uint8_t)floor(x * 256);
 }
@@ -120,7 +122,7 @@ void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color)
 
 
 
-void dvz_colormap_scale(DvzColormap cmap, double value, double vmin, double vmax, cvec4 color)
+void dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, cvec4 color)
 {
     uint8_t u_value = _scale_uint8(value, vmin, vmax);
     dvz_colormap(cmap, u_value, color);

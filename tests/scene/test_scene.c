@@ -215,9 +215,6 @@ int test_scene_3(TstSuite* suite)
     // Important: upload the data to the GPU for both the vertex buffer and the params dat.
     dvz_visual_update(mesh);
 
-    // Perspective camera.
-    DvzCamera* camera = dvz_panel_camera(panel);
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, mesh);
 
@@ -225,7 +222,6 @@ int test_scene_3(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Cleanup.
-    dvz_camera_destroy(camera);
     dvz_panel_destroy(panel);
     dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);
