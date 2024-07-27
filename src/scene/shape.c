@@ -322,8 +322,9 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 /*************************************************************************************************/
 
 DvzShape dvz_shape_surface(
-    uint32_t row_count, uint32_t col_count, float* heights, //
-    vec3 o, vec3 u, vec3 v, cvec4 color, int flags)
+    uint32_t row_count, uint32_t col_count, //
+    float* heights, cvec4* colors,          //
+    vec3 o, vec3 u, vec3 v, int flags)
 {
     // TODO: flag for closed surface on i or j
     // TODO: flag planar or cylindric
@@ -370,10 +371,10 @@ DvzShape dvz_shape_surface(
             shape.pos[point_idx][2] += height * normal[2];
 
             // Color.
-            shape.color[point_idx][0] = color[0];
-            shape.color[point_idx][1] = color[1];
-            shape.color[point_idx][2] = color[2];
-            shape.color[point_idx][3] = color[3];
+            shape.color[point_idx][0] = colors != NULL ? colors[point_idx][0] : 255;
+            shape.color[point_idx][1] = colors != NULL ? colors[point_idx][1] : 255;
+            shape.color[point_idx][2] = colors != NULL ? colors[point_idx][2] : 255;
+            shape.color[point_idx][3] = colors != NULL ? colors[point_idx][3] : 255;
 
             // Index.
             // TODO: shape topology (flags) to implement here

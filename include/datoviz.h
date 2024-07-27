@@ -764,7 +764,8 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
  *
  * @param row_count number of rows
  * @param col_count number of cols
- * @param heights a pointer to row_count*col_count floating point values with the vertex heights
+ * @param heights a pointer to row_count*col_count height values (floats)
+ * @param colors a pointer to row_count*col_count color values (cvec4)
  * @param o the origin
  * @param u the unit vector parallel to each column
  * @param v the unit vector parallel to each row
@@ -773,8 +774,9 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
  */
 DVZ_EXPORT
 DvzShape dvz_shape_surface(
-    uint32_t row_count, uint32_t col_count, float* heights, //
-    vec3 o, vec3 u, vec3 v, cvec4 color, int flags);
+    uint32_t row_count, uint32_t col_count, //
+    float* heights, cvec4* colors,          //
+    vec3 o, vec3 u, vec3 v, int flags);
 
 
 

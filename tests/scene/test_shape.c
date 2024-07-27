@@ -55,8 +55,7 @@ int test_shape_surface(TstSuite* suite)
             heights[idx++] = sin(i) * cos(j);
         }
     }
-    cvec4 color = {64, 128, 255, 255};
-    DvzShape shape = dvz_shape_surface(row_count, col_count, heights, o, u, v, color, 0);
+    DvzShape shape = dvz_shape_surface(row_count, col_count, heights, NULL, o, u, v, 0);
 
     dvz_shape_print(&shape);
 
