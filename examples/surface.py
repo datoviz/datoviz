@@ -76,7 +76,6 @@ dvz.panel_visual(panel, visual)
 # Initial arcball angles.
 angle = -0.39686
 dvz.arcball_initial(arcball, vec3(0.42339, angle, -0.00554))
-dvz.arcball_set(arcball, vec3(0.42339, angle, -0.00554))
 dvz.panel_update(panel)
 
 

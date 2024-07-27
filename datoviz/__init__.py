@@ -140,7 +140,7 @@ def ndpointer(*args, **kwargs):
 
 
 def char_pointer(s):
-    return s.encode('utf-8')
+    return str(s).encode('utf-8')
 
 
 def vec2(x: float, y: float):

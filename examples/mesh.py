@@ -1,0 +1,62 @@
+"""# Mesh example
+
+Show a 3D mesh.
+
+"""
+
+from pathlib import Path
+import numpy as np
+import datoviz as dvz
+from datoviz import vec2, vec3, vec4, S_, A_
+
+# Boilerplate.
+app = dvz.app(0)
+batch = dvz.app_batch(app)
+scene = dvz.scene(batch)
+
+# Create a figure 800x600.
+figure = dvz.figure(scene, 800, 600, 0)
+
+# Panel spanning the entire window.
+panel = dvz.panel_default(figure)
+
+# Arcball interactivity.
+arcball = dvz.panel_arcball(scene, panel)
+
+# Load a .OBJ mesh file.
+CURDIR = Path(__file__).parent
+filepath = (CURDIR / "../data/mesh/brain.obj").resolve()
+shape = dvz.shape_obj(S_(filepath))
+
+# Fill artificial colors.
+nv = shape.vertex_count
+ni = shape.index_count
+print(f"Loaded {filepath} with {nv} vertices and {ni // 3} faces.")
+
+# Create the mesh visual from the surface shape.
+flags = dvz.DvzMeshFlags.DVZ_MESH_FLAGS_LIGHTING
+visual = dvz.mesh_shape(batch, shape, flags)
+
+# Set artificial vertex colors.
+t = np.linspace(0, 1, nv).astype(np.float32)
+colors = np.empty((nv, 4), dtype=np.uint8)
+dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_BWR, nv, t, 0, 1, colors)
+dvz.mesh_color(visual, 0, nv, colors, 0)
+
+# Lighting parameters.
+dvz.mesh_light_pos(visual, vec4(-1, +1, +10, 0))
+dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
+
+# Add the visual to the panel.
+dvz.panel_visual(panel, visual)
+
+# Initial arcball angles.
+dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))
+dvz.panel_update(panel)
+
+# Run the application.
+dvz.scene_run(scene, app, 0)
+
+# Cleanup.
+dvz.scene_destroy(scene)
+dvz.app_destroy(app)
