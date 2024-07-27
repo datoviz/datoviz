@@ -108,6 +108,8 @@ static void _glfw_key_callback(GLFWwindow* window, int key, int scancode, int ac
         dvz_keyboard_press(input->keyboard, (DvzKeyCode)key);
     else if (action == GLFW_RELEASE)
         dvz_keyboard_release(input->keyboard, (DvzKeyCode)key);
+    else if (action == GLFW_REPEAT)
+        dvz_keyboard_repeat(input->keyboard, (DvzKeyCode)key);
 }
 
 

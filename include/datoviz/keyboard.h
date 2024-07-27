@@ -76,6 +76,10 @@ void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key);
 
 
 
+void dvz_keyboard_repeat(DvzKeyboard* keyboard, DvzKeyCode key);
+
+
+
 void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key);
 
 

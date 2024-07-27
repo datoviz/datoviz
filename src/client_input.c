@@ -146,6 +146,7 @@ void dvz_window_input(DvzWindow* window)
     DvzKeyboard* keyboard = dvz_input_keyboard(window->input);
     dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_PRESS, _on_keyboard, window);
     dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_RELEASE, _on_keyboard, window);
+    dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_REPEAT, _on_keyboard, window);
 }
 
 

@@ -95,6 +95,28 @@ void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
 
 
 
+void dvz_keyboard_repeat(DvzKeyboard* keyboard, DvzKeyCode key)
+{
+    ANN(keyboard);
+    ANN(keyboard->keys);
+
+    if (_is_key_modifier(key))
+    {
+        keyboard->mods |= _key_modifiers(key);
+    }
+    else
+    {
+        dvz_list_append(keyboard->keys, (DvzListItem){.i = (int)key});
+    }
+
+    // Create the PRESS event struct.
+    DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_REPEAT, .mods = keyboard->mods, .key = key};
+    // Call the registered callbacks.
+    _callbacks(keyboard, ev);
+}
+
+
+
 void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
 {
     ANN(keyboard);
