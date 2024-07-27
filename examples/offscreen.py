@@ -30,16 +30,16 @@ n = 100_000
 dvz.point_alloc(visual, n)
 
 # Positions.
-pos = np.random.normal(size=(n, 3), scale=.25)  # NumPy version
-dvz.point_position(visual, 0, n, dvz.array_pointer(pos), 0)
+pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+dvz.point_position(visual, 0, n, pos, 0)
 
 # Colors.
-color = np.random.uniform(size=(n, 4), low=50, high=240)
-dvz.point_color(visual, 0, n, dvz.array_pointer(color, np.uint8), 0)
+color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
+dvz.point_color(visual, 0, n, color, 0)
 
 # Sizes.
-size = np.random.uniform(size=(n,), low=10, high=30)
-dvz.point_size(visual, 0, n, dvz.array_pointer(size), 0)
+size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
+dvz.point_size(visual, 0, n, size, 0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual)
