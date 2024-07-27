@@ -618,6 +618,25 @@ DVZ_EXPORT void dvz_colormap_array(
 /*************************************************************************************************/
 
 /**
+ * Recompute the face normals.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
+
+
+
+/**
+ * Merge two shapes.
+ *
+ * @param merged the shape to append the other shape to
+ * @param to_merge the shape appended to the first shape
+ */
+DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
+
+
+
+/**
  * Show information about a shape.
  *
  * @param shape the shape
@@ -703,30 +722,11 @@ DVZ_EXPORT float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale)
 
 
 /**
- * Recompute the face normals.
- *
- * @param shape the shape
- */
-DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
-
-
-
-/**
  * Apply the transformation sequence and reset it.
  *
  * @param shape the shape
  */
 DVZ_EXPORT void dvz_shape_end(DvzShape* shape);
-
-
-
-/**
- * Merge two shapes.
- *
- * @param merged the shape to append the other shape to
- * @param to_merge the shape appended to the first shape
- */
-DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
 
 
 

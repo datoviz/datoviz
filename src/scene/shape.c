@@ -27,6 +27,63 @@
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
 
+void dvz_shape_normals(DvzShape* shape)
+{
+    ANN(shape);
+    ANN(shape->pos);
+    ANN(shape->index);
+    ANN(shape->normal);
+
+    DvzIndex i0, i1, i2;
+    vec3 u, v, n;
+    vec3 v0, v1, v2;
+    vec3 n0, n1, n2;
+
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t face_count = shape->index_count / 3;
+
+    // Go through all triangle faces.
+    for (uint32_t i = 0; i < face_count; i++)
+    {
+        i0 = shape->index[3 * i + 0];
+        i1 = shape->index[3 * i + 1];
+        i2 = shape->index[3 * i + 2];
+
+        glm_vec3_copy(shape->pos[i0], v0);
+        glm_vec3_copy(shape->pos[i1], v1);
+        glm_vec3_copy(shape->pos[i2], v2);
+
+        // u = v1-v0
+        // v = v2-v0
+        // n = u^v      normalized vector orthogonal to the current face
+        glm_vec3_sub(v1, v0, u);
+        glm_vec3_sub(v2, v0, v);
+        glm_vec3_crossn(u, v, n);
+
+        // Add the face normal to the current vertex normal.
+        glm_vec3_add(shape->normal[i0], n, shape->normal[i0]);
+        glm_vec3_add(shape->normal[i1], n, shape->normal[i1]);
+        glm_vec3_add(shape->normal[i2], n, shape->normal[i2]);
+    }
+
+    // Normalize all normals since every vertex might contain the sum of many normals.
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        glm_vec3_normalize(shape->normal[i]);
+    }
+}
+
+
+
+void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge)
+{
+    ANN(merged);
+    ANN(to_merge);
+    // TODO
+}
+
+
+
 void dvz_shape_print(DvzShape* shape)
 {
     ANN(shape);
@@ -142,54 +199,6 @@ float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale)
 
 
 
-void dvz_shape_normals(DvzShape* shape)
-{
-    ANN(shape);
-    ANN(shape->pos);
-    ANN(shape->index);
-    ANN(shape->normal);
-
-    DvzIndex i0, i1, i2;
-    vec3 u, v, n;
-    vec3 v0, v1, v2;
-    vec3 n0, n1, n2;
-
-    uint32_t vertex_count = shape->vertex_count;
-    uint32_t face_count = shape->index_count / 3;
-
-    // Go through all triangle faces.
-    for (uint32_t i = 0; i < face_count; i++)
-    {
-        i0 = shape->index[3 * i + 0];
-        i1 = shape->index[3 * i + 1];
-        i2 = shape->index[3 * i + 2];
-
-        glm_vec3_copy(shape->pos[i0], v0);
-        glm_vec3_copy(shape->pos[i1], v1);
-        glm_vec3_copy(shape->pos[i2], v2);
-
-        // u = v1-v0
-        // v = v2-v0
-        // n = u^v      normalized vector orthogonal to the current face
-        glm_vec3_sub(v1, v0, u);
-        glm_vec3_sub(v2, v0, v);
-        glm_vec3_crossn(u, v, n);
-
-        // Add the face normal to the current vertex normal.
-        glm_vec3_add(shape->normal[i0], n, shape->normal[i0]);
-        glm_vec3_add(shape->normal[i1], n, shape->normal[i1]);
-        glm_vec3_add(shape->normal[i2], n, shape->normal[i2]);
-    }
-
-    // Normalize all normals since every vertex might contain the sum of many normals.
-    for (uint32_t i = 0; i < vertex_count; i++)
-    {
-        glm_vec3_normalize(shape->normal[i]);
-    }
-}
-
-
-
 void dvz_shape_end(DvzShape* shape)
 {
     ANN(shape);
@@ -204,15 +213,6 @@ void dvz_shape_end(DvzShape* shape)
 
     // Reset the transformation matrix.
     glm_mat4_identity(shape->transform);
-}
-
-
-
-void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge)
-{
-    ANN(merged);
-    ANN(to_merge);
-    // TODO
 }
 
 
