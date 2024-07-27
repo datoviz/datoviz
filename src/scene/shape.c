@@ -145,7 +145,47 @@ float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale)
 void dvz_shape_normals(DvzShape* shape)
 {
     ANN(shape);
-    // TODO: recompute the face normals
+    ANN(shape->pos);
+    ANN(shape->index);
+    ANN(shape->normal);
+
+    DvzIndex i0, i1, i2;
+    vec3 u, v, n;
+    vec3 v0, v1, v2;
+    vec3 n0, n1, n2;
+
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t face_count = shape->index_count / 3;
+
+    // Go through all triangle faces.
+    for (uint32_t i = 0; i < face_count; i++)
+    {
+        i0 = shape->index[3 * i + 0];
+        i1 = shape->index[3 * i + 1];
+        i2 = shape->index[3 * i + 2];
+
+        glm_vec3_copy(shape->pos[i0], v0);
+        glm_vec3_copy(shape->pos[i1], v1);
+        glm_vec3_copy(shape->pos[i2], v2);
+
+        // u = v1-v0
+        // v = v2-v0
+        // n = u^v      normalized vector orthogonal to the current face
+        glm_vec3_sub(v1, v0, u);
+        glm_vec3_sub(v2, v0, v);
+        glm_vec3_crossn(u, v, n);
+
+        // Add the face normal to the current vertex normal.
+        glm_vec3_add(shape->normal[i0], n, shape->normal[i0]);
+        glm_vec3_add(shape->normal[i1], n, shape->normal[i1]);
+        glm_vec3_add(shape->normal[i2], n, shape->normal[i2]);
+    }
+
+    // Normalize all normals since every vertex might contain the sum of many normals.
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        glm_vec3_normalize(shape->normal[i]);
+    }
 }
 
 
@@ -281,15 +321,18 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 /*  3D shapes                                                                                    */
 /*************************************************************************************************/
 
-DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, vec3 v, int flags)
+DvzShape dvz_shape_surface(
+    uint32_t row_count, uint32_t col_count, float* heights, //
+    vec3 o, vec3 u, vec3 v, cvec4 color, int flags)
 {
-    // TODO: flag for closed surface
+    // TODO: flag for closed surface on i or j
+    // TODO: flag planar or cylindric
 
     ASSERT(row_count > 0);
     ASSERT(col_count > 0);
 
     DvzShape shape = {0};
-    shape.type = DVZ_SHAPE_GRID;
+    shape.type = DVZ_SHAPE_SURFACE;
 
     const uint32_t vertex_count = col_count * row_count;
     const uint32_t index_count = 6 * (col_count - 1) * (row_count - 1);
@@ -298,13 +341,16 @@ DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, 
     shape.index_count = index_count;
 
     shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
 
     uint32_t point_idx = 0;
     uint32_t index = 0;
 
     vec3 normal = {0};
     glm_vec3_crossn(u, v, normal);
+    float height = 0;
 
     for (uint32_t i = 0; i < row_count; i++)
     {
@@ -316,6 +362,18 @@ DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, 
             shape.pos[point_idx][0] = o[0] + i * u[0] + j * v[0];
             shape.pos[point_idx][1] = o[1] + i * u[1] + j * v[1];
             shape.pos[point_idx][2] = o[2] + i * u[2] + j * v[2];
+
+            // Height.
+            height = heights != NULL ? heights[point_idx] : 0;
+            shape.pos[point_idx][0] += height * normal[0];
+            shape.pos[point_idx][1] += height * normal[1];
+            shape.pos[point_idx][2] += height * normal[2];
+
+            // Color.
+            shape.color[point_idx][0] = color[0];
+            shape.color[point_idx][1] = color[1];
+            shape.color[point_idx][2] = color[2];
+            shape.color[point_idx][3] = color[3];
 
             // Index.
             // TODO: shape topology (flags) to implement here
@@ -334,31 +392,9 @@ DvzShape dvz_shape_grid(uint32_t row_count, uint32_t col_count, vec3 o, vec3 u, 
         }
     }
 
-    // Normal.
-    shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    for (uint32_t i = 0; i < vertex_count; i++)
-    {
-        shape.normal[i][0] = normal[0];
-        shape.normal[i][1] = normal[1];
-        shape.normal[i][2] = normal[2];
-    }
+    dvz_shape_normals(&shape);
 
     return shape;
-}
-
-
-
-void dvz_shape_surface(DvzShape* shape, float* heights)
-{
-    ANN(shape);
-    ANN(heights);
-
-    // for (uint32_t i = 0; i < shape->row_count; i++)
-    // {
-    //     for (uint32_t j = 0; j < shape->col_count; j++)
-    //     {
-    //     }
-    // }
 }
 
 

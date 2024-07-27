@@ -21,7 +21,7 @@
 
 int test_shape_1(TstSuite*);
 
-int test_shape_grid(TstSuite*);
+int test_shape_surface(TstSuite*);
 
 int test_shape_transform(TstSuite*);
 

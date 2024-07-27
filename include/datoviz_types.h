@@ -395,7 +395,6 @@ typedef enum
     DVZ_SHAPE_SPHERE,
     DVZ_SHAPE_CYLINDER,
     DVZ_SHAPE_CONE,
-    DVZ_SHAPE_GRID,
     DVZ_SHAPE_SURFACE,
     DVZ_SHAPE_OBJ,
     DVZ_SHAPE_OTHER,
@@ -500,8 +499,6 @@ struct DvzShape
     DvzShapeType type;
     uint32_t vertex_count;
     uint32_t index_count;
-    uint32_t row_count;
-    uint32_t col_count;
 
     vec3* pos;
     vec3* normal;

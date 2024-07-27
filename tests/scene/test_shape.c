@@ -37,7 +37,7 @@ int test_shape_1(TstSuite* suite)
 
 
 
-int test_shape_grid(TstSuite* suite)
+int test_shape_surface(TstSuite* suite)
 {
     ANN(suite);
 
@@ -46,13 +46,24 @@ int test_shape_grid(TstSuite* suite)
     vec3 o = {0};
     vec3 u = {1, 0, 0};
     vec3 v = {0, 1, 0};
-    DvzShape shape = dvz_shape_grid(row_count, col_count, o, u, v, 0);
+    float* heights = (float*)calloc(row_count * col_count, sizeof(float));
+    uint32_t idx = 0;
+    for (uint32_t i = 0; i < row_count; i++)
+    {
+        for (uint32_t j = 0; j < col_count; j++)
+        {
+            heights[idx++] = sin(i) * cos(j);
+        }
+    }
+    cvec4 color = {64, 128, 255, 255};
+    DvzShape shape = dvz_shape_surface(row_count, col_count, heights, o, u, v, color, 0);
 
     dvz_shape_print(&shape);
 
     dvz_shape_destroy(&shape);
     return 0;
 }
+
 
 
 int test_shape_transform(TstSuite* suite)
