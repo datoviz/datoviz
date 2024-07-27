@@ -34,9 +34,10 @@ def ongui(app, fid, ev):
         scale = 0.9
     if incr or decr:
 
-        # Start recording a set of shape transforms spanning the entire shape (0, 0).
+        # Start recording shape transforms for all vertices in the shape (first=0, count=0=all).
         dvz.shape_begin(shape, 0, 0)
 
+        # Scaling transform.
         dvz.shape_scale(shape, vec3(scale, scale, scale))
 
         # Stop recording the shape transforms.
@@ -63,14 +64,14 @@ figure = dvz.figure(scene, 800, 800, dvz.DvzCanvasFlags.DVZ_CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(scene, panel)
 
-# Shape.
+# Create a square shape.
 color = dvz.cvec4(64, 128, 255, 255)
 shape = dvz.shape_square(color)
 
-# Mesh visual.
+# Create a mesh visual directly instantiated with the shape data.
 visual = dvz.mesh_shape(batch, shape, 0)
 
-# Add the visual.
+# Add the visual to the panel.
 dvz.panel_visual(panel, visual)
 
 # Associate a GUI callback function with a figure.
