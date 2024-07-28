@@ -59,7 +59,7 @@ static void _create_vertex_binding(DvzBaker* baker, uint32_t binding_idx, uint32
         log_trace("skipping creation of shared dat for vertex binding #%d", binding_idx);
         return;
     }
-    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_VERTEX_NONMAPPABLE) != 0)
+    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_VERTEX_MAPPABLE) == 0)
                          ? DVZ_DAT_FLAGS_PERSISTENT_STAGING
                          : DVZ_DAT_FLAGS_MAPPABLE;
     bv->dual = dvz_dual_vertex(baker->batch, vertex_count, bv->stride, dual_flags);
@@ -80,7 +80,7 @@ static void _create_index(DvzBaker* baker, uint32_t index_count)
         log_trace("skipping creation of dat for shared index buffer");
         return;
     }
-    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_INDEX_NONMAPPABLE) != 0)
+    int dual_flags = ((baker->flags & DVZ_BAKER_FLAGS_INDEX_MAPPABLE) == 0)
                          ? DVZ_DAT_FLAGS_PERSISTENT_STAGING
                          : DVZ_DAT_FLAGS_MAPPABLE;
     baker->index = dvz_dual_index(baker->batch, index_count, dual_flags);

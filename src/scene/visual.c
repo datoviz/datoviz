@@ -42,7 +42,7 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     // No callback by default, will just use dvz_visual_instance().
     visual->callback = NULL;
 
-    // Baker flags: DVZ_BAKER_FLAGS_VERTEX_NONMAPPABLE / DVZ_BAKER_FLAGS_INDEX_NONMAPPABLE.
+    // Baker flags: DVZ_BAKER_FLAGS_VERTEX_MAPPABLE / DVZ_BAKER_FLAGS_INDEX_MAPPABLE.
     visual->baker = dvz_baker(batch, flags & 0xF00000);
 
     // Create the graphics object.

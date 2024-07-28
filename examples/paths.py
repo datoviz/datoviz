@@ -27,14 +27,7 @@ panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(panel)
 
 # Path visual.
-
-# HACK: at the moment, vertex data is stored by default on mappable GPU memory, which is more
-# efficient when updating the data frequently, but smaller than nonmappable memory on some
-# hardware. This flag lets us put the data on larger nonmappable memory, but frequent transfers
-# will not be optimized.
-flag = dvz.VISUAL_FLAGS_VERTEX_NONMAPPABLE
-
-visual = dvz.path(batch, flag)
+visual = dvz.path(batch, 0)
 
 # Multiple paths.
 n_paths = 100
