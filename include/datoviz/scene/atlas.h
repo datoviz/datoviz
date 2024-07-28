@@ -14,6 +14,7 @@
 #include "_log.h"
 #include "_map.h"
 #include "datoviz_math.h"
+#include "datoviz_types.h"
 
 
 
@@ -22,7 +23,6 @@
 /*************************************************************************************************/
 
 typedef struct DvzAtlas DvzAtlas;
-typedef struct DvzAtlasFont DvzAtlasFont;
 
 // Forward declarations.
 typedef struct DvzFont DvzFont;
