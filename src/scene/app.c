@@ -77,6 +77,7 @@ _make_payload(DvzClientEventType et, DvzApp* app, function_pointer callback, voi
     return payload;
 }
 
+
 // Conversion from client callback to app callback.
 static void _client_callback(DvzClient* client, DvzClientEvent ev)
 {

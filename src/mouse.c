@@ -79,6 +79,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
         mouse->state = DVZ_MOUSE_STATE_RELEASE;
         ev.type = DVZ_MOUSE_EVENT_DRAG_STOP;
         ev.content.d.button = button;
+        glm_vec2_copy(mouse->cur_pos, ev.pos);
         glm_vec2_copy(mouse->cur_pos, ev.content.d.cur_pos);
         break;
 

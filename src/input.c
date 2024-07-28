@@ -72,9 +72,13 @@ static void _glfw_button_callback(GLFWwindow* window, int b, int action, int mod
 
     DvzMouseButton button = _from_glfw_button(b);
     if (action == GLFW_PRESS)
+    {
         dvz_mouse_press(input->mouse, button, input->keyboard->mods);
+    }
     else if (action == GLFW_RELEASE)
+    {
         dvz_mouse_release(input->mouse, button, input->keyboard->mods);
+    }
 }
 
 
