@@ -247,7 +247,8 @@ static void _print_create_dat(DvzRequest* req)
         "  content:\n"
         "    type: %d\n"
         "    size: %" PRId64 "\n",
-        req->desc, req->id, req->flags, req->content.dat.type, req->content.dat.size);
+        req->desc ? req->desc : "", req->id, req->flags, req->content.dat.type,
+        req->content.dat.size);
 }
 
 static void _print_resize_dat(DvzRequest* req)
@@ -472,7 +473,7 @@ static void _print_create_graphics(DvzRequest* req)
         "  flags: %d\n"
         "  content:\n"
         "    type: %d\n",
-        req->desc, req->id, req->flags, req->content.graphics.type);
+        req->desc ? req->desc : "", req->id, req->flags, req->content.graphics.type);
 }
 
 static void _print_delete_graphics(DvzRequest* req)

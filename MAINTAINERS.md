@@ -101,6 +101,7 @@ TODO.
 
 ## Release checklist
 
+* Build in release mode with `just build Release`
 * Run the C testing suite
 * Run the Python testing suite
 * Write the changelog

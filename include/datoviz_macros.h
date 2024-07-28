@@ -75,7 +75,13 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 /*************************************************************************************************/
 
 #ifndef ASSERT
+#if DEBUG
 #define ASSERT(x) assert((x))
+#else
+#define ASSERT(x)                                                                                 \
+    if (!(x))                                                                                     \
+    fprintf(stderr, "CRITICAL ERROR, PLEASE REPORT (%s:%d, %s)\n", __FILE_NAME__, __LINE__, #x)
+#endif
 #endif
 
 #ifndef ANN
