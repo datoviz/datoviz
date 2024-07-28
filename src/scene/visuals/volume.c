@@ -186,6 +186,23 @@ void dvz_volume_size(DvzVisual* visual, float w, float h, float d)
 
 
 
+void dvz_volume_texcoords(DvzVisual* visual, vec3 uvw0, vec3 uvw1)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 1, (vec4){uvw0[0], uvw0[1], uvw0[2], 0});
+    dvz_visual_param(visual, 2, 2, (vec4){uvw1[0], uvw1[1], uvw1[2], 0});
+}
+
+
+
+void dvz_volume_transfer(DvzVisual* visual, vec4 transfer)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 3, transfer);
+}
+
+
+
 DvzId dvz_tex_volume(
     DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth, void* data)
 {

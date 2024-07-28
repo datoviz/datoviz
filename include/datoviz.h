@@ -2005,6 +2005,27 @@ DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
 
 
 /**
+ * Set the texture coordinates of two corner points.
+ *
+ * @param visual the visual
+ * @param uvw0 coordinates of one of the corner points
+ * @param uvw1 coordinates of one of the corner points
+ */
+DVZ_EXPORT void dvz_volume_texcoords(DvzVisual* visual, vec3 uvw0, vec3 uvw1);
+
+
+
+/**
+ * Set the volume size.
+ *
+ * @param visual the visual
+ * @param transfer transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
+ */
+DVZ_EXPORT void dvz_volume_transfer(DvzVisual* visual, vec4 transfer);
+
+
+
+/**
  * Create a 3D texture to be used in a volume visual.
  *
  * @param batch the batch
