@@ -333,6 +333,15 @@ DVZ_EXPORT DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id);
 
 
 /**
+ * Update a figure after the composition of the panels and visuals has changed.
+ *
+ * @param figure the figure
+ */
+DVZ_EXPORT void dvz_figure_update(DvzFigure* figure);
+
+
+
+/**
  * Destroy a figure.
  *
  * @param figure the figure

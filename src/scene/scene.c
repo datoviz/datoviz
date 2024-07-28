@@ -221,6 +221,16 @@ DvzFigure* dvz_scene_figure(DvzScene* scene, DvzId id)
 
 
 
+void dvz_figure_update(DvzFigure* figure)
+{
+    ANN(figure);
+    ANN(figure->viewset);
+    ANN(figure->viewset->status);
+    dvz_atomic_set(figure->viewset->status, (int)DVZ_BUILD_DIRTY);
+}
+
+
+
 void dvz_figure_destroy(DvzFigure* fig)
 {
     ANN(fig);
