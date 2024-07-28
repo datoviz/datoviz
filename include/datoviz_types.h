@@ -564,7 +564,7 @@ struct DvzMouseWheelEvent
 struct DvzMouseDragEvent
 {
     DvzMouseButton button;
-    vec2 cur_pos; // press_pos is in the mouse event itself
+    vec2 press_pos;
     vec2 shift;
 };
 
@@ -585,7 +585,7 @@ struct DvzMouseEvent
 {
     DvzMouseEventType type;
     DvzMouseEventUnion content;
-    vec2 pos;
+    vec2 pos; // current position
     int mods;
     float content_scale;
     void* user_data;

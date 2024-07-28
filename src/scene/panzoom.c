@@ -385,7 +385,7 @@ bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
             if ((pz->flags & DVZ_PANZOOM_FLAGS_KEEP_ASPECT) != 0)
                 shift[1] = -shift[0];
 
-            dvz_panzoom_zoom_shift(pz, shift, ev.pos);
+            dvz_panzoom_zoom_shift(pz, shift, ev.content.d.press_pos);
         }
         break;
 

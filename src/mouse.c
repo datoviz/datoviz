@@ -63,6 +63,7 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
     ev.type = DVZ_MOUSE_EVENT_RELEASE;
     ev.mods = mods;
     ev.content.b.button = button;
+    glm_vec2_copy(mouse->cur_pos, ev.pos); // ev.pos always contains the current position
 
     switch (state)
     {
@@ -76,22 +77,23 @@ static DvzMouseEvent _after_release(DvzMouse* mouse, DvzMouseButton button, int 
         break;
 
     case DVZ_MOUSE_STATE_DRAGGING:
+        // Drag stop.
         mouse->state = DVZ_MOUSE_STATE_RELEASE;
         ev.type = DVZ_MOUSE_EVENT_DRAG_STOP;
         ev.content.d.button = button;
-        glm_vec2_copy(mouse->cur_pos, ev.pos);
-        glm_vec2_copy(mouse->cur_pos, ev.content.d.cur_pos);
+        glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos);
         break;
 
     case DVZ_MOUSE_STATE_PRESS:
     case DVZ_MOUSE_STATE_CLICK_PRESS:
         if (delay <= DVZ_MOUSE_CLICK_MAX_DELAY)
         {
+            // Click.
             mouse->state = DVZ_MOUSE_STATE_CLICK;
             ev.type = state == DVZ_MOUSE_STATE_CLICK_PRESS ? DVZ_MOUSE_EVENT_DOUBLE_CLICK
                                                            : DVZ_MOUSE_EVENT_CLICK;
             ev.content.c.button = button;
-            glm_vec2_copy(mouse->cur_pos, ev.pos);
+
 
             // Record the time of the last click.
             mouse->last_click = mouse->time;
@@ -121,9 +123,6 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
     // Save the button.
     mouse->button = button;
 
-    // Copy the press position and time.
-    glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
-
     // Delay since the last press.
     double delay = mouse->time - mouse->last_press;
     mouse->last_press = mouse->time;
@@ -133,6 +132,13 @@ static DvzMouseEvent _after_press(DvzMouse* mouse, DvzMouseButton button, int mo
     ev.type = DVZ_MOUSE_EVENT_PRESS;
     ev.mods = mods;
     ev.content.b.button = button;
+    glm_vec2_copy(mouse->cur_pos, ev.pos); // ev.pos always contains the current position
+
+    // Update the mouse press position whenever we press while in release mode.
+    if (state == DVZ_MOUSE_STATE_RELEASE)
+    {
+        glm_vec2_copy(mouse->cur_pos, mouse->press_pos);
+    }
 
     switch (state)
     {
@@ -184,7 +190,7 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
     DvzMouseEvent ev = {0};
     ev.type = DVZ_MOUSE_EVENT_MOVE;
     ev.mods = mods;
-    glm_vec2_copy(pos, ev.pos);
+    glm_vec2_copy(pos, ev.pos); // ev.pos always contains the current position
 
     switch (state)
     {
@@ -195,10 +201,13 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
     case DVZ_MOUSE_STATE_CLICK_PRESS:
         if (delta > DVZ_MOUSE_CLICK_MAX_SHIFT)
         {
+            // Drag start.
             mouse->state = DVZ_MOUSE_STATE_DRAGGING;
             ev.type = DVZ_MOUSE_EVENT_DRAG_START;
             ev.content.d.button = mouse->button;
-            glm_vec2_copy(pos, ev.content.d.cur_pos);
+
+            // The press position is in press_pos.
+            glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos);
         }
         break;
 
@@ -214,11 +223,11 @@ static DvzMouseEvent _after_move(DvzMouse* mouse, vec2 pos, int mods)
         break;
 
     case DVZ_MOUSE_STATE_DRAGGING:
+        // Dragging.
         ev.type = DVZ_MOUSE_EVENT_DRAG;
-        glm_vec2_copy(pos, ev.content.d.cur_pos);
         // Shift between the press position and the current position.
         glm_vec2_sub(pos, mouse->press_pos, ev.content.d.shift);
-        glm_vec2_copy(mouse->press_pos, ev.pos); // NOTE: ev.pos is the dragging press position
+        glm_vec2_copy(mouse->press_pos, ev.content.d.press_pos); // Copy the press position
         ev.content.d.button = mouse->button;
         break;
 

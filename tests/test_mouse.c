@@ -149,7 +149,7 @@ static void _on_mouse_drag(DvzMouse* mouse, DvzMouseEvent ev)
     ANN(ev.user_data);
 
     // ASSERT(ev.type == DVZ_MOUSE_EVENT_DRAG);
-    *((float*)ev.user_data) = ev.content.d.cur_pos[0];
+    *((float*)ev.user_data) = ev.pos[0];
 }
 
 static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent ev)

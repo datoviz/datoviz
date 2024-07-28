@@ -1406,7 +1406,7 @@ class DvzMouseDragEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("button", ctypes.c_int32),
-        ("cur_pos", ctypes.c_float * 2),
+        ("press_pos", ctypes.c_float * 2),
         ("shift", ctypes.c_float * 2),
     ]
 

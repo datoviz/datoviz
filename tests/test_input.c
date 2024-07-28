@@ -53,19 +53,19 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     case DVZ_MOUSE_EVENT_DRAG:
         log_debug(
             "mouse drag button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
+            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_START:
         log_debug(
             "mouse drag start button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
+            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_STOP:
         log_debug(
             "mouse drag stop button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.content.d.cur_pos[0], ev.content.d.cur_pos[1], ev.mods);
+            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_MOVE:

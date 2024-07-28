@@ -48,6 +48,14 @@ static void _panzoom_size(DvzPanel* panel)
 }
 
 
+static inline bool _is_drag(DvzMouseEvent ev)
+{
+    return ev.type == DVZ_MOUSE_EVENT_DRAG ||       //
+           ev.type == DVZ_MOUSE_EVENT_DRAG_START || //
+           ev.type == DVZ_MOUSE_EVENT_DRAG_STOP;    //
+}
+
+
 
 /*************************************************************************************************/
 /*  Scene                                                                                        */
@@ -743,9 +751,20 @@ static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     DvzFigure* fig = dvz_scene_figure(scene, window_id);
     ANN(fig);
 
-    DvzPanel* panel = dvz_panel_at(fig, ev.pos);
+    // Find the relevant panel for mouse interaction. Depends on whether this is a dragging action
+    // or not.
+    DvzPanel* panel = NULL;
+    if (_is_drag(ev))
+    {
+        panel = dvz_panel_at(fig, ev.content.d.press_pos);
+    }
+    else
+    {
+        panel = dvz_panel_at(fig, ev.pos);
+    }
     if (panel == NULL)
     {
+        log_debug("no panel found with mouse event type %d", ev.type);
         return;
     }
 

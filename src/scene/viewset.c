@@ -298,7 +298,7 @@ dvz_view_mouse(DvzView* view, DvzMouseEvent ev, float content_scale, DvzMouseRef
     case DVZ_MOUSE_EVENT_DRAG_START:
     case DVZ_MOUSE_EVENT_DRAG_STOP:
     case DVZ_MOUSE_EVENT_DRAG:
-        _normalize_pos(&ev.content.d.cur_pos, offset, shape, content_scale, ref);
+        _normalize_pos(&ev.content.d.press_pos, offset, shape, content_scale, ref);
         break;
     default:
         break;
