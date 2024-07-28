@@ -51,8 +51,11 @@ int test_fake_sphere_1(TstSuite* suite)
     float* size = dvz_mock_uniform(n, 50, 100);
     dvz_fake_sphere_size(visual, 0, n, size, 0);
 
-    // Light position
+    // Light position.
     dvz_fake_sphere_light_pos(visual, (vec3){-1, +1, +10});
+
+    // Light parameters.
+    dvz_fake_sphere_light_params(visual, (vec4){.3, .6, 2, 32});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

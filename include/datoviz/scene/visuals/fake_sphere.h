@@ -50,7 +50,8 @@ struct DvzFakeSphereVertex
 
 struct DvzFakeSphereParams
 {
-    vec4 light_pos;
+    vec4 light_pos;   /* light position */
+    vec4 light_param; /* ambient, diffuse, specular coefs */
 };
 
 

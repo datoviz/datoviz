@@ -1944,6 +1944,16 @@ DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
 
 
 
+/**
+ * Set the sphere light parameters.
+ *
+ * @param visual the visual
+ * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
+ */
+DVZ_EXPORT void dvz_fake_sphere_light_params(DvzVisual* visual, vec4 params);
+
+
+
 /*************************************************************************************************/
 /*  Volume                                                                                       */
 /*************************************************************************************************/

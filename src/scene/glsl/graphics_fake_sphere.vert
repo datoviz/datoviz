@@ -1,7 +1,11 @@
 #version 450
 #include "common.glsl"
 
-layout(binding = 2) uniform FakeParams { vec4 light_pos; }
+layout(binding = 2) uniform FakeParams
+{
+    vec4 light_pos;
+    vec4 light_params;
+}
 params;
 
 layout(location = 0) in vec3 pos;

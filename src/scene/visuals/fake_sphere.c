@@ -65,8 +65,8 @@ DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags)
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzFakeSphereParams));
-
     dvz_params_attr(params, 0, FIELD(DvzFakeSphereParams, light_pos));
+    dvz_params_attr(params, 1, FIELD(DvzFakeSphereParams, light_param));
 
     return visual;
 }
@@ -119,4 +119,12 @@ void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos)
     ANN(visual);
     vec4 pos_ = {pos[0], pos[1], pos[2], 0};
     dvz_visual_param(visual, 2, 0, pos_);
+}
+
+
+
+void dvz_fake_sphere_light_params(DvzVisual* visual, vec4 params)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 1, params);
 }
