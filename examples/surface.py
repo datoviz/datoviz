@@ -18,7 +18,7 @@ import datoviz as dvz
 from datoviz import vec3, vec4
 
 # Boilerplate.
-app = dvz.app(dvz.DvzAppFlags.DVZ_APP_FLAGS_WHITE_BACKGROUND)
+app = dvz.app(dvz.APP_FLAGS_WHITE_BACKGROUND)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
@@ -72,7 +72,7 @@ dvz.colormap_array(
 shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
 
 # Create the mesh visual from the surface shape.
-flags = dvz.DvzMeshFlags.DVZ_MESH_FLAGS_LIGHTING
+flags = dvz.MESH_FLAGS_LIGHTING
 visual = dvz.mesh_shape(batch, shape, flags)
 
 # Lighting parameters.

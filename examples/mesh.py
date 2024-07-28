@@ -44,7 +44,7 @@ ni = shape.index_count
 print(f"Loaded {filepath} with {nv} vertices and {ni // 3} faces.")
 
 # Create the mesh visual from the surface shape.
-flags = dvz.DvzMeshFlags.DVZ_MESH_FLAGS_LIGHTING
+flags = dvz.MESH_FLAGS_LIGHTING
 visual = dvz.mesh_shape(batch, shape, flags)
 
 # Set artificial vertex colors.

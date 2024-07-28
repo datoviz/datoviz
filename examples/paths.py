@@ -32,7 +32,7 @@ pz = dvz.panel_panzoom(panel)
 # efficient when updating the data frequently, but smaller than nonmappable memory on some
 # hardware. This flag lets us put the data on larger nonmappable memory, but frequent transfers
 # will not be optimized.
-flag = dvz.DvzVisualFlags.DVZ_VISUAL_FLAGS_VERTEX_NONMAPPABLE
+flag = dvz.VISUAL_FLAGS_VERTEX_NONMAPPABLE
 
 visual = dvz.path(batch, flag)
 

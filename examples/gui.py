@@ -72,7 +72,7 @@ scene = dvz.scene(batch)
 
 # Create a figure.
 # NOTE: to use a GUI, use this flag. Don't use it if there is no GUI.
-figure = dvz.figure(scene, 800, 800, dvz.DvzCanvasFlags.DVZ_CANVAS_FLAGS_IMGUI)
+figure = dvz.figure(scene, 800, 800, dvz.CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(panel)
 

@@ -65,7 +65,7 @@ tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
 # -------------------------------------------------------------------------------------------------
 
 # Create the volume visual.
-visual = dvz.volume(batch, dvz.DvzVolumeFlags.DVZ_VOLUME_FLAGS_RGBA)
+visual = dvz.volume(batch, dvz.VOLUME_FLAGS_RGBA)
 
 # Visual data allocation (1 volumetric object).
 dvz.volume_alloc(visual, 1)

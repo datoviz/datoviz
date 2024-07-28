@@ -175,6 +175,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 
     # Handle enums.
     delim("ENUMERATIONS")
+    enum_values = []
     for fn in data:
         enums = data.get(fn, {}).get("enums", {})
         for enum_name, enum_info in enums.items():
@@ -182,7 +183,13 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += f'class {enum_name}(CtypesEnum):\n'
             for value in enum_info.get('values', []):
                 out += f'    {value[0]} = {value[1]}\n'
+                enum_values.append(value)
             out += '\n\n'
+    for name, value in enum_values:
+        if name.startswith('DVZ_'):
+            name = name[4:]
+        out += f'{name} = {value}\n'
+    out += '\n\n'
 
     # Forward declarations.
     delim("FORWARD DECLARATIONS")

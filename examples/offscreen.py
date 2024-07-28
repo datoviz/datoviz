@@ -21,7 +21,7 @@ from datoviz import (
 
 
 # Boilerplate.
-app = dvz.app(dvz.DvzAppFlags.DVZ_APP_FLAGS_OFFSCREEN)
+app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 

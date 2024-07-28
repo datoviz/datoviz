@@ -125,7 +125,7 @@ dvz.sphere_light_params(visual, vec4(.4, .8, 2, 32))
 dvz.panel_visual(panel, visual, 0)
 
 # We add the glyph visual and we opt out of the panel transform (3D movable camera).
-dvz.panel_visual(panel, glyph, dvz.DvzViewFlags.DVZ_VIEW_FLAGS_STATIC)
+dvz.panel_visual(panel, glyph, dvz.VIEW_FLAGS_STATIC)
 
 
 # -------------------------------------------------------------------------------------------------
