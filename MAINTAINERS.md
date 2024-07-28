@@ -101,7 +101,8 @@ TODO.
 
 ## Release checklist
 
-* Test
+* Run the C testing suite
+* Run the Python testing suite
 * Write the changelog
 * Bump to the new version with `just bump x.y.z`
 * Commit and tag

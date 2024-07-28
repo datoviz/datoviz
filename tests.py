@@ -6,9 +6,8 @@ from pathlib import Path
 import numpy as np
 
 import datoviz as dvz
-from datoviz import (
-    S_,
-)
+from datoviz import S_
+
 
 CURDIR = Path(__file__).parent
 IMGDIR = (CURDIR / "build/artifacts").resolve()
@@ -55,3 +54,7 @@ class DatovizTests(unittest.TestCase):
         self.assertTrue(path.exists())
         self.assertTrue(path.stat().st_size > 100_000)
         path.unlink()
+
+
+if __name__ == '__main__':
+    unittest.main()

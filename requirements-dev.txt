@@ -2,3 +2,4 @@ numpy
 tqdm
 pillow
 pyparsing
+pytest
