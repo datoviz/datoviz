@@ -135,7 +135,11 @@ def ndpointer(*args, **kwargs):
     def from_param(cls, obj):
         if obj is None:
             return obj
-        return base.from_param(obj)
+        if isinstance(obj, np.ndarray):
+            out = base.from_param(obj)
+        else:
+            out = obj
+        return out
     return type(base.__name__, (base,), {'from_param': from_param})
 
 
@@ -378,7 +382,8 @@ class DvzKeyboardModifiers(CtypesEnum):
 class DvzKeyboardEventType(CtypesEnum):
     DVZ_KEYBOARD_EVENT_NONE = 0
     DVZ_KEYBOARD_EVENT_PRESS = 1
-    DVZ_KEYBOARD_EVENT_RELEASE = 2
+    DVZ_KEYBOARD_EVENT_REPEAT = 2
+    DVZ_KEYBOARD_EVENT_RELEASE = 3
 
 
 class DvzMouseButton(CtypesEnum):
@@ -810,6 +815,10 @@ class DvzFigure(ctypes.Structure):
     pass
 
 
+class DvzFont(ctypes.Structure):
+    pass
+
+
 class DvzMVP(ctypes.Structure):
     pass
 
@@ -849,6 +858,16 @@ class DvzVisual(ctypes.Structure):
 # ===============================================================================
 # STRUCTURES
 # ===============================================================================
+
+class DvzAtlasFont(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("ttf_size", ctypes.c_ulong),
+        ("ttf_bytes", ndpointer(dtype=np.ubyte, flags="C_CONTIGUOUS")),
+        ("atlas", ctypes.POINTER(DvzAtlas)),
+        ("font", ctypes.POINTER(DvzFont)),
+    ]
+
 
 class DvzMVP(ctypes.Structure):
     _pack_ = 8
@@ -1849,6 +1868,62 @@ path_alloc = dvz.dvz_path_alloc
 path_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t total_point_count
+]
+
+# Function dvz_atlas_font()
+atlas_font = dvz.dvz_atlas_font
+atlas_font.argtypes = [
+    ctypes.c_double,  # double font_size
+]
+atlas_font.restype = DvzAtlasFont
+
+# Function dvz_font()
+font = dvz.dvz_font
+font.argtypes = [
+    ctypes.c_long,  # long ttf_size
+    ctypes.c_char_p,  # char* ttf_bytes
+]
+font.restype = ctypes.POINTER(DvzFont)
+
+# Function dvz_font_size()
+font_size = dvz.dvz_font_size
+font_size.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
+    ctypes.c_double,  # double size
+]
+
+# Function dvz_font_layout()
+font_layout = dvz.dvz_font_layout
+font_layout.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
+    ctypes.c_uint32,  # uint32_t length
+    ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
+]
+font_layout.restype = ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")
+
+# Function dvz_font_ascii()
+font_ascii = dvz.dvz_font_ascii
+font_ascii.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
+    ctypes.c_char_p,  # char* string
+]
+font_ascii.restype = ndpointer(dtype=np.float32, flags="C_CONTIGUOUS")
+
+# Function dvz_font_draw()
+font_draw = dvz.dvz_font_draw
+font_draw.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
+    ctypes.c_uint32,  # uint32_t length
+    ndpointer(dtype=np.uint32, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
+    ndpointer(dtype=np.float32, flags="C_CONTIGUOUS"),  # vec4* xywh
+    ctypes.c_uint32 * 2,  # uvec2 out_size
+]
+font_draw.restype = ndpointer(dtype=np.uint8, flags="C_CONTIGUOUS")
+
+# Function dvz_font_destroy()
+font_destroy = dvz.dvz_font_destroy
+font_destroy.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
 ]
 
 # Function dvz_glyph()

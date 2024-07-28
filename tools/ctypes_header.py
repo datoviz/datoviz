@@ -136,7 +136,12 @@ def ndpointer(*args, **kwargs):
     def from_param(cls, obj):
         if obj is None:
             return obj
-        return base.from_param(obj)
+        if isinstance(obj, np.ndarray):
+            out = base.from_param(obj)
+        else:
+            # NOTE: allow passing ndpointers without change
+            out = obj
+        return out
     return type(base.__name__, (base,), {'from_param': from_param})
 
 
