@@ -255,6 +255,7 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
 {
     ANN(fig);
     ANN(fig->scene);
+    ANN(fig->scene->batch);
     ANN(fig->viewset);
 
     // Instantiate the structure.
@@ -268,6 +269,9 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
 
     // Create a view.
     panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){width, height});
+
+    // Default static transform.
+    panel->static_transform = dvz_transform(fig->scene->batch, 0);
 
     // Append the figure to the scene's figures.
     dvz_list_append(fig->panels, (DvzListItem){.p = (void*)panel});
@@ -416,6 +420,7 @@ void dvz_panel_destroy(DvzPanel* panel)
         dvz_transform_destroy(panel->transform);
         panel->transform = NULL;
     }
+    dvz_transform_destroy(panel->static_transform);
 
     // Destroy the view.
     dvz_view_destroy(panel->view);
@@ -509,7 +514,7 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel)
 /*  Visuals                                                                                      */
 /*************************************************************************************************/
 
-void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
+void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags)
 {
     ANN(panel);
     ANN(panel->figure);
@@ -529,17 +534,29 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual)
     }
 
     // Panel transform must be set.
-    if (panel->transform == NULL)
+    bool is_static = (flags & DVZ_VIEW_FLAGS_STATIC) != 0;
+
+    DvzTransform* tr = NULL;
+    // Static transform.
+    if (is_static)
+    {
+        tr = panel->static_transform;
+    }
+    else if (panel->transform == NULL)
     {
         log_debug("the panel had no transform, creating one");
         panel->transform = dvz_transform(panel->figure->scene->batch, 0);
         panel->transform_to_destroy = true;
+        tr = panel->transform;
     }
-
-    ANN(panel->transform);
+    else
+    {
+        tr = panel->transform;
+    }
+    ANN(tr);
 
     // Add the visual to the view, and bind the common (shared) descriptors.
-    dvz_view_add(view, visual, 0, visual->item_count, 0, 1, panel->transform, 0);
+    dvz_view_add(view, visual, 0, visual->item_count, 0, 1, tr, 0);
 
     // Send the buffer upload requests.
     dvz_visual_update(visual);

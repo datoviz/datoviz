@@ -84,6 +84,7 @@ struct DvzPanel
     DvzView* view;                // has a list of visuals
     vec2 offset_init, shape_init; // initial viewport size
     DvzTransform* transform;
+    DvzTransform* static_transform;
     DvzCamera* camera;
     DvzPanzoom* panzoom;
     DvzArcball* arcball;
