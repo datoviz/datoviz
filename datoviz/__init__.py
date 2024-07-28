@@ -648,6 +648,11 @@ class DvzViewportClip(CtypesEnum):
     DVZ_VIEWPORT_CLIP_LEFT = 0x0008
 
 
+class DvzDepthTest(CtypesEnum):
+    DVZ_DEPTH_TEST_DISABLE = 0
+    DVZ_DEPTH_TEST_ENABLE = 1
+
+
 class DvzColormap(CtypesEnum):
     DVZ_CMAP_BINARY = 0
     DVZ_CMAP_HSV = 1
@@ -1110,6 +1115,8 @@ VIEWPORT_CLIP_INNER = 0x0001
 VIEWPORT_CLIP_OUTER = 0x0002
 VIEWPORT_CLIP_BOTTOM = 0x0004
 VIEWPORT_CLIP_LEFT = 0x0008
+DEPTH_TEST_DISABLE = 0
+DEPTH_TEST_ENABLE = 1
 CMAP_BINARY = 0
 CMAP_HSV = 1
 CMAP_CIVIDIS = 2
@@ -1827,6 +1834,13 @@ visual_clip = dvz.dvz_visual_clip
 visual_clip.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzViewportClip,  # DvzViewportClip clip
+]
+
+# Function dvz_visual_depth()
+visual_depth = dvz.dvz_visual_depth
+visual_depth.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzDepthTest,  # DvzDepthTest depth_test
 ]
 
 # Function dvz_visual_show()
