@@ -3322,6 +3322,14 @@ gui_button.argtypes = [
 ]
 gui_button.restype = ctypes.c_bool
 
+# Function dvz_gui_checkbox()
+gui_checkbox = dvz.dvz_gui_checkbox
+gui_checkbox.argtypes = [
+    ctypes.c_char_p,  # char* name
+    ndpointer(dtype=np.bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* checked
+]
+gui_checkbox.restype = ctypes.c_bool
+
 # Function dvz_gui_image()
 gui_image = dvz.dvz_gui_image
 gui_image.argtypes = [
