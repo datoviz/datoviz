@@ -61,6 +61,7 @@ void dvz_camera_initial(DvzCamera* camera, vec3 pos, vec3 lookat, vec3 up)
 }
 
 
+
 void dvz_camera_reset(DvzCamera* camera)
 {
     ANN(camera);

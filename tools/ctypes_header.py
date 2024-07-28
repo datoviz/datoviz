@@ -158,19 +158,19 @@ def char_pointer(s):
     return str(s).encode('utf-8')
 
 
-def vec2(x: float, y: float):
+def vec2(x: float = 0, y: float = 0):
     return (ctypes.c_float * 2)(x, y)
 
 
-def vec3(x: float, y: float, z: float):
+def vec3(x: float = 0, y: float = 0, z: float = 0):
     return (ctypes.c_float * 3)(x, y, z)
 
 
-def vec4(x: float, y: float, z: float, w: float):
+def vec4(x: float = 0, y: float = 0, z: float = 0, w: float = 0):
     return (ctypes.c_float * 4)(x, y, z, w)
 
 
-def cvec4(r: int, g: int, b: int, a: int):
+def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
     return (ctypes.c_uint8 * 4)(r, g, b, a)
 
 
