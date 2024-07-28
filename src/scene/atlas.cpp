@@ -10,6 +10,7 @@
 #include "scene/atlas.h"
 #include "../_pointer.h"
 #include "_macros.h"
+#include "datoviz.h"
 #include "fileio.h"
 #include "request.h"
 #include "scene/font.h"
@@ -100,7 +101,12 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
-DvzAtlasFont dvz_atlas_font() { return dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas"); }
+DvzAtlasFont dvz_atlas_font(double font_size)
+{
+    DvzAtlasFont af = dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas");
+    dvz_font_size(af.font, font_size);
+    return af;
+}
 
 
 

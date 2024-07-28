@@ -1336,22 +1336,91 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
 
 
 /*************************************************************************************************/
-/*  Glyph                                                                                        */
+/*  Font                                                                                         */
 /*************************************************************************************************/
 
 /**
- * Load the default font.
+ * Load the default atlas and font.
+ *
+ * @param font_size the font size
+ * @returns a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
  */
-// DVZ_EXPORT DvzFont* dvz_font_default(void);
+DVZ_EXPORT DvzAtlasFont dvz_atlas_font(double font_size);
 
 
 
 /**
- * Load the default atlas.
+ * Create a font.
+ *
+ * @param ttf_size size in bytes of a TTF font raw buffer
+ * @param ttf_bytes TTF font raw buffer
+ * @returns the font
  */
-DVZ_EXPORT DvzAtlasFont dvz_atlas_font(void);
+DVZ_EXPORT DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes);
 
 
+
+/**
+ * Set the font size.
+ *
+ * @param font the font
+ * @param size the font size
+ */
+DVZ_EXPORT void dvz_font_size(DvzFont* font, double size);
+
+
+
+/**
+ * Compute the shift of each glyph in a Unicode string, using the Freetype library.
+ *
+ * @param font the font
+ * @param length the number of glyphs
+ * @param codepoints the Unicode codepoints of the glyphs
+ * @returns an array of (x,y,w,h) shifts
+ */
+DVZ_EXPORT vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints);
+
+
+
+/**
+ * Compute the shift of each glyph in an ASCII string, using the Freetype library.
+ *
+ * @param font the font
+ * @param string the ASCII string
+ * @returns an array of (x,y,w,h) shifts
+ */
+DVZ_EXPORT vec4* dvz_font_ascii(DvzFont* font, const char* string);
+
+
+
+/**
+ * Render a string using Freetype.
+ *
+ * @param font the font
+ * @param length the number of glyphs
+ * @param codepoints the Unicode codepoints of the glyphs
+ * @param xywh an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+ * @param[out] out_size the number of bytes in the returned image
+ * @returns an RGBA array allocated by this function and that MUST be freed by the caller
+ *
+ */
+DVZ_EXPORT uint8_t* dvz_font_draw(
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, uvec2 out_size);
+
+
+
+/**
+ * Destroy a font.
+ *
+ * @param font the font
+ */
+DVZ_EXPORT void dvz_font_destroy(DvzFont* font);
+
+
+
+/*************************************************************************************************/
+/*  Glyph                                                                                        */
+/*************************************************************************************************/
 
 /**
  * Create a glyph visual.
