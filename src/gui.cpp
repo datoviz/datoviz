@@ -512,6 +512,15 @@ bool dvz_gui_button(const char* name, float width, float height)
 
 
 
+bool dvz_gui_checkbox(const char* name, bool* checked)
+{
+    ANN(name);
+    ANN(checked);
+    return ImGui::Checkbox(name, checked);
+}
+
+
+
 void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...)
 {
     ANN(fmt);

@@ -2772,6 +2772,19 @@ DVZ_EXPORT bool dvz_gui_button(const char* name, float width, float height);
 
 
 /**
+ * Add a checkbox.
+ *
+ * @param name the button name
+ * @param width the button width
+ * @param height the button height
+ * @param[out] checked whether the checkbox is checked
+ * @returns whether the checkbox's state has changed
+ */
+DVZ_EXPORT bool dvz_gui_checkbox(const char* name, bool* checked);
+
+
+
+/**
  * Add a progress widget.
  *
  * @param fraction the fraction between 0 and 1
