@@ -2,6 +2,14 @@
 
 Show an image.
 
+Illustrates:
+
+- Creating a figure, panel
+- Panzoom interactivity
+- Loading a PNG image with pillow
+- Image visual
+- Creating a texture
+
 """
 
 from pathlib import Path
@@ -58,7 +66,7 @@ tex = dvz.tex_image(batch, format, width, height, A_(image))
 dvz.image_texture(visual, tex, filter, address_mode)
 
 # Add the visual.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

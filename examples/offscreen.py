@@ -2,6 +2,14 @@
 
 This is an example showing how to generate an offscreen image and save it as a PNG.
 
+
+Illustrates:
+
+- Creating a figure, panel
+- Panzoom interactivity
+- Point visual
+- Offscreen rendering (save to a PNG image)
+
 """
 
 import numpy as np
@@ -42,7 +50,7 @@ size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
 dvz.point_size(visual, 0, n, size, 0)
 
 # Add the visual.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

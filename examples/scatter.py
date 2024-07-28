@@ -2,6 +2,12 @@
 
 Show points in 2D with various colors and sizes.
 
+Illustrates:
+
+- Creating a figure, panel
+- Panzoom interactivity
+- Point visual
+
 """
 
 import numpy as np
@@ -41,7 +47,7 @@ size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
 dvz.point_size(visual, 0, n, size, 0)
 
 # Add the visual.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

@@ -2,6 +2,18 @@
 
 Display a simple GUI to control the size of a disc.
 
+Illustrates:
+
+- Creating a figure, panel
+- Panzoom interactivity
+- Shape
+- Mesh visual and shape mesh
+- GUI callback
+- GUI dialog
+- GUI buttons
+- Shape transforms
+- Dynamic shape and mesh update
+
 """
 
 import numpy as np
@@ -72,7 +84,7 @@ shape = dvz.shape_square(color)
 visual = dvz.mesh_shape(batch, shape, 0)
 
 # Add the visual to the panel.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Associate a GUI callback function with a figure.
 dvz.app_gui(app, dvz.figure_id(figure), ongui, None)

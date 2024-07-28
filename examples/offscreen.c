@@ -47,7 +47,7 @@ int main(int argc, char** argv)
     FREE(size);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, visual);
+    dvz_panel_visual(panel, visual, 0);
 
     // Run the app.
     dvz_scene_run(scene, app, 0);

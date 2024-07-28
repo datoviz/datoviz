@@ -1,6 +1,15 @@
 """# Surface example
 
-Show a surface in 3D.
+Show a rotating surface in 3D.
+
+Illustrates:
+
+- Surface shape
+- Mesh visual and surface mesh
+- Arcball interactivity
+- Initial arcball angles
+- Manual arcball parameter update
+- Timers and timer callbacks
 
 """
 
@@ -47,7 +56,7 @@ d = np.sqrt((xv - center_x) ** 2 + (yv - center_y) ** 2)
 
 # Heights.
 a = 4.0 * 2 * np.pi / row_count
-b = 3.0 * 2*np.pi / col_count
+b = 3.0 * 2 * np.pi / col_count
 c = .5
 hmin = -.5
 hmax = +.5
@@ -71,7 +80,7 @@ dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
 dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Initial arcball angles.
 angle = -0.39686

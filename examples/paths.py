@@ -2,6 +2,12 @@
 
 This is an example with multiple paths.
 
+Illustrates:
+
+- Creating a figure, panel
+- Panzoom interactivity
+- Path visual
+
 """
 
 import numpy as np
@@ -59,7 +65,7 @@ dvz.path_color(visual, 0, n, color, 0)
 dvz.path_linewidth(visual, 5.0)
 
 # Add the visual.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

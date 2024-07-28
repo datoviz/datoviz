@@ -78,7 +78,7 @@ int main(int argc, char** argv)
     dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16}); // Ambient, diffuse, specular, exponent.
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, visual);
+    dvz_panel_visual(panel, visual, 0);
 
     // Print the arcball angles in the terminal.
     dvz_app_onmouse(app, show_arcball_angles, arcball);

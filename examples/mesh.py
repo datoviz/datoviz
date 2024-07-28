@@ -2,6 +2,14 @@
 
 Show a 3D mesh.
 
+Illustrates:
+
+- Creating a figure, panel
+- Arcball interactivity
+- Loading a .OBJ mesh file
+- 3D shape
+- Mesh visual and shape mesh
+
 """
 
 from pathlib import Path
@@ -48,7 +56,7 @@ dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
 dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
-dvz.panel_visual(panel, visual)
+dvz.panel_visual(panel, visual, 0)
 
 # Initial arcball angles.
 dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))
