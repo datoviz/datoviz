@@ -1681,6 +1681,12 @@ scene_figure.argtypes = [
 ]
 scene_figure.restype = ctypes.POINTER(DvzFigure)
 
+# Function dvz_figure_update()
+figure_update = dvz.dvz_figure_update
+figure_update.argtypes = [
+    ctypes.POINTER(DvzFigure),  # DvzFigure* figure
+]
+
 # Function dvz_figure_destroy()
 figure_destroy = dvz.dvz_figure_destroy
 figure_destroy.argtypes = [
