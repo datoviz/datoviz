@@ -66,7 +66,7 @@ int test_marker_code(TstSuite* suite)
     dvz_marker_edge_width(visual, (float){3.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -120,7 +120,7 @@ int test_marker_bitmap(TstSuite* suite)
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -209,7 +209,7 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_tex_scale(visual, (float){(float)tex_size});
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -293,7 +293,7 @@ int test_marker_msdf(TstSuite* suite)
     dvz_marker_tex_scale(visual, (float){w});
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -344,7 +344,7 @@ int test_marker_rotation(TstSuite* suite)
     dvz_marker_color(visual, 0, 1, (cvec4[]){{255, 0, 0, 255}}, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Animation.
     vt.visual = visual;

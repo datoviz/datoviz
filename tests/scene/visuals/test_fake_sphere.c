@@ -55,7 +55,7 @@ int test_fake_sphere_1(TstSuite* suite)
     dvz_fake_sphere_light_pos(visual, (vec3){-1, +1, +10});
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);

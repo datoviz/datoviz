@@ -43,7 +43,7 @@ int test_image_1(TstSuite* suite)
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Create and upload the texture.
     uvec3 tex_shape = {0};

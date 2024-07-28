@@ -448,8 +448,8 @@ void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
     ANN(axis);
     ANN(panel);
 
-    dvz_panel_visual(panel, axis->segment);
-    dvz_panel_visual(panel, axis->glyph);
+    dvz_panel_visual(panel, axis->segment, 0);
+    dvz_panel_visual(panel, axis->glyph, 0);
 }
 
 

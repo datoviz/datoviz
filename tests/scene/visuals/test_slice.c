@@ -119,7 +119,7 @@ int test_slice_1(TstSuite* suite)
     dvz_slice_alpha(visual, .5);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Create the texture and upload the volume data.
     uvec3 shape = {0};

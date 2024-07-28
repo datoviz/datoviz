@@ -78,7 +78,7 @@ int test_path_1(TstSuite* suite)
     dvz_path_color(visual, 0, total_length, colors, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -181,7 +181,7 @@ int test_path_2(TstSuite* suite)
     dvz_path_linewidth(visual, 5);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Animation.
     vt.n = n_paths;

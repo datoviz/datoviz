@@ -86,7 +86,7 @@ int test_scene_1(TstSuite* suite)
 
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, pixel);
+    dvz_panel_visual(panel, pixel, 0);
 
 
     // Run the app.
@@ -153,8 +153,8 @@ int test_scene_2(TstSuite* suite)
 
 
     // Add the visuals to the panel AFTER setting the visuals' data.
-    dvz_panel_visual(panel_0, pixel);
-    dvz_panel_visual(panel_1, pixel_1);
+    dvz_panel_visual(panel_0, pixel, 0);
+    dvz_panel_visual(panel_1, pixel_1, 0);
 
     // Run the app.
     dvz_scene_run(scene, app, N_FRAMES);
@@ -216,7 +216,7 @@ int test_scene_3(TstSuite* suite)
     dvz_visual_update(mesh);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, mesh);
+    dvz_panel_visual(panel, mesh, 0);
 
     // Run the app.
     dvz_scene_run(scene, app, N_FRAMES);
@@ -262,7 +262,7 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, pixel);
+    dvz_panel_visual(panel, pixel, 0);
 
     // Run the app.
     // NOTE: with offscreen rendering, N_FRAMES is ignored, the scene is just rendered once.

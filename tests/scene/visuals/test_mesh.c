@@ -91,7 +91,7 @@ int test_mesh_1(TstSuite* suite)
 
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
@@ -156,7 +156,7 @@ int test_mesh_surface(TstSuite* suite)
     dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     dvz_app_onmouse(vt.app, _onmouse, &vt);
 
@@ -202,7 +202,7 @@ int test_mesh_obj(TstSuite* suite)
     }
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     dvz_app_onmouse(vt.app, _onmouse, &vt);
 

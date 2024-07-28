@@ -122,7 +122,7 @@ int test_glyph_1(TstSuite* suite)
 
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // LATER
     // // Animation.

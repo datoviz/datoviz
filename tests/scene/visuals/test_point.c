@@ -52,7 +52,7 @@ int test_point_1(TstSuite* suite)
     dvz_point_size(visual, 0, n, size, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);

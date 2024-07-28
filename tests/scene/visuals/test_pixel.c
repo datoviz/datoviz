@@ -48,7 +48,7 @@ int test_pixel_1(TstSuite* suite)
     dvz_pixel_color(visual, 0, n, color, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);

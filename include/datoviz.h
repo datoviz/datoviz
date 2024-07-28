@@ -510,7 +510,7 @@ DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
  * @param panel the panel
  * @param visual the visual
  */
-DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual);
+DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags);
 
 
 

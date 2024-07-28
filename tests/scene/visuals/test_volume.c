@@ -55,7 +55,7 @@ int test_volume_1(TstSuite* suite)
     dvz_volume_alloc(visual, 1);
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual);
+    dvz_panel_visual(vt.panel, visual, 0);
 
     // Texture parameters.
     uint32_t a = 7;
@@ -125,7 +125,7 @@ int test_volume_2(TstSuite* suite)
         dvz_volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1);
 
         // Add the visual to the panel AFTER setting the visual's data.
-        dvz_panel_visual(vt.panel, visual);
+        dvz_panel_visual(vt.panel, visual, 0);
 
         // Create the texture and upload the volume data.
         uvec3 shape = {0};
@@ -156,7 +156,7 @@ int test_volume_2(TstSuite* suite)
         dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
         // Add the visual to the panel AFTER setting the visual's data.
-        dvz_panel_visual(vt.panel, image);
+        dvz_panel_visual(vt.panel, image, 0);
 
         // Create and upload the texture.
         uvec3 tex_shape = {0};
