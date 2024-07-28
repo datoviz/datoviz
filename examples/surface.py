@@ -61,7 +61,7 @@ c = .5
 hmin = -.5
 hmax = +.5
 heights = np.exp(-.0001 * d ** 2) * np.sin(a*xv) * np.cos(b*yv)
-heights = heights.astype(np.float32)
+heights = heights.ravel().astype(np.float32)
 
 # Colors.
 colors = np.empty((n, 4), dtype=np.uint8)

@@ -9,6 +9,8 @@ Illustrates:
 - Loading a .OBJ mesh file
 - 3D shape
 - Mesh visual and shape mesh
+- Colormaps
+- Manual mesh colors
 
 """
 
