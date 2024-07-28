@@ -1,18 +1,23 @@
 """# Panels example
 
-Show the same visual in two panels.
+Show visuals in two different panels.
 
 Illustrates:
 
 - Creating a figure, panel
+- Point visual
+- Marker visual
 - Multiple panels
-- Sharing a visual between different panels
+- Mixing 2D and 3D in the same window
+- GUI checkbox
+- Show/hide a visual
 
 """
 
+import ctypes
 import numpy as np
 import datoviz as dvz
-from datoviz import cvec4
+from datoviz import vec2, vec3, S_, V_
 
 
 # -------------------------------------------------------------------------------------------------
@@ -26,7 +31,7 @@ scene = dvz.scene(batch)
 
 # Create a figure 800x600.
 w, h = 800, 600
-figure = dvz.figure(scene, w, h, 0)
+figure = dvz.figure(scene, w, h, dvz.CANVAS_FLAGS_IMGUI)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -103,7 +108,52 @@ dvz.panel_visual(panel1, visual1, 0)
 
 
 # -------------------------------------------------------------------------------------------------
-# 5. Run and cleanup
+# 5. GUI with checkbox
+# -------------------------------------------------------------------------------------------------
+
+# There are four steps to add a GUI with a checkbox.
+# i.    Initialize the figure with the flag `dvz.CANVAS_FLAGS_IMGUI``
+# ii.   Define a global-scoped object representing the variable to be updated by the GUI.
+# iii.  Define the GUI callback.
+# iv.   Call `dvz.app_gui(...)`
+
+# A wrapped boolean value with initial value False.
+checked = V_(True, ctypes.c_bool)
+
+
+@dvz.gui
+def ongui(app, fid, ev):
+    """GUI callback function."""
+
+    # Set the size of the next GUI dialog.
+    dvz.gui_size(vec2(170, 110))
+
+    # Start a GUI dialog with a dialog title.
+    dvz.gui_begin(S_("My GUI"), 0)
+
+    # Add a checkbox
+    with checked:  # Wrap the boolean value.
+        # Return True if the checkbox's state has changed.
+        if dvz.gui_checkbox(S_("Show visual"), checked.P_):
+            #                                  ^^^^^^^^^^ pass a C pointer to our wrapped bool
+            is_checked = checked.value  # Python variable with the checkbox's state
+
+            # Show/hide the visual.
+            dvz.visual_show(visual0, is_checked)
+
+            # Update the figure after its composition has changed.
+            dvz.figure_update(figure)
+
+    # End the GUI dialog.
+    dvz.gui_end()
+
+
+# Associate a GUI callback function with a figure.
+dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+
+
+# -------------------------------------------------------------------------------------------------
+# 6. Run and cleanup
 # -------------------------------------------------------------------------------------------------
 
 # Run the application.
