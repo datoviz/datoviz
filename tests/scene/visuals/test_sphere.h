@@ -2,8 +2,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_FAKE_SPHERE
-#define DVZ_HEADER_TEST_FAKE_SPHERE
+#ifndef DVZ_HEADER_TEST_SPHERE
+#define DVZ_HEADER_TEST_SPHERE
 
 
 
@@ -19,7 +19,7 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_fake_sphere_1(TstSuite*);
+int test_sphere_1(TstSuite*);
 
 
 

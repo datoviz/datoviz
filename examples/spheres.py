@@ -90,31 +90,31 @@ dvz.glyph_xywh(glyph, 0, n, xywh, anchor, 0)
 # Now we define a fake sphere visual, similar to markers, but with a fake 3D effect to simulate
 # spheres whereas they are really 2D bitmap sprites in a 3D world.
 # See https://paroj.github.io/gltut/Illumination/Tutorial%2013.html
-visual = dvz.fake_sphere(batch, 0)
+visual = dvz.sphere(batch, 0)
 
 # Sphere data allocation (100 000 spheres).
 n = 100_000
-dvz.fake_sphere_alloc(visual, n)
+dvz.sphere_alloc(visual, n)
 
 # Sphere random positions.
 pos = np.random.uniform(size=(n, 3), low=-1, high=+1).astype(np.float32)
 pos *= np.array([100, 1, 100])
-dvz.fake_sphere_position(visual, 0, n, pos, 0)
+dvz.sphere_position(visual, 0, n, pos, 0)
 
 # Sphere random colors.
 color = np.random.uniform(size=(n, 4), low=50, high=200).astype(np.uint8)
 color[:, 3] = 255
-dvz.fake_sphere_color(visual, 0, n, color, 0)
+dvz.sphere_color(visual, 0, n, color, 0)
 
 # Sphere sizes in pixels.
 size = np.random.uniform(size=(n,), low=50, high=100).astype(np.float32)
-dvz.fake_sphere_size(visual, 0, n, size, 0)
+dvz.sphere_size(visual, 0, n, size, 0)
 
 # Light position.
-dvz.fake_sphere_light_pos(visual, vec3(-5, +5, +100))
+dvz.sphere_light_pos(visual, vec3(-5, +5, +100))
 
 # Light parameters.
-dvz.fake_sphere_light_params(visual, vec4(.4, .8, 2, 32))
+dvz.sphere_light_params(visual, vec4(.4, .8, 2, 32))
 
 
 # -------------------------------------------------------------------------------------------------

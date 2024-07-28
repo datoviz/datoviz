@@ -1,7 +1,7 @@
 #version 450
 #include "common.glsl"
 
-layout(binding = 2) uniform FakeParams
+layout(binding = 2) uniform SphereParams
 {
     vec4 light_pos;
     vec4 light_params;

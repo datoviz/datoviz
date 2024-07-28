@@ -1,5 +1,5 @@
 /*************************************************************************************************/
-/*  Testing fake sphere                                                                          */
+/*  Testing sphere                                                                               */
 /*************************************************************************************************/
 
 
@@ -8,13 +8,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/visuals/test_fake_sphere.h"
+#include "scene/visuals/test_sphere.h"
 #include "renderer.h"
 #include "request.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
-#include "scene/visuals/fake_sphere.h"
+#include "scene/visuals/sphere.h"
 #include "scene/visuals/visual_test.h"
 #include "test.h"
 #include "testing.h"
@@ -23,39 +23,39 @@
 
 
 /*************************************************************************************************/
-/*  Fake sphere tests                                                                            */
+/*  Sphere tests                                                                                 */
 /*************************************************************************************************/
 
-int test_fake_sphere_1(TstSuite* suite)
+int test_sphere_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("fake_sphere", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("sphere", VISUAL_TEST_ARCBALL, 0);
 
     // Number of items.
     const uint32_t n = 1000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_fake_sphere(vt.batch, 0);
+    DvzVisual* visual = dvz_sphere(vt.batch, 0);
 
     // Visual allocation.
-    dvz_fake_sphere_alloc(visual, n);
+    dvz_sphere_alloc(visual, n);
 
     // Position.
     vec3* pos = dvz_mock_pos3D(n, 0.25);
-    dvz_fake_sphere_position(visual, 0, n, pos, 0);
+    dvz_sphere_position(visual, 0, n, pos, 0);
 
     // Color.
     cvec4* color = dvz_mock_color(n, 255);
-    dvz_fake_sphere_color(visual, 0, n, color, 0);
+    dvz_sphere_color(visual, 0, n, color, 0);
 
     // Size.
     float* size = dvz_mock_uniform(n, 50, 100);
-    dvz_fake_sphere_size(visual, 0, n, size, 0);
+    dvz_sphere_size(visual, 0, n, size, 0);
 
     // Light position.
-    dvz_fake_sphere_light_pos(visual, (vec3){-1, +1, +10});
+    dvz_sphere_light_pos(visual, (vec3){-1, +1, +10});
 
     // Light parameters.
-    dvz_fake_sphere_light_params(visual, (vec4){.3, .6, 2, 32});
+    dvz_sphere_light_params(visual, (vec4){.3, .6, 2, 32});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

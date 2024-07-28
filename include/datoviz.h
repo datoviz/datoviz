@@ -1868,22 +1868,22 @@ DVZ_EXPORT void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape);
 
 
 /*************************************************************************************************/
-/*  Fake sphere                                                                                  */
+/*  Sphere                                                                                  */
 /*************************************************************************************************/
 
 /**
- * Create a fake sphere visual.
+ * Create a sphere visual.
  *
  * @param batch the batch
  * @param flags the visual creation flags
  * @returns the visual
  */
-DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
+DVZ_EXPORT DvzVisual* dvz_sphere(DvzBatch* batch, int flags);
 
 
 
 /**
- * Set the fake sphere positions.
+ * Set the sphere positions.
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -1892,12 +1892,12 @@ DVZ_EXPORT DvzVisual* dvz_fake_sphere(DvzBatch* batch, int flags);
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos, int flags);
+dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos, int flags);
 
 
 
 /**
- * Set the fake sphere colors.
+ * Set the sphere colors.
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -1906,12 +1906,12 @@ dvz_fake_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
+dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
 
 
 
 /**
- * Set the fake sphere sizes.
+ * Set the sphere sizes.
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -1920,7 +1920,7 @@ dvz_fake_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, int flags);
+dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, int flags);
 
 
 
@@ -1930,7 +1930,7 @@ dvz_fake_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* s
  * @param visual the visual
  * @param item_count the total number of spheres to allocate for this visual
  */
-DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
+DVZ_EXPORT void dvz_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 
 
 
@@ -1940,7 +1940,7 @@ DVZ_EXPORT void dvz_fake_sphere_alloc(DvzVisual* visual, uint32_t item_count);
  * @param visual the visual
  * @param pos the light position
  */
-DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
+DVZ_EXPORT void dvz_sphere_light_pos(DvzVisual* visual, vec3 pos);
 
 
 
@@ -1950,7 +1950,7 @@ DVZ_EXPORT void dvz_fake_sphere_light_pos(DvzVisual* visual, vec3 pos);
  * @param visual the visual
  * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
-DVZ_EXPORT void dvz_fake_sphere_light_params(DvzVisual* visual, vec4 params);
+DVZ_EXPORT void dvz_sphere_light_params(DvzVisual* visual, vec4 params);
 
 
 

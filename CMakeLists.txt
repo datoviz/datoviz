@@ -692,7 +692,7 @@ add_library(datoviz_scene OBJECT
 
     # Visuals
     "src/scene/visuals/basic.c"
-    "src/scene/visuals/fake_sphere.c"
+    "src/scene/visuals/sphere.c"
     "src/scene/visuals/glyph.c"
     "src/scene/visuals/image.c"
     "src/scene/visuals/slice.c"
@@ -841,7 +841,7 @@ if(DATOVIZ_WITH_CLI)
 
         # Visuals
         "tests/scene/visuals/test_basic.c"
-        "tests/scene/visuals/test_fake_sphere.c"
+        "tests/scene/visuals/test_sphere.c"
         "tests/scene/visuals/test_glyph.c"
         "tests/scene/visuals/test_image.c"
         "tests/scene/visuals/test_slice.c"

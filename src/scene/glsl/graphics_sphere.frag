@@ -30,7 +30,7 @@ void main()
     if (dist_squared > 1.0)
         discard;
 
-    // Calculate the normal of the fake sphere at this fragment
+    // Calculate the normal of the sphere at this fragment
     vec3 normal = vec3(coord, sqrt(1.0 - dist_squared));
 
     // Calculate the lighting

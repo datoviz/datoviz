@@ -37,7 +37,6 @@
 #include "scene/test_viewset.h"
 #include "scene/test_visual.h"
 #include "scene/visuals/test_basic.h"
-#include "scene/visuals/test_fake_sphere.h"
 #include "scene/visuals/test_glyph.h"
 #include "scene/visuals/test_image.h"
 #include "scene/visuals/test_marker.h"
@@ -47,6 +46,7 @@
 #include "scene/visuals/test_point.h"
 #include "scene/visuals/test_segment.h"
 #include "scene/visuals/test_slice.h"
+#include "scene/visuals/test_sphere.h"
 #include "scene/visuals/test_volume.h"
 #include "test.h"
 #include "test_alloc.h"
@@ -384,7 +384,7 @@ int dvz_run_tests(const char* match)
     // TEST(test_volume_2)
     TEST(test_image_1)
     TEST(test_slice_1)
-    TEST(test_fake_sphere_1)
+    TEST(test_sphere_1)
     // TEST(test_axis_1)
     // TEST(test_axis_2)
     // TEST(test_axis_get)

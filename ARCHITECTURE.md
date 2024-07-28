@@ -150,7 +150,7 @@ Datoviz comes with a built-in library of visuals commonly used in scientific ren
 
 * **3D visuals** represent meshes (or "fake" meshes, volumes):
     * **Mesh**: triangular meshes (vertex position, normal, color, texture coordinates, face indices, light position and parameters)
-    * **Fake sphere**: collection of "fake" spheres rendered as 2D sprites with 3D illusion (position, color, size, light position)
+    * **Sphere**: collection of "fake" spheres rendered as 2D sprites with 3D illusion (position, color, size, light position)
     * **Volume**: volume rendering
     * **Slice**: images in 3D space showing slices of a 3D volume (corner position, texture coordinates)
 

@@ -1,9 +1,9 @@
 /*************************************************************************************************/
-/* FakeSphere                                                                                    */
+/* Sphere                                                                                    */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_FAKE_SPHERE
-#define DVZ_HEADER_FAKE_SPHERE
+#ifndef DVZ_HEADER_SPHERE
+#define DVZ_HEADER_SPHERE
 
 
 
@@ -20,8 +20,8 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzFakeSphereVertex DvzFakeSphereVertex;
-typedef struct DvzFakeSphereParams DvzFakeSphereParams;
+typedef struct DvzSphereVertex DvzSphereVertex;
+typedef struct DvzSphereParams DvzSphereParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -39,7 +39,7 @@ typedef struct DvzVisual DvzVisual;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct DvzFakeSphereVertex
+struct DvzSphereVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
@@ -48,7 +48,7 @@ struct DvzFakeSphereVertex
 
 
 
-struct DvzFakeSphereParams
+struct DvzSphereParams
 {
     vec4 light_pos;   /* light position */
     vec4 light_param; /* ambient, diffuse, specular coefs */

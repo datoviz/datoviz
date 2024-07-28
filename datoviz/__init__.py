@@ -2254,17 +2254,17 @@ mesh_reshape.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
-# Function dvz_fake_sphere()
-fake_sphere = dvz.dvz_fake_sphere
-fake_sphere.argtypes = [
+# Function dvz_sphere()
+sphere = dvz.dvz_sphere
+sphere.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
 ]
-fake_sphere.restype = ctypes.POINTER(DvzVisual)
+sphere.restype = ctypes.POINTER(DvzVisual)
 
-# Function dvz_fake_sphere_position()
-fake_sphere_position = dvz.dvz_fake_sphere_position
-fake_sphere_position.argtypes = [
+# Function dvz_sphere_position()
+sphere_position = dvz.dvz_sphere_position
+sphere_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
@@ -2272,9 +2272,9 @@ fake_sphere_position.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_fake_sphere_color()
-fake_sphere_color = dvz.dvz_fake_sphere_color
-fake_sphere_color.argtypes = [
+# Function dvz_sphere_color()
+sphere_color = dvz.dvz_sphere_color
+sphere_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
@@ -2282,9 +2282,9 @@ fake_sphere_color.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_fake_sphere_size()
-fake_sphere_size = dvz.dvz_fake_sphere_size
-fake_sphere_size.argtypes = [
+# Function dvz_sphere_size()
+sphere_size = dvz.dvz_sphere_size
+sphere_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
@@ -2292,23 +2292,23 @@ fake_sphere_size.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_fake_sphere_alloc()
-fake_sphere_alloc = dvz.dvz_fake_sphere_alloc
-fake_sphere_alloc.argtypes = [
+# Function dvz_sphere_alloc()
+sphere_alloc = dvz.dvz_sphere_alloc
+sphere_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
 ]
 
-# Function dvz_fake_sphere_light_pos()
-fake_sphere_light_pos = dvz.dvz_fake_sphere_light_pos
-fake_sphere_light_pos.argtypes = [
+# Function dvz_sphere_light_pos()
+sphere_light_pos = dvz.dvz_sphere_light_pos
+sphere_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 pos
 ]
 
-# Function dvz_fake_sphere_light_params()
-fake_sphere_light_params = dvz.dvz_fake_sphere_light_params
-fake_sphere_light_params.argtypes = [
+# Function dvz_sphere_light_params()
+sphere_light_params = dvz.dvz_sphere_light_params
+sphere_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 params
 ]
