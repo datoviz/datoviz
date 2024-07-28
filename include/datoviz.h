@@ -561,6 +561,16 @@ DVZ_EXPORT void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip);
 
 
 /**
+ * Set the visual depth.
+ *
+ * @param visual the visual
+ * @param depth_test whether to activate the depth test
+ */
+DVZ_EXPORT void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test);
+
+
+
+/**
  * Set the visibility of a visual.
  *
  * @param visual the visual

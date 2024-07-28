@@ -162,13 +162,6 @@ void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
 /**
  *
  */
-void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test);
-
-
-
-/**
- *
- */
 void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode);
 
 
