@@ -4,18 +4,23 @@ Show fake 3D spheres and static text with manual camera control.
 
 Illustrates:
 
-- Multiple visuals
+- Adding multiple visuals to a panel
+- Sphere visual
+- Glyph (text) visual
 - Dynamic and static visual (visual opting out of the global panel transform)
 - Keyboard event callbacks
 - Manual camera control
-- Glyph (text) visual
 
 """
 
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, S_
+from datoviz import vec2, vec3, vec4, S_
 
+
+# -------------------------------------------------------------------------------------------------
+# 1. Creating the scene
+# -------------------------------------------------------------------------------------------------
 
 # Boilerplate.
 app = dvz.app(0)
@@ -31,6 +36,10 @@ panel = dvz.panel_default(figure)
 # 3D camera.
 camera = dvz.panel_camera(panel)
 
+
+# -------------------------------------------------------------------------------------------------
+# 2. Text
+# -------------------------------------------------------------------------------------------------
 
 # Show a static glyph.
 glyph = dvz.glyph(batch, 0)
@@ -74,6 +83,10 @@ anchor = vec2(-.5 * font_size * len(text), -2 * font_size)
 dvz.glyph_xywh(glyph, 0, n, xywh, anchor, 0)
 
 
+# -------------------------------------------------------------------------------------------------
+# 3. Spheres
+# -------------------------------------------------------------------------------------------------
+
 # Now we define a fake sphere visual, similar to markers, but with a fake 3D effect to simulate
 # spheres whereas they are really 2D bitmap sprites in a 3D world.
 # See https://paroj.github.io/gltut/Illumination/Tutorial%2013.html
@@ -100,12 +113,24 @@ dvz.fake_sphere_size(visual, 0, n, size, 0)
 # Light position.
 dvz.fake_sphere_light_pos(visual, vec3(-5, +5, +100))
 
+# Light parameters.
+dvz.fake_sphere_light_params(visual, vec4(.4, .8, 2, 32))
+
+
+# -------------------------------------------------------------------------------------------------
+# 4. Panel composition
+# -------------------------------------------------------------------------------------------------
+
 # We add the sphere visual.
 dvz.panel_visual(panel, visual, 0)
 
 # We add the glyph visual and we opt out of the panel transform (3D movable camera).
 dvz.panel_visual(panel, glyph, dvz.DvzViewFlags.DVZ_VIEW_FLAGS_STATIC)
 
+
+# -------------------------------------------------------------------------------------------------
+# 5. Manual camera control
+# -------------------------------------------------------------------------------------------------
 
 # Custom camera manipulation with the keyboard.
 # NOTE: a similar interaction pattern will be soon provided as a builtin option in Datoviz
@@ -149,6 +174,11 @@ def on_keyboard(app, window_id, ev):
 
 # We register the keyboard callback function.
 dvz.app_onkeyboard(app, on_keyboard, None)
+
+
+# -------------------------------------------------------------------------------------------------
+# 6. Run and cleanup
+# -------------------------------------------------------------------------------------------------
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

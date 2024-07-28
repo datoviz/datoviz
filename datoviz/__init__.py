@@ -2306,6 +2306,13 @@ fake_sphere_light_pos.argtypes = [
     ctypes.c_float * 3,  # vec3 pos
 ]
 
+# Function dvz_fake_sphere_light_params()
+fake_sphere_light_params = dvz.dvz_fake_sphere_light_params
+fake_sphere_light_params.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float * 4,  # vec4 params
+]
+
 # Function dvz_volume()
 volume = dvz.dvz_volume
 volume.argtypes = [
