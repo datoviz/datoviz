@@ -130,6 +130,8 @@ def array_pointer(x, dtype=None):
 
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
+    ndim = kwargs.pop('ndim', 1)
+    ncol = kwargs.pop('ncol', 1)
     base = ndpointer_(*args, **kwargs)
 
     @classmethod
@@ -137,6 +139,13 @@ def ndpointer(*args, **kwargs):
         if obj is None:
             return obj
         if isinstance(obj, np.ndarray):
+            s = f"array <{obj.dtype}>{obj.shape}"
+            if obj.ndim != ndim:
+                raise ValueError(
+                    f"Wrong ndim {obj.ndim} (expected {ndim}) for {s}")
+            if ncol > 1 and obj.shape[1] != ncol:
+                raise ValueError(
+                    f"Wrong shape {obj.shape} (expected (*, {ncol})) for {s}")
             out = base.from_param(obj)
         else:
             # NOTE: allow passing ndpointers without change

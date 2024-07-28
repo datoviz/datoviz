@@ -64,19 +64,20 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
 def c_to_dtype(type, enum_int=False, unsigned=None):
     import numpy as np
     assert '*' not in type
+    n = _extract_int(type)
     type_ = type if not type.endswith('_t') else type[:-2]
 
     if type.startswith(('vec', 'mat')):
-        return 'np.float32'
+        return 'np.float32', n
 
     elif type.startswith('cvec'):
-        return 'np.uint8'
+        return 'np.uint8', n
 
     elif type.startswith('uvec'):
-        return 'np.uint32'
+        return 'np.uint32', n
 
     elif type.startswith('dvec'):
-        return 'np.double'
+        return 'np.double', n
 
     elif type == 'DvzIndex':
         return 'np.uint32'
@@ -104,8 +105,14 @@ def cpointer_to_ndpointer(type, unsigned=None):
     btype = type[:-1]
     dtype = c_to_dtype(btype, unsigned=unsigned)
     if dtype:
+        if isinstance(dtype, tuple):
+            dtype, n = dtype
+            ndim = 2
+        else:
+            n = 1
+            ndim = 1
         # NOTE: redefined in ctypes_header.py to support None arguments
-        return f'ndpointer(dtype={dtype}, flags="C_CONTIGUOUS")'
+        return f'ndpointer(dtype={dtype}, ndim={ndim}, ncol={n}, flags="C_CONTIGUOUS")'
     else:
         if btype.startswith("Dvz"):
             TYPES.add(btype)
