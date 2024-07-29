@@ -109,5 +109,5 @@ TODO.
 * Commit and tag
 * Build packages
 * Upload packages
-* Bump to the development version (TODO)
+* Bump to the new development version with `just bump a.b.c-dev`
 * Announcement
