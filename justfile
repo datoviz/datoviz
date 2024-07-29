@@ -132,13 +132,14 @@ pydev: # install the Python binding on a development machine
     @pip install -e .
 #
 
-getversion:
+version:
     #!/usr/bin/env sh
     VERSION=$(awk '
     /#define DVZ_VERSION_MAJOR/ { major = $3 }
     /#define DVZ_VERSION_MINOR/ { minor = $3 }
     /#define DVZ_VERSION_PATCH/ { patch = $3 }
-    END { print major "." minor "." patch }
+    /#define DVZ_VERSION_DEV/ { dev = $3 }
+    END { print major "." minor "." patch dev }
     ' "include/datoviz_version.h")
     echo ${VERSION}
 #
@@ -151,6 +152,11 @@ bump version:
     # Define the version
     version = "{{version}}"
     major, minor, patch = version.split('.')
+    dev = ""
+    if "-" in patch:
+        patch, dev = patch.split("-")
+        dev = "-" + dev
+    # dev variable contains either "" or "-dev"
 
     # Function to update file content using regex
     def update_file(file_path, patterns_replacements):
@@ -166,7 +172,8 @@ bump version:
     include_patterns_replacements = [
         (r'#define DVZ_VERSION_MAJOR \d+', f'#define DVZ_VERSION_MAJOR {major}'),
         (r'#define DVZ_VERSION_MINOR \d+', f'#define DVZ_VERSION_MINOR {minor}'),
-        (r'#define DVZ_VERSION_PATCH \d+', f'#define DVZ_VERSION_PATCH {patch}')
+        (r'#define DVZ_VERSION_PATCH \d+', f'#define DVZ_VERSION_PATCH {patch}'),
+        (r'#define DVZ_VERSION_DEVEL[^\n]*', f'#define DVZ_VERSION_DEVEL {dev}'.strip())
     ]
     update_file(include_file, include_patterns_replacements)
     print(f"Updated {include_file}")
