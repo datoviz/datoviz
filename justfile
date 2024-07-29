@@ -144,62 +144,52 @@ getversion:
 #
 
 bump version:
-    #!/usr/bin/env sh
-    # x@="$(just getversion)"
-    IFS='.' read -r -a VERSION_PARTS <<< "{{version}}"
-    MAJOR=${VERSION_PARTS[0]}
-    MINOR=${VERSION_PARTS[1]}
-    PATCH=${VERSION_PARTS[2]}
+    #!/usr/bin/env python3
+    import os
+    import re
+
+    # Define the version
+    version = "{{version}}"
+    major, minor, patch = version.split('.')
+
+    # Function to update file content using regex
+    def update_file(file_path, patterns_replacements):
+        with open(file_path, 'r') as file:
+            content = file.read()
+        for pattern, replacement in patterns_replacements:
+            content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
+        with open(file_path, 'w') as file:
+            file.write(content)
 
     # Update the include file with the new version numbers
-    INCLUDE_FILE="include/datoviz_version.h"
-    cp $INCLUDE_FILE $INCLUDE_FILE.bak
-    awk -v major=$MAJOR -v minor=$MINOR -v patch=$PATCH '
-    {
-    if ($2 == "DVZ_VERSION_MAJOR") {
-    print "#define DVZ_VERSION_MAJOR " major;
-    } else if ($2 == "DVZ_VERSION_MINOR") {
-    print "#define DVZ_VERSION_MINOR " minor;
-    } else if ($2 == "DVZ_VERSION_PATCH") {
-    print "#define DVZ_VERSION_PATCH " patch;
-    } else {
-    print $0;
-    }
-    }' $INCLUDE_FILE.bak > $INCLUDE_FILE
-    rm $INCLUDE_FILE.bak
-    echo "Updated $INCLUDE_FILE"
+    include_file = "include/datoviz_version.h"
+    include_patterns_replacements = [
+        (r'#define DVZ_VERSION_MAJOR \d+', f'#define DVZ_VERSION_MAJOR {major}'),
+        (r'#define DVZ_VERSION_MINOR \d+', f'#define DVZ_VERSION_MINOR {minor}'),
+        (r'#define DVZ_VERSION_PATCH \d+', f'#define DVZ_VERSION_PATCH {patch}')
+    ]
+    update_file(include_file, include_patterns_replacements)
+    print(f"Updated {include_file}")
 
     # Update the CITATION.cff file with the new version number
-    CITATION_FILE="CITATION.cff"
-    cp $CITATION_FILE $CITATION_FILE.bak
-    awk -v version="{{version}}" '
-    {
-        if ($1 == "version:") {
-            print "version: " version;
-        } else {
-            print $0;
-        }
-    }' $CITATION_FILE.bak > $CITATION_FILE
-    rm $CITATION_FILE.bak
-    echo "Updated $CITATION_FILE"
+    citation_file = "CITATION.cff"
+    citation_patterns_replacements = [
+        (r'^version: .+', f'version: {version}')
+    ]
+    update_file(citation_file, citation_patterns_replacements)
+    print(f"Updated {citation_file}")
 
     # Update the pyproject.toml file with the new version number
-    TOML_FILE="pyproject.toml"
-    cp $TOML_FILE $TOML_FILE.bak
-    awk -v version="{{version}}" '
-    {
-        if ($1 == "version" && $2 == "=") {
-            print "version = \"" version "\"";
-        } else {
-            print $0;
-        }
-    }' $TOML_FILE.bak > $TOML_FILE
-    rm $TOML_FILE.bak
-    echo "Updated $TOML_FILE"
+    toml_file = "pyproject.toml"
+    toml_patterns_replacements = [
+        (r'^version = ".+"', f'version = "{version}"')
+    ]
+    update_file(toml_file, toml_patterns_replacements)
+    print(f"Updated {toml_file}")
 
-    just ctypes
-    echo "Updated ctypes wrapper"
-
+    # Call the `just ctypes` command
+    os.system("just ctypes")
+    print("Updated ctypes wrapper")
 #
 
 
