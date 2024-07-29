@@ -36,6 +36,10 @@ build release="Debug":
     @cd build/ && ninja
 #
 
+release:
+    @just build "Release"
+#
+
 rmbuild:
     rm -rf ./build/
 #
