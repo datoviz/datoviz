@@ -11,6 +11,7 @@
 #include "_list.h"
 #include "common.h"
 #include "datoviz.h"
+#include "env_utils.h"
 #include "request.h"
 #include "scene/app.h"
 #include "scene/arcball.h"
@@ -130,7 +131,9 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 
     // Check if the batch/app is offscreen.
     DvzRequest req = {0};
-    if ((batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0)
+    bool offscreen = (batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+    char* capture = capture_png(&offscreen);
+    if (offscreen)
     {
         // Create the board.
         req = dvz_create_board(batch, width, height, DVZ_DEFAULT_CLEAR_COLOR, flags);
