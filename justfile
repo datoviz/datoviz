@@ -853,8 +853,22 @@ example name="":
     just runexample {{name}}
 #
 
-examples:
+runexamples:
+    #!/usr/bin/env sh
+    set -e
+    mkdir -p data/screenshots/examples
+    for file in examples/*.py; do
+        bn=$(basename $file)
+        name="${bn%.*}"
+        DVZ_CAPTURE_PNG=data/screenshots/examples/$name.png python $file
+    done
+#
+
+docexamples:
     @python tools/generate_doc.py examples
+#
+
+examples: runexamples docexamples
 #
 
 

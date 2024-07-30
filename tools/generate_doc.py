@@ -284,8 +284,8 @@ def process_code_image(markdown, config):
 
 
 def generate_examples():
-    print("Generating Python example markdown pages")
     for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
+        print(f"Generating Python example {f.name}")
         code = f.read_text()
         m = PYTHON_DESC_REGEX.match(code)
         assert m
