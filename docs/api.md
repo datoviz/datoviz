@@ -1,4 +1,4 @@
-# API Reference
+# C API Reference
 
 ## Functions
 
@@ -2858,8 +2858,6 @@ void dvz_range(
 
 ## Enumerations
 
-
-
 ### `DvzKeyCode`
 
 ```
@@ -2988,7 +2986,6 @@ DVZ_KEY_MENU
 DVZ_KEY_LAST
 ```
 
-
 ### `DvzAppFlags`
 
 ```
@@ -2997,14 +2994,12 @@ DVZ_APP_FLAGS_OFFSCREEN
 DVZ_APP_FLAGS_WHITE_BACKGROUND
 ```
 
-
 ### `DvzArcballFlags`
 
 ```
 DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN
 ```
-
 
 ### `DvzCanvasFlags`
 
@@ -3017,7 +3012,6 @@ DVZ_CANVAS_FLAGS_VSYNC
 DVZ_CANVAS_FLAGS_PICK
 ```
 
-
 ### `DvzCapType`
 
 ```
@@ -3029,7 +3023,6 @@ DVZ_CAP_SQUARE
 DVZ_CAP_BUTT
 DVZ_CAP_COUNT
 ```
-
 
 ### `DvzColormap`
 
@@ -3183,7 +3176,6 @@ DVZ_CPAL032_CATEGORY20C_20
 DVZ_CPAL032_COLORBLIND8
 ```
 
-
 ### `DvzCorner`
 
 ```
@@ -3192,7 +3184,6 @@ DVZ_DIALOG_CORNER_UPPER_RIGHT
 DVZ_DIALOG_CORNER_LOWER_LEFT
 DVZ_DIALOG_CORNER_LOWER_RIGHT
 ```
-
 
 ### `DvzDatFlags`
 
@@ -3205,7 +3196,6 @@ DVZ_DAT_FLAGS_KEEP_ON_RESIZE
 DVZ_DAT_FLAGS_PERSISTENT_STAGING
 ```
 
-
 ### `DvzDepthTest`
 
 ```
@@ -3213,14 +3203,12 @@ DVZ_DEPTH_TEST_DISABLE
 DVZ_DEPTH_TEST_ENABLE
 ```
 
-
 ### `DvzDialogFlags`
 
 ```
 DVZ_DIALOG_FLAGS_NONE
 DVZ_DIALOG_FLAGS_OVERLAY
 ```
-
 
 ### `DvzEasing`
 
@@ -3259,7 +3247,6 @@ DVZ_EASING_IN_OUT_BOUNCE
 DVZ_EASING_COUNT
 ```
 
-
 ### `DvzFilter`
 
 ```
@@ -3267,7 +3254,6 @@ DVZ_FILTER_NEAREST
 DVZ_FILTER_LINEAR
 DVZ_FILTER_CUBIC_IMG
 ```
-
 
 ### `DvzFormat`
 
@@ -3290,14 +3276,12 @@ DVZ_FORMAT_R32G32B32_SFLOAT
 DVZ_FORMAT_R32G32B32A32_SFLOAT
 ```
 
-
 ### `DvzJoinType`
 
 ```
 DVZ_JOIN_SQUARE
 DVZ_JOIN_ROUND
 ```
-
 
 ### `DvzKeyboardEventType`
 
@@ -3307,7 +3291,6 @@ DVZ_KEYBOARD_EVENT_PRESS
 DVZ_KEYBOARD_EVENT_REPEAT
 DVZ_KEYBOARD_EVENT_RELEASE
 ```
-
 
 ### `DvzKeyboardModifiers`
 
@@ -3319,7 +3302,6 @@ DVZ_KEY_MODIFIER_ALT
 DVZ_KEY_MODIFIER_SUPER
 ```
 
-
 ### `DvzMarkerAspect`
 
 ```
@@ -3327,7 +3309,6 @@ DVZ_MARKER_ASPECT_FILLED
 DVZ_MARKER_ASPECT_STROKE
 DVZ_MARKER_ASPECT_OUTLINE
 ```
-
 
 ### `DvzMarkerMode`
 
@@ -3339,7 +3320,6 @@ DVZ_MARKER_MODE_SDF
 DVZ_MARKER_MODE_MSDF
 DVZ_MARKER_MODE_MTSDF
 ```
-
 
 ### `DvzMarkerShape`
 
@@ -3366,7 +3346,6 @@ DVZ_MARKER_SHAPE_VBAR
 DVZ_MARKER_SHAPE_COUNT
 ```
 
-
 ### `DvzMeshFlags`
 
 ```
@@ -3374,7 +3353,6 @@ DVZ_MESH_FLAGS_NONE
 DVZ_MESH_FLAGS_TEXTURED
 DVZ_MESH_FLAGS_LIGHTING
 ```
-
 
 ### `DvzMouseButton`
 
@@ -3384,7 +3362,6 @@ DVZ_MOUSE_BUTTON_LEFT
 DVZ_MOUSE_BUTTON_MIDDLE
 DVZ_MOUSE_BUTTON_RIGHT
 ```
-
 
 ### `DvzMouseEventType`
 
@@ -3401,7 +3378,6 @@ DVZ_MOUSE_EVENT_WHEEL
 DVZ_MOUSE_EVENT_ALL
 ```
 
-
 ### `DvzMouseState`
 
 ```
@@ -3413,7 +3389,6 @@ DVZ_MOUSE_STATE_DOUBLE_CLICK
 DVZ_MOUSE_STATE_DRAGGING
 ```
 
-
 ### `DvzPanzoomFlags`
 
 ```
@@ -3423,14 +3398,12 @@ DVZ_PANZOOM_FLAGS_FIXED_X
 DVZ_PANZOOM_FLAGS_FIXED_Y
 ```
 
-
 ### `DvzPathTopology`
 
 ```
 DVZ_PATH_OPEN
 DVZ_PATH_CLOSED
 ```
-
 
 ### `DvzPrimitiveTopology`
 
@@ -3443,7 +3416,6 @@ DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
 DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN
 ```
 
-
 ### `DvzSamplerAddressMode`
 
 ```
@@ -3453,7 +3425,6 @@ DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
 DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
 DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
 ```
-
 
 ### `DvzShapeType`
 
@@ -3470,7 +3441,6 @@ DVZ_SHAPE_OBJ
 DVZ_SHAPE_OTHER
 ```
 
-
 ### `DvzTexFlags`
 
 ```
@@ -3478,13 +3448,11 @@ DVZ_TEX_FLAGS_NONE
 DVZ_TEX_FLAGS_PERSISTENT_STAGING
 ```
 
-
 ### `DvzUploadFlags`
 
 ```
 DVZ_UPLOAD_FLAGS_NOCOPY
 ```
-
 
 ### `DvzViewFlags`
 
@@ -3492,7 +3460,6 @@ DVZ_UPLOAD_FLAGS_NOCOPY
 DVZ_VIEW_FLAGS_NONE
 DVZ_VIEW_FLAGS_STATIC
 ```
-
 
 ### `DvzViewportClip`
 
@@ -3502,7 +3469,6 @@ DVZ_VIEWPORT_CLIP_OUTER
 DVZ_VIEWPORT_CLIP_BOTTOM
 DVZ_VIEWPORT_CLIP_LEFT
 ```
-
 
 ### `DvzVisualFlags`
 
@@ -3514,7 +3480,6 @@ DVZ_VISUAL_FLAGS_VERTEX_MAPPABLE
 DVZ_VISUAL_FLAGS_INDEX_MAPPABLE
 ```
 
-
 ### `DvzVolumeFlags`
 
 ```
@@ -3523,3 +3488,152 @@ DVZ_VOLUME_FLAGS_RGBA
 DVZ_VOLUME_FLAGS_COLORMAP
 DVZ_VOLUME_FLAGS_BACK_FRONT
 ```
+
+## Structures
+
+### `DvzAtlasFont`
+
+```
+struct DvzAtlasFont
+    unsigned long ttf_size
+    unsigned char* ttf_bytes
+    DvzAtlas* atlas
+    DvzFont* font
+```
+
+### `DvzFrameEvent`
+
+```
+struct DvzFrameEvent
+    uint64_t frame_idx
+    double time
+    double interval
+    void* user_data
+```
+
+### `DvzGuiEvent`
+
+```
+struct DvzGuiEvent
+    void* user_data
+```
+
+### `DvzKeyboardEvent`
+
+```
+struct DvzKeyboardEvent
+    DvzKeyboardEventType type
+    DvzKeyCode key
+    int mods
+    void* user_data
+```
+
+### `DvzMVP`
+
+```
+struct DvzMVP
+    mat4 model
+    mat4 view
+    mat4 proj
+```
+
+### `DvzMouseButtonEvent`
+
+```
+struct DvzMouseButtonEvent
+    DvzMouseButton button
+```
+
+### `DvzMouseClickEvent`
+
+```
+struct DvzMouseClickEvent
+    DvzMouseButton button
+```
+
+### `DvzMouseDragEvent`
+
+```
+struct DvzMouseDragEvent
+    DvzMouseButton button
+    vec2 press_pos
+    vec2 shift
+```
+
+### `DvzMouseEvent`
+
+```
+struct DvzMouseEvent
+    DvzMouseEventType type
+    DvzMouseEventUnion content
+    vec2 pos
+    int mods
+    float content_scale
+    void* user_data
+```
+
+### `DvzMouseEventUnion`
+
+```
+union DvzMouseEventUnion
+    DvzMouseButtonEvent b
+    DvzMouseWheelEvent w
+    DvzMouseDragEvent d
+    DvzMouseClickEvent c
+```
+
+### `DvzMouseWheelEvent`
+
+```
+struct DvzMouseWheelEvent
+    vec2 dir
+```
+
+### `DvzRequestsEvent`
+
+```
+struct DvzRequestsEvent
+    DvzBatch* batch
+    void* user_data
+```
+
+### `DvzShape`
+
+```
+struct DvzShape
+    mat4 transform
+    uint32_t first
+    uint32_t count
+    DvzShapeType type
+    uint32_t vertex_count
+    uint32_t index_count
+    vec3* pos
+    vec3* normal
+    cvec4* color
+    vec4* texcoords
+    DvzIndex* index
+```
+
+### `DvzTimerEvent`
+
+```
+struct DvzTimerEvent
+    uint32_t timer_idx
+    DvzTimerItem* timer_item
+    uint64_t step_idx
+    double time
+    void* user_data
+```
+
+### `DvzWindowEvent`
+
+```
+struct DvzWindowEvent
+    uint32_t framebuffer_width
+    uint32_t framebuffer_height
+    uint32_t screen_width
+    uint32_t screen_height
+    int flags
+    void* user_data
+```
+

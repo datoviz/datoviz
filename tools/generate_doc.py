@@ -333,10 +333,11 @@ def generate_api():
     with open(HEADERS_FILE, 'r') as f:
         objects = json.load(f)
     md = dedent("""
-    # API Reference
+    # C API Reference
 
     """).lstrip()
 
+    # Functions
     md += f"## Functions\n\n"
 
     for filename, items in sorted(objects.items(), key=itemgetter(0)):
@@ -363,7 +364,8 @@ def generate_api():
                 f"```c\n{return_type}{func_name}({return_desc}\n{args}\n)\n```") + "\n\n"
             md += func_desc
 
-    md += f"## Enumerations\n\n"
+    # Enumerations
+    md += f"## Enumerations"
 
     for filename, items in sorted(objects.items(), key=itemgetter(0)):
         for enum_name, enum_info in sorted(items["enums"].items(), key=itemgetter(0)):
@@ -371,8 +373,22 @@ def generate_api():
             md += f"\n\n### `{enum_name}`\n\n"
             md += '```\n'
             md += '\n'.join(f"{value[0]}" for value in enum_info["values"])
-            md += '\n```\n'
+            md += '\n```'
 
+    # Structures
+    md += f"\n\n## Structures\n\n"
+    for filename, items in sorted(objects.items(), key=itemgetter(0)):
+        for struct_name, struct_info in sorted(items["structs"].items(), key=itemgetter(0)):
+
+            md += f"### `{struct_name}`\n\n"
+
+            md += f'```\n{struct_info['type']} {struct_name}\n'
+            for field in struct_info['fields']:
+                unsigned = 'unsigned ' if field.get("unsigned", None) else ''
+                md += f'    {unsigned}{field["dtype"]} {field["name"]}\n'
+            md += '```\n\n'
+
+    # Write the output.
     with open(API_OUTPUT, 'w') as f:
         f.write(md)
 
