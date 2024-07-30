@@ -30,7 +30,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/gui.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/gui.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/gui.py</code></summary>
@@ -133,7 +133,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/image.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/image.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/image.py</code></summary>
@@ -220,7 +220,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/mesh.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/mesh.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/mesh.py</code></summary>
@@ -299,7 +299,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/offscreen.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/offscreen.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/offscreen.py</code></summary>
@@ -373,7 +373,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/panels.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/panels.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/panels.py</code></summary>
@@ -542,7 +542,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/paths.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/paths.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/paths.py</code></summary>
@@ -619,7 +619,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/scatter.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/scatter.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/scatter.py</code></summary>
@@ -688,7 +688,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/spheres.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/spheres.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/spheres.py</code></summary>
@@ -885,7 +885,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/surface.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/surface.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/surface.py</code></summary>
@@ -1004,7 +1004,7 @@ Illustrates:
 
 
 
-![](../images/screenshots/examples/volume.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/volume.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/volume.py</code></summary>

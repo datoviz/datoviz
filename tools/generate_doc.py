@@ -32,7 +32,7 @@ INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
 PYTHON_EXAMPLE_TEMPLATE = '''
 {description}
 
-![](../images/screenshots/examples/{name}.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/{name}.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/{name}.py</code></summary>
