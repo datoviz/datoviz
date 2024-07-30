@@ -19,7 +19,7 @@ from textwrap import indent
 ROOT_DIR = Path(__file__).parent.parent
 HEADERS_FILE = ROOT_DIR / 'tools/headers.json'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
-EXAMPLES_DIR = ROOT_DIR / 'docs/examples/'
+EXAMPLES_PATH = ROOT_DIR / 'docs/examples.md'
 PYTHON_EXAMPLES_DIR = ROOT_DIR / 'examples/'
 
 ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
@@ -288,7 +288,7 @@ def process_code_image(markdown, config):
 
 
 def generate_examples():
-    readme = EXAMPLES_DIR / "README.md"
+    readme = EXAMPLES_PATH
     examples = sorted(PYTHON_EXAMPLES_DIR.glob("*.py"))
     out = ""
     toc = ""

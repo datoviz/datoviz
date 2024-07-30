@@ -2,7 +2,7 @@
 
 
 [**[User guide]**](docs/userguide.md) &nbsp;
-[**[Examples]**](examples/) &nbsp;
+[**[Examples]**](docs/examples.md) &nbsp;
 [**[API reference]**](docs/api.md) &nbsp;
 
 
@@ -108,7 +108,7 @@ TODO.
 ## Documentation
 
 * [**📖 User guide**](docs/userguide.md)
-* [**🐍 Examples**](docs/examples/)
+* [**🐍 Examples**](docs/examples.md)
 * [**📚 API** reference](docs/api.md)
 * [**🏛️ Architecture** overview](ARCHITECTURE.md)
 * [**🏗️ Build** instructions](BUILD.md)
