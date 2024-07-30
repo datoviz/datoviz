@@ -108,7 +108,7 @@ TODO.
 ## Documentation
 
 * [**📖 User guide**](docs/userguide.md)
-* [**🐍 Examples**](examples/)
+* [**🐍 Examples**](docs/examples/)
 * [**📚 API** reference](docs/api.md)
 * [**🏛️ Architecture** overview](ARCHITECTURE.md)
 * [**🏗️ Build** instructions](BUILD.md)

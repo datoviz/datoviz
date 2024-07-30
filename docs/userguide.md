@@ -18,4 +18,4 @@ Creating a GPU-based interactive visualization script with Datoviz in Python typ
 8. Running the application.
 9. Close and destroy the `scene` and `app`.
 
-> The user guide is still a work in progress. In the meantime, please look at the [examples](docs/examples.md) and [API reference](docs/api.md).
+> The user guide is still a work in progress. In the meantime, please look at the [examples](examples.md) and [API reference](api.md).
