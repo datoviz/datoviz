@@ -1,4 +1,4 @@
-"""# Volume example.
+"""# Volume example
 
 Show a 3D volume.
 

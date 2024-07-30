@@ -32,11 +32,15 @@ INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
 PYTHON_EXAMPLE_TEMPLATE = '''
 {description}
 
-![](../images/screenshots/py_{name}.png)
+![](../images/screenshots/examples/{name}.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/{name}.py</code></summary>
 
 ```python
-# from `bindings/cython/examples/{path}`{code}
+{code}
 ```
+</details>
 
 '''.strip()
 PYTHON_DESC_REGEX = re.compile(r'"""([^"]+)"""')
@@ -284,20 +288,33 @@ def process_code_image(markdown, config):
 
 
 def generate_examples():
-    for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
+    readme = EXAMPLES_DIR / "README.md"
+    examples = sorted(PYTHON_EXAMPLES_DIR.glob("*.py"))
+    out = ""
+    toc = ""
+
+    for f in examples:
         print(f"Generating Python example {f.name}")
+
         code = f.read_text()
         m = PYTHON_DESC_REGEX.match(code)
         assert m
         desc = m.group(1)
+        desc = "#" + desc
 
         # NOTE: only remove the first docstring.
-        code = PYTHON_DESC_REGEX.sub('', code, count=1)
+        code = PYTHON_DESC_REGEX.sub('', code, count=1).strip()
         doc = PYTHON_EXAMPLE_TEMPLATE.format(
-            description=desc, code=code, path=f.name, name=f.stem)
+            description=desc, code=code, name=f.stem, path=f)
 
-        dst = EXAMPLES_DIR / f"{f.stem}.md"
-        dst.write_text(doc)
+        title = desc.splitlines()[0][2:].strip()
+        anchor = title.lower().replace(' ', '-')
+        toc += f"* [{title}](#{anchor})\n"
+        out += f"{doc}\n\n"
+
+    with open(readme, 'w') as fr:
+        out = f"# Examples\n\n{toc}\n\n{out}"
+        fr.write(out)
 
 
 def parse_doxygen_docstring(docstring):
