@@ -830,7 +830,7 @@ testwheel vm_ip_address:
 # -------------------------------------------------------------------------------------------------
 
 doc: headers
-    @python tools/generate_doc.py
+    @python tools/generate_doc.py api
 #
 
 
@@ -851,6 +851,10 @@ runexample name="":
 example name="":
     gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
     just runexample {{name}}
+#
+
+examples:
+    @python tools/generate_doc.py examples
 #
 
 

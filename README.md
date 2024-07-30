@@ -1,5 +1,11 @@
 # Datoviz: high-performance GPU scientific data visualization C/C++ library
 
+
+[**[User guide]**](docs/userguide.md) &nbsp;
+[**[Examples]**](examples/) &nbsp;
+[**[API reference]**](docs/api.md) &nbsp;
+
+
 <!-- INTRODUCTION -->
 
 **⚡️ Datoviz** is a cross-platform, open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the [**Khronos Vulkan**](https://www.vulkan.org/) graphics API and the [**glfw**](https://www.glfw.org/) window library. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
@@ -101,11 +107,9 @@ TODO.
 
 ## Documentation
 
-Work in progress.
-
 * [**📖 User guide**](docs/userguide.md)
-* [**📚 API** reference](docs/api.md)
 * [**🐍 Examples**](examples/)
+* [**📚 API** reference](docs/api.md)
 * [**🏛️ Architecture** overview](ARCHITECTURE.md)
 * [**🏗️ Build** instructions](BUILD.md)
 * [**👥 Contributors** instructions](CONTRIBUTING.md)

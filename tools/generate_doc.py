@@ -3,11 +3,13 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from operator import itemgetter
 from textwrap import dedent
 import json
 import itertools
 from pathlib import Path
 import re
+import sys
 from textwrap import indent
 
 
@@ -282,7 +284,7 @@ def process_code_image(markdown, config):
 
 
 def generate_examples():
-    print("generating Python example markdown pages")
+    print("Generating Python example markdown pages")
     for f in sorted(PYTHON_EXAMPLES_DIR.glob("*.py")):
         code = f.read_text()
         m = PYTHON_DESC_REGEX.match(code)
@@ -334,8 +336,11 @@ def generate_api():
     # API Reference
 
     """).lstrip()
-    for filename, items in objects.items():
-        for func_name, func_info in items["functions"].items():
+
+    md += f"## Functions\n\n"
+
+    for filename, items in sorted(objects.items(), key=itemgetter(0)):
+        for func_name, func_info in sorted(items["functions"].items(), key=itemgetter(0)):
 
             md += f"### `{func_name}()`\n\n"
 
@@ -358,10 +363,22 @@ def generate_api():
                 f"```c\n{return_type}{func_name}({return_desc}\n{args}\n)\n```") + "\n\n"
             md += func_desc
 
+    md += f"## Enumerations\n\n"
+
+    for filename, items in sorted(objects.items(), key=itemgetter(0)):
+        for enum_name, enum_info in sorted(items["enums"].items(), key=itemgetter(0)):
+
+            md += f"\n\n### `{enum_name}`\n\n"
+            md += '```\n'
+            md += '\n'.join(f"{value[0]}" for value in enum_info["values"])
+            md += '\n```\n'
+
     with open(API_OUTPUT, 'w') as f:
         f.write(md)
 
 
 if __name__ == '__main__':
-    # generate_examples()
-    generate_api()
+    if 'api' in sys.argv:
+        generate_api()
+    if 'examples' in sys.argv:
+        generate_examples()

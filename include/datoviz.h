@@ -71,14 +71,16 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Demo.
+ * Run a demo.
  */
 DVZ_EXPORT void dvz_demo(void);
 
 
 
 /**
- * Version.
+ * Return the current version string.
+ *
+ * @returns the version string
  */
 DVZ_EXPORT const char* dvz_version(void);
 
