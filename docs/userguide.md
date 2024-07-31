@@ -213,25 +213,138 @@ dvz.image_texture(visual, tex, filter, address_mode)
 
 ### Data sharing
 
+Since textures are decoupled from visuals, they can readily be shared across visuals.
 
-## Shapes
+However, it is not yet possible to easily share other types of data between visuals.
+While the underlying architecture has been designed to make this use-case possible, the user-exposed API does not yet support it.
+
+
+### Shapes
+
+The `mesh` visual can be used directly with properties such as vertices, indices, colors, normals and texture coordinates, but one can also use the `Shape` structure that encapsulates these arrays.
+They can be created with functions for predefined shapes, along with affine transforms, merging, etc.
 
 
 ## Interactivity
 
-### Panzoom
+Two types of interactivity patterns are currently supported:
 
+* **Panzoom** (2D): pan with left mouse drag, zoom with the right mouse dag.
+* **Arcball** (3D): rotate with left mouse drag.
 
-### Arcball
+More interactivity patterns will be implemented in the future.
 
+Use this to define the interactivity pattern in a panel:
 
+```python
+pz = dvz.panel_panzoom(panel)
+# or
+arcball = dvz.panel_arcball(panel)
+```
 
 
 ## Event callbacks
 
+You can define custom event callbacks to react to the mouse and the keyboard.
+You can also set up timers.
+
+### Mouse
+
+Define a mouse callback as follows:
+
+```python
+@dvz.mouse
+def on_mouse(app, window_id, ev):
+    # ev is the mouse event structure.
+    # Mouse position.
+    x, y = ev.pos
+    print(f"Position {x:.0f},{y:.0f}")
+    # Mouse event type.
+    if ev.type == dvz.MOUSE_EVENT_CLICK:
+        # Mouse click button.
+        button = ev.content.b.button
+        print(f"Clicked with button {button}")
+```
+
+The mouse event types are the following:
+
+```
+MOUSE_EVENT_RELEASE             b       DvzMouseButtonEvent
+MOUSE_EVENT_PRESS               b       DvzMouseButtonEvent
+MOUSE_EVENT_MOVE
+MOUSE_EVENT_CLICK               c       DvzMouseClickEvent
+MOUSE_EVENT_DOUBLE_CLICK        c       DvzMouseClickEvent
+MOUSE_EVENT_DRAG_START          d       DvzMouseDragEvent
+MOUSE_EVENT_DRAG                d       DvzMouseDragEvent
+MOUSE_EVENT_DRAG_STOP           d       DvzMouseDragEvent
+MOUSE_EVENT_WHEEL               w       DvzMouseWheelEvent
+```
+
+The letters are to be used after `ev.content.`, for example `ev.content.b` which is a `DvzMouseButtonEvent` structure.
+See the C API reference for more details about the fields available in these structures.
+
+The mouse buttons are:
+
+```
+DVZ_MOUSE_BUTTON_LEFT = 1
+DVZ_MOUSE_BUTTON_MIDDLE = 2
+DVZ_MOUSE_BUTTON_RIGHT = 3
+```
+
+Datoviz does not yet provide built-in picking functionality.
+The only information provided by Datoviz in mouse event callbacks is the coordinates in pixels of the mouse cursor.
+
+
+### Keyboard
+
+Define a keyboard callback as follows:
+
+```python
+# Keyboard event callback function.
+
+@dvz.keyboard
+def on_keyboard(app, window_id, ev):
+
+    # Key code (see the C API reference).
+    key = ev.key
+
+    # Modifier flags.
+    mods = {
+        'shift': ev.mods & dvz.KEY_MODIFIER_SHIFT != 0,
+        'control': ev.mods & dvz.KEY_MODIFIER_CONTROL != 0,
+        'alt': ev.mods & dvz.KEY_MODIFIER_ALT != 0,
+        'sup': ev.mods & dvz.KEY_MODIFIER_SUPER != 0,
+    }
+    mods = '+'.join(key for key, val in mods.items() if val)
+
+    # Keyboard events are PRESS, RELEASE, and REPEAT.
+    type = {
+        dvz.KEYBOARD_EVENT_PRESS: 'press',
+        dvz.KEYBOARD_EVENT_REPEAT: 'repeat',
+        dvz.KEYBOARD_EVENT_RELEASE: 'release',
+    }
+    type = type.get(ev.type, '')
+
+    print(f"{type} {mods} {key}")
+
+# We register the keyboard callback function.
+dvz.app_onkeyboard(app, on_keyboard, None)
+```
+
+
+### Timer
+
+
+
 
 ### Manual 3D camera control
 
+```python
+from datoviz import vec3
+camera = dvz.panel_camera(panel)
+dvz.camera_position(camera, vec3(x, y, z))
+dvz.camera_lookat(camera, vec3(x, y, z))
+```
 
 
 ## Graphical user interfaces
