@@ -55,9 +55,9 @@ with Image.open(filepath) as f:
     height, width = image.shape[:2]
 
     # Texture parameters.
-    format = dvz.DvzFormat.DVZ_FORMAT_R8G8B8A8_UNORM
-    address_mode = dvz.DvzSamplerAddressMode.DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
-    filter = dvz.DvzFilter.DVZ_FILTER_LINEAR
+    format = dvz.FORMAT_R8G8B8A8_UNORM
+    address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
+    filter = dvz.FILTER_LINEAR
 
     # Create a texture out of a RGB image.
     tex = dvz.tex_image(batch, format, width, height, A_(image))

@@ -50,7 +50,7 @@ visual = dvz.mesh_shape(batch, shape, flags)
 # Set artificial vertex colors.
 t = np.linspace(0, 1, nv).astype(np.float32)
 colors = np.empty((nv, 4), dtype=np.uint8)
-dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_BWR, nv, t, 0, 1, colors)
+dvz.colormap_array(dvz.CMAP_BWR, nv, t, 0, 1, colors)
 dvz.mesh_color(visual, 0, nv, colors, 0)
 
 # Lighting parameters.

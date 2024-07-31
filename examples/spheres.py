@@ -148,15 +148,15 @@ d = .2
 def on_keyboard(app, window_id, ev):
     global eye
     # Keyboard events are PRESS, RELEASE, and REPEAT.
-    if ev.type != dvz.DvzKeyboardEventType.DVZ_KEYBOARD_EVENT_RELEASE:
+    if ev.type != dvz.KEYBOARD_EVENT_RELEASE:
         # Move the camera position depending on the pressed keys.
-        if ev.key == dvz.DvzKeyCode.DVZ_KEY_UP:
+        if ev.key == dvz.KEY_UP:
             eye[2] -= d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_DOWN:
+        elif ev.key == dvz.KEY_DOWN:
             eye[2] += d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_LEFT:
+        elif ev.key == dvz.KEY_LEFT:
             eye[0] -= d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_RIGHT:
+        elif ev.key == dvz.KEY_RIGHT:
             eye[0] += d
 
         # Update the camera position.
