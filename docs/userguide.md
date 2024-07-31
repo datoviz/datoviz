@@ -4,7 +4,9 @@ This user guide targets the Python bindings which closely follow the Datoviz C A
 
 To use a Datoviz C function in Python, you typically just need to replace the `dvz_` (functions), `DVZ_` (enumerations), or `Dvz` (structures) prefix with `dvz.` after importing Datoviz with `import datoviz as dvz`.
 
-This user guide is still a work in progress. You're strongly advised to look at the [examples](examples.md) (in the `examples/` subfolder in the repository) and the auto-generated [API reference](api.md) (in `docs/api.md`).
+This user guide is still a work in progress. You're strongly advised to look at the [examples](examples.md) (in the `examples/` subfolder in the repository) and the auto-generated [C API reference](api.md) (in `docs/api.md`).
+
+## Overview
 
 Creating a GPU-based interactive visualization script with Datoviz in Python typically involves the following steps:
 
@@ -16,7 +18,7 @@ Creating a GPU-based interactive visualization script with Datoviz in Python typ
 6. Optionally, setting up event callbacks (mouse, keyboard, timers...).
 7. Optionally, creating GUIs.
 8. Running the application.
-9. Close and destroy the `scene` and `app`.
+9. Closing and destroying the `scene` and `app`.
 
 GPU knowledge is not required when using this interface.
 The lower-level GPU-based layers are not yet exposed in the `datoviz.h` public header file.
@@ -36,12 +38,12 @@ A visualization script is typically organized as follows:
 import datoviz as dvz
 
 # Create an application. The argument is reserved to optional flags, like dvz.APP_FLAGS_OFFSCREEN
-# to run an offscreen application (without window, saving a figure to a PNG file).
+# for running an offscreen application (without a window, saving a figure to a PNG file).
 # See the offscreen.py example.
 app = dvz.app(0)
 
-# Retrieve the app's batch, that contains a stream of Datoviz Intermediate Protocol that will be
-# processed at the next frame by the app's event loop. It's used to create visuals.
+# Retrieve the app's batch, which contains a stream of Datoviz Intermediate Protocol requests that
+# will be processed at the next frame by the app's event loop. It's used to create visuals.
 batch = dvz.app_batch(app)
 
 # Create a scene, which handles the plotting objects (figures, panels, visuals, data, callbacks).
@@ -99,6 +101,7 @@ panel = dvz.panel(figure, x, y, w, h)
 
 The `Visual` is the most important object type in Datoviz.
 It represents a visual collection of similar elements, like a set of points, markers, segments, glyphs (text), paths, images, meshes...
+
 The notion of collection is crucial for high-performance rendering with GPUs.
 Visual elements of the same type should be grouped together in the same `Visual` to ensure good performance.
 
@@ -128,7 +131,7 @@ visual = dvz.point(batch, 0)
 Once a visual is created, specify its data using the provided visual-specific functions.
 
 The most common types of visual properties are the point positions and colors, but each visual comes with specific data properties (size, shape, groups, etc.).
-Refer to the C API reference for more details.
+Refer to the [C API reference](api.md) for more details.
 
 ### Terminology
 
@@ -137,13 +140,14 @@ We use the following terminology:
 * **item**: a single visual element, like a particular point or marker, or a single image in an `image` visual (remember that each visual is a collection of elements, so the `image` visual represents a set of one or multiple images)
 * **group**: a consecutive group of items that share common properties. This is mostly used in the `path` visual for now, where a group refers to a single path, while an item refers to a point within a path. A `path` visual therefore contains a set of points (items) each organized into a single or multiple disjoint paths (groups).
 * **vertex**: a 3D point sent to the GPU (this is transparent to the user). For example, a single image is defined by two triangles and six vertices. Datoviz handles the triangulation automatically and transparently, so you typically don't need to be aware of vertices.
+* **index**: in the mesh visual, an index refers to the set of vertices. A mesh is mainly defined by (1) a set of 3D points (vertices), and (2) a set of index triplets (three indices) definining a triangular face.
 
 A particular visual represents a collection of `n` items indexed from `0` to `n-1`.
 
 
 ### Python ctypes bindings
 
-C visual data functions expect a pointer to arrays of a given type, for example typically an array of `vec3` (three float32 numbers) for positions, or an array of `cvec4` (four `char`, ie four rgba uint8 bytes).
+C visual data functions expect a pointer to arrays of a given type, for example typically an array of `vec3` (three float32 numbers) for positions, or an array of `cvec4` (four `char`, i.e. four RGBA `uint8` unsigned bytes) for colors.
 
 Python ctypes bindings are auto-generated and expect a NumPy array whenever a C visual data function expects a pointer to an array of values.
 At the moment, the ctypes bindings check the dtype, the shape, and the C-contiguity of the provided arrays.
@@ -181,14 +185,14 @@ Datoviz v0.2 does not yet provide builtin axes nor data normalization features, 
 
 ### Color
 
-Colors are passed as rgba 4*uint8 values.
+Colors are passed as RGBA 4*`uint8` values.
 Use opacity values < 255 in the last component (`a` for alpha) to define transparent elements.
 
 
 ### Textures
 
 Textures are used by the `image` (2D textures), `mesh` (2D textures) and `volumes` (3D textures) visuals.
-See the examples for more details.
+See the [examples](examples.md) for more details.
 
 For example, here is how to create a 2D texture and pass it to an `image` visual:
 
@@ -197,8 +201,8 @@ For example, here is how to create a 2D texture and pass it to an `image` visual
 height, width = rgba.shape[:2]
 
 # Texture parameters.
-format = dvz.FORMAT_R8G8B8A8_UNORM  # The Vulkan format corresponds to 4xuint8 values.
-address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER  # Texture address modeL.
+format = dvz.FORMAT_R8G8B8A8_UNORM  # The Vulkan format corresponds to 4*uint8 values.
+address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER  # Texture address mode.
 filter = dvz.FILTER_LINEAR  # Linear filtering, use dvz.FILTER_NEAREST to disable.
 
 # Create a texture out of a RGB image.
@@ -217,6 +221,15 @@ Since textures are decoupled from visuals, they can readily be shared across vis
 
 However, it is not yet possible to easily share other types of data between visuals.
 While the underlying architecture has been designed to make this use-case possible, the user-exposed API does not yet support it.
+
+### Dynamic data updates
+
+You can modify the data of a visual dynamically, while the event loop is running (for example, in an event callback).
+After you've updated a visual, you need to apply the changes with the following call:
+
+```python
+dvz.visual_update(visual)
+```
 
 
 ### Shapes
@@ -240,6 +253,13 @@ Use this to define the interactivity pattern in a panel:
 pz = dvz.panel_panzoom(panel)
 # or
 arcball = dvz.panel_arcball(panel)
+```
+
+Refer to the [C API reference](api.md) to see which functions you can use to manually control the panzoom or arcball.
+After these interactivity objects have been updated, you need to update the panel to apply your changes to the panel:
+
+```python
+dvz.panel_update(panel)
 ```
 
 
@@ -281,7 +301,7 @@ MOUSE_EVENT_WHEEL               w       DvzMouseWheelEvent
 ```
 
 The letters are to be used after `ev.content.`, for example `ev.content.b` which is a `DvzMouseButtonEvent` structure.
-See the C API reference for more details about the fields available in these structures.
+Refer to the [C API reference](api.md) for more details about the fields available in these structures.
 
 The mouse buttons are:
 
@@ -301,7 +321,6 @@ Define a keyboard callback as follows:
 
 ```python
 # Keyboard event callback function.
-
 @dvz.keyboard
 def on_keyboard(app, window_id, ev):
 
