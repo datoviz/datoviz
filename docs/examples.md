@@ -182,9 +182,9 @@ with Image.open(filepath) as f:
     height, width = image.shape[:2]
 
     # Texture parameters.
-    format = dvz.DvzFormat.DVZ_FORMAT_R8G8B8A8_UNORM
-    address_mode = dvz.DvzSamplerAddressMode.DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
-    filter = dvz.DvzFilter.DVZ_FILTER_LINEAR
+    format = dvz.FORMAT_R8G8B8A8_UNORM
+    address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
+    filter = dvz.FILTER_LINEAR
 
     # Create a texture out of a RGB image.
     tex = dvz.tex_image(batch, format, width, height, A_(image))
@@ -262,7 +262,7 @@ visual = dvz.mesh_shape(batch, shape, flags)
 # Set artificial vertex colors.
 t = np.linspace(0, 1, nv).astype(np.float32)
 colors = np.empty((nv, 4), dtype=np.uint8)
-dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_BWR, nv, t, 0, 1, colors)
+dvz.colormap_array(dvz.CMAP_BWR, nv, t, 0, 1, colors)
 dvz.mesh_color(visual, 0, nv, colors, 0)
 
 # Lighting parameters.
@@ -588,7 +588,7 @@ dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
 # Colors.
 t = np.linspace(0, 1, n_paths).astype(np.float32)
 color = np.full((n_paths, 4), 255, dtype=np.uint8)
-dvz.colormap_array(dvz.DvzColormap.DVZ_CMAP_HSV, n_paths, t, 0, 1, color)
+dvz.colormap_array(dvz.CMAP_HSV, n_paths, t, 0, 1, color)
 color = np.repeat(color, path_size, axis=0)
 dvz.path_color(visual, 0, n, color, 0)
 
@@ -829,15 +829,15 @@ d = .2
 def on_keyboard(app, window_id, ev):
     global eye
     # Keyboard events are PRESS, RELEASE, and REPEAT.
-    if ev.type != dvz.DvzKeyboardEventType.DVZ_KEYBOARD_EVENT_RELEASE:
+    if ev.type != dvz.KEYBOARD_EVENT_RELEASE:
         # Move the camera position depending on the pressed keys.
-        if ev.key == dvz.DvzKeyCode.DVZ_KEY_UP:
+        if ev.key == dvz.KEY_UP:
             eye[2] -= d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_DOWN:
+        elif ev.key == dvz.KEY_DOWN:
             eye[2] += d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_LEFT:
+        elif ev.key == dvz.KEY_LEFT:
             eye[0] -= d
-        elif ev.key == dvz.DvzKeyCode.DVZ_KEY_RIGHT:
+        elif ev.key == dvz.KEY_RIGHT:
             eye[0] += d
 
         # Update the camera position.
@@ -944,7 +944,7 @@ heights = heights.ravel().astype(np.float32)
 # Colors.
 colors = np.empty((n, 4), dtype=np.uint8)
 dvz.colormap_array(
-    dvz.DvzColormap.DVZ_CMAP_PLASMA, n, -heights, -hmax, -hmin, colors)
+    dvz.CMAP_PLASMA, n, -heights, -hmax, -hmin, colors)
 
 # Create the surface shape.
 shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
@@ -1054,7 +1054,7 @@ MOUSE_D = 528
 scaling = 1.0 / MOUSE_D
 
 # Create the 3D texture.
-format = dvz.DvzFormat.DVZ_FORMAT_R8G8B8A8_UNORM  # DVZ_FORMAT_R16_UNORM
+format = dvz.FORMAT_R8G8B8A8_UNORM  # DVZ_FORMAT_R16_UNORM
 tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
 
 
@@ -1070,8 +1070,7 @@ dvz.volume_alloc(visual, 1)
 
 # Bind the volume texture to the visual.
 volume_tex = dvz.volume_texture(
-    visual, tex, dvz.DvzFilter.DVZ_FILTER_LINEAR,
-    dvz.DvzSamplerAddressMode.DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+    visual, tex, dvz.FILTER_LINEAR, dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
 
 # Volume parameters.
 dvz.volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1)
