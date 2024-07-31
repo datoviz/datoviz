@@ -12,7 +12,7 @@ Designed for speed, visual quality, and scalability to datasets comprising up to
 
 **⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning binaries, packaging, and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current stable version is **v0.2**, with documentation available only on GitHub. The `datoviz.org` website still reflects the **deprecated v0.1** documentation, it will be updated soon.
 
-**🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with Jupyter and Qt.
+**🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with IPython, Jupyter and Qt.
 
 
 <!-- SCREENSHOTS -->
@@ -51,8 +51,7 @@ Future work (planned for **v0.4 and later**):
 * **🖌️ Dynamic shaders**
 * **🌐 WebGPU/WebAssembly compatibility**
 * **🧮 Compute shaders**
-* **🖥️ Qt integration**
-* **🐍 Jupyter integration**
+* **🐍 IPython, Jupyter, Qt integration**
 
 
 ## History and current status
