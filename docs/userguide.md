@@ -334,22 +334,99 @@ dvz.app_onkeyboard(app, on_keyboard, None)
 
 ### Timer
 
+Define a timer as follows:
 
+```python
+# Timer callback.
+@dvz.timer
+def on_timer(app, window_id, ev):
+    # When defining multiple timers, they can be identified with their index.
+    idx = ev.timer_idx
+    step = ev.step_idx
+    time = ev.time
+    print(f"{time:.3f}: timer #{idx}, step {step}")
+
+
+# Timer frequency.
+frequency = 4
+
+# Define a timer with that frequency that starts after 0.5 s and that stops after 50 ticks
+# (use 0 as the last argument to define an infinite timer).
+dvz.app_timer(app, 0.5, 1. / frequency, 50)
+
+# Register a timer callback.
+dvz.app_ontimer(app, on_timer, None)
+```
 
 
 ### Manual 3D camera control
 
+By default, a panel is in 2D.
+To define a 3D panel, you can either define an arcball (see above) or a generic 3D perspective
+camera.
+Here is how to do the latter:
+
 ```python
 from datoviz import vec3
+
+# Define a 3D perspective camera.
 camera = dvz.panel_camera(panel)
+
+# Camera position.
 dvz.camera_position(camera, vec3(x, y, z))
-dvz.camera_lookat(camera, vec3(x, y, z))
+
+# Position of the point the camera is looking at.
+dvz.camera_lookat(camera, vec3(lx, ly, lz))
+```
+
+You can implement custom 3D camera control by calling these functions in mouse and keyboard callback functions.
+After these camera functions have been called, it is crucial to call this function to apply these changes to the panel:
+
+```python
+dvz.panel_update(panel)
 ```
 
 
 ## Graphical user interfaces
 
+Datoviz provides a few simple GUI capabilities via the Dear ImGui C++ library.
+A future version of Datoviz may document how to use directly any functionality directly provided by Dear ImGui instead of relying on the few wrappers provided by Datoviz.
 
+To display a GUI dialog, follow these three steps:
 
+1. Use the flag `dvz.CANVAS_FLAGS_IMGUI` when creating a figure (last argument of `dvz.figure()`).
+2. Define a GUI callback function.
+3. Register this GUI callback function.
 
+Here is an example:
 
+```python
+from datoviz import vec2, S_
+
+@dvz.gui
+def on_gui(app, fid, ev):
+    """GUI callback function."""
+
+    # Set the size of the next GUI dialog.
+    dvz.gui_size(vec2(200, 100))
+
+    # Start a GUI dialog with a dialog title.
+    # NOTE: the `S_()` function is used to pass a Python string to a C function expecting
+    # a const char*.
+    dvz.gui_begin(S_("My GUI dialog"), 0)
+
+    # Display a button.
+    clicked = dvz.gui_button(S_("Click me"), 150, 30)
+    if clicked:
+        print("Clicked!")
+
+    # End the GUI dialog.
+    dvz.gui_end()
+
+# Associate a GUI callback function with a figure.
+dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
+```
+
+The GUI callback function is called at every frame: ensure there is no long-lasting computation in it to avoid blocking the main event loop.
+Dear ImGui recreates the entire GUI at every frame (immediate mode rendering).
+GUI widget functions such as `dvz.gui_button()` typically return a boolean indicating whether the widget's state has changed.
