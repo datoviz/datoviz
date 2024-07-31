@@ -1,10 +1,8 @@
 # Datoviz: high-performance GPU scientific data visualization C/C++ library
 
-
 [**[User guide]**](docs/userguide.md) &nbsp;
 [**[Examples]**](docs/examples.md) &nbsp;
 [**[API reference]**](docs/api.md) &nbsp;
-
 
 <!-- INTRODUCTION -->
 
@@ -12,7 +10,9 @@
 
 Designed for speed, visual quality, and scalability to datasets comprising up to $10^6-10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-**⚠️ Warning:** Datoviz is still in its **early stages** and would greatly benefit from increased **community feedback**, especially regarding binaries, packaging, and hardware compatibility. The API is still in flux, so expect regular (but hopefully minimal) **breaking changes** for now. The current working version is **v0.2** and documentation is only available on GitHub for now. The `datoviz.org` documentation website is still about the **deprecated v0.1**. The current version only provides common 2D/3D visuals and basic interactivity for now, no axes yet (coming soon, 90% done).
+**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning binaries, packaging, and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current stable version is **v0.2**, with documentation available only on GitHub. The `datoviz.org` website still reflects the **deprecated v0.1** documentation, it will be updated soon.
+
+**🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with Jupyter and Qt.
 
 
 <!-- SCREENSHOTS -->
@@ -34,20 +34,22 @@ Designed for speed, visual quality, and scalability to datasets comprising up to
 * **🌈 150 colormaps** included (from matplotlib, colorcet, MATLAB)
 * **🖱️ High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
 * **🎥 Manual control of cameras**: custom interactivity
-* **𓈈 Subplots** organized in a grid layout
+* **𓈈 Figure subplots** (aka "panels")
 * **🖥️ Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 Work in progress (currently planned for **v0.3**):
 
 * **➕ Axes**: ticks, grids, labels
-* **🎨 Color bars**
+* **🖱️ More interactivity patterns**
+* **🎨 Colorbars**
 
-Future work (planned for **v0.4+**):
+Future work (planned for **v0.4 and later**):
 
 * **📐 More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
 * **🎯 Picking**
 * **📈 Nonlinear transforms**
 * **🖌️ Dynamic shaders**
+* **🌐 WebGPU/WebAssembly compatibility**
 * **🧮 Compute shaders**
 * **🖥️ Qt integration**
 * **🐍 Jupyter integration**
@@ -67,7 +69,7 @@ Over the next three years, the technology matured, aided by a [Chan Zuckerberg I
 
 In **2024**, a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/) facilitated the release of Datoviz **v0.2**. This version was redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs. It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
 
-Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API that supports a Datoviz renderer, as well as a Matplotlib renderer and potentially others.
+Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
 
 The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
 
