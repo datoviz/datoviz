@@ -185,6 +185,8 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
                 out += f'    {value[0]} = {value[1]}\n'
                 enum_values.append(value)
             out += '\n\n'
+    # Aliases without the DVZ_ prefix.
+    out += '# Function aliases\n\n'
     for name, value in enum_values:
         if name.startswith('DVZ_'):
             name = name[4:]
@@ -197,9 +199,11 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 
     # Generate ctypes structures.
     delim("STRUCTURES")
+    struct_names = []
     for fn in data:
         structs = data.get(fn, {}).get("structs", {})
         for struct_name, struct_info in structs.items():
+            struct_names.append(struct_name)
             is_union = struct_info["type"] == "union"
             cls = "Structure" if not is_union else "Union"
             out += f'class {struct_name}(ctypes.{cls}):\n'
@@ -210,6 +214,12 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
                     field["dtype"], enum_int=True, unsigned=field.get("unsigned", None))
                 out += f'        ("{field["name"]}", {dtype}),\n'
             out += '    ]\n\n\n'
+    # Aliases without the Dvz prefix.
+    out += '# Struct aliases\n\n'
+    for name in struct_names:
+        if name.startswith('Dvz'):
+            out += f'{name[3:]} = {name}\n'
+    out += '\n\n'
 
     # Function callbacks.
     delim("FUNCTION CALLBACK TYPES")
@@ -249,7 +259,9 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     # Forward declarations.
     forward = ""
     for dtype in sorted(TYPES):
-        forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
+        # Remove the structure from the forward declarations if it is already defined.
+        if dtype not in struct_names:
+            forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
     # Write the __init__.py file.

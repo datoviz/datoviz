@@ -2574,7 +2574,7 @@ DvzId dvz_tex_volume(  // returns: the texture ID
 Return the current version string.
 
 ```c
-char* dvz_version(
+char* dvz_version(  // returns: the version string
 
 )
 ```

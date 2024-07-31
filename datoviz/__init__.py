@@ -803,6 +803,8 @@ class DvzColormap(CtypesEnum):
     DVZ_CPAL032_COLORBLIND8 = 146
 
 
+# Function aliases
+
 KEY_UNKNOWN = -1
 KEY_NONE = +0
 KEY_SPACE = 32
@@ -1302,10 +1304,6 @@ class DvzFont(ctypes.Structure):
     pass
 
 
-class DvzMVP(ctypes.Structure):
-    pass
-
-
 class DvzPanel(ctypes.Structure):
     pass
 
@@ -1315,10 +1313,6 @@ class DvzPanzoom(ctypes.Structure):
 
 
 class DvzScene(ctypes.Structure):
-    pass
-
-
-class DvzShape(ctypes.Structure):
     pass
 
 
@@ -1486,6 +1480,25 @@ class DvzRequestsEvent(ctypes.Structure):
         ("batch", ctypes.POINTER(DvzBatch)),
         ("user_data", ctypes.c_void_p),
     ]
+
+
+# Struct aliases
+
+AtlasFont = DvzAtlasFont
+MVP = DvzMVP
+Shape = DvzShape
+KeyboardEvent = DvzKeyboardEvent
+MouseButtonEvent = DvzMouseButtonEvent
+MouseWheelEvent = DvzMouseWheelEvent
+MouseDragEvent = DvzMouseDragEvent
+MouseClickEvent = DvzMouseClickEvent
+MouseEventUnion = DvzMouseEventUnion
+MouseEvent = DvzMouseEvent
+WindowEvent = DvzWindowEvent
+FrameEvent = DvzFrameEvent
+GuiEvent = DvzGuiEvent
+TimerEvent = DvzTimerEvent
+RequestsEvent = DvzRequestsEvent
 
 
 # ===============================================================================
