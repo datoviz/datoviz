@@ -1,10 +1,10 @@
 # User guide
 
-This user guide targets the Python bindings which closely follow the Datoviz C API. The ctypes bindings are auto-generated from the C function signatures.
+This user guide focuses on the Python bindings that closely follow the Datoviz C API. The ctypes bindings are auto-generated from the C function signatures.
 
-To use a Datoviz C function in Python, you typically just need to replace the `dvz_` (functions), `DVZ_` (enumerations), or `Dvz` (structures) prefix with `dvz.` after importing Datoviz with `import datoviz as dvz`.
+To use a Datoviz C function in Python, you typically need to replace the `dvz_` (functions), `DVZ_` (enumerations), or `Dvz` (structures) prefix with `dvz.` after importing Datoviz with `import datoviz as dvz`.
 
-This user guide is still a work in progress. You're strongly advised to look at the [examples](examples.md) (in the `examples/` subfolder in the repository) and the auto-generated [C API reference](api.md) (in `docs/api.md`).
+Please note that this user guide is a work in progress. We strongly recommend looking at the [examples](examples.md) (located in the `examples/` subfolder of the repository) and the auto-generated [C API reference](api.md) (found in `docs/api.md`).
 
 ## Overview
 
@@ -59,12 +59,9 @@ dvz.scene_destroy(scene)
 dvz.app_destroy(app)
 ```
 
-Internally, the `scene` API generates a stream of Datoviz Intermediate Protocol (DIP) requests and sends them to the Datoviz Vulkan renderer (handled by the `app`).
-The DIP closely resembles the WebGPU specification.
-This decoupled architecture ensures that, in the future, the `scene` API can be implemented on top of other non-Vulkan DIP renderers (including a future Javascript-based one).
+Internally, the `scene` API generates a stream of Datoviz Intermediate Protocol (DIP) requests and sends them to the Datoviz Vulkan renderer (managed by the `app`). The DIP closely resembles the WebGPU specification. This decoupled architecture ensures that, in the future, the `scene` API can be implemented on top of other non-Vulkan DIP renderers (including a future JavaScript-based one).
 
-While the architecture has been designed with multithreading in mind (allowing data compute and transfers without blocking the event loop), we have mostly focused on single-threaded applications so far.
-Multithreading functionality will be provided and documented later.
+Although the architecture is designed with multithreading in mind (allowing for data computation and transfers without blocking the event loop), our primary focus has been on single-threaded applications so far. Multithreading functionality will be provided and documented at a later time.
 
 
 ## Figures
@@ -99,25 +96,23 @@ panel = dvz.panel(figure, x, y, w, h)
 
 ## Visuals
 
-The `Visual` is the most important object type in Datoviz.
-It represents a visual collection of similar elements, like a set of points, markers, segments, glyphs (text), paths, images, meshes...
+The `Visual` is the most important object type in Datoviz. It represents a visual collection of similar elements, such as points, markers, segments, glyphs (text), paths, images, meshes, and more.
 
-The notion of collection is crucial for high-performance rendering with GPUs.
-Visual elements of the same type should be grouped together in the same `Visual` to ensure good performance.
+The concept of a collection is crucial for high-performance rendering with GPUs. Visual elements of the same type should be grouped within the same `Visual` to optimize performance.
 
-The main limitation with grouping elements together is that they currently share the same transform (i.e. they share the same coordinate system).
+The primary limitation of grouping elements together is that they currently share the same transform, meaning they share the same coordinate system.
 
-Datoviz provides a predefined set of common visuals:
+Datoviz offers a predefined set of common visuals:
 
-* **Raw basic visuals** (fast but low quality): pixels, squares, aliased thin lines (line strip, line list), triangles (triangle list, triangle strip);
+* **Basic visuals** (fast but lower quality): pixels, squares, aliased thin lines (line strip, line list), triangles (triangle list, triangle strip);
  * **0D visuals**: `pixel`, `point` (disc), `marker`, `glyph` (string characters rendered on the GPU with multichannel signed distance fields);
  * **1D visuals**: `segment`, `path`;
  * **2D visuals**: `image`;
- * **3D visuals**: `mesh`, `sphere` (2D sprites with "fake" 3D rendering, aka impostors), `volume` (basic GPU raymarching algorithm at the moment), `slice` (volume image slices).
+ * **3D visuals**: `mesh`, `sphere` (2D sprites with "fake" 3D rendering, also known as impostors), `volume` (currently using a basic GPU raymarching algorithm), `slice` (volume image slices).
 
-The visuals are implemented on the GPU using advanced antialiasing techniques in the shaders.
+The visuals are implemented on the GPU using advanced antialiasing techniques within the shaders.
 
-More visuals will be implemented later, as will as the possibility of creating custom visuals via user-provided shaders.
+Additional visuals and the ability to create custom visuals via user-provided shaders will be added in the future.
 
 To create a visual, use this:
 
@@ -128,37 +123,30 @@ visual = dvz.point(batch, 0)
 
 ## Visual data
 
-Once a visual is created, specify its data using the provided visual-specific functions.
+Once a visual is created, you can specify its data using the provided visual-specific functions.
 
-The most common types of visual properties are the point positions and colors, but each visual comes with specific data properties (size, shape, groups, etc.).
-Refer to the [C API reference](api.md) for more details.
+The most common types of visual properties are point positions and colors, but each visual has its own specific data properties (e.g., size, shape, groups). For more details, refer to the [C API reference](api.md).
 
 ### Terminology
 
 We use the following terminology:
 
-* **item**: a single visual element, like a particular point or marker, or a single image in an `image` visual (remember that each visual is a collection of elements, so the `image` visual represents a set of one or multiple images)
-* **group**: a consecutive group of items that share common properties. This is mostly used in the `path` visual for now, where a group refers to a single path, while an item refers to a point within a path. A `path` visual therefore contains a set of points (items) each organized into a single or multiple disjoint paths (groups).
-* **vertex**: a 3D point sent to the GPU (this is transparent to the user). For example, a single image is defined by two triangles and six vertices. Datoviz handles the triangulation automatically and transparently, so you typically don't need to be aware of vertices.
-* **index**: in the mesh visual, an index refers to the set of vertices. A mesh is mainly defined by (1) a set of 3D points (vertices), and (2) a set of index triplets (three indices) definining a triangular face.
+* **item**: A single visual element, such as a particular point, marker, or a single image within an `image` visual. Each visual represents a collection of elements, so an `image` visual may represent one or multiple images.
+* **group**: A consecutive sequence of items that share common properties. This concept is mostly used in the `path` visual, where a group refers to an entire path, while an item refers to a point within that path. Thus, a `path` visual contains a set of points (items) organized into one or multiple disjoint paths (groups).
+* **vertex**: A 3D point sent to the GPU, which is managed transparently by Datoviz. For example, a single image is represented by two triangles and six vertices. Datoviz automatically handles the triangulation, so you typically don't need to concern yourself with vertices.
+* **index**: In the mesh visual, an index refers to the set of vertices. A mesh is primarily defined by (1) a set of 3D points (vertices), and (2) a set of index triplets (three indices) that define a triangular face.
 
-A particular visual represents a collection of `n` items indexed from `0` to `n-1`.
+A visual represents a collection of `n` items, indexed from `0` to `n-1`.
 
+### Python ctypes Bindings
 
-### Python ctypes bindings
+C visual data functions expect pointers to arrays of a specific type, such as an array of `vec3` (three `float32` values) for positions, or an array of `cvec4` (four `char`, representing RGBA `uint8` unsigned bytes) for colors.
 
-C visual data functions expect a pointer to arrays of a given type, for example typically an array of `vec3` (three float32 numbers) for positions, or an array of `cvec4` (four `char`, i.e. four RGBA `uint8` unsigned bytes) for colors.
-
-Python ctypes bindings are auto-generated and expect a NumPy array whenever a C visual data function expects a pointer to an array of values.
-At the moment, the ctypes bindings check the dtype, the shape, and the C-contiguity of the provided arrays.
-
+Python ctypes bindings are auto-generated and expect a NumPy array when a C visual data function expects a pointer to an array of values. Currently, the ctypes bindings check the `dtype`, shape, and C-contiguity of the provided arrays.
 
 ### Position
 
-The `position` property specifies the 3D positions of the visual points.
-Some visuals require the point position in a particular format.
-For example, the segment positions are specified by the 3D coordinates of the initial and terminal sections of each segment.
-The image positions are currently defined by 2D coordinates of the upper left and lower right corners (this might change in the future depending on user feedback).
+The `position` property specifies the 3D coordinates of visual points. Some visuals require the point positions in a specific format. For instance, segment positions are defined by the 3D coordinates of the start and end points of each segment. Image positions are currently defined by the 2D coordinates of the upper left and lower right corners, though this may change based on user feedback.
 
 To set the positions of a visual, for example the `point` visual, use this:
 
@@ -171,30 +159,25 @@ pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
 # The last argument represents the optional data transfer flags (typically 0).
 dvz.point_position(visual, 0, n, pos, 0)
 ```
+The coordinate system is defined as follows:
 
-The coordinate system is as follows:
+* **x**: left to right (-1 to 1)
+* **y**: bottom to top (-1 to 1)
+* **z**: front to back (0 to 1)
 
-* **x**: left to right (-1..1)
-* **y**: bottom to top (-1..1)
-* **z**: front to back (0..1)
+Positions must be provided in a normalized coordinate system, known as normalized device coordinates (NDC) in computer graphics terminology. Since your data is typically not in this range, you'll need to manually normalize it to the [-1 to 1] interval before passing it to Datoviz.
 
-The positions must be provided in a normalized coordinate system (normalized device coordinates, or NDC, in computer graphics terminology).
-Your data is typically not in this range so you'll need to normalize it manually to the [-1..1] interval before passing it to Datoviz.
-
-Datoviz v0.2 does not yet provide builtin axes nor data normalization features, but that will come in v0.3.
+Datoviz v0.2 does not yet include built-in axes or data normalization features, but these will be introduced in v0.3.
 
 ### Color
 
-Colors are passed as RGBA 4*`uint8` values.
-Use opacity values < 255 in the last component (`a` for alpha) to define transparent elements.
-
+Colors are passed as RGBA values, each represented by four `uint8` values. Use opacity values less than 255 in the last component (the alpha channel, `a`) to create transparent elements.
 
 ### Textures
 
-Textures are used by the `image` (2D textures), `mesh` (2D textures) and `volumes` (3D textures) visuals.
-See the [examples](examples.md) for more details.
+Textures are used in the `image` (2D textures), `mesh` (2D textures), and `volume` (3D textures) visuals. Refer to the [examples](examples.md) for more details.
 
-For example, here is how to create a 2D texture and pass it to an `image` visual:
+For example, here’s how to create a 2D texture and apply it to an `image` visual:
 
 ```python
 # Assuming rgba is a 3D NumPy array (height, width, 4).
@@ -214,40 +197,34 @@ tex = dvz.tex_image(batch, format, width, height, A_(image))
 dvz.image_texture(visual, tex, filter, address_mode)
 ```
 
+### Data Sharing
 
-### Data sharing
+Since textures are decoupled from visuals, they can be easily shared across different visuals.
 
-Since textures are decoupled from visuals, they can readily be shared across visuals.
+However, it is not yet straightforward to share other types of data between visuals. While the underlying architecture is designed to support this, the user-facing API does not currently offer this capability.
 
-However, it is not yet possible to easily share other types of data between visuals.
-While the underlying architecture has been designed to make this use-case possible, the user-exposed API does not yet support it.
+### Dynamic Data Updates
 
-### Dynamic data updates
-
-You can modify the data of a visual dynamically, while the event loop is running (for example, in an event callback).
-After you've updated a visual, you need to apply the changes with the following call:
+You can modify the data of a visual dynamically while the event loop is running, such as in an event callback. After updating a visual, you need to apply the changes with the following call:
 
 ```python
 dvz.visual_update(visual)
 ```
 
-
 ### Shapes
 
-The `mesh` visual can be used directly with properties such as vertices, indices, colors, normals and texture coordinates, but one can also use the `Shape` structure that encapsulates these arrays.
-They can be created with functions for predefined shapes, along with affine transforms, merging, etc.
-
+The `mesh` visual can be directly used with properties such as vertices, indices, colors, normals, and texture coordinates. Alternatively, you can use the `Shape` structure, which encapsulates these arrays. Shapes can be created using functions for predefined forms, along with affine transforms, merging, and other operations.
 
 ## Interactivity
 
 Two types of interactivity patterns are currently supported:
 
-* **Panzoom** (2D): pan with left mouse drag, zoom with the right mouse dag.
-* **Arcball** (3D): rotate with left mouse drag.
+* **Panzoom** (2D): Pan with left mouse drag, zoom with right mouse drag.
+* **Arcball** (3D): Rotate with left mouse drag.
 
-More interactivity patterns will be implemented in the future.
+Additional interactivity patterns will be implemented in the future.
 
-Use this to define the interactivity pattern in a panel:
+To define the interactivity pattern in a panel:
 
 ```python
 pz = dvz.panel_panzoom(panel)
@@ -255,18 +232,14 @@ pz = dvz.panel_panzoom(panel)
 arcball = dvz.panel_arcball(panel)
 ```
 
-Refer to the [C API reference](api.md) to see which functions you can use to manually control the panzoom or arcball.
-After these interactivity objects have been updated, you need to update the panel to apply your changes to the panel:
+Refer to the [C API reference](api.md) for functions you can use to manually control the panzoom or arcball. After updating these interactivity objects, you need to update the panel to apply your changes:
 
 ```python
 dvz.panel_update(panel)
 ```
+## Event Callbacks
 
-
-## Event callbacks
-
-You can define custom event callbacks to react to the mouse and the keyboard.
-You can also set up timers.
+You can define custom event callbacks to respond to mouse and keyboard interactions, as well as set up timers.
 
 ### Mouse
 
@@ -275,18 +248,18 @@ Define a mouse callback as follows:
 ```python
 @dvz.mouse
 def on_mouse(app, window_id, ev):
-    # ev is the mouse event structure.
+    # Access the mouse event structure.
     # Mouse position.
     x, y = ev.pos
     print(f"Position {x:.0f},{y:.0f}")
-    # Mouse event type.
+    # Detect mouse event type.
     if ev.type == dvz.MOUSE_EVENT_CLICK:
-        # Mouse click button.
+        # Identify mouse click button.
         button = ev.content.b.button
         print(f"Clicked with button {button}")
 ```
 
-The mouse event types are the following:
+The mouse event types are:
 
 ```
 MOUSE_EVENT_RELEASE             b       DvzMouseButtonEvent
@@ -300,8 +273,7 @@ MOUSE_EVENT_DRAG_STOP           d       DvzMouseDragEvent
 MOUSE_EVENT_WHEEL               w       DvzMouseWheelEvent
 ```
 
-The letters are to be used after `ev.content.`, for example `ev.content.b` which is a `DvzMouseButtonEvent` structure.
-Refer to the [C API reference](api.md) for more details about the fields available in these structures.
+Use the corresponding letter after `ev.content.`, such as `ev.content.b` for a `DvzMouseButtonEvent` structure. Refer to the [C API reference](api.md) for more details about the fields in these structures.
 
 The mouse buttons are:
 
@@ -311,9 +283,7 @@ DVZ_MOUSE_BUTTON_MIDDLE = 2
 DVZ_MOUSE_BUTTON_RIGHT = 3
 ```
 
-Datoviz does not yet provide built-in picking functionality.
-The only information provided by Datoviz in mouse event callbacks is the coordinates in pixels of the mouse cursor.
-
+Datoviz currently does not provide built-in picking functionality. The only information available in mouse event callbacks is the pixel coordinates of the mouse cursor.
 
 ### Keyboard
 
@@ -324,10 +294,10 @@ Define a keyboard callback as follows:
 @dvz.keyboard
 def on_keyboard(app, window_id, ev):
 
-    # Key code (see the C API reference).
+    # Get the key code (refer to the C API reference).
     key = ev.key
 
-    # Modifier flags.
+    # Determine modifier flags.
     mods = {
         'shift': ev.mods & dvz.KEY_MODIFIER_SHIFT != 0,
         'control': ev.mods & dvz.KEY_MODIFIER_CONTROL != 0,
@@ -336,7 +306,7 @@ def on_keyboard(app, window_id, ev):
     }
     mods = '+'.join(key for key, val in mods.items() if val)
 
-    # Keyboard events are PRESS, RELEASE, and REPEAT.
+    # Identify the keyboard event type (PRESS, RELEASE, REPEAT).
     type = {
         dvz.KEYBOARD_EVENT_PRESS: 'press',
         dvz.KEYBOARD_EVENT_REPEAT: 'repeat',
@@ -346,10 +316,9 @@ def on_keyboard(app, window_id, ev):
 
     print(f"{type} {mods} {key}")
 
-# We register the keyboard callback function.
+# Register the keyboard callback function.
 dvz.app_onkeyboard(app, on_keyboard, None)
 ```
-
 
 ### Timer
 
@@ -359,31 +328,26 @@ Define a timer as follows:
 # Timer callback.
 @dvz.timer
 def on_timer(app, window_id, ev):
-    # When defining multiple timers, they can be identified with their index.
+    # Use the timer index for identifying multiple timers.
     idx = ev.timer_idx
     step = ev.step_idx
     time = ev.time
     print(f"{time:.3f}: timer #{idx}, step {step}")
 
-
-# Timer frequency.
+# Set the timer frequency.
 frequency = 4
 
-# Define a timer with that frequency that starts after 0.5 s and that stops after 50 ticks
-# (use 0 as the last argument to define an infinite timer).
+# Define a timer with this frequency, starting after 0.5 seconds, stopping after 50 ticks.
+# Use 0 as the last argument for an infinite timer.
 dvz.app_timer(app, 0.5, 1. / frequency, 50)
 
-# Register a timer callback.
+# Register the timer callback.
 dvz.app_ontimer(app, on_timer, None)
 ```
 
+### Manual 3D Camera Control
 
-### Manual 3D camera control
-
-By default, a panel is in 2D.
-To define a 3D panel, you can either define an arcball (see above) or a generic 3D perspective
-camera.
-Here is how to do the latter:
+By default, a panel is 2D. To define a 3D panel, you can either use an arcball (see above) or a generic 3D perspective camera. Here's how to define a 3D perspective camera:
 
 ```python
 from datoviz import vec3
@@ -391,33 +355,30 @@ from datoviz import vec3
 # Define a 3D perspective camera.
 camera = dvz.panel_camera(panel)
 
-# Camera position.
+# Set the camera position.
 dvz.camera_position(camera, vec3(x, y, z))
 
-# Position of the point the camera is looking at.
+# Set the position of the point the camera is looking at.
 dvz.camera_lookat(camera, vec3(lx, ly, lz))
 ```
 
-You can implement custom 3D camera control by calling these functions in mouse and keyboard callback functions.
-After these camera functions have been called, it is crucial to call this function to apply these changes to the panel:
+You can implement custom 3D camera control by calling these functions within mouse and keyboard callbacks. After these camera functions are called, it is crucial to apply the changes to the panel:
 
 ```python
 dvz.panel_update(panel)
 ```
 
+## Graphical User Interfaces
 
-## Graphical user interfaces
+Datoviz includes basic GUI capabilities via the Dear ImGui C++ library. A future version of Datoviz may allow more direct use of Dear ImGui functionalities beyond the current wrappers.
 
-Datoviz provides a few simple GUI capabilities via the Dear ImGui C++ library.
-A future version of Datoviz may document how to use directly any functionality directly provided by Dear ImGui instead of relying on the few wrappers provided by Datoviz.
+To display a GUI dialog, follow these steps:
 
-To display a GUI dialog, follow these three steps:
-
-1. Use the flag `dvz.CANVAS_FLAGS_IMGUI` when creating a figure (last argument of `dvz.figure()`).
+1. Use the `dvz.CANVAS_FLAGS_IMGUI` flag when creating a figure (last argument of `dvz.figure()`).
 2. Define a GUI callback function.
-3. Register this GUI callback function.
+3. Register the GUI callback function.
 
-Here is an example:
+Example:
 
 ```python
 from datoviz import vec2, S_
@@ -429,9 +390,8 @@ def on_gui(app, fid, ev):
     # Set the size of the next GUI dialog.
     dvz.gui_size(vec2(200, 100))
 
-    # Start a GUI dialog with a dialog title.
-    # NOTE: the `S_()` function is used to pass a Python string to a C function expecting
-    # a const char*.
+    # Start a GUI dialog with a title.
+    # Use `S_()` to pass a Python string to a C function expecting a const char*.
     dvz.gui_begin(S_("My GUI dialog"), 0)
 
     # Display a button.
@@ -446,6 +406,4 @@ def on_gui(app, fid, ev):
 dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 ```
 
-The GUI callback function is called at every frame: ensure there is no long-lasting computation in it to avoid blocking the main event loop.
-Dear ImGui recreates the entire GUI at every frame (immediate mode rendering).
-GUI widget functions such as `dvz.gui_button()` typically return a boolean indicating whether the widget's state has changed.
+The GUI callback function is called on every frame. To avoid blocking the main event loop, ensure there is no long-lasting computation within it. Dear ImGui recreates the entire GUI at each frame (immediate mode rendering). GUI widget functions like `dvz.gui_button()` typically return a boolean indicating whether the widget's state has changed.
