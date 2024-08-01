@@ -68,7 +68,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     ANN(ttf_bytes);
     ImFontConfig font_cfg;
     font_cfg.FontDataOwnedByAtlas = false;
-    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, ttf_size, 16, &font_cfg);
+    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, (int)ttf_size, 16, &font_cfg);
 
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
 

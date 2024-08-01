@@ -273,6 +273,7 @@ symbols:
         for fn, items in headers.items():
             for function in items["functions"].keys():
                 f.write(f"{function}\n")
+#
 
 exports:
     @nm -D --defined-only build/libdatoviz.so
@@ -855,6 +856,11 @@ runexample name="":
 [macos]
 runexample name="":
     @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
+#
+
+[windows]
+runexample name="":
+    ./build/example_{{name}}.exe
 #
 
 example name="":

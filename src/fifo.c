@@ -346,9 +346,15 @@ static int _proc_wait(DvzDeqProc* proc)
         gettimeofday(&now, NULL);
 
         // How many seconds after now?
-        proc->wait.tv_sec = now.tv_sec + wait_s;
+#ifdef OS_WIN32
+        proc->wait.tv_sec = now.tv_sec + (int32_t)wait_s;
+        // How many nanoseconds after the X seconds?
+        proc->wait.tv_nsec = (now.tv_usec + (int32_t)wait_us) * 1000; // from us to ns
+#else
+        proc->wait.tv_sec = (uint32_t)now.tv_sec + wait_s;
         // How many nanoseconds after the X seconds?
         proc->wait.tv_nsec = ((uint32_t)now.tv_usec + wait_us) * 1000; // from us to ns
+#endif
 
         // NOTE: this call automatically releases the mutex while waiting, and reacquires it
         // afterwards
