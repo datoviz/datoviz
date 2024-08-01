@@ -85,6 +85,9 @@ def c_to_dtype(type, enum_int=False, unsigned=None):
     elif type == 'float':
         return 'np.float32'
 
+    elif type == 'bool':
+        return 'bool'
+
     elif type == 'char' and unsigned:
         return 'np.ubyte'
 
