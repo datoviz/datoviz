@@ -25,12 +25,11 @@ checkstructs:
 #
 
 
-build release="Debug":
+build release="Debug": symbols
     @set -e
     @unset CC
     @unset CXX
     @mkdir -p docs/images
-    #@ln -sf $(pwd)/data/screenshots $(pwd)/docs/images/
     @mkdir -p build
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
@@ -264,6 +263,16 @@ python *args:
 headers:
     @python tools/parse_headers.py
 #
+
+symbols:
+    #!/usr/bin/env python3
+    import json
+    with open("tools/headers.json", "r") as f:
+        headers = json.load(f)
+    with open("symbols.map", "w") as f:
+        for fn, items in headers.items():
+            for function in items["functions"].keys():
+                f.write(f"{function}\n")
 
 exports:
     @nm -D --defined-only build/libdatoviz.so
