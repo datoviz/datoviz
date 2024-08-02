@@ -395,7 +395,7 @@ deb: checkstructs
 
     # Create the control file.
     echo "Package: datoviz
-    Version: $(just getversion)
+    Version: $(just version)
     Section: libs
     Priority: optional
     Architecture: amd64
@@ -436,7 +436,7 @@ deb: checkstructs
     rm -rf "$TEMP_DIR"
 
     # Move it.
-    mv packaging/deb.deb packaging/datoviz_$(just getversion)_amd64.deb
+    mv packaging/deb.deb packaging/datoviz_$(just version)_amd64.deb
     rm -rf $DEB
 #
 
@@ -566,7 +566,7 @@ pkg: checkstructs
     otool -l "$LIB" | awk '/LC_RPATH/ {getline; getline; print $2}'
 
     # Build the package.
-    pkgbuild --root $PKGROOT --scripts $PKGSCRIPTS --identifier com.datoviz --version $(just getversion) --install-location / $PKG/datoviz.pkg
+    pkgbuild --root $PKGROOT --scripts $PKGSCRIPTS --identifier com.datoviz --version $(just version) --install-location / $PKG/datoviz.pkg
     # NOTE: unneeded:
     # productbuild --package-path $PKG --package $PKG/datoviz.pkg $PKG/datoviz_installer.pkg
 
@@ -576,7 +576,7 @@ pkg: checkstructs
     tree . -ugh && cd -
 
     # Move it.
-    cp $PKG/datoviz.pkg packaging/datoviz_$(just getversion).pkg
+    cp $PKG/datoviz.pkg packaging/datoviz_$(just version).pkg
     rm -rf $PKGROOT $PKG $PKGSCRIPTS
     rmdir packaging/pkgroot
 #
@@ -589,13 +589,13 @@ testpkg vm_ip_address:
     TMPDIR=/tmp/datoviz_example
 
     # Check if the pkg package exists, if not, build it
-    if [ ! -f packaging/datoviz_$(just getversion).pkg ]; then
+    if [ ! -f packaging/datoviz_$(just version).pkg ]; then
         just pkg
     fi
 
     # Copy the .pkg file to the VM
     ssh -T $USER@$IP "mkdir -p $TMPDIR && rm -rf $TMPDIR/*"
-    scp packaging/datoviz_$(just getversion).pkg \
+    scp packaging/datoviz_$(just version).pkg \
         examples/scatter.c \
         $USER@$IP:$TMPDIR
 
@@ -603,7 +603,7 @@ testpkg vm_ip_address:
     ssh -T $USER@$IP << 'EOF'
     # Install the .pkg package
     TMPDIR=/tmp/datoviz_example
-    echo "$USER" | sudo -S installer -pkg $TMPDIR/datoviz_$(just getversion).pkg -target /
+    echo "$USER" | sudo -S installer -pkg $TMPDIR/datoviz_$(just version).pkg -target /
     cd $TMPDIR
     ls -la $TMPDIR
     clang -o $TMPDIR/example_scatter $TMPDIR/scatter.c \
@@ -634,6 +634,7 @@ fullctypes: build headers ctypes checkstructs
 
 pytest:
     @pytest tests.py
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -747,7 +748,7 @@ testwheel:
     #!/usr/bin/env sh
     set -e
 
-    if [ ! -f dist/datoviz-*.whl ]; then
+    if [ ! -f dist/datoviz-*any.whl ]; then
         just wheel
     fi
 
@@ -757,9 +758,9 @@ testwheel:
     # Create a Dockerfile for testing
     echo "$(cat Dockerfile_ubuntu)
 
-    COPY dist/datoviz-*.whl /tmp/
+    COPY dist/datoviz-*any.whl /tmp/
     RUN python3 -m venv /tmp/venv
-    RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
+    RUN /tmp/venv/bin/pip install /tmp/datoviz-*any.whl
 
     WORKDIR /root
     CMD [\"/tmp/venv/bin/python\", \"-c\", \"import datoviz; datoviz.demo()\"]
