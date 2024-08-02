@@ -107,7 +107,13 @@ The primary limitation of grouping elements together is that they currently shar
 
 Datoviz offers a predefined set of common visuals:
 
-* **Basic visuals** (fast but lower quality): pixels, squares, aliased thin lines (line strip, line list), triangles (triangle list, triangle strip);
+
+PRIMITIVE_TOPOLOGY_LINE_LIST
+PRIMITIVE_TOPOLOGY_LINE_STRIP
+PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
+PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
+
+* **Basic visuals** (fast but lower quality): `basic` with an adequate `dvz.PRIMITIVE_TOPOLOGY_*` enumeration, supporting pixels (`POINT_LIST`), aliased thin lines (`LINE_LIST`, `LINE_STRIP`), triangles (`TRIANGLE_LIST`, `TRIANGLE_STRIP`);
  * **0D visuals**: `pixel`, `point` (disc), `marker`, `glyph` (string characters rendered on the GPU with multichannel signed distance fields);
  * **1D visuals**: `segment`, `path`;
  * **2D visuals**: `image`;
@@ -141,7 +147,7 @@ We use the following terminology:
 
 A visual represents a collection of `n` items, indexed from `0` to `n-1`.
 
-### Python ctypes Bindings
+### Python ctypes bindings
 
 C visual data functions expect pointers to arrays of a specific type, such as an array of `vec3` (three `float32` values) for positions, or an array of `cvec4` (four `char`, representing RGBA `uint8` unsigned bytes) for colors.
 
@@ -164,11 +170,11 @@ dvz.point_position(visual, 0, n, pos, 0)
 ```
 The coordinate system is defined as follows:
 
-* **x**: left to right (-1 to 1)
-* **y**: bottom to top (-1 to 1)
-* **z**: front to back (0 to 1)
+* **x**: left to right `[-1, +1]`
+* **y**: bottom to top `[-1, +1]`
+* **z**: front to back `[0, +1]`
 
-Positions must be provided in a normalized coordinate system, known as normalized device coordinates (NDC) in computer graphics terminology. Since your data is typically not in this range, you'll need to manually normalize it to the [-1 to 1] interval before passing it to Datoviz.
+Positions must be provided in a normalized coordinate system, known as normalized device coordinates (NDC) in computer graphics terminology. Since your data is typically not in this range, you'll need to manually normalize it to the `[-1, +1]` interval before passing it to Datoviz.
 
 Datoviz v0.2 does not yet include built-in axes or data normalization features, but these will be introduced in v0.3.
 
@@ -200,13 +206,13 @@ tex = dvz.tex_image(batch, format, width, height, A_(image))
 dvz.image_texture(visual, tex, filter, address_mode)
 ```
 
-### Data Sharing
+### Data sharing
 
 Since textures are decoupled from visuals, they can be easily shared across different visuals.
 
 However, it is not yet straightforward to share other types of data between visuals. While the underlying architecture is designed to support this, the user-facing API does not currently offer this capability.
 
-### Dynamic Data Updates
+### Dynamic data updates
 
 You can modify the data of a visual dynamically while the event loop is running, such as in an event callback. After updating a visual, you need to apply the changes with the following call:
 
@@ -240,7 +246,7 @@ Refer to the [C API reference](api.md) for functions you can use to manually con
 ```python
 dvz.panel_update(panel)
 ```
-## Event Callbacks
+## Event callbacks
 
 You can define custom event callbacks to respond to mouse and keyboard interactions, as well as set up timers.
 
@@ -281,9 +287,9 @@ Use the corresponding letter after `ev.content.`, such as `ev.content.b` for a `
 The mouse buttons are:
 
 ```
-DVZ_MOUSE_BUTTON_LEFT = 1
-DVZ_MOUSE_BUTTON_MIDDLE = 2
-DVZ_MOUSE_BUTTON_RIGHT = 3
+MOUSE_BUTTON_LEFT = 1
+MOUSE_BUTTON_MIDDLE = 2
+MOUSE_BUTTON_RIGHT = 3
 ```
 
 Datoviz currently does not provide built-in picking functionality. The only information available in mouse event callbacks is the pixel coordinates of the mouse cursor.
@@ -348,7 +354,7 @@ dvz.app_timer(app, 0.5, 1. / frequency, 50)
 dvz.app_ontimer(app, on_timer, None)
 ```
 
-### Manual 3D Camera Control
+### Manual 3D camera control
 
 By default, a panel is 2D. To define a 3D panel, you can either use an arcball (see above) or a generic 3D perspective camera. Here's how to define a 3D perspective camera:
 
@@ -420,11 +426,14 @@ This section provides general instructions for C/C++ developers who want to use 
 
 ### Ubuntu
 
-TODO.
+_Note_: to be completed.
+
+Install the `.deb` package and look at the `.c` examples in `examples/`.
+
 
 ### macOS (arm64)
 
-Looking at the [justfile](justfile) (`pkg` and `testpkg` commands) may be helpful.
+Looking at the [justfile](../justfile) (`pkg` and `testpkg` commands) may be helpful.
 To build an application using Datoviz:
 
 1. You need to link your application to `libdatoviz.dylib`, that you can build yourself or find in the provided `.pkg` installation file.
@@ -435,7 +444,8 @@ To build an application using Datoviz:
 
 ### Windows
 
-TODO.
+To be completed.
+
 
 ### Technical notes for C/C++ developers
 
