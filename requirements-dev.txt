@@ -4,3 +4,4 @@ pillow
 pyparsing
 pytest
 wheel
+setuptools
