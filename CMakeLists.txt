@@ -776,7 +776,7 @@ set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
 # CLI tool
 # -------------------------------------------------------------------------------------------------
 if(DATOVIZ_WITH_CLI)
-    add_executable(cli
+    set(cli_src
         "cli/main.c"
 
         # Utils
@@ -856,15 +856,25 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_scene.c"
 
         "tests/test.c"
-
-        ${path_testdata}
-
-        #$<TARGET_OBJECTS:datoviz_core>
-        #$<TARGET_OBJECTS:datoviz_requests>
-        #$<TARGET_OBJECTS:datoviz_app>
-        #$<TARGET_OBJECTS:datoviz_scene>
-        #$<TARGET_OBJECTS:datoviz_resources>
     )
+
+    if(${OS_WINDOWS})
+        add_executable(cli
+            ${cli_src}
+            ${path_testdata}
+        )
+    else()
+        add_executable(cli
+            ${cli_src}
+            ${path_testdata}
+
+            $<TARGET_OBJECTS:datoviz_core>
+            $<TARGET_OBJECTS:datoviz_requests>
+            $<TARGET_OBJECTS:datoviz_app>
+            $<TARGET_OBJECTS:datoviz_scene>
+            $<TARGET_OBJECTS:datoviz_resources>
+        )
+    endif()
 
     target_include_directories(cli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)
     target_compile_definitions(cli PUBLIC ${COMPILE_DEFINITIONS})
