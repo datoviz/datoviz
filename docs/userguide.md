@@ -410,3 +410,40 @@ dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 ```
 
 The GUI callback function is called on every frame. To avoid blocking the main event loop, ensure there is no long-lasting computation within it. Dear ImGui recreates the entire GUI at each frame (immediate mode rendering). GUI widget functions like `dvz.gui_button()` typically return a boolean indicating whether the widget's state has changed.
+
+
+
+
+## Using Datoviz in a C/C++ application
+
+This section provides general instructions for C/C++ developers who want to use Datoviz in their library or application.
+
+### Ubuntu
+
+TODO.
+
+### macOS (arm64)
+
+Looking at the [justfile](justfile) (`pkg` and `testpkg` commands) may be helpful.
+To build an application using Datoviz:
+
+1. You need to link your application to `libdatoviz.dylib`, that you can build yourself or find in the provided `.pkg` installation file.
+2. You also need to link to the non-system dependencies of Datoviz, for now they are `libvulkan`, `libMoltenVK` ("emulating" Vulkan on top of Apple Metal), `libpng` and `freetype`. You can see the dependencies with `just deps` (which uses `otool` on `libdatoviz.dylib`). You'll find these dependencies in [`libs/vulkan/macos`](libs/vulkan/macos) in the GitHub repository.
+3. You should bundle these `dylib` dependencies alongside your application, and that will depend on how your application is built and distributed.
+4. Note that the `just pkg` script modifies the rpath of `libdatoviz.dylib` with [`install_name_tool`](https://www.unix.com/man-page/osx/1/install_name_tool/) before building the `.pkg` package to declare that its dependencies are to be found in the same directory.
+5. Another thing to keep in mind is that, for now, the `VK_DRIVER_FILES` environment variable needs to be set to the absolute path to [`MoltenVK_icd.json`](libs/vulkan/macos/MoltenVK_icd.json) (available in this GitHub repository). The `.pkg` package installs it to `/usr/local/lib/datoviz/MoltenVK_icd.json`. Right now, [`datoviz.h`](include/datoviz.h) automatically sets this environment variable if it's included in the source file implementing your `main()` entry-point. These complications are necessary to avoid requiring the end-users to install the Vulkan SDK manually.
+
+### Windows
+
+TODO.
+
+### Technical notes for C/C++ developers
+
+* **🧠 Memory management.** Datoviz uses opaque pointers and manages its own memory. Porting the relatively light high-level code of Datoviz (scene API) to a more modern and safer language may be considered in the future.
+* **💻 C/C++ usage.** Datoviz employs a restricted and straightforward usage of C, with very limited C++ functionality (mostly common dynamic data structures, in ~10% of the code).
+* **📂 Data copies.** When passing data to visuals, data is copied by default to Datoviz for memory safety reasons. This might impact performance and memory usage when handling large datasets (tens of millions of points). We will soon document how to avoid these extra copies and prevent crashes related to Datoviz accessing deallocated memory.
+* **🏗️ Modular architecture.** Datoviz v0.2+ features a modular architecture where the low-level Vulkan-specific rendering engine is decoupled from the higher-level visual and interactive logic. A private asynchronous message-based protocol is used internally, enabling a future Javascript/WebAssembly/WebGPU port of Datoviz, which we plan to work on in the coming years.
+* **👥 Contributing.** This modular architecture allows C/C++ contributors without GPU knowledge to propose improvements and new functionality in the higher-level parts.
+* **🔗 Bindings.** While we provide raw ctypes bindings in Python to the Datoviz C API, our goal is to implement as much functionality in C/C++ to offer the same functionality to other languages that may provide Datoviz bindings in the future (Julia, Rust, R, MATLAB...).
+
+
