@@ -24,7 +24,7 @@ checkstructs:
     @python -c "from datoviz import _check_struct_sizes; _check_struct_sizes('build/struct_sizes.json');"
 #
 
-
+[unix]
 build release="Debug": symbols
     @set -e
     @unset CC
@@ -32,6 +32,16 @@ build release="Debug": symbols
     @mkdir -p docs/images
     @mkdir -p build
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && ninja
+#
+
+[windows]
+build release="Debug":
+    @set -e
+    @unset CC
+    @unset CXX
+    @mkdir -p build
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
 
