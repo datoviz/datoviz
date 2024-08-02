@@ -1,91 +1,50 @@
 # Maintainers instructions
 
-## Packaging instructions
+## Packaging
 
-This section provides instructions for maintainers who need to create binary packages.
+This section provides instructions for maintainers who need to create binary packages and Python wheels.
+
 
 ### Ubuntu 24.04
 
-You need to install Docker to test the created deb package in an isolated virtual environment.
+Requirements:
+
+* Docker
+* [just](https://github.com/casey/just/releases)
+* `sudo apt-get install dpkg-dev fakeroot nvidia-container-toolkit`
+
+To build a release binary, see the [build instructions](BUILD.md):
 
 ```bash
-sudo apt-get install dpkg-dev fakeroot nvidia-container-toolkit
+pip install -r requirements-dev.txt
+just release
+```
 
-# Generate a .deb package in packaging/
+To build a `.deb` Debian installable package for development (with C headers and shared libraries):
+
+```bash
 just deb
+```
 
-# Test .deb installation in a Docker container
+To test the `.deb` package in an isolated Docker container:
+
+```bash
 just testdeb
 ```
 
-### macOS (arm64)
-
-Building a `.pkg` package file with Datoviz and its dependencies is straightforward with the `just pkg` command on macOS (arm64).
-
-#### Preparing a virtual machine for testing in an isolated environment
-
-However, testing this package file in a virtual machine is currently more complicated that on Linux.
-Before calling `just testpkg`, you need to follow several steps to prepare a virtual machine manually.
-
-1.  Install sshpass:
-
-    ```bash
-    brew install sshpass
-    ```
-
-2. Install [UTM](https://mac.getutm.app/).
-3. Create a new macOS virtual machine (VM) with **at least 64 GB storage** (for Xcode).
-4. Install macOS in the virtual machine. For simplicity, use your $USER as the login and password.
-5. Once installed, find the IP address in the VM macOS system preferences and write it down (for example, 192.168.64.4).
-6. Set up remote access via SSH in the VM macOS system preferences to set up a SSH server.
-7. Open a terminal in the VM and type:
-
-    ```bash
-    type: xcode-select --install
-    ```
-
-#### Build and test the macOS package
-
-Go back to the host machine and type:
+To build a `manylinux` wheel (using `manylinux_2_28_x86_64`, based on AlmaLinux 8):
 
 ```bash
-# Generate a .pkg package in packaging/
-just pkg
-
-# Test the .pkg installation in an UTM virtual machine, using the IP address you wrote down earlier.
-just testpkg 192.168.64.4
-
-# Go to the virtual machine, and run in a terminal `/tmp/datoviz_example/example_scatter`.
-```
-
-
-### Windows
-
-1. Build Datoviz (see [build instructions](BUILD.md)).
-2. Open a Git Bash.
-3. Type: `echo "alias python='winpty python.exe'" >> ~/.bash_profile` ([see here](https://stackoverflow.com/a/36530750/1595060)).
-4. Type: `pip install -r requirements-dev.txt`.
-5. Type: `just wheel`.
-
-
-
-<!-- PYTHON PACKAGING -->
-
-## Python packaging instructions
-
-This section provides instructions for maintainers who want to create Python wheel packages.
-
-### Ubuntu 24.04
-
-You need to install Docker to generate the wheels on a manylinux container. We have only used `manylinux_2_28_x86_64` so far (based on AlmaLinux 8).
-
-```bash
-# First, build Datoviz in the manylinux container.
+# Build Datoviz in the manylinux container.
 just buildmany
 
-# Then, build a Python wheel in a manylinux container (saved in dist/).
+# Build a Python wheel in that container (saved in dist/).
 just wheelmany
+```
 
+To test the `manylinux` wheel:
+
+```bash
 # Show the contents of the wheel.
 just showwheel
 
@@ -93,26 +52,104 @@ just showwheel
 just testwheel
 ```
 
-### macOS (arm46)
 
-TODO.
+### macOS (arm64)
+
+Requirements:
+
+* Homebrew
+* [just](https://github.com/casey/just/releases)
+
+To build a release binary, see the [build instructions](BUILD.md):
+
+```bash
+pip install -r requirements-dev.txt
+just release
+```
+
+To build a `.pkg` Debian installable package for development (with C headers and shared libraries):
+
+```bash
+just pkg
+```
+
+To build a macOS Python wheel:
+
+```bash
+just wheel
+```
+
+To test macOS packages in an isolated environment, you can use UTM:
+
+1. Install sshpass:
+
+    ```bash
+    brew install sshpass
+    ```
+
+2. Install [UTM](https://mac.getutm.app/).
+3. Create a new macOS virtual machine (VM) with **at least 64 GB storage** (for Xcode).
+4. Install macOS in the virtual machine. For simplicity, use your `$USER` as the login and password.
+5. Once installed, find the IP address in the VM macOS system preferences and write it down (for example, `192.168.64.4`).
+6. Set up remote access via SSH in the VM macOS system preferences to set up a SSH server.
+7. Open a terminal in the VM and type:
+
+    ```bash
+    type: xcode-select --install
+    ```
+
+Go back to the host machine and type:
+
+```bash
+# Test the .pkg installation in an UTM virtual machine, using the IP address you wrote down earlier.
+just testpkg 192.168.64.4
+```
+
+The virtual machine should show the Datoviz demo in a window.
 
 
 ### Windows
 
-TODO.
+Requirements:
 
+* [Git for Windows](https://git-scm.com/download/win)
+* [WinLibs](https://winlibs.com/)
+* [just](https://github.com/casey/just/releases)
+* [LunarG Vulkan SDK for Windows](https://vulkan.lunarg.com/sdk/home#windows)
+* [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install)
+* [vcpkg](https://vcpkg.io/en/)
+
+To build a release binary, see the [build instructions](BUILD.md):
+
+```bash
+just release
+```
+
+To build a Windows Python wheel, open a Git Bash and type:
+
+```bash
+# see https://stackoverflow.com/a/36530750/1595060
+echo "alias python='winpty python.exe'" >> ~/.bash_profile
+pip install -r requirements-dev.txt
+just wheel
+```
+
+To test the wheel in a Python virtual environment:
+
+```bash
+just testwheel
+```
 
 
 ## Release checklist
 
-* Build in release mode with `just release`
-* Run the C testing suite
-* Run the Python testing suite
-* Write the changelog
-* Bump to the new version with `just bump x.y.z`
-* Commit and tag
-* Build packages
-* Upload packages
-* Bump to the new development version with `just bump a.b.c-dev`
-* Announcement
+1. Build in release mode with `just release`.
+2. Run the C testing suite with `just test`.
+3. Run the Python testing suite with `just pytest`.
+4. Write the `CHANGELOG.md`.
+5. Bump to the new version with `just bump x.y.z`.
+6. Commit and tag.
+7. Build packages with `just wheel`.
+8. Upload packages.
+9. Bump to the new development version with `just bump a.b.c-dev`.
+10. Announcement.

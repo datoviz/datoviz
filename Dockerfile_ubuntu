@@ -16,6 +16,7 @@ RUN apt-get install -y \
     nvidia-driver-460 \
     nvidia-utils-460 \
     x11-apps
+RUN apt-get install -y python3-numpy
 
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 ENV NVIDIA_VISIBLE_DEVICES=all
