@@ -23,7 +23,7 @@
 /*************************************************************************************************/
 
 // Atomic macro, for both C++ and C
-#if defined(LANG_C) && !OS_WIN32
+#if defined(LANG_C) && !OS_WINDOWS
 /*  C11 atomic is only used for C (not C++) and not on Windows                                   */
 /*************************************************************************************************/
 #define ATOMIC_C

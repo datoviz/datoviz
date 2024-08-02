@@ -276,7 +276,7 @@ static void create_instance(
     info_inst.pApplicationInfo = &appInfo;
 
 // Portability.
-#if OS_MACOS || OS_WIN32
+#if OS_MACOS || OS_WINDOWS
     extensions[extension_count++] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
     info_inst.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif

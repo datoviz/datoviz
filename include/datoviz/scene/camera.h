@@ -32,7 +32,7 @@
 
 // HACK: work around mingw64 gcc warning on Windows
 // see https://stackoverflow.com/a/2754992/1595060
-#if OS_WIN32
+#if OS_WINDOWS
 #undef near
 #undef far
 #endif

@@ -77,7 +77,7 @@ static void* aligned_malloc(DvzSize size, DvzSize alignment)
     // Allocate the aligned buffer.
 #if OS_MACOS
     posix_memalign((void**)&data, alignment, size);
-#elif OS_WIN32
+#elif OS_WINDOWS
     data = _aligned_malloc(size, alignment);
 #else
     data = aligned_alloc(alignment, size);
@@ -94,7 +94,7 @@ static void* aligned_malloc(DvzSize size, DvzSize alignment)
 WARNING : on Windows, only works on aligned pointers. */
 static void aligned_free(void* pointer)
 {
-#if OS_WIN32
+#if OS_WINDOWS
     _aligned_free(pointer);
 #else
     FREE(pointer)

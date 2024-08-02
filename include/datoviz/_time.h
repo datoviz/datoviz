@@ -60,7 +60,7 @@ static int gettimeofday(struct timeval* tp, struct timezone* tzp)
 #endif
 
 // Used for Sleep()
-#if OS_WIN32
+#if OS_WINDOWS
 #include <Windows.h>
 #endif
 
@@ -97,7 +97,7 @@ struct DvzClock
  */
 static inline void dvz_sleep(int milliseconds)
 {
-#if OS_WIN32
+#if OS_WINDOWS
     Sleep((uint32_t)milliseconds);
 #else
     struct timespec ts;

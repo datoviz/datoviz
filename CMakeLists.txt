@@ -43,7 +43,7 @@ project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
-option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" OFF)
+option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -81,14 +81,14 @@ set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 # -------------------------------------------------------------------------------------------------
 set(OS_LINUX 0)
 set(OS_MACOS 0)
-set(OS_WIN32 0)
+set(OS_WINDOWS 0)
 
 if(UNIX AND NOT APPLE)
     set(OS_LINUX 1)
 elseif(APPLE)
     set(OS_MACOS 1)
 elseif(WIN32)
-    set(OS_WIN32 1)
+    set(OS_WINDOWS 1)
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ set(INCL_DIRS
 # ---- OS-specific directories --------------------------------------------------------------------
 if(${OS_MACOS})
     set(INCL_DIRS ${INCL_DIRS} /usr/local/include)
-elseif(${OS_WIN32})
+elseif(${OS_WINDOWS})
     set(INCL_DIRS ${INCL_DIRS}) # $ENV{VULKAN_SDK}/include $ENV{CGLM_INCLUDE})
     find_path(MINGW_DIR NAMES "gcc.exe")
 endif()
@@ -149,7 +149,7 @@ endif()
 # ---- OS-specific linking libraries --------------------------------------------------------------
 if(${OS_MACOS})
     link_directories(/usr/local/lib)
-elseif(${OS_WIN32})
+elseif(${OS_WINDOWS})
     # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
     set(LINK_LIBS ${LINK_LIBS})
 endif()
@@ -202,7 +202,7 @@ if(${OS_MACOS})
 
     find_program(GLSLC "glslc"
         HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
-elseif(${OS_WIN32})
+elseif(${OS_WINDOWS})
     # set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/windows")
     # set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/windows")
     # set(VULKAN_LIB "${VULKAN_DIR}/vulkan-1.dll")
@@ -239,7 +239,7 @@ if(DATOVIZ_WITH_MSDF)
     set(MSDFGEN_DISABLE_SVG OFF)
 
     set(MSDF_ATLAS_BUILD_STANDALONE OFF)
-    set(MSDF_ATLAS_USE_VCPKG OFF)
+    set(MSDF_ATLAS_USE_VCPKG ${OS_WINDOWS})
     set(MSDF_ATLAS_USE_SKIA OFF)
     set(MSDF_ATLAS_DYNAMIC_RUNTIME OFF)
     set(MSDF_ATLAS_MSDFGEN_EXTERNAL OFF)
@@ -308,7 +308,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     # OS.
     OS_LINUX=${OS_LINUX}
     OS_MACOS=${OS_MACOS}
-    OS_WIN32=${OS_WIN32}
+    OS_WINDOWS=${OS_WINDOWS}
 
     # Compiler.
     CC_MSVC=${CC_MSVC}
@@ -393,7 +393,7 @@ if(CC_GCC)
     # fsanitize=address fsanitize-trap=undefined
 
     # NOTE: to comment when using valgrind
-    if(NOT OS_WIN32)
+    if(NOT OS_WINDOWS)
         set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
     endif()
 
@@ -770,7 +770,7 @@ target_link_libraries(libdatoviz
 
 set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
 
-# if(${OS_WIN32})
+# if(${OS_WINDOWS})
 # set_target_properties(libdatoviz PROPERTIES OUTPUT_NAME "libdatoviz")
 # endif()
 

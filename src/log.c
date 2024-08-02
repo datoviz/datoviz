@@ -42,7 +42,7 @@
 
 #define MAX_THREADS 64
 
-#if OS_WIN32
+#if OS_WINDOWS
 MUTE_ON
 // #include "ansicolor-w32.h"
 MUTE_OFF
@@ -88,7 +88,7 @@ static uint64_t get_thread_idx(void)
 #if OS_MACOS
     // macOS
     pthread_threadid_np(NULL, &tid);
-#elif OS_WIN32
+#elif OS_WINDOWS
     // Windows
     tid = pthread_self();
 #else

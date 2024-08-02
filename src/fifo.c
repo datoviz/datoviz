@@ -346,7 +346,7 @@ static int _proc_wait(DvzDeqProc* proc)
         gettimeofday(&now, NULL);
 
         // How many seconds after now?
-#ifdef OS_WIN32
+#ifdef OS_WINDOWS
         proc->wait.tv_sec = now.tv_sec + (int32_t)wait_s;
         // How many nanoseconds after the X seconds?
         proc->wait.tv_nsec = (now.tv_usec + (int32_t)wait_us) * 1000; // from us to ns
