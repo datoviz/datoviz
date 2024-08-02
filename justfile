@@ -62,6 +62,7 @@ clang:
 
 buildmany release="Debug":
     #!/usr/bin/env sh
+    set -e
     DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
     BUILD_DIR="build_many"
     CONTAINER_NAME="datoviz-buildmany"
@@ -144,6 +145,7 @@ pydev: # install the Python binding on a development machine
 
 version:
     #!/usr/bin/env sh
+    set -e
     VERSION=$(awk '
     /#define DVZ_VERSION_MAJOR/ { major = $3 }
     /#define DVZ_VERSION_MINOR/ { minor = $3 }
@@ -379,6 +381,7 @@ cloc:
 [linux]
 deb: checkstructs
     #!/usr/bin/env sh
+    set -e
     DEB="packaging/deb/"
     INCLUDEDIR="/usr/local/include/datoviz"
     LIBDIR="/usr/local/lib/datoviz"
@@ -440,6 +443,7 @@ deb: checkstructs
 [linux]
 testdeb:
     #!/usr/bin/env sh
+    set -e
 
     # Check if the deb package exists, if not, build it
     if [ ! -f packaging/datoviz_*_amd64.deb ]; then
@@ -485,6 +489,7 @@ testdeb:
 [macos]
 pkg: checkstructs
     #!/usr/bin/env sh
+    set -e
     PKGROOT="packaging/pkgroot/Payload"
     PKGSCRIPTS="packaging/pkgroot/Scripts"
     INCLUDEDIR="/usr/local/include/datoviz"
@@ -579,6 +584,7 @@ pkg: checkstructs
 [macos]
 testpkg vm_ip_address:
     #!/usr/bin/env sh
+    set -e
     IP="{{vm_ip_address}}"
     TMPDIR=/tmp/datoviz_example
 
@@ -691,6 +697,7 @@ wheel: checkstructs
 [linux]
 wheelmany: checkstructs
     #!/usr/bin/env sh
+    set -e
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
     DISTDIR="dist"
@@ -738,6 +745,7 @@ wheelmany: checkstructs
 [linux]
 testwheel:
     #!/usr/bin/env sh
+    set -e
 
     if [ ! -f dist/datoviz-*.whl ]; then
         just wheel
@@ -751,7 +759,7 @@ testwheel:
     RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
 
     WORKDIR /root
-    CMD /tmp/venv/bin/python3 -c \"import datoviz; datoviz.demo()\"
+    CMD ['/tmp/venv/bin/python3', '-c \"import datoviz; datoviz.demo()\"']
 
     " > Dockerfile
 
@@ -785,6 +793,12 @@ wheel: checkstructs
     cp datoviz/__init__.py "$DVZDIR"
     cp pyproject.toml "$PKGROOT/"
     cp build/*.dll "$DVZDIR"
+
+    # Copy mingw64 shared libraries.
+    MINGW64_DIR="$(dirname $(which gcc))"
+    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" "$DVZDIR"
+    cp "$MINGW64_DIR/libstdc++-6.dll" "$DVZDIR"
+    cp "$MINGW64_DIR/libwinpthread-1.dll" "$DVZDIR"
 
     # Build the wheel.
     pushd "$PKGROOT"
@@ -832,6 +846,7 @@ testwheel:
 [macos]
 wheel: checkstructs
     #!/usr/bin/env sh
+    set -e
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
     DISTDIR="dist"
@@ -886,6 +901,7 @@ wheel: checkstructs
 [macos]
 testwheel vm_ip_address:
     #!/usr/bin/env sh
+    set -e
     IP="{{vm_ip_address}}"
     TMPDIR=/tmp/datoviz_example
 

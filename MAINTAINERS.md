@@ -61,7 +61,12 @@ just testpkg 192.168.64.4
 
 ### Windows
 
-TODO.
+1. Build Datoviz (see [build instructions](BUILD.md)).
+2. Open a Git Bash.
+3. Type: `echo "alias python='winpty python.exe'" >> ~/.bash_profile` ([see here](https://stackoverflow.com/a/36530750/1595060)).
+4. Type: `pip install -r requirements-dev.txt`.
+5. Type: `just wheel`.
+
 
 
 <!-- PYTHON PACKAGING -->
