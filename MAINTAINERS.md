@@ -9,7 +9,7 @@ This section provides instructions for maintainers who need to create binary pac
 You need to install Docker to test the created deb package in an isolated virtual environment.
 
 ```bash
-sudo apt-get install dpkg-dev fakeroot
+sudo apt-get install dpkg-dev fakeroot nvidia-container-toolkit
 
 # Generate a .deb package in packaging/
 just deb

@@ -751,6 +751,9 @@ testwheel:
         just wheel
     fi
 
+    # This command allows connections to the X server from any user.
+    xhost +
+
     # Create a Dockerfile for testing
     echo "$(cat Dockerfile_ubuntu)
 
@@ -759,7 +762,7 @@ testwheel:
     RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
 
     WORKDIR /root
-    CMD ['/tmp/venv/bin/python3', '-c \"import datoviz; datoviz.demo()\"']
+    CMD [\"/tmp/venv/bin/python\", \"-c\", \"import datoviz; datoviz.demo()\"]
 
     " > Dockerfile
 
