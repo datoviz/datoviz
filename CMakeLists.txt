@@ -146,12 +146,12 @@ if(NOT ${WIN32})
     set(LINK_LIBS m dl pthread ${LINK_LIBS})
 endif()
 
+set(CORE_LIBS ${LINK_LIBS})
+set(SCENE_LIBS ${LINK_LIBS})
+
 # ---- OS-specific linking libraries --------------------------------------------------------------
 if(${OS_MACOS})
     link_directories(/usr/local/lib)
-#elseif(${OS_WINDOWS})
-    # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
-    #set(LINK_LIBS ${LINK_LIBS})
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -189,7 +189,7 @@ if(DATOVIZ_WITH_GLFW)
     FetchContent_MakeAvailable(glfw)
 
     set(INCL_DIRS ${INCL_DIRS} "${glfw_SOURCE_DIR}/include")
-    set(LINK_LIBS ${LINK_LIBS} glfw)
+    set(CORE_LIBS ${CORE_LIBS} glfw)
 endif()
 
 # ---- Vulkan -------------------------------------------------------------------------------------
@@ -201,13 +201,13 @@ if(${OS_MACOS})
     set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.dylib")
 
     find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
+    set(CORE_LIBS ${CORE_LIBS} "${VULKAN_LIB}")
 elseif(${OS_WINDOWS})
     # set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/windows")
     # set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/windows")
     # set(VULKAN_LIB "${VULKAN_DIR}/vulkan-1.dll")
     find_package(Vulkan REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} ${Vulkan_LIBRARIES})
+    set(CORE_LIBS ${CORE_LIBS} ${Vulkan_LIBRARIES})
     find_program(GLSLC "glslc" HINTS "$ENV{VULKAN_SDK}\\bin" REQUIRED)
 else()
     set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/linux")
@@ -220,9 +220,8 @@ else()
     endif()
 
     find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
+    set(CORE_LIBS ${CORE_LIBS} "${VULKAN_LIB}")
 endif()
-
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -267,12 +266,11 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
 
-    #add_library(msdfgen_core STATIC IMPORTED)
-    #set_target_properties(msdfgen_core PROPERTIES
-    #    IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
-    #    POSITION_INDEPENDENT_CODE ON
-    #)
-
+    # add_library(msdfgen_core STATIC IMPORTED)
+    # set_target_properties(msdfgen_core PROPERTIES
+    # IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
+    # POSITION_INDEPENDENT_CODE ON
+    # )
     set(INCL_DIRS ${INCL_DIRS}
         ${msdfgen_SOURCE_DIR}
         ${msdfgen-atlas_SOURCE_DIR}
@@ -280,7 +278,7 @@ if(DATOVIZ_WITH_MSDF)
         ${msdfgen-atlas_SOURCE_DIR}/msdf-atlas-gen
         ${FREETYPE_INCLUDE_DIR_ft2build}
     )
-    set(LINK_LIBS ${LINK_LIBS} msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
+    set(SCENE_LIBS ${SCENE_LIBS} msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -633,7 +631,7 @@ add_library(datoviz_core OBJECT
 
 target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})
-target_link_libraries(datoviz_core ${LINK_LIBS})
+target_link_libraries(datoviz_core ${CORE_LIBS})
 set_target_properties(datoviz_core PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
@@ -706,7 +704,7 @@ add_library(datoviz_scene OBJECT
 
 target_include_directories(datoviz_scene PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_scene PRIVATE ${COMPILE_DEFINITIONS})
-target_link_libraries(datoviz_scene ${LINK_LIBS} ${FREETYPE_LIBRARIES})
+target_link_libraries(datoviz_scene ${SCENE_LIBS})
 set_target_properties(datoviz_scene PROPERTIES C_VISIBILITY_PRESET hidden)
 
 # -------------------------------------------------------------------------------------------------
@@ -757,13 +755,14 @@ if(${OS_LINUX})
 endif()
 
 target_link_libraries(libdatoviz
-    ${LINK_LIBS}
     external_sources
     datoviz_core
     datoviz_requests
     datoviz_app
     datoviz_scene
     datoviz_resources
+
+    # ${LINK_LIBS}
 )
 
 set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
