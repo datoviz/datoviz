@@ -249,6 +249,7 @@ if(DATOVIZ_WITH_MSDF)
     find_package(Freetype REQUIRED)
 
     # tinyxml2
+    set(tinyxml2_BUILD_TESTING OFF)
     FetchContent_Declare(
         tinyxml2
         GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
@@ -858,11 +859,11 @@ if(DATOVIZ_WITH_CLI)
 
         ${path_testdata}
 
-        $<TARGET_OBJECTS:datoviz_core>
-        $<TARGET_OBJECTS:datoviz_requests>
-        $<TARGET_OBJECTS:datoviz_app>
-        $<TARGET_OBJECTS:datoviz_scene>
-        $<TARGET_OBJECTS:datoviz_resources>
+        #$<TARGET_OBJECTS:datoviz_core>
+        #$<TARGET_OBJECTS:datoviz_requests>
+        #$<TARGET_OBJECTS:datoviz_app>
+        #$<TARGET_OBJECTS:datoviz_scene>
+        #$<TARGET_OBJECTS:datoviz_resources>
     )
 
     target_include_directories(cli PUBLIC ${INCL_DIRS} ${CMAKE_SOURCE_DIR}/tests)

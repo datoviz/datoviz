@@ -37,11 +37,11 @@ build release="Debug": symbols
 
 [windows]
 build release="Debug":
-    echo "WINDOWS"
     @set -e
     @unset CC
     @unset CXX
     @mkdir -p build
+    @cp libs/vulkan/windows/vulkan-1.dll build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && cmake --build .
 #
@@ -234,8 +234,14 @@ test test_name="":
 # Info
 # -------------------------------------------------------------------------------------------------
 
+[unix]
 info:
     @./build/datoviz info
+#
+
+[windows]
+info:
+    @build/datoviz.exe info
 #
 
 
@@ -259,7 +265,7 @@ libdemo:
 
 [windows]
 libdemo:
-    python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
+    python -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
 #
 
 python *args:
