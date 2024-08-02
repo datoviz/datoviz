@@ -64,8 +64,8 @@ int main(int argc, char** argv)
     log_set_level_env();
     if (argc <= 1)
     {
-        log_error("specify a command: info, demo, test");
-        return 1;
+        demo(argc, argv);
+        return 0;
     }
     ASSERT(argc >= 2);
     int res = 0;

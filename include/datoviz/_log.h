@@ -33,7 +33,7 @@ extern "C"
     };
 
 #ifdef DEBUG
-#define DVZ_DEFAULT_LOG_LEVEL LOG_TRACE
+#define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #else
 #define DVZ_DEFAULT_LOG_LEVEL LOG_INFO
 #endif

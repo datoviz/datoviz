@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datoviz"
-dependencies = []
+dependencies = ["numpy"]
 version = "0.2.0-dev"
 description = "A C library for high-performance GPU scientific visualization"
 authors = [

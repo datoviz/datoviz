@@ -796,6 +796,34 @@ wheel: checkstructs
     rm -rf "$PKGROOT"
 
 
+[windows]
+testwheel:
+    #!/usr/bin/env bash
+
+    # Ensure the wheel exists
+    if [ ! -f dist/datoviz-*.whl ]; then
+        just wheel
+    fi
+
+    # Create a new virtual environment
+    python -m venv test_env
+
+    # Activate the virtual environment
+    source test_env/Scripts/activate
+
+    # Install the wheel
+    pip install dist/datoviz-*.whl
+
+    # Run a test command
+    python -c "import datoviz; datoviz.demo()"
+
+    # Deactivate the virtual environment
+    deactivate
+
+    # Optionally clean up the environment
+    rm -rf test_env
+
+
 # -------------------------------------------------------------------------------------------------
 # Python packaging: macOS
 # -------------------------------------------------------------------------------------------------

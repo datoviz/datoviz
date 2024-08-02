@@ -25,7 +25,7 @@ try:
     from numpy.ctypeslib import ndpointer as ndpointer_
 except ImportError:
     float32 = object
-    print("NumPy is not available")
+    raise ImportError("NumPy is not available")
 
 
 # ===============================================================================
