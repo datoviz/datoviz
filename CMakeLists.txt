@@ -149,9 +149,9 @@ endif()
 # ---- OS-specific linking libraries --------------------------------------------------------------
 if(${OS_MACOS})
     link_directories(/usr/local/lib)
-elseif(${OS_WINDOWS})
+#elseif(${OS_WINDOWS})
     # link_directories($ENV{VULKAN_SDK}\\Lib $ENV{VULKAN_SDK}\\Bin) # $ENV{CGLM_LIB} ${MINGW_DIR})
-    set(LINK_LIBS ${LINK_LIBS})
+    #set(LINK_LIBS ${LINK_LIBS})
 endif()
 
 # -------------------------------------------------------------------------------------------------
@@ -200,17 +200,15 @@ if(${OS_MACOS})
     set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/macos")
     set(VULKAN_LIB "${VULKAN_DIR}/libvulkan.dylib")
 
-    find_program(GLSLC "glslc"
-        HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+    find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+    set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
 elseif(${OS_WINDOWS})
     # set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/windows")
     # set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/windows")
     # set(VULKAN_LIB "${VULKAN_DIR}/vulkan-1.dll")
     find_package(Vulkan REQUIRED)
-    set(LINK_LIBS ${LINK_LIBS} "$ENV{VULKAN_SDK}/lib/vulkan-1.lib")
-
-    find_program(GLSLC "glslc"
-        HINTS "$ENV{VULKAN_SDK}/bin" REQUIRED)
+    set(LINK_LIBS ${LINK_LIBS} ${Vulkan_LIBRARIES})
+    find_program(GLSLC "glslc" HINTS "$ENV{VULKAN_SDK}\\bin" REQUIRED)
 else()
     set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/linux")
     set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/linux")
@@ -221,11 +219,10 @@ else()
         set(VULKAN_LIB "/usr/lib64/libvulkan.so.1")
     endif()
 
-    find_program(GLSLC "glslc"
-        HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+    find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
+    set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
 endif()
 
-set(LINK_LIBS ${LINK_LIBS} "${VULKAN_LIB}")
 
 # ---- msdf ------------------------------------------------------------------------------------
 set(HAS_MSDF 0)
@@ -249,6 +246,7 @@ if(DATOVIZ_WITH_MSDF)
 
     # Freetype is required for msdf-atlas-gen
     # sudo apt install libtinyxml2-dev libfreetype-dev
+    find_package(PNG REQUIRED)
     find_package(Freetype REQUIRED)
 
     # tinyxml2
@@ -269,11 +267,11 @@ if(DATOVIZ_WITH_MSDF)
     )
     FetchContent_MakeAvailable(msdfgen-atlas)
 
-    add_library(msdfgen_core STATIC IMPORTED)
-    set_target_properties(msdfgen_core PROPERTIES
-        IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
-        POSITION_INDEPENDENT_CODE ON
-    )
+    #add_library(msdfgen_core STATIC IMPORTED)
+    #set_target_properties(msdfgen_core PROPERTIES
+    #    IMPORTED_LOCATION "${msdfgen-atlas_SOURCE_DIR}/msdfgen/build/libmsdfgen-core.a"
+    #    POSITION_INDEPENDENT_CODE ON
+    #)
 
     set(INCL_DIRS ${INCL_DIRS}
         ${msdfgen_SOURCE_DIR}
@@ -282,7 +280,7 @@ if(DATOVIZ_WITH_MSDF)
         ${msdfgen-atlas_SOURCE_DIR}/msdf-atlas-gen
         ${FREETYPE_INCLUDE_DIR_ft2build}
     )
-    set(LINK_LIBS ${LINK_LIBS} msdfgen::msdfgen-ext msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
+    set(LINK_LIBS ${LINK_LIBS} msdf-atlas-gen::msdf-atlas-gen ${FREETYPE_LIBRARIES})
 endif()
 
 # -------------------------------------------------------------------------------------------------

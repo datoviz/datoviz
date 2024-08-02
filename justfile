@@ -37,12 +37,13 @@ build release="Debug": symbols
 
 [windows]
 build release="Debug":
+    echo "WINDOWS"
     @set -e
     @unset CC
     @unset CXX
     @mkdir -p build
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -GNinja -DCMAKE_BUILD_TYPE={{release}}
-    @cd build/ && ninja
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && cmake --build .
 #
 
 release:
@@ -907,5 +908,5 @@ clean:
 
 rebuild:
     just rmbuild
-    just build || just build
+    just build #|| just build
 #

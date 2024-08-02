@@ -93,7 +93,11 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
     atlas->ft = initializeFreetype();
 
     // Load font file
+#if OS_WINDOWS
+    atlas->font = loadFontData(atlas->ft, ttf_bytes, (int)ttf_size);
+#else
     atlas->font = loadFontData(atlas->ft, ttf_bytes, ttf_size);
+#endif
 #endif
 
     return atlas;
