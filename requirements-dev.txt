@@ -3,3 +3,4 @@ tqdm
 pillow
 pyparsing
 pytest
+wheel

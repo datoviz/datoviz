@@ -766,6 +766,37 @@ testwheel:
 
 
 # -------------------------------------------------------------------------------------------------
+# Python packaging: Windows
+# -------------------------------------------------------------------------------------------------
+
+[windows]
+wheel: checkstructs
+    #!/usr/bin/env bash
+    set -e
+    PKGROOT="packaging/wheel"
+    DVZDIR="$PKGROOT/datoviz"
+    DISTDIR="dist"
+
+    # Clean up and prepare the directory structure.
+    rm -rf "$PKGROOT" "$DISTDIR"
+    mkdir -p "$PKGROOT" "$DVZDIR" "$DISTDIR"
+
+    # Copy the header files.
+    cp datoviz/__init__.py "$DVZDIR"
+    cp pyproject.toml "$PKGROOT/"
+    cp build/*.dll "$DVZDIR"
+
+    # Build the wheel.
+    pushd "$PKGROOT"
+    pip wheel . -w "../../$DISTDIR"
+    popd
+    just renamewheel
+
+    # Clean up.
+    rm -rf "$PKGROOT"
+
+
+# -------------------------------------------------------------------------------------------------
 # Python packaging: macOS
 # -------------------------------------------------------------------------------------------------
 
