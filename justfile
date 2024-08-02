@@ -158,6 +158,7 @@ version:
 
 bump version:
     #!/usr/bin/env python3
+    from datetime import datetime
     import os
     import re
 
@@ -190,10 +191,14 @@ bump version:
     update_file(include_file, include_patterns_replacements)
     print(f"Updated {include_file}")
 
+    # Get today's date in ISO format (YYYY-MM-DD)
+    today_date = datetime.now().strftime("%Y-%m-%d")
+
     # Update the CITATION.cff file with the new version number
     citation_file = "CITATION.cff"
     citation_patterns_replacements = [
-        (r'^version: .+', f'version: {version}')
+        (r'^version: .+', f'version: {version}'),
+        (r'^date-released: .+', f'date-released: {today_date}'),
     ]
     update_file(citation_file, citation_patterns_replacements)
     print(f"Updated {citation_file}")
