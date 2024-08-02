@@ -54,31 +54,15 @@ Future work (planned for **v0.4 and later**):
 * **🐍 IPython, Jupyter, Qt integration**
 
 
-## History and current status
-
-In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
-
-In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [sparking the idea of a future Vulkan-based visualization library]((https://cyrille.rossant.net/compiler-data-visualization/)).
-
-In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, began experimenting with Vulkan.
-
-In **2021**, the [first experimental version of Datoviz **v0.1** was released](https://cyrille.rossant.net/datoviz/). This initial release laid the groundwork for further development.
-
-Over the next three years, the technology matured, aided by a [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in **2021**.
-
-In **2024**, a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/) facilitated the release of Datoviz **v0.2**. This version was redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs. It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
-
-Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
-
-The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
-
-
-
 <!-- INSTALLATION -->
 
 ## Installation instructions
 
-### Ubuntu 24.04
+```bash
+pip install git+https://github.com/datoviz/datoviz/tree/v0.2x
+```
+
+<!-- ### Ubuntu 24.04
 
 1. Download the .deb package.
 2. Install the .deb package on your system:
@@ -93,18 +77,24 @@ The long-term vision is for high-performance GPU-based 2D/3D scientific visualiz
     # The .deb package should have installed the shared library libdatoviz.so into /usr/local/lib
     # This line loads this shared library and calls the exposed dvz_demo() C function from Python.
     python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
-    ```
+    ``` -->
 
-### macOS (arm64)
-
-TODO.
-
-### Windows
-
-TODO.
 
 
 <!-- DOCUMENTATION -->
+
+
+## Usage
+
+Check Datoviz works by running the demo:
+
+```python
+import datoviz as dvz
+dvz.demo()
+```
+
+Check out the [examples documentation](docs/examples.md) for more usage examples.
+
 
 ## Documentation
 
@@ -151,9 +141,43 @@ TODO.
 * **🔗 Bindings.** While we provide raw ctypes bindings in Python to the Datoviz C API, our goal is to implement as much functionality in C/C++ to offer the same functionality to other languages that may provide Datoviz bindings in the future (Julia, Rust, R, MATLAB...).
 
 
-<!-- FUNDING -->
 
-## Funding
+
+
+
+
+
+
+## History and current status
+
+In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
+
+In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [sparking the idea of a future Vulkan-based visualization library]((https://cyrille.rossant.net/compiler-data-visualization/)).
+
+In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, began experimenting with Vulkan.
+
+In **2021**, the [first experimental version of Datoviz **v0.1** was released](https://cyrille.rossant.net/datoviz/). This initial release laid the groundwork for further development.
+
+Over the next three years, the technology matured, aided by a [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in **2021**.
+
+In **2024**, a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/) facilitated the release of Datoviz **v0.2**. This version was redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs. It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+
+Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0 will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
+
+The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
+
+
+## Contributing
+
+See the [contributing notes](CONTRIBUTING.md).
+
+
+## License
+
+See the [license](LICENSE).
+
+
+## Credits
 
 Datoviz is developed by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 

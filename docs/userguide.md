@@ -1,6 +1,9 @@
 # User guide
 
-This user guide focuses on the Python bindings that closely follow the Datoviz C API. The ctypes bindings are auto-generated from the C function signatures.
+Datoviz is a C-first library.
+It provides auto-generated Python ctypes bindings that closely follow the Datoviz C API.
+
+While this user guide focuses on **Python** for convenience, it can be readily translated into C.
 
 To use a Datoviz C function in Python, you typically need to replace the `dvz_` (functions), `DVZ_` (enumerations), or `Dvz` (structures) prefix with `dvz.` after importing Datoviz with `import datoviz as dvz`.
 

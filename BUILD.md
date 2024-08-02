@@ -61,7 +61,12 @@ _Note_: we have less experience with Windows, improvements welcome.
 2. Install [WinLibs](https://winlibs.com/). Download and install the latest gcc UCRT version with POSIX threads.
 3. Download and decompress [just](https://github.com/casey/just/releases).
 4. Copy the decompressed `just.exe` into `C:\mingw64\bin` (which should have been created by WinLibs).
-5. Install the LunarG Vulkan SDK for Windows.
-6. Open a Git Bash terminal, go to the Datoviz GitHub repository, and type `just build` twice.
-7. Install the Vulkan Runtime for Windows, and copy the decompressed `vulkan-1.dll` into `build/`.
-8. Open a bash terminal, go to `build/`, and type `./datoviz.exe demo`.
+5. Install the [LunarG Vulkan SDK for Windows](https://vulkan.lunarg.com/sdk/home#windows).
+6. Install Python if you don't already have it (for example from the Windows Store).
+7. Open a Git Bash terminal and go to the Datoviz GitHub repository
+8. Type `wsl.exe --install`
+9. Type `wsl.exe --update`
+10. Install [vcpkg](https://vcpkg.io/en/). Ensure the `VCPKG_ROOT` environment variable is set and is also in the `PATH`.
+11. Type `just build`.
+12. There may be a build error, type `just build` again.
+13. Type `build\datoviz.exe demo`.
