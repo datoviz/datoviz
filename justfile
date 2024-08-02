@@ -681,7 +681,7 @@ wheel: checkstructs
 
     # Build the wheel.
     cd $PKGROOT
-    pip wheel . -w "../../$DISTDIR"
+    pip wheel . -w "../../$DISTDIR" --no-deps
     cd -
     just renamewheel
 
@@ -723,7 +723,7 @@ wheelmany: checkstructs
     COPY . \$PKGROOT
 
     # Build the wheel
-    CMD /opt/python/cp38-cp38/bin/pip wheel \$PKGROOT -w "/pkg/dist"
+    CMD /opt/python/cp38-cp38/bin/pip wheel \$PKGROOT -w "/pkg/dist" --no-deps
     EOF
 
     # Build the Docker image and create the wheel
@@ -788,13 +788,13 @@ wheel: checkstructs
 
     # Build the wheel.
     pushd "$PKGROOT"
-    pip wheel . -w "../../$DISTDIR"
+    pip wheel . -w "../../$DISTDIR" --no-deps
     popd
     just renamewheel
 
     # Clean up.
     rm -rf "$PKGROOT"
-
+#
 
 [windows]
 testwheel:
@@ -822,6 +822,7 @@ testwheel:
 
     # Optionally clean up the environment
     rm -rf test_env
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -868,7 +869,7 @@ wheel: checkstructs
 
     # Create the wheel.
     cd $PKGROOT
-    pip wheel . -w "../../$DISTDIR"
+    pip wheel . -w "../../$DISTDIR" --no-deps
 
     # Cleanup.
     cd -
