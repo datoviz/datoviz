@@ -50,13 +50,11 @@ with gzip.open(filepath, 'rb') as f:
 shape = volume_data.shape
 
 # Volume parameters.
-MOUSE_W = 320
-MOUSE_H = 456
-MOUSE_D = 528
+MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
 scaling = 1.0 / MOUSE_D
 
 # Create the 3D texture.
-format = dvz.FORMAT_R8G8B8A8_UNORM  # DVZ_FORMAT_R16_UNORM
+format = dvz.FORMAT_R8G8B8A8_UNORM
 tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
 
 
@@ -82,25 +80,25 @@ dvz.volume_transfer(visual, vec4(1, 0, 0, 0))
 # Add the visual to the panel AFTER setting the visual's data.
 dvz.panel_visual(panel, visual, 0)
 
-# @dvz.mouse
-# def on_mouse(app, window_id, ev):
-#     angles = vec3()
-#     dvz.arcball_angles(arcball, angles)
-#     print(tuple(angles))
-# dvz.app_onmouse(app, on_mouse, None)
-
 
 # -------------------------------------------------------------------------------------------------
-# 4. Run and cleanup
+# 4. Initial panel parameters
 # -------------------------------------------------------------------------------------------------
 
 # Initial arcball angles.
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
+
 # Initial camera position.
 camera = dvz.panel_camera(panel)
 dvz.camera_initial(camera, vec3(0, 0, 1.5), vec3(), vec3(0, 1, 0))
+
 # Update the panel after updating the arcball and camera.
 dvz.panel_update(panel)
+
+
+# -------------------------------------------------------------------------------------------------
+# 5. Run and cleanup
+# -------------------------------------------------------------------------------------------------
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

@@ -59,7 +59,7 @@ text = "Press the arrow keys!"
 n = len(text)
 dvz.glyph_alloc(glyph, n)
 
-# When displaying a single strings, all glyph share the exact same position in 3D space, BUT
+# When displaying a single string, all glyph share the exact same position in 3D space, BUT
 # each glyph has a fixed pixel offset due to its relative position within the string (see below).
 # Here, the string will be displayed at (1, 1, 0) (we will not use the panel camera transform).
 pos = np.c_[np.ones(n), np.ones(n), np.zeros(n)].astype(np.float32)

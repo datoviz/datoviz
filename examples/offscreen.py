@@ -1,53 +1,66 @@
-"""# Offscreen example
+"""# Path offscreen example
 
-This is an example showing how to generate an offscreen image and save it as a PNG.
-
+This path example illustrates how to generate an offscreen image and save it as a PNG.
 
 Illustrates:
 
 - Creating a figure, panel
 - Panzoom interactivity
-- Point visual
+- Path visual
 - Offscreen rendering (save to a PNG image)
 
 """
 
 import numpy as np
-
 import datoviz as dvz
 from datoviz import (
     S_,  # Python string to ctypes char*
 )
 
+offscreen = True
 
 # Boilerplate.
-app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
+app = dvz.app(dvz.APP_FLAGS_OFFSCREEN if offscreen else 0)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
 # Create a figure.
-figure = dvz.figure(scene, 800, 600, 0)
+figure = dvz.figure(scene, 400, 800, 0)
 panel = dvz.panel_default(figure)
+
+# Panzoom interactivity.
 pz = dvz.panel_panzoom(panel)
 
-# Point visual.
-visual = dvz.point(batch, 0)
+# Path visual.
+visual = dvz.path(batch, 0)
 
-# Visual data allocation.
-n = 100_000
-dvz.point_alloc(visual, n)
+# Multiple paths.
+n_paths = 100
+path_size = 1000
+n = n_paths * path_size
+path_lengths = np.full(n_paths, path_size, dtype=np.uint32)
+dvz.path_alloc(visual, n)
 
 # Positions.
-pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
-dvz.point_position(visual, 0, n, pos, 0)
+x = np.linspace(-1, +1, path_size)
+x = np.tile(x, (n_paths, 1))
+w = np.random.uniform(size=(n_paths, 1), low=20, high=100)
+d = 0.5 / (n_paths - 1)
+y = d * np.sin(w * x)
+y += np.linspace(-1, 1, n_paths).reshape((-1, 1))
+z = np.zeros((n_paths, path_size))
+pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
+dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
 
 # Colors.
-color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
-dvz.point_color(visual, 0, n, color, 0)
+t = np.linspace(0, 1, n_paths).astype(np.float32)
+color = np.full((n_paths, 4), 255, dtype=np.uint8)
+dvz.colormap_array(dvz.CMAP_HSV, n_paths, t, 0, 1, color)
+color = np.repeat(color, path_size, axis=0)
+dvz.path_color(visual, 0, n, color, 0)
 
-# Sizes.
-size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
-dvz.point_size(visual, 0, n, size, 0)
+# Line width.
+dvz.path_linewidth(visual, 3.0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual, 0)
@@ -56,7 +69,8 @@ dvz.panel_visual(panel, visual, 0)
 dvz.scene_run(scene, app, 0)
 
 # Screenshot to ./offscreen.png.
-dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
+if offscreen:
+    dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
 
 # Cleanup.
 dvz.scene_destroy(scene)
