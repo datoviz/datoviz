@@ -62,16 +62,6 @@ DvzHost* dvz_host(DvzBackend backend)
     }
 #endif
 
-    // Fill the host.autorun struct with DVZ_RUNNER_* environment variables.
-    // dvz_autorun_env(host);
-
-    // // Take env variable "DVZ_RUNNER_OFFSCREEN" into account, forcing offscreen backend in this
-    // case. if (host->autorun.enable && host->autorun.offscreen)
-    // {
-    //     log_info("forcing offscreen backend because DVZ_RUNNER_OFFSCREEN env variable is set");
-    //     backend = DVZ_BACKEND_OFFSCREEN;
-    // }
-
     // Backend-specific initialization code.
     host->backend = backend;
     backend_init(backend);
@@ -89,7 +79,8 @@ DvzHost* dvz_host(DvzBackend backend)
     create_instance(
         required_extension_count, required_extensions, &host->instance, &host->debug_messenger,
         &host->n_errors);
-    if (host->instance == VK_NULL_HANDLE){
+    if (host->instance == VK_NULL_HANDLE)
+    {
         log_error("unable to create Vulkan instance");
         exit(1);
     }
