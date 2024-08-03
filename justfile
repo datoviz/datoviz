@@ -65,7 +65,7 @@ build release="Debug":
     unset CXX
     mkdir -p build
     cp libs/vulkan/windows/vulkan-1.dll build/
-    
+
     # Copy mingw64 shared libraries.
     MINGW64_DIR="$(dirname $(which gcc))"
     cp "$MINGW64_DIR/libgcc_s_seh-1.dll" build/
@@ -795,7 +795,7 @@ testwheel:
 
     if [ ! -f dist/datoviz-*.whl ]; then
         echo "Build the wheel first."
-        exit(1)
+        exit
     fi
 
     # This command allows connections to the X server from any user.
