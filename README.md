@@ -8,9 +8,9 @@
 
 **⚡️ Datoviz** is a cross-platform, open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the [**Khronos Vulkan**](https://www.vulkan.org/) graphics API and the [**glfw**](https://www.glfw.org/) window library. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
 
-Designed for speed, visual quality, and scalability to datasets comprising up to $10^6-10^8$ points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
+Designed for speed, visual quality, and scalability to datasets comprising millions of points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning binaries, packaging, and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current version is **v0.2**, with documentation available only on GitHub. The `datoviz.org` website still reflects the **deprecated v0.1** documentation, it will be updated soon.
+**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current version is **v0.2**, with documentation available only on GitHub at the moment. The `datoviz.org` website still reflects the **deprecated v0.1** documentation, but it will be updated soon.
 
 **🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with IPython, Jupyter and Qt.
 
@@ -39,8 +39,9 @@ Designed for speed, visual quality, and scalability to datasets comprising up to
 Work in progress (currently planned for **v0.3**):
 
 * **➕ Axes**: ticks, grids, labels
-* **🖱️ More interactivity patterns**
 * **🎨 Colorbars**
+* **🖱️ More interactivity patterns**
+* **📖 More documentation**
 
 Future work (planned for **v0.4 and later**):
 
@@ -85,12 +86,41 @@ pip install git+https://github.com/datoviz/datoviz/tree/v0.2x
 
 ## Usage
 
-Check that Datoviz works correctly by running the demo:
+Simple scatter plot example (points with random positions, colors, and sizes) in Python, which closely follow the C API.
 
 ```python
+import numpy as np
 import datoviz as dvz
-dvz.demo()
+
+app = dvz.app(0)
+batch = dvz.app_batch(app)
+scene = dvz.scene(batch)
+
+figure = dvz.figure(scene, 800, 600, 0)
+panel = dvz.panel_default(figure)
+dvz.panel_panzoom(panel)
+visual = dvz.point(batch, 0)
+
+n = 100_000
+dvz.point_alloc(visual, n)
+
+pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+dvz.point_position(visual, 0, n, pos, 0)
+
+color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
+dvz.point_color(visual, 0, n, color, 0)
+
+size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
+dvz.point_size(visual, 0, n, size, 0)
+
+dvz.panel_visual(panel, visual, 0)
+dvz.scene_run(scene, app, 0)
+dvz.scene_destroy(scene)
+dvz.app_destroy(app)
+
 ```
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/scatter.png)
 
 Check out the [examples documentation](docs/examples.md) for more usage examples.
 

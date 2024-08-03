@@ -172,7 +172,7 @@ The coordinate system is defined as follows:
 
 * **x**: left to right `[-1, +1]`
 * **y**: bottom to top `[-1, +1]`
-* **z**: front to back `[0, +1]`
+* **z**: front to back `[-1, +1]`
 
 Positions must be provided in a normalized coordinate system, known as normalized device coordinates (NDC) in computer graphics terminology. Since your data is typically not in this range, you'll need to manually normalize it to the `[-1, +1]` interval before passing it to Datoviz.
 
