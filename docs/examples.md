@@ -4,9 +4,8 @@
 * [GUI example](#gui-example)
 * [Image example](#image-example)
 * [Mesh example](#mesh-example)
-* [Offscreen example](#offscreen-example)
+* [Path offscreen example](#path-offscreen-example)
 * [Panels example](#panels-example)
-* [Path example](#path-example)
 * [Scatter plot example](#scatter-plot-example)
 * [Spheres example](#spheres-example)
 * [Surface example](#surface-example)
@@ -81,7 +80,7 @@ dvz.app_destroy(app)
 
 ## GUI example
 
-Display a simple GUI to control the size of a disc.
+Display a simple GUI to control the size of a mesh.
 
 Illustrates:
 
@@ -109,6 +108,7 @@ from datoviz import (
     S_,  # Python string to ctypes char*
     vec2,
     vec3,
+    vec4,
 )
 
 
@@ -161,20 +161,33 @@ scene = dvz.scene(batch)
 # NOTE: to use a GUI, use this flag. Don't use it if there is no GUI.
 figure = dvz.figure(scene, 800, 800, dvz.CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
-pz = dvz.panel_panzoom(panel)
+arcball = dvz.panel_arcball(panel)
 
-# Create a square shape.
-color = dvz.cvec4(64, 128, 255, 255)
-shape = dvz.shape_square(color)
+# Cube colors.
+colors = np.array([
+    [255, 0, 0, 255],
+    [0, 255, 0, 255],
+    [0, 0, 255, 255],
+    [255, 255, 0, 255],
+    [255, 0, 255, 255],
+    [0, 255, 255, 255],
+], dtype=np.uint8)
+shape = dvz.shape_cube(colors)
 
 # Create a mesh visual directly instantiated with the shape data.
-visual = dvz.mesh_shape(batch, shape, 0)
+visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)
+dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
+dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
 dvz.panel_visual(panel, visual, 0)
 
 # Associate a GUI callback function with a figure.
 dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+
+# Initial arcball angles.
+dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))
+dvz.panel_update(panel)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)
@@ -352,16 +365,15 @@ dvz.app_destroy(app)
 ```
 </details>
 
-## Offscreen example
+## Path offscreen example
 
-This is an example showing how to generate an offscreen image and save it as a PNG.
-
+This path example illustrates how to generate an offscreen image and save it as a PNG.
 
 Illustrates:
 
 - Creating a figure, panel
 - Panzoom interactivity
-- Point visual
+- Path visual
 - Offscreen rendering (save to a PNG image)
 
 
@@ -373,41 +385,55 @@ Illustrates:
 
 ```python
 import numpy as np
-
 import datoviz as dvz
 from datoviz import (
     S_,  # Python string to ctypes char*
 )
 
+offscreen = True
 
 # Boilerplate.
-app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
+app = dvz.app(dvz.APP_FLAGS_OFFSCREEN if offscreen else 0)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
 # Create a figure.
-figure = dvz.figure(scene, 800, 600, 0)
+figure = dvz.figure(scene, 400, 800, 0)
 panel = dvz.panel_default(figure)
+
+# Panzoom interactivity.
 pz = dvz.panel_panzoom(panel)
 
-# Point visual.
-visual = dvz.point(batch, 0)
+# Path visual.
+visual = dvz.path(batch, 0)
 
-# Visual data allocation.
-n = 100_000
-dvz.point_alloc(visual, n)
+# Multiple paths.
+n_paths = 100
+path_size = 1000
+n = n_paths * path_size
+path_lengths = np.full(n_paths, path_size, dtype=np.uint32)
+dvz.path_alloc(visual, n)
 
 # Positions.
-pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
-dvz.point_position(visual, 0, n, pos, 0)
+x = np.linspace(-1, +1, path_size)
+x = np.tile(x, (n_paths, 1))
+w = np.random.uniform(size=(n_paths, 1), low=20, high=100)
+d = 0.5 / (n_paths - 1)
+y = d * np.sin(w * x)
+y += np.linspace(-1, 1, n_paths).reshape((-1, 1))
+z = np.zeros((n_paths, path_size))
+pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
+dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
 
 # Colors.
-color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
-dvz.point_color(visual, 0, n, color, 0)
+t = np.linspace(0, 1, n_paths).astype(np.float32)
+color = np.full((n_paths, 4), 255, dtype=np.uint8)
+dvz.colormap_array(dvz.CMAP_HSV, n_paths, t, 0, 1, color)
+color = np.repeat(color, path_size, axis=0)
+dvz.path_color(visual, 0, n, color, 0)
 
-# Sizes.
-size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
-dvz.point_size(visual, 0, n, size, 0)
+# Line width.
+dvz.path_linewidth(visual, 3.0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual, 0)
@@ -416,7 +442,8 @@ dvz.panel_visual(panel, visual, 0)
 dvz.scene_run(scene, app, 0)
 
 # Screenshot to ./offscreen.png.
-dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
+if offscreen:
+    dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
 
 # Cleanup.
 dvz.scene_destroy(scene)
@@ -597,83 +624,6 @@ dvz.app_destroy(app)
 ```
 </details>
 
-## Path example
-
-This is an example with multiple paths.
-
-Illustrates:
-
-- Creating a figure, panel
-- Panzoom interactivity
-- Path visual
-
-
-
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/paths.png)
-
-<details>
-<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/paths.py</code></summary>
-
-```python
-import numpy as np
-import datoviz as dvz
-
-
-# Boilerplate.
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-
-# Create a figure.
-figure = dvz.figure(scene, 600, 1200, 0)
-panel = dvz.panel_default(figure)
-
-# Panzoom interactivity.
-pz = dvz.panel_panzoom(panel)
-
-# Path visual.
-visual = dvz.path(batch, 0)
-
-# Multiple paths.
-n_paths = 100
-path_size = 1000
-n = n_paths * path_size
-path_lengths = np.full(n_paths, path_size, dtype=np.uint32)
-dvz.path_alloc(visual, n)
-
-# Positions.
-x = np.linspace(-1, +1, path_size)
-x = np.tile(x, (n_paths, 1))
-w = np.random.uniform(size=(n_paths, 1), low=20, high=100)
-d = 0.5 / (n_paths - 1)
-y = d * np.sin(w * x)
-y += np.linspace(-1, 1, n_paths).reshape((-1, 1))
-z = np.zeros((n_paths, path_size))
-pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
-dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
-
-# Colors.
-t = np.linspace(0, 1, n_paths).astype(np.float32)
-color = np.full((n_paths, 4), 255, dtype=np.uint8)
-dvz.colormap_array(dvz.CMAP_HSV, n_paths, t, 0, 1, color)
-color = np.repeat(color, path_size, axis=0)
-dvz.path_color(visual, 0, n, color, 0)
-
-# Line width.
-dvz.path_linewidth(visual, 5.0)
-
-# Add the visual.
-dvz.panel_visual(panel, visual, 0)
-
-# Run the application.
-dvz.scene_run(scene, app, 0)
-
-# Cleanup.
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
-```
-</details>
-
 ## Scatter plot example
 
 Show points in 2D with various colors and sizes.
@@ -807,7 +757,7 @@ text = "Press the arrow keys!"
 n = len(text)
 dvz.glyph_alloc(glyph, n)
 
-# When displaying a single strings, all glyph share the exact same position in 3D space, BUT
+# When displaying a single string, all glyph share the exact same position in 3D space, BUT
 # each glyph has a fixed pixel offset due to its relative position within the string (see below).
 # Here, the string will be displayed at (1, 1, 0) (we will not use the panel camera transform).
 pos = np.c_[np.ones(n), np.ones(n), np.zeros(n)].astype(np.float32)
@@ -1115,13 +1065,11 @@ with gzip.open(filepath, 'rb') as f:
 shape = volume_data.shape
 
 # Volume parameters.
-MOUSE_W = 320
-MOUSE_H = 456
-MOUSE_D = 528
+MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
 scaling = 1.0 / MOUSE_D
 
 # Create the 3D texture.
-format = dvz.FORMAT_R8G8B8A8_UNORM  # DVZ_FORMAT_R16_UNORM
+format = dvz.FORMAT_R8G8B8A8_UNORM
 tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
 
 
@@ -1147,25 +1095,25 @@ dvz.volume_transfer(visual, vec4(1, 0, 0, 0))
 # Add the visual to the panel AFTER setting the visual's data.
 dvz.panel_visual(panel, visual, 0)
 
-# @dvz.mouse
-# def on_mouse(app, window_id, ev):
-#     angles = vec3()
-#     dvz.arcball_angles(arcball, angles)
-#     print(tuple(angles))
-# dvz.app_onmouse(app, on_mouse, None)
-
 
 # -------------------------------------------------------------------------------------------------
-# 4. Run and cleanup
+# 4. Initial panel parameters
 # -------------------------------------------------------------------------------------------------
 
 # Initial arcball angles.
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
+
 # Initial camera position.
 camera = dvz.panel_camera(panel)
 dvz.camera_initial(camera, vec3(0, 0, 1.5), vec3(), vec3(0, 1, 0))
+
 # Update the panel after updating the arcball and camera.
 dvz.panel_update(panel)
+
+
+# -------------------------------------------------------------------------------------------------
+# 5. Run and cleanup
+# -------------------------------------------------------------------------------------------------
 
 # Run the application.
 dvz.scene_run(scene, app, 0)
