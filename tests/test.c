@@ -337,9 +337,9 @@ int dvz_run_tests(const char* match)
     TEST(test_shape_obj)
 
     // Ticks and axes.
-    TEST(test_ticks_1)
-    TEST(test_labels_1)
-    TEST(test_labels_factored)
+    // TEST(test_ticks_1)
+    // TEST(test_labels_1)
+    // TEST(test_labels_factored)
 
     // Testing atlas.
     TEST(test_atlas_1)

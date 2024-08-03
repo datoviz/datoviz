@@ -46,8 +46,8 @@ build release="Debug":
     @cd build/ && cmake --build .
 #
 
-release:
-    @just build "Release"
+release: rmbuild
+    just build "Release" || just build "Release"
 #
 
 rmbuild:
@@ -60,7 +60,7 @@ clang:
     just build
 #
 
-buildmany release="Debug":
+buildmany release="Release":
     #!/usr/bin/env sh
     set -e
     DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
@@ -664,6 +664,7 @@ renamewheel:
     PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
     TAG="cp3-none-$PLATFORM_TAG"
 
+    echo "Rename $WHEELPATH"
     python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
     rm $WHEELPATH
 #
@@ -744,6 +745,12 @@ wheelmany: checkstructs
     docker run --rm -v $(pwd)/$DISTDIR:/pkg/dist datoviz-wheelmany
     ls -lah $(pwd)/$DISTDIR
 
+    # Fix permissions.
+    sudo chown $(whoami):$(id -gn) $(pwd)/$DISTDIR/*.whl
+
+    # Rename the wheel
+    just renamewheel
+
     # Clean up
     rm -rf $PKGROOT
 #
@@ -753,8 +760,9 @@ testwheel:
     #!/usr/bin/env sh
     set -e
 
-    if [ ! -f dist/datoviz-*any.whl ]; then
-        just wheel
+    if [ ! -f dist/datoviz-*.whl ]; then
+        echo "Build the wheel first."
+        exit(1)
     fi
 
     # This command allows connections to the X server from any user.
@@ -763,9 +771,9 @@ testwheel:
     # Create a Dockerfile for testing
     echo "$(cat Dockerfile_ubuntu)
 
-    COPY dist/datoviz-*any.whl /tmp/
+    COPY dist/datoviz-*.whl /tmp/
     RUN python3 -m venv /tmp/venv
-    RUN /tmp/venv/bin/pip install /tmp/datoviz-*any.whl
+    RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
 
     WORKDIR /root
     CMD [\"/tmp/venv/bin/python\", \"-c\", \"import datoviz; datoviz.demo()\"]
