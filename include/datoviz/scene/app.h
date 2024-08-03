@@ -72,6 +72,10 @@ struct DvzApp
     DvzTimer* timer;
     DvzList* payloads;
     bool is_running;
+
+    // Offscreen GUI.
+    DvzGui* offscreen_gui;
+    DvzMap* offscreen_guis;
 };
 
 

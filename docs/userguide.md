@@ -113,7 +113,7 @@ PRIMITIVE_TOPOLOGY_LINE_STRIP
 PRIMITIVE_TOPOLOGY_TRIANGLE_LIST
 PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
 
-* **Basic visuals** (fast but lower quality): `basic` with an adequate `dvz.PRIMITIVE_TOPOLOGY_*` enumeration, supporting pixels (`POINT_LIST`), aliased thin lines (`LINE_LIST`, `LINE_STRIP`), triangles (`TRIANGLE_LIST`, `TRIANGLE_STRIP`);
+* **Basic visuals** (faster but lower quality than other visuals): `basic` with an adequate `dvz.PRIMITIVE_TOPOLOGY_*` enumeration, supporting pixels (`POINT_LIST`), aliased thin lines (`LINE_LIST`, `LINE_STRIP`), triangles (`TRIANGLE_LIST`, `TRIANGLE_STRIP`);
  * **0D visuals**: `pixel`, `point` (disc), `marker`, `glyph` (string characters rendered on the GPU with multichannel signed distance fields);
  * **1D visuals**: `segment`, `path`;
  * **2D visuals**: `image`;

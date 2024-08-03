@@ -188,6 +188,12 @@ DvzApp* dvz_app(int flags)
         app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
         ANN(app->prt);
     }
+    else
+    {
+        app->offscreen_gui = dvz_gui(app->gpu, DVZ_DEFAULT_QUEUE_RENDER, DVZ_GUI_FLAGS_OFFSCREEN);
+        app->offscreen_guis = dvz_map();
+        // app->offscreen_gui_window = dvz_gui_offscreen(app->offscreen_gui, canvas.images, 0);
+    }
 
     app->batch = dvz_batch();
     ANN(app->batch);
@@ -518,6 +524,16 @@ void dvz_app_destroy(DvzApp* app)
     {
         dvz_client_destroy(app->client);
         dvz_presenter_destroy(app->prt);
+    }
+
+    if (app->offscreen_gui != NULL)
+    {
+        dvz_gui_destroy(app->offscreen_gui);
+    }
+
+    if (app->offscreen_guis != NULL)
+    {
+        dvz_map_destroy(app->offscreen_guis);
     }
 
     dvz_timer_destroy(app->timer);

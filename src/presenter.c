@@ -713,7 +713,7 @@ void dvz_presenter_destroy(DvzPresenter* prt)
     // Destroy the GuiWindow map.
     dvz_map_destroy(prt->maps.guis);
 
-    // // Destroy the GUI.
+    // Destroy the GUI.
     if (prt->gui != NULL)
         dvz_gui_destroy(prt->gui);
 
