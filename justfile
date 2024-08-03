@@ -21,7 +21,29 @@ default:
 # -------------------------------------------------------------------------------------------------
 
 checkstructs:
-    @python -c "from datoviz import _check_struct_sizes; _check_struct_sizes('build/struct_sizes.json');"
+    #!/usr/bin/env python
+    import ctypes
+    import json
+
+    def _check_struct_sizes(json_path):
+        """Check the size of the ctypes structs and unions with respect to the sizes output by
+        the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
+        """
+        with open(json_path, "r") as f:
+            sizes = json.load(f)
+        import datoviz as dvz
+        for name, size_c in sizes.items():
+            obj = getattr(dvz, name)
+            assert obj
+            size_ctypes = ctypes.sizeof(obj)
+            assert size_ctypes > 0
+            if size_c != size_ctypes:
+                raise ValueError(
+                    f"Mismatch struct/union size error with {name}, "
+                    f"C struct/union size is {size_c} whereas the ctypes size is {size_ctypes}")
+        print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
+
+    _check_struct_sizes('build/struct_sizes.json')
 #
 
 [unix]
@@ -37,16 +59,27 @@ build release="Debug": symbols
 
 [windows]
 build release="Debug":
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p build
-    @cp libs/vulkan/windows/vulkan-1.dll build/
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
-    @cd build/ && cmake --build .
+    #!/usr/bin/env sh
+    set -e
+    unset CC
+    unset CXX
+    mkdir -p build
+    cp libs/vulkan/windows/vulkan-1.dll build/
+    
+    # Copy mingw64 shared libraries.
+    MINGW64_DIR="$(dirname $(which gcc))"
+    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" build/
+    cp "$MINGW64_DIR/libstdc++-6.dll" build/
+    cp "$MINGW64_DIR/libwinpthread-1.dll" build/
+
+    pushd build/
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
+    cmake --build .
+    popd
 #
 
-release: rmbuild
+release:
+    @#mv build build_debug
     just build "Release" || just build "Release"
 #
 
@@ -157,7 +190,7 @@ version:
 #
 
 bump version:
-    #!/usr/bin/env python3
+    #!/usr/bin/env python
     from datetime import datetime
     import os
     import re
@@ -289,7 +322,7 @@ headers:
 #
 
 symbols:
-    #!/usr/bin/env python3
+    #!/usr/bin/env python
     import json
     with open("tools/headers.json", "r") as f:
         headers = json.load(f)
@@ -629,7 +662,7 @@ ctypes:
     @python tools/generate_ctypes.py
 #
 
-fullctypes: build headers ctypes checkstructs
+fullctypes: headers ctypes checkstructs
 #
 
 
@@ -675,7 +708,7 @@ renamewheel:
 # -------------------------------------------------------------------------------------------------
 
 [linux]
-wheel: checkstructs
+wheel: checkstructs && showwheel
     #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
@@ -702,7 +735,7 @@ wheel: checkstructs
 #
 
 [linux]
-wheelmany: checkstructs
+wheelmany: checkstructs && showwheel
     #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
@@ -795,7 +828,7 @@ testwheel:
 # -------------------------------------------------------------------------------------------------
 
 [windows]
-wheel: checkstructs
+wheel: checkstructs && showwheel
     #!/usr/bin/env bash
     set -e
     PKGROOT="packaging/wheel"
@@ -846,7 +879,9 @@ testwheel:
     pip install dist/datoviz-*.whl
 
     # Run a test command
+    pushd test_env
     python -c "import datoviz; datoviz.demo()"
+    popd
 
     # Deactivate the virtual environment
     deactivate

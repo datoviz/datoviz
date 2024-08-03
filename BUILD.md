@@ -76,9 +76,11 @@ Requirements:
 Instructions:
 
 1. Copy the decompressed `just.exe` into `C:\mingw64\bin` (which should have been created by WinLibs).
-2. Clone the Datoviz GitHub repository in a folder.
-3. Open a Git Bash terminal and go to that folder.
-4. Type:
+2. Open a Git Bash terminal.
+3. Add this to your `~/.bash_profile`: `export VCPKG_ROOT=/path/to/vcpkg` after putting the path to vcpkg.
+4. Clone the Datoviz GitHub repository in a folder.
+5. Go to that folder in the terminal.
+6. Type:
 
 ```bash
 wsl.exe --install

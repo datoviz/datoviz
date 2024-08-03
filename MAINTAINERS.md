@@ -45,10 +45,6 @@ just wheelmany
 To test the `manylinux` wheel:
 
 ```bash
-# Show the contents of the wheel.
-just showwheel
-
-# Try installing and running the wheel in an Ubuntu container.
 just testwheel
 ```
 

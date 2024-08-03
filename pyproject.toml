@@ -23,6 +23,9 @@ classifiers = [
 packages = ["datoviz"]
 package-data = {"datoviz" = [
     "lib*",
+    "*.so",
+    "*.dll",
+    "*.dylib",
     "*.json",
 ]}
 

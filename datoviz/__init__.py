@@ -7,7 +7,6 @@ __version__ = "0.2.0"
 # Imports
 # ===============================================================================
 
-import json
 import ctypes
 from ctypes import POINTER as P_
 import faulthandler
@@ -74,7 +73,17 @@ if not LIB_PATH.exists():
 # ===============================================================================
 
 assert LIB_PATH.exists()
-dvz = ctypes.cdll.LoadLibrary(LIB_PATH)
+try:
+    dvz = ctypes.cdll.LoadLibrary(LIB_PATH)
+except Exception as e:
+    print(f"Error loading {LIB_PATH}: {e}")
+    class DVZ:
+        def __getattr__(self, k):
+            return DVZ()
+
+        def __setattr__(self, k, v):
+            pass
+    dvz = DVZ()
 
 # on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
 if PLATFORM == "macos":
@@ -171,24 +180,6 @@ def vec4(x: float = 0, y: float = 0, z: float = 0, w: float = 0):
 
 def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
     return (ctypes.c_uint8 * 4)(r, g, b, a)
-
-
-def _check_struct_sizes(json_path):
-    """Check the size of the ctypes structs and unions with respect to the sizes output by
-    the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
-    """
-    with open(json_path, "r") as f:
-        sizes = json.load(f)
-    for name, size_c in sizes.items():
-        obj = globals().get(name)
-        assert obj
-        size_ctypes = ctypes.sizeof(obj)
-        # print(name, size_c, size_ctypes)
-        if size_c != size_ctypes:
-            raise ValueError(
-                f"Mismatch struct/union size error with {name}, "
-                f"C struct/union size is {size_c} whereas the ctypes size is {size_ctypes}")
-    print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
 
 
 # ===============================================================================
