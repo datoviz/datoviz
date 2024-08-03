@@ -970,12 +970,19 @@ testwheel vm_ip_address:
 
     # Connect to the VM and install the .pkg file
     ssh -T $USER@$IP << 'EOF'
+
     TMPDIR=/tmp/datoviz_example
     WHEEL_FILENAME=$(ls $TMPDIR/*.whl)
-    PYTHONPATH=~/.local/lib/python3.8/site-packages
-    mkdir -p $PYTHONPATH
-    python3 -m pip install "$WHEEL_FILENAME" --upgrade --target $PYTHONPATH
-    PYTHONPATH=$PYTHONPATH python3 -c "import datoviz; import datoviz; datoviz.demo()"
+
+    VENV=/tmp/venv
+    rm -rf $VENV
+    mkdir -p $VENV
+    python3 -m venv $VENV
+    #PYTHONPATH=~/.local/lib/python3.8/site-packages
+    #mkdir -p $PYTHONPATH
+    $VENV/bin/python3 -m pip install "$WHEEL_FILENAME" --upgrade # --target $PYTHONPATH
+    $VENV/bin/python3 -c "import datoviz; import datoviz; datoviz.demo()"
+    # PYTHONPATH=$PYTHONPATH python3 -c "import datoviz; import datoviz; datoviz.demo()"
     EOF
 #
 
