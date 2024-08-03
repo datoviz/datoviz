@@ -14,6 +14,8 @@ Illustrates:
 - Shape transforms
 - Dynamic shape and mesh update
 
+*Note*: the screenshot does not show the GUI at the moment, this will be fixed soon.
+
 """
 
 import numpy as np
