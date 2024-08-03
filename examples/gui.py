@@ -1,6 +1,6 @@
 """# GUI example
 
-Display a simple GUI to control the size of a disc.
+Display a simple GUI to control the size of a mesh.
 
 Illustrates:
 
@@ -22,6 +22,7 @@ from datoviz import (
     S_,  # Python string to ctypes char*
     vec2,
     vec3,
+    vec4,
 )
 
 
@@ -74,20 +75,33 @@ scene = dvz.scene(batch)
 # NOTE: to use a GUI, use this flag. Don't use it if there is no GUI.
 figure = dvz.figure(scene, 800, 800, dvz.CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
-pz = dvz.panel_panzoom(panel)
+arcball = dvz.panel_arcball(panel)
 
-# Create a square shape.
-color = dvz.cvec4(64, 128, 255, 255)
-shape = dvz.shape_square(color)
+# Cube colors.
+colors = np.array([
+    [255, 0, 0, 255],
+    [0, 255, 0, 255],
+    [0, 0, 255, 255],
+    [255, 255, 0, 255],
+    [255, 0, 255, 255],
+    [0, 255, 255, 255],
+], dtype=np.uint8)
+shape = dvz.shape_cube(colors)
 
 # Create a mesh visual directly instantiated with the shape data.
-visual = dvz.mesh_shape(batch, shape, 0)
+visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)
+dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
+dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
 dvz.panel_visual(panel, visual, 0)
 
 # Associate a GUI callback function with a figure.
 dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+
+# Initial arcball angles.
+dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))
+dvz.panel_update(panel)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)
