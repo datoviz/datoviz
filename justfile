@@ -443,7 +443,7 @@ bundledeps lib="build/libdatoviz.dylib":
     # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
     # the library to point to these local copies.
     target=$(dirname {{lib}})
-    otool -L {{lib}} | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
+    otool -L {{lib}} | grep -E "brew|rpath|local/opt" | awk '{print $1}' | while read -r dep; do
         filename=$(basename "$dep")
         if [[ "$dep" != *"rpath"* ]]; then
             echo "Copying $dep to $target/"
