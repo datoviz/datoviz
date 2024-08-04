@@ -266,7 +266,7 @@ manylinux release="Release":
     # sudo chown $(whoami):$(id -gn) $DISTDIR/*.whl
 
     # Rename the wheel
-    just renamewheel
+    just renamewheel "manylinux_2_28_x86_64"
 #
 
 [windows]
@@ -700,7 +700,7 @@ showwheel:
     @unzip -l dist/*.whl
 #
 
-renamewheel:
+renamewheel platform_tag='':
     #!/usr/bin/env sh
     set -e
 
@@ -711,7 +711,14 @@ renamewheel:
     fi
 
     WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
-    PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+
+    if [ -z "{{platform_tag}}" ]; then
+        PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+    else
+        PLATFORM_TAG="{{platform_tag}}"
+    fi
+    echo $PLATFORM_TAG
+
     TAG="cp3-none-$PLATFORM_TAG"
 
     echo "Rename $WHEELPATH"
