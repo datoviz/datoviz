@@ -151,6 +151,7 @@ set(SCENE_LIBS ${LINK_LIBS})
 
 # ---- OS-specific linking libraries --------------------------------------------------------------
 if(${OS_MACOS})
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 12)
     link_directories(/usr/local/lib)
 endif()
 
@@ -349,7 +350,6 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wno-unused-variable \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
-    -Wno-unused-but-set-variable \
     -Wno-strict-overflow \
     ")
 
@@ -376,6 +376,7 @@ if(CC_GCC)
         -Wno-stringop-overread \
         -fvisibility=hidden \
         -fdiagnostics-color=always \
+        -Wno-unused-but-set-variable \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
 
     # NOTES: static analysis for later?

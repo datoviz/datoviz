@@ -12,21 +12,27 @@ sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-for
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
 # Clone the Datoviz repo and build.
-git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
+git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
 cd datoviz
 
 # Build Python requirements
 pip install -r requirements-dev.txt
 
-# This call will fail, but the build will succeed the second time.
+# NOTE: this call will fail, but the build will succeed the second time.
 # Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
 just build
 
 # That one should succeed.
 just build
 
-# Compile and run an example.
+# Try a demo.
+just demo
+
+# Compile and run a C example.
 just example scatter
+
+# Run the demo from Python.
+python -c "import datoviz; datoviz.demo()"
 ```
 
 
@@ -35,29 +41,72 @@ just example scatter
 ```bash
 # Install brew if you don't have it already.
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/cyrille/.zprofile
+(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
-# Install dependencies.
+# Install build dependencies.
 brew install just cmake ccache ninja freetype clang-format tree
 
 # Clone the Datoviz repo.
-git clone https://github.com/datoviz/datoviz.git@v0.2x --recursive
+git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
 cd datoviz
 
 # Build Python requirements
 pip install -r requirements-dev.txt
 
-# This call will fail, but the build will succeed the second time.
+# NOTE: this call will fail, but the build will succeed the second time.
 # Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
 just build
 
 # That one should succeed.
 just build
 
-# Compile and run an example.
+# Try a demo.
+just demo
+
+# Compile and run a C example.
 just example scatter
+
+# Run the demo from Python.
+python -c "import datoviz; datoviz.demo()"
 ```
+
+
+## macOS (Intel x86-64)
+
+```bash
+# Install brew if you don't have it already.
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# Install build dependencies.
+brew install just cmake ccache ninja freetype clang-format tree
+
+# Clone the Datoviz repo.
+git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
+cd datoviz
+
+# Build Python requirements
+pip install -r requirements-dev.txt
+
+# NOTE: this call will fail, but the build will succeed the second time.
+# Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
+just build
+
+# That one should succeed.
+just build
+
+# Try a demo.
+just demo
+
+# Compile and run a C example.
+just example scatter
+
+# Run the demo from Python.
+python -c "import datoviz; datoviz.demo()"
+```
+
 
 ## Windows
 
@@ -88,5 +137,8 @@ wsl.exe --update
 pip install -r requirements-dev.txt
 just build  # this one may fail, try again below:
 just build
+# Try the builtin demo.
 build\datoviz.exe demo
+# Try running the demo from Python.
+python -c "import datoviz; datoviz.demo()"
 ```

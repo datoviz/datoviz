@@ -47,7 +47,7 @@ checkstructs:
 #
 
 [unix]
-build release="Debug": symbols
+build release="Debug":
     @set -e
     @unset CC
     @unset CXX
@@ -78,8 +78,7 @@ build release="Debug":
     popd
 #
 
-release:
-    @#mv build build_debug
+release: headers symbols
     just build "Release" || just build "Release"
 #
 

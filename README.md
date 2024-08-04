@@ -58,6 +58,15 @@ Future work (planned for **v0.4 and later**):
 
 ## Installation instructions
 
+Requirements:
+
+- A supported OS (Linux, macOS 12+, Windows 10+)
+- A Vulkan-capable graphics chipset (either integrated or dedicated graphics process unit)
+- Python and NumPy
+
+_Note_: Since Datoviz v0.2, you no longer need to install the Vulkan SDK or to manually build the library.
+
+
 ```bash
 pip install git+https://github.com/datoviz/datoviz/tree/v0.2x
 ```
