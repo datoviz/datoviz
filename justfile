@@ -282,7 +282,7 @@ build release="Debug":
 # -------------------------------------------------------------------------------------------------
 
 [linux]
-deb: checkstructs
+deb: checkstructs && rpath
     #!/usr/bin/env sh
     set -e
     DEB="packaging/deb/"
@@ -315,13 +315,6 @@ deb: checkstructs
     # Copy the Python ctypes wrapper/
     cp -a datoviz/__init__.py $DEB$LIBDIR/__init__.py
 
-    # Remove the first rpath
-    patchelf --remove-rpath $LIB
-
-    # Show the dependencies of the packaged datoviz library.
-    echo "Dependencies:"
-    ldd $LIB | sort -r
-
     # Create the post-install script.
     echo "#!/usr/bin/env sh
     SITE_PACKAGES=\$(python3 -m site --user-site)
@@ -336,6 +329,7 @@ deb: checkstructs
     TEMP_DIR=$(mktemp -d)
     dpkg-deb -x "packaging/deb.deb" "$TEMP_DIR"
     tree -h "$TEMP_DIR"
+    ldd "$TEMP_DIR/usr/local/lib/datoviz/libdatoviz.so" | sort -r
     rm -rf "$TEMP_DIR"
 
     # Move it.
@@ -819,11 +813,13 @@ deps:
 
 [macos]
 rpath:
+    @echo "Printing RPATH:"
     @otool -l build/libdatoviz.dylib | awk '/LC_RPATH/ {getline; getline; print $2}'
 #
 
 [linux]
 rpath:
+    @echo "Printing RPATH:"
     @objdump -x build/libdatoviz.so | grep 'R.*PATH'
 #
 
