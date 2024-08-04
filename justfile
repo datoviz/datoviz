@@ -171,7 +171,9 @@ buildmany release="Release":
     rm $BUILD_DIR/Dockerfile
 #
 
+
 pydev: # install the Python binding on a development machine
+    @pip install -r requirements-dev.txt
     @pip install -e .
 #
 
@@ -331,8 +333,14 @@ symbols:
                 f.write(f"{function}\n")
 #
 
+[linux]
 exports:
     @nm -D --defined-only build/libdatoviz.so
+#
+
+[macos]
+exports:
+    @nm -gU build/libdatoviz.dylib
 #
 
 [macos]
@@ -950,11 +958,34 @@ wheel: checkstructs
 
 
 [macos]
-testwheel vm_ip_address:
+testwheel vm_ip_address="":
     #!/usr/bin/env sh
     set -e
     IP="{{vm_ip_address}}"
     TMPDIR=/tmp/datoviz_example
+
+    if [ ! $IP]; then
+        # Create a new virtual environment
+        python -m venv test_env
+
+        # Activate the virtual environment
+        source test_env/bin/activate
+
+        # Install the wheel
+        pip install dist/datoviz-*.whl
+
+        # Run a test command
+        pushd test_env
+        python -c "import datoviz; datoviz.demo()"
+        popd
+
+        # Deactivate the virtual environment
+        deactivate
+
+        # Optionally clean up the environment
+        rm -rf test_env
+        exit
+    fi
 
     # Check if the pkg package exists, if not, build it
     if ! ls dist/datoviz*.whl 1> /dev/null 2>&1; then

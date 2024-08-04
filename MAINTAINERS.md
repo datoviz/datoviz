@@ -16,7 +16,7 @@ Requirements:
 To build a release binary, see the [build instructions](BUILD.md):
 
 ```bash
-pip install -r requirements-dev.txt
+just pydev
 just release
 ```
 
@@ -59,11 +59,11 @@ Requirements:
 To build a release binary, see the [build instructions](BUILD.md):
 
 ```bash
-pip install -r requirements-dev.txt
+just pydev
 just release
 ```
 
-To build a `.pkg` Debian installable package for development (with C headers and shared libraries):
+To build a `.pkg` macOS installable package for development (with C headers and shared libraries):
 
 ```bash
 just pkg
@@ -75,7 +75,7 @@ To build a macOS Python wheel:
 just wheel
 ```
 
-To test macOS packages in an isolated environment, you can use UTM:
+To test the macOS package in an isolated environment:
 
 1. Install sshpass:
 
@@ -103,6 +103,47 @@ just testpkg 192.168.64.4
 
 The virtual machine should show the Datoviz demo in a window.
 
+To test the macOS wheel, you can either test in a virtual Python environment, or in a virtual machine using UTM.
+
+To test the macOS wheel in a virtual Python environment:
+
+```bash
+just testwheel
+```
+
+To test the macOS wheel in a virtual machine, set up the virtual machine as indicated above, then run (replacing the IP address with your virtual machine's IP):
+
+```bash
+just testwheel 192.168.64.4
+```
+
+
+### macOS (Intel x86-64)
+
+Requirements:
+
+* Homebrew
+* [just](https://github.com/casey/just/releases)
+
+To build a release binary, see the [build instructions](BUILD.md):
+
+```bash
+just pydev
+just release
+```
+
+To build a `.pkg` macOS installable package for development (with C headers and shared libraries):
+
+```bash
+just pkg
+```
+
+To build a macOS Python wheel:
+
+```bash
+just wheel
+```
+
 
 ### Windows
 
@@ -126,7 +167,7 @@ To build a Windows Python wheel, open a Git Bash and type:
 ```bash
 # see https://stackoverflow.com/a/36530750/1595060
 echo "alias python='winpty python.exe'" >> ~/.bash_profile
-pip install -r requirements-dev.txt
+just pydev
 just wheel
 ```
 
