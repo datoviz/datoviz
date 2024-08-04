@@ -130,13 +130,28 @@ clang:
     just build
 #
 
-[unix]
+[linux]
 build release="Debug":
     @set -e
     @unset CC
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
+    @cp -a libs/vulkan/macos/libvulkan* build/
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && ninja
+#
+
+[macos]
+build release="Debug":
+    @set -e
+    @unset CC
+    @unset CXX
+    @mkdir -p docs/images
+    @mkdir -p build
+    @cp -a libs/vulkan/macos/libvulkan.1.*dylib build/
+    @cp -a libs/vulkan/macos/libMoltenVK.dylib build/
+    @cp -a libs/vulkan/macos/MoltenVK_icd.json build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
@@ -418,6 +433,34 @@ testwheel:
 # -------------------------------------------------------------------------------------------------
 
 [macos]
+bundledeps lib="build/libdatoviz.dylib":
+    #!/usr/bin/env sh
+    # Copy the dependencies and adjust their rpaths.
+
+    # ALTERNATIVE:
+    # cp -a $(otool -L build/libdatoviz.dylib | grep brew | awk '{print $1}') $PKGROOT$LIBDIR
+
+    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
+    # the library to point to these local copies.
+    target=$(dirname {{lib}})
+    otool -L {{lib}} | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
+        filename=$(basename "$dep")
+        if [[ "$dep" != *"rpath"* ]]; then
+            echo "Copying $dep to $target/"
+            cp -a $dep $target
+        fi
+        install_name_tool -change "$dep" "@loader_path/$filename" {{lib}}
+    done
+
+    # Remove the rpath that links to a build directory.
+    target_rpath=$(otool -l {{lib}} | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
+    if [ -n "$target_rpath" ]; then
+        install_name_tool -delete_rpath "$target_rpath" {{lib}}
+    fi
+    chmod 775 $target/*
+#
+
+[macos]
 pkg: checkstructs
     #!/usr/bin/env sh
     set -e
@@ -442,13 +485,11 @@ pkg: checkstructs
     #define INCLUDE_VK_DRIVER_FILES
     ' "$PKGROOT$INCLUDEDIR/datoviz.h"
 
+    # Copy the built files.
     cp -a datoviz/__init__.py $PKGROOT$LIBDIR/__init__.py
-    cp -a libs/vulkan/macos/MoltenVK_icd.json $PKGROOT$LIBDIR
-
-    # Copy the shared libraries.
-    cp -a build/libdatoviz.*dylib $PKGROOT$LIBDIR
-    cp -a libs/vulkan/macos/libvulkan.*dylib $PKGROOT$LIBDIR
-    cp -a libs/vulkan/macos/libMoltenVK.*dylib $PKGROOT$LIBDIR
+    cp -a build/MoltenVK_icd.json $PKGROOT$LIBDIR
+    cp -a build/*dylib $PKGROOT$LIBDIR
+    ls -lah $PKGROOT$LIBDIR
 
     # Post-install script for Python installation
     # Create a symlink from the local site-packages to /usr/local/lib/datoviz so that
@@ -467,26 +508,8 @@ pkg: checkstructs
     chmod +x $PKGSCRIPTS/postinstall
 
     # Copy the dependencies and adjust their rpaths.
-    # ALTERNATIVE:
-    # cp -a $(otool -L build/libdatoviz.dylib | grep brew | awk '{print $1}') $PKGROOT$LIBDIR
-    # Path to libdatoviz.
     LIB=$PKGROOT$LIBDIR/libdatoviz.dylib
-    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
-    # libdatoviz to point to these local copies.
-    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
-        filename=$(basename "$dep")
-        echo $filename
-        if [[ "$dep" != *"rpath"* ]]; then
-            cp -a $dep $PKGROOT$LIBDIR/
-        fi
-        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
-    done
-
-    # Remove the rpath that links to a build directory.
-    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
-    if [ -n "$target_rpath" ]; then
-        install_name_tool -delete_rpath "$target_rpath" $LIB
-    fi
+    just bundledeps $LIB
 
     # Show the dependencies of the packaged datoviz library.
     echo "Dependencies:"
@@ -562,28 +585,15 @@ wheel: checkstructs
     cp datoviz/__init__.py $DVZDIR
     cp pyproject.toml $PKGROOT/
     cp build/libdatoviz.dylib $DVZDIR
-    cp libs/vulkan/macos/libvulkan.1.dylib $DVZDIR
-    cp libs/vulkan/macos/libMoltenVK.dylib $DVZDIR
-    cp libs/vulkan/macos/MoltenVK_icd.json $DVZDIR
+    cp build/libvulkan.1.dylib $DVZDIR
+    cp build/libfreetype.6.dylib $DVZDIR
+    cp build/libpng16.16.dylib $DVZDIR
+    cp build/libMoltenVK.dylib $DVZDIR
+    cp build/MoltenVK_icd.json $DVZDIR
 
     # Copy the dependencies and adjust their rpaths.
-    # Path to libdatoviz.
     LIB=$DVZDIR/libdatoviz.dylib
-    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
-    # libdatoviz to point to these local copies.
-    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
-        filename=$(basename "$dep")
-        if [[ "$dep" != *"rpath"* ]]; then
-            cp -a $dep $DVZDIR
-        fi
-        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
-    done
-
-    # Remove the rpath that links to a build directory.
-    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
-    if [ -n "$target_rpath" ]; then
-        install_name_tool -delete_rpath "$target_rpath" $LIB
-    fi
+    just bundledeps $LIB
 
     # Create the wheel.
     cd $PKGROOT
@@ -609,6 +619,7 @@ testwheel vm_ip_address="":
 
     if [ ! $IP]; then
         # Create a new virtual environment
+        rm -rf test_env
         python -m venv test_env
 
         # Activate the virtual environment

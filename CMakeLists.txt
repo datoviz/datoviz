@@ -60,7 +60,6 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -754,6 +753,7 @@ target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 # LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
 # )
 if(${OS_LINUX})
+    set(CMAKE_INSTALL_RPATH "$ORIGIN")
     target_link_options(libdatoviz PRIVATE
         -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
 endif()
