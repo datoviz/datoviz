@@ -17,165 +17,8 @@ default:
 
 
 # -------------------------------------------------------------------------------------------------
-# Building
+# Versioning
 # -------------------------------------------------------------------------------------------------
-
-checkstructs:
-    #!/usr/bin/env python
-    import ctypes
-    import json
-
-    def _check_struct_sizes(json_path):
-        """Check the size of the ctypes structs and unions with respect to the sizes output by
-        the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
-        """
-        with open(json_path, "r") as f:
-            sizes = json.load(f)
-        import datoviz as dvz
-        for name, size_c in sizes.items():
-            obj = getattr(dvz, name)
-            assert obj
-            size_ctypes = ctypes.sizeof(obj)
-            assert size_ctypes > 0
-            if size_c != size_ctypes:
-                raise ValueError(
-                    f"Mismatch struct/union size error with {name}, "
-                    f"C struct/union size is {size_c} whereas the ctypes size is {size_ctypes}")
-        print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
-
-    _check_struct_sizes('build/struct_sizes.json')
-#
-
-[unix]
-build release="Debug":
-    @set -e
-    @unset CC
-    @unset CXX
-    @mkdir -p docs/images
-    @mkdir -p build
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
-    @cd build/ && ninja
-#
-
-[windows]
-build release="Debug":
-    #!/usr/bin/env sh
-    set -e
-    unset CC
-    unset CXX
-    mkdir -p build
-    cp libs/vulkan/windows/vulkan-1.dll build/
-
-    # Copy mingw64 shared libraries.
-    MINGW64_DIR="$(dirname $(which gcc))"
-    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" build/
-    cp "$MINGW64_DIR/libstdc++-6.dll" build/
-    cp "$MINGW64_DIR/libwinpthread-1.dll" build/
-
-    pushd build/
-    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
-    cmake --build .
-    popd
-#
-
-release: headers symbols
-    just build "Release" || just build "Release"
-#
-
-rmbuild:
-    rm -rf ./build/
-#
-
-clang:
-    export CC=/usr/bin/clang
-    export CXX=/usr/bin/clang++
-    just build
-#
-
-buildmany release="Release":
-    #!/usr/bin/env sh
-    set -e
-    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
-    BUILD_DIR="build_many"
-    CONTAINER_NAME="datoviz-buildmany"
-
-    # Create the build directory
-    mkdir -p $BUILD_DIR $BUILD_DIR/$BUILD_DIR
-    # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
-    rsync -a -v --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
-        bin cli cmake data external include libs src tests tools \
-        CMakeLists.txt *.map "$BUILD_DIR/"
-
-    # Create a temporary Dockerfile
-    cat <<EOF > $BUILD_DIR/Dockerfile
-    FROM $DOCKER_IMAGE
-
-    # Install dependencies
-    RUN yum install -y epel-release
-    RUN dnf config-manager --set-enabled powertools && \
-        dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-        dnf --enablerepo=epel group
-    RUN yum install --enablerepo=raven-extras -y \
-        ccache \
-        cmake \
-        ninja-build \
-        gcc \
-        gcc-c++ \
-        libXrandr-devel \
-        libXinerama-devel \
-        libXcursor-devel \
-        libXi-devel \
-        freetype-devel \
-        vulkan \
-        vulkan-tools \
-        vulkan-headers \
-        vulkan-loader \
-        glslc
-
-    # Set up environment variables
-    ENV CCACHE_DIR=/ccache
-    ENV PATH=/usr/lib/ccache:\$PATH
-
-    # Copy source files into the container
-    COPY . /workspace
-
-    # Set the working directory
-    WORKDIR /workspace
-
-    # Build the project
-    RUN mkdir -p $BUILD_DIR && \
-        cd $BUILD_DIR && \
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release || true && \
-        ninja || true
-    RUN cd $BUILD_DIR && \
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
-        ninja
-
-    EOF
-
-    # Build the Docker image
-    docker build -t $CONTAINER_NAME $BUILD_DIR
-
-    # Run the Docker container and keep it running after the build
-    docker run --name $CONTAINER_NAME-container $CONTAINER_NAME
-
-    # Copy the built files from the container to the host directory
-    docker cp -L $CONTAINER_NAME-container:/workspace/$BUILD_DIR/libdatoviz.so $BUILD_DIR/
-    docker cp -L $CONTAINER_NAME-container:/usr/lib64/libvulkan.so.1 $BUILD_DIR/libvulkan.so
-    docker cp -L $CONTAINER_NAME-container:/usr/bin/glslc $BUILD_DIR/
-
-    # Clean up the container
-    docker rm $CONTAINER_NAME-container
-
-    # Clean up the temporary Dockerfile
-    rm $BUILD_DIR/Dockerfile
-#
-
-
-pydev: # install the Python binding on a development machine
-    @pip install -r requirements-dev.txt
-    @pip install -e .
-#
 
 version:
     #!/usr/bin/env sh
@@ -252,171 +95,186 @@ bump version:
 
 
 # -------------------------------------------------------------------------------------------------
-# Tests
+# Building
 # -------------------------------------------------------------------------------------------------
 
-[linux]
-test test_name="":
-    ./build/datoviz test {{test_name}}
+checkstructs:
+    #!/usr/bin/env python
+    import ctypes
+    import json
+
+    def _check_struct_sizes(json_path):
+        """Check the size of the ctypes structs and unions with respect to the sizes output by
+        the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
+        """
+        with open(json_path, "r") as f:
+            sizes = json.load(f)
+        import datoviz as dvz
+        for name, size_c in sizes.items():
+            obj = getattr(dvz, name)
+            assert obj
+            size_ctypes = ctypes.sizeof(obj)
+            assert size_ctypes > 0
+            if size_c != size_ctypes:
+                raise ValueError(
+                    f"Mismatch struct/union size error with {name}, "
+                    f"C struct/union size is {size_c} whereas the ctypes size is {size_ctypes}")
+        print(f"Sizes of {len(sizes)} structs/unions successfully checked.")
+
+    _check_struct_sizes('build/struct_sizes.json')
 #
 
-[macos]
-test test_name="":
-    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
+clang:
+    export CC=/usr/bin/clang
+    export CXX=/usr/bin/clang++
+    just build
 #
-
-[windows]
-test test_name="":
-    ./build/datoviz.exe test {{test_name}}
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Info
-# -------------------------------------------------------------------------------------------------
 
 [unix]
-info:
-    @./build/datoviz info
+build release="Debug":
+    @set -e
+    @unset CC
+    @unset CXX
+    @mkdir -p docs/images
+    @mkdir -p build
+    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    @cd build/ && ninja
+#
+
+release: headers symbols
+    just build "Release" || just build "Release"
+#
+
+[linux]
+manylinux release="Release":
+    #!/usr/bin/env sh
+    set -e
+    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
+    BUILD_DIR="build_many"
+    IMAGE_NAME="datoviz-manylinux"
+    DISTDIR="dist"
+
+    mkdir -p $BUILD_DIR
+    # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
+    rsync -a -v \
+        --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
+        --exclude "__pycache__" --exclude "Dockerfile" \
+        bin cli cmake data datoviz external include libs src tests tools \
+        *.toml *.json *.txt *.map *.md *.cff \
+        CMakeLists.txt *.map "$BUILD_DIR/"
+
+    # Create a temporary Dockerfile
+    cat <<EOF > $BUILD_DIR/Dockerfile
+    FROM $DOCKER_IMAGE
+
+    # Install dependencies
+    RUN yum install -y epel-release
+    RUN dnf config-manager --set-enabled powertools && \
+        dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+        dnf --enablerepo=epel group
+    RUN yum install --enablerepo=raven-extras -y \
+        ccache \
+        cmake \
+        ninja-build \
+        gcc \
+        gcc-c++ \
+        libXrandr-devel \
+        libXinerama-devel \
+        libXcursor-devel \
+        libXi-devel \
+        freetype-devel \
+        vulkan \
+        vulkan-tools \
+        vulkan-headers \
+        vulkan-loader \
+        glslc
+
+    # Set up environment variables
+    ENV CCACHE_DIR=/ccache
+    ENV PATH=/usr/lib/ccache:\$PATH
+
+    # Copy source files into the container
+    COPY . /workspace
+
+    # Set the working directory
+    WORKDIR /workspace
+
+    # Build the project
+    RUN ldd --version ldd
+    RUN mkdir -p build/ $DISTDIR wheel/ && \
+        cd build/ && \
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release || true && \
+        ninja || true
+    RUN cd build/ && \
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
+        ninja
+
+    # Install pip wheel depedencies.
+    RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel
+
+    # Copy files before building the wheel.
+    RUN \
+        mkdir -p wheel wheel/datoviz && \
+        cp datoviz/__init__.py wheel/datoviz/ && \
+        cp pyproject.toml wheel/ && \
+        cp build/libdatoviz.so wheel/datoviz/ && \
+        cp /usr/lib64/libvulkan.so.1 wheel/datoviz/ && \
+        cp /usr/bin/glslc wheel/datoviz/
+
+    # Build the wheel.
+    RUN /opt/python/cp38-cp38/bin/pip wheel wheel/ -w "$DISTDIR/" --no-deps
+
+    # # Rename the wheel.
+    # RUN \
+    #     WHEELPATH=$(ls dist/*any.whl 2>/dev/null) && \
+    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))") && \
+    #     TAG="cp3-none-$PLATFORM_TAG" && \
+    #     /opt/python/cp38-cp38/bin/python -m wheel tags --platform-tag $PLATFORM_TAG "$DISTDIR/*"
+
+    EOF
+
+    # Build the Docker image
+    docker build -t $IMAGE_NAME $BUILD_DIR # --progress=plain
+
+    # Copy the files from the container to the host, in dist/.
+    container_id=$(docker create $IMAGE_NAME)
+    files=$(docker run --rm $IMAGE_NAME sh -c 'ls /workspace/dist/datoviz*.whl')
+    for file in $files; do
+        docker cp "$container_id:$file" ./dist/
+    done
+    docker rm $container_id
+
+    # Check the contents of dist/
+    ls -lah $DISTDIR
+
+    # Fix permissions.
+    # sudo chown $(whoami):$(id -gn) $DISTDIR/*.whl
+
+    # Rename the wheel
+    just renamewheel
 #
 
 [windows]
-info:
-    @build/datoviz.exe info
+build release="Debug":
+    #!/usr/bin/env sh
+    set -e
+    unset CC
+    unset CXX
+    mkdir -p build
+    cp libs/vulkan/windows/vulkan-1.dll build/
+
+    # Copy mingw64 shared libraries.
+    MINGW64_DIR="$(dirname $(which gcc))"
+    cp "$MINGW64_DIR/libgcc_s_seh-1.dll" build/
+    cp "$MINGW64_DIR/libstdc++-6.dll" build/
+    cp "$MINGW64_DIR/libwinpthread-1.dll" build/
+
+    pushd build/
+    CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
+    cmake --build .
+    popd
 #
 
-
-# -------------------------------------------------------------------------------------------------
-# Demo
-# -------------------------------------------------------------------------------------------------
-
-demo:
-    ./build/datoviz demo
-#
-
-[linux]
-libdemo:
-    @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
-#
-
-[macos]
-libdemo:
-    @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
-#
-
-[windows]
-libdemo:
-    python -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
-#
-
-python *args:
-    @PYTHONPATH=. python {{args}}
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Shared library
-# -------------------------------------------------------------------------------------------------
-
-headers:
-    @python tools/parse_headers.py
-#
-
-symbols:
-    #!/usr/bin/env python
-    import json
-    with open("tools/headers.json", "r") as f:
-        headers = json.load(f)
-    with open("symbols.map", "w") as f:
-        for fn, items in headers.items():
-            for function in items["functions"].keys():
-                f.write(f"{function}\n")
-#
-
-[linux]
-exports:
-    @nm -D --defined-only build/libdatoviz.so
-#
-
-[macos]
-exports:
-    @nm -gU build/libdatoviz.dylib
-#
-
-[macos]
-deps:
-    @otool -L build/libdatoviz.dylib | sort -r
-#
-
-[linux]
-deps:
-    @ldd build/libdatoviz.so
-#
-
-[macos]
-rpath:
-    @otool -l build/libdatoviz.dylib | awk '/LC_RPATH/ {getline; getline; print $2}'
-#
-
-[linux]
-rpath:
-    @objdump -x build/libdatoviz.so | grep 'R.*PATH'
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Swiftshader
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
-#
-
-[macos]
-swiftshader +args:
-    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Code quality
-# -------------------------------------------------------------------------------------------------
-
-format:
-    find tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
-#
-
-valgrind args="":
-    # NOTE: need to remove -pg compiler option before running valgrind
-    valgrind \
-        --leak-check=full \
-        --show-leak-kinds=all \
-        --keep-debuginfo=yes \
-        --track-origins=yes \
-        --verbose \
-        --suppressions=.valgrind.exceptions.txt \
-        --log-file=.valgrind.out.txt \
-        {{args}}
-#
-
-cppcheck:
-    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external -I include/datoviz
-    # 2> .cppcheck.out.txt && \
-    # echo ".cppcheck.out.txt saved"
-#
-
-prof:
-    gprof build/datoviz gmon.out
-#
-
-tree:
-    tree -I external -I "build*" -I data -I bin -I libs -I tools -I "packaging*" -I docs -I cmake -I "*.py" -I "*.pxd" -I "*.pyx" -I "*.json" -I "*.out"
-#
-
-cloc:
-    cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
-#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -522,6 +380,40 @@ testdeb:
 
     # Run the Docker container
     docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_deb_test
+
+    rm Dockerfile
+#
+
+[linux]
+testwheel:
+    #!/usr/bin/env sh
+    set -e
+
+    if [ ! -f dist/datoviz-*.whl ]; then
+        echo "Build the wheel first."
+        exit
+    fi
+
+    # This command allows connections to the X server from any user.
+    xhost +
+
+    # Create a Dockerfile for testing
+    echo "$(cat Dockerfile_ubuntu)
+
+    COPY dist/datoviz-*.whl /tmp/
+    RUN python3 -m venv /tmp/venv
+    RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
+
+    WORKDIR /root
+    CMD [\"/tmp/venv/bin/python\", \"-c\", \"import datoviz; datoviz.demo()\"]
+
+    " > Dockerfile
+
+    # Build the Docker image
+    docker build -t datoviz_wheel_test .
+
+    # Run the Docker container
+    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
 #
@@ -660,10 +552,128 @@ testpkg vm_ip_address:
     EOF
 #
 
+[macos]
+wheel: checkstructs
+    #!/usr/bin/env sh
+    set -e
+    PKGROOT="packaging/wheel"
+    DVZDIR="$PKGROOT/datoviz"
+    DISTDIR="dist"
+
+    # Clean up and prepare the directory structure.
+    mkdir -p $PKGROOT $DISTDIR
+    mkdir -p $DVZDIR
+
+    # Copy the header files.
+    cp datoviz/__init__.py $DVZDIR
+    cp pyproject.toml $PKGROOT/
+    cp build/libdatoviz.dylib $DVZDIR
+    cp libs/vulkan/macos/libvulkan.1.dylib $DVZDIR
+    cp libs/vulkan/macos/libMoltenVK.dylib $DVZDIR
+    cp libs/vulkan/macos/MoltenVK_icd.json $DVZDIR
+
+    # Copy the dependencies and adjust their rpaths.
+    # Path to libdatoviz.
+    LIB=$DVZDIR/libdatoviz.dylib
+    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
+    # libdatoviz to point to these local copies.
+    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
+        filename=$(basename "$dep")
+        if [[ "$dep" != *"rpath"* ]]; then
+            cp -a $dep $DVZDIR
+        fi
+        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
+    done
+
+    # Remove the rpath that links to a build directory.
+    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
+    if [ -n "$target_rpath" ]; then
+        install_name_tool -delete_rpath "$target_rpath" $LIB
+    fi
+
+    # Create the wheel.
+    cd $PKGROOT
+    pip wheel . -w "../../$DISTDIR" --no-deps
+
+    # Cleanup.
+    cd -
+    rm -rf $PKGROOT
+
+    # Rename the wheel.
+    just renamewheel
+
+    # Show the wheel contents.
+    just showwheel
+#
+
+[macos]
+testwheel vm_ip_address="":
+    #!/usr/bin/env sh
+    set -e
+    IP="{{vm_ip_address}}"
+    TMPDIR=/tmp/datoviz_example
+
+    if [ ! $IP]; then
+        # Create a new virtual environment
+        python -m venv test_env
+
+        # Activate the virtual environment
+        source test_env/bin/activate
+
+        # Install the wheel
+        pip install dist/datoviz-*.whl
+
+        # Run a test command
+        pushd test_env
+        python -c "import datoviz; datoviz.demo()"
+        popd
+
+        # Deactivate the virtual environment
+        deactivate
+
+        # Optionally clean up the environment
+        rm -rf test_env
+        exit
+    fi
+
+    # Check if the pkg package exists, if not, build it
+    if ! ls dist/datoviz*.whl 1> /dev/null 2>&1; then
+        echo "Wheel file not found in dist/"
+        exit
+    fi
+    WHEEL_PATH=$(ls dist/datoviz*.whl)
+
+    # Copy the .wheel file to the VM
+    ssh -T $USER@$IP "mkdir -p "$TMPDIR/" && rm -rf '$TMPDIR/*'"
+    scp $WHEEL_PATH $USER@$IP:$TMPDIR
+
+    # Connect to the VM and install the .pkg file
+    ssh -T $USER@$IP << 'EOF'
+
+    TMPDIR=/tmp/datoviz_example
+    WHEEL_FILENAME=$(ls $TMPDIR/*.whl)
+
+    VENV=/tmp/venv
+    rm -rf $VENV
+    mkdir -p $VENV
+    python3 -m venv $VENV
+    #PYTHONPATH=~/.local/lib/python3.8/site-packages
+    #mkdir -p $PYTHONPATH
+    $VENV/bin/python3 -m pip install "$WHEEL_FILENAME" --upgrade # --target $PYTHONPATH
+    $VENV/bin/python3 -c "import datoviz; import datoviz; datoviz.demo()"
+    # PYTHONPATH=$PYTHONPATH python3 -c "import datoviz; import datoviz; datoviz.demo()"
+    EOF
+#
+
 
 # -------------------------------------------------------------------------------------------------
-# Python ctypes wrapper generation
+# Python
 # -------------------------------------------------------------------------------------------------
+
+pydev: # install the Python binding on a development machine
+    @pip install -r requirements-dev.txt
+    @pip install -e .
+#
 
 ctypes:
     @python tools/generate_ctypes.py
@@ -672,18 +682,13 @@ ctypes:
 fullctypes: headers ctypes checkstructs
 #
 
-
-# -------------------------------------------------------------------------------------------------
-# Python tests
-# -------------------------------------------------------------------------------------------------
-
 pytest:
     @pytest tests.py
 #
 
 
 # -------------------------------------------------------------------------------------------------
-# Python packaging: generic
+# Python packaging
 # -------------------------------------------------------------------------------------------------
 
 showwheel:
@@ -708,131 +713,6 @@ renamewheel:
     python -m wheel tags --platform-tag $PLATFORM_TAG $WHEELPATH
     rm $WHEELPATH
 #
-
-
-# -------------------------------------------------------------------------------------------------
-# Python packaging: Linux
-# -------------------------------------------------------------------------------------------------
-
-[linux]
-wheel: checkstructs && showwheel
-    #!/usr/bin/env sh
-    set -e
-    PKGROOT="packaging/wheel"
-    DVZDIR="$PKGROOT/datoviz"
-    DISTDIR="dist"
-
-    # Clean up and prepare the directory structure.
-    mkdir -p $PKGROOT $DISTDIR
-    mkdir -p $DVZDIR
-
-    # Copy the header files.
-    cp datoviz/__init__.py $DVZDIR
-    cp pyproject.toml $PKGROOT/
-    cp build/libdatoviz.so $DVZDIR
-    cp libs/vulkan/linux/libvulkan.so $DVZDIR
-
-    # Build the wheel.
-    cd $PKGROOT
-    pip wheel . -w "../../$DISTDIR" --no-deps
-    cd -
-    just renamewheel
-
-    rm -rf $PKGROOT
-#
-
-[linux]
-wheelmany: checkstructs && showwheel
-    #!/usr/bin/env sh
-    set -e
-    PKGROOT="packaging/wheel"
-    DVZDIR="$PKGROOT/datoviz"
-    DISTDIR="dist"
-    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
-
-    # Clean up and prepare the directory structure.
-    mkdir -p $PKGROOT $DISTDIR
-    mkdir -p $DVZDIR
-
-    # Copy the header files.
-    cp datoviz/__init__.py $DVZDIR
-    cp pyproject.toml $PKGROOT/
-    cp build_many/libdatoviz.so $DVZDIR
-    cp build_many/libvulkan.so $DVZDIR
-
-    # Create a temporary Dockerfile
-    cat <<EOF > $PKGROOT/Dockerfile
-    FROM $DOCKER_IMAGE
-
-    # Set up environment variables
-    ENV PKGROOT=/pkg
-    ENV DVZDIR=\$PKGROOT/datoviz
-
-    # Install dependencies
-    RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel
-
-    # Copy the package files
-    RUN mkdir -p \$PKGROOT
-    WORKDIR \$PKGROOT
-    COPY . \$PKGROOT
-
-    # Build the wheel
-    CMD /opt/python/cp38-cp38/bin/pip wheel \$PKGROOT -w "/pkg/dist" --no-deps
-    EOF
-
-    # Build the Docker image and create the wheel
-    docker build -t datoviz-wheelmany $PKGROOT
-    docker run --rm -v $(pwd)/$DISTDIR:/pkg/dist datoviz-wheelmany
-    ls -lah $(pwd)/$DISTDIR
-
-    # Fix permissions.
-    sudo chown $(whoami):$(id -gn) $(pwd)/$DISTDIR/*.whl
-
-    # Rename the wheel
-    just renamewheel
-
-    # Clean up
-    rm -rf $PKGROOT
-#
-
-[linux]
-testwheel:
-    #!/usr/bin/env sh
-    set -e
-
-    if [ ! -f dist/datoviz-*.whl ]; then
-        echo "Build the wheel first."
-        exit
-    fi
-
-    # This command allows connections to the X server from any user.
-    xhost +
-
-    # Create a Dockerfile for testing
-    echo "$(cat Dockerfile_ubuntu)
-
-    COPY dist/datoviz-*.whl /tmp/
-    RUN python3 -m venv /tmp/venv
-    RUN /tmp/venv/bin/pip install /tmp/datoviz-*.whl
-
-    WORKDIR /root
-    CMD [\"/tmp/venv/bin/python\", \"-c\", \"import datoviz; datoviz.demo()\"]
-
-    " > Dockerfile
-
-    # Build the Docker image
-    docker build -t datoviz_wheel_test .
-
-    # Run the Docker container
-    docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
-
-    rm Dockerfile
-#
-
-
-# -------------------------------------------------------------------------------------------------
-# Python packaging: Windows
-# -------------------------------------------------------------------------------------------------
 
 [windows]
 wheel: checkstructs && showwheel
@@ -899,130 +779,170 @@ testwheel:
 
 
 # -------------------------------------------------------------------------------------------------
-# Python packaging: macOS
+# Shared library
 # -------------------------------------------------------------------------------------------------
 
-[macos]
-wheel: checkstructs
-    #!/usr/bin/env sh
-    set -e
-    PKGROOT="packaging/wheel"
-    DVZDIR="$PKGROOT/datoviz"
-    DISTDIR="dist"
-
-    # Clean up and prepare the directory structure.
-    mkdir -p $PKGROOT $DISTDIR
-    mkdir -p $DVZDIR
-
-    # Copy the header files.
-    cp datoviz/__init__.py $DVZDIR
-    cp pyproject.toml $PKGROOT/
-    cp build/libdatoviz.dylib $DVZDIR
-    cp libs/vulkan/macos/libvulkan.1.dylib $DVZDIR
-    cp libs/vulkan/macos/libMoltenVK.dylib $DVZDIR
-    cp libs/vulkan/macos/MoltenVK_icd.json $DVZDIR
-
-    # Copy the dependencies and adjust their rpaths.
-    # Path to libdatoviz.
-    LIB=$DVZDIR/libdatoviz.dylib
-    # List all Homebrew/Vulkan dependencies, copy them to the package tree, and update the rpath of
-    # libdatoviz to point to these local copies.
-    otool -L $LIB | grep -E "brew|rpath" | awk '{print $1}' | while read -r dep; do
-        filename=$(basename "$dep")
-        if [[ "$dep" != *"rpath"* ]]; then
-            cp -a $dep $DVZDIR
-        fi
-        install_name_tool -change "$dep" "@loader_path/$filename" $LIB
-    done
-
-    # Remove the rpath that links to a build directory.
-    target_rpath=$(otool -l $LIB | awk '/LC_RPATH/ {getline; getline; if ($2 ~ /libs\/vulkan\/macos/) print $2}')
-    if [ -n "$target_rpath" ]; then
-        install_name_tool -delete_rpath "$target_rpath" $LIB
-    fi
-
-    # Create the wheel.
-    cd $PKGROOT
-    pip wheel . -w "../../$DISTDIR" --no-deps
-
-    # Cleanup.
-    cd -
-    rm -rf $PKGROOT
-
-    # Rename the wheel.
-    just renamewheel
-
-    # Show the wheel contents.
-    just showwheel
+headers:
+    @python tools/parse_headers.py
 #
 
+symbols:
+    #!/usr/bin/env python
+    import json
+    with open("tools/headers.json", "r") as f:
+        headers = json.load(f)
+    with open("symbols.map", "w") as f:
+        for fn, items in headers.items():
+            for function in items["functions"].keys():
+                f.write(f"{function}\n")
+#
+
+[linux]
+exports:
+    @nm -D --defined-only build/libdatoviz.so
+#
 
 [macos]
-testwheel vm_ip_address="":
-    #!/usr/bin/env sh
-    set -e
-    IP="{{vm_ip_address}}"
-    TMPDIR=/tmp/datoviz_example
+exports:
+    @nm -gU build/libdatoviz.dylib
+#
 
-    if [ ! $IP]; then
-        # Create a new virtual environment
-        python -m venv test_env
+[macos]
+deps:
+    @otool -L build/libdatoviz.dylib | sort -r
+#
 
-        # Activate the virtual environment
-        source test_env/bin/activate
+[linux]
+deps:
+    @ldd build/libdatoviz.so
+#
 
-        # Install the wheel
-        pip install dist/datoviz-*.whl
+[macos]
+rpath:
+    @otool -l build/libdatoviz.dylib | awk '/LC_RPATH/ {getline; getline; print $2}'
+#
 
-        # Run a test command
-        pushd test_env
-        python -c "import datoviz; datoviz.demo()"
-        popd
-
-        # Deactivate the virtual environment
-        deactivate
-
-        # Optionally clean up the environment
-        rm -rf test_env
-        exit
-    fi
-
-    # Check if the pkg package exists, if not, build it
-    if ! ls dist/datoviz*.whl 1> /dev/null 2>&1; then
-        echo "Wheel file not found in dist/"
-        exit
-    fi
-    WHEEL_PATH=$(ls dist/datoviz*.whl)
-
-    # Copy the .wheel file to the VM
-    ssh -T $USER@$IP "mkdir -p "$TMPDIR/" && rm -rf '$TMPDIR/*'"
-    scp $WHEEL_PATH $USER@$IP:$TMPDIR
-
-    # Connect to the VM and install the .pkg file
-    ssh -T $USER@$IP << 'EOF'
-
-    TMPDIR=/tmp/datoviz_example
-    WHEEL_FILENAME=$(ls $TMPDIR/*.whl)
-
-    VENV=/tmp/venv
-    rm -rf $VENV
-    mkdir -p $VENV
-    python3 -m venv $VENV
-    #PYTHONPATH=~/.local/lib/python3.8/site-packages
-    #mkdir -p $PYTHONPATH
-    $VENV/bin/python3 -m pip install "$WHEEL_FILENAME" --upgrade # --target $PYTHONPATH
-    $VENV/bin/python3 -c "import datoviz; import datoviz; datoviz.demo()"
-    # PYTHONPATH=$PYTHONPATH python3 -c "import datoviz; import datoviz; datoviz.demo()"
-    EOF
+[linux]
+rpath:
+    @objdump -x build/libdatoviz.so | grep 'R.*PATH'
 #
 
 
 # -------------------------------------------------------------------------------------------------
-# Documentation
+# Swiftshader
 # -------------------------------------------------------------------------------------------------
 
-doc: headers
-    @python tools/generate_doc.py api
+[linux]
+swiftshader +args:
+    @VK_ICD_FILENAMES="data/swiftshader/linux/vk_swiftshader_icd.json" {{args}}
+#
+
+[macos]
+swiftshader +args:
+    @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Code quality
+# -------------------------------------------------------------------------------------------------
+
+format:
+    find tests/ src/ include/ -iname *.h -o -iname *.c | xargs clang-format -i
+#
+
+valgrind args="":
+    # NOTE: need to remove -pg compiler option before running valgrind
+    valgrind \
+        --leak-check=full \
+        --show-leak-kinds=all \
+        --keep-debuginfo=yes \
+        --track-origins=yes \
+        --verbose \
+        --suppressions=.valgrind.exceptions.txt \
+        --log-file=.valgrind.out.txt \
+        {{args}}
+#
+
+cppcheck:
+    cppcheck --enable=all --inconclusive src/ include/ cli/ tests/ -i external -I include/datoviz
+    # 2> .cppcheck.out.txt && \
+    # echo ".cppcheck.out.txt saved"
+#
+
+prof:
+    gprof build/datoviz gmon.out
+#
+
+tree:
+    tree -I external -I "build*" -I data -I bin -I libs -I tools -I "packaging*" -I docs -I cmake -I "*.py" -I "*.pxd" -I "*.pyx" -I "*.json" -I "*.out"
+#
+
+cloc:
+    cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Tests
+# -------------------------------------------------------------------------------------------------
+
+[linux]
+test test_name="":
+    ./build/datoviz test {{test_name}}
+#
+
+[macos]
+test test_name="":
+    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/datoviz test {{test_name}}
+#
+
+[windows]
+test test_name="":
+    ./build/datoviz.exe test {{test_name}}
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Info
+# -------------------------------------------------------------------------------------------------
+
+[unix]
+info:
+    @./build/datoviz info
+#
+
+[windows]
+info:
+    @build/datoviz.exe info
+#
+
+
+# -------------------------------------------------------------------------------------------------
+# Demo
+# -------------------------------------------------------------------------------------------------
+
+demo:
+    ./build/datoviz demo
+#
+
+[linux]
+libdemo:
+    @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
+#
+
+[macos]
+libdemo:
+    @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
+#
+
+[windows]
+libdemo:
+    python -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
+#
+
+python *args:
+    @PYTHONPATH=. python {{args}}
 #
 
 
@@ -1070,6 +990,15 @@ examples: runexamples docexamples
 
 
 # -------------------------------------------------------------------------------------------------
+# Documentation
+# -------------------------------------------------------------------------------------------------
+
+doc: headers
+    @python tools/generate_doc.py api
+#
+
+
+# -------------------------------------------------------------------------------------------------
 # Cleaning
 # -------------------------------------------------------------------------------------------------
 
@@ -1080,4 +1009,8 @@ clean:
 rebuild:
     just rmbuild
     just build || just build
+#
+
+rmbuild:
+    rm -rf ./build/
 #
