@@ -156,7 +156,7 @@ build release="Debug":
     @cd build/ && ninja
 #
 
-release: headers symbols
+release: headers symbols && bundledeps
     just build "Release" || just build "Release"
 #
 
