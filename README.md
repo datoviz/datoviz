@@ -17,7 +17,7 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 
 <!-- SCREENSHOTS -->
 
-## Screenshots from the v0.1 version
+## 🖼️ Screenshots from the v0.1 version
 
 ![](https://raw.githubusercontent.com/datoviz/data/master/screenshots/datoviz.jpg)
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
@@ -26,7 +26,7 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 
 <!-- FEATURES -->
 
-## Features
+## ✨ Features
 
 * **📊 High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
 * **🌐 3D visuals**: meshes, volumes, volume slices
@@ -56,7 +56,7 @@ Future work (planned for **v0.4 and later**):
 
 <!-- INSTALLATION -->
 
-## Installation instructions
+## 🛠️ Installation instructions
 
 Requirements:
 
@@ -93,7 +93,7 @@ pip install git+https://github.com/datoviz/datoviz/tree/v0.2x
 <!-- DOCUMENTATION -->
 
 
-## Usage
+## 🚀 Usage
 
 Simple scatter plot example (points with random positions, colors, and sizes) in Python, which closely follow the C API.
 
@@ -134,7 +134,7 @@ dvz.app_destroy(app)
 Check out the [examples documentation](docs/examples.md) for more usage examples.
 
 
-## Documentation
+## 📚 Documentation
 
 * [**📖 User guide**](docs/userguide.md)
 * [**🐍 Examples**](docs/examples.md)
@@ -145,7 +145,7 @@ Check out the [examples documentation](docs/examples.md) for more usage examples
 * [**🛠️ Maintainers** instructions](MAINTAINERS.md)
 
 
-## History and current status
+## 🕰️ History and current status
 
 In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
 
@@ -164,17 +164,17 @@ Datoviz is closely related to **VisPy**, as it is being developed by one of the 
 The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
 
 
-## Contributing
+## 🤝 Contributing
 
 See the [contributing notes](CONTRIBUTING.md).
 
 
-## License
+## 📄 License
 
 See the [MIT license](LICENSE).
 
 
-## Credits
+## 🙏 Credits
 
 Datoviz is developed by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
 
