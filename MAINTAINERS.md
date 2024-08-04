@@ -186,7 +186,25 @@ just testwheel
 4. Write the `CHANGELOG.md`.
 5. Bump to the new version with `just bump x.y.z`.
 6. Commit and tag.
-7. Build packages with `just wheel`.
+7. Build and test packages.
+   1. Linux
+      * `just release`
+      * `just deb`
+      * `just testdeb`
+      * `just manylinux`
+      * `just testwheel`
+      * Wheel is in `dist/`
+   2. macOS ARM & Intel
+      * `just release`
+      * `just pkg`
+      * `just wheel`
+      * `just testwheel`
+      * Wheel is in `dist/`
+   3. Windows
+      * `just release`
+      * `just wheel`
+      * `just testwheel`
+      * Wheel is in `dist/`
 8. Upload packages.
 9. Bump to the new development version with `just bump a.b.c-dev`.
 10. Announcement.
