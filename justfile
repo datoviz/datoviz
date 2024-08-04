@@ -620,7 +620,7 @@ testwheel vm_ip_address="":
     if [ ! $IP]; then
         # Create a new virtual environment
         rm -rf test_env
-        python -m venv test_env
+        python -m venv test_env --system-site-packages
 
         # Activate the virtual environment
         source test_env/bin/activate
