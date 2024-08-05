@@ -38,16 +38,22 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 * **𓈈 Figure subplots** (aka "panels")
 * **🖥️ Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
+### List of visuals
+
 ![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
 
-Work in progress (currently planned for **v0.3**):
+### Work in progress
+
+These features are currently planned for **v0.3**:
 
 * **➕ Axes**: ticks, grids, labels
 * **🎨 Colorbars**
 * **🖱️ More interactivity patterns**
 * **📖 More documentation**
 
-Future work (planned for **v0.4 and later**):
+### Future work
+
+These features are currently planned for **v0.4 and later**:
 
 * **📐 More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
 * **🎯 Picking**
