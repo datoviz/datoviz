@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "datoviz_enums.h"
 #include "datoviz_macros.h"
 
 
@@ -646,6 +647,28 @@ DVZ_EXPORT vec3* dvz_mock_pos2D(uint32_t count, float std);
 
 
 /**
+ * Generate points on a circle.
+ *
+ * @param count the number of positions to generate
+ * @param radius the radius of the circle
+ * @returns the positions
+ */
+DVZ_EXPORT vec3* dvz_mock_circle(uint32_t count, float radius);
+
+
+
+/**
+ * Generate points on a band.
+ *
+ * @param count the number of positions to generate
+ * @param size the size of the band
+ * @returns the positions
+ */
+DVZ_EXPORT vec3* dvz_mock_band(uint32_t count, vec2 size);
+
+
+
+/**
  * Generate a set of random 3D positions.
  *
  * @param count the number of positions to generate
@@ -653,6 +676,29 @@ DVZ_EXPORT vec3* dvz_mock_pos2D(uint32_t count, float std);
  * @returns the positions
  */
 DVZ_EXPORT vec3* dvz_mock_pos3D(uint32_t count, float std);
+
+
+
+/**
+ * Generate identical 3D positions.
+ *
+ * @param count the number of positions to generate
+ * @param fixed the position
+ * @returns the repeated positions
+ */
+DVZ_EXPORT vec3* dvz_mock_fixed(uint32_t count, vec3 fixed);
+
+
+
+/**
+ * Generate 3D positions on a line.
+ *
+ * @param count the number of positions to generate
+ * @param p0 initial position
+ * @param p1 terminal position
+ * @returns the positions
+ */
+DVZ_EXPORT vec3* dvz_mock_line(uint32_t count, vec3 p0, vec3 p1);
 
 
 
@@ -669,6 +715,40 @@ DVZ_EXPORT float* dvz_mock_uniform(uint32_t count, float vmin, float vmax);
 
 
 /**
+ * Generate an array with the same value.
+ *
+ * @param count the number of scalars to generate
+ * @param value the value
+ * @returns the values
+ */
+DVZ_EXPORT float* dvz_mock_full(uint32_t count, float value);
+
+
+
+/**
+ * Generate an array of consecutive positive numbers.
+ *
+ * @param count the number of consecutive integers to generate
+ * @param initial the initial value
+ * @returns the values
+ */
+DVZ_EXPORT uint32_t* dvz_mock_range(uint32_t count, uint32_t initial);
+
+
+
+/**
+ * Generate an array ranging from an initial value to a final value.
+ *
+ * @param count the number of scalars to generate
+ * @param initial the initial value
+ * @param final the final value
+ * @returns the values
+ */
+DVZ_EXPORT float* dvz_mock_linspace(uint32_t count, float initial, float final);
+
+
+
+/**
  * Generate a set of random colors.
  *
  * @param count the number of colors to generate
@@ -676,6 +756,28 @@ DVZ_EXPORT float* dvz_mock_uniform(uint32_t count, float vmin, float vmax);
  * @returns random colors
  */
 DVZ_EXPORT cvec4* dvz_mock_color(uint32_t count, uint8_t alpha);
+
+
+
+/**
+ * Repeat a color in an array.
+ *
+ * @param count the number of colors to generate
+ * @param mono the color to repeat
+ * @returns colors
+ */
+DVZ_EXPORT cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono);
+
+
+
+/**
+ * Generate a set of HSV colors.
+ *
+ * @param count the number of colors to generate
+ * @param alpha the alpha value
+ * @returns colors
+ */
+DVZ_EXPORT cvec4* dvz_mock_cmap(uint32_t count, DvzColormap cmap, uint8_t alpha);
 
 
 

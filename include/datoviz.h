@@ -1406,6 +1406,8 @@ DVZ_EXPORT vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t*
 /**
  * Compute the shift of each glyph in an ASCII string, using the Freetype library.
  *
+ * Note: the caller must free the output after use.
+ *
  * @param font the font
  * @param string the ASCII string
  * @returns an array of (x,y,w,h) shifts
@@ -1416,6 +1418,8 @@ DVZ_EXPORT vec4* dvz_font_ascii(DvzFont* font, const char* string);
 
 /**
  * Render a string using Freetype.
+ *
+ * Note: the caller must free the output after use.
  *
  * @param font the font
  * @param length the number of glyphs

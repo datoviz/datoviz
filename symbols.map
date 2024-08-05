@@ -238,6 +238,15 @@ dvz_rand_float
 dvz_rand_double
 dvz_rand_normal
 dvz_mock_pos2D
+dvz_mock_circle
+dvz_mock_band
 dvz_mock_pos3D
+dvz_mock_fixed
+dvz_mock_line
 dvz_mock_uniform
+dvz_mock_full
+dvz_mock_range
+dvz_mock_linspace
 dvz_mock_color
+dvz_mock_monochrome
+dvz_mock_cmap

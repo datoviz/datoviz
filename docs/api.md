@@ -2729,6 +2729,39 @@ void dvz_min_max(  // returns: the mean
 )
 ```
 
+### `dvz_mock_band()`
+
+Generate points on a band.
+
+```c
+vec3* dvz_mock_band(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    vec2 size,  // the size of the band
+)
+```
+
+### `dvz_mock_circle()`
+
+Generate points on a circle.
+
+```c
+vec3* dvz_mock_circle(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    float radius,  // the radius of the circle
+)
+```
+
+### `dvz_mock_cmap()`
+
+Generate a set of HSV colors.
+
+```c
+cvec4* dvz_mock_cmap(  // returns: colors
+    uint32_t count,  // the number of colors to generate
+    uint8_t alpha,  // the alpha value
+)
+```
+
 ### `dvz_mock_color()`
 
 Generate a set of random colors.
@@ -2737,6 +2770,63 @@ Generate a set of random colors.
 cvec4* dvz_mock_color(  // returns: random colors
     uint32_t count,  // the number of colors to generate
     uint8_t alpha,  // the alpha value
+)
+```
+
+### `dvz_mock_fixed()`
+
+Generate identical 3D positions.
+
+```c
+vec3* dvz_mock_fixed(  // returns: the repeated positions
+    uint32_t count,  // the number of positions to generate
+    vec3 fixed,  // the position
+)
+```
+
+### `dvz_mock_full()`
+
+Generate an array with the same value.
+
+```c
+float* dvz_mock_full(  // returns: the values
+    uint32_t count,  // the number of scalars to generate
+    float value,  // the value
+)
+```
+
+### `dvz_mock_line()`
+
+Generate 3D positions on a line.
+
+```c
+vec3* dvz_mock_line(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    vec3 p0,  // initial position
+    vec3 p1,  // terminal position
+)
+```
+
+### `dvz_mock_linspace()`
+
+Generate an array ranging from an initial value to a final value.
+
+```c
+float* dvz_mock_linspace(  // returns: the values
+    uint32_t count,  // the number of scalars to generate
+    float initial,  // the initial value
+    float final,  // the final value
+)
+```
+
+### `dvz_mock_monochrome()`
+
+Repeat a color in an array.
+
+```c
+cvec4* dvz_mock_monochrome(  // returns: colors
+    uint32_t count,  // the number of colors to generate
+    cvec4 mono,  // the color to repeat
 )
 ```
 
@@ -2759,6 +2849,17 @@ Generate a set of random 3D positions.
 vec3* dvz_mock_pos3D(  // returns: the positions
     uint32_t count,  // the number of positions to generate
     float std,  // the standard deviation
+)
+```
+
+### `dvz_mock_range()`
+
+Generate an array of consecutive positive numbers.
+
+```c
+uint32_t* dvz_mock_range(  // returns: the values
+    uint32_t count,  // the number of consecutive integers to generate
+    uint32_t initial,  // the initial value
 )
 ```
 
@@ -2857,134 +2958,6 @@ void dvz_range(
 ```
 
 ## Enumerations
-
-### `DvzKeyCode`
-
-```
-DVZ_KEY_UNKNOWN
-DVZ_KEY_NONE
-DVZ_KEY_SPACE
-DVZ_KEY_APOSTROPHE
-DVZ_KEY_COMMA
-DVZ_KEY_MINUS
-DVZ_KEY_PERIOD
-DVZ_KEY_SLASH
-DVZ_KEY_0
-DVZ_KEY_1
-DVZ_KEY_2
-DVZ_KEY_3
-DVZ_KEY_4
-DVZ_KEY_5
-DVZ_KEY_6
-DVZ_KEY_7
-DVZ_KEY_8
-DVZ_KEY_9
-DVZ_KEY_SEMICOLON
-DVZ_KEY_EQUAL
-DVZ_KEY_A
-DVZ_KEY_B
-DVZ_KEY_C
-DVZ_KEY_D
-DVZ_KEY_E
-DVZ_KEY_F
-DVZ_KEY_G
-DVZ_KEY_H
-DVZ_KEY_I
-DVZ_KEY_J
-DVZ_KEY_K
-DVZ_KEY_L
-DVZ_KEY_M
-DVZ_KEY_N
-DVZ_KEY_O
-DVZ_KEY_P
-DVZ_KEY_Q
-DVZ_KEY_R
-DVZ_KEY_S
-DVZ_KEY_T
-DVZ_KEY_U
-DVZ_KEY_V
-DVZ_KEY_W
-DVZ_KEY_X
-DVZ_KEY_Y
-DVZ_KEY_Z
-DVZ_KEY_LEFT_BRACKET
-DVZ_KEY_BACKSLASH
-DVZ_KEY_RIGHT_BRACKET
-DVZ_KEY_GRAVE_ACCENT
-DVZ_KEY_WORLD_1
-DVZ_KEY_WORLD_2
-DVZ_KEY_ESCAPE
-DVZ_KEY_ENTER
-DVZ_KEY_TAB
-DVZ_KEY_BACKSPACE
-DVZ_KEY_INSERT
-DVZ_KEY_DELETE
-DVZ_KEY_RIGHT
-DVZ_KEY_LEFT
-DVZ_KEY_DOWN
-DVZ_KEY_UP
-DVZ_KEY_PAGE_UP
-DVZ_KEY_PAGE_DOWN
-DVZ_KEY_HOME
-DVZ_KEY_END
-DVZ_KEY_CAPS_LOCK
-DVZ_KEY_SCROLL_LOCK
-DVZ_KEY_NUM_LOCK
-DVZ_KEY_PRINT_SCREEN
-DVZ_KEY_PAUSE
-DVZ_KEY_F1
-DVZ_KEY_F2
-DVZ_KEY_F3
-DVZ_KEY_F4
-DVZ_KEY_F5
-DVZ_KEY_F6
-DVZ_KEY_F7
-DVZ_KEY_F8
-DVZ_KEY_F9
-DVZ_KEY_F10
-DVZ_KEY_F11
-DVZ_KEY_F12
-DVZ_KEY_F13
-DVZ_KEY_F14
-DVZ_KEY_F15
-DVZ_KEY_F16
-DVZ_KEY_F17
-DVZ_KEY_F18
-DVZ_KEY_F19
-DVZ_KEY_F20
-DVZ_KEY_F21
-DVZ_KEY_F22
-DVZ_KEY_F23
-DVZ_KEY_F24
-DVZ_KEY_F25
-DVZ_KEY_KP_0
-DVZ_KEY_KP_1
-DVZ_KEY_KP_2
-DVZ_KEY_KP_3
-DVZ_KEY_KP_4
-DVZ_KEY_KP_5
-DVZ_KEY_KP_6
-DVZ_KEY_KP_7
-DVZ_KEY_KP_8
-DVZ_KEY_KP_9
-DVZ_KEY_KP_DECIMAL
-DVZ_KEY_KP_DIVIDE
-DVZ_KEY_KP_MULTIPLY
-DVZ_KEY_KP_SUBTRACT
-DVZ_KEY_KP_ADD
-DVZ_KEY_KP_ENTER
-DVZ_KEY_KP_EQUAL
-DVZ_KEY_LEFT_SHIFT
-DVZ_KEY_LEFT_CONTROL
-DVZ_KEY_LEFT_ALT
-DVZ_KEY_LEFT_SUPER
-DVZ_KEY_RIGHT_SHIFT
-DVZ_KEY_RIGHT_CONTROL
-DVZ_KEY_RIGHT_ALT
-DVZ_KEY_RIGHT_SUPER
-DVZ_KEY_MENU
-DVZ_KEY_LAST
-```
 
 ### `DvzAppFlags`
 
@@ -3487,6 +3460,134 @@ DVZ_VOLUME_FLAGS_NONE
 DVZ_VOLUME_FLAGS_RGBA
 DVZ_VOLUME_FLAGS_COLORMAP
 DVZ_VOLUME_FLAGS_BACK_FRONT
+```
+
+### `DvzKeyCode`
+
+```
+DVZ_KEY_UNKNOWN
+DVZ_KEY_NONE
+DVZ_KEY_SPACE
+DVZ_KEY_APOSTROPHE
+DVZ_KEY_COMMA
+DVZ_KEY_MINUS
+DVZ_KEY_PERIOD
+DVZ_KEY_SLASH
+DVZ_KEY_0
+DVZ_KEY_1
+DVZ_KEY_2
+DVZ_KEY_3
+DVZ_KEY_4
+DVZ_KEY_5
+DVZ_KEY_6
+DVZ_KEY_7
+DVZ_KEY_8
+DVZ_KEY_9
+DVZ_KEY_SEMICOLON
+DVZ_KEY_EQUAL
+DVZ_KEY_A
+DVZ_KEY_B
+DVZ_KEY_C
+DVZ_KEY_D
+DVZ_KEY_E
+DVZ_KEY_F
+DVZ_KEY_G
+DVZ_KEY_H
+DVZ_KEY_I
+DVZ_KEY_J
+DVZ_KEY_K
+DVZ_KEY_L
+DVZ_KEY_M
+DVZ_KEY_N
+DVZ_KEY_O
+DVZ_KEY_P
+DVZ_KEY_Q
+DVZ_KEY_R
+DVZ_KEY_S
+DVZ_KEY_T
+DVZ_KEY_U
+DVZ_KEY_V
+DVZ_KEY_W
+DVZ_KEY_X
+DVZ_KEY_Y
+DVZ_KEY_Z
+DVZ_KEY_LEFT_BRACKET
+DVZ_KEY_BACKSLASH
+DVZ_KEY_RIGHT_BRACKET
+DVZ_KEY_GRAVE_ACCENT
+DVZ_KEY_WORLD_1
+DVZ_KEY_WORLD_2
+DVZ_KEY_ESCAPE
+DVZ_KEY_ENTER
+DVZ_KEY_TAB
+DVZ_KEY_BACKSPACE
+DVZ_KEY_INSERT
+DVZ_KEY_DELETE
+DVZ_KEY_RIGHT
+DVZ_KEY_LEFT
+DVZ_KEY_DOWN
+DVZ_KEY_UP
+DVZ_KEY_PAGE_UP
+DVZ_KEY_PAGE_DOWN
+DVZ_KEY_HOME
+DVZ_KEY_END
+DVZ_KEY_CAPS_LOCK
+DVZ_KEY_SCROLL_LOCK
+DVZ_KEY_NUM_LOCK
+DVZ_KEY_PRINT_SCREEN
+DVZ_KEY_PAUSE
+DVZ_KEY_F1
+DVZ_KEY_F2
+DVZ_KEY_F3
+DVZ_KEY_F4
+DVZ_KEY_F5
+DVZ_KEY_F6
+DVZ_KEY_F7
+DVZ_KEY_F8
+DVZ_KEY_F9
+DVZ_KEY_F10
+DVZ_KEY_F11
+DVZ_KEY_F12
+DVZ_KEY_F13
+DVZ_KEY_F14
+DVZ_KEY_F15
+DVZ_KEY_F16
+DVZ_KEY_F17
+DVZ_KEY_F18
+DVZ_KEY_F19
+DVZ_KEY_F20
+DVZ_KEY_F21
+DVZ_KEY_F22
+DVZ_KEY_F23
+DVZ_KEY_F24
+DVZ_KEY_F25
+DVZ_KEY_KP_0
+DVZ_KEY_KP_1
+DVZ_KEY_KP_2
+DVZ_KEY_KP_3
+DVZ_KEY_KP_4
+DVZ_KEY_KP_5
+DVZ_KEY_KP_6
+DVZ_KEY_KP_7
+DVZ_KEY_KP_8
+DVZ_KEY_KP_9
+DVZ_KEY_KP_DECIMAL
+DVZ_KEY_KP_DIVIDE
+DVZ_KEY_KP_MULTIPLY
+DVZ_KEY_KP_SUBTRACT
+DVZ_KEY_KP_ADD
+DVZ_KEY_KP_ENTER
+DVZ_KEY_KP_EQUAL
+DVZ_KEY_LEFT_SHIFT
+DVZ_KEY_LEFT_CONTROL
+DVZ_KEY_LEFT_ALT
+DVZ_KEY_LEFT_SUPER
+DVZ_KEY_RIGHT_SHIFT
+DVZ_KEY_RIGHT_CONTROL
+DVZ_KEY_RIGHT_ALT
+DVZ_KEY_RIGHT_SUPER
+DVZ_KEY_MENU
+DVZ_KEY_LAST
 ```
 
 ## Structures

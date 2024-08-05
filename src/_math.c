@@ -162,6 +162,36 @@ vec3* dvz_mock_pos2D(uint32_t count, float std)
 
 
 
+vec3* dvz_mock_circle(uint32_t count, float radius)
+{
+    ASSERT(count > 1);
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = radius * cos(M_2PI * i * 1.0 / count);
+        pos[i][1] = radius * sin(M_2PI * i * 1.0 / count);
+    }
+    return pos;
+}
+
+
+
+vec3* dvz_mock_band(uint32_t count, vec2 size)
+{
+    ASSERT(count > 0);
+    float a = size[0] * .5;
+    float b = size[1] * .5;
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = -a + 2 * a * (i / 2) * 1. / (count / 2 - 1);
+        pos[i][1] = -b + 2 * b * (i % 2);
+    }
+    return pos;
+}
+
+
+
 vec3* dvz_mock_pos3D(uint32_t count, float std)
 {
     ASSERT(count > 0);
@@ -171,6 +201,43 @@ vec3* dvz_mock_pos3D(uint32_t count, float std)
         pos[i][0] = std * dvz_rand_normal();
         pos[i][1] = std * dvz_rand_normal();
         pos[i][2] = std * dvz_rand_normal();
+    }
+    return pos;
+}
+
+
+
+vec3* dvz_mock_fixed(uint32_t count, vec3 fixed)
+{
+    ASSERT(count > 1);
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = fixed[0];
+        pos[i][1] = fixed[1];
+        pos[i][2] = fixed[2];
+    }
+    return pos;
+}
+
+
+
+vec3* dvz_mock_line(uint32_t count, vec3 p0, vec3 p1)
+{
+    ASSERT(count > 1);
+    vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+
+    vec3 u = {0};
+    u[0] = (p1[0] - p0[0]) * 1. / (count - 1);
+    u[1] = (p1[1] - p0[1]) * 1. / (count - 1);
+    u[2] = (p1[2] - p0[2]) * 1. / (count - 1);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        pos[i][0] = p0[0] + i * u[0];
+        pos[i][1] = p0[1] + i * u[1];
+        pos[i][2] = p0[2] + i * u[2];
     }
     return pos;
 }
@@ -192,6 +259,45 @@ float* dvz_mock_uniform(uint32_t count, float vmin, float vmax)
 
 
 
+float* dvz_mock_full(uint32_t count, float value)
+{
+    ASSERT(count > 0);
+    float* values = (float*)calloc(count, sizeof(float));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        values[i] = value;
+    }
+    return values;
+}
+
+
+
+uint32_t* dvz_mock_range(uint32_t count, uint32_t initial)
+{
+    ASSERT(count > 1);
+    uint32_t* values = (uint32_t*)calloc(count, sizeof(uint32_t));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        values[i] = initial + i;
+    }
+    return values;
+}
+
+
+
+float* dvz_mock_linspace(uint32_t count, float initial, float final)
+{
+    ASSERT(count > 1);
+    float* values = (float*)calloc(count, sizeof(float));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        values[i] = initial + (final - initial) * i * 1.0 / (count - 1);
+    }
+    return values;
+}
+
+
+
 cvec4* dvz_mock_color(uint32_t count, uint8_t alpha)
 {
     ASSERT(count > 0);
@@ -199,6 +305,36 @@ cvec4* dvz_mock_color(uint32_t count, uint8_t alpha)
     for (uint32_t i = 0; i < count; i++)
     {
         dvz_colormap(DVZ_CMAP_HSV, i % 256, color[i]);
+        color[i][3] = alpha;
+    }
+    return color;
+}
+
+
+
+cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono)
+{
+    ASSERT(count > 0);
+    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        color[i][0] = mono[0];
+        color[i][1] = mono[1];
+        color[i][2] = mono[2];
+        color[i][3] = mono[3];
+    }
+    return color;
+}
+
+
+
+cvec4* dvz_mock_cmap(uint32_t count, DvzColormap cmap, uint8_t alpha)
+{
+    ASSERT(count > 0);
+    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dvz_colormap_scale(cmap, i, 0, count, color[i]);
         color[i][3] = alpha;
     }
     return color;

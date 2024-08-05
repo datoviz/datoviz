@@ -197,13 +197,6 @@ V_ = WrappedValue
 # DEFINES
 # ===============================================================================
 
-M_PI = 3.141592653589793
-M_2PI = 6.283185307179586
-M_PI2 = 1.5707963267948966
-M_INV_255 = 0.00392156862745098
-GB = 1073741824
-MB = 1048576
-KB = 1024
 CMAP_NAT = 144
 CMAP_USR_OFS = 144
 CMAP_USR = 32
@@ -224,138 +217,20 @@ CMAP_COUNT = 256
 CMAP_CUSTOM_COUNT = 16
 CMAP_CUSTOM = 160
 CPAL256_CUSTOM = 224
+M_PI = 3.141592653589793
+M_2PI = 6.283185307179586
+M_PI2 = 1.5707963267948966
+M_INV_255 = 0.00392156862745098
+GB = 1073741824
+MB = 1048576
+KB = 1024
 DVZ_VERSION_MINOR = 2
+DVZ_VERSION_PATCH = 1
 
 
 # ===============================================================================
 # ENUMERATIONS
 # ===============================================================================
-
-class DvzKeyCode(CtypesEnum):
-    DVZ_KEY_UNKNOWN = -1
-    DVZ_KEY_NONE = +0
-    DVZ_KEY_SPACE = 32
-    DVZ_KEY_APOSTROPHE = 39
-    DVZ_KEY_COMMA = 44
-    DVZ_KEY_MINUS = 45
-    DVZ_KEY_PERIOD = 46
-    DVZ_KEY_SLASH = 47
-    DVZ_KEY_0 = 48
-    DVZ_KEY_1 = 49
-    DVZ_KEY_2 = 50
-    DVZ_KEY_3 = 51
-    DVZ_KEY_4 = 52
-    DVZ_KEY_5 = 53
-    DVZ_KEY_6 = 54
-    DVZ_KEY_7 = 55
-    DVZ_KEY_8 = 56
-    DVZ_KEY_9 = 57
-    DVZ_KEY_SEMICOLON = 59
-    DVZ_KEY_EQUAL = 61
-    DVZ_KEY_A = 65
-    DVZ_KEY_B = 66
-    DVZ_KEY_C = 67
-    DVZ_KEY_D = 68
-    DVZ_KEY_E = 69
-    DVZ_KEY_F = 70
-    DVZ_KEY_G = 71
-    DVZ_KEY_H = 72
-    DVZ_KEY_I = 73
-    DVZ_KEY_J = 74
-    DVZ_KEY_K = 75
-    DVZ_KEY_L = 76
-    DVZ_KEY_M = 77
-    DVZ_KEY_N = 78
-    DVZ_KEY_O = 79
-    DVZ_KEY_P = 80
-    DVZ_KEY_Q = 81
-    DVZ_KEY_R = 82
-    DVZ_KEY_S = 83
-    DVZ_KEY_T = 84
-    DVZ_KEY_U = 85
-    DVZ_KEY_V = 86
-    DVZ_KEY_W = 87
-    DVZ_KEY_X = 88
-    DVZ_KEY_Y = 89
-    DVZ_KEY_Z = 90
-    DVZ_KEY_LEFT_BRACKET = 91
-    DVZ_KEY_BACKSLASH = 92
-    DVZ_KEY_RIGHT_BRACKET = 93
-    DVZ_KEY_GRAVE_ACCENT = 96
-    DVZ_KEY_WORLD_1 = 161
-    DVZ_KEY_WORLD_2 = 162
-    DVZ_KEY_ESCAPE = 256
-    DVZ_KEY_ENTER = 257
-    DVZ_KEY_TAB = 258
-    DVZ_KEY_BACKSPACE = 259
-    DVZ_KEY_INSERT = 260
-    DVZ_KEY_DELETE = 261
-    DVZ_KEY_RIGHT = 262
-    DVZ_KEY_LEFT = 263
-    DVZ_KEY_DOWN = 264
-    DVZ_KEY_UP = 265
-    DVZ_KEY_PAGE_UP = 266
-    DVZ_KEY_PAGE_DOWN = 267
-    DVZ_KEY_HOME = 268
-    DVZ_KEY_END = 269
-    DVZ_KEY_CAPS_LOCK = 280
-    DVZ_KEY_SCROLL_LOCK = 281
-    DVZ_KEY_NUM_LOCK = 282
-    DVZ_KEY_PRINT_SCREEN = 283
-    DVZ_KEY_PAUSE = 284
-    DVZ_KEY_F1 = 290
-    DVZ_KEY_F2 = 291
-    DVZ_KEY_F3 = 292
-    DVZ_KEY_F4 = 293
-    DVZ_KEY_F5 = 294
-    DVZ_KEY_F6 = 295
-    DVZ_KEY_F7 = 296
-    DVZ_KEY_F8 = 297
-    DVZ_KEY_F9 = 298
-    DVZ_KEY_F10 = 299
-    DVZ_KEY_F11 = 300
-    DVZ_KEY_F12 = 301
-    DVZ_KEY_F13 = 302
-    DVZ_KEY_F14 = 303
-    DVZ_KEY_F15 = 304
-    DVZ_KEY_F16 = 305
-    DVZ_KEY_F17 = 306
-    DVZ_KEY_F18 = 307
-    DVZ_KEY_F19 = 308
-    DVZ_KEY_F20 = 309
-    DVZ_KEY_F21 = 310
-    DVZ_KEY_F22 = 311
-    DVZ_KEY_F23 = 312
-    DVZ_KEY_F24 = 313
-    DVZ_KEY_F25 = 314
-    DVZ_KEY_KP_0 = 320
-    DVZ_KEY_KP_1 = 321
-    DVZ_KEY_KP_2 = 322
-    DVZ_KEY_KP_3 = 323
-    DVZ_KEY_KP_4 = 324
-    DVZ_KEY_KP_5 = 325
-    DVZ_KEY_KP_6 = 326
-    DVZ_KEY_KP_7 = 327
-    DVZ_KEY_KP_8 = 328
-    DVZ_KEY_KP_9 = 329
-    DVZ_KEY_KP_DECIMAL = 330
-    DVZ_KEY_KP_DIVIDE = 331
-    DVZ_KEY_KP_MULTIPLY = 332
-    DVZ_KEY_KP_SUBTRACT = 333
-    DVZ_KEY_KP_ADD = 334
-    DVZ_KEY_KP_ENTER = 335
-    DVZ_KEY_KP_EQUAL = 336
-    DVZ_KEY_LEFT_SHIFT = 340
-    DVZ_KEY_LEFT_CONTROL = 341
-    DVZ_KEY_LEFT_ALT = 342
-    DVZ_KEY_LEFT_SUPER = 343
-    DVZ_KEY_RIGHT_SHIFT = 344
-    DVZ_KEY_RIGHT_CONTROL = 345
-    DVZ_KEY_RIGHT_ALT = 346
-    DVZ_KEY_RIGHT_SUPER = 347
-    DVZ_KEY_MENU = 348
-    DVZ_KEY_LAST = 348
-
 
 class DvzAppFlags(CtypesEnum):
     DVZ_APP_FLAGS_NONE = 0x000000
@@ -794,131 +669,134 @@ class DvzColormap(CtypesEnum):
     DVZ_CPAL032_COLORBLIND8 = 146
 
 
+class DvzKeyCode(CtypesEnum):
+    DVZ_KEY_UNKNOWN = -1
+    DVZ_KEY_NONE = +0
+    DVZ_KEY_SPACE = 32
+    DVZ_KEY_APOSTROPHE = 39
+    DVZ_KEY_COMMA = 44
+    DVZ_KEY_MINUS = 45
+    DVZ_KEY_PERIOD = 46
+    DVZ_KEY_SLASH = 47
+    DVZ_KEY_0 = 48
+    DVZ_KEY_1 = 49
+    DVZ_KEY_2 = 50
+    DVZ_KEY_3 = 51
+    DVZ_KEY_4 = 52
+    DVZ_KEY_5 = 53
+    DVZ_KEY_6 = 54
+    DVZ_KEY_7 = 55
+    DVZ_KEY_8 = 56
+    DVZ_KEY_9 = 57
+    DVZ_KEY_SEMICOLON = 59
+    DVZ_KEY_EQUAL = 61
+    DVZ_KEY_A = 65
+    DVZ_KEY_B = 66
+    DVZ_KEY_C = 67
+    DVZ_KEY_D = 68
+    DVZ_KEY_E = 69
+    DVZ_KEY_F = 70
+    DVZ_KEY_G = 71
+    DVZ_KEY_H = 72
+    DVZ_KEY_I = 73
+    DVZ_KEY_J = 74
+    DVZ_KEY_K = 75
+    DVZ_KEY_L = 76
+    DVZ_KEY_M = 77
+    DVZ_KEY_N = 78
+    DVZ_KEY_O = 79
+    DVZ_KEY_P = 80
+    DVZ_KEY_Q = 81
+    DVZ_KEY_R = 82
+    DVZ_KEY_S = 83
+    DVZ_KEY_T = 84
+    DVZ_KEY_U = 85
+    DVZ_KEY_V = 86
+    DVZ_KEY_W = 87
+    DVZ_KEY_X = 88
+    DVZ_KEY_Y = 89
+    DVZ_KEY_Z = 90
+    DVZ_KEY_LEFT_BRACKET = 91
+    DVZ_KEY_BACKSLASH = 92
+    DVZ_KEY_RIGHT_BRACKET = 93
+    DVZ_KEY_GRAVE_ACCENT = 96
+    DVZ_KEY_WORLD_1 = 161
+    DVZ_KEY_WORLD_2 = 162
+    DVZ_KEY_ESCAPE = 256
+    DVZ_KEY_ENTER = 257
+    DVZ_KEY_TAB = 258
+    DVZ_KEY_BACKSPACE = 259
+    DVZ_KEY_INSERT = 260
+    DVZ_KEY_DELETE = 261
+    DVZ_KEY_RIGHT = 262
+    DVZ_KEY_LEFT = 263
+    DVZ_KEY_DOWN = 264
+    DVZ_KEY_UP = 265
+    DVZ_KEY_PAGE_UP = 266
+    DVZ_KEY_PAGE_DOWN = 267
+    DVZ_KEY_HOME = 268
+    DVZ_KEY_END = 269
+    DVZ_KEY_CAPS_LOCK = 280
+    DVZ_KEY_SCROLL_LOCK = 281
+    DVZ_KEY_NUM_LOCK = 282
+    DVZ_KEY_PRINT_SCREEN = 283
+    DVZ_KEY_PAUSE = 284
+    DVZ_KEY_F1 = 290
+    DVZ_KEY_F2 = 291
+    DVZ_KEY_F3 = 292
+    DVZ_KEY_F4 = 293
+    DVZ_KEY_F5 = 294
+    DVZ_KEY_F6 = 295
+    DVZ_KEY_F7 = 296
+    DVZ_KEY_F8 = 297
+    DVZ_KEY_F9 = 298
+    DVZ_KEY_F10 = 299
+    DVZ_KEY_F11 = 300
+    DVZ_KEY_F12 = 301
+    DVZ_KEY_F13 = 302
+    DVZ_KEY_F14 = 303
+    DVZ_KEY_F15 = 304
+    DVZ_KEY_F16 = 305
+    DVZ_KEY_F17 = 306
+    DVZ_KEY_F18 = 307
+    DVZ_KEY_F19 = 308
+    DVZ_KEY_F20 = 309
+    DVZ_KEY_F21 = 310
+    DVZ_KEY_F22 = 311
+    DVZ_KEY_F23 = 312
+    DVZ_KEY_F24 = 313
+    DVZ_KEY_F25 = 314
+    DVZ_KEY_KP_0 = 320
+    DVZ_KEY_KP_1 = 321
+    DVZ_KEY_KP_2 = 322
+    DVZ_KEY_KP_3 = 323
+    DVZ_KEY_KP_4 = 324
+    DVZ_KEY_KP_5 = 325
+    DVZ_KEY_KP_6 = 326
+    DVZ_KEY_KP_7 = 327
+    DVZ_KEY_KP_8 = 328
+    DVZ_KEY_KP_9 = 329
+    DVZ_KEY_KP_DECIMAL = 330
+    DVZ_KEY_KP_DIVIDE = 331
+    DVZ_KEY_KP_MULTIPLY = 332
+    DVZ_KEY_KP_SUBTRACT = 333
+    DVZ_KEY_KP_ADD = 334
+    DVZ_KEY_KP_ENTER = 335
+    DVZ_KEY_KP_EQUAL = 336
+    DVZ_KEY_LEFT_SHIFT = 340
+    DVZ_KEY_LEFT_CONTROL = 341
+    DVZ_KEY_LEFT_ALT = 342
+    DVZ_KEY_LEFT_SUPER = 343
+    DVZ_KEY_RIGHT_SHIFT = 344
+    DVZ_KEY_RIGHT_CONTROL = 345
+    DVZ_KEY_RIGHT_ALT = 346
+    DVZ_KEY_RIGHT_SUPER = 347
+    DVZ_KEY_MENU = 348
+    DVZ_KEY_LAST = 348
+
+
 # Function aliases
 
-KEY_UNKNOWN = -1
-KEY_NONE = +0
-KEY_SPACE = 32
-KEY_APOSTROPHE = 39
-KEY_COMMA = 44
-KEY_MINUS = 45
-KEY_PERIOD = 46
-KEY_SLASH = 47
-KEY_0 = 48
-KEY_1 = 49
-KEY_2 = 50
-KEY_3 = 51
-KEY_4 = 52
-KEY_5 = 53
-KEY_6 = 54
-KEY_7 = 55
-KEY_8 = 56
-KEY_9 = 57
-KEY_SEMICOLON = 59
-KEY_EQUAL = 61
-KEY_A = 65
-KEY_B = 66
-KEY_C = 67
-KEY_D = 68
-KEY_E = 69
-KEY_F = 70
-KEY_G = 71
-KEY_H = 72
-KEY_I = 73
-KEY_J = 74
-KEY_K = 75
-KEY_L = 76
-KEY_M = 77
-KEY_N = 78
-KEY_O = 79
-KEY_P = 80
-KEY_Q = 81
-KEY_R = 82
-KEY_S = 83
-KEY_T = 84
-KEY_U = 85
-KEY_V = 86
-KEY_W = 87
-KEY_X = 88
-KEY_Y = 89
-KEY_Z = 90
-KEY_LEFT_BRACKET = 91
-KEY_BACKSLASH = 92
-KEY_RIGHT_BRACKET = 93
-KEY_GRAVE_ACCENT = 96
-KEY_WORLD_1 = 161
-KEY_WORLD_2 = 162
-KEY_ESCAPE = 256
-KEY_ENTER = 257
-KEY_TAB = 258
-KEY_BACKSPACE = 259
-KEY_INSERT = 260
-KEY_DELETE = 261
-KEY_RIGHT = 262
-KEY_LEFT = 263
-KEY_DOWN = 264
-KEY_UP = 265
-KEY_PAGE_UP = 266
-KEY_PAGE_DOWN = 267
-KEY_HOME = 268
-KEY_END = 269
-KEY_CAPS_LOCK = 280
-KEY_SCROLL_LOCK = 281
-KEY_NUM_LOCK = 282
-KEY_PRINT_SCREEN = 283
-KEY_PAUSE = 284
-KEY_F1 = 290
-KEY_F2 = 291
-KEY_F3 = 292
-KEY_F4 = 293
-KEY_F5 = 294
-KEY_F6 = 295
-KEY_F7 = 296
-KEY_F8 = 297
-KEY_F9 = 298
-KEY_F10 = 299
-KEY_F11 = 300
-KEY_F12 = 301
-KEY_F13 = 302
-KEY_F14 = 303
-KEY_F15 = 304
-KEY_F16 = 305
-KEY_F17 = 306
-KEY_F18 = 307
-KEY_F19 = 308
-KEY_F20 = 309
-KEY_F21 = 310
-KEY_F22 = 311
-KEY_F23 = 312
-KEY_F24 = 313
-KEY_F25 = 314
-KEY_KP_0 = 320
-KEY_KP_1 = 321
-KEY_KP_2 = 322
-KEY_KP_3 = 323
-KEY_KP_4 = 324
-KEY_KP_5 = 325
-KEY_KP_6 = 326
-KEY_KP_7 = 327
-KEY_KP_8 = 328
-KEY_KP_9 = 329
-KEY_KP_DECIMAL = 330
-KEY_KP_DIVIDE = 331
-KEY_KP_MULTIPLY = 332
-KEY_KP_SUBTRACT = 333
-KEY_KP_ADD = 334
-KEY_KP_ENTER = 335
-KEY_KP_EQUAL = 336
-KEY_LEFT_SHIFT = 340
-KEY_LEFT_CONTROL = 341
-KEY_LEFT_ALT = 342
-KEY_LEFT_SUPER = 343
-KEY_RIGHT_SHIFT = 344
-KEY_RIGHT_CONTROL = 345
-KEY_RIGHT_ALT = 346
-KEY_RIGHT_SUPER = 347
-KEY_MENU = 348
-KEY_LAST = 348
 APP_FLAGS_NONE = 0x000000
 APP_FLAGS_OFFSCREEN = 0x000001
 APP_FLAGS_WHITE_BACKGROUND = 0x100000
@@ -1257,6 +1135,129 @@ CPAL032_CATEGORY20_20 = 143
 CPAL032_CATEGORY20B_20 = 144
 CPAL032_CATEGORY20C_20 = 145
 CPAL032_COLORBLIND8 = 146
+KEY_UNKNOWN = -1
+KEY_NONE = +0
+KEY_SPACE = 32
+KEY_APOSTROPHE = 39
+KEY_COMMA = 44
+KEY_MINUS = 45
+KEY_PERIOD = 46
+KEY_SLASH = 47
+KEY_0 = 48
+KEY_1 = 49
+KEY_2 = 50
+KEY_3 = 51
+KEY_4 = 52
+KEY_5 = 53
+KEY_6 = 54
+KEY_7 = 55
+KEY_8 = 56
+KEY_9 = 57
+KEY_SEMICOLON = 59
+KEY_EQUAL = 61
+KEY_A = 65
+KEY_B = 66
+KEY_C = 67
+KEY_D = 68
+KEY_E = 69
+KEY_F = 70
+KEY_G = 71
+KEY_H = 72
+KEY_I = 73
+KEY_J = 74
+KEY_K = 75
+KEY_L = 76
+KEY_M = 77
+KEY_N = 78
+KEY_O = 79
+KEY_P = 80
+KEY_Q = 81
+KEY_R = 82
+KEY_S = 83
+KEY_T = 84
+KEY_U = 85
+KEY_V = 86
+KEY_W = 87
+KEY_X = 88
+KEY_Y = 89
+KEY_Z = 90
+KEY_LEFT_BRACKET = 91
+KEY_BACKSLASH = 92
+KEY_RIGHT_BRACKET = 93
+KEY_GRAVE_ACCENT = 96
+KEY_WORLD_1 = 161
+KEY_WORLD_2 = 162
+KEY_ESCAPE = 256
+KEY_ENTER = 257
+KEY_TAB = 258
+KEY_BACKSPACE = 259
+KEY_INSERT = 260
+KEY_DELETE = 261
+KEY_RIGHT = 262
+KEY_LEFT = 263
+KEY_DOWN = 264
+KEY_UP = 265
+KEY_PAGE_UP = 266
+KEY_PAGE_DOWN = 267
+KEY_HOME = 268
+KEY_END = 269
+KEY_CAPS_LOCK = 280
+KEY_SCROLL_LOCK = 281
+KEY_NUM_LOCK = 282
+KEY_PRINT_SCREEN = 283
+KEY_PAUSE = 284
+KEY_F1 = 290
+KEY_F2 = 291
+KEY_F3 = 292
+KEY_F4 = 293
+KEY_F5 = 294
+KEY_F6 = 295
+KEY_F7 = 296
+KEY_F8 = 297
+KEY_F9 = 298
+KEY_F10 = 299
+KEY_F11 = 300
+KEY_F12 = 301
+KEY_F13 = 302
+KEY_F14 = 303
+KEY_F15 = 304
+KEY_F16 = 305
+KEY_F17 = 306
+KEY_F18 = 307
+KEY_F19 = 308
+KEY_F20 = 309
+KEY_F21 = 310
+KEY_F22 = 311
+KEY_F23 = 312
+KEY_F24 = 313
+KEY_F25 = 314
+KEY_KP_0 = 320
+KEY_KP_1 = 321
+KEY_KP_2 = 322
+KEY_KP_3 = 323
+KEY_KP_4 = 324
+KEY_KP_5 = 325
+KEY_KP_6 = 326
+KEY_KP_7 = 327
+KEY_KP_8 = 328
+KEY_KP_9 = 329
+KEY_KP_DECIMAL = 330
+KEY_KP_DIVIDE = 331
+KEY_KP_MULTIPLY = 332
+KEY_KP_SUBTRACT = 333
+KEY_KP_ADD = 334
+KEY_KP_ENTER = 335
+KEY_KP_EQUAL = 336
+KEY_LEFT_SHIFT = 340
+KEY_LEFT_CONTROL = 341
+KEY_LEFT_ALT = 342
+KEY_LEFT_SUPER = 343
+KEY_RIGHT_SHIFT = 344
+KEY_RIGHT_CONTROL = 345
+KEY_RIGHT_ALT = 346
+KEY_RIGHT_SUPER = 347
+KEY_MENU = 348
+KEY_LAST = 348
 
 
 # ===============================================================================
@@ -3439,6 +3440,22 @@ mock_pos2D.argtypes = [
 ]
 mock_pos2D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
+# Function dvz_mock_circle()
+mock_circle = dvz.dvz_mock_circle
+mock_circle.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float,  # float radius
+]
+mock_circle.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_band()
+mock_band = dvz.dvz_mock_band
+mock_band.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float * 2,  # vec2 size
+]
+mock_band.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+
 # Function dvz_mock_pos3D()
 mock_pos3D = dvz.dvz_mock_pos3D
 mock_pos3D.argtypes = [
@@ -3446,6 +3463,23 @@ mock_pos3D.argtypes = [
     ctypes.c_float,  # float std
 ]
 mock_pos3D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_fixed()
+mock_fixed = dvz.dvz_mock_fixed
+mock_fixed.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float * 3,  # vec3 fixed
+]
+mock_fixed.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_line()
+mock_line = dvz.dvz_mock_line
+mock_line.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float * 3,  # vec3 p0
+    ctypes.c_float * 3,  # vec3 p1
+]
+mock_line.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_uniform()
 mock_uniform = dvz.dvz_mock_uniform
@@ -3456,6 +3490,31 @@ mock_uniform.argtypes = [
 ]
 mock_uniform.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
+# Function dvz_mock_full()
+mock_full = dvz.dvz_mock_full
+mock_full.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float,  # float value
+]
+mock_full.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_range()
+mock_range = dvz.dvz_mock_range
+mock_range.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_uint32,  # uint32_t initial
+]
+mock_range.restype = ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_linspace()
+mock_linspace = dvz.dvz_mock_linspace
+mock_linspace.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float,  # float initial
+    ctypes.c_float,  # float final
+]
+mock_linspace.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
 # Function dvz_mock_color()
 mock_color = dvz.dvz_mock_color
 mock_color.argtypes = [
@@ -3463,4 +3522,21 @@ mock_color.argtypes = [
     ctypes.c_uint8,  # uint8_t alpha
 ]
 mock_color.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_monochrome()
+mock_monochrome = dvz.dvz_mock_monochrome
+mock_monochrome.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_uint8 * 4,  # cvec4 mono
+]
+mock_monochrome.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
+
+# Function dvz_mock_cmap()
+mock_cmap = dvz.dvz_mock_cmap
+mock_cmap.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    DvzColormap,  # DvzColormap cmap
+    ctypes.c_uint8,  # uint8_t alpha
+]
+mock_cmap.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
