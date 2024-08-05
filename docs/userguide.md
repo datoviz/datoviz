@@ -113,6 +113,8 @@ Datoviz offers a predefined set of common visuals:
  * **2D visuals**: `image`;
  * **3D visuals**: `mesh`, `sphere` (2D sprites with "fake" 3D rendering, also known as impostors), `volume` (currently using a basic GPU raymarching algorithm), `slice` (volume image slices).
 
+![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
+
 The visuals are implemented on the GPU using advanced antialiasing techniques within the shaders.
 
 Additional visuals and the ability to create custom visuals via user-provided shaders will be added in the future.

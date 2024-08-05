@@ -38,6 +38,8 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 * **𓈈 Figure subplots** (aka "panels")
 * **🖥️ Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
+![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
+
 Work in progress (currently planned for **v0.3**):
 
 * **➕ Axes**: ticks, grids, labels
