@@ -102,12 +102,12 @@ def c_to_dtype(type, enum_int=False, unsigned=None):
 
 
 # Original C pointer to ndpointer.
-def cpointer_to_ndpointer(type, unsigned=None):
+def cpointer_to_ndpointer(type, unsigned=None, ndpointer=True):
     assert '*' in type
     assert type.endswith('*')
     btype = type[:-1]
     dtype = c_to_dtype(btype, unsigned=unsigned)
-    if dtype:
+    if dtype and ndpointer:
         if isinstance(dtype, tuple):
             dtype, n = dtype
             ndim = 2
@@ -124,7 +124,7 @@ def cpointer_to_ndpointer(type, unsigned=None):
 
 
 # Final type mapping.
-def map_type(type, enum_int=False, unsigned=None):
+def map_type(type, enum_int=False, unsigned=None, ndpointer=True):
     assert type
     if type == 'char*' and not unsigned:
         return 'ctypes.c_char_p'
@@ -133,7 +133,7 @@ def map_type(type, enum_int=False, unsigned=None):
         return "ctypes.c_void_p"
 
     elif type.endswith('*'):
-        return cpointer_to_ndpointer(type, unsigned=unsigned)
+        return cpointer_to_ndpointer(type, unsigned=unsigned, ndpointer=ndpointer)
 
     else:
         return c_to_ctype(type, enum_int=enum_int, unsigned=unsigned)
@@ -213,8 +213,9 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += '    _pack_ = 8\n'
             out += '    _fields_ = [\n'
             for field in struct_info.get('fields', []):
+                unsigned = field.get("unsigned", None)
                 dtype = map_type(
-                    field["dtype"], enum_int=True, unsigned=field.get("unsigned", None))
+                    field["dtype"], enum_int=True, unsigned=unsigned, ndpointer=False)
                 out += f'        ("{field["name"]}", {dtype}),\n'
             out += '    ]\n\n\n'
     # Aliases without the Dvz prefix.

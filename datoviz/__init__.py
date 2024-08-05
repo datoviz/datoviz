@@ -1295,6 +1295,10 @@ class DvzFont(ctypes.Structure):
     pass
 
 
+class DvzIndex(ctypes.Structure):
+    pass
+
+
 class DvzPanel(ctypes.Structure):
     pass
 
@@ -1331,7 +1335,7 @@ class DvzAtlasFont(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("ttf_size", ctypes.c_ulong),
-        ("ttf_bytes", ndpointer(dtype=np.ubyte, ndim=1, ncol=1, flags="C_CONTIGUOUS")),
+        ("ttf_bytes", ctypes.POINTER(ctypes.c_char)),
         ("atlas", ctypes.POINTER(DvzAtlas)),
         ("font", ctypes.POINTER(DvzFont)),
     ]
@@ -1355,11 +1359,11 @@ class DvzShape(ctypes.Structure):
         ("type", ctypes.c_int32),
         ("vertex_count", ctypes.c_uint32),
         ("index_count", ctypes.c_uint32),
-        ("pos", ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")),
-        ("normal", ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")),
-        ("color", ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")),
-        ("texcoords", ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS")),
-        ("index", ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS")),
+        ("pos", ctypes.POINTER(ctypes.c_float * 3)),
+        ("normal", ctypes.POINTER(ctypes.c_float * 3)),
+        ("color", ctypes.POINTER(ctypes.c_uint8 * 4)),
+        ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
+        ("index", ctypes.POINTER(ctypes.c_uint32)),
     ]
 
 
