@@ -148,7 +148,11 @@ def extract_version(version_path):
         r"#define DVZ_VERSION_MINOR ([0-9a-z\.]+)").search(version_contents).group(1))
     patch = int(re.compile(
         r"#define DVZ_VERSION_PATCH ([0-9a-z\.]+)").search(version_contents).group(1))
+    dev = re.compile(
+        r"#define DVZ_VERSION_DEVEL ([0-9a-z\.\-]+)").search(version_contents).group(1)
     version = f"{major}.{minor}.{patch}"
+    if dev:
+        version += "-dev"
     return version
 
 
