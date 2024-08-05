@@ -24,6 +24,7 @@ vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
         }
         else if (modes.y == VOLUME_COLOR_COLORMAP)
         {
+            // TODO: the colormap should be a parameter.
             color = colormap(DVZ_CMAP_HSV, v);
             color.a = v;
         }
