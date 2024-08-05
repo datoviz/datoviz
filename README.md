@@ -1,5 +1,7 @@
 # Datoviz: high-performance GPU scientific data visualization C/C++ library
 
+[**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
+[**[Usage]**](#-usage) &nbsp;
 [**[User guide]**](docs/userguide.md) &nbsp;
 [**[Examples]**](docs/examples.md) &nbsp;
 [**[API reference]**](docs/api.md) &nbsp;
