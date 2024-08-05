@@ -12,7 +12,7 @@ sudo apt install build-essential cmake gcc ccache ninja-build xorg-dev clang-for
 curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
 
 # Clone the Datoviz repo and build.
-git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
+git clone https://github.com/datoviz/datoviz.git --recursive
 cd datoviz
 
 # Build Python requirements
@@ -48,7 +48,7 @@ python -c "import datoviz; datoviz.demo()"
 brew install just cmake ccache ninja freetype clang-format tree
 
 # Clone the Datoviz repo.
-git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
+git clone https://github.com/datoviz/datoviz.git --recursive
 cd datoviz
 
 # Build Python requirements
@@ -84,7 +84,7 @@ python -c "import datoviz; datoviz.demo()"
 brew install just cmake ccache ninja freetype clang-format tree
 
 # Clone the Datoviz repo.
-git clone https://github.com/datoviz/datoviz.git -b v0.2x --recursive
+git clone https://github.com/datoviz/datoviz.git --recursive
 cd datoviz
 
 # Build Python requirements

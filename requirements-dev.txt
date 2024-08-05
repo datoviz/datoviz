@@ -5,3 +5,4 @@ pyparsing
 pytest
 wheel
 setuptools
+twine

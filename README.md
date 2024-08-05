@@ -68,7 +68,7 @@ _Note_: Since Datoviz v0.2, you no longer need to install the Vulkan SDK or to m
 
 
 ```bash
-pip install git+https://github.com/datoviz/datoviz/tree/v0.2x
+pip install datoviz
 ```
 
 <!-- ### Ubuntu 24.04

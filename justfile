@@ -17,7 +17,7 @@ default:
 
 
 # -------------------------------------------------------------------------------------------------
-# Versioning
+# Versioning and releasing
 # -------------------------------------------------------------------------------------------------
 
 version:
@@ -91,6 +91,14 @@ bump version:
     # Call the `just ctypes` command
     os.system("just ctypes")
     print("Updated ctypes wrapper")
+#
+
+upload *files:
+    # Put this in your ~/.pypirc:
+    # [pypi]
+    #     username = __token__
+    #     password = pypi-YOUR_API_TOKEN_HERE
+    twine upload {{files}}
 #
 
 
@@ -794,6 +802,16 @@ testwheel:
 
     # Optionally clean up the environment
     rm -rf test_env
+#
+
+testpypi:
+    #!/usr/bin/env bash
+    python3 -m venv venv_pypi
+    source venv_pypi/bin/activate
+    pip install datoviz
+    python -c "import datoviz; datoviz.demo()"
+    deactivate
+    rm -rf venv_pypi
 #
 
 

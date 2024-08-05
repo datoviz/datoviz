@@ -8,7 +8,7 @@ dependencies = ["numpy"]
 version = "0.2.1-dev"
 description = "A C library for high-performance GPU scientific visualization"
 authors = [
-    { name = "Cyrille Rossant", email = "cyrille.rossant@datoviz.com" }
+    { name = "Cyrille Rossant", email = "cyrille.rossant@gmail.com" }
 ]
 license = { text = "MIT" }
 readme = "README.md"
@@ -30,6 +30,6 @@ package-data = {"datoviz" = [
 ]}
 
 [project.urls]
-"Homepage" = "https://datoviz.com"
-"Documentation" = "https://datoviz.com/docs"
+"Homepage" = "https://github.com/datoviz/datoviz"
+"Documentation" = "https://github.com/datoviz/datoviz"
 "Source" = "https://github.com/datoviz/datoviz"
