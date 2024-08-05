@@ -37,10 +37,17 @@ static void _visual_callback(
     uint32_t first_instance, uint32_t instance_count)
 {
     ANN(visual);
-    // NOTE: here, count is item_count, so index_count/3 (number of faces).
+
+    // NOTE: if indexing is used, count is item_count, so index_count/3 (number of faces).
     // We need to multiply by three to retrieve the number of elements to draw using
     // indexing.
-    dvz_visual_instance(visual, canvas, first, 0, 3 * count, first_instance, instance_count);
+    bool indexed = ((visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0);
+    if (indexed)
+    {
+        count *= 3;
+    }
+
+    dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
 }
 
 
@@ -132,7 +139,7 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
     ANN(visual);
     ASSERT(vertex_count > 0);
     ASSERT(index_count % 3 == 0);
-    log_debug("allocating the mesh visual");
+    log_debug("allocating the mesh visual, %d vertices, %d indices", vertex_count, index_count);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);

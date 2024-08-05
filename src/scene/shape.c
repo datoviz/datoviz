@@ -509,6 +509,8 @@ DvzShape dvz_shape_cube(cvec4* colors)
     {
         for (uint32_t j = 0; j < 6; j++)
         {
+            ASSERT(i < 6);
+            ASSERT(6 * i + j < vertex_count);
             memcpy(shape.color[6 * i + j], colors[i], sizeof(cvec4));
         }
     }
@@ -570,6 +572,7 @@ DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color)
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_SPHERE;
     // TODO
+    log_error("dvz_shape_sphere() not yet implemented");
     return shape;
 }
 
@@ -581,6 +584,7 @@ DvzShape dvz_shape_cone(uint32_t count, cvec4 color)
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_CONE;
     // TODO
+    log_error("dvz_shape_cone() not yet implemented");
     return shape;
 }
 
@@ -592,5 +596,6 @@ DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color)
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_CYLINDER;
     // TODO
+    log_error("dvz_shape_cylinder() not yet implemented");
     return shape;
 }
