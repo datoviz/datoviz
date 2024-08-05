@@ -102,7 +102,7 @@ static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_vo
 {
     char path[1024] = {0};
     snprintf(
-        path, sizeof(path), "%s/%s%s.npy", DATA_DIR, "allen_mouse_brain",
+        path, sizeof(path), "%s/volumes/%s%s.npy", DATA_DIR, "allen_mouse_brain",
         use_rgb_volume ? "_rgba" : "");
 
     DvzSize size = 0;
