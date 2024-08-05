@@ -806,11 +806,28 @@ testwheel:
 
 testpypi:
     #!/usr/bin/env bash
+
+    # HACK: work around: ERROR: Can not perform a '--user' install. User site-packages are not
+    # visible in this virtualenv
+    # see https://github.com/gitpod-io/gitpod/issues/1997
+    export PIP_USER=false
+
+    # Create a temporary venv.
+    rm -rf venv_pypi
     python3 -m venv venv_pypi
-    source venv_pypi/bin/activate
-    pip install datoviz
-    pushd venv_pypi && python -c "import datoviz; datoviz.demo()" && popd
-    deactivate
+    pushd venv_pypi
+
+    # Make sure Datoviz is not installed in the venv before we pip install it.
+    bin/python -c "exec('try: import datoviz\nexcept: print(\"datoviz not yet installed\")\nelse: raise RuntimeError(\"datoviz already installed\")')"
+
+    # Install datoviz from PyPI
+    bin/pip install datoviz
+
+    # Check the Datoviz demo.
+    bin/python -c "import datoviz; datoviz.demo()"
+
+    # Cleanup the venv.
+    popd
     rm -rf venv_pypi
 #
 
