@@ -167,7 +167,8 @@ In **2021**, the [first experimental version of Datoviz **v0.1** was released](h
 
 Over the next three years, the technology matured, aided by a [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in **2021**.
 
-In **2024**, a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/) facilitated the release of Datoviz **v0.2**. This version was redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs. It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+In **2024**, Datoviz **v0.2** is released. This version is redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
+It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers (thanks to a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/)).
 
 Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0, initiated by Cyrille Rossant and Nicolas Rougier, will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
 
