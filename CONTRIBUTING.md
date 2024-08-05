@@ -9,9 +9,9 @@ This is a work in progress.
 
 Set this environment variable:
 
-* `DVZ_LOG_LEVEL=2`: (info, default)
-* `DVZ_LOG_LEVEL=1`: debug
-* `DVZ_LOG_LEVEL=0`: trace (caution: extremely verbose)
+* `DVZ_LOG_LEVEL=2`: info logging level, default
+* `DVZ_LOG_LEVEL=1`: debug logging level
+* `DVZ_LOG_LEVEL=0`: trace logging level (caution: extremely verbose)
 
 
 ### Datoviz Intermediate Protocol requests
@@ -26,4 +26,14 @@ You can inspect these commands for debugging purposes, and depending on whether 
 
 Set this environment variable to force offscreen rendering of all Datoviz applications:
 
-* `DVZ_CAPTURE_PNG=path/to/image.png`
+* `DVZ_CAPTURE_PNG=path/to/image.png`: save the figure to a PNG file.
+
+
+### Performance
+
+Set these environment variable to display some performance statistics
+
+* `DVZ_FPS=1`: display an FPS counter (frames per second).
+* `DVZ_MONITOR=1`: display a memory monitor (allocated GPU memory).
+
+_Note_: the FPS computation algorithm is currently suboptimal, it will be improved later. Contributions welcome.
