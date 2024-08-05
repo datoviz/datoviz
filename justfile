@@ -809,7 +809,7 @@ testpypi:
     python3 -m venv venv_pypi
     source venv_pypi/bin/activate
     pip install datoviz
-    python -c "import datoviz; datoviz.demo()"
+    pushd venv_pypi && python -c "import datoviz; datoviz.demo()" && popd
     deactivate
     rm -rf venv_pypi
 #
