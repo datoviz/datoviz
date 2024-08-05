@@ -5,21 +5,21 @@ This document provides a high-level overview of the Datoviz v0.2x code architect
 
 ## Main components
 
-The main components are the following:
+The main components are:
 
-* **vklite** (`include/datoviz/vklite.h`): a thin C Vulkan wrapper that provides the main GPU compute/visualization functionality required for scientific visualization.
-* **Renderer** (`include/datoviz/renderer.h`): a C/C++, Vulkan-based GPU visualization engine that provides a glfw-based event loop receiving and processing visualization requests in real time.
-* **Requests** (`include/datoviz/requests.h`): a C API that generates the visualization requests to be sent to the renderer in real time.
-* **Visuals** (`includes/datoviz/scene/visuals/`): a rich C/GLSL library of common high-quality GPU graphical primitives such as points, markers, paths, images, glyphs, meshes, volumes...
-* **Scene** (`include/datoviz.h`): a C/C++ library that provides scientific visualization functionality that generates visualization requests to be sent to the renderer.
+* **vklite** (`include/datoviz/vklite.h`): A lightweight C Vulkan wrapper that provides essential GPU compute and visualization functionality for scientific visualization.
+* **Renderer** (`include/datoviz/renderer.h`): A C/C++ Vulkan-based GPU visualization engine that offers a GLFW-based event loop, processing visualization requests in real time.
+* **Requests** (`include/datoviz/requests.h`): A C API that generates real-time visualization requests to be sent to the renderer.
+* **Visuals** (`includes/datoviz/scene/visuals/`): A comprehensive C/GLSL library of high-quality GPU graphical primitives, including points, markers, paths, images, glyphs, meshes, and volumes.
+* **Scene** (`include/datoviz.h`): A C/C++ library providing scientific visualization functionality that generates requests to be sent to the renderer.
 
-These components are organized around the **Datoviz Intermediate Protocol**, an **intermediate-level message-based visualization protocol** that decouples the high-level scientific visualization logic from the low-level Vulkan rendering implementation.
+These components are organized around the **Datoviz Intermediate Protocol**, an **intermediate-level, message-based visualization protocol** that decouples high-level scientific visualization logic from low-level Vulkan rendering implementation.
 
-While the former may be maintained and contributed by research software engineers and scientists, the former requires deep technical expertise that is more common within the video game industry and among game engine developers than in science.
+While the former can be developed and maintained by research software engineers and scientists, the latter requires deep technical expertise, more commonly found in the video game industry and among game engine developers than in scientific fields.
 
-Another benefit of this architecture is that it ensures the high-level scientific visualization logic can be developed independently from the constant innovations in graphics hardware and graphics APIs (OpenGL, Vulkan, Metal, DirectX, WebGPU, wgpu...). In particular, thanks to a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) attributed to the VisPy project in 2024, this architecture will allow us in the next couple of years to port the Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers.
+This architecture also ensures that high-level scientific visualization logic can evolve independently from ongoing innovations in graphics hardware and APIs (OpenGL, Vulkan, Metal, DirectX, WebGPU, wgpu, etc.). Notably, with support from a generous [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to the VisPy project in 2024, this architecture will enable us to port Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers, in the coming years.
 
-This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** will be available in local and remote multi-platform environments (distributed rendering, web-based visualization), working with either local or cloud-based data, with language-agnostic visualization code (C/C++, Python, Julia, Rust...).
+This will help us achieve a long-term vision where **high-performance GPU-based 2D/3D scientific visualization** is accessible across local and remote multi-platform environments (distributed rendering, web-based visualization), capable of working with both local and cloud-based data, and supporting language-agnostic visualization code (C/C++, Python, Julia, Rust, etc.).
 
 
 ## Renderer

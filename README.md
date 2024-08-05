@@ -66,7 +66,7 @@ Requirements:
 - A Vulkan-capable graphics chipset (either integrated or dedicated graphics process unit)
 - Python and NumPy
 
-_Note_: Since Datoviz v0.2, you no longer need to install the Vulkan SDK or to manually build the library.
+_Note_: You no longer need to install the Vulkan SDK or to manually build the library. Precompiled wheels for Linux, Windows, and macOS have been uploaded to PyPI.
 
 
 ```bash
