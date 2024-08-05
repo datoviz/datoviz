@@ -699,9 +699,6 @@ ctypes:
     @python tools/generate_ctypes.py
 #
 
-fullctypes: headers ctypes checkstructs
-#
-
 pytest:
     @pytest tests.py
 #
@@ -881,6 +878,9 @@ rpath:
 rpath:
     @echo "Printing RPATH:"
     @objdump -x build/libdatoviz.so | grep 'R.*PATH'
+#
+
+api: headers symbols ctypes checkstructs doc # after every API update
 #
 
 
