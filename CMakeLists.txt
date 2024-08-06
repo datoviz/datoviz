@@ -756,6 +756,8 @@ if(${OS_LINUX})
     set(CMAKE_INSTALL_RPATH "$ORIGIN")
     target_link_options(libdatoviz PRIVATE
         -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
+elseif(${OS_MACOS})
+    set(CMAKE_INSTALL_RPATH "@loader_path")
 endif()
 
 target_link_libraries(libdatoviz
