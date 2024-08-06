@@ -151,7 +151,7 @@ build release="Debug":
 #
 
 [macos]
-build release="Debug":
+build release="Debug": && bundledeps
     @set -e
     @unset CC
     @unset CXX
@@ -448,7 +448,7 @@ testwheel:
 # -------------------------------------------------------------------------------------------------
 
 [macos]
-bundledeps lib="build/libdatoviz.dylib":
+bundledeps lib="build/libdatoviz.dylib":  # && rpath
     #!/usr/bin/env sh
     # Copy the dependencies and adjust their rpaths.
 
@@ -464,6 +464,7 @@ bundledeps lib="build/libdatoviz.dylib":
             echo "Copying $dep to $target/"
             cp -a $dep $target
         fi
+        # echo "Change $dep to @loader_path/$filename in {{lib}}"
         install_name_tool -change "$dep" "@loader_path/$filename" {{lib}}
     done
 
@@ -874,13 +875,13 @@ deps:
 [macos]
 rpath:
     @echo "Printing RPATH:"
-    @otool -l build/libdatoviz.dylib | awk '/LC_RPATH/ {getline; getline; print $2}'
+    @otool -l build/libdatoviz.dylib | grep -i "path"
 #
 
 [linux]
 rpath:
     @echo "Printing RPATH:"
-    @objdump -x build/libdatoviz.so | grep 'R.*PATH'
+    @objdump -x build/libdatoviz.so | grep -i 'R.*PATH'
 #
 
 
