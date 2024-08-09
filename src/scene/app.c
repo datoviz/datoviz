@@ -91,6 +91,14 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
     if (payload.et != ev.type)
         return;
 
+    // NOTE: detect when callbacks are called while the app is being stopped.
+    // This prevents assertion crashes in callbacks upon app closing.
+    if (dvz_atomic_get(client->to_stop) == 1)
+    {
+        log_debug("prevent client callback from being called while the app is stopping");
+        return;
+    }
+
     DvzApp* app = payload.app;
     ANN(app);
 
