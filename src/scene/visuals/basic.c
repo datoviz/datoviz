@@ -55,6 +55,11 @@ DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags)
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+
+    // Params.
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzBasicParams));
+    dvz_params_attr(params, 0, FIELD(DvzBasicParams, size));
 
     return visual;
 }
@@ -87,4 +92,12 @@ void dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* v
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, (void*)values);
+}
+
+
+
+void dvz_basic_size(DvzVisual* visual, float size)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, &size);
 }

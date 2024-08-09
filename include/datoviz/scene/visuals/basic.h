@@ -22,6 +22,7 @@
 
 // typedef struct DvzBasic DvzBasic;
 typedef struct DvzBasicVertex DvzBasicVertex;
+typedef struct DvzBasicParams DvzBasicParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -37,6 +38,13 @@ struct DvzBasicVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
+};
+
+
+
+struct DvzBasicParams
+{
+    float size; /* point size */
 };
 
 

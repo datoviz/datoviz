@@ -182,6 +182,7 @@ void dvz_demo(void)
         dvz_basic_alloc(point_list, n2);
         dvz_basic_position(point_list, 0, n2, pos2, 0);
         dvz_basic_color(point_list, 0, n2, color2, 0);
+        dvz_basic_size(point_list, 3.0f);
     }
 
     legend(batch, p10, "POINT LIST");

@@ -31,7 +31,7 @@ int test_basic_1(TstSuite* suite)
     VisualTest vt = visual_test_start("basic", VISUAL_TEST_PANZOOM, 0);
 
     // Number of items.
-    const uint32_t n = 30000;
+    const uint32_t n = 1000;
 
     // Create the visual.
     DvzVisual* visual = dvz_basic(vt.batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);

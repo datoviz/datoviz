@@ -910,6 +910,16 @@ dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
 
 
 /**
+ * Set the point size (for POINT_LIST topology only).
+ *
+ * @param visual the visual
+ * @param size the point size in pixels
+ */
+DVZ_EXPORT void dvz_basic_size(DvzVisual* visual, float size);
+
+
+
+/**
  * Allocate memory for a visual.
  *
  * @param visual the visual
