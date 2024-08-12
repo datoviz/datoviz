@@ -41,6 +41,8 @@ struct DvzArcball
     vec3 init;       // initial Euler angles
     versor rotation; // current rotation (while dragging), to be applied to mat after dragging
     vec3 constrain;  // constrain axis, null if no constraint
+
+    void* user_data;
 };
 
 

@@ -15,7 +15,7 @@
 typedef enum
 {
     DVZ_APP_FLAGS_NONE = 0x000000,
-    DVZ_APP_FLAGS_OFFSCREEN = 0x000001,
+    DVZ_APP_FLAGS_OFFSCREEN = 0x008000, // INTERNAL: also passed as CanvasFlags in visual_test.h
 
     // NOTE: must match DVZ_RENDERER_FLAGS_WHITE_BACKGROUND
     DVZ_APP_FLAGS_WHITE_BACKGROUND = 0x100000,

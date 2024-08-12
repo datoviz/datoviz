@@ -31,7 +31,6 @@
 static unsigned char* DVZ_COLORMAP_ARRAY;
 #pragma GCC visibility pop
 
-#define EPS 0.000001
 
 
 /*************************************************************************************************/
@@ -48,8 +47,8 @@ static uint8_t _scale_uint8(float value, float vmin, float vmax)
     }
     float x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
     // printf("%f %f %f %f\n", value, vmin, vmax, x);
-    if (x >= 1 - EPS)
-        x = 1 - EPS;
+    if (x >= 1 - EPSILON)
+        x = 1 - EPSILON;
     ASSERT(0 <= x && x < 1);
     return (uint8_t)floor(x * 256);
 }

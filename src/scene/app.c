@@ -391,7 +391,11 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
     ANN(payload);
 
     DvzApp* app = payload->app;
+    ANN(app);
+
     DvzId canvas_id = payload->canvas_id;
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
     DvzAppGuiCallback callback = payload->callback;
     void* user_data = payload->user_data;
 
@@ -411,6 +415,7 @@ void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void*
     ANN(prt);
 
     DvzAppGuiPayload* payload = (DvzAppGuiPayload*)calloc(1, sizeof(DvzAppGuiPayload));
+    payload->app = app;
     payload->canvas_id = canvas_id;
     payload->callback = callback;
     payload->user_data = user_data;

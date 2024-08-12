@@ -19,7 +19,7 @@ layout(location = 0) out vec4 out_color;
 
 const vec3 light_color = vec3(1.0);
 
-#define EPS 0
+#define EPSILON 0
 
 
 void main()
@@ -28,7 +28,7 @@ void main()
     vec2 coord = 2.0 * gl_PointCoord - 1.0;
     float dist_squared = dot(coord, coord);
 
-    if (dist_squared > 1.0 + EPS)
+    if (dist_squared > 1.0 + EPSILON)
         discard;
 
     // Calculate the normal of the sphere at this fragment

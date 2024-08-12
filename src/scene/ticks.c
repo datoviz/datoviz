@@ -22,14 +22,10 @@
 #define J_MAX          10
 #define K_MAX          50
 #define Z_MAX          18
-#define EPS            1e-10
 #define PRECISION      2
 #define TARGET_DENSITY .2
-#define SCORE_WEIGHTS                                                                             \
-    {                                                                                             \
-        0.2, 0.25, 0.5, 0.05                                                                      \
-    }
-#define CLOSE(x, y) (fabs((x) - (y)) < EPS)
+#define SCORE_WEIGHTS  {0.2, 0.25, 0.5, 0.05}
+#define CLOSE(x, y)    (fabs((x) - (y)) < EPSILON)
 
 
 
@@ -60,7 +56,7 @@ struct Q
 
 DVZ_INLINE double simplicity(Q q, int32_t j, double lmin, double lmax, double lstep)
 {
-    double eps = EPS;
+    double eps = EPSILON;
     int64_t n = q.len;
     int32_t i = q.i + 1;
     int32_t v = 0;
@@ -272,8 +268,8 @@ static inline double legibility(DvzTicks* ticks)
     // Overlap part.
     double o = overlap(min_distance_labels(ticks));
 
-    ASSERT(f <= 1.0 + EPS);
-    ASSERT(o <= 1.0 + EPS);
+    ASSERT(f <= 1.0 + EPSILON);
+    ASSERT(o <= 1.0 + EPSILON);
 
     double out = (f + o) / 2.0;
     if (out < -INF / 10)

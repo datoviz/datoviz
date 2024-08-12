@@ -91,7 +91,10 @@ int test_volume_1(TstSuite* suite)
 
 static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
-    DvzVisual* visual = (DvzVisual*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzVisual* visual = vt->visual;
     ANN(visual);
 
     dvz_gui_pos((vec2){50, 50}, DVZ_DIALOG_DEFAULT_PIVOT);
@@ -103,7 +106,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
     if (dvz_gui_slider("param", 0, 10, param))
     {
-        dvz_visual_param(visual, 2, 3, (vec4){*param, 0, 0, 0});
+        dvz_visual_param(visual, 2, 3, (float*)param);
         dvz_visual_update(visual);
     }
 
@@ -137,11 +140,13 @@ int test_volume_2(TstSuite* suite)
                 visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 
         // GUI callback.
+        vt.visual = visual;
         visual->user_data = &param;
-        dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+        dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
     }
 
     // Image visual.
+    if (0)
     {
         DvzVisual* image = dvz_image(vt.batch, 0);
 
@@ -164,6 +169,8 @@ int test_volume_2(TstSuite* suite)
 
         dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
     }
+
+    dvz_arcball_gui(vt.arcball, vt.app, vt.figure->canvas_id, vt.panel);
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
     dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat, vt.camera->up);

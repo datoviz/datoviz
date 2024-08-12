@@ -154,6 +154,9 @@ void dvz_arcball_constrain(DvzArcball* arcball, vec3 constrain)
 void dvz_arcball_angles(DvzArcball* arcball, vec3 out_angles)
 {
     ANN(arcball);
+    // mat4 rot, model;
+    // glm_quat_mat4(arcball->rotation, rot);
+    // glm_mat4_mul(rot, arcball->mat, model);
     glm_euler_angles(arcball->mat, out_angles);
 }
 
@@ -235,6 +238,46 @@ void dvz_arcball_print(DvzArcball* arcball)
     mat4 model;
     dvz_arcball_model(arcball, model);
     glm_mat4_print(model, stdout);
+}
+
+
+
+static inline void _arcball_gui(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    ANN(app);
+
+    DvzArcball* arcball = (DvzArcball*)ev.user_data;
+    ANN(arcball);
+
+    DvzPanel* panel = (DvzPanel*)arcball->user_data;
+
+    dvz_gui_corner(DVZ_DIALOG_CORNER_LOWER_RIGHT, (vec2){20, 20});
+    dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY);
+    dvz_gui_size((vec2){180, 120});
+    dvz_gui_begin("Arcball angles", 0);
+
+    vec3 angles = {0};
+    dvz_arcball_angles(arcball, angles);
+    dvz_gui_slider("x", -M_PI, M_PI, &angles[0]);
+    dvz_gui_slider("y", -M_PI / 2 + .001, M_PI / 2 - .001, &angles[1]);
+    dvz_gui_slider("z", -M_PI, M_PI, &angles[2]);
+    dvz_arcball_set(arcball, angles);
+
+    if (panel != NULL)
+        dvz_panel_update(panel);
+
+    dvz_gui_end();
+}
+
+void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel* panel)
+{
+    ANN(arcball);
+    ANN(app);
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
+    if (panel != NULL)
+        arcball->user_data = (void*)panel;
+    dvz_app_gui(app, canvas_id, _arcball_gui, arcball);
 }
 
 

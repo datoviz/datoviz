@@ -36,6 +36,8 @@
 
 #define M_INV_255 0.00392156862745098
 
+#define EPSILON 1e-10
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
 static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};

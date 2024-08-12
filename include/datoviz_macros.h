@@ -20,6 +20,7 @@
 #include "datoviz_version.h"
 
 
+
 /*************************************************************************************************/
 /*  VK_DRIVER_FILES env variable for macOS MoltenVK                                              */
 /*************************************************************************************************/
@@ -86,6 +87,8 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 #ifndef ANN
 #define ANN(x) ASSERT((x) != NULL);
 #endif
+
+#define DVZ_ID_NONE 0
 
 
 

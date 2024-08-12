@@ -2407,6 +2407,19 @@ DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
 
 
 
+/**
+ * Show a GUI with sliders controlling the three arcball angles.
+ *
+ * @param arcball the arcball
+ * @param app the app
+ * @param canvas_id the canvas (or figure) ID
+ * @param panel the panel
+ */
+DVZ_EXPORT
+void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel* panel);
+
+
+
 /*************************************************************************************************/
 /*  Camera                                                                                       */
 /*************************************************************************************************/
