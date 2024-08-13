@@ -45,7 +45,8 @@ static uint8_t _scale_uint8(float value, float vmin, float vmax)
         log_warn("error in colormap_value(): vmin=vmax");
         return 0;
     }
-    float x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
+    float d = vmax - vmin;
+    float x = (CLIP(value, vmin, vmax - d * 1e-7) - vmin) / d;
     // printf("%f %f %f %f\n", value, vmin, vmax, x);
     if (x >= 1 - EPSILON)
         x = 1 - EPSILON;
