@@ -20,9 +20,10 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FPS_MAX_COUNT 200
-#define DVZ_FPS_BINS      100
+#define DVZ_FPS_MAX_COUNT 1000
+#define DVZ_FPS_BINS      50
 #define DVZ_FPS_HEIGHT    50.0f
+#define DVZ_FPS_CUTOFF    2.0
 
 
 
@@ -35,22 +36,18 @@ typedef struct DvzFps DvzFps;
 
 
 /*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-
-/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
 struct DvzFps
 {
     DvzClock clock;
-    uint64_t counter;
-    uint32_t count; // number of values in delays
-    dvec2 min_max;
-    double* values;
-    float* hist;
+    uint64_t counter; // total number of frames
+    uint32_t count;   // number of items in 'values'
+    dvec2 min_max;    // min and max of values
+    // double max;
+    double* values; // time to render the last 'count' frames
+    float* hist;    // histogram of 'values', with DVZ_FPS_BINS bins
 };
 
 

@@ -584,6 +584,7 @@ DVZ_EXPORT uint8_t* dvz_normalize_bytes(uint32_t count, float* values);
 DVZ_EXPORT void dvz_range(uint32_t n, double* values, dvec2 min_max);
 
 
+
 /*************************************************************************************************/
 /*  Random number generation                                                                     */
 /*************************************************************************************************/

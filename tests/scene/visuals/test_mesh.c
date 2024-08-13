@@ -28,28 +28,6 @@
 
 
 /*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-static void _onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
-{
-    ANN(app);
-
-    // Display arcball Euler angles when rotating the model.
-    VisualTest* vt = (VisualTest*)ev.user_data;
-    ANN(vt);
-
-    DvzArcball* arcball = (DvzArcball*)vt->arcball;
-    ANN(arcball);
-
-    vec3 angles = {0};
-    dvz_arcball_angles(arcball, angles);
-    // glm_vec3_print(angles, stdout);
-}
-
-
-
-/*************************************************************************************************/
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
@@ -158,8 +136,6 @@ int test_mesh_surface(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    dvz_app_onmouse(vt.app, _onmouse, &vt);
-
     dvz_arcball_initial(vt.arcball, (vec3){0.42339, -0.39686, -0.00554});
     dvz_panel_update(vt.panel);
 
@@ -203,8 +179,6 @@ int test_mesh_obj(TstSuite* suite)
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
-
-    dvz_app_onmouse(vt.app, _onmouse, &vt);
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
     dvz_panel_update(vt.panel);
