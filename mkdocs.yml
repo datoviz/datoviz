@@ -1,4 +1,5 @@
 site_name: Datoviz Documentation
+site_url: https://datoviz.org
 repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
 site_description: '⚡ Datoviz: high-performance GPU scientific data visualization C/C++/Python library'

@@ -1059,7 +1059,7 @@ serve:
 #
 
 publish:
-    #!/usr/bin/env sh
+    #!/usr/bin/env bash
     set -e
     pushd ../datoviz.github.io
     mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
