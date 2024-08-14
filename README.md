@@ -12,7 +12,7 @@
 
 Designed for speed, visual quality, and scalability to datasets comprising millions of points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current version is **v0.2**, with documentation available only on GitHub at the moment. The `datoviz.org` website still reflects the **deprecated v0.1** documentation, but it will be updated soon.
+**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current version is **v0.2**. The previous **v0.1** version is now deprecated.
 
 **🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with IPython, Jupyter and Qt.
 
