@@ -1,0 +1,25 @@
+:root {
+    --md-primary-fg-color: #554596;
+}
+
+.md-header-nav__button.md-logo img,
+.md-header-nav__button.md-logo svg,
+.md-nav__button.md-logo img,
+.md-nav__button.md-logo svg
+{
+    width: 150px !important;
+    height: 50px !important;
+}
+
+h3[id^=dvz_] {
+    border-top: 5px solid whitesmoke;
+    padding-top: 20px;
+}
+
+img[alt^=marker_] {
+    width: 32px;
+}
+
+img[alt*=gpuopen] {
+    width: 512px;
+}

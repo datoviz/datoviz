@@ -5,7 +5,7 @@ This document is a work in progress.
 ## Management commands
 
 We use the [just](https://github.com/casey/just) tool for all management commands.
-The commands are implemented in [`justfile`](justfile).
+The commands are implemented in `justfile`.
 
 
 ## Branches

@@ -1054,6 +1054,18 @@ doc: headers
     @python tools/generate_doc.py api
 #
 
+serve:
+    @mkdocs serve
+#
+
+publish:
+    #!/usr/bin/env sh
+    set -e
+    pushd ../datoviz.github.io
+    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
+    popd
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Cleaning

@@ -1,0 +1,52 @@
+site_name: Datoviz Documentation
+repo_url: https://github.com/datoviz/datoviz
+docs_dir: docs
+site_description: '⚡ Datoviz: high-performance GPU scientific data visualization C/C++/Python library'
+site_author: Cyrille Rossant
+theme:
+  name: material
+  logo: images/logow.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - toc.integrate
+  icon:
+    repo: fontawesome/brands/github
+extra_css:
+  - stylesheets/extra.css
+markdown_extensions:
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - abbr
+  - admonition
+  - attr_list
+  - pymdownx.tilde
+  - pymdownx.highlight
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+plugins:
+  - search
+hooks:
+  - tools/mkdocs_hooks.py
+nav:
+  - Home: 'index.md'
+  - User guide:
+    - User guide: 'userguide.md'
+  - Examples:
+    - Examples: 'examples.md'
+  - Reference:
+    - Colormaps reference: 'colormaps.md'
+    - C API reference: 'api.md'
+  - Discussions:
+    - Architecture: 'ARCHITECTURE.md'
+    - Building instructions: 'BUILD.md'
+    - Contributing notes: 'CONTRIBUTING.md'
+    - Maintainers instructions: 'MAINTAINERS.md'
+    - License: 'LICENSE.md'

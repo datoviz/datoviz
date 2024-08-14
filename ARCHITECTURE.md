@@ -1,4 +1,4 @@
-# Datoviz code architecture overview
+# Architecture
 
 This document provides a high-level overview of the Datoviz v0.2x code architecture.
 
