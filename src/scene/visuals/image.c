@@ -72,6 +72,10 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 2, DVZ_SLOT_TEX);
 
+    int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &size_ndc);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &size_ndc);
+
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
 
