@@ -21,6 +21,8 @@
 
 int test_image_1(TstSuite*);
 
+int test_image_2(TstSuite*);
+
 
 
 #endif
