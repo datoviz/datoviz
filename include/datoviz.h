@@ -1458,12 +1458,30 @@ DVZ_EXPORT vec4* dvz_font_ascii(DvzFont* font, const char* string);
  * @param length the number of glyphs
  * @param codepoints the Unicode codepoints of the glyphs
  * @param xywh an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+ * @param flags the font flags
  * @param[out] out_size the number of bytes in the returned image
  * @returns an RGBA array allocated by this function and that MUST be freed by the caller
  *
  */
 DVZ_EXPORT uint8_t* dvz_font_draw(
-    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, uvec2 out_size);
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, int flags,
+    uvec2 out_size);
+
+
+
+/**
+ * Generate a texture with a rendered text.
+ *
+ * @param font the font
+ * @param batch the batch
+ * @param length the number of Unicode codepoints
+ * @param codepoints the Unicode codepoints
+ * @param[out] size the generated texture size
+ * @returns a tex ID
+ *
+ */
+DVZ_EXPORT DvzId dvz_font_texture(
+    DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 size);
 
 
 

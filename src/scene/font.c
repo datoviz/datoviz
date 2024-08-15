@@ -29,6 +29,7 @@
 /*************************************************************************************************/
 
 #define DVZ_DEFAULT_FONT_SIZE 24
+#define MAX_TEXT_LENGTH       65536
 
 
 
@@ -195,12 +196,14 @@ vec4* dvz_font_ascii(DvzFont* font, const char* string)
 
 // The caller must FREE the returned pointer.
 uint8_t* dvz_font_draw(
-    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, uvec2 out_size)
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, int flags,
+    uvec2 out_size)
 {
     ANN(font);
     ANN(codepoints);
     ANN(xywh);
     ASSERT(length > 0);
+    uint8_t n_channels = (flags & DVZ_FONT_RGBA) > 0 ? 4 : 3;
 
 #if HAS_MSDF
     FT_Face face = font->face;
@@ -255,7 +258,7 @@ uint8_t* dvz_font_draw(
     out_size[0] = (uint32_t)width;
     out_size[1] = (uint32_t)height;
 
-    uint8_t* bitmap = (uint8_t*)calloc((uint32_t)(width * height * 3), sizeof(uint8_t));
+    uint8_t* bitmap = (uint8_t*)calloc((uint32_t)(width * height * n_channels), sizeof(uint8_t));
 
     for (int i = 0; i < (int)length; i++)
     {
@@ -289,8 +292,10 @@ uint8_t* dvz_font_draw(
                 uint32_t idx = (uint32_t)((y + v) * width + x + u);
                 ASSERT((int)idx < width * height * 1);
                 for (uint32_t k = 0; k < 3; k++)
-                    bitmap[3 * idx + k] = face->glyph->bitmap.buffer[w * v + u];
-                // bitmap[3 * idx + 1] += 64; // DEBUG
+                    bitmap[n_channels * idx + k] = face->glyph->bitmap.buffer[w * v + u];
+                if (n_channels == 4)
+                    bitmap[n_channels * idx + 3] = 255;
+                // bitmap[n_channels * idx + 1] += 64; // DEBUG
             }
         }
     }
@@ -299,6 +304,26 @@ uint8_t* dvz_font_draw(
 #else
     return NULL;
 #endif
+}
+
+
+
+DvzId dvz_font_texture(
+    DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 out_size)
+{
+    ANN(font);
+
+    // Compute the layout of the text.
+    vec4* xywh = dvz_font_layout(font, length, codepoints);
+    uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_RGBA, out_size);
+    out_size[2] = 1;
+    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_size[0], out_size[1], bitmap);
+
+    // Cleanup.
+    FREE(bitmap);
+    FREE(xywh);
+
+    return tex;
 }
 
 

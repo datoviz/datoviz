@@ -58,7 +58,7 @@ int test_font_1(TstSuite* suite)
     uvec2 out_size;
     uint32_t count = 0;
     uint32_t* codepoints = _ascii_to_utf32(text, &count);
-    uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, out_size);
+    uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, 0, out_size);
 
     char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/font.png", ARTIFACTS_DIR);

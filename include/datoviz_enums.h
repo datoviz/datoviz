@@ -195,6 +195,15 @@ typedef enum
 
 
 
+// Font flags.
+typedef enum
+{
+    DVZ_FONT_RGB,
+    DVZ_FONT_RGBA,
+} DvzFontFlags;
+
+
+
 /*************************************************************************************************/
 /*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
 /*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
