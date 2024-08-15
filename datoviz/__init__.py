@@ -361,17 +361,35 @@ class DvzFormat(CtypesEnum):
     DVZ_FORMAT_R8_UNORM = 9
     DVZ_FORMAT_R8_SNORM = 10
     DVZ_FORMAT_R8_UINT = 13
+    DVZ_FORMAT_R8_SINT = 14
+    DVZ_FORMAT_R8G8_UNORM = 16
+    DVZ_FORMAT_R8G8_SNORM = 17
+    DVZ_FORMAT_R8G8_UINT = 20
+    DVZ_FORMAT_R8G8_SINT = 21
     DVZ_FORMAT_R8G8B8_UNORM = 23
+    DVZ_FORMAT_R8G8B8_SNORM = 24
+    DVZ_FORMAT_R8G8B8_UINT = 27
+    DVZ_FORMAT_R8G8B8_SINT = 28
+    DVZ_FORMAT_B8G8R8_UNORM = 30
+    DVZ_FORMAT_B8G8R8_SNORM = 31
     DVZ_FORMAT_R8G8B8A8_UNORM = 37
+    DVZ_FORMAT_R8G8B8A8_SNORM = 38
     DVZ_FORMAT_R8G8B8A8_UINT = 41
+    DVZ_FORMAT_R8G8B8A8_SINT = 42
     DVZ_FORMAT_B8G8R8A8_UNORM = 44
     DVZ_FORMAT_R16_UNORM = 70
     DVZ_FORMAT_R16_SNORM = 71
     DVZ_FORMAT_R32_UINT = 98
     DVZ_FORMAT_R32_SINT = 99
     DVZ_FORMAT_R32_SFLOAT = 100
+    DVZ_FORMAT_R32G32_UINT = 101
+    DVZ_FORMAT_R32G32_SINT = 102
     DVZ_FORMAT_R32G32_SFLOAT = 103
+    DVZ_FORMAT_R32G32B32_UINT = 104
+    DVZ_FORMAT_R32G32B32_SINT = 105
     DVZ_FORMAT_R32G32B32_SFLOAT = 106
+    DVZ_FORMAT_R32G32B32A32_UINT = 107
+    DVZ_FORMAT_R32G32B32A32_SINT = 108
     DVZ_FORMAT_R32G32B32A32_SFLOAT = 109
 
 
@@ -874,17 +892,35 @@ FORMAT_NONE = 0
 FORMAT_R8_UNORM = 9
 FORMAT_R8_SNORM = 10
 FORMAT_R8_UINT = 13
+FORMAT_R8_SINT = 14
+FORMAT_R8G8_UNORM = 16
+FORMAT_R8G8_SNORM = 17
+FORMAT_R8G8_UINT = 20
+FORMAT_R8G8_SINT = 21
 FORMAT_R8G8B8_UNORM = 23
+FORMAT_R8G8B8_SNORM = 24
+FORMAT_R8G8B8_UINT = 27
+FORMAT_R8G8B8_SINT = 28
+FORMAT_B8G8R8_UNORM = 30
+FORMAT_B8G8R8_SNORM = 31
 FORMAT_R8G8B8A8_UNORM = 37
+FORMAT_R8G8B8A8_SNORM = 38
 FORMAT_R8G8B8A8_UINT = 41
+FORMAT_R8G8B8A8_SINT = 42
 FORMAT_B8G8R8A8_UNORM = 44
 FORMAT_R16_UNORM = 70
 FORMAT_R16_SNORM = 71
 FORMAT_R32_UINT = 98
 FORMAT_R32_SINT = 99
 FORMAT_R32_SFLOAT = 100
+FORMAT_R32G32_UINT = 101
+FORMAT_R32G32_SINT = 102
 FORMAT_R32G32_SFLOAT = 103
+FORMAT_R32G32B32_UINT = 104
+FORMAT_R32G32B32_SINT = 105
 FORMAT_R32G32B32_SFLOAT = 106
+FORMAT_R32G32B32A32_UINT = 107
+FORMAT_R32G32B32A32_SINT = 108
 FORMAT_R32G32B32A32_SFLOAT = 109
 FILTER_NEAREST = 0
 FILTER_LINEAR = 1
@@ -2401,6 +2437,12 @@ atlas_font.argtypes = [
 ]
 atlas_font.restype = DvzAtlasFont
 
+# Function dvz_atlas_destroy()
+atlas_destroy = dvz.dvz_atlas_destroy
+atlas_destroy.argtypes = [
+    ctypes.POINTER(DvzAtlas),  # DvzAtlas* atlas
+]
+
 # Function dvz_font()
 font = dvz.dvz_font
 font.argtypes = [
@@ -2600,6 +2642,84 @@ glyph_xywh.argtypes = [
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* values
     ctypes.c_float * 2,  # vec2 offset
     ctypes.c_int,  # int flags
+]
+
+# Function dvz_monoglyph()
+monoglyph = dvz.dvz_monoglyph
+monoglyph.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_int,  # int flags
+]
+monoglyph.restype = ctypes.POINTER(DvzVisual)
+
+# Function dvz_monoglyph_position()
+monoglyph_position = dvz.dvz_monoglyph_position
+monoglyph_position.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_monoglyph_offset()
+monoglyph_offset = dvz.dvz_monoglyph_offset
+monoglyph_offset.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.POINTER(ctypes.c_int32 * 2),  # ivec2* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_monoglyph_color()
+monoglyph_color = dvz.dvz_monoglyph_color
+monoglyph_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_monoglyph_glyph()
+monoglyph_glyph = dvz.dvz_monoglyph_glyph
+monoglyph_glyph.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_char_p,  # char* text
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_monoglyph_anchor()
+monoglyph_anchor = dvz.dvz_monoglyph_anchor
+monoglyph_anchor.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float * 2,  # vec2 anchor
+]
+
+# Function dvz_monoglyph_size()
+monoglyph_size = dvz.dvz_monoglyph_size
+monoglyph_size.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float size
+]
+
+# Function dvz_monoglyph_textarea()
+monoglyph_textarea = dvz.dvz_monoglyph_textarea
+monoglyph_textarea.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float * 3,  # vec3 pos
+    ctypes.c_uint8 * 4,  # cvec4 color
+    ctypes.c_float,  # float size
+    ctypes.c_char_p,  # char* text
+]
+
+# Function dvz_monoglyph_alloc()
+monoglyph_alloc = dvz.dvz_monoglyph_alloc
+monoglyph_alloc.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t item_count
 ]
 
 # Function dvz_image()

@@ -303,6 +303,16 @@ void dvz_arcball_set(
 )
 ```
 
+### `dvz_atlas_destroy()`
+
+Destroy an atlas.
+
+```c
+void dvz_atlas_destroy(
+    DvzAtlas* atlas,  // the atlas
+)
+```
+
 ### `dvz_atlas_font()`
 
 Load the default atlas and font.
@@ -1499,6 +1509,117 @@ void dvz_mesh_texture(
     DvzId tex,  // the texture ID
     DvzFilter filter,  // the texture filtering mode
     DvzSamplerAddressMode address_mode,  // the texture address mode
+)
+```
+
+### `dvz_monoglyph()`
+
+Create a monoglyph visual.
+
+```c
+DvzVisual* dvz_monoglyph(  // returns: the visual
+    DvzBatch* batch,  // the batch
+    int flags,  // the visual creation flags
+)
+```
+
+### `dvz_monoglyph_alloc()`
+
+Allocate memory for a visual.
+
+```c
+void dvz_monoglyph_alloc(
+    DvzVisual* visual,  // the visual
+    uint32_t item_count,  // the total number of items to allocate for this visual
+)
+```
+
+### `dvz_monoglyph_anchor()`
+
+Set the glyph anchor (relative to the glyph size).
+
+```c
+void dvz_monoglyph_anchor(
+    DvzVisual* visual,  // the visual
+    vec2 anchor,  // the anchor
+)
+```
+
+### `dvz_monoglyph_color()`
+
+Set the glyph colors.
+
+```c
+void dvz_monoglyph_color(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec4* values,  // the colors of the items to update
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_glyph()`
+
+Set the text.
+
+```c
+void dvz_monoglyph_glyph(
+    DvzVisual* visual,  // the visual
+    char* text,  // the ASCII test (string length without the null terminal byte = number of glyphs)
+)
+```
+
+### `dvz_monoglyph_offset()`
+
+Set the glyph offsets.
+
+```c
+void dvz_monoglyph_offset(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    ivec2* values,  // the glyph offsets (ivec2 integers: row,column)
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_position()`
+
+Set the glyph positions.
+
+```c
+void dvz_monoglyph_position(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the 3D positions of the items to update
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_size()`
+
+Set the glyph size (relative to the initial glyph size).
+
+```c
+void dvz_monoglyph_size(
+    DvzVisual* visual,  // the visual
+    float size,  // the glyph size
+)
+```
+
+### `dvz_monoglyph_textarea()`
+
+All-in-one function for multiline text.
+
+```c
+void dvz_monoglyph_textarea(
+    DvzVisual* visual,  // the visual
+    vec3 pos,  // the text position
+    cvec4 color,  // the text color
+    float size,  // the glyph size
+    char* text,  // the text, can contain `\n` new lines
 )
 ```
 
@@ -3273,17 +3394,35 @@ DVZ_FORMAT_NONE
 DVZ_FORMAT_R8_UNORM
 DVZ_FORMAT_R8_SNORM
 DVZ_FORMAT_R8_UINT
+DVZ_FORMAT_R8_SINT
+DVZ_FORMAT_R8G8_UNORM
+DVZ_FORMAT_R8G8_SNORM
+DVZ_FORMAT_R8G8_UINT
+DVZ_FORMAT_R8G8_SINT
 DVZ_FORMAT_R8G8B8_UNORM
+DVZ_FORMAT_R8G8B8_SNORM
+DVZ_FORMAT_R8G8B8_UINT
+DVZ_FORMAT_R8G8B8_SINT
+DVZ_FORMAT_B8G8R8_UNORM
+DVZ_FORMAT_B8G8R8_SNORM
 DVZ_FORMAT_R8G8B8A8_UNORM
+DVZ_FORMAT_R8G8B8A8_SNORM
 DVZ_FORMAT_R8G8B8A8_UINT
+DVZ_FORMAT_R8G8B8A8_SINT
 DVZ_FORMAT_B8G8R8A8_UNORM
 DVZ_FORMAT_R16_UNORM
 DVZ_FORMAT_R16_SNORM
 DVZ_FORMAT_R32_UINT
 DVZ_FORMAT_R32_SINT
 DVZ_FORMAT_R32_SFLOAT
+DVZ_FORMAT_R32G32_UINT
+DVZ_FORMAT_R32G32_SINT
 DVZ_FORMAT_R32G32_SFLOAT
+DVZ_FORMAT_R32G32B32_UINT
+DVZ_FORMAT_R32G32B32_SINT
 DVZ_FORMAT_R32G32B32_SFLOAT
+DVZ_FORMAT_R32G32B32A32_UINT
+DVZ_FORMAT_R32G32B32A32_SINT
 DVZ_FORMAT_R32G32B32A32_SFLOAT
 ```
 

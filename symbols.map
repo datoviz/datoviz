@@ -109,6 +109,7 @@ dvz_path_color
 dvz_path_linewidth
 dvz_path_alloc
 dvz_atlas_font
+dvz_atlas_destroy
 dvz_font
 dvz_font_size
 dvz_font_layout
@@ -132,6 +133,15 @@ dvz_glyph_atlas
 dvz_glyph_unicode
 dvz_glyph_ascii
 dvz_glyph_xywh
+dvz_monoglyph
+dvz_monoglyph_position
+dvz_monoglyph_offset
+dvz_monoglyph_color
+dvz_monoglyph_glyph
+dvz_monoglyph_anchor
+dvz_monoglyph_size
+dvz_monoglyph_textarea
+dvz_monoglyph_alloc
 dvz_image
 dvz_image_position
 dvz_image_texcoords

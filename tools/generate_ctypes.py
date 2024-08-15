@@ -35,6 +35,9 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
     elif type.startswith('uvec'):
         return f'ctypes.c_uint32 * {n}'
 
+    elif type.startswith('ivec'):
+        return f'ctypes.c_int32 * {n}'
+
     elif type.startswith('dvec'):
         return f'ctypes.c_double * {n}'
 
