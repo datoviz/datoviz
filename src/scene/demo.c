@@ -26,12 +26,10 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void legend(DvzBatch* batch, DvzPanel* panel, const char* text)
+static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasFont* af)
 {
-    DvzAtlasFont af = dvz_atlas_font(LEGEND_FONT_SIZE);
-
     DvzVisual* glyph = dvz_glyph(batch, 0);
-    dvz_glyph_atlas(glyph, af.atlas);
+    dvz_glyph_atlas(glyph, af->atlas);
 
     uint32_t n = strnlen(text, 1024);
     dvz_glyph_alloc(glyph, n);
@@ -43,7 +41,7 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text)
     dvz_glyph_color(glyph, 0, n, color, 0);
     dvz_glyph_ascii(glyph, text);
 
-    vec4* xywh = dvz_font_ascii(af.font, text);
+    vec4* xywh = dvz_font_ascii(af->font, text);
     dvz_glyph_xywh(glyph, 0, n, xywh, (vec2){LEGEND_ANCHOR}, 0);
 
     FREE(pos);
@@ -67,6 +65,8 @@ void dvz_demo(void)
 
     // Create a scene.
     DvzScene* scene = dvz_scene(batch);
+
+    DvzAtlasFont af = dvz_atlas_font(LEGEND_FONT_SIZE);
 
     // Create a figure.
     uint32_t W = 1000;
@@ -127,7 +127,7 @@ void dvz_demo(void)
         dvz_basic_color(line_list, 0, n, color, 0);
     }
 
-    legend(batch, p00, "LINE LIST");
+    legend(batch, p00, "LINE LIST", &af);
     dvz_panel_panzoom(p00);
     dvz_panel_visual(p00, line_list, 0);
 
@@ -140,7 +140,7 @@ void dvz_demo(void)
         dvz_basic_color(line_strip, 0, n, color, 0);
     }
 
-    legend(batch, p01, "LINE STRIP");
+    legend(batch, p01, "LINE STRIP", &af);
     dvz_panel_panzoom(p01);
     dvz_panel_visual(p01, line_strip, 0);
 
@@ -153,7 +153,7 @@ void dvz_demo(void)
         dvz_basic_color(triangle_list, 0, n, color, 0);
     }
 
-    legend(batch, p02, "TRIANGLE LIST");
+    legend(batch, p02, "TRIANGLE LIST", &af);
     dvz_panel_panzoom(p02);
     dvz_panel_visual(p02, triangle_list, 0);
 
@@ -166,7 +166,7 @@ void dvz_demo(void)
         dvz_basic_color(triangle_strip, 0, n, color, 0);
     }
 
-    legend(batch, p03, "TRIANGLE STRIP");
+    legend(batch, p03, "TRIANGLE STRIP", &af);
     dvz_panel_panzoom(p03);
     dvz_panel_visual(p03, triangle_strip, 0);
 
@@ -185,7 +185,7 @@ void dvz_demo(void)
         dvz_basic_size(point_list, 3.0f);
     }
 
-    legend(batch, p10, "POINT LIST");
+    legend(batch, p10, "POINT LIST", &af);
     dvz_panel_panzoom(p10);
     dvz_panel_visual(p10, point_list, 0);
 
@@ -198,7 +198,7 @@ void dvz_demo(void)
         dvz_basic_color(pixel, 0, n2, color2, 0);
     }
 
-    legend(batch, p11, "PIXEL");
+    legend(batch, p11, "PIXEL", &af);
     dvz_panel_panzoom(p11);
     dvz_panel_visual(p11, pixel, 0);
 
@@ -212,7 +212,7 @@ void dvz_demo(void)
         dvz_point_size(point, 0, n, size, 0);
     }
 
-    legend(batch, p12, "POINT");
+    legend(batch, p12, "POINT", &af);
     dvz_panel_panzoom(p12);
     dvz_panel_visual(p12, point, 0);
 
@@ -235,7 +235,7 @@ void dvz_demo(void)
         dvz_marker_edge_width(marker, (float){3.0});
     }
 
-    legend(batch, p13, "MARKER");
+    legend(batch, p13, "MARKER", &af);
     dvz_panel_panzoom(p13);
     dvz_panel_visual(p13, marker, 0);
 
@@ -248,7 +248,6 @@ void dvz_demo(void)
     // 2,0  GLYPH
     DvzVisual* glyph = dvz_glyph(batch, 0);
     {
-        DvzAtlasFont af = dvz_atlas_font(32);
         const char* text = "ABCDEF";
         dvz_glyph_atlas(glyph, af.atlas);
         dvz_glyph_alloc(glyph, n);
@@ -272,7 +271,7 @@ void dvz_demo(void)
         FREE(xywh);
     }
 
-    legend(batch, p20, "GLYPH");
+    legend(batch, p20, "GLYPH", &af);
     dvz_panel_panzoom(p20);
     dvz_panel_visual(p20, glyph, 0);
 
@@ -301,7 +300,7 @@ void dvz_demo(void)
         FREE(cap);
     }
 
-    legend(batch, p21, "SEGMENT");
+    legend(batch, p21, "SEGMENT", &af);
     dvz_panel_panzoom(p21);
     dvz_panel_visual(p21, segment, 0);
 
@@ -325,7 +324,7 @@ void dvz_demo(void)
         FREE(positions)
     }
 
-    legend(batch, p22, "PATH");
+    legend(batch, p22, "PATH", &af);
     dvz_panel_panzoom(p22);
     dvz_panel_visual(p22, path, 0);
 
@@ -368,7 +367,7 @@ void dvz_demo(void)
         FREE(imgdata);
     }
 
-    legend(batch, p23, "IMAGE");
+    legend(batch, p23, "IMAGE", &af);
     dvz_panel_panzoom(p23);
     dvz_panel_visual(p23, image, 0);
 
@@ -386,7 +385,7 @@ void dvz_demo(void)
         dvz_mesh_light_params(mesh, (vec4){.5, .5, .5, 16});
     }
 
-    legend(batch, p30, "MESH");
+    legend(batch, p30, "MESH", &af);
     dvz_arcball_initial(dvz_panel_arcball(p30), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(dvz_panel_camera(p30), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p30, mesh, 0);
@@ -409,7 +408,7 @@ void dvz_demo(void)
         dvz_sphere_light_params(sphere, (vec4){.5, .5, .5, 16});
     }
 
-    legend(batch, p31, "SPHERE");
+    legend(batch, p31, "SPHERE", &af);
     dvz_arcball_initial(dvz_panel_arcball(p31), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(dvz_panel_camera(p31), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p31, sphere, 0);
@@ -450,7 +449,7 @@ void dvz_demo(void)
         FREE(tex_data);
     }
 
-    legend(batch, p32, "VOLUME");
+    legend(batch, p32, "VOLUME", &af);
     dvz_arcball_initial(dvz_panel_arcball(p32), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(dvz_panel_camera(p32), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p32, volume, 0);
@@ -530,7 +529,7 @@ void dvz_demo(void)
     //     FREE(uvw3);
     // }
 
-    // legend(batch, p33, "SLICE");
+    // legend(batch, p33, "SLICE", &af);
     // dvz_arcball_initial(dvz_panel_arcball(p33), (vec3){+0.4, -0.8, +2.9});
     // dvz_camera_initial(dvz_panel_camera(p33), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1,
     // 0}); dvz_panel_visual(p33, slice, 0); dvz_panel_update(p33);
@@ -547,6 +546,9 @@ void dvz_demo(void)
     FREE(pos2);
     FREE(size2);
     FREE(color2);
+
+    dvz_atlas_destroy(af.atlas);
+    dvz_font_destroy(af.font);
 
     return;
 }

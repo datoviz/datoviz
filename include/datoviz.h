@@ -1395,6 +1395,15 @@ DVZ_EXPORT DvzAtlasFont dvz_atlas_font(double font_size);
 
 
 /**
+ * Destroy an atlas.
+ *
+ * @param atlas the atlas
+ */
+DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
+
+
+
+/**
  * Create a font.
  *
  * @param ttf_size size in bytes of a TTF font raw buffer
