@@ -38,6 +38,7 @@ struct DvzBasicVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
+    float group; /* group */
 };
 
 

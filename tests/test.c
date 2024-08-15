@@ -366,6 +366,7 @@ int dvz_run_tests(const char* match)
 
     // Visual tests.
     TEST(test_basic_1)
+    TEST(test_basic_2)
     TEST(test_pixel_1)
     TEST(test_point_1)
     TEST(test_marker_code)

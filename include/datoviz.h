@@ -910,6 +910,20 @@ dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values
 
 
 /**
+ * Set the vertex group index.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the group index of each vertex
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_basic_group(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
  * Set the point size (for POINT_LIST topology only).
  *
  * @param visual the visual
