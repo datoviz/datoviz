@@ -1,20 +1,40 @@
 #version 450
 #include "common.glsl"
-
-layout(std140, binding = USER_BINDING) uniform MonoglyphParams { float size; /* point size */ }
-params;
+#include "params_monoglyph.glsl"
 
 layout(location = 0) in vec3 pos;
-layout(location = 1) in vec4 color;
-layout(location = 2) in float group;
+layout(location = 1) in vec3 bytes_012;
+layout(location = 2) in vec3 bytes_345;
+layout(location = 3) in ivec2 offset;
+layout(location = 4) in vec4 color;
 
 layout(location = 0) out vec4 out_color;
-layout(location = 1) out float out_group;
+layout(location = 1) out vec3 out_bytes_012;
+layout(location = 2) out vec3 out_bytes_345;
 
 void main()
 {
-    gl_Position = transform(pos);
+    // Offset.
+    float dx = params.size * 3 * offset.y;
+    float dy = -params.size * 5 * offset.x;
+    vec2 trans = vec2(dx, dy);
+    trans -= params.anchor * params.size;
+    mat4 tra = get_translation_matrix(trans);
+
+    // Transform.
+    mat4 ortho = get_ortho_matrix();
+    mat4 ortho_inv = inverse(ortho);
+    vec4 tr = transform_mvp(pos);
+    tr = transform_fixed(tr, pos);
+    tr = ortho * tra * ortho_inv * tr;
+    tr = transform_margins(tr);
+    tr = to_vulkan(tr);
+    // HACK: without this the z is negative and clipped
+    tr.z = 0;
+    gl_Position = tr;
+
     out_color = color;
-    out_group = group;
-    gl_PointSize = params.size;
+    out_bytes_012 = bytes_012;
+    out_bytes_345 = bytes_345;
+    gl_PointSize = 8.0 * params.size;
 }

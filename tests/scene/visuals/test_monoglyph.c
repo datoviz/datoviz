@@ -30,32 +30,33 @@ int test_monoglyph_1(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("monoglyph", VISUAL_TEST_PANZOOM, 0);
 
-    // Number of items.
-    const uint32_t n = 1000;
-
     // Create the visual.
     DvzVisual* visual = dvz_monoglyph(vt.batch, 0);
 
-    // Visual allocation.
-    dvz_monoglyph_alloc(visual, n);
-
-    // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
-    dvz_monoglyph_position(visual, 0, n, pos, 0);
-
-    // Color.
-    cvec4* color = dvz_mock_color(n, 128);
-    dvz_monoglyph_color(visual, 0, n, color, 0);
+    // Text area.
+    const char text0[] = "Hello world.\nThis is a new line.\nAnd yet another line here!\n";
+    char text[98 + 62] = {0};
+    memcpy(text, text0, sizeof(text0));
+    uint32_t j = 0, idx = 60;
+    for (uint32_t i = 0; i < 96; i++)
+    {
+        ASSERT(idx < 96 + 2 + 61);
+        ASSERT(i + 32 < 128);
+        text[idx++] = (char)(i + 32);
+        if (i % 32 == 0 && i > 0)
+        {
+            text[idx++] = '\n';
+        }
+    }
+    log_error(text);
+    dvz_monoglyph_textarea(visual, (vec3){0, 0, 0}, (cvec4){255, 128, 0, 255}, 5.0f, text);
+    dvz_monoglyph_anchor(visual, (vec2){+40, -10});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
     // Run the test.
     visual_test_end(vt);
-
-    // Cleanup.
-    FREE(pos);
-    FREE(color);
 
     return 0;
 }

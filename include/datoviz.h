@@ -1748,7 +1748,7 @@ dvz_monoglyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* va
  * @param text the ASCII test (string length without the null terminal byte = number of glyphs)
  */
 DVZ_EXPORT void
-dvz_monoglyph_text(DvzVisual* visual, uint32_t first, uint32_t count, const char* text, int flags);
+dvz_monoglyph_glyph(DvzVisual* visual, uint32_t first, const char* text, int flags);
 
 
 
@@ -1769,6 +1769,20 @@ DVZ_EXPORT void dvz_monoglyph_anchor(DvzVisual* visual, vec2 anchor);
  * @param size the glyph size
  */
 DVZ_EXPORT void dvz_monoglyph_size(DvzVisual* visual, float size);
+
+
+
+/**
+ * All-in-one function for multiline text.
+ *
+ * @param visual the visual
+ * @param pos the text position
+ * @param color the text color
+ * @param size the glyph size
+ * @param text the text, can contain `\n` new lines
+ */
+DVZ_EXPORT void
+dvz_monoglyph_textarea(DvzVisual* visual, vec3 pos, cvec4 color, float size, const char* text);
 
 
 

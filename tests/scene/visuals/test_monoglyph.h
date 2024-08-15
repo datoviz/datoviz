@@ -21,8 +21,6 @@
 
 int test_monoglyph_1(TstSuite*);
 
-int test_monoglyph_2(TstSuite*);
-
 
 
 #endif

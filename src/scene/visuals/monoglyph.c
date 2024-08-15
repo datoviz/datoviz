@@ -20,6 +20,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define MAX_TEXT_LENGTH 65536
+
+
+
+/*************************************************************************************************/
 /*  Glyphs                                                                                       */
 /*************************************************************************************************/
 
@@ -162,15 +170,13 @@ void dvz_monoglyph_color(
 
 
 
-void dvz_monoglyph_text(DvzVisual* visual, uint32_t first, const char* text, int flags)
+void dvz_monoglyph_glyph(DvzVisual* visual, uint32_t first, const char* text, int flags)
 {
     ANN(visual);
     ANN(text);
 
-    uint32_t count = strnlen(text, 65536);
+    uint32_t count = strnlen(text, MAX_TEXT_LENGTH);
     ASSERT(count > 0);
-
-    // __FONT_6x8__ - 32;
 
     vec3* bytes_012 = (vec3*)calloc(count, sizeof(vec3));
     vec3* bytes_345 = (vec3*)calloc(count, sizeof(vec3));
@@ -203,7 +209,7 @@ void dvz_monoglyph_text(DvzVisual* visual, uint32_t first, const char* text, int
 void dvz_monoglyph_anchor(DvzVisual* visual, vec2 anchor)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, 0, &anchor);
+    dvz_visual_param(visual, 2, 0, anchor);
 }
 
 
@@ -212,4 +218,58 @@ void dvz_monoglyph_size(DvzVisual* visual, float size)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, 1, &size);
+}
+
+
+
+void dvz_monoglyph_textarea(
+    DvzVisual* visual, vec3 position, cvec4 color, float size, const char* text)
+{
+    ANN(visual);
+
+    // NOTE: count may contain an arbitrary number of newlines \n that we should subtract.
+    uint32_t count = strnlen(text, MAX_TEXT_LENGTH);
+    char* glyphs = (char*)calloc(count, sizeof(char));
+    ivec2* offsets = (ivec2*)calloc(count, sizeof(ivec2));
+
+    uint32_t new_lines = 0, k = 0, column = 0, row = 0;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (text[i] == '\n')
+        {
+            new_lines++;
+            row++;
+            column = 0;
+        }
+        else
+        {
+            glyphs[k] = text[i];
+            offsets[k][0] = (int32_t)row;
+            offsets[k][1] = (int32_t)column;
+            column++;
+            k++;
+        }
+    }
+
+    ASSERT(new_lines < count);
+    count = (uint32_t)(count - new_lines);
+
+    dvz_monoglyph_alloc(visual, count);
+
+    vec3* positions = dvz_mock_fixed(count, position);
+    dvz_monoglyph_position(visual, 0, count, positions, 0);
+
+    dvz_monoglyph_offset(visual, 0, count, offsets, 0);
+
+    cvec4* colors = dvz_mock_monochrome(count, color);
+    dvz_monoglyph_color(visual, 0, count, colors, 0);
+
+    dvz_monoglyph_glyph(visual, 0, (const char*)glyphs, 0);
+
+    dvz_monoglyph_size(visual, size);
+
+    FREE(positions);
+    FREE(offsets);
+    FREE(colors);
+    FREE(glyphs);
 }
