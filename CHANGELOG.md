@@ -9,6 +9,8 @@
 - Add functionality to basic visual (point size, groups).
 - Arcball GUI.
 - Improve FPS computation.
+- Experimental monoglyph visual (pure GLSL low-quality glyph generation)
+- Generating a texture with a text string from a font.
 - Minor bug fixes.
 
 
