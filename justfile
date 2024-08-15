@@ -1061,6 +1061,16 @@ serve:
 publish:
     #!/usr/bin/env bash
     set -e
+
+    # Get the current branch name
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    # Check if the current branch is "main"
+    if [ "$current_branch" != "main" ]; then
+        echo "You can only publish the documentation from the main branch (current branch is '$current_branch')."
+        exit 1
+    fi
+
     pushd ../datoviz.github.io
     mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
     popd
