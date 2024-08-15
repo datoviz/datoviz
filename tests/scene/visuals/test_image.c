@@ -82,7 +82,7 @@ int test_image_1(TstSuite* suite)
 
 
     // Create the visual.
-    DvzVisual* visual = dvz_image(vt.batch, 0);
+    DvzVisual* visual = dvz_image(vt.batch, DVZ_IMAGE_FLAGS_RESCALE);
 
     // Visual allocation.
     dvz_image_alloc(visual, 1);

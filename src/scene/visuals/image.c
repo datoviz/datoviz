@@ -72,9 +72,15 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 2, DVZ_SLOT_TEX);
 
+    // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &size_ndc);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &size_ndc);
+
+    // Rescale specialization constant.
+    int rescale = (flags & DVZ_IMAGE_FLAGS_RESCALE) > 0;
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &rescale);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);

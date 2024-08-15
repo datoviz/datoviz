@@ -51,7 +51,7 @@ panel = dvz.panel_default(figure)
 pz = dvz.panel_panzoom(panel)
 
 # Image visual.
-visual = dvz.image(batch, 0)
+visual = dvz.image(batch, dvz.IMAGE_FLAGS_RESCALE)
 
 # One image in this visual, there could be multiple images sharing the same underlying texture.
 dvz.image_alloc(visual, 1)
