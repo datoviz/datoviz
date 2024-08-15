@@ -1685,6 +1685,104 @@ DVZ_EXPORT void dvz_glyph_xywh(
 
 
 /*************************************************************************************************/
+/*  Monoglyph visual                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Create a monoglyph visual.
+ *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_monoglyph(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Set the glyph positions.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the glyph offsets.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the glyph offsets (ivec2 integers: row,column)
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_offset(DvzVisual* visual, uint32_t first, uint32_t count, ivec2* values, int flags);
+
+
+
+/**
+ * Set the glyph colors.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ * Set the text.
+ *
+ * @param visual the visual
+ * @param text the ASCII test (string length without the null terminal byte = number of glyphs)
+ */
+DVZ_EXPORT void
+dvz_monoglyph_text(DvzVisual* visual, uint32_t first, uint32_t count, const char* text, int flags);
+
+
+
+/**
+ * Set the glyph anchor (relative to the glyph size).
+ *
+ * @param visual the visual
+ * @param anchor the anchor
+ */
+DVZ_EXPORT void dvz_monoglyph_anchor(DvzVisual* visual, vec2 anchor);
+
+
+
+/**
+ * Set the glyph size (relative to the initial glyph size).
+ *
+ * @param visual the visual
+ * @param size the glyph size
+ */
+DVZ_EXPORT void dvz_monoglyph_size(DvzVisual* visual, float size);
+
+
+
+/**
+ * Allocate memory for a visual.
+ *
+ * @param visual the visual
+ * @param item_count the total number of items to allocate for this visual
+ */
+DVZ_EXPORT void dvz_monoglyph_alloc(DvzVisual* visual, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
 /*  Image                                                                                        */
 /*************************************************************************************************/
 

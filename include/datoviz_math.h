@@ -225,9 +225,10 @@ typedef uint32_t DvzIndex;
     ((type*)CGLM_ASSUME_ALIGNED((expr), __alignof__(type)))
 #endif
 
-typedef int ivec2[2];
-typedef int ivec3[3];
-typedef int ivec4[4];
+// Signed 32-bit integers.
+typedef int32_t ivec2[2];
+typedef int32_t ivec3[3];
+typedef int32_t ivec4[4];
 
 typedef float vec2[2];
 typedef float vec3[3];
