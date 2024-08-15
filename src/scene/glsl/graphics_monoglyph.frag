@@ -16,8 +16,6 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     CLIP;
-    // out_color = vec4(1, 1, 1, 1);
-    // return;
 
     vec2 uv = floor(gl_PointCoord.xy * 8.0);
     if (uv.x > 5.0)

@@ -209,7 +209,7 @@ vec3* dvz_mock_pos3D(uint32_t count, float std)
 
 vec3* dvz_mock_fixed(uint32_t count, vec3 fixed)
 {
-    ASSERT(count > 1);
+    ASSERT(count > 0);
     vec3* pos = (vec3*)calloc(count, sizeof(vec3));
 
     for (uint32_t i = 0; i < count; i++)

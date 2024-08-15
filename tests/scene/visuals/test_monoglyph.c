@@ -48,7 +48,7 @@ int test_monoglyph_1(TstSuite* suite)
             text[idx++] = '\n';
         }
     }
-    log_error(text);
+
     dvz_monoglyph_textarea(visual, (vec3){0, 0, 0}, (cvec4){255, 128, 0, 255}, 5.0f, text);
     dvz_monoglyph_anchor(visual, (vec2){+40, -10});
 
