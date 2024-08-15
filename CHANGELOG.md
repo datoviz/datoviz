@@ -11,6 +11,7 @@
 - Improve FPS computation.
 - Experimental monoglyph visual (pure GLSL low-quality glyph generation)
 - Generating a texture with a text string from a font.
+- Improve image visual API with more rescaling options.
 - Minor bug fixes.
 
 
@@ -26,4 +27,3 @@
 
 - First experimental release.
 - Cython bindings.
--
