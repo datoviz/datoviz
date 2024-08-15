@@ -71,6 +71,8 @@ dvz_shape_obj
 dvz_basic
 dvz_basic_position
 dvz_basic_color
+dvz_basic_group
+dvz_basic_size
 dvz_basic_alloc
 dvz_pixel
 dvz_pixel_position
@@ -188,6 +190,7 @@ dvz_arcball_model
 dvz_arcball_end
 dvz_arcball_mvp
 dvz_arcball_print
+dvz_arcball_gui
 dvz_camera_initial
 dvz_camera_reset
 dvz_camera_zrange

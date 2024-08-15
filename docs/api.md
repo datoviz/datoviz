@@ -203,6 +203,19 @@ void dvz_arcball_flags(
 )
 ```
 
+### `dvz_arcball_gui()`
+
+Show a GUI with sliders controlling the three arcball angles.
+
+```c
+void dvz_arcball_gui(
+    DvzArcball* arcball,  // the arcball
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the canvas (or figure) ID
+    DvzPanel* panel,  // the panel
+)
+```
+
 ### `dvz_arcball_initial()`
 
 Set the initial arcball angles.
@@ -337,6 +350,20 @@ void dvz_basic_color(
 )
 ```
 
+### `dvz_basic_group()`
+
+Set the vertex group index.
+
+```c
+void dvz_basic_group(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    float* values,  // the group index of each vertex
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_basic_position()`
 
 Set the vertex positions.
@@ -348,6 +375,17 @@ void dvz_basic_position(
     uint32_t count,  // the number of items to update
     vec3* values,  // the 3D positions of the items to update
     int flags,  // the data update flags
+)
+```
+
+### `dvz_basic_size()`
+
+Set the point size (for POINT_LIST topology only).
+
+```c
+void dvz_basic_size(
+    DvzVisual* visual,  // the visual
+    float size,  // the point size in pixels
 )
 ```
 

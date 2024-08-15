@@ -221,6 +221,7 @@ M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
 M_PI2 = 1.5707963267948966
 M_INV_255 = 0.00392156862745098
+EPSILON = 1e-10
 GB = 1073741824
 MB = 1048576
 KB = 1024
@@ -234,7 +235,7 @@ DVZ_VERSION_PATCH = 1
 
 class DvzAppFlags(CtypesEnum):
     DVZ_APP_FLAGS_NONE = 0x000000
-    DVZ_APP_FLAGS_OFFSCREEN = 0x000001
+    DVZ_APP_FLAGS_OFFSCREEN = 0x008000
     DVZ_APP_FLAGS_WHITE_BACKGROUND = 0x100000
 
 
@@ -798,7 +799,7 @@ class DvzKeyCode(CtypesEnum):
 # Function aliases
 
 APP_FLAGS_NONE = 0x000000
-APP_FLAGS_OFFSCREEN = 0x000001
+APP_FLAGS_OFFSCREEN = 0x008000
 APP_FLAGS_WHITE_BACKGROUND = 0x100000
 CANVAS_FLAGS_NONE = 0x0000
 CANVAS_FLAGS_IMGUI = 0x0001
@@ -2074,6 +2075,23 @@ basic_color.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_basic_group()
+basic_group = dvz.dvz_basic_group
+basic_group.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_basic_size()
+basic_size = dvz.dvz_basic_size
+basic_size.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float size
+]
+
 # Function dvz_basic_alloc()
 basic_alloc = dvz.dvz_basic_alloc
 basic_alloc.argtypes = [
@@ -3079,6 +3097,15 @@ arcball_mvp.argtypes = [
 arcball_print = dvz.dvz_arcball_print
 arcball_print.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
+]
+
+# Function dvz_arcball_gui()
+arcball_gui = dvz.dvz_arcball_gui
+arcball_gui.argtypes = [
+    ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 
 # Function dvz_camera_initial()
