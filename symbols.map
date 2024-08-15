@@ -115,6 +115,7 @@ dvz_font_size
 dvz_font_layout
 dvz_font_ascii
 dvz_font_draw
+dvz_font_texture
 dvz_font_destroy
 dvz_glyph
 dvz_glyph_alloc

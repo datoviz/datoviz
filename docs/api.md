@@ -719,6 +719,7 @@ uint8_t* dvz_font_draw(  // returns: an RGBA array allocated by this function an
     uint32_t length,  // the number of glyphs
     uint32_t* codepoints,  // the Unicode codepoints of the glyphs
     vec4* xywh,  // an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+    int flags,  // the font flags
 )
 ```
 
@@ -742,6 +743,19 @@ Set the font size.
 void dvz_font_size(
     DvzFont* font,  // the font
     double size,  // the font size
+)
+```
+
+### `dvz_font_texture()`
+
+Generate a texture with a rendered text.
+
+```c
+DvzId dvz_font_texture(  // returns: a tex ID
+    DvzFont* font,  // the font
+    DvzBatch* batch,  // the batch
+    uint32_t length,  // the number of Unicode codepoints
+    uint32_t* codepoints,  // the Unicode codepoints
 )
 ```
 
@@ -3385,6 +3399,13 @@ DVZ_EASING_COUNT
 DVZ_FILTER_NEAREST
 DVZ_FILTER_LINEAR
 DVZ_FILTER_CUBIC_IMG
+```
+
+### `DvzFontFlags`
+
+```
+DVZ_FONT_RGB
+DVZ_FONT_RGBA
 ```
 
 ### `DvzFormat`

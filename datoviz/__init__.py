@@ -347,6 +347,11 @@ class DvzTexFlags(CtypesEnum):
     DVZ_TEX_FLAGS_PERSISTENT_STAGING = 0x2000
 
 
+class DvzFontFlags(CtypesEnum):
+    DVZ_FONT_RGB = 0
+    DVZ_FONT_RGBA = 1
+
+
 class DvzPrimitiveTopology(CtypesEnum):
     DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0
     DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1
@@ -882,6 +887,8 @@ DAT_FLAGS_PERSISTENT_STAGING = 0x2000
 UPLOAD_FLAGS_NOCOPY = 0x0800
 TEX_FLAGS_NONE = 0x0000
 TEX_FLAGS_PERSISTENT_STAGING = 0x2000
+FONT_RGB = 0
+FONT_RGBA = 1
 PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_LINE_LIST = 1
 PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
@@ -2482,9 +2489,21 @@ font_draw.argtypes = [
     ctypes.c_uint32,  # uint32_t length
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* xywh
+    ctypes.c_int,  # int flags
     ctypes.c_uint32 * 2,  # uvec2 out_size
 ]
 font_draw.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_font_texture()
+font_texture = dvz.dvz_font_texture
+font_texture.argtypes = [
+    ctypes.POINTER(DvzFont),  # DvzFont* font
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_uint32,  # uint32_t length
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
+    ctypes.c_uint32 * 3,  # uvec3 size
+]
+font_texture.restype = DvzId
 
 # Function dvz_font_destroy()
 font_destroy = dvz.dvz_font_destroy
