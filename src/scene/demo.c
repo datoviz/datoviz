@@ -332,10 +332,6 @@ void dvz_demo(void)
     // 2,3  IMAGE
     DvzVisual* image = dvz_image(batch, 0);
     {
-        dvz_image_alloc(image, 1);
-        dvz_image_position(image, 0, 1, (vec4[]){{-a / 2, +a / 2, +a / 2, -a / 2}}, 0);
-        dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
-
         uint32_t wi = 200;
         uint32_t hi = 200;
         cvec4* imgdata = (cvec4*)calloc(wi * hi, sizeof(cvec4));
@@ -360,8 +356,13 @@ void dvz_demo(void)
                     DVZ_CMAP_VIRIDIS, value, vmin, vmax, (uint8_t*)&imgdata[j * wi + i]);
             }
         }
-
         DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, wi, hi, imgdata);
+
+        dvz_image_alloc(image, 1);
+        dvz_image_position(image, 0, 1, (vec3[]){{0, 0, 0}}, 0);
+        dvz_image_size(image, 0, 1, (vec2[]){{wi, hi}}, 0);
+        dvz_image_anchor(image, 0, 1, (vec2[]){{.5, .35}}, 0);
+        dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
         dvz_image_texture(image, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
         FREE(imgdata);

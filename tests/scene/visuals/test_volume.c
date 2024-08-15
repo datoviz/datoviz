@@ -146,29 +146,29 @@ int test_volume_2(TstSuite* suite)
     }
 
     // Image visual.
-    if (0)
-    {
-        DvzVisual* image = dvz_image(vt.batch, 0);
+    // if (0)
+    // {
+    //     DvzVisual* image = dvz_image(vt.batch, 0);
 
-        // Visual allocation.
-        dvz_image_alloc(image, 1);
+    //     // Visual allocation.
+    //     dvz_image_alloc(image, 1);
 
-        // Image position.
-        float a = .25;
-        dvz_image_position(image, 0, 1, (vec4[]){{-a, +a, +a, -a}}, 0);
+    //     // Image position.
+    //     float a = .25;
+    //     dvz_image_position(image, 0, 1, (vec4[]){{-a, +a, +a, -a}}, 0);
 
-        // Image texture coordinates.
-        dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+    //     // Image texture coordinates.
+    //     dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
-        // Add the visual to the panel AFTER setting the visual's data.
-        dvz_panel_visual(vt.panel, image, 0);
+    //     // Add the visual to the panel AFTER setting the visual's data.
+    //     dvz_panel_visual(vt.panel, image, 0);
 
-        // Create and upload the texture.
-        uvec3 tex_shape = {0};
-        DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
+    //     // Create and upload the texture.
+    //     uvec3 tex_shape = {0};
+    //     DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
 
-        dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
-    }
+    //     dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    // }
 
     dvz_arcball_gui(vt.arcball, vt.app, vt.figure->canvas_id, vt.panel);
 

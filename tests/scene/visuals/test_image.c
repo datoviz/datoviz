@@ -72,7 +72,14 @@ int test_image_1(TstSuite* suite)
     // float w = tex_size[0] / (float)WIDTH;
     // float h = tex_size[1] / (float)HEIGHT;
 
-    float w = 1, h = 1;
+    // float w = 1, h = 1;
+
+    // Create and upload the texture.
+    uvec3 tex_shape = {0};
+    DvzId tex = load_crate_texture(vt.batch, tex_shape);
+    ASSERT(tex_shape[0] > 0);
+    ASSERT(tex_shape[1] > 0);
+
 
     // Create the visual.
     DvzVisual* visual = dvz_image(vt.batch, 0);
@@ -81,7 +88,13 @@ int test_image_1(TstSuite* suite)
     dvz_image_alloc(visual, 1);
 
     // Image position.
-    dvz_image_position(visual, 0, 1, (vec4[]){{-w, +h, +w, -h}}, 0);
+    dvz_image_position(visual, 0, 1, (vec3[]){{0, 0, 0}}, 0);
+
+    // Image size.
+    dvz_image_size(visual, 0, 1, (vec2[]){{(float)tex_shape[0], (float)tex_shape[1]}}, 0);
+
+    // Image anchor.
+    dvz_image_anchor(visual, 0, 1, (vec2[]){{.5, .5}}, 0);
 
     // Image texture coordinates.
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
@@ -89,10 +102,7 @@ int test_image_1(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    // Create and upload the texture.
-    uvec3 tex_shape = {0};
-    DvzId tex = load_crate_texture(vt.batch, tex_shape);
-
+    // Attach the texture to the image visual.
     dvz_image_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     // Run the test.

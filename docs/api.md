@@ -1142,6 +1142,20 @@ void dvz_image_alloc(
 )
 ```
 
+### `dvz_image_anchor()`
+
+Set the image anchors.
+
+```c
+void dvz_image_anchor(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec2* values,  // the relative anchors of each image, (0,0 = position pertains to top-left corner)
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_image_position()`
 
 Set the image positions.
@@ -1151,7 +1165,21 @@ void dvz_image_position(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec4* ul_lr,  // the 2D positions of the upper-left and lower-right corners (vec4 x0,y0,x1,y1)
+    vec3* values,  // the 3D positions of the top-left corner
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_image_size()`
+
+Set the image sizes.
+
+```c
+void dvz_image_size(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec2* values,  // the sizes of each image, in pixels
     int flags,  // the data update flags
 )
 ```

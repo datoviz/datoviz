@@ -40,8 +40,10 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzImageVertex
 {
-    vec2 pos; /* position */
-    vec2 uv;  /* texture coordinates */
+    vec3 pos;    /* position */
+    vec2 size;   /* size */
+    vec2 anchor; /* anchor */
+    vec2 uv;     /* texture coordinates */
 };
 
 
