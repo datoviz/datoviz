@@ -1156,6 +1156,20 @@ void dvz_image_anchor(
 )
 ```
 
+### `dvz_image_color()`
+
+Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+
+```c
+void dvz_image_color(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec4* values,  // the image colors
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_image_edge_color()`
 
 Set the edge color.
@@ -3536,6 +3550,7 @@ DVZ_FORMAT_R32G32B32A32_SFLOAT
 DVZ_IMAGE_FLAGS_SIZE_PIXELS
 DVZ_IMAGE_FLAGS_SIZE_NDC
 DVZ_IMAGE_FLAGS_RESCALE
+DVZ_IMAGE_FLAGS_FILL
 ```
 
 ### `DvzJoinType`

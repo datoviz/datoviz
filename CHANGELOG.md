@@ -10,10 +10,14 @@
 
 - Added open/close option in `path` visual.
 - Added functionality in `basic` visual (point size, groups).
-- Improved the `image` visual API.
-- Added rescaling option in `image` visual.
-- Added rounded corners and stroke options in `image` visual.
 - Added new _experimental_ `monoglyph` visual (pure GLSL low-quality glyph generation), works on macOS but not on Linux (?)
+
+#### Image visual
+
+- Improved the `image` visual API (position is now specified in normalized device coordinates, the size in pixels, the anchor in relative coordinates).
+- Added rescaling option.
+- Added rounded corners and stroke options.
+- Added fill option to replace the texture by a uniform color.
 
 ### Text
 

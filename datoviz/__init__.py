@@ -480,6 +480,7 @@ class DvzImageFlags(CtypesEnum):
     DVZ_IMAGE_FLAGS_SIZE_PIXELS = 0x0000
     DVZ_IMAGE_FLAGS_SIZE_NDC = 0x0001
     DVZ_IMAGE_FLAGS_RESCALE = 0x0004
+    DVZ_IMAGE_FLAGS_FILL = 0x0008
 
 
 class DvzShapeType(CtypesEnum):
@@ -995,6 +996,7 @@ PATH_FLAGS_CLOSED = 1
 IMAGE_FLAGS_SIZE_PIXELS = 0x0000
 IMAGE_FLAGS_SIZE_NDC = 0x0001
 IMAGE_FLAGS_RESCALE = 0x0004
+IMAGE_FLAGS_FILL = 0x0008
 SHAPE_NONE = 0
 SHAPE_SQUARE = 1
 SHAPE_DISC = 2
@@ -2818,6 +2820,16 @@ image_texcoords.argtypes = [
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* ul_lr
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_image_color()
+image_color = dvz.dvz_image_color
+image_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
