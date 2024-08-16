@@ -205,11 +205,11 @@ void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* va
 
 
 
-void dvz_path_linewidth(DvzVisual* visual, float value)
+void dvz_path_linewidth(DvzVisual* visual, float width)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 0, &value);
+    dvz_visual_param(visual, 2, 0, &width);
 }
 
 

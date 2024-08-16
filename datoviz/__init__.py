@@ -437,7 +437,8 @@ class DvzMarkerShape(CtypesEnum):
     DVZ_MARKER_SHAPE_TAG = 16
     DVZ_MARKER_SHAPE_TRIANGLE = 17
     DVZ_MARKER_SHAPE_VBAR = 18
-    DVZ_MARKER_SHAPE_COUNT = 19
+    DVZ_MARKER_SHAPE_ROUNDED_RECT = 19
+    DVZ_MARKER_SHAPE_COUNT = 20
 
 
 class DvzMarkerMode(CtypesEnum):
@@ -969,7 +970,8 @@ MARKER_SHAPE_SQUARE = 15
 MARKER_SHAPE_TAG = 16
 MARKER_SHAPE_TRIANGLE = 17
 MARKER_SHAPE_VBAR = 18
-MARKER_SHAPE_COUNT = 19
+MARKER_SHAPE_ROUNDED_RECT = 19
+MARKER_SHAPE_COUNT = 20
 MARKER_MODE_NONE = 0
 MARKER_MODE_CODE = 1
 MARKER_MODE_BITMAP = 2
@@ -2311,14 +2313,14 @@ marker_color.argtypes = [
 marker_edge_color = dvz.dvz_marker_edge_color
 marker_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint8 * 4,  # cvec4 value
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 
 # Function dvz_marker_edge_width()
 marker_edge_width = dvz.dvz_marker_edge_width
 marker_edge_width.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float value
+    ctypes.c_float,  # float width
 ]
 
 # Function dvz_marker_tex()
@@ -2333,7 +2335,7 @@ marker_tex.argtypes = [
 marker_tex_scale = dvz.dvz_marker_tex_scale
 marker_tex_scale.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float value
+    ctypes.c_float,  # float scale
 ]
 
 # Function dvz_marker_alloc()
@@ -2443,7 +2445,7 @@ path_color.argtypes = [
 path_linewidth = dvz.dvz_path_linewidth
 path_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float value
+    ctypes.c_float,  # float width
 ]
 
 # Function dvz_path_cap()
@@ -2833,6 +2835,20 @@ image_radius = dvz.dvz_image_radius
 image_radius.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float radius
+]
+
+# Function dvz_image_edge_width()
+image_edge_width = dvz.dvz_image_edge_width
+image_edge_width.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float width
+]
+
+# Function dvz_image_edge_color()
+image_edge_color = dvz.dvz_image_edge_color
+image_edge_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint8 * 4,  # cvec4 color
 ]
 
 # Function dvz_image_alloc()

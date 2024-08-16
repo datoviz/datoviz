@@ -1156,6 +1156,28 @@ void dvz_image_anchor(
 )
 ```
 
+### `dvz_image_edge_color()`
+
+Set the edge color.
+
+```c
+void dvz_image_edge_color(
+    DvzVisual* visual,  // the visual
+    cvec4 color,  // the edge color
+)
+```
+
+### `dvz_image_edge_width()`
+
+Set the edge width.
+
+```c
+void dvz_image_edge_width(
+    DvzVisual* visual,  // the visual
+    float width,  // the edge width
+)
+```
+
 ### `dvz_image_position()`
 
 Set the image positions.
@@ -1326,7 +1348,7 @@ Set the marker edge color.
 ```c
 void dvz_marker_edge_color(
     DvzVisual* visual,  // the visual
-    cvec4 value,  // the edge color
+    cvec4 color,  // the edge color
 )
 ```
 
@@ -1337,7 +1359,7 @@ Set the marker edge width.
 ```c
 void dvz_marker_edge_width(
     DvzVisual* visual,  // the visual
-    float value,  // the edge width
+    float width,  // the edge width
 )
 ```
 
@@ -1410,7 +1432,7 @@ Set the texture scale.
 ```c
 void dvz_marker_tex_scale(
     DvzVisual* visual,  // the visual
-    float value,  // the texture scale
+    float scale,  // the texture scale
 )
 ```
 
@@ -2090,7 +2112,7 @@ Set the path line width.
 ```c
 void dvz_path_linewidth(
     DvzVisual* visual,  // the visual
-    float value,  // the line width
+    float width,  // the line width
 )
 ```
 
@@ -3583,6 +3605,7 @@ DVZ_MARKER_SHAPE_SQUARE
 DVZ_MARKER_SHAPE_TAG
 DVZ_MARKER_SHAPE_TRIANGLE
 DVZ_MARKER_SHAPE_VBAR
+DVZ_MARKER_SHAPE_ROUNDED_RECT
 DVZ_MARKER_SHAPE_COUNT
 ```
 

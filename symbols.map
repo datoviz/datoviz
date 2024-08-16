@@ -152,6 +152,8 @@ dvz_image_anchor
 dvz_image_texcoords
 dvz_image_texture
 dvz_image_radius
+dvz_image_edge_width
+dvz_image_edge_color
 dvz_image_alloc
 dvz_tex_image
 dvz_mesh

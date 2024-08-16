@@ -76,6 +76,8 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzImageParams));
     dvz_params_attr(params, 0, FIELD(DvzImageParams, radius));
+    dvz_params_attr(params, 1, FIELD(DvzImageParams, edge_width));
+    dvz_params_attr(params, 2, FIELD(DvzImageParams, edge_color));
 
     // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
@@ -145,6 +147,28 @@ void dvz_image_radius(DvzVisual* visual, float radius)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, 0, &radius);
+}
+
+
+
+void dvz_image_edge_width(DvzVisual* visual, float width)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 1, &width);
+}
+
+
+
+void dvz_image_edge_color(DvzVisual* visual, cvec4 color)
+{
+    ANN(visual);
+
+    // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
+    float r = color[0] / 255.0;
+    float g = color[1] / 255.0;
+    float b = color[2] / 255.0;
+    float a = color[3] / 255.0;
+    dvz_visual_param(visual, 2, 2, (vec4){r, g, b, a});
 }
 
 

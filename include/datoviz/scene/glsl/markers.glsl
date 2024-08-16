@@ -212,6 +212,21 @@ float marker_square(vec2 P, float size) { return max(abs(P.x), abs(P.y)) - size 
 
 
 
+float marker_rounded_rect(vec2 P, vec2 size, float radius)
+{
+    vec2 d = abs(P) - size / 2.0 + radius;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - radius;
+}
+
+
+
+float marker_rounded_rect(vec2 P, float size, float radius)
+{
+    return marker_rounded_rect(P, vec2(size, size), radius);
+}
+
+
+
 float marker_tag(vec2 P, float size)
 {
     float r1 = max(abs(P.x) - size / 2.0, abs(P.y) - size / 6.0);

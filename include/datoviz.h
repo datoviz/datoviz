@@ -1170,9 +1170,9 @@ dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* value
  * Set the marker edge color.
  *
  * @param visual the visual
- * @param value the edge color
+ * @param color the edge color
  */
-DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
+DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 color);
 
 
 
@@ -1180,9 +1180,9 @@ DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
  * Set the marker edge width.
  *
  * @param visual the visual
- * @param value the edge width
+ * @param width the edge width
  */
-DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float width);
 
 
 
@@ -1201,9 +1201,9 @@ DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
  * Set the texture scale.
  *
  * @param visual the visual
- * @param value the texture scale
+ * @param scale the texture scale
  */
-DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float scale);
 
 
 
@@ -1364,9 +1364,9 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values,
  * Set the path line width.
  *
  * @param visual the visual
- * @param value the line width
+ * @param width the line width
  */
-DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float width);
 
 
 
@@ -1934,8 +1934,27 @@ DVZ_EXPORT void dvz_image_texture(
  * @param visual the visual
  * @param radius the rounded corner radius, in pixel
  */
-DVZ_EXPORT
-void dvz_image_radius(DvzVisual* visual, float radius);
+DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
+
+
+
+/**
+ * Set the edge width.
+ *
+ * @param visual the visual
+ * @param width the edge width
+ */
+DVZ_EXPORT void dvz_image_edge_width(DvzVisual* visual, float width);
+
+
+
+/**
+ * Set the edge color.
+ *
+ * @param visual the visual
+ * @param color the edge color
+ */
+DVZ_EXPORT void dvz_image_edge_color(DvzVisual* visual, cvec4 color);
 
 
 
