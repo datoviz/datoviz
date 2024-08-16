@@ -2,19 +2,35 @@
 
 ## Development version
 
-- Add mock functions.
-- Improved visual demo.
-- Updated documentation website `datoviz.org`.
-- Added some documentation.
-- Add functionality to basic visual (point size, groups).
-- Arcball GUI.
-- Improve FPS computation.
-- Experimental monoglyph visual (pure GLSL low-quality glyph generation)
-- Generating a texture with a text string from a font.
-- Support text rendering with multiple lines in font API.
-- Paths can now be closed.
-- Improve image visual API with more rescaling options.
-- Minor bug fixes.
+### Scene
+
+- Implemented arcball GUI with sliders for rotation angles.
+
+### Visuals
+
+- Added open/close option in `path` visual.
+- Added functionality in `basic` visual (point size, groups).
+- Improved the `image` visual API.
+- Added rescaling option in `image` visual.
+- Added rounded corners and stroke options in `image` visual.
+- Added new _experimental_ `monoglyph` visual (pure GLSL low-quality glyph generation), works on macOS but not on Linux (?)
+
+### Text
+
+- Added feature to generate a texture containing a string, using a given font.
+- Implemented multiline support in text rendering using the font API.
+
+### Documentation
+
+- Added more documentation.
+- Updated website `datoviz.org`.
+
+### Miscellaneous
+
+- Improved demo now showing a grid of visuals.
+- Improved FPS computation.
+- Added mock functions.
+- Fixed various minor bugs.
 
 
 ## v0.2.0 (2024-08-05) [STABLE]
