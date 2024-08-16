@@ -132,6 +132,22 @@ Once a visual is created, you can specify its data using the provided visual-spe
 
 The most common types of visual properties are point positions and colors, but each visual has its own specific data properties (e.g., size, shape, groups). For more details, refer to the [C API reference](api.md).
 
+
+## Text
+
+Rendering high-quality text on the GPU efficiently is challenging. Several methods have been developed within the graphics community. Datoviz currently offers or plans to offer the following visuals:
+
+- **`glyph`**: Reasonably good quality, supports scaling, but currently not ideal for small font sizes. Utilizes multi-channel signed distance fields. Refer to [Chlumsky's code](https://github.com/Chlumsky/msdf-atlas-gen/).
+- **`monoglyph`**: Fast but very low quality and still experimental (may not work on Linux for now). See [glumpy's example](https://github.com/glumpy/glumpy/blob/master/glumpy/app/console.py#L12).
+- **`font`**: High quality but slow and does not support scaling. Renders on the CPU with freetype.
+- **`vectorglyph`**: Potentially the most promising option, though not yet implemented! Refer to [GreenLightning's code](https://github.com/GreenLightning/gpu-font-rendering).
+
+Datoviz currently includes the Roboto font and supports loading TTF/OTF fonts directly via freetype, which is a library dependency. Additional fonts may be integrated into Datoviz in the near future.
+
+Additionally, we are exploring basic standalone LaTeX rendering in Datoviz, potentially using a micro LaTeX renderer such as [MicroTeX](https://github.com/NanoMichael/MicroTeX). This approach would not require a LaTeX distribution on the client side and would be particularly useful for rendering mathematical equations.
+This could work via bundling of the [New Computer Modern](https://ctan.org/pkg/newcomputermodern?lang=en) font (`NewCMMath-Regular.otf`).
+
+
 ### Terminology
 
 We use the following terminology:
