@@ -50,7 +50,7 @@ int test_image_1(TstSuite* suite)
     float w = tex_shape[0], h = tex_shape[1];
 
     // Create the visual.
-    DvzVisual* visual = dvz_image(vt.batch, DVZ_IMAGE_FLAGS_RESCALE);
+    DvzVisual* visual = dvz_image(vt.batch, DVZ_IMAGE_FLAGS_RESCALE | 0);
 
     // Visual allocation.
     dvz_image_alloc(visual, 1);
@@ -68,6 +68,9 @@ int test_image_1(TstSuite* suite)
 
     // Image texture coordinates.
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+
+    // Image colors.
+    dvz_image_color(visual, 0, 1, (cvec4[]){{0, 64, 128, 255}}, 0);
 
     // Image parameters.
     dvz_image_radius(visual, 100.0);                         // rounded corners

@@ -1916,6 +1916,20 @@ dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_
 
 
 /**
+ * Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the image colors
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
  * Assign a texture to an image visual.
  *
  * @param visual the visual

@@ -35,6 +35,7 @@ struct DvzImageVertex
     vec2 size;   /* size */
     vec2 anchor; /* anchor */
     vec2 uv;     /* texture coordinates */
+    cvec4 color; /* color */
 };
 
 

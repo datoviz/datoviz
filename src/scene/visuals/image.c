@@ -63,6 +63,7 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzImageVertex, size), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 2, FIELD(DvzImageVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 3, FIELD(DvzImageVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0);
+    dvz_visual_attr(visual, 4, FIELD(DvzImageVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzImageVertex));
@@ -88,6 +89,11 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     int rescale = (flags & DVZ_IMAGE_FLAGS_RESCALE) > 0;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &rescale);
+
+    // Filled specialization constant.
+    int fill = (flags & DVZ_IMAGE_FLAGS_FILL) > 0;
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 2, sizeof(int), &fill);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &fill);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -139,6 +145,14 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
 {
     ANN(visual);
     dvz_visual_quads(visual, 3, first, count, ul_lr);
+}
+
+
+
+void dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 4, first, count, values);
 }
 
 
