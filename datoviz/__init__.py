@@ -2828,6 +2828,13 @@ image_texture.argtypes = [
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
 
+# Function dvz_image_radius()
+image_radius = dvz.dvz_image_radius
+image_radius.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float radius
+]
+
 # Function dvz_image_alloc()
 image_alloc = dvz.dvz_image_alloc
 image_alloc.argtypes = [

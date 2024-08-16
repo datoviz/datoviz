@@ -1170,6 +1170,17 @@ void dvz_image_position(
 )
 ```
 
+### `dvz_image_radius()`
+
+Use a rounded rectangle for images, with a given radius in pixels.
+
+```c
+void dvz_image_radius(
+    DvzVisual* visual,  // the visual
+    float radius,  // the rounded corner radius, in pixel
+)
+```
+
 ### `dvz_image_size()`
 
 Set the image sizes.

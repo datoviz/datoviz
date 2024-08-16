@@ -1,34 +1,20 @@
 #version 450
 #include "common.glsl"
-
-float total_zoom()
-{
-    // Combine the matrices: T = proj * view * model
-    mat4 T = mvp.proj * mvp.view * mvp.model;
-
-    // Extract the scaling factors along the x, y, and z axes
-    float S_x = length(vec3(T[0][0], T[0][1], T[0][2]));
-    float S_y = length(vec3(T[1][0], T[1][1], T[1][2]));
-    float S_z = length(vec3(T[2][0], T[2][1], T[2][2]));
-
-    // Calculate the total zoom as the average scaling factor
-    float zoom = (S_x + S_y + S_z) / 3.0;
-
-    return zoom;
-}
+#include "params_image.glsl"
 
 // Specialization constants.
 layout(constant_id = 0) const int SIZE_NDC = 0;
 layout(constant_id = 1) const int RESCALE = 0;
 
 // Attributes.
-layout(location = 0) in vec3 pos;
-layout(location = 1) in vec2 size;
-layout(location = 2) in vec2 anchor;
-layout(location = 3) in vec2 uv;
+layout(location = 0) in vec3 pos;    // in NDC
+layout(location = 1) in vec2 size;   // in pixels
+layout(location = 2) in vec2 anchor; // in relative coordinates
+layout(location = 3) in vec2 uv;     // in texel coordinates
 
 // Varyings.
 layout(location = 0) out vec2 out_uv;
+layout(location = 1) out vec3 out_size; // w, h, zoom
 
 vec2 ds[6] = {{0, 0}, {0, +1}, {+1, +1}, {+1, +1}, {+1, 0}, {0, 0}};
 
@@ -38,13 +24,17 @@ void main()
 
     int idx = gl_VertexIndex % 6;
     vec2 d = size * (ds[idx] - anchor);
+    float zoom = 1;
     if (RESCALE == 1)
     {
-        d *= total_zoom();
+        zoom = total_zoom();
+        d *= zoom;
     }
     tr.xy += (SIZE_NDC == 0 ? d * 2. / viewport.size : d);
 
     gl_Position = tr;
 
     out_uv = uv;
+    out_size.xy = size * zoom;
+    out_size.z = zoom;
 }

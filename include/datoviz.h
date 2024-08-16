@@ -1929,6 +1929,17 @@ DVZ_EXPORT void dvz_image_texture(
 
 
 /**
+ * Use a rounded rectangle for images, with a given radius in pixels.
+ *
+ * @param visual the visual
+ * @param radius the rounded corner radius, in pixel
+ */
+DVZ_EXPORT
+void dvz_image_radius(DvzVisual* visual, float radius);
+
+
+
+/**
  * Allocate memory for a visual.
  *
  * @param visual the visual

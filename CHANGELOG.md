@@ -11,7 +11,7 @@
 - Improve FPS computation.
 - Experimental monoglyph visual (pure GLSL low-quality glyph generation)
 - Generating a texture with a text string from a font.
-- Support text with multiple lines in font API.
+- Support text rendering with multiple lines in font API.
 - Paths can now be closed.
 - Improve image visual API with more rescaling options.
 - Minor bug fixes.

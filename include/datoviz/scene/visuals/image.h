@@ -21,6 +21,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzImageVertex DvzImageVertex;
+typedef struct DvzImageParams DvzImageParams;
 
 
 
@@ -34,6 +35,13 @@ struct DvzImageVertex
     vec2 size;   /* size */
     vec2 anchor; /* anchor */
     vec2 uv;     /* texture coordinates */
+};
+
+
+
+struct DvzImageParams
+{
+    float radius; /* rounded rectangle radius, 0 for sharp corners */
 };
 
 

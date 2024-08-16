@@ -70,7 +70,12 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 2, DVZ_SLOT_TEX);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
+
+    // Params.
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzImageParams));
+    dvz_params_attr(params, 0, FIELD(DvzImageParams, radius));
 
     // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
@@ -136,6 +141,14 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
 
 
 
+void dvz_image_radius(DvzVisual* visual, float radius)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, &radius);
+}
+
+
+
 void dvz_image_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
 {
@@ -147,7 +160,7 @@ void dvz_image_texture(
     DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
 
     // Bind texture to the visual.
-    dvz_visual_tex(visual, 2, tex, sampler, DVZ_ZERO_OFFSET);
+    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
 }
 
 
