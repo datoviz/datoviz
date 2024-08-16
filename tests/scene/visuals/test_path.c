@@ -127,7 +127,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
 
 int test_path_2(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM, 0);
+    VisualTest vt = visual_test_start("path_2", VISUAL_TEST_PANZOOM, 0);
 
     // Number of items.
     uint32_t N = 100; // size of each path
@@ -198,6 +198,62 @@ int test_path_2(TstSuite* suite)
     FREE(path_lengths);
     FREE(positions);
     FREE(colors);
+
+    return 0;
+}
+
+
+
+int test_path_closed(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("path_closed", VISUAL_TEST_PANZOOM, 0);
+
+    uint32_t n = 100;
+    float radius = 0.35;
+    float linewidth = 50.0;
+
+
+    // Create the visual.
+    DvzVisual* visual = dvz_path(vt.batch, DVZ_PATH_FLAGS_CLOSED);
+    dvz_path_alloc(visual, 2 * n);
+    dvz_path_linewidth(visual, linewidth);
+
+
+    // Two circles.
+    vec3* pos_0 = dvz_mock_circle(n, radius);
+    vec3* positions = (vec3*)calloc(2 * n, sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos_0[i][0] -= .5;
+    }
+    memcpy(positions, pos_0, n * sizeof(vec3));
+    for (uint32_t i = 0; i < n; i++)
+    {
+        pos_0[i][0] += 1;
+    }
+    memcpy(&positions[n], pos_0, n * sizeof(vec3));
+
+    dvz_path_position(visual, 2 * n, positions, 2, (uint32_t[]){n, n}, 0);
+
+
+    // Colors.
+    cvec4* colors_0 = dvz_mock_cmap(n, DVZ_CMAP_HSV, 200);
+    cvec4* colors = (cvec4*)calloc(2 * n, sizeof(cvec4));
+    memcpy(colors, colors_0, n * sizeof(cvec4));
+    memcpy(&colors[n], colors_0, n * sizeof(cvec4));
+    dvz_path_color(visual, 0, 2 * n, colors, 0);
+
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    FREE(pos_0);
+    FREE(positions);
+    FREE(colors_0);
 
     return 0;
 }

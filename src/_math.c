@@ -166,10 +166,12 @@ vec3* dvz_mock_circle(uint32_t count, float radius)
 {
     ASSERT(count > 1);
     vec3* pos = (vec3*)calloc(count, sizeof(vec3));
+    // bool closed = (flags & DVZ_MOCK_FLAGS_CLOSED) > 0;
+    uint32_t n = count; // closed ? count - 1 : count;
     for (uint32_t i = 0; i < count; i++)
     {
-        pos[i][0] = radius * cos(M_2PI * i * 1.0 / count);
-        pos[i][1] = radius * sin(M_2PI * i * 1.0 / count);
+        pos[i][0] = radius * cos(M_2PI * i * 1.0 / n);
+        pos[i][1] = radius * sin(M_2PI * i * 1.0 / n);
     }
     return pos;
 }

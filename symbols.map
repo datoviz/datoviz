@@ -107,6 +107,8 @@ dvz_path
 dvz_path_position
 dvz_path_color
 dvz_path_linewidth
+dvz_path_cap
+dvz_path_join
 dvz_path_alloc
 dvz_atlas_font
 dvz_atlas_destroy

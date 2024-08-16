@@ -348,8 +348,13 @@ class DvzTexFlags(CtypesEnum):
 
 
 class DvzFontFlags(CtypesEnum):
-    DVZ_FONT_RGB = 0
-    DVZ_FONT_RGBA = 1
+    DVZ_FONT_FLAGS_RGB = 0
+    DVZ_FONT_FLAGS_RGBA = 1
+
+
+class DvzMockFlags(CtypesEnum):
+    DVZ_MOCK_FLAGS_NONE = 0x00
+    DVZ_MOCK_FLAGS_CLOSED = 0x01
 
 
 class DvzPrimitiveTopology(CtypesEnum):
@@ -451,7 +456,7 @@ class DvzMarkerAspect(CtypesEnum):
 
 
 class DvzCapType(CtypesEnum):
-    DVZ_CAP_TYPE_NONE = 0
+    DVZ_CAP_NONE = 0
     DVZ_CAP_ROUND = 1
     DVZ_CAP_TRIANGLE_IN = 2
     DVZ_CAP_TRIANGLE_OUT = 3
@@ -465,9 +470,9 @@ class DvzJoinType(CtypesEnum):
     DVZ_JOIN_ROUND = 1
 
 
-class DvzPathTopology(CtypesEnum):
-    DVZ_PATH_OPEN = 0
-    DVZ_PATH_CLOSED = 1
+class DvzPathFlags(CtypesEnum):
+    DVZ_PATH_FLAGS_OPEN = 0
+    DVZ_PATH_FLAGS_CLOSED = 1
 
 
 class DvzImageFlags(CtypesEnum):
@@ -893,8 +898,10 @@ DAT_FLAGS_PERSISTENT_STAGING = 0x2000
 UPLOAD_FLAGS_NOCOPY = 0x0800
 TEX_FLAGS_NONE = 0x0000
 TEX_FLAGS_PERSISTENT_STAGING = 0x2000
-FONT_RGB = 0
-FONT_RGBA = 1
+FONT_FLAGS_RGB = 0
+FONT_FLAGS_RGBA = 1
+MOCK_FLAGS_NONE = 0x00
+MOCK_FLAGS_CLOSED = 0x01
 PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_LINE_LIST = 1
 PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
@@ -972,7 +979,7 @@ MARKER_MODE_MTSDF = 5
 MARKER_ASPECT_FILLED = 0
 MARKER_ASPECT_STROKE = 1
 MARKER_ASPECT_OUTLINE = 2
-CAP_TYPE_NONE = 0
+CAP_NONE = 0
 CAP_ROUND = 1
 CAP_TRIANGLE_IN = 2
 CAP_TRIANGLE_OUT = 3
@@ -981,8 +988,8 @@ CAP_BUTT = 5
 CAP_COUNT = 6
 JOIN_SQUARE = 0
 JOIN_ROUND = 1
-PATH_OPEN = 0
-PATH_CLOSED = 1
+PATH_FLAGS_OPEN = 0
+PATH_FLAGS_CLOSED = 1
 IMAGE_FLAGS_SIZE_PIXELS = 0x0000
 IMAGE_FLAGS_SIZE_NDC = 0x0001
 IMAGE_FLAGS_RESCALE = 0x0004
@@ -2437,6 +2444,20 @@ path_linewidth = dvz.dvz_path_linewidth
 path_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float value
+]
+
+# Function dvz_path_cap()
+path_cap = dvz.dvz_path_cap
+path_cap.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzCapType,  # DvzCapType cap
+]
+
+# Function dvz_path_join()
+path_join = dvz.dvz_path_join
+path_join.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzJoinType,  # DvzJoinType join
 ]
 
 # Function dvz_path_alloc()

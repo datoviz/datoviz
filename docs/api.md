@@ -2036,6 +2036,17 @@ void dvz_path_alloc(
 )
 ```
 
+### `dvz_path_cap()`
+
+Set the path cap.
+
+```c
+void dvz_path_cap(
+    DvzVisual* visual,  // the visual
+    DvzCapType cap,  // the cap
+)
+```
+
 ### `dvz_path_color()`
 
 Set the path colors.
@@ -2047,6 +2058,17 @@ void dvz_path_color(
     uint32_t count,  // the number of items to update
     cvec4* values,  // the colors of the items to update
     int flags,  // the data update flags
+)
+```
+
+### `dvz_path_join()`
+
+Set the path join.
+
+```c
+void dvz_path_join(
+    DvzVisual* visual,  // the visual
+    DvzJoinType join,  // the join
 )
 ```
 
@@ -3189,7 +3211,7 @@ DVZ_CANVAS_FLAGS_PICK
 ### `DvzCapType`
 
 ```
-DVZ_CAP_TYPE_NONE
+DVZ_CAP_NONE
 DVZ_CAP_ROUND
 DVZ_CAP_TRIANGLE_IN
 DVZ_CAP_TRIANGLE_OUT
@@ -3432,8 +3454,8 @@ DVZ_FILTER_CUBIC_IMG
 ### `DvzFontFlags`
 
 ```
-DVZ_FONT_RGB
-DVZ_FONT_RGBA
+DVZ_FONT_FLAGS_RGB
+DVZ_FONT_FLAGS_RGBA
 ```
 
 ### `DvzFormat`
@@ -3561,6 +3583,13 @@ DVZ_MESH_FLAGS_TEXTURED
 DVZ_MESH_FLAGS_LIGHTING
 ```
 
+### `DvzMockFlags`
+
+```
+DVZ_MOCK_FLAGS_NONE
+DVZ_MOCK_FLAGS_CLOSED
+```
+
 ### `DvzMouseButton`
 
 ```
@@ -3605,11 +3634,11 @@ DVZ_PANZOOM_FLAGS_FIXED_X
 DVZ_PANZOOM_FLAGS_FIXED_Y
 ```
 
-### `DvzPathTopology`
+### `DvzPathFlags`
 
 ```
-DVZ_PATH_OPEN
-DVZ_PATH_CLOSED
+DVZ_PATH_FLAGS_OPEN
+DVZ_PATH_FLAGS_CLOSED
 ```
 
 ### `DvzPrimitiveTopology`

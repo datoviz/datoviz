@@ -83,10 +83,11 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
     dvz_params_attr(params, 2, FIELD(DvzPathParams, cap_type));
     dvz_params_attr(params, 3, FIELD(DvzPathParams, round_join));
 
-    // TODO: default params
+    // Default params.
+    bool closed = (visual->flags & DVZ_PATH_FLAGS_CLOSED) > 0;
     dvz_visual_param(visual, 2, 0, (float[]){10.0});
     dvz_visual_param(visual, 2, 1, (float[]){4.0});
-    dvz_visual_param(visual, 2, 2, (int32_t[]){DVZ_CAP_ROUND});
+    dvz_visual_param(visual, 2, 2, (int32_t[]){closed ? DVZ_CAP_NONE : DVZ_CAP_ROUND});
     dvz_visual_param(visual, 2, 3, (int32_t[]){DVZ_JOIN_ROUND});
 
     return visual;
@@ -116,6 +117,8 @@ void dvz_path_position(
     ANN(positions);
     ASSERT(point_count > 0);
 
+    bool closed = (visual->flags & DVZ_PATH_FLAGS_CLOSED) > 0;
+
     uint32_t path_lengths_1[1] = {point_count};
     if (path_count <= 1)
     {
@@ -125,11 +128,11 @@ void dvz_path_position(
 
     // Compute the total number of vertices, which is the sum of all path lengths.
     uint32_t total_length = 0;
-    int32_t path_length = 0;
+    int32_t l = 0;
     for (uint32_t i = 0; i < path_count; i++)
     {
-        path_length = (int32_t)path_lengths[i];
-        total_length += (uint32_t)path_length;
+        l = (int32_t)path_lengths[i];
+        total_length += (uint32_t)l;
     }
 
     uint32_t k = 0;
@@ -141,18 +144,31 @@ void dvz_path_position(
     vec3* p3 = (vec3*)calloc(total_length, sizeof(vec3));
     for (uint32_t j = 0; j < path_count; j++)
     {
-        path_length = (int32_t)path_lengths[j];
-        for (int32_t i = 0; i < path_length; i++)
+        l = (int32_t)path_lengths[j];
+        for (int32_t i = 0; i < l; i++)
         {
-            i0 = i >= 1 ? i - 1 : 0;
+            i0 = i - 1;
             i1 = i + 0;
-            i2 = i < path_length - 1 ? i + 1 : path_length - 1;
-            i3 = i < path_length - 2 ? i + 2 : path_length - 1;
+            i2 = i + 1;
+            i3 = i + 2;
 
-            ASSERT(0 <= i0 && i0 < path_length);
-            ASSERT(0 <= i1 && i1 < path_length);
-            ASSERT(0 <= i2 && i2 < path_length);
-            ASSERT(0 <= i3 && i3 < path_length);
+            if (!closed)
+            {
+                i0 = MAX(i0, 0);
+                i2 = MIN(i2, l - 1);
+                i3 = MIN(i3, l - 1);
+            }
+            else
+            {
+                i0 = i0 < 0 ? i0 + l : i0;
+                i2 = i2 >= l ? i2 - l : i2;
+                i3 = i3 >= l ? i3 - l : i3;
+            }
+
+            ASSERT(0 <= i0 && i0 < l);
+            ASSERT(0 <= i1 && i1 < l);
+            ASSERT(0 <= i2 && i2 < l);
+            ASSERT(0 <= i3 && i3 < l);
 
             _vec3_copy(positions[src_offset + (uint32_t)i0], p0[k]);
             _vec3_copy(positions[src_offset + (uint32_t)i1], p1[k]);
@@ -161,7 +177,7 @@ void dvz_path_position(
 
             k++;
         }
-        src_offset += (uint32_t)path_length;
+        src_offset += (uint32_t)l;
     }
     ASSERT(k == total_length);
 
@@ -194,4 +210,22 @@ void dvz_path_linewidth(DvzVisual* visual, float value)
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
     dvz_visual_param(visual, 2, 0, &value);
+}
+
+
+
+void dvz_path_cap(DvzVisual* visual, DvzCapType cap)
+{
+    ANN(visual);
+    // NOTE: this is safe because a copy is made immediately.
+    dvz_visual_param(visual, 2, 2, (int32_t[]){cap});
+}
+
+
+
+void dvz_path_join(DvzVisual* visual, DvzJoinType join)
+{
+    ANN(visual);
+    // NOTE: this is safe because a copy is made immediately.
+    dvz_visual_param(visual, 2, 3, (int32_t[]){join});
 }

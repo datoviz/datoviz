@@ -1371,6 +1371,27 @@ DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
 
 
 /**
+ * Set the path cap.
+ *
+ * @param visual the visual
+ * @param cap the cap
+ */
+DVZ_EXPORT
+void dvz_path_cap(DvzVisual* visual, DvzCapType cap);
+
+
+
+/**
+ * Set the path join.
+ *
+ * @param visual the visual
+ * @param join the join
+ */
+DVZ_EXPORT void dvz_path_join(DvzVisual* visual, DvzJoinType join);
+
+
+
+/**
  * Allocate memory for a visual.
  *
  * @param visual the visual

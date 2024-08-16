@@ -198,9 +198,18 @@ typedef enum
 // Font flags.
 typedef enum
 {
-    DVZ_FONT_RGB,
-    DVZ_FONT_RGBA,
+    DVZ_FONT_FLAGS_RGB,
+    DVZ_FONT_FLAGS_RGBA,
 } DvzFontFlags;
+
+
+
+// Mock flags.
+typedef enum
+{
+    DVZ_MOCK_FLAGS_NONE = 0x00,
+    DVZ_MOCK_FLAGS_CLOSED = 0x01,
+} DvzMockFlags;
 
 
 
@@ -347,7 +356,7 @@ typedef enum
 // Cap type.
 typedef enum
 {
-    DVZ_CAP_TYPE_NONE = 0,
+    DVZ_CAP_NONE = 0,
     DVZ_CAP_ROUND = 1,
     DVZ_CAP_TRIANGLE_IN = 2,
     DVZ_CAP_TRIANGLE_OUT = 3,
@@ -367,12 +376,12 @@ typedef enum
 
 
 
-// Path topology.
+// Path flags.
 typedef enum
 {
-    DVZ_PATH_OPEN,
-    DVZ_PATH_CLOSED,
-} DvzPathTopology;
+    DVZ_PATH_FLAGS_OPEN,
+    DVZ_PATH_FLAGS_CLOSED,
+} DvzPathFlags;
 
 
 
