@@ -140,7 +140,7 @@ int test_image_2(TstSuite* suite)
     dvz_font_size(font, 64);
 
     // Font texture.
-    const char* text = "Hello world! 语言处理";
+    const char* text = "Hello world!\n语言处理";
     uint32_t length = 0;
     uint32_t* codepoints = utf32_codepoints(text, &length);
     uvec3 tex_size = {0};

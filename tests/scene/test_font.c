@@ -46,7 +46,7 @@ int test_font_1(TstSuite* suite)
 
     // Compute the layout of the text.
     // const char* text = "dfghijkl!01234";
-    const char* text = "Hello world! abcdefhijklm";
+    const char* text = "Hello world!\nabcdefhijklm";
     vec4* xywh = dvz_font_ascii(font, text);
     uint32_t n = strnlen(text, 1024);
     for (uint32_t i = 0; i < n; i++)
