@@ -13,7 +13,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#if OS_MACOS
+#include <stdint.h>
+typedef uint16_t char16_t;
+typedef uint32_t char32_t;
+#else
 #include <uchar.h>
+#endif
 
 #include "renderer.h"
 #include "request.h"
@@ -78,6 +85,11 @@ int test_image_1(TstSuite* suite)
 
 static uint32_t* utf32_codepoints(const char* text, uint32_t* out_length)
 {
+
+#if OS_MACOS
+    log_error("test_image_2 currently not supported on macOS");
+    return NULL;
+#else
     ANN(text);
     ANN(out_length);
 
@@ -105,10 +117,16 @@ static uint32_t* utf32_codepoints(const char* text, uint32_t* out_length)
 
     *out_length = length;
     return codepoints;
+#endif
 }
 
 int test_image_2(TstSuite* suite)
 {
+
+#if OS_MACOS
+    log_error("test_image_2 currently not supported on macOS");
+    return 0;
+#else
     VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM, 0);
 
     // NOTE: quick test with font texture image, need to find a way to define the image size
@@ -164,4 +182,5 @@ int test_image_2(TstSuite* suite)
     visual_test_end(vt);
 
     return 0;
+#endif
 }
