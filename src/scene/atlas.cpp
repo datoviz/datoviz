@@ -38,11 +38,7 @@ using namespace msdf_atlas;
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  Utility functions                                                                            */
-/*************************************************************************************************/
+#define MINIMUM_SCALE 64.0
 
 
 
@@ -263,7 +259,7 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     packer.setDimensionsConstraint(DimensionsConstraint::SQUARE);
 
     // setScale for a fixed size or setMinimumScale to use the largest that fits
-    packer.setMinimumScale(48.0);
+    packer.setMinimumScale(MINIMUM_SCALE);
 
     // packer.setPadding(5.0);
     packer.setPixelRange(4.0);
@@ -291,7 +287,7 @@ int dvz_atlas_generate(DvzAtlas* atlas)
     // GeneratorAttributes can be modified to change the generator's default settings.
     GeneratorAttributes attributes;
     generator.setAttributes(attributes);
-    generator.setThreadCount(4);
+    generator.setThreadCount(8);
 
     // Generate atlas bitmap
     generator.generate(atlas->glyphs.data(), atlas->glyphs.size());
