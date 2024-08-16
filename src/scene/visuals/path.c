@@ -218,7 +218,7 @@ void dvz_path_cap(DvzVisual* visual, DvzCapType cap)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 2, (int32_t[]){cap});
+    dvz_visual_param(visual, 2, 2, (int32_t[]){(int32_t)cap});
 }
 
 
@@ -227,5 +227,5 @@ void dvz_path_join(DvzVisual* visual, DvzJoinType join)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 3, (int32_t[]){join});
+    dvz_visual_param(visual, 2, 3, (int32_t[]){(int32_t)join});
 }
