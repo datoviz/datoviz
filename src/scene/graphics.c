@@ -98,8 +98,8 @@ static void _graphics_triangle(DvzRenderpass* renderpass, DvzGraphics* graphics)
     ANN(renderpass);
     ANN(graphics);
 
-    SHADER(VERTEX, "graphics_basic_vert")
-    SHADER(FRAGMENT, "graphics_basic_frag")
+    SHADER(VERTEX, "graphics_trivial_vert")
+    SHADER(FRAGMENT, "graphics_trivial_frag")
 
     dvz_graphics_renderpass(graphics, renderpass, 0);
     dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);

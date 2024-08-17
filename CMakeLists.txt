@@ -887,7 +887,12 @@ if(DATOVIZ_WITH_CLI)
     target_compile_definitions(cli PUBLIC ${COMPILE_DEFINITIONS})
     target_link_libraries(cli libdatoviz)
 
-    set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
+    set_target_properties(cli
+        PROPERTIES OUTPUT_NAME "datoviz"
+
+        # BUILD_RPATH "${CMAKE_BINARY_DIR}"
+        # INSTALL_RPATH "${CMAKE_BINARY_DIR}"
+    )
 endif()
 
 # -------------------------------------------------------------------------------------------------

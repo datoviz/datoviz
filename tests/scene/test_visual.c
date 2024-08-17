@@ -33,7 +33,7 @@ int test_visual_1(TstSuite* suite)
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
     // Visual shaders.
-    dvz_visual_shader(visual, "graphics_basic");
+    dvz_visual_shader(visual, "graphics_trivial");
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, 0, sizeof(vec3), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
