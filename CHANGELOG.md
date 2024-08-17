@@ -11,6 +11,7 @@
 - Added open/close option in `path` visual.
 - Added functionality in `basic` visual (point size, groups).
 - Added new _experimental_ `monoglyph` visual (pure GLSL low-quality glyph generation), works on macOS but not on Linux (?)
+- Implemented automatic data update of dirty visuals.
 
 #### Image visual
 
