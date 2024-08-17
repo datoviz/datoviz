@@ -56,7 +56,7 @@ visual = dvz.image(batch, dvz.IMAGE_FLAGS_RESCALE)
 # One image in this visual, there could be multiple images sharing the same underlying texture.
 dvz.image_alloc(visual, 1)
 
-# xyz coordinates of the upper left corner.
+# xyz coordinates of the top left corner.
 pos = np.array([[0, 0, 0]], dtype=np.float32)
 dvz.image_position(visual, 0, 1, pos, 0)
 
@@ -68,7 +68,7 @@ dvz.image_size(visual, 0, 1, size, 0)
 anchor = np.array([[.5, .5]], dtype=np.float32)
 dvz.image_anchor(visual, 0, 1, anchor, 0)
 
-# uv coordinates of the upper left corner, and lower right corner.
+# uv coordinates of the top left corner, and bottom right corner.
 texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
 dvz.image_texcoords(visual, 0, 1, texcoords, 0)
 

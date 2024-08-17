@@ -1,15 +1,15 @@
 # Examples
 
-* [Basic visual example](#basic-visual-example)
-* [GUI example](#gui-example)
-* [Image example](#image-example)
-* [Mesh example](#mesh-example)
-* [Path offscreen example](#path-offscreen-example)
-* [Panels example](#panels-example)
-* [Scatter plot example](#scatter-plot-example)
-* [Spheres example](#spheres-example)
-* [Surface example](#surface-example)
-* [Volume example](#volume-example)
+- [Basic visual example](#basic-visual-example)
+- [GUI example](#gui-example)
+- [Image example](#image-example)
+- [Mesh example](#mesh-example)
+- [Path offscreen example](#path-offscreen-example)
+- [Panels example](#panels-example)
+- [Scatter plot example](#scatter-plot-example)
+- [Spheres example](#spheres-example)
+- [Surface example](#surface-example)
+- [Volume example](#volume-example)
 
 
 ## Basic visual example
@@ -248,11 +248,11 @@ visual = dvz.image(batch, 0)
 # One image in this visual, there could be multiple images sharing the same underlying texture.
 dvz.image_alloc(visual, 1)
 
-# xy coordinates of the upper left corner, and lower right corner
+# xy coordinates of the top left corner, and lower right corner
 pos = np.array([[-1, +1, +1, -1]], dtype=np.float32)
 dvz.image_position(visual, 0, 1, pos, 0)
 
-# uv coordinates of the upper left corner, and lower right corner
+# uv coordinates of the top left corner, and lower right corner
 texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
 dvz.image_texcoords(visual, 0, 1, texcoords, 0)
 

@@ -91,7 +91,7 @@ panel = dvz.panel_default(figure)
 Create an arbitrary panel as follows:
 
 ```python
-# x, y is the offset of the top-left panel corner.
+# x, y is the offset of the top left panel corner.
 # w, h is the size in pixels of the panel.
 panel = dvz.panel(figure, x, y, w, h)
 ```
@@ -167,7 +167,7 @@ Python ctypes bindings are auto-generated and expect a NumPy array when a C visu
 
 ### Position
 
-The `position` property specifies the 3D coordinates of visual points. Some visuals require the point positions in a specific format. For instance, segment positions are defined by the 3D coordinates of the start and end points of each segment. Image positions are currently defined by the 2D coordinates of the upper left and lower right corners, though this may change based on user feedback.
+The `position` property specifies the 3D coordinates of visual points. Some visuals require the point positions in a specific format. For instance, segment positions are defined by the 3D coordinates of the start and end points of each segment. Image positions are currently defined by the 2D coordinates of the top left and bottom right corners, though this may change based on user feedback.
 
 To set the positions of a visual, for example the `point` visual, use this:
 
