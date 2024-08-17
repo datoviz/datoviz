@@ -11,6 +11,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "../_atomic.h"
 #include "_enums.h"
 #include "_obj.h"
 #include "datoviz_types.h"
@@ -90,6 +91,7 @@ struct DvzVisual
     DvzBatch* batch;
     DvzView* view;
     int flags;
+    DvzAtomic status;
     void* user_data;
 
     DvzId graphics_id;

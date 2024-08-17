@@ -718,23 +718,54 @@ static void _scene_build(DvzScene* scene)
     ANN(scene);
 
     // Go through all figures.
-    uint32_t n = dvz_list_count(scene->figures);
+    uint64_t n = dvz_list_count(scene->figures);
+    uint64_t view_count = 0;
+    uint64_t visual_count = 0;
     DvzFigure* fig = NULL;
+    DvzView* view = NULL;
+    DvzVisual* visual = NULL;
     DvzBuildStatus status = DVZ_BUILD_CLEAR;
-    for (uint32_t i = 0; i < n; i++)
+
+    for (uint64_t viewset_idx = 0; viewset_idx < n; viewset_idx++)
     {
-        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+        fig = (DvzFigure*)dvz_list_get(scene->figures, viewset_idx).p;
         ANN(fig);
         ANN(fig->viewset);
+        ANN(fig->viewset->views);
 
         // Build status.
         status = (DvzBuildStatus)dvz_atomic_get(fig->viewset->status);
         // if viewset state == dirty, build viewset, and set the viewset state to clear
         if (status == DVZ_BUILD_DIRTY)
         {
-            log_debug("build figure #%d", i);
+            log_debug("build figure #%d", viewset_idx);
             dvz_viewset_build(fig->viewset);
             dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_CLEAR);
+        }
+
+        // Now, automatically call dvz_visual_update() on all dirty visuals.
+
+        // Go through the views of the viewset.
+        view_count = dvz_list_count(fig->viewset->views);
+        view = NULL;
+        for (uint64_t view_idx = 0; view_idx < view_count; view_idx++)
+        {
+            view = (DvzView*)dvz_list_get(fig->viewset->views, view_idx).p;
+            ANN(view);
+
+            // Go through the visuals of the view.
+            visual_count = dvz_list_count(view->visuals);
+            log_trace(
+                "going through %d visuals of view #%d to find dirty visuals", //
+                visual_count, view_idx);
+            for (uint64_t visual_idx = 0; visual_idx < visual_count; visual_idx++)
+            {
+                visual = (DvzVisual*)dvz_list_get(view->visuals, visual_idx).p;
+                ANN(visual);
+
+                // This will only update the visual if it needs to be updated.
+                dvz_visual_update(visual);
+            }
         }
     }
 }
@@ -849,7 +880,7 @@ static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
     //
     if (dvz_atomic_get(fig->viewset->status) == DVZ_BUILD_DIRTY)
     {
-        log_warn("skip figure onresize because the viewset is already dirty");
+        log_warn("skip figure onresize callback because the viewset is already dirty");
         return;
     }
 

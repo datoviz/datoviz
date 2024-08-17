@@ -56,7 +56,12 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     dvz_set_primitive(batch, visual->graphics_id, primitive);
 
     // Polygon mode.
+
     dvz_set_polygon(batch, visual->graphics_id, DVZ_POLYGON_MODE_FILL);
+
+    // Visual dirty status.
+    visual->status = dvz_atomic();
+    dvz_atomic_set(visual->status, (int)DVZ_BUILD_CLEAR);
 
     dvz_obj_init(&visual->obj);
     return visual;
@@ -67,13 +72,31 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
 void dvz_visual_update(DvzVisual* visual)
 {
     ANN(visual);
+
+    // Check if the visual needs to be updated.
+    DvzBuildStatus status = (DvzBuildStatus)dvz_atomic_get(visual->status);
+    if (status == DVZ_BUILD_DIRTY)
+    {
+        log_debug("updating dirty visual");
+    }
+    else
+    {
+        log_debug("skipping update of clean visual");
+        return;
+    }
+
+    // Update the baker.
     dvz_baker_update(visual->baker);
 
+    // Update the params.
     for (uint32_t i = 0; i < DVZ_MAX_BINDINGS; i++)
     {
         if (visual->params[i] != NULL)
             dvz_params_update(visual->params[i]);
     }
+
+    // Clear the visual status.
+    dvz_atomic_set(visual->status, (int32_t)DVZ_BUILD_CLEAR);
 }
 
 
@@ -94,6 +117,8 @@ void dvz_visual_destroy(DvzVisual* visual)
             dvz_params_destroy(visual->params[i]);
         }
     }
+
+    dvz_atomic_destroy(visual->status);
     FREE(visual);
 }
 
@@ -656,6 +681,12 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
 
+static void _set_visual_dirty(DvzVisual* visual)
+{
+    ANN(visual);
+    dvz_atomic_set(visual->status, (int32_t)DVZ_BUILD_DIRTY);
+}
+
 void dvz_visual_data(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)
 {
@@ -691,6 +722,8 @@ void dvz_visual_data(
         log_debug("visual data for attr #%d (%d->%d)", attr_idx, first, count);
         dvz_baker_data(baker, attr_idx, first, count, data);
     }
+
+    _set_visual_dirty(visual);
 }
 
 
@@ -708,6 +741,8 @@ void dvz_visual_quads(
     // ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
 
     dvz_baker_quads(baker, attr_idx, first, count, tl_br);
+
+    _set_visual_dirty(visual);
 }
 
 
@@ -721,6 +756,8 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
 
     log_debug("visual data for index (%d->%d)", first, count);
     dvz_baker_index(baker, first, count, data);
+
+    _set_visual_dirty(visual);
 }
 
 
@@ -734,6 +771,8 @@ void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, v
     ANN(params);
 
     dvz_params_set(params, attr_idx, item);
+
+    _set_visual_dirty(visual);
 }
 
 
