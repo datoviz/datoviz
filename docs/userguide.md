@@ -226,11 +226,9 @@ However, it is not yet straightforward to share other types of data between visu
 
 ### Dynamic data updates
 
-You can modify the data of a visual dynamically while the event loop is running, such as in an event callback. After updating a visual, you need to apply the changes with the following call:
+You can modify the data of a visual dynamically while the event loop is running, such as in an event callback.
+After updating a visual, the function `dvz.visual_update(visual)` is automatically called internally to trigger the data updates on the GPU, so you should not need to call it manually in most cases.
 
-```python
-dvz.visual_update(visual)
-```
 
 ### Shapes
 

@@ -320,7 +320,6 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     float t = ev.time;
 
     dvz_marker_angle(visual, 0, 1, (float[]){.25 * M_PI * t}, 0);
-    dvz_visual_update(visual);
 
     // uint32_t mem = dvz_memory();
     // log_info("%s", pretty_size(mem));

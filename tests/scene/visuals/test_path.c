@@ -121,8 +121,6 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     }
 
     dvz_path_color(visual, 0, N * n_paths, colors, 0);
-
-    dvz_visual_update(visual);
 }
 
 int test_path_2(TstSuite* suite)
@@ -140,7 +138,7 @@ int test_path_2(TstSuite* suite)
         path_lengths[j] = N;
 
     // Create the visual.
-    DvzVisual* visual = dvz_path(vt.batch, 0);
+    DvzVisual* visual = dvz_path(vt.batch, DVZ_PATH_FLAGS_CLOSED);
 
     // Visual allocation.
     dvz_path_alloc(visual, total_length);

@@ -107,7 +107,6 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     if (dvz_gui_slider("param", 0, 10, param))
     {
         dvz_visual_param(visual, 2, 3, (float*)param);
-        dvz_visual_update(visual);
     }
 
     dvz_gui_end();

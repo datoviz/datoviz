@@ -61,9 +61,6 @@ def ongui(app, fid, ev):
         # Update the mesh visual data with the new shape's data.
         dvz.mesh_reshape(visual, shape)
 
-        # Update the visual after its data has changed.
-        dvz.visual_update(visual)
-
     # End the GUI dialog.
     dvz.gui_end()
 

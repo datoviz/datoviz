@@ -212,9 +212,6 @@ int test_scene_3(TstSuite* suite)
     dvz_mesh_light_pos(mesh, (vec3){-1, +1, +5});
     dvz_mesh_light_params(mesh, (vec4){.25, .25, .5, 16});
 
-    // Important: upload the data to the GPU for both the vertex buffer and the params dat.
-    dvz_visual_update(mesh);
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, mesh, 0);
 
