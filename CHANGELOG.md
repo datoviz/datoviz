@@ -16,7 +16,7 @@
 #### Image visual
 
 - Improved the `image` visual API (position is now specified in normalized device coordinates, the size in pixels, the anchor in relative coordinates).
-- Added rescaling option.
+- Added rescaling options (with aspect ratio kept or not).
 - Added rounded corners and stroke options.
 - Added fill option to replace the texture by a uniform color.
 
