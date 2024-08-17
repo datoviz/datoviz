@@ -86,7 +86,11 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &size_ndc);
 
     // Rescale specialization constant.
-    int rescale = (flags & DVZ_IMAGE_FLAGS_RESCALE) > 0;
+    int rescale = 0;
+    if ((flags & DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO) > 0)
+        rescale = 1;
+    if ((flags & DVZ_IMAGE_FLAGS_RESCALE) > 0)
+        rescale = 2;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &rescale);
 

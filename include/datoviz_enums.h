@@ -392,8 +392,9 @@ typedef enum
 {
     DVZ_IMAGE_FLAGS_SIZE_PIXELS = 0x0000, // image size is specified in pixels
     DVZ_IMAGE_FLAGS_SIZE_NDC = 0x0001, // image size is specified in normalized device coordinates
-    DVZ_IMAGE_FLAGS_RESCALE = 0x0004,  // image size should depend on total zoom level
-    DVZ_IMAGE_FLAGS_FILL = 0x0008,     // image does not show a texture but a uniform color
+    DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004, // image size ~ to total zoom level
+    DVZ_IMAGE_FLAGS_RESCALE = 0x0008,            // image size ~ to axis zoom level
+    DVZ_IMAGE_FLAGS_FILL = 0x0010, // image does not show a texture but a uniform color
 } DvzImageFlags;
 
 

@@ -287,9 +287,25 @@ float total_zoom()
     float S_z = length(vec3(T[2][0], T[2][1], T[2][2]));
 
     // Calculate the total zoom as the average scaling factor
-    float zoom = (S_x + S_y + S_z) / 3.0;
+    // float a = viewport.size.y * 1.0 / viewport.size.x;
+    float zoom = (S_x + S_y + 0) / 2.0;
 
     return zoom;
+}
+
+
+
+vec3 axis_zoom()
+{
+    // Combine the matrices: T = proj * view * model
+    mat4 T = mvp.proj * mvp.view * mvp.model;
+
+    // Extract the scaling factors along the x, y, and z axes
+    float S_x = length(vec3(T[0][0], T[0][1], T[0][2]));
+    float S_y = length(vec3(T[1][0], T[1][1], T[1][2]));
+    float S_z = length(vec3(T[2][0], T[2][1], T[2][2]));
+
+    return vec3(S_x, S_y, S_z);
 }
 
 

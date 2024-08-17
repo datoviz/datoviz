@@ -22,10 +22,20 @@ void main()
 
     int idx = gl_VertexIndex % 6;
     vec2 d = size * (ds[idx] - anchor);
-    float zoom = 1;
+    vec2 zoom = vec2(1, 1);
+
+    // Keep aspect ratio.
     if (RESCALE == 1)
     {
-        zoom = total_zoom();
+        zoom.x = total_zoom();
+        zoom.y = zoom.x;
+        d *= zoom;
+    }
+
+    // Do not keep aspect ratio.
+    else if (RESCALE == 2)
+    {
+        zoom = axis_zoom().xy;
         d *= zoom;
     }
     tr.xy += (SIZE_NDC == 0 ? d * 2. / viewport.size : d);
@@ -34,6 +44,6 @@ void main()
 
     out_uv = uv;
     out_size.xy = size * zoom;
-    out_size.z = zoom;
+    out_size.z = .5 * (zoom.x + zoom.y);
     out_color = color;
 }
