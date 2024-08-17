@@ -325,7 +325,7 @@ bool clip_viewport(vec2 frag_coords, int coord)
     // if (uv.y < top - 10.0 || uv.x > w - right + 30.0)
     //     discard;
 
-    // Bottom-left corner: discard along the diagonal
+    // Bottom left corner: discard along the diagonal
     if (uv.x < left && uv.y > h - bottom)
     {
         vec2 q0 = vec2(left, bottom);

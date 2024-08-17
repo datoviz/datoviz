@@ -696,7 +696,7 @@ void dvz_visual_data(
 
 
 void dvz_visual_quads(
-    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr)
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br)
 {
     ANN(visual);
     ASSERT(attr_idx < DVZ_MAX_VERTEX_ATTRS);
@@ -707,7 +707,7 @@ void dvz_visual_quads(
     // int flags = visual->attrs[attr_idx].flags;
     // ASSERT((flags & DVZ_ATTR_FLAGS_QUAD) != 0);
 
-    dvz_baker_quads(baker, attr_idx, first, count, ul_lr);
+    dvz_baker_quads(baker, attr_idx, first, count, tl_br);
 }
 
 

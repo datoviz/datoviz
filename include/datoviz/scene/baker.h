@@ -273,7 +273,7 @@ void dvz_baker_repeat(
  *
  */
 void dvz_baker_quads(
-    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br);
 
 
 

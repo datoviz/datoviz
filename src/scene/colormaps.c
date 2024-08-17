@@ -164,7 +164,7 @@ void dvz_colormap_array(
 //  * Get the tex coords extent of a colormap.
 //  *
 //  * @param cmap the colormap
-//  * @param[out] uvuv the texture coordinates of the upper-left and lower-right corners
+//  * @param[out] uvuv the texture coordinates of the top left and bottom right corners
 //  */
 // DVZ_INLINE void dvz_colormap_extent(DvzColormap cmap, vec4 uvuv)
 // {

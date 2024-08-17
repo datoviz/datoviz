@@ -559,7 +559,7 @@ DvzTicksFormat dvz_ticks_format(DvzTicks* ticks)
 
 
 
-// return true if the score with that range is significantly lower than the current score
+// return true if the score with that range is significantly bottom than the current score
 bool dvz_ticks_dirty(DvzTicks* ticks, double dmin, double dmax)
 {
     ANN(ticks);

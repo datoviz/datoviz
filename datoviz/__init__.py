@@ -298,10 +298,10 @@ class DvzDialogFlags(CtypesEnum):
 
 
 class DvzCorner(CtypesEnum):
-    DVZ_DIALOG_CORNER_UPPER_LEFT = 0
-    DVZ_DIALOG_CORNER_UPPER_RIGHT = 1
-    DVZ_DIALOG_CORNER_LOWER_LEFT = 2
-    DVZ_DIALOG_CORNER_LOWER_RIGHT = 3
+    DVZ_DIALOG_CORNER_TOP_LEFT = 0
+    DVZ_DIALOG_CORNER_TOP_RIGHT = 1
+    DVZ_DIALOG_CORNER_BOTTOM_LEFT = 2
+    DVZ_DIALOG_CORNER_BOTTOM_RIGHT = 3
 
 
 class DvzArcballFlags(CtypesEnum):
@@ -874,10 +874,10 @@ MOUSE_EVENT_WHEEL = 20
 MOUSE_EVENT_ALL = 255
 DIALOG_FLAGS_NONE = 0x0000
 DIALOG_FLAGS_OVERLAY = 0x0001
-DIALOG_CORNER_UPPER_LEFT = 0
-DIALOG_CORNER_UPPER_RIGHT = 1
-DIALOG_CORNER_LOWER_LEFT = 2
-DIALOG_CORNER_LOWER_RIGHT = 3
+DIALOG_CORNER_TOP_LEFT = 0
+DIALOG_CORNER_TOP_RIGHT = 1
+DIALOG_CORNER_BOTTOM_LEFT = 2
+DIALOG_CORNER_BOTTOM_RIGHT = 3
 ARCBALL_FLAGS_NONE = 0
 ARCBALL_FLAGS_CONSTRAIN = 1
 PANZOOM_FLAGS_NONE = 0x00
@@ -2819,7 +2819,7 @@ image_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* ul_lr
+    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* tl_br
     ctypes.c_int,  # int flags
 ]
 

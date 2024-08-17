@@ -299,7 +299,7 @@ uint8_t* dvz_font_draw(
             continue;
         }
 
-        // Determine the upper-left corner of the glyph.
+        // Determine the top left corner of the glyph.
         x = round(xywh[i][0]);
         y = round(xywh[i][1]);
         w = round(xywh[i][2]);

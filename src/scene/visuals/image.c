@@ -141,10 +141,10 @@ void dvz_image_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* v
 
 
 
-void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_lr, int flags)
+void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* tl_br, int flags)
 {
     ANN(visual);
-    dvz_visual_quads(visual, 3, first, count, ul_lr);
+    dvz_visual_quads(visual, 3, first, count, tl_br);
 }
 
 

@@ -376,8 +376,8 @@ DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
  * Create a panel in a figure (partial or complete rectangular portion of a figure).
  *
  * @param fig the figure
- * @param x the x coordinate of the top-left corner, in pixels
- * @param y the y coordinate of the top-left corner, in pixels
+ * @param x the x coordinate of the top left corner, in pixels
+ * @param y the y coordinate of the top left corner, in pixels
  * @param width the panel width, in pixels
  * @param height the panel height, in pixels
  */
@@ -431,8 +431,8 @@ DVZ_EXPORT void dvz_panel_mvpmat(DvzPanel* panel, mat4 model, mat4 view, mat4 pr
  * Resize a panel.
  *
  * @param panel the panel
- * @param x the x coordinate of the top-left corner, in pixels
- * @param y the y coordinate of the top-left corner, in pixels
+ * @param x the x coordinate of the top left corner, in pixels
+ * @param y the y coordinate of the top left corner, in pixels
  * @param width the panel width, in pixels
  * @param height the panel height, in pixels
  */
@@ -1865,7 +1865,7 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzBatch* batch, int flags);
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param values the 3D positions of the top-left corner
+ * @param values the 3D positions of the top left corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void
@@ -1893,7 +1893,7 @@ dvz_image_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param values the relative anchors of each image, (0,0 = position pertains to top-left corner)
+ * @param values the relative anchors of each image, (0,0 = position pertains to top left corner)
  * @param flags the data update flags
  */
 DVZ_EXPORT void
@@ -1907,11 +1907,11 @@ dvz_image_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param ul_lr the tex coordinates of the upper-left and lower-right corners (vec4 u0,v0,u1,v1)
+ * @param tl_br the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
+dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* tl_br, int flags);
 
 
 
@@ -2344,10 +2344,10 @@ DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param p0 the 3D positions of the upper-left corner
- * @param p1 the 3D positions of the upper-right corner
- * @param p2 the 3D positions of the lower-left corner
- * @param p3 the 3D positions of the lower-right corner
+ * @param p0 the 3D positions of the top left corner
+ * @param p1 the 3D positions of the top right corner
+ * @param p2 the 3D positions of the bottom left corner
+ * @param p3 the 3D positions of the bottom right corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_position(
@@ -2362,10 +2362,10 @@ DVZ_EXPORT void dvz_slice_position(
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param uvw0 the 3D texture coordinates of the upper-left corner
- * @param uvw1 the 3D texture coordinates of the upper-right corner
- * @param uvw2 the 3D texture coordinates of the lower-left corner
- * @param uvw3 the 3D texture coordinates of the lower-right corner
+ * @param uvw0 the 3D texture coordinates of the top left corner
+ * @param uvw1 the 3D texture coordinates of the top right corner
+ * @param uvw2 the 3D texture coordinates of the bottom left corner
+ * @param uvw3 the 3D texture coordinates of the bottom right corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_texcoords(

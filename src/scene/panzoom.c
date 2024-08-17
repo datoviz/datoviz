@@ -43,7 +43,7 @@ static inline bool _is_vec2_null(vec2 v) { return memcmp(v, (vec2){0, 0}, sizeof
 
 static inline void _normalize_pos(DvzPanzoom* pz, vec2 in, vec2 out)
 {
-    // From pixel coordinates (origin is upper left corner) to NDC (origin is center of
+    // From pixel coordinates (origin is top left corner) to NDC (origin is center of
     // viewport)
     float x = in[0];
     float y = in[1];
@@ -215,7 +215,7 @@ void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 
 void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {
-    // NOTE: center_px is the center of the zoom, in pixel coordinates (origin at the upper left
+    // NOTE: center_px is the center of the zoom, in pixel coordinates (origin at the top left
     // corner of the viewport)
     ANN(pz);
 

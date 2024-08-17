@@ -321,7 +321,7 @@ void dvz_visual_data(
  *
  */
 void dvz_visual_quads(
-    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr);
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br);
 
 
 

@@ -1151,7 +1151,7 @@ void dvz_image_anchor(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec2* values,  // the relative anchors of each image, (0,0 = position pertains to top-left corner)
+    vec2* values,  // the relative anchors of each image, (0,0 = position pertains to top left corner)
     int flags,  // the data update flags
 )
 ```
@@ -1201,7 +1201,7 @@ void dvz_image_position(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec3* values,  // the 3D positions of the top-left corner
+    vec3* values,  // the 3D positions of the top left corner
     int flags,  // the data update flags
 )
 ```
@@ -1240,7 +1240,7 @@ void dvz_image_texcoords(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec4* ul_lr,  // the tex coordinates of the upper-left and lower-right corners (vec4 u0,v0,u1,v1)
+    vec4* tl_br,  // the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
     int flags,  // the data update flags
 )
 ```
@@ -1731,8 +1731,8 @@ Create a panel in a figure (partial or complete rectangular portion of a figure)
 ```c
 DvzPanel* dvz_panel(
     DvzFigure* fig,  // the figure
-    float x,  // the x coordinate of the top-left corner, in pixels
-    float y,  // the y coordinate of the top-left corner, in pixels
+    float x,  // the x coordinate of the top left corner, in pixels
+    float y,  // the y coordinate of the top left corner, in pixels
     float width,  // the panel width, in pixels
     float height,  // the panel height, in pixels
 )
@@ -1855,8 +1855,8 @@ Resize a panel.
 ```c
 void dvz_panel_resize(
     DvzPanel* panel,  // the panel
-    float x,  // the x coordinate of the top-left corner, in pixels
-    float y,  // the y coordinate of the top-left corner, in pixels
+    float x,  // the x coordinate of the top left corner, in pixels
+    float y,  // the y coordinate of the top left corner, in pixels
     float width,  // the panel width, in pixels
     float height,  // the panel height, in pixels
 )
@@ -2671,10 +2671,10 @@ void dvz_slice_position(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec3* p0,  // the 3D positions of the upper-left corner
-    vec3* p1,  // the 3D positions of the upper-right corner
-    vec3* p2,  // the 3D positions of the lower-left corner
-    vec3* p3,  // the 3D positions of the lower-right corner
+    vec3* p0,  // the 3D positions of the top left corner
+    vec3* p1,  // the 3D positions of the top right corner
+    vec3* p2,  // the 3D positions of the bottom left corner
+    vec3* p3,  // the 3D positions of the bottom right corner
     int flags,  // the data update flags
 )
 ```
@@ -2688,10 +2688,10 @@ void dvz_slice_texcoords(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec3* uvw0,  // the 3D texture coordinates of the upper-left corner
-    vec3* uvw1,  // the 3D texture coordinates of the upper-right corner
-    vec3* uvw2,  // the 3D texture coordinates of the lower-left corner
-    vec3* uvw3,  // the 3D texture coordinates of the lower-right corner
+    vec3* uvw0,  // the 3D texture coordinates of the top left corner
+    vec3* uvw1,  // the 3D texture coordinates of the top right corner
+    vec3* uvw2,  // the 3D texture coordinates of the bottom left corner
+    vec3* uvw3,  // the 3D texture coordinates of the bottom right corner
     int flags,  // the data update flags
 )
 ```
@@ -3422,10 +3422,10 @@ DVZ_CPAL032_COLORBLIND8
 ### `DvzCorner`
 
 ```
-DVZ_DIALOG_CORNER_UPPER_LEFT
-DVZ_DIALOG_CORNER_UPPER_RIGHT
-DVZ_DIALOG_CORNER_LOWER_LEFT
-DVZ_DIALOG_CORNER_LOWER_RIGHT
+DVZ_DIALOG_CORNER_TOP_LEFT
+DVZ_DIALOG_CORNER_TOP_RIGHT
+DVZ_DIALOG_CORNER_BOTTOM_LEFT
+DVZ_DIALOG_CORNER_BOTTOM_RIGHT
 ```
 
 ### `DvzDatFlags`

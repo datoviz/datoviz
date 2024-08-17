@@ -176,7 +176,7 @@ void dvz_glyph_texcoords(
     // coords is u0,v0,w,h ; need to upload 4 vec2 corresponding to each corner
 
     vec2* uv = (vec2*)calloc(4 * count, sizeof(vec2));
-    float u0, v0, u1, v1; // upper-left, lower-right
+    float u0, v0, u1, v1; // top left, bottom right
     for (uint32_t i = 0; i < count; i++)
     {
         u0 = coords[i][0];
@@ -187,19 +187,19 @@ void dvz_glyph_texcoords(
         // ASSERT(u0 <= u1);
         // ASSERT(v0 <= v1);
 
-        // lower-left
+        // bottom left
         uv[4 * i + 0][0] = u0;
         uv[4 * i + 0][1] = v1;
 
-        // lower-right
+        // bottom right
         uv[4 * i + 1][0] = u1;
         uv[4 * i + 1][1] = v1;
 
-        // upper-right
+        // top right
         uv[4 * i + 2][0] = u1;
         uv[4 * i + 2][1] = v0;
 
-        // upper-left
+        // top left
         uv[4 * i + 3][0] = u0;
         uv[4 * i + 3][1] = v0;
     }
