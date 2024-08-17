@@ -34,10 +34,11 @@
 - Improved demo now showing a grid of visuals.
 - Improved FPS computation.
 - Added mock functions.
+- Rename upper/lower to top/bottom in API.
 - Fixed various minor bugs.
 
 
-## v0.2.0 (2024-08-05) [STABLE]
+## v0.2.0 (2024-08-05) [LATEST RELEASE]
 
 - Full internal architecture rewrite.
 - Internal asynchronous message-based Datoviz Intermediate Protocol.
