@@ -20,14 +20,10 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  Internal functions                                                                           */
-/*************************************************************************************************/
+#define DEFAULT_SIZE 1.0
 
 
 
@@ -61,6 +57,9 @@ DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags)
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzBasicParams));
     dvz_params_attr(params, 0, FIELD(DvzBasicParams, size));
+
+    // Default params.
+    dvz_visual_param(visual, 2, 0, (float[]){DEFAULT_SIZE});
 
     return visual;
 }
