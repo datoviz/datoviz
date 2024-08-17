@@ -1082,7 +1082,7 @@ publish:
 # -------------------------------------------------------------------------------------------------
 
 clean:
-    just rmbuild
+    @rm -rf build
 #
 
 rebuild:
@@ -1091,5 +1091,5 @@ rebuild:
 #
 
 rmbuild:
-    rm -rf ./build/
+    @rm -rf build/spirv build/artifacts build/struct_sizes* build/*.dylib build/*.so build/*.dll build/datoviz*
 #
