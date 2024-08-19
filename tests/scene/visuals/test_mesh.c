@@ -116,8 +116,7 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_barycentric(visual, 0, count, barycentric, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20});
-    // dvz_mesh_wireframe(visual, true);
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -172,10 +171,15 @@ int test_mesh_surface(TstSuite* suite)
 
     // Create the surface shape.
     DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
+    dvz_shape_unindex(&shape);
 
+    // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Wireframe.
+    dvz_mesh_wireframe(visual, .5);
 
     // Lighting.
     dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
@@ -228,7 +232,7 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
-    dvz_mesh_wireframe(visual, true);
+    dvz_mesh_wireframe(visual, 1.0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

@@ -2,12 +2,23 @@
 #include "common.glsl"
 #include "params_mesh.glsl"
 
-float edgeFactor(vec3 barycentric, float linewidth)
+float edge_factor(vec3 barycentric, float linewidth)
 {
-    vec3 d = fwidth(barycentric);
-    // vec3 a3 = smoothstep(vec3(0.0), d * 50, barycentric);
-    vec3 a3 = step(d * linewidth, barycentric);
-    return min(min(a3.x, a3.y), a3.z);
+    // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
+    // easy-wireframe-display-with-barycentric-coordinates/
+    // vec3 d = fwidth(barycentric);
+    // // vec3 a3 = smoothstep(vec3(0.0), d * 50, barycentric);
+    // vec3 a3 = step(d * linewidth, barycentric);
+    // return min(min(a3.x, a3.y), a3.z);
+
+    // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
+    barycentric.z = 1 - barycentric.x - barycentric.y;
+    vec3 deltas = fwidth(barycentric);
+    float scale = linewidth * 0.5;
+    // barycentric = smoothstep(deltas, 2 * deltas, barycentric);
+    barycentric = smoothstep(deltas * scale, deltas * (scale + 1.0), barycentric);
+    float minBary = min(barycentric.x, min(barycentric.y, barycentric.z));
+    return minBary;
 }
 
 const float eps = .00001;
@@ -93,7 +104,8 @@ void main()
     // Stroke.
     if (params.stroke.a > 0)
     {
-        float e = edgeFactor(in_barycentric, params.stroke.a);
+        float stroke_width = params.stroke.a;
+        float e = edge_factor(in_barycentric, stroke_width);
         out_color.rgb = mix(params.stroke.rgb, out_color.rgb, e);
     }
 }
