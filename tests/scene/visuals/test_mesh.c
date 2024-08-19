@@ -116,7 +116,8 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_barycentric(visual, 0, count, barycentric, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 10});
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20});
+    // dvz_mesh_wireframe(visual, true);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -223,6 +224,8 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
+
+    // dvz_mesh_wireframe(visual, true);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

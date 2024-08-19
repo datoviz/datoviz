@@ -22,8 +22,10 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define STROKE 0.25, 0.25, 0.25
 
 
 
@@ -48,6 +50,22 @@ static void _visual_callback(
     }
 
     dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
+}
+
+
+
+// The caller must FREE the output.
+static vec3* _default_barycentric(uint32_t count)
+{
+    vec3* barycentric = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count / 3; i++)
+    {
+        ASSERT(3 * i + 2 < count);
+        barycentric[3 * i + 0][0] = 1;
+        barycentric[3 * i + 1][1] = 1;
+        barycentric[3 * i + 2][2] = 1;
+    }
+    return barycentric;
 }
 
 
@@ -277,6 +295,28 @@ void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, 2, rgb_width);
+}
+
+
+
+void dvz_mesh_wireframe(DvzVisual* visual, float stroke_width)
+{
+    ANN(visual);
+    if (stroke_width > 0)
+    {
+        log_debug("enable mesh wireframe");
+        // TODO: optimization avoid recomputing barycentric coordinates.
+        vec3* barycentric = _default_barycentric(visual->vertex_count);
+        dvz_mesh_barycentric(visual, 0, visual->vertex_count, barycentric, 0);
+        FREE(barycentric);
+
+        dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
+    }
+    else
+    {
+        log_debug("disable mesh wireframe");
+        dvz_mesh_stroke(visual, (vec4){0});
+    }
 }
 
 

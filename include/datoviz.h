@@ -2151,6 +2151,16 @@ DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width);
 
 
 /**
+ * Show mesh wireframe (calls dvz_mesh_barycentric() and dvz_mesh_stroke() with sensible defaults).
+ *
+ * @param visual the mesh
+ * @param stroke_width wireframe stroke width
+ */
+DVZ_EXPORT void dvz_mesh_wireframe(DvzVisual* visual, float stroke_width);
+
+
+
+/**
  * Create a mesh out of a shape.
  *
  * @param batch the batch

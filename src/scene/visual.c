@@ -13,6 +13,7 @@
 #include "datoviz.h"
 #include "fileio.h"
 #include "request.h"
+#include "scene/array.h"
 #include "scene/baker.h"
 #include "scene/dual.h"
 #include "scene/graphics.h"
