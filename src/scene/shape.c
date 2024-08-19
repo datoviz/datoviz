@@ -418,6 +418,53 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 
 
 
+DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color)
+{
+    ASSERT(count > 2);
+    ANN(points);
+
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_POLYGON;
+    uint32_t index_count = 0;
+
+    // Run earcut.
+    DvzIndex* indices = dvz_earcut(count, points, &index_count);
+
+    if (indices == NULL)
+    {
+        log_error("Polygon triangulation failed");
+        return shape;
+    }
+    ASSERT(index_count > 0);
+    ANN(indices);
+
+    shape.vertex_count = count;
+    shape.index_count = index_count;
+    shape.index = indices;
+
+    // Position.
+    shape.pos = (vec3*)calloc(count, sizeof(vec3));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        shape.pos[i][0] = (float)points[i][0];
+        shape.pos[i][1] = (float)points[i][1];
+    }
+
+    // Color.
+    shape.color = (cvec4*)calloc(count, sizeof(cvec4));
+    for (uint32_t i = 0; i < count; i++)
+    {
+        shape.color[i][0] = color[0];
+        shape.color[i][1] = color[1];
+        shape.color[i][2] = color[2];
+        shape.color[i][3] = color[3];
+    }
+
+    return shape;
+}
+
+
+
 /*************************************************************************************************/
 /*  3D shapes                                                                                    */
 /*************************************************************************************************/

@@ -668,6 +668,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/array.c"
     "src/scene/atlas.cpp"
     "src/scene/axis.c"
+    "src/scene/geometry.cpp"
     "src/scene/axes.c"
     "src/scene/baker.c"
     "src/scene/camera.c"

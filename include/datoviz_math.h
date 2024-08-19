@@ -587,6 +587,23 @@ DVZ_EXPORT void dvz_range(uint32_t n, double* values, dvec2 min_max);
 
 
 /*************************************************************************************************/
+/*  Geometry                                                                                     */
+/*************************************************************************************************/
+
+/**
+ * Compute a polygon triangulation with only indexing on the polygon contour vertices.
+ *
+ * @param point_count the number of points
+ * @param polygon the polygon 2D positions
+ * @param[out] out_index_count the computed index count
+ * @returns the computed indices (must be FREED by the caller)
+ */
+DVZ_EXPORT DvzIndex*
+dvz_earcut(uint32_t point_count, const dvec2* polygon, uint32_t* out_index_count);
+
+
+
+/*************************************************************************************************/
 /*  Random number generation                                                                     */
 /*************************************************************************************************/
 

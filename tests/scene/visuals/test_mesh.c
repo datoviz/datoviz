@@ -82,6 +82,43 @@ int test_mesh_1(TstSuite* suite)
 
 
 
+int test_mesh_polygon(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_PANZOOM, 0);
+
+    // Polygon.
+    uint32_t n = 12;
+    dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
+    double r = .5;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        points[i][0] = r * cos(i * M_2PI / n);
+        points[i][1] = r * sin(i * M_2PI / n) * WIDTH / (float)HEIGHT;
+    }
+    cvec4 color = {255, 128, 0, 255};
+    DvzShape shape = dvz_shape_polygon(n, points, color);
+    FREE(points);
+
+    // Create the visual.
+    int flags = 0;
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    dvz_mesh_wireframe(visual, 2.0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_shape_destroy(&shape);
+
+    return 0;
+}
+
+
+
 int test_mesh_stroke(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_PANZOOM, 0);

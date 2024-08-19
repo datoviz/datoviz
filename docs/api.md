@@ -2572,6 +2572,18 @@ DvzShape dvz_shape_obj(  // returns: the shape
 )
 ```
 
+### `dvz_shape_polygon()`
+
+Create a polygon shape using the simple earcut polygon triangulation algorithm.
+
+```c
+DvzShape dvz_shape_polygon(  // returns: the shape
+    uint32_t count,  // the number of points along the polygon border
+    dvec2* points,  // the points 2D coordinates
+    cvec4 color,  // the polygon color
+)
+```
+
 ### `dvz_shape_print()`
 
 Show information about a shape.
@@ -3031,6 +3043,17 @@ Set the volume size.
 void dvz_volume_transfer(
     DvzVisual* visual,  // the visual
     vec4 transfer,  // transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
+)
+```
+
+### `dvz_earcut()`
+
+Compute a polygon triangulation with only indexing on the polygon contour vertices.
+
+```c
+DvzIndex* dvz_earcut(  // returns: the computed indices (must be FREED by the caller)
+    uint32_t point_count,  // the number of points
+    dvec2* polygon,  // the polygon 2D positions
 )
 ```
 
@@ -3776,6 +3799,7 @@ DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
 DVZ_SHAPE_NONE
 DVZ_SHAPE_SQUARE
 DVZ_SHAPE_DISC
+DVZ_SHAPE_POLYGON
 DVZ_SHAPE_CUBE
 DVZ_SHAPE_SPHERE
 DVZ_SHAPE_CYLINDER

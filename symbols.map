@@ -62,6 +62,7 @@ dvz_shape_rescaling
 dvz_shape_end
 dvz_shape_square
 dvz_shape_disc
+dvz_shape_polygon
 dvz_shape_surface
 dvz_shape_cube
 dvz_shape_sphere
@@ -259,6 +260,7 @@ dvz_mean
 dvz_min_max
 dvz_normalize_bytes
 dvz_range
+dvz_earcut
 dvz_rand_byte
 dvz_rand_int
 dvz_rand_float

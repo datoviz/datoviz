@@ -488,13 +488,14 @@ class DvzShapeType(CtypesEnum):
     DVZ_SHAPE_NONE = 0
     DVZ_SHAPE_SQUARE = 1
     DVZ_SHAPE_DISC = 2
-    DVZ_SHAPE_CUBE = 3
-    DVZ_SHAPE_SPHERE = 4
-    DVZ_SHAPE_CYLINDER = 5
-    DVZ_SHAPE_CONE = 6
-    DVZ_SHAPE_SURFACE = 7
-    DVZ_SHAPE_OBJ = 8
-    DVZ_SHAPE_OTHER = 9
+    DVZ_SHAPE_POLYGON = 3
+    DVZ_SHAPE_CUBE = 4
+    DVZ_SHAPE_SPHERE = 5
+    DVZ_SHAPE_CYLINDER = 6
+    DVZ_SHAPE_CONE = 7
+    DVZ_SHAPE_SURFACE = 8
+    DVZ_SHAPE_OBJ = 9
+    DVZ_SHAPE_OTHER = 10
 
 
 class DvzMeshFlags(CtypesEnum):
@@ -1002,13 +1003,14 @@ IMAGE_FLAGS_FILL = 0x0010
 SHAPE_NONE = 0
 SHAPE_SQUARE = 1
 SHAPE_DISC = 2
-SHAPE_CUBE = 3
-SHAPE_SPHERE = 4
-SHAPE_CYLINDER = 5
-SHAPE_CONE = 6
-SHAPE_SURFACE = 7
-SHAPE_OBJ = 8
-SHAPE_OTHER = 9
+SHAPE_POLYGON = 3
+SHAPE_CUBE = 4
+SHAPE_SPHERE = 5
+SHAPE_CYLINDER = 6
+SHAPE_CONE = 7
+SHAPE_SURFACE = 8
+SHAPE_OBJ = 9
+SHAPE_OTHER = 10
 MESH_FLAGS_NONE = 0x0000
 MESH_FLAGS_TEXTURED = 0x0001
 MESH_FLAGS_LIGHTING = 0x0002
@@ -2057,6 +2059,15 @@ shape_disc.argtypes = [
     ctypes.c_uint8 * 4,  # cvec4 color
 ]
 shape_disc.restype = DvzShape
+
+# Function dvz_shape_polygon()
+shape_polygon = dvz.dvz_shape_polygon
+shape_polygon.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* points
+    ctypes.c_uint8 * 4,  # cvec4 color
+]
+shape_polygon.restype = DvzShape
 
 # Function dvz_shape_surface()
 shape_surface = dvz.dvz_shape_surface
@@ -3693,6 +3704,15 @@ range.argtypes = [
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* values
     ctypes.c_double * 2,  # dvec2 min_max
 ]
+
+# Function dvz_earcut()
+earcut = dvz.dvz_earcut
+earcut.argtypes = [
+    ctypes.c_uint32,  # uint32_t point_count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* polygon
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* out_index_count
+]
+earcut.restype = ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_rand_byte()
 rand_byte = dvz.dvz_rand_byte

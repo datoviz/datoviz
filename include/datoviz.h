@@ -790,6 +790,19 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
 
 
 
+/**
+ * Create a polygon shape using the simple earcut polygon triangulation algorithm.
+ *
+ * @param count the number of points along the polygon border
+ * @param points the points 2D coordinates
+ * @param color the polygon color
+ * @returns the shape
+ */
+DVZ_EXPORT
+DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color);
+
+
+
 /*************************************************************************************************/
 /*  3D shapes                                                                                    */
 /*************************************************************************************************/
