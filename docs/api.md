@@ -1033,6 +1033,18 @@ bool dvz_gui_checkbox(  // returns: whether the checkbox's state has changed
 )
 ```
 
+### `dvz_gui_colorpicker()`
+
+Add a color picker
+
+```c
+bool dvz_gui_colorpicker(
+    char* name,  // the widget name
+    vec3 color,  // the color
+    int flags,  // the widget flags
+)
+```
+
 ### `dvz_gui_corner()`
 
 Set the corner position of the next GUI dialog.
@@ -1473,6 +1485,20 @@ void dvz_mesh_alloc(
 )
 ```
 
+### `dvz_mesh_barycentric()`
+
+Set the mesh vertex barycentric coordinates.
+
+```c
+void dvz_mesh_barycentric(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the barycentric coordinates
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_mesh_color()`
 
 Set the mesh colors.
@@ -1574,6 +1600,17 @@ DvzVisual* dvz_mesh_shape(  // returns: the mesh
 )
 ```
 
+### `dvz_mesh_stroke()`
+
+Set the stroke color and width.
+
+```c
+void dvz_mesh_stroke(
+    DvzVisual* visual,  // the mesh
+     stroke,  // the rgb components define the color, the a component defines the width in pixels
+)
+```
+
 ### `dvz_mesh_texcoords()`
 
 Set the mesh texture coordinates.
@@ -1598,6 +1635,17 @@ void dvz_mesh_texture(
     DvzId tex,  // the texture ID
     DvzFilter filter,  // the texture filtering mode
     DvzSamplerAddressMode address_mode,  // the texture address mode
+)
+```
+
+### `dvz_mesh_wireframe()`
+
+Show mesh wireframe (calls dvz_mesh_barycentric() and dvz_mesh_stroke() with sensible defaults).
+
+```c
+void dvz_mesh_wireframe(
+    DvzVisual* visual,  // the mesh
+    float stroke_width,  // wireframe stroke width
 )
 ```
 
@@ -2626,6 +2674,16 @@ Append a translation to a shape.
 void dvz_shape_translate(
     DvzShape* shape,  // the shape
     vec3 translate,  // the translation vector
+)
+```
+
+### `dvz_shape_unindex()`
+
+Convert an indexed shape to a non-indexed one by duplicating the vertex values according
+
+```c
+void dvz_shape_unindex(
+    DvzShape* shape,  // the shape
 )
 ```
 

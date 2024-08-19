@@ -562,6 +562,14 @@ void dvz_gui_image(DvzTex* tex, float width, float height)
 
 
 
+bool dvz_gui_colorpicker(const char* name, vec3 color, int flags)
+{
+    ANN(name);
+    return ImGui::ColorPicker3(name, color, 0);
+}
+
+
+
 void dvz_gui_end()
 {
     ImGui::End(); //

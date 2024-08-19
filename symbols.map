@@ -51,6 +51,7 @@ dvz_colormap_array
 dvz_shape_normals
 dvz_shape_merge
 dvz_shape_print
+dvz_shape_unindex
 dvz_shape_destroy
 dvz_shape_begin
 dvz_shape_scale
@@ -162,11 +163,14 @@ dvz_mesh_position
 dvz_mesh_color
 dvz_mesh_texcoords
 dvz_mesh_normal
+dvz_mesh_barycentric
 dvz_mesh_texture
 dvz_mesh_index
 dvz_mesh_alloc
 dvz_mesh_light_pos
 dvz_mesh_light_params
+dvz_mesh_stroke
+dvz_mesh_wireframe
 dvz_mesh_shape
 dvz_mesh_reshape
 dvz_sphere
@@ -247,6 +251,7 @@ dvz_gui_slider
 dvz_gui_button
 dvz_gui_checkbox
 dvz_gui_image
+dvz_gui_colorpicker
 dvz_gui_demo
 dvz_gui_end
 dvz_next_pow2

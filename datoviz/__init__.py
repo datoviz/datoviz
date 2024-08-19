@@ -1979,6 +1979,12 @@ shape_print.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
+# Function dvz_shape_unindex()
+shape_unindex = dvz.dvz_shape_unindex
+shape_unindex.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+
 # Function dvz_shape_destroy()
 shape_destroy = dvz.dvz_shape_destroy
 shape_destroy.argtypes = [
@@ -2931,6 +2937,16 @@ mesh_normal.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_mesh_barycentric()
+mesh_barycentric = dvz.dvz_mesh_barycentric
+mesh_barycentric.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* values
+    ctypes.c_int,  # int flags
+]
+
 # Function dvz_mesh_texture()
 mesh_texture = dvz.dvz_mesh_texture
 mesh_texture.argtypes = [
@@ -2970,6 +2986,20 @@ mesh_light_params = dvz.dvz_mesh_light_params
 mesh_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 params
+]
+
+# Function dvz_mesh_stroke()
+mesh_stroke = dvz.dvz_mesh_stroke
+mesh_stroke.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float * 4,  # vec4 rgb_width
+]
+
+# Function dvz_mesh_wireframe()
+mesh_wireframe = dvz.dvz_mesh_wireframe
+mesh_wireframe.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float stroke_width
 ]
 
 # Function dvz_mesh_shape()
@@ -3605,6 +3635,15 @@ gui_image.argtypes = [
     ctypes.c_float,  # float width
     ctypes.c_float,  # float height
 ]
+
+# Function dvz_gui_colorpicker()
+gui_colorpicker = dvz.dvz_gui_colorpicker
+gui_colorpicker.argtypes = [
+    ctypes.c_char_p,  # char* name
+    ctypes.c_float * 3,  # vec3 color
+    ctypes.c_int,  # int flags
+]
+gui_colorpicker.restype = ctypes.c_bool
 
 # Function dvz_gui_demo()
 gui_demo = dvz.dvz_gui_demo

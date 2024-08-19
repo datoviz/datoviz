@@ -3139,6 +3139,17 @@ DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
 
 
 /**
+ * Add a color picker
+ *
+ * @param name the widget name
+ * @param color the color
+ * @param flags the widget flags
+ */
+DVZ_EXPORT bool dvz_gui_colorpicker(const char* name, vec3 color, int flags);
+
+
+
+/**
  * Show the demo GUI.
  */
 DVZ_EXPORT void dvz_gui_demo(void);
