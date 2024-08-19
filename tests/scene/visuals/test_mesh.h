@@ -21,6 +21,8 @@
 
 int test_mesh_1(TstSuite*);
 
+int test_mesh_stroke(TstSuite*);
+
 int test_mesh_surface(TstSuite*);
 
 int test_mesh_obj(TstSuite*);

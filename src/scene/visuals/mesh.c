@@ -156,6 +156,11 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
 void dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values, int flags)
 {
     ANN(visual);
+    if ((visual->flags & DVZ_VISUAL_FLAGS_INDEXED) == 0)
+    {
+        log_error(
+            "mesh visual should be created with flag `DVZ_VISUAL_FLAGS_INDEXED` to use indices");
+    }
     dvz_visual_index(visual, first, count, values);
 }
 

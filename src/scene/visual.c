@@ -446,6 +446,11 @@ void dvz_visual_alloc(
 
     // Handle indexing.
     bool indexed = (visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0;
+    if (index_count > 0 && !indexed)
+    {
+        log_error(
+            "mesh visual should be created with flag `DVZ_VISUAL_FLAGS_INDEXED` to use indices");
+    }
 
     // NOTE: if index_count is not specified, item_count is the number of FACES (number of
     // indices / 3).

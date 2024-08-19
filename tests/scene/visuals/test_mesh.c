@@ -82,9 +82,43 @@ int test_mesh_1(TstSuite* suite)
 
 
 
+int test_mesh_stroke(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_PANZOOM, 0);
+
+    // Create the visual.
+    DvzVisual* visual = dvz_mesh(vt.batch, 0);
+    uint32_t count = 3;
+    dvz_mesh_alloc(visual, count, 0);
+
+    vec3 position[3] = {
+        {-1, -1, 0},
+        {0, +1, 0},
+        {+1, -1, 0},
+    };
+    dvz_mesh_position(visual, 0, count, position, 0);
+
+    cvec4 color[3] = {
+        {255, 0, 0, 255},
+        {0, 255, 0, 255},
+        {0, 0, 255, 255},
+    };
+    dvz_mesh_color(visual, 0, count, color, 0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    return 0;
+}
+
+
+
 int test_mesh_surface(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("mesh_surface", VISUAL_TEST_ARCBALL, 0);
 
     // Grid size.
     uint32_t row_count = 250;
