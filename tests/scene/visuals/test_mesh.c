@@ -91,6 +91,7 @@ int test_mesh_stroke(TstSuite* suite)
     uint32_t count = 3;
     dvz_mesh_alloc(visual, count, 0);
 
+    // Mesh position.
     vec3 position[3] = {
         {-1, -1, 0},
         {0, +1, 0},
@@ -98,12 +99,24 @@ int test_mesh_stroke(TstSuite* suite)
     };
     dvz_mesh_position(visual, 0, count, position, 0);
 
+    // Mesh color.
     cvec4 color[3] = {
         {255, 0, 0, 255},
         {0, 255, 0, 255},
         {0, 0, 255, 255},
     };
     dvz_mesh_color(visual, 0, count, color, 0);
+
+    // Barycentric coordinates.
+    vec3 barycentric[3] = {
+        {1, 0, 0},
+        {0, 1, 0},
+        {0, 0, 1},
+    };
+    dvz_mesh_barycentric(visual, 0, count, barycentric, 0);
+
+    // Stroke.
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 10});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

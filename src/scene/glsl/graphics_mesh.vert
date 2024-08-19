@@ -11,10 +11,14 @@ layout(location = 1) in vec3 normal;
 // Color or texture.
 layout(location = 2) in vec4 uvcolor; // contains either rgba, or uv*a
 
+// Barycentric coordinates.
+layout(location = 3) in vec3 barycentric;
+
 // Varying variables.
 layout(location = 0) out vec3 out_pos;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec4 out_uvcolor;
+layout(location = 3) out vec3 out_barycentric;
 
 void main()
 {
@@ -23,4 +27,5 @@ void main()
     out_pos = ((mvp.model * vec4(pos, 1.0))).xyz;
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
+    out_barycentric = barycentric;
 }

@@ -1,7 +1,14 @@
 #version 450
 #include "common.glsl"
-
 #include "params_mesh.glsl"
+
+float edgeFactor(vec3 barycentric, float linewidth)
+{
+    vec3 d = fwidth(barycentric);
+    // vec3 a3 = smoothstep(vec3(0.0), d * 50, barycentric);
+    vec3 a3 = step(d * linewidth, barycentric);
+    return min(min(a3.x, a3.y), a3.z);
+}
 
 const float eps = .00001;
 
@@ -9,6 +16,7 @@ const float eps = .00001;
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_uvcolor;
+layout(location = 3) in vec3 in_barycentric;
 
 layout(location = 0) out vec4 out_color;
 
@@ -80,5 +88,12 @@ void main()
         // NOTE: the 4th component of in_uvcolor is always the alpha channel, both in the
         // color case (rgba) or the uv tex case (uv*a).
         out_color = vec4(color, in_uvcolor.a);
+    }
+
+    // Stroke.
+    if (params.stroke.a > 0)
+    {
+        float e = edgeFactor(in_barycentric, params.stroke.a);
+        out_color.rgb = mix(params.stroke.rgb, out_color.rgb, e);
     }
 }

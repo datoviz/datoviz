@@ -92,6 +92,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
             visual, 1, FIELD(DvzMeshTexturedVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshTexturedVertex, texcoords), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 3, FIELD(DvzMeshTexturedVertex, barycentric), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -106,6 +108,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
             visual, 1, FIELD(DvzMeshColorVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+        dvz_visual_attr( //
+            visual, 3, FIELD(DvzMeshColorVertex, barycentric), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));
@@ -121,6 +125,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
     dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
+    dvz_params_attr(params, 2, FIELD(DvzMeshParams, stroke));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
@@ -208,6 +213,15 @@ void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4*
 
 
 
+void dvz_mesh_barycentric(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 3, first, count, (void*)values);
+}
+
+
+
 void dvz_mesh_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
 {
@@ -255,6 +269,14 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
         return;
     }
     dvz_visual_param(visual, 2, 1, params);
+}
+
+
+
+void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 2, rgb_width);
 }
 
 

@@ -2069,6 +2069,20 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 /**
+ * Set the mesh vertex barycentric coordinates.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the barycentric coordinates
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_barycentric(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
  * Assign a 2D texture to a mesh visual.
  *
  * @param visual the visual
@@ -2123,6 +2137,16 @@ DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos);
  * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
 DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
+
+
+
+/**
+ * Set the stroke color and width.
+ *
+ * @param visual the mesh
+ * @param stroke the rgb components define the color, the a component defines the width in pixels
+ */
+DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width);
 
 
 
