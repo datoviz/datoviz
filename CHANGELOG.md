@@ -20,10 +20,19 @@
 - Added rounded corners and stroke options.
 - Added fill option to replace the texture by a uniform color.
 
+#### Mesh
+
+- Mesh wireframe option.
+- Polygon triangulation with earcut library.
+
 ### Text
 
 - Added feature to generate a texture containing a string, using a given font.
 - Implemented multiline support in text rendering using the font API.
+
+### GUI
+
+- Added color picker.
 
 ### Documentation
 
