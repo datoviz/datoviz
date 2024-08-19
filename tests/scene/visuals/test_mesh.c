@@ -214,6 +214,9 @@ int test_mesh_obj(TstSuite* suite)
         return 0;
     }
 
+    // NOTE: we need to use non-indexed meshes for mesh wireframe.
+    dvz_shape_unindex(&shape);
+
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
@@ -225,7 +228,7 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
-    // dvz_mesh_wireframe(visual, true);
+    dvz_mesh_wireframe(visual, true);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

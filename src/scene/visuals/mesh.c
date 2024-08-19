@@ -14,6 +14,7 @@
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "request.h"
+#include "scene/baker.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
 #include "scene/viewset.h"
@@ -301,15 +302,26 @@ void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width)
 
 void dvz_mesh_wireframe(DvzVisual* visual, float stroke_width)
 {
+    // NOTE: this requires a non-indexed mesh.
+
     ANN(visual);
     if (stroke_width > 0)
     {
         log_debug("enable mesh wireframe");
+
+        if (visual->index_count > 0)
+        {
+            log_warn( //
+                "Mesh wireframe requires non-indexed meshes, please use dvz_shape_unindex() "
+                "first");
+        }
+
         // TODO: optimization avoid recomputing barycentric coordinates.
         vec3* barycentric = _default_barycentric(visual->vertex_count);
         dvz_mesh_barycentric(visual, 0, visual->vertex_count, barycentric, 0);
         FREE(barycentric);
 
+        // Set up the wireframe stroke.
         dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
     }
     else

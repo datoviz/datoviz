@@ -67,41 +67,6 @@ struct DvzBakerVertex
     bool shared; // if a dual is shared, it won't be bound upon baker creation
 };
 
-// union DvzBakerDescriptorUnion
-// {
-//     struct
-//     {
-//         DvzSize item_size;
-//         DvzDual dual;
-//     } dat;
-//     struct
-//     {
-//         DvzId tex;
-
-//         // NOTE: are the following necessary?
-//         DvzTexDims dims;
-//         DvzFormat format;
-//         uvec3 shape;
-//     } tex;
-// };
-
-// struct DvzBakerDescriptor
-// {
-//     uint32_t slot_idx;
-//     int flags;
-//     bool shared; // if a dual is shared, it won't be bound upon baker creation
-//     DvzSlotType type;
-//     DvzBakerDescriptorUnion u;
-// };
-
-// struct DvzBakerParam
-// {
-//     uint32_t prop_idx;
-//     uint32_t slot_idx;
-//     DvzSize offset;
-//     DvzSize size;
-// };
-
 
 
 struct DvzBaker
@@ -116,8 +81,6 @@ struct DvzBaker
 
     DvzBakerAttr vertex_attrs[DVZ_MAX_VERTEX_ATTRS];
     DvzBakerVertex vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
-    // DvzBakerDescriptor descriptors[DVZ_MAX_BINDINGS];
-    // DvzBakerParam params[DVZ_MAX_PARAMS];
 
     DvzDual index; // index buffer
     bool index_shared;
@@ -185,30 +148,6 @@ void dvz_baker_attr(
 
 
 
-// declare a descriptor slot for a dat
-/**
- *
- */
-// void dvz_baker_slot_dat(DvzBaker* baker, uint32_t slot_idx, DvzSize item_size);
-
-
-
-// declare a descriptor slot for a tex
-/**
- *
- */
-// void dvz_baker_slot_tex(DvzBaker* baker, uint32_t slot_idx);
-
-
-
-/**
- *
- */
-// void dvz_baker_property(
-//     DvzBaker* baker, uint32_t prop_idx, uint32_t slot_idx, DvzSize offset, DvzSize size);
-
-
-
 /**
  *
  */
@@ -224,13 +163,6 @@ void dvz_baker_indirect(DvzBaker* baker);
  *
  */
 void dvz_baker_share_vertex(DvzBaker* baker, uint32_t binding_idx);
-
-
-
-/**
- *
- */
-// void dvz_baker_share_binding(DvzBaker* baker, uint32_t binding_idx);
 
 
 
@@ -287,15 +219,7 @@ void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* 
 /**
  *
  */
-// void dvz_baker_uniform(DvzBaker* baker, uint32_t binding_idx, DvzSize size, void*
-// data);
-
-
-
-/**
- *
- */
-// void dvz_baker_param(DvzBaker* baker, uint32_t prop_idx, void* data);
+void dvz_baker_unindex(DvzBaker* baker);
 
 
 

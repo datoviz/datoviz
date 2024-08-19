@@ -668,6 +668,19 @@ DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
 
 /**
+ * Convert an indexed shape to a non-indexed one by duplicating the vertex values according
+ * to the indices.
+ *
+ * This is used by the mesh wireframe option, as a given vertex may have distinct barycentric
+ * coordinates depending on its index.
+ *
+ * @param shape the shape
+ */
+DVZ_EXPORT void dvz_shape_unindex(DvzShape* shape);
+
+
+
+/**
  * Destroy a shape.
  *
  * @param shape the shape

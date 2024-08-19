@@ -98,6 +98,107 @@ void dvz_shape_print(DvzShape* shape)
 
 
 
+void dvz_shape_unindex(DvzShape* shape)
+{
+    ANN(shape);
+
+    if (shape->index_count == 0)
+    {
+        log_warn("the shape is already non-indexed, skipping unindexing");
+        return;
+    }
+
+    uint32_t vertex_count = shape->vertex_count;
+    ASSERT(vertex_count > 0);
+
+    uint32_t index_count = shape->index_count;
+    ASSERT(index_count > 0);
+
+    // Reindex positions.
+    if (shape->pos != NULL)
+    {
+        log_trace("reindex positions (%d vertices, %d indices)", vertex_count, index_count);
+        vec3* pos = (vec3*)calloc(index_count, sizeof(vec3));
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = shape->index[i];
+            ASSERT(vertex_idx < vertex_count);
+
+            pos[i][0] = shape->pos[vertex_idx][0];
+            pos[i][1] = shape->pos[vertex_idx][1];
+            pos[i][2] = shape->pos[vertex_idx][2];
+        }
+        FREE(shape->pos);
+        shape->pos = pos;
+    }
+
+    // Reindex colors.
+    if (shape->color != NULL)
+    {
+        log_trace("reindex colors (%d vertices, %d indices)", vertex_count, index_count);
+        cvec4* color = (cvec4*)calloc(index_count, sizeof(cvec4));
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = shape->index[i];
+            ASSERT(vertex_idx < vertex_count);
+
+            color[i][0] = shape->color[vertex_idx][0];
+            color[i][1] = shape->color[vertex_idx][1];
+            color[i][2] = shape->color[vertex_idx][2];
+            color[i][3] = shape->color[vertex_idx][3];
+        }
+        FREE(shape->color);
+        shape->color = color;
+    }
+
+    // Reindex normals.
+    if (shape->normal != NULL)
+    {
+        log_trace("reindex normals (%d vertices, %d indices)", vertex_count, index_count);
+        vec3* normal = (vec3*)calloc(index_count, sizeof(vec3));
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = shape->index[i];
+            ASSERT(vertex_idx < vertex_count);
+
+            normal[i][0] = shape->normal[vertex_idx][0];
+            normal[i][1] = shape->normal[vertex_idx][1];
+            normal[i][2] = shape->normal[vertex_idx][2];
+        }
+        FREE(shape->normal);
+        shape->normal = normal;
+    }
+
+    // Reindex texcoords.
+    if (shape->texcoords != NULL)
+    {
+        log_trace("reindex texcoords (%d vertices, %d indices)", vertex_count, index_count);
+        vec4* texcoords = (vec4*)calloc(index_count, sizeof(vec4));
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = shape->index[i];
+            ASSERT(vertex_idx < vertex_count);
+
+            texcoords[i][0] = shape->texcoords[vertex_idx][0];
+            texcoords[i][1] = shape->texcoords[vertex_idx][1];
+            texcoords[i][2] = shape->texcoords[vertex_idx][2];
+            texcoords[i][3] = shape->texcoords[vertex_idx][3];
+        }
+        FREE(shape->texcoords);
+        shape->texcoords = texcoords;
+    }
+
+    shape->vertex_count = index_count;
+    shape->index_count = 0;
+    FREE(shape->index);
+}
+
+
+
 void dvz_shape_destroy(DvzShape* shape)
 {
     ANN(shape);

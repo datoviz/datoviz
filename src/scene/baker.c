@@ -459,3 +459,67 @@ void dvz_baker_quads(
     dvz_baker_repeat(baker, attr_idx, 6 * first, 6 * count, 1, quads);
     FREE(quads);
 }
+
+
+
+void dvz_baker_unindex(DvzBaker* baker)
+{
+    // NOTE: this function is still mostly untested and probably doesn't work right now.
+    // It might not be very useful now that there is dvz_shape_unindex().
+
+    ANN(baker);
+
+    // Index dual.
+    DvzDual* index = &baker->index;
+    ANN(index);
+    ANN(index->array);
+
+    // Index array.
+    DvzIndex* indices = (DvzIndex*)index->array->data;
+    ANN(indices);
+
+    // Number of indices.
+    uint32_t index_count = index->array->item_count;
+    ASSERT(index_count > 0);
+
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
+    {
+        // Vertex binding.
+        DvzBakerVertex* baker_vertex = &baker->vertex_bindings[binding_idx];
+        ANN(baker_vertex);
+
+        // Vertex dual.
+        DvzDual* vertex = &baker_vertex->dual;
+        ANN(vertex->array);
+
+        // Vertex array.
+        void* vertices_orig = vertex->array->data;
+        ANN(vertices_orig);
+
+        // Number of vertices.
+        uint32_t vertex_count = vertex->array->item_count;
+        ASSERT(vertex_count > 0);
+
+        // Item size.
+        DvzSize vertex_size = vertex->array->item_size;
+        ASSERT(vertex_size > 0);
+
+        // Copy the indexed vertices;
+        void* vertices = calloc(index_count, vertex_size);
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = indices[i];
+            ASSERT(vertex_idx < vertex_count);
+            memcpy(
+                (void*)((uint64_t)vertices + vertex_size * i),               //
+                (void*)((uint64_t)vertices_orig + vertex_size * vertex_idx), //
+                vertex_size);
+        }
+        dvz_dual_data(vertex, 0, index_count, vertices);
+        FREE(vertices);
+    }
+
+    // Disable index buffer.
+    index->array->item_count = 0;
+}
