@@ -204,9 +204,24 @@ int test_mesh_surface(TstSuite* suite)
 
 
 
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    VisualTest* vt = ev.user_data;
+    ANN(vt);
+
+    vec4* stroke = (vec4*)vt->user_data;
+
+    dvz_gui_size((vec2){300, 100});
+    dvz_gui_begin("Wireframe", 0);
+    dvz_gui_slider("Stroke width", 0, 5.0, &stroke[0][3]);
+    dvz_gui_end();
+
+    dvz_mesh_stroke(vt->visual, stroke[0]);
+}
+
 int test_mesh_obj(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Load obj shape.
     char path[1024] = {0};
@@ -217,6 +232,8 @@ int test_mesh_obj(TstSuite* suite)
         dvz_shape_destroy(&shape);
         return 0;
     }
+
+    // dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     dvz_shape_unindex(&shape);
@@ -232,13 +249,18 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
-    dvz_mesh_wireframe(visual, 1.0);
+    vec4 stroke = {.25, .25, .25, 1.0};
+    dvz_mesh_wireframe(visual, stroke[3]);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
     dvz_panel_update(vt.panel);
+
+    vt.visual = visual;
+    vt.user_data = &stroke[0];
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
 
     // Run the test.
     visual_test_end(vt);
