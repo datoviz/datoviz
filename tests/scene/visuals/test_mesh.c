@@ -211,12 +211,15 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
     vec4* stroke = (vec4*)vt->user_data;
 
-    dvz_gui_size((vec2){300, 100});
-    dvz_gui_begin("Wireframe", 0);
-    dvz_gui_slider("Stroke width", 0, 5.0, &stroke[0][3]);
+    dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
+    dvz_gui_size((vec2){200, 300});
+    dvz_gui_begin("Wireframe", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    bool width_changed = dvz_gui_slider("Width", 0, 5.0, &stroke[0][3]);
+    bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
     dvz_gui_end();
 
-    dvz_mesh_stroke(vt->visual, stroke[0]);
+    if (width_changed || stroke_changed)
+        dvz_mesh_stroke(vt->visual, stroke[0]);
 }
 
 int test_mesh_obj(TstSuite* suite)
