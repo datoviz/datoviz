@@ -38,19 +38,19 @@ typedef struct DvzShape DvzShape;
 struct DvzMeshColorVertex
 {
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-    vec3 pos;         /* position */
-    vec3 normal;      /* normal vector */
-    cvec4 color;      /* color */
-    vec3 barycentric; /* barycentric coordinates */
+    vec3 pos;     /* position */
+    vec3 normal;  /* normal vector */
+    cvec4 color;  /* color */
+    uint8_t edge; /* last 3 bits indicate presence of each triangle edge contour */
 };
 
 struct DvzMeshTexturedVertex
 {
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-    vec3 pos;         /* position */
-    vec3 normal;      /* normal vector */
-    vec4 texcoords;   /* u, v, *, a */
-    vec3 barycentric; /* barycentric coordinates */
+    vec3 pos;       /* position */
+    vec3 normal;    /* normal vector */
+    vec4 texcoords; /* u, v, *, a */
+    uint8_t edge;   /* last 3 bits indicate presence of each triangle edge contour */
 };
 
 

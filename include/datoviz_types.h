@@ -101,6 +101,7 @@ struct DvzShape
     cvec4* color;
     vec4* texcoords; // u, v, *, a
     DvzIndex* index;
+    uint8_t* edge; // 0-7, 3 bits indicate presence of each triangle edge in the contour
 };
 
 

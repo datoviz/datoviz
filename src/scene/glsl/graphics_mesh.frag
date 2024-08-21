@@ -2,7 +2,7 @@
 #include "common.glsl"
 #include "params_mesh.glsl"
 
-float edge_factor(vec3 barycentric, float linewidth)
+float edge_factor(vec3 barycentric, vec3 edge, float linewidth)
 {
     // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
     // easy-wireframe-display-with-barycentric-coordinates/
@@ -12,13 +12,42 @@ float edge_factor(vec3 barycentric, float linewidth)
     // return min(min(a3.x, a3.y), a3.z);
 
     // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
-    barycentric.z = 1 - barycentric.x - barycentric.y;
+    // barycentric.z = 1 - barycentric.x - barycentric.y;
+    // barycentric = smoothstep(deltas, 2 * deltas, barycentric);
+
     vec3 deltas = fwidth(barycentric);
     float scale = linewidth * 0.5;
-    // barycentric = smoothstep(deltas, 2 * deltas, barycentric);
     barycentric = smoothstep(deltas * scale, deltas * (scale + 1.0), barycentric);
-    float minBary = min(barycentric.x, min(barycentric.y, barycentric.z));
-    return minBary;
+
+    float x = barycentric.x;
+    float y = barycentric.y;
+    float z = barycentric.z;
+
+    float s = edge.x + edge.y + edge.z;
+
+    if (s == 3)
+    {
+        return min(x, min(y, z));
+    }
+    else if (s == 2)
+    {
+        // NOTE: in the s=2 and s=1 cases, we should theoretically check for the 3 possible
+        // permutations, however dvz_shape_unindex() reorders vertices in each triangle so as to
+        // ensure the first vertex is always the one that is different from the two others.
+        return min(y, z);
+    }
+    else if (s == 1)
+    {
+        return min(x, max(y, z));
+    }
+    else if (s == 0)
+    {
+        return min(max(x, y), min(max(x, z), max(y, z)));
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 const float eps = .00001;
@@ -28,6 +57,7 @@ layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_uvcolor;
 layout(location = 3) in vec3 in_barycentric;
+layout(location = 4) in vec3 in_edge;
 
 layout(location = 0) out vec4 out_color;
 
@@ -105,7 +135,7 @@ void main()
     if (params.stroke.a > 0)
     {
         float stroke_width = params.stroke.a;
-        float e = edge_factor(in_barycentric, stroke_width);
+        float e = edge_factor(in_barycentric, in_edge, stroke_width);
         out_color.rgb = mix(params.stroke.rgb, out_color.rgb, e);
     }
 }

@@ -2095,16 +2095,16 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 /**
- * Set the mesh vertex barycentric coordinates.
+ * Set the mesh vertex edge for wireframe contour.
  *
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param values the barycentric coordinates
+ * @param values the edge numbers (last 3 bits of each byte indicate presence of each edge)
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_mesh_barycentric(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+dvz_mesh_edge(DvzVisual* visual, uint32_t first, uint32_t count, uint8_t* values, int flags);
 
 
 

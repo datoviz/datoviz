@@ -1433,6 +1433,7 @@ class DvzShape(ctypes.Structure):
         ("color", ctypes.POINTER(ctypes.c_uint8 * 4)),
         ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
         ("index", ctypes.POINTER(ctypes.c_uint32)),
+        ("edge", ctypes.POINTER(ctypes.c_uint8)),
     ]
 
 
@@ -2948,13 +2949,13 @@ mesh_normal.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_mesh_barycentric()
-mesh_barycentric = dvz.dvz_mesh_barycentric
-mesh_barycentric.argtypes = [
+# Function dvz_mesh_edge()
+mesh_edge = dvz.dvz_mesh_edge
+mesh_edge.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* values
+    ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* values
     ctypes.c_int,  # int flags
 ]
 

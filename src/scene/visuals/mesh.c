@@ -55,22 +55,6 @@ static void _visual_callback(
 
 
 
-// The caller must FREE the output.
-static vec3* _default_barycentric(uint32_t count)
-{
-    vec3* barycentric = (vec3*)calloc(count, sizeof(vec3));
-    for (uint32_t i = 0; i < count / 3; i++)
-    {
-        ASSERT(3 * i + 2 < count);
-        barycentric[3 * i + 0][0] = 1;
-        barycentric[3 * i + 1][1] = 1;
-        barycentric[3 * i + 2][2] = 1;
-    }
-    return barycentric;
-}
-
-
-
 /*************************************************************************************************/
 /*  Functions                                                                                    */
 /*************************************************************************************************/
@@ -112,7 +96,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshTexturedVertex, texcoords), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 3, FIELD(DvzMeshTexturedVertex, barycentric), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+            visual, 3, FIELD(DvzMeshTexturedVertex, edge), DVZ_FORMAT_R8_UINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -128,7 +112,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
         dvz_visual_attr( //
-            visual, 3, FIELD(DvzMeshColorVertex, barycentric), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+            visual, 3, FIELD(DvzMeshColorVertex, edge), DVZ_FORMAT_R8_UINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));
@@ -232,8 +216,7 @@ void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4*
 
 
 
-void dvz_mesh_barycentric(
-    DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+void dvz_mesh_edge(DvzVisual* visual, uint32_t first, uint32_t count, uint8_t* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 3, first, count, (void*)values);
@@ -316,11 +299,6 @@ void dvz_mesh_wireframe(DvzVisual* visual, float stroke_width)
                 "first");
         }
 
-        // TODO: optimization avoid recomputing barycentric coordinates.
-        vec3* barycentric = _default_barycentric(visual->vertex_count);
-        dvz_mesh_barycentric(visual, 0, visual->vertex_count, barycentric, 0);
-        FREE(barycentric);
-
         // Set up the wireframe stroke.
         dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
     }
@@ -377,6 +355,9 @@ void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape)
 
     if (shape->texcoords && (visual->flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
+
+    if (shape->edge)
+        dvz_mesh_edge(visual, 0, vertex_count, shape->edge, 0);
 
     if (shape->index_count > 0)
         dvz_mesh_index(visual, 0, index_count, shape->index, 0);

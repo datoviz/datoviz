@@ -164,7 +164,7 @@ dvz_mesh_position
 dvz_mesh_color
 dvz_mesh_texcoords
 dvz_mesh_normal
-dvz_mesh_barycentric
+dvz_mesh_edge
 dvz_mesh_texture
 dvz_mesh_index
 dvz_mesh_alloc

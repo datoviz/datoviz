@@ -23,7 +23,8 @@
 #### Mesh
 
 - Mesh wireframe option.
-- Polygon triangulation with earcut library.
+- Polygon triangulation with the earcut library.
+- Polygon contour.
 
 ### Text
 

@@ -98,6 +98,17 @@ void dvz_shape_print(DvzShape* shape)
 
 
 
+#define COPY_VEC3(x, idx, y)                                                                      \
+    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
+    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
+    x[3 * i + (idx)][2] = shape->x[y][2];
+
+#define COPY_VEC4(x, idx, y)                                                                      \
+    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
+    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
+    x[3 * i + (idx)][2] = shape->x[y][2];                                                         \
+    x[3 * i + (idx)][3] = shape->x[y][3];
+
 void dvz_shape_unindex(DvzShape* shape)
 {
     ANN(shape);
@@ -108,93 +119,160 @@ void dvz_shape_unindex(DvzShape* shape)
         return;
     }
 
-    uint32_t vertex_count = shape->vertex_count;
+    int32_t vertex_count = (int32_t)shape->vertex_count;
     ASSERT(vertex_count > 0);
 
     uint32_t index_count = shape->index_count;
     ASSERT(index_count > 0);
 
+    uint32_t face_count = index_count / 3;
+    ASSERT(face_count > 0);
+
     // Reindex positions.
-    if (shape->pos != NULL)
+    log_trace("reindex positions (%d vertices, %d indices)", vertex_count, index_count);
+    vec3* pos = (vec3*)calloc(index_count, sizeof(vec3));
+    cvec4* color = NULL;
+    vec3* normal = NULL;
+    vec4* texcoords = NULL;
+    uint8_t* edge = NULL;
+
+    if (shape->color != NULL)
+        color = (cvec4*)calloc(index_count, sizeof(cvec4));
+    if (shape->normal != NULL)
+        normal = (vec3*)calloc(index_count, sizeof(vec3));
+    if (shape->texcoords != NULL)
+        texcoords = (vec4*)calloc(index_count, sizeof(vec4));
+
+    edge = (uint8_t*)calloc(index_count, sizeof(uint8_t));
+
+    DvzIndex vertex_idx = 0;
+    for (uint32_t i = 0; i < face_count; i++)
     {
-        log_trace("reindex positions (%d vertices, %d indices)", vertex_count, index_count);
-        vec3* pos = (vec3*)calloc(index_count, sizeof(vec3));
-        DvzIndex vertex_idx = 0;
-        for (uint32_t i = 0; i < index_count; i++)
+        int32_t v0 = (int32_t)shape->index[3 * i + 0];
+        int32_t v1 = (int32_t)shape->index[3 * i + 1];
+        int32_t v2 = (int32_t)shape->index[3 * i + 2];
+        ASSERT(v2 < vertex_count);
+
+        // Whether there should be an edge on the other side of the v0 vertex.
+        bool e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
+                  ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
+        // Whether there should be an edge on the other side of the v1 vertex.
+        bool e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
+                  ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
+        // Whether there should be an edge on the other side of the v2 vertex.
+        bool e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
+                  ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
+
+        // Reordering of vertices within each triangle to ensure that, if there are only 1 or 2
+        // contour edges in the triangle, the first vertex of the 3 triangle vertices is always the
+        // one that is different from the two others. This ensures that we don't need to check for
+        // all of the permutations in the fragment shader, which would hurt performance.
+        int32_t v0r = v0;
+        int32_t v1r = v1;
+        int32_t v2r = v2;
+
+        // Vertex reordering in cases where there are 1 or 2 edges to draw contour for (instead of
+        // 0 or 3).
+        int s = e0 + e1 + e2;
+        if (s == 0)
         {
-            vertex_idx = shape->index[i];
-            ASSERT(vertex_idx < vertex_count);
-
-            pos[i][0] = shape->pos[vertex_idx][0];
-            pos[i][1] = shape->pos[vertex_idx][1];
-            pos[i][2] = shape->pos[vertex_idx][2];
+            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 0; // 0 edge: 0b000
         }
-        FREE(shape->pos);
-        shape->pos = pos;
-    }
+        else if (s == 1)
+        {
+            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 1; // 1 edge: 0b001
+            if (e1)
+            {
+                v0r = v1;
+                v1r = v2;
+                v2r = v0;
+            }
+            else if (e2)
+            {
+                v0r = v2;
+                v1r = v0;
+                v2r = v1;
+            }
+        }
+        else if (s == 2)
+        {
+            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 3; // 2 edges: 0b011
+            if (!e1)
+            {
+                v0r = v1;
+                v1r = v2;
+                v2r = v0;
+            }
+            else if (!e2)
+            {
+                v0r = v2;
+                v1r = v0;
+                v2r = v1;
+            }
+        }
+        else
+        {
+            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
+        }
 
-    // Reindex colors.
+        // DEBUG
+        // edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
+        // log_info("triangle %d, edge %d", i, edge[3 * i + 0]);
+
+        // Now we copy the unindexed pos, color, normal, texcoords values.
+        COPY_VEC3(pos, 0, v0r)
+        COPY_VEC3(pos, 1, v1r)
+        COPY_VEC3(pos, 2, v2r)
+
+        if (shape->color != NULL)
+        {
+            COPY_VEC4(color, 0, v0r)
+            COPY_VEC4(color, 1, v1r)
+            COPY_VEC4(color, 2, v2r)
+        }
+
+        if (shape->normal != NULL)
+        {
+            COPY_VEC3(normal, 0, v0r)
+            COPY_VEC3(normal, 1, v1r)
+            COPY_VEC3(normal, 2, v2r)
+        }
+
+        if (shape->texcoords != NULL)
+        {
+            COPY_VEC4(texcoords, 0, v0r)
+            COPY_VEC4(texcoords, 1, v1r)
+            COPY_VEC4(texcoords, 2, v2r)
+        }
+    }
+    FREE(shape->pos);
+    shape->pos = pos;
+    shape->edge = edge;
+
     if (shape->color != NULL)
     {
-        log_trace("reindex colors (%d vertices, %d indices)", vertex_count, index_count);
-        cvec4* color = (cvec4*)calloc(index_count, sizeof(cvec4));
-        DvzIndex vertex_idx = 0;
-        for (uint32_t i = 0; i < index_count; i++)
-        {
-            vertex_idx = shape->index[i];
-            ASSERT(vertex_idx < vertex_count);
-
-            color[i][0] = shape->color[vertex_idx][0];
-            color[i][1] = shape->color[vertex_idx][1];
-            color[i][2] = shape->color[vertex_idx][2];
-            color[i][3] = shape->color[vertex_idx][3];
-        }
         FREE(shape->color);
         shape->color = color;
     }
 
-    // Reindex normals.
     if (shape->normal != NULL)
     {
-        log_trace("reindex normals (%d vertices, %d indices)", vertex_count, index_count);
-        vec3* normal = (vec3*)calloc(index_count, sizeof(vec3));
-        DvzIndex vertex_idx = 0;
-        for (uint32_t i = 0; i < index_count; i++)
-        {
-            vertex_idx = shape->index[i];
-            ASSERT(vertex_idx < vertex_count);
-
-            normal[i][0] = shape->normal[vertex_idx][0];
-            normal[i][1] = shape->normal[vertex_idx][1];
-            normal[i][2] = shape->normal[vertex_idx][2];
-        }
         FREE(shape->normal);
         shape->normal = normal;
     }
 
-    // Reindex texcoords.
     if (shape->texcoords != NULL)
     {
-        log_trace("reindex texcoords (%d vertices, %d indices)", vertex_count, index_count);
-        vec4* texcoords = (vec4*)calloc(index_count, sizeof(vec4));
-        DvzIndex vertex_idx = 0;
-        for (uint32_t i = 0; i < index_count; i++)
-        {
-            vertex_idx = shape->index[i];
-            ASSERT(vertex_idx < vertex_count);
-
-            texcoords[i][0] = shape->texcoords[vertex_idx][0];
-            texcoords[i][1] = shape->texcoords[vertex_idx][1];
-            texcoords[i][2] = shape->texcoords[vertex_idx][2];
-            texcoords[i][3] = shape->texcoords[vertex_idx][3];
-        }
         FREE(shape->texcoords);
         shape->texcoords = texcoords;
     }
 
     shape->vertex_count = index_count;
     shape->index_count = 0;
-    FREE(shape->index);
+
+    // NOTE: we keep shape->index around although we disable indexed rendering with index_count=0.
+    // This is why this is commented.
+    // FREE(shape->index);
 }
 
 
