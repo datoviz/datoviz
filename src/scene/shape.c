@@ -143,6 +143,12 @@ void dvz_shape_unindex(DvzShape* shape)
     if (shape->texcoords != NULL)
         texcoords = (vec4*)calloc(index_count, sizeof(vec4));
 
+    // WARNING: will override any previous shape->edge.
+    if (shape->edge != NULL)
+    {
+        log_warn("Discard previous shape edge array and generate a new one.");
+        FREE(shape->edge);
+    }
     edge = (uint8_t*)calloc(index_count, sizeof(uint8_t));
 
     DvzIndex vertex_idx = 0;
