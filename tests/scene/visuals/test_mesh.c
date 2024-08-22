@@ -134,9 +134,9 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Mesh position.
     vec3 position[3] = {
-        {-1, -1, 0},
         {0, +1, 0},
         {+1, -1, 0},
+        {-1, -1, 0},
     };
     dvz_mesh_position(visual, 0, count, position, 0);
 
@@ -149,11 +149,11 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_color(visual, 0, count, color, 0);
 
     // Barycentric coordinates.
-    uint8_t edge[3] = {0, 0, 0};
+    uint8_t edge[3] = {1, 1, 1}; // try: 0, 1, 3, 7 (each value repeated 3 times for the triangle)
     dvz_mesh_edge(visual, 0, count, edge, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 50.0});
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 100.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
