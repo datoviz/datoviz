@@ -123,9 +123,79 @@ int test_mesh_polygon(TstSuite* suite)
 
 
 
+// static float cross2D(vec2 v1, vec2 v2) { return v1[0] * v2[1] - v1[1] * v2[0]; }
+
+// static void computeBarycentric(vec3 P0, vec3 P1, vec3 P2, vec2 u, vec2 ubary)
+// {
+//     // Vectors from P0 to P1 and P0 to P2
+//     float v0[2] = {P1[0] - P0[0], P1[1] - P0[1]};
+//     float v1[2] = {P2[0] - P0[0], P2[1] - P0[1]};
+//     float v2[2] = {u[0] - P0[0], u[1] - P0[1]};
+
+//     // Compute the area of the triangle ABC using the cross product
+//     float denom = cross2D(v0, v1);
+
+//     // Calculate barycentric coordinates
+//     ubary[0] = cross2D(v2, v1) / denom; // Barycentric coordinate corresponding to P1
+//     ubary[1] = cross2D(v0, v2) / denom; // Barycentric coordinate corresponding to P2
+//     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
+// }
+
+static inline void _update_angle(DvzVisual* visual, vec2 angle)
+{
+    vec3 P0 = {0, +1, 0};
+    vec3 P1 = {+1, -1, 0};
+    vec3 P2 = {-1, -1, 0};
+    vec2 u = {cos(angle[0]), sin(angle[0])};
+    vec2 v = {cos(angle[1]), sin(angle[1])};
+
+    // NOTE: distance from P to Au is dot(AP, u_ortho)
+    // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
+    vec3 d_left[3] = {0};
+    vec3 d_right[3] = {0};
+    d_left[0][0] = 0;
+    d_left[1][0] = (P1[0] - P0[0]) * u[1] - (P1[1] - P0[1]) * u[0];
+    d_left[2][0] = (P2[0] - P0[0]) * u[1] - (P2[1] - P0[1]) * u[0];
+
+    d_right[0][0] = 0;
+    d_right[1][0] = (P1[0] - P0[0]) * v[1] - (P1[1] - P0[1]) * v[0];
+    d_right[2][0] = (P2[0] - P0[0]) * v[1] - (P2[1] - P0[1]) * v[0];
+
+    // NOTE: orientation:
+    if (angle[0] < angle[1])
+    {
+        d_left[1][0] *= -1;
+        d_left[2][0] *= -1;
+    }
+
+    dvz_mesh_left(visual, 0, 3, (void*)d_left, 0);
+    dvz_mesh_right(visual, 0, 3, (void*)d_right, 0);
+}
+
+static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    VisualTest* vt = ev.user_data;
+    ANN(vt);
+
+    float* angle = (float*)vt->user_data;
+    ANN(angle);
+
+    dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
+    dvz_gui_size((vec2){200, 300});
+    dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    bool u_changed = dvz_gui_slider("u", -M_PI, +M_PI, &angle[0]);
+    bool v_changed = dvz_gui_slider("v", -M_PI, +M_PI, &angle[1]);
+    dvz_gui_end();
+
+    if (u_changed || v_changed)
+    {
+        _update_angle(vt->visual, (vec2){angle[0], angle[1]});
+    }
+}
+
 int test_mesh_stroke(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_PANZOOM, 0);
+    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, 0);
@@ -133,10 +203,13 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_alloc(visual, count, 0);
 
     // Mesh position.
+    vec3 P0 = {0, +1, 0};
+    vec3 P1 = {-1, -1, 0};
+    vec3 P2 = {+1, -1, 0};
     vec3 position[3] = {
-        {0, +1, 0},
-        {+1, -1, 0},
-        {-1, -1, 0},
+        {P0[0], P0[1], P0[2]}, //
+        {P1[0], P1[1], P1[2]}, //
+        {P2[0], P2[1], P2[2]}, //
     };
     dvz_mesh_position(visual, 0, count, position, 0);
 
@@ -148,15 +221,26 @@ int test_mesh_stroke(TstSuite* suite)
     };
     dvz_mesh_color(visual, 0, count, color, 0);
 
-    // Barycentric coordinates.
-    uint8_t edge[3] = {1, 1, 1}; // try: 0, 1, 3, 7 (each value repeated 3 times for the triangle)
-    dvz_mesh_edge(visual, 0, count, edge, 0);
+    // Contour information.
+    cvec3 contour[3] = {
+        {3, 0, 0},
+        {3, 0, 0},
+        {3, 0, 0},
+    };
+    dvz_visual_data(visual, 5, 0, count, (void*)contour);
 
     // Stroke.
     dvz_mesh_stroke(visual, (vec4){1, 1, 1, 100.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
+
+    // Angle GUI.
+    vt.visual = visual;
+    float angle[2] = {0.8, -0.8};
+    _update_angle(visual, angle);
+    vt.user_data = &angle[0];
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _stroke_callback, &vt);
 
     // Run the test.
     visual_test_end(vt);

@@ -96,7 +96,11 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshTexturedVertex, texcoords), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 3, FIELD(DvzMeshTexturedVertex, edge), DVZ_FORMAT_R8_UINT, 0);
+            visual, 3, FIELD(DvzMeshTexturedVertex, d_left), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 4, FIELD(DvzMeshTexturedVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 5, FIELD(DvzMeshTexturedVertex, contour), DVZ_FORMAT_R8_UINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -112,7 +116,11 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
         dvz_visual_attr( //
-            visual, 3, FIELD(DvzMeshColorVertex, edge), DVZ_FORMAT_R8_UINT, 0);
+            visual, 3, FIELD(DvzMeshColorVertex, d_left), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 4, FIELD(DvzMeshColorVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 5, FIELD(DvzMeshColorVertex, contour), DVZ_FORMAT_R8G8B8_UINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));
@@ -216,10 +224,26 @@ void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4*
 
 
 
-void dvz_mesh_edge(DvzVisual* visual, uint32_t first, uint32_t count, uint8_t* values, int flags)
+void dvz_mesh_left(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 3, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 4, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec3* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 5, first, count, (void*)values);
 }
 
 
@@ -356,8 +380,14 @@ void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape)
     if (shape->texcoords && (visual->flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
 
-    if (shape->edge)
-        dvz_mesh_edge(visual, 0, vertex_count, shape->edge, 0);
+    if (shape->d_left)
+        dvz_mesh_left(visual, 0, vertex_count, shape->d_left, 0);
+
+    if (shape->d_right)
+        dvz_mesh_right(visual, 0, vertex_count, shape->d_right, 0);
+
+    if (shape->contour)
+        dvz_mesh_contour(visual, 0, vertex_count, shape->contour, 0);
 
     if (shape->index_count > 0)
         dvz_mesh_index(visual, 0, index_count, shape->index, 0);

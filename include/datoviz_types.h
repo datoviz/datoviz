@@ -100,8 +100,12 @@ struct DvzShape
     vec3* normal;
     cvec4* color;
     vec4* texcoords; // u, v, *, a
+    vec3* d_left;
+    vec3* d_right;
+    cvec3* contour;
+    // vec4* adjacent;  // xy coordinates of left and right adjacent vectors
+    // uint8_t* edge;   // 0-7, 3 bits indicate presence of each triangle edge in the contour
     DvzIndex* index;
-    uint8_t* edge; // 0-7, 3 bits indicate presence of each triangle edge in the contour
 };
 
 

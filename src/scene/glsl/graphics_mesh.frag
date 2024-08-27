@@ -2,54 +2,6 @@
 #include "common.glsl"
 #include "params_mesh.glsl"
 
-float edge_factor(vec3 barycentric, vec3 edge, float linewidth)
-{
-    // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
-    // easy-wireframe-display-with-barycentric-coordinates/
-    // vec3 d = fwidth(barycentric);
-    // // vec3 a3 = smoothstep(vec3(0.0), d * 50, barycentric);
-    // vec3 a3 = step(d * linewidth, barycentric);
-    // return min(min(a3.x, a3.y), a3.z);
-
-    // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
-    // barycentric.z = 1 - barycentric.x - barycentric.y;
-    // barycentric = smoothstep(deltas, 2 * deltas, barycentric);
-
-    vec3 deltas = fwidth(barycentric);
-    float scale = linewidth * 0.5;
-    barycentric = smoothstep(deltas * scale, deltas * (scale + 1.0), barycentric);
-
-    float x = barycentric.x;
-    float y = barycentric.y;
-    float z = barycentric.z;
-
-    float s = edge.x + edge.y + edge.z;
-
-    if (s == 3)
-    {
-        return min(x, min(y, z));
-    }
-    else if (s == 2)
-    {
-        // NOTE: in the s=2 and s=1 cases, we should theoretically check for the 3 possible
-        // permutations, however dvz_shape_unindex() reorders vertices in each triangle so as to
-        // ensure the first vertex is always the one that is different from the two others.
-        return min(y, z);
-    }
-    else if (s == 1)
-    {
-        return min(x, max(y, z));
-    }
-    else if (s == 0)
-    {
-        return min(max(x, y), min(max(x, z), max(y, z)));
-    }
-    else
-    {
-        return 0;
-    }
-}
-
 const float eps = .00001;
 
 // Varying variables.
@@ -57,11 +9,74 @@ layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_uvcolor;
 layout(location = 3) in vec3 in_barycentric;
-layout(location = 4) in vec3 in_edge;
+layout(location = 4) in vec3 in_d_left;
+layout(location = 5) in vec3 in_d_right;
+layout(location = 6) flat in ivec3 in_contour;
 
 layout(location = 0) out vec4 out_color;
 
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
+
+// Vertex corner between the left and right edge.
+float one_corner(float d_left, float d_right, float linewidth)
+{
+    vec2 d = abs(vec2(d_left, d_right));
+    vec2 deltas = fwidth(d);  // rate of change of the distances
+    float a = d.x / deltas.x; // normalized distance to left edge
+    float b = d.y / deltas.y; // normalized distance to right edge
+    // NOTE: the sign of d_left/right indicates the orientation.
+    float in_orient = d_left > 0 ? 0 : 1;
+    float c = in_orient > 0 ? min(a, b) : max(a, b); // take min or max of the distance
+    return smoothstep(linewidth, linewidth + 1, c);  // 0 on contour, 1 inside the polygon
+}
+
+float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
+{
+    bool corner_x = ((contour.x >> 1) & 1) > 0;
+    bool corner_y = ((contour.y >> 1) & 1) > 0;
+    bool corner_z = ((contour.z >> 1) & 1) > 0;
+
+    float res = 1;
+    if (corner_x)
+        res = min(res, one_corner(d_left.x, d_right.x, linewidth));
+    if (corner_y)
+        res = min(res, one_corner(d_left.y, d_right.y, linewidth));
+    if (corner_z)
+        res = min(res, one_corner(d_left.z, d_right.z, linewidth));
+    return res;
+}
+
+float edge(vec3 barycentric, ivec3 contour, float linewidth)
+{
+    // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
+    // easy-wireframe-display-with-barycentric-coordinates/
+    // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
+
+    vec3 deltas = fwidth(barycentric);
+    float scale = linewidth * 0.5;
+    vec3 a = deltas * scale;
+    vec3 b = deltas * (scale + 1);
+
+    vec3 stepped = smoothstep(a, b, barycentric);
+    float x = stepped.x;
+    float y = stepped.y;
+    float z = stepped.z;
+
+    bool edge_x = ((contour.x >> 0) & 1) > 0;
+    bool edge_y = ((contour.y >> 0) & 1) > 0;
+    bool edge_z = ((contour.z >> 0) & 1) > 0;
+
+    float res = 1;
+    if (edge_x)
+        res = min(res, x);
+    if (edge_y)
+        res = min(res, y);
+    if (edge_z)
+        res = min(res, z);
+    return res;
+}
+
+
 
 void main()
 {
@@ -134,8 +149,10 @@ void main()
     // Stroke.
     if (params.stroke.a > 0)
     {
-        float stroke_width = params.stroke.a;
-        float e = edge_factor(in_barycentric, in_edge, stroke_width);
-        out_color.rgb = mix(params.stroke.rgb, out_color.rgb, e);
+        float linewidth = params.stroke.a;
+        vec3 stroke = params.stroke.rgb;
+        float e = edge(in_barycentric, in_contour, linewidth);
+        float c = corner(in_d_left, in_d_right, in_contour, linewidth);
+        out_color.rgb = mix(stroke, out_color.rgb, min(e, c));
     }
 }

@@ -134,7 +134,9 @@ void dvz_shape_unindex(DvzShape* shape)
     cvec4* color = NULL;
     vec3* normal = NULL;
     vec4* texcoords = NULL;
-    uint8_t* edge = NULL;
+    vec3* d_left = NULL;
+    vec3* d_right = NULL;
+    cvec3* contour = NULL;
 
     if (shape->color != NULL)
         color = (cvec4*)calloc(index_count, sizeof(cvec4));
@@ -144,12 +146,21 @@ void dvz_shape_unindex(DvzShape* shape)
         texcoords = (vec4*)calloc(index_count, sizeof(vec4));
 
     // WARNING: will override any previous shape->edge.
-    if (shape->edge != NULL)
-    {
-        log_warn("Discard previous shape edge array and generate a new one.");
-        FREE(shape->edge);
-    }
-    edge = (uint8_t*)calloc(index_count, sizeof(uint8_t));
+    // if (shape->edge != NULL)
+    // {
+    //     log_warn("Discard previous shape edge array and generate a new one.");
+    //     FREE(shape->edge);
+    // }
+
+    // WARNING: will override any previous shape->adjacent.
+    // if (shape->adjacent != NULL)
+    // {
+    //     log_warn("Discard previous shape adjacent array and generate a new one.");
+    //     FREE(shape->adjacent);
+    // }
+    d_left = (vec3*)calloc(index_count, sizeof(vec3));
+    d_right = (vec3*)calloc(index_count, sizeof(vec3));
+    contour = (cvec3*)calloc(index_count, sizeof(cvec3));
 
     DvzIndex vertex_idx = 0;
     for (uint32_t i = 0; i < face_count; i++)
@@ -177,49 +188,70 @@ void dvz_shape_unindex(DvzShape* shape)
         int32_t v1r = v1;
         int32_t v2r = v2;
 
+        if (e0)
+        {
+            contour[3 * i + 0][0] |= 1;
+            contour[3 * i + 1][0] |= 1;
+            contour[3 * i + 2][0] |= 1;
+        }
+        if (e1)
+        {
+            contour[3 * i + 0][1] |= 1;
+            contour[3 * i + 1][1] |= 1;
+            contour[3 * i + 2][1] |= 1;
+        }
+        if (e2)
+        {
+            contour[3 * i + 0][2] |= 1;
+            contour[3 * i + 1][2] |= 1;
+            contour[3 * i + 2][2] |= 1;
+        }
+
+        // TODO: compute corner (second LSB) and d_left and d_right
+
         // Vertex reordering in cases where there are 1 or 2 edges to draw contour for (instead of
         // 0 or 3).
-        int s = e0 + e1 + e2;
-        if (s == 0)
-        {
-            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 0; // 0 edge: 0b000
-        }
-        else if (s == 1)
-        {
-            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 1; // 1 edge: 0b001
-            if (e1)
-            {
-                v0r = v1;
-                v1r = v2;
-                v2r = v0;
-            }
-            else if (e2)
-            {
-                v0r = v2;
-                v1r = v0;
-                v2r = v1;
-            }
-        }
-        else if (s == 2)
-        {
-            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 3; // 2 edges: 0b011
-            if (!e1)
-            {
-                v0r = v1;
-                v1r = v2;
-                v2r = v0;
-            }
-            else if (!e2)
-            {
-                v0r = v2;
-                v1r = v0;
-                v2r = v1;
-            }
-        }
-        else
-        {
-            edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
-        }
+        // int s = e0 + e1 + e2;
+        // if (s == 0)
+        // {
+        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 0; // 0 edge: 0b000
+        // }
+        // else if (s == 1)
+        // {
+        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 1; // 1 edge: 0b001
+        //     if (e1)
+        //     {
+        //         v0r = v1;
+        //         v1r = v2;
+        //         v2r = v0;
+        //     }
+        //     else if (e2)
+        //     {
+        //         v0r = v2;
+        //         v1r = v0;
+        //         v2r = v1;
+        //     }
+        // }
+        // else if (s == 2)
+        // {
+        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 3; // 2 edges: 0b011
+        //     if (!e1)
+        //     {
+        //         v0r = v1;
+        //         v1r = v2;
+        //         v2r = v0;
+        //     }
+        //     else if (!e2)
+        //     {
+        //         v0r = v2;
+        //         v1r = v0;
+        //         v2r = v1;
+        //     }
+        // }
+        // else
+        // {
+        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
+        // }
 
         // DEBUG
         // edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
@@ -253,7 +285,9 @@ void dvz_shape_unindex(DvzShape* shape)
     }
     FREE(shape->pos);
     shape->pos = pos;
-    shape->edge = edge;
+    shape->d_left = d_left;
+    shape->d_right = d_right;
+    shape->contour = contour;
 
     if (shape->color != NULL)
     {

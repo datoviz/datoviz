@@ -38,10 +38,12 @@ typedef struct DvzShape DvzShape;
 struct DvzMeshColorVertex
 {
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-    vec3 pos;     /* position */
-    vec3 normal;  /* normal vector */
-    cvec4 color;  /* color */
-    uint8_t edge; /* last 3 bits indicate presence of each triangle edge contour */
+    vec3 pos;      /* position */
+    vec3 normal;   /* normal vector */
+    cvec4 color;   /* color rgba */
+    vec3 d_left;   /* distance of the current vertex between the left edge and point A, B, C */
+    vec3 d_right;  /* distance of the current vertex between the right edge and point A, B, C */
+    cvec3 contour; /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
 };
 
 struct DvzMeshTexturedVertex
@@ -50,7 +52,9 @@ struct DvzMeshTexturedVertex
     vec3 pos;       /* position */
     vec3 normal;    /* normal vector */
     vec4 texcoords; /* u, v, *, a */
-    uint8_t edge;   /* last 3 bits indicate presence of each triangle edge contour */
+    vec3 d_left;    /* distance of the current vertex between the left edge and point A, B, C */
+    vec3 d_right;   /* distance of the current vertex between the right edge and point A, B, C */
+    cvec3 contour;  /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
 };
 
 

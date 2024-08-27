@@ -2095,16 +2095,47 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 /**
- * Set the mesh vertex edge for wireframe contour.
+ * Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
+ * ABC.
  *
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param values the edge numbers (last 3 bits of each byte indicate presence of each edge)
+ * @param values the distance to the left edge adjacent to each triangle vertex
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_mesh_edge(DvzVisual* visual, uint32_t first, uint32_t count, uint8_t* values, int flags);
+dvz_mesh_left(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the distance between the current vertex to the right edge at corner A, B, or C in triangle
+ * ABC.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the distance to the right edge adjacent to each triangle vertex
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the contour information for polygon contours.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+ * contour, and the second least significant bit is 1 if the corner is a contour
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec3* values, int flags);
 
 
 
