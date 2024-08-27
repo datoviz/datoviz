@@ -191,19 +191,39 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
     vec3 d_left[3] = {0};
     vec3 d_right[3] = {0};
+
     d_left[0][0] = 0;
     d_left[1][0] = (P1[0] - P0[0]) * u[1] - (P1[1] - P0[1]) * u[0];
     d_left[2][0] = (P2[0] - P0[0]) * u[1] - (P2[1] - P0[1]) * u[0];
+
+    d_left[0][1] = .75;
+    d_left[1][1] = 0;
+    d_left[2][1] = 1.5;
+
+    d_left[0][2] = 1.5;
+    d_left[1][2] = 0;
+    d_left[2][2] = 0;
 
     d_right[0][0] = 0;
     d_right[1][0] = (P1[0] - P0[0]) * v[1] - (P1[1] - P0[1]) * v[0];
     d_right[2][0] = (P2[0] - P0[0]) * v[1] - (P2[1] - P0[1]) * v[0];
 
+    d_right[0][1] = 1.5;
+    d_right[1][1] = 0;
+    d_right[2][1] = 0;
+
+    d_right[0][2] = .75;
+    d_right[1][2] = 1.5;
+    d_right[2][2] = 0;
+
+    dvz_mesh_left(visual, 3, 3, (void*)d_left, 0);
+    dvz_mesh_right(visual, 3, 3, (void*)d_right, 0);
+
     // NOTE: orientation
     cvec3 contour[] = {
-        {3, 0, 0},
-        {3, 0, 0},
-        {3, 0, 0},
+        {3, 2, 2},
+        {3, 2, 2},
+        {3, 2, 2},
     };
     if (glm_vec2_cross(u, v) < 0)
     {
@@ -212,9 +232,6 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
         contour[2][0] |= 4;
     }
     dvz_mesh_contour(visual, 3, 3, (void*)contour, 0);
-
-    dvz_mesh_left(visual, 3, 3, (void*)d_left, 0);
-    dvz_mesh_right(visual, 3, 3, (void*)d_right, 0);
 }
 
 static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
@@ -265,9 +282,18 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Contour information.
     cvec3 contour[] = {
-        {0, 1, 1}, {0, 1, 1}, {0, 1, 1}, //
-        {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, //
-        {1, 1, 0}, {1, 1, 0}, {1, 1, 0},
+        {0, 1, 1}, // Q0
+        {0, 1, 1}, // P1
+        {0, 1, 1}, // P0
+
+        // NOTE: will be overriden by the GUI
+        {0, 0, 0}, // P0
+        {0, 0, 0}, // P1
+        {0, 0, 0}, // P2
+
+        {1, 1, 0}, // P0
+        {1, 1, 0}, // P2
+        {1, 1, 0}, // R0
     };
     dvz_mesh_contour(visual, 0, COUNT, (void*)contour, 0);
 

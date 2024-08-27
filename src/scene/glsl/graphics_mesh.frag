@@ -18,7 +18,7 @@ layout(location = 0) out vec4 out_color;
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 // Vertex corner between the left and right edge.
-float one_corner(float d_left, float d_right, float linewidth, int orient)
+float one_corner(float d_left, float d_right, int orient, float linewidth)
 {
     float scale = linewidth * 0.5;
     vec2 d = vec2(d_left, d_right);
@@ -36,11 +36,11 @@ float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
 
     float res = 1;
     if (corner.x > 0)
-        res = min(res, one_corner(d_left.x, d_right.x, linewidth, orient.x));
+        res = min(res, one_corner(d_left.x, d_right.x, orient.x, linewidth));
     if (corner.y > 0)
-        res = min(res, one_corner(d_left.y, d_right.y, linewidth, orient.y));
+        res = min(res, one_corner(d_left.y, d_right.y, orient.y, linewidth));
     if (corner.z > 0)
-        res = min(res, one_corner(d_left.z, d_right.z, linewidth, orient.z));
+        res = min(res, one_corner(d_left.z, d_right.z, orient.z, linewidth));
     return res;
 }
 
