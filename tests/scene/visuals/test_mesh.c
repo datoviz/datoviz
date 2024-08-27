@@ -141,13 +141,53 @@ int test_mesh_polygon(TstSuite* suite)
 //     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
 // }
 
+#define POS(x)                                                                                    \
+    {                                                                                             \
+        x[0], x[1], x[2]                                                                          \
+    }
+
+#define COUNT (3 * 3)
+
+#define R                                                                                         \
+    {                                                                                             \
+        255, 0, 0, 255                                                                            \
+    }
+#define G                                                                                         \
+    {                                                                                             \
+        0, 255, 0, 255                                                                            \
+    }
+#define B                                                                                         \
+    {                                                                                             \
+        0, 0, 255, 255                                                                            \
+    }
+
 static inline void _update_angle(DvzVisual* visual, vec2 angle)
 {
-    vec3 P0 = {0, +1, 0};
-    vec3 P1 = {+1, -1, 0};
-    vec3 P2 = {-1, -1, 0};
-    vec2 u = {cos(angle[0]), sin(angle[0])};
-    vec2 v = {cos(angle[1]), sin(angle[1])};
+    // vec2 u = {cos(angle[0]), sin(angle[0])};
+    // vec2 v = {cos(angle[1]), sin(angle[1])};
+    float a = angle[0];
+    float b = angle[1];
+    vec3 P0 = {0, +.5, 0};
+    vec3 P1 = {-.75, -.75, 0};
+    vec3 P2 = {+.75, -.75, 0};
+    vec3 Q0 = {-.75, a, 0};
+    vec3 R0 = {+.75, b, 0};
+
+    vec3 position[] = {
+        POS(Q0), POS(P1), POS(P0), //
+        POS(P0), POS(P1), POS(P2), //
+        POS(P0), POS(P2), POS(R0), //
+    };
+    dvz_mesh_position(visual, 0, COUNT, position, 0);
+
+    // Direction vectors.
+    vec2 u, v;
+    u[0] = P0[0] - Q0[0];
+    u[1] = P0[1] - Q0[1];
+    glm_vec2_normalize(u);
+    v[0] = R0[0] - P0[0];
+    v[1] = R0[1] - P0[1];
+    glm_vec2_normalize(v);
 
     // NOTE: distance from P to Au is dot(AP, u_ortho)
     // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
@@ -162,14 +202,14 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     d_right[2][0] = (P2[0] - P0[0]) * v[1] - (P2[1] - P0[1]) * v[0];
 
     // NOTE: orientation:
-    if (angle[0] < angle[1])
+    if (glm_vec2_cross(u, v) < 0)
     {
         d_left[1][0] *= -1;
         d_left[2][0] *= -1;
     }
 
-    dvz_mesh_left(visual, 0, 3, (void*)d_left, 0);
-    dvz_mesh_right(visual, 0, 3, (void*)d_right, 0);
+    dvz_mesh_left(visual, 3, 3, (void*)d_left, 0);
+    dvz_mesh_right(visual, 3, 3, (void*)d_right, 0);
 }
 
 static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
@@ -181,10 +221,10 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
     ANN(angle);
 
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
-    dvz_gui_size((vec2){200, 300});
+    dvz_gui_size((vec2){200, 0});
     dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
-    bool u_changed = dvz_gui_slider("u", -M_PI, +M_PI, &angle[0]);
-    bool v_changed = dvz_gui_slider("v", -M_PI, +M_PI, &angle[1]);
+    bool u_changed = dvz_gui_slider("u", -.75, +5.0, &angle[0]);
+    bool v_changed = dvz_gui_slider("v", -.75, +5.0, &angle[1]);
     dvz_gui_end();
 
     if (u_changed || v_changed)
@@ -199,35 +239,32 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, 0);
-    uint32_t count = 3;
-    dvz_mesh_alloc(visual, count, 0);
+    dvz_mesh_alloc(visual, COUNT, 0);
 
     // Mesh position.
-    vec3 P0 = {0, +1, 0};
-    vec3 P1 = {-1, -1, 0};
-    vec3 P2 = {+1, -1, 0};
-    vec3 position[3] = {
-        {P0[0], P0[1], P0[2]}, //
-        {P1[0], P1[1], P1[2]}, //
-        {P2[0], P2[1], P2[2]}, //
+    vec3 P0 = {0, +.5, 0};
+    vec3 P1 = {-.75, -.75, 0};
+    vec3 P2 = {+.75, -.75, 0};
+    vec3 Q0 = {-.75, +.75, 0};
+    vec3 R0 = {+.75, +.75, 0};
+    vec3 position[] = {
+        POS(Q0), POS(P1), POS(P0), //
+        POS(P0), POS(P1), POS(P2), //
+        POS(P0), POS(P2), POS(R0), //
     };
-    dvz_mesh_position(visual, 0, count, position, 0);
+    dvz_mesh_position(visual, 0, COUNT, position, 0);
 
     // Mesh color.
-    cvec4 color[3] = {
-        {255, 0, 0, 255},
-        {0, 255, 0, 255},
-        {0, 0, 255, 255},
-    };
-    dvz_mesh_color(visual, 0, count, color, 0);
+    cvec4 color[] = {B, B, B, R, G, B, R, R, R};
+    dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Contour information.
-    cvec3 contour[3] = {
-        {3, 0, 0},
-        {3, 0, 0},
-        {3, 0, 0},
+    cvec3 contour[] = {
+        {0, 1, 1}, {0, 1, 1}, {0, 1, 1}, //
+        {3, 0, 0}, {3, 0, 0}, {3, 0, 0}, //
+        {1, 1, 0}, {1, 1, 0}, {1, 1, 0},
     };
-    dvz_visual_data(visual, 5, 0, count, (void*)contour);
+    dvz_mesh_contour(visual, 0, COUNT, (void*)contour, 0);
 
     // Stroke.
     dvz_mesh_stroke(visual, (vec4){1, 1, 1, 100.0});
@@ -237,7 +274,7 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Angle GUI.
     vt.visual = visual;
-    float angle[2] = {0.8, -0.8};
+    float angle[2] = {0.75, 0.75};
     _update_angle(visual, angle);
     vt.user_data = &angle[0];
     dvz_app_gui(vt.app, vt.figure->canvas_id, _stroke_callback, &vt);
