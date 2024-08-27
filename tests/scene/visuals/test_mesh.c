@@ -163,8 +163,6 @@ int test_mesh_polygon(TstSuite* suite)
 
 static inline void _update_angle(DvzVisual* visual, vec2 angle)
 {
-    // vec2 u = {cos(angle[0]), sin(angle[0])};
-    // vec2 v = {cos(angle[1]), sin(angle[1])};
     float a = angle[0];
     float b = angle[1];
     vec3 P0 = {0, +.5, 0};
@@ -201,12 +199,19 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     d_right[1][0] = (P1[0] - P0[0]) * v[1] - (P1[1] - P0[1]) * v[0];
     d_right[2][0] = (P2[0] - P0[0]) * v[1] - (P2[1] - P0[1]) * v[0];
 
-    // NOTE: orientation:
+    // NOTE: orientation
+    cvec3 contour[] = {
+        {3, 0, 0},
+        {3, 0, 0},
+        {3, 0, 0},
+    };
     if (glm_vec2_cross(u, v) < 0)
     {
-        d_left[1][0] *= -1;
-        d_left[2][0] *= -1;
+        contour[0][0] |= 4;
+        contour[1][0] |= 4;
+        contour[2][0] |= 4;
     }
+    dvz_mesh_contour(visual, 3, 3, (void*)contour, 0);
 
     dvz_mesh_left(visual, 3, 3, (void*)d_left, 0);
     dvz_mesh_right(visual, 3, 3, (void*)d_right, 0);

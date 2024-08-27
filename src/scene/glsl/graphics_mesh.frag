@@ -18,32 +18,29 @@ layout(location = 0) out vec4 out_color;
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 // Vertex corner between the left and right edge.
-float one_corner(float d_left, float d_right, float linewidth)
+float one_corner(float d_left, float d_right, float linewidth, int orient)
 {
     float scale = linewidth * 0.5;
-    vec2 d = abs(vec2(d_left, d_right));
-    vec2 deltas = fwidth(d);  // rate of change of the distances
-    float a = d.x / deltas.x; // normalized distance to left edge
-    float b = d.y / deltas.y; // normalized distance to right edge
-    // NOTE: the sign of d_left/right indicates the orientation.
-    float in_orient = d_left > 0 ? 0 : 1;
-    float c = in_orient > 0 ? min(a, b) : max(a, b); // take min or max of the distance
-    return smoothstep(scale, scale + 1, c);          // 0 on contour, 1 inside the polygon
+    vec2 d = vec2(d_left, d_right);
+    vec2 deltas = fwidth(d);                      // rate of change of the distances
+    float a = d.x / deltas.x;                     // normalized distance to left edge
+    float b = d.y / deltas.y;                     // normalized distance to right edge
+    float c = orient > 0 ? min(a, b) : max(a, b); // take min or max of the distance
+    return smoothstep(scale, scale + 1, c);       // 0 on contour, 1 inside the polygon
 }
 
 float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
 {
-    bool corner_x = ((contour.x >> 1) & 1) > 0;
-    bool corner_y = ((contour.y >> 1) & 1) > 0;
-    bool corner_z = ((contour.z >> 1) & 1) > 0;
+    ivec3 corner = ((contour >> 1) & 1);
+    ivec3 orient = ((contour >> 2) & 1);
 
     float res = 1;
-    if (corner_x)
-        res = min(res, one_corner(d_left.x, d_right.x, linewidth));
-    if (corner_y)
-        res = min(res, one_corner(d_left.y, d_right.y, linewidth));
-    if (corner_z)
-        res = min(res, one_corner(d_left.z, d_right.z, linewidth));
+    if (corner.x > 0)
+        res = min(res, one_corner(d_left.x, d_right.x, linewidth, orient.x));
+    if (corner.y > 0)
+        res = min(res, one_corner(d_left.y, d_right.y, linewidth, orient.y));
+    if (corner.z > 0)
+        res = min(res, one_corner(d_left.z, d_right.z, linewidth, orient.z));
     return res;
 }
 
