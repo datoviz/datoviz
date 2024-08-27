@@ -464,8 +464,10 @@ void dvz_baker_quads(
 
 void dvz_baker_unindex(DvzBaker* baker)
 {
-    // NOTE: this function is still mostly untested and probably doesn't work right now.
+    // NOTE: OBSOLETE FUNCTION TO DELETE?
+    // This function is still mostly untested and probably doesn't work right now.
     // It might not be very useful now that there is dvz_shape_unindex().
+    // Can probably be deleted.
 
     ANN(baker);
 

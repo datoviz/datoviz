@@ -417,6 +417,15 @@ typedef enum
 
 
 
+// Contour flags.
+typedef enum
+{
+    DVZ_CONTOUR_ALL = 0x00,      // when unindexing a shape, all triangles have a contour
+    DVZ_CONTOUR_ADJACENT = 0x01, // only adjacent vertices have a contour
+} DvzContourFlags;
+
+
+
 // Mesh flags.
 // NOTE: these flags are also passed as VisualFlags and then BakerFlags
 typedef enum

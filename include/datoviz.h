@@ -675,8 +675,9 @@ DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
  * coordinates depending on its index.
  *
  * @param shape the shape
+ * @param flags the flags
  */
-DVZ_EXPORT void dvz_shape_unindex(DvzShape* shape);
+DVZ_EXPORT void dvz_shape_unindex(DvzShape* shape, int flags);
 
 
 

@@ -109,7 +109,7 @@ void dvz_shape_print(DvzShape* shape)
     x[3 * i + (idx)][2] = shape->x[y][2];                                                         \
     x[3 * i + (idx)][3] = shape->x[y][3];
 
-void dvz_shape_unindex(DvzShape* shape)
+void dvz_shape_unindex(DvzShape* shape, int flags)
 {
     ANN(shape);
 
@@ -161,32 +161,41 @@ void dvz_shape_unindex(DvzShape* shape)
     d_left = (vec3*)calloc(index_count, sizeof(vec3));
     d_right = (vec3*)calloc(index_count, sizeof(vec3));
     contour = (cvec3*)calloc(index_count, sizeof(cvec3));
+    int32_t v0, v1, v2;
+    int32_t v0r, v1r, v2r;
+
+    // By default, contour on all triangles.
+    bool e0 = true, e1 = true, e2 = true;
 
     DvzIndex vertex_idx = 0;
     for (uint32_t i = 0; i < face_count; i++)
     {
-        int32_t v0 = (int32_t)shape->index[3 * i + 0];
-        int32_t v1 = (int32_t)shape->index[3 * i + 1];
-        int32_t v2 = (int32_t)shape->index[3 * i + 2];
+        v0 = (int32_t)shape->index[3 * i + 0];
+        v1 = (int32_t)shape->index[3 * i + 1];
+        v2 = (int32_t)shape->index[3 * i + 2];
         ASSERT(v2 < vertex_count);
-
-        // Whether there should be an edge on the other side of the v0 vertex.
-        bool e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
-                  ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
-        // Whether there should be an edge on the other side of the v1 vertex.
-        bool e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
-                  ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
-        // Whether there should be an edge on the other side of the v2 vertex.
-        bool e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
-                  ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
 
         // Reordering of vertices within each triangle to ensure that, if there are only 1 or 2
         // contour edges in the triangle, the first vertex of the 3 triangle vertices is always the
         // one that is different from the two others. This ensures that we don't need to check for
         // all of the permutations in the fragment shader, which would hurt performance.
-        int32_t v0r = v0;
-        int32_t v1r = v1;
-        int32_t v2r = v2;
+        v0r = v0;
+        v1r = v1;
+        v2r = v2;
+
+        // Flag to set the contour only on adjacent vertices.
+        if ((flags & DVZ_CONTOUR_ADJACENT) > 0)
+        {
+            // Whether there should be an edge on the other side of the v0 vertex.
+            e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
+                 ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
+            // Whether there should be an edge on the other side of the v1 vertex.
+            e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
+                 ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
+            // Whether there should be an edge on the other side of the v2 vertex.
+            e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
+                 ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
+        }
 
         if (e0)
         {

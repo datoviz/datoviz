@@ -89,25 +89,25 @@ int test_mesh_polygon(TstSuite* suite)
     // Polygon.
     uint32_t n = 6;
     dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
-    double r = .5;
+    double r = .75;
     for (uint32_t i = 0; i < n; i++)
     {
         points[i][0] = r * cos(i * M_2PI / n);
         points[i][1] = r * sin(i * M_2PI / n) * WIDTH / (float)HEIGHT;
     }
     cvec4 color = {255, 128, 0, 255};
-    DvzShape shape = dvz_shape_polygon(n, points, color);
+    DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
     // Make the shape a non-indexed shape so that each vertex gets its own barycentric coordinates.
-    dvz_shape_unindex(&shape);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_ADJACENT);
 
     // Create the visual.
     int flags = 0;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 100.0});
+    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 50.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -292,7 +292,7 @@ int test_mesh_surface(TstSuite* suite)
 
     // Create the surface shape.
     DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
-    dvz_shape_unindex(&shape);
+    dvz_shape_unindex(&shape, 0);
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
@@ -335,7 +335,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 300});
     dvz_gui_begin("Wireframe", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
-    bool width_changed = dvz_gui_slider("Width", 0, 5.0, &stroke[0][3]);
+    bool width_changed = dvz_gui_slider("Width", 0, 10.0, &stroke[0][3]);
     bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
     dvz_gui_end();
 
@@ -360,7 +360,7 @@ int test_mesh_obj(TstSuite* suite)
     // dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
-    dvz_shape_unindex(&shape);
+    dvz_shape_unindex(&shape, 0);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
