@@ -216,13 +216,13 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         glm_vec3_copy(shape->pos[v1r], face[1]);
         glm_vec3_copy(shape->pos[v2r], face[2]);
 
-        glm_vec3_copy(left[v0r], face_left[0]);
-        glm_vec3_copy(left[v1r], face_left[1]);
-        glm_vec3_copy(left[v2r], face_left[2]);
+        glm_vec2_copy(left[v0r], face_left[0]);
+        glm_vec2_copy(left[v1r], face_left[1]);
+        glm_vec2_copy(left[v2r], face_left[2]);
 
-        glm_vec3_copy(right[v0r], face_right[0]);
-        glm_vec3_copy(right[v1r], face_right[1]);
-        glm_vec3_copy(right[v2r], face_right[2]);
+        glm_vec2_copy(right[v0r], face_right[0]);
+        glm_vec2_copy(right[v1r], face_right[1]);
+        glm_vec2_copy(right[v2r], face_right[2]);
 
         // Set edge bit mask on all vertices.
         if ((flags & DVZ_CONTOUR_EDGES) > 0)
