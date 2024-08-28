@@ -17,6 +17,11 @@ layout(location = 0) out vec4 out_color;
 
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
+// Replacement for fwidth, using L2 norm of gradient instead of L1 norm.
+float fwidth2(float p) { return sqrt(pow(abs(dFdx(p)), 2) + pow(abs(dFdy(p)), 2)); }
+vec2 fwidth2(vec2 p) { return sqrt(pow(abs(dFdx(p)), vec2(2)) + pow(abs(dFdy(p)), vec2(2))); }
+vec3 fwidth2(vec3 p) { return sqrt(pow(abs(dFdx(p)), vec3(2)) + pow(abs(dFdy(p)), vec3(2))); }
+
 // Vertex corner between the left and right edge.
 float one_corner(float d_left, float d_right, int orient, float linewidth)
 {
