@@ -304,7 +304,7 @@ int test_mesh_stroke(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    DvzCamera* camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
+    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
     DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
     dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
     dvz_transform_update(vt.panel->transform);
