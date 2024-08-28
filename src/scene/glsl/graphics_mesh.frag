@@ -27,7 +27,7 @@ float one_corner(float d_left, float d_right, int orient, float linewidth)
 {
     float scale = linewidth * 0.5;
     vec2 d = vec2(d_left, d_right);
-    vec2 deltas = fwidth(d);                      // rate of change of the distances
+    vec2 deltas = fwidth2(d);                     // rate of change of the distances
     float a = d.x / deltas.x;                     // normalized distance to left edge
     float b = d.y / deltas.y;                     // normalized distance to right edge
     float c = orient > 0 ? min(a, b) : max(a, b); // take min or max of the distance
@@ -55,7 +55,7 @@ float edge(vec3 barycentric, ivec3 contour, float linewidth)
     // easy-wireframe-display-with-barycentric-coordinates/
     // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
 
-    vec3 deltas = fwidth(barycentric);
+    vec3 deltas = fwidth2(barycentric);
     float scale = linewidth * 0.5;
     vec3 a = deltas * scale;
     vec3 b = deltas * (scale + 1);
