@@ -235,18 +235,18 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
 
     // NOTE: orientation
     cvec3 contour[] = {
-        {0, 2, 3}, // Q0
-        {0, 2, 3}, // P1
-        {0, 2, 3}, // P0
+        {0, 2, 2}, // Q0
+        {0, 2, 2}, // P1
+        {0, 2, 2}, // P0
 
         // NOTE: will be overriden by the GUI
         {2, 2, 2}, // P0
         {2, 2, 2}, // P1
         {2, 2, 2}, // P2
 
-        {3, 2, 0}, // P0
-        {3, 2, 0}, // P2
-        {3, 2, 0}, // R0
+        {2, 2, 0}, // P0
+        {2, 2, 0}, // P2
+        {2, 2, 0}, // R0
     };
     if (glm_vec2_cross(u, v) < 0)
     {
