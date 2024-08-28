@@ -429,8 +429,9 @@ typedef enum
 // Contour flags.
 typedef enum
 {
-    DVZ_CONTOUR_ALL = 0x00,      // when unindexing a shape, all triangles have a contour
-    DVZ_CONTOUR_ADJACENT = 0x01, // only adjacent vertices have a contour
+    DVZ_CONTOUR_NONE = 0x00,   // no contours
+    DVZ_CONTOUR_EDGES = 0x01,  // set edge on all vertices
+    DVZ_CONTOUR_JOINTS = 0x02, // set corners on some vertices
 } DvzContourFlags;
 
 

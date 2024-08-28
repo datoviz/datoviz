@@ -109,6 +109,18 @@ void dvz_shape_print(DvzShape* shape)
     x[3 * i + (idx)][2] = shape->x[y][2];                                                         \
     x[3 * i + (idx)][3] = shape->x[y][3];
 
+static inline void direction_vector(vec3 a, vec3 b, vec2 u)
+{
+    u[0] = b[0] - a[0];
+    u[1] = b[1] - a[1];
+    glm_vec2_normalize(u);
+}
+
+static inline float line_distance(vec3 p, vec3 q, vec2 u)
+{
+    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+}
+
 void dvz_shape_unindex(DvzShape* shape, int flags)
 {
     ANN(shape);
@@ -164,9 +176,30 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     int32_t v0, v1, v2;
     int32_t v0r, v1r, v2r;
 
-    // By default, contour on all triangles.
-    bool e0 = true, e1 = true, e2 = true;
+    vec2* left = (vec2*)calloc((uint32_t)vertex_count, sizeof(vec2));
+    vec2* right = (vec2*)calloc((uint32_t)vertex_count, sizeof(vec2));
 
+    // Compute direction vectors of contours.
+    // NOTE: assume clockwise orientation of the polygon contour.
+    int32_t im, iM;
+    for (int32_t i = 0; i < vertex_count; i++)
+    {
+        im = i > 0 ? i - 1 : i - 1 + vertex_count;
+        iM = (i + 1) % vertex_count;
+
+        // d_left[i] = P[i] - P[i-1] (2D)
+        direction_vector(shape->pos[im], shape->pos[i], left[i]);
+
+        // d_right[i] = P[i+1] - P[i] (2D)
+        direction_vector(shape->pos[i], shape->pos[iM], right[i]);
+    }
+
+    // By default, contour on all triangles.
+    bool e0 = false, e1 = false, e2 = false;
+
+    vec3 face[3] = {0};
+    vec2 face_left[3] = {0};
+    vec2 face_right[3] = {0};
     DvzIndex vertex_idx = 0;
     for (uint32_t i = 0; i < face_count; i++)
     {
@@ -175,16 +208,32 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         v2 = (int32_t)shape->index[3 * i + 2];
         ASSERT(v2 < vertex_count);
 
-        // Reordering of vertices within each triangle to ensure that, if there are only 1 or 2
-        // contour edges in the triangle, the first vertex of the 3 triangle vertices is always the
-        // one that is different from the two others. This ensures that we don't need to check for
-        // all of the permutations in the fragment shader, which would hurt performance.
         v0r = v0;
         v1r = v1;
         v2r = v2;
 
-        // Flag to set the contour only on adjacent vertices.
-        if ((flags & DVZ_CONTOUR_ADJACENT) > 0)
+        glm_vec3_copy(shape->pos[v0r], face[0]);
+        glm_vec3_copy(shape->pos[v1r], face[1]);
+        glm_vec3_copy(shape->pos[v2r], face[2]);
+
+        glm_vec3_copy(left[v0r], face_left[0]);
+        glm_vec3_copy(left[v1r], face_left[1]);
+        glm_vec3_copy(left[v2r], face_left[2]);
+
+        glm_vec3_copy(right[v0r], face_right[0]);
+        glm_vec3_copy(right[v1r], face_right[1]);
+        glm_vec3_copy(right[v2r], face_right[2]);
+
+        // Set edge bit mask on all vertices.
+        if ((flags & DVZ_CONTOUR_EDGES) > 0)
+        {
+            for (uint8_t k = 0; k < 3; k++)
+                for (uint8_t l = 0; l < 3; l++)
+                    contour[3 * i + k][l] |= 1;
+        }
+
+        // Set corner and edge bit mask depending on topology.
+        else if ((flags & DVZ_CONTOUR_JOINTS) > 0)
         {
             // Whether there should be an edge on the other side of the v0 vertex.
             e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
@@ -195,76 +244,67 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             // Whether there should be an edge on the other side of the v2 vertex.
             e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
                  ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
-        }
 
-        if (e0)
-        {
-            contour[3 * i + 0][0] |= 1;
-            contour[3 * i + 1][0] |= 1;
-            contour[3 * i + 2][0] |= 1;
-        }
-        if (e1)
-        {
-            contour[3 * i + 0][1] |= 1;
-            contour[3 * i + 1][1] |= 1;
-            contour[3 * i + 2][1] |= 1;
-        }
-        if (e2)
-        {
-            contour[3 * i + 0][2] |= 1;
-            contour[3 * i + 1][2] |= 1;
-            contour[3 * i + 2][2] |= 1;
-        }
+            // Compute d_left and d_right.
+            for (uint8_t k = 0; k < 3; k++)
+                for (uint8_t l = 0; l < 3; l++)
+                {
+                    d_left[3 * i + k][l] = line_distance(face[l], face[k], left[l]);
+                }
 
-        // TODO: compute corner (second LSB) and d_left and d_right
+            // if 3 edges, set contour=1 on the 3 vertices
+            if (e0 && e1 && e2)
+            {
+                for (uint8_t k = 0; k < 3; k++)
+                    for (uint8_t l = 0; l < 3; l++)
+                        contour[3 * i + k][l] |= 1;
+            }
 
-        // Vertex reordering in cases where there are 1 or 2 edges to draw contour for (instead of
-        // 0 or 3).
-        // int s = e0 + e1 + e2;
-        // if (s == 0)
-        // {
-        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 0; // 0 edge: 0b000
-        // }
-        // else if (s == 1)
-        // {
-        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 1; // 1 edge: 0b001
-        //     if (e1)
-        //     {
-        //         v0r = v1;
-        //         v1r = v2;
-        //         v2r = v0;
-        //     }
-        //     else if (e2)
-        //     {
-        //         v0r = v2;
-        //         v1r = v0;
-        //         v2r = v1;
-        //     }
-        // }
-        // else if (s == 2)
-        // {
-        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 3; // 2 edges: 0b011
-        //     if (!e1)
-        //     {
-        //         v0r = v1;
-        //         v1r = v2;
-        //         v2r = v0;
-        //     }
-        //     else if (!e2)
-        //     {
-        //         v0r = v2;
-        //         v1r = v0;
-        //         v2r = v1;
-        //     }
-        // }
-        // else
-        // {
-        //     edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
-        // }
+            // 2 edges, the two opposite ends are corners
+            else if (e1 && e2)
+            {
+                for (uint8_t k = 0; k < 3; k++)
+                {
+                    contour[3 * i + k][1] |= 2;
+                    contour[3 * i + k][2] |= 2;
+                }
+            }
+            else if (e0 && e2)
+            {
+                for (uint8_t k = 0; k < 3; k++)
+                {
+                    contour[3 * i + k][0] |= 2;
+                    contour[3 * i + k][2] |= 2;
+                }
+            }
+            else if (e0 && e1)
+            {
+                for (uint8_t k = 0; k < 3; k++)
+                {
+                    contour[3 * i + k][0] |= 2;
+                    contour[3 * i + k][1] |= 2;
+                }
+            }
 
-        // DEBUG
-        // edge[3 * i + 0] = edge[3 * i + 1] = edge[3 * i + 2] = 7; // 3 edges: 0b111
-        // log_info("triangle %d, edge %d", i, edge[3 * i + 0]);
+            // 1 or 0 edge: all corners
+            else
+            {
+                for (uint8_t k = 0; k < 3; k++)
+                    for (uint8_t l = 0; l < 3; l++)
+                        contour[3 * i + k][l] |= 2;
+            }
+
+            // Orientation.
+            //     if left[i_k] ^ right[i_k] < 0, then |4 for [k] on the 3 vertices
+            for (uint8_t k = 0; k < 3; k++)
+            {
+                if (glm_vec2_cross(face_left[k], face_right[k]) < 0)
+                {
+                    for (uint8_t l = 0; l < 3; l++)
+                        contour[l][k] |= 4;
+                }
+            }
+        }
 
         // Now we copy the unindexed pos, color, normal, texcoords values.
         COPY_VEC3(pos, 0, v0r)
@@ -318,6 +358,9 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
     shape->vertex_count = index_count;
     shape->index_count = 0;
+
+    FREE(left);
+    FREE(right);
 
     // NOTE: we keep shape->index around although we disable indexed rendering with index_count=0.
     // This is why this is commented.

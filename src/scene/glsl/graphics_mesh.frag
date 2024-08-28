@@ -179,6 +179,6 @@ void main()
         out_color.rgb = mix(stroke, out_color.rgb, min(e, c));
 
         // Tentative antialias.
-        out_color.a = smoothstep(0, 1.25, alpha);
+        // out_color.a = smoothstep(0, 1.25, alpha);
     }
 }
