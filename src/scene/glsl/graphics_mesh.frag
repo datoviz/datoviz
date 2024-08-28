@@ -25,7 +25,7 @@ vec3 fwidth2(vec3 p) { return sqrt(pow(abs(dFdx(p)), vec3(2)) + pow(abs(dFdy(p))
 // Vertex corner between the left and right edge.
 float one_corner(float d_left, float d_right, int orient, float linewidth)
 {
-    float scale = linewidth * 0.5;
+    float scale = linewidth;
     vec2 d = vec2(d_left, d_right);
     vec2 deltas = fwidth2(d);                     // rate of change of the distances
     float a = d.x / deltas.x;                     // normalized distance to left edge
@@ -40,23 +40,30 @@ float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
     ivec3 orient = ((contour >> 2) & 1);
 
     float res = 1;
+
     if (corner.x > 0)
+    {
         res = min(res, one_corner(d_left.x, d_right.x, orient.x, linewidth));
+    }
     if (corner.y > 0)
+    {
         res = min(res, one_corner(d_left.y, d_right.y, orient.y, linewidth));
+    }
     if (corner.z > 0)
+    {
         res = min(res, one_corner(d_left.z, d_right.z, orient.z, linewidth));
+    }
     return res;
 }
 
-float edge(vec3 barycentric, ivec3 contour, float linewidth)
+vec2 edge(vec3 barycentric, ivec3 contour, float linewidth)
 {
     // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
     // easy-wireframe-display-with-barycentric-coordinates/
     // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
 
     vec3 deltas = fwidth2(barycentric);
-    float scale = linewidth * 0.5;
+    float scale = linewidth;
     vec3 a = deltas * scale;
     vec3 b = deltas * (scale + 1);
 
@@ -70,13 +77,24 @@ float edge(vec3 barycentric, ivec3 contour, float linewidth)
     bool edge_z = ((contour.z >> 0) & 1) > 0;
 
     float res = 1;
+    float alpha = 1;
+
     if (edge_x)
+    {
         res = min(res, x);
+        alpha = min(alpha, barycentric.x / deltas.x);
+    }
     if (edge_y)
+    {
         res = min(res, y);
+        alpha = min(alpha, barycentric.y / deltas.y);
+    }
     if (edge_z)
+    {
         res = min(res, z);
-    return res;
+        alpha = min(alpha, barycentric.z / deltas.z);
+    }
+    return vec2(res, alpha);
 }
 
 
@@ -154,8 +172,13 @@ void main()
     {
         float linewidth = params.stroke.a;
         vec3 stroke = params.stroke.rgb;
-        float e = edge(in_barycentric, in_contour, linewidth);
+        vec2 ea = edge(in_barycentric, in_contour, linewidth);
+        float e = ea.x;
+        float alpha = ea.y;
         float c = corner(in_d_left, in_d_right, in_contour, linewidth);
         out_color.rgb = mix(stroke, out_color.rgb, min(e, c));
+
+        // Tentative antialias.
+        out_color.a = smoothstep(0, 1.25, alpha);
     }
 }
