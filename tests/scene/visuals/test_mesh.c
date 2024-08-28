@@ -208,9 +208,9 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     vec3 d_left[9] = {
 
         // Q0-P1-P0
-        {0, dot_ortho(P1, Q0, P1, P2), 0}, // Q0
-        {0, 0, dot_ortho(P0, P1, P0, Q0)}, // P1
-        {dot_ortho(Q0, P0, Q0, P1), 0, 0}, // P0
+        {0, dot_ortho(P1, Q0, P1, P2), 0},                         // Q0
+        {0, 0, dot_ortho(P0, P1, P0, Q0)},                         // P1
+        {dot_ortho(Q0, P0, Q0, P1), dot_ortho(P1, P0, P1, P2), 0}, // P0
 
         // P0-P1-P2
         {0, dot_ortho(P1, P0, P1, P2), dot_ortho(P2, P0, P2, R0)}, // P0
@@ -247,18 +247,18 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
 
     // NOTE: orientation
     cvec3 contour[] = {
-        {0, 0, 3}, // Q0
-        {0, 0, 3}, // P1
-        {0, 0, 3}, // P0
+        {0, 2, 3}, // Q0
+        {0, 2, 3}, // P1
+        {0, 2, 3}, // P0
 
         // NOTE: will be overriden by the GUI
         {2, 2, 2}, // P0
         {2, 2, 2}, // P1
         {2, 2, 2}, // P2
 
-        {3, 0, 0}, // P0
-        {3, 0, 0}, // P2
-        {3, 0, 0}, // R0
+        {3, 2, 0}, // P0
+        {3, 2, 0}, // P2
+        {3, 2, 0}, // R0
     };
     if (glm_vec2_cross(u, v) < 0)
     {
@@ -311,7 +311,7 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 100.0});
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 50.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
