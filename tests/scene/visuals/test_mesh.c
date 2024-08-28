@@ -182,8 +182,8 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     float a = angle[0];
     float b = angle[1];
     vec3 P0 = {0, +.5, 0};
-    vec3 P1 = {-.75, -.75, 0};
-    vec3 P2 = {+.75, -.75, 0};
+    vec3 P1 = {-.75, -1, 0};
+    vec3 P2 = {+.75, -1, 0};
     vec3 Q0 = {-.75, a, 0};
     vec3 R0 = {+.75, b, 0};
 
@@ -261,8 +261,8 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 0});
     dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
-    bool u_changed = dvz_gui_slider("u", -.75, +5.0, &angle[0]);
-    bool v_changed = dvz_gui_slider("v", -.75, +5.0, &angle[1]);
+    bool u_changed = dvz_gui_slider("u", -1, +10.0, &angle[0]);
+    bool v_changed = dvz_gui_slider("v", -1, +10.0, &angle[1]);
     dvz_gui_end();
 
     if (u_changed || v_changed)
@@ -273,7 +273,7 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
 
 int test_mesh_stroke(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_PANZOOM, DVZ_CANVAS_FLAGS_IMGUI);
+    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_NONE, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, 0);
@@ -281,8 +281,8 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Mesh position.
     vec3 P0 = {0, +.5, 0};
-    vec3 P1 = {-.75, -.75, 0};
-    vec3 P2 = {+.75, -.75, 0};
+    vec3 P1 = {-.75, -1, 0};
+    vec3 P2 = {+.75, -1, 0};
     vec3 Q0 = {-.75, +.75, 0};
     vec3 R0 = {+.75, +.75, 0};
     vec3 position[] = {
@@ -318,6 +318,12 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
+
+    DvzCamera* camera = dvz_panel_camera(vt.panel);
+    dvz_camera_ortho(vt.panel->camera, 0, WIDTH, HEIGHT, 0);
+    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
+    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
+    dvz_transform_update(vt.panel->transform);
 
     // Angle GUI.
     vt.visual = visual;
