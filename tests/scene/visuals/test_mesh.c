@@ -161,6 +161,22 @@ int test_mesh_polygon(TstSuite* suite)
         0, 0, 255, 255                                                                            \
     }
 
+static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
+{
+    vec2 u = {0};
+    u[0] = b[0] - a[0];
+    u[1] = b[1] - a[1];
+    glm_vec2_normalize(u);
+    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+}
+
+static inline void dist_opposite(vec3 p0, vec3 p1, vec3 p2, vec3* d_opposite)
+{
+    d_opposite[0][0] = dot_ortho(p1, p0, p1, p2);
+    d_opposite[1][1] = dot_ortho(p2, p1, p2, p0);
+    d_opposite[2][2] = dot_ortho(p0, p2, p0, p1);
+}
+
 static inline void _update_angle(DvzVisual* visual, vec2 angle)
 {
     float a = angle[0];
