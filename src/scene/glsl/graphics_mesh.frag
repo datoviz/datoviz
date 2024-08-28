@@ -77,7 +77,7 @@ vec2 edge(vec3 barycentric, ivec3 contour, float linewidth)
     bool edge_z = ((contour.z >> 0) & 1) > 0;
 
     float res = 1;
-    float alpha = 1;
+    float alpha = 100000;
 
     if (edge_x)
     {
