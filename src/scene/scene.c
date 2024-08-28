@@ -524,7 +524,7 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel)
     // panel->transform_to_destroy = true;
 
     // Also create a perspective camera.
-    DvzCamera* camera = dvz_panel_camera(panel);
+    DvzCamera* camera = dvz_panel_camera(panel, 0);
 
     return panel->arcball;
 }
@@ -600,7 +600,7 @@ static void _camera_zoom(DvzCamera* camera, float dz)
 
 
 
-DvzCamera* dvz_panel_camera(DvzPanel* panel)
+DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags)
 {
     ANN(panel);
     ANN(panel->view);
@@ -624,7 +624,7 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
 
     // Create a camera.
     log_trace("create a new Camera instance");
-    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], 0);
+    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], flags);
     ANN(panel->camera);
 
     // Get the MVP struct of the panel, update it with the camera, and update the buffer on the

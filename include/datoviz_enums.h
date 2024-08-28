@@ -143,6 +143,15 @@ typedef enum
 
 
 
+// Camera flags.
+typedef enum
+{
+    DVZ_CAMERA_FLAGS_PERSPECTIVE = 0x00,
+    DVZ_CAMERA_FLAGS_ORTHO = 0x01,
+} DvzCameraFlags;
+
+
+
 // Visual flags.
 // NOTE: these flags are also passed to BakerFlags
 typedef enum

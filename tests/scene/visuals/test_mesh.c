@@ -141,25 +141,13 @@ int test_mesh_polygon(TstSuite* suite)
 //     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
 // }
 
-#define POS(x)                                                                                    \
-    {                                                                                             \
-        x[0], x[1], x[2]                                                                          \
-    }
+#define POS(x) {x[0], x[1], x[2]}
 
 #define COUNT (3 * 3)
 
-#define R                                                                                         \
-    {                                                                                             \
-        255, 0, 0, 255                                                                            \
-    }
-#define G                                                                                         \
-    {                                                                                             \
-        0, 255, 0, 255                                                                            \
-    }
-#define B                                                                                         \
-    {                                                                                             \
-        0, 0, 255, 255                                                                            \
-    }
+#define R {255, 0, 0, 255}
+#define G {0, 255, 0, 255}
+#define B {0, 0, 255, 255}
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
 {
@@ -316,8 +304,7 @@ int test_mesh_stroke(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    DvzCamera* camera = dvz_panel_camera(vt.panel);
-    dvz_camera_ortho(vt.panel->camera, 0, WIDTH, HEIGHT, 0);
+    DvzCamera* camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
     DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
     dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
     dvz_transform_update(vt.panel->transform);

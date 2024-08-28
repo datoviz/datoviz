@@ -119,7 +119,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
         ANN(arcball);
 
         // Perspective camera.
-        camera = dvz_panel_camera(panel);
+        camera = dvz_panel_camera(panel, 0);
 
         break;
 

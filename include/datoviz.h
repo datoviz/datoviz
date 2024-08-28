@@ -480,9 +480,10 @@ DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
  * Set a camera for a panel.
  *
  * @param panel the panel
+ * @param flags the camera flags
  * @returns the camera
  */
-DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
+DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags);
 
 
 
