@@ -184,8 +184,8 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     vec3 P0 = {0, +.5, 0};
     vec3 P1 = {-.75, -1, 0};
     vec3 P2 = {+.75, -1, 0};
-    vec3 Q0 = {-.75, a, 0};
-    vec3 R0 = {+.75, b, 0};
+    vec3 Q0 = {-.85, a, 0};
+    vec3 R0 = {+.85, b, 0};
 
     vec3 position[] = {
         POS(Q0), POS(P1), POS(P0), //
@@ -196,8 +196,8 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
 
     // Direction vectors.
     vec2 u, v;
-    u[0] = P0[0] - Q0[0];
-    u[1] = P0[1] - Q0[1];
+    u[0] = Q0[0] - P0[0];
+    u[1] = Q0[1] - P0[1];
     glm_vec2_normalize(u);
     v[0] = R0[0] - P0[0];
     v[1] = R0[1] - P0[1];
@@ -205,49 +205,76 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
 
     // NOTE: distance from P to Au is dot(AP, u_ortho)
     // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
-    vec3 d_left[3] = {0};
-    vec3 d_right[3] = {0};
+    vec3 d_left[9] = {
 
-    d_left[0][0] = 0;
-    d_left[1][0] = (P1[0] - P0[0]) * u[1] - (P1[1] - P0[1]) * u[0];
-    d_left[2][0] = (P2[0] - P0[0]) * u[1] - (P2[1] - P0[1]) * u[0];
+        // Q0-P1-P0
+        {0, dot_ortho(P1, Q0, P1, P2), 0}, // Q0
+        {0, 0, dot_ortho(P0, P1, P0, Q0)}, // P1
+        {dot_ortho(Q0, P0, Q0, P1), 0, 0}, // P0
 
-    d_left[0][1] = .75;
-    d_left[1][1] = 0;
-    d_left[2][1] = 1.5;
+        // P0-P1-P2
+        {0, dot_ortho(P1, P0, P1, P2), dot_ortho(P2, P0, P2, R0)}, // P0
+        {dot_ortho(P0, P1, P0, Q0), 0, dot_ortho(P2, P1, P2, R0)}, // P1
+        {dot_ortho(P0, P2, P0, Q0), 0, 0},                         // P2
 
-    d_left[0][2] = 1.5;
-    d_left[1][2] = 0;
-    d_left[2][2] = 0;
+        // P0-P2-R0
+        {0, dot_ortho(P2, P0, P2, R0), 0},                         // P0
+        {dot_ortho(P0, P2, P0, Q0), 0, dot_ortho(R0, P2, R0, P0)}, // P2
+        {dot_ortho(P0, R0, P0, Q0), 0, 0},                         // R0
 
-    d_right[0][0] = 0;
-    d_right[1][0] = (P1[0] - P0[0]) * v[1] - (P1[1] - P0[1]) * v[0];
-    d_right[2][0] = (P2[0] - P0[0]) * v[1] - (P2[1] - P0[1]) * v[0];
+    };
+    vec3 d_right[9] = {
 
-    d_right[0][1] = 1.5;
-    d_right[1][1] = 0;
-    d_right[2][1] = 0;
+        // Q0-P1-P0
+        {0, 0, -dot_ortho(P0, Q0, P0, R0)},                          // Q0
+        {-dot_ortho(Q0, P1, P0, Q0), 0, -dot_ortho(P0, P1, P0, R0)}, // P1
+        {0, -dot_ortho(P1, P0, P1, Q0), 0},                          // P0
 
-    d_right[0][2] = .75;
-    d_right[1][2] = 1.5;
-    d_right[2][2] = 0;
+        // P0-P1-P2
+        {0, -dot_ortho(P1, P0, P1, Q0), -dot_ortho(P2, P0, P2, P1)}, // P0
+        {-dot_ortho(P0, P1, P0, R0), 0, 0},                          // P1
+        {-dot_ortho(P0, P2, P0, R0), -dot_ortho(P1, P2, P1, Q0), 0}, // P2
 
-    dvz_mesh_left(visual, 3, 3, (void*)d_left, 0);
-    dvz_mesh_right(visual, 3, 3, (void*)d_right, 0);
+        // P0-P2-R0
+        {0, -dot_ortho(P2, P0, P2, P1), -dot_ortho(R0, P0, R0, P2)}, // P0
+        {-dot_ortho(P0, P2, P0, R0), 0, 0},                          // P2
+        {0, -dot_ortho(P2, R0, P2, P1), 0},                          // R0
+
+    };
+
+    dvz_mesh_left(visual, 0, 9, (void*)d_left, 0);
+    dvz_mesh_right(visual, 0, 9, (void*)d_right, 0);
 
     // NOTE: orientation
     cvec3 contour[] = {
-        {3, 2, 2},
-        {3, 2, 2},
-        {3, 2, 2},
+        {0, 0, 3}, // Q0
+        {0, 0, 3}, // P1
+        {0, 0, 3}, // P0
+
+        // NOTE: will be overriden by the GUI
+        {2, 2, 2}, // P0
+        {2, 2, 2}, // P1
+        {2, 2, 2}, // P2
+
+        {3, 0, 0}, // P0
+        {3, 0, 0}, // P2
+        {3, 0, 0}, // R0
     };
     if (glm_vec2_cross(u, v) < 0)
     {
-        contour[0][0] |= 4;
-        contour[1][0] |= 4;
-        contour[2][0] |= 4;
+        contour[0][2] |= 4;
+        contour[1][2] |= 4;
+        contour[2][2] |= 4;
+
+        contour[3][0] |= 4;
+        contour[4][0] |= 4;
+        contour[5][0] |= 4;
+
+        contour[6][0] |= 4;
+        contour[7][0] |= 4;
+        contour[8][0] |= 4;
     }
-    dvz_mesh_contour(visual, 3, 3, (void*)contour, 0);
+    dvz_mesh_contour(visual, 0, 9, (void*)contour, 0);
 }
 
 static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
@@ -261,8 +288,8 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 0});
     dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
-    bool u_changed = dvz_gui_slider("u", -1, +10.0, &angle[0]);
-    bool v_changed = dvz_gui_slider("v", -1, +10.0, &angle[1]);
+    bool u_changed = dvz_gui_slider("u", -1 + .01, +5.0, &angle[0]);
+    bool v_changed = dvz_gui_slider("v", -1 + .01, +5.0, &angle[1]);
     dvz_gui_end();
 
     if (u_changed || v_changed)
@@ -279,39 +306,9 @@ int test_mesh_stroke(TstSuite* suite)
     DvzVisual* visual = dvz_mesh(vt.batch, 0);
     dvz_mesh_alloc(visual, COUNT, 0);
 
-    // Mesh position.
-    vec3 P0 = {0, +.5, 0};
-    vec3 P1 = {-.75, -1, 0};
-    vec3 P2 = {+.75, -1, 0};
-    vec3 Q0 = {-.75, +.75, 0};
-    vec3 R0 = {+.75, +.75, 0};
-    vec3 position[] = {
-        POS(Q0), POS(P1), POS(P0), //
-        POS(P0), POS(P1), POS(P2), //
-        POS(P0), POS(P2), POS(R0), //
-    };
-    dvz_mesh_position(visual, 0, COUNT, position, 0);
-
     // Mesh color.
     cvec4 color[] = {B, B, B, R, G, B, R, R, R};
     dvz_mesh_color(visual, 0, COUNT, color, 0);
-
-    // Contour information.
-    cvec3 contour[] = {
-        {0, 1, 1}, // Q0
-        {0, 1, 1}, // P1
-        {0, 1, 1}, // P0
-
-        // NOTE: will be overriden by the GUI
-        {0, 0, 0}, // P0
-        {0, 0, 0}, // P1
-        {0, 0, 0}, // P2
-
-        {1, 1, 0}, // P0
-        {1, 1, 0}, // P2
-        {1, 1, 0}, // R0
-    };
-    dvz_mesh_contour(visual, 0, COUNT, (void*)contour, 0);
 
     // Stroke.
     dvz_mesh_stroke(visual, (vec4){1, 1, 1, 100.0});
