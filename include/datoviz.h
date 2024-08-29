@@ -650,12 +650,13 @@ DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
 
 
 /**
- * Merge two shapes.
+ * Merge several shapes.
  *
- * @param merged the shape to append the other shape to
- * @param to_merge the shape appended to the first shape
+ * @param count the number of shapes to merge
+ * @param shapes the shapes to merge
+ * @returns the merged shape
  */
-DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
+DVZ_EXPORT DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes);
 
 
 

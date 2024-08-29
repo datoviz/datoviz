@@ -75,11 +75,107 @@ void dvz_shape_normals(DvzShape* shape)
 
 
 
-void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge)
+DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
 {
-    ANN(merged);
-    ANN(to_merge);
-    // TODO
+    DvzShape merged_shape = {0};
+
+    glm_mat4_identity(merged_shape.transform);
+    merged_shape.first = 0;
+    merged_shape.count = 0;
+    merged_shape.type = DVZ_SHAPE_OTHER;
+
+    // Initialize vertex and index counts.
+    merged_shape.vertex_count = 0;
+    merged_shape.index_count = 0;
+
+    // Calculate total vertex and index counts.
+    bool has_normal, has_color, has_texcoords, has_d_left, has_d_right, has_contour, has_index;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        // Ensures all transformations are applied before merging the shapes.
+        dvz_shape_end(&shapes[i]);
+
+        merged_shape.vertex_count += shapes[i].vertex_count;
+        merged_shape.index_count += shapes[i].index_count;
+
+        has_normal |= shapes[i].normal != NULL;
+        has_color |= shapes[i].color != NULL;
+        has_texcoords |= shapes[i].texcoords != NULL;
+        has_d_left |= shapes[i].d_left != NULL;
+        has_d_right |= shapes[i].d_right != NULL;
+        has_contour |= shapes[i].contour != NULL;
+        has_index |= shapes[i].index != NULL;
+    }
+
+    // Allocate memory for the merged shape's data.
+    merged_shape.pos = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    if (has_normal)
+        merged_shape.normal = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    if (has_color)
+        merged_shape.color = (cvec4*)malloc(merged_shape.vertex_count * sizeof(cvec4));
+    if (has_texcoords)
+        merged_shape.texcoords = (vec4*)malloc(merged_shape.vertex_count * sizeof(vec4));
+    if (has_d_left)
+        merged_shape.d_left = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    if (has_d_right)
+        merged_shape.d_right = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    if (has_contour)
+        merged_shape.contour = (cvec3*)malloc(merged_shape.vertex_count * sizeof(cvec3));
+    if (has_index)
+        merged_shape.index = (DvzIndex*)malloc(merged_shape.index_count * sizeof(DvzIndex));
+
+    uint32_t vertex_offset = 0;
+    uint32_t index_offset = 0;
+
+    // Copy the data from each shape into the merged shape.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        DvzShape* shape = &shapes[i];
+
+        memcpy(merged_shape.pos + vertex_offset, shape->pos, shape->vertex_count * sizeof(vec3));
+
+        if (shape->normal != NULL)
+            memcpy(
+                merged_shape.normal + vertex_offset, shape->normal,
+                shape->vertex_count * sizeof(vec3));
+
+        if (shape->color != NULL)
+            memcpy(
+                merged_shape.color + vertex_offset, shape->color,
+                shape->vertex_count * sizeof(cvec4));
+
+        if (shape->texcoords != NULL)
+            memcpy(
+                merged_shape.texcoords + vertex_offset, shape->texcoords,
+                shape->vertex_count * sizeof(vec4));
+
+        if (shape->d_left != NULL)
+            memcpy(
+                merged_shape.d_left + vertex_offset, shape->d_left,
+                shape->vertex_count * sizeof(vec3));
+
+        if (shape->d_right != NULL)
+            memcpy(
+                merged_shape.d_right + vertex_offset, shape->d_right,
+                shape->vertex_count * sizeof(vec3));
+
+        if (shape->contour != NULL)
+            memcpy(
+                merged_shape.contour + vertex_offset, shape->contour,
+                shape->vertex_count * sizeof(cvec3));
+
+        // Copy and reindex the indices.
+        for (uint32_t j = 0; j < shape->index_count; j++)
+        {
+            merged_shape.index[index_offset + j] = shape->index[j] + vertex_offset;
+        }
+
+        // Update the offsets.
+        vertex_offset += shape->vertex_count;
+        index_offset += shape->index_count;
+    }
+
+    return merged_shape;
 }
 
 
@@ -496,7 +592,11 @@ float dvz_shape_rescaling(DvzShape* shape, int flags, vec3 out_scale)
 
 void dvz_shape_end(DvzShape* shape)
 {
+    // Apply the transformation matrix.
     ANN(shape);
+
+    if (shape->count == 0)
+        return;
 
     // Apply the transformation to the vertex positions and normals.
     for (uint32_t i = shape->first; i < shape->count; i++)

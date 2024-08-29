@@ -92,20 +92,19 @@ struct DvzShape
     uint32_t first; // first vertex to transform
     uint32_t count; // number of vertices to transform
 
-    DvzShapeType type;
-    uint32_t vertex_count;
-    uint32_t index_count;
+    DvzShapeType type;     // shape type
+    uint32_t vertex_count; // number of vertices
+    uint32_t index_count;  // number of indices (three times the number of triangle faces)
 
-    vec3* pos;
-    vec3* normal;
-    cvec4* color;
-    vec4* texcoords; // u, v, *, a
-    vec3* d_left;
-    vec3* d_right;
-    cvec3* contour;
-    // vec4* adjacent;  // xy coordinates of left and right adjacent vectors
-    // uint8_t* edge;   // 0-7, 3 bits indicate presence of each triangle edge in the contour
-    DvzIndex* index;
+    vec3* pos;       // 3D positions of each vertex
+    vec3* normal;    // 3D normal vector at each vertex
+    cvec4* color;    // RGBA color of each vertex
+    vec4* texcoords; // texture coordinates as u, v, (unused), alpha
+    vec3* d_left;    // the distance of each vertex to the left edge adjacent to each face vertex
+    vec3* d_right;   // the distance of each vertex to the right edge adjacent to each face vertex
+    cvec3* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour
+                     // edge, 2 if it is a corner, 4 if it should be oriented differently
+    DvzIndex* index; // the index buffer
 };
 
 
