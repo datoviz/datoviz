@@ -100,7 +100,7 @@ int test_mesh_polygon(TstSuite* suite)
     FREE(points);
 
     // Make the shape a non-indexed shape so that each vertex gets its own barycentric coordinates.
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_EDGES);
 
     // Create the visual.
     int flags = 0;

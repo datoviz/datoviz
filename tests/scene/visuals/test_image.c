@@ -50,7 +50,7 @@ int test_image_1(TstSuite* suite)
     float w = tex_shape[0], h = tex_shape[1];
 
     // Create the visual.
-    DvzVisual* visual = dvz_image(vt.batch, DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO);
+    DvzVisual* visual = dvz_image(vt.batch, 0);
 
     // Visual allocation.
     dvz_image_alloc(visual, 1);

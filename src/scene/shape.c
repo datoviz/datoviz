@@ -212,6 +212,16 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         v1r = v1;
         v2r = v2;
 
+        // Whether there should be an edge on the other side of the v0 vertex.
+        e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
+             ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
+        // Whether there should be an edge on the other side of the v1 vertex.
+        e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
+             ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
+        // Whether there should be an edge on the other side of the v2 vertex.
+        e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
+             ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
+
         glm_vec3_copy(shape->pos[v0r], face[0]);
         glm_vec3_copy(shape->pos[v1r], face[1]);
         glm_vec3_copy(shape->pos[v2r], face[2]);
@@ -225,7 +235,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         glm_vec2_copy(right[v2r], face_right[2]);
 
         // Set edge bit mask on all vertices.
-        if ((flags & DVZ_CONTOUR_EDGES) > 0)
+        if ((flags & DVZ_CONTOUR_FULL) > 0)
         {
             for (uint8_t k = 0; k < 3; k++)
                 for (uint8_t l = 0; l < 3; l++)
@@ -235,16 +245,6 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         // Set corner and edge bit mask depending on topology.
         else if ((flags & DVZ_CONTOUR_JOINTS) > 0)
         {
-            // Whether there should be an edge on the other side of the v0 vertex.
-            e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
-                 ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
-            // Whether there should be an edge on the other side of the v1 vertex.
-            e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
-                 ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
-            // Whether there should be an edge on the other side of the v2 vertex.
-            e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
-                 ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
-
             // Compute d_left and d_right.
             for (uint8_t k = 0; k < 3; k++)
                 for (uint8_t l = 0; l < 3; l++)
@@ -303,6 +303,26 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
                     for (uint8_t l = 0; l < 3; l++)
                         contour[l][k] |= 4;
                 }
+            }
+        }
+
+        // DEBUG
+        else if ((flags & DVZ_CONTOUR_EDGES) > 0)
+        {
+            if (e0)
+            {
+                for (uint8_t l = 0; l < 3; l++)
+                    contour[3 * i + l][0] |= 1;
+            }
+            if (e1)
+            {
+                for (uint8_t l = 0; l < 3; l++)
+                    contour[3 * i + l][1] |= 1;
+            }
+            if (e2)
+            {
+                for (uint8_t l = 0; l < 3; l++)
+                    contour[3 * i + l][2] |= 1;
             }
         }
 

@@ -430,8 +430,9 @@ typedef enum
 typedef enum
 {
     DVZ_CONTOUR_NONE = 0x00,   // no contours
-    DVZ_CONTOUR_EDGES = 0x01,  // set edge on all vertices
-    DVZ_CONTOUR_JOINTS = 0x02, // set corners on some vertices
+    DVZ_CONTOUR_EDGES = 0x01,  // set edge on some vertices (those on the contour)
+    DVZ_CONTOUR_JOINTS = 0x02, // set joints on some vertices (those with 1 exterior adjacent edge)
+    DVZ_CONTOUR_FULL = 0xF0,   // set edge on all vertices
 } DvzContourFlags;
 
 
