@@ -87,7 +87,7 @@ int test_mesh_polygon(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_PANZOOM, 0);
 
     // Polygon.
-    uint32_t n = 6;
+    uint32_t n = 12;
     dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
     double r = .75;
     for (uint32_t i = 0; i < n; i++)
