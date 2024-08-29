@@ -105,8 +105,12 @@ vec2 edge(vec3 barycentric, ivec3 contour, float linewidth)
 
 void main()
 {
-
     CLIP;
+
+    // DEBUG
+    // out_color = vec4(1);
+    // return;
+
     // if (in_clip < -eps)
     //     discard;
 

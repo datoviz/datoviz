@@ -118,7 +118,8 @@ static inline void direction_vector(vec3 a, vec3 b, vec2 u)
 
 static inline float line_distance(vec3 p, vec3 q, vec2 u)
 {
-    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+    float d = -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+    return d;
 }
 
 void dvz_shape_unindex(DvzShape* shape, int flags)
@@ -188,7 +189,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         iM = (i + 1) % vertex_count;
 
         // d_left[i] = P[i] - P[i-1] (2D)
-        direction_vector(shape->pos[im], shape->pos[i], left[i]);
+        direction_vector(shape->pos[i], shape->pos[im], left[i]);
 
         // d_right[i] = P[i+1] - P[i] (2D)
         direction_vector(shape->pos[i], shape->pos[iM], right[i]);
@@ -246,11 +247,14 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         else if ((flags & DVZ_CONTOUR_JOINTS) > 0)
         {
             // Compute d_left and d_right.
-            for (uint8_t k = 0; k < 3; k++)
-                for (uint8_t l = 0; l < 3; l++)
+            for (uint8_t l = 0; l < 3; l++)
+            {
+                for (uint8_t k = 0; k < 3; k++)
                 {
-                    d_left[3 * i + k][l] = line_distance(face[l], face[k], left[l]);
+                    d_left[3 * i + k][l] = line_distance(face[l], face[k], face_left[l]);
+                    d_right[3 * i + k][l] = -line_distance(face[l], face[k], face_right[l]);
                 }
+            }
 
             // if 3 edges, set contour=1 on the 3 vertices
             if (e0 && e1 && e2)
@@ -306,7 +310,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             }
         }
 
-        // DEBUG
+        // Only set edges on contour.
         else if ((flags & DVZ_CONTOUR_EDGES) > 0)
         {
             if (e0)

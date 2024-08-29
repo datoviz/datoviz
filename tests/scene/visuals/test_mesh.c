@@ -92,15 +92,16 @@ int test_mesh_polygon(TstSuite* suite)
     double r = .75;
     for (uint32_t i = 0; i < n; i++)
     {
-        points[i][0] = r * cos(i * M_2PI / n);
-        points[i][1] = r * sin(i * M_2PI / n) * WIDTH / (float)HEIGHT;
+        // NOTE: (float) is required otherwise -i overflows as i is unsigned...
+        points[i][0] = r * cos(-(float)i * M_2PI / n);
+        points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
     }
     cvec4 color = {255, 128, 0, 255};
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
     // Make the shape a non-indexed shape so that each vertex gets its own barycentric coordinates.
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_EDGES);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;

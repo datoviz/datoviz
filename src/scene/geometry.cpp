@@ -42,7 +42,7 @@ DvzIndex* dvz_earcut(uint32_t point_count, const dvec2* polygon, uint32_t* out_i
     log_debug("earcut found %d indices", indices.size());
 
     // Return the data as a C array.
-    size_t size = indices.size() * sizeof(uint32_t);
+    size_t size = indices.size() * sizeof(DvzIndex);
     DvzIndex* out = (DvzIndex*)malloc(size);
     memcpy(out, indices.data(), size);
     *out_index_count = indices.size();
