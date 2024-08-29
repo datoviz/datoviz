@@ -87,28 +87,31 @@ int test_mesh_polygon(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_PANZOOM, 0);
 
     // Polygon.
-    uint32_t n = 12;
+    uint32_t n = 6;
     dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
-    double r = .75;
+    double r = 0;
     for (uint32_t i = 0; i < n; i++)
     {
+        // r = .75 + .25 * 2 * (dvz_rand_double() - 1.0);
+        r = .5 + .25 * (+1 - 2 * ((int32_t)i % 2));
         // NOTE: (float) is required otherwise -i overflows as i is unsigned...
         points[i][0] = r * cos(-(float)i * M_2PI / n);
         points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
     }
-    cvec4 color = {255, 128, 0, 255};
+    cvec4 color = {64, 128, 255, 255};
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
     // Make the shape a non-indexed shape so that each vertex gets its own barycentric coordinates.
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
+
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 50.0});
+    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 10.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
