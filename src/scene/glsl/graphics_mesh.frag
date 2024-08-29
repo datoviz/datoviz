@@ -2,6 +2,9 @@
 #include "common.glsl"
 #include "params_mesh.glsl"
 
+layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
+layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
+
 const float eps = .00001;
 
 // Varying variables.

@@ -141,13 +141,25 @@ int test_mesh_polygon(TstSuite* suite)
 //     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
 // }
 
-#define POS(x) {x[0], x[1], x[2]}
+#define POS(x)                                                                                    \
+    {                                                                                             \
+        x[0], x[1], x[2]                                                                          \
+    }
 
 #define COUNT (3 * 3)
 
-#define R {255, 0, 0, 255}
-#define G {0, 255, 0, 255}
-#define B {0, 0, 255, 255}
+#define R                                                                                         \
+    {                                                                                             \
+        255, 0, 0, 255                                                                            \
+    }
+#define G                                                                                         \
+    {                                                                                             \
+        0, 255, 0, 255                                                                            \
+    }
+#define B                                                                                         \
+    {                                                                                             \
+        0, 0, 255, 255                                                                            \
+    }
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
 {
@@ -366,7 +378,7 @@ int test_mesh_surface(TstSuite* suite)
 
     // Create the surface shape.
     DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_EDGES);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
@@ -434,7 +446,7 @@ int test_mesh_obj(TstSuite* suite)
     // dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_EDGES);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;

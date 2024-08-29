@@ -80,9 +80,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_visual_cull(visual, DVZ_CULL_MODE_NONE);
 
     // Specialization constants.
-    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &textured);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
-    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &lighting);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &lighting);
 
     // Textured vertex.
