@@ -103,7 +103,7 @@ int test_mesh_polygon(TstSuite* suite)
     dvz_shape_unindex(&shape, DVZ_CONTOUR_EDGES);
 
     // Create the visual.
-    int flags = 0;
+    int flags = DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
@@ -303,7 +303,7 @@ int test_mesh_stroke(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_NONE, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Create the visual.
-    DvzVisual* visual = dvz_mesh(vt.batch, 0);
+    DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
     dvz_mesh_alloc(visual, COUNT, 0);
 
     // Mesh color.
@@ -382,7 +382,7 @@ int test_mesh_surface(TstSuite* suite)
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING;
+    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Wireframe.
@@ -449,7 +449,7 @@ int test_mesh_obj(TstSuite* suite)
     dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING;
+    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Lighting.

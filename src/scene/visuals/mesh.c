@@ -69,6 +69,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Parse flags.
     int textured = (flags & DVZ_MESH_FLAGS_TEXTURED);
     int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
+    int contour = (flags & DVZ_MESH_FLAGS_CONTOUR);
     log_trace("create mesh visual, texture: %d, lighting: %d", textured, lighting);
 
     // Visual shaders.
@@ -82,6 +83,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Specialization constants.
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &lighting);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &contour);
 
     // Textured vertex.
     if (textured)
@@ -300,6 +302,12 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width)
 {
     ANN(visual);
+    if ((visual->flags & DVZ_MESH_FLAGS_CONTOUR) == 0)
+    {
+        log_error( //
+            "mesh visual must be created with DVZ_MESH_FLAGS_CONTOUR flag for contour to be "
+            "active");
+    }
     dvz_visual_param(visual, 2, 2, rgb_width);
 }
 

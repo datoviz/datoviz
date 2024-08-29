@@ -4,6 +4,7 @@
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
+layout(constant_id = 2) const int MESH_CONTOUR = 0;  // 1 to enable
 
 const float eps = .00001;
 
@@ -171,7 +172,7 @@ void main()
     }
 
     // Stroke.
-    if (params.stroke.a > 0)
+    if (MESH_CONTOUR > 0)
     {
         float linewidth = params.stroke.a;
         vec3 stroke = params.stroke.rgb;
