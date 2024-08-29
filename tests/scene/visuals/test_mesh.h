@@ -25,6 +25,8 @@ int test_mesh_polygon(TstSuite*);
 
 int test_mesh_stroke(TstSuite*);
 
+int test_mesh_contour(TstSuite*);
+
 int test_mesh_surface(TstSuite*);
 
 int test_mesh_obj(TstSuite*);

@@ -102,9 +102,15 @@ int test_mesh_polygon(TstSuite* suite)
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
-    // Make the shape a non-indexed shape so that each vertex gets its own barycentric coordinates.
+    // Display the indices.
+    for (uint32_t i = 0; i < shape.index_count; i++)
+    {
+        if (i % 3 == 0)
+            printf("\n");
+        printf("%d ", shape.index[i]);
+    }
 
-    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
@@ -331,6 +337,81 @@ int test_mesh_stroke(TstSuite* suite)
     _update_angle(visual, angle);
     vt.user_data = &angle[0];
     dvz_app_gui(vt.app, vt.figure->canvas_id, _stroke_callback, &vt);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    return 0;
+}
+
+
+
+static inline float dot_ortho_u(vec3 p, vec3 q, vec2 u)
+{
+    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+}
+
+int test_mesh_contour(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_NONE, 0);
+
+    // Create the visual.
+    DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
+    dvz_mesh_alloc(visual, 3, 0);
+
+    float r = .75;
+    float w = .707;
+
+    vec3 P0 = {r * w, -r * w, 0};
+    vec3 P1 = {0, r, 0};
+    vec3 P2 = {-r * w, -r * w, 0};
+
+    vec3 position[] = {
+        POS(P0), POS(P1), POS(P2), //
+    };
+    dvz_mesh_position(visual, 0, 3, position, 0);
+
+    // Direction vectors.
+    vec2 u = {-w, -w}, v = {+w, -w};
+
+    // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
+    vec3 d_left[] = {
+        {0, 0, dot_ortho_u(P2, P0, u)},    // P0
+        {0, 0, dot_ortho_u(P2, P1, u)},    // P1
+        {dot_ortho(P0, P2, P0, P1), 0, 0}, // P2
+    };
+    vec3 d_right[] = {
+        {0, 0, -dot_ortho(P2, P0, P2, P1)}, // P0
+        {-dot_ortho_u(P0, P1, v), 0, 0},    // P1
+        {-dot_ortho_u(P0, P2, v), 0, 0},    // P2
+    };
+
+    dvz_mesh_left(visual, 0, 3, (void*)d_left, 0);
+    dvz_mesh_right(visual, 0, 3, (void*)d_right, 0);
+
+    // NOTE: orientation
+    cvec3 contour[] = {
+        {2 | 4, 0, 2 | 4}, // P0
+        {2 | 4, 0, 2 | 4}, // P1
+        {2 | 4, 0, 2 | 4}, // P2
+    };
+    dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
+
+    // Mesh color.
+    cvec4 color[] = {R, G, B};
+    dvz_mesh_color(visual, 0, 3, color, 0);
+
+    // Stroke.
+    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20.0});
+
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
+    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
+    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
+    dvz_transform_update(vt.panel->transform);
 
     // Run the test.
     visual_test_end(vt);
