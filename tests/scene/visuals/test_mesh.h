@@ -29,6 +29,8 @@ int test_mesh_surface(TstSuite*);
 
 int test_mesh_obj(TstSuite*);
 
+int test_mesh_geo(TstSuite* suite);
+
 
 
 #endif

@@ -254,19 +254,6 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     if (shape->texcoords != NULL)
         texcoords = (vec4*)calloc(index_count, sizeof(vec4));
 
-    // WARNING: will override any previous shape->edge.
-    // if (shape->edge != NULL)
-    // {
-    //     log_warn("Discard previous shape edge array and generate a new one.");
-    //     FREE(shape->edge);
-    // }
-
-    // WARNING: will override any previous shape->adjacent.
-    // if (shape->adjacent != NULL)
-    // {
-    //     log_warn("Discard previous shape adjacent array and generate a new one.");
-    //     FREE(shape->adjacent);
-    // }
     d_left = (vec3*)calloc(index_count, sizeof(vec3));
     d_right = (vec3*)calloc(index_count, sizeof(vec3));
     contour = (cvec3*)calloc(index_count, sizeof(cvec3));

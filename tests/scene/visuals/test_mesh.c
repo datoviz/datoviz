@@ -481,3 +481,107 @@ int test_mesh_obj(TstSuite* suite)
 
     return 0;
 }
+
+
+
+static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
+{
+    ANN(pos);
+    dvec2* copied = (dvec2*)calloc(length, sizeof(dvec2));
+    uint32_t j = 0;
+    for (uint32_t i = 0; i < length; i++)
+    {
+        j = i;
+        // j = length - 1 - i;
+        copied[i][0] = pos[j][0];
+        copied[i][1] = pos[j][1];
+    }
+    return copied;
+}
+
+int test_mesh_geo(TstSuite* suite)
+{
+    cvec4 color = {255, 128, 64, 255};
+
+    // Load positions.
+    char pos_path[1024] = {0};
+    snprintf(pos_path, sizeof(pos_path), "%s/misc/poly-pos.bin", DATA_DIR);
+
+    DvzSize pos_size = 0;
+    unsigned char* pos_bytes = dvz_read_file(pos_path, &pos_size);
+    log_info("loaded %s (%s)", pos_path, pretty_size(pos_size));
+
+
+    // Load lengths.
+    char length_path[1024] = {0};
+    snprintf(length_path, sizeof(length_path), "%s/misc/poly-length.bin", DATA_DIR);
+
+    DvzSize length_size = 0;
+    unsigned char* length_bytes = dvz_read_file(length_path, &length_size);
+    log_info("loaded %s (%s)", length_path, pretty_size(length_size));
+
+    ASSERT(length_size % sizeof(uint32_t) == 0);
+    uint32_t poly_count = length_size / sizeof(uint32_t);
+
+    // DEBUG
+    // poly_count = 1;
+
+    log_info("loaded %d polygons", poly_count);
+
+    uint32_t* poly_lengths = (uint32_t*)length_bytes;
+    const dvec2* poly_pos = (const dvec2*)pos_bytes;
+
+    // Triangulate and merge the polygons into a single shape.
+    uint32_t vertex_offset = 0, poly_length = 0;
+    DvzShape* shapes = (DvzShape*)calloc(poly_count, sizeof(DvzShape));
+    for (uint32_t i = 0; i < poly_count; i++)
+    {
+        poly_length = poly_lengths[i];
+
+        // DEBUG
+        // poly_length = 10;
+
+        log_debug("polygon #%d length is %d", i, poly_length);
+
+        // Color
+        dvz_colormap_scale(DVZ_CMAP_VIRIDIS, i, 0, poly_count - 1, color);
+
+        // Polygon triangulation.
+        dvec2* polygon = copy_polygon(poly_length, &poly_pos[vertex_offset]);
+        shapes[i] = dvz_shape_polygon(poly_length, (const dvec2*)polygon, color);
+        dvz_shape_unindex(&shapes[i], DVZ_CONTOUR_FULL);
+        FREE(polygon);
+
+        vertex_offset += poly_length;
+    }
+    DvzShape shape = dvz_shape_merge(poly_count, shapes);
+    FREE(shapes);
+
+
+    VisualTest vt = visual_test_start("mesh_geo", VISUAL_TEST_PANZOOM, 0);
+
+    // Create the visual.
+    int flags = DVZ_MESH_FLAGS_CONTOUR;
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Set up the wireframe stroke parameters.
+    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 1});
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
+    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
+    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
+    dvz_transform_update(vt.panel->transform);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_shape_destroy(&shape);
+    FREE(pos_bytes);
+    FREE(length_bytes);
+
+    return 0;
+}
