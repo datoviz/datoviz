@@ -102,13 +102,13 @@ int test_mesh_polygon(TstSuite* suite)
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
-    // Display the indices.
-    for (uint32_t i = 0; i < shape.index_count; i++)
-    {
-        if (i % 3 == 0)
-            printf("\n");
-        printf("%d ", shape.index[i]);
-    }
+    // // Display the indices.
+    // for (uint32_t i = 0; i < shape.index_count; i++)
+    // {
+    //     if (i % 3 == 0)
+    //         printf("\n");
+    //     printf("%d ", shape.index[i]);
+    // }
 
     dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
 
