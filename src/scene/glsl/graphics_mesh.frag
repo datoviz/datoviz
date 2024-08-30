@@ -60,13 +60,12 @@ float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
     return res;
 }
 
-vec2 edge(vec3 barycentric, ivec3 contour, float linewidth)
+vec2 edge(vec3 barycentric, vec3 deltas, ivec3 edge, float linewidth)
 {
     // cf https://web.archive.org/web/20190220052115/http://codeflow.org/entries/2012/aug/02/
     // easy-wireframe-display-with-barycentric-coordinates/
     // cf https://catlikecoding.com/unity/tutorials/advanced-rendering/flat-and-wireframe-shading/
 
-    vec3 deltas = fwidth2(barycentric);
     float scale = linewidth;
     vec3 a = deltas * scale;
     vec3 b = deltas * (scale + 1);
@@ -76,24 +75,20 @@ vec2 edge(vec3 barycentric, ivec3 contour, float linewidth)
     float y = stepped.y;
     float z = stepped.z;
 
-    bool edge_x = ((contour.x >> 0) & 1) > 0;
-    bool edge_y = ((contour.y >> 0) & 1) > 0;
-    bool edge_z = ((contour.z >> 0) & 1) > 0;
-
     float res = 1;
     float alpha = 100000;
 
-    if (edge_x)
+    if (edge.x > 0)
     {
         res = min(res, x);
         alpha = min(alpha, barycentric.x / deltas.x);
     }
-    if (edge_y)
+    if (edge.y > 0)
     {
         res = min(res, y);
         alpha = min(alpha, barycentric.y / deltas.y);
     }
-    if (edge_z)
+    if (edge.z > 0)
     {
         res = min(res, z);
         alpha = min(alpha, barycentric.z / deltas.z);
@@ -178,15 +173,36 @@ void main()
     // Stroke.
     if (MESH_CONTOUR > 0)
     {
+        // Stroke parameters.
         float linewidth = params.stroke.a;
         vec3 stroke = params.stroke.rgb;
-        vec2 ea = edge(in_barycentric, in_contour, linewidth);
+
+        // Contour information.
+        ivec3 bedge = (in_contour >> 0) & 1;
+
+        // Barycentric coordinates scale.
+        vec3 deltas = fwidth2(in_barycentric);
+
+        // Edges.
+        vec2 ea = vec2(1);
+        if (bedge.x > 0 || bedge.y > 0 || bedge.z > 0)
+            ea = edge(in_barycentric, deltas, bedge, linewidth);
         float e = ea.x;
         float alpha = ea.y;
+
+        // Corners.
         float c = corner(in_d_left, in_d_right, in_contour, linewidth);
+
+        // Final color.
         out_color.rgb = mix(stroke, out_color.rgb, min(e, c));
 
-        // Tentative antialias.
-        // out_color.a = smoothstep(0, 1.25, alpha);
+        // // Antialiasing.
+        // if (c == 0 && e > 0)
+        // {
+        //     float min_bary = min(min(in_barycentric.x, in_barycentric.y), in_barycentric.z);
+        //     float aa = fwidth2(min_bary);
+        //     alpha = smoothstep(0.0, aa, min_bary);
+        // }
+        // out_color.a *= alpha;
     }
 }

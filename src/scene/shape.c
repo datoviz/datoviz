@@ -280,6 +280,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
     // By default, contour on all triangles.
     bool e0 = false, e1 = false, e2 = false;
+    float cross = 0;
 
     vec3 face[3] = {0};
     vec2 face_left[3] = {0};
@@ -385,7 +386,8 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             //     if left[i_k] ^ right[i_k] < 0, then |4 for [k] on the 3 vertices
             for (uint8_t k = 0; k < 3; k++)
             {
-                if (glm_vec2_cross(face_left[k], face_right[k]) < 0)
+                cross = glm_vec2_cross(face_left[k], face_right[k]);
+                if (cross < 0)
                 {
                     for (uint8_t l = 0; l < 3; l++)
                     {
@@ -425,6 +427,10 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             COPY_VEC4(color, 0, v0r)
             COPY_VEC4(color, 1, v1r)
             COPY_VEC4(color, 2, v2r)
+
+            // DEBUG: random color on each triangle for debugging purposes
+            // color[3 * i + 0][0] = color[3 * i + 1][0] = color[3 * i + 2][0] = dvz_rand_byte();
+            // color[3 * i + 0][1] = color[3 * i + 1][1] = color[3 * i + 2][1] = dvz_rand_byte();
         }
 
         if (shape->normal != NULL)

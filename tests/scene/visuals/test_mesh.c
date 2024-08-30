@@ -359,12 +359,13 @@ int test_mesh_contour(TstSuite* suite)
     DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
     dvz_mesh_alloc(visual, 3, 0);
 
-    float r = .75;
+    float r = 1.5;
     float w = .707;
+    float c = 1;
 
-    vec3 P0 = {r * w, -r * w, 0};
-    vec3 P1 = {0, r, 0};
-    vec3 P2 = {-r * w, -r * w, 0};
+    vec3 P0 = {r * w, -c * r * w, 0};
+    vec3 P1 = {0, c * r, 0};
+    vec3 P2 = {-r * w, -c * r * w, 0};
 
     vec3 position[] = {
         POS(P0), POS(P1), POS(P2), //
@@ -391,9 +392,9 @@ int test_mesh_contour(TstSuite* suite)
 
     // NOTE: orientation
     cvec3 contour[] = {
-        {2 | 4, 0, 2 | 4}, // P0
-        {2 | 4, 0, 2 | 4}, // P1
-        {2 | 4, 0, 2 | 4}, // P2
+        {2 | 4, 1, 2 | 4}, // P0
+        {2 | 4, 1, 2 | 4}, // P1
+        {2 | 4, 1, 2 | 4}, // P2
     };
     dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
 
