@@ -35,7 +35,8 @@ float one_corner(float d_left, float d_right, int orient, float linewidth)
     float a = d.x / deltas.x;                     // normalized distance to left edge
     float b = d.y / deltas.y;                     // normalized distance to right edge
     float c = orient > 0 ? max(a, b) : min(a, b); // take min or max of the distance
-    return smoothstep(scale, scale + 1, c);       // 0 on contour, 1 inside the polygon
+    // return smoothstep(scale, scale + 1, c);      // 0 on contour, 1 inside the polygon
+    return c <= scale ? 0 : 1;
 }
 
 float corner(vec3 d_left, vec3 d_right, ivec3 contour, float linewidth)
