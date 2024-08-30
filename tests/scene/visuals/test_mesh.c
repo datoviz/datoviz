@@ -87,7 +87,7 @@ int test_mesh_polygon(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_PANZOOM, 0);
 
     // Polygon.
-    uint32_t n = 6;
+    uint32_t n = 24;
     dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
     double r = 0;
     for (uint32_t i = 0; i < n; i++)
@@ -633,7 +633,7 @@ int test_mesh_geo(TstSuite* suite)
         // Polygon triangulation.
         dvec2* polygon = copy_polygon(poly_length, &poly_pos[vertex_offset]);
         shapes[i] = dvz_shape_polygon(poly_length, (const dvec2*)polygon, color);
-        dvz_shape_unindex(&shapes[i], DVZ_CONTOUR_FULL);
+        dvz_shape_unindex(&shapes[i], DVZ_CONTOUR_JOINTS);
         FREE(polygon);
 
         vertex_offset += poly_length;

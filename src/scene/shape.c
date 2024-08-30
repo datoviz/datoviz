@@ -388,7 +388,9 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
                 if (glm_vec2_cross(face_left[k], face_right[k]) < 0)
                 {
                     for (uint8_t l = 0; l < 3; l++)
-                        contour[l][k] |= 4;
+                    {
+                        contour[3 * i + l][k] |= 4;
+                    }
                 }
             }
         }
@@ -441,6 +443,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     }
     FREE(shape->pos);
     shape->pos = pos;
+
     shape->d_left = d_left;
     shape->d_right = d_right;
     shape->contour = contour;
