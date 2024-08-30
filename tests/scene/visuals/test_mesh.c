@@ -151,25 +151,13 @@ int test_mesh_polygon(TstSuite* suite)
 //     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
 // }
 
-#define POS(x)                                                                                    \
-    {                                                                                             \
-        x[0], x[1], x[2]                                                                          \
-    }
+#define POS(x) {x[0], x[1], x[2]}
 
 #define COUNT (3 * 3)
 
-#define R                                                                                         \
-    {                                                                                             \
-        255, 0, 0, 255                                                                            \
-    }
-#define G                                                                                         \
-    {                                                                                             \
-        0, 255, 0, 255                                                                            \
-    }
-#define B                                                                                         \
-    {                                                                                             \
-        0, 0, 255, 255                                                                            \
-    }
+#define R {255, 0, 0, 255}
+#define G {0, 255, 0, 255}
+#define B {0, 0, 255, 255}
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
 {
@@ -593,7 +581,7 @@ int test_mesh_geo(TstSuite* suite)
     snprintf(pos_path, sizeof(pos_path), "%s/misc/poly-pos.bin", DATA_DIR);
 
     DvzSize pos_size = 0;
-    unsigned char* pos_bytes = dvz_read_file(pos_path, &pos_size);
+    uint64_t* pos_bytes = (uint64_t*)dvz_read_file(pos_path, &pos_size);
     log_info("loaded %s (%s)", pos_path, pretty_size(pos_size));
 
 
@@ -602,7 +590,7 @@ int test_mesh_geo(TstSuite* suite)
     snprintf(length_path, sizeof(length_path), "%s/misc/poly-length.bin", DATA_DIR);
 
     DvzSize length_size = 0;
-    unsigned char* length_bytes = dvz_read_file(length_path, &length_size);
+    uint32_t* length_bytes = (uint32_t*)dvz_read_file(length_path, &length_size);
     log_info("loaded %s (%s)", length_path, pretty_size(length_size));
 
     ASSERT(length_size % sizeof(uint32_t) == 0);

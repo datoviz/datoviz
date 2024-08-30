@@ -89,7 +89,8 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
     merged_shape.index_count = 0;
 
     // Calculate total vertex and index counts.
-    bool has_normal, has_color, has_texcoords, has_d_left, has_d_right, has_contour, has_index;
+    bool has_normal = false, has_color = false, has_texcoords = false, //
+        has_d_left = false, has_d_right = false, has_contour = false, has_index = false;
     for (uint32_t i = 0; i < count; i++)
     {
         // Ensures all transformations are applied before merging the shapes.
