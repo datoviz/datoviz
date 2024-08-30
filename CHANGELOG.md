@@ -5,6 +5,7 @@
 ### Scene
 
 - Implemented arcball GUI with sliders for rotation angles.
+- Ortho interactivity (like panzoom but with fixed aspect ratio).
 
 ### Visuals
 

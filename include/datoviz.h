@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /**************************************************************************************************
 
@@ -60,6 +60,7 @@ typedef struct DvzMVP DvzMVP;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzOrtho DvzOrtho;
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzFont DvzFont;
@@ -3050,6 +3051,112 @@ DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
  * @param mvp the MVP
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
+
+
+
+/*************************************************************************************************/
+/*  Ortho                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Reset an ortho.
+ *
+ * @param ortho the ortho
+ */
+DVZ_EXPORT void dvz_ortho_reset(DvzOrtho* ortho);
+
+
+
+/**
+ * Inform an ortho of a panel resize.
+ *
+ * @param ortho the ortho
+ * @param width the panel width
+ * @param height the panel height
+ */
+DVZ_EXPORT void dvz_ortho_resize(DvzOrtho* ortho, float width, float height);
+
+
+
+/**
+ * Set the ortho flags.
+ *
+ * @param ortho the ortho
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_ortho_flags(DvzOrtho* ortho, int flags);
+
+
+
+/**
+ * Apply a pan value to an ortho.
+ *
+ * @param ortho the ortho
+ * @param pan the pan, in NDC
+ */
+DVZ_EXPORT void dvz_ortho_pan(DvzOrtho* ortho, vec2 pan);
+
+
+
+/**
+ * Apply a zoom value to an ortho.
+ *
+ * @param ortho the ortho
+ * @param zoom the zoom level
+ */
+DVZ_EXPORT void dvz_ortho_zoom(DvzOrtho* ortho, float zoom);
+
+
+
+/**
+ * Apply a pan shift to an ortho.
+ *
+ * @param ortho the ortho
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_pan_shift(DvzOrtho* ortho, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * Apply a zoom shift to an ortho.
+ *
+ * @param ortho the ortho
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_zoom_shift(DvzOrtho* ortho, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * End an ortho interaction.
+ *
+ * @param ortho the ortho
+ */
+DVZ_EXPORT void dvz_ortho_end(DvzOrtho* ortho);
+
+
+
+/**
+ * Apply a wheel zoom to an ortho.
+ *
+ * @param ortho the ortho
+ * @param dir the wheel direction
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_zoom_wheel(DvzOrtho* ortho, vec2 dir, vec2 center_px);
+
+
+
+/**
+ * Apply an MVP matrix to an ortho.
+ *
+ * @param ortho the ortho
+ * @param mvp the MVP
+ */
+DVZ_EXPORT void dvz_ortho_mvp(DvzOrtho* ortho, DvzMVP* mvp);
 
 
 

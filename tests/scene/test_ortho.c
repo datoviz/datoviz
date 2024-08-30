@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Testing panzoom                                                                              */
+/*  Testing ortho                                                                                */
 /*************************************************************************************************/
 
 
@@ -14,9 +14,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "test_panzoom.h"
+#include "test_ortho.h"
 #include "datoviz.h"
-#include "scene/panzoom.h"
+#include "scene/ortho.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
@@ -24,41 +24,39 @@
 
 
 /*************************************************************************************************/
-/*  Panzoom test utils                                                                           */
+/*  Ortho test utils                                                                             */
 /*************************************************************************************************/
 
 #define PAN(x, y)                                                                                 \
-    dvz_panzoom_pan_shift(pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});      \
-    dvz_panzoom_end(pz);
+    dvz_ortho_pan_shift(ortho, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH / 2, HEIGHT / 2});     \
+    dvz_ortho_end(ortho);
 
 #define ZOOM(x, y, cx, cy)                                                                        \
-    dvz_panzoom_zoom_shift(pz, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH * cx, HEIGHT * cy});   \
-    dvz_panzoom_end(pz);
+    dvz_ortho_zoom_shift(ortho, (vec2){WIDTH * x, HEIGHT * y}, (vec2){WIDTH * cx, HEIGHT * cy});  \
+    dvz_ortho_end(ortho);
 
-#define RESET dvz_panzoom_reset(pz);
+#define RESET dvz_ortho_reset(ortho);
 
 #define AP(x, y)                                                                                  \
-    AC(pz->pan[0], x, EPS);                                                                       \
-    AC(pz->pan[1], y, EPS);
+    AC(ortho->pan[0], x, EPS);                                                                    \
+    AC(ortho->pan[1], y, EPS);
 
 #define SHOW                                                                                      \
-    log_info(                                                                                     \
-        "pan: (%.2f, %.2f)  zoom: (%.2f, %.2f)", pz->pan[0], pz->pan[1], pz->zoom[0],             \
-        pz->zoom[1]);                                                                             \
-    dvz_panzoom_mvp(pz, &mvp);                                                                    \
+    log_info("pan: (%.2f, %.2f)  zoom: (%.2f)", ortho->pan[0], ortho->pan[1], ortho->zoom);       \
+    dvz_ortho_mvp(ortho, &mvp);                                                                   \
     glm_mat4_print(mvp.view, stdout);
 
 
 
 /*************************************************************************************************/
-/*  Panzoom tests                                                                                */
+/*  Ortho tests                                                                                */
 /*************************************************************************************************/
 
-int test_panzoom_1(TstSuite* suite)
+int test_ortho_1(TstSuite* suite)
 {
     ANN(suite);
 
-    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    DvzOrtho* ortho = dvz_ortho(WIDTH, HEIGHT, 0);
     DvzMVP mvp = dvz_mvp_default();
 
     // Test pan.
@@ -85,22 +83,20 @@ int test_panzoom_1(TstSuite* suite)
         ZOOM(0, 0, .5, .5);
         AP(0, 0);
 
-        ZOOM(.5, .5, .5, .5);
-        AT(pz->zoom[0] > 1);
-        AT(pz->zoom[1] < 1);
+        ZOOM(.5, -.5, .5, .5);
+        // SHOW;
+        AT(ortho->zoom > 1);
     }
 
     // Zoom with shift center.
     RESET;
     {
-        ZOOM(10, -10, 1, 0); // top right corner
-        AT(pz->zoom[0] > 1e6);
-        AT(pz->zoom[1] > 1e6);
-        AT(pz->zoom[0] == pz->zoom[1]);
+        ZOOM(3, -3, 1, 0); // top right corner
         // SHOW;
+        AT(ortho->zoom > 1e6);
         AP(-1, -1);
     }
 
-    dvz_panzoom_destroy(pz);
+    dvz_ortho_destroy(ortho);
     return 0;
 }

@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Testing suite                                                                                */
@@ -34,6 +34,7 @@
 #include "scene/test_graphics.h"
 #include "scene/test_labels.h"
 #include "scene/test_mvp.h"
+#include "scene/test_ortho.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
 #include "scene/test_scene.h"
@@ -336,6 +337,7 @@ int dvz_run_tests(const char* match)
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
     TEST(test_camera_1)
+    TEST(test_ortho_1)
     TEST(test_mvp_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
