@@ -939,6 +939,45 @@ cloc:
     cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
 #
 
+copyright:
+    #!/bin/bash
+
+    # Define the copyright text
+    COPYRIGHT_TEXT="/*
+    * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+    * Licensed under the MIT license. See LICENSE file in the project root for details.
+    * SPDX-License-Identifier: MIT
+    */
+    "
+
+    # Define the directories to search through
+    DIRECTORIES=("tests" "src" "include" "cli")
+
+    # Define the file extensions to look for
+    EXTENSIONS=("comp" "vert" "frag" "glsl" "c" "h")
+
+    # Function to prepend text to a file
+    prepend_text() {
+        local file="$1"
+        # Check if the file already contains the copyright text
+        if ! grep -q "SPDX-License-Identifier" "$file"; then
+            # Prepend the copyright text to the file
+            echo $file
+            { echo "$COPYRIGHT_TEXT"; cat "$file"; } > temp_file && mv temp_file "$file"
+        fi
+    }
+
+    # Loop through each directory
+    for dir in "${DIRECTORIES[@]}"; do
+        # Loop through each extension
+        for ext in "${EXTENSIONS[@]}"; do
+            # Find all files with the current extension in the current directory
+            find "$dir" -type f -name "*.$ext" | while read -r file; do
+                prepend_text "$file"
+            done
+        done
+    done
+
 
 # -------------------------------------------------------------------------------------------------
 # Tests
