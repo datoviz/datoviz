@@ -1485,20 +1485,6 @@ void dvz_mesh_alloc(
 )
 ```
 
-### `dvz_mesh_barycentric()`
-
-Set the mesh vertex barycentric coordinates.
-
-```c
-void dvz_mesh_barycentric(
-    DvzVisual* visual,  // the visual
-    uint32_t first,  // the index of the first item to update
-    uint32_t count,  // the number of items to update
-    vec3* values,  // the barycentric coordinates
-    int flags,  // the data update flags
-)
-```
-
 ### `dvz_mesh_color()`
 
 Set the mesh colors.
@@ -1513,6 +1499,20 @@ void dvz_mesh_color(
 )
 ```
 
+### `dvz_mesh_contour()`
+
+Set the contour information for polygon contours.
+
+```c
+void dvz_mesh_contour(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec3* values,  // for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_mesh_index()`
 
 Set the mesh indices.
@@ -1523,6 +1523,20 @@ void dvz_mesh_index(
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
     DvzIndex* values,  // the face indices (three vertex indices per triangle)
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_mesh_left()`
+
+Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
+
+```c
+void dvz_mesh_left(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the distance to the left edge adjacent to each triangle vertex
     int flags,  // the data update flags
 )
 ```
@@ -1585,6 +1599,20 @@ Update a mesh once a shape has been updated.
 void dvz_mesh_reshape(
     DvzVisual* visual,  // the mesh
     DvzShape* shape,  // the shape
+)
+```
+
+### `dvz_mesh_right()`
+
+Set the distance between the current vertex to the right edge at corner A, B, or C in triangle
+
+```c
+void dvz_mesh_right(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the distance to the right edge adjacent to each triangle vertex
+    int flags,  // the data update flags
 )
 ```
 
@@ -1814,6 +1842,7 @@ Set a camera for a panel.
 ```c
 DvzCamera* dvz_panel_camera(  // returns: the camera
     DvzPanel* panel,  // the panel
+    int flags,  // the camera flags
 )
 ```
 
@@ -2533,12 +2562,12 @@ void dvz_shape_end(
 
 ### `dvz_shape_merge()`
 
-Merge two shapes.
+Merge several shapes.
 
 ```c
-void dvz_shape_merge(
-    DvzShape* merged,  // the shape to append the other shape to
-    DvzShape* to_merge,  // the shape appended to the first shape
+DvzShape dvz_shape_merge(  // returns: the merged shape
+    uint32_t count,  // the number of shapes to merge
+    DvzShape* shapes,  // the shapes to merge
 )
 ```
 
@@ -2696,6 +2725,7 @@ Convert an indexed shape to a non-indexed one by duplicating the vertex values a
 ```c
 void dvz_shape_unindex(
     DvzShape* shape,  // the shape
+    int flags,  // the flags
 )
 ```
 
@@ -3325,6 +3355,13 @@ DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN
 ```
 
+### `DvzCameraFlags`
+
+```
+DVZ_CAMERA_FLAGS_PERSPECTIVE
+DVZ_CAMERA_FLAGS_ORTHO
+```
+
 ### `DvzCanvasFlags`
 
 ```
@@ -3498,6 +3535,15 @@ DVZ_CPAL032_CATEGORY20_20
 DVZ_CPAL032_CATEGORY20B_20
 DVZ_CPAL032_CATEGORY20C_20
 DVZ_CPAL032_COLORBLIND8
+```
+
+### `DvzContourFlags`
+
+```
+DVZ_CONTOUR_NONE
+DVZ_CONTOUR_EDGES
+DVZ_CONTOUR_JOINTS
+DVZ_CONTOUR_FULL
 ```
 
 ### `DvzCorner`
@@ -3712,6 +3758,7 @@ DVZ_MARKER_SHAPE_COUNT
 DVZ_MESH_FLAGS_NONE
 DVZ_MESH_FLAGS_TEXTURED
 DVZ_MESH_FLAGS_LIGHTING
+DVZ_MESH_FLAGS_CONTOUR
 ```
 
 ### `DvzMockFlags`
@@ -4107,7 +4154,11 @@ struct DvzShape
     vec3* normal
     cvec4* color
     vec4* texcoords
+    vec3* d_left
+    vec3* d_right
+    cvec3* contour
     DvzIndex* index
+    double _
 ```
 
 ### `DvzTimerEvent`

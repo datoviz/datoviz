@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Common types                                                                                 */
@@ -111,6 +111,10 @@ struct DvzShape
     cvec3* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour
                      // edge, 2 if it is a corner, 4 if it should be oriented differently
     DvzIndex* index; // the index buffer
+
+    // UGLY HACK: this seems to be necessary to ensure struct size equality between C and ctypes
+    // (just checkstructs), maybe some alignment issue.
+    double _;
 };
 
 

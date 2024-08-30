@@ -152,7 +152,7 @@ def parse_structs(text):
         Optional(cStyleComment("desc")))
     structList = Group(structDecl + ZeroOrMore(structDecl))
     struct = _struct('struct') + identifier("struct_name") + LBRACE + \
-        structList("names") + RBRACE + SEMICOLON
+        structList("names") + RBRACE
 
     for item, start, stop in struct.scanString(text):
         l = []

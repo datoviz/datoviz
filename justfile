@@ -881,7 +881,7 @@ rpath:
     @objdump -x build/libdatoviz.so | grep -i 'R.*PATH'
 #
 
-api: headers symbols ctypes checkstructs doc # after every API update
+api: headers symbols ctypes doc # after every API update
 #
 
 
@@ -977,6 +977,7 @@ copyright:
             done
         done
     done
+#
 
 
 # -------------------------------------------------------------------------------------------------

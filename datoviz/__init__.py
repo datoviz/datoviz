@@ -316,6 +316,11 @@ class DvzPanzoomFlags(CtypesEnum):
     DVZ_PANZOOM_FLAGS_FIXED_Y = 0x20
 
 
+class DvzCameraFlags(CtypesEnum):
+    DVZ_CAMERA_FLAGS_PERSPECTIVE = 0x00
+    DVZ_CAMERA_FLAGS_ORTHO = 0x01
+
+
 class DvzVisualFlags(CtypesEnum):
     DVZ_VISUAL_FLAGS_DEFAULT = 0x000000
     DVZ_VISUAL_FLAGS_INDEXED = 0x010000
@@ -498,10 +503,18 @@ class DvzShapeType(CtypesEnum):
     DVZ_SHAPE_OTHER = 10
 
 
+class DvzContourFlags(CtypesEnum):
+    DVZ_CONTOUR_NONE = 0x00
+    DVZ_CONTOUR_EDGES = 0x01
+    DVZ_CONTOUR_JOINTS = 0x02
+    DVZ_CONTOUR_FULL = 0xF0
+
+
 class DvzMeshFlags(CtypesEnum):
     DVZ_MESH_FLAGS_NONE = 0x0000
     DVZ_MESH_FLAGS_TEXTURED = 0x0001
     DVZ_MESH_FLAGS_LIGHTING = 0x0002
+    DVZ_MESH_FLAGS_CONTOUR = 0x0004
 
 
 class DvzVolumeFlags(CtypesEnum):
@@ -886,6 +899,8 @@ PANZOOM_FLAGS_NONE = 0x00
 PANZOOM_FLAGS_KEEP_ASPECT = 0x01
 PANZOOM_FLAGS_FIXED_X = 0x10
 PANZOOM_FLAGS_FIXED_Y = 0x20
+CAMERA_FLAGS_PERSPECTIVE = 0x00
+CAMERA_FLAGS_ORTHO = 0x01
 VISUAL_FLAGS_DEFAULT = 0x000000
 VISUAL_FLAGS_INDEXED = 0x010000
 VISUAL_FLAGS_INDIRECT = 0x020000
@@ -1011,9 +1026,14 @@ SHAPE_CONE = 7
 SHAPE_SURFACE = 8
 SHAPE_OBJ = 9
 SHAPE_OTHER = 10
+CONTOUR_NONE = 0x00
+CONTOUR_EDGES = 0x01
+CONTOUR_JOINTS = 0x02
+CONTOUR_FULL = 0xF0
 MESH_FLAGS_NONE = 0x0000
 MESH_FLAGS_TEXTURED = 0x0001
 MESH_FLAGS_LIGHTING = 0x0002
+MESH_FLAGS_CONTOUR = 0x0004
 VOLUME_FLAGS_NONE = 0x0000
 VOLUME_FLAGS_RGBA = 0x0001
 VOLUME_FLAGS_COLORMAP = 0x0002
@@ -1432,8 +1452,11 @@ class DvzShape(ctypes.Structure):
         ("normal", ctypes.POINTER(ctypes.c_float * 3)),
         ("color", ctypes.POINTER(ctypes.c_uint8 * 4)),
         ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
+        ("d_left", ctypes.POINTER(ctypes.c_float * 3)),
+        ("d_right", ctypes.POINTER(ctypes.c_float * 3)),
+        ("contour", ctypes.POINTER(ctypes.c_uint8 * 3)),
         ("index", ctypes.POINTER(ctypes.c_uint32)),
-        ("edge", ctypes.POINTER(ctypes.c_uint8)),
+        ("_", ctypes.c_double),
     ]
 
 
@@ -1861,6 +1884,7 @@ panel_at.restype = ctypes.POINTER(DvzPanel)
 panel_camera = dvz.dvz_panel_camera
 panel_camera.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
 ]
 panel_camera.restype = ctypes.POINTER(DvzCamera)
 
@@ -1972,9 +1996,10 @@ shape_normals.argtypes = [
 # Function dvz_shape_merge()
 shape_merge = dvz.dvz_shape_merge
 shape_merge.argtypes = [
-    ctypes.POINTER(DvzShape),  # DvzShape* merged
-    ctypes.POINTER(DvzShape),  # DvzShape* to_merge
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.POINTER(DvzShape),  # DvzShape* shapes
 ]
+shape_merge.restype = DvzShape
 
 # Function dvz_shape_print()
 shape_print = dvz.dvz_shape_print
@@ -1986,6 +2011,7 @@ shape_print.argtypes = [
 shape_unindex = dvz.dvz_shape_unindex
 shape_unindex.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_int,  # int flags
 ]
 
 # Function dvz_shape_destroy()
@@ -2949,13 +2975,33 @@ mesh_normal.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_mesh_edge()
-mesh_edge = dvz.dvz_mesh_edge
-mesh_edge.argtypes = [
+# Function dvz_mesh_left()
+mesh_left = dvz.dvz_mesh_left
+mesh_left.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* values
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_mesh_right()
+mesh_right = dvz.dvz_mesh_right
+mesh_right.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_mesh_contour()
+mesh_contour = dvz.dvz_mesh_contour
+mesh_contour.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint8, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # cvec3* values
     ctypes.c_int,  # int flags
 ]
 
