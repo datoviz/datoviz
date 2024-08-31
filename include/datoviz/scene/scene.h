@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /* Scene                                                                                         */
@@ -40,6 +40,7 @@ typedef struct DvzArcball DvzArcball;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzList DvzList;
 typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzOrtho DvzOrtho;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzTransform DvzTransform;
 typedef struct DvzView DvzView;
@@ -93,6 +94,7 @@ struct DvzPanel
     DvzTransform* static_transform;
     DvzCamera* camera;
     DvzPanzoom* panzoom;
+    DvzOrtho* ortho;
     DvzArcball* arcball;
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
 };

@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Testing scene                                                                                */
@@ -73,12 +73,16 @@ int test_scene_1(TstSuite* suite)
     AT(dvz_panel_at(figure, (vec2){WIDTH / 2, -1}) == NULL);
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
-    ANN(pz);
+    // DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    // ANN(pz);
+
+    // Ortho.
+    DvzOrtho* ortho = dvz_panel_ortho(panel);
+    ANN(ortho);
 
     // Create a visual.
     DvzVisual* pixel = dvz_pixel(batch, 0);
-    const uint32_t n = 10000;
+    const uint32_t n = 100000;
     dvz_pixel_alloc(pixel, n);
 
 
@@ -87,7 +91,7 @@ int test_scene_1(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    cvec4* color = dvz_mock_color(n, 192);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
 

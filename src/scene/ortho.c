@@ -57,9 +57,22 @@ static inline void _normalize_pos(DvzOrtho* ortho, vec2 in, vec2 out)
 
     float w = ortho->viewport_size[0];
     float h = ortho->viewport_size[1];
+    ASSERT(h > 0);
+
+    float a = w / h;
 
     out[0] = -1 + 2 * x / w;
     out[1] = +1 - 2 * y / h;
+
+    if (w > h)
+    {
+        out[0] *= a;
+    }
+
+    if (w < h)
+    {
+        out[1] /= a;
+    }
 }
 
 
@@ -72,8 +85,11 @@ static inline void _normalize_shift(DvzOrtho* ortho, vec2 in, vec2 out)
     float w = ortho->viewport_size[0];
     float h = ortho->viewport_size[1];
 
-    out[0] = +2 * x / w;
-    out[1] = -2 * y / h;
+    float a = fmin(w, h);
+    ASSERT(a > 0);
+
+    out[0] = +2 * x / a;
+    out[1] = -2 * y / a;
 }
 
 
@@ -268,7 +284,11 @@ void dvz_ortho_mvp(DvzOrtho* ortho, DvzMVP* mvp)
     // Proj matrix (depends on the zoom).
     {
         float z = ortho->zoom;
-        glm_ortho(-1.0f / z, +1.0f / z, -1.0f / z, 1.0f / z, -10.0f, 10.0f, mvp->proj);
+        float w = ortho->viewport_size[0];
+        float h = ortho->viewport_size[1];
+        float aspect = w / h;
+        glm_ortho_default_s(aspect, 1.0 / z, mvp->proj);
+        // glm_ortho(-1.0f / z, +1.0f / z, -1.0f / z, 1.0f / z, -10.0f, 10.0f, mvp->proj);
     }
 }
 

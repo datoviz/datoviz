@@ -505,6 +505,16 @@ DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
 
 
 /**
+ * Set ortho interactivity for a panel.
+ *
+ * @param panel the panel
+ * @returns the ortho
+ */
+DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel);
+
+
+
+/**
  * Set arcball interactivity for a panel.
  *
  * @param panel the panel
