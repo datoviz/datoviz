@@ -5,14 +5,14 @@
 ### Scene
 
 - Implemented arcball GUI with sliders for rotation angles.
-- Ortho interactivity (like panzoom but with fixed aspect ratio).
+- Added ortho interactivity (like panzoom but with fixed aspect ratio).
+- Implemented automatic data update of dirty visuals.
 
 ### Visuals
 
-- Added open/close option in `path` visual.
+#### Basic visual
+
 - Added functionality in `basic` visual (point size, groups).
-- Added new _experimental_ `monoglyph` visual (pure GLSL low-quality glyph generation), works on macOS but not on Linux (?)
-- Implemented automatic data update of dirty visuals.
 
 #### Image visual
 
@@ -21,16 +21,21 @@
 - Added rounded corners and stroke options.
 - Added fill option to replace the texture by a uniform color.
 
-#### Mesh
+#### Mesh visual
 
-- Mesh wireframe option.
-- Polygon triangulation with the earcut library.
-- Polygon contour.
+- Added wireframe option in `mesh` visual.
+- Implemented polygon triangulation with the [earcut](https://github.com/mapbox/earcut.hpp) C++ library.
+- Added experimental stroke contour option for polygons (fragment shader implementation). Better implementations coming soon.
 
-### Text
+#### Path visual
+
+- Added open/close option in `path` visual.
+
+#### Text visuals
 
 - Added feature to generate a texture containing a string, using a given font.
 - Implemented multiline support in text rendering using the font API.
+- Added new _experimental_ `monoglyph` visual (pure GLSL low-quality glyph generation), works on macOS but not on Linux (?)
 
 ### GUI
 
