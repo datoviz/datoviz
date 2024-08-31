@@ -33,8 +33,8 @@
 #define DVZ_ORTHO_ZOOM_WHEEL_COEF -5.0
 #else
 // TODO: test on linux/Windows.
-#define DVZ_ORTHO_ZOOM_DRAG_COEF  .002
-#define DVZ_ORTHO_ZOOM_WHEEL_COEF 60.0
+#define DVZ_ORTHO_ZOOM_DRAG_COEF  .001
+#define DVZ_ORTHO_ZOOM_WHEEL_COEF 30.0
 #endif
 
 
@@ -245,7 +245,7 @@ void dvz_ortho_zoom_wheel(DvzOrtho* ortho, vec2 dir, vec2 center_px)
     {
         d /= (float)fabs((double)d);
         vec2 shift = {0};
-        shift[0] = DVZ_ORTHO_ZOOM_WHEEL_COEF * (d);
+        shift[0] = DVZ_ORTHO_ZOOM_WHEEL_COEF * d;
         shift[1] = -a * shift[0];
         dvz_ortho_zoom_shift(ortho, shift, center_px);
         dvz_ortho_end(ortho);

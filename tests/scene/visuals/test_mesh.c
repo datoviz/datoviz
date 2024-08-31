@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Testing mesh                                                                                 */
@@ -90,7 +90,7 @@ int test_mesh_1(TstSuite* suite)
 
 int test_mesh_polygon(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_PANZOOM, 0);
+    VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_ORTHO, 0);
 
     // Polygon.
     uint32_t n = 24;
@@ -157,13 +157,25 @@ int test_mesh_polygon(TstSuite* suite)
 //     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
 // }
 
-#define POS(x) {x[0], x[1], x[2]}
+#define POS(x)                                                                                    \
+    {                                                                                             \
+        x[0], x[1], x[2]                                                                          \
+    }
 
 #define COUNT (3 * 3)
 
-#define R {255, 0, 0, 255}
-#define G {0, 255, 0, 255}
-#define B {0, 0, 255, 255}
+#define R                                                                                         \
+    {                                                                                             \
+        255, 0, 0, 255                                                                            \
+    }
+#define G                                                                                         \
+    {                                                                                             \
+        0, 255, 0, 255                                                                            \
+    }
+#define B                                                                                         \
+    {                                                                                             \
+        0, 0, 255, 255                                                                            \
+    }
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
 {
@@ -304,7 +316,7 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
 
 int test_mesh_stroke(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_NONE, DVZ_CANVAS_FLAGS_IMGUI);
+    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
@@ -319,11 +331,6 @@ int test_mesh_stroke(TstSuite* suite)
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
-
-    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
-    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
-    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
-    dvz_transform_update(vt.panel->transform);
 
     // Angle GUI.
     vt.visual = visual;
@@ -347,7 +354,7 @@ static inline float dot_ortho_u(vec3 p, vec3 q, vec2 u)
 
 int test_mesh_contour(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_NONE, 0);
+    VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_ORTHO, 0);
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
@@ -399,14 +406,8 @@ int test_mesh_contour(TstSuite* suite)
     // Stroke.
     dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20.0});
 
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
-
-    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
-    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
-    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
-    dvz_transform_update(vt.panel->transform);
 
     // Run the test.
     visual_test_end(vt);
@@ -637,22 +638,17 @@ int test_mesh_geo(TstSuite* suite)
     FREE(shapes);
 
 
-    VisualTest vt = visual_test_start("mesh_geo", VISUAL_TEST_PANZOOM, 0);
+    VisualTest vt = visual_test_start("mesh_geo", VISUAL_TEST_ORTHO, 0);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 1});
+    dvz_mesh_stroke(visual, (vec4){.95, .95, .95, 1});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
-
-    vt.panel->camera = dvz_panel_camera(vt.panel, DVZ_CAMERA_FLAGS_ORTHO);
-    DvzMVP* mvp = dvz_transform_mvp(vt.panel->transform);
-    dvz_camera_mvp(vt.panel->camera, mvp); // set the view and proj matrices
-    dvz_transform_update(vt.panel->transform);
 
     // Run the test.
     visual_test_end(vt);
