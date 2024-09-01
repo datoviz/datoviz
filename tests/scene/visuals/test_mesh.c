@@ -537,7 +537,7 @@ int test_mesh_obj(TstSuite* suite)
     shape.isoline = (float*)calloc(shape.vertex_count, sizeof(float));
     for (uint32_t i = 0; i < shape.vertex_count; i++)
     {
-        shape.isoline[i] = shape.pos[i][2];
+        shape.isoline[i] = .5 * (1 + shape.pos[i][1]) + .1 * sin(1 * M_2PI * shape.pos[i][0]);
     }
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
@@ -557,6 +557,7 @@ int test_mesh_obj(TstSuite* suite)
     vec4 stroke = {.25, .25, .25, .5f};
     // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
     dvz_mesh_linewidth(visual, 1);
+    dvz_mesh_density(visual, 10);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

@@ -27,7 +27,7 @@
 /*  Macros and utils                                                                             */
 /*************************************************************************************************/
 
-#define COPY_SCALAR(x, y) x[3 * i + 0] = shape->x[y];
+#define COPY_SCALAR(x, idx, y) x[3 * i + idx] = shape->x[y];
 
 #define COPY_VEC3(x, idx, y)                                                                      \
     x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
@@ -469,7 +469,9 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
         if (shape->isoline != NULL)
         {
-            COPY_SCALAR(isoline, v0r)
+            COPY_SCALAR(isoline, 0, v0r)
+            COPY_SCALAR(isoline, 1, v1r)
+            COPY_SCALAR(isoline, 2, v2r)
         }
     }
     FREE(shape->pos);

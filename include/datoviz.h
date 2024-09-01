@@ -2254,6 +2254,16 @@ DVZ_EXPORT void dvz_mesh_linewidth(DvzVisual* visual, float linewidth);
 
 
 /**
+ * Set the number of isolines
+ *
+ * @param visual the mesh
+ * @param count the number of isolines
+ */
+DVZ_EXPORT void dvz_mesh_density(DvzVisual* visual, uint32_t count);
+
+
+
+/**
  * Create a mesh out of a shape.
  *
  * @param batch the batch

@@ -3084,6 +3084,13 @@ mesh_linewidth.argtypes = [
     ctypes.c_float,  # float linewidth
 ]
 
+# Function dvz_mesh_density()
+mesh_density = dvz.dvz_mesh_density
+mesh_density.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t count
+]
+
 # Function dvz_mesh_shape()
 mesh_shape = dvz.dvz_mesh_shape
 mesh_shape.argtypes = [

@@ -69,9 +69,10 @@ struct DvzMeshTexturedVertex
 
 struct DvzMeshParams
 {
-    vec4 light_pos;    /* light position */
-    vec4 light_params; /* ambient, diffuse, specular coefs */
-    vec4 stroke;       /* r, g, b, stroke width */
+    vec4 light_pos;         /* light position */
+    vec4 light_params;      /* ambient, diffuse, specular, exponent */
+    vec4 stroke;            /* r, g, b, stroke width */
+    uint32_t isoline_count; /* number of isolines */
 };
 
 

@@ -150,6 +150,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
     dvz_params_attr(params, 2, FIELD(DvzMeshParams, stroke));
+    dvz_params_attr(params, 3, FIELD(DvzMeshParams, isoline_count));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
@@ -158,6 +159,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Default stroke parameters.
     dvz_mesh_stroke(visual, (cvec4){STROKE});
     dvz_mesh_linewidth(visual, LINEWIDTH);
+    dvz_mesh_density(visual, 10);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -364,6 +366,14 @@ void dvz_mesh_linewidth(DvzVisual* visual, float stroke_width)
     memcpy(stroke, item, sizeof(vec4));
     stroke[3] = stroke_width;
     dvz_visual_param(visual, 2, 2, stroke);
+}
+
+
+
+void dvz_mesh_density(DvzVisual* visual, uint32_t count)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 3, &count);
 }
 
 

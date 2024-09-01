@@ -134,7 +134,7 @@ void main()
     CLIP;
 
     // DEBUG
-    // out_color = vec4(in_isoline);
+    // out_color = vec4(in_isoline, 1, 0, 1);
     // return;
 
     // if (in_clip < -eps)
@@ -243,9 +243,8 @@ void main()
     if (MESH_ISOLINE > 0)
     {
         // Calculate the normalized distance to the nearest contour line
-        float value = (1 + in_pos.y);
-        int isoline_count = 10;
-        float isoline = logContours(value, isoline_count, linewidth);
+        float value = in_isoline; //(1 + in_pos.y)
+        float isoline = logContours(value, params.isoline_count, linewidth);
         out_color.rgb = mix(out_color.rgb, stroke, isoline);
     }
 }

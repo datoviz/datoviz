@@ -176,6 +176,7 @@ dvz_mesh_light_pos
 dvz_mesh_light_params
 dvz_mesh_stroke
 dvz_mesh_linewidth
+dvz_mesh_density
 dvz_mesh_shape
 dvz_mesh_reshape
 dvz_sphere

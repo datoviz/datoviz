@@ -1513,6 +1513,17 @@ void dvz_mesh_contour(
 )
 ```
 
+### `dvz_mesh_density()`
+
+Set the number of isolines
+
+```c
+void dvz_mesh_density(
+    DvzVisual* visual,  // the mesh
+    uint32_t count,  // the number of isolines
+)
+```
+
 ### `dvz_mesh_index()`
 
 Set the mesh indices.
