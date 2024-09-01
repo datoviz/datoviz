@@ -24,6 +24,7 @@
 #### Mesh visual
 
 - Added wireframe option in `mesh` visual.
+- Added mesh isolines.
 - Implemented polygon triangulation with the [earcut](https://github.com/mapbox/earcut.hpp) C++ library.
 - Added experimental stroke contour option for polygons (fragment shader implementation). Better implementations coming soon.
 
