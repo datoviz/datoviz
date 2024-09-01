@@ -28,11 +28,9 @@
 // before tweaking WHEEL_COEFF.
 #if OS_MACOS
 // HACK: touchpad wheel too sensitive on macOS
-// TODO
-#define DVZ_ORTHO_ZOOM_DRAG_COEF  .003
-#define DVZ_ORTHO_ZOOM_WHEEL_COEF -5.0
+#define DVZ_ORTHO_ZOOM_DRAG_COEF  .001
+#define DVZ_ORTHO_ZOOM_WHEEL_COEF -2.0
 #else
-// TODO: test on linux/Windows.
 #define DVZ_ORTHO_ZOOM_DRAG_COEF  .001
 #define DVZ_ORTHO_ZOOM_WHEEL_COEF 30.0
 #endif
