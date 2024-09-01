@@ -99,7 +99,7 @@ int test_mesh_polygon(TstSuite* suite)
     for (uint32_t i = 0; i < n; i++)
     {
         // r = .75 + .25 * 2 * (dvz_rand_double() - 1.0);
-        r = .5 + .25 * (+1 - 2 * ((int32_t)i % 2));
+        r = .5 + .1 * (+1 - 2 * ((int32_t)i % 2));
         // NOTE: (float) is required otherwise -i overflows as i is unsigned...
         points[i][0] = r * cos(-(float)i * M_2PI / n);
         points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
@@ -123,7 +123,8 @@ int test_mesh_polygon(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (vec4){.75, .75, .75, 10.0});
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 10.0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -327,7 +328,8 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 50.0});
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 50);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -404,7 +406,8 @@ int test_mesh_contour(TstSuite* suite)
     dvz_mesh_color(visual, 0, 3, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (vec4){1, 1, 1, 20.0});
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 20);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -422,7 +425,7 @@ int test_mesh_surface(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh_surface", VISUAL_TEST_ARCBALL, 0);
 
     // Grid size.
-    uint32_t row_count = 250;
+    uint32_t row_count = 150;
     uint32_t col_count = row_count;
 
     // Grid parameters.
@@ -467,7 +470,8 @@ int test_mesh_surface(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Wireframe.
-    dvz_mesh_wireframe(visual, .5);
+    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    dvz_mesh_linewidth(visual, 0.25f);
 
     // Lighting.
     dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
@@ -506,8 +510,13 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
     dvz_gui_end();
 
-    if (width_changed || stroke_changed)
-        dvz_mesh_stroke(vt->visual, stroke[0]);
+    if (stroke_changed)
+        dvz_mesh_stroke( //
+            vt->visual,
+            (cvec4){
+                round(stroke[0][0] * 255), round(stroke[0][1] * 255), round(stroke[0][2] * 255)});
+    if (width_changed)
+        dvz_mesh_linewidth(vt->visual, stroke[0][3]);
 }
 
 int test_mesh_obj(TstSuite* suite)
@@ -524,13 +533,18 @@ int test_mesh_obj(TstSuite* suite)
         return 0;
     }
 
-    // dvz_mesh_stroke(visual, (vec4){STROKE, stroke_width});
+    // Set up isoline values in the shape.
+    shape.isoline = (float*)calloc(shape.vertex_count, sizeof(float));
+    for (uint32_t i = 0; i < shape.vertex_count; i++)
+    {
+        shape.isoline[i] = shape.pos[i][2];
+    }
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR;
+    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_ISOLINE;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Lighting.
@@ -540,8 +554,9 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
-    vec4 stroke = {.25, .25, .25, 1.0};
-    dvz_mesh_wireframe(visual, stroke[3]);
+    vec4 stroke = {.25, .25, .25, .5f};
+    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    dvz_mesh_linewidth(visual, 1);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -645,7 +660,7 @@ int test_mesh_geo(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (vec4){.95, .95, .95, 1});
+    dvz_mesh_linewidth(visual, 1);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

@@ -515,6 +515,7 @@ class DvzMeshFlags(CtypesEnum):
     DVZ_MESH_FLAGS_TEXTURED = 0x0001
     DVZ_MESH_FLAGS_LIGHTING = 0x0002
     DVZ_MESH_FLAGS_CONTOUR = 0x0004
+    DVZ_MESH_FLAGS_ISOLINE = 0x0008
 
 
 class DvzVolumeFlags(CtypesEnum):
@@ -1034,6 +1035,7 @@ MESH_FLAGS_NONE = 0x0000
 MESH_FLAGS_TEXTURED = 0x0001
 MESH_FLAGS_LIGHTING = 0x0002
 MESH_FLAGS_CONTOUR = 0x0004
+MESH_FLAGS_ISOLINE = 0x0008
 VOLUME_FLAGS_NONE = 0x0000
 VOLUME_FLAGS_RGBA = 0x0001
 VOLUME_FLAGS_COLORMAP = 0x0002
@@ -1388,6 +1390,10 @@ class DvzIndex(ctypes.Structure):
     pass
 
 
+class DvzOrtho(ctypes.Structure):
+    pass
+
+
 class DvzPanel(ctypes.Structure):
     pass
 
@@ -1452,6 +1458,7 @@ class DvzShape(ctypes.Structure):
         ("normal", ctypes.POINTER(ctypes.c_float * 3)),
         ("color", ctypes.POINTER(ctypes.c_uint8 * 4)),
         ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
+        ("isoline", ctypes.POINTER(ctypes.c_float)),
         ("d_left", ctypes.POINTER(ctypes.c_float * 3)),
         ("d_right", ctypes.POINTER(ctypes.c_float * 3)),
         ("contour", ctypes.POINTER(ctypes.c_uint8 * 3)),
@@ -1894,6 +1901,13 @@ panel_panzoom.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_panzoom.restype = ctypes.POINTER(DvzPanzoom)
+
+# Function dvz_panel_ortho()
+panel_ortho = dvz.dvz_panel_ortho
+panel_ortho.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+panel_ortho.restype = ctypes.POINTER(DvzOrtho)
 
 # Function dvz_panel_arcball()
 panel_arcball = dvz.dvz_panel_arcball
@@ -2975,6 +2989,16 @@ mesh_normal.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_mesh_isoline()
+mesh_isoline = dvz.dvz_mesh_isoline
+mesh_isoline.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ctypes.c_int,  # int flags
+]
+
 # Function dvz_mesh_left()
 mesh_left = dvz.dvz_mesh_left
 mesh_left.argtypes = [
@@ -3050,14 +3074,14 @@ mesh_light_params.argtypes = [
 mesh_stroke = dvz.dvz_mesh_stroke
 mesh_stroke.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 4,  # vec4 rgb_width
+    ctypes.c_uint8 * 4,  # cvec4 rgba
 ]
 
-# Function dvz_mesh_wireframe()
-mesh_wireframe = dvz.dvz_mesh_wireframe
-mesh_wireframe.argtypes = [
+# Function dvz_mesh_linewidth()
+mesh_linewidth = dvz.dvz_mesh_linewidth
+mesh_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float stroke_width
+    ctypes.c_float,  # float linewidth
 ]
 
 # Function dvz_mesh_shape()
@@ -3616,6 +3640,78 @@ panzoom_yrange.argtypes = [
 panzoom_mvp = dvz.dvz_panzoom_mvp
 panzoom_mvp.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
+    ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
+]
+
+# Function dvz_ortho_reset()
+ortho_reset = dvz.dvz_ortho_reset
+ortho_reset.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+]
+
+# Function dvz_ortho_resize()
+ortho_resize = dvz.dvz_ortho_resize
+ortho_resize.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+]
+
+# Function dvz_ortho_flags()
+ortho_flags = dvz.dvz_ortho_flags
+ortho_flags.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_ortho_pan()
+ortho_pan = dvz.dvz_ortho_pan
+ortho_pan.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float * 2,  # vec2 pan
+]
+
+# Function dvz_ortho_zoom()
+ortho_zoom = dvz.dvz_ortho_zoom
+ortho_zoom.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float,  # float zoom
+]
+
+# Function dvz_ortho_pan_shift()
+ortho_pan_shift = dvz.dvz_ortho_pan_shift
+ortho_pan_shift.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float * 2,  # vec2 shift_px
+    ctypes.c_float * 2,  # vec2 center_px
+]
+
+# Function dvz_ortho_zoom_shift()
+ortho_zoom_shift = dvz.dvz_ortho_zoom_shift
+ortho_zoom_shift.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float * 2,  # vec2 shift_px
+    ctypes.c_float * 2,  # vec2 center_px
+]
+
+# Function dvz_ortho_end()
+ortho_end = dvz.dvz_ortho_end
+ortho_end.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+]
+
+# Function dvz_ortho_zoom_wheel()
+ortho_zoom_wheel = dvz.dvz_ortho_zoom_wheel
+ortho_zoom_wheel.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
+    ctypes.c_float * 2,  # vec2 dir
+    ctypes.c_float * 2,  # vec2 center_px
+]
+
+# Function dvz_ortho_mvp()
+ortho_mvp = dvz.dvz_ortho_mvp
+ortho_mvp.argtypes = [
+    ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
 ]
 

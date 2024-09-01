@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Common enums                                                                                 */
@@ -451,6 +451,7 @@ typedef enum
     DVZ_MESH_FLAGS_TEXTURED = 0x0001,
     DVZ_MESH_FLAGS_LIGHTING = 0x0002,
     DVZ_MESH_FLAGS_CONTOUR = 0x0004,
+    DVZ_MESH_FLAGS_ISOLINE = 0x0008,
 } DvzMeshFlags;
 
 

@@ -36,6 +36,7 @@ dvz_panel_contains
 dvz_panel_at
 dvz_panel_camera
 dvz_panel_panzoom
+dvz_panel_ortho
 dvz_panel_arcball
 dvz_panel_update
 dvz_panel_visual
@@ -164,6 +165,7 @@ dvz_mesh_position
 dvz_mesh_color
 dvz_mesh_texcoords
 dvz_mesh_normal
+dvz_mesh_isoline
 dvz_mesh_left
 dvz_mesh_right
 dvz_mesh_contour
@@ -173,7 +175,7 @@ dvz_mesh_alloc
 dvz_mesh_light_pos
 dvz_mesh_light_params
 dvz_mesh_stroke
-dvz_mesh_wireframe
+dvz_mesh_linewidth
 dvz_mesh_shape
 dvz_mesh_reshape
 dvz_sphere
@@ -244,6 +246,16 @@ dvz_panzoom_zoom_wheel
 dvz_panzoom_xrange
 dvz_panzoom_yrange
 dvz_panzoom_mvp
+dvz_ortho_reset
+dvz_ortho_resize
+dvz_ortho_flags
+dvz_ortho_pan
+dvz_ortho_zoom
+dvz_ortho_pan_shift
+dvz_ortho_zoom_shift
+dvz_ortho_end
+dvz_ortho_zoom_wheel
+dvz_ortho_mvp
 dvz_gui_pos
 dvz_gui_corner
 dvz_gui_size

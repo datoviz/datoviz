@@ -2115,6 +2115,20 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 /**
+ * Set the isolines values.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the scalar field for which to draw isolines
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_isoline(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
  * Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
  * ABC.
  *
@@ -2218,22 +2232,24 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
 
 
 /**
- * Set the stroke color and width.
+ * Set the stroke color.
+ *
+ * Note: the alpha component is currently unused.
  *
  * @param visual the mesh
- * @param stroke the rgb components define the color, the a component defines the width in pixels
+ * @param stroke the rgba components
  */
-DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, vec4 rgb_width);
+DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba);
 
 
 
 /**
- * Show mesh wireframe (calls dvz_mesh_barycentric() and dvz_mesh_stroke() with sensible defaults).
+ * Set the stroke linewidth (wireframe or isoline).
  *
  * @param visual the mesh
- * @param stroke_width wireframe stroke width
+ * @param linewidth the line width
  */
-DVZ_EXPORT void dvz_mesh_wireframe(DvzVisual* visual, float stroke_width);
+DVZ_EXPORT void dvz_mesh_linewidth(DvzVisual* visual, float linewidth);
 
 
 
@@ -3065,7 +3081,7 @@ DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 
 /*************************************************************************************************/
-/*  Ortho                                                                                      */
+/*  Ortho                                                                                        */
 /*************************************************************************************************/
 
 /**

@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 #version 450
 #include "common.glsl"
@@ -12,12 +12,18 @@
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec4 uvcolor; // color or texture, contains either rgba, or uv*a
+
+// scalar value for isolines.
+layout(location = 3) in float isoline;
+
 // distance of the current vertex between the left edge and point A, B, C
-layout(location = 3) in vec3 d_left;
+layout(location = 4) in vec3 d_left;
+
 // distance of the current vertex between the right edge and point A, B, C
-layout(location = 4) in vec3 d_right;
+layout(location = 5) in vec3 d_right;
+
 // 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner
-layout(location = 5) in ivec3 contour;
+layout(location = 6) in ivec3 contour;
 
 // Varying variables.
 layout(location = 0) out vec3 out_pos;
@@ -27,15 +33,17 @@ layout(location = 3) out vec3 out_barycentric;
 layout(location = 4) out vec3 out_d_left;
 layout(location = 5) out vec3 out_d_right;
 layout(location = 6) out ivec3 out_contour;
+layout(location = 7) out float out_isoline;
 
 
 void main()
 {
     gl_Position = transform(pos);
 
-    out_pos = ((mvp.model * vec4(pos, 1.0))).xyz;
+    out_pos = pos.xyz;
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
+    out_isoline = isoline;
 
     // Generate barycentric coordinates.
     out_barycentric = vec3(0);

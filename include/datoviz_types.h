@@ -106,6 +106,7 @@ struct DvzShape
     vec3* normal;    // 3D normal vector at each vertex
     cvec4* color;    // RGBA color of each vertex
     vec4* texcoords; // texture coordinates as u, v, (unused), alpha
+    float* isoline;  // scalar field for isolines
     vec3* d_left;    // the distance of each vertex to the left edge adjacent to each face vertex
     vec3* d_right;   // the distance of each vertex to the right edge adjacent to each face vertex
     cvec3* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour

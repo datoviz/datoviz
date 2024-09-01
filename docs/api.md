@@ -1527,6 +1527,20 @@ void dvz_mesh_index(
 )
 ```
 
+### `dvz_mesh_isoline()`
+
+Set the isolines values.
+
+```c
+void dvz_mesh_isoline(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    float* values,  // the scalar field for which to draw isolines
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_mesh_left()`
 
 Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
@@ -1560,6 +1574,17 @@ Set the mesh light position.
 void dvz_mesh_light_pos(
     DvzVisual* visual,  // the mesh
     vec3 pos,  // the light position
+)
+```
+
+### `dvz_mesh_linewidth()`
+
+Set the stroke linewidth (wireframe or isoline).
+
+```c
+void dvz_mesh_linewidth(
+    DvzVisual* visual,  // the mesh
+    float linewidth,  // the line width
 )
 ```
 
@@ -1630,12 +1655,12 @@ DvzVisual* dvz_mesh_shape(  // returns: the mesh
 
 ### `dvz_mesh_stroke()`
 
-Set the stroke color and width.
+Set the stroke color.
 
 ```c
 void dvz_mesh_stroke(
     DvzVisual* visual,  // the mesh
-     stroke,  // the rgb components define the color, the a component defines the width in pixels
+     stroke,  // the rgba components
 )
 ```
 
@@ -1663,17 +1688,6 @@ void dvz_mesh_texture(
     DvzId tex,  // the texture ID
     DvzFilter filter,  // the texture filtering mode
     DvzSamplerAddressMode address_mode,  // the texture address mode
-)
-```
-
-### `dvz_mesh_wireframe()`
-
-Show mesh wireframe (calls dvz_mesh_barycentric() and dvz_mesh_stroke() with sensible defaults).
-
-```c
-void dvz_mesh_wireframe(
-    DvzVisual* visual,  // the mesh
-    float stroke_width,  // wireframe stroke width
 )
 ```
 
@@ -1800,6 +1814,118 @@ DvzMVP dvz_mvp(  // returns: the MVP structure
 )
 ```
 
+### `dvz_ortho_end()`
+
+End an ortho interaction.
+
+```c
+void dvz_ortho_end(
+    DvzOrtho* ortho,  // the ortho
+)
+```
+
+### `dvz_ortho_flags()`
+
+Set the ortho flags.
+
+```c
+void dvz_ortho_flags(
+    DvzOrtho* ortho,  // the ortho
+    int flags,  // the flags
+)
+```
+
+### `dvz_ortho_mvp()`
+
+Apply an MVP matrix to an ortho.
+
+```c
+void dvz_ortho_mvp(
+    DvzOrtho* ortho,  // the ortho
+    DvzMVP* mvp,  // the MVP
+)
+```
+
+### `dvz_ortho_pan()`
+
+Apply a pan value to an ortho.
+
+```c
+void dvz_ortho_pan(
+    DvzOrtho* ortho,  // the ortho
+    vec2 pan,  // the pan, in NDC
+)
+```
+
+### `dvz_ortho_pan_shift()`
+
+Apply a pan shift to an ortho.
+
+```c
+void dvz_ortho_pan_shift(
+    DvzOrtho* ortho,  // the ortho
+    vec2 shift_px,  // the shift value, in pixels
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
+### `dvz_ortho_reset()`
+
+Reset an ortho.
+
+```c
+void dvz_ortho_reset(
+    DvzOrtho* ortho,  // the ortho
+)
+```
+
+### `dvz_ortho_resize()`
+
+Inform an ortho of a panel resize.
+
+```c
+void dvz_ortho_resize(
+    DvzOrtho* ortho,  // the ortho
+    float width,  // the panel width
+    float height,  // the panel height
+)
+```
+
+### `dvz_ortho_zoom()`
+
+Apply a zoom value to an ortho.
+
+```c
+void dvz_ortho_zoom(
+    DvzOrtho* ortho,  // the ortho
+    float zoom,  // the zoom level
+)
+```
+
+### `dvz_ortho_zoom_shift()`
+
+Apply a zoom shift to an ortho.
+
+```c
+void dvz_ortho_zoom_shift(
+    DvzOrtho* ortho,  // the ortho
+    vec2 shift_px,  // the shift value, in pixels
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
+### `dvz_ortho_zoom_wheel()`
+
+Apply a wheel zoom to an ortho.
+
+```c
+void dvz_ortho_zoom_wheel(
+    DvzOrtho* ortho,  // the ortho
+    vec2 dir,  // the wheel direction
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
 ### `dvz_panel()`
 
 Create a panel in a figure (partial or complete rectangular portion of a figure).
@@ -1912,6 +2038,16 @@ void dvz_panel_mvpmat(
     mat4 model,  // the model matrix
     mat4 view,  // the view matrix
     mat4 proj,  // the projection matrix
+)
+```
+
+### `dvz_panel_ortho()`
+
+Set ortho interactivity for a panel.
+
+```c
+DvzOrtho* dvz_panel_ortho(  // returns: the ortho
+    DvzPanel* panel,  // the panel
 )
 ```
 
@@ -3759,6 +3895,7 @@ DVZ_MESH_FLAGS_NONE
 DVZ_MESH_FLAGS_TEXTURED
 DVZ_MESH_FLAGS_LIGHTING
 DVZ_MESH_FLAGS_CONTOUR
+DVZ_MESH_FLAGS_ISOLINE
 ```
 
 ### `DvzMockFlags`
@@ -4154,6 +4291,7 @@ struct DvzShape
     vec3* normal
     cvec4* color
     vec4* texcoords
+    float* isoline
     vec3* d_left
     vec3* d_right
     cvec3* contour

@@ -1,18 +1,21 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 #version 450
 #include "common.glsl"
+#include "constants.glsl"
 #include "params_mesh.glsl"
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
 layout(constant_id = 2) const int MESH_CONTOUR = 0;  // 1 to enable
+layout(constant_id = 3) const int MESH_ISOLINE = 0;  // 1 to enable
 
 const float eps = .00001;
+const float antialias_ = 2 * antialias;
 
 // Varying variables.
 layout(location = 0) in vec3 in_pos;
@@ -22,6 +25,7 @@ layout(location = 3) in vec3 in_barycentric;
 layout(location = 4) in vec3 in_d_left;
 layout(location = 5) in vec3 in_d_right;
 layout(location = 6) flat in ivec3 in_contour;
+layout(location = 7) in float in_isoline;
 
 layout(location = 0) out vec4 out_color;
 
@@ -75,7 +79,7 @@ vec2 edge(vec3 barycentric, vec3 deltas, ivec3 edge, float linewidth)
 
     float scale = linewidth;
     vec3 a = deltas * scale;
-    vec3 b = deltas * (scale + 1);
+    vec3 b = deltas * (scale + antialias_);
 
     vec3 stepped = smoothstep(a, b, barycentric);
     float x = stepped.x;
@@ -103,6 +107,26 @@ vec2 edge(vec3 barycentric, vec3 deltas, ivec3 edge, float linewidth)
     return vec2(res, alpha);
 }
 
+// Isolines.
+// cf https://observablehq.com/@rreusser/locally-scaled-domain-coloring-part-1-contour-plots
+float logContours(float f, float spacing, float width)
+{
+    float plotVar = log2(abs(f)) * spacing;
+    float screenSpaceGradient = length(vec2(dFdx(f), dFdy(f))) / abs(f) * spacing;
+    width *= 2;
+    return smoothstep(
+        width + antialias_, width, (0.5 - abs(fract(plotVar) - 0.5)) / screenSpaceGradient);
+}
+
+// cf https://observablehq.com/@rreusser/contour-plots-with-d3-regl-and-observable
+float contourFunction(float parameter, float width, float feather)
+{
+    float w1 = width - feather * 0.5;
+    float d = length(vec2(dFdx(parameter), dFdy(parameter)));
+    float looped = 0.5 - abs(mod(parameter, 1.0) - 0.5);
+    return smoothstep(d * (w1 + feather), d * w1, looped);
+}
+
 
 
 void main()
@@ -110,7 +134,7 @@ void main()
     CLIP;
 
     // DEBUG
-    // out_color = vec4(1);
+    // out_color = vec4(in_isoline);
     // return;
 
     // if (in_clip < -eps)
@@ -122,11 +146,15 @@ void main()
     vec3 light_color = vec3(1, 1, 1); // TODO: customizable light color
     float diff, spec;
 
+    // Stroke parameters.
+    float linewidth = params.stroke.a;
+    vec3 stroke = params.stroke.rgb;
+    vec3 pos_tr;
+
     normal = normalize(in_normal);
     out_color = vec4(0, 0, 0, 1);
     diffuse = vec3(0);
     specular = vec3(0);
-
 
     // Texture.
     if (MESH_TEXTURED > 0)
@@ -143,12 +171,14 @@ void main()
     // Lighting.
     if (MESH_LIGHTING > 0)
     {
+        pos_tr = ((mvp.model * vec4(in_pos, 1.0))).xyz;
+
         // Light position and params.
         lpos = params.light_pos.xyz;
         lpar = params.light_params;
 
         // Light direction.
-        light_dir = normalize(lpos - in_pos);
+        light_dir = normalize(lpos - pos_tr);
 
         // Ambient component.
         ambient = light_color;
@@ -160,15 +190,15 @@ void main()
         diffuse = diff * light_color;
 
         // Specular component.
-        view_dir = normalize(-mvp.view[3].xyz - in_pos);
+        view_dir = normalize(-mvp.view[3].xyz - pos_tr);
         reflect_dir = reflect(-light_dir, normal);
         spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
         specular = spec * light_color;
 
         // Total color.
         out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-        out_color.a =
-            in_uvcolor.a; // by convention, alpha channel is in 4th component of this attr
+        // by convention, alpha channel is in 4th component of this attribute
+        out_color.a = in_uvcolor.a;
     }
     else
     {
@@ -180,10 +210,6 @@ void main()
     // Stroke.
     if (MESH_CONTOUR > 0)
     {
-        // Stroke parameters.
-        float linewidth = params.stroke.a;
-        vec3 stroke = params.stroke.rgb;
-
         // Contour information.
         ivec3 bedge = (in_contour >> 0) & 1;
 
@@ -211,5 +237,15 @@ void main()
         //     alpha = smoothstep(0.0, aa, min_bary);
         // }
         // out_color.a *= alpha;
+    }
+
+    // Isoline.
+    if (MESH_ISOLINE > 0)
+    {
+        // Calculate the normalized distance to the nearest contour line
+        float value = (1 + in_pos.y);
+        int isoline_count = 10;
+        float isoline = logContours(value, isoline_count, linewidth);
+        out_color.rgb = mix(out_color.rgb, stroke, isoline);
     }
 }

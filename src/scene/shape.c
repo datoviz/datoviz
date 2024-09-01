@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Shape                                                                                        */
@@ -24,8 +24,34 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
+/*  Macros and utils                                                                             */
 /*************************************************************************************************/
+
+#define COPY_SCALAR(x, y) x[3 * i + 0] = shape->x[y];
+
+#define COPY_VEC3(x, idx, y)                                                                      \
+    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
+    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
+    x[3 * i + (idx)][2] = shape->x[y][2];
+
+#define COPY_VEC4(x, idx, y)                                                                      \
+    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
+    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
+    x[3 * i + (idx)][2] = shape->x[y][2];                                                         \
+    x[3 * i + (idx)][3] = shape->x[y][3];
+
+static inline void direction_vector(vec3 a, vec3 b, vec2 u)
+{
+    u[0] = b[0] - a[0];
+    u[1] = b[1] - a[1];
+    glm_vec2_normalize(u);
+}
+
+static inline float line_distance(vec3 p, vec3 q, vec2 u)
+{
+    float d = -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+    return d;
+}
 
 
 
@@ -95,8 +121,8 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
     merged_shape.index_count = 0;
 
     // Calculate total vertex and index counts.
-    bool has_normal = false, has_color = false, has_texcoords = false, //
-        has_d_left = false, has_d_right = false, has_contour = false, has_index = false;
+    bool has_normal = false, has_color = false, has_texcoords = false, has_isoline = false,
+         has_d_left = false, has_d_right = false, has_contour = false, has_index = false;
     for (uint32_t i = 0; i < count; i++)
     {
         // Ensures all transformations are applied before merging the shapes.
@@ -108,6 +134,7 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
         has_normal |= shapes[i].normal != NULL;
         has_color |= shapes[i].color != NULL;
         has_texcoords |= shapes[i].texcoords != NULL;
+        has_isoline |= shapes[i].isoline != NULL;
         has_d_left |= shapes[i].d_left != NULL;
         has_d_right |= shapes[i].d_right != NULL;
         has_contour |= shapes[i].contour != NULL;
@@ -122,6 +149,8 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
         merged_shape.color = (cvec4*)malloc(merged_shape.vertex_count * sizeof(cvec4));
     if (has_texcoords)
         merged_shape.texcoords = (vec4*)malloc(merged_shape.vertex_count * sizeof(vec4));
+    if (has_isoline)
+        merged_shape.isoline = (float*)malloc(merged_shape.vertex_count * sizeof(float));
     if (has_d_left)
         merged_shape.d_left = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
     if (has_d_right)
@@ -155,6 +184,11 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
             memcpy(
                 merged_shape.texcoords + vertex_offset, shape->texcoords,
                 shape->vertex_count * sizeof(vec4));
+
+        if (shape->isoline != NULL)
+            memcpy(
+                merged_shape.isoline + vertex_offset, shape->isoline,
+                shape->vertex_count * sizeof(float));
 
         if (shape->d_left != NULL)
             memcpy(
@@ -201,30 +235,6 @@ void dvz_shape_print(DvzShape* shape)
 
 
 
-#define COPY_VEC3(x, idx, y)                                                                      \
-    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
-    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
-    x[3 * i + (idx)][2] = shape->x[y][2];
-
-#define COPY_VEC4(x, idx, y)                                                                      \
-    x[3 * i + (idx)][0] = shape->x[y][0];                                                         \
-    x[3 * i + (idx)][1] = shape->x[y][1];                                                         \
-    x[3 * i + (idx)][2] = shape->x[y][2];                                                         \
-    x[3 * i + (idx)][3] = shape->x[y][3];
-
-static inline void direction_vector(vec3 a, vec3 b, vec2 u)
-{
-    u[0] = b[0] - a[0];
-    u[1] = b[1] - a[1];
-    glm_vec2_normalize(u);
-}
-
-static inline float line_distance(vec3 p, vec3 q, vec2 u)
-{
-    float d = -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
-    return d;
-}
-
 void dvz_shape_unindex(DvzShape* shape, int flags)
 {
     ANN(shape);
@@ -250,6 +260,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     cvec4* color = NULL;
     vec3* normal = NULL;
     vec4* texcoords = NULL;
+    float* isoline = NULL;
     vec3* d_left = NULL;
     vec3* d_right = NULL;
     cvec3* contour = NULL;
@@ -260,6 +271,8 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         normal = (vec3*)calloc(index_count, sizeof(vec3));
     if (shape->texcoords != NULL)
         texcoords = (vec4*)calloc(index_count, sizeof(vec4));
+    if (shape->isoline != NULL)
+        isoline = (float*)calloc(index_count, sizeof(float));
 
     d_left = (vec3*)calloc(index_count, sizeof(vec3));
     d_right = (vec3*)calloc(index_count, sizeof(vec3));
@@ -453,6 +466,11 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             COPY_VEC4(texcoords, 1, v1r)
             COPY_VEC4(texcoords, 2, v2r)
         }
+
+        if (shape->isoline != NULL)
+        {
+            COPY_SCALAR(isoline, v0r)
+        }
     }
     FREE(shape->pos);
     shape->pos = pos;
@@ -460,6 +478,12 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     shape->d_left = d_left;
     shape->d_right = d_right;
     shape->contour = contour;
+
+    if (shape->isoline != NULL)
+    {
+        FREE(shape->isoline);
+        shape->isoline = isoline;
+    }
 
     if (shape->color != NULL)
     {
@@ -496,10 +520,15 @@ void dvz_shape_destroy(DvzShape* shape)
 {
     ANN(shape);
     FREE(shape->pos);
-    FREE(shape->index);
     FREE(shape->color);
     FREE(shape->texcoords);
     FREE(shape->normal);
+    FREE(shape->d_left);
+    FREE(shape->d_right);
+    FREE(shape->contour);
+    FREE(shape->isoline);
+
+    FREE(shape->index);
 }
 
 
