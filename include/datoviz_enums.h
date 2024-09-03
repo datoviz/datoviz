@@ -251,6 +251,9 @@ typedef enum
 // NOTE: we only included the most common ones, this list can be completed as needed.
 // IMPORTANT: the original Vulkan enum values need to be used:
 // see https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkFormat.html
+//
+// NOTE: see https://vulkan.gpuinfo.org/listbufferformats.php for hardware support
+// Avoid using poorly-supported formats.
 typedef enum
 {
     DVZ_FORMAT_NONE = 0,
@@ -262,12 +265,10 @@ typedef enum
     DVZ_FORMAT_R8G8_SNORM = 17,
     DVZ_FORMAT_R8G8_UINT = 20,
     DVZ_FORMAT_R8G8_SINT = 21,
-    DVZ_FORMAT_R8G8B8_UNORM = 23,
-    DVZ_FORMAT_R8G8B8_SNORM = 24,
-    DVZ_FORMAT_R8G8B8_UINT = 27,
-    DVZ_FORMAT_R8G8B8_SINT = 28,
-    DVZ_FORMAT_B8G8R8_UNORM = 30,
-    DVZ_FORMAT_B8G8R8_SNORM = 31,
+    DVZ_FORMAT_R8G8B8_UNORM = 23, // NOTE: poor GPU hardware support
+    DVZ_FORMAT_R8G8B8_SNORM = 24, // NOTE: poor GPU hardware support
+    DVZ_FORMAT_R8G8B8_UINT = 27,  // NOTE: poor GPU hardware support
+    DVZ_FORMAT_R8G8B8_SINT = 28,  // NOTE: poor GPU hardware support
     DVZ_FORMAT_R8G8B8A8_UNORM = 37,
     DVZ_FORMAT_R8G8B8A8_SNORM = 38,
     DVZ_FORMAT_R8G8B8A8_UINT = 41,
@@ -281,9 +282,9 @@ typedef enum
     DVZ_FORMAT_R32G32_UINT = 101,
     DVZ_FORMAT_R32G32_SINT = 102,
     DVZ_FORMAT_R32G32_SFLOAT = 103,
-    DVZ_FORMAT_R32G32B32_UINT = 104,
-    DVZ_FORMAT_R32G32B32_SINT = 105,
-    DVZ_FORMAT_R32G32B32_SFLOAT = 106,
+    DVZ_FORMAT_R32G32B32_UINT = 104,   // NOTE: weak GPU hardware support for textures
+    DVZ_FORMAT_R32G32B32_SINT = 105,   // NOTE: weak GPU hardware support for textures
+    DVZ_FORMAT_R32G32B32_SFLOAT = 106, // NOTE: weak GPU hardware support for textures
     DVZ_FORMAT_R32G32B32A32_UINT = 107,
     DVZ_FORMAT_R32G32B32A32_SINT = 108,
     DVZ_FORMAT_R32G32B32A32_SFLOAT = 109,

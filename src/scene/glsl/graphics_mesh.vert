@@ -23,7 +23,7 @@ layout(location = 4) in vec3 d_left;
 layout(location = 5) in vec3 d_right;
 
 // 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner
-layout(location = 6) in ivec3 contour;
+layout(location = 6) in ivec4 contour;
 
 // Varying variables.
 layout(location = 0) out vec3 out_pos;
@@ -50,7 +50,7 @@ void main()
     out_barycentric[gl_VertexIndex % 3] = 1;
 
     float z = total_zoom();
-    out_contour = contour;
+    out_contour = contour.xyz;
     out_d_left = d_left / z;
     out_d_right = d_right / z;
 

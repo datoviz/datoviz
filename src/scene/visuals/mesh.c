@@ -111,7 +111,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 5, FIELD(DvzMeshTexturedVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 6, FIELD(DvzMeshTexturedVertex, contour), DVZ_FORMAT_R8G8B8_SINT, 0);
+            visual, 6, FIELD(DvzMeshTexturedVertex, contour), DVZ_FORMAT_R8G8B8A8_SINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -133,7 +133,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 5, FIELD(DvzMeshColorVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 6, FIELD(DvzMeshColorVertex, contour), DVZ_FORMAT_R8G8B8_SINT, 0);
+            visual, 6, FIELD(DvzMeshColorVertex, contour), DVZ_FORMAT_R8G8B8A8_SINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));

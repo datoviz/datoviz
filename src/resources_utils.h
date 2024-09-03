@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Holds all GPU data resources (buffers, images, dats, texs)                                   */
@@ -607,7 +607,16 @@ static inline DvzSize _format_size(DvzFormat format)
     {
     case DVZ_FORMAT_R8_UNORM:
     case DVZ_FORMAT_R8_SNORM:
+    case DVZ_FORMAT_R8_UINT:
+    case DVZ_FORMAT_R8_SINT:
         return 1 * sizeof(uint8_t);
+        break;
+
+    case DVZ_FORMAT_R8G8_UNORM:
+    case DVZ_FORMAT_R8G8_SNORM:
+    case DVZ_FORMAT_R8G8_UINT:
+    case DVZ_FORMAT_R8G8_SINT:
+        return 2 * sizeof(uint8_t);
         break;
 
     case DVZ_FORMAT_R16_UNORM:
@@ -622,19 +631,34 @@ static inline DvzSize _format_size(DvzFormat format)
         break;
 
     case DVZ_FORMAT_R8G8B8_UNORM:
+    case DVZ_FORMAT_R8G8B8_SNORM:
+    case DVZ_FORMAT_R8G8B8_UINT:
+    case DVZ_FORMAT_R8G8B8_SINT:
         return 3 * sizeof(uint8_t);
         break;
 
     case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_SNORM:
     case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_R8G8B8A8_SINT:
     case DVZ_FORMAT_B8G8R8A8_UNORM:
         return 4 * sizeof(uint8_t);
         break;
 
+    case DVZ_FORMAT_R32G32_UINT:
+    case DVZ_FORMAT_R32G32_SINT:
+    case DVZ_FORMAT_R32G32_SFLOAT:
+        return 2 * sizeof(float);
+        break;
+
+    case DVZ_FORMAT_R32G32B32_UINT:
+    case DVZ_FORMAT_R32G32B32_SINT:
     case DVZ_FORMAT_R32G32B32_SFLOAT:
         return 3 * sizeof(float);
         break;
 
+    case DVZ_FORMAT_R32G32B32A32_UINT:
+    case DVZ_FORMAT_R32G32B32A32_SINT:
     case DVZ_FORMAT_R32G32B32A32_SFLOAT:
         return 4 * sizeof(float);
         break;

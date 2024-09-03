@@ -50,7 +50,7 @@ struct DvzMeshColorVertex
     float value;   /* scalar value used for isolines */
     vec3 d_left;   /* distance of the current vertex between the left edge and point A, B, C */
     vec3 d_right;  /* distance of the current vertex between the right edge and point A, B, C */
-    cvec3 contour; /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
+    cvec4 contour; /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
 };
 
 struct DvzMeshTexturedVertex
@@ -62,7 +62,7 @@ struct DvzMeshTexturedVertex
     float value;    /* scalar value used for isolines */
     vec3 d_left;    /* distance of the current vertex between the left edge and point A, B, C */
     vec3 d_right;   /* distance of the current vertex between the right edge and point A, B, C */
-    cvec3 contour;  /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
+    cvec4 contour;  /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
 };
 
 
