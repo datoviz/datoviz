@@ -156,7 +156,7 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
     if (has_d_right)
         merged_shape.d_right = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
     if (has_contour)
-        merged_shape.contour = (cvec3*)malloc(merged_shape.vertex_count * sizeof(cvec3));
+        merged_shape.contour = (cvec4*)malloc(merged_shape.vertex_count * sizeof(cvec4));
     if (has_index)
         merged_shape.index = (DvzIndex*)malloc(merged_shape.index_count * sizeof(DvzIndex));
 
@@ -203,7 +203,7 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
         if (shape->contour != NULL)
             memcpy(
                 merged_shape.contour + vertex_offset, shape->contour,
-                shape->vertex_count * sizeof(cvec3));
+                shape->vertex_count * sizeof(cvec4));
 
         // Copy and reindex the indices.
         for (uint32_t j = 0; j < shape->index_count; j++)
@@ -263,7 +263,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     float* isoline = NULL;
     vec3* d_left = NULL;
     vec3* d_right = NULL;
-    cvec3* contour = NULL;
+    cvec4* contour = NULL;
 
     if (shape->color != NULL)
         color = (cvec4*)calloc(index_count, sizeof(cvec4));
@@ -276,7 +276,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
     d_left = (vec3*)calloc(index_count, sizeof(vec3));
     d_right = (vec3*)calloc(index_count, sizeof(vec3));
-    contour = (cvec3*)calloc(index_count, sizeof(cvec3));
+    contour = (cvec4*)calloc(index_count, sizeof(cvec4));
     int32_t v0, v1, v2;
     int32_t v0r, v1r, v2r;
 

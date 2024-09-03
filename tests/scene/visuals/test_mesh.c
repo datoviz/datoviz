@@ -263,19 +263,19 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     dvz_mesh_right(visual, 0, 9, (void*)d_right, 0);
 
     // NOTE: orientation
-    cvec3 contour[] = {
-        {0, 2, 2}, // Q0
-        {0, 2, 2}, // P1
-        {0, 2, 2}, // P0
+    cvec4 contour[] = {
+        {0, 2, 2, 0}, // Q0
+        {0, 2, 2, 0}, // P1
+        {0, 2, 2, 0}, // P0
 
         // NOTE: will be overriden by the GUI
-        {2, 2, 2}, // P0
-        {2, 2, 2}, // P1
-        {2, 2, 2}, // P2
+        {2, 2, 2, 0}, // P0
+        {2, 2, 2, 0}, // P1
+        {2, 2, 2, 0}, // P2
 
-        {2, 2, 0}, // P0
-        {2, 2, 0}, // P2
-        {2, 2, 0}, // R0
+        {2, 2, 0, 0}, // P0
+        {2, 2, 0, 0}, // P2
+        {2, 2, 0, 0}, // R0
     };
     if (glm_vec2_cross(u, v) < 0)
     {
@@ -394,10 +394,10 @@ int test_mesh_contour(TstSuite* suite)
     dvz_mesh_right(visual, 0, 3, (void*)d_right, 0);
 
     // NOTE: orientation
-    cvec3 contour[] = {
-        {2 | 4, 1, 2 | 4}, // P0
-        {2 | 4, 1, 2 | 4}, // P1
-        {2 | 4, 1, 2 | 4}, // P2
+    cvec4 contour[] = {
+        {2 | 4, 1, 2 | 4, 0}, // P0
+        {2 | 4, 1, 2 | 4, 0}, // P1
+        {2 | 4, 1, 2 | 4, 0}, // P2
     };
     dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
 

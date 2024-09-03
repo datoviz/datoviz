@@ -109,13 +109,13 @@ struct DvzShape
     float* isoline;  // scalar field for isolines
     vec3* d_left;    // the distance of each vertex to the left edge adjacent to each face vertex
     vec3* d_right;   // the distance of each vertex to the right edge adjacent to each face vertex
-    cvec3* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour
+    cvec4* contour;  // in each face, a bit mask with 1 if the opposite edge belongs to the contour
                      // edge, 2 if it is a corner, 4 if it should be oriented differently
     DvzIndex* index; // the index buffer
 
     // UGLY HACK: this seems to be necessary to ensure struct size equality between C and ctypes
     // (just checkstructs), maybe some alignment issue.
-    double _;
+    // double _;
 };
 
 

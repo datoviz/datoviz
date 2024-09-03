@@ -2169,7 +2169,7 @@ dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, 
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec3* values, int flags);
+dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
 
 
 

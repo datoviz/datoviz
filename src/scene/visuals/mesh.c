@@ -267,7 +267,7 @@ void dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* val
 
 
 
-void dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec3* values, int flags)
+void dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 6, first, count, (void*)values);

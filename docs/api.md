@@ -1508,7 +1508,7 @@ void dvz_mesh_contour(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec3* values,  // for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+    cvec4* values,  // for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
     int flags,  // the data update flags
 )
 ```
@@ -3795,8 +3795,6 @@ DVZ_FORMAT_R8G8B8_UNORM
 DVZ_FORMAT_R8G8B8_SNORM
 DVZ_FORMAT_R8G8B8_UINT
 DVZ_FORMAT_R8G8B8_SINT
-DVZ_FORMAT_B8G8R8_UNORM
-DVZ_FORMAT_B8G8R8_SNORM
 DVZ_FORMAT_R8G8B8A8_UNORM
 DVZ_FORMAT_R8G8B8A8_SNORM
 DVZ_FORMAT_R8G8B8A8_UINT
@@ -4305,9 +4303,8 @@ struct DvzShape
     float* isoline
     vec3* d_left
     vec3* d_right
-    cvec3* contour
+    cvec4* contour
     DvzIndex* index
-    double _
 ```
 
 ### `DvzTimerEvent`

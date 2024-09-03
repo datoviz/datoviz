@@ -385,8 +385,6 @@ class DvzFormat(CtypesEnum):
     DVZ_FORMAT_R8G8B8_SNORM = 24
     DVZ_FORMAT_R8G8B8_UINT = 27
     DVZ_FORMAT_R8G8B8_SINT = 28
-    DVZ_FORMAT_B8G8R8_UNORM = 30
-    DVZ_FORMAT_B8G8R8_SNORM = 31
     DVZ_FORMAT_R8G8B8A8_UNORM = 37
     DVZ_FORMAT_R8G8B8A8_SNORM = 38
     DVZ_FORMAT_R8G8B8A8_UINT = 41
@@ -941,8 +939,6 @@ FORMAT_R8G8B8_UNORM = 23
 FORMAT_R8G8B8_SNORM = 24
 FORMAT_R8G8B8_UINT = 27
 FORMAT_R8G8B8_SINT = 28
-FORMAT_B8G8R8_UNORM = 30
-FORMAT_B8G8R8_SNORM = 31
 FORMAT_R8G8B8A8_UNORM = 37
 FORMAT_R8G8B8A8_SNORM = 38
 FORMAT_R8G8B8A8_UINT = 41
@@ -1461,9 +1457,8 @@ class DvzShape(ctypes.Structure):
         ("isoline", ctypes.POINTER(ctypes.c_float)),
         ("d_left", ctypes.POINTER(ctypes.c_float * 3)),
         ("d_right", ctypes.POINTER(ctypes.c_float * 3)),
-        ("contour", ctypes.POINTER(ctypes.c_uint8 * 3)),
+        ("contour", ctypes.POINTER(ctypes.c_uint8 * 4)),
         ("index", ctypes.POINTER(ctypes.c_uint32)),
-        ("_", ctypes.c_double),
     ]
 
 
@@ -3025,7 +3020,7 @@ mesh_contour.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # cvec3* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
     ctypes.c_int,  # int flags
 ]
 
