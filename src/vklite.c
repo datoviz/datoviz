@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Vklite                                                                                       */
@@ -646,7 +646,9 @@ void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
     DvzQueues* q = &cmds->gpu->queues;
     VkQueue queue = q->queues[cmds->queue_idx];
 
-    vkQueueWaitIdle(queue);
+    // NOTE: hard synchronization on the whole GPU here, otherwise write after write hasard warning
+    // if just waiting on the queue.
+    vkDeviceWaitIdle(cmds->gpu->device);
     VkSubmitInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.commandBufferCount = cmds->count;
