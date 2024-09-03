@@ -58,6 +58,7 @@ int test_ortho_1(TstSuite* suite)
 
     DvzOrtho* ortho = dvz_ortho(WIDTH, HEIGHT, 0);
     DvzMVP mvp = dvz_mvp_default();
+    float a = (float)WIDTH / HEIGHT;
 
     // Test pan.
     {
@@ -66,13 +67,15 @@ int test_ortho_1(TstSuite* suite)
         // SHOW;
 
         PAN(.5, 0);
-        AP(1, 0);
+        AP(a, 0);
         // SHOW;
 
         PAN(.5, 0);
-        AP(2, 0);
+        // SHOW;
+        AP(2 * a, 0);
 
         PAN(-1, .5);
+        // SHOW;
         AP(0, -1);
     }
 
@@ -91,10 +94,10 @@ int test_ortho_1(TstSuite* suite)
     // Zoom with shift center.
     RESET;
     {
-        ZOOM(3, -3, 1, 0); // top right corner
+        ZOOM(5, -5, 1, 0); // top right corner
         // SHOW;
         AT(ortho->zoom > 1e6);
-        AP(-1, -1);
+        AP(-a, -1);
     }
 
     dvz_ortho_destroy(ortho);
