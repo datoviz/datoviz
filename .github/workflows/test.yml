@@ -37,4 +37,4 @@ jobs:
 
     - name: Run tests with Xvfb
       run:
-        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./build/datoviz test test_vklite
+        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24 -extension MIT-SHM" ./build/datoviz test
