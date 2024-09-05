@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Generic testing framework                                                                    */
@@ -177,6 +177,13 @@ static void print_res(int index, const char* name, int res)
     printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
 }
 
+static void print_res_begin(int index, const char* name) { printf("%50s...", name); }
+
+static void print_res_end(int index, const char* name, int res)
+{
+    printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
+}
+
 
 
 static void print_end(int index, int res)
@@ -284,9 +291,9 @@ static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user
 }
 
 
-
 static void tst_suite_run(TstSuite* suite, const char* match)
 {
+    log_trace("running testing suite");
     ANN(suite);
     TstItem* item = NULL;
     TstItem* current_fixture = NULL;
@@ -340,9 +347,10 @@ static void tst_suite_run(TstSuite* suite, const char* match)
         case TST_ITEM_TEST:
             if (item->active)
             {
+                print_res_begin(index, item->u.t.name);
                 item->u.t.res = item->u.t.function(suite);
                 cur_res = item->u.t.res;
-                print_res(index, item->u.t.name, cur_res);
+                print_res_end(index, item->u.t.name, cur_res);
                 res += cur_res == 0 ? 0 : 1;
                 index++;
             }
@@ -368,6 +376,7 @@ static void tst_suite_run(TstSuite* suite, const char* match)
 
 static void tst_suite_destroy(TstSuite* suite)
 {
+    log_trace("destroy testing suite");
     ANN(suite);
     ANN(suite->items);
     suite->n_items = 0;
