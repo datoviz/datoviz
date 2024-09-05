@@ -318,7 +318,7 @@ dockerpush:
 #
 
 act:
-    act
+    act --bind --env USING_ACT=true
 #
 
 

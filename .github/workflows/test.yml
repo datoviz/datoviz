@@ -9,8 +9,8 @@ on:
       - main
 
 env:
-  # DVZ_LOG_LEVEL: 0
-  DISPLAY: :1
+  DVZ_LOG_LEVEL: 0
+  USING_ACT: 0
 
 jobs:
   test:
@@ -21,10 +21,20 @@ jobs:
 
     steps:
     - name: Checkout Datoviz repository
+      if: env.USING_ACT == 'false'
       uses: actions/checkout@v3
 
+    - name: Allow access to X server
+      run: |
+        # sudo apt-get install -y x11-xserver-utils
+        # xhost +local:
+        # mkdir -p /dev/shm
+        # chmod 1777 /dev/shm
+
     - name: Build Datoviz
+      if: env.USING_ACT == 'false'
       run: just build || just build
 
     - name: Run tests with Xvfb
-      run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" just test
+      run:
+        xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" ./build/datoviz test test_vklite
