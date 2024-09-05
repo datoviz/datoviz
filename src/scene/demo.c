@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Demo                                                                                         */
@@ -14,6 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "_macros.h"
 #include "datoviz.h"
 #include <string.h>
 
@@ -108,7 +109,7 @@ void dvz_demo(void)
 
 
     // Common data.
-    const uint32_t n = 6;
+    uint32_t n = 6;
     float a = 1.0;
     vec3* pos = dvz_mock_band(n, (vec2){a, a});
     cvec4* color = dvz_mock_cmap(n, DVZ_CMAP_VIRIDIS, 255);
@@ -437,21 +438,31 @@ void dvz_demo(void)
         uint8_t val0 = 2;
         uint8_t val1 = 0;
         DvzSize vsize = va * vb * vc * sizeof(cvec4);
-        cvec4 col = {255, 0, 0, 2};
-        // dvz_colormap(DVZ_CMAP_VIRIDIS, val1, col);
+        cvec4 col = {0};
+        dvz_colormap(DVZ_CMAP_VIRIDIS, 128, col);
+        col[3] = 64;
 
         // Generate the texture data.
         cvec4* tex_data = (cvec4*)calloc(va * vb * vc, sizeof(cvec4));
+        printf("creating volume texture (%s)\n", pretty_size(vsize));
         memset(tex_data, val0, vsize);
+        uint32_t idx = 0;
         for (uint32_t i = a0 - d0; i <= a0 + d0; i++)
+        {
             for (uint32_t j = a0 - d0; j <= a0 + d0; j++)
+            {
                 for (uint32_t k = a0 - d0; k <= a0 + d0; k++)
                 {
-                    tex_data[4 * (vb * vc * i + vc * j + k)][0] = col[0];
-                    tex_data[4 * (vb * vc * i + vc * j + k)][1] = col[1];
-                    tex_data[4 * (vb * vc * i + vc * j + k)][2] = col[2];
-                    tex_data[4 * (vb * vc * i + vc * j + k)][3] = col[3];
+                    idx = vb * vc * i + vc * j + k;
+                    ASSERT((4 * idx + 3) < va * vb * vc * 4);
+
+                    for (uint32_t l = 0; l < 4; l++)
+                    {
+                        tex_data[idx][l] = col[l];
+                    }
                 }
+            }
+        }
 
         tex = dvz_tex_volume(batch, DVZ_FORMAT_R8G8B8A8_UNORM, va, vb, vc, tex_data);
         dvz_volume_texture(volume, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
@@ -466,86 +477,87 @@ void dvz_demo(void)
     dvz_panel_update(p32);
 
 
-    // TODO
-    // // 3,3  SLICE
-    // DvzVisual* slice = dvz_slice(batch, DVZ_VOLUME_FLAGS_RGBA);
-    // {
-    //     dvz_slice_alloc(slice, n);
+    // 3,3  SLICE
+    DvzVisual* slice = dvz_slice(batch, DVZ_VOLUME_FLAGS_RGBA);
+    {
+        n = 12;
+        dvz_slice_alloc(slice, n);
 
-    //     vec3* p0 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* p1 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* p2 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* p3 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* uvw0 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* uvw1 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* uvw2 = (vec3*)calloc(n, sizeof(vec3));
-    //     vec3* uvw3 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* p0 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* p1 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* p2 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* p3 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* uvw0 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* uvw1 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* uvw2 = (vec3*)calloc(n, sizeof(vec3));
+        vec3* uvw3 = (vec3*)calloc(n, sizeof(vec3));
 
-    //     float sa = 1;
-    //     float dw = 2.0 * sa / (n - 1.0);
-    //     float dt = 1.0 / (n - 1.0);
-    //     float sw = 0, t = 0;
-    //     for (uint32_t i = 0; i < n; i++)
-    //     {
-    //         sw = i * dw;
-    //         p0[i][0] = -sa;
-    //         p0[i][1] = +sa;
-    //         p0[i][2] = -sa + sw;
+        float sa = 1;
+        float dw = 2.0 * sa / (n - 1.0);
+        float dt = 1.0 / (n - 1.0);
+        float sw = 0, t = 0;
+        for (uint32_t i = 0; i < n; i++)
+        {
+            sw = i * dw;
+            p0[i][0] = -sa;
+            p0[i][1] = +sa;
+            p0[i][2] = -sa + sw;
 
-    //         p1[i][0] = -sa;
-    //         p1[i][1] = -sa;
-    //         p1[i][2] = -sa + sw;
+            p1[i][0] = -sa;
+            p1[i][1] = -sa;
+            p1[i][2] = -sa + sw;
 
-    //         p2[i][0] = +sa;
-    //         p2[i][1] = -sa;
-    //         p2[i][2] = -sa + sw;
+            p2[i][0] = +sa;
+            p2[i][1] = -sa;
+            p2[i][2] = -sa + sw;
 
-    //         p3[i][0] = +sa;
-    //         p3[i][1] = +sa;
-    //         p3[i][2] = -sa + sw;
+            p3[i][0] = +sa;
+            p3[i][1] = +sa;
+            p3[i][2] = -sa + sw;
 
-    //         t = i * dt;
-    //         uvw0[i][0] = t;
-    //         uvw0[i][1] = 0;
-    //         uvw0[i][2] = 0;
+            t = i * dt;
+            uvw0[i][0] = t;
+            uvw0[i][1] = 0;
+            uvw0[i][2] = 0;
 
-    //         uvw1[i][0] = t;
-    //         uvw1[i][1] = 1;
-    //         uvw1[i][2] = 0;
+            uvw1[i][0] = t;
+            uvw1[i][1] = 1;
+            uvw1[i][2] = 0;
 
-    //         uvw2[i][0] = t;
-    //         uvw2[i][1] = 1;
-    //         uvw2[i][2] = 1;
+            uvw2[i][0] = t;
+            uvw2[i][1] = 1;
+            uvw2[i][2] = 1;
 
-    //         uvw3[i][0] = t;
-    //         uvw3[i][1] = 0;
-    //         uvw3[i][2] = 1;
-    //     }
+            uvw3[i][0] = t;
+            uvw3[i][1] = 0;
+            uvw3[i][2] = 1;
+        }
 
-    //     dvz_slice_position(slice, 0, n, p0, p1, p2, p3, 0);
-    //     dvz_slice_texcoords(slice, 0, n, uvw0, uvw1, uvw2, uvw3, 0);
+        dvz_slice_position(slice, 0, n, p0, p1, p2, p3, 0);
+        dvz_slice_texcoords(slice, 0, n, uvw0, uvw1, uvw2, uvw3, 0);
 
-    //     dvz_slice_alpha(slice, .5);
-    //     dvz_slice_texture(slice, tex, DVZ_FILTER_LINEAR,
-    //     DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+        dvz_slice_alpha(slice, .5);
+        dvz_slice_texture(slice, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 
-    //     FREE(p0);
-    //     FREE(p1);
-    //     FREE(p2);
-    //     FREE(p3);
-    //     FREE(uvw0);
-    //     FREE(uvw1);
-    //     FREE(uvw2);
-    //     FREE(uvw3);
-    // }
+        FREE(p0);
+        FREE(p1);
+        FREE(p2);
+        FREE(p3);
+        FREE(uvw0);
+        FREE(uvw1);
+        FREE(uvw2);
+        FREE(uvw3);
+    }
 
-    // legend(batch, p33, "SLICE", &af);
-    // dvz_arcball_initial(dvz_panel_arcball(p33), (vec3){+0.4, -0.8, +2.9});
-    // dvz_camera_initial(dvz_panel_camera(p33), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1,
-    // 0}); dvz_panel_visual(p33, slice, 0); dvz_panel_update(p33);
+    legend(batch, p33, "SLICE", &af);
+    dvz_arcball_initial(dvz_panel_arcball(p33), (vec3){+0.4, -0.8, +2.9});
+    dvz_camera_initial(
+        dvz_panel_camera(p33, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
+    dvz_panel_visual(p33, slice, 0);
+    dvz_panel_update(p33);
 
 
-    dvz_scene_run(scene, app, 0);
+    dvz_scene_run(scene, app, checkenv("DVZ_DEBUG") ? 5 : 0);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
 
