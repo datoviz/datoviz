@@ -773,6 +773,13 @@ static void _buffer_create(DvzBuffer* buffer)
     vmaCreateBuffer(
         gpu->allocator, &buf_info, &alloc_info, &buffer->buffer, //
         &buffer->vma.alloc, &buffer->vma.info);
+
+    if (buffer->buffer == VK_NULL_HANDLE)
+    {
+        log_error("buffer creation failed");
+        return;
+    }
+
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
@@ -872,6 +879,12 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     }
     new_buffer.size = size;
     _buffer_create(&new_buffer);
+
+    if (new_buffer.buffer == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
     // At this point, the new buffer is empty.
 
     // Handle permanent mapping.

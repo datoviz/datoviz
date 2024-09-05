@@ -337,7 +337,7 @@ static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, D
         "creating %dD image with shape %dx%dx%d and format %d", //
         dims, shape[0], shape[1], shape[2], format);
 
-    DvzImages* img = calloc(1, sizeof(DvzImages));
+    DvzImages* img = (DvzImages*)calloc(1, sizeof(DvzImages));
     _make_image(gpu, img, dims, shape, format);
     return img;
 }
@@ -468,6 +468,14 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, DvzSize size, DvzSize* al
 /*  Dat allocation                                                                               */
 /*************************************************************************************************/
 
+static inline bool _is_dat_valid(DvzDat* dat)
+{
+    ANN(dat);
+    return dat->br.buffer != NULL && dat->br.buffer->buffer != VK_NULL_HANDLE;
+}
+
+
+
 static inline DvzDat* _alloc_staging(DvzContext* ctx, DvzSize size)
 {
     ANN(ctx);
@@ -519,6 +527,12 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
     if (alignment > 0)
         ASSERT(offset % alignment == 0);
 
+    if (buffer->buffer == VK_NULL_HANDLE || offset + count * size > buffer->size)
+    {
+        log_error("dat allocation failed");
+        return;
+    }
+
     log_debug(
         "allocate dat, buffer type %d, flags %d, offset %d, %s%ssize %s", //
         type, dat->flags, offset,                                         //
@@ -535,6 +549,12 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
 static void _dat_dealloc(DvzDat* dat)
 {
     ANN(dat);
+
+    if (dat->br.buffer == NULL)
+    {
+        return;
+    }
+
     log_debug(
         "deallocate dat %u, offset %d, size %s", //
         dat, dat->br.offsets[0], pretty_size(dat->br.size));
