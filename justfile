@@ -307,7 +307,7 @@ build release="Debug":
 
 
 # -------------------------------------------------------------------------------------------------
-# Docker image
+# Docker image and CI/CD
 # -------------------------------------------------------------------------------------------------
 
 dockerpush:
@@ -315,6 +315,10 @@ dockerpush:
     docker login
     docker push rossant/datoviz_build:latest
     # docker run -it rossant/datoviz_build:latest
+#
+
+act:
+    act
 #
 
 

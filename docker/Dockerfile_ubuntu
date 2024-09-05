@@ -6,6 +6,7 @@ RUN apt-get install -y \
     build-essential \
     cmake \
     gcc \
+    git \
     ccache \
     ninja-build \
     xorg-dev \
@@ -30,13 +31,15 @@ RUN apt-get install -y \
     mesa-utils \
     nvidia-driver-460 \
     nvidia-utils-460 \
-    x11-apps
-
-# casey just
-RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+    x11-apps \
+    x11-utils
 
 # Python dependencies
 RUN pip install --break-system-packages numpy tqdm pillow pyparsing pytest wheel setuptools twine mkdocs-material
+
+# casey just
+RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash
+ENV PATH="/root/bin:$PATH"
 
 # SwiftShader
 RUN mkdir -p /tmp/swiftshader/ && \
@@ -47,7 +50,3 @@ wget https://raw.githubusercontent.com/datoviz/data/main/swiftshader/linux/vk_sw
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 ENV NVIDIA_VISIBLE_DEVICES=all
 ENV VK_ICD_FILENAMES="/tmp/swiftshader/vk_swiftshader_icd.json"
-
-# xvfb
-RUN Xvfb :99 -screen 0 1024x768x24 &
-ENV DISPLAY=:99

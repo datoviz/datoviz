@@ -1,0 +1,30 @@
+name: Test
+
+on:
+  push:
+    tags:
+      - '*'
+  pull_request:
+    branches:
+      - main
+
+env:
+  # DVZ_LOG_LEVEL: 0
+  DISPLAY: :1
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: rossant/datoviz_build
+
+    steps:
+    - name: Checkout Datoviz repository
+      uses: actions/checkout@v3
+
+    - name: Build Datoviz
+      run: just build || just build
+
+    - name: Run tests with Xvfb
+      run: xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" just test
