@@ -306,6 +306,17 @@ build release="Debug":
 #
 
 
+# -------------------------------------------------------------------------------------------------
+# Docker image
+# -------------------------------------------------------------------------------------------------
+
+dockerpush:
+    docker build -t rossant/datoviz_build:latest -f docker/Dockerfile_ubuntu .
+    docker login
+    docker push rossant/datoviz_build:latest
+    # docker run -it rossant/datoviz_build:latest
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Linux packaging
