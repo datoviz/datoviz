@@ -4,9 +4,7 @@ name: "TEST on Linux"
 on:
   push:
     branches:
-      - dev
-    # tags:
-    #   - '*'
+      - main
   pull_request:
     branches:
       - main
