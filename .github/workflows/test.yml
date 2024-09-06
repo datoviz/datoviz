@@ -2,6 +2,7 @@ name: "TEST on Linux"
 
 # Trigger on tags and PRs
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
