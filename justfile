@@ -179,7 +179,7 @@ release: headers symbols && bundledeps
 manylinux release="Release":
     #!/usr/bin/env sh
     set -e
-    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
+    DOCKER_IMAGE="rossant/datoviz_manylinux"
     BUILD_DIR="build_many"
     IMAGE_NAME="datoviz-manylinux"
     DISTDIR="dist"
@@ -197,32 +197,6 @@ manylinux release="Release":
     cat <<EOF > $BUILD_DIR/Dockerfile
     FROM $DOCKER_IMAGE
 
-    # Install dependencies
-    RUN yum install -y epel-release
-    RUN dnf config-manager --set-enabled powertools && \
-        dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-        dnf --enablerepo=epel group
-    RUN yum install --enablerepo=raven-extras -y \
-        ccache \
-        cmake \
-        ninja-build \
-        gcc \
-        gcc-c++ \
-        libXrandr-devel \
-        libXinerama-devel \
-        libXcursor-devel \
-        libXi-devel \
-        freetype-devel \
-        vulkan \
-        vulkan-tools \
-        vulkan-headers \
-        vulkan-loader \
-        glslc
-
-    # Set up environment variables
-    ENV CCACHE_DIR=/ccache
-    ENV PATH=/usr/lib/ccache:\$PATH
-
     # Copy source files into the container
     COPY . /workspace
 
@@ -238,9 +212,6 @@ manylinux release="Release":
     RUN cd build/ && \
         CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
         ninja
-
-    # Install pip wheel depedencies.
-    RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel
 
     # Copy files before building the wheel.
     RUN \
