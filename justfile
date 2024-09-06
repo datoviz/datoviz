@@ -424,6 +424,39 @@ testdeb:
 #
 
 [linux]
+wheel almalinux="0":
+    #!/usr/bin/env sh
+    set -e
+
+    # Create the wheel/ temporary directory
+    mkdir -p wheel wheel/datoviz
+
+    # Copy the Python projects files
+    cp datoviz/__init__.py wheel/datoviz/
+    cp pyproject.toml wheel/
+
+    # Copy libdatoviz
+    cp build/libdatoviz.so wheel/datoviz/
+
+    # Copy the Vulkan shared libraries
+    if [ "{{almalinux}}" != "0" ]; then
+        cp /usr/lib64/libvulkan.so.1 wheel/datoviz/
+        cp /usr/bin/glslc wheel/datoviz/
+    else
+        cp libs/vulkan/linux/libvulkan.so.1 wheel/datoviz/
+        cp bin/vulkan/linux/glslc wheel/datoviz/
+    fi
+
+    # Build the wheel
+    pip wheel wheel/ -w "dist/" --no-deps
+
+    # Rename the wheel
+    if [ "{{almalinux}}" != "0" ]; then
+        just renamewheel "manylinux_2_28_x86_64"
+    fi
+#
+
+[linux]
 testwheel:
     #!/usr/bin/env sh
     set -e
@@ -455,6 +488,42 @@ testwheel:
     docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
+#
+
+[linux]
+testwheel_local:
+    #!/usr/bin/env sh
+    set -e
+
+    # Temp directory
+    TESTDIR=/tmp/testwheel
+    rm -rf $TESTDIR
+    mkdir -p $TESTDIR
+
+    # Copy the wheel
+    cp dist/datoviz-*.whl $TESTDIR
+
+    # Virtual env
+    python3 -m venv $TESTDIR/venv
+
+    # Install the wheel in the virtual env
+    $TESTDIR/venv/bin/pip install $TESTDIR/datoviz-*.whl
+
+    # Run the demo from the wheel
+    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
+
+    if [ -f "$TESTDIR/testwheel.png" ]; then
+        filesize=$(stat -c%s "$TESTDIR/testwheel.png")
+        if [ "$filesize" -gt 180000 ]; then
+            exit 0
+        else
+            exit 1
+        fi
+    else
+        exit 1
+    fi
+
+    rm -rf $TESTDIR
 #
 
 
