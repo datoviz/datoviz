@@ -26,7 +26,7 @@ jobs:
     steps:
     - name: Checkout Datoviz repository
       if: env.USING_ACT == 0
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: recursive
 

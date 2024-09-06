@@ -1,0 +1,77 @@
+name: "RELEASE on Linux"
+
+# Trigger on tags and PRs
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '*'
+
+env:
+  DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
+  USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Use a pre-built Docker image with all build and run dependencies.
+    container:
+      image: rossant/datoviz_manylinux
+
+    # Clone the repo (except if local with "act")
+    steps:
+    - name: Checkout Datoviz repository
+      if: env.USING_ACT == 0
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    # Conditionally copy local files using rsync when USING_ACT is 1
+    - name: Sync local files with /datoviz inside container
+      if: env.USING_ACT == 1
+      run: |
+        # TODO: HACK, move to Dockerfile and reupload
+        yum install -y rsync
+        rm /usr/local/bin/just
+        curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/
+
+        mkdir -p /datoviz
+        rsync -a -v \
+          --exclude "libvulkan*" --exclude "glslc" \
+          --exclude "__pycache__" --exclude "Dockerfile" \
+          bin cli cmake data datoviz external include libs src tests tools \
+          justfile *.toml *.json *.txt *.map *.md *.cff \
+          CMakeLists.txt *.map /datoviz/
+
+    # Go to /datoviz and run "just release"
+    - name: Run release command
+      working-directory: /datoviz
+      run: |
+        mkdir -p build/
+        cd build/
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=Release || true
+        ninja || true
+        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
+        ninja
+
+    # Build the wheel
+    - name: Build the wheel
+      working-directory: /datoviz
+      run: |
+        export PATH=$PATH:/opt/python/cp38-cp38/bin/
+        just wheel almalinux=1
+
+    # Test the wheel
+    - name: Test the wheel
+      working-directory: /datoviz
+      run: |
+        export PATH=$PATH:/opt/python/cp38-cp38/bin/
+        just testwheel_local
+
+    # Upload the wheel
+    - name: Upload the wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-wheel
+        path: dist/*.whl

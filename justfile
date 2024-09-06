@@ -145,7 +145,7 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @cp -a libs/vulkan/macos/libvulkan* build/
+    @cp -a libs/vulkan/linux/libvulkan* build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
