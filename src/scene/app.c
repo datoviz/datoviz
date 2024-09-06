@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  App                                                                                          */
@@ -529,7 +529,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
         dvz_write_png(filename, board->width, board->height, rgb);
         dvz_board_free(board);
 
-        log_info("screenshot saved to %s", filename);
+        log_info("screenshot saved to %s (%s)", filename, pretty_size(dvz_file_size(filename)));
     }
 }
 
