@@ -290,8 +290,10 @@ dockerpush:
     # docker run -it rossant/datoviz_build:latest
 #
 
+# on macOS do
+# export DOCKER_HOST=$(docker context inspect | jq -r '.[0].Endpoints.docker.Host')
 act arg:
-    act --bind --env USING_ACT=1 -W .github/workflows/{{arg}}.yml
+    act --bind --env USING_ACT=1 -j {{arg}}
 #
 
 
