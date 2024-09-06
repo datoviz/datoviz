@@ -63,11 +63,9 @@ jobs:
 
     - name: FreeType fixes
       run: |
+        sudo mv /Library/Frameworks/Mono.framework /Library/Frameworks/Mono.framework~
         export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
         export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
-
-    - name: Set pkg-config path
-      run: |
         export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
 
     # Build the library (except if local with "act")
