@@ -39,6 +39,8 @@ jobs:
         rsync -a -v \
           --exclude "libvulkan*" --exclude "glslc" \
           --exclude "__pycache__" --exclude "Dockerfile" \
+          --exclude "screenshots" --exclude "volumes" --exclude "misc" \
+          --exclude "imgui/examples" \
           bin cli cmake data datoviz external include libs src tests tools \
           justfile *.toml *.json *.txt *.map *.md *.cff \
           CMakeLists.txt *.map /datoviz/
@@ -73,7 +75,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: linux-wheel
-        path: dist/*.whl
+        path: /datoviz/dist/*.whl
 
 
   # release:
