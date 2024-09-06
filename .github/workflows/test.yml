@@ -1,5 +1,6 @@
 name: Test
 
+# Trigger on tags and PRs
 on:
   push:
     tags:
@@ -9,21 +10,24 @@ on:
       - main
 
 env:
-  DVZ_LOG_LEVEL: 2
+  DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
   USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
+    # Use a pre-built Docker image with all build and run dependencies.
     container:
       image: rossant/datoviz_build
 
+    # Clone the repo (except if local with "act")
     steps:
     - name: Checkout Datoviz repository
       if: env.USING_ACT == 'false'
       uses: actions/checkout@v3
 
+    # Build the library (except if local with "act")
     - name: Build Datoviz
       if: env.USING_ACT == 'false'
       run: just build || just build
