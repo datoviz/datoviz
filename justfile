@@ -393,7 +393,7 @@ testdeb:
     fi
 
     # Create a Dockerfile for testing
-    echo "$(cat Dockerfile_ubuntu)
+    echo "$(cat docker/Dockerfile_ubuntu)
 
     COPY packaging/datoviz_*_amd64.deb /tmp/
     RUN dpkg -i /tmp/datoviz_*_amd64.deb || apt-get install -f -y
@@ -437,7 +437,7 @@ testwheel:
     xhost +
 
     # Create a Dockerfile for testing
-    echo "$(cat Dockerfile_ubuntu)
+    echo "$(cat docker/Dockerfile_ubuntu)
 
     COPY dist/datoviz-*.whl /tmp/
     RUN python3 -m venv /tmp/venv

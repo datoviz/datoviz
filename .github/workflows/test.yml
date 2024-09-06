@@ -26,12 +26,12 @@ jobs:
     # Clone the repo (except if local with "act")
     steps:
     - name: Checkout Datoviz repository
-      if: env.USING_ACT == 'false'
+      if: env.USING_ACT == 0
       uses: actions/checkout@v3
 
     # Build the library (except if local with "act")
     - name: Build Datoviz
-      if: env.USING_ACT == 'false'
+      if: env.USING_ACT == 0
       run: just build || just build
 
       # WARNING: disabling the MIT-SHM X extension is crucial as it avoid random X crashes that
