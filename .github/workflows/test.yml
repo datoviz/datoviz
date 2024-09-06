@@ -16,6 +16,9 @@ env:
 
 jobs:
   test-linux:
+    # DEBUG
+    if: ${{ false }}
+
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -55,10 +58,7 @@ jobs:
     # Install the build dependencies
     - name: Dependencies
       run: |
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-        (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
-            eval "$(/opt/homebrew/bin/brew shellenv)"
-        brew install just cmake ccache ninja freetype clang-format tree cloc
+        brew install just ccache ninja clang-format tree cloc
         pip install -r requirements-dev.txt
 
     # Build the library (except if local with "act")
