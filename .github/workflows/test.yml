@@ -9,8 +9,8 @@ on:
       - main
 
 env:
-  DVZ_LOG_LEVEL: 0
-  USING_ACT: 0
+  DVZ_LOG_LEVEL: 2
+  USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
 
 jobs:
   test:
@@ -24,17 +24,12 @@ jobs:
       if: env.USING_ACT == 'false'
       uses: actions/checkout@v3
 
-    - name: Allow access to X server
-      run: |
-        # sudo apt-get install -y x11-xserver-utils
-        # xhost +local:
-        # mkdir -p /dev/shm
-        # chmod 1777 /dev/shm
-
     - name: Build Datoviz
       if: env.USING_ACT == 'false'
       run: just build || just build
 
+      # WARNING: disabling the MIT-SHM X extension is crucial as it avoid random X crashes that
+      # make the tests fail.
     - name: Run tests with Xvfb
       run:
         xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24 -extension MIT-SHM" ./build/datoviz test
