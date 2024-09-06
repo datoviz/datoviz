@@ -180,31 +180,35 @@ just testwheel
 
 ## Release checklist
 
-1. Build in release mode with `just release`.
+Development happens on `dev` whereas `main` is stable.
+
+1. While on `dev`, build in release mode with `just release`.
 2. Run the C testing suite with `just test`.
 3. Run the Python testing suite with `just pytest`.
-4. Write the `CHANGELOG.md`.
-5. Bump to the new version with `just bump x.y.z`.
-6. Commit and tag.
-7. Build and test packages.
-   1. Linux
+4. Run GitHub Actions tests locally with `just act`.
+5. Write the `CHANGELOG.md`.
+6. Bump to the new version with `just bump x.y.z`.
+7. Merge `dev` to `main` and switch to `main`.
+8. Once on `main`, tag with the new version.
+9. Build and test packages (until this is done by CI/CD):
+   1. On a Linux computer:
       * `just release`
       * `just deb`
       * `just testdeb`
       * `just manylinux`
       * `just testwheel`
       * Wheel is in `dist/`
-   2. macOS ARM & Intel
+   2. On macOS ARM & Intel:
       * `just release`
       * `just pkg`
       * `just wheel`
       * `just testwheel`
       * Wheel is in `dist/`
-   3. Windows
+   3. On: Windows
       * `just release`
       * `just wheel`
       * `just testwheel`
       * Wheel is in `dist/`
-8. Upload packages.
-9. Bump to the new development version with `just bump a.b.c-dev`.
-10. Announcement.
+10. Upload these packages to GitHub and PyPI.
+11. Bump to the new development version with `just bump a.b.c-dev`.
+12. New release announcement.
