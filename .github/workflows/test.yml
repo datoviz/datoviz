@@ -1,8 +1,8 @@
-name: "TEST on Linux"
+name: "TEST"
 
 # Trigger on push and PR on main
 on:
-  workflow_dispatch:
+  workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
     branches:
       - main
@@ -16,9 +16,6 @@ env:
 
 jobs:
   test-linux:
-    # DEBUG
-    if: ${{ false }}
-
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -61,9 +58,12 @@ jobs:
         brew install just ccache ninja clang-format tree cloc
         pip install -r requirements-dev.txt
 
+    # HACK: the compilation fails because the compiler uses the Mono freetype which
+    # does not work for some reason. So here we just brutally remove the Mono framework
+    # that we don't need for building.
     - name: FreeType fixes
       run: |
-        sudo mv /Library/Frameworks/Mono.framework /Library/Frameworks/Mono.framework~
+        sudo rm -rf /Library/Frameworks/Mono.framework
         export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
         export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
         export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH

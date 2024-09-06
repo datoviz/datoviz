@@ -1,8 +1,8 @@
-name: "RELEASE on Linux"
+name: "RELEASE"
 
 # Trigger on tags
 on:
-  workflow_dispatch:
+  workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
     tags:
       - '*'
