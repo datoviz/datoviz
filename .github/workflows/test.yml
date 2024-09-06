@@ -3,8 +3,10 @@ name: "TEST on Linux"
 # Trigger on tags and PRs
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - dev
+    # tags:
+    #   - '*'
   pull_request:
     branches:
       - main
