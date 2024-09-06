@@ -59,7 +59,17 @@ jobs:
     - name: Dependencies
       run: |
         brew install just ccache ninja clang-format tree cloc
+        brew uninstall mono
         pip install -r requirements-dev.txt
+
+    - name: FreeType fixes
+      run: |
+        export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
+        export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
+
+    - name: Set pkg-config path
+      run: |
+        export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
 
     # Build the library (except if local with "act")
     - name: Build
