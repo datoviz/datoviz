@@ -28,6 +28,8 @@ jobs:
     - name: Checkout Datoviz repository
       if: env.USING_ACT == 0
       uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
     # Build the library (except if local with "act")
     - name: Build Datoviz
