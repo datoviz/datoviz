@@ -12,6 +12,24 @@
 /*  Generic file I/O utils                                                                       */
 /*************************************************************************************************/
 
+DvzSize dvz_file_size(const char* filename)
+{
+    FILE* file = fopen(filename, "rb"); // Open the file in binary mode
+    if (file == NULL)
+    {
+        perror("Error opening file");
+        return 0;
+    }
+
+    fseek(file, 0, SEEK_END); // Move to the end of the file
+    long size = ftell(file);  // Get the current position in bytes (i.e., the file size)
+    fclose(file);             // Close the file
+
+    return (DvzSize)size;
+}
+
+
+
 void* dvz_read_file(const char* filename, DvzSize* size)
 {
     /* The returned pointer must be freed by the caller. */
