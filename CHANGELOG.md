@@ -55,6 +55,11 @@
 - Rename upper/lower to top/bottom in API.
 - Fixed various minor bugs.
 
+### CI/CD
+
+- Create Docker image with all build and run dependencies.
+- Set up Linux build and test workflow on GitHub Actions.
+
 
 ## v0.2.0 (2024-08-05) [LATEST RELEASE]
 
