@@ -15,7 +15,7 @@ env:
   USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -24,19 +24,49 @@ jobs:
 
     # Clone the repo (except if local with "act")
     steps:
-    - name: Checkout Datoviz repository
+    - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
     # Build the library (except if local with "act")
-    - name: Build Datoviz
+    - name: Build
       if: env.USING_ACT == 0
       run: just build || just build
 
       # WARNING: disabling the MIT-SHM X extension is crucial as it avoid random X crashes that
       # make the tests fail.
-    - name: Run tests with Xvfb
+    - name: Test
       run:
         xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24 -extension MIT-SHM" ./build/datoviz test
+
+  test-macos:
+    runs-on: macos-latest
+
+    # Clone the repo (except if local with "act")
+    steps:
+    - name: Checkout
+      if: env.USING_ACT == 0
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    # Install the build dependencies
+    - name: Dependencies
+      run: |
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        (echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> ~/.zprofile
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        brew install just cmake ccache ninja freetype clang-format tree cloc
+        pip install -r requirements-dev.txt
+
+    # Build the library (except if local with "act")
+    - name: Build
+      if: env.USING_ACT == 0
+      run: just build || just build
+
+    # Run the tests
+    - name: Test
+      run:
+        ./build/datoviz test

@@ -253,6 +253,8 @@ manylinux release="Release":
 
     # Rename the wheel
     just renamewheel "manylinux_2_28_x86_64"
+
+    rm -rf wheel/
 #
 
 [windows]
@@ -425,6 +427,8 @@ wheel almalinux="0":
     if [ "{{almalinux}}" != "0" ]; then
         just renamewheel "manylinux_2_28_x86_64"
     fi
+
+    rm -rf wheel/
 #
 
 [linux]
