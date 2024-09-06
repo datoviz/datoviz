@@ -27,20 +27,15 @@ jobs:
       run: mkdir -p /datoviz
 
     # Clone the repo (except if local with "act")
-    - name: Checkout Datoviz repository
+    - name: Checkout repository
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
     # Conditionally copy local files using rsync when USING_ACT is 1
-    - name: Sync local files with /datoviz inside container
-      if: env.USING_ACT == 1
+    - name: Sync local files
       run: |
-        #yum --cacheonly install -y rsync
-        #rm /usr/local/bin/just
-        #curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/
-
         rsync -a -v \
           --exclude "libvulkan*" --exclude "glslc" \
           --exclude "__pycache__" --exclude "Dockerfile" \
@@ -49,7 +44,7 @@ jobs:
           CMakeLists.txt *.map /datoviz/
 
     # Go to /datoviz and run "just release"
-    - name: Run release command
+    - name: Build
       working-directory: /datoviz
       run: |
         mkdir -p build/
@@ -60,21 +55,21 @@ jobs:
         ninja
 
     # Build the wheel
-    - name: Build the wheel
+    - name: Wheel
       working-directory: /datoviz
       run: |
         export PATH=$PATH:/opt/python/cp38-cp38/bin/
         just wheel almalinux=1
 
     # Test the wheel
-    - name: Test the wheel
+    - name: Test
       working-directory: /datoviz
       run: |
         export PATH=$PATH:/opt/python/cp38-cp38/bin/
         just testwheel_local
 
     # Upload the wheel
-    - name: Upload the wheel
+    - name: Upload
       uses: actions/upload-artifact@v4
       with:
         name: linux-wheel
