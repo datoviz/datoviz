@@ -317,8 +317,8 @@ dockerpush:
     # docker run -it rossant/datoviz_build:latest
 #
 
-act:
-    act --bind --env USING_ACT=true
+act arg:
+    act --bind --env USING_ACT=1 -W .github/workflows/{{arg}}.yml
 #
 
 

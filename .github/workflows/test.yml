@@ -1,6 +1,6 @@
 name: "TEST on Linux"
 
-# Trigger on tags and PRs
+# Trigger on push and PR on main
 on:
   workflow_dispatch:
   push:
