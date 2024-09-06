@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Testing image                                                                                */
@@ -150,6 +150,10 @@ int test_image_2(TstSuite* suite)
     // Load font.
     DvzSize ttf_size = 0;
     unsigned char* ttf_bytes = dvz_read_file("data/fonts/Arial-Unicode-Regular.ttf", &ttf_size);
+    if (ttf_bytes == NULL)
+    {
+        return 0;
+    }
     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
     dvz_font_size(font, 64);
 

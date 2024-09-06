@@ -291,6 +291,7 @@ static void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user
 }
 
 
+
 static void tst_suite_run(TstSuite* suite, const char* match)
 {
     log_trace("running testing suite");
@@ -347,9 +348,9 @@ static void tst_suite_run(TstSuite* suite, const char* match)
         case TST_ITEM_TEST:
             if (item->active)
             {
-                print_res_begin(index, item->u.t.name);
                 item->u.t.res = item->u.t.function(suite);
                 cur_res = item->u.t.res;
+                print_res_begin(index, item->u.t.name);
                 print_res_end(index, item->u.t.name, cur_res);
                 res += cur_res == 0 ? 0 : 1;
                 index++;
