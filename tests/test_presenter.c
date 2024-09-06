@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Testing presenter                                                                            */
@@ -474,7 +474,7 @@ static void _client_timer_callback(DvzClient* client, DvzClientEvent ev)
 
     for (uint32_t i = 0; i < 10; i++)
     {
-        // _random_data(wrapper->n, (DvzGraphicsPointVertex*)wrapper->data);
+        _random_data(wrapper->n, (DvzGraphicsPointVertex*)wrapper->data);
         dvz_upload_dat(
             batch, wrapper->dat_id, 0, //
             wrapper->n * sizeof(DvzGraphicsPointVertex), wrapper->data, DVZ_UPLOAD_FLAGS_NOCOPY);

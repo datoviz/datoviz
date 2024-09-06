@@ -54,6 +54,14 @@ static inline bool _is_buffer_mappable(DvzBuffer* buffer)
 
 
 
+static inline bool _is_buffer_intended_mappable(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    return buffer->mappable_intended;
+}
+
+
+
 static inline VkBufferUsageFlags _find_buffer_usage(DvzBufferType type)
 {
     ASSERT((uint32_t)type > 0);
@@ -122,6 +130,7 @@ static void _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mapp
     ANN(buffer);
     CHECK_BUFFER_TYPE
     ASSERT(type != DVZ_BUFFER_TYPE_STAGING);
+    buffer->mappable_intended = mappable;
 
     dvz_buffer_size(buffer, size);
     VkBufferUsageFlags usage = _find_buffer_usage(type);
@@ -156,10 +165,11 @@ _make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, Dv
     ASSERT((uint32_t)type > 0);
     ASSERT(size > 0);
     DvzBuffer* buffer = _make_new_buffer(res);
+    buffer->mappable_intended = mappable;
     if (type == DVZ_BUFFER_TYPE_STAGING)
     {
         ASSERT(mappable);
-        log_debug("create new staging buffer with size %s", pretty_size(size));
+        log_debug("create new staging buffer mappable %d size %s", mappable, pretty_size(size));
         _make_staging_buffer(buffer, size);
     }
     else
@@ -187,9 +197,8 @@ static DvzBuffer* _find_shared_buffer(DvzResources* res, DvzBufferType type, boo
         ANN(buffer);
         // log_trace(
         //     "buffer %d=%d? %d=%d?", buffer->type, type, _is_buffer_mappable(buffer), mappable);
-        if (dvz_obj_is_created(&buffer->obj) && //
-            buffer->type == type &&             //
-            (_is_buffer_mappable(buffer) == mappable))
+        if (dvz_obj_is_created(&buffer->obj) && buffer->type == type &&
+            buffer->mappable_intended == mappable)
             return buffer;
         dvz_container_iter(&iter);
     }
@@ -207,8 +216,10 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
     DvzBuffer* buffer = _find_shared_buffer(res, type, mappable);
     if (buffer == NULL)
     {
-        log_trace("could not find shared buffer with type %d, so creating a new one", type);
         buffer = _make_standalone_buffer(res, type, mappable, DVZ_BUFFER_DEFAULT_SIZE);
+        log_debug(
+            "could not find shared buffer with type %d and mappable %d, so created a new one %d", //
+            type, mappable, (uint64_t)buffer->buffer);
     }
     ANN(buffer);
     return buffer;
@@ -527,7 +538,14 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
     if (alignment > 0)
         ASSERT(offset % alignment == 0);
 
-    if (buffer->buffer == VK_NULL_HANDLE || offset + count * size > buffer->size)
+    if (offset + tot_size > buffer->size)
+    {
+        log_error(
+            "buffer %d too small %d %d %d", //
+            (uint64_t)buffer->buffer, offset, tot_size, buffer->size);
+        return;
+    }
+    if (buffer->buffer == VK_NULL_HANDLE)
     {
         log_error("dat allocation failed");
         return;

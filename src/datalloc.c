@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  GPU data allocation                                                                          */
@@ -70,7 +70,9 @@ DvzSize dvz_datalloc_alloc(
     if (resized)
     {
         DvzBuffer* buffer = _get_shared_buffer(res, type, mappable);
-        log_info("resizing buffer %d (mappable: %d) to %s", type, mappable, pretty_size(resized));
+        log_info(
+            "resizing buffer %d type %d (mappable: %d) to %s", //
+            (uint64_t)buffer->buffer, type, mappable, pretty_size(resized));
         dvz_buffer_resize(buffer, resized);
     }
 
