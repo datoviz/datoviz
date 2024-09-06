@@ -59,7 +59,6 @@ jobs:
     - name: Dependencies
       run: |
         brew install just ccache ninja clang-format tree cloc
-        brew uninstall mono
         pip install -r requirements-dev.txt
 
     - name: FreeType fixes
