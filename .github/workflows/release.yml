@@ -21,8 +21,12 @@ jobs:
     container:
       image: rossant/datoviz_manylinux
 
-    # Clone the repo (except if local with "act")
+    # Create the directory
     steps:
+    - name: Make directory
+      run: mkdir -p /datoviz
+
+    # Clone the repo (except if local with "act")
     - name: Checkout Datoviz repository
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
@@ -37,7 +41,6 @@ jobs:
         #rm /usr/local/bin/just
         #curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/
 
-        mkdir -p /datoviz
         rsync -a -v \
           --exclude "libvulkan*" --exclude "glslc" \
           --exclude "__pycache__" --exclude "Dockerfile" \
