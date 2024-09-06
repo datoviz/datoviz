@@ -4,8 +4,8 @@ name: "RELEASE on Linux"
 on:
   workflow_dispatch:
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - '*'
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
