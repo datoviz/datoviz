@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 /*************************************************************************************************/
 /*  Ticks                                                                                        */
@@ -30,8 +30,11 @@
 #define Z_MAX          18
 #define PRECISION      2
 #define TARGET_DENSITY .2
-#define SCORE_WEIGHTS  {0.2, 0.25, 0.5, 0.05}
-#define CLOSE(x, y)    (fabs((x) - (y)) < EPSILON)
+#define SCORE_WEIGHTS                                                                             \
+    {                                                                                             \
+        0.2, 0.25, 0.5, 0.05                                                                      \
+    }
+#define CLOSE(x, y) (fabs((x) - (y)) < EPSILON)
 
 
 
