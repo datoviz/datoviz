@@ -75,9 +75,10 @@ if not LIB_PATH.exists():
 
 assert LIB_PATH.exists()
 try:
-    dvz = ctypes.cdll.LoadLibrary(LIB_PATH)
+    dvz = ctypes.cdll.LoadLibrary(str(LIB_PATH))
 except Exception as e:
     print(f"Error loading {LIB_PATH}: {e}")
+
     class DVZ:
         def __getattr__(self, k):
             return DVZ()
