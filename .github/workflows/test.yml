@@ -104,14 +104,16 @@ jobs:
 
     # Step 2: Set up the Git Bash shell
     - name: Install Git for Windows
-      uses: chrispat/setup-git@v1
+      uses: bwoodsend/setup-winlibs-action@v1
+      with:
+        destination: "C:"
 
-    # Step 3: Install WinLibs GCC (latest UCRT version with POSIX threads)
-    - name: Install WinLibs GCC
-      run: |
-        curl -LO https://winlibs.com/gcc-latest-ucrt-posix-64.zip
-        Expand-Archive -Path gcc-latest-ucrt-posix-64.zip -DestinationPath C:\
-        echo "C:\mingw64\bin" | Out-File -FilePath $Env:GITHUB_ENV -Append
+    # # Step 3: Install WinLibs GCC (latest UCRT version with POSIX threads)
+    # - name: Install WinLibs GCC
+    #   run: |
+    #     curl -LO https://winlibs.com/gcc-latest-ucrt-posix-64.zip
+    #     Expand-Archive -Path gcc-latest-ucrt-posix-64.zip -DestinationPath C:\
+    #     echo "C:\mingw64\bin" | Out-File -FilePath $Env:GITHUB_ENV -Append
 
     # Step 4: Install just
     - name: Install just
