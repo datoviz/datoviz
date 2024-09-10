@@ -182,11 +182,11 @@ just testwheel
 
 Development happens on `dev` whereas `main` is stable.
 
-1. While on `dev`, build in release mode with `just release`.
-2. Run the C testing suite with `just test`.
-3. Run the Python testing suite with `just pytest`.
-4. Run GitHub Actions tests locally with `just act`.
-5. Write the `CHANGELOG.md`.
+1. Write the `CHANGELOG.md`.
+2. While on `dev`, build in release mode with `just release`.
+3. Run the C testing suite with `just test`.
+4. Run the Python testing suite with `just pytest`.
+5. Run GitHub Actions tests locally with `just act`.
 6. Bump to the new version with `just bump x.y.z`.
 7. Merge `dev` to `main` and switch to `main`.
 8. Once on `main`, tag with the new version.
