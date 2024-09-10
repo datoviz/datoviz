@@ -1,0 +1,42 @@
+# Use Windows Server Core as the base image
+FROM mcr.microsoft.com/windows/servercore:ltsc2022
+
+# Set environment variables
+ENV VCPKG_ROOT="C:/vcpkg"
+ENV PATH="C:/mingw64/bin;C:/VulkanSDK/1.3.280.0/Bin;C:/vcpkg/installed/x64-windows/bin;${PATH}"
+
+# Step 1: Install Chocolatey for managing packages
+RUN powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
+    iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+
+# Step 2: Install Git for Windows
+RUN choco install git -y --params "/GitAndUnixToolsOnPath"
+
+# Step 3: Install WinLibs (GCC, Mingw64)
+RUN curl -LO https://winlibs.com/gcc-latest-ucrt-posix-64.zip && \
+    powershell -Command "Expand-Archive -Path gcc-latest-ucrt-posix-64.zip -DestinationPath C:/mingw64"
+
+# Step 4: Install Just
+RUN curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip && \
+    powershell -Command "Expand-Archive -Path just-1.35.0-x86_64-pc-windows-msvc.zip -DestinationPath C:/mingw64/bin"
+
+# Step 5: Install Vulkan SDK
+RUN curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe && \
+    Start-Process -FilePath vulkan-sdk.exe -ArgumentList "/S" -Wait
+
+# Step 6: Install Python using Chocolatey
+RUN choco install python --version=3.12 -y
+
+# Step 7: Install vcpkg
+RUN git clone https://github.com/microsoft/vcpkg.git C:/vcpkg && \
+    powershell -Command "C:/vcpkg/bootstrap-vcpkg.bat"
+
+# Step 8: Set up environment variables
+RUN setx /M VCPKG_ROOT "C:/vcpkg"
+
+# Step 9: Install Python dependencies
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r https://raw.githubusercontent.com/datoviz/datoviz/main/requirements-dev.txt
+
+# Default command
+CMD [ "powershell" ]
