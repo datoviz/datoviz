@@ -109,10 +109,16 @@ jobs:
         submodules: recursive
 
     # Build Docker image
+    # - name: Build Docker image
+    #   run: |
+    #     docker buildx create --use
+    #     docker buildx build --platform windows/amd64 -t datoviz_windows -f docker/Dockerfile_windows .
+
     - name: Build Docker image
-      run: |
-        docker buildx create --use
-        docker buildx build --platform windows/amd64 -t datoviz_windows -f docker/Dockerfile_windows .
+      uses: docker/build-push-action@v6
+      with:
+        file: docker/Dockerfile_windows
+        push: false
 
     # # Set up the Git Bash shell
     # - name: Install Git for Windows
