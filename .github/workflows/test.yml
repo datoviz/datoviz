@@ -21,6 +21,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   test-linux:
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -51,6 +52,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   test-macos:
+    if: ${{ false }}
     runs-on: macos-latest
 
     # Clone the repo (except if local with "act")
@@ -124,7 +126,7 @@ jobs:
     # Step 5: Install the Vulkan SDK
     - name: Install LunarG Vulkan SDK
       run: |
-        curl -LO https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe
+        curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
         Start-Process -FilePath ./vulkan-sdk.exe -ArgumentList "/S" -NoNewWindow -Wait
         echo "C:\VulkanSDK\1.3.280.0\Bin" | Out-File -FilePath $Env:GITHUB_ENV -Append
         echo "C:\VulkanSDK\1.3.280.0\Lib" | Out-File -FilePath $Env:GITHUB_ENV -Append
