@@ -4,8 +4,8 @@ name: "TEST"
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
   pull_request:
     branches:
       - main
