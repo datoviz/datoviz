@@ -63,11 +63,39 @@ jobs:
       with:
         submodules: recursive
 
-    # Install the build dependencies
-    - name: Dependencies
+
+    # Cache Homebrew dependencies
+    - name: Cache Homebrew
+      uses: actions/cache@v4
+      with:
+        path: |
+          /usr/local/Homebrew/Library/Homebrew
+          /usr/local/Cellar
+          /usr/local/var/homebrew/linked
+        key: ${{ runner.os }}-brew-${{ hashFiles('~/.Brewfile') }}
+        restore-keys: |
+          ${{ runner.os }}-brew-
+
+    # Install Homebrew dependencies
+    - name: Homebrew Dependencies
       run: |
+        brew update
+        brew bundle dump --force --file ~/.Brewfile || true
         brew install just ccache ninja clang-format tree cloc
-        pip install -r requirements-dev.txt
+
+    # Cache pip dependencies
+    - name: Cache pip
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    # Install pip dependencies
+    - name: Python dependencies
+      run: pip install -r requirements-dev.txt
+
 
     # HACK: the compilation fails because the compiler uses the Mono freetype which
     # does not work for some reason. So here we just brutally remove the Mono framework
