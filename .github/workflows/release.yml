@@ -4,8 +4,8 @@ name: "RELEASE"
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
-    # tags:
-    #   - '*'
+    tags:
+      - '*'
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
@@ -19,7 +19,6 @@ jobs:
 
   # Build the wheel on manylinux (AlmaLinux)
   wheel-linux:
-    if: ${{ false }}
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -73,7 +72,7 @@ jobs:
       working-directory: /datoviz
       run: |
         export PATH=$PATH:/opt/python/cp38-cp38/bin/
-        just testwheel_local
+        just checkwheel
 
     # Upload the wheel
     - name: Upload
@@ -99,7 +98,7 @@ jobs:
 
     # Install Python and required dependencies
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.12'
 

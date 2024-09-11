@@ -433,6 +433,7 @@ wheel almalinux="0":
     rm -rf wheel/
 #
 
+# Test the wheel in a Docker environment.
 [linux]
 testwheel:
     #!/usr/bin/env sh
@@ -465,42 +466,6 @@ testwheel:
     docker run --runtime=nvidia --gpus all -e DISPLAY=$DISPLAY -v /tmp/.X11-unix/:/tmp/.X11-unix/ --rm datoviz_wheel_test
 
     rm Dockerfile
-#
-
-[linux]
-testwheel_local:
-    #!/usr/bin/env sh
-    set -e
-
-    # Temp directory
-    TESTDIR=/tmp/testwheel
-    rm -rf $TESTDIR
-    mkdir -p $TESTDIR
-
-    # Copy the wheel
-    cp dist/datoviz-*.whl $TESTDIR
-
-    # Virtual env
-    python3 -m venv $TESTDIR/venv
-
-    # Install the wheel in the virtual env
-    $TESTDIR/venv/bin/pip install $TESTDIR/datoviz-*.whl
-
-    # Run the demo from the wheel
-    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
-
-    if [ -f "$TESTDIR/testwheel.png" ]; then
-        filesize=$(stat -c%s "$TESTDIR/testwheel.png")
-        if [ "$filesize" -gt 180000 ]; then
-            exit 0
-        else
-            exit 1
-        fi
-    else
-        exit 1
-    fi
-
-    rm -rf $TESTDIR
 #
 
 
@@ -687,6 +652,7 @@ wheel: checkstructs
     just showwheel
 #
 
+# Test the wheel in a virtual machine
 [macos]
 testwheel vm_ip_address="":
     #!/usr/bin/env sh
@@ -695,26 +661,27 @@ testwheel vm_ip_address="":
     TMPDIR=/tmp/datoviz_example
 
     if [ ! $IP]; then
-        # Create a new virtual environment
-        rm -rf test_env
-        python -m venv test_env --system-site-packages
+        just checkwheel
+        # # Create a new virtual environment
+        # rm -rf test_env
+        # python -m venv test_env --system-site-packages
 
-        # Activate the virtual environment
-        source test_env/bin/activate
+        # # Activate the virtual environment
+        # source test_env/bin/activate
 
-        # Install the wheel
-        pip install dist/datoviz-*.whl
+        # # Install the wheel
+        # pip install dist/datoviz-*.whl
 
-        # Run a test command
-        pushd test_env
-        python -c "import datoviz; datoviz.demo()"
-        popd
+        # # Run a test command
+        # pushd test_env
+        # python -c "import datoviz; datoviz.demo()"
+        # popd
 
-        # Deactivate the virtual environment
-        deactivate
+        # # Deactivate the virtual environment
+        # deactivate
 
-        # Optionally clean up the environment
-        rm -rf test_env
+        # # Optionally clean up the environment
+        # rm -rf test_env
         exit
     fi
 
@@ -833,35 +800,35 @@ wheel: checkstructs && showwheel
     rm -rf "$PKGROOT"
 #
 
-[windows]
-testwheel:
-    #!/usr/bin/env bash
+# [windows]
+# testwheel:
+#     #!/usr/bin/env bash
 
-    # Ensure the wheel exists
-    if [ ! -f dist/datoviz-*.whl ]; then
-        just wheel
-    fi
+#     # Ensure the wheel exists
+#     if [ ! -f dist/datoviz-*.whl ]; then
+#         just wheel
+#     fi
 
-    # Create a new virtual environment
-    python -m venv test_env
+#     # Create a new virtual environment
+#     python -m venv test_env
 
-    # Activate the virtual environment
-    source test_env/Scripts/activate
+#     # Activate the virtual environment
+#     source test_env/Scripts/activate
 
-    # Install the wheel
-    pip install dist/datoviz-*.whl
+#     # Install the wheel
+#     pip install dist/datoviz-*.whl
 
-    # Run a test command
-    pushd test_env
-    python -c "import datoviz; datoviz.demo()"
-    popd
+#     # Run a test command
+#     pushd test_env
+#     python -c "import datoviz; datoviz.demo()"
+#     popd
 
-    # Deactivate the virtual environment
-    deactivate
+#     # Deactivate the virtual environment
+#     deactivate
 
-    # Optionally clean up the environment
-    rm -rf test_env
-#
+#     # Optionally clean up the environment
+#     rm -rf test_env
+# #
 
 testpypi:
     #!/usr/bin/env bash
@@ -888,6 +855,45 @@ testpypi:
     # Cleanup the venv.
     popd
     rm -rf venv_pypi
+#
+
+checkwheel path="":
+    #!/usr/bin/env sh
+    set -e
+
+    # Temp directory
+    TESTDIR=/tmp/testwheel
+    rm -rf $TESTDIR
+    mkdir -p $TESTDIR
+
+    # Copy the wheel
+    if [ -f "{{path}}" ]; then
+        cp {{path}} $TESTDIR
+    else
+        cp dist/datoviz-*.whl $TESTDIR
+    fi
+
+    # Virtual env
+    python3 -m venv $TESTDIR/venv
+
+    # Install the wheel in the virtual env
+    $TESTDIR/venv/bin/pip install $TESTDIR/datoviz-*.whl
+
+    # Run the demo from the wheel
+    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
+
+    if [ -f "$TESTDIR/testwheel.png" ]; then
+        filesize=$(stat -c%s "$TESTDIR/testwheel.png")
+        if [ "$filesize" -gt 180000 ]; then
+            exit 0
+        else
+            exit 1
+        fi
+    else
+        exit 1
+    fi
+
+    rm -rf $TESTDIR
 #
 
 

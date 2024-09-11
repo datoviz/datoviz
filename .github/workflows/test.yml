@@ -4,8 +4,8 @@ name: "TEST"
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
-    # branches:
-    #   - main
+    branches:
+      - main
   pull_request:
     branches:
       - main
@@ -21,7 +21,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   test-linux:
-    if: ${{ false }}
+    # if: ${{ false }}
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -52,7 +52,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   test-macos:
-    if: ${{ false }}
+    # if: ${{ false }}
     runs-on: macos-latest
 
     # Clone the repo (except if local with "act")
@@ -94,6 +94,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   test-windows:
+    # WIP: await docker image
     if: ${{ false }}
     runs-on: windows-latest
     steps:
@@ -157,7 +158,7 @@ jobs:
 
     # # Install Python and required dependencies
     # - name: Setup Python
-    #   uses: actions/setup-python@v4
+    #   uses: actions/setup-python@v5
     #   with:
     #     python-version: '3.12'
 
