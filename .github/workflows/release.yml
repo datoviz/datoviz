@@ -97,6 +97,12 @@ jobs:
       with:
         submodules: recursive
 
+    # Install Python and required dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
     # Install the build dependencies
     - name: Dependencies
       run: |
@@ -121,6 +127,7 @@ jobs:
     # Build the wheel
     - name: Wheel
       run: |
+        just pydev
         just wheel
 
     # Upload the wheel
