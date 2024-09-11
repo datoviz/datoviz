@@ -4,8 +4,8 @@ name: "TEST"
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
   pull_request:
     branches:
       - main
@@ -155,7 +155,9 @@ jobs:
         curl -LO https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip
         curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip
         curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
-        if not exist C:/vcpkg (git clone https://github.com/microsoft/vcpkg.git C:/vcpkg)
+        if (!(Test-Path "C:\vcpkg")) {
+          git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+        }
 
     # Decompress the downloaded archives using 7-Zip
     - name: Decompressing
