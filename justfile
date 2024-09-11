@@ -612,7 +612,7 @@ testpkg vm_ip_address:
 #
 
 [macos]
-wheel: checkstructs
+wheel arg='': checkstructs
     #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
@@ -646,7 +646,7 @@ wheel: checkstructs
     rm -rf $PKGROOT
 
     # Rename the wheel.
-    just renamewheel
+    just renamewheel {{arg}}
 
     # Show the wheel contents.
     just showwheel
@@ -883,7 +883,11 @@ checkwheel path="":
     DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
 
     if [ -f "$TESTDIR/testwheel.png" ]; then
-        filesize=$(stat -c%s "$TESTDIR/testwheel.png")
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            filesize=$(stat -f%z "$TESTDIR/testwheel.png")
+        else
+            filesize=$(stat -c%s "$TESTDIR/testwheel.png")
+        fi
         if [ "$filesize" -gt 180000 ]; then
             exit 0
         else
