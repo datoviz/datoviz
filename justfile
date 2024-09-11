@@ -284,10 +284,10 @@ build release="Debug":
 # -------------------------------------------------------------------------------------------------
 
 dockerpush:
-    docker build -t rossant/datoviz_build:latest -f docker/Dockerfile_ubuntu .
+    docker build -t rossant/datoviz_ubuntu:latest -f docker/Dockerfile_ubuntu .
     docker login
-    docker push rossant/datoviz_build:latest
-    # docker run -it rossant/datoviz_build:latest
+    docker push rossant/datoviz_ubuntu:latest
+    # docker run -it rossant/datoviz_ubuntu:latest
 #
 
 # on macOS do
