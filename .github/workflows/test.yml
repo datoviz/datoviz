@@ -193,12 +193,6 @@ jobs:
         echo "C:/Python312" >> $GITHUB_PATH
         echo "C:/Python312/Scripts" >> $GITHUB_PATH
 
-    # Install Python dependencies (pip packages)
-    - name: Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-
 
     # Clone the repo (except if local with "act")
     - name: Checkout
@@ -206,6 +200,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: recursive
+
+    # Install Python dependencies (pip packages)
+    - name: Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
 
     # Build the project
     - name: Build
