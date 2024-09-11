@@ -228,7 +228,7 @@ manylinux release="Release":
     # # Rename the wheel.
     # RUN \
     #     WHEELPATH=$(ls dist/*any.whl 2>/dev/null) && \
-    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))") && \
+    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from setuptools.wheel import get_platform; print(get_platform('datoviz'))") && \
     #     TAG="cp3-none-$PLATFORM_TAG" && \
     #     /opt/python/cp38-cp38/bin/python -m wheel tags --platform-tag $PLATFORM_TAG "$DISTDIR/*"
 
@@ -787,7 +787,7 @@ renamewheel platform_tag='':
     WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
 
     if [ -z "{{platform_tag}}" ]; then
-        PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+        PLATFORM_TAG=$(python -c "from setuptools.wheel import get_platform; print(get_platform('datoviz'))")
     else
         PLATFORM_TAG="{{platform_tag}}"
     fi
