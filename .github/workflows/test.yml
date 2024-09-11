@@ -119,7 +119,7 @@ jobs:
       run: |
         choco install git -y --params "/GitAndUnixToolsOnPath"
         choco install 7zip -y
-        choco install python --version=3.12 -y
+        # choco install python --version=3.12 -y
 
     # Download the build dependencies
     - name: Build dependencies
