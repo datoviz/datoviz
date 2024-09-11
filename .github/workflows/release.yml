@@ -127,7 +127,7 @@ jobs:
     - name: Wheel
       run: |
         just pydev
-        just wheel
+        just wheel macosx_10_9_universal2
 
     # Upload the wheel
     - name: Upload
