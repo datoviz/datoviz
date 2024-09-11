@@ -4,8 +4,8 @@ name: "RELEASE"
 on:
   workflow_dispatch: # enable manual workflow trigger from the GitHub website
   push:
-    tags:
-      - '*'
+    # tags:
+    #   - '*'
 
 env:
   DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
@@ -13,8 +13,13 @@ env:
 
 jobs:
 
+  # -----------------------------------------------------------------------------------------------
+  # Linux
+  # -----------------------------------------------------------------------------------------------
+
   # Build the wheel on manylinux (AlmaLinux)
   wheel-linux:
+    if: ${{ false }}
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -77,6 +82,64 @@ jobs:
         name: linux-wheel
         path: /datoviz/dist/*.whl
 
+  # -----------------------------------------------------------------------------------------------
+  # macOS
+  # -----------------------------------------------------------------------------------------------
+
+  -wheel-macos:
+    runs-on: macos-latest
+
+    # Clone the repo (except if local with "act")
+    steps:
+    - name: Checkout
+      if: env.USING_ACT == 0
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    # Install the build dependencies
+    - name: Dependencies
+      run: |
+        brew install just ccache ninja clang-format tree cloc
+        pip install -r requirements-dev.txt
+
+    # HACK: the compilation fails because the compiler uses the Mono freetype which
+    # does not work for some reason. So here we just brutally remove the Mono framework
+    # that we don't need for building.
+    - name: FreeType fixes
+      run: |
+        sudo rm -rf /Library/Frameworks/Mono.framework
+        export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
+        export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
+        export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
+
+    # Build the library (except if local with "act")
+    - name: Build
+      if: env.USING_ACT == 0
+      run: just release || just release
+
+    # Build the wheel
+    - name: Wheel
+      working-directory: /datoviz
+      run: |
+        just wheel
+
+    # Upload the wheel
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-wheel
+        path: /datoviz/dist/*.whl
+
+  # -----------------------------------------------------------------------------------------------
+  # Windows
+  # -----------------------------------------------------------------------------------------------
+
+  # TODO
+
+  # -----------------------------------------------------------------------------------------------
+  # Release process
+  # -----------------------------------------------------------------------------------------------
 
   # release:
   #   runs-on: ubuntu-latest
