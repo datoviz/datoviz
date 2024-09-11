@@ -86,7 +86,7 @@ jobs:
   # macOS
   # -----------------------------------------------------------------------------------------------
 
-  -wheel-macos:
+  wheel-macos:
     runs-on: macos-latest
 
     # Clone the repo (except if local with "act")
