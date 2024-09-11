@@ -1,4 +1,4 @@
-name: "TEST on Linux"
+name: "TEST"
 
 # Trigger on tags and PRs
 on:
