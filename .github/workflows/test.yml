@@ -132,13 +132,16 @@ jobs:
     # container:
     #   image: rossant/datoviz_windows
 
+    env:
+      VCPKG_ROOT: C:/vcpkg
+
     steps:
 
     - name: Cache Chocolatey
       uses: actions/cache@v4
       with:
         path: C:\ProgramData\chocolatey
-        key: ${{ runner.os }}-choco-${{ hashFiles('requirements-dev.txt') }}
+        key: ${{ runner.os }}-choco
         restore-keys: |
           ${{ runner.os }}-choco-
 
@@ -156,7 +159,7 @@ jobs:
           C:/vcpkg
           C:/mingw64
           C:/VulkanSDK
-        key: ${{ runner.os }}-build-${{ hashFiles('requirements-dev.txt') }}
+        key: ${{ runner.os }}-build
         restore-keys: |
           ${{ runner.os }}-build-
 
