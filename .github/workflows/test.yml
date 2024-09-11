@@ -134,13 +134,13 @@ jobs:
 
     steps:
 
-    # Clone the repo (except if local with "act")
-    - name: Checkout
-      if: env.USING_ACT == 0
-      uses: actions/checkout@v4
+    - name: Cache Chocolatey
+      uses: actions/cache@v4
       with:
-        submodules: recursive
-
+        path: C:\ProgramData\chocolatey
+        key: ${{ runner.os }}-choco-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-choco-
 
     # Install Chocolatey dependencies
     - name: Chocolatey dependencies
@@ -148,6 +148,17 @@ jobs:
         choco install git -y --params "/GitAndUnixToolsOnPath"
         choco install 7zip -y
         # choco install python --version=3.12 -y
+
+    - name: Cache build dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          C:/vcpkg
+          C:/mingw64
+          C:/VulkanSDK
+        key: ${{ runner.os }}-build-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
 
     # Download the build dependencies
     - name: Build dependencies
@@ -189,10 +200,16 @@ jobs:
         pip install -r requirements-dev.txt
 
 
+    # Clone the repo (except if local with "act")
+    - name: Checkout
+      if: env.USING_ACT == 0
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
     # Build the project
     - name: Build
       run: |
-        pip install -r requirements-dev.txt
         just build || just build
 
     # Run the tests
