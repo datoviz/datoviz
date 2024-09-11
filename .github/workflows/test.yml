@@ -132,6 +132,10 @@ jobs:
     # container:
     #   image: rossant/datoviz_windows
 
+    env:
+      PATH: C:/mingw64/bin;C:/VulkanSDK/1.3.280.0/Bin;C:/vcpkg/installed/x64-windows/bin;C:/Python312;C:/Python312/Scripts;%SystemRoot%\system32;%SystemRoot%;%SystemRoot%\System32\Wbem;%SYSTEMROOT%\System32\WindowsPowerShell\v1.0\
+      VCPKG_ROOT: C:/vcpkg
+
     steps:
 
     # Clone the repo (except if local with "act")
@@ -172,16 +176,6 @@ jobs:
     # Install Vulkan SDK silently
     - name: Vulkan SDK
       run: .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
-
-    # Add environment variables for vcpkg, Python, and other paths
-    - name: Environment variables
-      run: |
-        echo "C:/vcpkg" | Out-File -FilePath $env:GITHUB_ENV -Append
-        echo "C:/mingw64/bin" | Out-File -FilePath $env:GITHUB_ENV -Append
-        echo "C:/VulkanSDK/1.3.280.0/Bin" | Out-File -FilePath $env:GITHUB_ENV -Append
-        echo "C:/Python312" | Out-File -FilePath $env:GITHUB_ENV -Append
-        echo "C:/Python312/Scripts" | Out-File -FilePath $env:GITHUB_ENV -Append
-        setx /M PATH "C:/mingw64/bin;C:/VulkanSDK/1.3.280.0/Bin;C:/vcpkg/installed/x64-windows/bin;C:/Python312;C:/Python312/Scripts;%PATH%"
 
     # Install Python dependencies (pip packages)
     - name: Python dependencies
