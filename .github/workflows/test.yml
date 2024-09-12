@@ -138,25 +138,25 @@ jobs:
     steps:
 
     # Cache
-    # C:/ProgramData/chocolatey
-    # - name: Cache
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: |
-    #       C:/vcpkg
-    #       C:/mingw64
-    #       C:/VulkanSDK
-    #     key: ${{ runner.os }}-build
-    #     restore-keys: |
-    #       ${{ runner.os }}-build
+    # C:/mingw64
+    - name: Cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          C:/ProgramData/chocolatey
+          C:/vcpkg
+          C:/VulkanSDK
+        key: ${{ runner.os }}-build
+        restore-keys: |
+          ${{ runner.os }}-build
 
     # Chocolatey
     - name: Chocolatey
       run: |
-        # if (!(Test-Path "C:\ProgramData\chocolatey")) {
-        choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja llvm tree vulkan-sdk cloc -y
-        # }
+        if (!(Test-Path "C:\ProgramData\chocolatey")) {
+          choco install git -y --params "/GitAndUnixToolsOnPath"
+          choco install 7zip python just mingw cmake ccache ninja llvm tree cloc -y
+        }
 
     # WinLibs
     # - name: WinLibs
@@ -179,12 +179,12 @@ jobs:
         }
 
     # Vulkan SDK
-    # - name: Vulkan SDK
-    #   run: |
-    #     if (!(Test-Path "C:\VulkanSDK")) {
-    #       curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
-    #       .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
-    #     }
+    - name: Vulkan SDK
+      run: |
+        if (!(Test-Path "C:\VulkanSDK")) {
+          curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
+          .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+        }
 
     # # Environment variables
     # - name: Environment variables
