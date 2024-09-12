@@ -735,7 +735,7 @@ ctypes:
     @python tools/generate_ctypes.py
 #
 
-pytest:
+pytest: && examples
     @pytest tests.py
 #
 
