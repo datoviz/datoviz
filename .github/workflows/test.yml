@@ -222,4 +222,4 @@ jobs:
     # Test
     - name: Test
       run: |
-        just swiftshader just test
+        just swiftshader just test test_vklite
