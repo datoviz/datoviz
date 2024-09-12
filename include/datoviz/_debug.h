@@ -90,7 +90,7 @@ static void dvz_show_buffer(uint32_t group_size, uint32_t cols, DvzSize size, vo
         if (i % group_size == 0)
             printf("| ");
 
-        printf("%hhu ", ((char*)data)[i]);
+        printf("%u ", (unsigned)((unsigned char*)data)[i]);
 
         if ((i > 0) && (i % cols == cols - 1))
             printf("|\n");

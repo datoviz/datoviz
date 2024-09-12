@@ -155,22 +155,10 @@ jobs:
     # Chocolatey
     - name: Chocolatey
       run: |
-        # if (!(Test-Path "C:\ProgramData\chocolatey")) {
-        choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
-        # }
-
-    # WinLibs
-    # - name: WinLibs
-    #   run: |
-    #     if (!(Test-Path "C:\mingw64")) {
-    #       curl -LO https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip
-    #       7z x winlibs*.zip -oC:/
-    #     }
-    #     if (!(Test-Path "C:\mingw64\bin\just.exe")) {
-    #       curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip
-    #       7z x just-1.35.0-x86_64-pc-windows-msvc.zip -oC:/mingw64/bin/
-    #     }
+        if (!(Test-Path "C:\ProgramData\chocolatey")) {
+          choco install git -y --params "/GitAndUnixToolsOnPath"
+          choco install 7zip python just mingw cmake ccache ninja tree cloc -y
+        }
 
     # vcpkg
     - name: vcpkg
@@ -188,15 +176,6 @@ jobs:
           .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
         }
 
-    # # Environment variables
-    # - name: Environment variables
-    #   run: |
-    #     echo "C:/vcpkg" >> $GITHUB_PATH
-    #     echo "C:/mingw64/bin" >> $GITHUB_PATH
-    #     echo "C:/VulkanSDK/1.3.280.0/Bin" >> $GITHUB_PATH
-    #     echo "C:/Python312" >> $GITHUB_PATH
-    #     echo "C:/Python312/Scripts" >> $GITHUB_PATH
-
     # Checkout
     - name: Checkout
       if: env.USING_ACT == 0
@@ -204,15 +183,15 @@ jobs:
       with:
         submodules: recursive
 
-    # # Cache Python
-    # - name: Cache Python
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: |
-    #       c:/hostedtoolcache/windows/python/3.9.13/x64/lib/site-packages
-    #     key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
-    #     restore-keys: |
-    #       ${{ runner.os }}-pip
+    # Cache Python
+    - name: Cache Python
+      uses: actions/cache@v4
+      with:
+        path: |
+          c:/hostedtoolcache/windows/python/3.9.13/x64/lib/site-packages
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements-dev.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip
 
     # Python
     - name: Python
