@@ -776,7 +776,7 @@ renamewheel platform_tag='':
 
 [windows]
 wheel: checkstructs && showwheel
-    #!/usr/bin/env bash
+    #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
