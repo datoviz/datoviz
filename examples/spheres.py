@@ -34,7 +34,7 @@ figure = dvz.figure(scene, 1000, 1000, 0)
 panel = dvz.panel_default(figure)
 
 # 3D camera.
-camera = dvz.panel_camera(panel)
+camera = dvz.panel_camera(panel, 0)
 
 
 # -------------------------------------------------------------------------------------------------
