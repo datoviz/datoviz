@@ -191,7 +191,7 @@ jobs:
         ls data/swiftshader/windows/
         mv -force data/swiftshader/windows/vk_swiftshader.dll.zip build/
         ls build
-        rm -rf build/vulkan-1.dll
+        rm -r -fo build/vulkan-1.dll
         7z x build/vk_swiftshader.dll.zip
         ls build
         mv build/vk_swiftshader.dll build/vulkan-1.dll
