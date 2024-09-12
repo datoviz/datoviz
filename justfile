@@ -292,8 +292,15 @@ dockerpush:
 
 # on macOS do
 # export DOCKER_HOST=$(docker context inspect | jq -r '.[0].Endpoints.docker.Host')
+[linux]
+[macos]
 act arg:
     act --bind --env USING_ACT=1 -j {{arg}}
+#
+
+[windows]
+act arg:
+    act --bind --env USING_ACT=1 -P windows-latest=-self-hosted -j {{arg}}
 #
 
 

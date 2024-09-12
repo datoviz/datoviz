@@ -134,12 +134,14 @@ jobs:
 
     env:
       VCPKG_ROOT: C:/vcpkg
+      VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
 
     steps:
 
     # Cache
     # C:/mingw64
     - name: Cache
+      if: env.USING_ACT == 0
       uses: actions/cache@v4
       with:
         path: |
@@ -155,7 +157,7 @@ jobs:
       run: |
         # if (!(Test-Path "C:\ProgramData\chocolatey")) {
         choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja llvm tree cloc -y
+        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
         # }
 
     # WinLibs
