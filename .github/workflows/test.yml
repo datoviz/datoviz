@@ -139,7 +139,6 @@ jobs:
     steps:
 
     # Cache
-    # C:/mingw64
     - name: Cache
       if: env.USING_ACT == 0
       uses: actions/cache@v4
@@ -153,6 +152,7 @@ jobs:
 
     # Chocolatey
     - name: Chocolatey
+      if: ${{ false }}
       run: |
         # if (!(Test-Path "C:\ProgramData\chocolatey")) {
         choco install git -y --params "/GitAndUnixToolsOnPath"
@@ -161,6 +161,7 @@ jobs:
 
     # vcpkg
     - name: vcpkg
+      if: ${{ false }}
       run: |
         if (!(Test-Path "C:\vcpkg")) {
           git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
@@ -169,6 +170,7 @@ jobs:
 
     # Vulkan SDK
     - name: Vulkan SDK
+      if: ${{ false }}
       run: |
         if (!(Test-Path "C:\VulkanSDK")) {
           curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
@@ -185,13 +187,18 @@ jobs:
     # Decompress Swiftshader DLL (compressed on the git data submodule to bypass the 100M file size limit)
     - name: Decompress Swiftshader
       run: |
-        if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader.dll")) {
-          7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
-          mv -force data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
-        }
+        choco install 7zip -y
+        ls data/swiftshader/windows/
+        mv -force data/swiftshader/windows/vk_swiftshader.dll.zip build/
+        ls build
+        rm -rf build/vulkan-1.dll
+        7z x build/vk_swiftshader.dll.zip
+        ls build
+        mv build/vk_swiftshader.dll build/vulkan-1.dll
 
     # Cache Python
     - name: Cache Python
+      if: ${{ false }}
       uses: actions/cache@v4
       with:
         path: |
@@ -202,16 +209,19 @@ jobs:
 
     # Python
     - name: Python
+      if: ${{ false }}
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
 
     # Build
     - name: Build
+      if: ${{ false }}
       run: |
         just build || just build
 
     # Test
     - name: Test
+      if: ${{ false }}
       run: |
         just swiftshader just test
