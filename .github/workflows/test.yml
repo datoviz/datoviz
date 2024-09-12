@@ -214,4 +214,4 @@ jobs:
     # Test
     - name: Test
       run: |
-        ./build/datoviz.exe test
+        just swiftshader just test
