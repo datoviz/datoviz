@@ -183,6 +183,13 @@ jobs:
       with:
         submodules: recursive
 
+    # Decompress Swiftshader DLL (compressed on the git data submodule to bypass the 100M file size limit)
+    - name: Decompress Swiftshader
+      run: |
+        if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader_icd.dll")) {
+          7z x data/swiftshader/windows/vk_swiftshader_icd.dll.zip -odata/swiftshader/windows
+        }
+
     # Cache Python
     - name: Cache Python
       uses: actions/cache@v4
