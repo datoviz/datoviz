@@ -155,10 +155,10 @@ jobs:
     # Chocolatey
     - name: Chocolatey
       run: |
-        if (!(Test-Path "C:\ProgramData\chocolatey")) {
-          choco install git -y --params "/GitAndUnixToolsOnPath"
-          choco install 7zip python just mingw cmake ccache ninja tree cloc -y
-        }
+        # if (!(Test-Path "C:\ProgramData\chocolatey")) {
+        choco install git -y --params "/GitAndUnixToolsOnPath"
+        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
+        # }
 
     # vcpkg
     - name: vcpkg
