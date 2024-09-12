@@ -186,8 +186,8 @@ jobs:
     - name: Decompress Swiftshader
       run: |
         if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader.dll")) {
-          7z x data/swiftshader/windows/vk_swiftshader.dll.zip -o.
-          mv vk_swiftshader.dll vulkan-1.dll
+          7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
+          mv data/swiftshader/windows/vk_swiftshader.dll vulkan-1.dll
         }
 
     # Cache Python
