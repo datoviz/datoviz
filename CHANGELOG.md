@@ -57,8 +57,9 @@
 
 ### CI/CD
 
-- Create Docker image with all build and run dependencies.
-- Set up Linux build and test workflow on GitHub Actions.
+- Create Docker images with all build and run dependencies for Ubuntu, Almalinux (manylinux), Windows.
+- Set up automated testing on GitHub Actions: Linux, macOS, Windows (partially).
+- Set up automated wheel building on GitHub Actions: Linux, macOS, Windows.
 
 
 ## v0.2.0 (2024-08-05) [LATEST RELEASE]
