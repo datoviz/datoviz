@@ -188,13 +188,18 @@ jobs:
     - name: Decompress Swiftshader
       run: |
         choco install 7zip -y
-        ls data/swiftshader/windows/
-        mv -force data/swiftshader/windows/vk_swiftshader.dll.zip build/
-        ls build
-        rm -r -fo build/vulkan-1.dll
-        7z x build/vk_swiftshader.dll.zip
-        ls build
-        mv build/vk_swiftshader.dll build/vulkan-1.dll
+
+        if (!(Test-Path -Path build)) {
+          New-Item -Path build -ItemType Directory
+        }
+
+        7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
+
+        if (Test-Path data/swiftshader/windows/vk_swiftshader.dll) {
+          Move-Item -Force data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
+        } else {
+          Write-Error "vk_swiftshader.dll not found after extraction"
+        }
 
     # Cache Python
     - name: Cache Python
