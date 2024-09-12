@@ -145,10 +145,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          C:/ProgramData/chocolatey
           C:/vcpkg
           C:/VulkanSDK
-        key: ${{ runner.os }}-build-2
+        key: ${{ runner.os }}-build-3
         restore-keys: |
           ${{ runner.os }}-build
 

@@ -979,7 +979,7 @@ swiftshader +args:
 
 [windows]
 swiftshader +args:
-    ls . \
+    ls .
     VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
     VK_LOADER_DEBUG=all \
     {{args}}
