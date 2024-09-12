@@ -115,7 +115,7 @@ static uint32_t* utf32_codepoints(const char* text, uint32_t* out_length)
     uint32_t k = 0;
     size_t len = 0;
 
-    while ((len = mbrtoc32(&codepoint, ptr, MB_CUR_MAX, &state)) > 0)
+    while ((len = mbrtoc32(&codepoint, ptr, (size_t)MB_CUR_MAX, &state)) > 0)
     {
         if (len == (size_t)-1 || len == (size_t)-2)
         {
