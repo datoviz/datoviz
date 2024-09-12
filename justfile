@@ -979,6 +979,9 @@ swiftshader +args:
 
 [windows]
 swiftshader +args:
+    if ![ -f data/swiftshader/windows/vk_swiftshader_icd.dll ]; then
+        unzip data/swiftshader/windows/vk_swiftshader_icd.dll.zip -d data/swiftshader/windows/
+    fi
     VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
     {{args}}
 #
