@@ -135,6 +135,7 @@ jobs:
     env:
       VCPKG_ROOT: C:/vcpkg
       VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
+      DVZ_LOG_LEVEL: 0
 
     steps:
 
@@ -220,6 +221,9 @@ jobs:
         }
 
     # Test
+
+    # BUG: `just swiftshader just test` hangs on Windows GitHub Actions
+    # So, for now, we just run a single test without swiftshader.
     - name: Test
       run: |
-        just swiftshader just test test_vklite
+        just test test_list
