@@ -181,23 +181,6 @@ jobs:
       with:
         submodules: recursive
 
-    # Decompress Swiftshader DLL (compressed on the git data submodule to bypass the 100M file size limit)
-    - name: Decompress Swiftshader
-      run: |
-        choco install 7zip -y
-
-        if (!(Test-Path -Path build)) {
-          New-Item -Path build -ItemType Directory
-        }
-
-        7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
-
-        if (Test-Path data/swiftshader/windows/vk_swiftshader.dll) {
-          Move-Item -Force data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
-        } else {
-          Write-Error "vk_swiftshader.dll not found after extraction"
-        }
-
     # Cache Python
     - name: Cache Python
       uses: actions/cache@v4
@@ -218,6 +201,23 @@ jobs:
     - name: Build
       run: |
         just build || just build
+
+    # Decompress Swiftshader DLL (compressed on the git data submodule to bypass the 100M file size limit)
+    - name: Decompress Swiftshader
+      run: |
+        choco install 7zip -y
+
+        if (!(Test-Path -Path build)) {
+          New-Item -Path build -ItemType Directory
+        }
+
+        7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
+
+        if (Test-Path data/swiftshader/windows/vk_swiftshader.dll) {
+          Move-Item -Force data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
+        } else {
+          Write-Error "vk_swiftshader.dll not found after extraction"
+        }
 
     # Test
     - name: Test
