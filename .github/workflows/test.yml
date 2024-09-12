@@ -187,7 +187,7 @@ jobs:
       run: |
         if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader.dll")) {
           7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
-          mv -f data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
+          mv -force data/swiftshader/windows/vk_swiftshader.dll build/vulkan-1.dll
         }
 
     # Cache Python
