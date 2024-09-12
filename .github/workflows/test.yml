@@ -155,10 +155,10 @@ jobs:
     # Chocolatey
     - name: Chocolatey
       run: |
-        # if (!(Test-Path "C:\ProgramData\chocolatey")) {
-        choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
-        # }
+        if (!(Test-Path "C:\ProgramData\chocolatey")) {
+          choco install git -y --params "/GitAndUnixToolsOnPath"
+          choco install 7zip python just mingw cmake ccache ninja tree cloc -y
+        }
 
     # vcpkg
     - name: vcpkg
@@ -186,8 +186,8 @@ jobs:
     # Decompress Swiftshader DLL (compressed on the git data submodule to bypass the 100M file size limit)
     - name: Decompress Swiftshader
       run: |
-        if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader_icd.dll")) {
-          7z x data/swiftshader/windows/vk_swiftshader_icd.dll.zip -odata/swiftshader/windows
+        if (!(Test-Path -Path "data/swiftshader/windows/vk_swiftshader.dll")) {
+          7z x data/swiftshader/windows/vk_swiftshader.dll.zip -odata/swiftshader/windows
         }
 
     # Cache Python
