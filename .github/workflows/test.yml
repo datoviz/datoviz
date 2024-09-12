@@ -137,57 +137,54 @@ jobs:
 
     steps:
 
-    - name: Cache Chocolatey
-      uses: actions/cache@v4
-      with:
-        path: C:\ProgramData\chocolatey
-        key: ${{ runner.os }}-choco
-        restore-keys: |
-          ${{ runner.os }}-choco-
-
-    # Install Chocolatey dependencies
-    - name: Chocolatey dependencies
-      run: |
-        choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip -y
-        # choco install python --version=3.12 -y
-
-    - name: Cache build dependencies
+    # Cache
+    - name: Cache
       uses: actions/cache@v4
       with:
         path: |
+          C:\ProgramData\chocolatey
           C:/vcpkg
           C:/mingw64
           C:/VulkanSDK
         key: ${{ runner.os }}-build
         restore-keys: |
-          ${{ runner.os }}-build-
+          ${{ runner.os }}-build
 
-    # Download the build dependencies
-    - name: Build dependencies
+    # Chocolatey
+    - name: Chocolatey
       run: |
-        curl -LO https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip
-        curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip
-        curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
-        if (!(Test-Path "C:\vcpkg")) {
-          git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+        if (!(Test-Path "C:\ProgramData\chocolatey")) {
+          choco install git -y --params "/GitAndUnixToolsOnPath"
+          choco install 7zip -y
         }
 
-    # Decompress the downloaded archives using 7-Zip
-    - name: Decompressing
+    # WinLibs
+    - name: WinLibs
       run: |
-        7z x winlibs*.zip -oC:/
-        7z x just-1.35.0-x86_64-pc-windows-msvc.zip -oC:/mingw64/bin/
+        if (!(Test-Path "C:\mingw64")) {
+          curl -LO https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip
+          curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip
+          7z x winlibs*.zip -oC:/
+          7z x just-1.35.0-x86_64-pc-windows-msvc.zip -oC:/mingw64/bin/
+        }
 
-    # Install vcpkg
+    # vcpkg
     - name: vcpkg
-      run: powershell.exe -NoProfile -ExecutionPolicy Bypass C:\vcpkg\scripts\bootstrap.ps1
+      run: |
+        if (!(Test-Path "C:\vcpkg")) {
+          git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+          powershell.exe -NoProfile -ExecutionPolicy Bypass C:\vcpkg\scripts\bootstrap.ps1
+        }
 
-    # Install Vulkan SDK silently
+    # Vulkan SDK
     - name: Vulkan SDK
-      run: .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+      run: |
+        if (!(Test-Path "C:\VulkanSDK")) {
+          curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
+          .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+        }
 
-    # Add environment variables for vcpkg, Python, and other paths
+    # Environment variables
     - name: Environment variables
       run: |
         echo "C:/vcpkg" >> $GITHUB_PATH
@@ -196,26 +193,25 @@ jobs:
         echo "C:/Python312" >> $GITHUB_PATH
         echo "C:/Python312/Scripts" >> $GITHUB_PATH
 
-
-    # Clone the repo (except if local with "act")
+    # Clone
     - name: Checkout
       if: env.USING_ACT == 0
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    # Install Python dependencies (pip packages)
-    - name: Python dependencies
+    # Python
+    - name: Python
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
 
-    # Build the project
+    # Build
     - name: Build
       run: |
         just build || just build
 
-    # Run the tests
+    # Test
     - name: Test
       run: |
         ./build/datoviz.exe test
