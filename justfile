@@ -977,6 +977,12 @@ swiftshader +args:
     @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
 #
 
+[windows]
+swiftshader +args:
+    VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
+    {{args}}
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Code quality
