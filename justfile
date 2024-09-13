@@ -807,36 +807,6 @@ wheel: checkstructs && showwheel
     rm -rf "$PKGROOT"
 #
 
-# [windows]
-# testwheel:
-#     #!/usr/bin/env bash
-
-#     # Ensure the wheel exists
-#     if [ ! -f dist/datoviz-*.whl ]; then
-#         just wheel
-#     fi
-
-#     # Create a new virtual environment
-#     python -m venv test_env
-
-#     # Activate the virtual environment
-#     source test_env/Scripts/activate
-
-#     # Install the wheel
-#     pip install dist/datoviz-*.whl
-
-#     # Run a test command
-#     pushd test_env
-#     python -c "import datoviz; datoviz.demo()"
-#     popd
-
-#     # Deactivate the virtual environment
-#     deactivate
-
-#     # Optionally clean up the environment
-#     rm -rf test_env
-# #
-
 testpypi:
     #!/usr/bin/env bash
 
@@ -874,11 +844,7 @@ checkwheel path="":
     mkdir -p $TESTDIR
 
     # Copy the wheel
-    if [ -f "{{path}}" ]; then
-        cp {{path}} $TESTDIR
-    else
-        cp dist/datoviz-*.whl $TESTDIR
-    fi
+    [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
 
     # Virtual env
     python3 -m venv $TESTDIR/venv
@@ -889,22 +855,47 @@ checkwheel path="":
     # Run the demo from the wheel
     DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
 
+    # Return 0 iff the file exists and if sufficiently large
+    res=1
     if [ -f "$TESTDIR/testwheel.png" ]; then
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            filesize=$(stat -f%z "$TESTDIR/testwheel.png")
-        else
-            filesize=$(stat -c%s "$TESTDIR/testwheel.png")
-        fi
-        if [ "$filesize" -gt 180000 ]; then
-            exit 0
-        else
-            exit 1
-        fi
-    else
-        exit 1
+        filesize=$(python -c "from pathlib import Path; print(Path('$TESTDIR/testwheel.png').stat().st_size)")
+        res=$(( $filesize > 180000 ? 0 : 1 ))
     fi
-
     rm -rf $TESTDIR
+    exit $res
+#
+
+[linux]
+checkartifact RUN_ID:
+    #!/usr/bin/env sh
+    temp_dir=$(mktemp -d)
+    gh run download {{RUN_ID}} -n linux-wheel -D $temp_dir
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
+#
+
+[macos]
+checkartifact RUN_ID:
+    #!/usr/bin/env sh
+    temp_dir=$(mktemp -d)
+    gh run download {{RUN_ID}} -n macos-wheel -D $temp_dir
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
+#
+
+[windows]
+checkartifact url:
+    #!/usr/bin/env sh
+    temp_dir=$(mktemp -d)
+    gh run download {{RUN_ID}} -n windows-wheel -D $temp_dir
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
 #
 
 
