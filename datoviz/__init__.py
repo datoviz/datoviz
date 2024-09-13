@@ -1609,17 +1609,42 @@ resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWin
 
 # Function dvz_demo()
 demo = dvz.dvz_demo
+demo.__doc__ = """
+Run a demo.
+"""
 demo.argtypes = [
 ]
 
 # Function dvz_version()
 version = dvz.dvz_version
+version.__doc__ = """
+Return the current version string.
+
+
+Returns
+-------
+type
+    the version string
+"""
 version.argtypes = [
 ]
 version.restype = ctypes.c_char_p
 
 # Function dvz_app()
 app = dvz.dvz_app
+app.__doc__ = """
+Create an app.
+
+Parameters
+----------
+flags : int
+    the app creation flags
+
+Returns
+-------
+type
+    the app
+"""
 app.argtypes = [
     ctypes.c_int,  # int flags
 ]
@@ -1627,6 +1652,19 @@ app.restype = ctypes.POINTER(DvzApp)
 
 # Function dvz_app_batch()
 app_batch = dvz.dvz_app_batch
+app_batch.__doc__ = """
+Return the app batch.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+
+Returns
+-------
+type
+    the batch
+"""
 app_batch.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
@@ -1634,12 +1672,32 @@ app_batch.restype = ctypes.POINTER(DvzBatch)
 
 # Function dvz_app_frame()
 app_frame = dvz.dvz_app_frame
+app_frame.__doc__ = """
+Run one frame.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
 app_frame.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
 # Function dvz_app_onframe()
 app_onframe = dvz.dvz_app_onframe
+app_onframe.__doc__ = """
+Register a frame callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppFrameCallback
+    the callback
+user_data : void*
+    the user data
+"""
 app_onframe.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppFrameCallback,  # DvzAppFrameCallback callback
@@ -1648,6 +1706,18 @@ app_onframe.argtypes = [
 
 # Function dvz_app_onmouse()
 app_onmouse = dvz.dvz_app_onmouse
+app_onmouse.__doc__ = """
+Register a mouse callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppMouseCallback
+    the callback
+user_data : void*
+    the user data
+"""
 app_onmouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppMouseCallback,  # DvzAppMouseCallback callback
@@ -1656,6 +1726,18 @@ app_onmouse.argtypes = [
 
 # Function dvz_app_onkeyboard()
 app_onkeyboard = dvz.dvz_app_onkeyboard
+app_onkeyboard.__doc__ = """
+Register a keyboard callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppKeyboardCallback
+    the callback
+user_data : void*
+    the user data
+"""
 app_onkeyboard.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppKeyboardCallback,  # DvzAppKeyboardCallback callback
@@ -1664,6 +1746,18 @@ app_onkeyboard.argtypes = [
 
 # Function dvz_app_onresize()
 app_onresize = dvz.dvz_app_onresize
+app_onresize.__doc__ = """
+Register a resize callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppResizeCallback
+    the callback
+user_data : void*
+    the user data
+"""
 app_onresize.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppResizeCallback,  # DvzAppResizeCallback callback
@@ -1672,6 +1766,25 @@ app_onresize.argtypes = [
 
 # Function dvz_app_timer()
 app_timer = dvz.dvz_app_timer
+app_timer.__doc__ = """
+Create a timer.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+delay : double
+    the delay, in seconds, until the first event
+period : double
+    the period, in seconds, between two events
+max_count : uint64_t
+    the maximum number of events
+
+Returns
+-------
+type
+    the timer
+"""
 app_timer.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     ctypes.c_double,  # double delay
@@ -1682,6 +1795,18 @@ app_timer.restype = ctypes.POINTER(DvzTimerItem)
 
 # Function dvz_app_ontimer()
 app_ontimer = dvz.dvz_app_ontimer
+app_ontimer.__doc__ = """
+Register a timer callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppTimerCallback
+    the timer callback
+user_data : void*
+    the user data
+"""
 app_ontimer.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppTimerCallback,  # DvzAppTimerCallback callback
@@ -1690,6 +1815,20 @@ app_ontimer.argtypes = [
 
 # Function dvz_app_gui()
 app_gui = dvz.dvz_app_gui
+app_gui.__doc__ = """
+Register a GUI callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the canvas ID
+callback : DvzAppGuiCallback
+    the GUI callback
+user_data : void*
+    the user data
+"""
 app_gui.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
@@ -1699,6 +1838,16 @@ app_gui.argtypes = [
 
 # Function dvz_app_run()
 app_run = dvz.dvz_app_run
+app_run.__doc__ = """
+Start the application event loop.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+n_frames : uint64_t
+    the maximum number of frames, 0 for infinite loop
+"""
 app_run.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     ctypes.c_uint64,  # uint64_t n_frames
@@ -1706,12 +1855,32 @@ app_run.argtypes = [
 
 # Function dvz_app_submit()
 app_submit = dvz.dvz_app_submit
+app_submit.__doc__ = """
+Submit the current batch to the application.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
 app_submit.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
 # Function dvz_app_screenshot()
 app_screenshot = dvz.dvz_app_screenshot
+app_screenshot.__doc__ = """
+Make a screenshot of a canvas.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the ID of the canvas
+filename : char*
+    the path to the PNG file with the screenshot
+"""
 app_screenshot.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
@@ -1720,18 +1889,47 @@ app_screenshot.argtypes = [
 
 # Function dvz_app_destroy()
 app_destroy = dvz.dvz_app_destroy
+app_destroy.__doc__ = """
+Destroy the app.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
 app_destroy.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
 # Function dvz_free()
 free = dvz.dvz_free
+free.__doc__ = """
+Free a pointer.
+
+Parameters
+----------
+pointer : void*
+    a pointer
+"""
 free.argtypes = [
     ctypes.c_void_p,  # void* pointer
 ]
 
 # Function dvz_scene()
 scene = dvz.dvz_scene
+scene.__doc__ = """
+Create a scene.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+
+Returns
+-------
+type
+    the scene
+"""
 scene.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
 ]
@@ -1739,6 +1937,18 @@ scene.restype = ctypes.POINTER(DvzScene)
 
 # Function dvz_scene_run()
 scene_run = dvz.dvz_scene_run
+scene_run.__doc__ = """
+Start the event loop and render the scene in a window.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+app : DvzApp*
+    the app
+n_frames : uint64_t
+    the maximum number of frames, 0 for infinite loop
+"""
 scene_run.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzApp),  # DvzApp* app
@@ -1747,12 +1957,39 @@ scene_run.argtypes = [
 
 # Function dvz_scene_destroy()
 scene_destroy = dvz.dvz_scene_destroy
+scene_destroy.__doc__ = """
+Destroy a scene.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+"""
 scene_destroy.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
 ]
 
 # Function dvz_figure()
 figure = dvz.dvz_figure
+figure.__doc__ = """
+Create a figure, a desktop window with panels and visuals.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+width : uint32_t
+    the window width
+height : uint32_t
+    the window height
+flags : int
+    the figure creation flags (not yet stabilized)
+
+Returns
+-------
+type
+    the figure
+"""
 figure.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.c_uint32,  # uint32_t width
@@ -1763,6 +2000,19 @@ figure.restype = ctypes.POINTER(DvzFigure)
 
 # Function dvz_figure_id()
 figure_id = dvz.dvz_figure_id
+figure_id.__doc__ = """
+Return a figure ID.
+
+Parameters
+----------
+figure : DvzFigure*
+    the figure
+
+Returns
+-------
+type
+    the figure ID
+"""
 figure_id.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
 ]
@@ -1770,6 +2020,18 @@ figure_id.restype = DvzId
 
 # Function dvz_figure_resize()
 figure_resize = dvz.dvz_figure_resize
+figure_resize.__doc__ = """
+Resize a figure.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+width : uint32_t
+    the window width
+height : uint32_t
+    the window height
+"""
 figure_resize.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
     ctypes.c_uint32,  # uint32_t width
@@ -1778,6 +2040,21 @@ figure_resize.argtypes = [
 
 # Function dvz_scene_figure()
 scene_figure = dvz.dvz_scene_figure
+scene_figure.__doc__ = """
+Get a figure from its id.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+id : DvzId
+    the figure id
+
+Returns
+-------
+type
+    the figure
+"""
 scene_figure.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     DvzId,  # DvzId id
@@ -1786,18 +2063,51 @@ scene_figure.restype = ctypes.POINTER(DvzFigure)
 
 # Function dvz_figure_update()
 figure_update = dvz.dvz_figure_update
+figure_update.__doc__ = """
+Update a figure after the composition of the panels and visuals has changed.
+
+Parameters
+----------
+figure : DvzFigure*
+    the figure
+"""
 figure_update.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
 ]
 
 # Function dvz_figure_destroy()
 figure_destroy = dvz.dvz_figure_destroy
+figure_destroy.__doc__ = """
+Destroy a figure.
+
+Parameters
+----------
+figure : DvzFigure*
+    the figure
+"""
 figure_destroy.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
 ]
 
 # Function dvz_mvp()
 mvp = dvz.dvz_mvp
+mvp.__doc__ = """
+Create a MVP structure.
+
+Parameters
+----------
+model : mat4
+    the model matrix
+view : mat4
+    the view matrix
+proj : mat4
+    the projection matrix
+
+Returns
+-------
+type
+    the MVP structure
+"""
 mvp.argtypes = [
     ctypes.c_float * 16,  # mat4 model
     ctypes.c_float * 16,  # mat4 view
@@ -1807,6 +2117,22 @@ mvp.restype = DvzMVP
 
 # Function dvz_panel()
 panel = dvz.dvz_panel
+panel.__doc__ = """
+Create a panel in a figure (partial or complete rectangular portion of a figure).
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+x : float
+    the x coordinate of the top left corner, in pixels
+y : float
+    the y coordinate of the top left corner, in pixels
+width : float
+    the panel width, in pixels
+height : float
+    the panel height, in pixels
+"""
 panel.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
     ctypes.c_float,  # float x
@@ -1818,6 +2144,19 @@ panel.restype = ctypes.POINTER(DvzPanel)
 
 # Function dvz_panel_default()
 panel_default = dvz.dvz_panel_default
+panel_default.__doc__ = """
+Return the default full panel spanning an entire figure.
+
+Parameters
+----------
+fig : DvzFigure*
+    the figure
+
+Returns
+-------
+type
+    the panel spanning the entire figure
+"""
 panel_default.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
 ]
@@ -1825,6 +2164,16 @@ panel_default.restype = ctypes.POINTER(DvzPanel)
 
 # Function dvz_panel_transform()
 panel_transform = dvz.dvz_panel_transform
+panel_transform.__doc__ = """
+Assign a transform to a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+tr : DvzTransform*
+    the transform
+"""
 panel_transform.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.POINTER(DvzTransform),  # DvzTransform* tr
@@ -1832,6 +2181,16 @@ panel_transform.argtypes = [
 
 # Function dvz_panel_mvp()
 panel_mvp = dvz.dvz_panel_mvp
+panel_mvp.__doc__ = """
+Assign a MVP structure to a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+mvp : DvzMVP*
+    a pointer to the MVP structure
+"""
 panel_mvp.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
@@ -1839,6 +2198,20 @@ panel_mvp.argtypes = [
 
 # Function dvz_panel_mvpmat()
 panel_mvpmat = dvz.dvz_panel_mvpmat
+panel_mvpmat.__doc__ = """
+Assign the model-view-proj matrices to a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+model : mat4
+    the model matrix
+view : mat4
+    the view matrix
+proj : mat4
+    the projection matrix
+"""
 panel_mvpmat.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_float * 16,  # mat4 model
@@ -1848,6 +2221,22 @@ panel_mvpmat.argtypes = [
 
 # Function dvz_panel_resize()
 panel_resize = dvz.dvz_panel_resize
+panel_resize.__doc__ = """
+Resize a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+x : float
+    the x coordinate of the top left corner, in pixels
+y : float
+    the y coordinate of the top left corner, in pixels
+width : float
+    the panel width, in pixels
+height : float
+    the panel height, in pixels
+"""
 panel_resize.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_float,  # float x
@@ -1858,6 +2247,22 @@ panel_resize.argtypes = [
 
 # Function dvz_panel_margins()
 panel_margins = dvz.dvz_panel_margins
+panel_margins.__doc__ = """
+Set the margins of a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+top : float
+    the top margin, in pixels
+right : float
+    the right margin, in pixels
+bottom : float
+    the bottom margin, in pixels
+left : float
+    the left margin, in pixels
+"""
 panel_margins.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_float,  # float top
@@ -1868,6 +2273,21 @@ panel_margins.argtypes = [
 
 # Function dvz_panel_contains()
 panel_contains = dvz.dvz_panel_contains
+panel_contains.__doc__ = """
+Return whether a point is inside a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+pos : vec2
+    the position
+
+Returns
+-------
+type
+    true if the position lies within the panel
+"""
 panel_contains.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_float * 2,  # vec2 pos
@@ -1876,6 +2296,21 @@ panel_contains.restype = ctypes.c_bool
 
 # Function dvz_panel_at()
 panel_at = dvz.dvz_panel_at
+panel_at.__doc__ = """
+Return the panel containing a given point.
+
+Parameters
+----------
+figure : DvzFigure*
+    the figure
+pos : vec2
+    the position
+
+Returns
+-------
+type
+    the panel containing the point, or NULL if there is none
+"""
 panel_at.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
     ctypes.c_float * 2,  # vec2 pos
@@ -1884,6 +2319,21 @@ panel_at.restype = ctypes.POINTER(DvzPanel)
 
 # Function dvz_panel_camera()
 panel_camera = dvz.dvz_panel_camera
+panel_camera.__doc__ = """
+Set a camera for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the camera flags
+
+Returns
+-------
+type
+    the camera
+"""
 panel_camera.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.c_int,  # int flags
@@ -1892,6 +2342,19 @@ panel_camera.restype = ctypes.POINTER(DvzCamera)
 
 # Function dvz_panel_panzoom()
 panel_panzoom = dvz.dvz_panel_panzoom
+panel_panzoom.__doc__ = """
+Set panzoom interactivity for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the panzoom
+"""
 panel_panzoom.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
@@ -1899,6 +2362,19 @@ panel_panzoom.restype = ctypes.POINTER(DvzPanzoom)
 
 # Function dvz_panel_ortho()
 panel_ortho = dvz.dvz_panel_ortho
+panel_ortho.__doc__ = """
+Set ortho interactivity for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the ortho
+"""
 panel_ortho.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
@@ -1906,6 +2382,19 @@ panel_ortho.restype = ctypes.POINTER(DvzOrtho)
 
 # Function dvz_panel_arcball()
 panel_arcball = dvz.dvz_panel_arcball
+panel_arcball.__doc__ = """
+Set arcball interactivity for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the arcball
+"""
 panel_arcball.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
@@ -1913,12 +2402,30 @@ panel_arcball.restype = ctypes.POINTER(DvzArcball)
 
 # Function dvz_panel_update()
 panel_update = dvz.dvz_panel_update
+panel_update.__doc__ = """
+Trigger a panel update.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+"""
 panel_update.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 
 # Function dvz_panel_visual()
 panel_visual = dvz.dvz_panel_visual
+panel_visual.__doc__ = """
+Add a visual to a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+visual : DvzVisual*
+    the visual
+"""
 panel_visual.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -1927,18 +2434,48 @@ panel_visual.argtypes = [
 
 # Function dvz_panel_destroy()
 panel_destroy = dvz.dvz_panel_destroy
+panel_destroy.__doc__ = """
+Destroy a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+"""
 panel_destroy.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 
 # Function dvz_visual_update()
 visual_update = dvz.dvz_visual_update
+visual_update.__doc__ = """
+Update a visual after its data has changed.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+"""
 visual_update.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
 ]
 
 # Function dvz_visual_fixed()
 visual_fixed = dvz.dvz_visual_fixed
+visual_fixed.__doc__ = """
+Fix some axes in a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+fixed_x : bool
+    whether the x axis should be fixed
+fixed_y : bool
+    whether the y axis should be fixed
+fixed_z : bool
+    whether the z axis should be fixed
+"""
 visual_fixed.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_bool,  # bool fixed_x
@@ -1948,6 +2485,16 @@ visual_fixed.argtypes = [
 
 # Function dvz_visual_clip()
 visual_clip = dvz.dvz_visual_clip
+visual_clip.__doc__ = """
+Set the visual clipping.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+clip : DvzViewportClip
+    the viewport clipping
+"""
 visual_clip.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzViewportClip,  # DvzViewportClip clip
@@ -1955,6 +2502,16 @@ visual_clip.argtypes = [
 
 # Function dvz_visual_depth()
 visual_depth = dvz.dvz_visual_depth
+visual_depth.__doc__ = """
+Set the visual depth.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+depth_test : DvzDepthTest
+    whether to activate the depth test
+"""
 visual_depth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzDepthTest,  # DvzDepthTest depth_test
@@ -1962,6 +2519,16 @@ visual_depth.argtypes = [
 
 # Function dvz_visual_show()
 visual_show = dvz.dvz_visual_show
+visual_show.__doc__ = """
+Set the visibility of a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+is_visible : bool
+    the visual visibility
+"""
 visual_show.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_bool,  # bool is_visible
@@ -1969,6 +2536,18 @@ visual_show.argtypes = [
 
 # Function dvz_colormap()
 colormap = dvz.dvz_colormap
+colormap.__doc__ = """
+Fetch a color from a colormap and a value.
+
+Parameters
+----------
+cmap : DvzColormap
+    the colormap
+value : uint8_t
+    the value
+color : cvec4 (out parameter)
+    the fetched color
+"""
 colormap.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint8,  # uint8_t value
@@ -1977,6 +2556,22 @@ colormap.argtypes = [
 
 # Function dvz_colormap_scale()
 colormap_scale = dvz.dvz_colormap_scale
+colormap_scale.__doc__ = """
+Fetch a color from a colormap and an interpolated value.
+
+Parameters
+----------
+cmap : DvzColormap
+    the colormap
+value : float
+    the value
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+color : cvec4 (out parameter)
+    the fetched color
+"""
 colormap_scale.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_float,  # float value
@@ -1987,6 +2582,24 @@ colormap_scale.argtypes = [
 
 # Function dvz_colormap_array()
 colormap_array = dvz.dvz_colormap_array
+colormap_array.__doc__ = """
+Fetch colors from a colormap and an array of values.
+
+Parameters
+----------
+cmap : DvzColormap
+    the colormap
+count : uint32_t
+    the number of values
+values : float*
+    pointer to the array of float numbers
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+out : cvec4* (out parameter)
+    the fetched colors
+"""
 colormap_array.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint32,  # uint32_t count
@@ -1998,12 +2611,35 @@ colormap_array.argtypes = [
 
 # Function dvz_shape_normals()
 shape_normals = dvz.dvz_shape_normals
+shape_normals.__doc__ = """
+Recompute the face normals.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
 shape_normals.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
 # Function dvz_shape_merge()
 shape_merge = dvz.dvz_shape_merge
+shape_merge.__doc__ = """
+Merge several shapes.
+
+Parameters
+----------
+count : uint32_t
+    the number of shapes to merge
+shapes : DvzShape*
+    the shapes to merge
+
+Returns
+-------
+type
+    the merged shape
+"""
 shape_merge.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.POINTER(DvzShape),  # DvzShape* shapes
@@ -2012,12 +2648,30 @@ shape_merge.restype = DvzShape
 
 # Function dvz_shape_print()
 shape_print = dvz.dvz_shape_print
+shape_print.__doc__ = """
+Show information about a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
 shape_print.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
 # Function dvz_shape_unindex()
 shape_unindex = dvz.dvz_shape_unindex
+shape_unindex.__doc__ = """
+Convert an indexed shape to a non-indexed one by duplicating the vertex values according to the indices.  This is used by the mesh wireframe option, as a given vertex may have distinct barycentric coordinates depending on its index.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+flags : int
+    the flags
+"""
 shape_unindex.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_int,  # int flags
@@ -2025,12 +2679,32 @@ shape_unindex.argtypes = [
 
 # Function dvz_shape_destroy()
 shape_destroy = dvz.dvz_shape_destroy
+shape_destroy.__doc__ = """
+Destroy a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
 shape_destroy.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
 # Function dvz_shape_begin()
 shape_begin = dvz.dvz_shape_begin
+shape_begin.__doc__ = """
+Start a transformation sequence.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+first : uint32_t
+    the first vertex to modify
+count : uint32_t
+    the number of vertices to modify
+"""
 shape_begin.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t first
@@ -2039,6 +2713,16 @@ shape_begin.argtypes = [
 
 # Function dvz_shape_scale()
 shape_scale = dvz.dvz_shape_scale
+shape_scale.__doc__ = """
+Append a scaling transform to a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+scale : vec3
+    the scaling factors
+"""
 shape_scale.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_float * 3,  # vec3 scale
@@ -2046,6 +2730,16 @@ shape_scale.argtypes = [
 
 # Function dvz_shape_translate()
 shape_translate = dvz.dvz_shape_translate
+shape_translate.__doc__ = """
+Append a translation to a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+translate : vec3
+    the translation vector
+"""
 shape_translate.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_float * 3,  # vec3 translate
@@ -2053,6 +2747,18 @@ shape_translate.argtypes = [
 
 # Function dvz_shape_rotate()
 shape_rotate = dvz.dvz_shape_rotate
+shape_rotate.__doc__ = """
+Append a rotation to a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+angle : float
+    the rotation angle
+axis : vec3
+    the rotation axis
+"""
 shape_rotate.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_float,  # float angle
@@ -2061,6 +2767,16 @@ shape_rotate.argtypes = [
 
 # Function dvz_shape_transform()
 shape_transform = dvz.dvz_shape_transform
+shape_transform.__doc__ = """
+Append an arbitrary transformation.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+transform : mat4
+    the transform mat4 matrix
+"""
 shape_transform.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_float * 16,  # mat4 transform
@@ -2068,6 +2784,18 @@ shape_transform.argtypes = [
 
 # Function dvz_shape_rescaling()
 shape_rescaling = dvz.dvz_shape_rescaling
+shape_rescaling.__doc__ = """
+Compute the rescaling factor to renormalize a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+flags : int
+    the rescaling flags
+out_scale : vec3 (out parameter)
+    the computed scaling factors
+"""
 shape_rescaling.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_int,  # int flags
@@ -2077,12 +2805,33 @@ shape_rescaling.restype = ctypes.c_float
 
 # Function dvz_shape_end()
 shape_end = dvz.dvz_shape_end
+shape_end.__doc__ = """
+Apply the transformation sequence and reset it.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
 shape_end.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
 # Function dvz_shape_square()
 shape_square = dvz.dvz_shape_square
+shape_square.__doc__ = """
+Create a square shape.
+
+Parameters
+----------
+color : cvec4
+    the square color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_square.argtypes = [
     ctypes.c_uint8 * 4,  # cvec4 color
 ]
@@ -2090,6 +2839,21 @@ shape_square.restype = DvzShape
 
 # Function dvz_shape_disc()
 shape_disc = dvz.dvz_shape_disc
+shape_disc.__doc__ = """
+Create a disc shape.
+
+Parameters
+----------
+count : uint32_t
+    the number of points along the disc border
+color : cvec4
+    the disc color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_disc.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2098,6 +2862,23 @@ shape_disc.restype = DvzShape
 
 # Function dvz_shape_polygon()
 shape_polygon = dvz.dvz_shape_polygon
+shape_polygon.__doc__ = """
+Create a polygon shape using the simple earcut polygon triangulation algorithm.
+
+Parameters
+----------
+count : uint32_t
+    the number of points along the polygon border
+points : dvec2*
+    the points 2D coordinates
+color : cvec4
+    the polygon color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_polygon.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* points
@@ -2107,6 +2888,33 @@ shape_polygon.restype = DvzShape
 
 # Function dvz_shape_surface()
 shape_surface = dvz.dvz_shape_surface
+shape_surface.__doc__ = """
+Create a grid shape.
+
+Parameters
+----------
+row_count : uint32_t
+    number of rows
+col_count : uint32_t
+    number of cols
+heights : float*
+    a pointer to row_count*col_count height values (floats)
+colors : cvec4*
+    a pointer to row_count*col_count color values (cvec4)
+o : vec3
+    the origin
+u : vec3
+    the unit vector parallel to each column
+v : vec3
+    the unit vector parallel to each row
+flags : int
+    the grid creation flags
+
+Returns
+-------
+type
+    the shape
+"""
 shape_surface.argtypes = [
     ctypes.c_uint32,  # uint32_t row_count
     ctypes.c_uint32,  # uint32_t col_count
@@ -2121,6 +2929,19 @@ shape_surface.restype = DvzShape
 
 # Function dvz_shape_cube()
 shape_cube = dvz.dvz_shape_cube
+shape_cube.__doc__ = """
+Create a cube shape.
+
+Parameters
+----------
+colors : cvec4*
+    the colors of the six faces
+
+Returns
+-------
+type
+    the shape
+"""
 shape_cube.argtypes = [
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* colors
 ]
@@ -2128,6 +2949,23 @@ shape_cube.restype = DvzShape
 
 # Function dvz_shape_sphere()
 shape_sphere = dvz.dvz_shape_sphere
+shape_sphere.__doc__ = """
+Create a sphere shape.
+
+Parameters
+----------
+rows : uint32_t
+    the number of rows
+cols : uint32_t
+    the number of columns
+color : cvec4
+    the sphere color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_sphere.argtypes = [
     ctypes.c_uint32,  # uint32_t rows
     ctypes.c_uint32,  # uint32_t cols
@@ -2137,6 +2975,21 @@ shape_sphere.restype = DvzShape
 
 # Function dvz_shape_cone()
 shape_cone = dvz.dvz_shape_cone
+shape_cone.__doc__ = """
+Create a cone shape.
+
+Parameters
+----------
+count : uint32_t
+    the number of points along the disc border
+color : cvec4
+    the cone color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_cone.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2145,6 +2998,21 @@ shape_cone.restype = DvzShape
 
 # Function dvz_shape_cylinder()
 shape_cylinder = dvz.dvz_shape_cylinder
+shape_cylinder.__doc__ = """
+Create a cylinder shape.
+
+Parameters
+----------
+count : uint32_t
+    the number of points along the cylinder border
+color : cvec4
+    the cylinder color
+
+Returns
+-------
+type
+    the shape
+"""
 shape_cylinder.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2153,12 +3021,33 @@ shape_cylinder.restype = DvzShape
 
 # Function dvz_shape_normalize()
 shape_normalize = dvz.dvz_shape_normalize
+shape_normalize.__doc__ = """
+Normalize a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+"""
 shape_normalize.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
 
 # Function dvz_shape_obj()
 shape_obj = dvz.dvz_shape_obj
+shape_obj.__doc__ = """
+Load a .obj shape.
+
+Parameters
+----------
+file_path : char*
+    the path to the .obj file
+
+Returns
+-------
+type
+    the shape
+"""
 shape_obj.argtypes = [
     ctypes.c_char_p,  # char* file_path
 ]
@@ -2166,6 +3055,23 @@ shape_obj.restype = DvzShape
 
 # Function dvz_basic()
 basic = dvz.dvz_basic
+basic.__doc__ = """
+Create a basic visual using the few GPU visual primitives (point, line, triangles).
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+topology : DvzPrimitiveTopology
+    the primitive topology
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 basic.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzPrimitiveTopology,  # DvzPrimitiveTopology topology
@@ -2175,6 +3081,22 @@ basic.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_basic_position()
 basic_position = dvz.dvz_basic_position
+basic_position.__doc__ = """
+Set the vertex positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 basic_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2185,6 +3107,22 @@ basic_position.argtypes = [
 
 # Function dvz_basic_color()
 basic_color = dvz.dvz_basic_color
+basic_color.__doc__ = """
+Set the vertex colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 basic_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2195,6 +3133,22 @@ basic_color.argtypes = [
 
 # Function dvz_basic_group()
 basic_group = dvz.dvz_basic_group
+basic_group.__doc__ = """
+Set the vertex group index.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the group index of each vertex
+flags : int
+    the data update flags
+"""
 basic_group.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2205,6 +3159,16 @@ basic_group.argtypes = [
 
 # Function dvz_basic_size()
 basic_size = dvz.dvz_basic_size
+basic_size.__doc__ = """
+Set the point size (for POINT_LIST topology only).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+size : float
+    the point size in pixels
+"""
 basic_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float size
@@ -2212,6 +3176,16 @@ basic_size.argtypes = [
 
 # Function dvz_basic_alloc()
 basic_alloc = dvz.dvz_basic_alloc
+basic_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 basic_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2219,6 +3193,21 @@ basic_alloc.argtypes = [
 
 # Function dvz_pixel()
 pixel = dvz.dvz_pixel
+pixel.__doc__ = """
+Create a pixel visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 pixel.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2227,6 +3216,22 @@ pixel.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_pixel_position()
 pixel_position = dvz.dvz_pixel_position
+pixel_position.__doc__ = """
+Set the pixel positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 pixel_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2237,6 +3242,22 @@ pixel_position.argtypes = [
 
 # Function dvz_pixel_color()
 pixel_color = dvz.dvz_pixel_color
+pixel_color.__doc__ = """
+Set the pixel colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 pixel_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2247,6 +3268,16 @@ pixel_color.argtypes = [
 
 # Function dvz_pixel_alloc()
 pixel_alloc = dvz.dvz_pixel_alloc
+pixel_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 pixel_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2254,6 +3285,21 @@ pixel_alloc.argtypes = [
 
 # Function dvz_point()
 point = dvz.dvz_point
+point.__doc__ = """
+Create a point visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 point.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2262,6 +3308,22 @@ point.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_point_position()
 point_position = dvz.dvz_point_position
+point_position.__doc__ = """
+Set the point positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 point_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2272,6 +3334,22 @@ point_position.argtypes = [
 
 # Function dvz_point_color()
 point_color = dvz.dvz_point_color
+point_color.__doc__ = """
+Set the point colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 point_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2282,6 +3360,22 @@ point_color.argtypes = [
 
 # Function dvz_point_size()
 point_size = dvz.dvz_point_size
+point_size.__doc__ = """
+Set the point sizes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the sizes of the items to update
+flags : int
+    the data update flags
+"""
 point_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2292,6 +3386,16 @@ point_size.argtypes = [
 
 # Function dvz_point_alloc()
 point_alloc = dvz.dvz_point_alloc
+point_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 point_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2299,6 +3403,21 @@ point_alloc.argtypes = [
 
 # Function dvz_marker()
 marker = dvz.dvz_marker
+marker.__doc__ = """
+Create a marker visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 marker.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2307,6 +3426,16 @@ marker.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_marker_mode()
 marker_mode = dvz.dvz_marker_mode
+marker_mode.__doc__ = """
+Set the marker mode.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+mode : DvzMarkerMode
+    the marker mode, one of DVZ_MARKER_MODE_CODE, DVZ_MARKER_MODE_BITMAP,
+"""
 marker_mode.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzMarkerMode,  # DvzMarkerMode mode
@@ -2314,6 +3443,16 @@ marker_mode.argtypes = [
 
 # Function dvz_marker_aspect()
 marker_aspect = dvz.dvz_marker_aspect
+marker_aspect.__doc__ = """
+Set the marker aspect.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+aspect : DvzMarkerAspect
+    the marker aspect, one of DVZ_MARKER_ASPECT_FILLED, DVZ_MARKER_ASPECT_STROKE,
+"""
 marker_aspect.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzMarkerAspect,  # DvzMarkerAspect aspect
@@ -2321,6 +3460,16 @@ marker_aspect.argtypes = [
 
 # Function dvz_marker_shape()
 marker_shape = dvz.dvz_marker_shape
+marker_shape.__doc__ = """
+Set the marker shape.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+shape : DvzMarkerShape
+    the marker shape
+"""
 marker_shape.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzMarkerShape,  # DvzMarkerShape shape
@@ -2328,6 +3477,22 @@ marker_shape.argtypes = [
 
 # Function dvz_marker_position()
 marker_position = dvz.dvz_marker_position
+marker_position.__doc__ = """
+Set the marker positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 marker_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2338,6 +3503,22 @@ marker_position.argtypes = [
 
 # Function dvz_marker_size()
 marker_size = dvz.dvz_marker_size
+marker_size.__doc__ = """
+Set the marker sizes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 marker_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2348,6 +3529,22 @@ marker_size.argtypes = [
 
 # Function dvz_marker_angle()
 marker_angle = dvz.dvz_marker_angle
+marker_angle.__doc__ = """
+Set the marker angles.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the angles of the items to update
+flags : int
+    the data update flags
+"""
 marker_angle.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2358,6 +3555,22 @@ marker_angle.argtypes = [
 
 # Function dvz_marker_color()
 marker_color = dvz.dvz_marker_color
+marker_color.__doc__ = """
+Set the marker colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 marker_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2368,6 +3581,16 @@ marker_color.argtypes = [
 
 # Function dvz_marker_edge_color()
 marker_edge_color = dvz.dvz_marker_edge_color
+marker_edge_color.__doc__ = """
+Set the marker edge color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+color : cvec4
+    the edge color
+"""
 marker_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2375,6 +3598,16 @@ marker_edge_color.argtypes = [
 
 # Function dvz_marker_edge_width()
 marker_edge_width = dvz.dvz_marker_edge_width
+marker_edge_width.__doc__ = """
+Set the marker edge width.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+width : float
+    the edge width
+"""
 marker_edge_width.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float width
@@ -2382,6 +3615,18 @@ marker_edge_width.argtypes = [
 
 # Function dvz_marker_tex()
 marker_tex = dvz.dvz_marker_tex
+marker_tex.__doc__ = """
+Set the marker texture.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+sampler : DvzId
+    the sampler ID
+"""
 marker_tex.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -2390,6 +3635,16 @@ marker_tex.argtypes = [
 
 # Function dvz_marker_tex_scale()
 marker_tex_scale = dvz.dvz_marker_tex_scale
+marker_tex_scale.__doc__ = """
+Set the texture scale.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+scale : float
+    the texture scale
+"""
 marker_tex_scale.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float scale
@@ -2397,6 +3652,16 @@ marker_tex_scale.argtypes = [
 
 # Function dvz_marker_alloc()
 marker_alloc = dvz.dvz_marker_alloc
+marker_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 marker_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2404,6 +3669,21 @@ marker_alloc.argtypes = [
 
 # Function dvz_segment()
 segment = dvz.dvz_segment
+segment.__doc__ = """
+Create a segment visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 segment.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2412,6 +3692,24 @@ segment.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_segment_position()
 segment_position = dvz.dvz_segment_position
+segment_position.__doc__ = """
+Set the segment positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+initial : vec3*
+    the initial 3D positions of the segments
+terminal : vec3*
+    the terminal 3D positions of the segments
+flags : int
+    the data update flags
+"""
 segment_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2423,6 +3721,22 @@ segment_position.argtypes = [
 
 # Function dvz_segment_shift()
 segment_shift = dvz.dvz_segment_shift
+segment_shift.__doc__ = """
+Set the segment shift.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec4*
+    the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+flags : int
+    the data update flags
+"""
 segment_shift.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2433,6 +3747,22 @@ segment_shift.argtypes = [
 
 # Function dvz_segment_color()
 segment_color = dvz.dvz_segment_color
+segment_color.__doc__ = """
+Set the segment colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 segment_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2443,6 +3773,22 @@ segment_color.argtypes = [
 
 # Function dvz_segment_linewidth()
 segment_linewidth = dvz.dvz_segment_linewidth
+segment_linewidth.__doc__ = """
+Set the segment line widths.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the segment line widths
+flags : int
+    the data update flags
+"""
 segment_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2453,6 +3799,24 @@ segment_linewidth.argtypes = [
 
 # Function dvz_segment_cap()
 segment_cap = dvz.dvz_segment_cap
+segment_cap.__doc__ = """
+Set the segment cap types.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+initial : DvzCapType*
+    the initial segment cap types
+terminal : DvzCapType*
+    the terminal segment cap types
+flags : int
+    the data update flags
+"""
 segment_cap.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2464,6 +3828,16 @@ segment_cap.argtypes = [
 
 # Function dvz_segment_alloc()
 segment_alloc = dvz.dvz_segment_alloc
+segment_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 segment_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2471,6 +3845,21 @@ segment_alloc.argtypes = [
 
 # Function dvz_path()
 path = dvz.dvz_path
+path.__doc__ = """
+Create a path visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 path.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2479,6 +3868,24 @@ path.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_path_position()
 path_position = dvz.dvz_path_position
+path_position.__doc__ = """
+Set the path positions. Note: all path point positions must be updated at once for now.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+vertex_count : unknown
+    the total number of points across all paths
+positions : vec3*
+    the path point positions
+path_count : uint32_t
+    the number of different paths
+path_lengths : uint32_t*
+    the number of points in each path
+flags : int
+    the data update flags
+"""
 path_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t point_count
@@ -2490,6 +3897,22 @@ path_position.argtypes = [
 
 # Function dvz_path_color()
 path_color = dvz.dvz_path_color
+path_color.__doc__ = """
+Set the path colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 path_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2500,6 +3923,16 @@ path_color.argtypes = [
 
 # Function dvz_path_linewidth()
 path_linewidth = dvz.dvz_path_linewidth
+path_linewidth.__doc__ = """
+Set the path line width.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+width : float
+    the line width
+"""
 path_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float width
@@ -2507,6 +3940,16 @@ path_linewidth.argtypes = [
 
 # Function dvz_path_cap()
 path_cap = dvz.dvz_path_cap
+path_cap.__doc__ = """
+Set the path cap.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+cap : DvzCapType
+    the cap
+"""
 path_cap.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzCapType,  # DvzCapType cap
@@ -2514,6 +3957,16 @@ path_cap.argtypes = [
 
 # Function dvz_path_join()
 path_join = dvz.dvz_path_join
+path_join.__doc__ = """
+Set the path join.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+join : DvzJoinType
+    the join
+"""
 path_join.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzJoinType,  # DvzJoinType join
@@ -2521,6 +3974,16 @@ path_join.argtypes = [
 
 # Function dvz_path_alloc()
 path_alloc = dvz.dvz_path_alloc
+path_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+total_point_count : uint32_t
+    the total number of points to allocate for this visual
+"""
 path_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t total_point_count
@@ -2528,6 +3991,19 @@ path_alloc.argtypes = [
 
 # Function dvz_atlas_font()
 atlas_font = dvz.dvz_atlas_font
+atlas_font.__doc__ = """
+Load the default atlas and font.
+
+Parameters
+----------
+font_size : double
+    the font size
+
+Returns
+-------
+type
+    a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
+"""
 atlas_font.argtypes = [
     ctypes.c_double,  # double font_size
 ]
@@ -2535,12 +4011,35 @@ atlas_font.restype = DvzAtlasFont
 
 # Function dvz_atlas_destroy()
 atlas_destroy = dvz.dvz_atlas_destroy
+atlas_destroy.__doc__ = """
+Destroy an atlas.
+
+Parameters
+----------
+atlas : DvzAtlas*
+    the atlas
+"""
 atlas_destroy.argtypes = [
     ctypes.POINTER(DvzAtlas),  # DvzAtlas* atlas
 ]
 
 # Function dvz_font()
 font = dvz.dvz_font
+font.__doc__ = """
+Create a font.
+
+Parameters
+----------
+ttf_size : long
+    size in bytes of a TTF font raw buffer
+ttf_bytes : char*
+    TTF font raw buffer
+
+Returns
+-------
+type
+    the font
+"""
 font.argtypes = [
     ctypes.c_long,  # long ttf_size
     ctypes.c_char_p,  # char* ttf_bytes
@@ -2549,6 +4048,16 @@ font.restype = ctypes.POINTER(DvzFont)
 
 # Function dvz_font_size()
 font_size = dvz.dvz_font_size
+font_size.__doc__ = """
+Set the font size.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+size : double
+    the font size
+"""
 font_size.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.c_double,  # double size
@@ -2556,6 +4065,23 @@ font_size.argtypes = [
 
 # Function dvz_font_layout()
 font_layout = dvz.dvz_font_layout
+font_layout.__doc__ = """
+Compute the shift of each glyph in a Unicode string, using the Freetype library.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+length : uint32_t
+    the number of glyphs
+codepoints : uint32_t*
+    the Unicode codepoints of the glyphs
+
+Returns
+-------
+type
+    an array of (x,y,w,h) shifts
+"""
 font_layout.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.c_uint32,  # uint32_t length
@@ -2565,6 +4091,21 @@ font_layout.restype = ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTI
 
 # Function dvz_font_ascii()
 font_ascii = dvz.dvz_font_ascii
+font_ascii.__doc__ = """
+Compute the shift of each glyph in an ASCII string, using the Freetype library.  Note: the caller must free the output after use.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+string : char*
+    the ASCII string
+
+Returns
+-------
+type
+    an array of (x,y,w,h) shifts
+"""
 font_ascii.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.c_char_p,  # char* string
@@ -2573,6 +4114,29 @@ font_ascii.restype = ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIG
 
 # Function dvz_font_draw()
 font_draw = dvz.dvz_font_draw
+font_draw.__doc__ = """
+Render a string using Freetype.  Note: the caller must free the output after use.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+length : uint32_t
+    the number of glyphs
+codepoints : uint32_t*
+    the Unicode codepoints of the glyphs
+xywh : vec4*
+    an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+flags : int
+    the font flags
+out_size : uvec2 (out parameter)
+    the number of bytes in the returned image
+
+Returns
+-------
+type
+    an RGBA array allocated by this function and that MUST be freed by the caller
+"""
 font_draw.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.c_uint32,  # uint32_t length
@@ -2585,6 +4149,27 @@ font_draw.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOU
 
 # Function dvz_font_texture()
 font_texture = dvz.dvz_font_texture
+font_texture.__doc__ = """
+Generate a texture with a rendered text.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+batch : DvzBatch*
+    the batch
+length : uint32_t
+    the number of Unicode codepoints
+codepoints : uint32_t*
+    the Unicode codepoints
+size : uvec3 (out parameter)
+    the generated texture size
+
+Returns
+-------
+type
+    a tex ID
+"""
 font_texture.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
@@ -2596,12 +4181,35 @@ font_texture.restype = DvzId
 
 # Function dvz_font_destroy()
 font_destroy = dvz.dvz_font_destroy
+font_destroy.__doc__ = """
+Destroy a font.
+
+Parameters
+----------
+font : DvzFont*
+    the font
+"""
 font_destroy.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
 ]
 
 # Function dvz_glyph()
 glyph = dvz.dvz_glyph
+glyph.__doc__ = """
+Create a glyph visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 glyph.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2610,6 +4218,16 @@ glyph.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_glyph_alloc()
 glyph_alloc = dvz.dvz_glyph_alloc
+glyph_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 glyph_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2617,6 +4235,22 @@ glyph_alloc.argtypes = [
 
 # Function dvz_glyph_position()
 glyph_position = dvz.dvz_glyph_position
+glyph_position.__doc__ = """
+Set the glyph positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 glyph_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2627,6 +4261,22 @@ glyph_position.argtypes = [
 
 # Function dvz_glyph_axis()
 glyph_axis = dvz.dvz_glyph_axis
+glyph_axis.__doc__ = """
+Set the glyph axes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D axis vectors of the items to update
+flags : int
+    the data update flags
+"""
 glyph_axis.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2637,6 +4287,22 @@ glyph_axis.argtypes = [
 
 # Function dvz_glyph_size()
 glyph_size = dvz.dvz_glyph_size
+glyph_size.__doc__ = """
+Set the glyph sizes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the sizes (width and height) of the items to update
+flags : int
+    the data update flags
+"""
 glyph_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2647,6 +4313,22 @@ glyph_size.argtypes = [
 
 # Function dvz_glyph_anchor()
 glyph_anchor = dvz.dvz_glyph_anchor
+glyph_anchor.__doc__ = """
+Set the glyph anchors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the anchors (x and y) of the items to update
+flags : int
+    the data update flags
+"""
 glyph_anchor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2657,6 +4339,22 @@ glyph_anchor.argtypes = [
 
 # Function dvz_glyph_shift()
 glyph_shift = dvz.dvz_glyph_shift
+glyph_shift.__doc__ = """
+Set the glyph shifts.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the shifts (x and y) of the items to update
+flags : int
+    the data update flags
+"""
 glyph_shift.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2667,6 +4365,22 @@ glyph_shift.argtypes = [
 
 # Function dvz_glyph_texcoords()
 glyph_texcoords = dvz.dvz_glyph_texcoords
+glyph_texcoords.__doc__ = """
+Set the glyph texture coordinates.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+coords : vec4*
+    the x,y,w,h texture coordinates
+flags : int
+    the data update flags
+"""
 glyph_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2677,6 +4391,22 @@ glyph_texcoords.argtypes = [
 
 # Function dvz_glyph_angle()
 glyph_angle = dvz.dvz_glyph_angle
+glyph_angle.__doc__ = """
+Set the glyph angles.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the angles of the items to update
+flags : int
+    the data update flags
+"""
 glyph_angle.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2687,6 +4417,22 @@ glyph_angle.argtypes = [
 
 # Function dvz_glyph_color()
 glyph_color = dvz.dvz_glyph_color
+glyph_color.__doc__ = """
+Set the glyph colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 glyph_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2697,6 +4443,22 @@ glyph_color.argtypes = [
 
 # Function dvz_glyph_groupsize()
 glyph_groupsize = dvz.dvz_glyph_groupsize
+glyph_groupsize.__doc__ = """
+Set the glyph group size.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the glyph group sizes
+flags : int
+    the data update flags
+"""
 glyph_groupsize.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2707,6 +4469,16 @@ glyph_groupsize.argtypes = [
 
 # Function dvz_glyph_bgcolor()
 glyph_bgcolor = dvz.dvz_glyph_bgcolor
+glyph_bgcolor.__doc__ = """
+Set the glyph background color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+bgcolor : vec4
+    the background color
+"""
 glyph_bgcolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 bgcolor
@@ -2714,6 +4486,16 @@ glyph_bgcolor.argtypes = [
 
 # Function dvz_glyph_texture()
 glyph_texture = dvz.dvz_glyph_texture
+glyph_texture.__doc__ = """
+Assign a texture to a glyph visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+"""
 glyph_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -2721,6 +4503,16 @@ glyph_texture.argtypes = [
 
 # Function dvz_glyph_atlas()
 glyph_atlas = dvz.dvz_glyph_atlas
+glyph_atlas.__doc__ = """
+Associate an atlas with a glyph visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+atlas : DvzAtlas*
+    the atlas
+"""
 glyph_atlas.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.POINTER(DvzAtlas),  # DvzAtlas* atlas
@@ -2728,6 +4520,18 @@ glyph_atlas.argtypes = [
 
 # Function dvz_glyph_unicode()
 glyph_unicode = dvz.dvz_glyph_unicode
+glyph_unicode.__doc__ = """
+Set the glyph unicode code points.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+count : uint32_t
+    the number of glyphs
+codepoints : uint32_t*
+    the unicode codepoints
+"""
 glyph_unicode.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t count
@@ -2736,6 +4540,16 @@ glyph_unicode.argtypes = [
 
 # Function dvz_glyph_ascii()
 glyph_ascii = dvz.dvz_glyph_ascii
+glyph_ascii.__doc__ = """
+Set the glyph ascii characters.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+string : char*
+    the characters
+"""
 glyph_ascii.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_char_p,  # char* string
@@ -2743,6 +4557,24 @@ glyph_ascii.argtypes = [
 
 # Function dvz_glyph_xywh()
 glyph_xywh = dvz.dvz_glyph_xywh
+glyph_xywh.__doc__ = """
+Set the xywh parameters of each glyph.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec4*
+    the xywh values of each glyph
+offset : vec2
+    the xy offsets of each glyph
+flags : int
+    the data update flags
+"""
 glyph_xywh.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2754,6 +4586,21 @@ glyph_xywh.argtypes = [
 
 # Function dvz_monoglyph()
 monoglyph = dvz.dvz_monoglyph
+monoglyph.__doc__ = """
+Create a monoglyph visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 monoglyph.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2762,6 +4609,22 @@ monoglyph.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_monoglyph_position()
 monoglyph_position = dvz.dvz_monoglyph_position
+monoglyph_position.__doc__ = """
+Set the glyph positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the items to update
+flags : int
+    the data update flags
+"""
 monoglyph_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2772,6 +4635,22 @@ monoglyph_position.argtypes = [
 
 # Function dvz_monoglyph_offset()
 monoglyph_offset = dvz.dvz_monoglyph_offset
+monoglyph_offset.__doc__ = """
+Set the glyph offsets.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : ivec2*
+    the glyph offsets (ivec2 integers: row,column)
+flags : int
+    the data update flags
+"""
 monoglyph_offset.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2782,6 +4661,22 @@ monoglyph_offset.argtypes = [
 
 # Function dvz_monoglyph_color()
 monoglyph_color = dvz.dvz_monoglyph_color
+monoglyph_color.__doc__ = """
+Set the glyph colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
 monoglyph_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2792,6 +4687,16 @@ monoglyph_color.argtypes = [
 
 # Function dvz_monoglyph_glyph()
 monoglyph_glyph = dvz.dvz_monoglyph_glyph
+monoglyph_glyph.__doc__ = """
+Set the text.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+text : char*
+    the ASCII test (string length without the null terminal byte = number of glyphs)
+"""
 monoglyph_glyph.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2801,6 +4706,16 @@ monoglyph_glyph.argtypes = [
 
 # Function dvz_monoglyph_anchor()
 monoglyph_anchor = dvz.dvz_monoglyph_anchor
+monoglyph_anchor.__doc__ = """
+Set the glyph anchor (relative to the glyph size).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+anchor : vec2
+    the anchor
+"""
 monoglyph_anchor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 2,  # vec2 anchor
@@ -2808,6 +4723,16 @@ monoglyph_anchor.argtypes = [
 
 # Function dvz_monoglyph_size()
 monoglyph_size = dvz.dvz_monoglyph_size
+monoglyph_size.__doc__ = """
+Set the glyph size (relative to the initial glyph size).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+size : float
+    the glyph size
+"""
 monoglyph_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float size
@@ -2815,6 +4740,22 @@ monoglyph_size.argtypes = [
 
 # Function dvz_monoglyph_textarea()
 monoglyph_textarea = dvz.dvz_monoglyph_textarea
+monoglyph_textarea.__doc__ = """
+All-in-one function for multiline text.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+pos : vec3
+    the text position
+color : cvec4
+    the text color
+size : float
+    the glyph size
+text : char*
+    the text, can contain `\n` new lines
+"""
 monoglyph_textarea.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 pos
@@ -2825,6 +4766,16 @@ monoglyph_textarea.argtypes = [
 
 # Function dvz_monoglyph_alloc()
 monoglyph_alloc = dvz.dvz_monoglyph_alloc
+monoglyph_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of items to allocate for this visual
+"""
 monoglyph_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2832,6 +4783,21 @@ monoglyph_alloc.argtypes = [
 
 # Function dvz_image()
 image = dvz.dvz_image
+image.__doc__ = """
+Create an image visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 image.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2840,6 +4806,22 @@ image.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_image_position()
 image_position = dvz.dvz_image_position
+image_position.__doc__ = """
+Set the image positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D positions of the top left corner
+flags : int
+    the data update flags
+"""
 image_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2850,6 +4832,22 @@ image_position.argtypes = [
 
 # Function dvz_image_size()
 image_size = dvz.dvz_image_size
+image_size.__doc__ = """
+Set the image sizes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the sizes of each image, in pixels
+flags : int
+    the data update flags
+"""
 image_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2860,6 +4858,22 @@ image_size.argtypes = [
 
 # Function dvz_image_anchor()
 image_anchor = dvz.dvz_image_anchor
+image_anchor.__doc__ = """
+Set the image anchors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the relative anchors of each image, (0,0 = position pertains to top left corner)
+flags : int
+    the data update flags
+"""
 image_anchor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2870,6 +4884,22 @@ image_anchor.argtypes = [
 
 # Function dvz_image_texcoords()
 image_texcoords = dvz.dvz_image_texcoords
+image_texcoords.__doc__ = """
+Set the image texture coordinates.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+tl_br : vec4*
+    the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
+flags : int
+    the data update flags
+"""
 image_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2880,6 +4910,22 @@ image_texcoords.argtypes = [
 
 # Function dvz_image_color()
 image_color = dvz.dvz_image_color
+image_color.__doc__ = """
+Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the image colors
+flags : int
+    the data update flags
+"""
 image_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2890,6 +4936,20 @@ image_color.argtypes = [
 
 # Function dvz_image_texture()
 image_texture = dvz.dvz_image_texture
+image_texture.__doc__ = """
+Assign a texture to an image visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+filter : DvzFilter
+    the texture filtering mode
+address_mode : DvzSamplerAddressMode
+    the texture address mode
+"""
 image_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -2899,6 +4959,16 @@ image_texture.argtypes = [
 
 # Function dvz_image_radius()
 image_radius = dvz.dvz_image_radius
+image_radius.__doc__ = """
+Use a rounded rectangle for images, with a given radius in pixels.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+radius : float
+    the rounded corner radius, in pixel
+"""
 image_radius.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float radius
@@ -2906,6 +4976,16 @@ image_radius.argtypes = [
 
 # Function dvz_image_edge_width()
 image_edge_width = dvz.dvz_image_edge_width
+image_edge_width.__doc__ = """
+Set the edge width.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+width : float
+    the edge width
+"""
 image_edge_width.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float width
@@ -2913,6 +4993,16 @@ image_edge_width.argtypes = [
 
 # Function dvz_image_edge_color()
 image_edge_color = dvz.dvz_image_edge_color
+image_edge_color.__doc__ = """
+Set the edge color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+color : cvec4
+    the edge color
+"""
 image_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2920,6 +5010,16 @@ image_edge_color.argtypes = [
 
 # Function dvz_image_alloc()
 image_alloc = dvz.dvz_image_alloc
+image_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of images to allocate for this visual
+"""
 image_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -2927,6 +5027,27 @@ image_alloc.argtypes = [
 
 # Function dvz_tex_image()
 tex_image = dvz.dvz_tex_image
+tex_image.__doc__ = """
+Create a 2D texture to be used in an image visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+width : uint32_t
+    the texture width
+height : uint32_t
+    the texture height
+data : void*
+    the texture data to upload
+
+Returns
+-------
+type
+    the texture ID
+"""
 tex_image.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzFormat,  # DvzFormat format
@@ -2938,6 +5059,21 @@ tex_image.restype = DvzId
 
 # Function dvz_mesh()
 mesh = dvz.dvz_mesh
+mesh.__doc__ = """
+Create a mesh visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 mesh.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -2946,6 +5082,22 @@ mesh.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_mesh_position()
 mesh_position = dvz.dvz_mesh_position
+mesh_position.__doc__ = """
+Set the mesh vertex positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the 3D vertex positions
+flags : int
+    the data update flags
+"""
 mesh_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2956,6 +5108,22 @@ mesh_position.argtypes = [
 
 # Function dvz_mesh_color()
 mesh_color = dvz.dvz_mesh_color
+mesh_color.__doc__ = """
+Set the mesh colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    the vertex colors
+flags : int
+    the data update flags
+"""
 mesh_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2966,6 +5134,22 @@ mesh_color.argtypes = [
 
 # Function dvz_mesh_texcoords()
 mesh_texcoords = dvz.dvz_mesh_texcoords
+mesh_texcoords.__doc__ = """
+Set the mesh texture coordinates.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec4*
+    the vertex texture coordinates (vec4 u,v,*,alpha)
+flags : int
+    the data update flags
+"""
 mesh_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2976,6 +5160,22 @@ mesh_texcoords.argtypes = [
 
 # Function dvz_mesh_normal()
 mesh_normal = dvz.dvz_mesh_normal
+mesh_normal.__doc__ = """
+Set the mesh normals.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the vertex normal vectors
+flags : int
+    the data update flags
+"""
 mesh_normal.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2986,6 +5186,22 @@ mesh_normal.argtypes = [
 
 # Function dvz_mesh_isoline()
 mesh_isoline = dvz.dvz_mesh_isoline
+mesh_isoline.__doc__ = """
+Set the isolines values.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the scalar field for which to draw isolines
+flags : int
+    the data update flags
+"""
 mesh_isoline.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -2996,6 +5212,22 @@ mesh_isoline.argtypes = [
 
 # Function dvz_mesh_left()
 mesh_left = dvz.dvz_mesh_left
+mesh_left.__doc__ = """
+Set the distance between the current vertex to the left edge at corner A, B, or C in triangle ABC.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the distance to the left edge adjacent to each triangle vertex
+flags : int
+    the data update flags
+"""
 mesh_left.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3006,6 +5238,22 @@ mesh_left.argtypes = [
 
 # Function dvz_mesh_right()
 mesh_right = dvz.dvz_mesh_right
+mesh_right.__doc__ = """
+Set the distance between the current vertex to the right edge at corner A, B, or C in triangle ABC.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec3*
+    the distance to the right edge adjacent to each triangle vertex
+flags : int
+    the data update flags
+"""
 mesh_right.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3016,6 +5264,22 @@ mesh_right.argtypes = [
 
 # Function dvz_mesh_contour()
 mesh_contour = dvz.dvz_mesh_contour
+mesh_contour.__doc__ = """
+Set the contour information for polygon contours.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : cvec4*
+    for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+flags : int
+    the data update flags
+"""
 mesh_contour.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3026,6 +5290,20 @@ mesh_contour.argtypes = [
 
 # Function dvz_mesh_texture()
 mesh_texture = dvz.dvz_mesh_texture
+mesh_texture.__doc__ = """
+Assign a 2D texture to a mesh visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+filter : DvzFilter
+    the texture filtering mode
+address_mode : DvzSamplerAddressMode
+    the texture address mode
+"""
 mesh_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -3035,6 +5313,22 @@ mesh_texture.argtypes = [
 
 # Function dvz_mesh_index()
 mesh_index = dvz.dvz_mesh_index
+mesh_index.__doc__ = """
+Set the mesh indices.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : DvzIndex*
+    the face indices (three vertex indices per triangle)
+flags : int
+    the data update flags
+"""
 mesh_index.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3045,6 +5339,18 @@ mesh_index.argtypes = [
 
 # Function dvz_mesh_alloc()
 mesh_alloc = dvz.dvz_mesh_alloc
+mesh_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+vertex_count : uint32_t
+    the number of vertices
+index_count : uint32_t
+    the number of indices
+"""
 mesh_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t vertex_count
@@ -3053,6 +5359,16 @@ mesh_alloc.argtypes = [
 
 # Function dvz_mesh_light_pos()
 mesh_light_pos = dvz.dvz_mesh_light_pos
+mesh_light_pos.__doc__ = """
+Set the mesh light position.
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+pos : vec3
+    the light position
+"""
 mesh_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 pos
@@ -3060,6 +5376,16 @@ mesh_light_pos.argtypes = [
 
 # Function dvz_mesh_light_params()
 mesh_light_params = dvz.dvz_mesh_light_params
+mesh_light_params.__doc__ = """
+Set the mesh light parameters.
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+params : vec4
+    the light parameters (vec4 ambient, diffuse, specular, exponent)
+"""
 mesh_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 params
@@ -3067,6 +5393,16 @@ mesh_light_params.argtypes = [
 
 # Function dvz_mesh_stroke()
 mesh_stroke = dvz.dvz_mesh_stroke
+mesh_stroke.__doc__ = """
+Set the stroke color.  Note: the alpha component is currently unused.
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+stroke : unknown
+    the rgba components
+"""
 mesh_stroke.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint8 * 4,  # cvec4 rgba
@@ -3074,6 +5410,16 @@ mesh_stroke.argtypes = [
 
 # Function dvz_mesh_linewidth()
 mesh_linewidth = dvz.dvz_mesh_linewidth
+mesh_linewidth.__doc__ = """
+Set the stroke linewidth (wireframe or isoline).
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+linewidth : float
+    the line width
+"""
 mesh_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float linewidth
@@ -3081,6 +5427,16 @@ mesh_linewidth.argtypes = [
 
 # Function dvz_mesh_density()
 mesh_density = dvz.dvz_mesh_density
+mesh_density.__doc__ = """
+Set the number of isolines
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+count : uint32_t
+    the number of isolines
+"""
 mesh_density.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t count
@@ -3088,6 +5444,23 @@ mesh_density.argtypes = [
 
 # Function dvz_mesh_shape()
 mesh_shape = dvz.dvz_mesh_shape
+mesh_shape.__doc__ = """
+Create a mesh out of a shape.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+shape : DvzShape*
+    the shape
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the mesh
+"""
 mesh_shape.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.POINTER(DvzShape),  # DvzShape* shape
@@ -3097,6 +5470,16 @@ mesh_shape.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_mesh_reshape()
 mesh_reshape = dvz.dvz_mesh_reshape
+mesh_reshape.__doc__ = """
+Update a mesh once a shape has been updated.
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+shape : DvzShape*
+    the shape
+"""
 mesh_reshape.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.POINTER(DvzShape),  # DvzShape* shape
@@ -3104,6 +5487,21 @@ mesh_reshape.argtypes = [
 
 # Function dvz_sphere()
 sphere = dvz.dvz_sphere
+sphere.__doc__ = """
+Create a sphere visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 sphere.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -3112,6 +5510,22 @@ sphere.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_sphere_position()
 sphere_position = dvz.dvz_sphere_position
+sphere_position.__doc__ = """
+Set the sphere positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+pos : vec3*
+    the 3D positions of the sphere centers
+flags : int
+    the data update flags
+"""
 sphere_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3122,6 +5536,22 @@ sphere_position.argtypes = [
 
 # Function dvz_sphere_color()
 sphere_color = dvz.dvz_sphere_color
+sphere_color.__doc__ = """
+Set the sphere colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+color : cvec4*
+    the sphere colors
+flags : int
+    the data update flags
+"""
 sphere_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3132,6 +5562,22 @@ sphere_color.argtypes = [
 
 # Function dvz_sphere_size()
 sphere_size = dvz.dvz_sphere_size
+sphere_size.__doc__ = """
+Set the sphere sizes.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+size : float*
+    the radius of the spheres
+flags : int
+    the data update flags
+"""
 sphere_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3142,6 +5588,16 @@ sphere_size.argtypes = [
 
 # Function dvz_sphere_alloc()
 sphere_alloc = dvz.dvz_sphere_alloc
+sphere_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of spheres to allocate for this visual
+"""
 sphere_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -3149,6 +5605,16 @@ sphere_alloc.argtypes = [
 
 # Function dvz_sphere_light_pos()
 sphere_light_pos = dvz.dvz_sphere_light_pos
+sphere_light_pos.__doc__ = """
+Set the sphere light position.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+pos : vec3
+    the light position
+"""
 sphere_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 pos
@@ -3156,6 +5622,16 @@ sphere_light_pos.argtypes = [
 
 # Function dvz_sphere_light_params()
 sphere_light_params = dvz.dvz_sphere_light_params
+sphere_light_params.__doc__ = """
+Set the sphere light parameters.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+params : vec4
+    the light parameters (vec4 ambient, diffuse, specular, exponent)
+"""
 sphere_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 params
@@ -3163,6 +5639,21 @@ sphere_light_params.argtypes = [
 
 # Function dvz_volume()
 volume = dvz.dvz_volume
+volume.__doc__ = """
+Create a volume visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 volume.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -3171,6 +5662,16 @@ volume.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_volume_alloc()
 volume_alloc = dvz.dvz_volume_alloc
+volume_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of volumes to allocate for this visual
+"""
 volume_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -3178,6 +5679,20 @@ volume_alloc.argtypes = [
 
 # Function dvz_volume_texture()
 volume_texture = dvz.dvz_volume_texture
+volume_texture.__doc__ = """
+Assign a 3D texture to a volume visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+filter : DvzFilter
+    the texture filtering mode
+address_mode : DvzSamplerAddressMode
+    the texture address mode
+"""
 volume_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -3187,6 +5702,20 @@ volume_texture.argtypes = [
 
 # Function dvz_volume_size()
 volume_size = dvz.dvz_volume_size
+volume_size.__doc__ = """
+Set the volume size.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+w : float
+    the texture width
+h : float
+    the texture height
+d : float
+    the texture depth
+"""
 volume_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float w
@@ -3196,6 +5725,18 @@ volume_size.argtypes = [
 
 # Function dvz_volume_texcoords()
 volume_texcoords = dvz.dvz_volume_texcoords
+volume_texcoords.__doc__ = """
+Set the texture coordinates of two corner points.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+uvw0 : vec3
+    coordinates of one of the corner points
+uvw1 : vec3
+    coordinates of one of the corner points
+"""
 volume_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 uvw0
@@ -3204,6 +5745,16 @@ volume_texcoords.argtypes = [
 
 # Function dvz_volume_transfer()
 volume_transfer = dvz.dvz_volume_transfer
+volume_transfer.__doc__ = """
+Set the volume size.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+transfer : vec4
+    transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
+"""
 volume_transfer.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 4,  # vec4 transfer
@@ -3211,6 +5762,29 @@ volume_transfer.argtypes = [
 
 # Function dvz_tex_volume()
 tex_volume = dvz.dvz_tex_volume
+tex_volume.__doc__ = """
+Create a 3D texture to be used in a volume visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+width : uint32_t
+    the texture width
+height : uint32_t
+    the texture height
+depth : uint32_t
+    the texture depth
+data : void*
+    the texture data to upload
+
+Returns
+-------
+type
+    the texture ID
+"""
 tex_volume.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzFormat,  # DvzFormat format
@@ -3223,6 +5797,21 @@ tex_volume.restype = DvzId
 
 # Function dvz_slice()
 slice = dvz.dvz_slice
+slice.__doc__ = """
+Create a slice visual (multiple 2D images with slices of a 3D texture).
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+flags : int
+    the visual creation flags
+
+Returns
+-------
+type
+    the visual
+"""
 slice.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_int,  # int flags
@@ -3231,6 +5820,28 @@ slice.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_slice_position()
 slice_position = dvz.dvz_slice_position
+slice_position.__doc__ = """
+Set the slice positions.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+p0 : vec3*
+    the 3D positions of the top left corner
+p1 : vec3*
+    the 3D positions of the top right corner
+p2 : vec3*
+    the 3D positions of the bottom left corner
+p3 : vec3*
+    the 3D positions of the bottom right corner
+flags : int
+    the data update flags
+"""
 slice_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3244,6 +5855,28 @@ slice_position.argtypes = [
 
 # Function dvz_slice_texcoords()
 slice_texcoords = dvz.dvz_slice_texcoords
+slice_texcoords.__doc__ = """
+Set the slice texture coordinates.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+uvw0 : vec3*
+    the 3D texture coordinates of the top left corner
+uvw1 : vec3*
+    the 3D texture coordinates of the top right corner
+uvw2 : vec3*
+    the 3D texture coordinates of the bottom left corner
+uvw3 : vec3*
+    the 3D texture coordinates of the bottom right corner
+flags : int
+    the data update flags
+"""
 slice_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
@@ -3257,6 +5890,20 @@ slice_texcoords.argtypes = [
 
 # Function dvz_slice_texture()
 slice_texture = dvz.dvz_slice_texture
+slice_texture.__doc__ = """
+Assign a texture to a slice visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tex : DvzId
+    the texture ID
+filter : DvzFilter
+    the texture filtering mode
+address_mode : DvzSamplerAddressMode
+    the texture address mode
+"""
 slice_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzId,  # DvzId tex
@@ -3266,6 +5913,16 @@ slice_texture.argtypes = [
 
 # Function dvz_slice_alloc()
 slice_alloc = dvz.dvz_slice_alloc
+slice_alloc.__doc__ = """
+Allocate memory for a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the total number of slices to allocate for this visual
+"""
 slice_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
@@ -3273,6 +5930,29 @@ slice_alloc.argtypes = [
 
 # Function dvz_tex_slice()
 tex_slice = dvz.dvz_tex_slice
+tex_slice.__doc__ = """
+Create a 3D texture to be used in a slice visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+width : uint32_t
+    the texture width
+height : uint32_t
+    the texture height
+depth : uint32_t
+    the texture depth
+data : void*
+    the texture data to upload
+
+Returns
+-------
+type
+    the texture ID
+"""
 tex_slice.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzFormat,  # DvzFormat format
@@ -3285,6 +5965,16 @@ tex_slice.restype = DvzId
 
 # Function dvz_slice_alpha()
 slice_alpha = dvz.dvz_slice_alpha
+slice_alpha.__doc__ = """
+Set the slice transparency alpha value.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+alpha : float
+    the alpha value
+"""
 slice_alpha.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float alpha
@@ -3292,6 +5982,23 @@ slice_alpha.argtypes = [
 
 # Function dvz_resample()
 resample = dvz.dvz_resample
+resample.__doc__ = """
+Normalize a value in an interval.
+
+Parameters
+----------
+t0 : double
+    the interval start
+t1 : double
+    the interval end
+t : double
+    the value within the interval
+
+Returns
+-------
+type
+    the normalized value between 0 and 1
+"""
 resample.argtypes = [
     ctypes.c_double,  # double t0
     ctypes.c_double,  # double t1
@@ -3301,6 +6008,21 @@ resample.restype = ctypes.c_double
 
 # Function dvz_easing()
 easing = dvz.dvz_easing
+easing.__doc__ = """
+Apply an easing function to a normalized value.
+
+Parameters
+----------
+easing : DvzEasing
+    the easing mode
+t : double
+    the normalized value
+
+Returns
+-------
+type
+    the eased value
+"""
 easing.argtypes = [
     DvzEasing,  # DvzEasing easing
     ctypes.c_double,  # double t
@@ -3309,6 +6031,22 @@ easing.restype = ctypes.c_double
 
 # Function dvz_circular_2D()
 circular_2D = dvz.dvz_circular_2D
+circular_2D.__doc__ = """
+Generate a 2D circular motion.
+
+Parameters
+----------
+center : vec2
+    the circle center
+radius : float
+    the circle radius
+angle : float
+    the initial angle
+t : float
+    the normalized value
+out : vec2 (out parameter)
+    the 2D position
+"""
 circular_2D.argtypes = [
     ctypes.c_float * 2,  # vec2 center
     ctypes.c_float,  # float radius
@@ -3319,6 +6057,26 @@ circular_2D.argtypes = [
 
 # Function dvz_circular_3D()
 circular_3D = dvz.dvz_circular_3D
+circular_3D.__doc__ = """
+Generate a 3D circular motion.
+
+Parameters
+----------
+center : vec3
+    the circle center
+u : vec3
+    the first 3D vector defining the plane containing the circle
+v : vec3
+    the second 3D vector defining the plane containing the circle
+radius : float
+    the circle radius
+angle : float
+    the initial angle
+t : float
+    the normalized value
+out : vec3 (out parameter)
+    the 3D position
+"""
 circular_3D.argtypes = [
     ctypes.c_float * 3,  # vec3 center
     ctypes.c_float * 3,  # vec3 u
@@ -3331,6 +6089,23 @@ circular_3D.argtypes = [
 
 # Function dvz_interpolate()
 interpolate = dvz.dvz_interpolate
+interpolate.__doc__ = """
+Make a linear interpolation between two scalar value.
+
+Parameters
+----------
+p0 : float
+    the first value
+p1 : float
+    the second value
+t : float
+    the normalized value
+
+Returns
+-------
+type
+    the interpolated value
+"""
 interpolate.argtypes = [
     ctypes.c_float,  # float p0
     ctypes.c_float,  # float p1
@@ -3340,6 +6115,23 @@ interpolate.restype = ctypes.c_float
 
 # Function dvz_interpolate_2D()
 interpolate_2D = dvz.dvz_interpolate_2D
+interpolate_2D.__doc__ = """
+Make a linear interpolation between two 2D points.
+
+Parameters
+----------
+p0 : vec2
+    the first point
+p1 : vec2
+    the second point
+t : float
+    the normalized value
+
+Returns
+-------
+type
+    the interpolated point
+"""
 interpolate_2D.argtypes = [
     ctypes.c_float * 2,  # vec2 p0
     ctypes.c_float * 2,  # vec2 p1
@@ -3349,6 +6141,23 @@ interpolate_2D.argtypes = [
 
 # Function dvz_interpolate_3D()
 interpolate_3D = dvz.dvz_interpolate_3D
+interpolate_3D.__doc__ = """
+Make a linear interpolation between two 3D points.
+
+Parameters
+----------
+p0 : vec3
+    the first point
+p1 : vec3
+    the second point
+t : float
+    the normalized value
+
+Returns
+-------
+type
+    the interpolated point
+"""
 interpolate_3D.argtypes = [
     ctypes.c_float * 3,  # vec3 p0
     ctypes.c_float * 3,  # vec3 p1
@@ -3358,6 +6167,16 @@ interpolate_3D.argtypes = [
 
 # Function dvz_arcball_initial()
 arcball_initial = dvz.dvz_arcball_initial
+arcball_initial.__doc__ = """
+Set the initial arcball angles.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+angles : vec3
+    the initial angles
+"""
 arcball_initial.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 3,  # vec3 angles
@@ -3365,12 +6184,32 @@ arcball_initial.argtypes = [
 
 # Function dvz_arcball_reset()
 arcball_reset = dvz.dvz_arcball_reset
+arcball_reset.__doc__ = """
+Reset an arcball to its initial position.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+"""
 arcball_reset.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
 ]
 
 # Function dvz_arcball_resize()
 arcball_resize = dvz.dvz_arcball_resize
+arcball_resize.__doc__ = """
+Inform an arcball of a panel resize.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+width : float
+    the panel width
+height : float
+    the panel height
+"""
 arcball_resize.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float,  # float width
@@ -3379,6 +6218,16 @@ arcball_resize.argtypes = [
 
 # Function dvz_arcball_flags()
 arcball_flags = dvz.dvz_arcball_flags
+arcball_flags.__doc__ = """
+Set the arcball flags.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+flags : int
+    the flags
+"""
 arcball_flags.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_int,  # int flags
@@ -3386,6 +6235,16 @@ arcball_flags.argtypes = [
 
 # Function dvz_arcball_constrain()
 arcball_constrain = dvz.dvz_arcball_constrain
+arcball_constrain.__doc__ = """
+Add arcball constraints.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+constrain : vec3
+    the constrain values
+"""
 arcball_constrain.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 3,  # vec3 constrain
@@ -3393,6 +6252,16 @@ arcball_constrain.argtypes = [
 
 # Function dvz_arcball_set()
 arcball_set = dvz.dvz_arcball_set
+arcball_set.__doc__ = """
+Set the arcball angles.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+angles : vec3
+    the angles
+"""
 arcball_set.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 3,  # vec3 angles
@@ -3400,6 +6269,16 @@ arcball_set.argtypes = [
 
 # Function dvz_arcball_angles()
 arcball_angles = dvz.dvz_arcball_angles
+arcball_angles.__doc__ = """
+Get the current arcball angles.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+out_angles : vec3 (out parameter)
+    the arcball angles
+"""
 arcball_angles.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 3,  # vec3 out_angles
@@ -3407,6 +6286,18 @@ arcball_angles.argtypes = [
 
 # Function dvz_arcball_rotate()
 arcball_rotate = dvz.dvz_arcball_rotate
+arcball_rotate.__doc__ = """
+Apply a rotation to an arcball.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+cur_pos : vec2
+    the initial position
+last_pos : vec2
+    the final position
+"""
 arcball_rotate.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 2,  # vec2 cur_pos
@@ -3415,6 +6306,16 @@ arcball_rotate.argtypes = [
 
 # Function dvz_arcball_model()
 arcball_model = dvz.dvz_arcball_model
+arcball_model.__doc__ = """
+Return the model matrix of an arcball.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+model : mat4 (out parameter)
+    the model
+"""
 arcball_model.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.c_float * 16,  # mat4 model
@@ -3422,12 +6323,30 @@ arcball_model.argtypes = [
 
 # Function dvz_arcball_end()
 arcball_end = dvz.dvz_arcball_end
+arcball_end.__doc__ = """
+Finalize arcball position update.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+"""
 arcball_end.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
 ]
 
 # Function dvz_arcball_mvp()
 arcball_mvp = dvz.dvz_arcball_mvp
+arcball_mvp.__doc__ = """
+Apply an MVP matrix to an arcball (only the model matrix).
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+mvp : DvzMVP*
+    the MVP
+"""
 arcball_mvp.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
@@ -3435,12 +6354,34 @@ arcball_mvp.argtypes = [
 
 # Function dvz_arcball_print()
 arcball_print = dvz.dvz_arcball_print
+arcball_print.__doc__ = """
+Display information about an arcball.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+"""
 arcball_print.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
 ]
 
 # Function dvz_arcball_gui()
 arcball_gui = dvz.dvz_arcball_gui
+arcball_gui.__doc__ = """
+Show a GUI with sliders controlling the three arcball angles.
+
+Parameters
+----------
+arcball : DvzArcball*
+    the arcball
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the canvas (or figure) ID
+panel : DvzPanel*
+    the panel
+"""
 arcball_gui.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
     ctypes.POINTER(DvzApp),  # DvzApp* app
@@ -3450,6 +6391,20 @@ arcball_gui.argtypes = [
 
 # Function dvz_camera_initial()
 camera_initial = dvz.dvz_camera_initial
+camera_initial.__doc__ = """
+Set the initial camera parameters.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+pos : vec3
+    the initial position
+lookat : vec3
+    the lookat position
+up : vec3
+    the up vector
+"""
 camera_initial.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float * 3,  # vec3 pos
@@ -3459,12 +6414,32 @@ camera_initial.argtypes = [
 
 # Function dvz_camera_reset()
 camera_reset = dvz.dvz_camera_reset
+camera_reset.__doc__ = """
+Reset a camera.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+"""
 camera_reset.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
 ]
 
 # Function dvz_camera_zrange()
 camera_zrange = dvz.dvz_camera_zrange
+camera_zrange.__doc__ = """
+Set the camera zrange.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+near : float
+    the near value
+far : float
+    the far value
+"""
 camera_zrange.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float,  # float near
@@ -3473,6 +6448,22 @@ camera_zrange.argtypes = [
 
 # Function dvz_camera_ortho()
 camera_ortho = dvz.dvz_camera_ortho
+camera_ortho.__doc__ = """
+Make an orthographic camera.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+left : float
+    the left value
+right : float
+    the right value
+bottom : float
+    the bottom value
+top : float
+    the top value
+"""
 camera_ortho.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float,  # float left
@@ -3483,6 +6474,18 @@ camera_ortho.argtypes = [
 
 # Function dvz_camera_resize()
 camera_resize = dvz.dvz_camera_resize
+camera_resize.__doc__ = """
+Inform a camera of a panel resize.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+width : float
+    the panel width
+height : float
+    the panel height
+"""
 camera_resize.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float,  # float width
@@ -3491,6 +6494,16 @@ camera_resize.argtypes = [
 
 # Function dvz_camera_position()
 camera_position = dvz.dvz_camera_position
+camera_position.__doc__ = """
+Set a camera position.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+pos : vec3
+    the pos
+"""
 camera_position.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float * 3,  # vec3 pos
@@ -3498,6 +6511,16 @@ camera_position.argtypes = [
 
 # Function dvz_camera_lookat()
 camera_lookat = dvz.dvz_camera_lookat
+camera_lookat.__doc__ = """
+Set a camera lookat position.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+lookat : vec3
+    the lookat position
+"""
 camera_lookat.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float * 3,  # vec3 lookat
@@ -3505,6 +6528,16 @@ camera_lookat.argtypes = [
 
 # Function dvz_camera_up()
 camera_up = dvz.dvz_camera_up
+camera_up.__doc__ = """
+Set a camera up vector.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+up : vec3
+    the up vector
+"""
 camera_up.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float * 3,  # vec3 up
@@ -3512,6 +6545,16 @@ camera_up.argtypes = [
 
 # Function dvz_camera_perspective()
 camera_perspective = dvz.dvz_camera_perspective
+camera_perspective.__doc__ = """
+Set a camera perspective.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+fov : float
+    the field of view angle (in radians)
+"""
 camera_perspective.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float,  # float fov
@@ -3519,6 +6562,18 @@ camera_perspective.argtypes = [
 
 # Function dvz_camera_viewproj()
 camera_viewproj = dvz.dvz_camera_viewproj
+camera_viewproj.__doc__ = """
+Return the view and proj matrices of the camera.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+view : mat4 (out parameter)
+    the view matrix
+proj : mat4 (out parameter)
+    the proj matrix
+"""
 camera_viewproj.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.c_float * 16,  # mat4 view
@@ -3527,6 +6582,16 @@ camera_viewproj.argtypes = [
 
 # Function dvz_camera_mvp()
 camera_mvp = dvz.dvz_camera_mvp
+camera_mvp.__doc__ = """
+Apply an MVP to a camera.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+mvp : DvzMVP*
+    the MVP
+"""
 camera_mvp.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
@@ -3534,18 +6599,46 @@ camera_mvp.argtypes = [
 
 # Function dvz_camera_print()
 camera_print = dvz.dvz_camera_print
+camera_print.__doc__ = """
+Display information about a camera.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+"""
 camera_print.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
 ]
 
 # Function dvz_panzoom_reset()
 panzoom_reset = dvz.dvz_panzoom_reset
+panzoom_reset.__doc__ = """
+Reset a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+"""
 panzoom_reset.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
 ]
 
 # Function dvz_panzoom_resize()
 panzoom_resize = dvz.dvz_panzoom_resize
+panzoom_resize.__doc__ = """
+Inform a panzoom of a panel resize.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+width : float
+    the panel width
+height : float
+    the panel height
+"""
 panzoom_resize.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float,  # float width
@@ -3554,6 +6647,16 @@ panzoom_resize.argtypes = [
 
 # Function dvz_panzoom_flags()
 panzoom_flags = dvz.dvz_panzoom_flags
+panzoom_flags.__doc__ = """
+Set the panzoom flags.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+flags : int
+    the flags
+"""
 panzoom_flags.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_int,  # int flags
@@ -3561,6 +6664,16 @@ panzoom_flags.argtypes = [
 
 # Function dvz_panzoom_xlim()
 panzoom_xlim = dvz.dvz_panzoom_xlim
+panzoom_xlim.__doc__ = """
+Set a panzoom x limits.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+xlim : vec2
+    the xlim (FLOAT_MIN/MAX=no lim)
+"""
 panzoom_xlim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 xlim
@@ -3568,6 +6681,16 @@ panzoom_xlim.argtypes = [
 
 # Function dvz_panzoom_ylim()
 panzoom_ylim = dvz.dvz_panzoom_ylim
+panzoom_ylim.__doc__ = """
+Set a panzoom y limits.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+ylim : vec2
+    the ylim (FLOAT_MIN/MAX=no lim)
+"""
 panzoom_ylim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 ylim
@@ -3575,6 +6698,16 @@ panzoom_ylim.argtypes = [
 
 # Function dvz_panzoom_zlim()
 panzoom_zlim = dvz.dvz_panzoom_zlim
+panzoom_zlim.__doc__ = """
+Set a panzoom z limits.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+zlim : vec2
+    the zlim (FLOAT_MIN/MAX=no lim)
+"""
 panzoom_zlim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 zlim
@@ -3582,6 +6715,16 @@ panzoom_zlim.argtypes = [
 
 # Function dvz_panzoom_pan()
 panzoom_pan = dvz.dvz_panzoom_pan
+panzoom_pan.__doc__ = """
+Apply a pan value to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+pan : vec2
+    the pan, in NDC
+"""
 panzoom_pan.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 pan
@@ -3589,6 +6732,16 @@ panzoom_pan.argtypes = [
 
 # Function dvz_panzoom_zoom()
 panzoom_zoom = dvz.dvz_panzoom_zoom
+panzoom_zoom.__doc__ = """
+Apply a zoom value to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+zoom : vec2
+    the zoom, in NDC
+"""
 panzoom_zoom.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 zoom
@@ -3596,6 +6749,18 @@ panzoom_zoom.argtypes = [
 
 # Function dvz_panzoom_pan_shift()
 panzoom_pan_shift = dvz.dvz_panzoom_pan_shift
+panzoom_pan_shift.__doc__ = """
+Apply a pan shift to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+shift_px : vec2
+    the shift value, in pixels
+center_px : vec2
+    the center position, in pixels
+"""
 panzoom_pan_shift.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 shift_px
@@ -3604,6 +6769,18 @@ panzoom_pan_shift.argtypes = [
 
 # Function dvz_panzoom_zoom_shift()
 panzoom_zoom_shift = dvz.dvz_panzoom_zoom_shift
+panzoom_zoom_shift.__doc__ = """
+Apply a zoom shift to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+shift_px : vec2
+    the shift value, in pixels
+center_px : vec2
+    the center position, in pixels
+"""
 panzoom_zoom_shift.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 shift_px
@@ -3612,12 +6789,32 @@ panzoom_zoom_shift.argtypes = [
 
 # Function dvz_panzoom_end()
 panzoom_end = dvz.dvz_panzoom_end
+panzoom_end.__doc__ = """
+End a panzoom interaction.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+"""
 panzoom_end.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
 ]
 
 # Function dvz_panzoom_zoom_wheel()
 panzoom_zoom_wheel = dvz.dvz_panzoom_zoom_wheel
+panzoom_zoom_wheel.__doc__ = """
+Apply a wheel zoom to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+dir : vec2
+    the wheel direction
+center_px : vec2
+    the center position, in pixels
+"""
 panzoom_zoom_wheel.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 dir
@@ -3626,6 +6823,16 @@ panzoom_zoom_wheel.argtypes = [
 
 # Function dvz_panzoom_xrange()
 panzoom_xrange = dvz.dvz_panzoom_xrange
+panzoom_xrange.__doc__ = """
+Get or set the xrange.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+xrange : vec2
+    the xrange (get if (0,0), set otherwise)
+"""
 panzoom_xrange.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 xrange
@@ -3633,6 +6840,16 @@ panzoom_xrange.argtypes = [
 
 # Function dvz_panzoom_yrange()
 panzoom_yrange = dvz.dvz_panzoom_yrange
+panzoom_yrange.__doc__ = """
+Get or set the yrange.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+yrange : vec2
+    the yrange (get if (0,0), set otherwise)
+"""
 panzoom_yrange.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.c_float * 2,  # vec2 yrange
@@ -3640,6 +6857,16 @@ panzoom_yrange.argtypes = [
 
 # Function dvz_panzoom_mvp()
 panzoom_mvp = dvz.dvz_panzoom_mvp
+panzoom_mvp.__doc__ = """
+Apply an MVP matrix to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+mvp : DvzMVP*
+    the MVP
+"""
 panzoom_mvp.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
@@ -3647,12 +6874,32 @@ panzoom_mvp.argtypes = [
 
 # Function dvz_ortho_reset()
 ortho_reset = dvz.dvz_ortho_reset
+ortho_reset.__doc__ = """
+Reset an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+"""
 ortho_reset.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
 ]
 
 # Function dvz_ortho_resize()
 ortho_resize = dvz.dvz_ortho_resize
+ortho_resize.__doc__ = """
+Inform an ortho of a panel resize.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+width : float
+    the panel width
+height : float
+    the panel height
+"""
 ortho_resize.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float,  # float width
@@ -3661,6 +6908,16 @@ ortho_resize.argtypes = [
 
 # Function dvz_ortho_flags()
 ortho_flags = dvz.dvz_ortho_flags
+ortho_flags.__doc__ = """
+Set the ortho flags.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+flags : int
+    the flags
+"""
 ortho_flags.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_int,  # int flags
@@ -3668,6 +6925,16 @@ ortho_flags.argtypes = [
 
 # Function dvz_ortho_pan()
 ortho_pan = dvz.dvz_ortho_pan
+ortho_pan.__doc__ = """
+Apply a pan value to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+pan : vec2
+    the pan, in NDC
+"""
 ortho_pan.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float * 2,  # vec2 pan
@@ -3675,6 +6942,16 @@ ortho_pan.argtypes = [
 
 # Function dvz_ortho_zoom()
 ortho_zoom = dvz.dvz_ortho_zoom
+ortho_zoom.__doc__ = """
+Apply a zoom value to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+zoom : float
+    the zoom level
+"""
 ortho_zoom.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float,  # float zoom
@@ -3682,6 +6959,18 @@ ortho_zoom.argtypes = [
 
 # Function dvz_ortho_pan_shift()
 ortho_pan_shift = dvz.dvz_ortho_pan_shift
+ortho_pan_shift.__doc__ = """
+Apply a pan shift to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+shift_px : vec2
+    the shift value, in pixels
+center_px : vec2
+    the center position, in pixels
+"""
 ortho_pan_shift.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float * 2,  # vec2 shift_px
@@ -3690,6 +6979,18 @@ ortho_pan_shift.argtypes = [
 
 # Function dvz_ortho_zoom_shift()
 ortho_zoom_shift = dvz.dvz_ortho_zoom_shift
+ortho_zoom_shift.__doc__ = """
+Apply a zoom shift to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+shift_px : vec2
+    the shift value, in pixels
+center_px : vec2
+    the center position, in pixels
+"""
 ortho_zoom_shift.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float * 2,  # vec2 shift_px
@@ -3698,12 +6999,32 @@ ortho_zoom_shift.argtypes = [
 
 # Function dvz_ortho_end()
 ortho_end = dvz.dvz_ortho_end
+ortho_end.__doc__ = """
+End an ortho interaction.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+"""
 ortho_end.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
 ]
 
 # Function dvz_ortho_zoom_wheel()
 ortho_zoom_wheel = dvz.dvz_ortho_zoom_wheel
+ortho_zoom_wheel.__doc__ = """
+Apply a wheel zoom to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+dir : vec2
+    the wheel direction
+center_px : vec2
+    the center position, in pixels
+"""
 ortho_zoom_wheel.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.c_float * 2,  # vec2 dir
@@ -3712,6 +7033,16 @@ ortho_zoom_wheel.argtypes = [
 
 # Function dvz_ortho_mvp()
 ortho_mvp = dvz.dvz_ortho_mvp
+ortho_mvp.__doc__ = """
+Apply an MVP matrix to an ortho.
+
+Parameters
+----------
+ortho : DvzOrtho*
+    the ortho
+mvp : DvzMVP*
+    the MVP
+"""
 ortho_mvp.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
@@ -3719,6 +7050,16 @@ ortho_mvp.argtypes = [
 
 # Function dvz_gui_pos()
 gui_pos = dvz.dvz_gui_pos
+gui_pos.__doc__ = """
+Set the position of the next GUI dialog.
+
+Parameters
+----------
+pos : vec2
+    the dialog position
+pivot : vec2
+    the pivot
+"""
 gui_pos.argtypes = [
     ctypes.c_float * 2,  # vec2 pos
     ctypes.c_float * 2,  # vec2 pivot
@@ -3726,6 +7067,16 @@ gui_pos.argtypes = [
 
 # Function dvz_gui_corner()
 gui_corner = dvz.dvz_gui_corner
+gui_corner.__doc__ = """
+Set the corner position of the next GUI dialog.
+
+Parameters
+----------
+corner : DvzCorner
+    which corner
+pad : vec2
+    the pad
+"""
 gui_corner.argtypes = [
     DvzCorner,  # DvzCorner corner
     ctypes.c_float * 2,  # vec2 pad
@@ -3733,12 +7084,28 @@ gui_corner.argtypes = [
 
 # Function dvz_gui_size()
 gui_size = dvz.dvz_gui_size
+gui_size.__doc__ = """
+Set the size of the next GUI dialog.
+
+Parameters
+----------
+size : vec2
+    the size
+"""
 gui_size.argtypes = [
     ctypes.c_float * 2,  # vec2 size
 ]
 
 # Function dvz_gui_flags()
 gui_flags = dvz.dvz_gui_flags
+gui_flags.__doc__ = """
+Set the flags of the next GUI dialog.
+
+Parameters
+----------
+flags : int
+    the flags
+"""
 gui_flags.argtypes = [
     ctypes.c_int,  # int flags
 ]
@@ -3746,12 +7113,30 @@ gui_flags.restype = ctypes.c_int
 
 # Function dvz_gui_alpha()
 gui_alpha = dvz.dvz_gui_alpha
+gui_alpha.__doc__ = """
+Set the alpha transparency of the next GUI dialog.
+
+Parameters
+----------
+alpha : float
+    the alpha transparency value
+"""
 gui_alpha.argtypes = [
     ctypes.c_float,  # float alpha
 ]
 
 # Function dvz_gui_begin()
 gui_begin = dvz.dvz_gui_begin
+gui_begin.__doc__ = """
+Start a new dialog.
+
+Parameters
+----------
+title : char*
+    the dialog title
+flags : int
+    the flags
+"""
 gui_begin.argtypes = [
     ctypes.c_char_p,  # char* title
     ctypes.c_int,  # int flags
@@ -3759,6 +7144,25 @@ gui_begin.argtypes = [
 
 # Function dvz_gui_slider()
 gui_slider = dvz.dvz_gui_slider
+gui_slider.__doc__ = """
+Add a slider.
+
+Parameters
+----------
+name : char*
+    the slider name
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+value : float*
+    the pointer to the value
+
+Returns
+-------
+type
+    whether the value has changed
+"""
 gui_slider.argtypes = [
     ctypes.c_char_p,  # char* name
     ctypes.c_float,  # float vmin
@@ -3769,6 +7173,23 @@ gui_slider.restype = ctypes.c_bool
 
 # Function dvz_gui_button()
 gui_button = dvz.dvz_gui_button
+gui_button.__doc__ = """
+Add a button.
+
+Parameters
+----------
+name : char*
+    the button name
+width : float
+    the button width
+height : float
+    the button height
+
+Returns
+-------
+type
+    whether the button was pressed
+"""
 gui_button.argtypes = [
     ctypes.c_char_p,  # char* name
     ctypes.c_float,  # float width
@@ -3778,6 +7199,21 @@ gui_button.restype = ctypes.c_bool
 
 # Function dvz_gui_checkbox()
 gui_checkbox = dvz.dvz_gui_checkbox
+gui_checkbox.__doc__ = """
+Add a checkbox.
+
+Parameters
+----------
+name : char*
+    the button name
+checked : bool* (out parameter)
+    whether the checkbox is checked
+
+Returns
+-------
+type
+    whether the checkbox's state has changed
+"""
 gui_checkbox.argtypes = [
     ctypes.c_char_p,  # char* name
     ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* checked
@@ -3786,6 +7222,18 @@ gui_checkbox.restype = ctypes.c_bool
 
 # Function dvz_gui_image()
 gui_image = dvz.dvz_gui_image
+gui_image.__doc__ = """
+Add an image in a GUI dialog.
+
+Parameters
+----------
+tex : DvzTex*
+    the texture
+width : float
+    the image width
+height : float
+    the image height
+"""
 gui_image.argtypes = [
     ctypes.POINTER(DvzTex),  # DvzTex* tex
     ctypes.c_float,  # float width
@@ -3794,6 +7242,18 @@ gui_image.argtypes = [
 
 # Function dvz_gui_colorpicker()
 gui_colorpicker = dvz.dvz_gui_colorpicker
+gui_colorpicker.__doc__ = """
+Add a color picker
+
+Parameters
+----------
+name : char*
+    the widget name
+color : vec3
+    the color
+flags : int
+    the widget flags
+"""
 gui_colorpicker.argtypes = [
     ctypes.c_char_p,  # char* name
     ctypes.c_float * 3,  # vec3 color
@@ -3803,16 +7263,35 @@ gui_colorpicker.restype = ctypes.c_bool
 
 # Function dvz_gui_demo()
 gui_demo = dvz.dvz_gui_demo
+gui_demo.__doc__ = """
+Show the demo GUI.
+"""
 gui_demo.argtypes = [
 ]
 
 # Function dvz_gui_end()
 gui_end = dvz.dvz_gui_end
+gui_end.__doc__ = """
+Stop the creation of the dialog.
+"""
 gui_end.argtypes = [
 ]
 
 # Function dvz_next_pow2()
 next_pow2 = dvz.dvz_next_pow2
+next_pow2.__doc__ = """
+Return the smallest power of 2 larger or equal than a positive integer.
+
+Parameters
+----------
+x : uint64_t
+    the value
+
+Returns
+-------
+type
+    the power of 2
+"""
 next_pow2.argtypes = [
     ctypes.c_uint64,  # uint64_t x
 ]
@@ -3820,6 +7299,21 @@ next_pow2.restype = ctypes.c_uint64
 
 # Function dvz_mean()
 mean = dvz.dvz_mean
+mean.__doc__ = """
+Compute the mean of an array of double values.
+
+Parameters
+----------
+n : uint32_t
+    the number of values
+values : double*
+    an array of double numbers
+
+Returns
+-------
+type
+    the mean
+"""
 mean.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* values
@@ -3828,6 +7322,23 @@ mean.restype = ctypes.c_double
 
 # Function dvz_min_max()
 min_max = dvz.dvz_min_max
+min_max.__doc__ = """
+Compute the min and max of an array of float values.
+
+Parameters
+----------
+n : uint32_t
+    the number of values
+values : float*
+    an array of float numbers
+out_min_max : vec2
+    the min and max
+
+Returns
+-------
+type
+    the mean
+"""
 min_max.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
@@ -3836,6 +7347,21 @@ min_max.argtypes = [
 
 # Function dvz_normalize_bytes()
 normalize_bytes = dvz.dvz_normalize_bytes
+normalize_bytes.__doc__ = """
+Normalize the array.
+
+Parameters
+----------
+count : uint32_t
+    the number of values
+values : float*
+    an array of float numbers
+
+Returns
+-------
+type
+    the normalized array
+"""
 normalize_bytes.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
@@ -3844,6 +7370,18 @@ normalize_bytes.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CON
 
 # Function dvz_range()
 range = dvz.dvz_range
+range.__doc__ = """
+Compute the range of an array of double values.
+
+Parameters
+----------
+n : uint32_t
+    the number of values
+values : double*
+    an array of double numbers
+the : unknown (out parameter)
+    min and max values
+"""
 range.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* values
@@ -3852,6 +7390,23 @@ range.argtypes = [
 
 # Function dvz_earcut()
 earcut = dvz.dvz_earcut
+earcut.__doc__ = """
+Compute a polygon triangulation with only indexing on the polygon contour vertices.
+
+Parameters
+----------
+point_count : uint32_t
+    the number of points
+polygon : dvec2*
+    the polygon 2D positions
+out_index_count : uint32_t* (out parameter)
+    the computed index count
+
+Returns
+-------
+type
+    the computed indices (must be FREED by the caller)
+"""
 earcut.argtypes = [
     ctypes.c_uint32,  # uint32_t point_count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* polygon
@@ -3861,36 +7416,96 @@ earcut.restype = ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"
 
 # Function dvz_rand_byte()
 rand_byte = dvz.dvz_rand_byte
+rand_byte.__doc__ = """
+Return a random integer number between 0 and 255.
+
+
+Returns
+-------
+type
+    random number
+"""
 rand_byte.argtypes = [
 ]
 rand_byte.restype = ctypes.c_uint8
 
 # Function dvz_rand_int()
 rand_int = dvz.dvz_rand_int
+rand_int.__doc__ = """
+Return a random integer number.
+
+
+Returns
+-------
+type
+    random number
+"""
 rand_int.argtypes = [
 ]
 rand_int.restype = ctypes.c_int
 
 # Function dvz_rand_float()
 rand_float = dvz.dvz_rand_float
+rand_float.__doc__ = """
+Return a random floating-point number between 0 and 1.
+
+
+Returns
+-------
+type
+    random number
+"""
 rand_float.argtypes = [
 ]
 rand_float.restype = ctypes.c_float
 
 # Function dvz_rand_double()
 rand_double = dvz.dvz_rand_double
+rand_double.__doc__ = """
+Return a random floating-point number between 0 and 1.
+
+
+Returns
+-------
+type
+    random number
+"""
 rand_double.argtypes = [
 ]
 rand_double.restype = ctypes.c_double
 
 # Function dvz_rand_normal()
 rand_normal = dvz.dvz_rand_normal
+rand_normal.__doc__ = """
+Return a random normal floating-point number.
+
+
+Returns
+-------
+type
+    random number
+"""
 rand_normal.argtypes = [
 ]
 rand_normal.restype = ctypes.c_double
 
 # Function dvz_mock_pos2D()
 mock_pos2D = dvz.dvz_mock_pos2D
+mock_pos2D.__doc__ = """
+Generate a set of random 2D positions.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+std : float
+    the standard deviation
+
+Returns
+-------
+type
+    the positions
+"""
 mock_pos2D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
@@ -3899,6 +7514,21 @@ mock_pos2D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIG
 
 # Function dvz_mock_circle()
 mock_circle = dvz.dvz_mock_circle
+mock_circle.__doc__ = """
+Generate points on a circle.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+radius : float
+    the radius of the circle
+
+Returns
+-------
+type
+    the positions
+"""
 mock_circle.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float radius
@@ -3907,6 +7537,21 @@ mock_circle.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTI
 
 # Function dvz_mock_band()
 mock_band = dvz.dvz_mock_band
+mock_band.__doc__ = """
+Generate points on a band.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+size : vec2
+    the size of the band
+
+Returns
+-------
+type
+    the positions
+"""
 mock_band.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float * 2,  # vec2 size
@@ -3915,6 +7560,21 @@ mock_band.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGU
 
 # Function dvz_mock_pos3D()
 mock_pos3D = dvz.dvz_mock_pos3D
+mock_pos3D.__doc__ = """
+Generate a set of random 3D positions.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+std : float
+    the standard deviation
+
+Returns
+-------
+type
+    the positions
+"""
 mock_pos3D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
@@ -3923,6 +7583,21 @@ mock_pos3D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIG
 
 # Function dvz_mock_fixed()
 mock_fixed = dvz.dvz_mock_fixed
+mock_fixed.__doc__ = """
+Generate identical 3D positions.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+fixed : vec3
+    the position
+
+Returns
+-------
+type
+    the repeated positions
+"""
 mock_fixed.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float * 3,  # vec3 fixed
@@ -3931,6 +7606,23 @@ mock_fixed.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIG
 
 # Function dvz_mock_line()
 mock_line = dvz.dvz_mock_line
+mock_line.__doc__ = """
+Generate 3D positions on a line.
+
+Parameters
+----------
+count : uint32_t
+    the number of positions to generate
+p0 : vec3
+    initial position
+p1 : vec3
+    terminal position
+
+Returns
+-------
+type
+    the positions
+"""
 mock_line.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float * 3,  # vec3 p0
@@ -3940,6 +7632,23 @@ mock_line.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGU
 
 # Function dvz_mock_uniform()
 mock_uniform = dvz.dvz_mock_uniform
+mock_uniform.__doc__ = """
+Generate a set of uniformly random scalar values.
+
+Parameters
+----------
+count : uint32_t
+    the number of values to generate
+vmin : float
+    the minimum value of the interval
+vmax : float
+    the maximum value of the interval
+
+Returns
+-------
+type
+    the values
+"""
 mock_uniform.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float vmin
@@ -3949,6 +7658,21 @@ mock_uniform.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONT
 
 # Function dvz_mock_full()
 mock_full = dvz.dvz_mock_full
+mock_full.__doc__ = """
+Generate an array with the same value.
+
+Parameters
+----------
+count : uint32_t
+    the number of scalars to generate
+value : float
+    the value
+
+Returns
+-------
+type
+    the values
+"""
 mock_full.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float value
@@ -3957,6 +7681,21 @@ mock_full.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGU
 
 # Function dvz_mock_range()
 mock_range = dvz.dvz_mock_range
+mock_range.__doc__ = """
+Generate an array of consecutive positive numbers.
+
+Parameters
+----------
+count : uint32_t
+    the number of consecutive integers to generate
+initial : uint32_t
+    the initial value
+
+Returns
+-------
+type
+    the values
+"""
 mock_range.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint32,  # uint32_t initial
@@ -3965,6 +7704,23 @@ mock_range.restype = ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGU
 
 # Function dvz_mock_linspace()
 mock_linspace = dvz.dvz_mock_linspace
+mock_linspace.__doc__ = """
+Generate an array ranging from an initial value to a final value.
+
+Parameters
+----------
+count : uint32_t
+    the number of scalars to generate
+initial : float
+    the initial value
+final : float
+    the final value
+
+Returns
+-------
+type
+    the values
+"""
 mock_linspace.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float initial
@@ -3974,6 +7730,21 @@ mock_linspace.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CON
 
 # Function dvz_mock_color()
 mock_color = dvz.dvz_mock_color
+mock_color.__doc__ = """
+Generate a set of random colors.
+
+Parameters
+----------
+count : uint32_t
+    the number of colors to generate
+alpha : uint8_t
+    the alpha value
+
+Returns
+-------
+type
+    random colors
+"""
 mock_color.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8,  # uint8_t alpha
@@ -3982,6 +7753,21 @@ mock_color.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUO
 
 # Function dvz_mock_monochrome()
 mock_monochrome = dvz.dvz_mock_monochrome
+mock_monochrome.__doc__ = """
+Repeat a color in an array.
+
+Parameters
+----------
+count : uint32_t
+    the number of colors to generate
+mono : cvec4
+    the color to repeat
+
+Returns
+-------
+type
+    colors
+"""
 mock_monochrome.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_uint8 * 4,  # cvec4 mono
@@ -3990,6 +7776,21 @@ mock_monochrome.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CON
 
 # Function dvz_mock_cmap()
 mock_cmap = dvz.dvz_mock_cmap
+mock_cmap.__doc__ = """
+Generate a set of HSV colors.
+
+Parameters
+----------
+count : uint32_t
+    the number of colors to generate
+alpha : uint8_t
+    the alpha value
+
+Returns
+-------
+type
+    colors
+"""
 mock_cmap.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     DvzColormap,  # DvzColormap cmap

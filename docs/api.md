@@ -1028,8 +1028,6 @@ Add a checkbox.
 ```c
 bool dvz_gui_checkbox(  // returns: whether the checkbox's state has changed
     char* name,  // the button name
-     width,  // the button width
-     height,  // the button height
 )
 ```
 
