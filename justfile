@@ -888,7 +888,7 @@ checkartifact RUN_ID:
 #
 
 [windows]
-checkartifact url:
+checkartifact RUN_ID:
     #!/usr/bin/env sh
     temp_dir=$(mktemp -d)
     gh run download {{RUN_ID}} -n windows-wheel -D $temp_dir
