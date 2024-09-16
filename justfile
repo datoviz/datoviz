@@ -761,7 +761,7 @@ renamewheel platform_tag='':
     WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
 
     if [ -z "{{platform_tag}}" ]; then
-        PLATFORM_TAG=$(python -c "from setuptools.wheel import get_platform; print(get_platform())")
+        PLATFORM_TAG=$(python -c "from setuptools.wheel import get_platform; print(get_platform().replace('-', '_'))")
     else
         PLATFORM_TAG="{{platform_tag}}"
     fi
@@ -843,23 +843,29 @@ checkwheel path="":
     rm -rf $TESTDIR
     mkdir -p $TESTDIR
 
+    if [[ "$(uname -s)" == *CYGWIN* || "$(uname -s)" == *MINGW* || "$(uname -s)" == *MSYS* ]]; then
+        BINDIR="Scripts"
+    else
+        BINDIR="bin"
+    fi
+
     # Copy the wheel
     [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
 
     # Virtual env
-    python3 -m venv $TESTDIR/venv
+    python -m venv $TESTDIR/venv
     cd $TESTDIR
-    $TESTDIR/venv/bin/python -m pip install --isolated --upgrade pip wheel
+    $TESTDIR/venv/$BINDIR/python -m pip install --isolated --upgrade pip wheel
     # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
-    $TESTDIR/venv/bin/python -m pip install --isolated $TESTDIR/datoviz-*.whl
+    $TESTDIR/venv/$BINDIR/python -m pip install --isolated $TESTDIR/datoviz-*.whl
 
     # Run the demo from the wheel
-    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
+    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/$BINDIR/python -c "import datoviz; datoviz.demo()"
 
     # Return 0 iff the file exists and if sufficiently large
     res=1
     if [ -f "$TESTDIR/testwheel.png" ]; then
-        filesize=$(python -c "from pathlib import Path; print(Path('$TESTDIR/testwheel.png').stat().st_size)")
+        filesize=$($TESTDIR/venv/$BINDIR/python -c "from pathlib import Path; print(Path(r'testwheel.png').stat().st_size)")
         res=$(( $filesize > 180000 ? 0 : 1 ))
     fi
     rm -rf $TESTDIR
@@ -893,6 +899,12 @@ checkartifact RUN_ID:
     #!/usr/bin/env sh
     temp_dir=$(mktemp -d)
     gh run download {{RUN_ID}} -n windows-wheel -D $temp_dir
+
+    for file in "$temp_dir"/datoviz*win-amd64*.whl; do
+        new_file="${file//win-amd64/win_amd64}"
+        mv "$file" "$new_file"
+    done
+
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
