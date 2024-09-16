@@ -843,11 +843,10 @@ checkwheel path="":
     rm -rf $TESTDIR
     mkdir -p $TESTDIR
 
-    if [[ "$(uname -s)" == *CYGWIN* || "$(uname -s)" == *MINGW* || "$(uname -s)" == *MSYS* ]]; then
-        BINDIR="Scripts"
-    else
-        BINDIR="bin"
-    fi
+    case "$(uname -s)" in
+    *CYGWIN*|*MINGW*|*MSYS*) BINDIR="Scripts" ;;
+    *) BINDIR="bin" ;;
+    esac
 
     # Copy the wheel
     [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
