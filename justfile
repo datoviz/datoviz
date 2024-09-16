@@ -849,7 +849,6 @@ checkwheel path="":
     # Virtual env
     python3 -m venv $TESTDIR/venv
     cd $TESTDIR
-    source $TESTDIR/venv/bin/activate
     $TESTDIR/venv/bin/python -m pip install --isolated --upgrade pip wheel
     # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
     $TESTDIR/venv/bin/python -m pip install --isolated $TESTDIR/datoviz-*.whl
