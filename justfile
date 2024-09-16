@@ -839,7 +839,7 @@ checkwheel path="":
     set -e
 
     # Temp directory
-    TESTDIR=/tmp/testwheel
+    TESTDIR=~/tmp/testwheel
     rm -rf $TESTDIR
     mkdir -p $TESTDIR
 
@@ -848,9 +848,11 @@ checkwheel path="":
 
     # Virtual env
     python3 -m venv $TESTDIR/venv
-
-    # Install the wheel in the virtual env
-    $TESTDIR/venv/bin/pip install $TESTDIR/datoviz-*.whl
+    cd $TESTDIR
+    source $TESTDIR/venv/bin/activate
+    $TESTDIR/venv/bin/python -m pip install --isolated --upgrade pip wheel
+    # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
+    $TESTDIR/venv/bin/python -m pip install --isolated $TESTDIR/datoviz-*.whl
 
     # Run the demo from the wheel
     DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/bin/python -c "import datoviz; datoviz.demo()"
