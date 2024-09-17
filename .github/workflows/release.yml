@@ -17,12 +17,15 @@ jobs:
           run_id=$(gh api -H "Accept: application/vnd.github+json" \
               /repos/${{ github.repository }}/actions/workflows/wheels.yml/runs \
               -q '.workflow_runs[] | select(.conclusion == "success") | .id' | head -n 1)
-          echo "::set-output name=run_id::$run_id"
+          echo "run_id=$run_id" >> $GITHUB_ENV  # Set environment variable for use in next steps
 
   release:
     needs: get-run-id
     runs-on: ubuntu-latest
     steps:
+      - name: run-id
+        run: echo ${{ needs.get-run-id.outputs.run-id }}
+
       - name: Download
         uses: actions/download-artifact@v4
         with:
