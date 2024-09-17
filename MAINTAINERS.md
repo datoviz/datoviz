@@ -22,12 +22,13 @@ Release checklist from a Linux development machine:
 14. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
 15. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
 16. `just tag $version`: once on `main`, tag with the new version.
-17. `just draft`: create a new GitHub Release draft with the built wheels.
-18. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
-19. `just upload`: upload the wheels to PyPI.
-20. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
-21. `git commit -am "Bump to development version" && git push`: bump to the development version.
-22. Announce the new release on the various communication channels.
+17. `git push origin --tags`: push the tag.
+18. `just draft`: create a new GitHub Release draft with the built wheels.
+19. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
+20. `just upload`: upload the wheels to PyPI.
+21. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
+22. `git commit -am "Bump to development version" && git push`: bump to the development version.
+23. Announce the new release on the various communication channels.
 
 
 ## Packaging instructions (advanced users)

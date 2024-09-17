@@ -125,8 +125,10 @@ download:
 
 draft:
     #!/usr/bin/env sh
-    tag=$(git describe --tags --abbrev=0)
     just download
+
+    tag=$(git describe --tags --abbrev=0)
+    artifacts_dir="release_artifacts/$tag"
     gh release create "$tag" --draft --title "$tag" --notes "" $artifacts_dir/*
     # gh release upload "$tag"
 #
@@ -141,7 +143,7 @@ upload:
 
     tag=$(git describe --tags --abbrev=0)
     artifacts_dir="release_artifacts/$tag"
-    twine upload artifacts_dir/*.whl
+    twine upload $artifacts_dir/*.whl
 #
 
 wheels:
