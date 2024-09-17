@@ -868,19 +868,24 @@ testpypi:
     # see https://github.com/gitpod-io/gitpod/issues/1997
     export PIP_USER=false
 
+    case "$(uname -s)" in
+    *CYGWIN*|*MINGW*|*MSYS*) BINDIR="Scripts" ;;
+    *) BINDIR="bin" ;;
+    esac
+
     # Create a temporary venv.
     rm -rf venv_pypi
-    python3 -m venv venv_pypi
+    python -m venv venv_pypi
     pushd venv_pypi
 
     # Make sure Datoviz is not installed in the venv before we pip install it.
-    bin/python -c "exec('try: import datoviz\nexcept: print(\"datoviz not yet installed\")\nelse: raise RuntimeError(\"datoviz already installed\")')"
+    $BINDIR/python -c "exec('try: import datoviz\nexcept: print(\"datoviz not yet installed\")\nelse: raise RuntimeError(\"datoviz already installed\")')"
 
     # Install datoviz from PyPI
-    bin/pip install datoviz
+    $BINDIR/pip install datoviz
 
     # Check the Datoviz demo.
-    bin/python -c "import datoviz; datoviz.demo()"
+    $BINDIR/python -c "import datoviz; datoviz.demo()"
 
     # Cleanup the venv.
     popd
