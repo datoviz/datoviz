@@ -137,6 +137,61 @@ jobs:
         path: dist/*.whl
 
   # -----------------------------------------------------------------------------------------------
+  # macOS x86_64
+  # -----------------------------------------------------------------------------------------------
+
+  wheel-macos:
+    runs-on: macos-13
+
+    # Clone the repo (except if local with "act")
+    steps:
+    - name: Checkout
+      if: env.USING_ACT == 0
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    # Install Python and required dependencies
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    # Install the build dependencies
+    - name: Dependencies
+      run: |
+        brew install just ccache ninja clang-format tree cloc
+        pip install -r requirements-dev.txt
+
+    # HACK: the compilation fails because the compiler uses the Mono freetype which
+    # does not work for some reason. So here we just brutally remove the Mono framework
+    # that we don't need for building.
+    - name: FreeType fixes
+      run: |
+        sudo rm -rf /Library/Frameworks/Mono.framework
+        export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
+        export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
+        export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
+
+    # Build the library (except if local with "act")
+    - name: Build
+      if: env.USING_ACT == 0
+      run: just release || just release
+
+    # Build the wheel
+    - name: Wheel
+      run: |
+        just pydev
+        just wheel macosx_10_9_x86_64
+
+    # Upload the wheel
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-wheel
+        path: dist/*.whl
+
+  # -----------------------------------------------------------------------------------------------
   # Windows
   # -----------------------------------------------------------------------------------------------
 
