@@ -17,7 +17,7 @@ jobs:
           run_id=$(gh run list -R datoviz/datoviz --workflow=WHEELS --json conclusion,databaseId \
           --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
           echo $run_id
-          echo "run_id=$run_id" >> $GITHUB_ENV  # Set environment variable for use in next steps
+          echo "run_id=$run_id" >> $GITHUB_OUTPUT
 
   release:
     needs: get-run-id
