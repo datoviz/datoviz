@@ -14,7 +14,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: get_run_id
         run: |
-          run_id=$(gh run list --workflow=WHEELS --json conclusion,databaseId \
+          run_id=$(gh run list -R datoviz/datoviz --workflow=WHEELS --json conclusion,databaseId \
           --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
           echo $run_id
           echo "run_id=$run_id" >> $GITHUB_ENV  # Set environment variable for use in next steps
