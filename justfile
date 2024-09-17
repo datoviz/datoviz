@@ -875,7 +875,7 @@ checkwheel path="":
 checkartifact RUN_ID:
     #!/usr/bin/env sh
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n linux-wheel -D $temp_dir
+    gh run download {{RUN_ID}} -n wheel-linux_x86_64 -D $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
@@ -885,8 +885,16 @@ checkartifact RUN_ID:
 [macos]
 checkartifact RUN_ID:
     #!/usr/bin/env sh
+
+    arch_str=$(arch)
+    if [[ "$arch_str" == "arm" ]]; then
+        platform="arm64"
+    else
+        platform="x86_64"
+    fi
+
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n macos-wheel -D $temp_dir
+    gh run download {{RUN_ID}} -n "wheel-macosx_$platform" -D $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
@@ -897,12 +905,12 @@ checkartifact RUN_ID:
 checkartifact RUN_ID:
     #!/usr/bin/env sh
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n windows-wheel -D $temp_dir
+    gh run download {{RUN_ID}} -n wheel-win_amd64 -D $temp_dir
 
-    for file in "$temp_dir"/datoviz*win-amd64*.whl; do
-        new_file="${file//win-amd64/win_amd64}"
-        mv "$file" "$new_file"
-    done
+    # for file in "$temp_dir"/datoviz*win-amd64*.whl; do
+    #     new_file="${file//win-amd64/win_amd64}"
+    #     mv "$file" "$new_file"
+    # done
 
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?

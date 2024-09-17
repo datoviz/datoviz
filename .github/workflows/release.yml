@@ -18,7 +18,7 @@ jobs:
   # -----------------------------------------------------------------------------------------------
 
   # Build the wheel on manylinux (AlmaLinux)
-  wheel-linux:
+  wheel-linux_x86_64:
     runs-on: ubuntu-latest
 
     # Use a pre-built Docker image with all build and run dependencies.
@@ -85,7 +85,7 @@ jobs:
   # macOS
   # -----------------------------------------------------------------------------------------------
 
-  wheel-macos:
+  wheel-macosx_arm64:
     runs-on: macos-latest
 
     # Clone the repo (except if local with "act")
@@ -195,7 +195,7 @@ jobs:
   # Windows
   # -----------------------------------------------------------------------------------------------
 
-  wheel-windows:
+  wheel-win_amd64:
     runs-on: windows-latest
 
     # NOTE: Windows Docker images are not yet supported on GitHub Actions
