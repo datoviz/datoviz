@@ -126,18 +126,11 @@ draft:
 #
 
 wheels:
-    # Trigger the WHEELS workflow and capture the run URL
-    workflow_run_url=$(gh workflow run WHEELS.yml --json url --jq '.url')
-
-    # Check if the workflow was triggered successfully
-    if [ -z "$workflow_run_url" ]; then
-      echo "Failed to trigger the WHEELS workflow"
-      exit 1
-    fi
-
-    # Open the workflow run page in the default browser
-    echo "Opening workflow run in browser: $workflow_run_url"
-    xdg-open "$workflow_run_url" || open "$workflow_run_url"
+    #!/usr/bin/env sh
+    gh workflow run wheels.yml
+    sleep 2
+    URL="https://github.com/datoviz/datoviz/actions"
+    xdg-open "$URL" || open "$URL"
 #
 
 
