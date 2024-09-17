@@ -1,303 +1,44 @@
-name: "RELEASE"
+name: RELEASE
 
-# Trigger on tags
 on:
-  workflow_dispatch: # enable manual workflow trigger from the GitHub website
-  push:
-    tags:
-      - '*'
-
-env:
-  DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
-  USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
+  workflow_dispatch:
 
 jobs:
-
-  # -----------------------------------------------------------------------------------------------
-  # Linux
-  # -----------------------------------------------------------------------------------------------
-
-  # Build the wheel on manylinux (AlmaLinux)
-  wheel-linux_x86_64:
+  get-run-id:
     runs-on: ubuntu-latest
-
-    # Use a pre-built Docker image with all build and run dependencies.
-    container:
-      image: rossant/datoviz_manylinux
-
-    # Create the directory
+    outputs:
+      run-id: ${{ steps.get_run_id.outputs.run_id }}
     steps:
-    - name: Make directory
-      run: mkdir -p /datoviz
+      - name: run-id
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: get_run_id
+        run: |
+          run_id=$(gh api -H "Accept: application/vnd.github+json" \
+              /repos/${{ github.repository }}/actions/workflows/wheels.yml/runs \
+              -q '.workflow_runs[] | select(.conclusion == "success") | .id' | head -n 1)
+          echo "::set-output name=run_id::$run_id"
 
-    # Clone the repo (except if local with "act")
-    - name: Checkout repository
-      if: env.USING_ACT == 0
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    # Conditionally copy local files using rsync when USING_ACT is 1
-    - name: Sync local files
-      run: |
-        rsync -a -v \
-          --exclude "libvulkan*" --exclude "glslc" \
-          --exclude "__pycache__" --exclude "Dockerfile" \
-          --exclude "screenshots" --exclude "volumes" --exclude "misc" \
-          --exclude "imgui/examples" \
-          bin cli cmake data datoviz external include libs src tests tools \
-          justfile *.toml *.json *.txt *.map *.md *.cff \
-          CMakeLists.txt *.map /datoviz/
-
-    # Go to /datoviz and run "just release"
-    - name: Build
-      working-directory: /datoviz
-      run: |
-        mkdir -p build/
-        cd build/
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=Release || true
-        ninja || true
-        CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
-        ninja
-
-    # Build the wheel
-    - name: Wheel
-      working-directory: /datoviz
-      run: |
-        export PATH=$PATH:/opt/python/cp38-cp38/bin/
-        just wheel almalinux=1
-
-    # Test the wheel
-    - name: Test
-      working-directory: /datoviz
-      run: |
-        export PATH=$PATH:/opt/python/cp38-cp38/bin/
-        just checkwheel
-
-    # Upload the wheel
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheel-linux_x86_64
-        path: /datoviz/dist/*.whl
-
-  # -----------------------------------------------------------------------------------------------
-  # macOS
-  # -----------------------------------------------------------------------------------------------
-
-  wheel-macosx_arm64:
-    runs-on: macos-latest
-
-    # Clone the repo (except if local with "act")
+  release:
+    needs: get-run-id
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout
-      if: env.USING_ACT == 0
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      - name: Download
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ needs.get-run-id.outputs.run-id }}
+          path: ./dist
 
-    # Install Python and required dependencies
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - name: List
+        run: ls -l ./dist
 
-    # Install the build dependencies
-    - name: Dependencies
-      run: |
-        brew install just ccache ninja clang-format tree cloc
-        pip install -r requirements-dev.txt
-
-    # HACK: the compilation fails because the compiler uses the Mono freetype which
-    # does not work for some reason. So here we just brutally remove the Mono framework
-    # that we don't need for building.
-    - name: FreeType fixes
-      run: |
-        sudo rm -rf /Library/Frameworks/Mono.framework
-        export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
-        export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
-        export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
-
-    # Build the library (except if local with "act")
-    - name: Build
-      if: env.USING_ACT == 0
-      run: just release || just release
-
-    # Build the wheel
-    - name: Wheel
-      run: |
-        just pydev
-        just wheel macosx_10_9_universal2
-
-    # Upload the wheel
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheel-macosx_arm64
-        path: dist/*.whl
-
-  # -----------------------------------------------------------------------------------------------
-  # macOS x86_64
-  # -----------------------------------------------------------------------------------------------
-
-  wheel-macosx_x86_64:
-    runs-on: macos-13
-
-    # Clone the repo (except if local with "act")
-    steps:
-    - name: Checkout
-      if: env.USING_ACT == 0
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    # Install Python and required dependencies
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-
-    # Install the build dependencies
-    - name: Dependencies
-      run: |
-        brew install just ccache ninja clang-format tree cloc
-        pip install -r requirements-dev.txt
-
-    # HACK: the compilation fails because the compiler uses the Mono freetype which
-    # does not work for some reason. So here we just brutally remove the Mono framework
-    # that we don't need for building.
-    - name: FreeType fixes
-      run: |
-        sudo rm -rf /Library/Frameworks/Mono.framework
-        export CPATH=$(brew --prefix freetype)/include/freetype2:$CPATH
-        export LIBRARY_PATH=$(brew --prefix freetype)/lib:$LIBRARY_PATH
-        export PKG_CONFIG_PATH=$(brew --prefix freetype)/lib/pkgconfig:$PKG_CONFIG_PATH
-
-    # Build the library (except if local with "act")
-    - name: Build
-      if: env.USING_ACT == 0
-      run: just release || just release
-
-    # Build the wheel
-    - name: Wheel
-      run: |
-        just pydev
-        just wheel macosx_10_9_x86_64
-
-    # Upload the wheel
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheel-macosx_x86_64
-        path: dist/*.whl
-
-  # -----------------------------------------------------------------------------------------------
-  # Windows
-  # -----------------------------------------------------------------------------------------------
-
-  wheel-win_amd64:
-    runs-on: windows-latest
-
-    # NOTE: Windows Docker images are not yet supported on GitHub Actions
-    # see https://github.com/docker/build-push-action/issues/18
-    # In the meantime we just replicate the Dockerfile steps here.
-
-    # Use a pre-built Docker image with all build and run dependencies.
-    # container:
-    #   image: rossant/datoviz_windows
-
-    env:
-      VCPKG_ROOT: C:/vcpkg
-      VULKAN_SDK: C:/VulkanSDK/1.3.280.0/
-
-    steps:
-
-    # Chocolatey
-    - name: Chocolatey
-      run: |
-        choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
-
-    # vcpkg
-    - name: vcpkg
-      run: |
-        if (!(Test-Path "C:\vcpkg")) {
-          git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
-          powershell.exe -NoProfile -ExecutionPolicy Bypass C:\vcpkg\scripts\bootstrap.ps1
-        }
-
-    # Vulkan SDK
-    - name: Vulkan SDK
-      run: |
-        if (!(Test-Path "C:\VulkanSDK")) {
-          curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
-          .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
-        }
-
-    # Checkout
-    - name: Checkout
-      if: env.USING_ACT == 0
-      uses: actions/checkout@v4
-      with:
-        submodules: recursive
-
-    # Python
-    - name: Python
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-
-    # Build
-    - name: Build
-      run: |
-        just release || just release
-
-    # Wheel
-    - name: Wheel
-      run: |
-        just pydev
-        just wheel
-
-    # Upload the wheel
-    - name: Upload
-      uses: actions/upload-artifact@v4
-      with:
-        name: wheel-win_amd64
-        path: dist/*.whl
-
-  # -----------------------------------------------------------------------------------------------
-  # Release process
-  # -----------------------------------------------------------------------------------------------
-
-  # release:
-  #   runs-on: ubuntu-latest
-  #   needs: [wheel-linux, wheel-macos, wheel-windows]  # Ensure this runs after all builds
-  #   steps:
-  #     - name: Download Linux wheel
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: linux-wheel
-
-  #     - name: Download macOS wheel
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: macos-wheel
-
-  #     - name: Download Windows wheel
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: windows-wheel
-
-  #     - name: Create GitHub release
-  #       uses: actions/create-release@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         tag_name: ${{ github.ref_name }}
-  #         release_name: ${{ github.ref_name }}
-  #         draft: false
-  #         prerelease: false
-  #         files: |
-  #           linux-wheel/*.whl
-  #           macos-wheel/*.whl
-  #           windows-wheel/*.whl
+      - name: Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: ./dist/**/*.whl
