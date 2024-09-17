@@ -78,7 +78,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: wheel-linux
+        name: wheel-linux_x86_64
         path: /datoviz/dist/*.whl
 
   # -----------------------------------------------------------------------------------------------
@@ -133,14 +133,14 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: wheel-macos-arm64
+        name: wheel-macosx_arm64
         path: dist/*.whl
 
   # -----------------------------------------------------------------------------------------------
   # macOS x86_64
   # -----------------------------------------------------------------------------------------------
 
-  wheel-macos_x86_64:
+  wheel-macosx_x86_64:
     runs-on: macos-13
 
     # Clone the repo (except if local with "act")
@@ -188,7 +188,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: wheel-macos-x86_64
+        name: wheel-macosx_x86_64
         path: dist/*.whl
 
   # -----------------------------------------------------------------------------------------------
@@ -262,7 +262,7 @@ jobs:
     - name: Upload
       uses: actions/upload-artifact@v4
       with:
-        name: wheel-windows
+        name: wheel-win_amd64
         path: dist/*.whl
 
   # -----------------------------------------------------------------------------------------------
