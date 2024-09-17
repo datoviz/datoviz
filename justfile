@@ -886,7 +886,7 @@ checkartifact RUN_ID:
 checkartifact RUN_ID:
     #!/usr/bin/env sh
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n "wheel-macosx_$(arch)" -D $temp_dir
+    gh run download {{RUN_ID}} -n "wheel-macosx_{{arch()}}" -D $temp_dir
     ls $temp_dir/datoviz*.whl
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
