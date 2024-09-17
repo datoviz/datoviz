@@ -17,6 +17,7 @@ jobs:
           run_id=$(gh api -H "Accept: application/vnd.github+json" \
               /repos/${{ github.repository }}/actions/workflows/wheels.yml/runs \
               -q '.workflow_runs[] | select(.conclusion == "success") | .id' | head -n 1)
+          echo $run_id
           echo "run_id=$run_id" >> $GITHUB_ENV  # Set environment variable for use in next steps
 
   release:
