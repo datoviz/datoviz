@@ -208,3 +208,49 @@ To test the wheel in a Python virtual environment:
 just testwheel
 ```
 
+
+## GitHub Actions notes
+
+Datoviz relies on GitHub Actions for cross-platform automated testing and wheel building.
+
+### Testing
+
+[This workflow is defined in `test.yml`](.github/workflows/test.yml)
+
+#### Linux
+
+The `test-linux` job relies on the custom Docker image [`rossant/datoviz_ubuntu`](https://hub.docker.com/repository/docker/rossant/datoviz_ubuntu/) (see the [Dockerfile](docker/Dockerfile_ubuntu)).
+This image has all build and run dependencies, as well as the Swiftshader software Vulkan renderer, and xvfb to run graphical applications on a headless server.
+
+#### macOS
+
+Docker seems to be not supported on GitHub Actions macOS servers. The `test_macos` job installs build dependencies with Homebrew, Python dependencies, it builds Datoviz and it run the test suite.
+
+Note that there is a workaround to remove Mono's freetype library which conflicts with Homebrew's one.
+
+#### Windows
+
+There is a custom Docker image [`rossant/datoviz_windows`](https://hub.docker.com/repository/docker/rossant/datoviz_windows/) which is however unused at the moment because GitHub Actions Windows servers to not seem to support custom Docker images at the moment.
+
+Instead, the job installs dependencies with Chocolatey, vcpkg, the Vulkan SDK, and it extracts the Swiftshader dynamic library.
+Note that the Swiftshader Windows library is very large (>100 MB) so it is stored as a compressed zip file in the [`datoviz/data` submodule](https://github.com/datoviz/data).
+
+
+### Wheel building
+
+[This workflow is defined in `wheel.yml`](.github/workflows/wheel.yml)
+
+For each supported platform, this workflow builds the library in release mode, builds the wheel, renames it for the current platform, and uploads it as a GitHub Actions build artifact.
+
+Refer to the Testing workflow for more information about the building process, which is mostly replicated in this workflow.
+
+#### Linux notes
+
+For improved compatibility with Linux Python wheels uploaded to PyPI, it is necessary to build Datoviz on a particular Linux distribution based on [AlmaLinux](https://en.wikipedia.org/wiki/AlmaLinux) (based on Red Hat Enterprise Linux, REHL).
+
+There is a custom Docker image [`rossant/datoviz_manylinux`](https://hub.docker.com/repository/docker/rossant/datoviz_manylinux/) based on `quay.io/pypa/manylinux_2_28_x86_64` (see the [Dockerfile](docker/Dockerfile_manylinux)) with all build dependencies.
+It also has Swiftshader compiled for this platform.
+
+#### macOS notes
+
+There are two separate jobs for x86_64 and amd64 architectures.
