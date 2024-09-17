@@ -146,7 +146,7 @@ upload:
 
 wheels:
     #!/usr/bin/env sh
-    gh workflow run wheels.yml
+    gh workflow run wheels.yml -r dev
     sleep 2
     URL="https://github.com/datoviz/datoviz/actions"
     xdg-open "$URL" || open "$URL"
