@@ -801,7 +801,7 @@ wheel: checkstructs && showwheel
     pushd "$PKGROOT"
     pip wheel . -w "../../$DISTDIR" --no-deps
     popd
-    just renamewheel
+    just renamewheel win_amd64
 
     # Clean up.
     rm -rf "$PKGROOT"
