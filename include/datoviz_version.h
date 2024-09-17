@@ -22,7 +22,7 @@
 #define DVZ_VERSION_MAJOR 0
 #define DVZ_VERSION_MINOR 2
 #define DVZ_VERSION_PATCH 1
-#define DVZ_VERSION_DEVEL -dev
+#define DVZ_VERSION_DEVEL
 
 #define DVZ_VERSION                                                                               \
     (xstr(DVZ_VERSION_MAJOR) "." xstr(DVZ_VERSION_MINOR) "." xstr(DVZ_VERSION_PATCH) "" xstr(     \

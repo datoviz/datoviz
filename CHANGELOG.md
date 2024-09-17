@@ -2,6 +2,10 @@
 
 ## Development version
 
+Work in progress.
+
+## v0.2.1 (2024-09-17) [LATEST RELEASE]
+
 ### Scene
 
 - Implemented arcball GUI with sliders for rotation angles.
@@ -40,12 +44,12 @@
 
 ### GUI
 
-- Added color picker.
+- Added color picker widget.
 
 ### Documentation
 
 - Added more documentation.
-- Updated website `datoviz.org`.
+- Updated website `datoviz.org` to `v0.2.0`.
 
 ### Miscellaneous
 
@@ -62,7 +66,7 @@
 - Set up automated wheel building on GitHub Actions: Linux, macOS, Windows.
 
 
-## v0.2.0 (2024-08-05) [LATEST RELEASE]
+## v0.2.0 (2024-08-05)
 
 - Full internal architecture rewrite.
 - Internal asynchronous message-based Datoviz Intermediate Protocol.
