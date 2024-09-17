@@ -14,9 +14,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: get_run_id
         run: |
-          run_id=$(gh api -H "Accept: application/vnd.github+json" \
-              /repos/${{ github.repository }}/actions/workflows/wheels.yml/runs \
-              -q '.workflow_runs[] | select(.conclusion == "success") | .id' | head -n 1)
+          run_id=$(gh run list --workflow=WHEELS --json conclusion,databaseId \
+          --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
           echo $run_id
           echo "run_id=$run_id" >> $GITHUB_ENV  # Set environment variable for use in next steps
 
