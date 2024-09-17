@@ -18,8 +18,8 @@ Release checklist from a Linux development machine:
 10. `git diff`: check the changes to commit.
 11. `git commit -am "Bump version to v$version" && git push`: commit the new version.
 12. `just wheels`: build the wheels on GitHub Actions.
-13. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml).
-14. `just checkartifact`: test the build wheels on different computers/operating systems.
+13. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions do not support Windows Docker containers yet).
+14. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
 15. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
 16. `just tag $version`: once on `main`, tag with the new version.
 17. `just draft`: create a new GitHub Release draft with the built wheels.
