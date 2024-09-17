@@ -9,6 +9,14 @@ jobs:
     outputs:
       run-id: ${{ steps.get_run_id.outputs.run_id }}
     steps:
+      - name: gh
+        if: env.USING_ACT == 1
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo tee /usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null
+          sudo apt-add-repository -y "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+          sudo apt update
+          sudo apt install gh -y
+
       - name: run-id
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,11 +37,11 @@ jobs:
       - name: Download
         uses: actions/download-artifact@v4
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ needs.get-run-id.outputs.run-id }}
-          path: ./dist
 
       - name: List
-        run: ls -l ./dist
+        run: ls -l
 
       - name: Release
         uses: actions/create-release@v1
@@ -44,4 +52,4 @@ jobs:
           release_name: ${{ github.ref_name }}
           draft: false
           prerelease: false
-          files: ./dist/**/*.whl
+          files: ./**/*.whl
