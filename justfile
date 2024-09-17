@@ -885,16 +885,9 @@ checkartifact RUN_ID:
 [macos]
 checkartifact RUN_ID:
     #!/usr/bin/env sh
-
-    arch_str=$(arch)
-    if [[ "$arch_str" == "arm" ]]; then
-        platform="arm64"
-    else
-        platform="x86_64"
-    fi
-
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n "wheel-macosx_$platform" -D $temp_dir
+    gh run download {{RUN_ID}} -n "wheel-macosx_$(arch)" -D $temp_dir
+    ls $temp_dir/datoviz*.whl
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
