@@ -77,15 +77,8 @@ assert LIB_PATH.exists()
 try:
     dvz = ctypes.cdll.LoadLibrary(str(LIB_PATH))
 except Exception as e:
-    print(f"Error loading {LIB_PATH}: {e}")
-
-    class DVZ:
-        def __getattr__(self, k):
-            return DVZ()
-
-        def __setattr__(self, k, v):
-            pass
-    dvz = DVZ()
+    print(f"Error loading library at {LIB_PATH}: {e}")
+    exit(1)
 
 # on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
 if PLATFORM == "macos":
