@@ -1,6 +1,33 @@
 # Contributing notes
 
-This is a work in progress.
+This document is a work in progress.
+
+## Management commands
+
+We use the [just](https://github.com/casey/just) tool for all management commands.
+The commands are implemented in `justfile`.
+
+
+## Branches
+
+* The `main` branch is reserved to stable releases.
+* Development occurs in the `dev` branch.
+
+
+## Python bindings
+
+The Python (ctypes) bindings are automatically generated into `datoviz/__init__.py` which is commmitted in the repository, but should not be manually edited.
+
+
+## Continuous integration/continuous delivery
+
+GitHub Actions-based CI/CD is not yet active in this repository.
+In the near future, we intend to activate it for:
+
+- cross-platform automated testing of the C library and Python bindings ;
+- automated build of the Python wheels on all supported platforms ;
+- automated build of the documentation and gallery.
+
 
 ## Debugging
 

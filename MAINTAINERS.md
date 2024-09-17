@@ -1,8 +1,38 @@
 # Maintainers instructions
 
-## Packaging
+## Release checklist for Datoviz maintainers
 
-This section provides instructions for maintainers who need to create binary packages and Python wheels.
+Development happens on `dev` whereas `main` is stable.
+
+Release checklist from a Linux development machine:
+
+1. `git branch`: check that you are on the `dev` branch.
+2. Write the `CHANGELOG.md` for the new version.
+3. `just clean release api`: rebuild in release mode.
+4. `just test`: run the C testing suite.
+5. `just pytest`: run the Python testing suite.
+6. `just act test-linux`: simulate the GitHub Actions tests locally.
+7. `version=x.y.z`: set up the new version.
+8. `just bump $version`: bump the codebase to the new version.
+9. `just release`: recompile with the new version.
+10. `git diff`: check the changes to commit.
+11. `git commit -am "Bump version to v$version" && git push`: commit the new version.
+12. `just wheels`: build the wheels on GitHub Actions.
+13. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions do not support Windows Docker containers yet).
+14. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
+15. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
+16. `just tag $version`: once on `main`, tag with the new version.
+17. `just draft`: create a new GitHub Release draft with the built wheels.
+18. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
+19. `just upload`: upload the wheels to PyPI.
+20. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
+21. `git commit -am "Bump to development version" && git push`: bump to the development version.
+22. Announce the new release on the various communication channels.
+
+
+## Packaging instructions (advanced users)
+
+This section provides instructions for Datoviz maintainers who'd like to create binary packages and Python wheels.
 
 
 ### Ubuntu 24.04
@@ -177,34 +207,3 @@ To test the wheel in a Python virtual environment:
 just testwheel
 ```
 
-
-## Release checklist
-
-1. Build in release mode with `just release`.
-2. Run the C testing suite with `just test`.
-3. Run the Python testing suite with `just pytest`.
-4. Write the `CHANGELOG.md`.
-5. Bump to the new version with `just bump x.y.z`.
-6. Commit and tag.
-7. Build and test packages.
-   1. Linux
-      * `just release`
-      * `just deb`
-      * `just testdeb`
-      * `just manylinux`
-      * `just testwheel`
-      * Wheel is in `dist/`
-   2. macOS ARM & Intel
-      * `just release`
-      * `just pkg`
-      * `just wheel`
-      * `just testwheel`
-      * Wheel is in `dist/`
-   3. Windows
-      * `just release`
-      * `just wheel`
-      * `just testwheel`
-      * Wheel is in `dist/`
-8. Upload packages.
-9. Bump to the new development version with `just bump a.b.c-dev`.
-10. Announcement.

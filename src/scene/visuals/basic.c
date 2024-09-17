@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Basic                                                                                        */
 /*************************************************************************************************/
@@ -20,14 +26,10 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
 
-
-
-/*************************************************************************************************/
-/*  Internal functions                                                                           */
-/*************************************************************************************************/
+#define DEFAULT_SIZE 1.0
 
 
 
@@ -48,6 +50,7 @@ DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags)
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzBasicVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 1, FIELD(DvzBasicVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 2, FIELD(DvzBasicVertex, group), DVZ_FORMAT_R32_SFLOAT, 0);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzBasicVertex));
@@ -55,6 +58,14 @@ DvzVisual* dvz_basic(DvzBatch* batch, DvzPrimitiveTopology topology, int flags)
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
+
+    // Params.
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzBasicParams));
+    dvz_params_attr(params, 0, FIELD(DvzBasicParams, size));
+
+    // Default params.
+    dvz_visual_param(visual, 2, 0, (float[]){DEFAULT_SIZE});
 
     return visual;
 }
@@ -87,4 +98,20 @@ void dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* v
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, (void*)values);
+}
+
+
+
+void dvz_basic_group(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 2, first, count, (void*)values);
+}
+
+
+
+void dvz_basic_size(DvzVisual* visual, float size)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, &size);
 }

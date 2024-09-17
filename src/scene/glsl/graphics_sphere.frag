@@ -1,6 +1,12 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 #version 450
+#include "antialias.glsl"
 #include "common.glsl"
-// #include "lighting.glsl"
 
 layout(binding = 2) uniform SphereParams
 {
@@ -19,6 +25,7 @@ layout(location = 0) out vec4 out_color;
 
 const vec3 light_color = vec3(1.0);
 
+#define EPSILON 0
 
 
 void main()
@@ -27,7 +34,7 @@ void main()
     vec2 coord = 2.0 * gl_PointCoord - 1.0;
     float dist_squared = dot(coord, coord);
 
-    if (dist_squared > 1.0)
+    if (dist_squared > 1.0 + EPSILON)
         discard;
 
     // Calculate the normal of the sphere at this fragment
@@ -47,7 +54,12 @@ void main()
     float spec = pow(max(dot(view_dir, reflect_dir), 0.0), params.light_params.w);
     vec3 specular = params.light_params.z * spec * light_color;
     vec3 final_color = (ambient + diffuse + specular) * in_color.rgb;
-    out_color = vec4(final_color, in_color.a);
+
+    // TODO: border antialias.
+    float alpha = in_color.a;
+    // if (dist_squared > 1.0)
+    //     alpha *= compute_distance(dist_squared - 1, 1.0).z;
+    out_color = vec4(final_color, alpha);
 
     // Depth.
     vec4 vm = mvp.view * mvp.model * vec4(in_pos, 1);
@@ -58,10 +70,6 @@ void main()
     float h = viewport.size.y;
     float a = w / h;
     float v = w;
-    // float point_size_clip_space_x = in_point_size / viewport.size.x;
-    // float point_size_clip_space_y = in_point_size / viewport.size.y;
-    // float point_size_clip_space =
-    //     max(point_size_clip_space_x, point_size_clip_space_y * aspect_ratio);
 
     vm += in_radius / (d * v) * vec4(normal, 1);
     vec4 clipPos = mvp.proj * vm;

@@ -1,3 +1,9 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 
 #define VOLUME_TYPE_SCALAR 0
 #define VOLUME_TYPE_RGBA   1
@@ -24,6 +30,7 @@ vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
         }
         else if (modes.y == VOLUME_COLOR_COLORMAP)
         {
+            // TODO: the colormap should be a parameter.
             color = colormap(DVZ_CMAP_HSV, v);
             color.a = v;
         }

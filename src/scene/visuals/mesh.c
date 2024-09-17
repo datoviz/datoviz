@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Mesh                                                                                         */
 /*************************************************************************************************/
@@ -14,6 +20,7 @@
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "request.h"
+#include "scene/baker.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
 #include "scene/viewset.h"
@@ -22,8 +29,11 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define STROKE    50, 50, 50, 255
+#define LINEWIDTH 2.0f
 
 
 
@@ -37,10 +47,17 @@ static void _visual_callback(
     uint32_t first_instance, uint32_t instance_count)
 {
     ANN(visual);
-    // NOTE: here, count is item_count, so index_count/3 (number of faces).
+
+    // NOTE: if indexing is used, count is item_count, so index_count/3 (number of faces).
     // We need to multiply by three to retrieve the number of elements to draw using
     // indexing.
-    dvz_visual_instance(visual, canvas, first, 0, 3 * count, first_instance, instance_count);
+    bool indexed = ((visual->flags & DVZ_VISUAL_FLAGS_INDEXED) != 0);
+    if (indexed)
+    {
+        count *= 3;
+    }
+
+    dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
 }
 
 
@@ -59,6 +76,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Parse flags.
     int textured = (flags & DVZ_MESH_FLAGS_TEXTURED);
     int lighting = (flags & DVZ_MESH_FLAGS_LIGHTING);
+    int contour = (flags & DVZ_MESH_FLAGS_CONTOUR);
+    int isoline = (flags & DVZ_MESH_FLAGS_ISOLINE);
     log_trace("create mesh visual, texture: %d, lighting: %d", textured, lighting);
 
     // Visual shaders.
@@ -70,10 +89,10 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_visual_cull(visual, DVZ_CULL_MODE_NONE);
 
     // Specialization constants.
-    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &textured);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &textured);
-    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &lighting);
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &lighting);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &contour);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 3, sizeof(int), &isoline);
 
     // Textured vertex.
     if (textured)
@@ -85,6 +104,14 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
             visual, 1, FIELD(DvzMeshTexturedVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshTexturedVertex, texcoords), DVZ_FORMAT_R32G32B32A32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 3, FIELD(DvzMeshTexturedVertex, value), DVZ_FORMAT_R32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 4, FIELD(DvzMeshTexturedVertex, d_left), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 5, FIELD(DvzMeshTexturedVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 6, FIELD(DvzMeshTexturedVertex, contour), DVZ_FORMAT_R8G8B8A8_SINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshTexturedVertex));
@@ -99,6 +126,14 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
             visual, 1, FIELD(DvzMeshColorVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
             visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+        dvz_visual_attr( //
+            visual, 3, FIELD(DvzMeshColorVertex, value), DVZ_FORMAT_R32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 4, FIELD(DvzMeshColorVertex, d_left), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 5, FIELD(DvzMeshColorVertex, d_right), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
+        dvz_visual_attr( //
+            visual, 6, FIELD(DvzMeshColorVertex, contour), DVZ_FORMAT_R8G8B8A8_SINT, 0);
 
         // Vertex stride.
         dvz_visual_stride(visual, 0, sizeof(DvzMeshColorVertex));
@@ -114,10 +149,17 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
     dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
+    dvz_params_attr(params, 2, FIELD(DvzMeshParams, stroke));
+    dvz_params_attr(params, 3, FIELD(DvzMeshParams, isoline_count));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
         visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
+
+    // Default stroke parameters.
+    dvz_mesh_stroke(visual, (cvec4){STROKE});
+    dvz_mesh_linewidth(visual, LINEWIDTH);
+    dvz_mesh_density(visual, 10);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -132,7 +174,7 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
     ANN(visual);
     ASSERT(vertex_count > 0);
     ASSERT(index_count % 3 == 0);
-    log_debug("allocating the mesh visual");
+    log_debug("allocating the mesh visual, %d vertices, %d indices", vertex_count, index_count);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
@@ -149,6 +191,11 @@ void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_t index_cou
 void dvz_mesh_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* values, int flags)
 {
     ANN(visual);
+    if ((visual->flags & DVZ_VISUAL_FLAGS_INDEXED) == 0)
+    {
+        log_error(
+            "mesh visual should be created with flag `DVZ_VISUAL_FLAGS_INDEXED` to use indices");
+    }
     dvz_visual_index(visual, first, count, values);
 }
 
@@ -192,6 +239,38 @@ void dvz_mesh_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4*
         return;
     }
     dvz_visual_data(visual, 2, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_isoline(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 3, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_left(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 4, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 5, first, count, (void*)values);
+}
+
+
+
+void dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 6, first, count, (void*)values);
 }
 
 
@@ -247,6 +326,58 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 
 
 
+void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba)
+{
+    ANN(visual);
+
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = 2;
+
+    DvzParams* params = visual->params[slot_idx];
+    ANN(params);
+
+    void* item = dvz_params_get(params, attr_idx);
+    ANN(item);
+
+    vec4 stroke = {0};
+    memcpy(stroke, item, sizeof(vec4));
+    stroke[0] = rgba[0] / 255.0;
+    stroke[1] = rgba[1] / 255.0;
+    stroke[2] = rgba[2] / 255.0;
+    dvz_visual_param(visual, 2, 2, stroke);
+}
+
+
+
+void dvz_mesh_linewidth(DvzVisual* visual, float stroke_width)
+{
+    ANN(visual);
+
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = 2;
+
+    DvzParams* params = visual->params[slot_idx];
+    ANN(params);
+
+    void* item = dvz_params_get(params, attr_idx);
+    ANN(item);
+
+    vec4 stroke = {0};
+    memcpy(stroke, item, sizeof(vec4));
+    stroke[3] = stroke_width;
+    dvz_visual_param(visual, 2, 2, stroke);
+}
+
+
+
+void dvz_mesh_density(DvzVisual* visual, uint32_t count)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, 3, &count);
+}
+
+
+
 DvzVisual* dvz_mesh_shape(DvzBatch* batch, DvzShape* shape, int flags)
 {
     ANN(batch);
@@ -291,6 +422,18 @@ void dvz_mesh_reshape(DvzVisual* visual, DvzShape* shape)
 
     if (shape->texcoords && (visual->flags & DVZ_MESH_FLAGS_TEXTURED))
         dvz_mesh_texcoords(visual, 0, vertex_count, shape->texcoords, 0);
+
+    if (shape->isoline)
+        dvz_mesh_isoline(visual, 0, vertex_count, shape->isoline, 0);
+
+    if (shape->d_left)
+        dvz_mesh_left(visual, 0, vertex_count, shape->d_left, 0);
+
+    if (shape->d_right)
+        dvz_mesh_right(visual, 0, vertex_count, shape->d_right, 0);
+
+    if (shape->contour)
+        dvz_mesh_contour(visual, 0, vertex_count, shape->contour, 0);
 
     if (shape->index_count > 0)
         dvz_mesh_index(visual, 0, index_count, shape->index, 0);

@@ -35,6 +35,9 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
     elif type.startswith('uvec'):
         return f'ctypes.c_uint32 * {n}'
 
+    elif type.startswith('ivec'):
+        return f'ctypes.c_int32 * {n}'
+
     elif type.startswith('dvec'):
         return f'ctypes.c_double * {n}'
 
@@ -156,6 +159,47 @@ def extract_version(version_path):
     return version
 
 
+def convert_javadoc_to_numpy(javadoc_str, func_info):
+    # Remove the leading and trailing /** and */
+    javadoc_str = javadoc_str.strip().strip('/**').strip('*/')
+
+    # Split the content into lines and strip leading '*'
+    lines = [line.strip().lstrip('*').strip()
+             for line in javadoc_str.splitlines()]
+
+    # Extract the description (everything before the first @param or @returns)
+    description_lines = []
+    param_started = False
+    for line in lines:
+        if line.startswith('@param') or line.startswith('@returns'):
+            param_started = True
+        if not param_started:
+            description_lines.append(line)
+
+    description = ' '.join(description_lines).strip()
+
+    # Find all @param and @returns lines
+    params = re.findall(r'@param([\[\]out]*)\s+(\w+)\s+(.*)', javadoc_str)
+    returns = re.search(r'@returns?\s+(.*)', javadoc_str)
+
+    # Start building the NumPy-style docstring
+    numpy_doc = f"{description}\n\n"
+
+    args = {item['name']: item['dtype'] for item in func_info['args']}
+    if params:
+        numpy_doc += "Parameters\n----------\n"
+        for out, param, desc in params:
+            type = args.get(param, 'unknown')
+            out = ' (out parameter)' if out else ''
+            numpy_doc += f"{param} : {type}{out}\n    {desc}\n"
+
+    if returns:
+        numpy_doc += "\nReturns\n-------\n"
+        numpy_doc += f"type\n    {returns.group(1)}\n"
+
+    return numpy_doc.strip()
+
+
 def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     version = extract_version(version_path)
 
@@ -250,18 +294,30 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             # Remove dvz_ prefix.
             if func_name.startswith("dvz_"):
                 func_name = func_name[4:]
+            docstring = func_info.get('docstring', '')
+            docstring = convert_javadoc_to_numpy(docstring, func_info)
+            docstring = docstring.replace('"', '\"')
 
             out += f'# Function {orig_name}()\n'
             out += f'{func_name} = dvz.{orig_name}\n'
+            out += f'{func_name}.__doc__ = """\n{docstring}\n"""\n'
             out += f'{func_name}.argtypes = [\n'
+
+            # annotations = {}
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    out += (f'    {map_type(arg["dtype"])},  '
+                    mtype = map_type(arg["dtype"])
+                    out += (f'    {mtype},  '
                             f'# {arg["dtype"]} {arg["name"]}\n')
+                    # annotations[arg["name"]] = mtype
             out += ']\n'
             restype = map_type(func_info["returns"])
             if restype and restype != "None":
                 out += f'{func_name}.restype = {restype}\n'
+                # annotations['return'] = restype
+
+            # out += f'{func_name}.__annotations__ = {str(annotations)}\n'
+
             out += '\n'
 
     # Forward declarations.

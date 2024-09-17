@@ -1,3 +1,9 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 /*************************************************************************************************/
 /*  Constants and macros                                                                         */
 /*************************************************************************************************/
@@ -276,6 +282,40 @@ vec4 transform(vec3 pos) { return transform(pos, vec2(0, 0)); }
 
 
 
+float total_zoom()
+{
+    // Combine the matrices: T = proj * view * model
+    mat4 T = mvp.proj * mvp.view * mvp.model;
+
+    // Extract the scaling factors along the x, y, and z axes
+    float S_x = length(vec3(T[0][0], T[0][1], T[0][2]));
+    float S_y = length(vec3(T[1][0], T[1][1], T[1][2]));
+    float S_z = length(vec3(T[2][0], T[2][1], T[2][2]));
+
+    // Calculate the total zoom as the average scaling factor
+    // float a = viewport.size.y * 1.0 / viewport.size.x;
+    float zoom = (S_x + S_y + 0) / 2.0;
+
+    return zoom;
+}
+
+
+
+vec3 axis_zoom()
+{
+    // Combine the matrices: T = proj * view * model
+    mat4 T = mvp.proj * mvp.view * mvp.model;
+
+    // Extract the scaling factors along the x, y, and z axes
+    float S_x = length(vec3(T[0][0], T[0][1], T[0][2]));
+    float S_y = length(vec3(T[1][0], T[1][1], T[1][2]));
+    float S_z = length(vec3(T[2][0], T[2][1], T[2][2]));
+
+    return vec3(S_x, S_y, S_z);
+}
+
+
+
 /*************************************************************************************************/
 /*  Clipping                                                                                     */
 /*************************************************************************************************/
@@ -307,7 +347,7 @@ bool clip_viewport(vec2 frag_coords, int coord)
     // if (uv.y < top - 10.0 || uv.x > w - right + 30.0)
     //     discard;
 
-    // Bottom-left corner: discard along the diagonal
+    // Bottom left corner: discard along the diagonal
     if (uv.x < left && uv.y > h - bottom)
     {
         vec2 q0 = vec2(left, bottom);

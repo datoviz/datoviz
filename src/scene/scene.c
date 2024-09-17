@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Scene                                                                                        */
 /*************************************************************************************************/
@@ -18,6 +24,7 @@
 #include "scene/baker.h"
 #include "scene/camera.h"
 #include "scene/graphics.h"
+#include "scene/ortho.h"
 #include "scene/panzoom.h"
 #include "scene/transform.h"
 #include "scene/viewset.h"
@@ -29,7 +36,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void _panzoom_size(DvzPanel* panel)
+static void _panzoom_ortho_size(DvzPanel* panel)
 {
     ANN(panel);
     ANN(panel->view);
@@ -42,9 +49,13 @@ static void _panzoom_size(DvzPanel* panel)
     float w = panel->view->shape[0] - r - l;
     float h = panel->view->shape[1] - t - b;
 
-    if (panel->panzoom)
+    if (panel->panzoom != NULL)
     {
         dvz_panzoom_resize(panel->panzoom, w, h);
+    }
+    if (panel->ortho != NULL)
+    {
+        dvz_ortho_resize(panel->ortho, w, h);
     }
 }
 
@@ -354,14 +365,14 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
     // NOTE: need to resize the panzoom as well.
-    _panzoom_size(panel);
+    _panzoom_ortho_size(panel);
 
-    if (panel->arcball)
+    if (panel->arcball != NULL)
     {
         dvz_arcball_resize(panel->arcball, width, height);
     }
 
-    if (panel->camera)
+    if (panel->camera != NULL)
     {
         dvz_camera_resize(panel->camera, width, height);
 
@@ -369,6 +380,15 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
         // projection matrix depends on the panel's aspect ratio.
         DvzMVP* mvp = dvz_transform_mvp(panel->transform);
         dvz_camera_mvp(panel->camera, mvp); // set the view and proj matrices
+        dvz_transform_update(panel->transform);
+    }
+
+    if (panel->ortho != NULL)
+    {
+        // NOTE: for the ortho, we also need to update the MVP struct on the GPU because the
+        // projection matrix depends on the panel's aspect ratio.
+        DvzMVP* mvp = dvz_transform_mvp(panel->transform);
+        dvz_ortho_mvp(panel->ortho, mvp); // set the view and proj matrices
         dvz_transform_update(panel->transform);
     }
 }
@@ -381,7 +401,7 @@ void dvz_panel_margins(DvzPanel* panel, float top, float right, float bottom, fl
     dvz_view_margins(panel->view, (vec4){top, right, bottom, left});
 
     // NOTE: need to resize the panzoom if needed.
-    _panzoom_size(panel);
+    _panzoom_ortho_size(panel);
 }
 
 
@@ -486,12 +506,56 @@ DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     panel->panzoom = dvz_panzoom(w, h, 0);
-    _panzoom_size(panel); // Takes panel margins into account.
+    _panzoom_ortho_size(panel); // Takes panel margins into account.
 
     panel->transform = dvz_transform(scene->batch, 0);
     panel->transform_to_destroy = true;
 
     return panel->panzoom;
+}
+
+
+
+DvzOrtho* dvz_panel_ortho(DvzPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->view);
+    ANN(panel->figure);
+
+    DvzScene* scene = panel->figure->scene;
+    ANN(scene);
+
+    if (panel->ortho)
+        return panel->ortho;
+
+    if (panel->transform != NULL)
+    {
+        log_error("could not create an ortho as the panel has already a transform");
+        return NULL;
+    }
+
+    ASSERT(panel->view->shape[0] > 0);
+    ASSERT(panel->view->shape[1] > 0);
+
+    log_trace("create a new Ortho instance");
+
+    float w = panel->view->shape[0];
+    float h = panel->view->shape[1];
+
+    // NOTE: the size is in screen coordinates, not framebuffer coordinates.
+    panel->ortho = dvz_ortho(w, h, 0);
+    _panzoom_ortho_size(panel); // Takes panel margins into account.
+
+    panel->transform = dvz_transform(scene->batch, 0);
+    panel->transform_to_destroy = true;
+
+    // Get the MVP struct of the panel, update it with the ortho, and update the buffer on the
+    // GPU.
+    DvzMVP* mvp = dvz_transform_mvp(panel->transform);
+    dvz_ortho_mvp(panel->ortho, mvp); // set the view and proj matrices
+    dvz_transform_update(panel->transform);
+
+    return panel->ortho;
 }
 
 
@@ -524,7 +588,7 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel)
     // panel->transform_to_destroy = true;
 
     // Also create a perspective camera.
-    DvzCamera* camera = dvz_panel_camera(panel);
+    DvzCamera* camera = dvz_panel_camera(panel, DVZ_CAMERA_FLAGS_PERSPECTIVE);
 
     return panel->arcball;
 }
@@ -600,7 +664,7 @@ static void _camera_zoom(DvzCamera* camera, float dz)
 
 
 
-DvzCamera* dvz_panel_camera(DvzPanel* panel)
+DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags)
 {
     ANN(panel);
     ANN(panel->view);
@@ -624,7 +688,7 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel)
 
     // Create a camera.
     log_trace("create a new Camera instance");
-    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], 0);
+    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], flags);
     ANN(panel->camera);
 
     // Get the MVP struct of the panel, update it with the camera, and update the buffer on the
@@ -655,6 +719,22 @@ static void _update_panzoom(DvzPanel* panel)
     // Update the MVP matrices.
     DvzMVP* mvp = dvz_transform_mvp(tr);
     dvz_panzoom_mvp(pz, mvp);
+}
+
+
+static void _update_ortho(DvzPanel* panel)
+{
+    ANN(panel);
+
+    DvzOrtho* ortho = panel->ortho;
+    ANN(ortho);
+
+    DvzTransform* tr = panel->transform;
+    ANN(tr);
+
+    // Update the MVP matrices.
+    DvzMVP* mvp = dvz_transform_mvp(tr);
+    dvz_ortho_mvp(ortho, mvp);
 }
 
 
@@ -699,6 +779,8 @@ void dvz_panel_update(DvzPanel* panel)
         _update_camera(panel);
     if (panel->panzoom)
         _update_panzoom(panel);
+    if (panel->ortho)
+        _update_ortho(panel);
     if (panel->arcball)
         _update_arcball(panel);
 
@@ -718,23 +800,54 @@ static void _scene_build(DvzScene* scene)
     ANN(scene);
 
     // Go through all figures.
-    uint32_t n = dvz_list_count(scene->figures);
+    uint64_t n = dvz_list_count(scene->figures);
+    uint64_t view_count = 0;
+    uint64_t visual_count = 0;
     DvzFigure* fig = NULL;
+    DvzView* view = NULL;
+    DvzVisual* visual = NULL;
     DvzBuildStatus status = DVZ_BUILD_CLEAR;
-    for (uint32_t i = 0; i < n; i++)
+
+    for (uint64_t viewset_idx = 0; viewset_idx < n; viewset_idx++)
     {
-        fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+        fig = (DvzFigure*)dvz_list_get(scene->figures, viewset_idx).p;
         ANN(fig);
         ANN(fig->viewset);
+        ANN(fig->viewset->views);
 
         // Build status.
         status = (DvzBuildStatus)dvz_atomic_get(fig->viewset->status);
         // if viewset state == dirty, build viewset, and set the viewset state to clear
         if (status == DVZ_BUILD_DIRTY)
         {
-            log_debug("build figure #%d", i);
+            log_debug("build figure #%d", viewset_idx);
             dvz_viewset_build(fig->viewset);
             dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_CLEAR);
+        }
+
+        // Now, automatically call dvz_visual_update() on all dirty visuals.
+
+        // Go through the views of the viewset.
+        view_count = dvz_list_count(fig->viewset->views);
+        view = NULL;
+        for (uint64_t view_idx = 0; view_idx < view_count; view_idx++)
+        {
+            view = (DvzView*)dvz_list_get(fig->viewset->views, view_idx).p;
+            ANN(view);
+
+            // Go through the visuals of the view.
+            visual_count = dvz_list_count(view->visuals);
+            log_trace(
+                "going through %d visuals of view #%d to find dirty visuals", //
+                visual_count, view_idx);
+            for (uint64_t visual_idx = 0; visual_idx < visual_count; visual_idx++)
+            {
+                visual = (DvzVisual*)dvz_list_get(view->visuals, visual_idx).p;
+                ANN(visual);
+
+                // This will only update the visual if it needs to be updated.
+                dvz_visual_update(visual);
+            }
         }
     }
 }
@@ -789,6 +902,24 @@ static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
         if (dvz_panzoom_mouse(pz, mev))
         {
             _update_panzoom(panel);
+            dvz_transform_update(tr);
+        }
+    }
+
+    // Ortho.
+    DvzOrtho* ortho = panel->ortho;
+    if (ortho != NULL)
+    {
+        DvzTransform* tr = panel->transform;
+        if (tr == NULL)
+        {
+            log_warn("no transform set in panel");
+            return;
+        }
+        // Pass the mouse event to the ortho object.
+        if (dvz_ortho_mouse(ortho, mev))
+        {
+            _update_ortho(panel);
             dvz_transform_update(tr);
         }
     }
@@ -849,12 +980,12 @@ static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
     //
     if (dvz_atomic_get(fig->viewset->status) == DVZ_BUILD_DIRTY)
     {
-        log_warn("skip figure onresize because the viewset is already dirty");
+        log_warn("skip figure onresize callback because the viewset is already dirty");
         return;
     }
 
     // Resize the figure, compute each panel's new size and resize them.
-    // This will also call panzoom/arcball/camera resize for each panel.
+    // This will also call panzoom/ortho/arcball/camera resize for each panel.
     dvz_figure_resize(fig, w, h);
 
     // Mark the viewset as dirty to trigger a command buffer record at the next frame.

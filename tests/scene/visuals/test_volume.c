@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing volume                                                                               */
 /*************************************************************************************************/
@@ -91,7 +97,10 @@ int test_volume_1(TstSuite* suite)
 
 static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
-    DvzVisual* visual = (DvzVisual*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzVisual* visual = vt->visual;
     ANN(visual);
 
     dvz_gui_pos((vec2){50, 50}, DVZ_DIALOG_DEFAULT_PIVOT);
@@ -103,8 +112,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
     if (dvz_gui_slider("param", 0, 10, param))
     {
-        dvz_visual_param(visual, 2, 3, (vec4){*param, 0, 0, 0});
-        dvz_visual_update(visual);
+        dvz_visual_param(visual, 2, 3, (float*)param);
     }
 
     dvz_gui_end();
@@ -137,33 +145,37 @@ int test_volume_2(TstSuite* suite)
                 visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
 
         // GUI callback.
+        vt.visual = visual;
         visual->user_data = &param;
-        dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, visual);
+        dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
     }
 
     // Image visual.
-    {
-        DvzVisual* image = dvz_image(vt.batch, 0);
+    // if (0)
+    // {
+    //     DvzVisual* image = dvz_image(vt.batch, 0);
 
-        // Visual allocation.
-        dvz_image_alloc(image, 1);
+    //     // Visual allocation.
+    //     dvz_image_alloc(image, 1);
 
-        // Image position.
-        float a = .25;
-        dvz_image_position(image, 0, 1, (vec4[]){{-a, +a, +a, -a}}, 0);
+    //     // Image position.
+    //     float a = .25;
+    //     dvz_image_position(image, 0, 1, (vec4[]){{-a, +a, +a, -a}}, 0);
 
-        // Image texture coordinates.
-        dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
+    //     // Image texture coordinates.
+    //     dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
-        // Add the visual to the panel AFTER setting the visual's data.
-        dvz_panel_visual(vt.panel, image, 0);
+    //     // Add the visual to the panel AFTER setting the visual's data.
+    //     dvz_panel_visual(vt.panel, image, 0);
 
-        // Create and upload the texture.
-        uvec3 tex_shape = {0};
-        DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
+    //     // Create and upload the texture.
+    //     uvec3 tex_shape = {0};
+    //     DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
 
-        dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
-    }
+    //     dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    // }
+
+    dvz_arcball_gui(vt.arcball, vt.app, vt.figure->canvas_id, vt.panel);
 
     dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
     dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat, vt.camera->up);

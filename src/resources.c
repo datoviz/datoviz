@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Holds all GPU data resources (buffers, images, dats, texs)                                   */
 /*************************************************************************************************/
@@ -12,7 +18,6 @@
 #include "resources_utils.h"
 #include "transfers.h"
 #include "transfers_utils.h"
-// #include "vklite_utils.h"
 #include <stdlib.h>
 
 
@@ -206,7 +211,10 @@ DvzDat* dvz_dat(DvzContext* ctx, DvzBufferType type, DvzSize size, int flags)
         dat->stg = _alloc_staging(ctx, size);
     }
 
-    dvz_obj_created(&dat->obj);
+    if (_is_dat_valid(dat))
+    {
+        dvz_obj_created(&dat->obj);
+    }
     return dat;
 }
 
@@ -415,6 +423,11 @@ void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* 
     // Get the associated staging buffer.
     DvzDat* stg = _tex_staging(ctx, tex, size);
     ANN(stg);
+
+    if (!_is_dat_valid(stg) || stg->size < size)
+    {
+        return;
+    }
 
     // May use shape[i] = 0 to indicate the full shape along that axis.
     for (uint32_t i = 0; i < 3; i++)

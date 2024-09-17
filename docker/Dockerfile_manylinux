@@ -1,0 +1,66 @@
+FROM quay.io/pypa/manylinux_2_28_x86_64
+
+# Install necessary system packages
+RUN yum install -y epel-release && \
+    dnf config-manager --set-enabled powertools && \
+    dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
+    yum install --enablerepo=raven-extras -y \
+        ccache \
+        cmake \
+        ninja-build \
+        gcc \
+        gcc-c++ \
+        libXrandr-devel \
+        libXinerama-devel \
+        libXcursor-devel \
+        libXi-devel \
+        libX11-devel \
+        xorg-x11-server-Xvfb \
+        xorg-x11-utils \
+        xorg-x11-apps \
+        freetype-devel \
+        vulkan \
+        vulkan-tools \
+        vulkan-headers \
+        vulkan-loader \
+        glslc \
+        patchelf \
+        rsync \
+        curl \
+        wget \
+        tree
+
+# Set up environment variables
+ENV CCACHE_DIR=/ccache
+ENV PATH=/usr/lib/ccache:/opt/python/cp38-cp38/bin/:$PATH
+
+# Install Python and wheel dependencies
+RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel && \
+    /opt/python/cp38-cp38/bin/pip install numpy tqdm pillow pyparsing pytest wheel setuptools twine mkdocs-material
+
+# Install Casey Just
+RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin/
+
+# Install SwiftShader for Vulkan only
+RUN git clone --recursive https://github.com/google/swiftshader.git /swiftshader
+RUN cd /swiftshader && \
+    mkdir -p build && cd build && \
+    cmake .. -GNinja -DSWIFTSHADER_VULKAN=ON -DSWIFTSHADER_OPENGL=OFF && \
+    ninja
+RUN cd /swiftshader && \
+    cp build/libvk_swiftshader.so /usr/local/lib/ && \
+    mkdir -p /usr/local/share/vulkan/icd.d && \
+    echo '{ \
+        "file_format_version": "1.0.0", \
+        "ICD": { \
+            "library_path": "/usr/local/lib/libvk_swiftshader.so", \
+            "api_version": "1.3.286" \
+        } \
+    }' > /usr/local/share/vulkan/icd.d/swiftshader_icd.json
+
+# Set environment variables for Vulkan
+ENV VK_ICD_FILENAMES=/usr/local/share/vulkan/icd.d/swiftshader_icd.json
+ENV VK_LAYER_PATH=/usr/local/lib
+
+# Clean up
+RUN yum clean all && rm -rf /var/cache/yum

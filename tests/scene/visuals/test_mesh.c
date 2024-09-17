@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing mesh                                                                                 */
 /*************************************************************************************************/
@@ -24,28 +30,6 @@
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-static void _onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
-{
-    ANN(app);
-
-    // Display arcball Euler angles when rotating the model.
-    VisualTest* vt = (VisualTest*)ev.user_data;
-    ANN(vt);
-
-    DvzArcball* arcball = (DvzArcball*)vt->arcball;
-    ANN(arcball);
-
-    vec3 angles = {0};
-    dvz_arcball_angles(arcball, angles);
-    // glm_vec3_print(angles, stdout);
-}
 
 
 
@@ -104,12 +88,344 @@ int test_mesh_1(TstSuite* suite)
 
 
 
+int test_mesh_polygon(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_ORTHO, 0);
+
+    // Polygon.
+    uint32_t n = 24;
+    dvec2* points = (dvec2*)calloc(n, sizeof(dvec2));
+    double r = 0;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        // r = .75 + .25 * 2 * (dvz_rand_double() - 1.0);
+        r = .5 + .1 * (+1 - 2 * ((int32_t)i % 2));
+        // NOTE: (float) is required otherwise -i overflows as i is unsigned...
+        points[i][0] = r * cos(-(float)i * M_2PI / n);
+        points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
+    }
+    cvec4 color = {64, 128, 255, 255};
+    DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
+    FREE(points);
+
+    // // Display the indices.
+    // for (uint32_t i = 0; i < shape.index_count; i++)
+    // {
+    //     if (i % 3 == 0)
+    //         printf("\n");
+    //     printf("%d ", shape.index[i]);
+    // }
+
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_JOINTS);
+
+    // Create the visual.
+    int flags = DVZ_MESH_FLAGS_CONTOUR;
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Set up the wireframe stroke parameters.
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 10.0);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_shape_destroy(&shape);
+
+    return 0;
+}
+
+
+
+// static float cross2D(vec2 v1, vec2 v2) { return v1[0] * v2[1] - v1[1] * v2[0]; }
+
+// static void computeBarycentric(vec3 P0, vec3 P1, vec3 P2, vec2 u, vec2 ubary)
+// {
+//     // Vectors from P0 to P1 and P0 to P2
+//     float v0[2] = {P1[0] - P0[0], P1[1] - P0[1]};
+//     float v1[2] = {P2[0] - P0[0], P2[1] - P0[1]};
+//     float v2[2] = {u[0] - P0[0], u[1] - P0[1]};
+
+//     // Compute the area of the triangle ABC using the cross product
+//     float denom = cross2D(v0, v1);
+
+//     // Calculate barycentric coordinates
+//     ubary[0] = cross2D(v2, v1) / denom; // Barycentric coordinate corresponding to P1
+//     ubary[1] = cross2D(v0, v2) / denom; // Barycentric coordinate corresponding to P2
+//     // ubary[0] = 1.0f - ubary[1] - ubary[2]; // Barycentric coordinate corresponding to P0
+// }
+
+#define POS(x)                                                                                    \
+    {                                                                                             \
+        x[0], x[1], x[2]                                                                          \
+    }
+
+#define COUNT (3 * 3)
+
+#define R                                                                                         \
+    {                                                                                             \
+        255, 0, 0, 255                                                                            \
+    }
+#define G                                                                                         \
+    {                                                                                             \
+        0, 255, 0, 255                                                                            \
+    }
+#define B                                                                                         \
+    {                                                                                             \
+        0, 0, 255, 255                                                                            \
+    }
+
+static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
+{
+    vec2 u = {0};
+    u[0] = b[0] - a[0];
+    u[1] = b[1] - a[1];
+    glm_vec2_normalize(u);
+    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+}
+
+static inline void dist_opposite(vec3 p0, vec3 p1, vec3 p2, vec3* d_opposite)
+{
+    d_opposite[0][0] = dot_ortho(p1, p0, p1, p2);
+    d_opposite[1][1] = dot_ortho(p2, p1, p2, p0);
+    d_opposite[2][2] = dot_ortho(p0, p2, p0, p1);
+}
+
+static inline void _update_angle(DvzVisual* visual, vec2 angle)
+{
+    float a = angle[0];
+    float b = angle[1];
+    vec3 P0 = {0, +.5, 0};
+    vec3 P1 = {-.75, -1, 0};
+    vec3 P2 = {+.75, -1, 0};
+    vec3 Q0 = {-.85, a, 0};
+    vec3 R0 = {+.85, b, 0};
+
+    vec3 position[] = {
+        POS(Q0), POS(P1), POS(P0), //
+        POS(P0), POS(P1), POS(P2), //
+        POS(P0), POS(P2), POS(R0), //
+    };
+    dvz_mesh_position(visual, 0, COUNT, position, 0);
+
+    // Direction vectors.
+    vec2 u, v;
+    u[0] = Q0[0] - P0[0];
+    u[1] = Q0[1] - P0[1];
+    glm_vec2_normalize(u);
+    v[0] = R0[0] - P0[0];
+    v[1] = R0[1] - P0[1];
+    glm_vec2_normalize(v);
+
+    // NOTE: distance from P to Au is dot(AP, u_ortho)
+    // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
+    vec3 d_left[9] = {
+
+        // Q0-P1-P0
+        {0, dot_ortho(P1, Q0, P1, P2), 0},                         // Q0
+        {0, 0, dot_ortho(P0, P1, P0, Q0)},                         // P1
+        {dot_ortho(Q0, P0, Q0, P1), dot_ortho(P1, P0, P1, P2), 0}, // P0
+
+        // P0-P1-P2
+        {0, dot_ortho(P1, P0, P1, P2), dot_ortho(P2, P0, P2, R0)}, // P0
+        {dot_ortho(P0, P1, P0, Q0), 0, dot_ortho(P2, P1, P2, R0)}, // P1
+        {dot_ortho(P0, P2, P0, Q0), 0, 0},                         // P2
+
+        // P0-P2-R0
+        {0, dot_ortho(P2, P0, P2, R0), 0},                         // P0
+        {dot_ortho(P0, P2, P0, Q0), 0, dot_ortho(R0, P2, R0, P0)}, // P2
+        {dot_ortho(P0, R0, P0, Q0), 0, 0},                         // R0
+
+    };
+    vec3 d_right[9] = {
+
+        // Q0-P1-P0
+        {0, 0, -dot_ortho(P0, Q0, P0, R0)},                          // Q0
+        {-dot_ortho(Q0, P1, P0, Q0), 0, -dot_ortho(P0, P1, P0, R0)}, // P1
+        {0, -dot_ortho(P1, P0, P1, Q0), 0},                          // P0
+
+        // P0-P1-P2
+        {0, -dot_ortho(P1, P0, P1, Q0), -dot_ortho(P2, P0, P2, P1)}, // P0
+        {-dot_ortho(P0, P1, P0, R0), 0, 0},                          // P1
+        {-dot_ortho(P0, P2, P0, R0), -dot_ortho(P1, P2, P1, Q0), 0}, // P2
+
+        // P0-P2-R0
+        {0, -dot_ortho(P2, P0, P2, P1), -dot_ortho(R0, P0, R0, P2)}, // P0
+        {-dot_ortho(P0, P2, P0, R0), 0, 0},                          // P2
+        {0, -dot_ortho(P2, R0, P2, P1), 0},                          // R0
+
+    };
+
+    dvz_mesh_left(visual, 0, 9, (void*)d_left, 0);
+    dvz_mesh_right(visual, 0, 9, (void*)d_right, 0);
+
+    // NOTE: orientation
+    cvec4 contour[] = {
+        {0, 2, 2, 0}, // Q0
+        {0, 2, 2, 0}, // P1
+        {0, 2, 2, 0}, // P0
+
+        // NOTE: will be overriden by the GUI
+        {2, 2, 2, 0}, // P0
+        {2, 2, 2, 0}, // P1
+        {2, 2, 2, 0}, // P2
+
+        {2, 2, 0, 0}, // P0
+        {2, 2, 0, 0}, // P2
+        {2, 2, 0, 0}, // R0
+    };
+    if (glm_vec2_cross(u, v) < 0)
+    {
+        contour[0][2] |= 4;
+        contour[1][2] |= 4;
+        contour[2][2] |= 4;
+
+        contour[3][0] |= 4;
+        contour[4][0] |= 4;
+        contour[5][0] |= 4;
+
+        contour[6][0] |= 4;
+        contour[7][0] |= 4;
+        contour[8][0] |= 4;
+    }
+    dvz_mesh_contour(visual, 0, 9, (void*)contour, 0);
+}
+
+static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    VisualTest* vt = ev.user_data;
+    ANN(vt);
+
+    float* angle = (float*)vt->user_data;
+    ANN(angle);
+
+    dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
+    dvz_gui_size((vec2){200, 0});
+    dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    bool u_changed = dvz_gui_slider("u", -1 + .01, +5.0, &angle[0]);
+    bool v_changed = dvz_gui_slider("v", -1 + .01, +5.0, &angle[1]);
+    dvz_gui_end();
+
+    if (u_changed || v_changed)
+    {
+        _update_angle(vt->visual, (vec2){angle[0], angle[1]});
+    }
+}
+
+int test_mesh_stroke(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
+
+    // Create the visual.
+    DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
+    dvz_mesh_alloc(visual, COUNT, 0);
+
+    // Mesh color.
+    cvec4 color[] = {B, B, B, R, G, B, R, R, R};
+    dvz_mesh_color(visual, 0, COUNT, color, 0);
+
+    // Stroke.
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 50);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Angle GUI.
+    vt.visual = visual;
+    float angle[2] = {0.75, 0.75};
+    _update_angle(visual, angle);
+    vt.user_data = &angle[0];
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _stroke_callback, &vt);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    return 0;
+}
+
+
+
+static inline float dot_ortho_u(vec3 p, vec3 q, vec2 u)
+{
+    return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
+}
+
+int test_mesh_contour(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_ORTHO, 0);
+
+    // Create the visual.
+    DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
+    dvz_mesh_alloc(visual, 3, 0);
+
+    float r = 1.5;
+    float w = .707;
+    float c = 1;
+
+    vec3 P0 = {r * w, -c * r * w, 0};
+    vec3 P1 = {0, c * r, 0};
+    vec3 P2 = {-r * w, -c * r * w, 0};
+
+    vec3 position[] = {
+        POS(P0), POS(P1), POS(P2), //
+    };
+    dvz_mesh_position(visual, 0, 3, position, 0);
+
+    // Direction vectors.
+    vec2 u = {-w, -w}, v = {+w, -w};
+
+    // d_left[i][j] is the distance from Pi to left edge adjacent to Pj
+    vec3 d_left[] = {
+        {0, 0, dot_ortho_u(P2, P0, u)},    // P0
+        {0, 0, dot_ortho_u(P2, P1, u)},    // P1
+        {dot_ortho(P0, P2, P0, P1), 0, 0}, // P2
+    };
+    vec3 d_right[] = {
+        {0, 0, -dot_ortho(P2, P0, P2, P1)}, // P0
+        {-dot_ortho_u(P0, P1, v), 0, 0},    // P1
+        {-dot_ortho_u(P0, P2, v), 0, 0},    // P2
+    };
+
+    dvz_mesh_left(visual, 0, 3, (void*)d_left, 0);
+    dvz_mesh_right(visual, 0, 3, (void*)d_right, 0);
+
+    // NOTE: orientation
+    cvec4 contour[] = {
+        {2 | 4, 1, 2 | 4, 0}, // P0
+        {2 | 4, 1, 2 | 4, 0}, // P1
+        {2 | 4, 1, 2 | 4, 0}, // P2
+    };
+    dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
+
+    // Mesh color.
+    cvec4 color[] = {R, G, B};
+    dvz_mesh_color(visual, 0, 3, color, 0);
+
+    // Stroke.
+    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_linewidth(visual, 20);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    return 0;
+}
+
+
+
 int test_mesh_surface(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("mesh_surface", VISUAL_TEST_ARCBALL, 0);
 
     // Grid size.
-    uint32_t row_count = 250;
+    uint32_t row_count = 150;
     uint32_t col_count = row_count;
 
     // Grid parameters.
@@ -146,10 +462,16 @@ int test_mesh_surface(TstSuite* suite)
 
     // Create the surface shape.
     DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
 
+    // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING;
+    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Wireframe.
+    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    dvz_mesh_linewidth(visual, 0.25f);
 
     // Lighting.
     dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
@@ -157,8 +479,6 @@ int test_mesh_surface(TstSuite* suite)
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
-
-    dvz_app_onmouse(vt.app, _onmouse, &vt);
 
     dvz_arcball_initial(vt.arcball, (vec3){0.42339, -0.39686, -0.00554});
     dvz_panel_update(vt.panel);
@@ -176,9 +496,32 @@ int test_mesh_surface(TstSuite* suite)
 
 
 
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    VisualTest* vt = ev.user_data;
+    ANN(vt);
+
+    vec4* stroke = (vec4*)vt->user_data;
+
+    dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
+    dvz_gui_size((vec2){200, 300});
+    dvz_gui_begin("Wireframe", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    bool width_changed = dvz_gui_slider("Width", 0, 10.0, &stroke[0][3]);
+    bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
+    dvz_gui_end();
+
+    if (stroke_changed)
+        dvz_mesh_stroke( //
+            vt->visual,
+            (cvec4){
+                round(stroke[0][0] * 255), round(stroke[0][1] * 255), round(stroke[0][2] * 255)});
+    if (width_changed)
+        dvz_mesh_linewidth(vt->visual, stroke[0][3]);
+}
+
 int test_mesh_obj(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Load obj shape.
     char path[1024] = {0};
@@ -190,8 +533,18 @@ int test_mesh_obj(TstSuite* suite)
         return 0;
     }
 
+    // Set up isoline values in the shape.
+    shape.isoline = (float*)calloc(shape.vertex_count, sizeof(float));
+    for (uint32_t i = 0; i < shape.vertex_count; i++)
+    {
+        shape.isoline[i] = .5 * (1 + shape.pos[i][1]) + .1 * sin(1 * M_2PI * shape.pos[i][0]);
+    }
+
+    // NOTE: we need to use non-indexed meshes for mesh wireframe.
+    dvz_shape_unindex(&shape, DVZ_CONTOUR_FULL);
+
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING;
+    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_ISOLINE;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Lighting.
@@ -201,19 +554,125 @@ int test_mesh_obj(TstSuite* suite)
         dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
     }
 
+    vec4 stroke = {.25, .25, .25, .5f};
+    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    dvz_mesh_linewidth(visual, 1);
+    dvz_mesh_density(visual, 10);
+
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    dvz_app_onmouse(vt.app, _onmouse, &vt);
-
     dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
     dvz_panel_update(vt.panel);
+
+    vt.visual = visual;
+    vt.user_data = &stroke[0];
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
 
     // Run the test.
     visual_test_end(vt);
 
     // Cleanup.
     dvz_shape_destroy(&shape);
+
+    return 0;
+}
+
+
+
+static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
+{
+    ANN(pos);
+    dvec2* copied = (dvec2*)calloc(length, sizeof(dvec2));
+    uint32_t j = 0;
+    for (uint32_t i = 0; i < length; i++)
+    {
+        j = i;
+        // j = length - 1 - i;
+        copied[i][0] = pos[j][0];
+        copied[i][1] = pos[j][1];
+    }
+    return copied;
+}
+
+int test_mesh_geo(TstSuite* suite)
+{
+    cvec4 color = {255, 128, 64, 255};
+
+    // Load positions.
+    char pos_path[1024] = {0};
+    snprintf(pos_path, sizeof(pos_path), "%s/misc/poly-pos.bin", DATA_DIR);
+
+    DvzSize pos_size = 0;
+    uint64_t* pos_bytes = (uint64_t*)dvz_read_file(pos_path, &pos_size);
+    log_info("loaded %s (%s)", pos_path, pretty_size(pos_size));
+
+
+    // Load lengths.
+    char length_path[1024] = {0};
+    snprintf(length_path, sizeof(length_path), "%s/misc/poly-length.bin", DATA_DIR);
+
+    DvzSize length_size = 0;
+    uint32_t* length_bytes = (uint32_t*)dvz_read_file(length_path, &length_size);
+    log_info("loaded %s (%s)", length_path, pretty_size(length_size));
+
+    ASSERT(length_size % sizeof(uint32_t) == 0);
+    uint32_t poly_count = length_size / sizeof(uint32_t);
+
+    // DEBUG
+    // poly_count = 1;
+
+    log_info("loaded %d polygons", poly_count);
+
+    uint32_t* poly_lengths = (uint32_t*)length_bytes;
+    const dvec2* poly_pos = (const dvec2*)pos_bytes;
+
+    // Triangulate and merge the polygons into a single shape.
+    uint32_t vertex_offset = 0, poly_length = 0;
+    DvzShape* shapes = (DvzShape*)calloc(poly_count, sizeof(DvzShape));
+    for (uint32_t i = 0; i < poly_count; i++)
+    {
+        poly_length = poly_lengths[i];
+
+        // DEBUG
+        // poly_length = 10;
+
+        log_debug("polygon #%d length is %d", i, poly_length);
+
+        // Color
+        dvz_colormap_scale(DVZ_CMAP_VIRIDIS, i, 0, poly_count - 1, color);
+
+        // Polygon triangulation.
+        dvec2* polygon = copy_polygon(poly_length, &poly_pos[vertex_offset]);
+        shapes[i] = dvz_shape_polygon(poly_length, (const dvec2*)polygon, color);
+        dvz_shape_unindex(&shapes[i], DVZ_CONTOUR_JOINTS);
+        FREE(polygon);
+
+        vertex_offset += poly_length;
+    }
+    DvzShape shape = dvz_shape_merge(poly_count, shapes);
+    FREE(shapes);
+
+
+    VisualTest vt = visual_test_start("mesh_geo", VISUAL_TEST_ORTHO, 0);
+
+    // Create the visual.
+    int flags = DVZ_MESH_FLAGS_CONTOUR;
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Set up the wireframe stroke parameters.
+    dvz_mesh_linewidth(visual, 1);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_shape_destroy(&shape);
+    FREE(pos_bytes);
+    FREE(length_bytes);
 
     return 0;
 }

@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Vklite                                                                                       */
 /*************************************************************************************************/
@@ -640,7 +646,9 @@ void dvz_cmd_submit_sync(DvzCommands* cmds, uint32_t idx)
     DvzQueues* q = &cmds->gpu->queues;
     VkQueue queue = q->queues[cmds->queue_idx];
 
-    vkQueueWaitIdle(queue);
+    // NOTE: hard synchronization on the whole GPU here, otherwise write after write hasard warning
+    // if just waiting on the queue.
+    vkDeviceWaitIdle(cmds->gpu->device);
     VkSubmitInfo info = {0};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.commandBufferCount = cmds->count;
@@ -765,6 +773,13 @@ static void _buffer_create(DvzBuffer* buffer)
     vmaCreateBuffer(
         gpu->allocator, &buf_info, &alloc_info, &buffer->buffer, //
         &buffer->vma.alloc, &buffer->vma.info);
+
+    if (buffer->buffer == VK_NULL_HANDLE)
+    {
+        log_error("buffer creation failed");
+        return;
+    }
+
     ASSERT(buffer->buffer != VK_NULL_HANDLE);
 
     // Get the memory flags found by VMA and store them in the DvzBuffer instance.
@@ -864,6 +879,12 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     }
     new_buffer.size = size;
     _buffer_create(&new_buffer);
+
+    if (new_buffer.buffer == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
     // At this point, the new buffer is empty.
 
     // Handle permanent mapping.

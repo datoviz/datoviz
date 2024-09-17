@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Presenter                                                                                    */
 /*************************************************************************************************/
@@ -258,6 +264,7 @@ static void _record_command(DvzRenderer* rd, DvzCanvas* canvas, uint32_t img_idx
     else
     {
         log_debug("record blank commands in the command buffer");
+        dvz_cmd_reset(&canvas->cmds, img_idx);
         blank_commands(
             canvas->render.renderpass, &canvas->render.framebuffers,
             canvas->render.swapchain.images, &canvas->render.depth, &canvas->cmds, img_idx, NULL);
@@ -523,7 +530,8 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     ANN(submit);
 
     // Wait for fence.
-    dvz_fences_wait(fences, canvas->cur_frame);
+    // dvz_fences_wait(fences, canvas->cur_frame);
+    dvz_fences_wait(fences, (canvas->cur_frame + 1) % DVZ_MAX_FRAMES_IN_FLIGHT);
 
     // We acquire the next swapchain image.
 

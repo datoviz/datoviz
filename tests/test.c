@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing suite                                                                                */
 /*************************************************************************************************/
@@ -28,6 +34,7 @@
 #include "scene/test_graphics.h"
 #include "scene/test_labels.h"
 #include "scene/test_mvp.h"
+#include "scene/test_ortho.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
 #include "scene/test_scene.h"
@@ -41,6 +48,7 @@
 #include "scene/visuals/test_image.h"
 #include "scene/visuals/test_marker.h"
 #include "scene/visuals/test_mesh.h"
+#include "scene/visuals/test_monoglyph.h"
 #include "scene/visuals/test_path.h"
 #include "scene/visuals/test_pixel.h"
 #include "scene/visuals/test_point.h"
@@ -329,6 +337,7 @@ int dvz_run_tests(const char* match)
     TEST(test_panzoom_1)
     TEST(test_arcball_1)
     TEST(test_camera_1)
+    TEST(test_ortho_1)
     TEST(test_mvp_1)
     TEST(test_animation_1)
     TEST(test_shape_1)
@@ -366,6 +375,8 @@ int dvz_run_tests(const char* match)
 
     // Visual tests.
     TEST(test_basic_1)
+    TEST(test_basic_2)
+    TEST(test_monoglyph_1)
     TEST(test_pixel_1)
     TEST(test_point_1)
     TEST(test_marker_code)
@@ -376,13 +387,19 @@ int dvz_run_tests(const char* match)
     TEST(test_segment_1)
     TEST(test_path_1)
     TEST(test_path_2)
+    TEST(test_path_closed)
     TEST(test_glyph_1)
     TEST(test_mesh_1)
+    TEST(test_mesh_polygon)
+    TEST(test_mesh_stroke)
+    TEST(test_mesh_contour)
     TEST(test_mesh_surface)
     TEST(test_mesh_obj)
+    TEST(test_mesh_geo)
     TEST(test_volume_1)
-    // TEST(test_volume_2)
+    TEST(test_volume_2)
     TEST(test_image_1)
+    TEST(test_image_2)
     TEST(test_slice_1)
     TEST(test_sphere_1)
     // TEST(test_axis_1)

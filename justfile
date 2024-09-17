@@ -93,12 +93,63 @@ bump version:
     print("Updated ctypes wrapper")
 #
 
-upload *files:
+tag version:
+    git tag -a v{{version}} -m "v{{version}}"
+#
+
+runid:
+    @echo $(gh run list --workflow=WHEELS --json conclusion,databaseId --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+#
+
+# Download the built wheel artifacts
+download:
+    #!/usr/bin/env sh
+    tag=$(git describe --tags --abbrev=0)
+    echo "Tag: $tag"
+
+    run_id=$(just runid)
+    echo "Workflow run: $run_id"
+
+    if [ -z "$run_id" ]; then
+        echo "No successful workflow run found for 'WHEELS'"
+        exit 1
+    fi
+
+    artifacts_dir="release_artifacts/$tag"
+    if ! ls $artifacts_dir/*.whl 1> /dev/null 2>&1; then
+        gh run download "$run_id" --dir "$artifacts_dir"
+        find "$artifacts_dir" -mindepth 2 -type f -exec mv -t "$artifacts_dir" {} +
+        find "$artifacts_dir" -type d -empty -delete
+    fi
+#
+
+draft:
+    #!/usr/bin/env sh
+    tag=$(git describe --tags --abbrev=0)
+    just download
+    gh release create "$tag" --draft --title "$tag" --notes "" $artifacts_dir/*
+    # gh release upload "$tag"
+#
+
+upload:
+    #!/usr/bin/env sh
+
     # Put this in your ~/.pypirc:
     # [pypi]
     #     username = __token__
     #     password = pypi-YOUR_API_TOKEN_HERE
-    twine upload {{files}}
+
+    tag=$(git describe --tags --abbrev=0)
+    artifacts_dir="release_artifacts/$tag"
+    twine upload artifacts_dir/*.whl
+#
+
+wheels:
+    #!/usr/bin/env sh
+    gh workflow run wheels.yml -r dev
+    sleep 2
+    URL="https://github.com/datoviz/datoviz/actions"
+    xdg-open "$URL" || open "$URL"
 #
 
 
@@ -145,7 +196,7 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @cp -a libs/vulkan/macos/libvulkan* build/
+    @cp -a libs/vulkan/linux/libvulkan* build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
@@ -179,7 +230,7 @@ release: headers symbols && bundledeps
 manylinux release="Release":
     #!/usr/bin/env sh
     set -e
-    DOCKER_IMAGE="quay.io/pypa/manylinux_2_28_x86_64"
+    DOCKER_IMAGE="rossant/datoviz_manylinux"
     BUILD_DIR="build_many"
     IMAGE_NAME="datoviz-manylinux"
     DISTDIR="dist"
@@ -197,32 +248,6 @@ manylinux release="Release":
     cat <<EOF > $BUILD_DIR/Dockerfile
     FROM $DOCKER_IMAGE
 
-    # Install dependencies
-    RUN yum install -y epel-release
-    RUN dnf config-manager --set-enabled powertools && \
-        dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-        dnf --enablerepo=epel group
-    RUN yum install --enablerepo=raven-extras -y \
-        ccache \
-        cmake \
-        ninja-build \
-        gcc \
-        gcc-c++ \
-        libXrandr-devel \
-        libXinerama-devel \
-        libXcursor-devel \
-        libXi-devel \
-        freetype-devel \
-        vulkan \
-        vulkan-tools \
-        vulkan-headers \
-        vulkan-loader \
-        glslc
-
-    # Set up environment variables
-    ENV CCACHE_DIR=/ccache
-    ENV PATH=/usr/lib/ccache:\$PATH
-
     # Copy source files into the container
     COPY . /workspace
 
@@ -239,9 +264,6 @@ manylinux release="Release":
         CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release && \
         ninja
 
-    # Install pip wheel depedencies.
-    RUN /opt/python/cp38-cp38/bin/pip install --upgrade pip setuptools wheel
-
     # Copy files before building the wheel.
     RUN \
         mkdir -p wheel wheel/datoviz && \
@@ -257,7 +279,7 @@ manylinux release="Release":
     # # Rename the wheel.
     # RUN \
     #     WHEELPATH=$(ls dist/*any.whl 2>/dev/null) && \
-    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))") && \
+    #     PLATFORM_TAG=$(/opt/python/cp38-cp38/bin/python -c "from setuptools.wheel import get_platform; print(get_platform())") && \
     #     TAG="cp3-none-$PLATFORM_TAG" && \
     #     /opt/python/cp38-cp38/bin/python -m wheel tags --platform-tag $PLATFORM_TAG "$DISTDIR/*"
 
@@ -282,6 +304,8 @@ manylinux release="Release":
 
     # Rename the wheel
     just renamewheel "manylinux_2_28_x86_64"
+
+    rm -rf wheel/
 #
 
 [windows]
@@ -305,6 +329,30 @@ build release="Debug":
     popd
 #
 
+
+# -------------------------------------------------------------------------------------------------
+# Docker image and CI/CD
+# -------------------------------------------------------------------------------------------------
+
+dockerpush:
+    docker build -t rossant/datoviz_ubuntu:latest -f docker/Dockerfile_ubuntu .
+    docker login
+    docker push rossant/datoviz_ubuntu:latest
+    # docker run -it rossant/datoviz_ubuntu:latest
+#
+
+# on macOS do
+# export DOCKER_HOST=$(docker context inspect | jq -r '.[0].Endpoints.docker.Host')
+[linux]
+[macos]
+act arg:
+    act --bind --env USING_ACT=1 -j {{arg}}
+#
+
+[windows]
+act arg:
+    act --bind --env USING_ACT=1 -P windows-latest=-self-hosted -j {{arg}}
+#
 
 
 # -------------------------------------------------------------------------------------------------
@@ -378,7 +426,7 @@ testdeb:
     fi
 
     # Create a Dockerfile for testing
-    echo "$(cat Dockerfile_ubuntu)
+    echo "$(cat docker/Dockerfile_ubuntu)
 
     COPY packaging/datoviz_*_amd64.deb /tmp/
     RUN dpkg -i /tmp/datoviz_*_amd64.deb || apt-get install -f -y
@@ -409,6 +457,42 @@ testdeb:
 #
 
 [linux]
+wheel almalinux="0":
+    #!/usr/bin/env sh
+    set -e
+
+    # Create the wheel/ temporary directory
+    mkdir -p wheel wheel/datoviz
+
+    # Copy the Python projects files
+    cp datoviz/__init__.py wheel/datoviz/
+    cp pyproject.toml wheel/
+
+    # Copy libdatoviz
+    cp build/libdatoviz.so wheel/datoviz/
+
+    # Copy the Vulkan shared libraries
+    if [ "{{almalinux}}" != "0" ]; then
+        cp /usr/lib64/libvulkan.so.1 wheel/datoviz/
+        cp /usr/bin/glslc wheel/datoviz/
+    else
+        cp libs/vulkan/linux/libvulkan.so.1 wheel/datoviz/
+        cp bin/vulkan/linux/glslc wheel/datoviz/
+    fi
+
+    # Build the wheel
+    pip wheel wheel/ -w "dist/" --no-deps
+
+    # Rename the wheel
+    if [ "{{almalinux}}" != "0" ]; then
+        just renamewheel "manylinux_2_28_x86_64"
+    fi
+
+    rm -rf wheel/
+#
+
+# Test the wheel in a Docker environment.
+[linux]
 testwheel:
     #!/usr/bin/env sh
     set -e
@@ -422,7 +506,7 @@ testwheel:
     xhost +
 
     # Create a Dockerfile for testing
-    echo "$(cat Dockerfile_ubuntu)
+    echo "$(cat docker/Dockerfile_ubuntu)
 
     COPY dist/datoviz-*.whl /tmp/
     RUN python3 -m venv /tmp/venv
@@ -586,7 +670,7 @@ testpkg vm_ip_address:
 #
 
 [macos]
-wheel: checkstructs
+wheel arg='': checkstructs
     #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
@@ -620,12 +704,13 @@ wheel: checkstructs
     rm -rf $PKGROOT
 
     # Rename the wheel.
-    just renamewheel
+    just renamewheel {{arg}}
 
     # Show the wheel contents.
     just showwheel
 #
 
+# Test the wheel in a virtual machine
 [macos]
 testwheel vm_ip_address="":
     #!/usr/bin/env sh
@@ -634,26 +719,27 @@ testwheel vm_ip_address="":
     TMPDIR=/tmp/datoviz_example
 
     if [ ! $IP]; then
-        # Create a new virtual environment
-        rm -rf test_env
-        python -m venv test_env --system-site-packages
+        just checkwheel
+        # # Create a new virtual environment
+        # rm -rf test_env
+        # python -m venv test_env --system-site-packages
 
-        # Activate the virtual environment
-        source test_env/bin/activate
+        # # Activate the virtual environment
+        # source test_env/bin/activate
 
-        # Install the wheel
-        pip install dist/datoviz-*.whl
+        # # Install the wheel
+        # pip install dist/datoviz-*.whl
 
-        # Run a test command
-        pushd test_env
-        python -c "import datoviz; datoviz.demo()"
-        popd
+        # # Run a test command
+        # pushd test_env
+        # python -c "import datoviz; datoviz.demo()"
+        # popd
 
-        # Deactivate the virtual environment
-        deactivate
+        # # Deactivate the virtual environment
+        # deactivate
 
-        # Optionally clean up the environment
-        rm -rf test_env
+        # # Optionally clean up the environment
+        # rm -rf test_env
         exit
     fi
 
@@ -700,10 +786,7 @@ ctypes:
     @python tools/generate_ctypes.py
 #
 
-fullctypes: headers ctypes checkstructs
-#
-
-pytest:
+pytest: && examples
     @pytest tests.py
 #
 
@@ -729,7 +812,7 @@ renamewheel platform_tag='':
     WHEELPATH=$(ls dist/*any.whl 2>/dev/null)
 
     if [ -z "{{platform_tag}}" ]; then
-        PLATFORM_TAG=$(python -c "from wheel.bdist_wheel import get_platform; print(get_platform('datoviz'))")
+        PLATFORM_TAG=$(python -c "from setuptools.wheel import get_platform; print(get_platform().replace('-', '_'))")
     else
         PLATFORM_TAG="{{platform_tag}}"
     fi
@@ -744,7 +827,7 @@ renamewheel platform_tag='':
 
 [windows]
 wheel: checkstructs && showwheel
-    #!/usr/bin/env bash
+    #!/usr/bin/env sh
     set -e
     PKGROOT="packaging/wheel"
     DVZDIR="$PKGROOT/datoviz"
@@ -769,40 +852,10 @@ wheel: checkstructs && showwheel
     pushd "$PKGROOT"
     pip wheel . -w "../../$DISTDIR" --no-deps
     popd
-    just renamewheel
+    just renamewheel win_amd64
 
     # Clean up.
     rm -rf "$PKGROOT"
-#
-
-[windows]
-testwheel:
-    #!/usr/bin/env bash
-
-    # Ensure the wheel exists
-    if [ ! -f dist/datoviz-*.whl ]; then
-        just wheel
-    fi
-
-    # Create a new virtual environment
-    python -m venv test_env
-
-    # Activate the virtual environment
-    source test_env/Scripts/activate
-
-    # Install the wheel
-    pip install dist/datoviz-*.whl
-
-    # Run a test command
-    pushd test_env
-    python -c "import datoviz; datoviz.demo()"
-    popd
-
-    # Deactivate the virtual environment
-    deactivate
-
-    # Optionally clean up the environment
-    rm -rf test_env
 #
 
 testpypi:
@@ -830,6 +883,98 @@ testpypi:
     # Cleanup the venv.
     popd
     rm -rf venv_pypi
+#
+
+checkwheel path="":
+    #!/usr/bin/env sh
+    set -e
+
+    # Temp directory
+    TESTDIR=~/tmp/testwheel
+    rm -rf $TESTDIR
+    mkdir -p $TESTDIR
+
+    case "$(uname -s)" in
+    *CYGWIN*|*MINGW*|*MSYS*) BINDIR="Scripts" ;;
+    *) BINDIR="bin" ;;
+    esac
+
+    # Copy the wheel
+    [ -f "{{path}}" ] && cp {{path}} $TESTDIR || cp dist/datoviz-*.whl $TESTDIR
+
+    # Virtual env
+    python -m venv $TESTDIR/venv
+    cd $TESTDIR
+    $TESTDIR/venv/$BINDIR/python -m pip install --isolated --upgrade pip wheel
+    # NOTE: --isolated fixes the pip error 'Can not perform a '--user' install'
+    $TESTDIR/venv/$BINDIR/python -m pip install --isolated $TESTDIR/datoviz-*.whl
+
+    # Run the demo from the wheel
+    DVZ_CAPTURE_PNG="$TESTDIR/testwheel.png" $TESTDIR/venv/$BINDIR/python -c "import datoviz; datoviz.demo()"
+
+    # Return 0 iff the file exists and if sufficiently large
+    res=1
+    if [ -f "$TESTDIR/testwheel.png" ]; then
+        filesize=$($TESTDIR/venv/$BINDIR/python -c "from pathlib import Path; print(Path(r'testwheel.png').stat().st_size)")
+        res=$(( $filesize > 180000 ? 0 : 1 ))
+    fi
+    rm -rf $TESTDIR
+    exit $res
+#
+
+[linux]
+checkartifact RUN_ID="":
+    #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
+    temp_dir=$(mktemp -d)
+    gh run download $run_id -n wheel-linux_x86_64 -D $temp_dir
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
+#
+
+[macos]
+checkartifact RUN_ID="":
+    #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
+
+    arch_str={{arch()}}
+    echo $arch_str
+    if [[ "$arch_str" == "aarch64" ]]; then
+        platform="arm64"
+    else
+        platform="x86_64"
+    fi
+
+    temp_dir=$(mktemp -d)
+    gh run download $run_id -n "wheel-macosx_$platform" -D $temp_dir
+    ls $temp_dir/datoviz*.whl
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
+#
+
+[windows]
+checkartifact RUN_ID="":
+    #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
+    temp_dir=$(mktemp -d)
+    gh run download $run_id -n wheel-win_amd64 -D $temp_dir
+    just checkwheel $temp_dir/datoviz*.whl
+    exit_code=$?
+    rm -rf "${temp_dir}"
+    exit $exit_code
 #
 
 
@@ -884,6 +1029,9 @@ rpath:
     @objdump -x build/libdatoviz.so | grep -i 'R.*PATH'
 #
 
+api: headers symbols ctypes doc # after every API update
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Swiftshader
@@ -897,6 +1045,13 @@ swiftshader +args:
 [macos]
 swiftshader +args:
     @VK_ICD_FILENAMES="data/swiftshader/macos/vk_swiftshader_icd.json" {{args}}
+#
+
+[windows]
+swiftshader +args:
+    VK_ICD_FILENAMES=data/swiftshader/windows/vk_swiftshader_icd.json \
+    VK_LOADER_DEBUG=all \
+    {{args}}
 #
 
 
@@ -937,6 +1092,46 @@ tree:
 
 cloc:
     cloc . --exclude-dir=bin,build,build_clang,cmake,data,datoviz,docs,external,libs,packaging,tools
+#
+
+copyright:
+    #!/bin/bash
+
+    # Define the copyright text
+    COPYRIGHT_TEXT="/*
+     * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+     * Licensed under the MIT license. See LICENSE file in the project root for details.
+     * SPDX-License-Identifier: MIT
+     */
+    "
+
+    # Define the directories to search through
+    DIRECTORIES=("tests" "src" "include" "cli")
+
+    # Define the file extensions to look for
+    EXTENSIONS=("comp" "vert" "frag" "glsl" "c" "h")
+
+    # Function to prepend text to a file
+    prepend_text() {
+        local file="$1"
+        # Check if the file already contains the copyright text
+        if ! grep -q "SPDX-License-Identifier" "$file"; then
+            # Prepend the copyright text to the file
+            echo $file
+            { echo "$COPYRIGHT_TEXT"; cat "$file"; } > temp_file && mv temp_file "$file"
+        fi
+    }
+
+    # Loop through each directory
+    for dir in "${DIRECTORIES[@]}"; do
+        # Loop through each extension
+        for ext in "${EXTENSIONS[@]}"; do
+            # Find all files with the current extension in the current directory
+            find "$dir" -type f -name "*.$ext" | while read -r file; do
+                prepend_text "$file"
+            done
+        done
+    done
 #
 
 
@@ -1054,13 +1249,35 @@ doc: headers
     @python tools/generate_doc.py api
 #
 
+serve:
+    @mkdocs serve
+#
+
+publish:
+    #!/usr/bin/env bash
+    set -e
+
+    # Get the current branch name
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    # Check if the current branch is "main"
+    if [ "$current_branch" != "main" ]; then
+        echo "You can only publish the documentation from the main branch (current branch is '$current_branch')."
+        exit 1
+    fi
+
+    pushd ../datoviz.github.io
+    mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
+    popd
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Cleaning
 # -------------------------------------------------------------------------------------------------
 
 clean:
-    just rmbuild
+    @rm -rf build
 #
 
 rebuild:
@@ -1069,5 +1286,5 @@ rebuild:
 #
 
 rmbuild:
-    rm -rf ./build/
+    @rm -rf build/spirv build/artifacts build/struct_sizes* build/*.dylib build/*.so build/*.dll build/datoviz*
 #

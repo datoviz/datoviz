@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Holds all GPU data resources (buffers, images, dats, texs)                                   */
 /*************************************************************************************************/
@@ -44,6 +50,14 @@ static inline bool _is_buffer_mappable(DvzBuffer* buffer)
 {
     ANN(buffer);
     return ((buffer->memory & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0);
+}
+
+
+
+static inline bool _is_buffer_intended_mappable(DvzBuffer* buffer)
+{
+    ANN(buffer);
+    return buffer->mappable_intended;
 }
 
 
@@ -116,6 +130,7 @@ static void _make_shared_buffer(DvzBuffer* buffer, DvzBufferType type, bool mapp
     ANN(buffer);
     CHECK_BUFFER_TYPE
     ASSERT(type != DVZ_BUFFER_TYPE_STAGING);
+    buffer->mappable_intended = mappable;
 
     dvz_buffer_size(buffer, size);
     VkBufferUsageFlags usage = _find_buffer_usage(type);
@@ -150,10 +165,11 @@ _make_standalone_buffer(DvzResources* res, DvzBufferType type, bool mappable, Dv
     ASSERT((uint32_t)type > 0);
     ASSERT(size > 0);
     DvzBuffer* buffer = _make_new_buffer(res);
+    buffer->mappable_intended = mappable;
     if (type == DVZ_BUFFER_TYPE_STAGING)
     {
         ASSERT(mappable);
-        log_debug("create new staging buffer with size %s", pretty_size(size));
+        log_debug("create new staging buffer mappable %d size %s", mappable, pretty_size(size));
         _make_staging_buffer(buffer, size);
     }
     else
@@ -181,9 +197,8 @@ static DvzBuffer* _find_shared_buffer(DvzResources* res, DvzBufferType type, boo
         ANN(buffer);
         // log_trace(
         //     "buffer %d=%d? %d=%d?", buffer->type, type, _is_buffer_mappable(buffer), mappable);
-        if (dvz_obj_is_created(&buffer->obj) && //
-            buffer->type == type &&             //
-            (_is_buffer_mappable(buffer) == mappable))
+        if (dvz_obj_is_created(&buffer->obj) && buffer->type == type &&
+            buffer->mappable_intended == mappable)
             return buffer;
         dvz_container_iter(&iter);
     }
@@ -201,8 +216,10 @@ static DvzBuffer* _get_shared_buffer(DvzResources* res, DvzBufferType type, bool
     DvzBuffer* buffer = _find_shared_buffer(res, type, mappable);
     if (buffer == NULL)
     {
-        log_trace("could not find shared buffer with type %d, so creating a new one", type);
         buffer = _make_standalone_buffer(res, type, mappable, DVZ_BUFFER_DEFAULT_SIZE);
+        log_debug(
+            "could not find shared buffer with type %d and mappable %d, so created a new one %d", //
+            type, mappable, (uint64_t)buffer->buffer);
     }
     ANN(buffer);
     return buffer;
@@ -331,7 +348,7 @@ static DvzImages* _standalone_image(DvzGpu* gpu, DvzTexDims dims, uvec3 shape, D
         "creating %dD image with shape %dx%dx%d and format %d", //
         dims, shape[0], shape[1], shape[2], format);
 
-    DvzImages* img = calloc(1, sizeof(DvzImages));
+    DvzImages* img = (DvzImages*)calloc(1, sizeof(DvzImages));
     _make_image(gpu, img, dims, shape, format);
     return img;
 }
@@ -462,6 +479,14 @@ _total_aligned_size(DvzBuffer* buffer, uint32_t count, DvzSize size, DvzSize* al
 /*  Dat allocation                                                                               */
 /*************************************************************************************************/
 
+static inline bool _is_dat_valid(DvzDat* dat)
+{
+    ANN(dat);
+    return dat->br.buffer != NULL && dat->br.buffer->buffer != VK_NULL_HANDLE;
+}
+
+
+
 static inline DvzDat* _alloc_staging(DvzContext* ctx, DvzSize size)
 {
     ANN(ctx);
@@ -513,6 +538,19 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
     if (alignment > 0)
         ASSERT(offset % alignment == 0);
 
+    if (offset + tot_size > buffer->size)
+    {
+        log_error(
+            "buffer %d too small %d %d %d", //
+            (uint64_t)buffer->buffer, offset, tot_size, buffer->size);
+        return;
+    }
+    if (buffer->buffer == VK_NULL_HANDLE)
+    {
+        log_error("dat allocation failed");
+        return;
+    }
+
     log_debug(
         "allocate dat, buffer type %d, flags %d, offset %d, %s%ssize %s", //
         type, dat->flags, offset,                                         //
@@ -529,6 +567,12 @@ _dat_alloc(DvzResources* res, DvzDat* dat, DvzBufferType type, uint32_t count, D
 static void _dat_dealloc(DvzDat* dat)
 {
     ANN(dat);
+
+    if (dat->br.buffer == NULL)
+    {
+        return;
+    }
+
     log_debug(
         "deallocate dat %u, offset %d, size %s", //
         dat, dat->br.offsets[0], pretty_size(dat->br.size));
@@ -601,36 +645,60 @@ static inline DvzSize _format_size(DvzFormat format)
     {
     case DVZ_FORMAT_R8_UNORM:
     case DVZ_FORMAT_R8_SNORM:
-        return 1 * sizeof(uint8_t);
+    case DVZ_FORMAT_R8_UINT:
+    case DVZ_FORMAT_R8_SINT:
+        return 1 * 1;
+        break;
+
+    case DVZ_FORMAT_R8G8_UNORM:
+    case DVZ_FORMAT_R8G8_SNORM:
+    case DVZ_FORMAT_R8G8_UINT:
+    case DVZ_FORMAT_R8G8_SINT:
+        return 2 * 1;
         break;
 
     case DVZ_FORMAT_R16_UNORM:
     case DVZ_FORMAT_R16_SNORM:
-        return 1 * sizeof(uint16_t);
+        return 1 * 2;
         break;
 
     case DVZ_FORMAT_R32_UINT:
     case DVZ_FORMAT_R32_SINT:
     case DVZ_FORMAT_R32_SFLOAT:
-        return 1 * sizeof(uint32_t);
+        return 1 * 4;
         break;
 
     case DVZ_FORMAT_R8G8B8_UNORM:
-        return 3 * sizeof(uint8_t);
+    case DVZ_FORMAT_R8G8B8_SNORM:
+    case DVZ_FORMAT_R8G8B8_UINT:
+    case DVZ_FORMAT_R8G8B8_SINT:
+        return 3 * 1;
         break;
 
     case DVZ_FORMAT_R8G8B8A8_UNORM:
+    case DVZ_FORMAT_R8G8B8A8_SNORM:
     case DVZ_FORMAT_R8G8B8A8_UINT:
+    case DVZ_FORMAT_R8G8B8A8_SINT:
     case DVZ_FORMAT_B8G8R8A8_UNORM:
-        return 4 * sizeof(uint8_t);
+        return 4 * 1;
         break;
 
+    case DVZ_FORMAT_R32G32_UINT:
+    case DVZ_FORMAT_R32G32_SINT:
+    case DVZ_FORMAT_R32G32_SFLOAT:
+        return 2 * 4;
+        break;
+
+    case DVZ_FORMAT_R32G32B32_UINT:
+    case DVZ_FORMAT_R32G32B32_SINT:
     case DVZ_FORMAT_R32G32B32_SFLOAT:
-        return 3 * sizeof(float);
+        return 3 * 4;
         break;
 
+    case DVZ_FORMAT_R32G32B32A32_UINT:
+    case DVZ_FORMAT_R32G32B32A32_SINT:
     case DVZ_FORMAT_R32G32B32A32_SFLOAT:
-        return 4 * sizeof(float);
+        return 4 * 4;
         break;
 
     default:

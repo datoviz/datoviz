@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Colormaps                                                                                    */
 /*************************************************************************************************/
@@ -31,7 +37,6 @@
 static unsigned char* DVZ_COLORMAP_ARRAY;
 #pragma GCC visibility pop
 
-#define EPS 0.000001
 
 
 /*************************************************************************************************/
@@ -46,10 +51,11 @@ static uint8_t _scale_uint8(float value, float vmin, float vmax)
         log_warn("error in colormap_value(): vmin=vmax");
         return 0;
     }
-    float x = (CLIP(value, vmin, vmax) - vmin) / (vmax - vmin);
+    float d = vmax - vmin;
+    float x = (CLIP(value, vmin, vmax - d * 1e-7) - vmin) / d;
     // printf("%f %f %f %f\n", value, vmin, vmax, x);
-    if (x >= 1 - EPS)
-        x = 1 - EPS;
+    if (x >= 1 - EPSILON)
+        x = 1 - EPSILON;
     ASSERT(0 <= x && x < 1);
     return (uint8_t)floor(x * 256);
 }
@@ -164,7 +170,7 @@ void dvz_colormap_array(
 //  * Get the tex coords extent of a colormap.
 //  *
 //  * @param cmap the colormap
-//  * @param[out] uvuv the texture coordinates of the upper-left and lower-right corners
+//  * @param[out] uvuv the texture coordinates of the top left and bottom right corners
 //  */
 // DVZ_INLINE void dvz_colormap_extent(DvzColormap cmap, vec4 uvuv)
 // {

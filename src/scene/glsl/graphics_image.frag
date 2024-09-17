@@ -1,31 +1,43 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 #version 450
+#include "antialias.glsl"
 #include "common.glsl"
+#include "markers.glsl"
+#include "params_image.glsl"
 
-// layout (std140, binding = USER_BINDING) uniform Params {
-//     vec4 tex_coefs; // blending coefficients for the textures
-// } params;
-
-layout(binding = (USER_BINDING)) uniform sampler2D tex;
-// layout(binding = (USER_BINDING + 2)) uniform sampler2D tex_1;
-// layout(binding = (USER_BINDING + 3)) uniform sampler2D tex_2;
-// layout(binding = (USER_BINDING + 4)) uniform sampler2D tex_3;
+layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
 layout(location = 0) in vec2 in_uv;
+layout(location = 1) in vec3 in_size; // w, h, zoom
+layout(location = 2) in vec4 in_color;
 
 layout(location = 0) out vec4 out_color;
 
 void main()
 {
-    CLIP
+    CLIP;
 
-        // out_color = vec4(.1, .1, 0, 1);
-        out_color = texture(tex, in_uv);
+    vec2 size = in_size.xy;
+    float zoom = in_size.z;
 
-    // if (params.tex_coefs.x > 0)
-    // if (params.tex_coefs.y > 0)
-    //     out_color += params.tex_coefs.y * texture(tex_1, in_uv);
-    // if (params.tex_coefs.z > 0)
-    //     out_color += params.tex_coefs.z * texture(tex_2, in_uv);
-    // if (params.tex_coefs.w > 0)
-    //     out_color += params.tex_coefs.w * texture(tex_3, in_uv);
+    vec2 P = in_uv - .5;
+
+    float lw = params.edge_width;
+    vec2 c = size + 2 * lw + antialias;
+
+    float radius = params.radius * zoom;
+    float d = marker_rounded_rect(P * c, size, radius);
+
+    vec4 base_color = in_color;
+    if (FILL == 0)
+    {
+        base_color = texture(tex, in_uv);
+    }
+    vec4 edge_color = params.edge_color;
+    out_color = outline(d, lw, edge_color, base_color);
 }

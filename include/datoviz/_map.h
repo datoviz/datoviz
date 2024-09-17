@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Map                                                                                          */
 /*************************************************************************************************/
@@ -16,14 +22,6 @@
 
 #include "_macros.h"
 #include "datoviz_math.h"
-
-
-
-/*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-#define DVZ_ID_NONE 0
 
 
 

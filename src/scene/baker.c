@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Baker                                                                                        */
 /*************************************************************************************************/
@@ -427,10 +433,10 @@ void dvz_baker_index(DvzBaker* baker, uint32_t first, uint32_t count, DvzIndex* 
 
 
 void dvz_baker_quads(
-    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* ul_lr)
+    DvzBaker* baker, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br)
 {
     ANN(baker);
-    ANN(ul_lr);
+    ANN(tl_br);
     ASSERT(count > 0);
 
     // Quad triangulation with 3 triangles = 6 vertices.
@@ -438,24 +444,90 @@ void dvz_baker_quads(
     float x0 = 0, y0 = 0, x1 = 0, y1 = 0;
     for (uint32_t i = 0; i < count; i++)
     {
-        x0 = ul_lr[i][0];
-        y0 = ul_lr[i][1];
-        x1 = ul_lr[i][2];
-        y1 = ul_lr[i][3];
+        x0 = tl_br[i][0];
+        y0 = tl_br[i][1];
+        x1 = tl_br[i][2];
+        y1 = tl_br[i][3];
 
-        quads[6 * i + 0][0] = x0; // upper left
+        quads[6 * i + 0][0] = x0; // top left
         quads[6 * i + 0][1] = y0;
-        quads[6 * i + 1][0] = x0; // lower left
+        quads[6 * i + 1][0] = x0; // bottom left
         quads[6 * i + 1][1] = y1;
-        quads[6 * i + 2][0] = x1; // lower right
+        quads[6 * i + 2][0] = x1; // bottom right
         quads[6 * i + 2][1] = y1;
-        quads[6 * i + 3][0] = x1; // lower right
+        quads[6 * i + 3][0] = x1; // bottom right
         quads[6 * i + 3][1] = y1;
-        quads[6 * i + 4][0] = x1; // upper right
+        quads[6 * i + 4][0] = x1; // top right
         quads[6 * i + 4][1] = y0;
-        quads[6 * i + 5][0] = x0; // upper left
+        quads[6 * i + 5][0] = x0; // top left
         quads[6 * i + 5][1] = y0;
     }
     dvz_baker_repeat(baker, attr_idx, 6 * first, 6 * count, 1, quads);
     FREE(quads);
+}
+
+
+
+void dvz_baker_unindex(DvzBaker* baker)
+{
+    // NOTE: OBSOLETE FUNCTION TO DELETE?
+    // This function is still mostly untested and probably doesn't work right now.
+    // It might not be very useful now that there is dvz_shape_unindex().
+    // Can probably be deleted.
+
+    ANN(baker);
+
+    // Index dual.
+    DvzDual* index = &baker->index;
+    ANN(index);
+    ANN(index->array);
+
+    // Index array.
+    DvzIndex* indices = (DvzIndex*)index->array->data;
+    ANN(indices);
+
+    // Number of indices.
+    uint32_t index_count = index->array->item_count;
+    ASSERT(index_count > 0);
+
+    for (uint32_t binding_idx = 0; binding_idx < baker->binding_count; binding_idx++)
+    {
+        // Vertex binding.
+        DvzBakerVertex* baker_vertex = &baker->vertex_bindings[binding_idx];
+        ANN(baker_vertex);
+
+        // Vertex dual.
+        DvzDual* vertex = &baker_vertex->dual;
+        ANN(vertex->array);
+
+        // Vertex array.
+        void* vertices_orig = vertex->array->data;
+        ANN(vertices_orig);
+
+        // Number of vertices.
+        uint32_t vertex_count = vertex->array->item_count;
+        ASSERT(vertex_count > 0);
+
+        // Item size.
+        DvzSize vertex_size = vertex->array->item_size;
+        ASSERT(vertex_size > 0);
+
+        // Copy the indexed vertices;
+        void* vertices = calloc(index_count, vertex_size);
+        DvzIndex vertex_idx = 0;
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            vertex_idx = indices[i];
+            ASSERT(vertex_idx < vertex_count);
+            memcpy(
+                (void*)((uint64_t)vertices + vertex_size * i),               //
+                (void*)((uint64_t)vertices_orig + vertex_size * vertex_idx), //
+                vertex_size);
+        }
+        dvz_dual_data(vertex, 0, index_count, vertices);
+        FREE(vertices);
+    }
+
+    // Disable index buffer.
+    index->array->item_count = 0;
 }

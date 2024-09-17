@@ -668,6 +668,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/array.c"
     "src/scene/atlas.cpp"
     "src/scene/axis.c"
+    "src/scene/geometry.cpp"
     "src/scene/axes.c"
     "src/scene/baker.c"
     "src/scene/camera.c"
@@ -679,6 +680,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/meshobj.cpp"
     "src/scene/mvp.c"
     "src/scene/panzoom.c"
+    "src/scene/ortho.c"
     "src/scene/params.c"
     "src/scene/scene.c"
     "src/scene/demo.c"
@@ -694,6 +696,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/visuals/basic.c"
     "src/scene/visuals/sphere.c"
     "src/scene/visuals/glyph.c"
+    "src/scene/visuals/monoglyph.c"
     "src/scene/visuals/image.c"
     "src/scene/visuals/slice.c"
     "src/scene/visuals/mesh.c"
@@ -836,6 +839,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_labels.c"
         "tests/scene/test_mvp.c"
         "tests/scene/test_panzoom.c"
+        "tests/scene/test_ortho.c"
         "tests/scene/test_params.c"
         "tests/scene/test_sdf.c"
         "tests/scene/test_shape.c"
@@ -847,6 +851,7 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/visuals/test_basic.c"
         "tests/scene/visuals/test_sphere.c"
         "tests/scene/visuals/test_glyph.c"
+        "tests/scene/visuals/test_monoglyph.c"
         "tests/scene/visuals/test_image.c"
         "tests/scene/visuals/test_slice.c"
         "tests/scene/visuals/test_mesh.c"
@@ -885,7 +890,12 @@ if(DATOVIZ_WITH_CLI)
     target_compile_definitions(cli PUBLIC ${COMPILE_DEFINITIONS})
     target_link_libraries(cli libdatoviz)
 
-    set_target_properties(cli PROPERTIES OUTPUT_NAME "datoviz")
+    set_target_properties(cli
+        PROPERTIES OUTPUT_NAME "datoviz"
+
+        # BUILD_RPATH "${CMAKE_BINARY_DIR}"
+        # INSTALL_RPATH "${CMAKE_BINARY_DIR}"
+    )
 endif()
 
 # -------------------------------------------------------------------------------------------------

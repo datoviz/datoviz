@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  App                                                                                          */
 /*************************************************************************************************/
@@ -90,6 +96,14 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
 
     if (payload.et != ev.type)
         return;
+
+    // NOTE: detect when callbacks are called while the app is being stopped.
+    // This prevents assertion crashes in callbacks upon app closing.
+    if (dvz_atomic_get(client->to_stop) == 1)
+    {
+        log_debug("prevent client callback from being called while the app is stopping");
+        return;
+    }
 
     DvzApp* app = payload.app;
     ANN(app);
@@ -383,7 +397,11 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
     ANN(payload);
 
     DvzApp* app = payload->app;
+    ANN(app);
+
     DvzId canvas_id = payload->canvas_id;
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
     DvzAppGuiCallback callback = payload->callback;
     void* user_data = payload->user_data;
 
@@ -403,6 +421,7 @@ void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void*
     ANN(prt);
 
     DvzAppGuiPayload* payload = (DvzAppGuiPayload*)calloc(1, sizeof(DvzAppGuiPayload));
+    payload->app = app;
     payload->canvas_id = canvas_id;
     payload->callback = callback;
     payload->user_data = user_data;
@@ -510,7 +529,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
         dvz_write_png(filename, board->width, board->height, rgb);
         dvz_board_free(board);
 
-        log_info("screenshot saved to %s", filename);
+        log_info("screenshot saved to %s (%s)", filename, pretty_size(dvz_file_size(filename)));
     }
 }
 

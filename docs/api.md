@@ -203,6 +203,19 @@ void dvz_arcball_flags(
 )
 ```
 
+### `dvz_arcball_gui()`
+
+Show a GUI with sliders controlling the three arcball angles.
+
+```c
+void dvz_arcball_gui(
+    DvzArcball* arcball,  // the arcball
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the canvas (or figure) ID
+    DvzPanel* panel,  // the panel
+)
+```
+
 ### `dvz_arcball_initial()`
 
 Set the initial arcball angles.
@@ -290,6 +303,16 @@ void dvz_arcball_set(
 )
 ```
 
+### `dvz_atlas_destroy()`
+
+Destroy an atlas.
+
+```c
+void dvz_atlas_destroy(
+    DvzAtlas* atlas,  // the atlas
+)
+```
+
 ### `dvz_atlas_font()`
 
 Load the default atlas and font.
@@ -337,6 +360,20 @@ void dvz_basic_color(
 )
 ```
 
+### `dvz_basic_group()`
+
+Set the vertex group index.
+
+```c
+void dvz_basic_group(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    float* values,  // the group index of each vertex
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_basic_position()`
 
 Set the vertex positions.
@@ -348,6 +385,17 @@ void dvz_basic_position(
     uint32_t count,  // the number of items to update
     vec3* values,  // the 3D positions of the items to update
     int flags,  // the data update flags
+)
+```
+
+### `dvz_basic_size()`
+
+Set the point size (for POINT_LIST topology only).
+
+```c
+void dvz_basic_size(
+    DvzVisual* visual,  // the visual
+    float size,  // the point size in pixels
 )
 ```
 
@@ -671,6 +719,7 @@ uint8_t* dvz_font_draw(  // returns: an RGBA array allocated by this function an
     uint32_t length,  // the number of glyphs
     uint32_t* codepoints,  // the Unicode codepoints of the glyphs
     vec4* xywh,  // an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+    int flags,  // the font flags
 )
 ```
 
@@ -694,6 +743,19 @@ Set the font size.
 void dvz_font_size(
     DvzFont* font,  // the font
     double size,  // the font size
+)
+```
+
+### `dvz_font_texture()`
+
+Generate a texture with a rendered text.
+
+```c
+DvzId dvz_font_texture(  // returns: a tex ID
+    DvzFont* font,  // the font
+    DvzBatch* batch,  // the batch
+    uint32_t length,  // the number of Unicode codepoints
+    uint32_t* codepoints,  // the Unicode codepoints
 )
 ```
 
@@ -966,8 +1028,18 @@ Add a checkbox.
 ```c
 bool dvz_gui_checkbox(  // returns: whether the checkbox's state has changed
     char* name,  // the button name
-     width,  // the button width
-     height,  // the button height
+)
+```
+
+### `dvz_gui_colorpicker()`
+
+Add a color picker
+
+```c
+bool dvz_gui_colorpicker(
+    char* name,  // the widget name
+    vec3 color,  // the color
+    int flags,  // the widget flags
 )
 ```
 
@@ -1080,6 +1152,56 @@ void dvz_image_alloc(
 )
 ```
 
+### `dvz_image_anchor()`
+
+Set the image anchors.
+
+```c
+void dvz_image_anchor(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec2* values,  // the relative anchors of each image, (0,0 = position pertains to top left corner)
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_image_color()`
+
+Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+
+```c
+void dvz_image_color(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec4* values,  // the image colors
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_image_edge_color()`
+
+Set the edge color.
+
+```c
+void dvz_image_edge_color(
+    DvzVisual* visual,  // the visual
+    cvec4 color,  // the edge color
+)
+```
+
+### `dvz_image_edge_width()`
+
+Set the edge width.
+
+```c
+void dvz_image_edge_width(
+    DvzVisual* visual,  // the visual
+    float width,  // the edge width
+)
+```
+
 ### `dvz_image_position()`
 
 Set the image positions.
@@ -1089,7 +1211,32 @@ void dvz_image_position(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec4* ul_lr,  // the 2D positions of the upper-left and lower-right corners (vec4 x0,y0,x1,y1)
+    vec3* values,  // the 3D positions of the top left corner
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_image_radius()`
+
+Use a rounded rectangle for images, with a given radius in pixels.
+
+```c
+void dvz_image_radius(
+    DvzVisual* visual,  // the visual
+    float radius,  // the rounded corner radius, in pixel
+)
+```
+
+### `dvz_image_size()`
+
+Set the image sizes.
+
+```c
+void dvz_image_size(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec2* values,  // the sizes of each image, in pixels
     int flags,  // the data update flags
 )
 ```
@@ -1103,7 +1250,7 @@ void dvz_image_texcoords(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec4* ul_lr,  // the tex coordinates of the upper-left and lower-right corners (vec4 u0,v0,u1,v1)
+    vec4* tl_br,  // the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
     int flags,  // the data update flags
 )
 ```
@@ -1225,7 +1372,7 @@ Set the marker edge color.
 ```c
 void dvz_marker_edge_color(
     DvzVisual* visual,  // the visual
-    cvec4 value,  // the edge color
+    cvec4 color,  // the edge color
 )
 ```
 
@@ -1236,7 +1383,7 @@ Set the marker edge width.
 ```c
 void dvz_marker_edge_width(
     DvzVisual* visual,  // the visual
-    float value,  // the edge width
+    float width,  // the edge width
 )
 ```
 
@@ -1309,7 +1456,7 @@ Set the texture scale.
 ```c
 void dvz_marker_tex_scale(
     DvzVisual* visual,  // the visual
-    float value,  // the texture scale
+    float scale,  // the texture scale
 )
 ```
 
@@ -1350,6 +1497,31 @@ void dvz_mesh_color(
 )
 ```
 
+### `dvz_mesh_contour()`
+
+Set the contour information for polygon contours.
+
+```c
+void dvz_mesh_contour(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec4* values,  // for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_mesh_density()`
+
+Set the number of isolines
+
+```c
+void dvz_mesh_density(
+    DvzVisual* visual,  // the mesh
+    uint32_t count,  // the number of isolines
+)
+```
+
 ### `dvz_mesh_index()`
 
 Set the mesh indices.
@@ -1360,6 +1532,34 @@ void dvz_mesh_index(
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
     DvzIndex* values,  // the face indices (three vertex indices per triangle)
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_mesh_isoline()`
+
+Set the isolines values.
+
+```c
+void dvz_mesh_isoline(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    float* values,  // the scalar field for which to draw isolines
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_mesh_left()`
+
+Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
+
+```c
+void dvz_mesh_left(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the distance to the left edge adjacent to each triangle vertex
     int flags,  // the data update flags
 )
 ```
@@ -1383,6 +1583,17 @@ Set the mesh light position.
 void dvz_mesh_light_pos(
     DvzVisual* visual,  // the mesh
     vec3 pos,  // the light position
+)
+```
+
+### `dvz_mesh_linewidth()`
+
+Set the stroke linewidth (wireframe or isoline).
+
+```c
+void dvz_mesh_linewidth(
+    DvzVisual* visual,  // the mesh
+    float linewidth,  // the line width
 )
 ```
 
@@ -1425,6 +1636,20 @@ void dvz_mesh_reshape(
 )
 ```
 
+### `dvz_mesh_right()`
+
+Set the distance between the current vertex to the right edge at corner A, B, or C in triangle
+
+```c
+void dvz_mesh_right(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the distance to the right edge adjacent to each triangle vertex
+    int flags,  // the data update flags
+)
+```
+
 ### `dvz_mesh_shape()`
 
 Create a mesh out of a shape.
@@ -1434,6 +1659,17 @@ DvzVisual* dvz_mesh_shape(  // returns: the mesh
     DvzBatch* batch,  // the batch
     DvzShape* shape,  // the shape
     int flags,  // the visual creation flags
+)
+```
+
+### `dvz_mesh_stroke()`
+
+Set the stroke color.
+
+```c
+void dvz_mesh_stroke(
+    DvzVisual* visual,  // the mesh
+     stroke,  // the rgba components
 )
 ```
 
@@ -1464,6 +1700,117 @@ void dvz_mesh_texture(
 )
 ```
 
+### `dvz_monoglyph()`
+
+Create a monoglyph visual.
+
+```c
+DvzVisual* dvz_monoglyph(  // returns: the visual
+    DvzBatch* batch,  // the batch
+    int flags,  // the visual creation flags
+)
+```
+
+### `dvz_monoglyph_alloc()`
+
+Allocate memory for a visual.
+
+```c
+void dvz_monoglyph_alloc(
+    DvzVisual* visual,  // the visual
+    uint32_t item_count,  // the total number of items to allocate for this visual
+)
+```
+
+### `dvz_monoglyph_anchor()`
+
+Set the glyph anchor (relative to the glyph size).
+
+```c
+void dvz_monoglyph_anchor(
+    DvzVisual* visual,  // the visual
+    vec2 anchor,  // the anchor
+)
+```
+
+### `dvz_monoglyph_color()`
+
+Set the glyph colors.
+
+```c
+void dvz_monoglyph_color(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    cvec4* values,  // the colors of the items to update
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_glyph()`
+
+Set the text.
+
+```c
+void dvz_monoglyph_glyph(
+    DvzVisual* visual,  // the visual
+    char* text,  // the ASCII test (string length without the null terminal byte = number of glyphs)
+)
+```
+
+### `dvz_monoglyph_offset()`
+
+Set the glyph offsets.
+
+```c
+void dvz_monoglyph_offset(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    ivec2* values,  // the glyph offsets (ivec2 integers: row,column)
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_position()`
+
+Set the glyph positions.
+
+```c
+void dvz_monoglyph_position(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    vec3* values,  // the 3D positions of the items to update
+    int flags,  // the data update flags
+)
+```
+
+### `dvz_monoglyph_size()`
+
+Set the glyph size (relative to the initial glyph size).
+
+```c
+void dvz_monoglyph_size(
+    DvzVisual* visual,  // the visual
+    float size,  // the glyph size
+)
+```
+
+### `dvz_monoglyph_textarea()`
+
+All-in-one function for multiline text.
+
+```c
+void dvz_monoglyph_textarea(
+    DvzVisual* visual,  // the visual
+    vec3 pos,  // the text position
+    cvec4 color,  // the text color
+    float size,  // the glyph size
+    char* text,  // the text, can contain `\n` new lines
+)
+```
+
 ### `dvz_mvp()`
 
 Create a MVP structure.
@@ -1476,6 +1823,118 @@ DvzMVP dvz_mvp(  // returns: the MVP structure
 )
 ```
 
+### `dvz_ortho_end()`
+
+End an ortho interaction.
+
+```c
+void dvz_ortho_end(
+    DvzOrtho* ortho,  // the ortho
+)
+```
+
+### `dvz_ortho_flags()`
+
+Set the ortho flags.
+
+```c
+void dvz_ortho_flags(
+    DvzOrtho* ortho,  // the ortho
+    int flags,  // the flags
+)
+```
+
+### `dvz_ortho_mvp()`
+
+Apply an MVP matrix to an ortho.
+
+```c
+void dvz_ortho_mvp(
+    DvzOrtho* ortho,  // the ortho
+    DvzMVP* mvp,  // the MVP
+)
+```
+
+### `dvz_ortho_pan()`
+
+Apply a pan value to an ortho.
+
+```c
+void dvz_ortho_pan(
+    DvzOrtho* ortho,  // the ortho
+    vec2 pan,  // the pan, in NDC
+)
+```
+
+### `dvz_ortho_pan_shift()`
+
+Apply a pan shift to an ortho.
+
+```c
+void dvz_ortho_pan_shift(
+    DvzOrtho* ortho,  // the ortho
+    vec2 shift_px,  // the shift value, in pixels
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
+### `dvz_ortho_reset()`
+
+Reset an ortho.
+
+```c
+void dvz_ortho_reset(
+    DvzOrtho* ortho,  // the ortho
+)
+```
+
+### `dvz_ortho_resize()`
+
+Inform an ortho of a panel resize.
+
+```c
+void dvz_ortho_resize(
+    DvzOrtho* ortho,  // the ortho
+    float width,  // the panel width
+    float height,  // the panel height
+)
+```
+
+### `dvz_ortho_zoom()`
+
+Apply a zoom value to an ortho.
+
+```c
+void dvz_ortho_zoom(
+    DvzOrtho* ortho,  // the ortho
+    float zoom,  // the zoom level
+)
+```
+
+### `dvz_ortho_zoom_shift()`
+
+Apply a zoom shift to an ortho.
+
+```c
+void dvz_ortho_zoom_shift(
+    DvzOrtho* ortho,  // the ortho
+    vec2 shift_px,  // the shift value, in pixels
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
+### `dvz_ortho_zoom_wheel()`
+
+Apply a wheel zoom to an ortho.
+
+```c
+void dvz_ortho_zoom_wheel(
+    DvzOrtho* ortho,  // the ortho
+    vec2 dir,  // the wheel direction
+    vec2 center_px,  // the center position, in pixels
+)
+```
+
 ### `dvz_panel()`
 
 Create a panel in a figure (partial or complete rectangular portion of a figure).
@@ -1483,8 +1942,8 @@ Create a panel in a figure (partial or complete rectangular portion of a figure)
 ```c
 DvzPanel* dvz_panel(
     DvzFigure* fig,  // the figure
-    float x,  // the x coordinate of the top-left corner, in pixels
-    float y,  // the y coordinate of the top-left corner, in pixels
+    float x,  // the x coordinate of the top left corner, in pixels
+    float y,  // the y coordinate of the top left corner, in pixels
     float width,  // the panel width, in pixels
     float height,  // the panel height, in pixels
 )
@@ -1518,6 +1977,7 @@ Set a camera for a panel.
 ```c
 DvzCamera* dvz_panel_camera(  // returns: the camera
     DvzPanel* panel,  // the panel
+    int flags,  // the camera flags
 )
 ```
 
@@ -1590,6 +2050,16 @@ void dvz_panel_mvpmat(
 )
 ```
 
+### `dvz_panel_ortho()`
+
+Set ortho interactivity for a panel.
+
+```c
+DvzOrtho* dvz_panel_ortho(  // returns: the ortho
+    DvzPanel* panel,  // the panel
+)
+```
+
 ### `dvz_panel_panzoom()`
 
 Set panzoom interactivity for a panel.
@@ -1607,8 +2077,8 @@ Resize a panel.
 ```c
 void dvz_panel_resize(
     DvzPanel* panel,  // the panel
-    float x,  // the x coordinate of the top-left corner, in pixels
-    float y,  // the y coordinate of the top-left corner, in pixels
+    float x,  // the x coordinate of the top left corner, in pixels
+    float y,  // the y coordinate of the top left corner, in pixels
     float width,  // the panel width, in pixels
     float height,  // the panel height, in pixels
 )
@@ -1835,6 +2305,17 @@ void dvz_path_alloc(
 )
 ```
 
+### `dvz_path_cap()`
+
+Set the path cap.
+
+```c
+void dvz_path_cap(
+    DvzVisual* visual,  // the visual
+    DvzCapType cap,  // the cap
+)
+```
+
 ### `dvz_path_color()`
 
 Set the path colors.
@@ -1849,6 +2330,17 @@ void dvz_path_color(
 )
 ```
 
+### `dvz_path_join()`
+
+Set the path join.
+
+```c
+void dvz_path_join(
+    DvzVisual* visual,  // the visual
+    DvzJoinType join,  // the join
+)
+```
+
 ### `dvz_path_linewidth()`
 
 Set the path line width.
@@ -1856,7 +2348,7 @@ Set the path line width.
 ```c
 void dvz_path_linewidth(
     DvzVisual* visual,  // the visual
-    float value,  // the line width
+    float width,  // the line width
 )
 ```
 
@@ -2215,12 +2707,12 @@ void dvz_shape_end(
 
 ### `dvz_shape_merge()`
 
-Merge two shapes.
+Merge several shapes.
 
 ```c
-void dvz_shape_merge(
-    DvzShape* merged,  // the shape to append the other shape to
-    DvzShape* to_merge,  // the shape appended to the first shape
+DvzShape dvz_shape_merge(  // returns: the merged shape
+    uint32_t count,  // the number of shapes to merge
+    DvzShape* shapes,  // the shapes to merge
 )
 ```
 
@@ -2251,6 +2743,18 @@ Load a .obj shape.
 ```c
 DvzShape dvz_shape_obj(  // returns: the shape
     char* file_path,  // the path to the .obj file
+)
+```
+
+### `dvz_shape_polygon()`
+
+Create a polygon shape using the simple earcut polygon triangulation algorithm.
+
+```c
+DvzShape dvz_shape_polygon(  // returns: the shape
+    uint32_t count,  // the number of points along the polygon border
+    dvec2* points,  // the points 2D coordinates
+    cvec4 color,  // the polygon color
 )
 ```
 
@@ -2359,6 +2863,17 @@ void dvz_shape_translate(
 )
 ```
 
+### `dvz_shape_unindex()`
+
+Convert an indexed shape to a non-indexed one by duplicating the vertex values according
+
+```c
+void dvz_shape_unindex(
+    DvzShape* shape,  // the shape
+    int flags,  // the flags
+)
+```
+
 ### `dvz_slice()`
 
 Create a slice visual (multiple 2D images with slices of a 3D texture).
@@ -2401,10 +2916,10 @@ void dvz_slice_position(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec3* p0,  // the 3D positions of the upper-left corner
-    vec3* p1,  // the 3D positions of the upper-right corner
-    vec3* p2,  // the 3D positions of the lower-left corner
-    vec3* p3,  // the 3D positions of the lower-right corner
+    vec3* p0,  // the 3D positions of the top left corner
+    vec3* p1,  // the 3D positions of the top right corner
+    vec3* p2,  // the 3D positions of the bottom left corner
+    vec3* p3,  // the 3D positions of the bottom right corner
     int flags,  // the data update flags
 )
 ```
@@ -2418,10 +2933,10 @@ void dvz_slice_texcoords(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    vec3* uvw0,  // the 3D texture coordinates of the upper-left corner
-    vec3* uvw1,  // the 3D texture coordinates of the upper-right corner
-    vec3* uvw2,  // the 3D texture coordinates of the lower-left corner
-    vec3* uvw3,  // the 3D texture coordinates of the lower-right corner
+    vec3* uvw0,  // the 3D texture coordinates of the top left corner
+    vec3* uvw1,  // the 3D texture coordinates of the top right corner
+    vec3* uvw2,  // the 3D texture coordinates of the bottom left corner
+    vec3* uvw3,  // the 3D texture coordinates of the bottom right corner
     int flags,  // the data update flags
 )
 ```
@@ -2706,6 +3221,17 @@ void dvz_volume_transfer(
 )
 ```
 
+### `dvz_earcut()`
+
+Compute a polygon triangulation with only indexing on the polygon contour vertices.
+
+```c
+DvzIndex* dvz_earcut(  // returns: the computed indices (must be FREED by the caller)
+    uint32_t point_count,  // the number of points
+    dvec2* polygon,  // the polygon 2D positions
+)
+```
+
 ### `dvz_mean()`
 
 Compute the mean of an array of double values.
@@ -2729,6 +3255,39 @@ void dvz_min_max(  // returns: the mean
 )
 ```
 
+### `dvz_mock_band()`
+
+Generate points on a band.
+
+```c
+vec3* dvz_mock_band(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    vec2 size,  // the size of the band
+)
+```
+
+### `dvz_mock_circle()`
+
+Generate points on a circle.
+
+```c
+vec3* dvz_mock_circle(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    float radius,  // the radius of the circle
+)
+```
+
+### `dvz_mock_cmap()`
+
+Generate a set of HSV colors.
+
+```c
+cvec4* dvz_mock_cmap(  // returns: colors
+    uint32_t count,  // the number of colors to generate
+    uint8_t alpha,  // the alpha value
+)
+```
+
 ### `dvz_mock_color()`
 
 Generate a set of random colors.
@@ -2737,6 +3296,63 @@ Generate a set of random colors.
 cvec4* dvz_mock_color(  // returns: random colors
     uint32_t count,  // the number of colors to generate
     uint8_t alpha,  // the alpha value
+)
+```
+
+### `dvz_mock_fixed()`
+
+Generate identical 3D positions.
+
+```c
+vec3* dvz_mock_fixed(  // returns: the repeated positions
+    uint32_t count,  // the number of positions to generate
+    vec3 fixed,  // the position
+)
+```
+
+### `dvz_mock_full()`
+
+Generate an array with the same value.
+
+```c
+float* dvz_mock_full(  // returns: the values
+    uint32_t count,  // the number of scalars to generate
+    float value,  // the value
+)
+```
+
+### `dvz_mock_line()`
+
+Generate 3D positions on a line.
+
+```c
+vec3* dvz_mock_line(  // returns: the positions
+    uint32_t count,  // the number of positions to generate
+    vec3 p0,  // initial position
+    vec3 p1,  // terminal position
+)
+```
+
+### `dvz_mock_linspace()`
+
+Generate an array ranging from an initial value to a final value.
+
+```c
+float* dvz_mock_linspace(  // returns: the values
+    uint32_t count,  // the number of scalars to generate
+    float initial,  // the initial value
+    float final,  // the final value
+)
+```
+
+### `dvz_mock_monochrome()`
+
+Repeat a color in an array.
+
+```c
+cvec4* dvz_mock_monochrome(  // returns: colors
+    uint32_t count,  // the number of colors to generate
+    cvec4 mono,  // the color to repeat
 )
 ```
 
@@ -2759,6 +3375,17 @@ Generate a set of random 3D positions.
 vec3* dvz_mock_pos3D(  // returns: the positions
     uint32_t count,  // the number of positions to generate
     float std,  // the standard deviation
+)
+```
+
+### `dvz_mock_range()`
+
+Generate an array of consecutive positive numbers.
+
+```c
+uint32_t* dvz_mock_range(  // returns: the values
+    uint32_t count,  // the number of consecutive integers to generate
+    uint32_t initial,  // the initial value
 )
 ```
 
@@ -2858,134 +3485,6 @@ void dvz_range(
 
 ## Enumerations
 
-### `DvzKeyCode`
-
-```
-DVZ_KEY_UNKNOWN
-DVZ_KEY_NONE
-DVZ_KEY_SPACE
-DVZ_KEY_APOSTROPHE
-DVZ_KEY_COMMA
-DVZ_KEY_MINUS
-DVZ_KEY_PERIOD
-DVZ_KEY_SLASH
-DVZ_KEY_0
-DVZ_KEY_1
-DVZ_KEY_2
-DVZ_KEY_3
-DVZ_KEY_4
-DVZ_KEY_5
-DVZ_KEY_6
-DVZ_KEY_7
-DVZ_KEY_8
-DVZ_KEY_9
-DVZ_KEY_SEMICOLON
-DVZ_KEY_EQUAL
-DVZ_KEY_A
-DVZ_KEY_B
-DVZ_KEY_C
-DVZ_KEY_D
-DVZ_KEY_E
-DVZ_KEY_F
-DVZ_KEY_G
-DVZ_KEY_H
-DVZ_KEY_I
-DVZ_KEY_J
-DVZ_KEY_K
-DVZ_KEY_L
-DVZ_KEY_M
-DVZ_KEY_N
-DVZ_KEY_O
-DVZ_KEY_P
-DVZ_KEY_Q
-DVZ_KEY_R
-DVZ_KEY_S
-DVZ_KEY_T
-DVZ_KEY_U
-DVZ_KEY_V
-DVZ_KEY_W
-DVZ_KEY_X
-DVZ_KEY_Y
-DVZ_KEY_Z
-DVZ_KEY_LEFT_BRACKET
-DVZ_KEY_BACKSLASH
-DVZ_KEY_RIGHT_BRACKET
-DVZ_KEY_GRAVE_ACCENT
-DVZ_KEY_WORLD_1
-DVZ_KEY_WORLD_2
-DVZ_KEY_ESCAPE
-DVZ_KEY_ENTER
-DVZ_KEY_TAB
-DVZ_KEY_BACKSPACE
-DVZ_KEY_INSERT
-DVZ_KEY_DELETE
-DVZ_KEY_RIGHT
-DVZ_KEY_LEFT
-DVZ_KEY_DOWN
-DVZ_KEY_UP
-DVZ_KEY_PAGE_UP
-DVZ_KEY_PAGE_DOWN
-DVZ_KEY_HOME
-DVZ_KEY_END
-DVZ_KEY_CAPS_LOCK
-DVZ_KEY_SCROLL_LOCK
-DVZ_KEY_NUM_LOCK
-DVZ_KEY_PRINT_SCREEN
-DVZ_KEY_PAUSE
-DVZ_KEY_F1
-DVZ_KEY_F2
-DVZ_KEY_F3
-DVZ_KEY_F4
-DVZ_KEY_F5
-DVZ_KEY_F6
-DVZ_KEY_F7
-DVZ_KEY_F8
-DVZ_KEY_F9
-DVZ_KEY_F10
-DVZ_KEY_F11
-DVZ_KEY_F12
-DVZ_KEY_F13
-DVZ_KEY_F14
-DVZ_KEY_F15
-DVZ_KEY_F16
-DVZ_KEY_F17
-DVZ_KEY_F18
-DVZ_KEY_F19
-DVZ_KEY_F20
-DVZ_KEY_F21
-DVZ_KEY_F22
-DVZ_KEY_F23
-DVZ_KEY_F24
-DVZ_KEY_F25
-DVZ_KEY_KP_0
-DVZ_KEY_KP_1
-DVZ_KEY_KP_2
-DVZ_KEY_KP_3
-DVZ_KEY_KP_4
-DVZ_KEY_KP_5
-DVZ_KEY_KP_6
-DVZ_KEY_KP_7
-DVZ_KEY_KP_8
-DVZ_KEY_KP_9
-DVZ_KEY_KP_DECIMAL
-DVZ_KEY_KP_DIVIDE
-DVZ_KEY_KP_MULTIPLY
-DVZ_KEY_KP_SUBTRACT
-DVZ_KEY_KP_ADD
-DVZ_KEY_KP_ENTER
-DVZ_KEY_KP_EQUAL
-DVZ_KEY_LEFT_SHIFT
-DVZ_KEY_LEFT_CONTROL
-DVZ_KEY_LEFT_ALT
-DVZ_KEY_LEFT_SUPER
-DVZ_KEY_RIGHT_SHIFT
-DVZ_KEY_RIGHT_CONTROL
-DVZ_KEY_RIGHT_ALT
-DVZ_KEY_RIGHT_SUPER
-DVZ_KEY_MENU
-DVZ_KEY_LAST
-```
-
 ### `DvzAppFlags`
 
 ```
@@ -2999,6 +3498,13 @@ DVZ_APP_FLAGS_WHITE_BACKGROUND
 ```
 DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN
+```
+
+### `DvzCameraFlags`
+
+```
+DVZ_CAMERA_FLAGS_PERSPECTIVE
+DVZ_CAMERA_FLAGS_ORTHO
 ```
 
 ### `DvzCanvasFlags`
@@ -3015,7 +3521,7 @@ DVZ_CANVAS_FLAGS_PICK
 ### `DvzCapType`
 
 ```
-DVZ_CAP_TYPE_NONE
+DVZ_CAP_NONE
 DVZ_CAP_ROUND
 DVZ_CAP_TRIANGLE_IN
 DVZ_CAP_TRIANGLE_OUT
@@ -3176,13 +3682,22 @@ DVZ_CPAL032_CATEGORY20C_20
 DVZ_CPAL032_COLORBLIND8
 ```
 
+### `DvzContourFlags`
+
+```
+DVZ_CONTOUR_NONE
+DVZ_CONTOUR_EDGES
+DVZ_CONTOUR_JOINTS
+DVZ_CONTOUR_FULL
+```
+
 ### `DvzCorner`
 
 ```
-DVZ_DIALOG_CORNER_UPPER_LEFT
-DVZ_DIALOG_CORNER_UPPER_RIGHT
-DVZ_DIALOG_CORNER_LOWER_LEFT
-DVZ_DIALOG_CORNER_LOWER_RIGHT
+DVZ_DIALOG_CORNER_TOP_LEFT
+DVZ_DIALOG_CORNER_TOP_RIGHT
+DVZ_DIALOG_CORNER_BOTTOM_LEFT
+DVZ_DIALOG_CORNER_BOTTOM_RIGHT
 ```
 
 ### `DvzDatFlags`
@@ -3255,6 +3770,13 @@ DVZ_FILTER_LINEAR
 DVZ_FILTER_CUBIC_IMG
 ```
 
+### `DvzFontFlags`
+
+```
+DVZ_FONT_FLAGS_RGB
+DVZ_FONT_FLAGS_RGBA
+```
+
 ### `DvzFormat`
 
 ```
@@ -3262,18 +3784,44 @@ DVZ_FORMAT_NONE
 DVZ_FORMAT_R8_UNORM
 DVZ_FORMAT_R8_SNORM
 DVZ_FORMAT_R8_UINT
+DVZ_FORMAT_R8_SINT
+DVZ_FORMAT_R8G8_UNORM
+DVZ_FORMAT_R8G8_SNORM
+DVZ_FORMAT_R8G8_UINT
+DVZ_FORMAT_R8G8_SINT
 DVZ_FORMAT_R8G8B8_UNORM
+DVZ_FORMAT_R8G8B8_SNORM
+DVZ_FORMAT_R8G8B8_UINT
+DVZ_FORMAT_R8G8B8_SINT
 DVZ_FORMAT_R8G8B8A8_UNORM
+DVZ_FORMAT_R8G8B8A8_SNORM
 DVZ_FORMAT_R8G8B8A8_UINT
+DVZ_FORMAT_R8G8B8A8_SINT
 DVZ_FORMAT_B8G8R8A8_UNORM
 DVZ_FORMAT_R16_UNORM
 DVZ_FORMAT_R16_SNORM
 DVZ_FORMAT_R32_UINT
 DVZ_FORMAT_R32_SINT
 DVZ_FORMAT_R32_SFLOAT
+DVZ_FORMAT_R32G32_UINT
+DVZ_FORMAT_R32G32_SINT
 DVZ_FORMAT_R32G32_SFLOAT
+DVZ_FORMAT_R32G32B32_UINT
+DVZ_FORMAT_R32G32B32_SINT
 DVZ_FORMAT_R32G32B32_SFLOAT
+DVZ_FORMAT_R32G32B32A32_UINT
+DVZ_FORMAT_R32G32B32A32_SINT
 DVZ_FORMAT_R32G32B32A32_SFLOAT
+```
+
+### `DvzImageFlags`
+
+```
+DVZ_IMAGE_FLAGS_SIZE_PIXELS
+DVZ_IMAGE_FLAGS_SIZE_NDC
+DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO
+DVZ_IMAGE_FLAGS_RESCALE
+DVZ_IMAGE_FLAGS_FILL
 ```
 
 ### `DvzJoinType`
@@ -3343,6 +3891,7 @@ DVZ_MARKER_SHAPE_SQUARE
 DVZ_MARKER_SHAPE_TAG
 DVZ_MARKER_SHAPE_TRIANGLE
 DVZ_MARKER_SHAPE_VBAR
+DVZ_MARKER_SHAPE_ROUNDED_RECT
 DVZ_MARKER_SHAPE_COUNT
 ```
 
@@ -3352,6 +3901,15 @@ DVZ_MARKER_SHAPE_COUNT
 DVZ_MESH_FLAGS_NONE
 DVZ_MESH_FLAGS_TEXTURED
 DVZ_MESH_FLAGS_LIGHTING
+DVZ_MESH_FLAGS_CONTOUR
+DVZ_MESH_FLAGS_ISOLINE
+```
+
+### `DvzMockFlags`
+
+```
+DVZ_MOCK_FLAGS_NONE
+DVZ_MOCK_FLAGS_CLOSED
 ```
 
 ### `DvzMouseButton`
@@ -3398,11 +3956,11 @@ DVZ_PANZOOM_FLAGS_FIXED_X
 DVZ_PANZOOM_FLAGS_FIXED_Y
 ```
 
-### `DvzPathTopology`
+### `DvzPathFlags`
 
 ```
-DVZ_PATH_OPEN
-DVZ_PATH_CLOSED
+DVZ_PATH_FLAGS_OPEN
+DVZ_PATH_FLAGS_CLOSED
 ```
 
 ### `DvzPrimitiveTopology`
@@ -3432,6 +3990,7 @@ DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
 DVZ_SHAPE_NONE
 DVZ_SHAPE_SQUARE
 DVZ_SHAPE_DISC
+DVZ_SHAPE_POLYGON
 DVZ_SHAPE_CUBE
 DVZ_SHAPE_SPHERE
 DVZ_SHAPE_CYLINDER
@@ -3487,6 +4046,134 @@ DVZ_VOLUME_FLAGS_NONE
 DVZ_VOLUME_FLAGS_RGBA
 DVZ_VOLUME_FLAGS_COLORMAP
 DVZ_VOLUME_FLAGS_BACK_FRONT
+```
+
+### `DvzKeyCode`
+
+```
+DVZ_KEY_UNKNOWN
+DVZ_KEY_NONE
+DVZ_KEY_SPACE
+DVZ_KEY_APOSTROPHE
+DVZ_KEY_COMMA
+DVZ_KEY_MINUS
+DVZ_KEY_PERIOD
+DVZ_KEY_SLASH
+DVZ_KEY_0
+DVZ_KEY_1
+DVZ_KEY_2
+DVZ_KEY_3
+DVZ_KEY_4
+DVZ_KEY_5
+DVZ_KEY_6
+DVZ_KEY_7
+DVZ_KEY_8
+DVZ_KEY_9
+DVZ_KEY_SEMICOLON
+DVZ_KEY_EQUAL
+DVZ_KEY_A
+DVZ_KEY_B
+DVZ_KEY_C
+DVZ_KEY_D
+DVZ_KEY_E
+DVZ_KEY_F
+DVZ_KEY_G
+DVZ_KEY_H
+DVZ_KEY_I
+DVZ_KEY_J
+DVZ_KEY_K
+DVZ_KEY_L
+DVZ_KEY_M
+DVZ_KEY_N
+DVZ_KEY_O
+DVZ_KEY_P
+DVZ_KEY_Q
+DVZ_KEY_R
+DVZ_KEY_S
+DVZ_KEY_T
+DVZ_KEY_U
+DVZ_KEY_V
+DVZ_KEY_W
+DVZ_KEY_X
+DVZ_KEY_Y
+DVZ_KEY_Z
+DVZ_KEY_LEFT_BRACKET
+DVZ_KEY_BACKSLASH
+DVZ_KEY_RIGHT_BRACKET
+DVZ_KEY_GRAVE_ACCENT
+DVZ_KEY_WORLD_1
+DVZ_KEY_WORLD_2
+DVZ_KEY_ESCAPE
+DVZ_KEY_ENTER
+DVZ_KEY_TAB
+DVZ_KEY_BACKSPACE
+DVZ_KEY_INSERT
+DVZ_KEY_DELETE
+DVZ_KEY_RIGHT
+DVZ_KEY_LEFT
+DVZ_KEY_DOWN
+DVZ_KEY_UP
+DVZ_KEY_PAGE_UP
+DVZ_KEY_PAGE_DOWN
+DVZ_KEY_HOME
+DVZ_KEY_END
+DVZ_KEY_CAPS_LOCK
+DVZ_KEY_SCROLL_LOCK
+DVZ_KEY_NUM_LOCK
+DVZ_KEY_PRINT_SCREEN
+DVZ_KEY_PAUSE
+DVZ_KEY_F1
+DVZ_KEY_F2
+DVZ_KEY_F3
+DVZ_KEY_F4
+DVZ_KEY_F5
+DVZ_KEY_F6
+DVZ_KEY_F7
+DVZ_KEY_F8
+DVZ_KEY_F9
+DVZ_KEY_F10
+DVZ_KEY_F11
+DVZ_KEY_F12
+DVZ_KEY_F13
+DVZ_KEY_F14
+DVZ_KEY_F15
+DVZ_KEY_F16
+DVZ_KEY_F17
+DVZ_KEY_F18
+DVZ_KEY_F19
+DVZ_KEY_F20
+DVZ_KEY_F21
+DVZ_KEY_F22
+DVZ_KEY_F23
+DVZ_KEY_F24
+DVZ_KEY_F25
+DVZ_KEY_KP_0
+DVZ_KEY_KP_1
+DVZ_KEY_KP_2
+DVZ_KEY_KP_3
+DVZ_KEY_KP_4
+DVZ_KEY_KP_5
+DVZ_KEY_KP_6
+DVZ_KEY_KP_7
+DVZ_KEY_KP_8
+DVZ_KEY_KP_9
+DVZ_KEY_KP_DECIMAL
+DVZ_KEY_KP_DIVIDE
+DVZ_KEY_KP_MULTIPLY
+DVZ_KEY_KP_SUBTRACT
+DVZ_KEY_KP_ADD
+DVZ_KEY_KP_ENTER
+DVZ_KEY_KP_EQUAL
+DVZ_KEY_LEFT_SHIFT
+DVZ_KEY_LEFT_CONTROL
+DVZ_KEY_LEFT_ALT
+DVZ_KEY_LEFT_SUPER
+DVZ_KEY_RIGHT_SHIFT
+DVZ_KEY_RIGHT_CONTROL
+DVZ_KEY_RIGHT_ALT
+DVZ_KEY_RIGHT_SUPER
+DVZ_KEY_MENU
+DVZ_KEY_LAST
 ```
 
 ## Structures
@@ -3611,6 +4298,10 @@ struct DvzShape
     vec3* normal
     cvec4* color
     vec4* texcoords
+    float* isoline
+    vec3* d_left
+    vec3* d_right
+    cvec4* contour
     DvzIndex* index
 ```
 

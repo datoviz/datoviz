@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Params                                                                                       */
 /*************************************************************************************************/
@@ -11,6 +17,7 @@
 #include "scene/params.h"
 #include "_map.h"
 #include "request.h"
+#include "scene/array.h"
 #include "scene/dual.h"
 
 
@@ -19,9 +26,6 @@
 /*  Params functions                                                                             */
 /*************************************************************************************************/
 
-/**
- *
- */
 DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared)
 {
     ANN(batch);
@@ -39,10 +43,6 @@ DvzParams* dvz_params(DvzBatch* batch, DvzSize struct_size, bool is_shared)
 }
 
 
-
-/**
- *
- */
 void dvz_params_attr(DvzParams* params, uint32_t idx, DvzSize offset, DvzSize item_size)
 {
     ANN(params);
@@ -55,9 +55,6 @@ void dvz_params_attr(DvzParams* params, uint32_t idx, DvzSize offset, DvzSize it
 
 
 
-/**
- *
- */
 void dvz_params_data(DvzParams* params, void* data)
 {
     ANN(params);
@@ -68,9 +65,6 @@ void dvz_params_data(DvzParams* params, void* data)
 
 
 
-/**
- *
- */
 void dvz_params_set(DvzParams* params, uint32_t idx, void* item)
 {
     ANN(params);
@@ -86,9 +80,19 @@ void dvz_params_set(DvzParams* params, uint32_t idx, void* item)
 
 
 
-/**
- *
- */
+void* dvz_params_get(DvzParams* params, uint32_t idx)
+{
+    ANN(params);
+    ASSERT(idx < DVZ_PARAMS_MAX_ATTRS);
+
+    DvzSize offset = params->attrs[idx].offset;
+    DvzSize item_size = params->attrs[idx].item_size;
+
+    return (void*)((uint64_t)params->dual.array->data + (uint64_t)offset);
+}
+
+
+
 void dvz_params_bind(DvzParams* params, DvzId graphics_id, uint32_t slot_idx)
 {
     ANN(params);
@@ -99,9 +103,6 @@ void dvz_params_bind(DvzParams* params, DvzId graphics_id, uint32_t slot_idx)
 
 
 
-/**
- *
- */
 void dvz_params_update(DvzParams* params)
 {
     ANN(params);
@@ -110,9 +111,6 @@ void dvz_params_update(DvzParams* params)
 
 
 
-/**
- *
- */
 void dvz_params_destroy(DvzParams* params)
 {
     ANN(params);

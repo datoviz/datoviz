@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Visual test                                                                                  */
 /*************************************************************************************************/
@@ -32,6 +38,7 @@ typedef enum
 {
     VISUAL_TEST_NONE,
     VISUAL_TEST_PANZOOM,
+    VISUAL_TEST_ORTHO,
     VISUAL_TEST_ARCBALL,
 } VisualTestType;
 
@@ -59,6 +66,7 @@ struct VisualTest
     DvzPanel* panel;
     DvzVisual* visual;
     DvzPanzoom* panzoom;
+    DvzOrtho* ortho;
     DvzArcball* arcball;
     DvzCamera* camera;
     DvzVisual* volume;
@@ -108,6 +116,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
 
     DvzArcball* arcball = NULL;
     DvzPanzoom* panzoom = NULL;
+    DvzOrtho* ortho = NULL;
     DvzCamera* camera = NULL;
 
     switch (type)
@@ -119,12 +128,16 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
         ANN(arcball);
 
         // Perspective camera.
-        camera = dvz_panel_camera(panel);
+        camera = dvz_panel_camera(panel, 0);
 
         break;
 
     case VISUAL_TEST_PANZOOM:
         panzoom = dvz_panel_panzoom(panel);
+        break;
+
+    case VISUAL_TEST_ORTHO:
+        ortho = dvz_panel_ortho(panel);
         break;
 
     default:
@@ -139,6 +152,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
         .figure = figure,
         .panel = panel,
         .panzoom = panzoom,
+        .ortho = ortho,
         .arcball = arcball,
         .camera = camera,
     };

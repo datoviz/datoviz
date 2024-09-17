@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /* Arcball                                                                                       */
 /*************************************************************************************************/
@@ -41,6 +47,8 @@ struct DvzArcball
     vec3 init;       // initial Euler angles
     versor rotation; // current rotation (while dragging), to be applied to mat after dragging
     vec3 constrain;  // constrain axis, null if no constraint
+
+    void* user_data;
 };
 
 

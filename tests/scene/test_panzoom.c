@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing panzoom                                                                              */
 /*************************************************************************************************/
@@ -79,7 +85,7 @@ int test_panzoom_1(TstSuite* suite)
         ZOOM(0, 0, .5, .5);
         AP(0, 0);
 
-        ZOOM(.5, +.5, .5, .5);
+        ZOOM(.5, .5, .5, .5);
         AT(pz->zoom[0] > 1);
         AT(pz->zoom[1] < 1);
     }
@@ -91,7 +97,7 @@ int test_panzoom_1(TstSuite* suite)
         AT(pz->zoom[0] > 1e6);
         AT(pz->zoom[1] > 1e6);
         AT(pz->zoom[0] == pz->zoom[1]);
-        SHOW;
+        // SHOW;
         AP(-1, -1);
     }
 

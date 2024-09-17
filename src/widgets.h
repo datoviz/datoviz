@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Widgets                                                                                      */
 /*************************************************************************************************/
@@ -26,7 +32,7 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
     ANN(fps);
 
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
-    dvz_gui_corner(DVZ_DIALOG_CORNER_UPPER_RIGHT, (vec2){0, 0});
+    dvz_gui_corner(DVZ_DIALOG_CORNER_TOP_RIGHT, (vec2){0, 0});
     dvz_gui_size((vec2){140, 70});
     dvz_gui_alpha(.5f);
     dvz_gui_begin("FPS", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
@@ -55,7 +61,7 @@ static inline void _gui_callback_monitoring(DvzGuiWindow* gui_window, void* user
     DvzDatAlloc* datalloc = (DvzDatAlloc*)user_data;
     ANN(datalloc);
 
-    dvz_gui_corner(DVZ_DIALOG_CORNER_UPPER_RIGHT, (vec2){0, 70});
+    dvz_gui_corner(DVZ_DIALOG_CORNER_TOP_RIGHT, (vec2){0, 70});
     dvz_gui_size((vec2){230, 80});
     dvz_gui_alpha(.5f);
     dvz_gui_begin("Monitoring", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));

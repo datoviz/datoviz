@@ -1,0 +1,31 @@
+# Use Windows Server Core as the base image
+FROM chocolatey/choco:latest-windows
+
+# Install Git for Windows
+RUN choco install git -y --params "/GitAndUnixToolsOnPath"
+RUN choco install 7zip -y
+RUN choco install python --version=3.12 -y
+
+# Download build dependencies
+RUN curl -LO https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-18.1.8-12.0.0-ucrt-r1/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-18.1.8-mingw-w64ucrt-12.0.0-r1.zip
+RUN curl -LO https://github.com/casey/just/releases/download/1.35.0/just-1.35.0-x86_64-pc-windows-msvc.zip
+RUN curl -LO https://sdk.lunarg.com/sdk/download/1.3.280.0/windows/vulkan-sdk.exe
+RUN git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+
+# Decompress archives
+RUN 7z x winlibs*.zip -oC:/
+RUN 7z x just-1.35.0-x86_64-pc-windows-msvc.zip -oC:/mingw64/bin/
+
+# Install vcpkg
+RUN powershell.exe -NoProfile -ExecutionPolicy Bypass C:\vcpkg\scripts\bootstrap.ps1
+
+# Install Vulkan SDK
+RUN vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+
+# Set environment variables
+ENV VCPKG_ROOT="C:/vcpkg"
+ENV PATH="C:/mingw64/bin;C:/VulkanSDK/1.3.280.0/Bin;C:/vcpkg/installed/x64-windows/bin;C:/Python312/;C:/Python312/Scripts;${PATH}"
+
+# Install Python dependencies
+RUN python -m pip install --upgrade pip && \
+    python -m pip install -r https://raw.githubusercontent.com/datoviz/datoviz/main/requirements-dev.txt

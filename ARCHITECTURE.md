@@ -1,4 +1,4 @@
-# Datoviz code architecture overview
+# Architecture
 
 This document provides a high-level overview of the Datoviz v0.2x code architecture.
 
@@ -31,20 +31,20 @@ The bottomest layer is the raw Vulkan C API, which is known for its extreme verb
 We built vklite, a thin wrapper on top of the Vulkan C API, that provides the most essential Vulkan functionality (`vklite.h`):
 
 * **Device control and event loops:**
-  * Device discovery (`dvz_gpu`)
-  * Swapchain presentation (`dvz_swapchain`, `dvz_renderpass`, `dvz_framebuffers`, `dvz_surface`)
-  * Synchronization primitives (`dvz_barrier`, `dvz_semaphores`, `dvz_fences`)
+    * Device discovery (`dvz_gpu`)
+    * Swapchain presentation (`dvz_swapchain`, `dvz_renderpass`, `dvz_framebuffers`, `dvz_surface`)
+    * Synchronization primitives (`dvz_barrier`, `dvz_semaphores`, `dvz_fences`)
 * **GPU memory:**
-  * GPU data buffers (`dvz_buffers`)
-  * GPU images (`dvz_images`)
-  * Samplers (`dvz_sampler`)
+    * GPU data buffers (`dvz_buffers`)
+    * GPU images (`dvz_images`)
+    * Samplers (`dvz_sampler`)
 * **Pipelines and shaders:**
-  * Compute pipelines (`dvz_compute`)
-  * Graphics pipelines (`dvz_graphics`) with fixed pipeline and custom shaders
-  * Slots and bindings or descriptors (`dvz_slots`, `dvz_descriptors`)
+    * Compute pipelines (`dvz_compute`)
+    * Graphics pipelines (`dvz_graphics`) with fixed pipeline and custom shaders
+    * Slots and bindings or descriptors (`dvz_slots`, `dvz_descriptors`)
 * **Command buffers:**
-  * Command buffer creation and submission (`dvz_commands`, `dvz_submit`)
-  * Command buffer recording (`dvz_cmd`)
+    * Command buffer creation and submission (`dvz_commands`, `dvz_submit`)
+    * Command buffer recording (`dvz_cmd`)
 
 Broadly speaking, these low-level functions allow one to create objects on the GPU, mostly data buffers and textures (images and samplers), to define GPU compute and graphics pipelines via custom SPIR-V shaders (compiled from GLSL), and to send compute and rendering jobs to the GPU by asynchronously submitting recorded command buffers to a dedicated event loop displaying graphics on screen.
 

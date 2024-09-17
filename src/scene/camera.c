@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Camera                                                                                       */
 /*************************************************************************************************/
@@ -36,14 +42,24 @@ DvzCamera* dvz_camera(float width, float height, int flags)
     camera->flags = flags;
 
     dvz_camera_resize(camera, width, height);
-
-    dvz_camera_zrange(camera, DVZ_CAMERA_DEFAULT_ZRANGE);
-    dvz_camera_perspective(camera, DVZ_CAMERA_DEFAULT_FOV);
     dvz_camera_initial(
         camera,                              //
         (vec3){DVZ_CAMERA_DEFAULT_POSITION}, //
         (vec3){DVZ_CAMERA_DEFAULT_LOOKAT},   //
         (vec3){DVZ_CAMERA_DEFAULT_UP});
+    dvz_camera_zrange(camera, DVZ_CAMERA_DEFAULT_ZRANGE);
+
+    // Ortho camera.
+    if ((flags & DVZ_CAMERA_FLAGS_ORTHO) > 0)
+    {
+        dvz_camera_ortho(camera, 0, width, 0, height);
+    }
+
+    // Perspective camera.
+    else
+    {
+        dvz_camera_perspective(camera, DVZ_CAMERA_DEFAULT_FOV);
+    }
 
     return camera;
 }
@@ -90,23 +106,6 @@ void dvz_camera_ortho(DvzCamera* camera, float left, float right, float bottom, 
     camera->top = top;
 }
 
-
-
-// void dvz_camera_aspect(DvzCamera* camera, float aspect)
-// {
-//     ANN(camera);
-//     // if 1, fix aspect ratio, if 0, do not fix aspect ratio
-//     camera->aspect = aspect;
-// }
-
-
-
-// void dvz_camera_ratio(DvzCamera* camera, vec2 viewport_size)
-// {
-//     ANN(camera);
-//     ASSERT(viewport_size[1] > 0);
-//     dvz_camera_aspect(camera, viewport_size[0] / viewport_size[1]);
-// }
 
 
 void dvz_camera_resize(DvzCamera* camera, float width, float height)

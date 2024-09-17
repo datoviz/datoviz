@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /* Image                                                                                         */
 /*************************************************************************************************/
@@ -21,16 +27,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzImageVertex DvzImageVertex;
-
-// Forward declarations.
-typedef struct DvzBatch DvzBatch;
-typedef struct DvzVisual DvzVisual;
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
+typedef struct DvzImageParams DvzImageParams;
 
 
 
@@ -40,8 +37,20 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzImageVertex
 {
-    vec2 pos; /* position */
-    vec2 uv;  /* texture coordinates */
+    vec3 pos;    /* position */
+    vec2 size;   /* size */
+    vec2 anchor; /* anchor */
+    vec2 uv;     /* texture coordinates */
+    cvec4 color; /* color */
+};
+
+
+
+struct DvzImageParams
+{
+    float radius;     /* rounded rectangle radius, 0 for sharp corners */
+    float edge_width; /* width of the border, 0 for no border */
+    vec4 edge_color;  /* color of the border */
 };
 
 

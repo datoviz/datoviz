@@ -28,11 +28,12 @@ static void compute_hist(uint32_t count, double* values, dvec2 min_max, uint32_t
     double max = min_max[1];
     double diff = min < max ? max - min : 1;
 
-    double bin = 0;
+    double bin = 0, value = 0;
     for (uint32_t i = 0; i < count; i++)
     {
         // Normalize in [0, 1].
-        bin = (values[i] - min) / diff;
+        value = values[i];
+        bin = (value - min) / diff;
         ASSERT((0 <= bin) && (bin <= 1));
 
         // Normalize in [0, bins-1].
@@ -43,6 +44,42 @@ static void compute_hist(uint32_t count, double* values, dvec2 min_max, uint32_t
 
         hist[(int)bin]++;
     }
+}
+
+
+
+static double compute_fps(uint64_t counter, uint32_t count, double* values)
+{
+    if (count == 0)
+        return 0;
+
+    ASSERT(count > 0);
+    ANN(values);
+
+    uint64_t counter_mod = counter % DVZ_FPS_MAX_COUNT;
+    ASSERT(counter_mod < DVZ_FPS_MAX_COUNT);
+
+    double mean = 0;
+    double sum = 0;
+    uint32_t idx = 0;
+    uint32_t k = 0;
+    for (int32_t i = (int32_t)count; i >= 0; i--)
+    {
+        idx = (uint32_t)i % DVZ_FPS_MAX_COUNT;
+        ASSERT(idx < DVZ_FPS_MAX_COUNT);
+        sum += values[idx];
+        if (sum > DVZ_FPS_CUTOFF)
+        {
+            break;
+        }
+        k++;
+    }
+    if (k == 0)
+        return 0;
+    ASSERT(k > 0);
+    ASSERT(sum > 0);
+
+    return k / sum;
 }
 
 
@@ -69,11 +106,17 @@ void dvz_fps_tick(DvzFps* fps)
 
     double interval = dvz_clock_interval(&fps->clock);
 
+    // HACK: avoid the initial large interval value corresponding to the first ticks
+    if (fps->counter <= 20)
+        interval = 0.001;
+
     uint64_t counter_mod = fps->counter % DVZ_FPS_MAX_COUNT;
     ASSERT(counter_mod < DVZ_FPS_MAX_COUNT);
-    fps->values[counter_mod] = 1. / interval;
+    double value = interval; // > 0 ? 1. / interval : 0;
+    fps->values[counter_mod] = value;
 
     fps->count = MIN(fps->counter, DVZ_FPS_MAX_COUNT);
+    // fps->max = MAX(fps->max, value);
 
     dvz_clock_tick(&fps->clock);
     fps->counter++;
@@ -86,7 +129,7 @@ void dvz_fps_histogram(DvzFps* fps)
     ANN(fps);
 
     // Compute the min and max of the values.
-    dvec2 min_max = {1000000, -1000000};
+    dvec2 min_max = {0, -1000000};
     dvz_range(fps->count, fps->values, min_max);
 
     // Keep the absolute maximum value.
@@ -96,7 +139,7 @@ void dvz_fps_histogram(DvzFps* fps)
     compute_hist(fps->count, fps->values, min_max, DVZ_FPS_BINS, fps->hist);
 
     // Compute the average FPS.
-    double mean = fps->count >= 2 ? dvz_mean(fps->count, fps->values) : 1.0;
+    double mean = compute_fps(fps->counter, fps->count, fps->values);
 
     // Generate the FPS string.
     char str[32] = {0};

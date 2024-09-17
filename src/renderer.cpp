@@ -13,6 +13,7 @@
 #include "pipelib.h"
 #include "recorder.h"
 #include "renderer.h"
+#include "resources_utils.h"
 #include "scene/graphics.h"
 #include "workspace.h"
 
@@ -487,9 +488,12 @@ static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
     // Get the dat with the vertex data.
     GET_ID(DvzDat, dat, req.content.bind_vertex.dat);
 
-    // Link the two.
-    dvz_pipe_vertex(
-        pipe, req.content.bind_vertex.binding_idx, dat, req.content.bind_vertex.offset);
+    if (_is_dat_valid(dat))
+    {
+        // Link the two.
+        dvz_pipe_vertex(
+            pipe, req.content.bind_vertex.binding_idx, dat, req.content.bind_vertex.offset);
+    }
 
     return NULL;
 }
@@ -507,8 +511,11 @@ static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
     // Get the dat with the index data.
     GET_ID(DvzDat, dat, req.content.bind_index.dat);
 
-    // Link the two.
-    dvz_pipe_index(pipe, dat, req.content.bind_index.offset);
+    if (_is_dat_valid(dat))
+    {
+        // Link the two.
+        dvz_pipe_index(pipe, dat, req.content.bind_index.offset);
+    }
 
     return NULL;
 }
@@ -526,12 +533,13 @@ static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req)
     // Get the dat data.
     GET_ID(DvzDat, dat, req.content.bind_dat.dat);
 
-    // Link the dat.
-    // pipe->dats[req.content.bind_dat.slot_idx] = dat;
 
-    dvz_pipe_dat(pipe, req.content.bind_dat.slot_idx, dat);
-    if (dvz_pipe_complete(pipe))
-        dvz_descriptors_update(&pipe->descriptors);
+    if (_is_dat_valid(dat))
+    {
+        dvz_pipe_dat(pipe, req.content.bind_dat.slot_idx, dat);
+        if (dvz_pipe_complete(pipe))
+            dvz_descriptors_update(&pipe->descriptors);
+    }
 
     return NULL;
 }
@@ -589,6 +597,12 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
 
     GET_ID(DvzDat, dat, req.id)
+
+    if (!_is_dat_valid(dat))
+    {
+        return NULL;
+    }
+
     ANN(dat->br.buffer);
     ASSERT(dat->br.size > 0);
     ANN(req.content.dat_upload.data);
@@ -647,7 +661,10 @@ static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
 
     GET_ID(DvzDat, dat, req.id)
 
-    dvz_dat_resize(dat, req.content.dat.size);
+    if (_is_dat_valid(dat))
+    {
+        dvz_dat_resize(dat, req.content.dat.size);
+    }
 
     return NULL;
 }
@@ -669,7 +686,7 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
-/*  Dat                                                                                          */
+/*  Tex                                                                                          */
 /*************************************************************************************************/
 
 static void* _tex_create(DvzRenderer* rd, DvzRequest req)
@@ -901,7 +918,7 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req)
 
 
 /*************************************************************************************************/
-/*  Utils                                                                                        */
+/*  Router                                                                                       */
 /*************************************************************************************************/
 
 static void _init_renderer(DvzRenderer* rd)

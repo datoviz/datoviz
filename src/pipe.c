@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Pipe: wrap a graphics/compute pipeline with descriptors and dat/tex resources */
 /*************************************************************************************************/
@@ -129,11 +135,15 @@ void dvz_pipe_dat(DvzPipe* pipe, uint32_t idx, DvzDat* dat)
     ASSERT(idx < DVZ_MAX_BINDINGS);
 
     ANN(dat);
+    if (dat->br.buffer->buffer == VK_NULL_HANDLE)
+    {
+        return;
+    }
+
     ANN(dat->br.buffer);
     ASSERT(dat->br.size > 0);
 
     pipe->descriptors_set[idx] = true;
-    // pipe->dats[idx] = dat;
 
     // Create the descriptors if needed.
     _ensure_descriptors_created(pipe, dat->br.count);

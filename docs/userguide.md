@@ -91,7 +91,7 @@ panel = dvz.panel_default(figure)
 Create an arbitrary panel as follows:
 
 ```python
-# x, y is the offset of the top-left panel corner.
+# x, y is the offset of the top left panel corner.
 # w, h is the size in pixels of the panel.
 panel = dvz.panel(figure, x, y, w, h)
 ```
@@ -132,6 +132,22 @@ Once a visual is created, you can specify its data using the provided visual-spe
 
 The most common types of visual properties are point positions and colors, but each visual has its own specific data properties (e.g., size, shape, groups). For more details, refer to the [C API reference](api.md).
 
+
+## Text
+
+Rendering high-quality text on the GPU efficiently is challenging. Several methods have been developed within the graphics community. Datoviz currently offers or plans to offer the following visuals:
+
+- **`glyph`**: Reasonably good quality, supports scaling, but currently not ideal for small font sizes. Utilizes multi-channel signed distance fields. Refer to [Chlumsky's code](https://github.com/Chlumsky/msdf-atlas-gen/).
+- **`monoglyph`**: Fast but very low quality and still experimental (may not work on Linux for now). See [glumpy's example](https://github.com/glumpy/glumpy/blob/master/glumpy/app/console.py#L12).
+- **`font`**: High quality but slow and does not support scaling. Renders on the CPU with freetype.
+- **`vectorglyph`**: Potentially the most promising option, though not yet implemented! Refer to [GreenLightning's code](https://github.com/GreenLightning/gpu-font-rendering).
+
+Datoviz currently includes the Roboto font and supports loading TTF/OTF fonts directly via freetype, which is a library dependency. Additional fonts may be integrated into Datoviz in the near future.
+
+Additionally, we are exploring basic standalone LaTeX rendering in Datoviz, potentially using a micro LaTeX renderer such as [MicroTeX](https://github.com/NanoMichael/MicroTeX). This approach would not require a LaTeX distribution on the client side and would be particularly useful for rendering mathematical equations.
+This could work via bundling of the [New Computer Modern](https://ctan.org/pkg/newcomputermodern?lang=en) font (`NewCMMath-Regular.otf`).
+
+
 ### Terminology
 
 We use the following terminology:
@@ -151,7 +167,7 @@ Python ctypes bindings are auto-generated and expect a NumPy array when a C visu
 
 ### Position
 
-The `position` property specifies the 3D coordinates of visual points. Some visuals require the point positions in a specific format. For instance, segment positions are defined by the 3D coordinates of the start and end points of each segment. Image positions are currently defined by the 2D coordinates of the upper left and lower right corners, though this may change based on user feedback.
+The `position` property specifies the 3D coordinates of visual points. Some visuals require the point positions in a specific format. For instance, segment positions are defined by the 3D coordinates of the start and end points of each segment. Image positions are currently defined by the 2D coordinates of the top left and bottom right corners, though this may change based on user feedback.
 
 To set the positions of a visual, for example the `point` visual, use this:
 
@@ -210,11 +226,9 @@ However, it is not yet straightforward to share other types of data between visu
 
 ### Dynamic data updates
 
-You can modify the data of a visual dynamically while the event loop is running, such as in an event callback. After updating a visual, you need to apply the changes with the following call:
+You can modify the data of a visual dynamically while the event loop is running, such as in an event callback.
+After updating a visual, the function `dvz.visual_update(visual)` is automatically called internally to trigger the data updates on the GPU, so you should not need to call it manually in most cases.
 
-```python
-dvz.visual_update(visual)
-```
 
 ### Shapes
 
@@ -429,14 +443,14 @@ Install the `.deb` package and look at the `.c` examples in `examples/`.
 
 ### macOS (arm64)
 
-Looking at the [justfile](../justfile) (`pkg` and `testpkg` commands) may be helpful.
+Looking at the `justfile` (`pkg` and `testpkg` commands) may be helpful.
 To build an application using Datoviz:
 
 1. You need to link your application to `libdatoviz.dylib`, that you can build yourself or find in the provided `.pkg` installation file.
-2. You also need to link to the non-system dependencies of Datoviz, for now they are `libvulkan`, `libMoltenVK` ("emulating" Vulkan on top of Apple Metal), `libpng` and `freetype`. You can see the dependencies with `just deps` (which uses `otool` on `libdatoviz.dylib`). You'll find these dependencies in [`libs/vulkan/macos`](libs/vulkan/macos) in the GitHub repository.
+2. You also need to link to the non-system dependencies of Datoviz, for now they are `libvulkan`, `libMoltenVK` ("emulating" Vulkan on top of Apple Metal), `libpng` and `freetype`. You can see the dependencies with `just deps` (which uses `otool` on `libdatoviz.dylib`). You'll find these dependencies in `libs/vulkan/macos` in the GitHub repository.
 3. You should bundle these `dylib` dependencies alongside your application, and that will depend on how your application is built and distributed.
 4. Note that the `just pkg` script modifies the rpath of `libdatoviz.dylib` with [`install_name_tool`](https://www.unix.com/man-page/osx/1/install_name_tool/) before building the `.pkg` package to declare that its dependencies are to be found in the same directory.
-5. Another thing to keep in mind is that, for now, the `VK_DRIVER_FILES` environment variable needs to be set to the absolute path to [`MoltenVK_icd.json`](libs/vulkan/macos/MoltenVK_icd.json) (available in this GitHub repository). The `.pkg` package installs it to `/usr/local/lib/datoviz/MoltenVK_icd.json`. Right now, [`datoviz.h`](include/datoviz.h) automatically sets this environment variable if it's included in the source file implementing your `main()` entry-point. These complications are necessary to avoid requiring the end-users to install the Vulkan SDK manually.
+5. Another thing to keep in mind is that, for now, the `VK_DRIVER_FILES` environment variable needs to be set to the absolute path to `libs/vulkan/macos/MoltenVK_icd.json` (available in this GitHub repository). The `.pkg` package installs it to `/usr/local/lib/datoviz/MoltenVK_icd.json`. Right now, `datoviz.h` automatically sets this environment variable if it's included in the source file implementing your `main()` entry-point. These complications are necessary to avoid requiring the end-users to install the Vulkan SDK manually.
 
 ### Windows
 

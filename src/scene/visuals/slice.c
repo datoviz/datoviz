@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Slice                                                                                        */
 /*************************************************************************************************/
@@ -141,27 +147,27 @@ void dvz_slice_position(
         y3 = p3[i][1];
         z3 = p3[i][2];
 
-        positions[6 * i + 0][0] = x0; // upper left
+        positions[6 * i + 0][0] = x0; // top left
         positions[6 * i + 0][1] = y0;
         positions[6 * i + 0][2] = z0;
 
-        positions[6 * i + 1][0] = x1; // lower left
+        positions[6 * i + 1][0] = x1; // bottom left
         positions[6 * i + 1][1] = y1;
         positions[6 * i + 1][2] = z1;
 
-        positions[6 * i + 2][0] = x2; // lower right
+        positions[6 * i + 2][0] = x2; // bottom right
         positions[6 * i + 2][1] = y2;
         positions[6 * i + 2][2] = z2;
 
-        positions[6 * i + 3][0] = x2; // lower right
+        positions[6 * i + 3][0] = x2; // bottom right
         positions[6 * i + 3][1] = y2;
         positions[6 * i + 3][2] = z2;
 
-        positions[6 * i + 4][0] = x3; // upper right
+        positions[6 * i + 4][0] = x3; // top right
         positions[6 * i + 4][1] = y3;
         positions[6 * i + 4][2] = z3;
 
-        positions[6 * i + 5][0] = x0; // upper left
+        positions[6 * i + 5][0] = x0; // top left
         positions[6 * i + 5][1] = y0;
         positions[6 * i + 5][2] = z0;
     }
@@ -207,27 +213,27 @@ void dvz_slice_texcoords(
         v3 = uvw3[i][1];
         w3 = uvw3[i][2];
 
-        uvw[6 * i + 0][0] = u0; // upper left
+        uvw[6 * i + 0][0] = u0; // top left
         uvw[6 * i + 0][1] = v0;
         uvw[6 * i + 0][2] = w0;
 
-        uvw[6 * i + 1][0] = u1; // lower left
+        uvw[6 * i + 1][0] = u1; // bottom left
         uvw[6 * i + 1][1] = v1;
         uvw[6 * i + 1][2] = w1;
 
-        uvw[6 * i + 2][0] = u2; // lower right
+        uvw[6 * i + 2][0] = u2; // bottom right
         uvw[6 * i + 2][1] = v2;
         uvw[6 * i + 2][2] = w2;
 
-        uvw[6 * i + 3][0] = u2; // lower right
+        uvw[6 * i + 3][0] = u2; // bottom right
         uvw[6 * i + 3][1] = v2;
         uvw[6 * i + 3][2] = w2;
 
-        uvw[6 * i + 4][0] = u3; // upper right
+        uvw[6 * i + 4][0] = u3; // top right
         uvw[6 * i + 4][1] = v3;
         uvw[6 * i + 4][2] = w3;
 
-        uvw[6 * i + 5][0] = u0; // upper left
+        uvw[6 * i + 5][0] = u0; // top left
         uvw[6 * i + 5][1] = v0;
         uvw[6 * i + 5][2] = w0;
     }

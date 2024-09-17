@@ -66,7 +66,6 @@ perf.*
 .DS_Store
 _old
 headers.json
-*.png
 joblib
 *.ipynb*
 *.npy
@@ -75,7 +74,6 @@ experimental
 *.out.txt
 *~.*
 *.dvz*
-*.yml
 *.zst
 _old*
 packaging
@@ -83,3 +81,5 @@ dist
 docs/examples
 api.md
 venv
+site
+release_artifacts

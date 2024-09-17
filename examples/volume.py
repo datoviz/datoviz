@@ -89,7 +89,7 @@ dvz.panel_visual(panel, visual, 0)
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
 
 # Initial camera position.
-camera = dvz.panel_camera(panel)
+camera = dvz.panel_camera(panel, 0)
 dvz.camera_initial(camera, vec3(0, 0, 1.5), vec3(), vec3(0, 1, 0))
 
 # Update the panel after updating the arcball and camera.

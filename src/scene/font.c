@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Font                                                                                         */
 /*************************************************************************************************/
@@ -29,6 +35,8 @@
 /*************************************************************************************************/
 
 #define DVZ_DEFAULT_FONT_SIZE 24
+#define MAX_TEXT_LENGTH       65536
+#define INTERLINE             1.5
 
 
 
@@ -140,9 +148,18 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     uint32_t h = 0;
 
     vec4* xywh = (vec4*)calloc(length, sizeof(vec4));
+    int x_min = +1000000;
+    int y_offset = 0;
 
     for (int i = 0; i < (int)length; i++)
     {
+        if (codepoints[i] == 0x0A)
+        {
+            pen_x = 0;
+            y_offset -= (int)h * INTERLINE;
+            continue;
+        }
+
         // Load the glyph for the current character
         if (FT_Load_Char(face, codepoints[i], FT_LOAD_RENDER))
         {
@@ -154,14 +171,16 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
         w = face->glyph->bitmap.width;
         h = face->glyph->bitmap.rows;
 
-        // HACK: ensure the x position is 0 for the first glyph.
+        // HACK:
         if (i == 0)
         {
-            pen_x = -face->glyph->bitmap_left;
+            pen_x = 0; // -face->glyph->bitmap_left;
         }
 
         x = pen_x + face->glyph->bitmap_left;
-        y = face->glyph->bitmap_top - (int)h;
+        y = y_offset + face->glyph->bitmap_top - (int)h;
+
+        x_min = MIN(x_min, x);
 
         xywh[i][0] = (float)x;
         xywh[i][1] = (float)y;
@@ -170,6 +189,15 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
 
         // Update the pen position based on the glyph's advance width
         pen_x += (face->glyph->advance.x >> 6); // 1/64 pixel units
+    }
+
+    // Ensure the minimal x position is 0.
+    for (int i = 0; i < (int)length; i++)
+    {
+        if (codepoints[i] != 0x0A)
+        {
+            xywh[i][0] -= x_min;
+        }
     }
 
     return xywh;
@@ -195,12 +223,14 @@ vec4* dvz_font_ascii(DvzFont* font, const char* string)
 
 // The caller must FREE the returned pointer.
 uint8_t* dvz_font_draw(
-    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, uvec2 out_size)
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, int flags,
+    uvec2 out_size)
 {
     ANN(font);
     ANN(codepoints);
     ANN(xywh);
     ASSERT(length > 0);
+    uint8_t n_channels = (flags & DVZ_FONT_FLAGS_RGBA) > 0 ? 4 : 3;
 
 #if HAS_MSDF
     FT_Face face = font->face;
@@ -211,12 +241,9 @@ uint8_t* dvz_font_draw(
     }
 
     // Compute the size of the image.
-    int margin = 5;
-    int width = 2 * margin + xywh[length - 1][0] + xywh[length - 1][2]; // x_last + w_last
-    ASSERT(width > 0);
-
     int top = -1000000, bottom = +1000000;
     int x = 0, y = 0, w = 0, h = 0;
+    int width = 0;
     uint32_t itop = 0;
 
     for (uint32_t i = 0; i < length; i++)
@@ -225,6 +252,8 @@ uint8_t* dvz_font_draw(
         y = (int)round(xywh[i][1]);
         w = (int)round(xywh[i][2]);
         h = (int)round(xywh[i][3]);
+
+        width = MAX(width, x + w);
 
         // Maximum height from the baseline.
         if (y + h > top)
@@ -239,6 +268,10 @@ uint8_t* dvz_font_draw(
             bottom = y;
         }
     }
+
+    // Total image width.
+    int margin = 5;
+    width += 2 * margin;
 
     int ytop = (int)round(xywh[itop][1]);
     int htop = (int)round(xywh[itop][3]);
@@ -255,10 +288,16 @@ uint8_t* dvz_font_draw(
     out_size[0] = (uint32_t)width;
     out_size[1] = (uint32_t)height;
 
-    uint8_t* bitmap = (uint8_t*)calloc((uint32_t)(width * height * 3), sizeof(uint8_t));
+    uint8_t* bitmap = (uint8_t*)calloc((uint32_t)(width * height * n_channels), sizeof(uint8_t));
 
     for (int i = 0; i < (int)length; i++)
     {
+        // Skip new line.
+        if (codepoints[i] == 0x0A)
+        {
+            continue;
+        }
+
         // Load the glyph for the current character
         if (FT_Load_Char(face, codepoints[i], FT_LOAD_RENDER))
         {
@@ -266,7 +305,7 @@ uint8_t* dvz_font_draw(
             continue;
         }
 
-        // Determine the upper-left corner of the glyph.
+        // Determine the top left corner of the glyph.
         x = round(xywh[i][0]);
         y = round(xywh[i][1]);
         w = round(xywh[i][2]);
@@ -289,8 +328,10 @@ uint8_t* dvz_font_draw(
                 uint32_t idx = (uint32_t)((y + v) * width + x + u);
                 ASSERT((int)idx < width * height * 1);
                 for (uint32_t k = 0; k < 3; k++)
-                    bitmap[3 * idx + k] = face->glyph->bitmap.buffer[w * v + u];
-                // bitmap[3 * idx + 1] += 64; // DEBUG
+                    bitmap[n_channels * idx + k] = face->glyph->bitmap.buffer[w * v + u];
+                if (n_channels == 4)
+                    bitmap[n_channels * idx + 3] = 255;
+                // bitmap[n_channels * idx + 1] += 64; // DEBUG
             }
         }
     }
@@ -299,6 +340,26 @@ uint8_t* dvz_font_draw(
 #else
     return NULL;
 #endif
+}
+
+
+
+DvzId dvz_font_texture(
+    DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 out_size)
+{
+    ANN(font);
+
+    // Compute the layout of the text.
+    vec4* xywh = dvz_font_layout(font, length, codepoints);
+    uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_FLAGS_RGBA, out_size);
+    out_size[2] = 1;
+    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_size[0], out_size[1], bitmap);
+
+    // Cleanup.
+    FREE(bitmap);
+    FREE(xywh);
+
+    return tex;
 }
 
 

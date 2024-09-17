@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  File I/O utilities                                                                           */
 /*************************************************************************************************/
@@ -25,6 +31,18 @@
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Return the size of a file.
+ *
+ * @param filename path of the file
+ * @returns the size of the file
+ */
+DvzSize dvz_file_size(const char* filename);
+
+
 
 /**
  * Read a binary file.

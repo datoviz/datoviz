@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing visual                                                                               */
 /*************************************************************************************************/
@@ -20,18 +26,6 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
@@ -45,7 +39,7 @@ int test_visual_1(TstSuite* suite)
     DvzVisual* visual = dvz_visual(batch, DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST, 0);
 
     // Visual shaders.
-    dvz_visual_shader(visual, "graphics_basic");
+    dvz_visual_shader(visual, "graphics_trivial");
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, 0, sizeof(vec3), DVZ_FORMAT_R32G32B32_SFLOAT, 0);

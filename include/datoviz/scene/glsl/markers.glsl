@@ -1,3 +1,9 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 // -----------------------------------------------------------------------------
 // Copyright (c) 2009-2016 Nicolas P. Rougier. All rights reserved.
 // Distributed under the (new) BSD License.
@@ -209,6 +215,21 @@ float marker_spade(vec2 P, float size)
 
 
 float marker_square(vec2 P, float size) { return max(abs(P.x), abs(P.y)) - size / 2.0; }
+
+
+
+float marker_rounded_rect(vec2 P, vec2 size, float radius)
+{
+    vec2 d = abs(P) - size / 2.0 + radius;
+    return min(max(d.x, d.y), 0.0) + length(max(d, 0.0)) - radius;
+}
+
+
+
+float marker_rounded_rect(vec2 P, float size, float radius)
+{
+    return marker_rounded_rect(P, vec2(size, size), radius);
+}
 
 
 

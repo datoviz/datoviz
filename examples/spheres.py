@@ -34,7 +34,7 @@ figure = dvz.figure(scene, 1000, 1000, 0)
 panel = dvz.panel_default(figure)
 
 # 3D camera.
-camera = dvz.panel_camera(panel)
+camera = dvz.panel_camera(panel, 0)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -184,5 +184,7 @@ dvz.app_onkeyboard(app, on_keyboard, None)
 dvz.scene_run(scene, app, 0)
 
 # Cleanup.
+dvz.atlas_destroy(af.atlas)
+dvz.font_destroy(af.font)
 dvz.scene_destroy(scene)
 dvz.app_destroy(app)

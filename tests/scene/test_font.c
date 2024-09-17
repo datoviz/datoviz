@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing font                                                                                 */
 /*************************************************************************************************/
@@ -46,7 +52,7 @@ int test_font_1(TstSuite* suite)
 
     // Compute the layout of the text.
     // const char* text = "dfghijkl!01234";
-    const char* text = "Hello world! abcdefhijklm";
+    const char* text = "Hello world!\nabcdefhijklm";
     vec4* xywh = dvz_font_ascii(font, text);
     uint32_t n = strnlen(text, 1024);
     for (uint32_t i = 0; i < n; i++)
@@ -58,7 +64,7 @@ int test_font_1(TstSuite* suite)
     uvec2 out_size;
     uint32_t count = 0;
     uint32_t* codepoints = _ascii_to_utf32(text, &count);
-    uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, out_size);
+    uint8_t* bitmap = dvz_font_draw(font, n, codepoints, xywh, 0, out_size);
 
     char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/font.png", ARTIFACTS_DIR);

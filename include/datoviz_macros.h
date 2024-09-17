@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
@@ -18,6 +24,7 @@
 #include <string.h>
 
 #include "datoviz_version.h"
+
 
 
 /*************************************************************************************************/
@@ -86,6 +93,8 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 #ifndef ANN
 #define ANN(x) ASSERT((x) != NULL);
 #endif
+
+#define DVZ_ID_NONE 0
 
 
 

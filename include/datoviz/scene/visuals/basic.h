@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /* Basic                                                                                         */
 /*************************************************************************************************/
@@ -22,6 +28,7 @@
 
 // typedef struct DvzBasic DvzBasic;
 typedef struct DvzBasicVertex DvzBasicVertex;
+typedef struct DvzBasicParams DvzBasicParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -37,6 +44,14 @@ struct DvzBasicVertex
 {
     vec3 pos;    /* position */
     cvec4 color; /* color */
+    float group; /* group */
+};
+
+
+
+struct DvzBasicParams
+{
+    float size; /* point size */
 };
 
 

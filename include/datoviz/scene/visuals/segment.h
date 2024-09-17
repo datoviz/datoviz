@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /* Segment                                                                                       */
 /*************************************************************************************************/
@@ -26,25 +32,6 @@ typedef struct DvzSegmentVertex DvzSegmentVertex;
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzVisual DvzVisual;
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-// TODO: comment out once graphics.h has been removed and this enum has been declared in _enums.h
-// Cap type.
-// typedef enum
-// {
-//     DVZ_CAP_TYPE_NONE = 0,
-//     DVZ_CAP_ROUND = 1,
-//     DVZ_CAP_TRIANGLE_IN = 2,
-//     DVZ_CAP_TRIANGLE_OUT = 3,
-//     DVZ_CAP_SQUARE = 4,
-//     DVZ_CAP_BUTT = 5,
-//     DVZ_CAP_COUNT,
-// } DvzCapType;
 
 
 

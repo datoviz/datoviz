@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Marker                                                                                       */
 /*************************************************************************************************/
@@ -158,21 +164,28 @@ void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 
-void dvz_marker_edge_color(DvzVisual* visual, cvec4 value)
+void dvz_marker_edge_color(DvzVisual* visual, cvec4 color)
 {
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
-    float r = value[0] / 255.0;
-    float g = value[1] / 255.0;
-    float b = value[2] / 255.0;
-    float a = value[3] / 255.0;
+    float r = color[0] / 255.0;
+    float g = color[1] / 255.0;
+    float b = color[2] / 255.0;
+    float a = color[3] / 255.0;
     dvz_visual_param(visual, 2, 0, (vec4){r, g, b, a});
 }
 
 
 
-void dvz_marker_edge_width(DvzVisual* visual, float value)
+void dvz_marker_edge_width(DvzVisual* visual, float width)
 {
-    dvz_visual_param(visual, 2, 1, &value);
+    dvz_visual_param(visual, 2, 1, &width);
+}
+
+
+
+void dvz_marker_tex_scale(DvzVisual* visual, float scale)
+{
+    dvz_visual_param(visual, 2, 2, &scale);
 }
 
 
@@ -180,11 +193,4 @@ void dvz_marker_edge_width(DvzVisual* visual, float value)
 void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler)
 {
     dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
-}
-
-
-
-void dvz_marker_tex_scale(DvzVisual* visual, float value)
-{
-    dvz_visual_param(visual, 2, 2, &value);
 }

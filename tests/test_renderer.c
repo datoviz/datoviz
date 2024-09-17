@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing renderer                                                                             */
 /*************************************************************************************************/
@@ -177,8 +183,8 @@ int test_renderer_graphics(TstSuite* suite)
     DvzId graphics_id = req.id;
 
     // Load shaders.
-    _load_shader(batch, graphics_id, DVZ_SHADER_VERTEX, "graphics_basic_vert");
-    _load_shader(batch, graphics_id, DVZ_SHADER_FRAGMENT, "graphics_basic_frag");
+    _load_shader(batch, graphics_id, DVZ_SHADER_VERTEX, "graphics_trivial_vert");
+    _load_shader(batch, graphics_id, DVZ_SHADER_FRAGMENT, "graphics_trivial_frag");
 
     // Primitive topology.
     dvz_set_primitive(batch, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);

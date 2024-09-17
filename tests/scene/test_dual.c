@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing dual                                                                                 */
 /*************************************************************************************************/
@@ -162,7 +168,7 @@ int test_dual_2(TstSuite* suite)
     {
         for (uint32_t i = 0; i < count * item_size; i++)
         {
-            printf("%hhu ", ((char*)array->data)[i]);
+            printf("%u ", ((char*)array->data)[i]);
             if ((i > 0) && (i % 4 == 3))
                 printf("| ");
             if ((i > 0) && (i % 12 == 11))

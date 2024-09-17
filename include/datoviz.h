@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /**************************************************************************************************
 
  * DATOVIZ PUBLIC API HEADER FILE
@@ -54,6 +60,7 @@ typedef struct DvzMVP DvzMVP;
 typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzOrtho DvzOrtho;
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzFont DvzFont;
@@ -376,8 +383,8 @@ DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
  * Create a panel in a figure (partial or complete rectangular portion of a figure).
  *
  * @param fig the figure
- * @param x the x coordinate of the top-left corner, in pixels
- * @param y the y coordinate of the top-left corner, in pixels
+ * @param x the x coordinate of the top left corner, in pixels
+ * @param y the y coordinate of the top left corner, in pixels
  * @param width the panel width, in pixels
  * @param height the panel height, in pixels
  */
@@ -431,8 +438,8 @@ DVZ_EXPORT void dvz_panel_mvpmat(DvzPanel* panel, mat4 model, mat4 view, mat4 pr
  * Resize a panel.
  *
  * @param panel the panel
- * @param x the x coordinate of the top-left corner, in pixels
- * @param y the y coordinate of the top-left corner, in pixels
+ * @param x the x coordinate of the top left corner, in pixels
+ * @param y the y coordinate of the top left corner, in pixels
  * @param width the panel width, in pixels
  * @param height the panel height, in pixels
  */
@@ -480,9 +487,10 @@ DVZ_EXPORT DvzPanel* dvz_panel_at(DvzFigure* figure, vec2 pos);
  * Set a camera for a panel.
  *
  * @param panel the panel
+ * @param flags the camera flags
  * @returns the camera
  */
-DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
+DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags);
 
 
 
@@ -493,6 +501,16 @@ DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel);
  * @returns the panzoom
  */
 DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
+
+
+
+/**
+ * Set ortho interactivity for a panel.
+ *
+ * @param panel the panel
+ * @returns the ortho
+ */
+DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel);
 
 
 
@@ -649,12 +667,13 @@ DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
 
 
 /**
- * Merge two shapes.
+ * Merge several shapes.
  *
- * @param merged the shape to append the other shape to
- * @param to_merge the shape appended to the first shape
+ * @param count the number of shapes to merge
+ * @param shapes the shapes to merge
+ * @returns the merged shape
  */
-DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
+DVZ_EXPORT DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes);
 
 
 
@@ -664,6 +683,20 @@ DVZ_EXPORT void dvz_shape_merge(DvzShape* merged, DvzShape* to_merge);
  * @param shape the shape
  */
 DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
+
+
+
+/**
+ * Convert an indexed shape to a non-indexed one by duplicating the vertex values according
+ * to the indices.
+ *
+ * This is used by the mesh wireframe option, as a given vertex may have distinct barycentric
+ * coordinates depending on its index.
+ *
+ * @param shape the shape
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_shape_unindex(DvzShape* shape, int flags);
 
 
 
@@ -774,6 +807,19 @@ DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
  * @returns the shape
  */
 DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
+
+
+
+/**
+ * Create a polygon shape using the simple earcut polygon triangulation algorithm.
+ *
+ * @param count the number of points along the polygon border
+ * @param points the points 2D coordinates
+ * @param color the polygon color
+ * @returns the shape
+ */
+DVZ_EXPORT
+DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color);
 
 
 
@@ -906,6 +952,30 @@ dvz_basic_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  */
 DVZ_EXPORT void
 dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ * Set the vertex group index.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the group index of each vertex
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_basic_group(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ * Set the point size (for POINT_LIST topology only).
+ *
+ * @param visual the visual
+ * @param size the point size in pixels
+ */
+DVZ_EXPORT void dvz_basic_size(DvzVisual* visual, float size);
 
 
 
@@ -1146,9 +1216,9 @@ dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* value
  * Set the marker edge color.
  *
  * @param visual the visual
- * @param value the edge color
+ * @param color the edge color
  */
-DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
+DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 color);
 
 
 
@@ -1156,9 +1226,9 @@ DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 value);
  * Set the marker edge width.
  *
  * @param visual the visual
- * @param value the edge width
+ * @param width the edge width
  */
-DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float width);
 
 
 
@@ -1177,9 +1247,9 @@ DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
  * Set the texture scale.
  *
  * @param visual the visual
- * @param value the texture scale
+ * @param scale the texture scale
  */
-DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_marker_tex_scale(DvzVisual* visual, float scale);
 
 
 
@@ -1340,9 +1410,30 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values,
  * Set the path line width.
  *
  * @param visual the visual
- * @param value the line width
+ * @param width the line width
  */
-DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float value);
+DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float width);
+
+
+
+/**
+ * Set the path cap.
+ *
+ * @param visual the visual
+ * @param cap the cap
+ */
+DVZ_EXPORT
+void dvz_path_cap(DvzVisual* visual, DvzCapType cap);
+
+
+
+/**
+ * Set the path join.
+ *
+ * @param visual the visual
+ * @param join the join
+ */
+DVZ_EXPORT void dvz_path_join(DvzVisual* visual, DvzJoinType join);
 
 
 
@@ -1367,6 +1458,15 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
  * @returns a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
  */
 DVZ_EXPORT DvzAtlasFont dvz_atlas_font(double font_size);
+
+
+
+/**
+ * Destroy an atlas.
+ *
+ * @param atlas the atlas
+ */
+DVZ_EXPORT void dvz_atlas_destroy(DvzAtlas* atlas);
 
 
 
@@ -1406,6 +1506,8 @@ DVZ_EXPORT vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t*
 /**
  * Compute the shift of each glyph in an ASCII string, using the Freetype library.
  *
+ * Note: the caller must free the output after use.
+ *
  * @param font the font
  * @param string the ASCII string
  * @returns an array of (x,y,w,h) shifts
@@ -1417,16 +1519,36 @@ DVZ_EXPORT vec4* dvz_font_ascii(DvzFont* font, const char* string);
 /**
  * Render a string using Freetype.
  *
+ * Note: the caller must free the output after use.
+ *
  * @param font the font
  * @param length the number of glyphs
  * @param codepoints the Unicode codepoints of the glyphs
  * @param xywh an array of (x,y,w,h) shifts, returned by dvz_font_layout()
+ * @param flags the font flags
  * @param[out] out_size the number of bytes in the returned image
  * @returns an RGBA array allocated by this function and that MUST be freed by the caller
  *
  */
 DVZ_EXPORT uint8_t* dvz_font_draw(
-    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, uvec2 out_size);
+    DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh, int flags,
+    uvec2 out_size);
+
+
+
+/**
+ * Generate a texture with a rendered text.
+ *
+ * @param font the font
+ * @param batch the batch
+ * @param length the number of Unicode codepoints
+ * @param codepoints the Unicode codepoints
+ * @param[out] size the generated texture size
+ * @returns a tex ID
+ *
+ */
+DVZ_EXPORT DvzId dvz_font_texture(
+    DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 size);
 
 
 
@@ -1657,6 +1779,118 @@ DVZ_EXPORT void dvz_glyph_xywh(
 
 
 /*************************************************************************************************/
+/*  Monoglyph visual                                                                             */
+/*************************************************************************************************/
+
+/**
+ * Create a monoglyph visual.
+ *
+ * @param batch the batch
+ * @param flags the visual creation flags
+ * @returns the visual
+ */
+DVZ_EXPORT DvzVisual* dvz_monoglyph(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Set the glyph positions.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the 3D positions of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the glyph offsets.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the glyph offsets (ivec2 integers: row,column)
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_offset(DvzVisual* visual, uint32_t first, uint32_t count, ivec2* values, int flags);
+
+
+
+/**
+ * Set the glyph colors.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_monoglyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
+ * Set the text.
+ *
+ * @param visual the visual
+ * @param text the ASCII test (string length without the null terminal byte = number of glyphs)
+ */
+DVZ_EXPORT void
+dvz_monoglyph_glyph(DvzVisual* visual, uint32_t first, const char* text, int flags);
+
+
+
+/**
+ * Set the glyph anchor (relative to the glyph size).
+ *
+ * @param visual the visual
+ * @param anchor the anchor
+ */
+DVZ_EXPORT void dvz_monoglyph_anchor(DvzVisual* visual, vec2 anchor);
+
+
+
+/**
+ * Set the glyph size (relative to the initial glyph size).
+ *
+ * @param visual the visual
+ * @param size the glyph size
+ */
+DVZ_EXPORT void dvz_monoglyph_size(DvzVisual* visual, float size);
+
+
+
+/**
+ * All-in-one function for multiline text.
+ *
+ * @param visual the visual
+ * @param pos the text position
+ * @param color the text color
+ * @param size the glyph size
+ * @param text the text, can contain `\n` new lines
+ */
+DVZ_EXPORT void
+dvz_monoglyph_textarea(DvzVisual* visual, vec3 pos, cvec4 color, float size, const char* text);
+
+
+
+/**
+ * Allocate memory for a visual.
+ *
+ * @param visual the visual
+ * @param item_count the total number of items to allocate for this visual
+ */
+DVZ_EXPORT void dvz_monoglyph_alloc(DvzVisual* visual, uint32_t item_count);
+
+
+
+/*************************************************************************************************/
 /*  Image                                                                                        */
 /*************************************************************************************************/
 
@@ -1677,11 +1911,39 @@ DVZ_EXPORT DvzVisual* dvz_image(DvzBatch* batch, int flags);
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param ul_lr the 2D positions of the upper-left and lower-right corners (vec4 x0,y0,x1,y1)
+ * @param values the 3D positions of the top left corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_image_position(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
+dvz_image_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the image sizes.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the sizes of each image, in pixels
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_image_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+
+
+
+/**
+ * Set the image anchors.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the relative anchors of each image, (0,0 = position pertains to top left corner)
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_image_anchor(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
 
 
 
@@ -1691,11 +1953,25 @@ dvz_image_position(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_l
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param ul_lr the tex coordinates of the upper-left and lower-right corners (vec4 u0,v0,u1,v1)
+ * @param tl_br the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_lr, int flags);
+dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* tl_br, int flags);
+
+
+
+/**
+ * Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the image colors
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
 
 
 
@@ -1709,6 +1985,36 @@ dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* ul_
  */
 DVZ_EXPORT void dvz_image_texture(
     DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ * Use a rounded rectangle for images, with a given radius in pixels.
+ *
+ * @param visual the visual
+ * @param radius the rounded corner radius, in pixel
+ */
+DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
+
+
+
+/**
+ * Set the edge width.
+ *
+ * @param visual the visual
+ * @param width the edge width
+ */
+DVZ_EXPORT void dvz_image_edge_width(DvzVisual* visual, float width);
+
+
+
+/**
+ * Set the edge color.
+ *
+ * @param visual the visual
+ * @param color the edge color
+ */
+DVZ_EXPORT void dvz_image_edge_color(DvzVisual* visual, cvec4 color);
 
 
 
@@ -1809,6 +2115,65 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 /**
+ * Set the isolines values.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the scalar field for which to draw isolines
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_isoline(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ * Set the distance between the current vertex to the left edge at corner A, B, or C in triangle
+ * ABC.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the distance to the left edge adjacent to each triangle vertex
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_left(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the distance between the current vertex to the right edge at corner A, B, or C in triangle
+ * ABC.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the distance to the right edge adjacent to each triangle vertex
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_right(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, int flags);
+
+
+
+/**
+ * Set the contour information for polygon contours.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
+ * contour, and the second least significant bit is 1 if the corner is a contour
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+
+
+
+/**
  * Assign a 2D texture to a mesh visual.
  *
  * @param visual the visual
@@ -1863,6 +2228,38 @@ DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos);
  * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
 DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
+
+
+
+/**
+ * Set the stroke color.
+ *
+ * Note: the alpha component is currently unused.
+ *
+ * @param visual the mesh
+ * @param stroke the rgba components
+ */
+DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba);
+
+
+
+/**
+ * Set the stroke linewidth (wireframe or isoline).
+ *
+ * @param visual the mesh
+ * @param linewidth the line width
+ */
+DVZ_EXPORT void dvz_mesh_linewidth(DvzVisual* visual, float linewidth);
+
+
+
+/**
+ * Set the number of isolines
+ *
+ * @param visual the mesh
+ * @param count the number of isolines
+ */
+DVZ_EXPORT void dvz_mesh_density(DvzVisual* visual, uint32_t count);
 
 
 
@@ -2084,10 +2481,10 @@ DVZ_EXPORT DvzVisual* dvz_slice(DvzBatch* batch, int flags);
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param p0 the 3D positions of the upper-left corner
- * @param p1 the 3D positions of the upper-right corner
- * @param p2 the 3D positions of the lower-left corner
- * @param p3 the 3D positions of the lower-right corner
+ * @param p0 the 3D positions of the top left corner
+ * @param p1 the 3D positions of the top right corner
+ * @param p2 the 3D positions of the bottom left corner
+ * @param p3 the 3D positions of the bottom right corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_position(
@@ -2102,10 +2499,10 @@ DVZ_EXPORT void dvz_slice_position(
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param uvw0 the 3D texture coordinates of the upper-left corner
- * @param uvw1 the 3D texture coordinates of the upper-right corner
- * @param uvw2 the 3D texture coordinates of the lower-left corner
- * @param uvw3 the 3D texture coordinates of the lower-right corner
+ * @param uvw0 the 3D texture coordinates of the top left corner
+ * @param uvw1 the 3D texture coordinates of the top right corner
+ * @param uvw2 the 3D texture coordinates of the bottom left corner
+ * @param uvw3 the 3D texture coordinates of the bottom right corner
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_slice_texcoords(
@@ -2390,6 +2787,19 @@ DVZ_EXPORT void dvz_arcball_mvp(DvzArcball* arcball, DvzMVP* mvp);
  * @param arcball the arcball
  */
 DVZ_EXPORT void dvz_arcball_print(DvzArcball* arcball);
+
+
+
+/**
+ * Show a GUI with sliders controlling the three arcball angles.
+ *
+ * @param arcball the arcball
+ * @param app the app
+ * @param canvas_id the canvas (or figure) ID
+ * @param panel the panel
+ */
+DVZ_EXPORT
+void dvz_arcball_gui(DvzArcball* arcball, DvzApp* app, DvzId canvas_id, DvzPanel* panel);
 
 
 
@@ -2681,6 +3091,112 @@ DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 
 /*************************************************************************************************/
+/*  Ortho                                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Reset an ortho.
+ *
+ * @param ortho the ortho
+ */
+DVZ_EXPORT void dvz_ortho_reset(DvzOrtho* ortho);
+
+
+
+/**
+ * Inform an ortho of a panel resize.
+ *
+ * @param ortho the ortho
+ * @param width the panel width
+ * @param height the panel height
+ */
+DVZ_EXPORT void dvz_ortho_resize(DvzOrtho* ortho, float width, float height);
+
+
+
+/**
+ * Set the ortho flags.
+ *
+ * @param ortho the ortho
+ * @param flags the flags
+ */
+DVZ_EXPORT void dvz_ortho_flags(DvzOrtho* ortho, int flags);
+
+
+
+/**
+ * Apply a pan value to an ortho.
+ *
+ * @param ortho the ortho
+ * @param pan the pan, in NDC
+ */
+DVZ_EXPORT void dvz_ortho_pan(DvzOrtho* ortho, vec2 pan);
+
+
+
+/**
+ * Apply a zoom value to an ortho.
+ *
+ * @param ortho the ortho
+ * @param zoom the zoom level
+ */
+DVZ_EXPORT void dvz_ortho_zoom(DvzOrtho* ortho, float zoom);
+
+
+
+/**
+ * Apply a pan shift to an ortho.
+ *
+ * @param ortho the ortho
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_pan_shift(DvzOrtho* ortho, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * Apply a zoom shift to an ortho.
+ *
+ * @param ortho the ortho
+ * @param shift_px the shift value, in pixels
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_zoom_shift(DvzOrtho* ortho, vec2 shift_px, vec2 center_px);
+
+
+
+/**
+ * End an ortho interaction.
+ *
+ * @param ortho the ortho
+ */
+DVZ_EXPORT void dvz_ortho_end(DvzOrtho* ortho);
+
+
+
+/**
+ * Apply a wheel zoom to an ortho.
+ *
+ * @param ortho the ortho
+ * @param dir the wheel direction
+ * @param center_px the center position, in pixels
+ */
+DVZ_EXPORT void dvz_ortho_zoom_wheel(DvzOrtho* ortho, vec2 dir, vec2 center_px);
+
+
+
+/**
+ * Apply an MVP matrix to an ortho.
+ *
+ * @param ortho the ortho
+ * @param mvp the MVP
+ */
+DVZ_EXPORT void dvz_ortho_mvp(DvzOrtho* ortho, DvzMVP* mvp);
+
+
+
+/*************************************************************************************************/
 /*************************************************************************************************/
 /*  GUI functions                                                                                */
 /*************************************************************************************************/
@@ -2786,8 +3302,6 @@ DVZ_EXPORT bool dvz_gui_button(const char* name, float width, float height);
  * Add a checkbox.
  *
  * @param name the button name
- * @param width the button width
- * @param height the button height
  * @param[out] checked whether the checkbox is checked
  * @returns whether the checkbox's state has changed
  */
@@ -2815,6 +3329,17 @@ DVZ_EXPORT void dvz_gui_progress(float fraction, float width, float height, cons
  * @param height the image height
  */
 DVZ_EXPORT void dvz_gui_image(DvzTex* tex, float width, float height);
+
+
+
+/**
+ * Add a color picker
+ *
+ * @param name the widget name
+ * @param color the color
+ * @param flags the widget flags
+ */
+DVZ_EXPORT bool dvz_gui_colorpicker(const char* name, vec3 color, int flags);
 
 
 

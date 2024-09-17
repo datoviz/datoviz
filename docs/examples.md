@@ -147,9 +147,6 @@ def ongui(app, fid, ev):
         # Update the mesh visual data with the new shape's data.
         dvz.mesh_reshape(visual, shape)
 
-        # Update the visual after its data has changed.
-        dvz.visual_update(visual)
-
     # End the GUI dialog.
     dvz.gui_end()
 
@@ -233,28 +230,6 @@ app = dvz.app(0)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 
-# Create a figure 1000x1000.
-figure = dvz.figure(scene, 1000, 1000, 0)
-
-# Panel spanning the entire window.
-panel = dvz.panel_default(figure)
-
-# Panzoom interactivity.
-pz = dvz.panel_panzoom(panel)
-
-# Image visual.
-visual = dvz.image(batch, 0)
-
-# One image in this visual, there could be multiple images sharing the same underlying texture.
-dvz.image_alloc(visual, 1)
-
-# xy coordinates of the upper left corner, and lower right corner
-pos = np.array([[-1, +1, +1, -1]], dtype=np.float32)
-dvz.image_position(visual, 0, 1, pos, 0)
-
-# uv coordinates of the upper left corner, and lower right corner
-texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
-dvz.image_texcoords(visual, 0, 1, texcoords, 0)
 
 # Load a PNG image.
 CURDIR = Path(__file__).parent
@@ -271,18 +246,51 @@ with Image.open(filepath) as f:
     # Create a texture out of a RGB image.
     tex = dvz.tex_image(batch, format, width, height, A_(image))
 
-    # Assign the texture to the visual.
-    dvz.image_texture(visual, tex, filter, address_mode)
 
-    # Add the visual.
-    dvz.panel_visual(panel, visual, 0)
+# Create a figure 1000x1000.
+figure = dvz.figure(scene, 1000, 1000, 0)
 
-    # Run the application.
-    dvz.scene_run(scene, app, 0)
+# Panel spanning the entire window.
+panel = dvz.panel_default(figure)
 
-    # Cleanup.
-    dvz.scene_destroy(scene)
-    dvz.app_destroy(app)
+# Panzoom interactivity.
+pz = dvz.panel_panzoom(panel)
+
+# Image visual.
+visual = dvz.image(batch, dvz.IMAGE_FLAGS_RESCALE)
+
+# One image in this visual, there could be multiple images sharing the same underlying texture.
+dvz.image_alloc(visual, 1)
+
+# xyz coordinates of the top left corner.
+pos = np.array([[0, 0, 0]], dtype=np.float32)
+dvz.image_position(visual, 0, 1, pos, 0)
+
+# Image size, in pixels.
+size = np.array([[width, height]], dtype=np.float32)
+dvz.image_size(visual, 0, 1, size, 0)
+
+# Image anchor.
+anchor = np.array([[.5, .5]], dtype=np.float32)
+dvz.image_anchor(visual, 0, 1, anchor, 0)
+
+# uv coordinates of the top left corner, and bottom right corner.
+texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
+dvz.image_texcoords(visual, 0, 1, texcoords, 0)
+
+
+# Assign the texture to the visual.
+dvz.image_texture(visual, tex, filter, address_mode)
+
+# Add the visual.
+dvz.panel_visual(panel, visual, 0)
+
+# Run the application.
+dvz.scene_run(scene, app, 0)
+
+# Cleanup.
+dvz.scene_destroy(scene)
+dvz.app_destroy(app)
 ```
 </details>
 
@@ -734,7 +742,7 @@ figure = dvz.figure(scene, 1000, 1000, 0)
 panel = dvz.panel_default(figure)
 
 # 3D camera.
-camera = dvz.panel_camera(panel)
+camera = dvz.panel_camera(panel, 0)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -884,6 +892,8 @@ dvz.app_onkeyboard(app, on_keyboard, None)
 dvz.scene_run(scene, app, 0)
 
 # Cleanup.
+dvz.atlas_destroy(af.atlas)
+dvz.font_destroy(af.font)
 dvz.scene_destroy(scene)
 dvz.app_destroy(app)
 ```
@@ -1107,7 +1117,7 @@ dvz.panel_visual(panel, visual, 0)
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
 
 # Initial camera position.
-camera = dvz.panel_camera(panel)
+camera = dvz.panel_camera(panel, 0)
 dvz.camera_initial(camera, vec3(0, 0, 1.5), vec3(), vec3(0, 1, 0))
 
 # Update the panel after updating the arcball and camera.

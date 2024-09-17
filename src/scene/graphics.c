@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Collection of builtin graphics pipelines                                                     */
 /*************************************************************************************************/
@@ -98,8 +104,8 @@ static void _graphics_triangle(DvzRenderpass* renderpass, DvzGraphics* graphics)
     ANN(renderpass);
     ANN(graphics);
 
-    SHADER(VERTEX, "graphics_basic_vert")
-    SHADER(FRAGMENT, "graphics_basic_frag")
+    SHADER(VERTEX, "graphics_trivial_vert")
+    SHADER(FRAGMENT, "graphics_trivial_frag")
 
     dvz_graphics_renderpass(graphics, renderpass, 0);
     dvz_graphics_primitive(graphics, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);

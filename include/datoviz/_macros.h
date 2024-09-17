@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Common macros                                                                                */
 /*************************************************************************************************/
@@ -59,7 +65,7 @@
 static inline bool checkenv(const char* x)
 {
     char* env = getenv(x);
-    return env && (strncmp(env, "0", 1) != 0);
+    return env && strnlen(env, 1) >= 1 && (strncmp(env, "0", 1) != 0);
 }
 
 static inline int32_t getenvint(const char* x)

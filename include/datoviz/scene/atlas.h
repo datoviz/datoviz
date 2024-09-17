@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /* Atlas                                                                                         */
 /*************************************************************************************************/
@@ -116,12 +122,6 @@ void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
 /**
  */
 DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
-
-
-
-/**
- */
-void dvz_atlas_destroy(DvzAtlas* atlas);
 
 
 

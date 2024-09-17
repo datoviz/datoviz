@@ -1,3 +1,9 @@
+/*
+* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+* Licensed under the MIT license. See LICENSE file in the project root for details.
+* SPDX-License-Identifier: MIT
+*/
+
 #version 450
 #include "antialias.glsl"
 #include "common.glsl"
@@ -30,25 +36,26 @@
 #define DVZ_MARKER_ASPECT_OUTLINE 2
 
 // Marker shape.
-#define DVZ_MARKER_SHAPE_DISC     0
-#define DVZ_MARKER_SHAPE_ASTERISK 1
-#define DVZ_MARKER_SHAPE_CHEVRON  2
-#define DVZ_MARKER_SHAPE_CLOVER   3
-#define DVZ_MARKER_SHAPE_CLUB     4
-#define DVZ_MARKER_SHAPE_CROSS    5
-#define DVZ_MARKER_SHAPE_DIAMOND  6
-#define DVZ_MARKER_SHAPE_ARROW    7
-#define DVZ_MARKER_SHAPE_ELLIPSE  8
-#define DVZ_MARKER_SHAPE_HBAR     9
-#define DVZ_MARKER_SHAPE_HEART    10
-#define DVZ_MARKER_SHAPE_INFINITY 11
-#define DVZ_MARKER_SHAPE_PIN      12
-#define DVZ_MARKER_SHAPE_RING     13
-#define DVZ_MARKER_SHAPE_SPADE    14
-#define DVZ_MARKER_SHAPE_SQUARE   15
-#define DVZ_MARKER_SHAPE_TAG      16
-#define DVZ_MARKER_SHAPE_TRIANGLE 17
-#define DVZ_MARKER_SHAPE_VBAR     18
+#define DVZ_MARKER_SHAPE_DISC         0
+#define DVZ_MARKER_SHAPE_ASTERISK     1
+#define DVZ_MARKER_SHAPE_CHEVRON      2
+#define DVZ_MARKER_SHAPE_CLOVER       3
+#define DVZ_MARKER_SHAPE_CLUB         4
+#define DVZ_MARKER_SHAPE_CROSS        5
+#define DVZ_MARKER_SHAPE_DIAMOND      6
+#define DVZ_MARKER_SHAPE_ARROW        7
+#define DVZ_MARKER_SHAPE_ELLIPSE      8
+#define DVZ_MARKER_SHAPE_HBAR         9
+#define DVZ_MARKER_SHAPE_HEART        10
+#define DVZ_MARKER_SHAPE_INFINITY     11
+#define DVZ_MARKER_SHAPE_PIN          12
+#define DVZ_MARKER_SHAPE_RING         13
+#define DVZ_MARKER_SHAPE_SPADE        14
+#define DVZ_MARKER_SHAPE_SQUARE       15
+#define DVZ_MARKER_SHAPE_TAG          16
+#define DVZ_MARKER_SHAPE_TRIANGLE     17
+#define DVZ_MARKER_SHAPE_VBAR         18
+#define DVZ_MARKER_SHAPE_ROUNDED_RECT 19
 
 // Specialization constants.
 layout(constant_id = 0) const int MARKER_MODE = 0;   // code, sdf, bitmap...
@@ -155,6 +162,10 @@ float select_marker(vec2 P, float size)
 
     case DVZ_MARKER_SHAPE_VBAR:
         return marker_vbar(P, size);
+        break;
+
+    case DVZ_MARKER_SHAPE_ROUNDED_RECT:
+        return marker_rounded_rect(P, size, size / 4.);
         break;
 
     default:

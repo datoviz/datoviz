@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
+
 /*************************************************************************************************/
 /*  Testing simple loop                                                                          */
 /*************************************************************************************************/
@@ -219,7 +225,7 @@ int test_loop_cube(TstSuite* suite)
         // Vertex shader.
         {
             unsigned long size = 0;
-            unsigned char* buffer = dvz_resource_shader("graphics_basic_vert", &size);
+            unsigned char* buffer = dvz_resource_shader("graphics_trivial_vert", &size);
             ASSERT(size > 0);
             ANN(buffer);
             _load_shader(graphics, VK_SHADER_STAGE_VERTEX_BIT, size, buffer);
@@ -228,7 +234,7 @@ int test_loop_cube(TstSuite* suite)
         // Fragment shader.
         {
             unsigned long size = 0;
-            unsigned char* buffer = dvz_resource_shader("graphics_basic_frag", &size);
+            unsigned char* buffer = dvz_resource_shader("graphics_trivial_frag", &size);
             ASSERT(size > 0);
             ANN(buffer);
             _load_shader(graphics, VK_SHADER_STAGE_FRAGMENT_BIT, size, buffer);
