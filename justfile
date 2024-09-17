@@ -101,6 +101,30 @@ upload *files:
     twine upload {{files}}
 #
 
+draft:
+    #!/usr/bin/env sh
+    tag=$(git describe --tags --abbrev=0)
+    echo "Tag: $tag"
+
+    run_id=$(gh run list --workflow=WHEELS --json conclusion,databaseId --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+    echo "Workflow run: $run_id"
+
+    if [ -z "$run_id" ]; then
+        echo "No successful workflow run found for 'WHEELS'"
+        exit 1
+    fi
+
+    artifacts_dir="release_artifacts/$tag"
+    if ! ls $artifacts_dir/*.whl 1> /dev/null 2>&1; then
+        gh run download "$run_id" --dir "$artifacts_dir"
+        find "$artifacts_dir" -mindepth 2 -type f -exec mv -t "$artifacts_dir" {} +
+        find "$artifacts_dir" -type d -empty -delete
+    fi
+
+    gh release create "$tag" --draft --title "$tag" --notes "" $artifacts_dir/*
+    # gh release upload "$tag"
+#
+
 
 # -------------------------------------------------------------------------------------------------
 # Building
