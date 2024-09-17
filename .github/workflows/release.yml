@@ -140,7 +140,7 @@ jobs:
   # macOS x86_64
   # -----------------------------------------------------------------------------------------------
 
-  wheel-macos:
+  wheel-macos_x86_64:
     runs-on: macos-13
 
     # Clone the repo (except if local with "act")
