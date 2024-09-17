@@ -93,20 +93,21 @@ bump version:
     print("Updated ctypes wrapper")
 #
 
-upload *files:
-    # Put this in your ~/.pypirc:
-    # [pypi]
-    #     username = __token__
-    #     password = pypi-YOUR_API_TOKEN_HERE
-    twine upload {{files}}
+tag version:
+    git tag -a v{{version}} -m "v{{version}}"
 #
 
-draft:
+runid:
+    @echo $(gh run list --workflow=WHEELS --json conclusion,databaseId --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+#
+
+# Download the built wheel artifacts
+download:
     #!/usr/bin/env sh
     tag=$(git describe --tags --abbrev=0)
     echo "Tag: $tag"
 
-    run_id=$(gh run list --workflow=WHEELS --json conclusion,databaseId --jq '.[] | select(.conclusion == "success") | .databaseId' | head -n 1)
+    run_id=$(just runid)
     echo "Workflow run: $run_id"
 
     if [ -z "$run_id" ]; then
@@ -120,9 +121,27 @@ draft:
         find "$artifacts_dir" -mindepth 2 -type f -exec mv -t "$artifacts_dir" {} +
         find "$artifacts_dir" -type d -empty -delete
     fi
+#
 
+draft:
+    #!/usr/bin/env sh
+    tag=$(git describe --tags --abbrev=0)
+    just download
     gh release create "$tag" --draft --title "$tag" --notes "" $artifacts_dir/*
     # gh release upload "$tag"
+#
+
+upload:
+    #!/usr/bin/env sh
+
+    # Put this in your ~/.pypirc:
+    # [pypi]
+    #     username = __token__
+    #     password = pypi-YOUR_API_TOKEN_HERE
+
+    tag=$(git describe --tags --abbrev=0)
+    artifacts_dir="release_artifacts/$tag"
+    twine upload artifacts_dir/*.whl
 #
 
 wheels:
@@ -904,10 +923,14 @@ checkwheel path="":
 #
 
 [linux]
-checkartifact RUN_ID:
+checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n wheel-linux_x86_64 -D $temp_dir
+    gh run download $run_id -n wheel-linux_x86_64 -D $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
@@ -915,8 +938,12 @@ checkartifact RUN_ID:
 #
 
 [macos]
-checkartifact RUN_ID:
+checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
 
     arch_str={{arch()}}
     echo $arch_str
@@ -927,7 +954,7 @@ checkartifact RUN_ID:
     fi
 
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n "wheel-macosx_$platform" -D $temp_dir
+    gh run download $run_id -n "wheel-macosx_$platform" -D $temp_dir
     ls $temp_dir/datoviz*.whl
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
@@ -936,16 +963,14 @@ checkartifact RUN_ID:
 #
 
 [windows]
-checkartifact RUN_ID:
+checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    run_id={{RUN_ID}}
+    if [ -z "$run_id" ]; then
+        run_id=$(just runid)
+    fi
     temp_dir=$(mktemp -d)
-    gh run download {{RUN_ID}} -n wheel-win_amd64 -D $temp_dir
-
-    # for file in "$temp_dir"/datoviz*win-amd64*.whl; do
-    #     new_file="${file//win-amd64/win_amd64}"
-    #     mv "$file" "$new_file"
-    # done
-
+    gh run download $run_id -n wheel-win_amd64 -D $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"

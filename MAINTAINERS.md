@@ -1,8 +1,34 @@
 # Maintainers instructions
 
-## Packaging
+## Release checklist for Datoviz maintainers
 
-This section provides instructions for maintainers who need to create binary packages and Python wheels.
+Development happens on `dev` whereas `main` is stable.
+
+1. Check that you are on the `dev` branch.
+2. Write the `CHANGELOG.md`.
+3. `just release`: build in release mode.
+4. `just test`: run the C testing suite.
+5. `just pytest`: run the Python testing suite.
+6. `just act`: simulate the GitHub Actions tests locally.
+7. `version=x.y.z`: set up the new version.
+8. `just bump $version`: bump the codebase to the new version.
+9. `git commit -am "Bump version to $version" && git push`: commit the new version.
+10. `just wheels`: build the wheels on GitHub Actions.
+11. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml).
+12. `just checkartifact`: test the build wheels on different computers/operating systems.
+13. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
+14. `just tag $version`: once on `main`, tag with the new version.
+15. `just draft`: create a new GitHub Release draft with the built wheels.
+16. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
+17. `just upload`: upload the wheels to PyPI.
+18. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
+19. `git commit -am "Bump to development version" && git push`: bump to the development version.
+20. Announce the new release on the various communication channels.
+
+
+## Packaging instructions (advanced users)
+
+This section provides instructions for Datoviz maintainers who'd like to create binary packages and Python wheels.
 
 
 ### Ubuntu 24.04
@@ -177,38 +203,3 @@ To test the wheel in a Python virtual environment:
 just testwheel
 ```
 
-
-## Release checklist
-
-Development happens on `dev` whereas `main` is stable.
-
-1. Write the `CHANGELOG.md`.
-2. While on `dev`, build in release mode with `just release`.
-3. Run the C testing suite with `just test`.
-4. Run the Python testing suite with `just pytest`.
-5. Run GitHub Actions tests locally with `just act`.
-6. Bump to the new version with `just bump x.y.z`.
-7. Merge `dev` to `main` and switch to `main`.
-8. Once on `main`, tag with the new version.
-9. Build and test packages (until this is done by CI/CD):
-   1. On a Linux computer:
-      * `just release`
-      * `just deb`
-      * `just testdeb`
-      * `just manylinux`
-      * `just testwheel`
-      * Wheel is in `dist/`
-   2. On macOS ARM & Intel:
-      * `just release`
-      * `just pkg`
-      * `just wheel`
-      * `just testwheel`
-      * Wheel is in `dist/`
-   3. On: Windows
-      * `just release`
-      * `just wheel`
-      * `just testwheel`
-      * Wheel is in `dist/`
-10. Upload these packages to GitHub and PyPI.
-11. Bump to the new development version with `just bump a.b.c-dev`.
-12. New release announcement.
