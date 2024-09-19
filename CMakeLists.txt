@@ -44,6 +44,7 @@ project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
+option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" ON)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -195,8 +196,6 @@ if(DATOVIZ_WITH_GLFW)
 endif()
 
 # ---- Vulkan -------------------------------------------------------------------------------------
-set(HAS_GLSLANG 0)
-
 if(${OS_MACOS})
     set(GLSLC_PATH "${CMAKE_SOURCE_DIR}/bin/vulkan/macos")
     set(VULKAN_DIR "${CMAKE_SOURCE_DIR}/libs/vulkan/macos")
@@ -223,6 +222,62 @@ else()
 
     find_program(GLSLC "glslc" HINTS "${GLSLC_PATH}" "$ENV{VULKAN_SDK}/bin" REQUIRED)
     set(CORE_LIBS ${CORE_LIBS} "${VULKAN_LIB}")
+endif()
+
+# ---- shaderc ------------------------------------------------------------------------------------
+set(HAS_SHADERC 0)
+
+if(${DATOVIZ_WITH_SHADERC})
+    # SPIRV-Headers
+    set(SPIRV_HEADERS_ENABLE_TESTS OFF)
+    set(SPIRV_HEADERS_ENABLE_INSTALL OFF)
+    FetchContent_Declare(
+        SPIRV-Headers
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+        GIT_TAG main
+    )
+    FetchContent_MakeAvailable(SPIRV-Headers)
+
+    # SPIRV-Tools
+    set(SPIRV_SKIP_TESTS ON)
+    set(SPIRV_SKIP_EXECUTABLES ON)
+    set(SPIRV_TOOLS_BUILD_STATIC OFF)
+    FetchContent_Declare(
+        SPIRV-Tools
+        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+        GIT_TAG main
+    )
+    FetchContent_MakeAvailable(SPIRV-Tools)
+
+    # glslang
+    set(GLSLANG_TESTS OFF)
+    set(GLSLANG_ENABLE_INSTALL OFF)
+    set(ENABLE_GLSLANG_BINARIES OFF)
+    set(BUILD_SHARED_LIBS OFF)
+
+    # set(ENABLE_HLSL ON)
+    FetchContent_Declare(
+        glslang
+        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+        GIT_TAG main
+    )
+    FetchContent_MakeAvailable(glslang)
+
+    # shaderc
+    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
+    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+    FetchContent_Declare(
+        shaderc
+        GIT_REPOSITORY https://github.com/google/shaderc
+        GIT_TAG main
+    )
+    FetchContent_MakeAvailable(shaderc)
+
+    set(INCL_DIRS ${INCL_DIRS} "${shaderc_SOURCE_DIR}/libshaderc/include")
+    set(CORE_LIBS ${CORE_LIBS} shaderc)
+
+    set(HAS_SHADERC 1)
 endif()
 
 # ---- msdf ------------------------------------------------------------------------------------
@@ -316,10 +371,8 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
     # Dependencies.
     HAS_GLFW=${HAS_GLFW}
-    HAS_GLSLANG=${HAS_GLSLANG}
     HAS_MSDF=${HAS_MSDF}
-
-    # HAS_PNG=${HAS_PNG}
+    HAS_SHADERC=${HAS_SHADERC}
 
     # HACK: this apparently fixes the msdfgen-config.h not found bug
     MSDFGEN_PUBLIC=

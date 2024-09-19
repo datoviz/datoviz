@@ -1024,6 +1024,10 @@ deps:
     @ldd build/libdatoviz.so
 #
 
+[linux]
+strip:
+    @strip --strip-debug build/libdatoviz.so
+
 [macos]
 rpath:
     @echo "Printing RPATH:"

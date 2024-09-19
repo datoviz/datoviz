@@ -762,7 +762,7 @@ int test_vklite_offscreen(TstSuite* suite)
 int test_vklite_shader(TstSuite* suite)
 {
     ANN(suite);
-#if HAS_GLSLANG
+#if HAS_SHADERC
     DvzHost* host = get_host(suite);
 
     DvzGpu* gpu = dvz_gpu_best(host);
