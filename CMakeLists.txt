@@ -671,7 +671,7 @@ add_library(datoviz_core OBJECT
     "src/recorder.c"
     "src/renderer.cpp"
     "src/resources.c"
-    "src/spirv.c"
+    "src/shader.c"
     "src/surface.c"
     "src/transfers.c"
     "src/vklite.c"

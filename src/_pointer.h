@@ -55,6 +55,8 @@ struct DvzPointer
 // NOTE: the returned pointer will have to be freed.
 static void* _cpy(DvzSize size, const void* data)
 {
+    if (data == NULL)
+        return NULL;
     void* data_cpy = malloc(size);
     memcpy(data_cpy, data, size);
     return data_cpy;

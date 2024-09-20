@@ -19,6 +19,7 @@
 #include "../src/vklite_utils.h"
 #include "fileio.h"
 #include "resources.h"
+#include "shader.h"
 #include "surface.h"
 #include "test.h"
 #include "test_gui.h"
@@ -769,7 +770,7 @@ int test_vklite_shader(TstSuite* suite)
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, VK_NULL_HANDLE);
 
-    VkShaderModule module = dvz_shader_compile(
+    VkShaderModule module = dvz_compile_glsl(
         gpu,
         "#version 450\n"
         "layout (location = 0) in vec3 pos;\n"

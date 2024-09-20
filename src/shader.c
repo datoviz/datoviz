@@ -13,7 +13,8 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-// #include "spirv.h"
+#include "shader.h"
+#include "_pointer.h"
 #include "vklite.h"
 
 #define BEGIN_IGNORE_STRICT_PROTOTYPES _Pragma("GCC diagnostic ignored \"-Wstrict-prototypes\"")
@@ -26,10 +27,10 @@
 
 
 /*************************************************************************************************/
-/*  Functions */
+/*  Compilation                                                                                  */
 /*************************************************************************************************/
 
-VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage)
+VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage)
 {
     VkShaderModule module = {0};
 
@@ -94,4 +95,39 @@ VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFl
 #endif
 
     return module;
+}
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+DvzShader
+dvz_shader(DvzShaderFormat format, DvzShaderType type, DvzSize size, char* code, uint32_t* buffer)
+{
+    DvzShader shader = {0};
+
+    shader.format = format;
+    shader.type = type;
+    shader.size = size;
+
+    // NOTE: make a copy of the passed buffers, will be destroyed in dvz_shader_destroy()
+    // called by pipelib.
+    shader.buffer = buffer != NULL ? _cpy(size, buffer) : NULL;
+    shader.code = code != NULL ? _cpy(size, code) : NULL;
+
+    dvz_obj_init(&shader.obj);
+    return shader;
+}
+
+
+
+void dvz_shader_destroy(DvzShader* shader)
+{
+    ANN(shader);
+    dvz_obj_destroyed(&shader->obj);
+    FREE(shader->code);
+    FREE(shader->buffer);
+    log_trace("shader destroyed");
 }

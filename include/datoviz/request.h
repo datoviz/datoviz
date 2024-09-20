@@ -114,7 +114,7 @@ union DvzRequestContent
     {
         DvzShaderFormat format;
         DvzShaderType type;
-        DvzSize size;     // TODO: remove because useless?
+        DvzSize size;
         char* code;       // For GLSL.
         uint32_t* buffer; // For SPIRV
     } shader;

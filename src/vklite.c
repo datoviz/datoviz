@@ -12,6 +12,7 @@
 #include "_pointer.h"
 #include "common.h"
 #include "host.h"
+#include "shader.h"
 #include "vklite_utils.h"
 #include "vkutils.h"
 
@@ -2304,7 +2305,7 @@ void dvz_compute_create(DvzCompute* compute)
     if (compute->shader_code != NULL)
     {
         compute->shader_module =
-            dvz_shader_compile(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
+            dvz_compile_glsl(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
     }
     else
     {
@@ -2410,7 +2411,7 @@ void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count] =
-        dvz_shader_compile(graphics->gpu, code, stage);
+        dvz_compile_glsl(graphics->gpu, code, stage);
     graphics->shader_count++;
 }
 

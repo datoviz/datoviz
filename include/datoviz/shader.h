@@ -27,6 +27,33 @@
 /*************************************************************************************************/
 
 typedef struct DvzGpu DvzGpu;
+typedef struct DvzShader DvzShader;
+
+
+
+/*************************************************************************************************/
+/*  Structures                                                                                   */
+/*************************************************************************************************/
+
+struct DvzShader
+{
+    DvzObject obj; // used to hold the id in the mapping structure
+
+    DvzShaderFormat format;
+    DvzShaderType type;
+    DvzSize size;
+
+    char* code;       // only for GLSL obj_type
+    uint32_t* buffer; // only for SPIRV obj_type
+};
+
+
+
+/*************************************************************************************************/
+/*  Compilation                                                                                  */
+/*************************************************************************************************/
+
+VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 
@@ -34,7 +61,11 @@ typedef struct DvzGpu DvzGpu;
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
-VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
+DvzShader
+dvz_shader(DvzShaderFormat format, DvzShaderType type, DvzSize size, char* code, uint32_t* buffer);
+
+
+void dvz_shader_destroy(DvzShader* shader);
 
 
 

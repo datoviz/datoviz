@@ -23,12 +23,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
@@ -51,6 +45,7 @@ typedef struct DvzPipelib DvzPipelib;
 
 // Forward declarations.
 typedef struct DvzContext DvzContext;
+typedef struct DvzShader DvzShader;
 
 
 
@@ -64,6 +59,7 @@ struct DvzPipelib
     DvzGpu* gpu;
     DvzContainer graphics;
     DvzContainer computes;
+    DvzContainer shaders;
 };
 
 
@@ -110,13 +106,20 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path);
 
 
 
-// /**
-//  * Destroy a pipe created by the pipelib.
-//  *
-//  * @param lib the pipelib instance
-//  * @param pipe the pipe to destroy
-//  */
-// void dvz_pipelib_pipe_destroy(DvzPipelib* lib, DvzPipe* pipe);
+/**
+ * Create a new shader.
+ *
+ * @param lib the pipelib instance
+ * @param format the shader format (GLSL or SPIRV)
+ * @param type the shader type
+ * @param size the size of the buffer (0 if code is set)
+ * @param code the GLSL code (NULL if buffer is set)
+ * @param buffer the SPIR-V bytecode buffer (NULL if code is set)
+ * @returns the shader
+ */
+DvzShader* dvz_pipelib_shader(
+    DvzPipelib* lib, DvzShaderFormat format, DvzShaderType type, DvzSize size, char* code,
+    uint32_t* buffer);
 
 
 

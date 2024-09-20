@@ -73,6 +73,7 @@ typedef struct DvzImages DvzImages;
 typedef struct DvzSampler DvzSampler;
 typedef struct DvzSlots DvzSlots;
 typedef struct DvzDescriptors DvzDescriptors;
+
 typedef struct DvzCompute DvzCompute;
 typedef struct DvzVertexBinding DvzVertexBinding;
 typedef struct DvzVertexAttr DvzVertexAttr;
@@ -1491,14 +1492,6 @@ void dvz_compute_descriptors(DvzCompute* compute, DvzDescriptors* descriptors);
  * @param compute the compute pipeline
  */
 void dvz_compute_destroy(DvzCompute* compute);
-
-
-
-/*************************************************************************************************/
-/*  Shaders                                                                                      */
-/*************************************************************************************************/
-
-VkShaderModule dvz_shader_compile(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
 
 
 

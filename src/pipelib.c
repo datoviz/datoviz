@@ -14,6 +14,7 @@
 
 #include "pipelib.h"
 #include "context.h"
+#include "shader.h"
 
 
 
@@ -67,10 +68,16 @@ DvzPipelib* dvz_pipelib(DvzContext* ctx)
     ANN(lib);
 
     lib->gpu = ctx->gpu;
+
     lib->graphics =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzPipe), DVZ_OBJECT_TYPE_PIPE);
+
     lib->computes =
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzPipe), DVZ_OBJECT_TYPE_PIPE);
+
+    lib->shaders =
+        dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzShader), DVZ_OBJECT_TYPE_SHADER);
+
     dvz_obj_created(&lib->obj);
     log_trace("pipelib created");
     return lib;
@@ -140,6 +147,23 @@ DvzPipe* dvz_pipelib_compute_file(DvzPipelib* lib, const char* shader_path)
 
 
 
+DvzShader* dvz_pipelib_shader(
+    DvzPipelib* lib, DvzShaderFormat format, DvzShaderType type, DvzSize size, char* code,
+    uint32_t* buffer)
+{
+    ANN(lib);
+
+    // Allocate a DvzShader pointer.
+    DvzShader* shader = (DvzShader*)dvz_container_alloc(&lib->shaders);
+
+    // Initialize the shader.
+    *shader = dvz_shader(format, type, size, code, buffer);
+
+    return shader;
+}
+
+
+
 void dvz_pipelib_destroy(DvzPipelib* lib)
 {
     ANN(lib);
@@ -148,6 +172,9 @@ void dvz_pipelib_destroy(DvzPipelib* lib)
     dvz_container_destroy(&lib->graphics);
 
     CONTAINER_DESTROY_ITEMS(DvzPipe, lib->computes, dvz_pipe_destroy)
+    dvz_container_destroy(&lib->computes);
+
+    CONTAINER_DESTROY_ITEMS(DvzShader, lib->shaders, dvz_shader_destroy)
     dvz_container_destroy(&lib->computes);
 
     dvz_obj_destroyed(&lib->obj);

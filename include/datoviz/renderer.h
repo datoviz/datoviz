@@ -25,24 +25,11 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzRouter DvzRouter;
-typedef struct DvzShader DvzShader;
 
 // Forward declarations.
 typedef struct DvzContext DvzContext;
@@ -57,20 +44,6 @@ typedef struct DvzMap DvzMap;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzShader
-{
-    DvzObject obj; // used to hold the id in the mapping structure
-
-    DvzShaderFormat format;
-    DvzShaderType type;
-    DvzSize size;
-
-    char* code;       // only for GLSL obj_type
-    uint32_t* buffer; // only for SPIRV obj_type
-};
-
-
 
 struct DvzRenderer
 {

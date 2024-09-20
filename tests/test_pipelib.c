@@ -87,6 +87,10 @@ int test_pipelib_1(TstSuite* suite)
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     dvz_board_free(&board);
 
+    // Shader.
+    char* glsl = "void main() {gl_Position = vec4(0,0,0,0);}";
+    dvz_pipelib_shader(lib, DVZ_SHADER_GLSL, DVZ_SHADER_VERTEX, strnlen(glsl, 1024), glsl, NULL);
+
     // Destruction.
     dvz_pipelib_destroy(lib);
     dvz_board_destroy(&board);
