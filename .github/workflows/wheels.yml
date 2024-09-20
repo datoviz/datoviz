@@ -38,7 +38,7 @@ jobs:
     - name: Sync local files
       run: |
         rsync -a -v \
-          --exclude "libvulkan*" --exclude "glslc" \
+          --exclude "libvulkan*" --exclude "glslc" --exclude "libshaderc*" \
           --exclude "__pycache__" --exclude "Dockerfile" \
           --exclude "screenshots" --exclude "volumes" --exclude "misc" \
           --exclude "imgui/examples" \

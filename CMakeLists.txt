@@ -228,55 +228,57 @@ endif()
 set(HAS_SHADERC 0)
 
 if(${DATOVIZ_WITH_SHADERC})
+    # set(INCL_DIRS ${INCL_DIRS} "${shaderc_SOURCE_DIR}/libshaderc/include")
+    set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/linux/libshaderc_shared.so")
+
+    # # SPIRV-Headers
+    # set(SPIRV_HEADERS_ENABLE_TESTS OFF)
+    # set(SPIRV_HEADERS_ENABLE_INSTALL OFF)
+    # FetchContent_Declare(
     # SPIRV-Headers
-    set(SPIRV_HEADERS_ENABLE_TESTS OFF)
-    set(SPIRV_HEADERS_ENABLE_INSTALL OFF)
-    FetchContent_Declare(
-        SPIRV-Headers
-        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
-        GIT_TAG main
-    )
-    FetchContent_MakeAvailable(SPIRV-Headers)
+    # GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Headers.git
+    # GIT_TAG main
+    # )
+    # FetchContent_MakeAvailable(SPIRV-Headers)
 
+    # # SPIRV-Tools
+    # set(SPIRV_SKIP_TESTS ON)
+    # set(SPIRV_SKIP_EXECUTABLES ON)
+    # set(SPIRV_TOOLS_BUILD_STATIC OFF)
+    # FetchContent_Declare(
     # SPIRV-Tools
-    set(SPIRV_SKIP_TESTS ON)
-    set(SPIRV_SKIP_EXECUTABLES ON)
-    set(SPIRV_TOOLS_BUILD_STATIC OFF)
-    FetchContent_Declare(
-        SPIRV-Tools
-        GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
-        GIT_TAG main
-    )
-    FetchContent_MakeAvailable(SPIRV-Tools)
+    # GIT_REPOSITORY https://github.com/KhronosGroup/SPIRV-Tools.git
+    # GIT_TAG main
+    # )
+    # FetchContent_MakeAvailable(SPIRV-Tools)
 
+    # # glslang
+    # set(GLSLANG_TESTS OFF)
+    # set(GLSLANG_ENABLE_INSTALL OFF)
+    # set(ENABLE_GLSLANG_BINARIES OFF)
+    # set(BUILD_SHARED_LIBS OFF)
+
+    # # set(ENABLE_HLSL ON)
+    # FetchContent_Declare(
     # glslang
-    set(GLSLANG_TESTS OFF)
-    set(GLSLANG_ENABLE_INSTALL OFF)
-    set(ENABLE_GLSLANG_BINARIES OFF)
-    set(BUILD_SHARED_LIBS OFF)
+    # GIT_REPOSITORY https://github.com/KhronosGroup/glslang
+    # GIT_TAG main
+    # )
+    # FetchContent_MakeAvailable(glslang)
 
-    # set(ENABLE_HLSL ON)
-    FetchContent_Declare(
-        glslang
-        GIT_REPOSITORY https://github.com/KhronosGroup/glslang
-        GIT_TAG main
-    )
-    FetchContent_MakeAvailable(glslang)
-
+    # # shaderc
+    # set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+    # set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
+    # set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
+    # FetchContent_Declare(
     # shaderc
-    set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "" FORCE)
-    set(SHADERC_SKIP_INSTALL ON CACHE BOOL "" FORCE)
-    FetchContent_Declare(
-        shaderc
-        GIT_REPOSITORY https://github.com/google/shaderc
-        GIT_TAG main
-    )
-    FetchContent_MakeAvailable(shaderc)
+    # GIT_REPOSITORY https://github.com/google/shaderc
+    # GIT_TAG main
+    # )
+    # FetchContent_MakeAvailable(shaderc)
 
-    set(INCL_DIRS ${INCL_DIRS} "${shaderc_SOURCE_DIR}/libshaderc/include")
-    set(CORE_LIBS ${CORE_LIBS} shaderc)
-
+    # set(INCL_DIRS ${INCL_DIRS} "${shaderc_SOURCE_DIR}/libshaderc/include")
+    # set(CORE_LIBS ${CORE_LIBS} shaderc)
     set(HAS_SHADERC 1)
 endif()
 

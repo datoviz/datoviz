@@ -23,6 +23,7 @@ RUN yum install -y epel-release && \
         vulkan-tools \
         vulkan-headers \
         vulkan-loader \
+        # libshaderc-devel \
         glslc \
         patchelf \
         rsync \

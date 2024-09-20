@@ -198,7 +198,7 @@ build release="Debug":
     @unset CXX
     @mkdir -p docs/images
     @mkdir -p build
-    @cp -a libs/vulkan/linux/libvulkan* build/
+    @cp -a libs/vulkan/linux/libvulkan* libs/shaderc/linux/libshaderc* build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
@@ -213,6 +213,7 @@ build release="Debug": && bundledeps
     @cp -a libs/vulkan/macos/libvulkan.1.*dylib build/
     @cp -a libs/vulkan/macos/libMoltenVK.dylib build/
     @cp -a libs/vulkan/macos/MoltenVK_icd.json build/
+    @cp -a libs/shaderc/macos/libshaderc*.1.*dylib build/
     @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
     @cd build/ && ninja
 #
@@ -240,7 +241,7 @@ manylinux release="Release":
     mkdir -p $BUILD_DIR
     # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
     rsync -a -v \
-        --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
+        --exclude "libvulkan*" --exclude "glslc" --exclude "libshaderc*" --exclude "justfile" \
         --exclude "__pycache__" --exclude "Dockerfile" \
         bin cli cmake data datoviz external include libs src tests tools \
         *.toml *.json *.txt *.map *.md *.cff \
@@ -391,6 +392,7 @@ deb: checkstructs && rpath
     # Copy the libraries.
     cp -a build/libdatoviz.so* $DEB$LIBDIR
     cp -a libs/vulkan/linux/libvulkan.so* $DEB$LIBDIR
+    cp -a libs/shaderc/linux/libshaderc*.so* $DEB$LIBDIR
 
     # Copy the Python ctypes wrapper/
     cp -a datoviz/__init__.py $DEB$LIBDIR/__init__.py
@@ -688,6 +690,7 @@ wheel arg='': checkstructs
     cp pyproject.toml $PKGROOT/
     cp build/libdatoviz.dylib $DVZDIR
     cp build/libvulkan.1.dylib $DVZDIR
+    cp build/libshaderc*.1.dylib $DVZDIR
     cp build/libfreetype.6.dylib $DVZDIR
     cp build/libpng16.16.dylib $DVZDIR
     cp build/libMoltenVK.dylib $DVZDIR
