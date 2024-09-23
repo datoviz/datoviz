@@ -658,6 +658,20 @@ DVZ_EXPORT void dvz_colormap_array(
 /*************************************************************************************************/
 
 /**
+ * Compute face normals.
+ *
+ * @param vertex_count number of vertices
+ * @param index_count number of indices (triple of the number of faces)
+ * @param pos array of vec3 positions
+ * @param index pos array of uint32_t indices
+ * @param[out] normal array of vec3 normals (to be overwritten by this function)
+ */
+DVZ_EXPORT void dvz_compute_normals(
+    uint32_t vertex_count, uint32_t index_count, vec3* pos, DvzIndex* index, vec3* normal);
+
+
+
+/**
  * Recompute the face normals.
  *
  * @param shape the shape

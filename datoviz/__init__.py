@@ -76,15 +76,8 @@ assert LIB_PATH.exists()
 try:
     dvz = ctypes.cdll.LoadLibrary(str(LIB_PATH))
 except Exception as e:
-    print(f"Error loading {LIB_PATH}: {e}")
-
-    class DVZ:
-        def __getattr__(self, k):
-            return DVZ()
-
-        def __setattr__(self, k, v):
-            pass
-    dvz = DVZ()
+    print(f"Error loading library at {LIB_PATH}: {e}")
+    exit(1)
 
 # on macOS, we need to set the VK_DRIVER_FILES environment variable to the path to the MoltenVK ICD
 if PLATFORM == "macos":
@@ -227,7 +220,7 @@ GB = 1073741824
 MB = 1048576
 KB = 1024
 DVZ_VERSION_MINOR = 2
-DVZ_VERSION_PATCH = 1
+DVZ_VERSION_PATCH = 2
 
 
 # ===============================================================================
@@ -2608,6 +2601,32 @@ colormap_array.argtypes = [
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* out
+]
+
+# Function dvz_compute_normals()
+compute_normals = dvz.dvz_compute_normals
+compute_normals.__doc__ = """
+Compute face normals.
+
+Parameters
+----------
+vertex_count : uint32_t
+    number of vertices
+index_count : uint32_t
+    number of indices (triple of the number of faces)
+pos : vec3*
+    array of vec3 positions
+index : DvzIndex*
+    pos array of uint32_t indices
+normal : vec3* (out parameter)
+    array of vec3 normals (to be overwritten by this function)
+"""
+compute_normals.argtypes = [
+    ctypes.c_uint32,  # uint32_t vertex_count
+    ctypes.c_uint32,  # uint32_t index_count
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* index
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* normal
 ]
 
 # Function dvz_shape_normals()

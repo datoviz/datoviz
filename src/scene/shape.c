@@ -59,31 +59,30 @@ static inline float line_distance(vec3 p, vec3 q, vec2 u)
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
 
-void dvz_shape_normals(DvzShape* shape)
+void dvz_compute_normals(
+    uint32_t vertex_count, uint32_t index_count, vec3* pos, DvzIndex* index, vec3* normal)
 {
-    ANN(shape);
-    ANN(shape->pos);
-    ANN(shape->index);
-    ANN(shape->normal);
+    ANN(pos);
+    ANN(index);
+    ANN(normal);
 
     DvzIndex i0, i1, i2;
     vec3 u, v, n;
     vec3 v0, v1, v2;
     vec3 n0, n1, n2;
 
-    uint32_t vertex_count = shape->vertex_count;
-    uint32_t face_count = shape->index_count / 3;
+    uint32_t face_count = index_count / 3;
 
     // Go through all triangle faces.
     for (uint32_t i = 0; i < face_count; i++)
     {
-        i0 = shape->index[3 * i + 0];
-        i1 = shape->index[3 * i + 1];
-        i2 = shape->index[3 * i + 2];
+        i0 = index[3 * i + 0];
+        i1 = index[3 * i + 1];
+        i2 = index[3 * i + 2];
 
-        glm_vec3_copy(shape->pos[i0], v0);
-        glm_vec3_copy(shape->pos[i1], v1);
-        glm_vec3_copy(shape->pos[i2], v2);
+        glm_vec3_copy(pos[i0], v0);
+        glm_vec3_copy(pos[i1], v1);
+        glm_vec3_copy(pos[i2], v2);
 
         // u = v1-v0
         // v = v2-v0
@@ -93,16 +92,29 @@ void dvz_shape_normals(DvzShape* shape)
         glm_vec3_crossn(u, v, n);
 
         // Add the face normal to the current vertex normal.
-        glm_vec3_add(shape->normal[i0], n, shape->normal[i0]);
-        glm_vec3_add(shape->normal[i1], n, shape->normal[i1]);
-        glm_vec3_add(shape->normal[i2], n, shape->normal[i2]);
+        glm_vec3_add(normal[i0], n, normal[i0]);
+        glm_vec3_add(normal[i1], n, normal[i1]);
+        glm_vec3_add(normal[i2], n, normal[i2]);
     }
 
     // Normalize all normals since every vertex might contain the sum of many normals.
     for (uint32_t i = 0; i < vertex_count; i++)
     {
-        glm_vec3_normalize(shape->normal[i]);
+        glm_vec3_normalize(normal[i]);
     }
+}
+
+
+
+void dvz_shape_normals(DvzShape* shape)
+{
+    ANN(shape);
+    ANN(shape->pos);
+    ANN(shape->index);
+    ANN(shape->normal);
+    uint32_t vertex_count = shape->vertex_count;
+    uint32_t index_count = shape->index_count;
+    dvz_compute_normals(vertex_count, index_count, shape->pos, shape->index, shape->normal);
 }
 
 

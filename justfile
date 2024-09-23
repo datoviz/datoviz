@@ -1030,6 +1030,7 @@ deps:
 [linux]
 strip:
     @strip --strip-debug build/libdatoviz.so
+#
 
 [macos]
 rpath:

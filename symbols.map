@@ -49,6 +49,7 @@ dvz_visual_show
 dvz_colormap
 dvz_colormap_scale
 dvz_colormap_array
+dvz_compute_normals
 dvz_shape_normals
 dvz_shape_merge
 dvz_shape_print

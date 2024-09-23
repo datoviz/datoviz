@@ -601,6 +601,19 @@ void dvz_colormap_scale(
 )
 ```
 
+### `dvz_compute_normals()`
+
+Compute face normals.
+
+```c
+void dvz_compute_normals(
+    uint32_t vertex_count,  // number of vertices
+    uint32_t index_count,  // number of indices (triple of the number of faces)
+    vec3* pos,  // array of vec3 positions
+    DvzIndex* index,  // pos array of uint32_t indices
+)
+```
+
 ### `dvz_demo()`
 
 Run a demo.
