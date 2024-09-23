@@ -60,7 +60,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
 # NOTE: -one-off script to remove unnecessary #includes
 # need to install llvm, llvm-dev, clang from the same version of iwyu
@@ -487,31 +488,6 @@ elseif(CC_MSVC)
 endif()
 
 # -------------------------------------------------------------------------------------------------
-# RPATH
-# see https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
-# -------------------------------------------------------------------------------------------------
-
-# # use, i.e. don't skip the full RPATH for the build tree
-# set(CMAKE_SKIP_BUILD_RPATH FALSE)
-
-# # when building, don't use the install RPATH already
-# # (but later on when installing)
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-
-# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-
-# # add the automatically determined parts of the RPATH
-# # which point to directories outside the build tree to the install RPATH
-# set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-# # the RPATH to be used when installing, but only if it's not a system directory
-# list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-
-# if("${isSystemDir}" STREQUAL "-1")
-# set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# endif("${isSystemDir}" STREQUAL "-1")
-
-# -------------------------------------------------------------------------------------------------
 # Shaders compilation
 # -------------------------------------------------------------------------------------------------
 file(GLOB shader_sources
@@ -811,7 +787,13 @@ target_include_directories(libdatoviz PUBLIC ${INCL_DIRS})
 # LINK_FLAGS "-Wl,--version-script=${CMAKE_SOURCE_DIR}/export.map"
 # )
 if(${OS_LINUX})
-    set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    # In DEBUG mode, also add the build directory in the RPATH
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_INSTALL_RPATH "$ORIGIN;${CMAKE_BINARY_DIR}")
+    else()
+        set(CMAKE_INSTALL_RPATH "$ORIGIN")
+    endif()
+
     target_link_options(libdatoviz PRIVATE
         -Wl,--no-export-dynamic,--retain-symbols-file=${CMAKE_SOURCE_DIR}/symbols.map,--version-script=${CMAKE_SOURCE_DIR}/export.map)
 elseif(${OS_MACOS})
