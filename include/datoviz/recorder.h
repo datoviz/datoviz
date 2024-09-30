@@ -18,6 +18,7 @@
 /*************************************************************************************************/
 
 #include "_obj.h"
+#include "datoviz_types.h"
 
 
 
@@ -36,20 +37,6 @@
 
 typedef enum
 {
-    DVZ_RECORDER_NONE,
-    DVZ_RECORDER_BEGIN,
-    DVZ_RECORDER_DRAW,
-    DVZ_RECORDER_DRAW_INDEXED,
-    DVZ_RECORDER_DRAW_INDIRECT,
-    DVZ_RECORDER_DRAW_INDEXED_INDIRECT,
-    DVZ_RECORDER_VIEWPORT,
-    DVZ_RECORDER_END,
-} DvzRecorderCommandType;
-
-
-
-typedef enum
-{
     DVZ_RECORDER_FLAGS_NONE = 0x00,
     DVZ_RECORDER_FLAGS_DISABLE_CACHE = 0x01,
 } DvzRecorderFlags;
@@ -60,7 +47,6 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
-typedef struct DvzRecorderCommand DvzRecorderCommand;
 typedef struct DvzRecorder DvzRecorder;
 
 // Forward declarations.
@@ -75,55 +61,6 @@ typedef struct DvzRenderer DvzRenderer;
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
-
-struct DvzRecorderCommand
-{
-    DvzRecorderCommandType type;
-    DvzId canvas_or_board_id;
-    DvzRequestObject object_type;
-
-    union
-    {
-        // Viewport.
-        struct
-        {
-            vec2 offset, shape; // in framebuffer pixels
-        } v;
-
-        // Direct draw.
-        struct
-        {
-            DvzId pipe_id;
-            uint32_t first_vertex, vertex_count;
-            uint32_t first_instance, instance_count;
-        } draw;
-
-        // Indexed draw.
-        struct
-        {
-            DvzId pipe_id;
-            uint32_t first_index, vertex_offset, index_count;
-            uint32_t first_instance, instance_count;
-        } draw_indexed;
-
-        // Indirect draw.
-        struct
-        {
-            DvzId pipe_id;
-            DvzId dat_indirect_id;
-            uint32_t draw_count;
-        } draw_indirect;
-
-        // Indexed indirect draw.
-        struct
-        {
-            DvzId pipe_id;
-            DvzId dat_indirect_id;
-            uint32_t draw_count;
-        } draw_indexed_indirect;
-    } contents;
-};
-
 
 
 struct DvzRecorder

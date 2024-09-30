@@ -95,59 +95,6 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Requests                                                                                     */
-/*************************************************************************************************/
-
-// Request action.
-typedef enum
-{
-    DVZ_REQUEST_ACTION_NONE,
-    DVZ_REQUEST_ACTION_CREATE,
-    DVZ_REQUEST_ACTION_DELETE,
-    DVZ_REQUEST_ACTION_RESIZE,
-    DVZ_REQUEST_ACTION_UPDATE,
-    DVZ_REQUEST_ACTION_BIND,
-    DVZ_REQUEST_ACTION_RECORD,
-    DVZ_REQUEST_ACTION_UPLOAD,
-    DVZ_REQUEST_ACTION_UPFILL,
-    DVZ_REQUEST_ACTION_DOWNLOAD,
-    DVZ_REQUEST_ACTION_SET,
-    DVZ_REQUEST_ACTION_GET,
-} DvzRequestAction;
-
-
-
-// Request object.
-typedef enum
-{
-    DVZ_REQUEST_OBJECT_NONE,
-    DVZ_REQUEST_OBJECT_BOARD = 100,
-    DVZ_REQUEST_OBJECT_CANVAS,
-    DVZ_REQUEST_OBJECT_DAT,
-    DVZ_REQUEST_OBJECT_TEX,
-    DVZ_REQUEST_OBJECT_SAMPLER,
-    DVZ_REQUEST_OBJECT_COMPUTE,
-    DVZ_REQUEST_OBJECT_PRIMITIVE,
-    DVZ_REQUEST_OBJECT_DEPTH,
-    DVZ_REQUEST_OBJECT_BLEND,
-    DVZ_REQUEST_OBJECT_POLYGON,
-    DVZ_REQUEST_OBJECT_CULL,
-    DVZ_REQUEST_OBJECT_FRONT,
-    DVZ_REQUEST_OBJECT_SHADER,
-    DVZ_REQUEST_OBJECT_VERTEX,
-    DVZ_REQUEST_OBJECT_VERTEX_ATTR,
-    DVZ_REQUEST_OBJECT_SLOT,
-    DVZ_REQUEST_OBJECT_SPECIALIZATION,
-    DVZ_REQUEST_OBJECT_GRAPHICS,
-    DVZ_REQUEST_OBJECT_INDEX,
-    DVZ_REQUEST_OBJECT_BACKGROUND,
-
-    DVZ_REQUEST_OBJECT_RECORD, // use recorder.h
-} DvzRequestObject;
-
-
-
-/*************************************************************************************************/
 /*  Host                                                                                         */
 /*************************************************************************************************/
 
@@ -158,79 +105,6 @@ typedef enum
     DVZ_BACKEND_GLFW,
     DVZ_BACKEND_OFFSCREEN,
 } DvzBackend;
-
-
-
-/*************************************************************************************************/
-/*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
-/*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
-/*************************************************************************************************/
-
-// VkVertexInputRate wrapper.
-typedef enum
-{
-    DVZ_VERTEX_INPUT_RATE_VERTEX = 0,
-    DVZ_VERTEX_INPUT_RATE_INSTANCE = 1,
-} DvzVertexInputRate;
-
-
-
-// VkPolygonMode wrapper.
-typedef enum
-{
-    DVZ_POLYGON_MODE_FILL = 0,
-    DVZ_POLYGON_MODE_LINE = 1,
-    DVZ_POLYGON_MODE_POINT = 2,
-} DvzPolygonMode;
-
-
-
-// VkFrontFace wrapper.
-typedef enum
-{
-    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0,
-    DVZ_FRONT_FACE_CLOCKWISE = 1,
-} DvzFrontFace;
-
-
-
-// VkCullModeFlagBits wrapper.
-typedef enum
-{
-    DVZ_CULL_MODE_NONE = 0,
-    DVZ_CULL_MODE_FRONT = 0x00000001,
-    DVZ_CULL_MODE_BACK = 0x00000002,
-} DvzCullMode;
-
-
-
-// VkShaderStageFlagBits wrapper.
-typedef enum
-{
-    DVZ_SHADER_VERTEX = 0x00000001,
-    DVZ_SHADER_TESSELLATION_CONTROL = 0x00000002,
-    DVZ_SHADER_TESSELLATION_EVALUATION = 0x00000004,
-    DVZ_SHADER_GEOMETRY = 0x00000008,
-    DVZ_SHADER_FRAGMENT = 0x00000010,
-    DVZ_SHADER_COMPUTE = 0x00000020,
-} DvzShaderType;
-
-
-
-// VkDescriptorType wrapper.
-typedef enum
-{
-    DVZ_DESCRIPTOR_TYPE_SAMPLER = 0,
-    DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1,
-    DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7,
-    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
-    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
-} DvzDescriptorType;
 
 
 
@@ -263,17 +137,6 @@ typedef enum
 
 
 
-// Tex dims.
-typedef enum
-{
-    DVZ_TEX_NONE,
-    DVZ_TEX_1D,
-    DVZ_TEX_2D,
-    DVZ_TEX_3D,
-} DvzTexDims;
-
-
-
 /*************************************************************************************************/
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
@@ -284,76 +147,6 @@ typedef enum
     DVZ_GRAPHICS_FLAGS_DEPTH_TEST = 0x40000,
     DVZ_GRAPHICS_FLAGS_PICK = 0x80000,
 } DvzGraphicsFlags;
-
-
-
-// Graphics builtins
-typedef enum
-{
-    DVZ_GRAPHICS_NONE,
-    DVZ_GRAPHICS_POINT,
-    DVZ_GRAPHICS_TRIANGLE,
-    DVZ_GRAPHICS_CUSTOM,
-} DvzGraphicsType;
-
-
-
-/*************************************************************************************************/
-/*  Vulkan wrapper enums, avoiding dependency to vulkan.h                                        */
-/*  WARNING: they must match exactly the corresponding Vulkan enums.                             */
-/*************************************************************************************************/
-
-// Buffer type.
-// NOTE: the enum index should correspond to the buffer index in the context->buffers container
-typedef enum
-{
-    DVZ_BUFFER_TYPE_UNDEFINED,
-    DVZ_BUFFER_TYPE_STAGING,  // 1
-    DVZ_BUFFER_TYPE_VERTEX,   // 2
-    DVZ_BUFFER_TYPE_INDEX,    // 3
-    DVZ_BUFFER_TYPE_STORAGE,  // 4
-    DVZ_BUFFER_TYPE_UNIFORM,  // 5
-    DVZ_BUFFER_TYPE_INDIRECT, // 6
-} DvzBufferType;
-
-#define DVZ_BUFFER_TYPE_COUNT 6
-
-
-
-// Shader format.
-typedef enum
-{
-    DVZ_SHADER_SPIRV,
-    DVZ_SHADER_GLSL,
-} DvzShaderFormat;
-
-
-
-// Texture axis.
-typedef enum
-{
-    DVZ_SAMPLER_AXIS_U,
-    DVZ_SAMPLER_AXIS_V,
-    DVZ_SAMPLER_AXIS_W,
-} DvzSamplerAxis;
-
-
-
-// // Filter type.
-// typedef enum
-// {
-//     DVZ_SAMPLER_FILTER_MIN,
-//     DVZ_SAMPLER_FILTER_MAG,
-// } DvzSamplerFilter;
-
-
-
-// Blend type.
-typedef enum
-{
-    DVZ_BLEND_DISABLE,
-    DVZ_BLEND_ENABLE,
-} DvzBlendType;
 
 
 

@@ -49,6 +49,10 @@ typedef struct DvzGuiEvent DvzGuiEvent;
 typedef struct DvzTimerEvent DvzTimerEvent;
 typedef struct DvzRequestsEvent DvzRequestsEvent;
 
+typedef struct DvzRequest DvzRequest;
+typedef union DvzRequestContent DvzRequestContent;
+typedef struct DvzRecorderCommand DvzRecorderCommand;
+
 // Forward declarations.
 typedef struct DvzTimerItem DvzTimerItem;
 typedef struct DvzBatch DvzBatch;
@@ -119,6 +123,10 @@ struct DvzShape
 };
 
 
+
+/*************************************************************************************************/
+/*  Events                                                                                       */
+/*************************************************************************************************/
 
 struct DvzKeyboardEvent
 {
@@ -210,6 +218,268 @@ struct DvzRequestsEvent
     // void* requests;
     DvzBatch* batch;
     void* user_data;
+};
+
+
+
+/*************************************************************************************************/
+/*  Requests                                                                                     */
+/*************************************************************************************************/
+
+struct DvzRecorderCommand
+{
+    DvzRecorderCommandType type;
+    DvzId canvas_or_board_id;
+    DvzRequestObject object_type;
+
+    union
+    {
+        // Viewport.
+        struct
+        {
+            vec2 offset, shape; // in framebuffer pixels
+        } v;
+
+        // Direct draw.
+        struct
+        {
+            DvzId pipe_id;
+            uint32_t first_vertex, vertex_count;
+            uint32_t first_instance, instance_count;
+        } draw;
+
+        // Indexed draw.
+        struct
+        {
+            DvzId pipe_id;
+            uint32_t first_index, vertex_offset, index_count;
+            uint32_t first_instance, instance_count;
+        } draw_indexed;
+
+        // Indirect draw.
+        struct
+        {
+            DvzId pipe_id;
+            DvzId dat_indirect_id;
+            uint32_t draw_count;
+        } draw_indirect;
+
+        // Indexed indirect draw.
+        struct
+        {
+            DvzId pipe_id;
+            DvzId dat_indirect_id;
+            uint32_t draw_count;
+        } draw_indexed_indirect;
+    } contents;
+};
+
+
+
+union DvzRequestContent
+{
+    // Board.
+    struct
+    {
+        uint32_t width, height;
+        cvec4 background;
+    } board;
+
+    // Canvas.
+    struct
+    {
+        uint32_t framebuffer_width, framebuffer_height;
+        uint32_t screen_width, screen_height;
+        cvec4 background;
+    } canvas;
+
+    // Dat.
+    struct
+    {
+        DvzBufferType type;
+        DvzSize size;
+    } dat;
+
+    // Tex.
+    struct
+    {
+        DvzTexDims dims;
+        uvec3 shape;
+        DvzFormat format;
+    } tex;
+
+    // Sampler.
+    struct
+    {
+        DvzFilter filter;
+        DvzSamplerAddressMode mode;
+    } sampler;
+
+    // Shader.
+    struct
+    {
+        DvzShaderFormat format;
+        DvzShaderType type;
+        DvzSize size;
+        char* code;       // For GLSL.
+        uint32_t* buffer; // For SPIRV
+    } shader;
+
+
+
+    // Dat upload.
+    struct
+    {
+        int upload_type; // 0=direct (data pointer), otherwise custom transfer method
+        DvzSize offset, size;
+        void* data;
+    } dat_upload;
+
+    // Tex upload.
+    struct
+    {
+        int upload_type; // 0=direct (data pointer), otherwise custom transfer method
+        uvec3 offset, shape;
+        DvzSize size;
+        void* data;
+    } tex_upload;
+
+
+
+    // Graphics.
+    struct
+    {
+        DvzGraphicsType type;
+    } graphics;
+
+    // Set primitive.
+    struct
+    {
+        DvzPrimitiveTopology primitive;
+    } set_primitive;
+
+    // Set blend type.
+    struct
+    {
+        DvzBlendType blend;
+    } set_blend;
+
+    // Set depth test.
+    struct
+    {
+        DvzDepthTest depth;
+    } set_depth;
+
+    // Set polygon mode.
+    struct
+    {
+        DvzPolygonMode polygon;
+    } set_polygon;
+
+    // Set cull mode.
+    struct
+    {
+        DvzCullMode cull;
+    } set_cull;
+
+    // Set front face mode.
+    struct
+    {
+        DvzFrontFace front;
+    } set_front;
+
+    // Set SPIRV or GLSL shader.
+    struct
+    {
+        DvzId shader;
+    } set_shader;
+
+    // Set vertex binding.
+    struct
+    {
+        uint32_t binding_idx;
+        DvzSize stride;
+        DvzVertexInputRate input_rate;
+    } set_vertex;
+
+    // Set vertex attribute.
+    struct
+    {
+        uint32_t binding_idx;
+        uint32_t location;
+        DvzFormat format;
+        DvzSize offset;
+    } set_attr;
+
+    // Set descriptor slot.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzDescriptorType type;
+    } set_slot;
+
+    // Set specialization constant.
+    struct
+    {
+        DvzShaderType shader;
+        uint32_t idx;
+        DvzSize size;
+        void* value;
+    } set_specialization;
+
+    // Bind a dat to a vertex binding.
+    struct
+    {
+        uint32_t binding_idx;
+        DvzId dat;
+        DvzSize offset;
+    } bind_vertex;
+
+    // Bind a dat to an index binding.
+    struct
+    {
+        DvzId dat;
+        DvzSize offset;
+    } bind_index;
+
+    // Bind a dat to a descriptor slot.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzId dat;
+        DvzSize offset;
+    } bind_dat;
+
+    // Bind a tex to a descriptor slot.
+    struct
+    {
+        uint32_t slot_idx;
+        DvzId tex;
+        DvzId sampler;
+        uvec3 offset;
+    } bind_tex;
+
+
+
+    // Record a command.
+    struct
+    {
+        DvzRecorderCommand command;
+    } record;
+};
+
+
+
+struct DvzRequest
+{
+    uint32_t version;          // request version
+    DvzRequestAction action;   // type of action
+    DvzRequestObject type;     // type of the object targetted by the action
+    DvzId id;                  // id of the object
+    DvzRequestContent content; // details on the action
+    int tag;                   // optional tag
+    int flags;                 // custom flags
+    const char* desc;          // optional string
 };
 
 
