@@ -49,7 +49,7 @@ int main(int argc, char** argv)
         "    gl_Position = vec4(pos, 1.0);\n"
         "    out_color = color;\n"
         "}\n";
-    req = dvz_create_glsl(batch, DVZ_SHADER_VERTEX, strlen(vertex_glsl), vertex_glsl);
+    req = dvz_create_glsl(batch, DVZ_SHADER_VERTEX, vertex_glsl);
 
     // Assign the shader to the graphics pipe.
     DvzId vertex_id = req.id;
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
         "{\n"
         "    out_color = in_color;\n"
         "}\n";
-    req = dvz_create_glsl(batch, DVZ_SHADER_FRAGMENT, strlen(fragment_glsl), fragment_glsl);
+    req = dvz_create_glsl(batch, DVZ_SHADER_FRAGMENT, fragment_glsl);
 
     // Assign the shader to the graphics pipe.
     DvzId fragment_id = req.id;
