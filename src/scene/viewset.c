@@ -19,7 +19,7 @@
 #include "_list.h"
 #include "_map.h"
 #include "common.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/baker.h"
 #include "scene/transform.h"
 #include "scene/visual.h"

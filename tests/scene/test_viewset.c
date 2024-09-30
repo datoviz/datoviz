@@ -16,8 +16,8 @@
 
 #include "scene/test_viewset.h"
 #include "_cglm.h"
+#include "datoviz_protocol.h"
 #include "renderer.h"
-#include "request.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/transform.h"
 #include "scene/viewset.h"

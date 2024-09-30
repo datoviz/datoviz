@@ -15,8 +15,8 @@
 /*************************************************************************************************/
 
 #include "scene/test_visual.h"
+#include "datoviz_protocol.h"
 #include "renderer.h"
-#include "request.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/visual.h"
 #include "test.h"

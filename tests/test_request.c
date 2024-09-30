@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #include "_map.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "test.h"
 #include "test_request.h"
 #include "testing.h"

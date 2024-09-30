@@ -11,8 +11,8 @@
 #include "../_pointer.h"
 #include "_macros.h"
 #include "datoviz.h"
+#include "datoviz_protocol.h"
 #include "fileio.h"
-#include "request.h"
 #include "scene/font.h"
 #include "scene/sdf.h"
 

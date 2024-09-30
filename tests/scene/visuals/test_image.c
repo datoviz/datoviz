@@ -28,8 +28,8 @@ typedef uint32_t char32_t;
 #include <uchar.h>
 #endif
 
+#include "datoviz_protocol.h"
 #include "renderer.h"
-#include "request.h"
 #include "scene/scene_testing_utils.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"

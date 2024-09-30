@@ -16,8 +16,8 @@
 
 #include "scene/visuals/test_mesh.h"
 #include "datoviz.h"
+#include "datoviz_protocol.h"
 #include "renderer.h"
-#include "request.h"
 #include "scene/arcball.h"
 #include "scene/dual.h"
 #include "scene/scene.h"

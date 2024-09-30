@@ -18,13 +18,13 @@
 #include "board.h"
 #include "client.h"
 #include "datoviz.h"
+#include "datoviz_protocol.h"
 #include "env_utils.h"
 #include "fileio.h"
 #include "gui.h"
 #include "host.h"
 #include "presenter.h"
 #include "renderer.h"
-#include "request.h"
 #include "timer.h"
 
 

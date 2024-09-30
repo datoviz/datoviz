@@ -16,7 +16,7 @@
 
 #include "scene/transform.h"
 #include "common.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/array.h"
 #include "scene/dual.h"
 #include "scene/visual.h"

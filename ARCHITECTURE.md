@@ -83,7 +83,7 @@ The GPU-agnostic client and the client-agnostic (static) renderer are linked tog
 
 ## Datoviz Intermediate Protocol
 
-The **Datoviz Intermediate Protocol** is entirely defined in `request.h`.
+The **Datoviz Intermediate Protocol** is entirely defined in `datoviz_protocol.h`.
 
 It provides a generic intermediate-level GPU visualization library that is somewhat similar to the WebGPU API. It deals exclusively with **GPU objects**, NOT visual objects. The protocol comes with NO graphical primitives, it supports arbitrary shaders and graphics pipelines. Graphical primitives and higher-level visualization constructs are implemented in the Visuals library and the Scene API described below
 

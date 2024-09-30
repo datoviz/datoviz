@@ -8,11 +8,11 @@
 /*  Request                                                                                      */
 /*************************************************************************************************/
 
-#include "request.h"
 #include "_cglm.h"
 #include "_debug.h"
 #include "_list.h"
 #include "_pointer.h"
+#include "datoviz_protocol.h"
 #include "fifo.h"
 #include "fileio.h"
 

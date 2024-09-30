@@ -18,8 +18,8 @@
 #include "_macros.h"
 #include "_string.h"
 #include "datoviz.h"
+#include "datoviz_protocol.h"
 #include "fileio.h"
-#include "request.h"
 
 #if HAS_MSDF
 #include <ft2build.h>

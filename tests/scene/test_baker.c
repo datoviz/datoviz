@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene/test_baker.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/array.h"
 #include "scene/baker.h"
 #include "scene/dual.h"

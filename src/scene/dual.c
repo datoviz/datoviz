@@ -16,7 +16,7 @@
 
 #include "scene/dual.h"
 #include "_map.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/array.h"
 
 

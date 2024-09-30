@@ -10,8 +10,8 @@
 #include "scene/sdf.h"
 #include "_macros.h"
 #include "datoviz_math.h"
+#include "datoviz_protocol.h"
 #include "fileio.h"
-#include "request.h"
 
 #if HAS_MSDF
 // Include msdfgen

@@ -16,9 +16,9 @@
 
 #include "scene/visuals/sphere.h"
 #include "datoviz.h"
+#include "datoviz_protocol.h"
 #include "datoviz_types.h"
 #include "fileio.h"
-#include "request.h"
 #include "scene/graphics.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"

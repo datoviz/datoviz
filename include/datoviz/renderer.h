@@ -18,8 +18,8 @@
 /*************************************************************************************************/
 
 #include "common.h"
+#include "datoviz_protocol.h"
 #include "pipelib.h"
-#include "request.h"
 #include "scene/graphics.h"
 
 

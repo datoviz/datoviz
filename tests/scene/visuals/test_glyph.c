@@ -15,8 +15,8 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_glyph.h"
+#include "datoviz_protocol.h"
 #include "renderer.h"
-#include "request.h"
 #include "scene/atlas.h"
 #include "scene/font.h"
 #include "scene/scene_testing_utils.h"

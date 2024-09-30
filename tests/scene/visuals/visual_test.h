@@ -18,7 +18,7 @@
 /*************************************************************************************************/
 
 #include "datoviz.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/app.h"
 #include "scene/axis.h"
 #include "scene/camera.h"

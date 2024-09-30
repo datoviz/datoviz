@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene/test_params.h"
-#include "request.h"
+#include "datoviz_protocol.h"
 #include "scene/params.h"
 #include "test.h"
 #include "testing.h"
