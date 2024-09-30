@@ -474,7 +474,7 @@ void dvz_request_print(DvzRequest* req);
  *
  * NOTE: background color not implemented yet
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param width the board width
  * @param height the board height
  * @param background the background color
@@ -489,7 +489,7 @@ dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 backgro
 /**
  * Change the background color of the board.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the board id
  * @param background the background color
  * @returns the request
@@ -501,7 +501,7 @@ DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background);
 /**
  * Create a request for a board redraw (command buffer submission).
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the board id
  * @returns the request
  */
@@ -512,7 +512,7 @@ DvzRequest dvz_update_board(DvzBatch* batch, DvzId id);
 /**
  * Create a request to resize a board.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param board the board id
  * @param width the new board width
  * @param height the new board height
@@ -525,7 +525,7 @@ DvzRequest dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32
 /**
  * Create a request for a board deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the board id
  * @returns the request
  */
@@ -544,7 +544,7 @@ DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id);
  *
  * NOTE: background color not implemented yet
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param width the canvas width (in screen pixels)
  * @param height the canvas height (in screen pixels)
  * @param background the background color
@@ -559,7 +559,7 @@ dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 backgr
 /**
  * Create a request for a canvas redraw (command buffer submission).
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the canvas id
  * @returns the request
  */
@@ -570,7 +570,7 @@ dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 backgr
 /**
  * Create a request for a canvas deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the canvas id
  * @returns the request
  */
@@ -585,7 +585,7 @@ DvzRequest dvz_delete_canvas(DvzBatch* batch, DvzId id);
 /**
  * Create a request for a dat creation.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param type the buffer type
  * @param size the dat size, in bytes
  * @param flags the dat creation flags
@@ -598,7 +598,7 @@ DvzRequest dvz_create_dat(DvzBatch* batch, DvzBufferType type, DvzSize size, int
 /**
  * Create a request to resize a dat.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param dat the dat id
  * @param size the new dat size, in bytes
  * @returns the request
@@ -613,7 +613,7 @@ DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size);
  * NOTE: this function makes a COPY of the buffer to ensure it will live until the upload actually
  * occurs. The copy will be freed automatically as soon as it's safe.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param dat the id of the dat to upload to
  * @param offset the byte offset of the upload transfer
  * @param size the number of bytes in data to transfer
@@ -628,9 +628,9 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
 /**
  * Create a request for dat deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the dat id
- * @returns the deletion request
+ * @returns the request
  */
 DvzRequest dvz_delete_dat(DvzBatch* batch, DvzId id);
 
@@ -643,7 +643,7 @@ DvzRequest dvz_delete_dat(DvzBatch* batch, DvzId id);
 /**
  * Create a request for a tex creation.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param dims the number of dimensions, 1, 2, or 3
  * @param format the image format
  * @param shape the texture shape
@@ -658,7 +658,7 @@ dvz_create_tex(DvzBatch* batch, DvzTexDims dims, DvzFormat format, uvec3 shape, 
 /**
  * Create a request to resize a tex.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param tex the tex id
  * @param shape the new tex shape
  * @returns the request
@@ -673,7 +673,7 @@ DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape);
  * NOTE: this function makes a COPY of the buffer to ensure it will live until the upload actually
  * occurs. The copy will be freed automatically as soon as it's safe.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param tex the id of the tex to upload to
  * @param offset the offset
  * @param shape the shape
@@ -689,9 +689,9 @@ DvzRequest dvz_upload_tex(
 /**
  * Create a request for tex deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the tex id
- * @returns the deletion request
+ * @returns the request
  */
 DvzRequest dvz_delete_tex(DvzBatch* batch, DvzId id);
 
@@ -704,7 +704,7 @@ DvzRequest dvz_delete_tex(DvzBatch* batch, DvzId id);
 /**
  * Create a request for a sampler creation.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param filter the sampler filter
  * @param mode the sampler address mode
  * @returns the request, containing a newly-generated id for the sampler to be created
@@ -716,9 +716,9 @@ DvzRequest dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddre
 /**
  * Create a request for sampler deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the sampler id
- * @returns the deletion request
+ * @returns the request
  */
 DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id);
 
@@ -728,11 +728,29 @@ DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id);
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
+/**
+ * Create a request for GLSL shader creation.
+ *
+ * @param batch the batch
+ * @param shader_type the shader type
+ * @param size the size in bytes of the string with the GLSL code
+ * @param code an ASCII string with the GLSL code
+ * @returns the request
+ */
 DvzRequest
 dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const char* code);
 
 
 
+/**
+ * Create a request for SPIR-V shader creation.
+ *
+ * @param batch the batch
+ * @param shader_type the shader type
+ * @param size the size in bytes of the SPIR-V buffer
+ * @param buffer pointer to a buffer with the SPIR-V bytecode
+ * @returns the request
+ */
 DvzRequest dvz_create_spirv(
     DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const unsigned char* buffer);
 
@@ -745,7 +763,7 @@ DvzRequest dvz_create_spirv(
 /**
  * Create a request for a builtin graphics pipe creation.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param parent either the parent board or canvas id
  * @param type the graphics type
  * @param flags the graphics creation flags
@@ -755,63 +773,159 @@ DvzRequest dvz_create_graphics(DvzBatch* batch, DvzGraphicsType type, int flags)
 
 
 
+/**
+ * Create a request for setting the primitive topology of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param primitive the graphics primitive topology
+ * @returns the request
+ */
 DvzRequest dvz_set_primitive(DvzBatch* batch, DvzId graphics, DvzPrimitiveTopology primitive);
 
 
 
+/**
+ * Create a request for setting the blend type of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param blend_type the graphics blend type
+ * @returns the request
+ */
 DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_type);
 
 
 
+/**
+ * Create a request for setting the depth test of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param depth_test the graphics depth test
+ * @returns the request
+ */
 DvzRequest dvz_set_depth(DvzBatch* batch, DvzId graphics, DvzDepthTest depth_test);
 
 
 
+/**
+ * Create a request for setting the polygon mode of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param polygon_mode the polygon mode
+ * @returns the request
+ */
 DvzRequest dvz_set_polygon(DvzBatch* batch, DvzId graphics, DvzPolygonMode polygon_mode);
 
 
 
+/**
+ * Create a request for setting the cull mode of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param cull_mode the cull mode
+ * @returns the request
+ */
 DvzRequest dvz_set_cull(DvzBatch* batch, DvzId graphics, DvzCullMode cull_mode);
 
 
 
+/**
+ * Create a request for setting the front face of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param front_face the front face
+ * @returns the request
+ */
 DvzRequest dvz_set_front(DvzBatch* batch, DvzId graphics, DvzFrontFace front_face);
 
 
 
+/**
+ * Create a request for setting a shader a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param shader the id of the shader object
+ * @returns the request
+ */
 DvzRequest dvz_set_shader(DvzBatch* batch, DvzId graphics, DvzId shader);
 
 
 
+/**
+ * Create a request for setting a vertex binding of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param binding_idx the index of the vertex binding
+ * @param stride the binding stride
+ * @returns the request
+ */
 DvzRequest dvz_set_vertex(
     DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzSize stride,
     DvzVertexInputRate input_rate);
 
 
 
+/**
+ * Create a request for setting a vertex attribute of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param binding_idx the index of the vertex binding
+ * @param location the GLSL attribute location
+ * @param format the attribute format
+ * @param offset the byte offset of the attribute within the vertex binding
+ * @returns the request
+ */
 DvzRequest dvz_set_attr(
     DvzBatch* batch, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset);
 
 
 
+/**
+ * Create a request for setting a binding slot (descriptor) of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param slot_idx the index of the GLSL binding slot
+ * @param type the descriptor type
+ * @returns the request
+ */
 DvzRequest
 dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type);
 
 
 
+/**
+ * Create a request for setting a specialization constant of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param shader the shader with the specialization constant
+ * @param idx the specialization constant index as specified in the GLSL code
+ * @param size the byte size of the value
+ * @param value a pointer to the specialization constant value
+ * @returns the request
+ */
 DvzRequest dvz_set_specialization(
-    DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size,
-    void* value);
+    DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, //
+    DvzSize size, void* value);
 
 
 
 /**
  * Create a request for graphics deletion.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param id the graphics id
- * @returns the deletion request
+ * @returns the request
  */
 DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id);
 
@@ -824,7 +938,7 @@ DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id);
 /**
  * Create a request for associating a vertex dat to a graphics pipe.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param graphics the id of the graphics pipe
  * @param dat the id of the dat with the vertex data
  * @param offset the offset within the dat
@@ -838,7 +952,7 @@ dvz_bind_vertex(DvzBatch* batch, DvzId pipe, uint32_t binding_idx, DvzId dat, Dv
 /**
  * Create a request for associating an index dat to a graphics pipe.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param graphics the id of the graphics pipe
  * @param dat the id of the dat with the index data
  * @param offset the offset within the dat
@@ -851,7 +965,7 @@ DvzRequest dvz_bind_index(DvzBatch* batch, DvzId pipe, DvzId dat, DvzSize offset
 /**
  * Create a request for associating a dat to a pipe's slot.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param pipe the id of the pipe
  * @param slot_idx the index of the descriptor slot
  * @param dat the id of the dat to bind to the pipe
@@ -865,7 +979,7 @@ DvzRequest dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId da
 /**
  * Create a request for associating a tex to a pipe's slot.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param pipe the id of the pipe
  * @param slot_idx the index of the descriptor slot
  * @param tex the id of the tex to bind to the pipe
@@ -885,7 +999,7 @@ DvzRequest dvz_bind_tex(
 /**
  * Create a request for starting recording of command buffer.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
@@ -896,7 +1010,7 @@ DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id);
 /**
  * Create a request for setting the viewport during command buffer recording.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @param offset the viewport offset, in framebuffer pixels
  * @param shape the viewport size, in framebuffer pixels
@@ -909,7 +1023,7 @@ DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 o
 /**
  * Create a request for a direct draw of a graphics during command buffer recording.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param first_vertex the index of the first vertex to draw
@@ -928,7 +1042,7 @@ DvzRequest dvz_record_draw(
 /**
  * Create a request for an indexed draw of a graphics during command buffer recording.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param first_index the index of the first index to draw
@@ -948,7 +1062,7 @@ DvzRequest dvz_record_draw_indexed(
 /**
  * Create a request for an indirect draw of a graphics during command buffer recording.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
@@ -964,7 +1078,7 @@ DvzRequest dvz_record_draw_indirect(
 /**
  * Create a request for an indexed indirect draw of a graphics during command buffer recording.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
@@ -980,7 +1094,7 @@ DvzRequest dvz_record_draw_indexed_indirect(
 /**
  * Create a request for ending recording of command buffer.
  *
- * @param rqr the requester
+ * @param batch the batch
  * @param canvas_or_board_id the id of the canvas or board
  * @returns the request
  */
