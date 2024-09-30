@@ -49,6 +49,32 @@ typedef struct DvzGuiEvent DvzGuiEvent;
 typedef struct DvzTimerEvent DvzTimerEvent;
 typedef struct DvzRequestsEvent DvzRequestsEvent;
 
+// Requests.
+typedef struct DvzRequestBoard DvzRequestBoard;
+typedef struct DvzRequestCanvas DvzRequestCanvas;
+typedef struct DvzRequestDat DvzRequestDat;
+typedef struct DvzRequestTex DvzRequestTex;
+typedef struct DvzRequestSampler DvzRequestSampler;
+typedef struct DvzRequestShader DvzRequestShader;
+typedef struct DvzRequestDatUpload DvzRequestDatUpload;
+typedef struct DvzRequestTexUpload DvzRequestTexUpload;
+typedef struct DvzRequestGraphics DvzRequestGraphics;
+typedef struct DvzRequestPrimitive DvzRequestPrimitive;
+typedef struct DvzRequestBlend DvzRequestBlend;
+typedef struct DvzRequestDepth DvzRequestDepth;
+typedef struct DvzRequestPolygon DvzRequestPolygon;
+typedef struct DvzRequestCull DvzRequestCull;
+typedef struct DvzRequestFront DvzRequestFront;
+typedef struct DvzRequestShaderSet DvzRequestShaderSet;
+typedef struct DvzRequestVertex DvzRequestVertex;
+typedef struct DvzRequestAttr DvzRequestAttr;
+typedef struct DvzRequestSlot DvzRequestSlot;
+typedef struct DvzRequestSpecialization DvzRequestSpecialization;
+typedef struct DvzRequestBindVertex DvzRequestBindVertex;
+typedef struct DvzRequestBindIndex DvzRequestBindIndex;
+typedef struct DvzRequestBindDat DvzRequestBindDat;
+typedef struct DvzRequestBindTex DvzRequestBindTex;
+typedef struct DvzRequestRecord DvzRequestRecord;
 typedef struct DvzRequest DvzRequest;
 typedef union DvzRequestContent DvzRequestContent;
 typedef struct DvzRecorderCommand DvzRecorderCommand;
@@ -276,196 +302,242 @@ struct DvzRecorderCommand
 
 
 
+struct DvzRequestBoard
+{
+    uint32_t width, height;
+    cvec4 background;
+};
+
+struct DvzRequestCanvas
+{
+    uint32_t framebuffer_width, framebuffer_height;
+    uint32_t screen_width, screen_height;
+    cvec4 background;
+};
+
+struct DvzRequestDat
+{
+    DvzBufferType type;
+    DvzSize size;
+};
+
+struct DvzRequestTex
+{
+    DvzTexDims dims;
+    uvec3 shape;
+    DvzFormat format;
+};
+
+struct DvzRequestSampler
+{
+    DvzFilter filter;
+    DvzSamplerAddressMode mode;
+};
+
+struct DvzRequestShader
+{
+    DvzShaderFormat format;
+    DvzShaderType type;
+    DvzSize size;
+    char* code;       // For GLSL.
+    uint32_t* buffer; // For SPIRV
+};
+
+struct DvzRequestDatUpload
+{
+    int upload_type; // 0=direct (data pointer), otherwise custom transfer method
+    DvzSize offset, size;
+    void* data;
+};
+
+struct DvzRequestTexUpload
+{
+    int upload_type; // 0=direct (data pointer), otherwise custom transfer method
+    uvec3 offset, shape;
+    DvzSize size;
+    void* data;
+};
+
+struct DvzRequestGraphics
+{
+    DvzGraphicsType type;
+};
+
+struct DvzRequestPrimitive
+{
+    DvzPrimitiveTopology primitive;
+};
+
+struct DvzRequestBlend
+{
+    DvzBlendType blend;
+};
+
+struct DvzRequestDepth
+{
+    DvzDepthTest depth;
+};
+
+struct DvzRequestPolygon
+{
+    DvzPolygonMode polygon;
+};
+
+struct DvzRequestCull
+{
+    DvzCullMode cull;
+};
+
+struct DvzRequestFront
+{
+    DvzFrontFace front;
+};
+
+struct DvzRequestShaderSet
+{
+    DvzId shader;
+};
+
+struct DvzRequestVertex
+{
+    uint32_t binding_idx;
+    DvzSize stride;
+    DvzVertexInputRate input_rate;
+};
+
+struct DvzRequestAttr
+{
+    uint32_t binding_idx;
+    uint32_t location;
+    DvzFormat format;
+    DvzSize offset;
+};
+
+struct DvzRequestSlot
+{
+    uint32_t slot_idx;
+    DvzDescriptorType type;
+};
+
+struct DvzRequestSpecialization
+{
+    DvzShaderType shader;
+    uint32_t idx;
+    DvzSize size;
+    void* value;
+};
+
+struct DvzRequestBindVertex
+{
+    uint32_t binding_idx;
+    DvzId dat;
+    DvzSize offset;
+};
+
+struct DvzRequestBindIndex
+{
+    DvzId dat;
+    DvzSize offset;
+};
+
+struct DvzRequestBindDat
+{
+    uint32_t slot_idx;
+    DvzId dat;
+    DvzSize offset;
+};
+
+struct DvzRequestBindTex
+{
+    uint32_t slot_idx;
+    DvzId tex;
+    DvzId sampler;
+    uvec3 offset;
+};
+
+struct DvzRequestRecord
+{
+    DvzRecorderCommand command;
+};
+
+
+
 union DvzRequestContent
 {
     // Board.
-    struct
-    {
-        uint32_t width, height;
-        cvec4 background;
-    } board;
+    DvzRequestBoard board;
 
     // Canvas.
-    struct
-    {
-        uint32_t framebuffer_width, framebuffer_height;
-        uint32_t screen_width, screen_height;
-        cvec4 background;
-    } canvas;
+    DvzRequestCanvas canvas;
 
     // Dat.
-    struct
-    {
-        DvzBufferType type;
-        DvzSize size;
-    } dat;
+    DvzRequestDat dat;
 
     // Tex.
-    struct
-    {
-        DvzTexDims dims;
-        uvec3 shape;
-        DvzFormat format;
-    } tex;
+    DvzRequestTex tex;
 
     // Sampler.
-    struct
-    {
-        DvzFilter filter;
-        DvzSamplerAddressMode mode;
-    } sampler;
+    DvzRequestSampler sampler;
 
     // Shader.
-    struct
-    {
-        DvzShaderFormat format;
-        DvzShaderType type;
-        DvzSize size;
-        char* code;       // For GLSL.
-        uint32_t* buffer; // For SPIRV
-    } shader;
-
-
+    DvzRequestShader shader;
 
     // Dat upload.
-    struct
-    {
-        int upload_type; // 0=direct (data pointer), otherwise custom transfer method
-        DvzSize offset, size;
-        void* data;
-    } dat_upload;
+    DvzRequestDatUpload dat_upload;
 
     // Tex upload.
-    struct
-    {
-        int upload_type; // 0=direct (data pointer), otherwise custom transfer method
-        uvec3 offset, shape;
-        DvzSize size;
-        void* data;
-    } tex_upload;
-
-
+    DvzRequestTexUpload tex_upload;
 
     // Graphics.
-    struct
-    {
-        DvzGraphicsType type;
-    } graphics;
+    DvzRequestGraphics graphics;
 
     // Set primitive.
-    struct
-    {
-        DvzPrimitiveTopology primitive;
-    } set_primitive;
+    DvzRequestPrimitive set_primitive;
 
     // Set blend type.
-    struct
-    {
-        DvzBlendType blend;
-    } set_blend;
+    DvzRequestBlend set_blend;
 
     // Set depth test.
-    struct
-    {
-        DvzDepthTest depth;
-    } set_depth;
+    DvzRequestDepth set_depth;
 
     // Set polygon mode.
-    struct
-    {
-        DvzPolygonMode polygon;
-    } set_polygon;
+    DvzRequestPolygon set_polygon;
 
     // Set cull mode.
-    struct
-    {
-        DvzCullMode cull;
-    } set_cull;
+    DvzRequestCull set_cull;
 
     // Set front face mode.
-    struct
-    {
-        DvzFrontFace front;
-    } set_front;
+    DvzRequestFront set_front;
 
     // Set SPIRV or GLSL shader.
-    struct
-    {
-        DvzId shader;
-    } set_shader;
+    DvzRequestShaderSet set_shader;
 
     // Set vertex binding.
-    struct
-    {
-        uint32_t binding_idx;
-        DvzSize stride;
-        DvzVertexInputRate input_rate;
-    } set_vertex;
+    DvzRequestVertex set_vertex;
 
     // Set vertex attribute.
-    struct
-    {
-        uint32_t binding_idx;
-        uint32_t location;
-        DvzFormat format;
-        DvzSize offset;
-    } set_attr;
+    DvzRequestAttr set_attr;
 
     // Set descriptor slot.
-    struct
-    {
-        uint32_t slot_idx;
-        DvzDescriptorType type;
-    } set_slot;
+    DvzRequestSlot set_slot;
 
     // Set specialization constant.
-    struct
-    {
-        DvzShaderType shader;
-        uint32_t idx;
-        DvzSize size;
-        void* value;
-    } set_specialization;
+    DvzRequestSpecialization set_specialization;
 
     // Bind a dat to a vertex binding.
-    struct
-    {
-        uint32_t binding_idx;
-        DvzId dat;
-        DvzSize offset;
-    } bind_vertex;
+    DvzRequestBindVertex bind_vertex;
 
     // Bind a dat to an index binding.
-    struct
-    {
-        DvzId dat;
-        DvzSize offset;
-    } bind_index;
+    DvzRequestBindIndex bind_index;
 
     // Bind a dat to a descriptor slot.
-    struct
-    {
-        uint32_t slot_idx;
-        DvzId dat;
-        DvzSize offset;
-    } bind_dat;
+    DvzRequestBindDat bind_dat;
 
     // Bind a tex to a descriptor slot.
-    struct
-    {
-        uint32_t slot_idx;
-        DvzId tex;
-        DvzId sampler;
-        uvec3 offset;
-    } bind_tex;
-
-
+    DvzRequestBindTex bind_tex;
 
     // Record a command.
-    struct
-    {
-        DvzRecorderCommand command;
-    } record;
+    DvzRequestRecord record;
 };
 
 
