@@ -1620,16 +1620,15 @@ DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id)
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-DvzRequest
-dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const char* code)
+DvzRequest dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, const char* code)
 {
     ANN(code);
-    ASSERT(size > 0);
 
     CREATE_REQUEST(CREATE, SHADER);
     req.id = dvz_prng_uuid(PRNG);
     req.content.shader.format = DVZ_SHADER_GLSL;
     req.content.shader.type = shader_type;
+    DvzSize size = strnlen(code, 1048576) + 1; // NOTE: null-terminated string
     req.content.shader.size = size;
     req.content.shader.code = _cpy(size, code); // NOTE: the renderer will need to free it
 

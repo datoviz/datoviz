@@ -64,7 +64,7 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
 
     if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
     {
-        log_error("error compiling the shader code");
+        log_error("error compiling the shader code: >>>%s<<<", code);
         shaderc_compiler_release(compiler);
         shaderc_compile_options_release(options);
         shaderc_result_release(result);

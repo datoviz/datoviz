@@ -488,12 +488,11 @@ DVZ_EXPORT DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id);
  *
  * @param batch the batch
  * @param shader_type the shader type
- * @param size the size in bytes of the string with the GLSL code
  * @param code an ASCII string with the GLSL code
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, DvzSize size, const char* code);
+dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, const char* code);
 
 
 
