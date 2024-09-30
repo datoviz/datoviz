@@ -257,6 +257,7 @@ typedef enum
 /*  Requests                                                                                     */
 /*************************************************************************************************/
 
+// Recorder command type.
 typedef enum
 {
     DVZ_RECORDER_NONE,
