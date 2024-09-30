@@ -256,6 +256,7 @@ Refer to the [C API reference](api.md) for functions you can use to manually con
 ```python
 dvz.panel_update(panel)
 ```
+
 ## Event callbacks
 
 You can define custom event callbacks to respond to mouse and keyboard interactions, as well as set up timers.

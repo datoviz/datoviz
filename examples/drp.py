@@ -1,4 +1,4 @@
-"""# Datoviz Renderer Protocol (DRP) example
+"""# Datoviz Rendering Protocol (DRP) example
 
 Show a simple triangle using raw DRP requests.
 

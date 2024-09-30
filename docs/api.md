@@ -1,6 +1,6 @@
 # C API Reference
 
-## Functions
+## Main functions
 
 ### `dvz_arcball_angles()`
 
@@ -3535,6 +3535,8 @@ void dvz_range(
     double* values,  // an array of double numbers
 )
 ```
+
+## Datoviz Rendering Protocol functions
 
 ### `dvz_batch()`
 

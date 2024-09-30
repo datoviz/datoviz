@@ -355,9 +355,18 @@ def generate_api():
     """).lstrip()
 
     # Functions
-    md += f"## Functions\n\n"
+    md += f"## Main functions\n\n"
 
-    for filename, items in sorted(objects.items(), key=itemgetter(0)):
+    # HACK: put DRP functions at the end.
+    files = sorted(objects.keys())
+    files.remove('datoviz_protocol.h')
+    files += ['datoviz_protocol.h']
+
+    for filename in files:
+        if filename == 'datoviz_protocol.h':
+            md += f"## Datoviz Rendering Protocol functions\n\n"
+
+        items = objects[filename]
         for func_name, func_info in sorted(items["functions"].items(), key=itemgetter(0)):
 
             md += f"### `{func_name}()`\n\n"
