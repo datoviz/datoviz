@@ -269,6 +269,10 @@ dvz_gui_button
 dvz_gui_checkbox
 dvz_gui_image
 dvz_gui_colorpicker
+dvz_gui_node
+dvz_gui_pop
+dvz_gui_clicked
+dvz_gui_selectable
 dvz_gui_demo
 dvz_gui_end
 dvz_next_pow2

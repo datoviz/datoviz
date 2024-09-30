@@ -570,10 +570,31 @@ bool dvz_gui_colorpicker(const char* name, vec3 color, int flags)
 
 
 
-void dvz_gui_end()
+bool dvz_gui_node(const char* name)
 {
-    ImGui::End(); //
+    // ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_Leaf |
+    // ImGuiTreeNodeFlags_NoTreePushOnOpen;
+    // bool res = ImGui::TreeNodeEx(name, node_flags);//
+
+    bool res = ImGui::TreeNode(name);
+
+    // && !ImGui::IsItemToggledOpen())
+    // if (ImGui::IsItemClicked())
+    // {
+    //     log_info("clicked %s", name);
+    // }
+    return res;
 }
+
+
+
+void dvz_gui_pop() { ImGui::TreePop(); }
+
+
+bool dvz_gui_clicked() { return ImGui::IsItemClicked(); }
+
+
+bool dvz_gui_selectable(const char* name) { return ImGui::Selectable(name); }
 
 
 
@@ -581,4 +602,11 @@ void dvz_gui_demo()
 {
     bool open = true;
     ImGui::ShowDemoWindow(&open);
+}
+
+
+
+void dvz_gui_end()
+{
+    ImGui::End(); //
 }

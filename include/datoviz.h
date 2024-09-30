@@ -3358,6 +3358,38 @@ DVZ_EXPORT bool dvz_gui_colorpicker(const char* name, vec3 color, int flags);
 
 
 /**
+ * Start a new tree node.
+ *
+ * @param name the widget name
+ */
+DVZ_EXPORT bool dvz_gui_node(const char* name);
+
+
+
+/**
+ * Close the current tree node.
+ */
+DVZ_EXPORT void dvz_gui_pop(void);
+
+
+
+/**
+ * Close the current tree node.
+ */
+DVZ_EXPORT bool dvz_gui_clicked(void);
+
+
+
+/**
+ * Close the current tree node.
+ *
+ * @param name the widget name
+ */
+DVZ_EXPORT bool dvz_gui_selectable(const char* name);
+
+
+
+/**
  * Show the demo GUI.
  */
 DVZ_EXPORT void dvz_gui_demo(void);

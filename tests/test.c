@@ -212,6 +212,7 @@ int dvz_run_tests(const char* match)
     TEST(test_loop_gui)
 
     // Testing GUI.
+    TEST(test_gui_1)
     TEST(test_gui_offscreen)
 
     // Testing presenter.

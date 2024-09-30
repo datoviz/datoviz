@@ -16,6 +16,7 @@
 
 #include "test_gui.h"
 #include "canvas.h"
+#include "datoviz.h"
 #include "gui.h"
 #include "test.h"
 #include "testing.h"
@@ -26,6 +27,63 @@
 /*************************************************************************************************/
 /*  Tests GUI                                                                                    */
 /*************************************************************************************************/
+
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){200, 200});
+
+    // dvz_gui_demo();
+
+    dvz_gui_begin("Hello", 0);
+    if (dvz_gui_node("Item 1"))
+    {
+        dvz_gui_selectable("Hello inside item 1");
+        if (dvz_gui_clicked())
+            log_info("clicked sub item 1");
+        dvz_gui_pop();
+    }
+
+    if (dvz_gui_node("Item 2"))
+    {
+        dvz_gui_selectable("Hello inside item 2");
+        if (dvz_gui_clicked())
+            log_info("clicked sub item 2");
+        dvz_gui_pop();
+    }
+
+    dvz_gui_end();
+}
+
+int test_gui_1(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app(0);
+    DvzBatch* batch = dvz_app_batch(app);
+
+    // Create a scene.
+    DvzScene* scene = dvz_scene(batch);
+
+    // Create a figure.
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+
+    // Create a panel.
+    DvzPanel* panel = dvz_panel_default(figure);
+
+    dvz_app_gui(app, dvz_figure_id(figure), _gui_callback, NULL);
+
+    // Run the scene.
+    dvz_scene_run(scene, app, N_FRAMES);
+
+    dvz_scene_destroy(scene);
+    dvz_app_destroy(app);
+
+    return 0;
+}
+
+
 
 int test_gui_offscreen(TstSuite* suite)
 {

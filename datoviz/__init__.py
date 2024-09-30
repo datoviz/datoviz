@@ -7281,6 +7281,53 @@ gui_colorpicker.argtypes = [
 ]
 gui_colorpicker.restype = ctypes.c_bool
 
+# Function dvz_gui_node()
+gui_node = dvz.dvz_gui_node
+gui_node.__doc__ = """
+Start a new tree node.
+
+Parameters
+----------
+name : char*
+    the widget name
+"""
+gui_node.argtypes = [
+    ctypes.c_char_p,  # char* name
+]
+gui_node.restype = ctypes.c_bool
+
+# Function dvz_gui_pop()
+gui_pop = dvz.dvz_gui_pop
+gui_pop.__doc__ = """
+Close the current tree node.
+"""
+gui_pop.argtypes = [
+]
+
+# Function dvz_gui_clicked()
+gui_clicked = dvz.dvz_gui_clicked
+gui_clicked.__doc__ = """
+Close the current tree node.
+"""
+gui_clicked.argtypes = [
+]
+gui_clicked.restype = ctypes.c_bool
+
+# Function dvz_gui_selectable()
+gui_selectable = dvz.dvz_gui_selectable
+gui_selectable.__doc__ = """
+Close the current tree node.
+
+Parameters
+----------
+name : char*
+    the widget name
+"""
+gui_selectable.argtypes = [
+    ctypes.c_char_p,  # char* name
+]
+gui_selectable.restype = ctypes.c_bool
+
 # Function dvz_gui_demo()
 gui_demo = dvz.dvz_gui_demo
 gui_demo.__doc__ = """

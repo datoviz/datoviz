@@ -1044,6 +1044,16 @@ bool dvz_gui_checkbox(  // returns: whether the checkbox's state has changed
 )
 ```
 
+### `dvz_gui_clicked()`
+
+Close the current tree node.
+
+```c
+bool dvz_gui_clicked(
+
+)
+```
+
 ### `dvz_gui_colorpicker()`
 
 Add a color picker
@@ -1109,6 +1119,26 @@ void dvz_gui_image(
 )
 ```
 
+### `dvz_gui_node()`
+
+Start a new tree node.
+
+```c
+bool dvz_gui_node(
+    char* name,  // the widget name
+)
+```
+
+### `dvz_gui_pop()`
+
+Close the current tree node.
+
+```c
+void dvz_gui_pop(
+
+)
+```
+
 ### `dvz_gui_pos()`
 
 Set the position of the next GUI dialog.
@@ -1117,6 +1147,16 @@ Set the position of the next GUI dialog.
 void dvz_gui_pos(
     vec2 pos,  // the dialog position
     vec2 pivot,  // the pivot
+)
+```
+
+### `dvz_gui_selectable()`
+
+Close the current tree node.
+
+```c
+bool dvz_gui_selectable(
+    char* name,  // the widget name
 )
 ```
 
