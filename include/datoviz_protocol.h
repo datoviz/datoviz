@@ -8,8 +8,8 @@
 /*  Request                                                                                      */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_REQUEST
-#define DVZ_HEADER_REQUEST
+#ifndef DVZ_HEADER_PUBLIC_REQUEST
+#define DVZ_HEADER_PUBLIC_REQUEST
 
 
 
@@ -17,10 +17,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_atomic.h"
-#include "_prng.h"
+#include "datoviz_app.h"
+#include "datoviz_enums.h"
 #include "datoviz_types.h"
-#include "recorder.h"
 
 
 

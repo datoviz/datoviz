@@ -369,6 +369,7 @@ static void* _graphics_shader(DvzRenderer* rd, DvzRequest req)
     GET_ID(DvzShader, shader, req.content.set_shader.shader)
 
     DvzShaderFormat format = shader->format;
+    ASSERT(format != DVZ_SHADER_NONE);
 
     if (format == DVZ_SHADER_GLSL)
     {

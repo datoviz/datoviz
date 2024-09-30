@@ -19,6 +19,7 @@
 #include "datoviz_types.h"
 #include "fifo.h"
 #include "gui.h"
+#include "recorder.h"
 #include "surface.h"
 #include "vklite.h"
 #include "vklite_utils.h"

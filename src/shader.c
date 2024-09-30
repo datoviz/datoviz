@@ -38,7 +38,7 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
     VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
-    log_trace("starting compilation of GLSL shader into SPIR-V");
+    log_info("starting compilation of GLSL shader into SPIR-V");
 
     shaderc_shader_kind shader_kind;
     switch (stage)
@@ -64,6 +64,7 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
 
     if (shaderc_result_get_compilation_status(result) != shaderc_compilation_status_success)
     {
+        log_error("error compiling the shader code");
         shaderc_compiler_release(compiler);
         shaderc_compile_options_release(options);
         shaderc_result_release(result);
@@ -80,6 +81,7 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
 
     if (vkCreateShaderModule(device, &create_info, NULL, &module) != VK_SUCCESS)
     {
+        log_error("error creating the shader module");
         shaderc_compiler_release(compiler);
         shaderc_compile_options_release(options);
         shaderc_result_release(result);

@@ -427,6 +427,7 @@ typedef enum
 // Shader format.
 typedef enum
 {
+    DVZ_SHADER_NONE,
     DVZ_SHADER_SPIRV,
     DVZ_SHADER_GLSL,
 } DvzShaderFormat;
@@ -730,6 +731,18 @@ typedef enum
     DVZ_DEPTH_TEST_DISABLE,
     DVZ_DEPTH_TEST_ENABLE,
 } DvzDepthTest;
+
+
+
+/*************************************************************************************************/
+/*  Defaults                                                                                     */
+/*************************************************************************************************/
+
+#define DVZ_DEFAULT_VIEWPORT                                                                      \
+    (vec2) { 0, 0 }
+#define DVZ_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
+#define DVZ_DEFAULT_CLEAR_COLOR                                                                   \
+    (cvec4) { 0, 0, 0, 0 }
 
 
 
