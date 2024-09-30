@@ -182,6 +182,7 @@ def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 # ===============================================================================
 
 DvzId = ctypes.c_uint64
+DvzSize = ctypes.c_uint64
 
 A_ = array_pointer
 S_ = char_pointer

@@ -181,6 +181,7 @@ def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 # ===============================================================================
 
 DvzId = ctypes.c_uint64
+DvzSize = ctypes.c_uint64
 
 A_ = array_pointer
 S_ = char_pointer
@@ -191,6 +192,7 @@ V_ = WrappedValue
 # DEFINES
 # ===============================================================================
 
+DVZ_BUFFER_TYPE_COUNT = 6
 CMAP_NAT = 144
 CMAP_USR_OFS = 144
 CMAP_USR = 32
@@ -219,6 +221,8 @@ EPSILON = 1e-10
 GB = 1073741824
 MB = 1048576
 KB = 1024
+DVZ_REQUEST_VERSION = 1
+DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 2
 DVZ_VERSION_PATCH = 2
 
@@ -356,6 +360,71 @@ class DvzMockFlags(CtypesEnum):
     DVZ_MOCK_FLAGS_CLOSED = 0x01
 
 
+class DvzTexDims(CtypesEnum):
+    DVZ_TEX_NONE = 0
+    DVZ_TEX_1D = 1
+    DVZ_TEX_2D = 2
+    DVZ_TEX_3D = 3
+
+
+class DvzGraphicsType(CtypesEnum):
+    DVZ_GRAPHICS_NONE = 0
+    DVZ_GRAPHICS_POINT = 1
+    DVZ_GRAPHICS_TRIANGLE = 2
+    DVZ_GRAPHICS_CUSTOM = 3
+
+
+class DvzRecorderCommandType(CtypesEnum):
+    DVZ_RECORDER_NONE = 0
+    DVZ_RECORDER_BEGIN = 1
+    DVZ_RECORDER_DRAW = 2
+    DVZ_RECORDER_DRAW_INDEXED = 3
+    DVZ_RECORDER_DRAW_INDIRECT = 4
+    DVZ_RECORDER_DRAW_INDEXED_INDIRECT = 5
+    DVZ_RECORDER_VIEWPORT = 6
+    DVZ_RECORDER_END = 7
+
+
+class DvzRequestAction(CtypesEnum):
+    DVZ_REQUEST_ACTION_NONE = 0
+    DVZ_REQUEST_ACTION_CREATE = 1
+    DVZ_REQUEST_ACTION_DELETE = 2
+    DVZ_REQUEST_ACTION_RESIZE = 3
+    DVZ_REQUEST_ACTION_UPDATE = 4
+    DVZ_REQUEST_ACTION_BIND = 5
+    DVZ_REQUEST_ACTION_RECORD = 6
+    DVZ_REQUEST_ACTION_UPLOAD = 7
+    DVZ_REQUEST_ACTION_UPFILL = 8
+    DVZ_REQUEST_ACTION_DOWNLOAD = 9
+    DVZ_REQUEST_ACTION_SET = 10
+    DVZ_REQUEST_ACTION_GET = 11
+
+
+class DvzRequestObject(CtypesEnum):
+    DVZ_REQUEST_OBJECT_NONE = 0
+    DVZ_REQUEST_OBJECT_BOARD = 100
+    DVZ_REQUEST_OBJECT_CANVAS = 2
+    DVZ_REQUEST_OBJECT_DAT = 3
+    DVZ_REQUEST_OBJECT_TEX = 4
+    DVZ_REQUEST_OBJECT_SAMPLER = 5
+    DVZ_REQUEST_OBJECT_COMPUTE = 6
+    DVZ_REQUEST_OBJECT_PRIMITIVE = 7
+    DVZ_REQUEST_OBJECT_DEPTH = 8
+    DVZ_REQUEST_OBJECT_BLEND = 9
+    DVZ_REQUEST_OBJECT_POLYGON = 10
+    DVZ_REQUEST_OBJECT_CULL = 11
+    DVZ_REQUEST_OBJECT_FRONT = 12
+    DVZ_REQUEST_OBJECT_SHADER = 13
+    DVZ_REQUEST_OBJECT_VERTEX = 14
+    DVZ_REQUEST_OBJECT_VERTEX_ATTR = 15
+    DVZ_REQUEST_OBJECT_SLOT = 16
+    DVZ_REQUEST_OBJECT_SPECIALIZATION = 17
+    DVZ_REQUEST_OBJECT_GRAPHICS = 18
+    DVZ_REQUEST_OBJECT_INDEX = 19
+    DVZ_REQUEST_OBJECT_BACKGROUND = 20
+    DVZ_REQUEST_OBJECT_RECORD = 21
+
+
 class DvzPrimitiveTopology(CtypesEnum):
     DVZ_PRIMITIVE_TOPOLOGY_POINT_LIST = 0
     DVZ_PRIMITIVE_TOPOLOGY_LINE_LIST = 1
@@ -412,6 +481,76 @@ class DvzSamplerAddressMode(CtypesEnum):
     DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2
     DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3
     DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
+
+
+class DvzBufferType(CtypesEnum):
+    DVZ_BUFFER_TYPE_UNDEFINED = 0
+    DVZ_BUFFER_TYPE_STAGING = 1
+    DVZ_BUFFER_TYPE_VERTEX = 2
+    DVZ_BUFFER_TYPE_INDEX = 3
+    DVZ_BUFFER_TYPE_STORAGE = 4
+    DVZ_BUFFER_TYPE_UNIFORM = 5
+    DVZ_BUFFER_TYPE_INDIRECT = 6
+
+
+class DvzShaderFormat(CtypesEnum):
+    DVZ_SHADER_SPIRV = 0
+    DVZ_SHADER_GLSL = 1
+
+
+class DvzSamplerAxis(CtypesEnum):
+    DVZ_SAMPLER_AXIS_U = 0
+    DVZ_SAMPLER_AXIS_V = 1
+    DVZ_SAMPLER_AXIS_W = 2
+
+
+class DvzBlendType(CtypesEnum):
+    DVZ_BLEND_DISABLE = 0
+    DVZ_BLEND_ENABLE = 1
+
+
+class DvzVertexInputRate(CtypesEnum):
+    DVZ_VERTEX_INPUT_RATE_VERTEX = 0
+    DVZ_VERTEX_INPUT_RATE_INSTANCE = 1
+
+
+class DvzPolygonMode(CtypesEnum):
+    DVZ_POLYGON_MODE_FILL = 0
+    DVZ_POLYGON_MODE_LINE = 1
+    DVZ_POLYGON_MODE_POINT = 2
+
+
+class DvzFrontFace(CtypesEnum):
+    DVZ_FRONT_FACE_COUNTER_CLOCKWISE = 0
+    DVZ_FRONT_FACE_CLOCKWISE = 1
+
+
+class DvzCullMode(CtypesEnum):
+    DVZ_CULL_MODE_NONE = 0
+    DVZ_CULL_MODE_FRONT = 0x00000001
+    DVZ_CULL_MODE_BACK = 0x00000002
+
+
+class DvzShaderType(CtypesEnum):
+    DVZ_SHADER_VERTEX = 0x00000001
+    DVZ_SHADER_TESSELLATION_CONTROL = 0x00000002
+    DVZ_SHADER_TESSELLATION_EVALUATION = 0x00000004
+    DVZ_SHADER_GEOMETRY = 0x00000008
+    DVZ_SHADER_FRAGMENT = 0x00000010
+    DVZ_SHADER_COMPUTE = 0x00000020
+
+
+class DvzDescriptorType(CtypesEnum):
+    DVZ_DESCRIPTOR_TYPE_SAMPLER = 0
+    DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1
+    DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2
+    DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE = 3
+    DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4
+    DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5
+    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6
+    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7
+    DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8
+    DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
 
 
 class DvzMarkerShape(CtypesEnum):
@@ -840,6 +979,11 @@ class DvzKeyCode(CtypesEnum):
     DVZ_KEY_LAST = 348
 
 
+class DvzGraphicsRequestFlags(CtypesEnum):
+    DVZ_GRAPHICS_REQUEST_FLAGS_NONE = 0x0000
+    DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000
+
+
 # Function aliases
 
 APP_FLAGS_NONE = 0x000000
@@ -914,6 +1058,56 @@ FONT_FLAGS_RGB = 0
 FONT_FLAGS_RGBA = 1
 MOCK_FLAGS_NONE = 0x00
 MOCK_FLAGS_CLOSED = 0x01
+TEX_NONE = 0
+TEX_1D = 1
+TEX_2D = 2
+TEX_3D = 3
+GRAPHICS_NONE = 0
+GRAPHICS_POINT = 1
+GRAPHICS_TRIANGLE = 2
+GRAPHICS_CUSTOM = 3
+RECORDER_NONE = 0
+RECORDER_BEGIN = 1
+RECORDER_DRAW = 2
+RECORDER_DRAW_INDEXED = 3
+RECORDER_DRAW_INDIRECT = 4
+RECORDER_DRAW_INDEXED_INDIRECT = 5
+RECORDER_VIEWPORT = 6
+RECORDER_END = 7
+REQUEST_ACTION_NONE = 0
+REQUEST_ACTION_CREATE = 1
+REQUEST_ACTION_DELETE = 2
+REQUEST_ACTION_RESIZE = 3
+REQUEST_ACTION_UPDATE = 4
+REQUEST_ACTION_BIND = 5
+REQUEST_ACTION_RECORD = 6
+REQUEST_ACTION_UPLOAD = 7
+REQUEST_ACTION_UPFILL = 8
+REQUEST_ACTION_DOWNLOAD = 9
+REQUEST_ACTION_SET = 10
+REQUEST_ACTION_GET = 11
+REQUEST_OBJECT_NONE = 0
+REQUEST_OBJECT_BOARD = 100
+REQUEST_OBJECT_CANVAS = 2
+REQUEST_OBJECT_DAT = 3
+REQUEST_OBJECT_TEX = 4
+REQUEST_OBJECT_SAMPLER = 5
+REQUEST_OBJECT_COMPUTE = 6
+REQUEST_OBJECT_PRIMITIVE = 7
+REQUEST_OBJECT_DEPTH = 8
+REQUEST_OBJECT_BLEND = 9
+REQUEST_OBJECT_POLYGON = 10
+REQUEST_OBJECT_CULL = 11
+REQUEST_OBJECT_FRONT = 12
+REQUEST_OBJECT_SHADER = 13
+REQUEST_OBJECT_VERTEX = 14
+REQUEST_OBJECT_VERTEX_ATTR = 15
+REQUEST_OBJECT_SLOT = 16
+REQUEST_OBJECT_SPECIALIZATION = 17
+REQUEST_OBJECT_GRAPHICS = 18
+REQUEST_OBJECT_INDEX = 19
+REQUEST_OBJECT_BACKGROUND = 20
+REQUEST_OBJECT_RECORD = 21
 PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_LINE_LIST = 1
 PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
@@ -960,6 +1154,46 @@ SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1
 SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2
 SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3
 SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
+BUFFER_TYPE_UNDEFINED = 0
+BUFFER_TYPE_STAGING = 1
+BUFFER_TYPE_VERTEX = 2
+BUFFER_TYPE_INDEX = 3
+BUFFER_TYPE_STORAGE = 4
+BUFFER_TYPE_UNIFORM = 5
+BUFFER_TYPE_INDIRECT = 6
+SHADER_SPIRV = 0
+SHADER_GLSL = 1
+SAMPLER_AXIS_U = 0
+SAMPLER_AXIS_V = 1
+SAMPLER_AXIS_W = 2
+BLEND_DISABLE = 0
+BLEND_ENABLE = 1
+VERTEX_INPUT_RATE_VERTEX = 0
+VERTEX_INPUT_RATE_INSTANCE = 1
+POLYGON_MODE_FILL = 0
+POLYGON_MODE_LINE = 1
+POLYGON_MODE_POINT = 2
+FRONT_FACE_COUNTER_CLOCKWISE = 0
+FRONT_FACE_CLOCKWISE = 1
+CULL_MODE_NONE = 0
+CULL_MODE_FRONT = 0x00000001
+CULL_MODE_BACK = 0x00000002
+SHADER_VERTEX = 0x00000001
+SHADER_TESSELLATION_CONTROL = 0x00000002
+SHADER_TESSELLATION_EVALUATION = 0x00000004
+SHADER_GEOMETRY = 0x00000008
+SHADER_FRAGMENT = 0x00000010
+SHADER_COMPUTE = 0x00000020
+DESCRIPTOR_TYPE_SAMPLER = 0
+DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER = 1
+DESCRIPTOR_TYPE_SAMPLED_IMAGE = 2
+DESCRIPTOR_TYPE_STORAGE_IMAGE = 3
+DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER = 4
+DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER = 5
+DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6
+DESCRIPTOR_TYPE_STORAGE_BUFFER = 7
+DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8
+DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
 MARKER_SHAPE_DISC = 0
 MARKER_SHAPE_ASTERISK = 1
 MARKER_SHAPE_CHEVRON = 2
@@ -1338,6 +1572,8 @@ KEY_RIGHT_ALT = 346
 KEY_RIGHT_SUPER = 347
 KEY_MENU = 348
 KEY_LAST = 348
+GRAPHICS_REQUEST_FLAGS_NONE = 0x0000
+GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000
 
 
 # ===============================================================================
@@ -1356,15 +1592,15 @@ class DvzAtlas(ctypes.Structure):
     pass
 
 
-class DvzBatch(ctypes.Structure):
-    pass
-
-
 class DvzCamera(ctypes.Structure):
     pass
 
 
 class DvzCapType(ctypes.Structure):
+    pass
+
+
+class DvzFifo(ctypes.Structure):
     pass
 
 
@@ -1377,6 +1613,10 @@ class DvzFont(ctypes.Structure):
 
 
 class DvzIndex(ctypes.Structure):
+    pass
+
+
+class DvzList(ctypes.Structure):
     pass
 
 
@@ -1558,11 +1798,358 @@ class DvzTimerEvent(ctypes.Structure):
     ]
 
 
+class DvzRecorderViewport(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("offset", ctypes.c_float * 2),
+        ("shape", ctypes.c_float * 2),
+    ]
+
+
+class DvzRecorderDraw(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("pipe_id", DvzId),
+        ("first_vertex", ctypes.c_uint32),
+        ("vertex_count", ctypes.c_uint32),
+        ("first_instance", ctypes.c_uint32),
+        ("instance_count", ctypes.c_uint32),
+    ]
+
+
+class DvzRecorderDrawIndexed(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("pipe_id", DvzId),
+        ("first_index", ctypes.c_uint32),
+        ("vertex_offset", ctypes.c_uint32),
+        ("index_count", ctypes.c_uint32),
+        ("first_instance", ctypes.c_uint32),
+        ("instance_count", ctypes.c_uint32),
+    ]
+
+
+class DvzRecorderDrawIndirect(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("pipe_id", DvzId),
+        ("dat_indirect_id", DvzId),
+        ("draw_count", ctypes.c_uint32),
+    ]
+
+
+class DvzRecorderDrawIndexedIndirect(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("pipe_id", DvzId),
+        ("dat_indirect_id", DvzId),
+        ("draw_count", ctypes.c_uint32),
+    ]
+
+
+class DvzRecorderUnion(ctypes.Union):
+    _pack_ = 8
+    _fields_ = [
+        ("v", DvzRecorderViewport),
+        ("draw", DvzRecorderDraw),
+        ("draw_indexed", DvzRecorderDrawIndexed),
+        ("draw_indirect", DvzRecorderDrawIndirect),
+        ("draw_indexed_indirect", DvzRecorderDrawIndexedIndirect),
+    ]
+
+
+class DvzRecorderCommand(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("type", ctypes.c_int32),
+        ("canvas_or_board_id", DvzId),
+        ("object_type", ctypes.c_int32),
+        ("contents", DvzRecorderUnion),
+    ]
+
+
+class DvzRequestBoard(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("width", ctypes.c_uint32),
+        ("height", ctypes.c_uint32),
+        ("background", ctypes.c_uint8 * 4),
+    ]
+
+
+class DvzRequestCanvas(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("framebuffer_width", ctypes.c_uint32),
+        ("framebuffer_height", ctypes.c_uint32),
+        ("screen_width", ctypes.c_uint32),
+        ("screen_height", ctypes.c_uint32),
+        ("background", ctypes.c_uint8 * 4),
+    ]
+
+
+class DvzRequestDat(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("type", ctypes.c_int32),
+        ("size", DvzSize),
+    ]
+
+
+class DvzRequestTex(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("dims", ctypes.c_int32),
+        ("shape", ctypes.c_uint32 * 3),
+        ("format", ctypes.c_int32),
+    ]
+
+
+class DvzRequestSampler(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("filter", ctypes.c_int32),
+        ("mode", ctypes.c_int32),
+    ]
+
+
+class DvzRequestShader(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("format", ctypes.c_int32),
+        ("type", ctypes.c_int32),
+        ("size", DvzSize),
+        ("code", ctypes.c_char_p),
+        ("buffer", ctypes.POINTER(ctypes.c_uint32)),
+    ]
+
+
+class DvzRequestDatUpload(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("upload_type", ctypes.c_int),
+        ("offset", DvzSize),
+        ("size", DvzSize),
+        ("data", ctypes.c_void_p),
+    ]
+
+
+class DvzRequestTexUpload(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("upload_type", ctypes.c_int),
+        ("offset", ctypes.c_uint32 * 3),
+        ("shape", ctypes.c_uint32 * 3),
+        ("size", DvzSize),
+        ("data", ctypes.c_void_p),
+    ]
+
+
+class DvzRequestGraphics(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("type", ctypes.c_int32),
+    ]
+
+
+class DvzRequestPrimitive(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("primitive", ctypes.c_int32),
+    ]
+
+
+class DvzRequestBlend(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("blend", ctypes.c_int32),
+    ]
+
+
+class DvzRequestDepth(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("depth", ctypes.c_int32),
+    ]
+
+
+class DvzRequestPolygon(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("polygon", ctypes.c_int32),
+    ]
+
+
+class DvzRequestCull(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("cull", ctypes.c_int32),
+    ]
+
+
+class DvzRequestFront(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("front", ctypes.c_int32),
+    ]
+
+
+class DvzRequestShaderSet(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("shader", DvzId),
+    ]
+
+
+class DvzRequestVertex(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("binding_idx", ctypes.c_uint32),
+        ("stride", DvzSize),
+        ("input_rate", ctypes.c_int32),
+    ]
+
+
+class DvzRequestAttr(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("binding_idx", ctypes.c_uint32),
+        ("location", ctypes.c_uint32),
+        ("format", ctypes.c_int32),
+        ("offset", DvzSize),
+    ]
+
+
+class DvzRequestSlot(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("slot_idx", ctypes.c_uint32),
+        ("type", ctypes.c_int32),
+    ]
+
+
+class DvzRequestSpecialization(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("shader", ctypes.c_int32),
+        ("idx", ctypes.c_uint32),
+        ("size", DvzSize),
+        ("value", ctypes.c_void_p),
+    ]
+
+
+class DvzRequestBindVertex(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("binding_idx", ctypes.c_uint32),
+        ("dat", DvzId),
+        ("offset", DvzSize),
+    ]
+
+
+class DvzRequestBindIndex(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("dat", DvzId),
+        ("offset", DvzSize),
+    ]
+
+
+class DvzRequestBindDat(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("slot_idx", ctypes.c_uint32),
+        ("dat", DvzId),
+        ("offset", DvzSize),
+    ]
+
+
+class DvzRequestBindTex(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("slot_idx", ctypes.c_uint32),
+        ("tex", DvzId),
+        ("sampler", DvzId),
+        ("offset", ctypes.c_uint32 * 3),
+    ]
+
+
+class DvzRequestRecord(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("command", DvzRecorderCommand),
+    ]
+
+
+class DvzRequestContent(ctypes.Union):
+    _pack_ = 8
+    _fields_ = [
+        ("board", DvzRequestBoard),
+        ("canvas", DvzRequestCanvas),
+        ("dat", DvzRequestDat),
+        ("tex", DvzRequestTex),
+        ("sampler", DvzRequestSampler),
+        ("shader", DvzRequestShader),
+        ("dat_upload", DvzRequestDatUpload),
+        ("tex_upload", DvzRequestTexUpload),
+        ("graphics", DvzRequestGraphics),
+        ("set_primitive", DvzRequestPrimitive),
+        ("set_blend", DvzRequestBlend),
+        ("set_depth", DvzRequestDepth),
+        ("set_polygon", DvzRequestPolygon),
+        ("set_cull", DvzRequestCull),
+        ("set_front", DvzRequestFront),
+        ("set_shader", DvzRequestShaderSet),
+        ("set_vertex", DvzRequestVertex),
+        ("set_attr", DvzRequestAttr),
+        ("set_slot", DvzRequestSlot),
+        ("set_specialization", DvzRequestSpecialization),
+        ("bind_vertex", DvzRequestBindVertex),
+        ("bind_index", DvzRequestBindIndex),
+        ("bind_dat", DvzRequestBindDat),
+        ("bind_tex", DvzRequestBindTex),
+        ("record", DvzRequestRecord),
+    ]
+
+
+class DvzRequest(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("version", ctypes.c_uint32),
+        ("action", ctypes.c_int32),
+        ("type", ctypes.c_int32),
+        ("id", DvzId),
+        ("content", DvzRequestContent),
+        ("tag", ctypes.c_int),
+        ("flags", ctypes.c_int),
+        ("desc", ctypes.c_char_p),
+    ]
+
+
+class DvzBatch(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("capacity", ctypes.c_uint32),
+        ("count", ctypes.c_uint32),
+        ("requests", ctypes.POINTER(DvzRequest)),
+        ("pointers_to_free", ctypes.POINTER(DvzList)),
+        ("board_id", DvzId),
+        ("flags", ctypes.c_int),
+    ]
+
+
 class DvzRequestsEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("batch", ctypes.POINTER(DvzBatch)),
         ("user_data", ctypes.c_void_p),
+    ]
+
+
+class DvzRequester(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("fifo", ctypes.POINTER(DvzFifo)),
     ]
 
 
@@ -1582,7 +2169,43 @@ WindowEvent = DvzWindowEvent
 FrameEvent = DvzFrameEvent
 GuiEvent = DvzGuiEvent
 TimerEvent = DvzTimerEvent
+RecorderViewport = DvzRecorderViewport
+RecorderDraw = DvzRecorderDraw
+RecorderDrawIndexed = DvzRecorderDrawIndexed
+RecorderDrawIndirect = DvzRecorderDrawIndirect
+RecorderDrawIndexedIndirect = DvzRecorderDrawIndexedIndirect
+RecorderUnion = DvzRecorderUnion
+RecorderCommand = DvzRecorderCommand
+RequestBoard = DvzRequestBoard
+RequestCanvas = DvzRequestCanvas
+RequestDat = DvzRequestDat
+RequestTex = DvzRequestTex
+RequestSampler = DvzRequestSampler
+RequestShader = DvzRequestShader
+RequestDatUpload = DvzRequestDatUpload
+RequestTexUpload = DvzRequestTexUpload
+RequestGraphics = DvzRequestGraphics
+RequestPrimitive = DvzRequestPrimitive
+RequestBlend = DvzRequestBlend
+RequestDepth = DvzRequestDepth
+RequestPolygon = DvzRequestPolygon
+RequestCull = DvzRequestCull
+RequestFront = DvzRequestFront
+RequestShaderSet = DvzRequestShaderSet
+RequestVertex = DvzRequestVertex
+RequestAttr = DvzRequestAttr
+RequestSlot = DvzRequestSlot
+RequestSpecialization = DvzRequestSpecialization
+RequestBindVertex = DvzRequestBindVertex
+RequestBindIndex = DvzRequestBindIndex
+RequestBindDat = DvzRequestBindDat
+RequestBindTex = DvzRequestBindTex
+RequestRecord = DvzRequestRecord
+RequestContent = DvzRequestContent
+Request = DvzRequest
+Batch = DvzBatch
 RequestsEvent = DvzRequestsEvent
+Requester = DvzRequester
 
 
 # ===============================================================================
@@ -7864,4 +8487,1481 @@ mock_cmap.argtypes = [
     ctypes.c_uint8,  # uint8_t alpha
 ]
 mock_cmap.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
+
+# Function dvz_requester()
+requester = dvz.dvz_requester
+requester.__doc__ = """
+Create a requester, used to create requests.
+
+
+Returns
+-------
+type
+    the requester struct
+"""
+requester.argtypes = [
+]
+requester.restype = ctypes.POINTER(DvzRequester)
+
+# Function dvz_requester_destroy()
+requester_destroy = dvz.dvz_requester_destroy
+requester_destroy.__doc__ = """
+Destroy a requester.
+
+Parameters
+----------
+rqr : DvzRequester*
+    the requester
+"""
+requester_destroy.argtypes = [
+    ctypes.POINTER(DvzRequester),  # DvzRequester* rqr
+]
+
+# Function dvz_batch()
+batch = dvz.dvz_batch
+batch.__doc__ = """
+Create a batch holding a number of requests.
+"""
+batch.argtypes = [
+]
+batch.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_batch_clear()
+batch_clear = dvz.dvz_batch_clear
+batch_clear.__doc__ = """
+Remove all requests in a batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_clear.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_batch_add()
+batch_add = dvz.dvz_batch_add
+batch_add.__doc__ = """
+Add a request to a batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+req : DvzRequest
+    the request
+"""
+batch_add.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzRequest,  # DvzRequest req
+]
+
+# Function dvz_batch_desc()
+batch_desc = dvz.dvz_batch_desc
+batch_desc.__doc__ = """
+Set the description of the last added request.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+desc : char*
+    the description
+"""
+batch_desc.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_char_p,  # char* desc
+]
+
+# Function dvz_batch_requests()
+batch_requests = dvz.dvz_batch_requests
+batch_requests.__doc__ = """
+Return a pointer to the array of all requests in the batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_requests.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+batch_requests.restype = ctypes.POINTER(DvzRequest)
+
+# Function dvz_batch_size()
+batch_size = dvz.dvz_batch_size
+batch_size.__doc__ = """
+Return the number of requests in the batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_size.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+batch_size.restype = ctypes.c_uint32
+
+# Function dvz_batch_print()
+batch_print = dvz.dvz_batch_print
+batch_print.__doc__ = """
+Display information about all requests in the batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_print.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_batch_dump()
+batch_dump = dvz.dvz_batch_dump
+batch_dump.__doc__ = """
+Dump all batch requests in raw binary file.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+filename : char*
+    the dump filename
+"""
+batch_dump.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_char_p,  # char* filename
+]
+batch_dump.restype = ctypes.c_int
+
+# Function dvz_batch_load()
+batch_load = dvz.dvz_batch_load
+batch_load.__doc__ = """
+Load a dump of batch requests into an existing batch object.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+filename : char*
+    the dump filename
+"""
+batch_load.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_char_p,  # char* filename
+]
+
+# Function dvz_batch_copy()
+batch_copy = dvz.dvz_batch_copy
+batch_copy.__doc__ = """
+Create a copy of a batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_copy.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+batch_copy.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_batch_destroy()
+batch_destroy = dvz.dvz_batch_destroy
+batch_destroy.__doc__ = """
+Destroy a batch.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+"""
+batch_destroy.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_requester_commit()
+requester_commit = dvz.dvz_requester_commit
+requester_commit.__doc__ = """
+Add a batch's requests to a requester.
+
+Parameters
+----------
+rqr : DvzRequester*
+    the requester
+batch : DvzBatch*
+    the batch
+"""
+requester_commit.argtypes = [
+    ctypes.POINTER(DvzRequester),  # DvzRequester* rqr
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_requester_flush()
+requester_flush = dvz.dvz_requester_flush
+requester_flush.__doc__ = """
+Return the requests in the requester and clear it.  NOTE: the caller must free the output.
+
+Parameters
+----------
+rqr : DvzRequester*
+    the requester
+count : uint32_t* (out parameter)
+    pointer to the number of requests, set by this function
+
+Returns
+-------
+type
+    an array with all requests in the requester
+"""
+requester_flush.argtypes = [
+    ctypes.POINTER(DvzRequester),  # DvzRequester* rqr
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* count
+]
+requester_flush.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_request_print()
+request_print = dvz.dvz_request_print
+request_print.__doc__ = """
+Display information about a request.
+
+Parameters
+----------
+req : DvzRequest*
+    the request
+"""
+request_print.argtypes = [
+    ctypes.POINTER(DvzRequest),  # DvzRequest* req
+]
+
+# Function dvz_create_board()
+create_board = dvz.dvz_create_board
+create_board.__doc__ = """
+Create a request for board creation.  A board is an offscreen rectangular area on which to render.  NOTE: background color not implemented yet
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+width : uint32_t
+    the board width
+height : uint32_t
+    the board height
+background : cvec4
+    the background color
+flags : int
+    the board creation flags
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the board to be created
+"""
+create_board.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ctypes.c_uint8 * 4,  # cvec4 background
+    ctypes.c_int,  # int flags
+]
+create_board.restype = DvzRequest
+
+# Function dvz_set_background()
+set_background = dvz.dvz_set_background
+set_background.__doc__ = """
+Change the background color of the board.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the board id
+background : cvec4
+    the background color
+
+Returns
+-------
+type
+    the request
+"""
+set_background.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+    ctypes.c_uint8 * 4,  # cvec4 background
+]
+set_background.restype = DvzRequest
+
+# Function dvz_update_board()
+update_board = dvz.dvz_update_board
+update_board.__doc__ = """
+Create a request for a board redraw (command buffer submission).
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the board id
+
+Returns
+-------
+type
+    the request
+"""
+update_board.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+update_board.restype = DvzRequest
+
+# Function dvz_resize_board()
+resize_board = dvz.dvz_resize_board
+resize_board.__doc__ = """
+Create a request to resize a board.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+board : DvzId
+    the board id
+width : uint32_t
+    the new board width
+height : uint32_t
+    the new board height
+
+Returns
+-------
+type
+    the request
+"""
+resize_board.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId board
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+resize_board.restype = DvzRequest
+
+# Function dvz_delete_board()
+delete_board = dvz.dvz_delete_board
+delete_board.__doc__ = """
+Create a request for a board deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the board id
+
+Returns
+-------
+type
+    the request
+"""
+delete_board.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_board.restype = DvzRequest
+
+# Function dvz_create_canvas()
+create_canvas = dvz.dvz_create_canvas
+create_canvas.__doc__ = """
+Create a request for canvas creation.  A canvas is a live window on which to render.  NOTE: background color not implemented yet
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+width : uint32_t
+    the canvas width (in screen pixels)
+height : uint32_t
+    the canvas height (in screen pixels)
+background : cvec4
+    the background color
+flags : int
+    the canvas creation flags
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the canvas to be created
+"""
+create_canvas.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ctypes.c_uint8 * 4,  # cvec4 background
+    ctypes.c_int,  # int flags
+]
+create_canvas.restype = DvzRequest
+
+# Function dvz_delete_canvas()
+delete_canvas = dvz.dvz_delete_canvas
+delete_canvas.__doc__ = """
+Create a request for a canvas deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the canvas id
+
+Returns
+-------
+type
+    the request
+"""
+delete_canvas.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_canvas.restype = DvzRequest
+
+# Function dvz_create_dat()
+create_dat = dvz.dvz_create_dat
+create_dat.__doc__ = """
+Create a request for a dat creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+type : DvzBufferType
+    the buffer type
+size : DvzSize
+    the dat size, in bytes
+flags : int
+    the dat creation flags
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the dat to be created
+"""
+create_dat.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzBufferType,  # DvzBufferType type
+    DvzSize,  # DvzSize size
+    ctypes.c_int,  # int flags
+]
+create_dat.restype = DvzRequest
+
+# Function dvz_resize_dat()
+resize_dat = dvz.dvz_resize_dat
+resize_dat.__doc__ = """
+Create a request to resize a dat.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+dat : DvzId
+    the dat id
+size : DvzSize
+    the new dat size, in bytes
+
+Returns
+-------
+type
+    the request
+"""
+resize_dat.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId dat
+    DvzSize,  # DvzSize size
+]
+resize_dat.restype = DvzRequest
+
+# Function dvz_upload_dat()
+upload_dat = dvz.dvz_upload_dat
+upload_dat.__doc__ = """
+Create a request for dat upload.  NOTE: this function makes a COPY of the buffer to ensure it will live until the upload actually occurs. The copy will be freed automatically as soon as it's safe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+dat : DvzId
+    the id of the dat to upload to
+offset : DvzSize
+    the byte offset of the upload transfer
+size : DvzSize
+    the number of bytes in data to transfer
+data : void*
+    a pointer to the data to upload
+
+Returns
+-------
+type
+    the request
+"""
+upload_dat.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId dat
+    DvzSize,  # DvzSize offset
+    DvzSize,  # DvzSize size
+    ctypes.c_void_p,  # void* data
+    ctypes.c_int,  # int flags
+]
+upload_dat.restype = DvzRequest
+
+# Function dvz_delete_dat()
+delete_dat = dvz.dvz_delete_dat
+delete_dat.__doc__ = """
+Create a request for dat deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the dat id
+
+Returns
+-------
+type
+    the request
+"""
+delete_dat.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_dat.restype = DvzRequest
+
+# Function dvz_create_tex()
+create_tex = dvz.dvz_create_tex
+create_tex.__doc__ = """
+Create a request for a tex creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+dims : DvzTexDims
+    the number of dimensions, 1, 2, or 3
+format : DvzFormat
+    the image format
+shape : uvec3
+    the texture shape
+flags : int
+    the dat creation flags
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the tex to be created
+"""
+create_tex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzTexDims,  # DvzTexDims dims
+    DvzFormat,  # DvzFormat format
+    ctypes.c_uint32 * 3,  # uvec3 shape
+    ctypes.c_int,  # int flags
+]
+create_tex.restype = DvzRequest
+
+# Function dvz_resize_tex()
+resize_tex = dvz.dvz_resize_tex
+resize_tex.__doc__ = """
+Create a request to resize a tex.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+tex : DvzId
+    the tex id
+shape : uvec3
+    the new tex shape
+
+Returns
+-------
+type
+    the request
+"""
+resize_tex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId tex
+    ctypes.c_uint32 * 3,  # uvec3 shape
+]
+resize_tex.restype = DvzRequest
+
+# Function dvz_upload_tex()
+upload_tex = dvz.dvz_upload_tex
+upload_tex.__doc__ = """
+Create a request for tex upload.  NOTE: this function makes a COPY of the buffer to ensure it will live until the upload actually occurs. The copy will be freed automatically as soon as it's safe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+tex : DvzId
+    the id of the tex to upload to
+offset : uvec3
+    the offset
+shape : uvec3
+    the shape
+size : DvzSize
+    the number of bytes in data to transfer
+data : void*
+    a pointer to the data to upload
+
+Returns
+-------
+type
+    the request
+"""
+upload_tex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId tex
+    ctypes.c_uint32 * 3,  # uvec3 offset
+    ctypes.c_uint32 * 3,  # uvec3 shape
+    DvzSize,  # DvzSize size
+    ctypes.c_void_p,  # void* data
+    ctypes.c_int,  # int flags
+]
+upload_tex.restype = DvzRequest
+
+# Function dvz_delete_tex()
+delete_tex = dvz.dvz_delete_tex
+delete_tex.__doc__ = """
+Create a request for tex deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the tex id
+
+Returns
+-------
+type
+    the request
+"""
+delete_tex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_tex.restype = DvzRequest
+
+# Function dvz_create_sampler()
+create_sampler = dvz.dvz_create_sampler
+create_sampler.__doc__ = """
+Create a request for a sampler creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+filter : DvzFilter
+    the sampler filter
+mode : DvzSamplerAddressMode
+    the sampler address mode
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the sampler to be created
+"""
+create_sampler.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzFilter,  # DvzFilter filter
+    DvzSamplerAddressMode,  # DvzSamplerAddressMode mode
+]
+create_sampler.restype = DvzRequest
+
+# Function dvz_delete_sampler()
+delete_sampler = dvz.dvz_delete_sampler
+delete_sampler.__doc__ = """
+Create a request for sampler deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the sampler id
+
+Returns
+-------
+type
+    the request
+"""
+delete_sampler.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_sampler.restype = DvzRequest
+
+# Function dvz_create_glsl()
+create_glsl = dvz.dvz_create_glsl
+create_glsl.__doc__ = """
+Create a request for GLSL shader creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+shader_type : DvzShaderType
+    the shader type
+size : DvzSize
+    the size in bytes of the string with the GLSL code
+code : char*
+    an ASCII string with the GLSL code
+
+Returns
+-------
+type
+    the request
+"""
+create_glsl.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzShaderType,  # DvzShaderType shader_type
+    DvzSize,  # DvzSize size
+    ctypes.c_char_p,  # char* code
+]
+create_glsl.restype = DvzRequest
+
+# Function dvz_create_spirv()
+create_spirv = dvz.dvz_create_spirv
+create_spirv.__doc__ = """
+Create a request for SPIR-V shader creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+shader_type : DvzShaderType
+    the shader type
+size : DvzSize
+    the size in bytes of the SPIR-V buffer
+buffer : char*
+    pointer to a buffer with the SPIR-V bytecode
+
+Returns
+-------
+type
+    the request
+"""
+create_spirv.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzShaderType,  # DvzShaderType shader_type
+    DvzSize,  # DvzSize size
+    ctypes.c_char_p,  # char* buffer
+]
+create_spirv.restype = DvzRequest
+
+# Function dvz_create_graphics()
+create_graphics = dvz.dvz_create_graphics
+create_graphics.__doc__ = """
+Create a request for a builtin graphics pipe creation.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+parent : unknown
+    either the parent board or canvas id
+type : DvzGraphicsType
+    the graphics type
+flags : int
+    the graphics creation flags
+
+Returns
+-------
+type
+    the request, containing a newly-generated id for the graphics pipe to be created
+"""
+create_graphics.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzGraphicsType,  # DvzGraphicsType type
+    ctypes.c_int,  # int flags
+]
+create_graphics.restype = DvzRequest
+
+# Function dvz_set_primitive()
+set_primitive = dvz.dvz_set_primitive
+set_primitive.__doc__ = """
+Create a request for setting the primitive topology of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+primitive : DvzPrimitiveTopology
+    the graphics primitive topology
+
+Returns
+-------
+type
+    the request
+"""
+set_primitive.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzPrimitiveTopology,  # DvzPrimitiveTopology primitive
+]
+set_primitive.restype = DvzRequest
+
+# Function dvz_set_blend()
+set_blend = dvz.dvz_set_blend
+set_blend.__doc__ = """
+Create a request for setting the blend type of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+blend_type : DvzBlendType
+    the graphics blend type
+
+Returns
+-------
+type
+    the request
+"""
+set_blend.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzBlendType,  # DvzBlendType blend_type
+]
+set_blend.restype = DvzRequest
+
+# Function dvz_set_depth()
+set_depth = dvz.dvz_set_depth
+set_depth.__doc__ = """
+Create a request for setting the depth test of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+depth_test : DvzDepthTest
+    the graphics depth test
+
+Returns
+-------
+type
+    the request
+"""
+set_depth.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzDepthTest,  # DvzDepthTest depth_test
+]
+set_depth.restype = DvzRequest
+
+# Function dvz_set_polygon()
+set_polygon = dvz.dvz_set_polygon
+set_polygon.__doc__ = """
+Create a request for setting the polygon mode of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+polygon_mode : DvzPolygonMode
+    the polygon mode
+
+Returns
+-------
+type
+    the request
+"""
+set_polygon.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzPolygonMode,  # DvzPolygonMode polygon_mode
+]
+set_polygon.restype = DvzRequest
+
+# Function dvz_set_cull()
+set_cull = dvz.dvz_set_cull
+set_cull.__doc__ = """
+Create a request for setting the cull mode of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+cull_mode : DvzCullMode
+    the cull mode
+
+Returns
+-------
+type
+    the request
+"""
+set_cull.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzCullMode,  # DvzCullMode cull_mode
+]
+set_cull.restype = DvzRequest
+
+# Function dvz_set_front()
+set_front = dvz.dvz_set_front
+set_front.__doc__ = """
+Create a request for setting the front face of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+front_face : DvzFrontFace
+    the front face
+
+Returns
+-------
+type
+    the request
+"""
+set_front.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzFrontFace,  # DvzFrontFace front_face
+]
+set_front.restype = DvzRequest
+
+# Function dvz_set_shader()
+set_shader = dvz.dvz_set_shader
+set_shader.__doc__ = """
+Create a request for setting a shader a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+shader : DvzId
+    the id of the shader object
+
+Returns
+-------
+type
+    the request
+"""
+set_shader.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzId,  # DvzId shader
+]
+set_shader.restype = DvzRequest
+
+# Function dvz_set_vertex()
+set_vertex = dvz.dvz_set_vertex
+set_vertex.__doc__ = """
+Create a request for setting a vertex binding of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+binding_idx : uint32_t
+    the index of the vertex binding
+stride : DvzSize
+    the binding stride
+
+Returns
+-------
+type
+    the request
+"""
+set_vertex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    ctypes.c_uint32,  # uint32_t binding_idx
+    DvzSize,  # DvzSize stride
+    DvzVertexInputRate,  # DvzVertexInputRate input_rate
+]
+set_vertex.restype = DvzRequest
+
+# Function dvz_set_attr()
+set_attr = dvz.dvz_set_attr
+set_attr.__doc__ = """
+Create a request for setting a vertex attribute of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+binding_idx : uint32_t
+    the index of the vertex binding
+location : uint32_t
+    the GLSL attribute location
+format : DvzFormat
+    the attribute format
+offset : DvzSize
+    the byte offset of the attribute within the vertex binding
+
+Returns
+-------
+type
+    the request
+"""
+set_attr.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    ctypes.c_uint32,  # uint32_t binding_idx
+    ctypes.c_uint32,  # uint32_t location
+    DvzFormat,  # DvzFormat format
+    DvzSize,  # DvzSize offset
+]
+set_attr.restype = DvzRequest
+
+# Function dvz_set_slot()
+set_slot = dvz.dvz_set_slot
+set_slot.__doc__ = """
+Create a request for setting a binding slot (descriptor) of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+slot_idx : uint32_t
+    the index of the GLSL binding slot
+type : DvzDescriptorType
+    the descriptor type
+
+Returns
+-------
+type
+    the request
+"""
+set_slot.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzDescriptorType,  # DvzDescriptorType type
+]
+set_slot.restype = DvzRequest
+
+# Function dvz_set_specialization()
+set_specialization = dvz.dvz_set_specialization
+set_specialization.__doc__ = """
+Create a request for setting a specialization constant of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+shader : DvzShaderType
+    the shader with the specialization constant
+idx : uint32_t
+    the specialization constant index as specified in the GLSL code
+size : DvzSize
+    the byte size of the value
+value : void*
+    a pointer to the specialization constant value
+
+Returns
+-------
+type
+    the request
+"""
+set_specialization.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzShaderType,  # DvzShaderType shader
+    ctypes.c_uint32,  # uint32_t idx
+    DvzSize,  # DvzSize size
+    ctypes.c_void_p,  # void* value
+]
+set_specialization.restype = DvzRequest
+
+# Function dvz_delete_graphics()
+delete_graphics = dvz.dvz_delete_graphics
+delete_graphics.__doc__ = """
+Create a request for graphics deletion.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the graphics id
+
+Returns
+-------
+type
+    the request
+"""
+delete_graphics.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+delete_graphics.restype = DvzRequest
+
+# Function dvz_bind_vertex()
+bind_vertex = dvz.dvz_bind_vertex
+bind_vertex.__doc__ = """
+Create a request for associating a vertex dat to a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : unknown
+    the id of the graphics pipe
+dat : DvzId
+    the id of the dat with the vertex data
+offset : DvzSize
+    the offset within the dat
+
+Returns
+-------
+type
+    the request
+"""
+bind_vertex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId pipe
+    ctypes.c_uint32,  # uint32_t binding_idx
+    DvzId,  # DvzId dat
+    DvzSize,  # DvzSize offset
+]
+bind_vertex.restype = DvzRequest
+
+# Function dvz_bind_index()
+bind_index = dvz.dvz_bind_index
+bind_index.__doc__ = """
+Create a request for associating an index dat to a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : unknown
+    the id of the graphics pipe
+dat : DvzId
+    the id of the dat with the index data
+offset : DvzSize
+    the offset within the dat
+
+Returns
+-------
+type
+    the request
+"""
+bind_index.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId pipe
+    DvzId,  # DvzId dat
+    DvzSize,  # DvzSize offset
+]
+bind_index.restype = DvzRequest
+
+# Function dvz_bind_dat()
+bind_dat = dvz.dvz_bind_dat
+bind_dat.__doc__ = """
+Create a request for associating a dat to a pipe's slot.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+pipe : DvzId
+    the id of the pipe
+slot_idx : uint32_t
+    the index of the descriptor slot
+dat : DvzId
+    the id of the dat to bind to the pipe
+offset : DvzSize
+    the offset
+
+Returns
+-------
+type
+    the request
+"""
+bind_dat.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId pipe
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzId,  # DvzId dat
+    DvzSize,  # DvzSize offset
+]
+bind_dat.restype = DvzRequest
+
+# Function dvz_bind_tex()
+bind_tex = dvz.dvz_bind_tex
+bind_tex.__doc__ = """
+Create a request for associating a tex to a pipe's slot.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+pipe : DvzId
+    the id of the pipe
+slot_idx : uint32_t
+    the index of the descriptor slot
+tex : DvzId
+    the id of the tex to bind to the pipe
+tex : DvzId
+    the id of the sampler
+offset : uvec3
+    the offset
+
+Returns
+-------
+type
+    the request
+"""
+bind_tex.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId pipe
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzId,  # DvzId tex
+    DvzId,  # DvzId sampler
+    ctypes.c_uint32 * 3,  # uvec3 offset
+]
+bind_tex.restype = DvzRequest
+
+# Function dvz_record_begin()
+record_begin = dvz.dvz_record_begin
+record_begin.__doc__ = """
+Create a request for starting recording of command buffer.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+
+Returns
+-------
+type
+    the request
+"""
+record_begin.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+]
+record_begin.restype = DvzRequest
+
+# Function dvz_record_viewport()
+record_viewport = dvz.dvz_record_viewport
+record_viewport.__doc__ = """
+Create a request for setting the viewport during command buffer recording.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+offset : vec2
+    the viewport offset, in framebuffer pixels
+shape : vec2
+    the viewport size, in framebuffer pixels
+
+Returns
+-------
+type
+    the request
+"""
+record_viewport.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+    ctypes.c_float * 2,  # vec2 offset
+    ctypes.c_float * 2,  # vec2 shape
+]
+record_viewport.restype = DvzRequest
+
+# Function dvz_record_draw()
+record_draw = dvz.dvz_record_draw
+record_draw.__doc__ = """
+Create a request for a direct draw of a graphics during command buffer recording.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+graphics : DvzId
+    the id of the graphics pipe to draw
+first_vertex : uint32_t
+    the index of the first vertex to draw
+vertex_count : uint32_t
+    the number of vertices to draw
+first_instance : uint32_t
+    the index of the first instance to draw
+instance_count : uint32_t
+    the number of instances to draw
+
+Returns
+-------
+type
+    the request
+"""
+record_draw.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId graphics
+    ctypes.c_uint32,  # uint32_t first_vertex
+    ctypes.c_uint32,  # uint32_t vertex_count
+    ctypes.c_uint32,  # uint32_t first_instance
+    ctypes.c_uint32,  # uint32_t instance_count
+]
+record_draw.restype = DvzRequest
+
+# Function dvz_record_draw_indexed()
+record_draw_indexed = dvz.dvz_record_draw_indexed
+record_draw_indexed.__doc__ = """
+Create a request for an indexed draw of a graphics during command buffer recording.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+graphics : DvzId
+    the id of the graphics pipe to draw
+first_index : uint32_t
+    the index of the first index to draw
+vertex_offset : uint32_t
+    the vertex offset within the vertices indexed by the indexes
+index_count : uint32_t
+    the number of indexes to draw
+first_instance : uint32_t
+    the index of the first instance to draw
+instance_count : uint32_t
+    the number of instances to draw
+
+Returns
+-------
+type
+    the request
+"""
+record_draw_indexed.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId graphics
+    ctypes.c_uint32,  # uint32_t first_index
+    ctypes.c_uint32,  # uint32_t vertex_offset
+    ctypes.c_uint32,  # uint32_t index_count
+    ctypes.c_uint32,  # uint32_t first_instance
+    ctypes.c_uint32,  # uint32_t instance_count
+]
+record_draw_indexed.restype = DvzRequest
+
+# Function dvz_record_draw_indirect()
+record_draw_indirect = dvz.dvz_record_draw_indirect
+record_draw_indirect.__doc__ = """
+Create a request for an indirect draw of a graphics during command buffer recording.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+graphics : DvzId
+    the id of the graphics pipe to draw
+indirect : DvzId
+    the id of the dat containing the indirect draw data
+draw_count : uint32_t
+    the number of draws to make
+
+Returns
+-------
+type
+    the request
+"""
+record_draw_indirect.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId graphics
+    DvzId,  # DvzId indirect
+    ctypes.c_uint32,  # uint32_t draw_count
+]
+record_draw_indirect.restype = DvzRequest
+
+# Function dvz_record_draw_indexed_indirect()
+record_draw_indexed_indirect = dvz.dvz_record_draw_indexed_indirect
+record_draw_indexed_indirect.__doc__ = """
+Create a request for an indexed indirect draw of a graphics during command buffer recording.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+graphics : DvzId
+    the id of the graphics pipe to draw
+indirect : DvzId
+    the id of the dat containing the indirect draw data
+draw_count : uint32_t
+    the number of draws to make
+
+Returns
+-------
+type
+    the request
+"""
+record_draw_indexed_indirect.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId graphics
+    DvzId,  # DvzId indirect
+    ctypes.c_uint32,  # uint32_t draw_count
+]
+record_draw_indexed_indirect.restype = DvzRequest
+
+# Function dvz_record_end()
+record_end = dvz.dvz_record_end
+record_end.__doc__ = """
+Create a request for ending recording of command buffer.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_or_board_id : DvzId
+    the id of the canvas or board
+
+Returns
+-------
+type
+    the request
+"""
+record_end.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_or_board_id
+]
+record_end.restype = DvzRequest
 

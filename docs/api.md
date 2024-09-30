@@ -3536,6 +3536,723 @@ void dvz_range(
 )
 ```
 
+### `dvz_batch()`
+
+Create a batch holding a number of requests.
+
+```c
+DvzBatch* dvz_batch(
+
+)
+```
+
+### `dvz_batch_add()`
+
+Add a request to a batch.
+
+```c
+void dvz_batch_add(
+    DvzBatch* batch,  // the batch
+    DvzRequest req,  // the request
+)
+```
+
+### `dvz_batch_clear()`
+
+Remove all requests in a batch.
+
+```c
+void dvz_batch_clear(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_batch_copy()`
+
+Create a copy of a batch.
+
+```c
+DvzBatch* dvz_batch_copy(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_batch_desc()`
+
+Set the description of the last added request.
+
+```c
+void dvz_batch_desc(
+    DvzBatch* batch,  // the batch
+    char* desc,  // the description
+)
+```
+
+### `dvz_batch_destroy()`
+
+Destroy a batch.
+
+```c
+void dvz_batch_destroy(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_batch_dump()`
+
+Dump all batch requests in raw binary file.
+
+```c
+int dvz_batch_dump(
+    DvzBatch* batch,  // the batch
+    char* filename,  // the dump filename
+)
+```
+
+### `dvz_batch_load()`
+
+Load a dump of batch requests into an existing batch object.
+
+```c
+void dvz_batch_load(
+    DvzBatch* batch,  // the batch
+    char* filename,  // the dump filename
+)
+```
+
+### `dvz_batch_print()`
+
+Display information about all requests in the batch.
+
+```c
+void dvz_batch_print(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_batch_requests()`
+
+Return a pointer to the array of all requests in the batch.
+
+```c
+DvzRequest* dvz_batch_requests(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_batch_size()`
+
+Return the number of requests in the batch.
+
+```c
+uint32_t dvz_batch_size(
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_bind_dat()`
+
+Create a request for associating a dat to a pipe's slot.
+
+```c
+DvzRequest dvz_bind_dat(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId pipe,  // the id of the pipe
+    uint32_t slot_idx,  // the index of the descriptor slot
+    DvzId dat,  // the id of the dat to bind to the pipe
+    DvzSize offset,  // the offset
+)
+```
+
+### `dvz_bind_index()`
+
+Create a request for associating an index dat to a graphics pipe.
+
+```c
+DvzRequest dvz_bind_index(  // returns: the request
+    DvzBatch* batch,  // the batch
+     graphics,  // the id of the graphics pipe
+    DvzId dat,  // the id of the dat with the index data
+    DvzSize offset,  // the offset within the dat
+)
+```
+
+### `dvz_bind_tex()`
+
+Create a request for associating a tex to a pipe's slot.
+
+```c
+DvzRequest dvz_bind_tex(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId pipe,  // the id of the pipe
+    uint32_t slot_idx,  // the index of the descriptor slot
+    DvzId tex,  // the id of the tex to bind to the pipe
+    DvzId tex,  // the id of the sampler
+    uvec3 offset,  // the offset
+)
+```
+
+### `dvz_bind_vertex()`
+
+Create a request for associating a vertex dat to a graphics pipe.
+
+```c
+DvzRequest dvz_bind_vertex(  // returns: the request
+    DvzBatch* batch,  // the batch
+     graphics,  // the id of the graphics pipe
+    DvzId dat,  // the id of the dat with the vertex data
+    DvzSize offset,  // the offset within the dat
+)
+```
+
+### `dvz_create_board()`
+
+Create a request for board creation.
+
+```c
+DvzRequest dvz_create_board(  // returns: the request, containing a newly-generated id for the board to be created
+    DvzBatch* batch,  // the batch
+    uint32_t width,  // the board width
+    uint32_t height,  // the board height
+    cvec4 background,  // the background color
+    int flags,  // the board creation flags
+)
+```
+
+### `dvz_create_canvas()`
+
+Create a request for canvas creation.
+
+```c
+DvzRequest dvz_create_canvas(  // returns: the request, containing a newly-generated id for the canvas to be created
+    DvzBatch* batch,  // the batch
+    uint32_t width,  // the canvas width (in screen pixels)
+    uint32_t height,  // the canvas height (in screen pixels)
+    cvec4 background,  // the background color
+    int flags,  // the canvas creation flags
+)
+```
+
+### `dvz_create_dat()`
+
+Create a request for a dat creation.
+
+```c
+DvzRequest dvz_create_dat(  // returns: the request, containing a newly-generated id for the dat to be created
+    DvzBatch* batch,  // the batch
+    DvzBufferType type,  // the buffer type
+    DvzSize size,  // the dat size, in bytes
+    int flags,  // the dat creation flags
+)
+```
+
+### `dvz_create_glsl()`
+
+Create a request for GLSL shader creation.
+
+```c
+DvzRequest dvz_create_glsl(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzShaderType shader_type,  // the shader type
+    DvzSize size,  // the size in bytes of the string with the GLSL code
+    char* code,  // an ASCII string with the GLSL code
+)
+```
+
+### `dvz_create_graphics()`
+
+Create a request for a builtin graphics pipe creation.
+
+```c
+DvzRequest dvz_create_graphics(  // returns: the request, containing a newly-generated id for the graphics pipe to be created
+    DvzBatch* batch,  // the batch
+     parent,  // either the parent board or canvas id
+    DvzGraphicsType type,  // the graphics type
+    int flags,  // the graphics creation flags
+)
+```
+
+### `dvz_create_sampler()`
+
+Create a request for a sampler creation.
+
+```c
+DvzRequest dvz_create_sampler(  // returns: the request, containing a newly-generated id for the sampler to be created
+    DvzBatch* batch,  // the batch
+    DvzFilter filter,  // the sampler filter
+    DvzSamplerAddressMode mode,  // the sampler address mode
+)
+```
+
+### `dvz_create_spirv()`
+
+Create a request for SPIR-V shader creation.
+
+```c
+DvzRequest dvz_create_spirv(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzShaderType shader_type,  // the shader type
+    DvzSize size,  // the size in bytes of the SPIR-V buffer
+    char* buffer,  // pointer to a buffer with the SPIR-V bytecode
+)
+```
+
+### `dvz_create_tex()`
+
+Create a request for a tex creation.
+
+```c
+DvzRequest dvz_create_tex(  // returns: the request, containing a newly-generated id for the tex to be created
+    DvzBatch* batch,  // the batch
+    DvzTexDims dims,  // the number of dimensions, 1, 2, or 3
+    DvzFormat format,  // the image format
+    uvec3 shape,  // the texture shape
+    int flags,  // the dat creation flags
+)
+```
+
+### `dvz_delete_board()`
+
+Create a request for a board deletion.
+
+```c
+DvzRequest dvz_delete_board(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the board id
+)
+```
+
+### `dvz_delete_canvas()`
+
+Create a request for a canvas deletion.
+
+```c
+DvzRequest dvz_delete_canvas(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the canvas id
+)
+```
+
+### `dvz_delete_dat()`
+
+Create a request for dat deletion.
+
+```c
+DvzRequest dvz_delete_dat(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the dat id
+)
+```
+
+### `dvz_delete_graphics()`
+
+Create a request for graphics deletion.
+
+```c
+DvzRequest dvz_delete_graphics(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the graphics id
+)
+```
+
+### `dvz_delete_sampler()`
+
+Create a request for sampler deletion.
+
+```c
+DvzRequest dvz_delete_sampler(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the sampler id
+)
+```
+
+### `dvz_delete_tex()`
+
+Create a request for tex deletion.
+
+```c
+DvzRequest dvz_delete_tex(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the tex id
+)
+```
+
+### `dvz_record_begin()`
+
+Create a request for starting recording of command buffer.
+
+```c
+DvzRequest dvz_record_begin(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+)
+```
+
+### `dvz_record_draw()`
+
+Create a request for a direct draw of a graphics during command buffer recording.
+
+```c
+DvzRequest dvz_record_draw(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId graphics,  // the id of the graphics pipe to draw
+    uint32_t first_vertex,  // the index of the first vertex to draw
+    uint32_t vertex_count,  // the number of vertices to draw
+    uint32_t first_instance,  // the index of the first instance to draw
+    uint32_t instance_count,  // the number of instances to draw
+)
+```
+
+### `dvz_record_draw_indexed()`
+
+Create a request for an indexed draw of a graphics during command buffer recording.
+
+```c
+DvzRequest dvz_record_draw_indexed(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId graphics,  // the id of the graphics pipe to draw
+    uint32_t first_index,  // the index of the first index to draw
+    uint32_t vertex_offset,  // the vertex offset within the vertices indexed by the indexes
+    uint32_t index_count,  // the number of indexes to draw
+    uint32_t first_instance,  // the index of the first instance to draw
+    uint32_t instance_count,  // the number of instances to draw
+)
+```
+
+### `dvz_record_draw_indexed_indirect()`
+
+Create a request for an indexed indirect draw of a graphics during command buffer recording.
+
+```c
+DvzRequest dvz_record_draw_indexed_indirect(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId graphics,  // the id of the graphics pipe to draw
+    DvzId indirect,  // the id of the dat containing the indirect draw data
+    uint32_t draw_count,  // the number of draws to make
+)
+```
+
+### `dvz_record_draw_indirect()`
+
+Create a request for an indirect draw of a graphics during command buffer recording.
+
+```c
+DvzRequest dvz_record_draw_indirect(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId graphics,  // the id of the graphics pipe to draw
+    DvzId indirect,  // the id of the dat containing the indirect draw data
+    uint32_t draw_count,  // the number of draws to make
+)
+```
+
+### `dvz_record_end()`
+
+Create a request for ending recording of command buffer.
+
+```c
+DvzRequest dvz_record_end(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+)
+```
+
+### `dvz_record_viewport()`
+
+Create a request for setting the viewport during command buffer recording.
+
+```c
+DvzRequest dvz_record_viewport(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_or_board_id,  // the id of the canvas or board
+    vec2 offset,  // the viewport offset, in framebuffer pixels
+    vec2 shape,  // the viewport size, in framebuffer pixels
+)
+```
+
+### `dvz_request_print()`
+
+Display information about a request.
+
+```c
+void dvz_request_print(
+    DvzRequest* req,  // the request
+)
+```
+
+### `dvz_requester()`
+
+Create a requester, used to create requests.
+
+```c
+DvzRequester* dvz_requester(  // returns: the requester struct
+
+)
+```
+
+### `dvz_requester_commit()`
+
+Add a batch's requests to a requester.
+
+```c
+void dvz_requester_commit(
+    DvzRequester* rqr,  // the requester
+    DvzBatch* batch,  // the batch
+)
+```
+
+### `dvz_requester_destroy()`
+
+Destroy a requester.
+
+```c
+void dvz_requester_destroy(
+    DvzRequester* rqr,  // the requester
+)
+```
+
+### `dvz_requester_flush()`
+
+Return the requests in the requester and clear it.
+
+```c
+DvzBatch* dvz_requester_flush(  // returns: an array with all requests in the requester
+    DvzRequester* rqr,  // the requester
+)
+```
+
+### `dvz_resize_board()`
+
+Create a request to resize a board.
+
+```c
+DvzRequest dvz_resize_board(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId board,  // the board id
+    uint32_t width,  // the new board width
+    uint32_t height,  // the new board height
+)
+```
+
+### `dvz_resize_dat()`
+
+Create a request to resize a dat.
+
+```c
+DvzRequest dvz_resize_dat(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId dat,  // the dat id
+    DvzSize size,  // the new dat size, in bytes
+)
+```
+
+### `dvz_resize_tex()`
+
+Create a request to resize a tex.
+
+```c
+DvzRequest dvz_resize_tex(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId tex,  // the tex id
+    uvec3 shape,  // the new tex shape
+)
+```
+
+### `dvz_set_attr()`
+
+Create a request for setting a vertex attribute of a graphics pipe.
+
+```c
+DvzRequest dvz_set_attr(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    uint32_t binding_idx,  // the index of the vertex binding
+    uint32_t location,  // the GLSL attribute location
+    DvzFormat format,  // the attribute format
+    DvzSize offset,  // the byte offset of the attribute within the vertex binding
+)
+```
+
+### `dvz_set_background()`
+
+Change the background color of the board.
+
+```c
+DvzRequest dvz_set_background(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the board id
+    cvec4 background,  // the background color
+)
+```
+
+### `dvz_set_blend()`
+
+Create a request for setting the blend type of a graphics pipe.
+
+```c
+DvzRequest dvz_set_blend(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzBlendType blend_type,  // the graphics blend type
+)
+```
+
+### `dvz_set_cull()`
+
+Create a request for setting the cull mode of a graphics pipe.
+
+```c
+DvzRequest dvz_set_cull(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzCullMode cull_mode,  // the cull mode
+)
+```
+
+### `dvz_set_depth()`
+
+Create a request for setting the depth test of a graphics pipe.
+
+```c
+DvzRequest dvz_set_depth(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzDepthTest depth_test,  // the graphics depth test
+)
+```
+
+### `dvz_set_front()`
+
+Create a request for setting the front face of a graphics pipe.
+
+```c
+DvzRequest dvz_set_front(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzFrontFace front_face,  // the front face
+)
+```
+
+### `dvz_set_polygon()`
+
+Create a request for setting the polygon mode of a graphics pipe.
+
+```c
+DvzRequest dvz_set_polygon(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzPolygonMode polygon_mode,  // the polygon mode
+)
+```
+
+### `dvz_set_primitive()`
+
+Create a request for setting the primitive topology of a graphics pipe.
+
+```c
+DvzRequest dvz_set_primitive(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzPrimitiveTopology primitive,  // the graphics primitive topology
+)
+```
+
+### `dvz_set_shader()`
+
+Create a request for setting a shader a graphics pipe.
+
+```c
+DvzRequest dvz_set_shader(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzId shader,  // the id of the shader object
+)
+```
+
+### `dvz_set_slot()`
+
+Create a request for setting a binding slot (descriptor) of a graphics pipe.
+
+```c
+DvzRequest dvz_set_slot(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    uint32_t slot_idx,  // the index of the GLSL binding slot
+    DvzDescriptorType type,  // the descriptor type
+)
+```
+
+### `dvz_set_specialization()`
+
+Create a request for setting a specialization constant of a graphics pipe.
+
+```c
+DvzRequest dvz_set_specialization(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzShaderType shader,  // the shader with the specialization constant
+    uint32_t idx,  // the specialization constant index as specified in the GLSL code
+    DvzSize size,  // the byte size of the value
+    void* value,  // a pointer to the specialization constant value
+)
+```
+
+### `dvz_set_vertex()`
+
+Create a request for setting a vertex binding of a graphics pipe.
+
+```c
+DvzRequest dvz_set_vertex(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    uint32_t binding_idx,  // the index of the vertex binding
+    DvzSize stride,  // the binding stride
+)
+```
+
+### `dvz_update_board()`
+
+Create a request for a board redraw (command buffer submission).
+
+```c
+DvzRequest dvz_update_board(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId id,  // the board id
+)
+```
+
+### `dvz_upload_dat()`
+
+Create a request for dat upload.
+
+```c
+DvzRequest dvz_upload_dat(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId dat,  // the id of the dat to upload to
+    DvzSize offset,  // the byte offset of the upload transfer
+    DvzSize size,  // the number of bytes in data to transfer
+    void* data,  // a pointer to the data to upload
+)
+```
+
+### `dvz_upload_tex()`
+
+Create a request for tex upload.
+
+```c
+DvzRequest dvz_upload_tex(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId tex,  // the id of the tex to upload to
+    uvec3 offset,  // the offset
+    uvec3 shape,  // the shape
+    DvzSize size,  // the number of bytes in data to transfer
+    void* data,  // a pointer to the data to upload
+)
+```
+
 ## Enumerations
 
 ### `DvzAppFlags`
@@ -3551,6 +4268,25 @@ DVZ_APP_FLAGS_WHITE_BACKGROUND
 ```
 DVZ_ARCBALL_FLAGS_NONE
 DVZ_ARCBALL_FLAGS_CONSTRAIN
+```
+
+### `DvzBlendType`
+
+```
+DVZ_BLEND_DISABLE
+DVZ_BLEND_ENABLE
+```
+
+### `DvzBufferType`
+
+```
+DVZ_BUFFER_TYPE_UNDEFINED
+DVZ_BUFFER_TYPE_STAGING
+DVZ_BUFFER_TYPE_VERTEX
+DVZ_BUFFER_TYPE_INDEX
+DVZ_BUFFER_TYPE_STORAGE
+DVZ_BUFFER_TYPE_UNIFORM
+DVZ_BUFFER_TYPE_INDIRECT
 ```
 
 ### `DvzCameraFlags`
@@ -3753,6 +4489,14 @@ DVZ_DIALOG_CORNER_BOTTOM_LEFT
 DVZ_DIALOG_CORNER_BOTTOM_RIGHT
 ```
 
+### `DvzCullMode`
+
+```
+DVZ_CULL_MODE_NONE
+DVZ_CULL_MODE_FRONT
+DVZ_CULL_MODE_BACK
+```
+
 ### `DvzDatFlags`
 
 ```
@@ -3769,6 +4513,21 @@ DVZ_DAT_FLAGS_PERSISTENT_STAGING
 ```
 DVZ_DEPTH_TEST_DISABLE
 DVZ_DEPTH_TEST_ENABLE
+```
+
+### `DvzDescriptorType`
+
+```
+DVZ_DESCRIPTOR_TYPE_SAMPLER
+DVZ_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+DVZ_DESCRIPTOR_TYPE_SAMPLED_IMAGE
+DVZ_DESCRIPTOR_TYPE_STORAGE_IMAGE
+DVZ_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER
+DVZ_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
+DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER
+DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC
+DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
 ```
 
 ### `DvzDialogFlags`
@@ -3865,6 +4624,22 @@ DVZ_FORMAT_R32G32B32_SFLOAT
 DVZ_FORMAT_R32G32B32A32_UINT
 DVZ_FORMAT_R32G32B32A32_SINT
 DVZ_FORMAT_R32G32B32A32_SFLOAT
+```
+
+### `DvzFrontFace`
+
+```
+DVZ_FRONT_FACE_COUNTER_CLOCKWISE
+DVZ_FRONT_FACE_CLOCKWISE
+```
+
+### `DvzGraphicsType`
+
+```
+DVZ_GRAPHICS_NONE
+DVZ_GRAPHICS_POINT
+DVZ_GRAPHICS_TRIANGLE
+DVZ_GRAPHICS_CUSTOM
 ```
 
 ### `DvzImageFlags`
@@ -4016,6 +4791,14 @@ DVZ_PATH_FLAGS_OPEN
 DVZ_PATH_FLAGS_CLOSED
 ```
 
+### `DvzPolygonMode`
+
+```
+DVZ_POLYGON_MODE_FILL
+DVZ_POLYGON_MODE_LINE
+DVZ_POLYGON_MODE_POINT
+```
+
 ### `DvzPrimitiveTopology`
 
 ```
@@ -4027,6 +4810,63 @@ DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP
 DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN
 ```
 
+### `DvzRecorderCommandType`
+
+```
+DVZ_RECORDER_NONE
+DVZ_RECORDER_BEGIN
+DVZ_RECORDER_DRAW
+DVZ_RECORDER_DRAW_INDEXED
+DVZ_RECORDER_DRAW_INDIRECT
+DVZ_RECORDER_DRAW_INDEXED_INDIRECT
+DVZ_RECORDER_VIEWPORT
+DVZ_RECORDER_END
+```
+
+### `DvzRequestAction`
+
+```
+DVZ_REQUEST_ACTION_NONE
+DVZ_REQUEST_ACTION_CREATE
+DVZ_REQUEST_ACTION_DELETE
+DVZ_REQUEST_ACTION_RESIZE
+DVZ_REQUEST_ACTION_UPDATE
+DVZ_REQUEST_ACTION_BIND
+DVZ_REQUEST_ACTION_RECORD
+DVZ_REQUEST_ACTION_UPLOAD
+DVZ_REQUEST_ACTION_UPFILL
+DVZ_REQUEST_ACTION_DOWNLOAD
+DVZ_REQUEST_ACTION_SET
+DVZ_REQUEST_ACTION_GET
+```
+
+### `DvzRequestObject`
+
+```
+DVZ_REQUEST_OBJECT_NONE
+DVZ_REQUEST_OBJECT_BOARD
+DVZ_REQUEST_OBJECT_CANVAS
+DVZ_REQUEST_OBJECT_DAT
+DVZ_REQUEST_OBJECT_TEX
+DVZ_REQUEST_OBJECT_SAMPLER
+DVZ_REQUEST_OBJECT_COMPUTE
+DVZ_REQUEST_OBJECT_PRIMITIVE
+DVZ_REQUEST_OBJECT_DEPTH
+DVZ_REQUEST_OBJECT_BLEND
+DVZ_REQUEST_OBJECT_POLYGON
+DVZ_REQUEST_OBJECT_CULL
+DVZ_REQUEST_OBJECT_FRONT
+DVZ_REQUEST_OBJECT_SHADER
+DVZ_REQUEST_OBJECT_VERTEX
+DVZ_REQUEST_OBJECT_VERTEX_ATTR
+DVZ_REQUEST_OBJECT_SLOT
+DVZ_REQUEST_OBJECT_SPECIALIZATION
+DVZ_REQUEST_OBJECT_GRAPHICS
+DVZ_REQUEST_OBJECT_INDEX
+DVZ_REQUEST_OBJECT_BACKGROUND
+DVZ_REQUEST_OBJECT_RECORD
+```
+
 ### `DvzSamplerAddressMode`
 
 ```
@@ -4035,6 +4875,32 @@ DVZ_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT
 DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE
 DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
 DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
+```
+
+### `DvzSamplerAxis`
+
+```
+DVZ_SAMPLER_AXIS_U
+DVZ_SAMPLER_AXIS_V
+DVZ_SAMPLER_AXIS_W
+```
+
+### `DvzShaderFormat`
+
+```
+DVZ_SHADER_SPIRV
+DVZ_SHADER_GLSL
+```
+
+### `DvzShaderType`
+
+```
+DVZ_SHADER_VERTEX
+DVZ_SHADER_TESSELLATION_CONTROL
+DVZ_SHADER_TESSELLATION_EVALUATION
+DVZ_SHADER_GEOMETRY
+DVZ_SHADER_FRAGMENT
+DVZ_SHADER_COMPUTE
 ```
 
 ### `DvzShapeType`
@@ -4053,6 +4919,15 @@ DVZ_SHAPE_OBJ
 DVZ_SHAPE_OTHER
 ```
 
+### `DvzTexDims`
+
+```
+DVZ_TEX_NONE
+DVZ_TEX_1D
+DVZ_TEX_2D
+DVZ_TEX_3D
+```
+
 ### `DvzTexFlags`
 
 ```
@@ -4064,6 +4939,13 @@ DVZ_TEX_FLAGS_PERSISTENT_STAGING
 
 ```
 DVZ_UPLOAD_FLAGS_NOCOPY
+```
+
+### `DvzVertexInputRate`
+
+```
+DVZ_VERTEX_INPUT_RATE_VERTEX
+DVZ_VERTEX_INPUT_RATE_INSTANCE
 ```
 
 ### `DvzViewFlags`
@@ -4229,6 +5111,13 @@ DVZ_KEY_MENU
 DVZ_KEY_LAST
 ```
 
+### `DvzGraphicsRequestFlags`
+
+```
+DVZ_GRAPHICS_REQUEST_FLAGS_NONE
+DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN
+```
+
 ## Structures
 
 ### `DvzAtlasFont`
@@ -4239,6 +5128,18 @@ struct DvzAtlasFont
     unsigned char* ttf_bytes
     DvzAtlas* atlas
     DvzFont* font
+```
+
+### `DvzBatch`
+
+```
+struct DvzBatch
+    uint32_t capacity
+    uint32_t count
+    DvzRequest* requests
+    DvzList* pointers_to_free
+    DvzId board_id
+    int flags
 ```
 
 ### `DvzFrameEvent`
@@ -4327,6 +5228,341 @@ union DvzMouseEventUnion
 ```
 struct DvzMouseWheelEvent
     vec2 dir
+```
+
+### `DvzRecorderCommand`
+
+```
+struct DvzRecorderCommand
+    DvzRecorderCommandType type
+    DvzId canvas_or_board_id
+    DvzRequestObject object_type
+    DvzRecorderUnion contents
+```
+
+### `DvzRecorderDraw`
+
+```
+struct DvzRecorderDraw
+    DvzId pipe_id
+    uint32_t first_vertex
+    uint32_t vertex_count
+    uint32_t first_instance
+    uint32_t instance_count
+```
+
+### `DvzRecorderDrawIndexed`
+
+```
+struct DvzRecorderDrawIndexed
+    DvzId pipe_id
+    uint32_t first_index
+    uint32_t vertex_offset
+    uint32_t index_count
+    uint32_t first_instance
+    uint32_t instance_count
+```
+
+### `DvzRecorderDrawIndexedIndirect`
+
+```
+struct DvzRecorderDrawIndexedIndirect
+    DvzId pipe_id
+    DvzId dat_indirect_id
+    uint32_t draw_count
+```
+
+### `DvzRecorderDrawIndirect`
+
+```
+struct DvzRecorderDrawIndirect
+    DvzId pipe_id
+    DvzId dat_indirect_id
+    uint32_t draw_count
+```
+
+### `DvzRecorderUnion`
+
+```
+union DvzRecorderUnion
+    DvzRecorderViewport v
+    DvzRecorderDraw draw
+    DvzRecorderDrawIndexed draw_indexed
+    DvzRecorderDrawIndirect draw_indirect
+    DvzRecorderDrawIndexedIndirect draw_indexed_indirect
+```
+
+### `DvzRecorderViewport`
+
+```
+struct DvzRecorderViewport
+    vec2 offset
+    vec2 shape
+```
+
+### `DvzRequest`
+
+```
+struct DvzRequest
+    uint32_t version
+    DvzRequestAction action
+    DvzRequestObject type
+    DvzId id
+    DvzRequestContent content
+    int tag
+    int flags
+    char* desc
+```
+
+### `DvzRequestAttr`
+
+```
+struct DvzRequestAttr
+    uint32_t binding_idx
+    uint32_t location
+    DvzFormat format
+    DvzSize offset
+```
+
+### `DvzRequestBindDat`
+
+```
+struct DvzRequestBindDat
+    uint32_t slot_idx
+    DvzId dat
+    DvzSize offset
+```
+
+### `DvzRequestBindIndex`
+
+```
+struct DvzRequestBindIndex
+    DvzId dat
+    DvzSize offset
+```
+
+### `DvzRequestBindTex`
+
+```
+struct DvzRequestBindTex
+    uint32_t slot_idx
+    DvzId tex
+    DvzId sampler
+    uvec3 offset
+```
+
+### `DvzRequestBindVertex`
+
+```
+struct DvzRequestBindVertex
+    uint32_t binding_idx
+    DvzId dat
+    DvzSize offset
+```
+
+### `DvzRequestBlend`
+
+```
+struct DvzRequestBlend
+    DvzBlendType blend
+```
+
+### `DvzRequestBoard`
+
+```
+struct DvzRequestBoard
+    uint32_t width
+    uint32_t height
+    cvec4 background
+```
+
+### `DvzRequestCanvas`
+
+```
+struct DvzRequestCanvas
+    uint32_t framebuffer_width
+    uint32_t framebuffer_height
+    uint32_t screen_width
+    uint32_t screen_height
+    cvec4 background
+```
+
+### `DvzRequestContent`
+
+```
+union DvzRequestContent
+    DvzRequestBoard board
+    DvzRequestCanvas canvas
+    DvzRequestDat dat
+    DvzRequestTex tex
+    DvzRequestSampler sampler
+    DvzRequestShader shader
+    DvzRequestDatUpload dat_upload
+    DvzRequestTexUpload tex_upload
+    DvzRequestGraphics graphics
+    DvzRequestPrimitive set_primitive
+    DvzRequestBlend set_blend
+    DvzRequestDepth set_depth
+    DvzRequestPolygon set_polygon
+    DvzRequestCull set_cull
+    DvzRequestFront set_front
+    DvzRequestShaderSet set_shader
+    DvzRequestVertex set_vertex
+    DvzRequestAttr set_attr
+    DvzRequestSlot set_slot
+    DvzRequestSpecialization set_specialization
+    DvzRequestBindVertex bind_vertex
+    DvzRequestBindIndex bind_index
+    DvzRequestBindDat bind_dat
+    DvzRequestBindTex bind_tex
+    DvzRequestRecord record
+```
+
+### `DvzRequestCull`
+
+```
+struct DvzRequestCull
+    DvzCullMode cull
+```
+
+### `DvzRequestDat`
+
+```
+struct DvzRequestDat
+    DvzBufferType type
+    DvzSize size
+```
+
+### `DvzRequestDatUpload`
+
+```
+struct DvzRequestDatUpload
+    int upload_type
+    DvzSize offset
+    DvzSize size
+    void* data
+```
+
+### `DvzRequestDepth`
+
+```
+struct DvzRequestDepth
+    DvzDepthTest depth
+```
+
+### `DvzRequestFront`
+
+```
+struct DvzRequestFront
+    DvzFrontFace front
+```
+
+### `DvzRequestGraphics`
+
+```
+struct DvzRequestGraphics
+    DvzGraphicsType type
+```
+
+### `DvzRequestPolygon`
+
+```
+struct DvzRequestPolygon
+    DvzPolygonMode polygon
+```
+
+### `DvzRequestPrimitive`
+
+```
+struct DvzRequestPrimitive
+    DvzPrimitiveTopology primitive
+```
+
+### `DvzRequestRecord`
+
+```
+struct DvzRequestRecord
+    DvzRecorderCommand command
+```
+
+### `DvzRequestSampler`
+
+```
+struct DvzRequestSampler
+    DvzFilter filter
+    DvzSamplerAddressMode mode
+```
+
+### `DvzRequestShader`
+
+```
+struct DvzRequestShader
+    DvzShaderFormat format
+    DvzShaderType type
+    DvzSize size
+    char* code
+    uint32_t* buffer
+```
+
+### `DvzRequestShaderSet`
+
+```
+struct DvzRequestShaderSet
+    DvzId shader
+```
+
+### `DvzRequestSlot`
+
+```
+struct DvzRequestSlot
+    uint32_t slot_idx
+    DvzDescriptorType type
+```
+
+### `DvzRequestSpecialization`
+
+```
+struct DvzRequestSpecialization
+    DvzShaderType shader
+    uint32_t idx
+    DvzSize size
+    void* value
+```
+
+### `DvzRequestTex`
+
+```
+struct DvzRequestTex
+    DvzTexDims dims
+    uvec3 shape
+    DvzFormat format
+```
+
+### `DvzRequestTexUpload`
+
+```
+struct DvzRequestTexUpload
+    int upload_type
+    uvec3 offset
+    uvec3 shape
+    DvzSize size
+    void* data
+```
+
+### `DvzRequestVertex`
+
+```
+struct DvzRequestVertex
+    uint32_t binding_idx
+    DvzSize stride
+    DvzVertexInputRate input_rate
+```
+
+### `DvzRequester`
+
+```
+struct DvzRequester
+    DvzFifo* fifo
 ```
 
 ### `DvzRequestsEvent`
