@@ -183,6 +183,9 @@ def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
+DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
+DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
+
 A_ = array_pointer
 S_ = char_pointer
 V_ = WrappedValue
@@ -193,6 +196,7 @@ V_ = WrappedValue
 # ===============================================================================
 
 DVZ_BUFFER_TYPE_COUNT = 6
+DVZ_DEFAULT_FORMAT = 44
 CMAP_NAT = 144
 CMAP_USR_OFS = 144
 CMAP_USR = 32
@@ -494,8 +498,9 @@ class DvzBufferType(CtypesEnum):
 
 
 class DvzShaderFormat(CtypesEnum):
-    DVZ_SHADER_SPIRV = 0
-    DVZ_SHADER_GLSL = 1
+    DVZ_SHADER_NONE = 0
+    DVZ_SHADER_SPIRV = 1
+    DVZ_SHADER_GLSL = 2
 
 
 class DvzSamplerAxis(CtypesEnum):
@@ -1161,8 +1166,9 @@ BUFFER_TYPE_INDEX = 3
 BUFFER_TYPE_STORAGE = 4
 BUFFER_TYPE_UNIFORM = 5
 BUFFER_TYPE_INDIRECT = 6
-SHADER_SPIRV = 0
-SHADER_GLSL = 1
+SHADER_NONE = 0
+SHADER_SPIRV = 1
+SHADER_GLSL = 2
 SAMPLER_AXIS_U = 0
 SAMPLER_AXIS_V = 1
 SAMPLER_AXIS_W = 2
@@ -2246,291 +2252,6 @@ type
 version.argtypes = [
 ]
 version.restype = ctypes.c_char_p
-
-# Function dvz_app()
-app = dvz.dvz_app
-app.__doc__ = """
-Create an app.
-
-Parameters
-----------
-flags : int
-    the app creation flags
-
-Returns
--------
-type
-    the app
-"""
-app.argtypes = [
-    ctypes.c_int,  # int flags
-]
-app.restype = ctypes.POINTER(DvzApp)
-
-# Function dvz_app_batch()
-app_batch = dvz.dvz_app_batch
-app_batch.__doc__ = """
-Return the app batch.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-
-Returns
--------
-type
-    the batch
-"""
-app_batch.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-]
-app_batch.restype = ctypes.POINTER(DvzBatch)
-
-# Function dvz_app_frame()
-app_frame = dvz.dvz_app_frame
-app_frame.__doc__ = """
-Run one frame.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-"""
-app_frame.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-]
-
-# Function dvz_app_onframe()
-app_onframe = dvz.dvz_app_onframe
-app_onframe.__doc__ = """
-Register a frame callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-callback : DvzAppFrameCallback
-    the callback
-user_data : void*
-    the user data
-"""
-app_onframe.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzAppFrameCallback,  # DvzAppFrameCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_onmouse()
-app_onmouse = dvz.dvz_app_onmouse
-app_onmouse.__doc__ = """
-Register a mouse callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-callback : DvzAppMouseCallback
-    the callback
-user_data : void*
-    the user data
-"""
-app_onmouse.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzAppMouseCallback,  # DvzAppMouseCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_onkeyboard()
-app_onkeyboard = dvz.dvz_app_onkeyboard
-app_onkeyboard.__doc__ = """
-Register a keyboard callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-callback : DvzAppKeyboardCallback
-    the callback
-user_data : void*
-    the user data
-"""
-app_onkeyboard.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzAppKeyboardCallback,  # DvzAppKeyboardCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_onresize()
-app_onresize = dvz.dvz_app_onresize
-app_onresize.__doc__ = """
-Register a resize callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-callback : DvzAppResizeCallback
-    the callback
-user_data : void*
-    the user data
-"""
-app_onresize.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzAppResizeCallback,  # DvzAppResizeCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_timer()
-app_timer = dvz.dvz_app_timer
-app_timer.__doc__ = """
-Create a timer.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-delay : double
-    the delay, in seconds, until the first event
-period : double
-    the period, in seconds, between two events
-max_count : uint64_t
-    the maximum number of events
-
-Returns
--------
-type
-    the timer
-"""
-app_timer.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_double,  # double delay
-    ctypes.c_double,  # double period
-    ctypes.c_uint64,  # uint64_t max_count
-]
-app_timer.restype = ctypes.POINTER(DvzTimerItem)
-
-# Function dvz_app_ontimer()
-app_ontimer = dvz.dvz_app_ontimer
-app_ontimer.__doc__ = """
-Register a timer callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-callback : DvzAppTimerCallback
-    the timer callback
-user_data : void*
-    the user data
-"""
-app_ontimer.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzAppTimerCallback,  # DvzAppTimerCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_gui()
-app_gui = dvz.dvz_app_gui
-app_gui.__doc__ = """
-Register a GUI callback.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-canvas_id : DvzId
-    the canvas ID
-callback : DvzAppGuiCallback
-    the GUI callback
-user_data : void*
-    the user data
-"""
-app_gui.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzId,  # DvzId canvas_id
-    DvzAppGuiCallback,  # DvzAppGuiCallback callback
-    ctypes.c_void_p,  # void* user_data
-]
-
-# Function dvz_app_run()
-app_run = dvz.dvz_app_run
-app_run.__doc__ = """
-Start the application event loop.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-n_frames : uint64_t
-    the maximum number of frames, 0 for infinite loop
-"""
-app_run.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_uint64,  # uint64_t n_frames
-]
-
-# Function dvz_app_submit()
-app_submit = dvz.dvz_app_submit
-app_submit.__doc__ = """
-Submit the current batch to the application.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-"""
-app_submit.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-]
-
-# Function dvz_app_screenshot()
-app_screenshot = dvz.dvz_app_screenshot
-app_screenshot.__doc__ = """
-Make a screenshot of a canvas.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-canvas_id : DvzId
-    the ID of the canvas
-filename : char*
-    the path to the PNG file with the screenshot
-"""
-app_screenshot.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-    DvzId,  # DvzId canvas_id
-    ctypes.c_char_p,  # char* filename
-]
-
-# Function dvz_app_destroy()
-app_destroy = dvz.dvz_app_destroy
-app_destroy.__doc__ = """
-Destroy the app.
-
-Parameters
-----------
-app : DvzApp*
-    the app
-"""
-app_destroy.argtypes = [
-    ctypes.POINTER(DvzApp),  # DvzApp* app
-]
-
-# Function dvz_free()
-free = dvz.dvz_free
-free.__doc__ = """
-Free a pointer.
-
-Parameters
-----------
-pointer : void*
-    a pointer
-"""
-free.argtypes = [
-    ctypes.c_void_p,  # void* pointer
-]
 
 # Function dvz_scene()
 scene = dvz.dvz_scene
@@ -7967,6 +7688,291 @@ Stop the creation of the dialog.
 gui_end.argtypes = [
 ]
 
+# Function dvz_app()
+app = dvz.dvz_app
+app.__doc__ = """
+Create an app.
+
+Parameters
+----------
+flags : int
+    the app creation flags
+
+Returns
+-------
+type
+    the app
+"""
+app.argtypes = [
+    ctypes.c_int,  # int flags
+]
+app.restype = ctypes.POINTER(DvzApp)
+
+# Function dvz_app_batch()
+app_batch = dvz.dvz_app_batch
+app_batch.__doc__ = """
+Return the app batch.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+
+Returns
+-------
+type
+    the batch
+"""
+app_batch.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+app_batch.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_app_frame()
+app_frame = dvz.dvz_app_frame
+app_frame.__doc__ = """
+Run one frame.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_frame.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+# Function dvz_app_onframe()
+app_onframe = dvz.dvz_app_onframe
+app_onframe.__doc__ = """
+Register a frame callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppFrameCallback
+    the callback
+user_data : void*
+    the user data
+"""
+app_onframe.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzAppFrameCallback,  # DvzAppFrameCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_onmouse()
+app_onmouse = dvz.dvz_app_onmouse
+app_onmouse.__doc__ = """
+Register a mouse callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppMouseCallback
+    the callback
+user_data : void*
+    the user data
+"""
+app_onmouse.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzAppMouseCallback,  # DvzAppMouseCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_onkeyboard()
+app_onkeyboard = dvz.dvz_app_onkeyboard
+app_onkeyboard.__doc__ = """
+Register a keyboard callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppKeyboardCallback
+    the callback
+user_data : void*
+    the user data
+"""
+app_onkeyboard.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzAppKeyboardCallback,  # DvzAppKeyboardCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_onresize()
+app_onresize = dvz.dvz_app_onresize
+app_onresize.__doc__ = """
+Register a resize callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppResizeCallback
+    the callback
+user_data : void*
+    the user data
+"""
+app_onresize.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzAppResizeCallback,  # DvzAppResizeCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_timer()
+app_timer = dvz.dvz_app_timer
+app_timer.__doc__ = """
+Create a timer.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+delay : double
+    the delay, in seconds, until the first event
+period : double
+    the period, in seconds, between two events
+max_count : uint64_t
+    the maximum number of events
+
+Returns
+-------
+type
+    the timer
+"""
+app_timer.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    ctypes.c_double,  # double delay
+    ctypes.c_double,  # double period
+    ctypes.c_uint64,  # uint64_t max_count
+]
+app_timer.restype = ctypes.POINTER(DvzTimerItem)
+
+# Function dvz_app_ontimer()
+app_ontimer = dvz.dvz_app_ontimer
+app_ontimer.__doc__ = """
+Register a timer callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+callback : DvzAppTimerCallback
+    the timer callback
+user_data : void*
+    the user data
+"""
+app_ontimer.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzAppTimerCallback,  # DvzAppTimerCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_gui()
+app_gui = dvz.dvz_app_gui
+app_gui.__doc__ = """
+Register a GUI callback.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the canvas ID
+callback : DvzAppGuiCallback
+    the GUI callback
+user_data : void*
+    the user data
+"""
+app_gui.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    DvzAppGuiCallback,  # DvzAppGuiCallback callback
+    ctypes.c_void_p,  # void* user_data
+]
+
+# Function dvz_app_run()
+app_run = dvz.dvz_app_run
+app_run.__doc__ = """
+Start the application event loop.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+n_frames : uint64_t
+    the maximum number of frames, 0 for infinite loop
+"""
+app_run.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    ctypes.c_uint64,  # uint64_t n_frames
+]
+
+# Function dvz_app_submit()
+app_submit = dvz.dvz_app_submit
+app_submit.__doc__ = """
+Submit the current batch to the application.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_submit.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+# Function dvz_app_screenshot()
+app_screenshot = dvz.dvz_app_screenshot
+app_screenshot.__doc__ = """
+Make a screenshot of a canvas.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the ID of the canvas
+filename : char*
+    the path to the PNG file with the screenshot
+"""
+app_screenshot.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.c_char_p,  # char* filename
+]
+
+# Function dvz_app_destroy()
+app_destroy = dvz.dvz_app_destroy
+app_destroy.__doc__ = """
+Destroy the app.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_destroy.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+# Function dvz_free()
+free = dvz.dvz_free
+free.__doc__ = """
+Free a pointer.
+
+Parameters
+----------
+pointer : void*
+    a pointer
+"""
+free.argtypes = [
+    ctypes.c_void_p,  # void* pointer
+]
+
 # Function dvz_next_pow2()
 next_pow2 = dvz.dvz_next_pow2
 next_pow2.__doc__ = """
@@ -9212,8 +9218,6 @@ batch : DvzBatch*
     the batch
 shader_type : DvzShaderType
     the shader type
-size : DvzSize
-    the size in bytes of the string with the GLSL code
 code : char*
     an ASCII string with the GLSL code
 
@@ -9225,7 +9229,6 @@ type
 create_glsl.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzShaderType,  # DvzShaderType shader_type
-    DvzSize,  # DvzSize size
     ctypes.c_char_p,  # char* code
 ]
 create_glsl.restype = DvzRequest

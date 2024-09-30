@@ -2,165 +2,6 @@
 
 ## Functions
 
-### `dvz_app()`
-
-Create an app.
-
-```c
-DvzApp* dvz_app(  // returns: the app
-    int flags,  // the app creation flags
-)
-```
-
-### `dvz_app_batch()`
-
-Return the app batch.
-
-```c
-DvzBatch* dvz_app_batch(  // returns: the batch
-    DvzApp* app,  // the app
-)
-```
-
-### `dvz_app_destroy()`
-
-Destroy the app.
-
-```c
-void dvz_app_destroy(
-    DvzApp* app,  // the app
-)
-```
-
-### `dvz_app_frame()`
-
-Run one frame.
-
-```c
-void dvz_app_frame(
-    DvzApp* app,  // the app
-)
-```
-
-### `dvz_app_gui()`
-
-Register a GUI callback.
-
-```c
-void dvz_app_gui(
-    DvzApp* app,  // the app
-    DvzId canvas_id,  // the canvas ID
-    DvzAppGuiCallback callback,  // the GUI callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_onframe()`
-
-Register a frame callback.
-
-```c
-void dvz_app_onframe(
-    DvzApp* app,  // the app
-    DvzAppFrameCallback callback,  // the callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_onkeyboard()`
-
-Register a keyboard callback.
-
-```c
-void dvz_app_onkeyboard(
-    DvzApp* app,  // the app
-    DvzAppKeyboardCallback callback,  // the callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_onmouse()`
-
-Register a mouse callback.
-
-```c
-void dvz_app_onmouse(
-    DvzApp* app,  // the app
-    DvzAppMouseCallback callback,  // the callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_onresize()`
-
-Register a resize callback.
-
-```c
-void dvz_app_onresize(
-    DvzApp* app,  // the app
-    DvzAppResizeCallback callback,  // the callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_ontimer()`
-
-Register a timer callback.
-
-```c
-void dvz_app_ontimer(
-    DvzApp* app,  // the app
-    DvzAppTimerCallback callback,  // the timer callback
-    void* user_data,  // the user data
-)
-```
-
-### `dvz_app_run()`
-
-Start the application event loop.
-
-```c
-void dvz_app_run(
-    DvzApp* app,  // the app
-    uint64_t n_frames,  // the maximum number of frames, 0 for infinite loop
-)
-```
-
-### `dvz_app_screenshot()`
-
-Make a screenshot of a canvas.
-
-```c
-void dvz_app_screenshot(
-    DvzApp* app,  // the app
-    DvzId canvas_id,  // the ID of the canvas
-    char* filename,  // the path to the PNG file with the screenshot
-)
-```
-
-### `dvz_app_submit()`
-
-Submit the current batch to the application.
-
-```c
-void dvz_app_submit(
-    DvzApp* app,  // the app
-)
-```
-
-### `dvz_app_timer()`
-
-Create a timer.
-
-```c
-DvzTimerItem* dvz_app_timer(  // returns: the timer
-    DvzApp* app,  // the app
-    double delay,  // the delay, in seconds, until the first event
-    double period,  // the period, in seconds, between two events
-    uint64_t max_count,  // the maximum number of events
-)
-```
-
 ### `dvz_arcball_angles()`
 
 Get the current arcball angles.
@@ -769,16 +610,6 @@ DvzId dvz_font_texture(  // returns: a tex ID
     DvzBatch* batch,  // the batch
     uint32_t length,  // the number of Unicode codepoints
     uint32_t* codepoints,  // the Unicode codepoints
-)
-```
-
-### `dvz_free()`
-
-Free a pointer.
-
-```c
-void dvz_free(
-    void* pointer,  // a pointer
 )
 ```
 
@@ -3274,6 +3105,175 @@ void dvz_volume_transfer(
 )
 ```
 
+### `dvz_app()`
+
+Create an app.
+
+```c
+DvzApp* dvz_app(  // returns: the app
+    int flags,  // the app creation flags
+)
+```
+
+### `dvz_app_batch()`
+
+Return the app batch.
+
+```c
+DvzBatch* dvz_app_batch(  // returns: the batch
+    DvzApp* app,  // the app
+)
+```
+
+### `dvz_app_destroy()`
+
+Destroy the app.
+
+```c
+void dvz_app_destroy(
+    DvzApp* app,  // the app
+)
+```
+
+### `dvz_app_frame()`
+
+Run one frame.
+
+```c
+void dvz_app_frame(
+    DvzApp* app,  // the app
+)
+```
+
+### `dvz_app_gui()`
+
+Register a GUI callback.
+
+```c
+void dvz_app_gui(
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the canvas ID
+    DvzAppGuiCallback callback,  // the GUI callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_onframe()`
+
+Register a frame callback.
+
+```c
+void dvz_app_onframe(
+    DvzApp* app,  // the app
+    DvzAppFrameCallback callback,  // the callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_onkeyboard()`
+
+Register a keyboard callback.
+
+```c
+void dvz_app_onkeyboard(
+    DvzApp* app,  // the app
+    DvzAppKeyboardCallback callback,  // the callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_onmouse()`
+
+Register a mouse callback.
+
+```c
+void dvz_app_onmouse(
+    DvzApp* app,  // the app
+    DvzAppMouseCallback callback,  // the callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_onresize()`
+
+Register a resize callback.
+
+```c
+void dvz_app_onresize(
+    DvzApp* app,  // the app
+    DvzAppResizeCallback callback,  // the callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_ontimer()`
+
+Register a timer callback.
+
+```c
+void dvz_app_ontimer(
+    DvzApp* app,  // the app
+    DvzAppTimerCallback callback,  // the timer callback
+    void* user_data,  // the user data
+)
+```
+
+### `dvz_app_run()`
+
+Start the application event loop.
+
+```c
+void dvz_app_run(
+    DvzApp* app,  // the app
+    uint64_t n_frames,  // the maximum number of frames, 0 for infinite loop
+)
+```
+
+### `dvz_app_screenshot()`
+
+Make a screenshot of a canvas.
+
+```c
+void dvz_app_screenshot(
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the ID of the canvas
+    char* filename,  // the path to the PNG file with the screenshot
+)
+```
+
+### `dvz_app_submit()`
+
+Submit the current batch to the application.
+
+```c
+void dvz_app_submit(
+    DvzApp* app,  // the app
+)
+```
+
+### `dvz_app_timer()`
+
+Create a timer.
+
+```c
+DvzTimerItem* dvz_app_timer(  // returns: the timer
+    DvzApp* app,  // the app
+    double delay,  // the delay, in seconds, until the first event
+    double period,  // the period, in seconds, between two events
+    uint64_t max_count,  // the maximum number of events
+)
+```
+
+### `dvz_free()`
+
+Free a pointer.
+
+```c
+void dvz_free(
+    void* pointer,  // a pointer
+)
+```
+
 ### `dvz_earcut()`
 
 Compute a polygon triangulation with only indexing on the polygon contour vertices.
@@ -3754,7 +3754,6 @@ Create a request for GLSL shader creation.
 DvzRequest dvz_create_glsl(  // returns: the request
     DvzBatch* batch,  // the batch
     DvzShaderType shader_type,  // the shader type
-    DvzSize size,  // the size in bytes of the string with the GLSL code
     char* code,  // an ASCII string with the GLSL code
 )
 ```
@@ -4888,6 +4887,7 @@ DVZ_SAMPLER_AXIS_W
 ### `DvzShaderFormat`
 
 ```
+DVZ_SHADER_NONE
 DVZ_SHADER_SPIRV
 DVZ_SHADER_GLSL
 ```

@@ -51,20 +51,22 @@ def _parse_value(val, i=0):
     return val
 
 
-def _resolve_defines(defines):
+def _resolve_defines(defines, ctx=None):
     for _ in range(3):
         for k, v in defines.items():
             if isinstance(v, str):
                 if v in defines:
                     defines[k] = defines[v]
 
-    defines_cst = defines.copy()
+    ctx = (ctx or {}).copy()
+    ctx.update(defines.copy())
     for k, v in defines.items():
         if isinstance(v, str):
             try:
-                defines[k] = eval(v, defines_cst)
-                defines_cst = defines.copy()
-            except:
+                defines[k] = eval(v, ctx)
+                ctx.update(defines.copy())
+            except Exception as e:
+                # print(f"Error parsing {k}={v}: {e}")
                 defines[k] = None
             # print(k, v, defines[k])
     return {k: v for (k, v) in defines.items() if v}
@@ -98,14 +100,18 @@ def parse_defines(text):
     defines = {}
     # syntax we don't want to see in the final parse tree
     # LBRACE, RBRACE, EQ, COMMA, SEMICOLON, SPACE = map(Suppress, "{}=,; ")
+
     _define = Suppress("#define")
+    _backslash = Optional(Suppress("\\"))
+
     identifier = Word(alphanums + "_")
-    value = Word(alphanums + "._+-*/ ()")
+    value = Word(alphanums + "._+- ()")
+
     # defineName = identifier("name") + Optional(Suppress(cStyleComment))
-    define = _define + identifier("name") + value("value")
+    define = _define + identifier("name") + _backslash + value("value")
     for item, start, stop in define.scanString(text):
         defines[item.name] = _parse_value(item.value)
-    return _resolve_defines(defines)
+    return defines
 
 
 def parse_enums(text):
@@ -233,6 +239,15 @@ def parse_headers():
             'structs': parse_structs(text),
             'functions': parse_functions(text),
         }
+
+    ctx = {}
+    for filename in iter_header_files():
+        d = headers[filename.name]
+        for v in d['enums'].values():
+            ctx.update(dict(v['values']))
+    for filename in iter_header_files():
+        d = headers[filename.name]
+        d['defines'] = _resolve_defines(d['defines'], ctx)
 
     with open(CACHE_PATH, 'w') as f:
         json.dump(headers, f, indent=1)

@@ -184,6 +184,9 @@ def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
+DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
+DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
+
 A_ = array_pointer
 S_ = char_pointer
 V_ = WrappedValue
