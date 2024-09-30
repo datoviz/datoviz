@@ -229,8 +229,14 @@ endif()
 set(HAS_SHADERC 0)
 
 if(${DATOVIZ_WITH_SHADERC})
+    if(${OS_MACOS})
+        set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/macos/libshaderc_shared.dylib")
+    elseif(${OS_WINDOWS})
+    else()
+        set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/linux/libshaderc_shared.so")
+    endif()
+
     # set(INCL_DIRS ${INCL_DIRS} "${shaderc_SOURCE_DIR}/libshaderc/include")
-    set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/linux/libshaderc_shared.so")
 
     # # SPIRV-Headers
     # set(SPIRV_HEADERS_ENABLE_TESTS OFF)
