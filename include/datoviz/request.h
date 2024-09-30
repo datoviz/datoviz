@@ -14,7 +14,7 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                    */
+/*  Includes                                                                                     */
 /*************************************************************************************************/
 
 #include "_atomic.h"
@@ -327,18 +327,26 @@ void dvz_requester_destroy(DvzRequester* rqr);
 /*************************************************************************************************/
 
 /**
+ * Create a batch holding a number of requests.
  */
 DvzBatch* dvz_batch(void);
 
 
 
 /**
+ * Remove all requests in a batch.
+ *
+ * @param batch the batch
  */
 void dvz_batch_clear(DvzBatch* batch);
 
 
 
 /**
+ * Add a request to a batch.
+ *
+ * @param batch the batch
+ * @param req the request
  */
 void dvz_batch_add(DvzBatch* batch, DvzRequest req);
 
@@ -346,74 +354,108 @@ void dvz_batch_add(DvzBatch* batch, DvzRequest req);
 
 /**
  * Set the description of the last added request.
+ *
+ * @param batch the batch
+ * @param desc the description
  */
 void dvz_batch_desc(DvzBatch* batch, const char* desc);
 
 
 
 /**
+ * Return a pointer to the array of all requests in the batch.
+ *
+ * @param batch the batch
  */
 DvzRequest* dvz_batch_requests(DvzBatch* batch);
 
 
 
 /**
+ * Return the number of requests in the batch.
+ *
+ * @param batch the batch
  */
 uint32_t dvz_batch_size(DvzBatch* batch);
 
 
 
 /**
- * Show information about all pending requests.
+ * Display information about all requests in the batch.
  *
- * @param rqr the requester
+ * @param batch the batch
  */
 void dvz_batch_print(DvzBatch* batch);
 
 
 
 /**
+ * Dump all batch requests in raw binary file.
+ *
+ * @param batch the batch
+ * @param filename the dump filename
  */
 int dvz_batch_dump(DvzBatch* batch, const char* filename);
 
 
 
 /**
+ * Load a dump of batch requests into an existing batch object.
+ *
+ * @param batch the batch
+ * @param filename the dump filename
  */
 void dvz_batch_load(DvzBatch* batch, const char* filename);
 
 
 
 /**
+ * Create a copy of a batch.
+ *
+ * @param batch the batch
  */
 DvzBatch* dvz_batch_copy(DvzBatch* batch);
 
 
 
 /**
+ * Destroy a batch.
+ *
+ * @param batch the batch
  */
 void dvz_batch_destroy(DvzBatch* batch);
 
 
 
 /*************************************************************************************************/
-/*  Requester functions */
+/*  Requester functions                                                                          */
 /*************************************************************************************************/
 
 /**
+ * Add a batch's requests to a requester.
+ *
+ * @param rqr the requester
+ * @param batch the batch
  */
 void dvz_requester_commit(DvzRequester* rqr, DvzBatch* batch);
 
 
 
 /**
+ * Return the requests in the requester and clear it.
+ *
+ * NOTE: the caller must free the output.
+ *
+ * @param rqr the requester
+ * @param[out] count pointer to the number of requests, set by this function
+ * @returns an array with all requests in the requester
  */
 DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
 
 
 
 /**
- * Show information about a request.
+ * Display information about a request.
  *
  * @param req the request
  */
