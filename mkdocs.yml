@@ -39,7 +39,8 @@ hooks:
 nav:
   - Home: 'index.md'
   - User guide:
-    - User guide: 'userguide.md'
+    - User API: 'userguide.md'
+    - Datoviz Rendering Protocol: 'drp.md'
   - Examples:
     - Examples: 'examples.md'
   - Reference:

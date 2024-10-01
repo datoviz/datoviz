@@ -238,7 +238,7 @@ Note that the Swiftshader Windows library is very large (>100 MB) so it is store
 
 ### Wheel building
 
-[This workflow is defined in `wheel.yml`](.github/workflows/wheel.yml)
+[This workflow is defined in `wheels.yml`](.github/workflows/wheels.yml)
 
 For each supported platform, this workflow builds the library in release mode, builds the wheel, renames it for the current platform, and uploads it as a GitHub Actions build artifact.
 
