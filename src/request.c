@@ -49,9 +49,11 @@
 // Maximum size of buffers encoded in base64 when printing the commands
 #define VERBOSE_MAX_BASE64 1048576
 
-#define IF_VERBOSE_DATA                                                                           \
-    if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0) &&                 \
-        (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) != 0) && (size < VERBOSE_MAX_BASE64))
+#define VERBOSE_DATA                                                                              \
+    (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0) &&                    \
+     (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) != 0) && (size < VERBOSE_MAX_BASE64))
+
+#define IF_VERBOSE_DATA if ((flags & DVZ_PRINT_FLAGS_DATA) > 0)
 
 
 
@@ -426,7 +428,7 @@ static void _print_delete_sampler(DvzRequest* req)
 
 
 
-static void _print_create_shader(DvzRequest* req)
+static void _print_create_shader(DvzRequest* req, int flags)
 {
     log_trace("print_create_shader");
     ANN(req);
@@ -692,7 +694,7 @@ static void _print_set_slot(DvzRequest* req)
         req->id, req->content.set_slot.slot_idx, req->content.set_slot.type);
 }
 
-static void _print_set_specialization(DvzRequest* req)
+static void _print_set_specialization(DvzRequest* req, int flags)
 {
     log_trace("print_create_specialization");
     ANN(req);
@@ -916,7 +918,7 @@ void dvz_request_print(DvzRequest* req, int flags)
     IF_REQ(UPLOAD, TEX) _print_upload_tex(req, flags);
 
     IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
-    IF_REQ(CREATE, SHADER) _print_create_shader(req);
+    IF_REQ(CREATE, SHADER) _print_create_shader(req, flags);
 
     IF_REQ(CREATE, GRAPHICS) _print_create_graphics(req);
 
@@ -933,7 +935,7 @@ void dvz_request_print(DvzRequest* req, int flags)
     IF_REQ(SET, VERTEX) _print_set_vertex(req);
     IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
     IF_REQ(SET, SLOT) _print_set_slot(req);
-    IF_REQ(SET, SPECIALIZATION) _print_set_specialization(req);
+    IF_REQ(SET, SPECIALIZATION) _print_set_specialization(req, flags);
 
     IF_REQ(BIND, DAT) _print_bind_dat(req);
     IF_REQ(BIND, TEX) _print_bind_tex(req);
@@ -1143,7 +1145,7 @@ void dvz_batch_yaml(DvzBatch* batch, const char* filename)
         return;
     }
 
-    dvz_batch_print(batch, 0);
+    dvz_batch_print(batch, DVZ_PRINT_FLAGS_DATA);
 
     fclose(file);
 }
@@ -1511,7 +1513,7 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
     req.content.dat_upload.data = data;
 
     IF_VERBOSE
-    _print_upload_dat(&req, 0);
+    _print_upload_dat(&req, VERBOSE_DATA);
 
     RETURN_REQUEST
 }
@@ -1583,7 +1585,7 @@ DvzRequest dvz_upload_tex(
     req.content.tex_upload.data = _cpy(size, data);
 
     IF_VERBOSE
-    _print_upload_tex(&req, 0);
+    _print_upload_tex(&req, VERBOSE_DATA);
 
     RETURN_REQUEST
 }
@@ -1651,7 +1653,7 @@ DvzRequest dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, const cha
     req.content.shader.size = size;
     req.content.shader.code = _cpy(size, code); // NOTE: the renderer will need to free it
 
-    IF_VERBOSE _print_create_shader(&req);
+    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_DATA);
 
     RETURN_REQUEST
 }
@@ -1671,7 +1673,7 @@ DvzRequest dvz_create_spirv(
     req.content.shader.size = size;
     req.content.shader.buffer = _cpy(size, buffer); // NOTE: the renderer will need to free it
 
-    IF_VERBOSE _print_create_shader(&req);
+    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_DATA);
 
     RETURN_REQUEST
 }
@@ -1862,7 +1864,7 @@ DvzRequest dvz_set_specialization(
         _cpy(size, value); // NOTE: the renderer will have to free it.
 
     IF_VERBOSE
-    _print_set_specialization(&req);
+    _print_set_specialization(&req, DVZ_PRINT_FLAGS_DATA);
 
     RETURN_REQUEST
 }
