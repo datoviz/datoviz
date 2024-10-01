@@ -41,7 +41,7 @@ int test_request_1(TstSuite* suite)
     uint32_t count = dvz_batch_size(batch);
     AT(count == 3);
     AT(reqs != NULL);
-    dvz_batch_print(batch);
+    dvz_batch_print(batch, 0);
 
     AT(memcmp(&reqs[0], &req1, sizeof(DvzRequest)) == 0);
     AT(memcmp(&reqs[1], &req2, sizeof(DvzRequest)) == 0);

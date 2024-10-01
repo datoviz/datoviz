@@ -271,7 +271,7 @@ static void _print_resize_dat(DvzRequest* req)
         req->id, req->content.dat.size);
 }
 
-static void _print_upload_dat(DvzRequest* req)
+static void _print_upload_dat(DvzRequest* req, int flags)
 {
     log_trace("print_upload_dat");
     ANN(req);
@@ -347,7 +347,7 @@ static void _print_resize_tex(DvzRequest* req)
         req->id, req->content.tex.shape[0], req->content.tex.shape[1], req->content.tex.shape[2]);
 }
 
-static void _print_upload_tex(DvzRequest* req)
+static void _print_upload_tex(DvzRequest* req, int flags)
 {
     log_trace("print_upload_tex");
     ANN(req);
@@ -894,7 +894,7 @@ static void _print_record_end(DvzRequest* req)
 
 
 
-void dvz_request_print(DvzRequest* req)
+void dvz_request_print(DvzRequest* req, int flags)
 {
     ANN(req);
 
@@ -909,11 +909,11 @@ void dvz_request_print(DvzRequest* req)
 
     IF_REQ(CREATE, DAT) _print_create_dat(req);
     IF_REQ(RESIZE, DAT) _print_resize_dat(req);
-    IF_REQ(UPLOAD, DAT) _print_upload_dat(req);
+    IF_REQ(UPLOAD, DAT) _print_upload_dat(req, flags);
 
     IF_REQ(CREATE, TEX) _print_create_tex(req);
     IF_REQ(RESIZE, TEX) _print_resize_tex(req);
-    IF_REQ(UPLOAD, TEX) _print_upload_tex(req);
+    IF_REQ(UPLOAD, TEX) _print_upload_tex(req, flags);
 
     IF_REQ(CREATE, SAMPLER) _print_create_sampler(req);
     IF_REQ(CREATE, SHADER) _print_create_shader(req);
@@ -1114,7 +1114,7 @@ uint32_t dvz_batch_size(DvzBatch* batch)
 
 
 
-void dvz_batch_print(DvzBatch* batch)
+void dvz_batch_print(DvzBatch* batch, int flags)
 {
     ANN(batch);
     ANN(batch->requests);
@@ -1125,7 +1125,7 @@ void dvz_batch_print(DvzBatch* batch)
     for (uint32_t i = 0; i < count; i++)
     {
         log_trace("print request %d/%d", i + 1, count);
-        dvz_request_print(&batch->requests[i]);
+        dvz_request_print(&batch->requests[i], flags);
     }
 }
 
@@ -1143,7 +1143,7 @@ void dvz_batch_yaml(DvzBatch* batch, const char* filename)
         return;
     }
 
-    dvz_batch_print(batch);
+    dvz_batch_print(batch, 0);
 
     fclose(file);
 }
@@ -1511,7 +1511,7 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
     req.content.dat_upload.data = data;
 
     IF_VERBOSE
-    _print_upload_dat(&req);
+    _print_upload_dat(&req, 0);
 
     RETURN_REQUEST
 }
@@ -1583,7 +1583,7 @@ DvzRequest dvz_upload_tex(
     req.content.tex_upload.data = _cpy(size, data);
 
     IF_VERBOSE
-    _print_upload_tex(&req);
+    _print_upload_tex(&req, 0);
 
     RETURN_REQUEST
 }

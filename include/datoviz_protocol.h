@@ -148,8 +148,9 @@ DVZ_EXPORT uint32_t dvz_batch_size(DvzBatch* batch);
  * Display information about all requests in the batch.
  *
  * @param batch the batch
+ * @param flags the flags
  */
-DVZ_EXPORT void dvz_batch_print(DvzBatch* batch);
+DVZ_EXPORT void dvz_batch_print(DvzBatch* batch, int flags);
 
 
 
@@ -232,8 +233,9 @@ DVZ_EXPORT DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count);
  * Display information about a request.
  *
  * @param req the request
+ * @param flags the flags
  */
-DVZ_EXPORT void dvz_request_print(DvzRequest* req);
+DVZ_EXPORT void dvz_request_print(DvzRequest* req, int flags);
 
 
 
