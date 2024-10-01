@@ -107,8 +107,7 @@ def _generate_struct(struct, defines=None):
     name = struct['name']
     out = ''
     out += f'ctypedef {struct["type"]} {name}:\n'
-    out = f'#### {
-        name}\n\n| Field | Type | Description |\n| ---- | ---- | ---- |\n'
+    out = f'#### {name}\n\n| Field | Type | Description |\n| ---- | ---- | ---- |\n'
     for field in struct['fields']:
         const = field.get('const', None)
         dtype = field.get('dtype', None)
@@ -161,8 +160,7 @@ def _generate_function(func):
 
     # Signature
     args_s = ', '.join(
-        f"{'const ' if arg.get('const', None) else ''}{
-            arg['dtype']} {arg['name']}"
+        f"{'const ' if arg.get('const', None) else ''}{arg['dtype']} {arg['name']}"
         for arg in args)
     # Split long lines
     if len(out) + len(name) + len(args_s) >= MAX_LINE_LENGTH:
@@ -408,7 +406,7 @@ def generate_api():
 
             md += f"### `{struct_name}`\n\n"
 
-            md += f'```\n{struct_info['type']} {struct_name}\n'
+            md += f'```\n{struct_info["type"]} {struct_name}\n'
             for field in struct_info['fields']:
                 unsigned = 'unsigned ' if field.get("unsigned", None) else ''
                 md += f'    {unsigned}{field["dtype"]} {field["name"]}\n'
