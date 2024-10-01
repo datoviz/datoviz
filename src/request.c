@@ -1131,6 +1131,25 @@ void dvz_batch_print(DvzBatch* batch)
 
 
 
+void dvz_batch_yaml(DvzBatch* batch, const char* filename)
+{
+    ANN(batch);
+    ANN(filename);
+
+    FILE* file = freopen(filename, "w", stdout);
+    if (file == NULL)
+    {
+        perror("freopen");
+        return;
+    }
+
+    dvz_batch_print(batch);
+
+    fclose(file);
+}
+
+
+
 int dvz_batch_dump(DvzBatch* batch, const char* filename)
 {
     ANN(batch);

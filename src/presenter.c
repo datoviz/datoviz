@@ -684,6 +684,10 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
     if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) == 0))
         dvz_batch_print(batch);
 
+    // Use DVZ_DRP=filename.yml to export DRP requests to a YAML file.
+    if (getenv("DVZ_DRP") != NULL)
+        dvz_batch_yaml(batch, getenv("DVZ_DRP"));
+
     // Submit the requests to the client's event loop. Will be processed by
     // _requester_callback(), which will also destroy the batch.
     DvzClientEvent ev = {

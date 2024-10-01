@@ -154,6 +154,16 @@ DVZ_EXPORT void dvz_batch_print(DvzBatch* batch);
 
 
 /**
+ * Export requests in a YAML file.
+ *
+ * @param batch the batch
+ * @param filename the YAML filename
+ */
+DVZ_EXPORT void dvz_batch_yaml(DvzBatch* batch, const char* filename);
+
+
+
+/**
  * Dump all batch requests in raw binary file.
  *
  * @param batch the batch

@@ -3652,6 +3652,17 @@ uint32_t dvz_batch_size(
 )
 ```
 
+### `dvz_batch_yaml()`
+
+Export requests in a YAML file.
+
+```c
+void dvz_batch_yaml(
+    DvzBatch* batch,  // the batch
+    char* filename,  // the YAML filename
+)
+```
+
 ### `dvz_bind_dat()`
 
 Create a request for associating a dat to a pipe's slot.

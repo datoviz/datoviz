@@ -308,6 +308,7 @@ dvz_batch_desc
 dvz_batch_requests
 dvz_batch_size
 dvz_batch_print
+dvz_batch_yaml
 dvz_batch_dump
 dvz_batch_load
 dvz_batch_copy

@@ -8624,6 +8624,23 @@ batch_print.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
 ]
 
+# Function dvz_batch_yaml()
+batch_yaml = dvz.dvz_batch_yaml
+batch_yaml.__doc__ = """
+Export requests in a YAML file.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+filename : char*
+    the YAML filename
+"""
+batch_yaml.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_char_p,  # char* filename
+]
+
 # Function dvz_batch_dump()
 batch_dump = dvz.dvz_batch_dump
 batch_dump.__doc__ = """
