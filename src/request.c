@@ -125,6 +125,51 @@ static char* show_data(const unsigned char* src, size_t len)
     }
 }
 
+static char* show_string(const char* src)
+{
+    if (!src)
+        return NULL;
+
+    // Initial calculation for output size
+    size_t len = strlen((const char*)src);
+    size_t new_len = len + 2; // for starting | and \n
+
+    // Count additional space needed for indentation
+    for (size_t i = 0; i < len; i++)
+    {
+        if (src[i] == '\n')
+        {
+            new_len += 8;
+        }
+    }
+
+    // Allocate new buffer
+    char* dest = (char*)malloc(new_len + 1); // +1 for null terminator
+    if (!dest)
+        return NULL;
+
+    // Start the new string with | and \n
+    char* ptr = dest;
+    *ptr++ = '|';
+    *ptr++ = '\n';
+
+    // Copy and transform the input
+    for (size_t i = 0; i < len; i++)
+    {
+        *ptr++ = src[i];
+        if (src[i] == '\n')
+        {
+            // Add 4 spaces after each newline
+            for (uint32_t j = 0; j < 8; j++)
+                *ptr++ = ' ';
+        }
+    }
+
+    // Null-terminate the new string
+    *ptr = '\0';
+    return dest;
+}
+
 
 
 /*************************************************************************************************/
@@ -446,7 +491,8 @@ static void _print_create_shader(DvzRequest* req, int flags)
     // NOTE: avoid computing the base64 of large arrays.
 
     IF_VERBOSE_DATA
-    encoded = show_data((const unsigned char*)code_buffer, size);
+    encoded = format == DVZ_SHADER_SPIRV ? show_data((const unsigned char*)code_buffer, size)
+                                         : show_string(code_buffer);
     else encoded = "<snip>";
 
     printf(
