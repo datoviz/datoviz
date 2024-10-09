@@ -78,7 +78,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 4, FIELD(DvzGlyphVertex, shift), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
     dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
-    dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
+    dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_COLOR, af);
     dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, group_size), DVZ_FORMAT_R32_SFLOAT, af);
 
     // Vertex stride.
@@ -223,7 +223,8 @@ void dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* v
 
 
 
-void dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_glyph_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 7, first, count, (void*)values);

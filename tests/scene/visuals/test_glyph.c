@@ -85,7 +85,7 @@ int test_glyph_1(TstSuite* suite)
     FREE(pos);
 
     // Glyph colors.
-    cvec4* color = dvz_mock_color(n, 255);
+    DvzColor* color = dvz_mock_color(n, DVZ_ALPHA_MAX);
     dvz_glyph_color(visual, 0, n, color, 0);
     FREE(color);
 

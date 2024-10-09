@@ -44,7 +44,7 @@ struct DvzSegmentVertex
     vec3 P0;         /* start position */
     vec3 P1;         /* end position */
     vec4 shift;      /* shift of start (xy) and end (zw) positions, in pixels */
-    cvec4 color;     /* color */
+    DvzColor color;  /* color */
     float linewidth; /* line width, in pixels */
     DvzCapType cap0; /* start cap enum */
     DvzCapType cap1; /* end cap enum */

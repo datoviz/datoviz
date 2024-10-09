@@ -197,7 +197,7 @@ int test_renderer_graphics(TstSuite* suite)
 
     // Vertex attrs.
     dvz_set_attr(batch, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
-    dvz_set_attr(batch, graphics_id, 0, 1, DVZ_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+    dvz_set_attr(batch, graphics_id, 0, 1, DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
 
     // Descriptor slots.
     dvz_set_slot(batch, graphics_id, 0, DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER);

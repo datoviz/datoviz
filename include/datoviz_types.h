@@ -146,7 +146,7 @@ struct DvzShape
 
     vec3* pos;       // 3D positions of each vertex
     vec3* normal;    // 3D normal vector at each vertex
-    cvec4* color;    // RGBA color of each vertex
+    DvzColor* color; // RGBA color of each vertex
     vec4* texcoords; // texture coordinates as u, v, (unused), alpha
     float* isoline;  // scalar field for isolines
     vec3* d_left;    // the distance of each vertex to the left edge adjacent to each face vertex

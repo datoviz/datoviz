@@ -1301,5 +1301,5 @@ rebuild:
 #
 
 rmbuild:
-    @rm -rf build/spirv build/artifacts build/struct_sizes* build/*.dylib build/*.so build/*.dll build/datoviz*
+    @rm -rf build/spirv build/artifacts build/struct_sizes* build/*.dylib* build/*.so* build/*.dll build/datoviz*
 #

@@ -44,13 +44,13 @@ typedef struct DvzShape DvzShape;
 struct DvzMeshColorVertex
 {
     // HACK: use vec4 for alignment when accessing from compute shader (need std140 on GPU)
-    vec3 pos;      /* position */
-    vec3 normal;   /* normal vector */
-    cvec4 color;   /* color rgba */
-    float value;   /* scalar value used for isolines */
-    vec3 d_left;   /* distance of the current vertex between the left edge and point A, B, C */
-    vec3 d_right;  /* distance of the current vertex between the right edge and point A, B, C */
-    cvec4 contour; /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
+    vec3 pos;       /* position */
+    vec3 normal;    /* normal vector */
+    DvzColor color; /* color rgba */
+    float value;    /* scalar value used for isolines */
+    vec3 d_left;    /* distance of the current vertex between the left edge and point A, B, C */
+    vec3 d_right;   /* distance of the current vertex between the right edge and point A, B, C */
+    cvec4 contour;  /* 0bXY where Y=1 if the opposite edge is a contour, X=1 if vertex is corner */
 };
 
 struct DvzMeshTexturedVertex

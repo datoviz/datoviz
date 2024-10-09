@@ -53,7 +53,7 @@ DvzVisual* dvz_point(DvzBatch* batch, int flags)
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzPointVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, FIELD(DvzPointVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 1, FIELD(DvzPointVertex, color), DVZ_FORMAT_COLOR, 0);
     dvz_visual_attr(visual, 2, FIELD(DvzPointVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
 
     // Vertex stride.
@@ -90,7 +90,8 @@ void dvz_point_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3*
 
 
 
-void dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_point_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, (void*)values);

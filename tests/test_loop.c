@@ -121,9 +121,9 @@ int test_loop_2(TstSuite* suite)
 
     // Upload the triangle data.
     DvzVertex data[] = {
-        {{-1, -1, 0}, {255, 0, 0, 255}},
-        {{+1, -1, 0}, {0, 255, 0, 255}},
-        {{+0, +1, 0}, {0, 0, 255, 255}},
+        {{-1, -1, 0}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},
+        {{+1, -1, 0}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},
+        {{+0, +1, 0}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},
     };
     dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
 
@@ -251,7 +251,7 @@ int test_loop_cube(TstSuite* suite)
         dvz_graphics_vertex_attr(
             graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
         dvz_graphics_vertex_attr(
-            graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+            graphics, 0, 1, (VkFormat)DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
 
         // Graphics slots.
         dvz_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
@@ -283,42 +283,42 @@ int test_loop_cube(TstSuite* suite)
     // Cube data.
     float x = .5;
     DvzVertex data[] = {
-        {{-x, -x, +x}, {255, 0, 0, 255}},   // front
-        {{+x, -x, +x}, {255, 0, 0, 255}},   //
-        {{+x, +x, +x}, {255, 0, 0, 255}},   //
-        {{+x, +x, +x}, {255, 0, 0, 255}},   //
-        {{-x, +x, +x}, {255, 0, 0, 255}},   //
-        {{-x, -x, +x}, {255, 0, 0, 255}},   //
-        {{+x, -x, +x}, {0, 255, 0, 255}},   // right
-        {{+x, -x, -x}, {0, 255, 0, 255}},   //
-        {{+x, +x, -x}, {0, 255, 0, 255}},   //
-        {{+x, +x, -x}, {0, 255, 0, 255}},   //
-        {{+x, +x, +x}, {0, 255, 0, 255}},   //
-        {{+x, -x, +x}, {0, 255, 0, 255}},   //
-        {{-x, +x, -x}, {0, 0, 255, 255}},   // back
-        {{+x, +x, -x}, {0, 0, 255, 255}},   //
-        {{+x, -x, -x}, {0, 0, 255, 255}},   //
-        {{+x, -x, -x}, {0, 0, 255, 255}},   //
-        {{-x, -x, -x}, {0, 0, 255, 255}},   //
-        {{-x, +x, -x}, {0, 0, 255, 255}},   //
-        {{-x, -x, -x}, {0, 255, 255, 255}}, // left
-        {{-x, -x, +x}, {0, 255, 255, 255}}, //
-        {{-x, +x, +x}, {0, 255, 255, 255}}, //
-        {{-x, +x, +x}, {0, 255, 255, 255}}, //
-        {{-x, +x, -x}, {0, 255, 255, 255}}, //
-        {{-x, -x, -x}, {0, 255, 255, 255}}, //
-        {{-x, -x, -x}, {255, 0, 255, 255}}, // bottom
-        {{+x, -x, -x}, {255, 0, 255, 255}}, //
-        {{+x, -x, +x}, {255, 0, 255, 255}}, //
-        {{+x, -x, +x}, {255, 0, 255, 255}}, //
-        {{-x, -x, +x}, {255, 0, 255, 255}}, //
-        {{-x, -x, -x}, {255, 0, 255, 255}}, //
-        {{-x, +x, +x}, {255, 255, 0, 255}}, // top
-        {{+x, +x, +x}, {255, 255, 0, 255}}, //
-        {{+x, +x, -x}, {255, 255, 0, 255}}, //
-        {{+x, +x, -x}, {255, 255, 0, 255}}, //
-        {{-x, +x, -x}, {255, 255, 0, 255}}, //
-        {{-x, +x, +x}, {255, 255, 0, 255}}, //
+        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             // front
+        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
+        {{-x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
+        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, -x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             // right
+        {{+x, -x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, +x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, +x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, +x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
+        {{+x, -x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
+        {{-x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             // back
+        {{+x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
+        {{+x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
+        {{+x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
+        {{-x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
+        {{-x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
+        {{-x, -x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, // left
+        {{-x, -x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, -x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, // bottom
+        {{+x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, // top
+        {{+x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
+        {{+x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
+        {{+x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
+        {{-x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
     };
 
     // Upload the vertex data.
@@ -338,7 +338,7 @@ int test_loop_cube(TstSuite* suite)
     for (loop->frame_idx = 0; loop->frame_idx < (DEBUG_TEST ? UINT64_MAX : 5); loop->frame_idx++)
     {
         // Model matrix.
-        glm_rotate_y(mvp.model, .005, mvp.model);
+        glm_rotate_y(mvp.model, .001, mvp.model);
 
         // Upload the MVP struct.
         dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);

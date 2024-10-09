@@ -185,14 +185,14 @@ static inline void set_segment_color(DvzAxis* axis)
     uint32_t n_total = n_major + n_minor;
 
     // Colors of the major and minor ticks.
-    cvec4* colors = (cvec4*)calloc(n_total, sizeof(cvec4));
+    DvzColor* colors = (DvzColor*)calloc(n_total, sizeof(DvzColor));
     for (uint32_t i = 0; i < n_major; i++)
     {
-        memcpy(colors[i], axis->color_major, sizeof(cvec4));
+        memcpy(colors[i], axis->color_major, sizeof(DvzColor));
     }
     for (uint32_t i = 0; i < n_minor; i++)
     {
-        memcpy(colors[n_major + i], axis->color_minor, sizeof(cvec4));
+        memcpy(colors[n_major + i], axis->color_minor, sizeof(DvzColor));
     }
 
     dvz_segment_color(segment, 0, n_total, colors, 0);
@@ -344,7 +344,7 @@ static inline void set_glyph_color(DvzAxis* axis)
     DvzVisual* glyph = axis->glyph;
 
     // NOTE: the axis currently only supports a uniform vec2 anchor.
-    cvec4* colors = (cvec4*)_repeat(glyph_count, sizeof(cvec4), (void*)axis->color_glyph);
+    DvzColor* colors = (DvzColor*)_repeat(glyph_count, sizeof(DvzColor), (void*)axis->color_glyph);
     dvz_glyph_color(glyph, 0, glyph_count, colors, 0);
     FREE(colors);
 }
@@ -533,14 +533,15 @@ void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float mi
 
 
 
-void dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor)
+void dvz_axis_color(
+    DvzAxis* axis, DvzColor glyph, DvzColor lim, DvzColor grid, DvzColor major, DvzColor minor)
 {
     ANN(axis);
-    memcpy(axis->color_glyph, glyph, sizeof(cvec4));
-    memcpy(axis->color_lim, lim, sizeof(cvec4));
-    memcpy(axis->color_grid, grid, sizeof(cvec4));
-    memcpy(axis->color_major, major, sizeof(cvec4));
-    memcpy(axis->color_minor, minor, sizeof(cvec4));
+    memcpy(axis->color_glyph, glyph, sizeof(DvzColor));
+    memcpy(axis->color_lim, lim, sizeof(DvzColor));
+    memcpy(axis->color_grid, grid, sizeof(DvzColor));
+    memcpy(axis->color_major, major, sizeof(DvzColor));
+    memcpy(axis->color_minor, minor, sizeof(DvzColor));
 }
 
 

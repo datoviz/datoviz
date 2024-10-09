@@ -306,7 +306,7 @@ static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
         data[i].pos[1] = -1 + 2 * dvz_rand_float(); // 6.1e-5 * fast_rand();
         data[i].size = 5;
         dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
-        data[i].color[3] = 255;
+        data[i].color[3] = DVZ_ALPHA_MAX;
     }
 }
 
@@ -633,7 +633,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
     // Update the texture data.
     for (uint32_t i = 0; i < width; i++)
-        dvz_colormap(
+        dvz_colormap_8bit(
             DVZ_CMAP_HSV, (i - ((uint32_t)round(t * 128) % width)) * 256 / width, tex_data[i]);
 
     // Upload the texture data.
@@ -693,7 +693,7 @@ int test_presenter_gui(TstSuite* suite)
     // Texture data.
     cvec4* tex_data = (cvec4*)calloc(width * height, sizeof(cvec4));
     for (uint32_t i = 0; i < width; i++)
-        dvz_colormap(DVZ_CMAP_HSV, i * 256 / width, tex_data[i]);
+        dvz_colormap_8bit(DVZ_CMAP_HSV, i * 256 / width, tex_data[i]);
     dvz_upload_tex(
         batch, tex_id, DVZ_ZERO_OFFSET, (uvec3){width, 1, 1}, width * sizeof(cvec4), tex_data, 0);
 

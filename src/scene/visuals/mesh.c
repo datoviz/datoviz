@@ -32,7 +32,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define STROKE    50, 50, 50, 255
+#define STROKE    TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
 #define LINEWIDTH 2.0f
 
 
@@ -125,7 +125,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_visual_attr( //
             visual, 1, FIELD(DvzMeshColorVertex, normal), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
         dvz_visual_attr( //
-            visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+            visual, 2, FIELD(DvzMeshColorVertex, color), DVZ_FORMAT_COLOR, 0);
         dvz_visual_attr( //
             visual, 3, FIELD(DvzMeshColorVertex, value), DVZ_FORMAT_R32_SFLOAT, 0);
         dvz_visual_attr( //
@@ -157,7 +157,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 
     // Default stroke parameters.
-    dvz_mesh_stroke(visual, (cvec4){STROKE});
+    dvz_mesh_stroke(visual, (DvzColor){STROKE});
     dvz_mesh_linewidth(visual, LINEWIDTH);
     dvz_mesh_density(visual, 10);
 
@@ -217,7 +217,7 @@ void dvz_mesh_normal(DvzVisual* visual, uint32_t first, uint32_t count, vec3* va
 
 
 
-void dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     if (visual->flags & DVZ_MESH_FLAGS_TEXTURED)
@@ -326,7 +326,7 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
 
 
 
-void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba)
+void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba)
 {
     ANN(visual);
 
@@ -336,15 +336,24 @@ void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba)
     DvzParams* params = visual->params[slot_idx];
     ANN(params);
 
-    void* item = dvz_params_get(params, attr_idx);
+    // HACK: this is to keep the alpha component.
+    vec4* item = (vec4*)dvz_params_get(params, attr_idx);
     ANN(item);
 
     vec4 stroke = {0};
-    memcpy(stroke, item, sizeof(vec4));
+
+#if DVZ_COLOR_CVEC4
     stroke[0] = rgba[0] / 255.0;
     stroke[1] = rgba[1] / 255.0;
     stroke[2] = rgba[2] / 255.0;
-    dvz_visual_param(visual, 2, 2, stroke);
+    stroke[3] = item[0][3] / 255.0;
+#else
+    stroke[0] = rgba[0];
+    stroke[1] = rgba[1];
+    stroke[2] = rgba[2];
+    stroke[3] = item[0][3];
+#endif
+    dvz_visual_param(visual, slot_idx, attr_idx, stroke);
 }
 
 

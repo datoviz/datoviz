@@ -37,11 +37,11 @@ typedef struct DvzImageParams DvzImageParams;
 
 struct DvzImageVertex
 {
-    vec3 pos;    /* position */
-    vec2 size;   /* size */
-    vec2 anchor; /* anchor */
-    vec2 uv;     /* texture coordinates */
-    cvec4 color; /* color */
+    vec3 pos;       /* position */
+    vec2 size;      /* size */
+    vec2 anchor;    /* anchor */
+    vec2 uv;        /* texture coordinates */
+    DvzColor color; /* color */
 };
 
 

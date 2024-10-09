@@ -48,11 +48,11 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzPathVertex
 {
-    vec3 p0;     /* previous position */
-    vec3 p1;     /* current position */
-    vec3 p2;     /* next position */
-    vec3 p3;     /* next next position */
-    cvec4 color; /* point color */
+    vec3 p0;        /* previous position */
+    vec3 p1;        /* current position */
+    vec3 p2;        /* next position */
+    vec3 p3;        /* next next position */
+    DvzColor color; /* point color */
 };
 
 

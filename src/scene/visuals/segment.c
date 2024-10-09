@@ -70,7 +70,7 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 0, FIELD(DvzSegmentVertex, P0), DVZ_FORMAT_R32G32B32_SFLOAT, af);
     dvz_visual_attr(visual, 1, FIELD(DvzSegmentVertex, P1), DVZ_FORMAT_R32G32B32_SFLOAT, af);
     dvz_visual_attr(visual, 2, FIELD(DvzSegmentVertex, shift), DVZ_FORMAT_R32G32B32A32_SFLOAT, af);
-    dvz_visual_attr(visual, 3, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
+    dvz_visual_attr(visual, 3, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_COLOR, af);
     dvz_visual_attr(visual, 4, FIELD(DvzSegmentVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, af);
     dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, af);
     dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
@@ -133,7 +133,8 @@ void dvz_segment_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec4* 
 
 
 
-void dvz_segment_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_segment_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 3, first, count, (void*)values);

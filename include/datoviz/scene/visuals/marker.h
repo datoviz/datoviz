@@ -47,10 +47,10 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzMarkerVertex
 {
-    vec3 pos;    /* position */
-    float size;  /* size */
-    float angle; /* angle */
-    cvec4 color; /* color */
+    vec3 pos;       /* position */
+    float size;     /* size */
+    float angle;    /* angle */
+    DvzColor color; /* color */
 };
 
 

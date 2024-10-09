@@ -42,9 +42,9 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzBasicVertex
 {
-    vec3 pos;    /* position */
-    cvec4 color; /* color */
-    float group; /* group */
+    vec3 pos;       /* position */
+    DvzColor color; /* color */
+    float group;    /* group */
 };
 
 

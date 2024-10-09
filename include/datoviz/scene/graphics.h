@@ -54,17 +54,17 @@ typedef struct DvzGraphics DvzGraphics;
 
 struct DvzVertex
 {
-    vec3 pos;    /* position */
-    cvec4 color; /* color */
+    vec3 pos;       /* position */
+    DvzColor color; /* color */
 };
 
 
 
 struct DvzGraphicsPointVertex
 {
-    vec3 pos;    /* position */
-    cvec4 color; /* color */
-    float size;  /* marker size, in pixels */
+    vec3 pos;       /* position */
+    DvzColor color; /* color */
+    float size;     /* marker size, in pixels */
 };
 
 

@@ -43,7 +43,7 @@ int test_visual_1(TstSuite* suite)
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, 0, sizeof(vec3), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, sizeof(vec3), sizeof(cvec4), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 1, sizeof(vec3), sizeof(DvzColor), DVZ_FORMAT_COLOR, 0);
 
     // Slots.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
@@ -66,7 +66,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_data(visual, 0, 0, n, pos);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
     dvz_visual_data(visual, 1, 0, n, color);
 
     // Important: upload the data to the GPU.

@@ -42,13 +42,13 @@ int test_mesh_1(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
 
     // Shape.
-    DvzShape shape = dvz_shape_cube((cvec4[]){
-        {255, 0, 0, 255},
-        {0, 255, 0, 255},
-        {0, 0, 255, 255},
-        {0, 255, 255, 255},
-        {255, 0, 255, 255},
-        {255, 255, 0, 255},
+    DvzShape shape = dvz_shape_cube((DvzColor[]){
+        {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
+        {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+        {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+        {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+        {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+        {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
     });
 
     // Create the visual.
@@ -104,7 +104,7 @@ int test_mesh_polygon(TstSuite* suite)
         points[i][0] = r * cos(-(float)i * M_2PI / n);
         points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
     }
-    cvec4 color = {64, 128, 255, 255};
+    DvzColor color = {TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)};
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
     FREE(points);
 
@@ -123,7 +123,7 @@ int test_mesh_polygon(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_stroke(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 10.0);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -167,15 +167,15 @@ int test_mesh_polygon(TstSuite* suite)
 
 #define R                                                                                         \
     {                                                                                             \
-        255, 0, 0, 255                                                                            \
+        DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX                                                        \
     }
 #define G                                                                                         \
     {                                                                                             \
-        0, 255, 0, 255                                                                            \
+        0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX                                                        \
     }
 #define B                                                                                         \
     {                                                                                             \
-        0, 0, 255, 255                                                                            \
+        0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX                                                        \
     }
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
@@ -324,11 +324,11 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_alloc(visual, COUNT, 0);
 
     // Mesh color.
-    cvec4 color[] = {B, B, B, R, G, B, R, R, R};
+    DvzColor color[] = {B, B, B, R, G, B, R, R, R};
     dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_stroke(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 50);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -402,11 +402,11 @@ int test_mesh_contour(TstSuite* suite)
     dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
 
     // Mesh color.
-    cvec4 color[] = {R, G, B};
+    DvzColor color[] = {R, G, B};
     dvz_mesh_color(visual, 0, 3, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, (cvec4){255, 255, 255, 255});
+    dvz_mesh_stroke(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 20);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -435,7 +435,7 @@ int test_mesh_surface(TstSuite* suite)
 
     // Allocate heights and colors arrays.
     float* heights = (float*)calloc(row_count * col_count, sizeof(float));
-    cvec4* colors = (cvec4*)calloc(row_count * col_count, sizeof(cvec4));
+    DvzColor* colors = (DvzColor*)calloc(row_count * col_count, sizeof(DvzColor));
 
     // Set heights and colors.
     uint32_t idx = 0;
@@ -513,8 +513,10 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     if (stroke_changed)
         dvz_mesh_stroke( //
             vt->visual,
-            (cvec4){
-                round(stroke[0][0] * 255), round(stroke[0][1] * 255), round(stroke[0][2] * 255)});
+            (DvzColor){
+                TO_ALPHA(stroke[0][0] * 255), //
+                TO_ALPHA(stroke[0][1] * 255), //
+                TO_ALPHA(stroke[0][2] * 255)});
     if (width_changed)
         dvz_mesh_linewidth(vt->visual, stroke[0][3]);
 }
@@ -597,7 +599,7 @@ static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
 
 int test_mesh_geo(TstSuite* suite)
 {
-    cvec4 color = {255, 128, 64, 255};
+    DvzColor color = {TO_ALPHA(255), TO_ALPHA(128), TO_ALPHA(64), TO_ALPHA(255)};
 
     // Load positions.
     char pos_path[1024] = {0};

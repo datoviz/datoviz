@@ -60,7 +60,8 @@ static uint32_t _ZERO_OFFSET[3] = {0, 0, 0};
 #define MAX(a, b)     (((a) > (b)) ? (a) : (b))
 #define CLIP(x, a, b) MAX(MIN((x), (b)), (a))
 
-#define TO_BYTE(x) (uint8_t) round(CLIP((x), 0, 1) * 255)
+#define TO_BYTE(x)   (uint8_t) round(CLIP((x), 0, 1) * 255)
+#define FROM_BYTE(x) ((x) / 255.0)
 
 #define _DMAT4_IDENTITY_INIT                                                                      \
     {                                                                                             \
@@ -782,7 +783,7 @@ DVZ_EXPORT float* dvz_mock_linspace(uint32_t count, float initial, float final);
  * @param alpha the alpha value
  * @returns random colors
  */
-DVZ_EXPORT cvec4* dvz_mock_color(uint32_t count, uint8_t alpha);
+DVZ_EXPORT DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha);
 
 
 
@@ -793,7 +794,7 @@ DVZ_EXPORT cvec4* dvz_mock_color(uint32_t count, uint8_t alpha);
  * @param mono the color to repeat
  * @returns colors
  */
-DVZ_EXPORT cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono);
+DVZ_EXPORT DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono);
 
 
 
@@ -804,7 +805,7 @@ DVZ_EXPORT cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono);
  * @param alpha the alpha value
  * @returns colors
  */
-DVZ_EXPORT cvec4* dvz_mock_cmap(uint32_t count, DvzColormap cmap, uint8_t alpha);
+DVZ_EXPORT DvzColor* dvz_mock_cmap(uint32_t count, DvzColormap cmap, DvzAlpha alpha);
 
 
 

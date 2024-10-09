@@ -69,7 +69,7 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzImageVertex, size), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 2, FIELD(DvzImageVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 3, FIELD(DvzImageVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0);
-    dvz_visual_attr(visual, 4, FIELD(DvzImageVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, af);
+    dvz_visual_attr(visual, 4, FIELD(DvzImageVertex, color), DVZ_FORMAT_COLOR, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzImageVertex));
@@ -159,7 +159,8 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
 
 
 
-void dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_image_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 4, first, count, values);
@@ -183,16 +184,21 @@ void dvz_image_edge_width(DvzVisual* visual, float width)
 
 
 
-void dvz_image_edge_color(DvzVisual* visual, cvec4 color)
+void dvz_image_edge_color(DvzVisual* visual, DvzColor color)
 {
     ANN(visual);
 
+#if DVZ_COLOR_CVEC4
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
     float r = color[0] / 255.0;
     float g = color[1] / 255.0;
     float b = color[2] / 255.0;
     float a = color[3] / 255.0;
+
     dvz_visual_param(visual, 2, 2, (vec4){r, g, b, a});
+#else
+    dvz_visual_param(visual, 2, 2, color);
+#endif
 }
 
 

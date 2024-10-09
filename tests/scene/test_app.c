@@ -313,7 +313,7 @@ int test_app_arcball(TstSuite* suite)
         data[i].size = 4;
 
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = 128;
+        data[i].color[3] = TO_ALPHA(128);
     }
     dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);
 
@@ -402,7 +402,7 @@ int test_app_anim(TstSuite* suite)
         data[i].size = 50;
 
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = 128;
+        data[i].color[3] = TO_ALPHA(128);
     }
 
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);
@@ -439,7 +439,7 @@ int test_app_pixel(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, 128);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Important: upload the data to the GPU.
@@ -545,7 +545,7 @@ int test_app_viewset(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, 128);
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Important: upload the data to the GPU.

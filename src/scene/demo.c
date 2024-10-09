@@ -44,7 +44,7 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasF
     vec3* pos = dvz_mock_fixed(n, (vec3){-1, +1, 0});
     dvz_glyph_position(glyph, 0, n, pos, 0);
 
-    cvec4* color = dvz_mock_monochrome(n, (cvec4){10, 10, 10, 255});
+    DvzColor* color = dvz_mock_monochrome(n, (DvzColor){10, 10, 10, 255});
     dvz_glyph_color(glyph, 0, n, color, 0);
     dvz_glyph_ascii(glyph, text);
 
@@ -112,12 +112,12 @@ void dvz_demo(void)
     uint32_t n = 6;
     float a = 1.0;
     vec3* pos = dvz_mock_band(n, (vec2){a, a});
-    cvec4* color = dvz_mock_cmap(n, DVZ_CMAP_VIRIDIS, 255);
+    DvzColor* color = dvz_mock_cmap(n, DVZ_CMAP_VIRIDIS, 255);
     float* size = dvz_mock_full(n, 50.0);
 
     const uint32_t n2 = n * 15;
     vec3* pos2 = dvz_mock_band(n2, (vec2){a, a});
-    cvec4* color2 = dvz_mock_cmap(n2, DVZ_CMAP_VIRIDIS, 255);
+    DvzColor* color2 = dvz_mock_cmap(n2, DVZ_CMAP_VIRIDIS, 255);
     float* size2 = dvz_mock_full(n2, 50.0);
 
 
@@ -238,7 +238,7 @@ void dvz_demo(void)
 
         dvz_marker_aspect(marker, DVZ_MARKER_ASPECT_OUTLINE);
         dvz_marker_shape(marker, DVZ_MARKER_SHAPE_CLUB);
-        dvz_marker_edge_color(marker, (cvec4){255, 255, 255, 255});
+        dvz_marker_edge_color(marker, DVZ_WHITE);
         dvz_marker_edge_width(marker, (float){3.0});
     }
 
@@ -291,7 +291,7 @@ void dvz_demo(void)
         vec3* initial = dvz_mock_line(n / 2, (vec3){-a / 2, -a / 2, 0}, (vec3){+a / 2, -a / 2, 0});
         vec3* terminal =
             dvz_mock_line(n / 2, (vec3){-a / 2, +a / 2, 0}, (vec3){+a / 2, +a / 2, 0});
-        cvec4* segment_color = dvz_mock_cmap(n / 2, DVZ_CMAP_VIRIDIS, 255);
+        DvzColor* segment_color = dvz_mock_cmap(n / 2, DVZ_CMAP_VIRIDIS, DVZ_ALPHA_MAX);
         float* linewidth = dvz_mock_linspace(n, 20.0, 80.0);
         DvzCapType* cap = (DvzCapType*)dvz_mock_range(n / 2, 1);
 
@@ -341,7 +341,7 @@ void dvz_demo(void)
     {
         uint32_t wi = 200;
         uint32_t hi = 200;
-        cvec4* imgdata = (cvec4*)calloc(wi * hi, sizeof(cvec4));
+        DvzColor* imgdata = (DvzColor*)calloc(wi * hi, sizeof(DvzColor));
 
         float xmin = -10.0f;
         float xmax = +10.0f;
@@ -360,10 +360,10 @@ void dvz_demo(void)
                 r = sqrtf(x * x + y * y);
                 value = r == 0 ? 1 : sinf(r) / r;
                 dvz_colormap_scale(
-                    DVZ_CMAP_VIRIDIS, value, vmin, vmax, (uint8_t*)&imgdata[j * wi + i]);
+                    DVZ_CMAP_VIRIDIS, value, vmin, vmax, (DvzAlpha*)&imgdata[j * wi + i]);
             }
         }
-        DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, wi, hi, imgdata);
+        DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_COLOR, wi, hi, imgdata);
 
         dvz_image_alloc(image, 1);
         dvz_image_position(image, 0, 1, (vec3[]){{0, 0, 0}}, 0);
@@ -439,7 +439,7 @@ void dvz_demo(void)
         uint8_t val1 = 0;
         DvzSize vsize = va * vb * vc * sizeof(cvec4);
         cvec4 col = {0};
-        dvz_colormap(DVZ_CMAP_VIRIDIS, 128, col);
+        dvz_colormap_8bit(DVZ_CMAP_VIRIDIS, 128, col);
         col[3] = 64;
 
         // Generate the texture data.

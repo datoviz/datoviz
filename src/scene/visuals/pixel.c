@@ -60,7 +60,7 @@ void dvz_pixel_position(DvzVisual* pixel, uint32_t first, uint32_t count, vec3* 
 
 
 
-void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     dvz_basic_color(pixel, first, count, values, flags);
 }

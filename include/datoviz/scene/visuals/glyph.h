@@ -56,7 +56,7 @@ struct DvzGlyphVertex
     vec2 shift;       /* 4: shift */
     vec2 uv;          /* 5: texture coordinates */
     float angle;      /* 6: angle */
-    cvec4 color;      /* 7: color */
+    DvzColor color;   /* 7: color */
     float group_size; /* 8: group_size */
 };
 

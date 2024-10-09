@@ -52,7 +52,7 @@ int test_segment_1(TstSuite* suite)
 
     vec3* initial = (vec3*)calloc(n, sizeof(vec3));
     vec3* terminal = (vec3*)calloc(n, sizeof(vec3));
-    cvec4* color = (cvec4*)calloc(n, sizeof(cvec4));
+    DvzColor* color = (DvzColor*)calloc(n, sizeof(DvzColor));
     float* linewidth = (float*)calloc(n, sizeof(float));
     DvzCapType* initial_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
     DvzCapType* terminal_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
@@ -67,7 +67,7 @@ int test_segment_1(TstSuite* suite)
         terminal[i][1] = -initial[i][1];
 
         dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
-        color[i][3] = 216;
+        color[i][3] = TO_ALPHA(216);
 
         linewidth[i] = 10.0f;
 

@@ -47,11 +47,11 @@ static void axis_common_params(DvzAxis* axis)
 {
     float font_size = DVZ_AXES_FONT_SIZE;
 
-    cvec4 color_glyph = {0, 0, 0, 255};
-    cvec4 color_lim = {0, 0, 0, 255};
-    cvec4 color_grid = {0, 0, 0, 255};
-    cvec4 color_major = {0, 0, 0, 255};
-    cvec4 color_minor = {0, 0, 0, 255};
+    DvzColor color_glyph = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_lim = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_grid = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_major = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_minor = {0, 0, 0, DVZ_ALPHA_MAX};
 
     float width_lim = 4;
     float width_grid = 2;

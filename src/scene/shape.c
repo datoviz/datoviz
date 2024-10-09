@@ -158,7 +158,7 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
     if (has_normal)
         merged_shape.normal = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
     if (has_color)
-        merged_shape.color = (cvec4*)malloc(merged_shape.vertex_count * sizeof(cvec4));
+        merged_shape.color = (DvzColor*)malloc(merged_shape.vertex_count * sizeof(DvzColor));
     if (has_texcoords)
         merged_shape.texcoords = (vec4*)malloc(merged_shape.vertex_count * sizeof(vec4));
     if (has_isoline)
@@ -190,7 +190,7 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
         if (shape->color != NULL)
             memcpy(
                 merged_shape.color + vertex_offset, shape->color,
-                shape->vertex_count * sizeof(cvec4));
+                shape->vertex_count * sizeof(DvzColor));
 
         if (shape->texcoords != NULL)
             memcpy(
@@ -269,7 +269,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     // Reindex positions.
     log_trace("reindex positions (%d vertices, %d indices)", vertex_count, index_count);
     vec3* pos = (vec3*)calloc(index_count, sizeof(vec3));
-    cvec4* color = NULL;
+    DvzColor* color = NULL;
     vec3* normal = NULL;
     vec4* texcoords = NULL;
     float* isoline = NULL;
@@ -278,7 +278,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
     cvec4* contour = NULL;
 
     if (shape->color != NULL)
-        color = (cvec4*)calloc(index_count, sizeof(cvec4));
+        color = (DvzColor*)calloc(index_count, sizeof(DvzColor));
     if (shape->normal != NULL)
         normal = (vec3*)calloc(index_count, sizeof(vec3));
     if (shape->texcoords != NULL)
@@ -662,7 +662,7 @@ void dvz_shape_end(DvzShape* shape)
 /*  2D shapes                                                                                    */
 /*************************************************************************************************/
 
-DvzShape dvz_shape_square(cvec4 color)
+DvzShape dvz_shape_square(DvzColor color)
 {
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_SQUARE;
@@ -691,10 +691,10 @@ DvzShape dvz_shape_square(cvec4 color)
     }
 
     // Color.
-    shape.color = (cvec4*)calloc(shape.vertex_count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(shape.vertex_count, sizeof(DvzColor));
     for (uint32_t i = 0; i < shape.vertex_count; i++)
     {
-        memcpy(shape.color[i], color, sizeof(cvec4));
+        memcpy(shape.color[i], color, sizeof(DvzColor));
     }
 
     // TODO: texcoords
@@ -704,7 +704,7 @@ DvzShape dvz_shape_square(cvec4 color)
 
 
 
-DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
+DvzShape dvz_shape_disc(uint32_t count, DvzColor color)
 {
     ASSERT(count > 0);
 
@@ -735,10 +735,10 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
     }
 
     // Color.
-    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
     for (uint32_t i = 0; i < shape.vertex_count; i++)
     {
-        memcpy(shape.color[i], color, sizeof(cvec4));
+        memcpy(shape.color[i], color, sizeof(DvzColor));
     }
 
     // TODO: texcoords
@@ -758,7 +758,7 @@ DvzShape dvz_shape_disc(uint32_t count, cvec4 color)
 
 
 
-DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color)
+DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color)
 {
     ASSERT(count > 2);
     ANN(points);
@@ -791,7 +791,7 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color)
     }
 
     // Color.
-    shape.color = (cvec4*)calloc(count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(count, sizeof(DvzColor));
     for (uint32_t i = 0; i < count; i++)
     {
         shape.color[i][0] = color[0];
@@ -811,7 +811,7 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color)
 
 DvzShape dvz_shape_surface(
     uint32_t row_count, uint32_t col_count, //
-    float* heights, cvec4* colors,          //
+    float* heights, DvzColor* colors,       //
     vec3 o, vec3 u, vec3 v, int flags)
 {
     // TODO: flag for closed surface on i or j
@@ -832,7 +832,7 @@ DvzShape dvz_shape_surface(
     shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
-    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
 
     uint32_t point_idx = 0;
     uint32_t index = 0;
@@ -859,10 +859,10 @@ DvzShape dvz_shape_surface(
             shape.pos[point_idx][2] += height * normal[2];
 
             // Color.
-            shape.color[point_idx][0] = colors != NULL ? colors[point_idx][0] : 255;
-            shape.color[point_idx][1] = colors != NULL ? colors[point_idx][1] : 255;
-            shape.color[point_idx][2] = colors != NULL ? colors[point_idx][2] : 255;
-            shape.color[point_idx][3] = colors != NULL ? colors[point_idx][3] : 255;
+            shape.color[point_idx][0] = colors != NULL ? colors[point_idx][0] : DVZ_ALPHA_MAX;
+            shape.color[point_idx][1] = colors != NULL ? colors[point_idx][1] : DVZ_ALPHA_MAX;
+            shape.color[point_idx][2] = colors != NULL ? colors[point_idx][2] : DVZ_ALPHA_MAX;
+            shape.color[point_idx][3] = colors != NULL ? colors[point_idx][3] : DVZ_ALPHA_MAX;
 
             // Index.
             // TODO: shape topology (flags) to implement here
@@ -888,7 +888,7 @@ DvzShape dvz_shape_surface(
 
 
 
-DvzShape dvz_shape_cube(cvec4* colors)
+DvzShape dvz_shape_cube(DvzColor* colors)
 {
     ANN(colors); // 6 colors, one per face
 
@@ -901,7 +901,7 @@ DvzShape dvz_shape_cube(cvec4* colors)
 
     shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
     shape.texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
 
     float x = .5;
@@ -999,7 +999,7 @@ DvzShape dvz_shape_cube(cvec4* colors)
         {
             ASSERT(i < 6);
             ASSERT(6 * i + j < vertex_count);
-            memcpy(shape.color[6 * i + j], colors[i], sizeof(cvec4));
+            memcpy(shape.color[6 * i + j], colors[i], sizeof(DvzColor));
         }
     }
 
@@ -1052,7 +1052,7 @@ DvzShape dvz_shape_cube(cvec4* colors)
 
 
 
-DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color)
+DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, DvzColor color)
 {
     ASSERT(rows > 0);
     ASSERT(cols > 0);
@@ -1066,7 +1066,7 @@ DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color)
 
 
 
-DvzShape dvz_shape_cone(uint32_t count, cvec4 color)
+DvzShape dvz_shape_cone(uint32_t count, DvzColor color)
 {
     ASSERT(count > 0);
     DvzShape shape = {0};
@@ -1078,7 +1078,7 @@ DvzShape dvz_shape_cone(uint32_t count, cvec4 color)
 
 
 
-DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color)
+DvzShape dvz_shape_cylinder(uint32_t count, DvzColor color)
 {
     ASSERT(count > 0);
     DvzShape shape = {0};

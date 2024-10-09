@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     struct Vertex
     {
         vec3 pos;
-        cvec4 color;
+        DvzColor color;
     };
 
 

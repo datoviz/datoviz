@@ -47,9 +47,9 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzSphereVertex
 {
-    vec3 pos;    /* position */
-    cvec4 color; /* color */
-    float size;  /* size */
+    vec3 pos;       /* position */
+    DvzColor color; /* color */
+    float size;     /* size */
 };
 
 

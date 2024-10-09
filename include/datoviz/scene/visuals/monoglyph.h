@@ -46,7 +46,7 @@ struct DvzMonoglyphVertex
     vec3 bytes_012; /* bytes_012 */
     vec3 bytes_345; /* bytes_345 */
     ivec2 offset;   /* offset */
-    cvec4 color;    /* color */
+    DvzColor color; /* color */
 };
 
 

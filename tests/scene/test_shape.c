@@ -30,7 +30,7 @@ int test_shape_1(TstSuite* suite)
 {
     ANN(suite);
 
-    cvec4 color = {255, 0, 0, 255};
+    DvzColor color = {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX};
     const uint32_t count = 30;
 
     DvzShape square = dvz_shape_square(color);
@@ -75,7 +75,7 @@ int test_shape_transform(TstSuite* suite)
 {
     ANN(suite);
 
-    cvec4 color = {255, 0, 0, 255};
+    DvzColor color = {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX};
     const uint32_t count = 30;
 
     DvzShape square = dvz_shape_square(color);

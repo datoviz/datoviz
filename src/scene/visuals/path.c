@@ -72,7 +72,7 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzPathVertex, p1), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 2, FIELD(DvzPathVertex, p2), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 3, FIELD(DvzPathVertex, p3), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
-    dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, attr_flag);
+    dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_COLOR, attr_flag);
 
     // Uniforms.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
@@ -202,7 +202,7 @@ void dvz_path_position(
 
 
 
-void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     // NOTE: repeat x4 is done transparently thanks to the attribute flags passed in dvz_path().

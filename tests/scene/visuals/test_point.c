@@ -50,7 +50,7 @@ int test_point_1(TstSuite* suite)
     dvz_point_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
     dvz_point_color(visual, 0, n, color, 0);
 
     // Size.

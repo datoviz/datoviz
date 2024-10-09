@@ -56,7 +56,7 @@ int test_path_1(TstSuite* suite)
     vec3* positions = (vec3*)calloc(total_length, sizeof(vec3));
 
     // Allocate the colors array.
-    cvec4* colors = (cvec4*)calloc(total_length, sizeof(cvec4));
+    DvzColor* colors = (DvzColor*)calloc(total_length, sizeof(DvzColor));
 
     // Generate the path data.
     double t = 0;
@@ -110,7 +110,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     ANN(visual);
 
     // Allocate the colors array.
-    cvec4* colors = (cvec4*)vt->user_data;
+    DvzColor* colors = (DvzColor*)vt->user_data;
     ANN(colors);
 
     // Generate the path data.
@@ -153,7 +153,7 @@ int test_path_2(TstSuite* suite)
     vec3* positions = (vec3*)calloc(total_length, sizeof(vec3));
 
     // Allocate the colors array.
-    cvec4* colors = (cvec4*)calloc(total_length, sizeof(cvec4));
+    DvzColor* colors = (DvzColor*)calloc(total_length, sizeof(DvzColor));
 
     // Generate the path data.
     double t = 0;
@@ -241,10 +241,10 @@ int test_path_closed(TstSuite* suite)
 
 
     // Colors.
-    cvec4* colors_0 = dvz_mock_cmap(n, DVZ_CMAP_HSV, 200);
-    cvec4* colors = (cvec4*)calloc(2 * n, sizeof(cvec4));
-    memcpy(colors, colors_0, n * sizeof(cvec4));
-    memcpy(&colors[n], colors_0, n * sizeof(cvec4));
+    DvzColor* colors_0 = dvz_mock_cmap(n, DVZ_CMAP_HSV, 200);
+    DvzColor* colors = (DvzColor*)calloc(2 * n, sizeof(DvzColor));
+    memcpy(colors, colors_0, n * sizeof(DvzColor));
+    memcpy(&colors[n], colors_0, n * sizeof(DvzColor));
     dvz_path_color(visual, 0, 2 * n, colors, 0);
 
 

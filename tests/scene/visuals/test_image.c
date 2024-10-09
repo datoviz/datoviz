@@ -76,12 +76,14 @@ int test_image_1(TstSuite* suite)
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
     // Image colors.
-    dvz_image_color(visual, 0, 1, (cvec4[]){{0, 64, 128, 255}}, 0);
+    dvz_image_color(
+        visual, 0, 1, (DvzColor[]){{0, TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255)}}, 0);
 
     // Image parameters.
-    dvz_image_radius(visual, 100.0);                         // rounded corners
-    dvz_image_edge_width(visual, 10.0);                      // stroke width
-    dvz_image_edge_color(visual, (cvec4){0, 128, 255, 255}); // stroke color
+    dvz_image_radius(visual, 100.0);    // rounded corners
+    dvz_image_edge_width(visual, 10.0); // stroke width
+    dvz_image_edge_color(
+        visual, (DvzColor){0, TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)}); // stroke color
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

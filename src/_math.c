@@ -306,10 +306,14 @@ float* dvz_mock_linspace(uint32_t count, float initial, float final)
 
 
 
-cvec4* dvz_mock_color(uint32_t count, uint8_t alpha)
+/*************************************************************************************************/
+/*  Mock colors                                                                                  */
+/*************************************************************************************************/
+
+DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha)
 {
     ASSERT(count > 0);
-    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
     for (uint32_t i = 0; i < count; i++)
     {
         dvz_colormap(DVZ_CMAP_HSV, i % 256, color[i]);
@@ -320,10 +324,10 @@ cvec4* dvz_mock_color(uint32_t count, uint8_t alpha)
 
 
 
-cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono)
+DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono)
 {
     ASSERT(count > 0);
-    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
     for (uint32_t i = 0; i < count; i++)
     {
         color[i][0] = mono[0];
@@ -336,10 +340,10 @@ cvec4* dvz_mock_monochrome(uint32_t count, cvec4 mono)
 
 
 
-cvec4* dvz_mock_cmap(uint32_t count, DvzColormap cmap, uint8_t alpha)
+DvzColor* dvz_mock_cmap(uint32_t count, DvzColormap cmap, DvzAlpha alpha)
 {
     ASSERT(count > 0);
-    cvec4* color = (cvec4*)calloc(count, sizeof(cvec4));
+    DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
     for (uint32_t i = 0; i < count; i++)
     {
         dvz_colormap_scale(cmap, i, 0, count, color[i]);

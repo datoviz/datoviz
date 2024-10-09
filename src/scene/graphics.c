@@ -89,7 +89,7 @@ static void _graphics_point(DvzRenderpass* renderpass, DvzGraphics* graphics)
         graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzGraphicsPointVertex, pos));
 
     dvz_graphics_vertex_attr(
-        graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzGraphicsPointVertex, color));
+        graphics, 0, 1, (VkFormat)DVZ_FORMAT_COLOR, offsetof(DvzGraphicsPointVertex, color));
 
     dvz_graphics_vertex_attr(
         graphics, 0, 2, VK_FORMAT_R32_SFLOAT, offsetof(DvzGraphicsPointVertex, size));
@@ -117,9 +117,10 @@ static void _graphics_triangle(DvzRenderpass* renderpass, DvzGraphics* graphics)
 
     dvz_graphics_vertex_binding(graphics, 0, sizeof(DvzVertex), VK_VERTEX_INPUT_RATE_VERTEX);
 
-    dvz_graphics_vertex_attr(graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
-
-    dvz_graphics_vertex_attr(graphics, 0, 1, VK_FORMAT_R8G8B8A8_UNORM, offsetof(DvzVertex, color));
+    dvz_graphics_vertex_attr( //
+        graphics, 0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+    dvz_graphics_vertex_attr(
+        graphics, 0, 1, (VkFormat)DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
 
     _common_slots(graphics);
 }

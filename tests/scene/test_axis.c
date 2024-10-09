@@ -41,11 +41,11 @@ static void _common_axis_params(DvzAxis* axis)
     vec2 anchor = {+.5, 0};
     vec2 offset = {0, -80};
 
-    cvec4 color_glyph = {255, 255, 0, 255};
-    cvec4 color_lim = {255, 0, 0, 255};
-    cvec4 color_grid = {0, 255, 0, 255};
-    cvec4 color_major = {255, 255, 255, 255};
-    cvec4 color_minor = {255, 0, 255, 255};
+    DvzColor color_glyph = {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX};
+    DvzColor color_lim = {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_grid = {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX};
+    DvzColor color_major = {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX};
+    DvzColor color_minor = {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX};
 
     float width_lim = 4;
     float width_grid = 2;
@@ -243,11 +243,11 @@ int test_axis_2(TstSuite* suite)
     // Global parameters.
     float font_size = 32;
 
-    cvec4 color_glyph = {0, 0, 0, 255};
-    cvec4 color_lim = {0, 0, 0, 255};
-    cvec4 color_grid = {0, 0, 0, 255};
-    cvec4 color_major = {0, 0, 0, 255};
-    cvec4 color_minor = {0, 0, 0, 255};
+    DvzColor color_glyph = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_lim = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_grid = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_major = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor color_minor = {0, 0, 0, DVZ_ALPHA_MAX};
 
     float width_lim = 4;
     float width_grid = 2;
@@ -332,7 +332,7 @@ int test_axis_2(TstSuite* suite)
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 255);
+    DvzColor* color = dvz_mock_color(n, DVZ_ALPHA_MAX);
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
@@ -340,7 +340,7 @@ int test_axis_2(TstSuite* suite)
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Parameters.
-    dvz_marker_edge_color(visual, (cvec4){0, 0, 0, 255});
+    dvz_marker_edge_color(visual, (DvzColor){0, 0, 0, DVZ_ALPHA_MAX});
     dvz_marker_edge_width(visual, (float){1.0});
 
     dvz_visual_clip(visual, DVZ_VIEWPORT_CLIP_OUTER);

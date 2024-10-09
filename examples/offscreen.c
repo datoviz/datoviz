@@ -37,7 +37,7 @@ int main(int argc, char** argv)
     FREE(pos);
 
     // Set the point RGBA colors.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, 128);
     dvz_point_color(visual, 0, n, color, 0);
     FREE(color);
 

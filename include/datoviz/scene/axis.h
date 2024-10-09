@@ -85,11 +85,11 @@ struct DvzAxis
     DvzTickSpec tick_spec;
 
     // Color.
-    cvec4 color_glyph;
-    cvec4 color_lim;
-    cvec4 color_grid;
-    cvec4 color_major;
-    cvec4 color_minor;
+    DvzColor color_glyph;
+    DvzColor color_lim;
+    DvzColor color_grid;
+    DvzColor color_major;
+    DvzColor color_minor;
 
     // Tick width.
     vec4 tick_width;  // lim, grid, major, minor
@@ -198,7 +198,8 @@ void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float mi
 /**
  *
  */
-void dvz_axis_color(DvzAxis* axis, cvec4 glyph, cvec4 lim, cvec4 grid, cvec4 major, cvec4 minor);
+void dvz_axis_color(
+    DvzAxis* axis, DvzColor glyph, DvzColor lim, DvzColor grid, DvzColor major, DvzColor minor);
 
 
 

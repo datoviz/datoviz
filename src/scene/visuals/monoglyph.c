@@ -115,7 +115,7 @@ DvzVisual* dvz_monoglyph(DvzBatch* batch, int flags)
     dvz_visual_attr(
         visual, 2, FIELD(DvzMonoglyphVertex, bytes_345), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 3, FIELD(DvzMonoglyphVertex, offset), DVZ_FORMAT_R32G32_SINT, 0);
-    dvz_visual_attr(visual, 4, FIELD(DvzMonoglyphVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 4, FIELD(DvzMonoglyphVertex, color), DVZ_FORMAT_COLOR, 0);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzMonoglyphVertex));
@@ -168,7 +168,7 @@ void dvz_monoglyph_offset(
 
 
 void dvz_monoglyph_color(
-    DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 4, first, count, (void*)values);
@@ -229,7 +229,7 @@ void dvz_monoglyph_size(DvzVisual* visual, float size)
 
 
 void dvz_monoglyph_textarea(
-    DvzVisual* visual, vec3 position, cvec4 color, float size, const char* text)
+    DvzVisual* visual, vec3 position, DvzColor color, float size, const char* text)
 {
     ANN(visual);
 
@@ -267,7 +267,7 @@ void dvz_monoglyph_textarea(
 
     dvz_monoglyph_offset(visual, 0, count, offsets, 0);
 
-    cvec4* colors = dvz_mock_monochrome(count, color);
+    DvzColor* colors = dvz_mock_monochrome(count, color);
     dvz_monoglyph_color(visual, 0, count, colors, 0);
 
     dvz_monoglyph_glyph(visual, 0, (const char*)glyphs, 0);

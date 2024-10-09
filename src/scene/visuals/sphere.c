@@ -58,7 +58,7 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
 
     // Vertex attributes.
     dvz_visual_attr(visual, 0, FIELD(DvzSphereVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
-    dvz_visual_attr(visual, 1, FIELD(DvzSphereVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 1, FIELD(DvzSphereVertex, color), DVZ_FORMAT_COLOR, 0);
     dvz_visual_attr(visual, 2, FIELD(DvzSphereVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
 
     // Vertex stride.
@@ -101,7 +101,7 @@ void dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3
 
 
 
-void dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* data, int flags)
+void dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* data, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 1, first, count, data);

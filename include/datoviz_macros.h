@@ -14,7 +14,7 @@
 
 
 /*************************************************************************************************/
-/*  Includes                                                                                    */
+/*  Includes                                                                                     */
 /*************************************************************************************************/
 
 #include <assert.h>
@@ -72,6 +72,34 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 
 #ifndef __STDC_VERSION__
 #define __STDC_VERSION__ 0
+#endif
+
+// NOTE: need to use vec4 instead of cvec4 for colors with WebGPU as WebGPU does not support cvec4
+#define DVZ_COLOR_CVEC4 1
+
+
+#if DVZ_COLOR_CVEC4
+
+#define DvzColor      cvec4
+#define DvzAlpha      uint8_t
+#define DVZ_ALPHA_MAX 255
+#define TO_ALPHA(x)   (x)
+#define DVZ_GRAY(x)                                                                               \
+    (cvec4) { (x), (x), (x), DVZ_ALPHA_MAX }
+#define DVZ_WHITE        DVZ_GRAY(255)
+#define DVZ_FORMAT_COLOR DVZ_FORMAT_R8G8B8A8_UNORM
+
+#else
+
+#define DvzColor      vec4
+#define DvzAlpha      float
+#define DVZ_ALPHA_MAX 1
+#define TO_ALPHA(x)   ((x) / 255.0)
+#define DVZ_GRAY(x)                                                                               \
+    (vec4) { FROM_BYTE((x)), FROM_BYTE((x)), FROM_BYTE((x)), DVZ_ALPHA_MAX }
+#define DVZ_WHITE        DVZ_GRAY(255)
+#define DVZ_FORMAT_COLOR DVZ_FORMAT_R32G32B32A32_SFLOAT
+
 #endif
 
 

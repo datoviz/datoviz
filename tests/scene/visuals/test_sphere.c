@@ -50,7 +50,7 @@ int test_sphere_1(TstSuite* suite)
     dvz_sphere_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 255);
+    DvzColor* color = dvz_mock_color(n, DVZ_ALPHA_MAX);
     dvz_sphere_color(visual, 0, n, color, 0);
 
     // Size.

@@ -456,13 +456,24 @@ DVZ_EXPORT void dvz_visual_show(DvzVisual* visual, bool is_visible);
 /*************************************************************************************************/
 
 /**
- * Fetch a color from a colormap and a value.
+ * Fetch a color from a colormap and a value (either 8-bit or float, depending on DVZ_COLOR_CVEC4).
  *
  * @param cmap the colormap
  * @param value the value
  * @param[out] color the fetched color
  */
-DVZ_EXPORT void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color);
+DVZ_EXPORT void dvz_colormap(DvzColormap cmap, uint8_t value, DvzColor color);
+
+
+
+/**
+ * Fetch a color from a colormap and a value (8-bit version).
+ *
+ * @param cmap the colormap
+ * @param value the value
+ * @param[out] color the fetched color
+ */
+DVZ_EXPORT void dvz_colormap_8bit(DvzColormap cmap, uint8_t value, cvec4 color);
 
 
 
@@ -476,7 +487,7 @@ DVZ_EXPORT void dvz_colormap(DvzColormap cmap, uint8_t value, cvec4 color);
  * @param[out] color the fetched color
  */
 DVZ_EXPORT void
-dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, cvec4 color);
+dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, DvzColor color);
 
 
 
@@ -491,7 +502,7 @@ dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, cvec4 
  * @param[out] out the fetched colors
  */
 DVZ_EXPORT void dvz_colormap_array(
-    DvzColormap cmap, uint32_t count, float* values, float vmin, float vmax, cvec4* out);
+    DvzColormap cmap, uint32_t count, float* values, float vmin, float vmax, DvzColor* out);
 
 
 
@@ -651,7 +662,7 @@ DVZ_EXPORT void dvz_shape_end(DvzShape* shape);
  * @param color the square color
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
+DVZ_EXPORT DvzShape dvz_shape_square(DvzColor color);
 
 
 
@@ -662,7 +673,7 @@ DVZ_EXPORT DvzShape dvz_shape_square(cvec4 color);
  * @param color the disc color
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
+DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, DvzColor color);
 
 
 
@@ -675,7 +686,7 @@ DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, cvec4 color);
  * @returns the shape
  */
 DVZ_EXPORT
-DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color);
+DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color);
 
 
 
@@ -689,7 +700,7 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color);
  * @param row_count number of rows
  * @param col_count number of cols
  * @param heights a pointer to row_count*col_count height values (floats)
- * @param colors a pointer to row_count*col_count color values (cvec4)
+ * @param colors a pointer to row_count*col_count color values (cvec4 or vec4)
  * @param o the origin
  * @param u the unit vector parallel to each column
  * @param v the unit vector parallel to each row
@@ -699,7 +710,7 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, cvec4 color);
 DVZ_EXPORT
 DvzShape dvz_shape_surface(
     uint32_t row_count, uint32_t col_count, //
-    float* heights, cvec4* colors,          //
+    float* heights, DvzColor* colors,       //
     vec3 o, vec3 u, vec3 v, int flags);
 
 
@@ -710,7 +721,7 @@ DvzShape dvz_shape_surface(
  * @param colors the colors of the six faces
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
+DVZ_EXPORT DvzShape dvz_shape_cube(DvzColor* colors);
 
 
 
@@ -722,7 +733,7 @@ DVZ_EXPORT DvzShape dvz_shape_cube(cvec4* colors);
  * @param color the sphere color
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
+DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, DvzColor color);
 
 
 
@@ -733,7 +744,7 @@ DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, cvec4 color);
  * @param color the cone color
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
+DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, DvzColor color);
 
 
 
@@ -744,7 +755,7 @@ DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, cvec4 color);
  * @param color the cylinder color
  * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, cvec4 color);
+DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, DvzColor color);
 
 
 
@@ -807,7 +818,7 @@ dvz_basic_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_basic_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -884,7 +895,7 @@ dvz_pixel_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_pixel_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_pixel_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -937,7 +948,7 @@ dvz_point_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1064,7 +1075,7 @@ dvz_marker_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* value
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1074,7 +1085,7 @@ dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* value
  * @param visual the visual
  * @param color the edge color
  */
-DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, cvec4 color);
+DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, DvzColor color);
 
 
 
@@ -1173,7 +1184,7 @@ dvz_segment_shift(DvzVisual* visual, uint32_t first, uint32_t count, vec4* value
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_segment_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_segment_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1258,7 +1269,7 @@ DVZ_EXPORT void dvz_path_position(
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1550,7 +1561,7 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1686,8 +1697,8 @@ dvz_monoglyph_offset(DvzVisual* visual, uint32_t first, uint32_t count, ivec2* v
  * @param values the colors of the items to update
  * @param flags the data update flags
  */
-DVZ_EXPORT void
-dvz_monoglyph_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+DVZ_EXPORT void dvz_monoglyph_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1732,7 +1743,7 @@ DVZ_EXPORT void dvz_monoglyph_size(DvzVisual* visual, float size);
  * @param text the text, can contain `\n` new lines
  */
 DVZ_EXPORT void
-dvz_monoglyph_textarea(DvzVisual* visual, vec3 pos, cvec4 color, float size, const char* text);
+dvz_monoglyph_textarea(DvzVisual* visual, vec3 pos, DvzColor color, float size, const char* text);
 
 
 
@@ -1827,7 +1838,7 @@ dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* tl_
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -1870,7 +1881,7 @@ DVZ_EXPORT void dvz_image_edge_width(DvzVisual* visual, float width);
  * @param visual the visual
  * @param color the edge color
  */
-DVZ_EXPORT void dvz_image_edge_color(DvzVisual* visual, cvec4 color);
+DVZ_EXPORT void dvz_image_edge_color(DvzVisual* visual, DvzColor color);
 
 
 
@@ -1938,7 +1949,7 @@ dvz_mesh_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* value
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags);
+dvz_mesh_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 
@@ -2095,7 +2106,7 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
  * @param visual the mesh
  * @param stroke the rgba components
  */
-DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, cvec4 rgba);
+DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba);
 
 
 
@@ -2180,7 +2191,7 @@ dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* color, int flags);
+dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* color, int flags);
 
 
 

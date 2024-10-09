@@ -56,7 +56,7 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 0, FIELD(DvzMarkerVertex, pos), DVZ_FORMAT_R32G32B32_SFLOAT, 0);
     dvz_visual_attr(visual, 1, FIELD(DvzMarkerVertex, size), DVZ_FORMAT_R32_SFLOAT, 0);
     dvz_visual_attr(visual, 2, FIELD(DvzMarkerVertex, angle), DVZ_FORMAT_R32_SFLOAT, 0);
-    dvz_visual_attr(visual, 3, FIELD(DvzMarkerVertex, color), DVZ_FORMAT_R8G8B8A8_UNORM, 0);
+    dvz_visual_attr(visual, 3, FIELD(DvzMarkerVertex, color), DVZ_FORMAT_COLOR, 0);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzMarkerVertex));
@@ -156,7 +156,8 @@ void dvz_marker_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* 
 
 
 
-void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* values, int flags)
+void dvz_marker_color(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 3, first, count, (void*)values);
@@ -164,14 +165,19 @@ void dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 
-void dvz_marker_edge_color(DvzVisual* visual, cvec4 color)
+void dvz_marker_edge_color(DvzVisual* visual, DvzColor color)
 {
+#if DVZ_COLOR_CVEC4
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
     float r = color[0] / 255.0;
     float g = color[1] / 255.0;
     float b = color[2] / 255.0;
     float a = color[3] / 255.0;
+
     dvz_visual_param(visual, 2, 0, (vec4){r, g, b, a});
+#else
+    dvz_visual_param(visual, 2, 0, color);
+#endif
 }
 
 

@@ -143,7 +143,7 @@ DvzShape dvz_shape_obj(const char* file_path)
 
     shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    shape.color = (cvec4*)calloc(vertex_count, sizeof(cvec4));
+    shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
     shape.texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
 

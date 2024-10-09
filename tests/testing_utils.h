@@ -323,10 +323,6 @@ static void triangle_commands(
     uint32_t width = framebuffers->attachments[0]->shape[0];
     uint32_t height = framebuffers->attachments[0]->shape[1];
     uint32_t n_vertices = 3;
-    // (uint32_t)(br.size / sizeof(TestVertex));
-    // n_vertices = n_vertices > 0 ? n_vertices : 3;
-    // log_debug("refill n vertices: %d", n_vertices);
-    // ASSERT(n_vertices > 0);
 
     ASSERT(width > 0);
     ASSERT(height > 0);
@@ -435,7 +431,7 @@ static void* graphics_scatter(DvzBatch* batch, DvzId dat_id, const uint32_t n)
         data[i].size = 50;
 
         dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = 128;
+        data[i].color[3] = TO_ALPHA(128);
     }
 
     dvz_upload_dat(batch, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);

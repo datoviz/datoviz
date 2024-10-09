@@ -32,17 +32,17 @@ int test_colormaps_default(TstSuite* suite)
     cvec4 color = {0};
     cvec4 expected = {0, 0, 0, 255};
 
-    dvz_colormap(cmap, 0, color);
+    dvz_colormap_8bit(cmap, 0, color);
     expected[0] = 255;
     AEn(4, color, expected);
 
-    dvz_colormap(cmap, 128, color);
+    dvz_colormap_8bit(cmap, 128, color);
     expected[0] = 0;
     expected[1] = 255;
     expected[2] = 245;
     AEn(4, color, expected);
 
-    dvz_colormap(cmap, 255, color);
+    dvz_colormap_8bit(cmap, 255, color);
     expected[0] = 255;
     expected[1] = 0;
     expected[2] = 23;
@@ -58,27 +58,27 @@ int test_colormaps_scale(TstSuite* suite)
     ANN(suite);
 
     DvzColormap cmap = DVZ_CMAP_HSV;
-    cvec4 color = {0};
-    cvec4 expected = {0, 0, 0, 255};
+    DvzColor color = {0};
+    DvzColor expected = {0, 0, 0, DVZ_ALPHA_MAX};
     float vmin = -1;
     float vmax = +1;
 
     dvz_colormap_scale(cmap, -1, vmin, vmax, color);
-    expected[0] = 255;
+    expected[0] = DVZ_ALPHA_MAX;
     expected[1] = 0;
     expected[2] = 0;
     AEn(4, color, expected);
 
     dvz_colormap_scale(cmap, 0, vmin, vmax, color);
     expected[0] = 0;
-    expected[1] = 255;
-    expected[2] = 245;
+    expected[1] = DVZ_ALPHA_MAX;
+    expected[2] = TO_ALPHA(245);
     AEn(4, color, expected);
 
     dvz_colormap_scale(cmap, 1, vmin, vmax, color);
-    expected[0] = 255;
+    expected[0] = DVZ_ALPHA_MAX;
     expected[1] = 0;
-    expected[2] = 23;
+    expected[2] = TO_ALPHA(23);
     AEn(4, color, expected);
 
     return 0;
@@ -99,7 +99,7 @@ int test_colormaps_array(TstSuite* suite)
     {
         values[i] = -1 + 2.0 / (n - 1) * i;
     }
-    cvec4* colors = (cvec4*)calloc(n, sizeof(cvec4));
+    DvzColor* colors = (DvzColor*)calloc(n, sizeof(DvzColor));
     float vmin = -1, vmax = +1;
 
     dvz_colormap_array(cmap, n, values, vmin, vmax, colors);
@@ -107,8 +107,10 @@ int test_colormaps_array(TstSuite* suite)
     // {
     //     printf("%d %d %d %d \n", colors[i][0], colors[i][1], colors[i][2], colors[i][3]);
     // }
-    AT(memcmp(colors[0], (uint8_t[]){255, 0, 0, 255}, sizeof(cvec4)) == 0);
-    AT(memcmp(colors[n - 1], (uint8_t[]){255, 0, 23, 255}, sizeof(cvec4)) == 0);
+    AT(memcmp(colors[0], (DvzAlpha[]){DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}, sizeof(DvzColor)) == 0);
+    AT(memcmp(
+           colors[n - 1], (DvzAlpha[]){DVZ_ALPHA_MAX, 0, TO_ALPHA(23), DVZ_ALPHA_MAX},
+           sizeof(DvzColor)) == 0);
 
     FREE(colors);
     FREE(values);
@@ -200,14 +202,14 @@ int test_colormaps_array(TstSuite* suite)
 //     DvzColormap cmap = DVZ_CMAP_BLUES;
 //     double vmin = -1;
 //     double vmax = +1;
-//     cvec4 color = {0};
+//     DvzColor color = {0};
 
 //     uint32_t count = 100;
 //     double* values = calloc(count, sizeof(double));
 //     for (uint32_t i = 0; i < count; i++)
 //         values[i] = -1.0 + 2.0 * i / (double)(count - 1);
 
-//     cvec4* colors = calloc(count, sizeof(cvec4));
+//     DvzColor* colors = calloc(count, sizeof(DvzColor));
 //     dvz_colormap_array(cmap, count, values, vmin, vmax, colors);
 //     for (uint32_t i = 0; i < count; i++)
 //     {

@@ -50,7 +50,7 @@ int test_basic_1(TstSuite* suite)
     dvz_basic_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_color(n, 128);
+    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
     dvz_basic_color(visual, 0, n, color, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -86,7 +86,7 @@ int test_basic_2(TstSuite* suite)
     dvz_basic_position(visual, 0, n, pos, 0);
 
     // Color.
-    cvec4* color = dvz_mock_cmap(n, DVZ_CMAP_HSV, 255);
+    DvzColor* color = dvz_mock_cmap(n, DVZ_CMAP_HSV, DVZ_ALPHA_MAX);
     dvz_basic_color(visual, 0, n, color, 0);
 
     // Group.
