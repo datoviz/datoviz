@@ -196,7 +196,7 @@ void dvz_basic_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -406,10 +406,21 @@ void dvz_circular_3D(
 
 ### `dvz_colormap()`
 
-Fetch a color from a colormap and a value.
+Fetch a color from a colormap and a value (either 8-bit or float, depending on DVZ_COLOR_CVEC4).
 
 ```c
 void dvz_colormap(
+    DvzColormap cmap,  // the colormap
+    uint8_t value,  // the value
+)
+```
+
+### `dvz_colormap_8bit()`
+
+Fetch a color from a colormap and a value (8-bit version).
+
+```c
+void dvz_colormap_8bit(
     DvzColormap cmap,  // the colormap
     uint8_t value,  // the value
 )
@@ -719,7 +730,7 @@ void dvz_glyph_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -1059,7 +1070,7 @@ void dvz_image_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the image colors
+    DvzColor* values,  // the image colors
     int flags,  // the data update flags
 )
 ```
@@ -1071,7 +1082,7 @@ Set the edge color.
 ```c
 void dvz_image_edge_color(
     DvzVisual* visual,  // the visual
-    cvec4 color,  // the edge color
+    DvzColor color,  // the edge color
 )
 ```
 
@@ -1244,7 +1255,7 @@ void dvz_marker_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -1256,7 +1267,7 @@ Set the marker edge color.
 ```c
 void dvz_marker_edge_color(
     DvzVisual* visual,  // the visual
-    cvec4 color,  // the edge color
+    DvzColor color,  // the edge color
 )
 ```
 
@@ -1376,7 +1387,7 @@ void dvz_mesh_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the vertex colors
+    DvzColor* values,  // the vertex colors
     int flags,  // the data update flags
 )
 ```
@@ -1626,7 +1637,7 @@ void dvz_monoglyph_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -1689,7 +1700,7 @@ All-in-one function for multiline text.
 void dvz_monoglyph_textarea(
     DvzVisual* visual,  // the visual
     vec3 pos,  // the text position
-    cvec4 color,  // the text color
+    DvzColor color,  // the text color
     float size,  // the glyph size
     char* text,  // the text, can contain `\n` new lines
 )
@@ -2209,7 +2220,7 @@ void dvz_path_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -2282,7 +2293,7 @@ void dvz_pixel_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -2332,7 +2343,7 @@ void dvz_point_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -2466,7 +2477,7 @@ void dvz_segment_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* values,  // the colors of the items to update
+    DvzColor* values,  // the colors of the items to update
     int flags,  // the data update flags
 )
 ```
@@ -2533,7 +2544,7 @@ Create a cone shape.
 ```c
 DvzShape dvz_shape_cone(  // returns: the shape
     uint32_t count,  // the number of points along the disc border
-    cvec4 color,  // the cone color
+    DvzColor color,  // the cone color
 )
 ```
 
@@ -2543,7 +2554,7 @@ Create a cube shape.
 
 ```c
 DvzShape dvz_shape_cube(  // returns: the shape
-    cvec4* colors,  // the colors of the six faces
+    DvzColor* colors,  // the colors of the six faces
 )
 ```
 
@@ -2554,7 +2565,7 @@ Create a cylinder shape.
 ```c
 DvzShape dvz_shape_cylinder(  // returns: the shape
     uint32_t count,  // the number of points along the cylinder border
-    cvec4 color,  // the cylinder color
+    DvzColor color,  // the cylinder color
 )
 ```
 
@@ -2575,7 +2586,7 @@ Create a disc shape.
 ```c
 DvzShape dvz_shape_disc(  // returns: the shape
     uint32_t count,  // the number of points along the disc border
-    cvec4 color,  // the disc color
+    DvzColor color,  // the disc color
 )
 ```
 
@@ -2638,7 +2649,7 @@ Create a polygon shape using the simple earcut polygon triangulation algorithm.
 DvzShape dvz_shape_polygon(  // returns: the shape
     uint32_t count,  // the number of points along the polygon border
     dvec2* points,  // the points 2D coordinates
-    cvec4 color,  // the polygon color
+    DvzColor color,  // the polygon color
 )
 ```
 
@@ -2694,7 +2705,7 @@ Create a sphere shape.
 DvzShape dvz_shape_sphere(  // returns: the shape
     uint32_t rows,  // the number of rows
     uint32_t cols,  // the number of columns
-    cvec4 color,  // the sphere color
+    DvzColor color,  // the sphere color
 )
 ```
 
@@ -2704,7 +2715,7 @@ Create a square shape.
 
 ```c
 DvzShape dvz_shape_square(  // returns: the shape
-    cvec4 color,  // the square color
+    DvzColor color,  // the square color
 )
 ```
 
@@ -2717,7 +2728,7 @@ DvzShape dvz_shape_surface(  // returns: the shape
     uint32_t row_count,  // number of rows
     uint32_t col_count,  // number of cols
     float* heights,  // a pointer to row_count*col_count height values (floats)
-    cvec4* colors,  // a pointer to row_count*col_count color values (cvec4)
+    DvzColor* colors,  // a pointer to row_count*col_count color values (cvec4 or vec4)
     vec3 o,  // the origin
     vec3 u,  // the unit vector parallel to each column
     vec3 v,  // the unit vector parallel to each row
@@ -2869,7 +2880,7 @@ void dvz_sphere_color(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    cvec4* color,  // the sphere colors
+    DvzColor* color,  // the sphere colors
     int flags,  // the data update flags
 )
 ```
@@ -3335,9 +3346,9 @@ vec3* dvz_mock_circle(  // returns: the positions
 Generate a set of HSV colors.
 
 ```c
-cvec4* dvz_mock_cmap(  // returns: colors
+DvzColor* dvz_mock_cmap(  // returns: colors
     uint32_t count,  // the number of colors to generate
-    uint8_t alpha,  // the alpha value
+    DvzAlpha alpha,  // the alpha value
 )
 ```
 
@@ -3346,9 +3357,9 @@ cvec4* dvz_mock_cmap(  // returns: colors
 Generate a set of random colors.
 
 ```c
-cvec4* dvz_mock_color(  // returns: random colors
+DvzColor* dvz_mock_color(  // returns: random colors
     uint32_t count,  // the number of colors to generate
-    uint8_t alpha,  // the alpha value
+    DvzAlpha alpha,  // the alpha value
 )
 ```
 
@@ -3403,9 +3414,9 @@ float* dvz_mock_linspace(  // returns: the values
 Repeat a color in an array.
 
 ```c
-cvec4* dvz_mock_monochrome(  // returns: colors
+DvzColor* dvz_mock_monochrome(  // returns: colors
     uint32_t count,  // the number of colors to generate
-    cvec4 mono,  // the color to repeat
+    DvzColor mono,  // the color to repeat
 )
 ```
 
@@ -3629,6 +3640,7 @@ Display information about all requests in the batch.
 ```c
 void dvz_batch_print(
     DvzBatch* batch,  // the batch
+    int flags,  // the flags
 )
 ```
 
@@ -3992,6 +4004,7 @@ Display information about a request.
 ```c
 void dvz_request_print(
     DvzRequest* req,  // the request
+    int flags,  // the flags
 )
 ```
 
@@ -5131,6 +5144,13 @@ DVZ_GRAPHICS_REQUEST_FLAGS_NONE
 DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN
 ```
 
+### `DvzPrintFlagsFlags`
+
+```
+DVZ_PRINT_FLAGS_NONE
+DVZ_PRINT_FLAGS_DATA
+```
+
 ## Structures
 
 ### `DvzAtlasFont`
@@ -5598,7 +5618,7 @@ struct DvzShape
     uint32_t index_count
     vec3* pos
     vec3* normal
-    cvec4* color
+    DvzColor* color
     vec4* texcoords
     float* isoline
     vec3* d_left

@@ -189,6 +189,10 @@ DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
 A_ = array_pointer
 S_ = char_pointer
 V_ = WrappedValue
+DVZ_ALPHA_MAX = 255
+DVZ_COLOR_CVEC4 = 1
+DvzColor = ctypes.c_uint8 * 4
+DvzAlpha = ctypes.c_uint8
 
 
 # ===============================================================================
@@ -989,6 +993,11 @@ class DvzGraphicsRequestFlags(CtypesEnum):
     DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000
 
 
+class DvzPrintFlagsFlags(CtypesEnum):
+    DVZ_PRINT_FLAGS_NONE = 0x0000
+    DVZ_PRINT_FLAGS_DATA = 0x0001
+
+
 # Function aliases
 
 APP_FLAGS_NONE = 0x000000
@@ -1580,6 +1589,8 @@ KEY_MENU = 348
 KEY_LAST = 348
 GRAPHICS_REQUEST_FLAGS_NONE = 0x0000
 GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000
+PRINT_FLAGS_NONE = 0x0000
+PRINT_FLAGS_DATA = 0x0001
 
 
 # ===============================================================================
@@ -1603,6 +1614,10 @@ class DvzCamera(ctypes.Structure):
 
 
 class DvzCapType(ctypes.Structure):
+    pass
+
+
+class DvzColor(ctypes.Structure):
     pass
 
 
@@ -1692,7 +1707,7 @@ class DvzShape(ctypes.Structure):
         ("index_count", ctypes.c_uint32),
         ("pos", ctypes.POINTER(ctypes.c_float * 3)),
         ("normal", ctypes.POINTER(ctypes.c_float * 3)),
-        ("color", ctypes.POINTER(ctypes.c_uint8 * 4)),
+        ("color", ctypes.POINTER(DvzColor)),
         ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
         ("isoline", ctypes.POINTER(ctypes.c_float)),
         ("d_left", ctypes.POINTER(ctypes.c_float * 3)),
@@ -2875,7 +2890,27 @@ visual_show.argtypes = [
 # Function dvz_colormap()
 colormap = dvz.dvz_colormap
 colormap.__doc__ = """
-Fetch a color from a colormap and a value.
+Fetch a color from a colormap and a value (either 8-bit or float, depending on DVZ_COLOR_CVEC4).
+
+Parameters
+----------
+cmap : DvzColormap
+    the colormap
+value : uint8_t
+    the value
+color : DvzColor (out parameter)
+    the fetched color
+"""
+colormap.argtypes = [
+    DvzColormap,  # DvzColormap cmap
+    ctypes.c_uint8,  # uint8_t value
+    DvzColor,  # DvzColor color
+]
+
+# Function dvz_colormap_8bit()
+colormap_8bit = dvz.dvz_colormap_8bit
+colormap_8bit.__doc__ = """
+Fetch a color from a colormap and a value (8-bit version).
 
 Parameters
 ----------
@@ -2886,7 +2921,7 @@ value : uint8_t
 color : cvec4 (out parameter)
     the fetched color
 """
-colormap.argtypes = [
+colormap_8bit.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint8,  # uint8_t value
     ctypes.c_uint8 * 4,  # cvec4 color
@@ -2907,7 +2942,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-color : cvec4 (out parameter)
+color : DvzColor (out parameter)
     the fetched color
 """
 colormap_scale.argtypes = [
@@ -2915,7 +2950,7 @@ colormap_scale.argtypes = [
     ctypes.c_float,  # float value
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 
 # Function dvz_colormap_array()
@@ -2935,7 +2970,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-out : cvec4* (out parameter)
+out : DvzColor* (out parameter)
     the fetched colors
 """
 colormap_array.argtypes = [
@@ -2944,7 +2979,7 @@ colormap_array.argtypes = [
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* out
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* out
 ]
 
 # Function dvz_compute_normals()
@@ -3188,7 +3223,7 @@ Create a square shape.
 
 Parameters
 ----------
-color : cvec4
+color : DvzColor
     the square color
 
 Returns
@@ -3197,7 +3232,7 @@ type
     the shape
 """
 shape_square.argtypes = [
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_square.restype = DvzShape
 
@@ -3210,7 +3245,7 @@ Parameters
 ----------
 count : uint32_t
     the number of points along the disc border
-color : cvec4
+color : DvzColor
     the disc color
 
 Returns
@@ -3220,7 +3255,7 @@ type
 """
 shape_disc.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_disc.restype = DvzShape
 
@@ -3235,7 +3270,7 @@ count : uint32_t
     the number of points along the polygon border
 points : dvec2*
     the points 2D coordinates
-color : cvec4
+color : DvzColor
     the polygon color
 
 Returns
@@ -3246,7 +3281,7 @@ type
 shape_polygon.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* points
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_polygon.restype = DvzShape
 
@@ -3263,8 +3298,8 @@ col_count : uint32_t
     number of cols
 heights : float*
     a pointer to row_count*col_count height values (floats)
-colors : cvec4*
-    a pointer to row_count*col_count color values (cvec4)
+colors : DvzColor*
+    a pointer to row_count*col_count color values (cvec4 or vec4)
 o : vec3
     the origin
 u : vec3
@@ -3283,7 +3318,7 @@ shape_surface.argtypes = [
     ctypes.c_uint32,  # uint32_t row_count
     ctypes.c_uint32,  # uint32_t col_count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* heights
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* colors
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
     ctypes.c_float * 3,  # vec3 o
     ctypes.c_float * 3,  # vec3 u
     ctypes.c_float * 3,  # vec3 v
@@ -3298,7 +3333,7 @@ Create a cube shape.
 
 Parameters
 ----------
-colors : cvec4*
+colors : DvzColor*
     the colors of the six faces
 
 Returns
@@ -3307,7 +3342,7 @@ type
     the shape
 """
 shape_cube.argtypes = [
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* colors
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
 ]
 shape_cube.restype = DvzShape
 
@@ -3322,7 +3357,7 @@ rows : uint32_t
     the number of rows
 cols : uint32_t
     the number of columns
-color : cvec4
+color : DvzColor
     the sphere color
 
 Returns
@@ -3333,7 +3368,7 @@ type
 shape_sphere.argtypes = [
     ctypes.c_uint32,  # uint32_t rows
     ctypes.c_uint32,  # uint32_t cols
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_sphere.restype = DvzShape
 
@@ -3346,7 +3381,7 @@ Parameters
 ----------
 count : uint32_t
     the number of points along the disc border
-color : cvec4
+color : DvzColor
     the cone color
 
 Returns
@@ -3356,7 +3391,7 @@ type
 """
 shape_cone.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_cone.restype = DvzShape
 
@@ -3369,7 +3404,7 @@ Parameters
 ----------
 count : uint32_t
     the number of points along the cylinder border
-color : cvec4
+color : DvzColor
     the cylinder color
 
 Returns
@@ -3379,7 +3414,7 @@ type
 """
 shape_cylinder.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 shape_cylinder.restype = DvzShape
 
@@ -3482,7 +3517,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -3491,7 +3526,7 @@ basic_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -3617,7 +3652,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -3626,7 +3661,7 @@ pixel_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -3709,7 +3744,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -3718,7 +3753,7 @@ point_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -3930,7 +3965,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -3939,7 +3974,7 @@ marker_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -3952,12 +3987,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : cvec4
+color : DvzColor
     the edge color
 """
 marker_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 
 # Function dvz_marker_edge_width()
@@ -4122,7 +4157,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -4131,7 +4166,7 @@ segment_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -4272,7 +4307,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -4281,7 +4316,7 @@ path_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -4792,7 +4827,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -4801,7 +4836,7 @@ glyph_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -5036,7 +5071,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the colors of the items to update
 flags : int
     the data update flags
@@ -5045,7 +5080,7 @@ monoglyph_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -5113,7 +5148,7 @@ visual : DvzVisual*
     the visual
 pos : vec3
     the text position
-color : cvec4
+color : DvzColor
     the text color
 size : float
     the glyph size
@@ -5123,7 +5158,7 @@ text : char*
 monoglyph_textarea.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 pos
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
     ctypes.c_float,  # float size
     ctypes.c_char_p,  # char* text
 ]
@@ -5285,7 +5320,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the image colors
 flags : int
     the data update flags
@@ -5294,7 +5329,7 @@ image_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -5364,12 +5399,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : cvec4
+color : DvzColor
     the edge color
 """
 image_edge_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint8 * 4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 
 # Function dvz_image_alloc()
@@ -5483,7 +5518,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : cvec4*
+values : DvzColor*
     the vertex colors
 flags : int
     the data update flags
@@ -5492,7 +5527,7 @@ mesh_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* values
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 
@@ -5769,7 +5804,7 @@ stroke : unknown
 """
 mesh_stroke.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint8 * 4,  # cvec4 rgba
+    DvzColor,  # DvzColor rgba
 ]
 
 # Function dvz_mesh_linewidth()
@@ -5911,7 +5946,7 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-color : cvec4*
+color : DvzColor*
     the sphere colors
 flags : int
     the data update flags
@@ -5920,7 +5955,7 @@ sphere_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* color
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* color
     ctypes.c_int,  # int flags
 ]
 
@@ -8433,7 +8468,7 @@ Parameters
 ----------
 count : uint32_t
     the number of colors to generate
-alpha : uint8_t
+alpha : DvzAlpha
     the alpha value
 
 Returns
@@ -8443,7 +8478,7 @@ type
 """
 mock_color.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_uint8,  # uint8_t alpha
+    DvzAlpha,  # DvzAlpha alpha
 ]
 mock_color.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
@@ -8456,7 +8491,7 @@ Parameters
 ----------
 count : uint32_t
     the number of colors to generate
-mono : cvec4
+mono : DvzColor
     the color to repeat
 
 Returns
@@ -8466,7 +8501,7 @@ type
 """
 mock_monochrome.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_uint8 * 4,  # cvec4 mono
+    DvzColor,  # DvzColor mono
 ]
 mock_monochrome.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
@@ -8479,7 +8514,7 @@ Parameters
 ----------
 count : uint32_t
     the number of colors to generate
-alpha : uint8_t
+alpha : DvzAlpha
     the alpha value
 
 Returns
@@ -8490,7 +8525,7 @@ type
 mock_cmap.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     DvzColormap,  # DvzColormap cmap
-    ctypes.c_uint8,  # uint8_t alpha
+    DvzAlpha,  # DvzAlpha alpha
 ]
 mock_cmap.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
@@ -8619,9 +8654,12 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
+flags : int
+    the flags
 """
 batch_print.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    ctypes.c_int,  # int flags
 ]
 
 # Function dvz_batch_yaml()
@@ -8754,9 +8792,12 @@ Parameters
 ----------
 req : DvzRequest*
     the request
+flags : int
+    the flags
 """
 request_print.argtypes = [
     ctypes.POINTER(DvzRequest),  # DvzRequest* req
+    ctypes.c_int,  # int flags
 ]
 
 # Function dvz_create_board()
@@ -9985,3 +10026,4 @@ record_end.argtypes = [
 ]
 record_end.restype = DvzRequest
 
+DVZ_FORMAT_COLOR = FORMAT_R8G8B8A8_UNORM

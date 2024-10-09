@@ -9,6 +9,11 @@ ROOT_DIR = Path(__file__).parent.parent
 TYPES = set()
 ENUMS = set()
 
+DVZ_COLOR_CVEC4 = 1
+DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
+DvzColor = 'ctypes.c_uint8 * 4' if DVZ_COLOR_CVEC4 else 'ctypes.c_float * 4'
+DvzAlpha = 'ctypes.c_uint8' if DVZ_COLOR_CVEC4 else 'ctypes.c_float'
+
 
 def _extract_int(s):
     try:
@@ -84,6 +89,18 @@ def c_to_dtype(type, enum_int=False, unsigned=None):
 
     elif type == 'DvzIndex':
         return 'np.uint32'
+
+    elif type == 'DvzColor':
+        if DVZ_COLOR_CVEC4:
+            return 'np.uint8', 4
+        else:
+            return 'np.float', 4
+
+    elif type == 'DvzAlpha':
+        if DVZ_COLOR_CVEC4:
+            return 'np.uint8'
+        else:
+            return 'np.float'
 
     elif type == 'float':
         return 'np.float32'
@@ -339,7 +356,16 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
         file.write('"""WARNING: DO NOT EDIT: automatically-generated file"""\n\n')
         file.write(f'__version__ = "{version}"\n')
         _include_py(file, "ctypes_header.py")
+
+        # Color type.
+        file.write(f'DVZ_ALPHA_MAX = {DVZ_ALPHA_MAX}\n')
+        file.write(f'DVZ_COLOR_CVEC4 = {DVZ_COLOR_CVEC4}\n')
+        file.write(f'DvzColor = {DvzColor}\n')
+        file.write(f'DvzAlpha = {DvzAlpha}\n')
+
         file.write(f"\n\n{out}")
+
+        file.write(f'DVZ_FORMAT_COLOR = FORMAT_R8G8B8A8_UNORM\n')
         _include_py(file, "ctypes_footer.py")
 
 

@@ -26,6 +26,13 @@ from pyparsing import (
 ROOT_DIR = Path(__file__).parent.parent
 HEADER_DIR = (ROOT_DIR / 'include').resolve()
 CACHE_PATH = ROOT_DIR / 'tools/headers.json'
+EXCLUDE_DEFINES = (
+    'DVZ_COLOR_CVEC4',
+    'DvzColor',
+    'DvzAlpha',
+    'DVZ_ALPHA_MAX',
+    'DVZ_FORMAT_COLOR',
+)
 
 LPAR, RPAR, LBRACE, RBRACE, LBRACKET, RBRACKET, COMMA, SEMICOLON, EQ, SPACE = \
     map(Suppress, "(){}[],;= ")
@@ -110,7 +117,8 @@ def parse_defines(text):
     # defineName = identifier("name") + Optional(Suppress(cStyleComment))
     define = _define + identifier("name") + _backslash + value("value")
     for item, start, stop in define.scanString(text):
-        defines[item.name] = _parse_value(item.value)
+        if item.name not in EXCLUDE_DEFINES:
+            defines[item.name] = _parse_value(item.value)
     return defines
 
 
@@ -245,6 +253,10 @@ def parse_headers():
         d = headers[filename.name]
         for v in d['enums'].values():
             ctx.update(dict(v['values']))
+
+    # HACK: avoid reference to Python type object "float"
+    ctx['float'] = 'float'
+
     for filename in iter_header_files():
         d = headers[filename.name]
         d['defines'] = _resolve_defines(d['defines'], ctx)

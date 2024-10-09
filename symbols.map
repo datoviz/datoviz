@@ -32,6 +32,7 @@ dvz_visual_clip
 dvz_visual_depth
 dvz_visual_show
 dvz_colormap
+dvz_colormap_8bit
 dvz_colormap_scale
 dvz_colormap_array
 dvz_compute_normals
