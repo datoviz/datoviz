@@ -67,7 +67,7 @@ int main(int argc, char** argv)
     {
         // Generate colors using the "bwr" colormap, in reverse (blue -> red).
         dvz_colormap_scale(
-            DVZ_CMAP_BWR, shape.vertex_count - 1 - i, 0, shape.vertex_count, shape.color[i]);
+            DVZ_CMAP_COOLWARM, shape.vertex_count - 1 - i, 0, shape.vertex_count, shape.color[i]);
     }
 
     // Create a mesh visual with basic lightingsupport.
