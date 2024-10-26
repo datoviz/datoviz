@@ -2079,22 +2079,35 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
 
 
 /**
- * Set the mesh light position.
+ * Set the light direction.
  *
  * @param visual the mesh
- * @param pos the light position
+ * @param idx the light index (0, 1, 2, or 3)
+ * @param dir the light direction
  */
-DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos);
+DVZ_EXPORT void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir);
 
 
 
 /**
- * Set the mesh light parameters.
+ * Set the light color.
  *
  * @param visual the mesh
+ * @param idx the light index (0, 1, 2, or 3)
+ * @param color the light color (rgba, but the a component is ignored)
+ */
+DVZ_EXPORT void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba);
+
+
+
+/**
+ * Set the light parameters.
+ *
+ * @param visual the mesh
+ * @param idx the light index (0, 1, 2, or 3)
  * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
  */
-DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, vec4 params);
+DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params);
 
 
 

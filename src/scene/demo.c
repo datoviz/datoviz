@@ -388,10 +388,6 @@ void dvz_demo(void)
     // 3,0  MESH
     DvzShape shape = dvz_shape_cube(color);
     DvzVisual* mesh = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
-    {
-        dvz_mesh_light_pos(mesh, (vec3){-1, 0, +10});
-        dvz_mesh_light_params(mesh, (vec4){.5, .5, .5, 16});
-    }
 
     legend(batch, p30, "MESH", &af);
     dvz_arcball_initial(dvz_panel_arcball(p30), (vec3){+0.4, -0.8, +2.9});

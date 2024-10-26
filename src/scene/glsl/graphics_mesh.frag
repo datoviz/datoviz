@@ -134,17 +134,16 @@ void main()
     CLIP;
 
     // DEBUG
-    // out_color = vec4(in_isoline, 1, 0, 1);
+    // out_color = vec4(params.light_color[0].xyz, 1);
     // return;
 
     // if (in_clip < -eps)
     //     discard;
 
-    vec3 normal, light_dir, ambient, diffuse, view_dir, reflect_dir, specular, color;
+    vec3 normal, light_dir, light_color, ambient, diffuse, view_dir, reflect_dir, specular, color;
     vec4 lpar;
     vec3 lpos;
-    vec3 light_color = vec3(1, 1, 1); // TODO: customizable light color
-    float diff, spec;
+    float diff, spec, view_facing;
 
     // Stroke parameters.
     float linewidth = params.stroke.a;
@@ -172,31 +171,40 @@ void main()
     if (MESH_LIGHTING > 0)
     {
         pos_tr = ((mvp.model * vec4(in_pos, 1.0))).xyz;
-
-        // Light position and params.
-        lpos = params.light_pos.xyz;
-        lpar = params.light_params;
-
-        // Light direction.
-        light_dir = normalize(lpos - pos_tr);
-
-        // Ambient component.
-        ambient = light_color;
-
-        // Diffuse component.
-        // HACK: normals on both faces
-        diff = max(dot(light_dir, normal), 0.0);
-        diff = max(diff, max(dot(light_dir, -normal), 0.0));
-        diffuse = diff * light_color;
-
-        // Specular component.
         view_dir = normalize(-mvp.view[3].xyz - pos_tr);
-        reflect_dir = reflect(-light_dir, normal);
-        spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-        specular = spec * light_color;
 
-        // Total color.
-        out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+        for (int i = 0; i < 4; i++)
+        {
+            // Light position and params.
+            lpar = params.light_params[i];
+            if (length(lpar) == 0)
+                continue;
+
+            // Light direction.
+            // light_dir = normalize(lpos - pos_tr);
+            // TODO OPTIM: normalize on the CPU instead, in dvz_mesh_light_dir()
+            light_dir = normalize(params.light_dir[i].xyz);
+
+            // Color.
+            light_color = params.light_color[i].xyz;
+            ambient = light_color;
+
+            // Diffuse component.
+            view_facing = max(dot(normal, view_dir), 0.0);
+            diff = max(dot(normal, -light_dir), 0.0);
+            // HACK: normals on both faces
+            // diff = max(diff, max(dot(light_dir, -normal), 0.0));
+            diffuse = diff * view_facing * light_color;
+
+            // Specular component.
+            reflect_dir = reflect(light_dir, normal);
+            spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
+            specular = spec * view_facing * light_color;
+
+            // Total color.
+            out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+        }
+
         // by convention, alpha channel is in 4th component of this attribute
         out_color.a = in_uvcolor.a;
     }

@@ -73,10 +73,6 @@ int main(int argc, char** argv)
     // Create a mesh visual with basic lightingsupport.
     DvzVisual* visual = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
 
-    // Mesh lighting parameters.
-    dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});       // Light position
-    dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16}); // Ambient, diffuse, specular, exponent.
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, visual, 0);
 

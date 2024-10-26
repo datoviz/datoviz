@@ -56,15 +56,6 @@ int test_mesh_1(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
 
-    // Lighting.
-    if (flags & DVZ_MESH_FLAGS_LIGHTING)
-    {
-        dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
-
-        // Light parameters: ambient, diffuse, specular, exponent.
-        dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
-    }
-
     // Create and upload the texture.
     if (flags & DVZ_MESH_FLAGS_TEXTURED)
     {
@@ -429,9 +420,9 @@ int test_mesh_surface(TstSuite* suite)
     uint32_t col_count = row_count;
 
     // Grid parameters.
-    vec3 o = {-1, 0, -1};
-    vec3 u = {2.0 / (row_count - 1), 0, 0};
-    vec3 v = {0, 0, 2.0 / (col_count - 1)};
+    vec3 o = {-1, 0, -1};                   // upper left corner of the matrix
+    vec3 u = {0, 0, 2.0 / (col_count - 1)}; // along the i axis (vertical)
+    vec3 v = {2.0 / (row_count - 1), 0, 0}; // along the j axis (horizontal)
 
     // Allocate heights and colors arrays.
     float* heights = (float*)calloc(row_count * col_count, sizeof(float));
@@ -466,16 +457,16 @@ int test_mesh_surface(TstSuite* suite)
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR;
+    int flags = DVZ_MESH_FLAGS_LIGHTING; // | DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+
+    // Lighting
+    // dvz_mesh_light_dir(visual, 0, (vec3){0, -1, 0});
+    // dvz_mesh_light_params(visual, 0, (vec4){0, 0, 1, 16});
 
     // Wireframe.
     // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
-    dvz_mesh_linewidth(visual, 0.25f);
-
-    // Lighting.
-    dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
-    dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
+    // dvz_mesh_linewidth(visual, .5);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -549,12 +540,20 @@ int test_mesh_obj(TstSuite* suite)
     int flags = DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_ISOLINE;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
-    // Lighting.
-    if (flags & DVZ_MESH_FLAGS_LIGHTING)
-    {
-        dvz_mesh_light_pos(visual, (vec3){-1, +1, +10});
-        dvz_mesh_light_params(visual, (vec4){.5, .5, .5, 16});
-    }
+    // Two lights.
+    dvz_mesh_light_dir(visual, 0, (vec3){+1, -0.25, -.5});
+    dvz_mesh_light_params(visual, 0, (vec4){0.1, .5, .5, 16});
+
+    dvz_mesh_light_dir(visual, 1, (vec3){-1, -0.25, -.5});
+    dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
+
+#if DVZ_COLOR_CVEC4
+    dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0});
+    dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0});
+#else
+    dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0});
+    dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0});
+#endif
 
     vec4 stroke = {.25, .25, .25, .5f};
     // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});

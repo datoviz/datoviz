@@ -101,6 +101,7 @@ void dvz_compute_normals(
     for (uint32_t i = 0; i < vertex_count; i++)
     {
         glm_vec3_normalize(normal[i]);
+        // glm_vec3_print(normal[i], stdout);
     }
 }
 

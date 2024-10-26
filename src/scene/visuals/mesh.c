@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/mesh.h"
+#include "_cglm.h"
 #include "_map.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
@@ -34,6 +35,19 @@
 
 #define STROKE    TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
 #define LINEWIDTH 2.0f
+#define DEFAULT_LIGHT_DIR                                                                         \
+    (vec3) { 0.25, -0.25, -1 }
+
+#if DVZ_COLOR_CVEC4
+#define DEFAULT_LIGHT_COLOR                                                                       \
+    (cvec4) { 255, 255, 255, 255 }
+#else
+#define DEFAULT_LIGHT_COLOR                                                                       \
+    (vec3) { 1, 1, 1, 1 }
+#endif
+
+#define DEFAULT_LIGHT_PARAMS                                                                      \
+    (vec4) { .3, .7, .4, 16 }
 
 
 
@@ -58,6 +72,18 @@ static void _visual_callback(
     }
 
     dvz_visual_instance(visual, canvas, first, 0, count, first_instance, instance_count);
+}
+
+
+
+static void* _get_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx)
+{
+    ANN(visual);
+
+    DvzParams* params = visual->params[slot_idx];
+    ANN(params);
+
+    return dvz_params_get(params, attr_idx);
 }
 
 
@@ -147,16 +173,23 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
-    dvz_params_attr(params, 0, FIELD(DvzMeshParams, light_pos));
-    dvz_params_attr(params, 1, FIELD(DvzMeshParams, light_params));
-    dvz_params_attr(params, 2, FIELD(DvzMeshParams, stroke));
-    dvz_params_attr(params, 3, FIELD(DvzMeshParams, isoline_count));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_DIR, FIELD(DvzMeshParams, light_dir));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_COLOR, FIELD(DvzMeshParams, light_color));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_PARAMS, FIELD(DvzMeshParams, light_params));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_STROKE, FIELD(DvzMeshParams, stroke));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_ISOLINE_COUNT, FIELD(DvzMeshParams, isoline_count));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
         visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 
     // Default stroke parameters.
+    if (lighting > 0)
+    {
+        dvz_mesh_light_color(visual, 0, DEFAULT_LIGHT_COLOR);
+        dvz_mesh_light_dir(visual, 0, DEFAULT_LIGHT_DIR);
+        dvz_mesh_light_params(visual, 0, DEFAULT_LIGHT_PARAMS);
+    }
     dvz_mesh_stroke(visual, (DvzColor){STROKE});
     dvz_mesh_linewidth(visual, LINEWIDTH);
     dvz_mesh_density(visual, 10);
@@ -297,7 +330,7 @@ void dvz_mesh_texture(
 
 
 
-void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos)
+void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -306,13 +339,21 @@ void dvz_mesh_light_pos(DvzVisual* visual, vec3 pos)
             "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
         return;
     }
-    vec4 pos_ = {pos[0], pos[1], pos[2], 0};
-    dvz_visual_param(visual, 2, 0, pos_);
+
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_DIR;
+    mat4* light_dir = _get_param(visual, slot_idx, attr_idx);
+
+    // NOTE: matrix order is transposed between C and glsl
+    light_dir[0][idx][0] = dir[0];
+    light_dir[0][idx][1] = dir[1];
+    light_dir[0][idx][2] = dir[2];
+    dvz_visual_param(visual, slot_idx, attr_idx, light_dir);
 }
 
 
 
-void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
+void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -321,7 +362,49 @@ void dvz_mesh_light_params(DvzVisual* visual, vec4 params)
             "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
         return;
     }
-    dvz_visual_param(visual, 2, 1, params);
+
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_COLOR;
+    mat4* light_color = _get_param(visual, slot_idx, attr_idx);
+
+    // NOTE: matrix order is transposed between C and glsl
+
+    // Need to convert to float rgb as this is what the shader expects.
+#if DVZ_COLOR_CVEC4
+    light_color[0][idx][0] = rgba[0] / 255.0;
+    light_color[0][idx][1] = rgba[1] / 255.0;
+    light_color[0][idx][2] = rgba[2] / 255.0;
+#else
+    light_color[0][idx][0] = rgba[0];
+    light_color[0][idx][1] = rgba[1];
+    light_color[0][idx][2] = rgba[2];
+#endif
+
+    dvz_visual_param(visual, slot_idx, attr_idx, light_color);
+}
+
+
+
+void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params)
+{
+    ANN(visual);
+    if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
+    {
+        log_error(
+            "lighting support needs to be activated with the mesh flag DVZ_MESH_FLAGS_LIGHTING");
+        return;
+    }
+
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_PARAMS;
+    mat4* light_params = _get_param(visual, slot_idx, attr_idx);
+
+    // NOTE: matrix order is transposed between C and glsl
+    light_params[0][idx][0] = params[0];
+    light_params[0][idx][1] = params[1];
+    light_params[0][idx][2] = params[2];
+    light_params[0][idx][3] = params[3];
+    dvz_visual_param(visual, slot_idx, attr_idx, light_params);
 }
 
 
@@ -330,14 +413,11 @@ void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba)
 {
     ANN(visual);
 
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = 2;
-
-    DvzParams* params = visual->params[slot_idx];
-    ANN(params);
-
     // HACK: this is to keep the alpha component.
-    vec4* item = (vec4*)dvz_params_get(params, attr_idx);
+    uint32_t slot_idx = 2;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_STROKE;
+
+    vec4* item = _get_param(visual, slot_idx, attr_idx);
     ANN(item);
 
     vec4 stroke = {0};
@@ -363,18 +443,15 @@ void dvz_mesh_linewidth(DvzVisual* visual, float stroke_width)
     ANN(visual);
 
     uint32_t slot_idx = 2;
-    uint32_t attr_idx = 2;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_STROKE;
 
-    DvzParams* params = visual->params[slot_idx];
-    ANN(params);
-
-    void* item = dvz_params_get(params, attr_idx);
+    vec4* item = _get_param(visual, slot_idx, attr_idx);
     ANN(item);
 
     vec4 stroke = {0};
     memcpy(stroke, item, sizeof(vec4));
     stroke[3] = stroke_width;
-    dvz_visual_param(visual, 2, 2, stroke);
+    dvz_visual_param(visual, 2, attr_idx, stroke);
 }
 
 
@@ -382,7 +459,7 @@ void dvz_mesh_linewidth(DvzVisual* visual, float stroke_width)
 void dvz_mesh_density(DvzVisual* visual, uint32_t count)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, 3, &count);
+    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_ISOLINE_COUNT, &count);
 }
 
 

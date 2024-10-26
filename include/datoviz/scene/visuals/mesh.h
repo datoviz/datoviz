@@ -69,11 +69,23 @@ struct DvzMeshTexturedVertex
 
 struct DvzMeshParams
 {
-    vec4 light_pos;         /* light position */
-    vec4 light_params;      /* ambient, diffuse, specular, exponent */
+    mat4 light_dir;         /* x, y, z, *** */
+    mat4 light_color;       /* r, g, b, *** */
+    mat4 light_params;      /* ambient, diffuse, specular, exponent */
     vec4 stroke;            /* r, g, b, stroke width */
     uint32_t isoline_count; /* number of isolines */
 };
+
+
+
+typedef enum
+{
+    DVZ_MESH_PARAMS_LIGHT_DIR,
+    DVZ_MESH_PARAMS_LIGHT_COLOR,
+    DVZ_MESH_PARAMS_LIGHT_PARAMS,
+    DVZ_MESH_PARAMS_STROKE,
+    DVZ_MESH_PARAMS_ISOLINE_COUNT,
+} DvzMeshParamsEnum;
 
 
 

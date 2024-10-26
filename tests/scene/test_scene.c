@@ -217,11 +217,6 @@ int test_scene_3(TstSuite* suite)
     int flags = DVZ_MESH_FLAGS_LIGHTING;
     DvzVisual* mesh = dvz_mesh_shape(batch, &disc, flags);
 
-    // Params.
-    // ambient, diffuse, specular, specular exponent
-    dvz_mesh_light_pos(mesh, (vec3){-1, +1, +5});
-    dvz_mesh_light_params(mesh, (vec4){.25, .25, .5, 16});
-
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, mesh, 0);
 
