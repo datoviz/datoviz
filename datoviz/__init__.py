@@ -2450,7 +2450,7 @@ panel_destroy.argtypes = [
 # Function dvz_visual_update()
 visual_update = dvz.dvz_visual_update
 visual_update.__doc__ = """
-Update a visual after its data has changed.
+Update a visual after its data has changed.  Note: this function is automatically called in the event loop internally, so you should not need to use it in most cases.
 
 Parameters
 ----------
