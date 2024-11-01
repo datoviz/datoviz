@@ -89,8 +89,6 @@ shape = dvz.shape_cube(colors)
 
 # Create a mesh visual directly instantiated with the shape data.
 visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)
-dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
-dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
 dvz.panel_visual(panel, visual, 0)

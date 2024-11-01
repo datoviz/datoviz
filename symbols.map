@@ -159,7 +159,8 @@ dvz_mesh_contour
 dvz_mesh_texture
 dvz_mesh_index
 dvz_mesh_alloc
-dvz_mesh_light_pos
+dvz_mesh_light_dir
+dvz_mesh_light_color
 dvz_mesh_light_params
 dvz_mesh_stroke
 dvz_mesh_linewidth

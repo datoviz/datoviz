@@ -5756,37 +5756,63 @@ mesh_alloc.argtypes = [
     ctypes.c_uint32,  # uint32_t index_count
 ]
 
-# Function dvz_mesh_light_pos()
-mesh_light_pos = dvz.dvz_mesh_light_pos
-mesh_light_pos.__doc__ = """
-Set the mesh light position.
+# Function dvz_mesh_light_dir()
+mesh_light_dir = dvz.dvz_mesh_light_dir
+mesh_light_dir.__doc__ = """
+Set the light direction.
 
 Parameters
 ----------
 visual : DvzVisual*
     the mesh
-pos : vec3
-    the light position
+idx : uint32_t
+    the light index (0, 1, 2, or 3)
+dir : vec3
+    the light direction
 """
-mesh_light_pos.argtypes = [
+mesh_light_dir.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 3,  # vec3 pos
+    ctypes.c_uint32,  # uint32_t idx
+    ctypes.c_float * 3,  # vec3 dir
+]
+
+# Function dvz_mesh_light_color()
+mesh_light_color = dvz.dvz_mesh_light_color
+mesh_light_color.__doc__ = """
+Set the light color.
+
+Parameters
+----------
+visual : DvzVisual*
+    the mesh
+idx : uint32_t
+    the light index (0, 1, 2, or 3)
+color : unknown
+    the light color (rgba, but the a component is ignored)
+"""
+mesh_light_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t idx
+    DvzColor,  # DvzColor rgba
 ]
 
 # Function dvz_mesh_light_params()
 mesh_light_params = dvz.dvz_mesh_light_params
 mesh_light_params.__doc__ = """
-Set the mesh light parameters.
+Set the light parameters.
 
 Parameters
 ----------
 visual : DvzVisual*
     the mesh
+idx : uint32_t
+    the light index (0, 1, 2, or 3)
 params : vec4
     the light parameters (vec4 ambient, diffuse, specular, exponent)
 """
 mesh_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t idx
     ctypes.c_float * 4,  # vec4 params
 ]
 

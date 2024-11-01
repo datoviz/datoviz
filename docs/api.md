@@ -1459,25 +1459,39 @@ void dvz_mesh_left(
 )
 ```
 
+### `dvz_mesh_light_color()`
+
+Set the light color.
+
+```c
+void dvz_mesh_light_color(
+    DvzVisual* visual,  // the mesh
+    uint32_t idx,  // the light index (0, 1, 2, or 3)
+     color,  // the light color (rgba, but the a component is ignored)
+)
+```
+
+### `dvz_mesh_light_dir()`
+
+Set the light direction.
+
+```c
+void dvz_mesh_light_dir(
+    DvzVisual* visual,  // the mesh
+    uint32_t idx,  // the light index (0, 1, 2, or 3)
+    vec3 dir,  // the light direction
+)
+```
+
 ### `dvz_mesh_light_params()`
 
-Set the mesh light parameters.
+Set the light parameters.
 
 ```c
 void dvz_mesh_light_params(
     DvzVisual* visual,  // the mesh
+    uint32_t idx,  // the light index (0, 1, 2, or 3)
     vec4 params,  // the light parameters (vec4 ambient, diffuse, specular, exponent)
-)
-```
-
-### `dvz_mesh_light_pos()`
-
-Set the mesh light position.
-
-```c
-void dvz_mesh_light_pos(
-    DvzVisual* visual,  // the mesh
-    vec3 pos,  // the light position
 )
 ```
 

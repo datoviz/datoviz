@@ -37,8 +37,8 @@ row_count = 250
 col_count = row_count
 n = row_count * col_count
 o = vec3(-1, 0, -1)
-u = vec3(2.0 / (row_count - 1), 0, 0)
-v = vec3(0, 0, 2.0 / (col_count - 1))
+u = vec3(0, 0, 2.0 / (col_count - 1))
+v = vec3(2.0 / (row_count - 1), 0, 0)
 
 # Allocate heights and colors arrays.
 grid = np.meshgrid(row_count, col_count)
@@ -67,7 +67,7 @@ heights = heights.ravel().astype(np.float32)
 # Colors.
 colors = np.empty((n, 4), dtype=np.uint8)
 dvz.colormap_array(
-    dvz.CMAP_PLASMA, n, -heights, -hmax, -hmin, colors)
+    dvz.CMAP_PLASMA, n, heights, hmin, hmax, colors)
 
 # Create the surface shape.
 shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
@@ -75,10 +75,6 @@ shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
 # Create the mesh visual from the surface shape.
 flags = dvz.MESH_FLAGS_LIGHTING
 visual = dvz.mesh_shape(batch, shape, flags)
-
-# Lighting parameters.
-dvz.mesh_light_pos(visual, vec3(-1, +1, +10))
-dvz.mesh_light_params(visual, vec4(.5, .5, .5, 16))
 
 # Add the visual to the panel.
 dvz.panel_visual(panel, visual, 0)
