@@ -63,8 +63,10 @@ DvzVisual* dvz_visual(DvzBatch* batch, DvzPrimitiveTopology primitive, int flags
     dvz_set_primitive(batch, visual->graphics_id, primitive);
 
     // Polygon mode.
-
     dvz_set_polygon(batch, visual->graphics_id, DVZ_POLYGON_MODE_FILL);
+
+    // Blending mode.
+    dvz_set_blend(batch, visual->graphics_id, DVZ_BLEND_STANDARD);
 
     // Visual dirty status.
     visual->status = dvz_atomic();

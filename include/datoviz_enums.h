@@ -407,52 +407,6 @@ typedef enum
 
 
 
-// Buffer type.
-// NOTE: the enum index should correspond to the buffer index in the context->buffers container
-typedef enum
-{
-    DVZ_BUFFER_TYPE_UNDEFINED,
-    DVZ_BUFFER_TYPE_STAGING,  // 1
-    DVZ_BUFFER_TYPE_VERTEX,   // 2
-    DVZ_BUFFER_TYPE_INDEX,    // 3
-    DVZ_BUFFER_TYPE_STORAGE,  // 4
-    DVZ_BUFFER_TYPE_UNIFORM,  // 5
-    DVZ_BUFFER_TYPE_INDIRECT, // 6
-} DvzBufferType;
-
-#define DVZ_BUFFER_TYPE_COUNT 6
-
-
-
-// Shader format.
-typedef enum
-{
-    DVZ_SHADER_NONE,
-    DVZ_SHADER_SPIRV,
-    DVZ_SHADER_GLSL,
-} DvzShaderFormat;
-
-
-
-// Texture axis.
-typedef enum
-{
-    DVZ_SAMPLER_AXIS_U,
-    DVZ_SAMPLER_AXIS_V,
-    DVZ_SAMPLER_AXIS_W,
-} DvzSamplerAxis;
-
-
-
-// Blend type.
-typedef enum
-{
-    DVZ_BLEND_DISABLE,
-    DVZ_BLEND_ENABLE,
-} DvzBlendType;
-
-
-
 // VkVertexInputRate wrapper.
 typedef enum
 {
@@ -518,6 +472,57 @@ typedef enum
     DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8,
     DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9,
 } DvzDescriptorType;
+
+
+
+/*************************************************************************************************/
+/*  Visual enums                                                                                 */
+/*************************************************************************************************/
+
+// Buffer type.
+// NOTE: the enum index should correspond to the buffer index in the context->buffers container
+typedef enum
+{
+    DVZ_BUFFER_TYPE_UNDEFINED,
+    DVZ_BUFFER_TYPE_STAGING,  // 1
+    DVZ_BUFFER_TYPE_VERTEX,   // 2
+    DVZ_BUFFER_TYPE_INDEX,    // 3
+    DVZ_BUFFER_TYPE_STORAGE,  // 4
+    DVZ_BUFFER_TYPE_UNIFORM,  // 5
+    DVZ_BUFFER_TYPE_INDIRECT, // 6
+} DvzBufferType;
+
+#define DVZ_BUFFER_TYPE_COUNT 6
+
+
+
+// Shader format.
+typedef enum
+{
+    DVZ_SHADER_NONE,
+    DVZ_SHADER_SPIRV,
+    DVZ_SHADER_GLSL,
+} DvzShaderFormat;
+
+
+
+// Texture axis.
+typedef enum
+{
+    DVZ_SAMPLER_AXIS_U,
+    DVZ_SAMPLER_AXIS_V,
+    DVZ_SAMPLER_AXIS_W,
+} DvzSamplerAxis;
+
+
+
+// Blend type.
+typedef enum
+{
+    DVZ_BLEND_DISABLE,
+    DVZ_BLEND_STANDARD,
+    DVZ_BLEND_OIT,
+} DvzBlendType;
 
 
 

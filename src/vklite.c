@@ -2716,8 +2716,10 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
 
     // Blend attachments.
-    VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment(true);
-    VkPipelineColorBlendAttachmentState pick_attachment = create_color_blend_attachment(false);
+    VkPipelineColorBlendAttachmentState color_attachment =
+        create_color_blend_attachment(graphics->blend_type);
+    VkPipelineColorBlendAttachmentState pick_attachment =
+        create_color_blend_attachment(DVZ_BLEND_DISABLE);
     VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
         graphics->support_pick ? 2 : 1,
         (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
