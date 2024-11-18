@@ -66,12 +66,21 @@ int main(int argc, char** argv)
     for (uint32_t i = 0; i < shape.vertex_count; i++)
     {
         // Generate colors using the "bwr" colormap, in reverse (blue -> red).
-        dvz_colormap_scale(
-            DVZ_CMAP_COOLWARM, shape.vertex_count - 1 - i, 0, shape.vertex_count, shape.color[i]);
+        // dvz_colormap_scale(
+        //     DVZ_CMAP_COOLWARM, shape.vertex_count - 1 - i, 0, shape.vertex_count,
+        //     shape.color[i]);
+        // shape.color[i][0] = shape.color[i][1] = shape.color[i][2] = 128;
+        shape.color[i][3] = 32;
     }
 
     // Create a mesh visual with basic lightingsupport.
     DvzVisual* visual = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
+
+    // NOTE: transparent meshes require special care.
+    dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE); // disable depth test
+    dvz_visual_cull(visual, DVZ_CULL_MODE_BACK);      // cull mode
+    dvz_visual_blend(visual, DVZ_BLEND_OIT); // special, imperfect order-independent blending
+    dvz_mesh_light_params(visual, 0, (vec4){.75, .1, .1, 16}); // light parameters
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, visual, 0);

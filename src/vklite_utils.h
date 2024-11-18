@@ -1009,7 +1009,7 @@ static VkPipelineColorBlendAttachmentState create_color_blend_attachment(DvzBlen
         attachment.colorBlendOp = VK_BLEND_OP_ADD;
 
         attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-        attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // or ONE
         attachment.alphaBlendOp = VK_BLEND_OP_ADD;
     }
 
