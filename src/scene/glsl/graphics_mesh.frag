@@ -133,8 +133,9 @@ void main()
 {
     CLIP;
 
-    // DEBUG
-    // out_color = vec4(params.light_color[0].xyz, 1);
+    // // DEBUG
+    // out_color = in_uvcolor;
+    // out_color.rgb *= out_color.a;
     // return;
 
     // if (in_clip < -eps)

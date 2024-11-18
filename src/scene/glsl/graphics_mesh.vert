@@ -43,6 +43,14 @@ void main()
     out_pos = pos.xyz;
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
+
+    // // DEBUG
+    // if ((mvp.model * vec4(pos, 1)).z < 0)
+    //     out_uvcolor = vec4(1, 0, 0, .5);
+    // else
+    //     out_uvcolor = vec4(0, 1, 0, .5);
+    // return;
+
     out_isoline = isoline;
 
     // Generate barycentric coordinates.
