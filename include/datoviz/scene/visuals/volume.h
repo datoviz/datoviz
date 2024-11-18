@@ -20,6 +20,7 @@
 #include "../../_enums.h"
 #include "../viewport.h"
 #include "../visual.h"
+#include "datoviz.h"
 
 
 

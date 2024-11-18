@@ -562,6 +562,11 @@ class DvzDescriptorType(CtypesEnum):
     DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
 
 
+class DvzSlotType(CtypesEnum):
+    DVZ_SLOT_DAT = 0
+    DVZ_SLOT_TEX = 1
+
+
 class DvzMarkerShape(CtypesEnum):
     DVZ_MARKER_SHAPE_DISC = 0
     DVZ_MARKER_SHAPE_ASTERISK = 1
@@ -1209,6 +1214,8 @@ DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6
 DESCRIPTOR_TYPE_STORAGE_BUFFER = 7
 DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8
 DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
+SLOT_DAT = 0
+SLOT_TEX = 1
 MARKER_SHAPE_DISC = 0
 MARKER_SHAPE_ASTERISK = 1
 MARKER_SHAPE_CHEVRON = 2
@@ -1650,6 +1657,10 @@ class DvzPanel(ctypes.Structure):
 
 
 class DvzPanzoom(ctypes.Structure):
+    pass
+
+
+class DvzParams(ctypes.Structure):
     pass
 
 
@@ -2885,6 +2896,247 @@ is_visible : bool
 visual_show.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_bool,  # bool is_visible
+]
+
+# Function dvz_visual_primitive()
+visual_primitive = dvz.dvz_visual_primitive
+visual_primitive.__doc__ = """
+
+"""
+visual_primitive.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzPrimitiveTopology,  # DvzPrimitiveTopology primitive
+]
+
+# Function dvz_visual_blend()
+visual_blend = dvz.dvz_visual_blend
+visual_blend.__doc__ = """
+
+"""
+visual_blend.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzBlendType,  # DvzBlendType blend_type
+]
+
+# Function dvz_visual_polygon()
+visual_polygon = dvz.dvz_visual_polygon
+visual_polygon.__doc__ = """
+
+"""
+visual_polygon.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzPolygonMode,  # DvzPolygonMode polygon_mode
+]
+
+# Function dvz_visual_cull()
+visual_cull = dvz.dvz_visual_cull
+visual_cull.__doc__ = """
+
+"""
+visual_cull.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzCullMode,  # DvzCullMode cull_mode
+]
+
+# Function dvz_visual_front()
+visual_front = dvz.dvz_visual_front
+visual_front.__doc__ = """
+
+"""
+visual_front.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzFrontFace,  # DvzFrontFace front_face
+]
+
+# Function dvz_visual_specialization()
+visual_specialization = dvz.dvz_visual_specialization
+visual_specialization.__doc__ = """
+
+"""
+visual_specialization.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzShaderType,  # DvzShaderType shader
+    ctypes.c_uint32,  # uint32_t idx
+    DvzSize,  # DvzSize size
+    ctypes.c_void_p,  # void* value
+]
+
+# Function dvz_visual_spirv()
+visual_spirv = dvz.dvz_visual_spirv
+visual_spirv.__doc__ = """
+
+"""
+visual_spirv.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzShaderType,  # DvzShaderType type
+    DvzSize,  # DvzSize size
+    ctypes.c_char_p,  # char* buffer
+]
+
+# Function dvz_visual_shader()
+visual_shader = dvz.dvz_visual_shader
+visual_shader.__doc__ = """
+
+"""
+visual_shader.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_char_p,  # char* name
+]
+
+# Function dvz_visual_resize()
+visual_resize = dvz.dvz_visual_resize
+visual_resize.__doc__ = """
+
+"""
+visual_resize.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t item_count
+    ctypes.c_uint32,  # uint32_t vertex_count
+    ctypes.c_uint32,  # uint32_t index_count
+]
+
+# Function dvz_visual_groups()
+visual_groups = dvz.dvz_visual_groups
+visual_groups.__doc__ = """
+
+"""
+visual_groups.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t group_count
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* group_sizes
+]
+
+# Function dvz_visual_attr()
+visual_attr = dvz.dvz_visual_attr
+visual_attr.__doc__ = """
+
+"""
+visual_attr.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t attr_idx
+    DvzSize,  # DvzSize offset
+    DvzSize,  # DvzSize item_size
+    DvzFormat,  # DvzFormat format
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_visual_stride()
+visual_stride = dvz.dvz_visual_stride
+visual_stride.__doc__ = """
+
+"""
+visual_stride.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t binding_idx
+    DvzSize,  # DvzSize stride
+]
+
+# Function dvz_visual_slot()
+visual_slot = dvz.dvz_visual_slot
+visual_slot.__doc__ = """
+
+"""
+visual_slot.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzSlotType,  # DvzSlotType type
+]
+
+# Function dvz_visual_params()
+visual_params = dvz.dvz_visual_params
+visual_params.__doc__ = """
+
+"""
+visual_params.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzSize,  # DvzSize size
+]
+visual_params.restype = ctypes.POINTER(DvzParams)
+
+# Function dvz_visual_dat()
+visual_dat = dvz.dvz_visual_dat
+visual_dat.__doc__ = """
+
+"""
+visual_dat.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzId,  # DvzId dat
+]
+
+# Function dvz_visual_tex()
+visual_tex = dvz.dvz_visual_tex
+visual_tex.__doc__ = """
+
+"""
+visual_tex.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    DvzId,  # DvzId tex
+    DvzId,  # DvzId sampler
+    ctypes.c_uint32 * 3,  # uvec3 offset
+]
+
+# Function dvz_visual_alloc()
+visual_alloc = dvz.dvz_visual_alloc
+visual_alloc.__doc__ = """
+
+"""
+visual_alloc.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t item_count
+    ctypes.c_uint32,  # uint32_t vertex_count
+    ctypes.c_uint32,  # uint32_t index_count
+]
+
+# Function dvz_visual_transform()
+visual_transform = dvz.dvz_visual_transform
+visual_transform.__doc__ = """
+
+"""
+visual_transform.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzTransform),  # DvzTransform* tr
+    ctypes.c_uint32,  # uint32_t vertex_attr
+]
+
+# Function dvz_visual_data()
+visual_data = dvz.dvz_visual_data
+visual_data.__doc__ = """
+
+"""
+visual_data.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t attr_idx
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_void_p,  # void* data
+]
+
+# Function dvz_visual_quads()
+visual_quads = dvz.dvz_visual_quads
+visual_quads.__doc__ = """
+
+"""
+visual_quads.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t attr_idx
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* tl_br
+]
+
+# Function dvz_visual_index()
+visual_index = dvz.dvz_visual_index
+visual_index.__doc__ = """
+
+"""
+visual_index.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* data
 ]
 
 # Function dvz_colormap()

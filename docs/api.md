@@ -3003,6 +3003,36 @@ char* dvz_version(  // returns: the version string
 )
 ```
 
+### `dvz_visual_alloc()`
+
+*
+
+```c
+void dvz_visual_alloc(
+
+)
+```
+
+### `dvz_visual_attr()`
+
+*
+
+```c
+void dvz_visual_attr(
+
+)
+```
+
+### `dvz_visual_blend()`
+
+*
+
+```c
+void dvz_visual_blend(
+
+)
+```
+
 ### `dvz_visual_clip()`
 
 Set the visual clipping.
@@ -3011,6 +3041,36 @@ Set the visual clipping.
 void dvz_visual_clip(
     DvzVisual* visual,  // the visual
     DvzViewportClip clip,  // the viewport clipping
+)
+```
+
+### `dvz_visual_cull()`
+
+*
+
+```c
+void dvz_visual_cull(
+
+)
+```
+
+### `dvz_visual_dat()`
+
+*
+
+```c
+void dvz_visual_dat(
+
+)
+```
+
+### `dvz_visual_data()`
+
+*
+
+```c
+void dvz_visual_data(
+
 )
 ```
 
@@ -3038,6 +3098,96 @@ void dvz_visual_fixed(
 )
 ```
 
+### `dvz_visual_front()`
+
+*
+
+```c
+void dvz_visual_front(
+
+)
+```
+
+### `dvz_visual_groups()`
+
+*
+
+```c
+void dvz_visual_groups(
+
+)
+```
+
+### `dvz_visual_index()`
+
+*
+
+```c
+void dvz_visual_index(
+
+)
+```
+
+### `dvz_visual_params()`
+
+*
+
+```c
+DvzParams* dvz_visual_params(
+
+)
+```
+
+### `dvz_visual_polygon()`
+
+*
+
+```c
+void dvz_visual_polygon(
+
+)
+```
+
+### `dvz_visual_primitive()`
+
+*
+
+```c
+void dvz_visual_primitive(
+
+)
+```
+
+### `dvz_visual_quads()`
+
+*
+
+```c
+void dvz_visual_quads(
+
+)
+```
+
+### `dvz_visual_resize()`
+
+*
+
+```c
+void dvz_visual_resize(
+
+)
+```
+
+### `dvz_visual_shader()`
+
+*
+
+```c
+void dvz_visual_shader(
+
+)
+```
+
 ### `dvz_visual_show()`
 
 Set the visibility of a visual.
@@ -3046,6 +3196,66 @@ Set the visibility of a visual.
 void dvz_visual_show(
     DvzVisual* visual,  // the visual
     bool is_visible,  // the visual visibility
+)
+```
+
+### `dvz_visual_slot()`
+
+*
+
+```c
+void dvz_visual_slot(
+
+)
+```
+
+### `dvz_visual_specialization()`
+
+*
+
+```c
+void dvz_visual_specialization(
+
+)
+```
+
+### `dvz_visual_spirv()`
+
+*
+
+```c
+void dvz_visual_spirv(
+
+)
+```
+
+### `dvz_visual_stride()`
+
+*
+
+```c
+void dvz_visual_stride(
+
+)
+```
+
+### `dvz_visual_tex()`
+
+*
+
+```c
+void dvz_visual_tex(
+
+)
+```
+
+### `dvz_visual_transform()`
+
+*
+
+```c
+void dvz_visual_transform(
+
 )
 ```
 
@@ -4957,6 +5167,13 @@ DVZ_SHAPE_CONE
 DVZ_SHAPE_SURFACE
 DVZ_SHAPE_OBJ
 DVZ_SHAPE_OTHER
+```
+
+### `DvzSlotType`
+
+```
+DVZ_SLOT_DAT
+DVZ_SLOT_TEX
 ```
 
 ### `DvzTexDims`

@@ -62,6 +62,7 @@ typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzOrtho DvzOrtho;
+typedef struct DvzParams DvzParams;
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzFont DvzFont;
@@ -451,6 +452,181 @@ DVZ_EXPORT void dvz_visual_depth(DvzVisual* visual, DvzDepthTest depth_test);
  * @param is_visible the visual visibility
  */
 DVZ_EXPORT void dvz_visual_show(DvzVisual* visual, bool is_visible);
+
+
+
+/*************************************************************************************************/
+/*  Visual fixed pipeline                                                                        */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive);
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_specialization(
+    DvzVisual* visual, DvzShaderType shader, uint32_t idx, DvzSize size, void* value);
+
+
+
+/*************************************************************************************************/
+/*  Visual declaration                                                                           */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_visual_spirv(DvzVisual* visual, DvzShaderType type, DvzSize size, const unsigned char* buffer);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_shader(DvzVisual* visual, const char* name);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_resize(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_groups(DvzVisual* visual, uint32_t group_count, uint32_t* group_sizes);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_attr(
+    DvzVisual* visual, uint32_t attr_idx, DvzSize offset, DvzSize item_size, //
+    DvzFormat format, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_stride(DvzVisual* visual, uint32_t binding_idx, DvzSize stride);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT DvzParams* dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzSize size);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzId dat);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
+
+
+
+/*************************************************************************************************/
+/*  Visual creation                                                                              */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+void dvz_visual_alloc(
+    DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
+
+
+
+/**
+ *
+ */
+void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr);
+
+
+
+/*************************************************************************************************/
+/*  Visual data                                                                                  */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+void dvz_visual_data(
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
+
+
+
+/**
+ *
+ */
+void dvz_visual_quads(
+    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br);
+
+
+
+/**
+ *
+ */
+void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
+
+
+
+void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item);
 
 
 
