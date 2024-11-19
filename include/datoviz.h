@@ -460,41 +460,62 @@ DVZ_EXPORT void dvz_visual_show(DvzVisual* visual, bool is_visible);
 /*************************************************************************************************/
 
 /**
+ * Set the primitive topology of a visual.
  *
+ * @param visual the visual
+ * @param primitive the primitive topology
  */
 DVZ_EXPORT void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology primitive);
 
 
 /**
+ * Set the blending type of a visual.
  *
+ * @param visual the visual
+ * @param blend_type the blending type
  */
 DVZ_EXPORT void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
 
 
 
 /**
+ * Set the polygon mode of a visual.
  *
+ * @param visual the visual
+ * @param polygon_mode the polygon mode
  */
 DVZ_EXPORT void dvz_visual_polygon(DvzVisual* visual, DvzPolygonMode polygon_mode);
 
 
 
 /**
+ * Set the cull mode of a visual.
  *
+ * @param visual the visual
+ * @param cull_mode the cull mode
  */
 DVZ_EXPORT void dvz_visual_cull(DvzVisual* visual, DvzCullMode cull_mode);
 
 
 
 /**
+ * Set the front face mode of a visual.
  *
+ * @param visual the visual
+ * @param front_face the front face mode
  */
 DVZ_EXPORT void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face);
 
 
 
 /**
+ * Set a specialization constant of a visual.
  *
+ * @param visual the visual
+ * @param shader the shader type
+ * @param idx the specialization constant index
+ * @param size the size, in bytes, of the value passed to this function
+ * @param value a pointer to the value to use for that specialization constant
  */
 DVZ_EXPORT void dvz_visual_specialization(
     DvzVisual* visual, DvzShaderType shader, uint32_t idx, DvzSize size, void* value);
@@ -506,7 +527,12 @@ DVZ_EXPORT void dvz_visual_specialization(
 /*************************************************************************************************/
 
 /**
+ * Set the shader SPIR-V code of a visual.
  *
+ * @param visual the visual
+ * @param type the shader type
+ * @param size the size, in bytes, of the SPIR-V buffer
+ * @param buffer a pointer to the SPIR-V buffer
  */
 DVZ_EXPORT void
 dvz_visual_spirv(DvzVisual* visual, DvzShaderType type, DvzSize size, const unsigned char* buffer);
@@ -514,14 +540,22 @@ dvz_visual_spirv(DvzVisual* visual, DvzShaderType type, DvzSize size, const unsi
 
 
 /**
+ * Set the shader SPIR-V name of a visual.
  *
+ * @param visual the visual
+ * @param name the built-in resource name of the shader (_vert and _frag are appended)
  */
 DVZ_EXPORT void dvz_visual_shader(DvzVisual* visual, const char* name);
 
 
 
 /**
+ * Resize a visual allocation.
  *
+ * @param visual the visual
+ * @param item_count the number of items
+ * @param vertex_count the number of vertices
+ * @param index_count the number of indices (0 if there is no index buffer)
  */
 DVZ_EXPORT void dvz_visual_resize(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
@@ -529,14 +563,25 @@ DVZ_EXPORT void dvz_visual_resize(
 
 
 /**
+ * Set groups in a visual.
  *
+ * @param visual the visual
+ * @param group_count the number of groups
+ * @param group_sizes the size of each group
  */
 DVZ_EXPORT void dvz_visual_groups(DvzVisual* visual, uint32_t group_count, uint32_t* group_sizes);
 
 
 
 /**
+ * Declare a visual attribute.
  *
+ * @param visual the visual
+ * @param attr_idx the attribute index
+ * @param offset the attribute offset within the vertex buffer, in bytes
+ * @param item_size the attribute size, in bytes
+ * @param format the attribute data format
+ * @param flags the attribute flags
  */
 DVZ_EXPORT void dvz_visual_attr(
     DvzVisual* visual, uint32_t attr_idx, DvzSize offset, DvzSize item_size, //
@@ -545,35 +590,58 @@ DVZ_EXPORT void dvz_visual_attr(
 
 
 /**
+ * Declare a visual binding.
  *
+ * @param visual the visual
+ * @param binding_idx the binding index
+ * @param stride the binding stride, in bytes
  */
 DVZ_EXPORT void dvz_visual_stride(DvzVisual* visual, uint32_t binding_idx, DvzSize stride);
 
 
 
 /**
+ * Declare a visual slot.
  *
+ * @param visual the visual
+ * @param slot_idx the slot index
+ * @param type the slot type
  */
 DVZ_EXPORT void dvz_visual_slot(DvzVisual* visual, uint32_t slot_idx, DvzSlotType type);
 
 
 
 /**
+ * Declare a set of visual parameters.
  *
+ * @param visual the visual
+ * @param slot_idx the slot index of the uniform buffer storing the parameter values
+ * @param size the size, in bytes, of that uniform buffer
  */
 DVZ_EXPORT DvzParams* dvz_visual_params(DvzVisual* visual, uint32_t slot_idx, DvzSize size);
 
 
 
 /**
+ * Bind a dat to a visual slot.
  *
+ * @param visual the visual
+ * @param slot_idx the slot index
+ * @param dat the dat ID
  */
+// TODO: add 'DvzSize offset' ?
 DVZ_EXPORT void dvz_visual_dat(DvzVisual* visual, uint32_t slot_idx, DvzId dat);
 
 
 
 /**
+ * Bind a tex to a visual slot.
  *
+ * @param visual the visual
+ * @param slot_idx the slot index
+ * @param tex the tex ID
+ * @param sampler the sampler ID
+ * @param offset the texture offset
  */
 DVZ_EXPORT void
 dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset);
@@ -585,7 +653,12 @@ dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, u
 /*************************************************************************************************/
 
 /**
+ * Allocate a visual.
  *
+ * @param visual the visual
+ * @param item_count the number of items
+ * @param vertex_count the number of vertices
+ * @param index_count the number of indices
  */
 void dvz_visual_alloc(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
@@ -593,7 +666,11 @@ void dvz_visual_alloc(
 
 
 /**
+ * Set a visual transform.
  *
+ * @param visual the visual
+ * @param tr the transform
+ * @param vertex_attr the vertex attribute on which the transform applies to
  */
 void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr);
 
@@ -604,7 +681,13 @@ void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_a
 /*************************************************************************************************/
 
 /**
+ * Set visual data.
  *
+ * @param visual the visual
+ * @param attr_idx the attribute index
+ * @param first the index of the first item to set
+ * @param count the number of items to set
+ * @param data a pointer to the data buffer
  */
 void dvz_visual_data(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
@@ -612,7 +695,14 @@ void dvz_visual_data(
 
 
 /**
+ * Set visual data as quads.
  *
+ * @param visual the visual
+ * @param attr_idx the attribute index
+ * @param first the index of the first item to set
+ * @param count the number of items to set
+ * @param tl_br a pointer to a buffer of vec4 with the 2D coordinates of the top-left and
+ *              bottom-right quad corners
  */
 void dvz_visual_quads(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br);
@@ -620,12 +710,25 @@ void dvz_visual_quads(
 
 
 /**
+ * Set the visual index data.
  *
+ * @param visual the visual
+ * @param first the index of the first index to set
+ * @param count the number of indices
+ * @param data a pointer to a buffer of DvzIndex (uint32_t) values with the indices
  */
 void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
 
 
 
+/**
+ * Set a visual parameter value.
+ *
+ * @param visual the visual
+ * @param slot_idx the slot index
+ * @param attr_idx the index of the parameter attribute within the params structure
+ * @param item a pointer to the value to use for that parameter
+ */
 void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item);
 
 

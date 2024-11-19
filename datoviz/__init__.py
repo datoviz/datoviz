@@ -491,33 +491,6 @@ class DvzSamplerAddressMode(CtypesEnum):
     DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
 
 
-class DvzBufferType(CtypesEnum):
-    DVZ_BUFFER_TYPE_UNDEFINED = 0
-    DVZ_BUFFER_TYPE_STAGING = 1
-    DVZ_BUFFER_TYPE_VERTEX = 2
-    DVZ_BUFFER_TYPE_INDEX = 3
-    DVZ_BUFFER_TYPE_STORAGE = 4
-    DVZ_BUFFER_TYPE_UNIFORM = 5
-    DVZ_BUFFER_TYPE_INDIRECT = 6
-
-
-class DvzShaderFormat(CtypesEnum):
-    DVZ_SHADER_NONE = 0
-    DVZ_SHADER_SPIRV = 1
-    DVZ_SHADER_GLSL = 2
-
-
-class DvzSamplerAxis(CtypesEnum):
-    DVZ_SAMPLER_AXIS_U = 0
-    DVZ_SAMPLER_AXIS_V = 1
-    DVZ_SAMPLER_AXIS_W = 2
-
-
-class DvzBlendType(CtypesEnum):
-    DVZ_BLEND_DISABLE = 0
-    DVZ_BLEND_ENABLE = 1
-
-
 class DvzVertexInputRate(CtypesEnum):
     DVZ_VERTEX_INPUT_RATE_VERTEX = 0
     DVZ_VERTEX_INPUT_RATE_INSTANCE = 1
@@ -560,6 +533,34 @@ class DvzDescriptorType(CtypesEnum):
     DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER = 7
     DVZ_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8
     DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
+
+
+class DvzBufferType(CtypesEnum):
+    DVZ_BUFFER_TYPE_UNDEFINED = 0
+    DVZ_BUFFER_TYPE_STAGING = 1
+    DVZ_BUFFER_TYPE_VERTEX = 2
+    DVZ_BUFFER_TYPE_INDEX = 3
+    DVZ_BUFFER_TYPE_STORAGE = 4
+    DVZ_BUFFER_TYPE_UNIFORM = 5
+    DVZ_BUFFER_TYPE_INDIRECT = 6
+
+
+class DvzShaderFormat(CtypesEnum):
+    DVZ_SHADER_NONE = 0
+    DVZ_SHADER_SPIRV = 1
+    DVZ_SHADER_GLSL = 2
+
+
+class DvzSamplerAxis(CtypesEnum):
+    DVZ_SAMPLER_AXIS_U = 0
+    DVZ_SAMPLER_AXIS_V = 1
+    DVZ_SAMPLER_AXIS_W = 2
+
+
+class DvzBlendType(CtypesEnum):
+    DVZ_BLEND_DISABLE = 0
+    DVZ_BLEND_STANDARD = 1
+    DVZ_BLEND_OIT = 2
 
 
 class DvzSlotType(CtypesEnum):
@@ -1173,21 +1174,6 @@ SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1
 SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2
 SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3
 SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4
-BUFFER_TYPE_UNDEFINED = 0
-BUFFER_TYPE_STAGING = 1
-BUFFER_TYPE_VERTEX = 2
-BUFFER_TYPE_INDEX = 3
-BUFFER_TYPE_STORAGE = 4
-BUFFER_TYPE_UNIFORM = 5
-BUFFER_TYPE_INDIRECT = 6
-SHADER_NONE = 0
-SHADER_SPIRV = 1
-SHADER_GLSL = 2
-SAMPLER_AXIS_U = 0
-SAMPLER_AXIS_V = 1
-SAMPLER_AXIS_W = 2
-BLEND_DISABLE = 0
-BLEND_ENABLE = 1
 VERTEX_INPUT_RATE_VERTEX = 0
 VERTEX_INPUT_RATE_INSTANCE = 1
 POLYGON_MODE_FILL = 0
@@ -1214,6 +1200,22 @@ DESCRIPTOR_TYPE_UNIFORM_BUFFER = 6
 DESCRIPTOR_TYPE_STORAGE_BUFFER = 7
 DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC = 8
 DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC = 9
+BUFFER_TYPE_UNDEFINED = 0
+BUFFER_TYPE_STAGING = 1
+BUFFER_TYPE_VERTEX = 2
+BUFFER_TYPE_INDEX = 3
+BUFFER_TYPE_STORAGE = 4
+BUFFER_TYPE_UNIFORM = 5
+BUFFER_TYPE_INDIRECT = 6
+SHADER_NONE = 0
+SHADER_SPIRV = 1
+SHADER_GLSL = 2
+SAMPLER_AXIS_U = 0
+SAMPLER_AXIS_V = 1
+SAMPLER_AXIS_W = 2
+BLEND_DISABLE = 0
+BLEND_STANDARD = 1
+BLEND_OIT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
 MARKER_SHAPE_DISC = 0
@@ -2901,7 +2903,14 @@ visual_show.argtypes = [
 # Function dvz_visual_primitive()
 visual_primitive = dvz.dvz_visual_primitive
 visual_primitive.__doc__ = """
+Set the primitive topology of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+primitive : DvzPrimitiveTopology
+    the primitive topology
 """
 visual_primitive.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2911,7 +2920,14 @@ visual_primitive.argtypes = [
 # Function dvz_visual_blend()
 visual_blend = dvz.dvz_visual_blend
 visual_blend.__doc__ = """
+Set the blending type of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+blend_type : DvzBlendType
+    the blending type
 """
 visual_blend.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2921,7 +2937,14 @@ visual_blend.argtypes = [
 # Function dvz_visual_polygon()
 visual_polygon = dvz.dvz_visual_polygon
 visual_polygon.__doc__ = """
+Set the polygon mode of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+polygon_mode : DvzPolygonMode
+    the polygon mode
 """
 visual_polygon.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2931,7 +2954,14 @@ visual_polygon.argtypes = [
 # Function dvz_visual_cull()
 visual_cull = dvz.dvz_visual_cull
 visual_cull.__doc__ = """
+Set the cull mode of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+cull_mode : DvzCullMode
+    the cull mode
 """
 visual_cull.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2941,7 +2971,14 @@ visual_cull.argtypes = [
 # Function dvz_visual_front()
 visual_front = dvz.dvz_visual_front
 visual_front.__doc__ = """
+Set the front face mode of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+front_face : DvzFrontFace
+    the front face mode
 """
 visual_front.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2951,7 +2988,20 @@ visual_front.argtypes = [
 # Function dvz_visual_specialization()
 visual_specialization = dvz.dvz_visual_specialization
 visual_specialization.__doc__ = """
+Set a specialization constant of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+shader : DvzShaderType
+    the shader type
+idx : uint32_t
+    the specialization constant index
+size : DvzSize
+    the size, in bytes, of the value passed to this function
+value : void*
+    a pointer to the value to use for that specialization constant
 """
 visual_specialization.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2964,7 +3014,18 @@ visual_specialization.argtypes = [
 # Function dvz_visual_spirv()
 visual_spirv = dvz.dvz_visual_spirv
 visual_spirv.__doc__ = """
+Set the shader SPIR-V code of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+type : DvzShaderType
+    the shader type
+size : DvzSize
+    the size, in bytes, of the SPIR-V buffer
+buffer : char*
+    a pointer to the SPIR-V buffer
 """
 visual_spirv.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2976,7 +3037,14 @@ visual_spirv.argtypes = [
 # Function dvz_visual_shader()
 visual_shader = dvz.dvz_visual_shader
 visual_shader.__doc__ = """
+Set the shader SPIR-V name of a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+name : char*
+    the built-in resource name of the shader (_vert and _frag are appended)
 """
 visual_shader.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2986,7 +3054,18 @@ visual_shader.argtypes = [
 # Function dvz_visual_resize()
 visual_resize = dvz.dvz_visual_resize
 visual_resize.__doc__ = """
+Resize a visual allocation.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the number of items
+vertex_count : uint32_t
+    the number of vertices
+index_count : uint32_t
+    the number of indices (0 if there is no index buffer)
 """
 visual_resize.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -2998,7 +3077,16 @@ visual_resize.argtypes = [
 # Function dvz_visual_groups()
 visual_groups = dvz.dvz_visual_groups
 visual_groups.__doc__ = """
+Set groups in a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+group_count : uint32_t
+    the number of groups
+group_sizes : uint32_t*
+    the size of each group
 """
 visual_groups.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3009,7 +3097,22 @@ visual_groups.argtypes = [
 # Function dvz_visual_attr()
 visual_attr = dvz.dvz_visual_attr
 visual_attr.__doc__ = """
+Declare a visual attribute.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+attr_idx : uint32_t
+    the attribute index
+offset : DvzSize
+    the attribute offset within the vertex buffer, in bytes
+item_size : DvzSize
+    the attribute size, in bytes
+format : DvzFormat
+    the attribute data format
+flags : int
+    the attribute flags
 """
 visual_attr.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3023,7 +3126,16 @@ visual_attr.argtypes = [
 # Function dvz_visual_stride()
 visual_stride = dvz.dvz_visual_stride
 visual_stride.__doc__ = """
+Declare a visual binding.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+binding_idx : uint32_t
+    the binding index
+stride : DvzSize
+    the binding stride, in bytes
 """
 visual_stride.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3034,7 +3146,16 @@ visual_stride.argtypes = [
 # Function dvz_visual_slot()
 visual_slot = dvz.dvz_visual_slot
 visual_slot.__doc__ = """
+Declare a visual slot.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index
+type : DvzSlotType
+    the slot type
 """
 visual_slot.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3045,7 +3166,16 @@ visual_slot.argtypes = [
 # Function dvz_visual_params()
 visual_params = dvz.dvz_visual_params
 visual_params.__doc__ = """
+Declare a set of visual parameters.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index of the uniform buffer storing the parameter values
+size : DvzSize
+    the size, in bytes, of that uniform buffer
 """
 visual_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3057,7 +3187,16 @@ visual_params.restype = ctypes.POINTER(DvzParams)
 # Function dvz_visual_dat()
 visual_dat = dvz.dvz_visual_dat
 visual_dat.__doc__ = """
+Bind a dat to a visual slot.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index
+dat : DvzId
+    the dat ID
 """
 visual_dat.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3068,7 +3207,20 @@ visual_dat.argtypes = [
 # Function dvz_visual_tex()
 visual_tex = dvz.dvz_visual_tex
 visual_tex.__doc__ = """
+Bind a tex to a visual slot.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index
+tex : DvzId
+    the tex ID
+sampler : DvzId
+    the sampler ID
+offset : uvec3
+    the texture offset
 """
 visual_tex.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3081,7 +3233,18 @@ visual_tex.argtypes = [
 # Function dvz_visual_alloc()
 visual_alloc = dvz.dvz_visual_alloc
 visual_alloc.__doc__ = """
+Allocate a visual.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+item_count : uint32_t
+    the number of items
+vertex_count : uint32_t
+    the number of vertices
+index_count : uint32_t
+    the number of indices
 """
 visual_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3093,7 +3256,16 @@ visual_alloc.argtypes = [
 # Function dvz_visual_transform()
 visual_transform = dvz.dvz_visual_transform
 visual_transform.__doc__ = """
+Set a visual transform.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+tr : DvzTransform*
+    the transform
+vertex_attr : uint32_t
+    the vertex attribute on which the transform applies to
 """
 visual_transform.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3104,7 +3276,20 @@ visual_transform.argtypes = [
 # Function dvz_visual_data()
 visual_data = dvz.dvz_visual_data
 visual_data.__doc__ = """
+Set visual data.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+attr_idx : uint32_t
+    the attribute index
+first : uint32_t
+    the index of the first item to set
+count : uint32_t
+    the number of items to set
+data : void*
+    a pointer to the data buffer
 """
 visual_data.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3117,7 +3302,20 @@ visual_data.argtypes = [
 # Function dvz_visual_quads()
 visual_quads = dvz.dvz_visual_quads
 visual_quads.__doc__ = """
+Set visual data as quads.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+attr_idx : uint32_t
+    the attribute index
+first : uint32_t
+    the index of the first item to set
+count : uint32_t
+    the number of items to set
+tl_br : vec4*
+    a pointer to a buffer of vec4 with the 2D coordinates of the top-left and
 """
 visual_quads.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -3130,13 +3328,47 @@ visual_quads.argtypes = [
 # Function dvz_visual_index()
 visual_index = dvz.dvz_visual_index
 visual_index.__doc__ = """
+Set the visual index data.
 
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first index to set
+count : uint32_t
+    the number of indices
+data : DvzIndex*
+    a pointer to a buffer of DvzIndex (uint32_t) values with the indices
 """
 visual_index.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* data
+]
+
+# Function dvz_visual_param()
+visual_param = dvz.dvz_visual_param
+visual_param.__doc__ = """
+Set a visual parameter value.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index
+attr_idx : uint32_t
+    the index of the parameter attribute within the params structure
+item : void*
+    a pointer to the value to use for that parameter
+"""
+visual_param.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    ctypes.c_uint32,  # uint32_t attr_idx
+    ctypes.c_void_p,  # void* item
 ]
 
 # Function dvz_colormap()

@@ -3005,31 +3005,40 @@ char* dvz_version(  // returns: the version string
 
 ### `dvz_visual_alloc()`
 
-*
+Allocate a visual.
 
 ```c
 void dvz_visual_alloc(
-
+    DvzVisual* visual,  // the visual
+    uint32_t item_count,  // the number of items
+    uint32_t vertex_count,  // the number of vertices
+    uint32_t index_count,  // the number of indices
 )
 ```
 
 ### `dvz_visual_attr()`
 
-*
+Declare a visual attribute.
 
 ```c
 void dvz_visual_attr(
-
+    DvzVisual* visual,  // the visual
+    uint32_t attr_idx,  // the attribute index
+    DvzSize offset,  // the attribute offset within the vertex buffer, in bytes
+    DvzSize item_size,  // the attribute size, in bytes
+    DvzFormat format,  // the attribute data format
+    int flags,  // the attribute flags
 )
 ```
 
 ### `dvz_visual_blend()`
 
-*
+Set the blending type of a visual.
 
 ```c
 void dvz_visual_blend(
-
+    DvzVisual* visual,  // the visual
+    DvzBlendType blend_type,  // the blending type
 )
 ```
 
@@ -3046,31 +3055,38 @@ void dvz_visual_clip(
 
 ### `dvz_visual_cull()`
 
-*
+Set the cull mode of a visual.
 
 ```c
 void dvz_visual_cull(
-
+    DvzVisual* visual,  // the visual
+    DvzCullMode cull_mode,  // the cull mode
 )
 ```
 
 ### `dvz_visual_dat()`
 
-*
+Bind a dat to a visual slot.
 
 ```c
 void dvz_visual_dat(
-
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index
+    DvzId dat,  // the dat ID
 )
 ```
 
 ### `dvz_visual_data()`
 
-*
+Set visual data.
 
 ```c
 void dvz_visual_data(
-
+    DvzVisual* visual,  // the visual
+    uint32_t attr_idx,  // the attribute index
+    uint32_t first,  // the index of the first item to set
+    uint32_t count,  // the number of items to set
+    void* data,  // a pointer to the data buffer
 )
 ```
 
@@ -3100,91 +3116,122 @@ void dvz_visual_fixed(
 
 ### `dvz_visual_front()`
 
-*
+Set the front face mode of a visual.
 
 ```c
 void dvz_visual_front(
-
+    DvzVisual* visual,  // the visual
+    DvzFrontFace front_face,  // the front face mode
 )
 ```
 
 ### `dvz_visual_groups()`
 
-*
+Set groups in a visual.
 
 ```c
 void dvz_visual_groups(
-
+    DvzVisual* visual,  // the visual
+    uint32_t group_count,  // the number of groups
+    uint32_t* group_sizes,  // the size of each group
 )
 ```
 
 ### `dvz_visual_index()`
 
-*
+Set the visual index data.
 
 ```c
 void dvz_visual_index(
+    DvzVisual* visual,  // the visual
+    uint32_t first,  // the index of the first index to set
+    uint32_t count,  // the number of indices
+    DvzIndex* data,  // a pointer to a buffer of DvzIndex (uint32_t) values with the indices
+)
+```
 
+### `dvz_visual_param()`
+
+Set a visual parameter value.
+
+```c
+void dvz_visual_param(
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index
+    uint32_t attr_idx,  // the index of the parameter attribute within the params structure
+    void* item,  // a pointer to the value to use for that parameter
 )
 ```
 
 ### `dvz_visual_params()`
 
-*
+Declare a set of visual parameters.
 
 ```c
 DvzParams* dvz_visual_params(
-
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index of the uniform buffer storing the parameter values
+    DvzSize size,  // the size, in bytes, of that uniform buffer
 )
 ```
 
 ### `dvz_visual_polygon()`
 
-*
+Set the polygon mode of a visual.
 
 ```c
 void dvz_visual_polygon(
-
+    DvzVisual* visual,  // the visual
+    DvzPolygonMode polygon_mode,  // the polygon mode
 )
 ```
 
 ### `dvz_visual_primitive()`
 
-*
+Set the primitive topology of a visual.
 
 ```c
 void dvz_visual_primitive(
-
+    DvzVisual* visual,  // the visual
+    DvzPrimitiveTopology primitive,  // the primitive topology
 )
 ```
 
 ### `dvz_visual_quads()`
 
-*
+Set visual data as quads.
 
 ```c
 void dvz_visual_quads(
-
+    DvzVisual* visual,  // the visual
+    uint32_t attr_idx,  // the attribute index
+    uint32_t first,  // the index of the first item to set
+    uint32_t count,  // the number of items to set
+    vec4* tl_br,  // a pointer to a buffer of vec4 with the 2D coordinates of the top-left and
 )
 ```
 
 ### `dvz_visual_resize()`
 
-*
+Resize a visual allocation.
 
 ```c
 void dvz_visual_resize(
-
+    DvzVisual* visual,  // the visual
+    uint32_t item_count,  // the number of items
+    uint32_t vertex_count,  // the number of vertices
+    uint32_t index_count,  // the number of indices (0 if there is no index buffer)
 )
 ```
 
 ### `dvz_visual_shader()`
 
-*
+Set the shader SPIR-V name of a visual.
 
 ```c
 void dvz_visual_shader(
-
+    DvzVisual* visual,  // the visual
+    char* name,  // the built-in resource name of the shader (_vert and _frag are appended)
 )
 ```
 
@@ -3201,61 +3248,78 @@ void dvz_visual_show(
 
 ### `dvz_visual_slot()`
 
-*
+Declare a visual slot.
 
 ```c
 void dvz_visual_slot(
-
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index
+    DvzSlotType type,  // the slot type
 )
 ```
 
 ### `dvz_visual_specialization()`
 
-*
+Set a specialization constant of a visual.
 
 ```c
 void dvz_visual_specialization(
-
+    DvzVisual* visual,  // the visual
+    DvzShaderType shader,  // the shader type
+    uint32_t idx,  // the specialization constant index
+    DvzSize size,  // the size, in bytes, of the value passed to this function
+    void* value,  // a pointer to the value to use for that specialization constant
 )
 ```
 
 ### `dvz_visual_spirv()`
 
-*
+Set the shader SPIR-V code of a visual.
 
 ```c
 void dvz_visual_spirv(
-
+    DvzVisual* visual,  // the visual
+    DvzShaderType type,  // the shader type
+    DvzSize size,  // the size, in bytes, of the SPIR-V buffer
+    char* buffer,  // a pointer to the SPIR-V buffer
 )
 ```
 
 ### `dvz_visual_stride()`
 
-*
+Declare a visual binding.
 
 ```c
 void dvz_visual_stride(
-
+    DvzVisual* visual,  // the visual
+    uint32_t binding_idx,  // the binding index
+    DvzSize stride,  // the binding stride, in bytes
 )
 ```
 
 ### `dvz_visual_tex()`
 
-*
+Bind a tex to a visual slot.
 
 ```c
 void dvz_visual_tex(
-
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index
+    DvzId tex,  // the tex ID
+    DvzId sampler,  // the sampler ID
+    uvec3 offset,  // the texture offset
 )
 ```
 
 ### `dvz_visual_transform()`
 
-*
+Set a visual transform.
 
 ```c
 void dvz_visual_transform(
-
+    DvzVisual* visual,  // the visual
+    DvzTransform* tr,  // the transform
+    uint32_t vertex_attr,  // the vertex attribute on which the transform applies to
 )
 ```
 
@@ -4523,7 +4587,8 @@ DVZ_ARCBALL_FLAGS_CONSTRAIN
 
 ```
 DVZ_BLEND_DISABLE
-DVZ_BLEND_ENABLE
+DVZ_BLEND_STANDARD
+DVZ_BLEND_OIT
 ```
 
 ### `DvzBufferType`

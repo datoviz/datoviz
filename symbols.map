@@ -52,6 +52,7 @@ dvz_visual_transform
 dvz_visual_data
 dvz_visual_quads
 dvz_visual_index
+dvz_visual_param
 dvz_colormap
 dvz_colormap_8bit
 dvz_colormap_scale
