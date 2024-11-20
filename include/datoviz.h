@@ -660,7 +660,7 @@ dvz_visual_tex(DvzVisual* visual, uint32_t slot_idx, DvzId tex, DvzId sampler, u
  * @param vertex_count the number of vertices
  * @param index_count the number of indices
  */
-void dvz_visual_alloc(
+DVZ_EXPORT void dvz_visual_alloc(
     DvzVisual* visual, uint32_t item_count, uint32_t vertex_count, uint32_t index_count);
 
 
@@ -672,7 +672,7 @@ void dvz_visual_alloc(
  * @param tr the transform
  * @param vertex_attr the vertex attribute on which the transform applies to
  */
-void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr);
+DVZ_EXPORT void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_attr);
 
 
 
@@ -689,8 +689,8 @@ void dvz_visual_transform(DvzVisual* visual, DvzTransform* tr, uint32_t vertex_a
  * @param count the number of items to set
  * @param data a pointer to the data buffer
  */
-void dvz_visual_data(
-    DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
+DVZ_EXPORT void
+dvz_visual_data(DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data);
 
 
 
@@ -704,7 +704,7 @@ void dvz_visual_data(
  * @param tl_br a pointer to a buffer of vec4 with the 2D coordinates of the top-left and
  *              bottom-right quad corners
  */
-void dvz_visual_quads(
+DVZ_EXPORT void dvz_visual_quads(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, vec4* tl_br);
 
 
@@ -717,7 +717,8 @@ void dvz_visual_quads(
  * @param count the number of indices
  * @param data a pointer to a buffer of DvzIndex (uint32_t) values with the indices
  */
-void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
+DVZ_EXPORT void
+dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzIndex* data);
 
 
 
@@ -729,7 +730,8 @@ void dvz_visual_index(DvzVisual* visual, uint32_t first, uint32_t count, DvzInde
  * @param attr_idx the index of the parameter attribute within the params structure
  * @param item a pointer to the value to use for that parameter
  */
-void dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item);
+DVZ_EXPORT void
+dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* item);
 
 
 
