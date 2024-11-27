@@ -131,6 +131,12 @@ def array_pointer(x, dtype=None):
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
 
+def pointer_array(pointer, length, n_components, dtype=np.float32):
+    np_array = np.ctypeslib.as_array(pointer, shape=(length,))
+    np_array = np_array.view(dtype=dtype).reshape(length, n_components)
+    return np_array
+
+
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
     ndim = kwargs.pop('ndim', 1)
