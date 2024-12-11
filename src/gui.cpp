@@ -591,10 +591,65 @@ bool dvz_gui_node(const char* name)
 void dvz_gui_pop() { ImGui::TreePop(); }
 
 
+
 bool dvz_gui_clicked() { return ImGui::IsItemClicked(); }
 
 
+
 bool dvz_gui_selectable(const char* name) { return ImGui::Selectable(name); }
+
+
+
+bool dvz_gui_table(
+    const char* name, uint32_t row_count, uint32_t column_count, //
+    const char* labels[], bool* selected)
+{
+    // length of selected is row_count
+    ANN(name);
+    ASSERT(column_count > 0);
+    uint32_t label_count = row_count * column_count;
+    if (row_count > 0)
+    {
+        ANN(labels);
+        ANN(selected);
+    }
+
+    int flags = ImGuiSelectableFlags_SpanAllColumns;
+    bool sel = false, out = false;
+    uint32_t row_idx = 0;
+
+    if (ImGui::BeginTable(name, (int)column_count))
+    {
+        for (uint32_t i = 0; i < label_count; i++)
+        {
+            row_idx = i / column_count;
+            ASSERT(row_idx < row_count);
+            sel = selected[row_idx];
+
+            ImGui::TableNextColumn();
+            if (i % column_count == 0)
+            {
+                if (ImGui::Selectable(labels[i], sel, flags, ImVec2(0, 0)))
+                {
+                    selected[row_idx] = !selected[row_idx];
+                }
+                else
+                {
+                }
+            }
+            else
+            {
+                ImGui::TextUnformatted(labels[i]);
+            }
+
+            // Return true if there is at least one selection change.
+            if (selected[row_idx] != sel)
+                out = true;
+        }
+        ImGui::EndTable();
+    }
+    return out;
+}
 
 
 
