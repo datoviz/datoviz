@@ -602,7 +602,7 @@ bool dvz_gui_selectable(const char* name) { return ImGui::Selectable(name); }
 
 bool dvz_gui_table(
     const char* name, uint32_t row_count, uint32_t column_count, //
-    const char* labels[], bool* selected)
+    const char* labels[], bool* selected, int flags)
 {
     // length of selected is row_count
     ANN(name);
@@ -614,38 +614,68 @@ bool dvz_gui_table(
         ANN(selected);
     }
 
-    int flags = ImGuiSelectableFlags_SpanAllColumns;
     bool sel = false, out = false;
-    uint32_t row_idx = 0;
+    uint32_t idx = column_count;
 
-    if (ImGui::BeginTable(name, (int)column_count))
+    int imgui_flags =
+        (ImGuiTableFlags_RowBg |   //
+         ImGuiTableFlags_Borders | //
+         ImGuiTableFlags_Resizable // | //
+
+         //  ImGuiTableFlags_Sortable    //
+        );
+
+    if (ImGui::BeginTable(name, (int)column_count, imgui_flags))
     {
-        for (uint32_t i = 0; i < label_count; i++)
+        // Header row.
+        for (uint32_t i = 0; i < column_count; i++)
         {
-            row_idx = i / column_count;
-            ASSERT(row_idx < row_count);
-            sel = selected[row_idx];
+            ImGui::TableSetupColumn(labels[i]);
+        }
+        // ImGui::TableSetupScrollFreeze(0, 1);
+        ImGui::TableHeadersRow();
 
-            ImGui::TableNextColumn();
-            if (i % column_count == 0)
+        // Rows.
+        for (uint32_t row_idx = 0; row_idx < row_count; row_idx++)
+        {
+            sel = selected[row_idx];
+            ImGui::TableNextRow();
+
+            // First column.
+            ImGui::TableSetColumnIndex(0);
+            // NOTE: the first item in each row should be a Selectable that spans all columns,
+            // such that the entire row is selectable. All other items are just text labels.
+            if (ImGui::Selectable(
+                    labels[idx++], sel, //
+                    ImGuiSelectableFlags_SpanAllColumns, ImVec2(0, 0)))
             {
-                if (ImGui::Selectable(labels[i], sel, flags, ImVec2(0, 0)))
+                // Only the clicked row should be selected if Control is pressed.
+                if (!ImGui::GetIO().KeyCtrl)
                 {
-                    selected[row_idx] = !selected[row_idx];
+                    memset(selected, 0, row_count * sizeof(bool));
+                    selected[row_idx] = !sel;
                 }
                 else
                 {
+                    // Toggle the clicked row.
+                    selected[row_idx] = !selected[row_idx];
                 }
             }
-            else
+
+            // Other columns.
+            for (uint32_t column_idx = 1; column_idx < column_count; column_idx++)
             {
-                ImGui::TextUnformatted(labels[i]);
+                ImGui::TableSetColumnIndex((int)column_idx);
+                ImGui::TextUnformatted(labels[idx++]);
             }
 
             // Return true if there is at least one selection change.
             if (selected[row_idx] != sel)
+            {
                 out = true;
+            }
         }
+
         ImGui::EndTable();
     }
     return out;

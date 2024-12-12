@@ -3546,13 +3546,14 @@ DVZ_EXPORT bool dvz_gui_selectable(const char* name);
  * @param row_count the number of rows
  * @param column_count the number of columns
  * @param labels all cell labels
- * @param[out] selected_count a pointer to the number of selected rows
- * @returns a pointer to the array of selected row indices (needs to be freed by the caller)
+ * @param selected a pointer to an array of boolean indicated which rows are selected
+ * @param flags the Dear ImGui flags
+ * @returns whether the row selection has changed (in the selected array)
  */
 DVZ_EXPORT
 bool dvz_gui_table(
     const char* name, uint32_t row_count, uint32_t column_count, //
-    const char* labels[], bool* selected);
+    const char* labels[], bool* selected, int flags);
 
 
 

@@ -30,11 +30,10 @@
 
 static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
-    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
-    dvz_gui_size((vec2){200, 200});
-
     dvz_gui_demo();
 
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){400, 300});
     dvz_gui_begin("Hello", 0);
 
     // Tree.
@@ -58,8 +57,12 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     uint32_t selected_count = 0;
     bool* selected = (bool*)ev.user_data;
     ANN(selected);
-    const char* labels[] = {"0", "1", "2", "3", "4", "5"};
-    bool sel = dvz_gui_table("table", 2, 3, labels, selected);
+    const char* labels[] = {
+        "col0", "col1", "col2", //
+        "0",    "1",    "2",    //
+        "3",    "4",    "5"     //
+    };
+    bool sel = dvz_gui_table("table", 2, 3, labels, selected, 0);
     if (sel)
     {
         for (uint32_t i = 0; i < 2; i++)
