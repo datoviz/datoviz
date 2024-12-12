@@ -3550,10 +3550,9 @@ DVZ_EXPORT bool dvz_gui_selectable(const char* name);
  * @param flags the Dear ImGui flags
  * @returns whether the row selection has changed (in the selected array)
  */
-DVZ_EXPORT
-bool dvz_gui_table(
+DVZ_EXPORT bool dvz_gui_table(                                   //
     const char* name, uint32_t row_count, uint32_t column_count, //
-    const char* labels[], bool* selected, int flags);
+    const char** labels, bool* selected, int flags);
 
 
 

@@ -149,6 +149,9 @@ def map_type(type, enum_int=False, unsigned=None, ndpointer=True):
     if type == 'char*' and not unsigned:
         return 'ctypes.c_char_p'
 
+    elif type == 'char**' and not unsigned:
+        return 'ctypes.POINTER(ctypes.c_char_p)'
+
     elif type == "void*":
         return "ctypes.c_void_p"
 

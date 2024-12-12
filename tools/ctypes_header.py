@@ -10,6 +10,7 @@ This is handled by `just ctypes`.
 
 import ctypes
 from ctypes import POINTER as P_
+from ctypes import c_char_p
 import faulthandler
 import os
 import pathlib
@@ -127,7 +128,7 @@ def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
     dtype = dtype or x.dtype
-    x = x.astype(dtype)
+    # x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
 
@@ -164,6 +165,8 @@ def ndpointer(*args, **kwargs):
 
 
 def char_pointer(s):
+    if isinstance(s, list):
+        return (c_char_p * len(s))(*[c_char_p(str(_).encode('utf-8')) for _ in s])
     return str(s).encode('utf-8')
 
 

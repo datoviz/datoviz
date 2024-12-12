@@ -9,6 +9,7 @@ __version__ = "0.2.2-dev"
 
 import ctypes
 from ctypes import POINTER as P_
+from ctypes import c_char_p
 import faulthandler
 import os
 import pathlib
@@ -126,7 +127,7 @@ def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
     dtype = dtype or x.dtype
-    x = x.astype(dtype)
+    # x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
 
@@ -163,6 +164,8 @@ def ndpointer(*args, **kwargs):
 
 
 def char_pointer(s):
+    if isinstance(s, list):
+        return (c_char_p * len(s))(*[c_char_p(str(_).encode('utf-8')) for _ in s])
     return str(s).encode('utf-8')
 
 
@@ -8222,6 +8225,41 @@ gui_selectable.argtypes = [
     ctypes.c_char_p,  # char* name
 ]
 gui_selectable.restype = ctypes.c_bool
+
+# Function dvz_gui_table()
+gui_table = dvz.dvz_gui_table
+gui_table.__doc__ = """
+Display a table with selectable rows.
+
+Parameters
+----------
+name : char*
+    the widget name
+row_count : uint32_t
+    the number of rows
+column_count : uint32_t
+    the number of columns
+labels : char**
+    all cell labels
+selected : bool*
+    a pointer to an array of boolean indicated which rows are selected
+flags : int
+    the Dear ImGui flags
+
+Returns
+-------
+type
+    whether the row selection has changed (in the selected array)
+"""
+gui_table.argtypes = [
+    ctypes.c_char_p,  # char* name
+    ctypes.c_uint32,  # uint32_t row_count
+    ctypes.c_uint32,  # uint32_t column_count
+    ctypes.POINTER(ctypes.c_char_p),  # char** labels
+    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* selected
+    ctypes.c_int,  # int flags
+]
+gui_table.restype = ctypes.c_bool
 
 # Function dvz_gui_demo()
 gui_demo = dvz.dvz_gui_demo

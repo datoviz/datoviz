@@ -602,7 +602,7 @@ bool dvz_gui_selectable(const char* name) { return ImGui::Selectable(name); }
 
 bool dvz_gui_table(
     const char* name, uint32_t row_count, uint32_t column_count, //
-    const char* labels[], bool* selected, int flags)
+    const char** labels, bool* selected, int flags)
 {
     // length of selected is row_count
     ANN(name);
@@ -611,7 +611,6 @@ bool dvz_gui_table(
     if (row_count > 0)
     {
         ANN(labels);
-        ANN(selected);
     }
 
     bool sel = false, out = false;
@@ -638,7 +637,7 @@ bool dvz_gui_table(
         // Rows.
         for (uint32_t row_idx = 0; row_idx < row_count; row_idx++)
         {
-            sel = selected[row_idx];
+            sel = selected ? selected[row_idx] : false;
             ImGui::TableNextRow();
 
             // First column.
@@ -647,7 +646,8 @@ bool dvz_gui_table(
             // such that the entire row is selectable. All other items are just text labels.
             if (ImGui::Selectable(
                     labels[idx++], sel, //
-                    ImGuiSelectableFlags_SpanAllColumns, ImVec2(0, 0)))
+                    ImGuiSelectableFlags_SpanAllColumns, ImVec2(0, 0)) &&
+                selected)
             {
                 // Only the clicked row should be selected if Control is pressed.
                 if (!ImGui::GetIO().KeyCtrl)
@@ -670,7 +670,7 @@ bool dvz_gui_table(
             }
 
             // Return true if there is at least one selection change.
-            if (selected[row_idx] != sel)
+            if (selected && selected[row_idx] != sel)
             {
                 out = true;
             }

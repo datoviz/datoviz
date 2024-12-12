@@ -287,10 +287,7 @@ def process_code_image(markdown, config):
 
 def generate_examples():
     readme = EXAMPLES_PATH
-    examples = sorted(PYTHON_EXAMPLES_DIR.glob("*.py"))
-    examples.pop('drp.py')
-    examples += ['drp.py']
-    # , key=lambda p: p.name == "drp.py")
+    examples = sorted(PYTHON_EXAMPLES_DIR.glob("*.py"), key=lambda x: (x.name == "drp.py", x.name))
     out = ""
     toc = ""
 

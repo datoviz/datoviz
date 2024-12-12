@@ -1025,6 +1025,21 @@ bool dvz_gui_slider(  // returns: whether the value has changed
 )
 ```
 
+### `dvz_gui_table()`
+
+Display a table with selectable rows.
+
+```c
+bool dvz_gui_table(  // returns: whether the row selection has changed (in the selected array)
+    char* name,  // the widget name
+    uint32_t row_count,  // the number of rows
+    uint32_t column_count,  // the number of columns
+    char** labels,  // all cell labels
+    bool* selected,  // a pointer to an array of boolean indicated which rows are selected
+    int flags,  // the Dear ImGui flags
+)
+```
+
 ### `dvz_image()`
 
 Create an image visual.

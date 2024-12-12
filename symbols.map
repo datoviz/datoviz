@@ -282,6 +282,7 @@ dvz_gui_node
 dvz_gui_pop
 dvz_gui_clicked
 dvz_gui_selectable
+dvz_gui_table
 dvz_gui_demo
 dvz_gui_end
 dvz_app
