@@ -202,17 +202,20 @@ For example, here’s how to create a 2D texture and apply it to an `image` visu
 
 ```python
 # Assuming rgba is a 3D NumPy array (height, width, 4).
+# NOTE: the dtype of the NumPy array should match the Vulkan format below.
+# TODO: write a NumPy-Vulkan/Datoviz format correspondance table in the documentation.
+# TODO: write a utility function automatically mapping NumPy dtypes to Vulkan/Datoviz formats.
 height, width = rgba.shape[:2]
 
 # Texture parameters.
-format = dvz.FORMAT_R8G8B8A8_UNORM  # The Vulkan format corresponds to 4*uint8 values.
+format = dvz.FORMAT_R8G8B8A8_UNORM  # This Vulkan format corresponds to 4*uint8 values.
 address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER  # Texture address mode.
 filter = dvz.FILTER_LINEAR  # Linear filtering, use dvz.FILTER_NEAREST to disable.
 
 # Create a texture out of a RGB image.
 # NOTE: since dvz_tex_image() accepts any type of pointer, we need to manually convert the NumPy
 # array to a void* pointer. This is done with the `A_()` function (`from datoviz import A_`).
-tex = dvz.tex_image(batch, format, width, height, A_(image))
+tex = dvz.tex_image(batch, format, width, height, A_(rgb))
 
 # Finally, we assign this texture to the image visual.
 dvz.image_texture(visual, tex, filter, address_mode)
