@@ -27,6 +27,7 @@
 #include "scene/test_axes.h"
 #include "scene/test_axis.h"
 #include "scene/test_baker.h"
+#include "scene/test_box.h"
 #include "scene/test_camera.h"
 #include "scene/test_colormaps.h"
 #include "scene/test_dual.h"
@@ -346,7 +347,13 @@ int dvz_run_tests(const char* match)
     TEST(test_shape_transform)
     TEST(test_shape_obj)
 
-    // Ticks and axes.
+    // Box, ticks and axes.
+    TEST(test_box_1)
+    TEST(test_box_2)
+    TEST(test_box_3)
+    TEST(test_box_4)
+    TEST(test_box_5)
+    TEST(test_box_6)
     // TEST(test_ticks_1)
     // TEST(test_labels_1)
     // TEST(test_labels_factored)
