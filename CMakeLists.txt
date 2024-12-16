@@ -45,6 +45,7 @@ option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and dem
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" ON)
+option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" ON)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -174,6 +175,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cglm)
 set(INCL_DIRS ${INCL_DIRS} ${cglm_SOURCE_DIR}/include)
+
+# ---- openmp -------------------------------------------------------------------------------------
+set(HAS_OPENMP 0)
+
+if(DATOVIZ_WITH_OPENMP)
+    find_package(OpenMP REQUIRED)
+
+    if(OPENMP_FOUND)
+        message(STATUS "OpenMP found. Adding support.")
+        set(CORE_LIBS OpenMP::OpenMP_CXX ${CORE_LIBS})
+        set(HAS_OPENMP 1)
+    else()
+        message(WARNING "OpenMP not found. Disabling OpenMP support.")
+    endif()
+endif()
 
 # ---- glfw ---------------------------------------------------------------------------------------
 set(HAS_GLFW 0)
@@ -379,6 +395,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     CC_CLANG=${CC_CLANG}
 
     # Dependencies.
+    HAS_OPENMP=${HAS_OPENMP}
     HAS_GLFW=${HAS_GLFW}
     HAS_MSDF=${HAS_MSDF}
     HAS_SHADERC=${HAS_SHADERC}
@@ -441,6 +458,10 @@ if(CC_GCC)
         -fdiagnostics-color=always \
         -Wno-unused-but-set-variable \
         -DFPNG_NO_SSE=0 -msse4.1 -mpclmul") # for fpng
+
+    if(HAS_OPENMP)
+        set(COMMON_FLAGS "${COMMON_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
 
     # NOTES: static analysis for later?
     # -fanalyzer \

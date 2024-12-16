@@ -73,6 +73,9 @@ void dvz_compute_normals(
 
     uint32_t face_count = index_count / 3;
 
+#if HAS_OPENMP
+#pragma omp parallel for
+#endif
     // Go through all triangle faces.
     for (uint32_t i = 0; i < face_count; i++)
     {
@@ -97,6 +100,9 @@ void dvz_compute_normals(
         glm_vec3_add(normal[i2], n, normal[i2]);
     }
 
+#if HAS_OPENMP
+#pragma omp parallel for
+#endif
     // Normalize all normals since every vertex might contain the sum of many normals.
     for (uint32_t i = 0; i < vertex_count; i++)
     {

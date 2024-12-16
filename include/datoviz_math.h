@@ -25,6 +25,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAS_OPENMP
+#include <omp.h>
+#endif
+
 #include "datoviz_enums.h"
 #include "datoviz_macros.h"
 
@@ -535,6 +539,24 @@ static inline void _dmat4_inv(dmat4 mat, dmat4 dest)
 /*************************************************************************************************/
 
 EXTERN_C_ON
+
+
+
+/**
+ * Return the number of processors on the current system.
+ *
+ *  @returns the number of processors
+ */
+DVZ_EXPORT int dvz_num_procs(void);
+
+
+
+/**
+ * Set the number of threads to use in OpenMP-aware functions.
+ *
+ *  @param num_threads the requested number of threads
+ */
+DVZ_EXPORT void dvz_num_threads(int num_threads);
 
 
 

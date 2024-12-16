@@ -175,6 +175,18 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
 
 DvzApp* dvz_app(int flags)
 {
+    // Set number of threads from DVZ_NUM_THREADS env variable.
+    char* env = getenv("DVZ_NUM_THREADS");
+    if (env == NULL)
+    {
+        dvz_num_threads(1);
+    }
+    else
+    {
+        int num_threads = getenvint("DVZ_NUM_THREADS");
+        dvz_num_threads(num_threads);
+    }
+
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
 
     DvzBackend backend = BACKEND;

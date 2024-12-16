@@ -26,7 +26,38 @@
 #include <string.h>
 
 #include "_cglm.h"
+#include "_log.h"
 #include "datoviz.h"
+
+
+
+/*************************************************************************************************/
+/*  OpenMP                                                                                       */
+/*************************************************************************************************/
+
+int dvz_num_procs(void)
+{
+#if HAS_OPENMP
+    return omp_get_num_procs();
+#else
+    return 0;
+#endif
+}
+
+
+
+void dvz_num_threads(int num_threads)
+{
+#if HAS_OPENMP
+    int num_procs = dvz_num_procs();
+    if (num_threads <= 0)
+    {
+        num_threads += num_procs;
+    }
+    log_info("Setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
+    omp_set_num_threads(num_threads);
+#endif
+}
 
 
 
