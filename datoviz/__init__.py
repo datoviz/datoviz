@@ -127,6 +127,10 @@ def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
     dtype = dtype or x.dtype
+    if not x.flags.c_contiguous:
+        print(
+            f"Warning: array is not C contiguous, ensure your array is in row-major (C) order "
+            "to avoid potential issues")
     # x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 

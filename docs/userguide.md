@@ -203,6 +203,7 @@ For example, here’s how to create a 2D texture and apply it to an `image` visu
 ```python
 # Assuming rgba is a 3D NumPy array (height, width, 4).
 # NOTE: the dtype of the NumPy array should match the Vulkan format below.
+# NOTE: Datoviz expects row-major order for arrays (C order)
 # TODO: write a NumPy-Vulkan/Datoviz format correspondance table in the documentation.
 # TODO: write a utility function automatically mapping NumPy dtypes to Vulkan/Datoviz formats.
 height, width = rgba.shape[:2]
