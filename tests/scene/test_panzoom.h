@@ -27,6 +27,10 @@
 
 int test_panzoom_1(TstSuite*);
 
+int test_panzoom_2(TstSuite*);
+
+int test_panzoom_3(TstSuite*);
+
 
 
 #endif

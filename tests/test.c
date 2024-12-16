@@ -337,6 +337,8 @@ int dvz_run_tests(const char* match)
 
     // Testing scene elements.
     TEST(test_panzoom_1)
+    TEST(test_panzoom_2)
+    TEST(test_panzoom_3)
     TEST(test_arcball_1)
     TEST(test_camera_1)
     TEST(test_ortho_1)

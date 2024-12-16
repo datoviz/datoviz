@@ -14,8 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/box.h"
-#include "datoviz_math.h"
+#include "datoviz.h"
 
 
 
@@ -227,4 +226,13 @@ void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
     (*out)[0] = (pos[0] - target.xmin) / scale_x + source.xmin;
     (*out)[1] = (pos[1] - target.ymin) / scale_y + source.ymin;
     (*out)[2] = (pos[2] - target.zmin) / scale_z + source.zmin;
+}
+
+
+
+void dvz_box_print(DvzBox box)
+{
+    printf(
+        "Box: x:%.3f..%.3f, y:%.3f..%.3f, z:%.3f..%.3f\n", //
+        box.xmin, box.xmax, box.ymin, box.ymax, box.zmin, box.zmax);
 }

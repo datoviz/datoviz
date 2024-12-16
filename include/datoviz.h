@@ -3099,6 +3099,115 @@ DVZ_EXPORT void dvz_camera_print(DvzCamera* camera);
 
 
 /*************************************************************************************************/
+/*  Box                                                                                          */
+/*************************************************************************************************/
+
+/**
+ * Create a box.
+ *
+ * @param xmin minimum x value
+ * @param xmax maximum x value
+ * @param ymin minimum y value
+ * @param ymax maximum y value
+ * @param zmin minimum z value
+ * @param zmax maximum z value
+ * @returns the box
+ */
+DVZ_EXPORT DvzBox
+dvz_box(double xmin, double xmax, double ymin, double ymax, double zmin, double zmax);
+
+
+
+/**
+ * Return the aspect ratio of a box.
+ *
+ * @param box the box
+ * @returns the aspect ratio width/height
+ */
+DVZ_EXPORT double dvz_box_aspect(DvzBox box);
+
+
+
+/**
+ * Return the box center.
+ *
+ * @param box the box
+ * @param[out] the box's center
+ */
+DVZ_EXPORT void dvz_box_center(DvzBox box, dvec3 center);
+
+
+
+/**
+ * Return the extent of a box, in the same coordinate system, depending on the aspect ratio.
+ * This will return the same box if the aspect ratio is unconstrained.
+ *
+ * @param box the original box
+ * @param width the viewport width
+ * @param height the viewport height
+ * @param strategy indicates how the extent box should be computed
+ * @returns the extent box
+ */
+DVZ_EXPORT
+DvzBox dvz_box_extent(DvzBox box, float width, float height, DvzBoxExtentStrategy strategy);
+
+
+
+/**
+ * Merge a number of boxes into a single box.
+ *
+ * @param box_count the number of boxes to merge
+ * @param boxes the boxes to merge
+ * @param strategy the merge strategy
+ * @returns the merged box
+ */
+DVZ_EXPORT DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy strategy);
+
+
+
+/**
+ * Normalize 3D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ */
+DVZ_EXPORT void
+dvz_box_normalize(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
+
+
+
+/**
+ * Normalize 2D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ */
+DVZ_EXPORT void
+dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
+
+
+
+/**
+ * Perform an inverse transformation of a position from a target box to a source box.
+ */
+DVZ_EXPORT void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out);
+
+
+
+/**
+ * Display information about a box.
+ */
+DVZ_EXPORT void dvz_box_print(DvzBox box);
+
+
+
+/*************************************************************************************************/
 /*  Panzoom                                                                                      */
 /*************************************************************************************************/
 
@@ -3225,22 +3334,22 @@ DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
 
 
 /**
- * Get or set the xrange.
+ * Get the extent box.
  *
  * @param pz the panzoom
- * @param xrange the xrange (get if (0,0), set otherwise)
+ * @returns the extent box in normalized coordinates
  */
-DVZ_EXPORT void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange);
+DVZ_EXPORT DvzBox dvz_panzoom_extent(DvzPanzoom* pz);
 
 
 
 /**
- * Get or set the yrange.
+ * Set the extent box.
  *
  * @param pz the panzoom
- * @param yrange the yrange (get if (0,0), set otherwise)
+ * @param extent the extent box
  */
-DVZ_EXPORT void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange);
+DVZ_EXPORT void dvz_panzoom_set(DvzPanzoom* pz, DvzBox extent);
 
 
 

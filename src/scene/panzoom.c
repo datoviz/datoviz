@@ -118,6 +118,8 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
     pz->zoom_center[1] = 1;
 
     // pz->mvp = dvz_mvp_default();
+    pz->zlim[0] = -1;
+    pz->zlim[1] = +1;
 }
 
 
@@ -301,35 +303,35 @@ void dvz_panzoom_end(DvzPanzoom* pz)
 
 
 
-void dvz_panzoom_xrange(DvzPanzoom* pz, vec2 xrange)
+DvzBox dvz_panzoom_extent(DvzPanzoom* pz)
 {
-    // if (0, 0), gets the xrange, otherwise sets it
     ANN(pz);
-    if (_is_vec2_null(xrange))
-    {
-        // TODO: compute xrange from pan and zoom
-    }
-    else
-    {
-        // TODO: compute from pan and zoom from xrange
-    }
+
+    float xmin = -pz->pan[0] - 1.0f / pz->zoom[0];
+    float xmax = -pz->pan[0] + 1.0f / pz->zoom[0];
+    float ymin = -pz->pan[1] - 1.0f / pz->zoom[1];
+    float ymax = -pz->pan[1] + 1.0f / pz->zoom[1];
+
+    return dvz_box(xmin, xmax, ymin, ymax, pz->zlim[0], pz->zlim[1]);
 }
 
 
 
-void dvz_panzoom_yrange(DvzPanzoom* pz, vec2 yrange)
+void dvz_panzoom_set(DvzPanzoom* pz, DvzBox extent)
 {
     ANN(pz);
-    // if (0, 0), gets the yrange, otherwise sets it
-    ANN(pz);
-    if (_is_vec2_null(yrange))
-    {
-        // TODO: compute yrange from pan and zoom
-    }
-    else
-    {
-        // TODO: compute from pan and zoom from yrange
-    }
+
+    float width = extent.xmax - extent.xmin;
+    float height = extent.ymax - extent.ymin;
+
+    pz->zoom[0] = 2.0f / width;
+    pz->zoom[1] = 2.0f / height;
+
+    pz->pan[0] = -(extent.xmin + extent.xmax) / 2.0f;
+    pz->pan[1] = -(extent.ymin + extent.ymax) / 2.0f;
+
+    // pz->zlim[0] = extent.zmin;
+    // pz->zlim[1] = extent.zmax;
 }
 
 

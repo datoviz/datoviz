@@ -104,3 +104,58 @@ int test_panzoom_1(TstSuite* suite)
     dvz_panzoom_destroy(pz);
     return 0;
 }
+
+
+
+int test_panzoom_2(TstSuite* suite)
+{
+    ANN(suite);
+
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+
+    DvzBox extent = dvz_panzoom_extent(pz);
+    AT(extent.xmin == -1.0f);
+    AT(extent.xmax == 1.0f);
+    AT(extent.ymin == -1.0f);
+    AT(extent.ymax == 1.0f);
+    AT(extent.zmin == -1.0f);
+    AT(extent.zmax == 1.0f);
+
+    dvz_panzoom_destroy(pz);
+
+    return 0;
+}
+
+
+
+int test_panzoom_3(TstSuite* suite)
+{
+    ANN(suite);
+
+    DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
+    pz->pan[0] = 1;
+    pz->pan[1] = -.5;
+    pz->zoom[0] = 2;
+    pz->zoom[1] = .5;
+
+    DvzBox extent = dvz_panzoom_extent(pz);
+    DvzBox expected_extent = dvz_box(-1.5, -.5, -1.5, +2.5, -1, 1);
+    AC(extent.xmin, expected_extent.xmin, EPS);
+    AC(extent.xmax, expected_extent.xmax, EPS);
+    AC(extent.ymin, expected_extent.ymin, EPS);
+    AC(extent.ymax, expected_extent.ymax, EPS);
+
+    dvz_panzoom_set(pz, extent);
+    AC(pz->pan[0], 1, EPS);
+    AC(pz->pan[1], -.5, EPS);
+    AC(pz->zoom[0], 2, EPS);
+    AC(pz->zoom[1], .5, EPS);
+
+    DvzBox new_extent = dvz_panzoom_extent(pz);
+    AC(new_extent.xmin, extent.xmin, EPS);
+    AC(new_extent.xmax, extent.xmax, EPS);
+    AC(new_extent.ymin, extent.ymin, EPS);
+    AC(new_extent.ymax, extent.ymax, EPS);
+
+    return 0;
+}

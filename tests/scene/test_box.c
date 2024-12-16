@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_box.h"
-#include "scene/box.h"
+#include "datoviz.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
