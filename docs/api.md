@@ -240,6 +240,112 @@ void dvz_basic_size(
 )
 ```
 
+### `dvz_box()`
+
+Create a box.
+
+```c
+DvzBox dvz_box(  // returns: the box
+    double xmin,  // minimum x value
+    double xmax,  // maximum x value
+    double ymin,  // minimum y value
+    double ymax,  // maximum y value
+    double zmin,  // minimum z value
+    double zmax,  // maximum z value
+)
+```
+
+### `dvz_box_aspect()`
+
+Return the aspect ratio of a box.
+
+```c
+double dvz_box_aspect(  // returns: the aspect ratio width/height
+    DvzBox box,  // the box
+)
+```
+
+### `dvz_box_center()`
+
+Return the box center.
+
+```c
+void dvz_box_center(
+    DvzBox box,  // the box
+)
+```
+
+### `dvz_box_extent()`
+
+Return the extent of a box, in the same coordinate system, depending on the aspect ratio.
+
+```c
+DvzBox dvz_box_extent(  // returns: the extent box
+    DvzBox box,  // the original box
+    float width,  // the viewport width
+    float height,  // the viewport height
+    DvzBoxExtentStrategy strategy,  // indicates how the extent box should be computed
+)
+```
+
+### `dvz_box_inverse()`
+
+Perform an inverse transformation of a position from a target box to a source box.
+
+```c
+void dvz_box_inverse(
+
+)
+```
+
+### `dvz_box_merge()`
+
+Merge a number of boxes into a single box.
+
+```c
+DvzBox dvz_box_merge(  // returns: the merged box
+    uint32_t box_count,  // the number of boxes to merge
+    DvzBox* boxes,  // the boxes to merge
+    DvzBoxMergeStrategy strategy,  // the merge strategy
+)
+```
+
+### `dvz_box_normalize()`
+
+Normalize 3D input positions into a target box.
+
+```c
+void dvz_box_normalize(
+    DvzBox source,  // the source box, in data coordinates
+    DvzBox target,  // the target box, typically in normalized coordinates
+    uint32_t count,  // the number of positions to normalize
+    dvec3* pos,  // the positions to normalize (double precision)
+)
+```
+
+### `dvz_box_normalize_2D()`
+
+Normalize 2D input positions into a target box.
+
+```c
+void dvz_box_normalize_2D(
+    DvzBox source,  // the source box, in data coordinates
+    DvzBox target,  // the target box, typically in normalized coordinates
+    uint32_t count,  // the number of positions to normalize
+    dvec2* pos,  // the positions to normalize (double precision)
+)
+```
+
+### `dvz_box_print()`
+
+Display information about a box.
+
+```c
+void dvz_box_print(
+
+)
+```
+
 ### `dvz_camera_initial()`
 
 Set the initial camera parameters.
@@ -2050,6 +2156,16 @@ void dvz_panzoom_end(
 )
 ```
 
+### `dvz_panzoom_extent()`
+
+Get the extent box.
+
+```c
+DvzBox dvz_panzoom_extent(  // returns: the extent box in normalized coordinates
+    DvzPanzoom* pz,  // the panzoom
+)
+```
+
 ### `dvz_panzoom_flags()`
 
 Set the panzoom flags.
@@ -2117,6 +2233,17 @@ void dvz_panzoom_resize(
 )
 ```
 
+### `dvz_panzoom_set()`
+
+Set the extent box.
+
+```c
+void dvz_panzoom_set(
+    DvzPanzoom* pz,  // the panzoom
+    DvzBox extent,  // the extent box
+)
+```
+
 ### `dvz_panzoom_xlim()`
 
 Set a panzoom x limits.
@@ -2128,17 +2255,6 @@ void dvz_panzoom_xlim(
 )
 ```
 
-### `dvz_panzoom_xrange()`
-
-Get or set the xrange.
-
-```c
-void dvz_panzoom_xrange(
-    DvzPanzoom* pz,  // the panzoom
-    vec2 xrange,  // the xrange (get if (0,0), set otherwise)
-)
-```
-
 ### `dvz_panzoom_ylim()`
 
 Set a panzoom y limits.
@@ -2147,17 +2263,6 @@ Set a panzoom y limits.
 void dvz_panzoom_ylim(
     DvzPanzoom* pz,  // the panzoom
     vec2 ylim,  // the ylim (FLOAT_MIN/MAX=no lim)
-)
-```
-
-### `dvz_panzoom_yrange()`
-
-Get or set the yrange.
-
-```c
-void dvz_panzoom_yrange(
-    DvzPanzoom* pz,  // the panzoom
-    vec2 yrange,  // the yrange (get if (0,0), set otherwise)
 )
 ```
 
@@ -3789,6 +3894,26 @@ uint8_t* dvz_normalize_bytes(  // returns: the normalized array
 )
 ```
 
+### `dvz_num_procs()`
+
+Return the number of processors on the current system.
+
+```c
+int dvz_num_procs(  // returns: the number of processors
+
+)
+```
+
+### `dvz_num_threads()`
+
+Set the number of threads to use in OpenMP-aware functions.
+
+```c
+void dvz_num_threads(
+    int num_threads,  // the requested number of threads
+)
+```
+
 ### `dvz_rand_byte()`
 
 Return a random integer number between 0 and 255.
@@ -4604,6 +4729,22 @@ DVZ_ARCBALL_FLAGS_CONSTRAIN
 DVZ_BLEND_DISABLE
 DVZ_BLEND_STANDARD
 DVZ_BLEND_OIT
+```
+
+### `DvzBoxExtentStrategy`
+
+```
+DVZ_BOX_EXTENT_DEFAULT
+DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND
+DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT
+```
+
+### `DvzBoxMergeStrategy`
+
+```
+DVZ_BOX_MERGE_DEFAULT
+DVZ_BOX_MERGE_CENTER
+DVZ_BOX_MERGE_CORNER
 ```
 
 ### `DvzBufferType`

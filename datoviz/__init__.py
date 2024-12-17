@@ -723,6 +723,18 @@ class DvzEasing(CtypesEnum):
     DVZ_EASING_COUNT = 31
 
 
+class DvzBoxExtentStrategy(CtypesEnum):
+    DVZ_BOX_EXTENT_DEFAULT = 0
+    DVZ_BOX_EXTENT_FIXED_ASPECT_EXPAND = 1
+    DVZ_BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2
+
+
+class DvzBoxMergeStrategy(CtypesEnum):
+    DVZ_BOX_MERGE_DEFAULT = 0
+    DVZ_BOX_MERGE_CENTER = 1
+    DVZ_BOX_MERGE_CORNER = 2
+
+
 class DvzViewportClip(CtypesEnum):
     DVZ_VIEWPORT_CLIP_INNER = 0x0001
     DVZ_VIEWPORT_CLIP_OUTER = 0x0002
@@ -1337,6 +1349,12 @@ EASING_IN_BOUNCE = 28
 EASING_OUT_BOUNCE = 29
 EASING_IN_OUT_BOUNCE = 30
 EASING_COUNT = 31
+BOX_EXTENT_DEFAULT = 0
+BOX_EXTENT_FIXED_ASPECT_EXPAND = 1
+BOX_EXTENT_FIXED_ASPECT_CONTRACT = 2
+BOX_MERGE_DEFAULT = 0
+BOX_MERGE_CENTER = 1
+BOX_MERGE_CORNER = 2
 VIEWPORT_CLIP_INNER = 0x0001
 VIEWPORT_CLIP_OUTER = 0x0002
 VIEWPORT_CLIP_BOTTOM = 0x0004
@@ -1632,6 +1650,10 @@ class DvzArcball(ctypes.Structure):
 
 
 class DvzAtlas(ctypes.Structure):
+    pass
+
+
+class DvzBox(ctypes.Structure):
     pass
 
 
@@ -7537,6 +7559,206 @@ camera_print.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
 ]
 
+# Function dvz_box()
+box = dvz.dvz_box
+box.__doc__ = """
+Create a box.
+
+Parameters
+----------
+xmin : double
+    minimum x value
+xmax : double
+    maximum x value
+ymin : double
+    minimum y value
+ymax : double
+    maximum y value
+zmin : double
+    minimum z value
+zmax : double
+    maximum z value
+
+Returns
+-------
+type
+    the box
+"""
+box.argtypes = [
+    ctypes.c_double,  # double xmin
+    ctypes.c_double,  # double xmax
+    ctypes.c_double,  # double ymin
+    ctypes.c_double,  # double ymax
+    ctypes.c_double,  # double zmin
+    ctypes.c_double,  # double zmax
+]
+box.restype = DvzBox
+
+# Function dvz_box_aspect()
+box_aspect = dvz.dvz_box_aspect
+box_aspect.__doc__ = """
+Return the aspect ratio of a box.
+
+Parameters
+----------
+box : DvzBox
+    the box
+
+Returns
+-------
+type
+    the aspect ratio width/height
+"""
+box_aspect.argtypes = [
+    DvzBox,  # DvzBox box
+]
+box_aspect.restype = ctypes.c_double
+
+# Function dvz_box_center()
+box_center = dvz.dvz_box_center
+box_center.__doc__ = """
+Return the box center.
+
+Parameters
+----------
+box : DvzBox
+    the box
+the : unknown (out parameter)
+    box's center
+"""
+box_center.argtypes = [
+    DvzBox,  # DvzBox box
+    ctypes.c_double * 3,  # dvec3 center
+]
+
+# Function dvz_box_extent()
+box_extent = dvz.dvz_box_extent
+box_extent.__doc__ = """
+Return the extent of a box, in the same coordinate system, depending on the aspect ratio. This will return the same box if the aspect ratio is unconstrained.
+
+Parameters
+----------
+box : DvzBox
+    the original box
+width : float
+    the viewport width
+height : float
+    the viewport height
+strategy : DvzBoxExtentStrategy
+    indicates how the extent box should be computed
+
+Returns
+-------
+type
+    the extent box
+"""
+box_extent.argtypes = [
+    DvzBox,  # DvzBox box
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+    DvzBoxExtentStrategy,  # DvzBoxExtentStrategy strategy
+]
+box_extent.restype = DvzBox
+
+# Function dvz_box_merge()
+box_merge = dvz.dvz_box_merge
+box_merge.__doc__ = """
+Merge a number of boxes into a single box.
+
+Parameters
+----------
+box_count : uint32_t
+    the number of boxes to merge
+boxes : DvzBox*
+    the boxes to merge
+strategy : DvzBoxMergeStrategy
+    the merge strategy
+
+Returns
+-------
+type
+    the merged box
+"""
+box_merge.argtypes = [
+    ctypes.c_uint32,  # uint32_t box_count
+    ctypes.POINTER(DvzBox),  # DvzBox* boxes
+    DvzBoxMergeStrategy,  # DvzBoxMergeStrategy strategy
+]
+box_merge.restype = DvzBox
+
+# Function dvz_box_normalize()
+box_normalize = dvz.dvz_box_normalize
+box_normalize.__doc__ = """
+Normalize 3D input positions into a target box.
+
+Parameters
+----------
+source : DvzBox
+    the source box, in data coordinates
+target : DvzBox
+    the target box, typically in normalized coordinates
+count : uint32_t
+    the number of positions to normalize
+pos : dvec3*
+    the positions to normalize (double precision)
+out : vec3* (out parameter)
+    pointer to an array with the normalized positions to compute (single precision)
+"""
+box_normalize.argtypes = [
+    DvzBox,  # DvzBox source
+    DvzBox,  # DvzBox target
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* out
+]
+
+# Function dvz_box_normalize_2D()
+box_normalize_2D = dvz.dvz_box_normalize_2D
+box_normalize_2D.__doc__ = """
+Normalize 2D input positions into a target box.
+
+Parameters
+----------
+source : DvzBox
+    the source box, in data coordinates
+target : DvzBox
+    the target box, typically in normalized coordinates
+count : uint32_t
+    the number of positions to normalize
+pos : dvec2*
+    the positions to normalize (double precision)
+out : vec3* (out parameter)
+    pointer to an array with the normalized positions to compute (single precision)
+"""
+box_normalize_2D.argtypes = [
+    DvzBox,  # DvzBox source
+    DvzBox,  # DvzBox target
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* out
+]
+
+# Function dvz_box_inverse()
+box_inverse = dvz.dvz_box_inverse
+box_inverse.__doc__ = """
+Perform an inverse transformation of a position from a target box to a source box.
+"""
+box_inverse.argtypes = [
+    DvzBox,  # DvzBox source
+    DvzBox,  # DvzBox target
+    ctypes.c_float * 3,  # vec3 pos
+    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* out
+]
+
+# Function dvz_box_print()
+box_print = dvz.dvz_box_print
+box_print.__doc__ = """
+Display information about a box.
+"""
+box_print.argtypes = [
+    DvzBox,  # DvzBox box
+]
+
 # Function dvz_panzoom_reset()
 panzoom_reset = dvz.dvz_panzoom_reset
 panzoom_reset.__doc__ = """
@@ -7747,38 +7969,41 @@ panzoom_zoom_wheel.argtypes = [
     ctypes.c_float * 2,  # vec2 center_px
 ]
 
-# Function dvz_panzoom_xrange()
-panzoom_xrange = dvz.dvz_panzoom_xrange
-panzoom_xrange.__doc__ = """
-Get or set the xrange.
+# Function dvz_panzoom_extent()
+panzoom_extent = dvz.dvz_panzoom_extent
+panzoom_extent.__doc__ = """
+Get the extent box.
 
 Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-xrange : vec2
-    the xrange (get if (0,0), set otherwise)
+
+Returns
+-------
+type
+    the extent box in normalized coordinates
 """
-panzoom_xrange.argtypes = [
+panzoom_extent.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 xrange
 ]
+panzoom_extent.restype = DvzBox
 
-# Function dvz_panzoom_yrange()
-panzoom_yrange = dvz.dvz_panzoom_yrange
-panzoom_yrange.__doc__ = """
-Get or set the yrange.
+# Function dvz_panzoom_set()
+panzoom_set = dvz.dvz_panzoom_set
+panzoom_set.__doc__ = """
+Set the extent box.
 
 Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-yrange : vec2
-    the yrange (get if (0,0), set otherwise)
+extent : DvzBox
+    the extent box
 """
-panzoom_yrange.argtypes = [
+panzoom_set.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 yrange
+    DvzBox,  # DvzBox extent
 ]
 
 # Function dvz_panzoom_mvp()
@@ -8568,6 +8793,35 @@ pointer : void*
 """
 free.argtypes = [
     ctypes.c_void_p,  # void* pointer
+]
+
+# Function dvz_num_procs()
+num_procs = dvz.dvz_num_procs
+num_procs.__doc__ = """
+Return the number of processors on the current system.
+
+
+Returns
+-------
+type
+    the number of processors
+"""
+num_procs.argtypes = [
+]
+num_procs.restype = ctypes.c_int
+
+# Function dvz_num_threads()
+num_threads = dvz.dvz_num_threads
+num_threads.__doc__ = """
+Set the number of threads to use in OpenMP-aware functions.
+
+Parameters
+----------
+num_threads : int
+    the requested number of threads
+"""
+num_threads.argtypes = [
+    ctypes.c_int,  # int num_threads
 ]
 
 # Function dvz_next_pow2()

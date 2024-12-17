@@ -242,6 +242,15 @@ dvz_camera_perspective
 dvz_camera_viewproj
 dvz_camera_mvp
 dvz_camera_print
+dvz_box
+dvz_box_aspect
+dvz_box_center
+dvz_box_extent
+dvz_box_merge
+dvz_box_normalize
+dvz_box_normalize_2D
+dvz_box_inverse
+dvz_box_print
 dvz_panzoom_reset
 dvz_panzoom_resize
 dvz_panzoom_flags
@@ -254,8 +263,8 @@ dvz_panzoom_pan_shift
 dvz_panzoom_zoom_shift
 dvz_panzoom_end
 dvz_panzoom_zoom_wheel
-dvz_panzoom_xrange
-dvz_panzoom_yrange
+dvz_panzoom_extent
+dvz_panzoom_set
 dvz_panzoom_mvp
 dvz_ortho_reset
 dvz_ortho_resize
@@ -300,6 +309,8 @@ dvz_app_submit
 dvz_app_screenshot
 dvz_app_destroy
 dvz_free
+dvz_num_procs
+dvz_num_threads
 dvz_next_pow2
 dvz_mean
 dvz_min_max
