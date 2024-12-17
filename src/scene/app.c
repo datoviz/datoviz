@@ -14,12 +14,12 @@
 /*************************************************************************************************/
 
 #include "scene/app.h"
+#include "../env_utils.h"
 #include "../render_utils.h"
 #include "board.h"
 #include "client.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
-#include "env_utils.h"
 #include "fileio.h"
 #include "gui.h"
 #include "host.h"
@@ -191,6 +191,7 @@ DvzApp* dvz_app(int flags)
 
     DvzBackend backend = BACKEND;
     bool offscreen = (flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+    // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
     char* capture = capture_png(&offscreen);
 
     if (offscreen)
@@ -498,7 +499,8 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
         // process the requests.
         dvz_renderer_requests(app->rd, dvz_batch_size(batch), dvz_batch_requests(batch));
 
-        // DVZ_CAPTURE_PNG environment variable to automatically save a screenshot when running.
+        // Set the DVZ_CAPTURE_PNG environment variable to automatically save a screenshot when
+        // running.
         char* capture = capture_png(NULL);
         if (capture != NULL)
         {

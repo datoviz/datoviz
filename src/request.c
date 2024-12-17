@@ -15,6 +15,7 @@
 #include "_pointer.h"
 #include "_prng.h"
 #include "datoviz_protocol.h"
+#include "env_utils.h"
 #include "fifo.h"
 #include "fileio.h"
 
@@ -1471,6 +1472,19 @@ DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id)
 DvzRequest
 dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
+    // HACK: when using offscreen rendering (including when setting DVZ_CAPTURE_PNG), we hijack
+    // create_canvas() and replace it by create_board() (it's the same interface) as a canvas
+    // does not work in offscreen mode: it is replaced by a board.
+    bool offscreen = (batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+    // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
+    char* capture = capture_png(&offscreen);
+    if (offscreen)
+    {
+        DvzRequest req = dvz_create_board(batch, width, height, background, flags);
+        batch->board_id = req.id;
+        return req;
+    }
+
     CREATE_REQUEST(CREATE, CANVAS);
     req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;

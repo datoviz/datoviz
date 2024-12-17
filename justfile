@@ -220,12 +220,12 @@ build release="Debug": && bundledeps
 
 [windows]
 [linux]
-release: headers symbols
+release: symbols
     just build "Release" || just build "Release"
 #
 
 [macos]
-release: headers symbols && bundledeps
+release: symbols && bundledeps
     just build "Release" || just build "Release"
 #
 
@@ -1244,7 +1244,9 @@ runexamples:
     for file in examples/*.py; do
         bn=$(basename $file)
         name="${bn%.*}"
+        echo "Running $name..."
         DVZ_CAPTURE_PNG=data/screenshots/examples/$name.png python $file
+        echo ""
     done
 #
 
