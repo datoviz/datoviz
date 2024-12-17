@@ -7,28 +7,29 @@ Development happens on `dev` whereas `main` is stable.
 Release checklist from a Linux development machine:
 
 1. `git branch`: check that you are on the `dev` branch.
-2. Write the `CHANGELOG.md` for the new version.
-3. `just clean release api`: rebuild in release mode.
-4. `just test`: run the C testing suite.
-5. `just pytest`: run the Python testing suite.
-6. `just act test-linux`: simulate the GitHub Actions tests locally.
-7. `version=x.y.z`: set up the new version.
-8. `just bump $version`: bump the codebase to the new version.
-9. `just release`: recompile with the new version.
-10. `git diff`: check the changes to commit.
-11. `git commit -am "Bump version to v$version" && git push`: commit the new version.
-12. `just wheels`: build the wheels on GitHub Actions.
-13. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions do not support Windows Docker containers yet).
-14. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
-15. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
-16. `just tag $version`: once on `main`, tag with the new version.
-17. `git push origin --tags`: push the tag.
-18. `just draft`: create a new GitHub Release draft with the built wheels.
-19. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
-20. `just upload`: upload the wheels to PyPI.
-21. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
-22. `git commit -am "Bump to development version" && git push`: bump to the development version.
-23. Announce the new release on the various communication channels.
+1. Write the `CHANGELOG.md` for the new version.
+1. `just clean release api`: rebuild in release mode.
+1. `just test`: run the C testing suite.
+1. `just pytest`: run the Python testing suite.
+1. Run the last commands on Windows and macOS too.
+1. `just act test-linux`: simulate the GitHub Actions tests locally.
+1. `version=x.y.z`: set up the new version.
+1. `just bump $version`: bump the codebase to the new version.
+1. `just release`: recompile with the new version.
+1. `git diff`: check the changes to commit.
+1. `git commit -am "Bump version to v$version" && git push`: commit the new version.
+1. `just wheels`: build the wheels on GitHub Actions.
+1. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions do not support Windows Docker containers yet).
+1. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
+1. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
+1. `just tag $version`: once on `main`, tag with the new version.
+1. `git push origin --tags`: push the tag.
+1. `just draft`: create a new GitHub Release draft with the built wheels.
+1. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
+1. `just upload`: upload the wheels to PyPI.
+1. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
+1. `git commit -am "Bump to development version" && git push`: bump to the development version.
+1. Announce the new release on the various communication channels.
 
 
 ## Packaging instructions (advanced users)

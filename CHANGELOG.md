@@ -4,7 +4,39 @@
 
 Work in progress.
 
+## v0.2.2 (2024-12-XX) [IN PREPARATION]
+
+Minor release with a few improvements to the mesh visual, a couple of new GUI features, and an API export of the *Datoviz Rendering Protocol* (DRP) layer for more advanced used-cases from Python or C/C++.
+
+### Visuals
+
+#### Mesh visual
+
+* Improved transparency capabilities (still imperfect, no order-independent transparency yet)
+* Added support for multiple directional lights
+* Started support for multiple blending types
+* Added an example of using the mesh visual with dynamic updates
+
+### GUI
+
+* Added a thin wrapper for simple trees
+* Added a thin wrapper for simple tables with selectable rows
+
+### API
+
+* Exported the *Datoviz Rendering Protocol* (DRP) layer
+* Added a box module, used internally by the upcoming axes system
+
+### Build
+
+* Added support for the [*shaderc*](https://github.com/google/shaderc/) to support GLSL to SPIR-V compilation from Datoviz.
+* Added initial support for OpenMP multicore parallelization of tight loops
+* Added basic error callback mechanism, used in assertions for now
+
+
 ## v0.2.1 (2024-09-17) [LATEST RELEASE]
+
+Minor release with various improvements to visuals and CI/CD system.
 
 ### Scene
 
