@@ -11,6 +11,8 @@ Illustrates:
 - Mesh visual and shape mesh
 - Colormaps
 - Manual mesh colors
+- Timer events
+- Dynamic visual updates
 
 """
 
