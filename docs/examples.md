@@ -800,7 +800,7 @@ dvz.glyph_ascii(glyph, S_(text))
 # Now we compute the glyph shifts (called "xywh") using our font.
 xywh = dvz.font_ascii(af.font, S_(text))
 # We also define a global relative anchor point, in pixels (xy), for the string.
-#  By default, the anchor is (0, 0) which represents the lower left corner of the string. The
+# By default, the anchor is (0, 0) which represents the lower left corner of the string. The
 # anchor position is the string position defined above (1, 1, 0).
 anchor = vec2(-.5 * font_size * len(text), -2 * font_size)
 dvz.glyph_xywh(glyph, 0, n, xywh, anchor, 0)

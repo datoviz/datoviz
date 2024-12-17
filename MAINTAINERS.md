@@ -8,7 +8,7 @@ Release checklist from a Linux development machine:
 
 1. `git branch`: check that you are on the `dev` branch.
 1. Write the `CHANGELOG.md` for the new version.
-1. `just clean release api`: rebuild in release mode.
+1. `just api clean release`: rebuild in release mode.
 1. `just test`: run the C testing suite.
 1. `just pytest`: run the Python testing suite.
 1. Run the last three commands on Windows and macOS too.

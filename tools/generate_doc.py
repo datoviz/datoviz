@@ -310,7 +310,7 @@ def generate_examples():
         toc += f"* [{title}](#{anchor})\n"
         out += f"{doc}\n\n"
 
-    with open(readme, 'w') as fr:
+    with open(readme, 'w', encoding='utf-8') as fr:
         out = f"# Examples\n\n{toc}\n\n{out}"
         fr.write(out)
 
