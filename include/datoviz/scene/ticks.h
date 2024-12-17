@@ -95,6 +95,8 @@ struct DvzTicks
 
 DVZ_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
 {
+    ASSERT(lstep != 0);
+    // TODO: replace by "round()"?
     return floor(1 + (lmax - lmin) / lstep);
 }
 

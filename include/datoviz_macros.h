@@ -225,7 +225,7 @@ typedef void (*DvzErrorCallback)(const char* message);
 extern char error_message[2048];
 extern DvzErrorCallback error_callback;
 
-extern void _assert(bool assertion, const char* message, const char* filename, int line);
+extern void _dvz_assert(bool assertion, const char* message, const char* filename, int line);
 
 EXTERN_C_OFF
 
@@ -239,7 +239,7 @@ EXTERN_C_OFF
 #if DEBUG
 #define ASSERT(x) assert(x)
 #else
-#define ASSERT(x) _assert(x, #x, __FILE_NAME__, __LINE__)
+#define ASSERT(x) _dvz_assert(x, #x, __FILE_NAME__, __LINE__)
 #endif
 #endif
 
