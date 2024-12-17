@@ -593,6 +593,16 @@ double dvz_easing(  // returns: the eased value
 )
 ```
 
+### `dvz_error_callback()`
+
+Register an error callback, a C function taking as input a string.
+
+```c
+void dvz_error_callback(
+    DvzErrorCallback cb,  // the error callback
+)
+```
+
 ### `dvz_figure()`
 
 Create a figure, a desktop window with panels and visuals.

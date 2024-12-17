@@ -1,5 +1,6 @@
 dvz_demo
 dvz_version
+dvz_error_callback
 dvz_scene
 dvz_scene_run
 dvz_scene_destroy

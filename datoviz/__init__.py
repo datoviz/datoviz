@@ -193,6 +193,7 @@ def uvec3(x: int = 0, y: int = 0, z: int = 0):
     return (ctypes.c_uint32 * 3)(x, y, z)
 
 
+
 # ===============================================================================
 # Aliases
 # ===============================================================================
@@ -2291,7 +2292,7 @@ keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, Dv
 frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
 timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
 resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
-
+DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 
 # ===============================================================================
 # FUNCTIONS
@@ -2319,6 +2320,20 @@ type
 version.argtypes = [
 ]
 version.restype = ctypes.c_char_p
+
+# Function dvz_error_callback()
+error_callback = dvz.dvz_error_callback
+error_callback.__doc__ = """
+Register an error callback, a C function taking as input a string.
+
+Parameters
+----------
+cb : DvzErrorCallback
+    the error callback
+"""
+error_callback.argtypes = [
+    DvzErrorCallback,  # DvzErrorCallback cb
+]
 
 # Function dvz_scene()
 scene = dvz.dvz_scene
@@ -10843,3 +10858,16 @@ record_end.argtypes = [
 record_end.restype = DvzRequest
 
 DVZ_FORMAT_COLOR = FORMAT_R8G8B8A8_UNORM
+
+# ===============================================================================
+# Error handling
+# ===============================================================================
+
+class DatovizError(Exception):
+    pass
+
+@DvzErrorCallback
+def error_handler(message):
+    raise DatovizError(message.decode('utf-8'))
+
+error_callback(error_handler)

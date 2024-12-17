@@ -301,7 +301,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
     timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
     resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
-
+    DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 
     """)
 

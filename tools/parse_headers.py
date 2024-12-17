@@ -204,7 +204,9 @@ def parse_functions(text):
         Optional(identifier("name")
                  ) + Optional(COMMA))
     args = Group(ZeroOrMore(argDecl))
-    func = Optional(Suppress("DVZ_EXPORT")) + \
+    # NOTE: make DVZ_EXPORT mandatory to avoid parsing non-functions such as DvzErrorCallback
+    # in datoviz_macros.h
+    func = (Suppress("DVZ_EXPORT")) + \
         Optional(Suppress("DVZ_INLINE"))
     signature = Optional(static("static")) + \
         Optional(inline("inline")) + \
