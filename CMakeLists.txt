@@ -645,6 +645,7 @@ add_library(datoviz_core OBJECT
 
     # Utils
     "src/_version.c"
+    "src/_error.c"
     "src/_atomic.cpp"
     "src/_list.c"
     "src/_map.cpp"

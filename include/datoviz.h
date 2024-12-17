@@ -95,6 +95,15 @@ DVZ_EXPORT const char* dvz_version(void);
 
 
 
+/**
+ * Register an error callback, a C function taking as input a string.
+ *
+ * @param cb the error callback
+ */
+DVZ_EXPORT void dvz_error_callback(DvzErrorCallback cb);
+
+
+
 /*************************************************************************************************/
 /*************************************************************************************************/
 /*  Scene API                                                                                    */

@@ -24,9 +24,18 @@
 #define DVZ_VERSION_PATCH 2
 #define DVZ_VERSION_DEVEL -dev
 
+// DVZ_VERSION
+#if DEBUG
+#define DVZ_VERSION                                                                               \
+    (xstr(DVZ_VERSION_MAJOR) "." xstr(DVZ_VERSION_MINOR) "." xstr(DVZ_VERSION_PATCH) "" xstr(     \
+        DVZ_VERSION_DEVEL) " (DEBUG)")
+#else
 #define DVZ_VERSION                                                                               \
     (xstr(DVZ_VERSION_MAJOR) "." xstr(DVZ_VERSION_MINOR) "." xstr(DVZ_VERSION_PATCH) "" xstr(     \
         DVZ_VERSION_DEVEL))
+#endif
+
+
 
 #define DVZ_NAME       "Datoviz"
 #define DVZ_MAINTAINER "Cyrille Rossant <cyrille.rossant at gmail.com>"

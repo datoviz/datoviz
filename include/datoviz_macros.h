@@ -19,6 +19,7 @@
 
 #include <assert.h>
 #include <libgen.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,6 +75,24 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 #define __STDC_VERSION__ 0
 #endif
 
+
+
+// Null ID
+#define DVZ_ID_NONE 0
+
+
+
+// Box
+#define DVZ_BOX_NDC                                                                               \
+    (DvzBox) { -1, +1, -1, +1, -1, +1 }
+
+
+
+/*************************************************************************************************/
+/*  Colors                                                                                       */
+/*************************************************************************************************/
+
+// Colors
 // NOTE: need to use vec4 instead of cvec4 for colors with WebGPU as WebGPU does not support cvec4
 #define DVZ_COLOR_CVEC4 1
 
@@ -101,33 +120,6 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 #define DVZ_FORMAT_COLOR DVZ_FORMAT_R32G32B32A32_SFLOAT
 
 #endif
-
-
-
-#define DVZ_BOX_NDC                                                                               \
-    (DvzBox) { -1, +1, -1, +1, -1, +1 }
-
-
-
-/*************************************************************************************************/
-/*  Assertions                                                                                   */
-/*************************************************************************************************/
-
-#ifndef ASSERT
-#if DEBUG
-#define ASSERT(x) assert((x))
-#else
-#define ASSERT(x)                                                                                 \
-    if (!(x))                                                                                     \
-    fprintf(stderr, "CRITICAL ERROR, PLEASE REPORT (%s:%d, %s)\n", __FILE_NAME__, __LINE__, #x)
-#endif
-#endif
-
-#ifndef ANN
-#define ANN(x) ASSERT((x) != NULL);
-#endif
-
-#define DVZ_ID_NONE 0
 
 
 
@@ -217,6 +209,45 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
 // #pragma warning(push)
 #define MUTE_OFF
 // #pragma warning(pop)
+#endif
+
+
+
+/*************************************************************************************************/
+/*  Error handling                                                                               */
+/*************************************************************************************************/
+
+EXTERN_C_ON
+
+// Error callback function type.
+typedef void (*DvzErrorCallback)(const char* message);
+
+extern char error_message[2048];
+extern DvzErrorCallback error_callback;
+
+extern void _assert(bool assertion, const char* message, const char* filename, int line);
+
+EXTERN_C_OFF
+
+
+
+/*************************************************************************************************/
+/*  Assertions                                                                                   */
+/*************************************************************************************************/
+
+#ifndef ASSERT
+#if DEBUG
+#define ASSERT(x) assert(x)
+#else
+#define ASSERT(x) _assert(x, #x, __FILE_NAME__, __LINE__)
+#endif
+#endif
+
+
+
+// ASSERT NOT NULL
+#ifndef ANN
+#define ANN(x) ASSERT((x) != NULL);
 #endif
 
 
