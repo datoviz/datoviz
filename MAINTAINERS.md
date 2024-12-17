@@ -11,7 +11,7 @@ Release checklist from a Linux development machine:
 1. `just clean release api`: rebuild in release mode.
 1. `just test`: run the C testing suite.
 1. `just pytest`: run the Python testing suite.
-1. Run the last commands on Windows and macOS too.
+1. Run the last three commands on Windows and macOS too.
 1. `just act test-linux`: simulate the GitHub Actions tests locally.
 1. `version=x.y.z`: set up the new version.
 1. `just bump $version`: bump the codebase to the new version.

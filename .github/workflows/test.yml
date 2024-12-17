@@ -11,7 +11,7 @@ on:
       - main
 
 env:
-  DVZ_LOG_LEVEL: 1  # 1 for DEBUG and 0 for TRACE
+  DVZ_LOG_LEVEL: 2  # 1 for DEBUG and 0 for TRACE
   USING_ACT: 0  # will be 1 when using "just act", skip repo cloning to use local instead
 
 jobs:
