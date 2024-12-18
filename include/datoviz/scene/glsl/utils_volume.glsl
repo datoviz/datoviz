@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 
 #define VOLUME_TYPE_SCALAR 0
@@ -17,6 +17,11 @@
 
 vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
 {
+    if ((min(min(uvw.x, uvw.y), uvw.z) <= 0) || (max(max(uvw.x, uvw.y), uvw.z) >= 1))
+    {
+        return vec4(0);
+    }
+
     // modes is (VOLUME_TYPE, VOLUME_COLOR)
     vec4 color = vec4(0);
     if (modes.x == VOLUME_TYPE_SCALAR)
