@@ -3350,7 +3350,7 @@ visual_data.argtypes = [
     ctypes.c_uint32,  # uint32_t attr_idx
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
 ]
 
 # Function dvz_visual_quads()
@@ -5990,7 +5990,7 @@ tex_image.argtypes = [
     DvzFormat,  # DvzFormat format
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
 ]
 tex_image.restype = DvzId
 
@@ -6754,7 +6754,7 @@ tex_volume.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
     ctypes.c_uint32,  # uint32_t depth
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
 ]
 tex_volume.restype = DvzId
 
@@ -6922,7 +6922,7 @@ tex_slice.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
     ctypes.c_uint32,  # uint32_t depth
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
 ]
 tex_slice.restype = DvzId
 
@@ -9902,7 +9902,7 @@ upload_dat.argtypes = [
     DvzId,  # DvzId dat
     DvzSize,  # DvzSize offset
     DvzSize,  # DvzSize size
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
 upload_dat.restype = DvzRequest
@@ -10019,7 +10019,7 @@ upload_tex.argtypes = [
     ctypes.c_uint32 * 3,  # uvec3 offset
     ctypes.c_uint32 * 3,  # uvec3 shape
     DvzSize,  # DvzSize size
-    ctypes.c_void_p,  # void* data
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
 upload_tex.restype = DvzRequest

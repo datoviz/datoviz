@@ -153,7 +153,12 @@ def map_type(type, enum_int=False, unsigned=None, ndpointer=True):
         return 'ctypes.POINTER(ctypes.c_char_p)'
 
     elif type == "void*":
-        return "ctypes.c_void_p"
+        # NOTE: void* becomes either "ctypes.c_void_p", or an ndpointer if the argument is
+        # typically expected to be an ndarray
+        if ndpointer:
+            return 'ndpointer(flags="C_CONTIGUOUS")'
+        else:
+            return "ctypes.c_void_p"
 
     elif type.endswith('*'):
         return cpointer_to_ndpointer(type, unsigned=unsigned, ndpointer=ndpointer)
@@ -326,7 +331,14 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             # annotations = {}
             for arg in func_info.get('args', []):
                 if arg["dtype"] != "void":
-                    mtype = map_type(arg["dtype"])
+
+                    # HACK: when there is "void* data", use a contiguous ndarray Python type
+                    if arg["dtype"] == 'void*':
+                        ndpointer = arg["name"] == 'data'
+                    else:
+                        ndpointer = True
+
+                    mtype = map_type(arg["dtype"], ndpointer=ndpointer)
                     out += (f'    {mtype},  '
                             f'# {arg["dtype"]} {arg["name"]}\n')
                     # annotations[arg["name"]] = mtype
