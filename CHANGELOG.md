@@ -29,6 +29,7 @@ Minor release with a few improvements to the mesh visual, a couple of new GUI fe
 ### API
 
 * Exported the *Datoviz Rendering Protocol* (DRP) layer
+* Enforced C_CONTIGUOUS ndarray arguments instead of generic `void*` pointers in some functions ([#71](https://github.com/datoviz/datoviz/issues/71))
 * Added a box module, used internally by the upcoming axes system
 
 ### Build
