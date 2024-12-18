@@ -17,6 +17,10 @@ Minor release with a few improvements to the mesh visual, a couple of new GUI fe
 * Started support for multiple blending types
 * Added an example of using the mesh visual with dynamic updates
 
+#### Volume visual
+
+* Fixed a visual issue whenever volume textures are non-zero on the volume boundaries ([#72](https://github.com/datoviz/datoviz/issues/72))
+
 ### GUI
 
 * Added a thin wrapper for simple trees
