@@ -244,10 +244,11 @@ endif()
 # ---- shaderc ------------------------------------------------------------------------------------
 set(HAS_SHADERC 0)
 
-if(${DATOVIZ_WITH_SHADERC})
+if(DATOVIZ_WITH_SHADERC)
     if(${OS_MACOS})
         set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/macos/libshaderc_shared.dylib")
     elseif(${OS_WINDOWS})
+        set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/windows/libshaderc_shared.dll")
     else()
         set(CORE_LIBS ${CORE_LIBS} "${CMAKE_SOURCE_DIR}/libs/shaderc/linux/libshaderc_shared.so")
     endif()

@@ -319,6 +319,7 @@ build release="Debug":
     unset CXX
     mkdir -p build
     cp libs/vulkan/windows/vulkan-1.dll build/
+    cp libs/shaderc/windows/libshaderc_shared.dll build/
 
     # Copy mingw64 shared libraries.
     MINGW64_DIR="$(dirname $(which gcc))"
