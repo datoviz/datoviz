@@ -180,7 +180,7 @@ set(INCL_DIRS ${INCL_DIRS} ${cglm_SOURCE_DIR}/include)
 set(HAS_OPENMP 0)
 
 if(DATOVIZ_WITH_OPENMP)
-    find_package(OpenMP REQUIRED)
+    find_package(OpenMP)
 
     if(OPENMP_FOUND)
         message(STATUS "OpenMP found. Adding support.")
