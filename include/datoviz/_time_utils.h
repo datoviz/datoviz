@@ -8,6 +8,9 @@
 /*  Time utilities                                                                               */
 /*************************************************************************************************/
 
+// NOTE: this file should NOT be called _time.h, or this will prevent compilation on macOS
+// probably due to a naming conflict of a system file.
+
 #ifndef DVZ_HEADER_TIME
 #define DVZ_HEADER_TIME
 

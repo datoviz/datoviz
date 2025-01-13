@@ -8,6 +8,9 @@
 /*  Threading utilities                                                                          */
 /*************************************************************************************************/
 
+// NOTE: this file should NOT be called _thread.h, or this will prevent compilation on macOS
+// probably due to a naming conflict of a system file.
+
 #ifndef DVZ_HEADER_THREAD
 #define DVZ_HEADER_THREAD
 

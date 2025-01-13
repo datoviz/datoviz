@@ -8,6 +8,9 @@
 /*  String utils                                                                                 */
 /*************************************************************************************************/
 
+// NOTE: this file should NOT be called _string.h, or this will prevent compilation on macOS
+// probably due to a naming conflict of a system file.
+
 #ifndef DVZ_HEADER_STRING
 #define DVZ_HEADER_STRING
 

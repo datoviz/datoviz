@@ -345,6 +345,13 @@ if(DATOVIZ_WITH_MSDF)
 
     set_target_properties(tinyxml2 PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+    # NOTE: this fixes a build problem on macOS with cstddef.h <stddef> where the import
+    # below is added to the compilation command and should be removed for the build to succeed:
+    # -isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.2.sdk/usr/include
+    if(${OS_MACOS})
+        set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)
+    endif()
+
     # MSDF atlas
     FetchContent_Declare(
         msdfgen-atlas

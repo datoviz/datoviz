@@ -16,7 +16,7 @@
 
 #include "test_font.h"
 #include "_cglm.h"
-#include "_string.h"
+#include "_string_utils.h"
 #include "scene/font.h"
 #include "test.h"
 #include "testing.h"

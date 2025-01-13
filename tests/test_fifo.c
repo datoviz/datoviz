@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "_thread.h"
+#include "_thread_utils.h"
 #include "fifo.h"
 #include "test.h"
 #include "test_fifo.h"

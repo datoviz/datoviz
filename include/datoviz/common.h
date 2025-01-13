@@ -32,8 +32,8 @@
 #include "_log.h"
 #include "_macros.h"
 #include "_obj.h"
-#include "_thread.h"
-#include "_time.h"
+#include "_thread_utils.h"
+#include "_time_utils.h"
 
 #include "_debug.h"
 

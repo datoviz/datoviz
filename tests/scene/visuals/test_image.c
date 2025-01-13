@@ -14,7 +14,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_string.h"
+#include "_string_utils.h"
 #include <locale.h>
 #include <stddef.h>
 #include <stdint.h>

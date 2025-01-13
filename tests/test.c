@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "_thread.h"
+#include "_thread_utils.h"
 #include "fileio.h"
 #include "input.h"
 #include "scene/test_animation.h"

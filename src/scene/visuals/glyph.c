@@ -15,7 +15,7 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/glyph.h"
-#include "_string.h"
+#include "_string_utils.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "datoviz_types.h"

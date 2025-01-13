@@ -13,11 +13,11 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "_thread.h"
 #include "_atomic.h"
 #include "_macros.h"
 #include "_mutex.h"
 #include "_obj.h"
+#include "_thread_utils.h"
 
 MUTE_ON
 // #include "tinycthread.h"

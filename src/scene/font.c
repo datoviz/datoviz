@@ -16,7 +16,7 @@
 #include "scene/font.h"
 #include "../_pointer.h"
 #include "_macros.h"
-#include "_string.h"
+#include "_string_utils.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "fileio.h"

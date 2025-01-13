@@ -17,7 +17,7 @@
 #include <stdio.h>
 
 #include "_mutex.h"
-#include "_thread.h"
+#include "_thread_utils.h"
 #include "test.h"
 #include "test_thread.h"
 #include "testing.h"
