@@ -71,7 +71,7 @@ DvzSize dvz_datalloc_alloc(
     {
         DvzBuffer* buffer = _get_shared_buffer(res, type, mappable);
         log_info(
-            "resizing buffer %d type %d (mappable: %d) to %s", //
+            "resizing buffer %u type %d (mappable: %d) to %s", //
             (uint64_t)buffer->buffer, type, mappable, pretty_size(resized));
         dvz_buffer_resize(buffer, resized);
     }
