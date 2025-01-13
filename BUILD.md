@@ -112,35 +112,42 @@ python -c "import datoviz; datoviz.demo()"
 
 ## Windows
 
-_Note_: we have less experience with Windows, improvements welcome.
-
 Requirements:
 
 * [Git for Windows](https://git-scm.com/download/win).
-* [WinLibs](https://winlibs.com/): download and install the latest gcc UCRT version with POSIX threads..
-* [just](https://github.com/casey/just/releases).
+* [WinLibs](https://winlibs.com/): Download and install the latest gcc UCRT version with POSIX threads.
 * [LunarG Vulkan SDK for Windows](https://vulkan.lunarg.com/sdk/home#windows).
-* [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install).
-* [vcpkg](https://vcpkg.io/en/). The `VCPKG_ROOT` environment variable should be set and should be in the `PATH`.
-* Python (e.g. conda).
+* [vcpkg](https://vcpkg.io/en/) The `VCPKG_ROOT` environment variable should be set and should be in the `PATH`.
+* [just](https://github.com/casey/just/releases) Extract the just.exe file into C:\mingw64\bin (created by WinLibs).
+* [Python](https://www.python.org/downloads).
+
 
 Instructions:
 
-1. Copy the decompressed `just.exe` into `C:\mingw64\bin` (which should have been created by WinLibs).
-2. Open a Git Bash terminal.
-3. Add this to your `~/.bash_profile`: `export VCPKG_ROOT=/path/to/vcpkg` after putting the path to vcpkg.
-4. Clone the Datoviz GitHub repository in a folder.
-5. Go to that folder in the terminal.
-6. Type:
+1. Install the above dependencies.
+2. Open Windows git-bash terminal at the directory location for the datoviz build.
 
 ```bash
-wsl.exe --install
-wsl.exe --update
+# Clone the Datoviz repo.
+git clone https://github.com/datoviz/datoviz.git --recursive
+cd datoviz
+
+# Build Python requirements
 pip install -r requirements-dev.txt
-just build  # this one may fail, try again below:
+
+# NOTE: this call will fail, but the build will succeed the second time.
+# Fix welcome (see https://github.com/Chlumsky/msdf-atlas-gen/issues/98)
 just build
-# Try the builtin demo.
-build\datoviz.exe demo
-# Try running the demo from Python.
+
+# That one should succeed.
+just build
+
+# Try a demo.
+just demo
+
+# Compile and run a C example.
+just example scatter
+
+# Run the demo from Python.
 python -c "import datoviz; datoviz.demo()"
 ```
