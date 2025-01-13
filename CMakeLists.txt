@@ -45,7 +45,10 @@ option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and dem
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" ON)
-option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" ON)
+
+# NOTE: disabling for now as it leads to a .dll that is not loadable in ctypes on Windows for
+# some reason.
+option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" OFF)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
