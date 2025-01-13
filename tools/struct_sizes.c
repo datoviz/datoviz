@@ -23,9 +23,9 @@ int main(void)
     printf("  \"DvzWindowEvent\": %u,\n", (unsigned)sizeof(DvzWindowEvent));
     printf("  \"DvzFrameEvent\": %u,\n", (unsigned)sizeof(DvzFrameEvent));
     printf("  \"DvzTimerEvent\": %u,\n", (unsigned)sizeof(DvzTimerEvent));
-    printf("  \"DvzRequestsEvent\": %u\n", (unsigned)sizeof(DvzRequestsEvent));
-    printf("  \"DvzRecorderCommand\": %u\n", (unsigned)sizeof(DvzRecorderCommand));
-    printf("  \"DvzRequestContent\": %u\n", (unsigned)sizeof(DvzRequestContent));
+    printf("  \"DvzRequestsEvent\": %u,\n", (unsigned)sizeof(DvzRequestsEvent));
+    printf("  \"DvzRecorderCommand\": %u,\n", (unsigned)sizeof(DvzRecorderCommand));
+    printf("  \"DvzRequestContent\": %u,\n", (unsigned)sizeof(DvzRequestContent));
     printf("  \"DvzRequest\": %u\n", (unsigned)sizeof(DvzRequest));
     printf("}\n");
     return 0;

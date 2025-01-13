@@ -164,6 +164,10 @@ checkstructs:
     import ctypes
     import json
 
+    # Insure local datoviz module is imported.
+    import sys
+    sys.path.insert(0, '.')
+
     def _check_struct_sizes(json_path):
         """Check the size of the ctypes structs and unions with respect to the sizes output by
         the CMake process (small executable in tools/struct_sizes.c compiled and executed by CMake).
@@ -330,6 +334,14 @@ build release="Debug":
     pushd build/
     CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. --preset=default -DCMAKE_BUILD_TYPE={{release}}
     cmake --build .
+
+    # Copy vcpkg_installed dll's to datoviz.exe location.
+    if [ "{{release}}" == "Debug" ]; then
+        cp vcpkg_installed/x64-windows/debug/bin/*.dll .
+    else
+        cp vcpkg_installed/x64-windows/bin/*.dll .
+    fi
+
     popd
 #
 
