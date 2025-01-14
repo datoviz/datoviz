@@ -81,7 +81,7 @@ jobs:
       run: |
         brew update
         brew bundle dump --force --file ~/.Brewfile || true
-        brew install just ccache ninja clang-format tree cloc
+        brew install just ccache ninja clang-format tree cloc jq
 
     # Cache pip dependencies
     - name: Cache pip

@@ -102,7 +102,7 @@ jobs:
     # Install the build dependencies
     - name: Dependencies
       run: |
-        brew install just ccache ninja clang-format tree cloc
+        brew install just ccache ninja clang-format tree cloc jq
         pip install -r requirements-dev.txt
 
     # HACK: the compilation fails because the compiler uses the Mono freetype which
@@ -157,7 +157,7 @@ jobs:
     # Install the build dependencies
     - name: Dependencies
       run: |
-        brew install just ccache ninja clang-format tree cloc
+        brew install just ccache ninja clang-format tree cloc jq
         pip install -r requirements-dev.txt
 
     # HACK: the compilation fails because the compiler uses the Mono freetype which

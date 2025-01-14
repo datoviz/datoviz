@@ -47,7 +47,7 @@ python -c "import datoviz; datoviz.demo()"
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Install build dependencies.
-brew install just cmake ccache ninja freetype clang-format tree cloc
+brew install just cmake ccache ninja freetype clang-format tree cloc jq
 
 # Clone the Datoviz repo.
 git clone https://github.com/datoviz/datoviz.git --recursive
@@ -83,7 +83,7 @@ python -c "import datoviz; datoviz.demo()"
     eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Install build dependencies.
-brew install just cmake ccache ninja freetype clang-format tree cloc
+brew install just cmake ccache ninja freetype clang-format tree cloc jq
 
 # Clone the Datoviz repo.
 git clone https://github.com/datoviz/datoviz.git --recursive
