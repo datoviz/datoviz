@@ -1011,14 +1011,7 @@ headers:
 #
 
 symbols:
-    #!/usr/bin/env python
-    import json
-    with open("tools/headers.json", "r") as f:
-        headers = json.load(f)
-    with open("symbols.map", "w") as f:
-        for fn, items in headers.items():
-            for function in items["functions"].keys():
-                f.write(f"{function}\n")
+    @jq -r '.[] | .functions | keys[]' tools/headers.json > symbols.map
 #
 
 [linux]
