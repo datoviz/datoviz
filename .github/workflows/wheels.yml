@@ -213,7 +213,7 @@ jobs:
     - name: Chocolatey
       run: |
         choco install git -y --params "/GitAndUnixToolsOnPath"
-        choco install 7zip python just mingw cmake ccache ninja tree cloc -y
+        choco install 7zip python just mingw cmake ccache ninja tree cloc jq -y
 
     # vcpkg
     - name: vcpkg
