@@ -117,8 +117,9 @@ Requirements:
 * [Git for Windows](https://git-scm.com/download/win).
 * [WinLibs](https://winlibs.com/): Download and install the latest gcc UCRT version with POSIX threads.
 * [LunarG Vulkan SDK for Windows](https://vulkan.lunarg.com/sdk/home#windows).
-* [vcpkg](https://vcpkg.io/en/) The `VCPKG_ROOT` environment variable should be set and should be in the `PATH`.
-* [just](https://github.com/casey/just/releases) Extract the just.exe file into C:\mingw64\bin (created by WinLibs).
+* [vcpkg](https://vcpkg.io/en/): The `VCPKG_ROOT` environment variable should be set and should be in the `PATH`.
+* [just](https://github.com/casey/just/releases): Extract the just.exe file into C:\mingw64\bin (created by WinLibs).`
+* [jq](https://jqlang.github.io/jq/download/): For example, with winget, use `winget install jqlang.jq`
 * [Python](https://www.python.org/downloads).
 
 
