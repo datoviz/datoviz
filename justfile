@@ -217,10 +217,11 @@ build release="Debug": && bundledeps
     @cp -a libs/vulkan/macos/libvulkan.1.*dylib build/
     @cp -a libs/vulkan/macos/libMoltenVK.dylib build/
     @cp -a libs/vulkan/macos/MoltenVK_icd.json build/
-    @cp -a libs/shaderc/macos/libshaderc*dylib build/
-    @cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
-    @cd build/ && ninja
+    @cp -a libs/shaderc/macos_$([[ "$(arch)" == "aarch64" ]] && echo "arm64" || echo "x86_64")/libshaderc*dylib build/
+    cd build/ && CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_BUILD_TYPE={{release}}
+    cd build/ && ninja
 #
+
 
 [windows]
 [linux]
