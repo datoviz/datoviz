@@ -1,10 +1,9 @@
-FROM quay.io/pypa/manylinux_2_28_x86_64
+FROM quay.io/pypa/manylinux_2_34_x86_64
 
 # Install necessary system packages
 RUN yum install -y epel-release && \
-    dnf config-manager --set-enabled powertools && \
-    dnf install -y https://pkgs.dyn.su/el8/base/x86_64/raven-release-1.0-2.el8.noarch.rpm && \
-    yum install --enablerepo=raven-extras -y \
+    dnf config-manager --set-enabled crb
+RUN yum install -y \
         ccache \
         cmake \
         ninja-build \
@@ -17,13 +16,11 @@ RUN yum install -y epel-release && \
         libX11-devel \
         xorg-x11-server-Xvfb \
         xorg-x11-utils \
-        xorg-x11-apps \
         freetype-devel \
         vulkan \
         vulkan-tools \
         vulkan-headers \
         vulkan-loader \
-        # libshaderc-devel \
         glslc \
         patchelf \
         rsync \

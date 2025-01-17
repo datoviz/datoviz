@@ -246,7 +246,7 @@ manylinux release="Release":
     mkdir -p $BUILD_DIR
     # HACK: do NOT use the shipped Ubuntu libraries in the RedHat-based Docker container
     rsync -a -v \
-        --exclude "libvulkan*" --exclude "glslc" --exclude "libshaderc*" --exclude "justfile" \
+        --exclude "libvulkan*" --exclude "glslc" --exclude "justfile" \
         --exclude "__pycache__" --exclude "Dockerfile" \
         bin cli cmake data datoviz external include libs src tests tools \
         *.toml *.json *.txt *.map *.md *.cff \
@@ -264,6 +264,7 @@ manylinux release="Release":
 
     # Build the project
     RUN ldd --version ldd
+    # RUN ldd  libs/shaderc/linux/libshaderc_shared.so.1
     RUN mkdir -p build/ $DISTDIR wheel/ && \
         cd build/ && \
         CMAKE_CXX_COMPILER_LAUNCHER=ccache cmake .. -GNinja -DCMAKE_MESSAGE_LOG_LEVEL=INFO -DCMAKE_BUILD_TYPE=$release || true && \
@@ -278,6 +279,7 @@ manylinux release="Release":
         cp datoviz/__init__.py wheel/datoviz/ && \
         cp pyproject.toml wheel/ && \
         cp build/libdatoviz.so wheel/datoviz/ && \
+        cp -a libs/shaderc/linux/*.so* wheel/datoviz/ && \
         cp /usr/lib64/libvulkan.so.1 wheel/datoviz/ && \
         cp /usr/bin/glslc wheel/datoviz/
 
@@ -311,7 +313,7 @@ manylinux release="Release":
     # sudo chown $(whoami):$(id -gn) $DISTDIR/*.whl
 
     # Rename the wheel
-    just renamewheel "manylinux_2_28_x86_64"
+    just renamewheel "manylinux_2_34_x86_64"
 
     rm -rf wheel/
 #
@@ -351,11 +353,11 @@ build release="Debug":
 # Docker image and CI/CD
 # -------------------------------------------------------------------------------------------------
 
-dockerpush:
-    docker build -t rossant/datoviz_ubuntu:latest -f docker/Dockerfile_ubuntu .
+dockerpush name:
+    docker build -t rossant/datoviz_{{name}}:latest -f docker/Dockerfile_{{name}} .
     docker login
-    docker push rossant/datoviz_ubuntu:latest
-    # docker run -it rossant/datoviz_ubuntu:latest
+    docker push rossant/datoviz_{{name}}:latest
+    # docker run -it rossant/datoviz_{{name}}:latest
 #
 
 # on macOS do
@@ -495,6 +497,7 @@ wheel almalinux="0":
         cp /usr/bin/glslc wheel/datoviz/
     else
         cp libs/vulkan/linux/libvulkan.so.1 wheel/datoviz/
+        cp libs/shaderc/linux/*.so* wheel/datoviz/
         cp bin/vulkan/linux/glslc wheel/datoviz/
     fi
 
@@ -503,7 +506,7 @@ wheel almalinux="0":
 
     # Rename the wheel
     if [ "{{almalinux}}" != "0" ]; then
-        just renamewheel "manylinux_2_28_x86_64"
+        just renamewheel "manylinux_2_34_x86_64"
     fi
 
     rm -rf wheel/
