@@ -44,7 +44,7 @@ project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
-option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" ON)
+option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" OFF)
 
 # NOTE: disabling for now as it leads to a .dll that is not loadable in ctypes on Windows for
 # some reason.
