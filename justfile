@@ -1246,7 +1246,7 @@ example name="":
 
 runexamples:
     #!/usr/bin/env sh
-    set -e
+    # set -e  # do not stop if one example fails
     mkdir -p data/screenshots/examples
     for file in examples/*.py; do
         bn=$(basename $file)
