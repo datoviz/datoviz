@@ -1013,9 +1013,18 @@ headers:
     @python tools/parse_headers.py
 #
 
+
+[linux]
+[macos]
 symbols:
     @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/tools/headers.json > {{justfile_directory()}}/symbols.map
 #
+
+[windows]
+symbols:
+    @jq -r ".[] | .functions | keys[]" "{{justfile_directory()}}\\tools\\headers.json" > "{{justfile_directory()}}\\symbols.map"
+#
+
 
 [linux]
 exports:
