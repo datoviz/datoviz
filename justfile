@@ -1014,7 +1014,7 @@ headers:
 #
 
 symbols:
-    @jq -r '.[] | .functions | keys[]' tools/headers.json > symbols.map
+    @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/tools/headers.json > {{justfile_directory()}}/symbols.map
 #
 
 [linux]
