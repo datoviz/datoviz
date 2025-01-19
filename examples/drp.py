@@ -123,7 +123,10 @@ dvz.record_end(batch, canvas_id)
 
 
 # Run the application.
-dvz.app_run(app, 0)
+
+# NOTE: disabling this example for now as the current stable version of Datoviz is NOT built with
+# shaderc support, due to compatibility issues on Linux. We'll fix it later.
+# dvz.app_run(app, 0)
 
 # Cleanup.
 dvz.app_destroy(app)
