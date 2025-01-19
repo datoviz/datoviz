@@ -4,9 +4,9 @@
 
 Work in progress.
 
-## v0.2.2 (2024-12-XX) [IN PREPARATION]
+## v0.2.2 (2025-01-19) [LATEST RELEASE]
 
-Minor release with a few improvements to the mesh visual, a couple of new GUI features, and an API export of the *Datoviz Rendering Protocol* (DRP) layer for more advanced used-cases from Python or C/C++.
+Minor release with a few improvements to the mesh visual, a couple of new GUI features, and preparatory work for the API export of the *Datoviz Rendering Protocol* (DRP) layer for more advanced used-cases from Python or C/C++.
 
 ### Visuals
 
@@ -28,19 +28,19 @@ Minor release with a few improvements to the mesh visual, a couple of new GUI fe
 
 ### API
 
-* Exported the *Datoviz Rendering Protocol* (DRP) layer.
+* Exported the *Datoviz Rendering Protocol* (DRP) layer (not yet activate because of compatibility issues of shaderc on manylinux image -- fix upcoming).
 * Enforced C_CONTIGUOUS ndarray arguments instead of generic `void*` pointers in some functions ([#71](https://github.com/datoviz/datoviz/issues/71)).
 * Added a box module, used internally by the upcoming axes system.
 
 ### Build
 
-* Added support for the [*shaderc*](https://github.com/google/shaderc/) to support GLSL to SPIR-V compilation from Datoviz.
-* Added initial support for OpenMP multicore parallelization of tight loops.
 * Added basic error callback mechanism, used in assertions for now.
 * Improved Windows build instructions (see [discussion #73](https://github.com/datoviz/datoviz/discussions/73), pull requests [#74](https://github.com/datoviz/datoviz/pull/74) and [#75](https://github.com/datoviz/datoviz/pull/75)).
+* Added initial support for OpenMP multicore parallelization of tight loops (not yet active because of compatibility issues on Windows).
+* Added support for the [*shaderc*](https://github.com/google/shaderc/) to support GLSL to SPIR-V compilation from Datoviz.
 
 
-## v0.2.1 (2024-09-17) [LATEST RELEASE]
+## v0.2.1 (2024-09-17)
 
 Minor release with various improvements to visuals and CI/CD system.
 
