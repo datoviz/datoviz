@@ -6,30 +6,39 @@ Development happens on `dev` whereas `main` is stable.
 
 Release checklist from a Linux development machine:
 
-1. `git branch`: check that you are on the `dev` branch.
-1. Write the `CHANGELOG.md` for the new version.
-1. `just api clean release`: rebuild in release mode.
-1. `just test`: run the C testing suite.
-1. `just pytest`: run the Python testing suite.
-1. Run the last three commands on Windows and macOS too.
-1. `just act test-linux`: simulate the GitHub Actions tests locally.
-1. `version=x.y.z`: set up the new version.
-1. `just bump $version`: bump the codebase to the new version.
-1. `just release`: recompile with the new version.
-1. `git diff`: check the changes to commit.
-1. `git commit -am "Bump version to v$version" && git push`: commit the new version.
-1. `just wheels`: build the wheels on GitHub Actions.
-1. Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions do not support Windows Docker containers yet).
-1. `just checkartifact`: once the wheels have been built, test them on different computers/operating systems (Linux, macOS, Windows if possible).
-1. `git checkout main && git merge dev`: merge `dev` to `main` and switch to `main`.
-1. `just tag $version`: once on `main`, tag with the new version.
-1. `git push origin --tags`: push the tag.
-1. `just draft`: create a new GitHub Release draft with the built wheels.
-1. Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
-1. `just upload`: upload the wheels to PyPI.
-1. `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
-1. `git commit -am "Bump to development version" && git push`: bump to the development version.
-1. Announce the new release on the various communication channels.
+1. **Preparation.**
+    * `git branch`: check that you are on the `dev` branch.
+    * Write the `CHANGELOG.md` for the new version.
+2. **Cross-platform release build and test.**
+    * For each of Linux, macOS arm64, macOS x86_64, Windows, do:
+    * `just clean release api`: rebuild in release mode.
+    * `just test`: run the C testing suite.
+    * `just pytest`: run the Python testing suite.
+    * `just act test-linux`: **on Linux only**, simulate the GitHub Actions tests locally.
+3. **Version bump.**
+    * `version=x.y.z`: set up the new version.
+    * `just bump $version`: bump the codebase to the new version.
+    * `just release`: recompile with the new version.
+    * `git diff`: check the changes to commit.
+    * `git commit -am "Bump version to v$version" && git push`: commit the new version.
+4. **Wheel build and test.**
+    * `just wheels`: build the wheels on GitHub Actions.
+    * Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions does not support Windows Docker containers yet).
+    * For each of Linux, macOS arm64, macOS x86_64, Windows, do:
+    * `just checkartifact`
+    * Fix and go back to (2) if there is any problem.
+5. **Release.**
+    * `git fetch --all && git status` : check we're up to date and on the `dev` branch.
+    * `git checkout main && git pull` : switch to `main` before merging.
+    * `git merge dev`: merge `dev` to `main`.
+    * `just tag $version`: once on `main`, tag with the new version.
+    * `git push origin --tags`: push the tag.
+    * `just draft`: create a new GitHub Release draft with the built wheels.
+    * Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
+    * `just upload`: upload the wheels to PyPI.
+    * `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
+    * `git commit -am "Bump to development version" && git push`: bump to the development version.
+    * Announce the new release on the various communication channels.
 
 
 ## Packaging instructions (advanced users)
