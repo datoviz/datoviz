@@ -57,6 +57,7 @@ struct DvzGui
     DvzGpu* gpu;
     DvzRenderpass renderpass;
     DvzContainer gui_windows;
+    int flags;
 };
 
 
@@ -71,19 +72,6 @@ struct DvzGuiWindow
     DvzFramebuffers framebuffers;
     DvzCommands cmds;
 };
-
-
-
-/*************************************************************************************************/
-/*  Enums                                                                                        */
-/*************************************************************************************************/
-
-// GUI flags.
-typedef enum
-{
-    DVZ_GUI_FLAGS_NONE,
-    DVZ_GUI_FLAGS_OFFSCREEN,
-} DvzGuiFlags;
 
 
 

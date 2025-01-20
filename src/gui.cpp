@@ -6,6 +6,7 @@
 
 #include "canvas.h"
 #include "datoviz.h"
+#include "datoviz_enums.h"
 #include "fileio.h"
 #include "glfw_utils.h"
 #include "gui.h"
@@ -47,6 +48,30 @@ static inline bool _imgui_has_glfw()
 
 
 
+static void _imgui_docking()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui::SetNextWindowPos(ImVec2(0, 0));
+    ImGui::SetNextWindowSize(io.DisplaySize);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+    ImGui::Begin(
+        "MainDockSpace", nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
+
+    ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
+
+    ImGui::End();
+    ImGui::PopStyleVar(2);
+}
+
+
+
 static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpass)
 {
     ASSERT(!_imgui_has_context());
@@ -60,17 +85,6 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     ImGui::CreateContext(NULL);
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = NULL;
-
-    // Load a font.
-    unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
-    ASSERT(ttf_size > 0);
-    ANN(ttf_bytes);
-    ImFontConfig font_cfg;
-    font_cfg.FontDataOwnedByAtlas = false;
-    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, (int)ttf_size, 16, &font_cfg);
-
-    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
 
     INIT(ImGui_ImplVulkan_InitInfo, init_info)
     init_info.Instance = gpu->host->instance;
@@ -92,6 +106,19 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
 
     init_info.CheckVkResultFn = _imgui_check_vk_result;
     ImGui_ImplVulkan_Init(&init_info); //, renderpass->renderpass);
+
+
+    // Load a font.
+    unsigned long ttf_size = 0;
+    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
+    ASSERT(ttf_size > 0);
+    ANN(ttf_bytes);
+    ImFontConfig font_cfg;
+    font_cfg.FontDataOwnedByAtlas = false;
+    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, (int)ttf_size, 16, &font_cfg);
+
+    // Style color.
+    ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
 }
 
 
@@ -224,6 +251,7 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
     log_debug("initialize the Dear ImGui context");
 
     DvzGui* gui = (DvzGui*)calloc(1, sizeof(DvzGui));
+    gui->flags = flags;
     gui->gpu = gpu;
 
     gui->gui_windows = dvz_container(
@@ -235,6 +263,11 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
     _imgui_init(gpu, queue_idx, &gui->renderpass);
+
+    // Enable docking.
+    if ((flags & DVZ_GUI_FLAGS_DOCKING) > 0)
+        ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
     return gui;
 }
 
@@ -356,6 +389,9 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
         ImGui_ImplGlfw_NewFrame();
 
     ImGui::NewFrame();
+
+    if ((gui->flags & DVZ_GUI_FLAGS_DOCKING) > 0)
+        _imgui_docking();
 
     dvz_cmd_begin(cmds, cmd_idx);
     dvz_cmd_begin_renderpass(cmds, cmd_idx, &gui->renderpass, &gui_window->framebuffers);
