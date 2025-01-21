@@ -50,24 +50,11 @@ static inline bool _imgui_has_glfw()
 
 static void _imgui_docking()
 {
-    ImGuiIO& io = ImGui::GetIO();
-
-    ImGui::SetNextWindowPos(ImVec2(0, 0));
-    ImGui::SetNextWindowSize(io.DisplaySize);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-    ImGui::Begin(
-        "MainDockSpace", nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground);
-
-    ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
-    ImGui::DockSpace(dockspace_id, ImVec2(0, 0), ImGuiDockNodeFlags_PassthruCentralNode);
-
-    ImGui::End();
-    ImGui::PopStyleVar(2);
+    auto id = ImGui::GetID("##MainDockSpace");
+    ImGui::DockSpaceOverViewport(
+        id,                       //
+        ImGui::GetMainViewport(), //
+        ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
 
@@ -515,6 +502,7 @@ void dvz_gui_begin(const char* title, int gui_flags)
 {
     // WARNING: the title should be unique for each different dialog!
     ANN(title);
+    ASSERT(strnlen(title, 1024) > 0);
     bool open = true;
     ImGui::Begin(title, &open, gui_flags);
 }

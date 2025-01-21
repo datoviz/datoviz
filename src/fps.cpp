@@ -154,7 +154,8 @@ void dvz_fps_histogram(DvzFps* fps)
 
     // Histogram.
     ImGui::PlotHistogram(
-        "", fps->hist, DVZ_FPS_BINS, 0, str, FLT_MAX, FLT_MAX, ImVec2(0, DVZ_FPS_HEIGHT));
+        "##FPS Histogram", fps->hist, DVZ_FPS_BINS, 0, str, FLT_MAX, FLT_MAX,
+        ImVec2(0, DVZ_FPS_HEIGHT));
 
     ImGui::PopStyleColor(2);
     ImGui::PopItemWidth();
