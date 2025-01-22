@@ -582,6 +582,16 @@ void dvz_demo(
 )
 ```
 
+### `dvz_demo_panel()`
+
+Demo panel (random scatter plot).
+
+```c
+DvzVisual* dvz_demo_panel(  // returns: the marker visual
+    DvzPanel* panel,  // the panel
+)
+```
+
 ### `dvz_easing()`
 
 Apply an easing function to a normalized value.
@@ -2007,6 +2017,16 @@ Return the panel containing a given point.
 DvzPanel* dvz_panel_at(  // returns: the panel containing the point, or NULL if there is none
     DvzFigure* figure,  // the figure
     vec2 pos,  // the position
+)
+```
+
+### `dvz_panel_batch()`
+
+Return the batch from a panel.
+
+```c
+DvzBatch* dvz_panel_batch(  // returns: the batch
+    DvzPanel* panel,  // the panel
 )
 ```
 
@@ -5120,6 +5140,14 @@ DVZ_GRAPHICS_NONE
 DVZ_GRAPHICS_POINT
 DVZ_GRAPHICS_TRIANGLE
 DVZ_GRAPHICS_CUSTOM
+```
+
+### `DvzGuiFlags`
+
+```
+DVZ_GUI_FLAGS_NONE
+DVZ_GUI_FLAGS_OFFSCREEN
+DVZ_GUI_FLAGS_DOCKING
 ```
 
 ### `DvzImageFlags`

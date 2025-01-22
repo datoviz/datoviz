@@ -48,6 +48,7 @@ dvz_colormap_array
 dvz_colormap_scale
 dvz_compute_normals
 dvz_demo
+dvz_demo_panel
 dvz_easing
 dvz_error_callback
 dvz_figure
@@ -167,6 +168,7 @@ dvz_ortho_zoom_wheel
 dvz_panel
 dvz_panel_arcball
 dvz_panel_at
+dvz_panel_batch
 dvz_panel_camera
 dvz_panel_contains
 dvz_panel_default

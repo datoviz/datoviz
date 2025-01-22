@@ -250,7 +250,7 @@ KB = 1024
 DVZ_REQUEST_VERSION = 1
 DVZ_BATCH_DEFAULT_CAPACITY = 4
 DVZ_VERSION_MINOR = 2
-DVZ_VERSION_PATCH = 2
+DVZ_VERSION_PATCH = 3
 
 
 # ===============================================================================
@@ -314,6 +314,12 @@ class DvzMouseEventType(CtypesEnum):
     DVZ_MOUSE_EVENT_DRAG_STOP = 12
     DVZ_MOUSE_EVENT_WHEEL = 20
     DVZ_MOUSE_EVENT_ALL = 255
+
+
+class DvzGuiFlags(CtypesEnum):
+    DVZ_GUI_FLAGS_NONE = 0x0000
+    DVZ_GUI_FLAGS_OFFSCREEN = 0x0001
+    DVZ_GUI_FLAGS_DOCKING = 0x0010
 
 
 class DvzDialogFlags(CtypesEnum):
@@ -1074,6 +1080,9 @@ MOUSE_EVENT_DRAG = 11
 MOUSE_EVENT_DRAG_STOP = 12
 MOUSE_EVENT_WHEEL = 20
 MOUSE_EVENT_ALL = 255
+GUI_FLAGS_NONE = 0x0000
+GUI_FLAGS_OFFSCREEN = 0x0001
+GUI_FLAGS_DOCKING = 0x0010
 DIALOG_FLAGS_NONE = 0x0000
 DIALOG_FLAGS_OVERLAY = 0x0001
 DIALOG_CORNER_TOP_LEFT = 0
@@ -2306,6 +2315,26 @@ Run a demo.
 demo.argtypes = [
 ]
 
+# Function dvz_demo_panel()
+demo_panel = dvz.dvz_demo_panel
+demo_panel.__doc__ = """
+Demo panel (random scatter plot).
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the marker visual
+"""
+demo_panel.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+demo_panel.restype = ctypes.POINTER(DvzVisual)
+
 # Function dvz_version()
 version = dvz.dvz_version
 version.__doc__ = """
@@ -2561,6 +2590,26 @@ panel.argtypes = [
     ctypes.c_float,  # float height
 ]
 panel.restype = ctypes.POINTER(DvzPanel)
+
+# Function dvz_panel_batch()
+panel_batch = dvz.dvz_panel_batch
+panel_batch.__doc__ = """
+Return the batch from a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the batch
+"""
+panel_batch.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+panel_batch.restype = ctypes.POINTER(DvzBatch)
 
 # Function dvz_panel_default()
 panel_default = dvz.dvz_panel_default
