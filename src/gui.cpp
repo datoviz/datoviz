@@ -564,6 +564,10 @@ void dvz_gui_begin(const char* title, int gui_flags)
 void dvz_gui_end()
 {
     ImGui::End(); //
+
+    ImGuiContext& g = *GImGui;
+    ImGui::PopStyleColor(g.ColorStack.Size);
+    ImGui::PopStyleVar(g.StyleVarStack.Size);
 }
 
 
