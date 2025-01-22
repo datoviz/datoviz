@@ -123,7 +123,7 @@ typedef enum
 {
     DVZ_DIALOG_FLAGS_NONE = 0x0000,
     DVZ_DIALOG_FLAGS_OVERLAY = 0x0001,
-    // DVZ_DIALOG_FLAGS_FPS = 0x0003,
+    DVZ_DIALOG_FLAGS_BLANK = 0x0004,
 } DvzDialogFlags;
 
 

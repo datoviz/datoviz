@@ -310,6 +310,15 @@ DvzBatch* dvz_panel_batch(DvzPanel* panel)
 
 
 
+DvzFigure* dvz_panel_figure(DvzPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->figure);
+    return panel->figure;
+}
+
+
+
 DvzPanel* dvz_panel_default(DvzFigure* fig)
 {
     ANN(fig);

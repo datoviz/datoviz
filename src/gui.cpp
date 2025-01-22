@@ -498,6 +498,12 @@ int dvz_gui_flags(int flags)
         dvz_gui_alpha(0.5f);
     }
 
+    // No background
+    if ((flags & DVZ_DIALOG_FLAGS_BLANK) != 0)
+    {
+        imgui_flags |= ImGuiWindowFlags_NoBackground;
+    }
+
     return imgui_flags;
 }
 

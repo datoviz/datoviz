@@ -265,6 +265,16 @@ DVZ_EXPORT DvzBatch* dvz_panel_batch(DvzPanel* panel);
 
 
 /**
+ * Return the figure from a panel.
+ *
+ * @param panel the panel
+ * @returns the figure
+ */
+DVZ_EXPORT DvzFigure* dvz_panel_figure(DvzPanel* panel);
+
+
+
+/**
  * Return the default full panel spanning an entire figure.
  *
  * @param fig the figure
