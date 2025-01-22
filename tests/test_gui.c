@@ -88,15 +88,45 @@ int test_gui_1(TstSuite* suite)
     // Create a figure.
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
-    // Create a panel.
-    DvzPanel* panel = dvz_panel_default(figure);
-
     bool selected[2] = {0};
     dvz_app_gui(app, dvz_figure_id(figure), _gui_callback, selected);
 
     // Run the scene.
     dvz_scene_run(scene, app, N_FRAMES);
 
+    dvz_scene_destroy(scene);
+    dvz_app_destroy(app);
+
+    return 0;
+}
+
+
+
+static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+
+    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){400, 300});
+    dvz_gui_begin("Hello", 0);
+    dvz_gui_end();
+}
+
+int test_gui_2(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app(0);
+    DvzBatch* batch = dvz_app_batch(app);
+    DvzScene* scene = dvz_scene(batch);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+
+    DvzPanel* panel = dvz_panel_default(figure);
+    dvz_demo_panel(panel);
+
+    dvz_app_gui(app, dvz_figure_id(figure), _gui_callback_2, NULL);
+
+    dvz_scene_run(scene, app, N_FRAMES);
     dvz_scene_destroy(scene);
     dvz_app_destroy(app);
 

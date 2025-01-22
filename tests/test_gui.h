@@ -33,6 +33,8 @@
 
 int test_gui_1(TstSuite*);
 
+int test_gui_2(TstSuite*);
+
 int test_gui_offscreen(TstSuite*);
 
 
