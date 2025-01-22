@@ -443,6 +443,18 @@ void dvz_gui_pos(vec2 pos, vec2 pivot)
 
 
 
+void dvz_gui_viewport(vec4 viewport) // x, h, w, h
+{
+    ImVec2 pos = ImGui::GetWindowPos();
+    ImVec2 size = ImGui::GetWindowSize();
+    viewport[0] = pos.x;
+    viewport[1] = pos.y;
+    viewport[2] = size.x;
+    viewport[3] = size.y;
+}
+
+
+
 void dvz_gui_corner(DvzCorner corner, vec2 pad)
 {
     // 0 = TL, 1 = TR, 2 = LL, 3 = LR

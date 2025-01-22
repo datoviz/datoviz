@@ -3516,6 +3516,16 @@ DVZ_EXPORT void dvz_gui_pos(vec2 pos, vec2 pivot);
 
 
 /**
+ * Get the position and size of the current dialog.
+ *
+ * @param viewport the x, y, w, h values
+ *
+ */
+DVZ_EXPORT void dvz_gui_viewport(vec4 viewport);
+
+
+
+/**
  * Set the corner position of the next GUI dialog.
  *
  * @param corner which corner

@@ -108,6 +108,9 @@ static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
     dvz_gui_size((vec2){400, 300});
     dvz_gui_begin("Hello", 0);
+    vec4 viewport = {0};
+    dvz_gui_viewport(viewport);
+    dvz_gui_text("(%.0f, %.0f), (%.0f, %.0f)", viewport[0], viewport[1], viewport[2], viewport[3]);
     dvz_gui_end();
 }
 
