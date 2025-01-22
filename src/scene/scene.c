@@ -187,6 +187,12 @@ void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
         ANN(panel);
         ANN(panel->view);
 
+        // NOTE: here we resize the panel relatively to its original size, unless the FIXED flag
+        // is set for this panel.
+        if ((panel->flags & DVZ_PANEL_RESIZE_FIXED) > 0)
+            return;
+        log_debug("resizing stretchable panel #%d while resizing figure", i);
+
         // NOTE: in framebuffer coordinates.
         x0 = panel->offset_init[0];
         y0 = panel->offset_init[1];
