@@ -3623,6 +3623,28 @@ DVZ_EXPORT void dvz_gui_size(vec2 size);
 
 
 /**
+ * Set the color of an element.
+ *
+ * @param type the element type for which to change the color
+ * @param color the color
+ *
+ */
+DVZ_EXPORT void dvz_gui_color(int type, cvec4 color);
+
+
+
+/**
+ * Set the style of an element.
+ *
+ * @param type the element type for which to change the style
+ * @param value the value
+ *
+ */
+DVZ_EXPORT void dvz_gui_style(int type, float value);
+
+
+
+/**
  * Set the flags of the next GUI dialog.
  *
  * @param flags the flags

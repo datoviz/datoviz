@@ -496,6 +496,19 @@ void dvz_gui_size(vec2 size)
 
 
 
+void dvz_gui_color(int type, cvec4 color)
+{
+    ImGui::PushStyleColor(type, IM_COL32(color[0], color[1], color[2], color[3]));
+}
+
+
+void dvz_gui_style(int type, float value)
+{
+    ImGui::PushStyleVar(type, value); //
+}
+
+
+
 int dvz_gui_flags(int flags)
 {
     int imgui_flags = ImGuiWindowFlags_NoSavedSettings;
