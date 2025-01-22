@@ -1166,6 +1166,16 @@ bool dvz_gui_table(  // returns: whether the row selection has changed (in the s
 )
 ```
 
+### `dvz_gui_viewport()`
+
+Get the position and size of the current dialog.
+
+```c
+void dvz_gui_viewport(
+    vec4 viewport,  // the x, y, w, h values
+)
+```
+
 ### `dvz_image()`
 
 Create an image visual.
@@ -2068,6 +2078,16 @@ Destroy a panel.
 
 ```c
 void dvz_panel_destroy(
+    DvzPanel* panel,  // the panel
+)
+```
+
+### `dvz_panel_figure()`
+
+Return the figure from a panel.
+
+```c
+DvzFigure* dvz_panel_figure(  // returns: the figure
     DvzPanel* panel,  // the panel
 )
 ```
@@ -5035,6 +5055,7 @@ DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
 ```
 DVZ_DIALOG_FLAGS_NONE
 DVZ_DIALOG_FLAGS_OVERLAY
+DVZ_DIALOG_FLAGS_BLANK
 ```
 
 ### `DvzEasing`

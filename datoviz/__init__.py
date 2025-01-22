@@ -325,6 +325,7 @@ class DvzGuiFlags(CtypesEnum):
 class DvzDialogFlags(CtypesEnum):
     DVZ_DIALOG_FLAGS_NONE = 0x0000
     DVZ_DIALOG_FLAGS_OVERLAY = 0x0001
+    DVZ_DIALOG_FLAGS_BLANK = 0x0004
 
 
 class DvzCorner(CtypesEnum):
@@ -1085,6 +1086,7 @@ GUI_FLAGS_OFFSCREEN = 0x0001
 GUI_FLAGS_DOCKING = 0x0010
 DIALOG_FLAGS_NONE = 0x0000
 DIALOG_FLAGS_OVERLAY = 0x0001
+DIALOG_FLAGS_BLANK = 0x0004
 DIALOG_CORNER_TOP_LEFT = 0
 DIALOG_CORNER_TOP_RIGHT = 1
 DIALOG_CORNER_BOTTOM_LEFT = 2
@@ -2610,6 +2612,26 @@ panel_batch.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_batch.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_panel_figure()
+panel_figure = dvz.dvz_panel_figure
+panel_figure.__doc__ = """
+Return the figure from a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the figure
+"""
+panel_figure.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+panel_figure.restype = ctypes.POINTER(DvzFigure)
 
 # Function dvz_panel_default()
 panel_default = dvz.dvz_panel_default
@@ -8278,6 +8300,20 @@ pivot : vec2
 gui_pos.argtypes = [
     ctypes.c_float * 2,  # vec2 pos
     ctypes.c_float * 2,  # vec2 pivot
+]
+
+# Function dvz_gui_viewport()
+gui_viewport = dvz.dvz_gui_viewport
+gui_viewport.__doc__ = """
+Get the position and size of the current dialog.
+
+Parameters
+----------
+viewport : vec4
+    the x, y, w, h values
+"""
+gui_viewport.argtypes = [
+    ctypes.c_float * 4,  # vec4 viewport
 ]
 
 # Function dvz_gui_corner()
