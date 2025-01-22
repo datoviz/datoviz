@@ -87,6 +87,16 @@ DVZ_EXPORT void dvz_demo(void);
 
 
 /**
+ * Demo panel (random scatter plot).
+ *
+ * @param panel the panel
+ * @returns the marker visual
+ */
+DVZ_EXPORT DvzVisual* dvz_demo_panel(DvzPanel* panel);
+
+
+
+/**
  * Return the current version string.
  *
  * @returns the version string
