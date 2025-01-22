@@ -580,7 +580,27 @@ void dvz_gui_end()
 bool dvz_gui_moving()
 {
     ImGuiContext& g = *ImGui::GetCurrentContext();
-    return g.MovingWindow == ImGui::GetCurrentWindow();
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+    if (g.MovingWindow == window)
+        return true;
+
+    // Ensure the window is docked and has a valid dock node
+    if (!window->DockIsActive || !window->DockNode)
+        return false;
+
+    // log_error("hello");
+    ImGuiDockNode* dock_node = window->DockNode;
+
+    // Check if the active ID corresponds to the tab bar of the dock node
+    // if (dock_node->TabBar && g.ActiveId == dock_node->TabBar->ID)
+    {
+        // The user is interacting with the tab bar (likely dragging)
+        return ImGui::IsMouseDragging(
+            ImGuiMouseButton_Left, 0.0f); // No threshold for immediate detection
+    }
+
+    return false;
 }
 
 
