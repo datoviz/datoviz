@@ -104,13 +104,25 @@ int test_gui_1(TstSuite* suite)
 
 static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
-
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
     dvz_gui_size((vec2){400, 300});
-    dvz_gui_begin("Hello", 0);
+    dvz_gui_begin("Hello", dvz_gui_flags(DVZ_DIALOG_FLAGS_BLANK));
     vec4 viewport = {0};
     dvz_gui_viewport(viewport);
+    float x = viewport[0];
+    float y = viewport[1];
+    float w = viewport[2];
+    float h = viewport[3];
     dvz_gui_text("(%.0f, %.0f), (%.0f, %.0f)", viewport[0], viewport[1], viewport[2], viewport[3]);
+
+    DvzPanel* panel = (DvzPanel*)ev.user_data;
+    // TODO: detect when the dialog viewport changes
+    if (panel != NULL)
+    {
+        dvz_panel_resize(panel, x, y, w, h);
+        dvz_figure_update(dvz_panel_figure(panel));
+    }
+
     dvz_gui_end();
 }
 
@@ -127,7 +139,7 @@ int test_gui_2(TstSuite* suite)
     DvzPanel* panel = dvz_panel_default(figure);
     dvz_demo_panel(panel);
 
-    dvz_app_gui(app, dvz_figure_id(figure), _gui_callback_2, NULL);
+    dvz_app_gui(app, dvz_figure_id(figure), _gui_callback_2, panel);
 
     dvz_scene_run(scene, app, N_FRAMES);
     dvz_scene_destroy(scene);
