@@ -298,6 +298,18 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
 
 
 
+DvzBatch* dvz_panel_batch(DvzPanel* panel)
+{
+    ANN(panel);
+    ANN(panel->figure);
+    ANN(panel->figure->scene);
+    DvzBatch* batch = panel->figure->scene->batch;
+    ANN(batch);
+    return batch;
+}
+
+
+
 DvzPanel* dvz_panel_default(DvzFigure* fig)
 {
     ANN(fig);
