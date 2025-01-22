@@ -148,7 +148,7 @@ void dvz_viewset_build(DvzViewset* viewset)
     // this function recreates the command buffer
     ANN(viewset);
     ANN(viewset->views);
-    log_trace("build viewset");
+    log_debug("build viewset");
 
     DvzId canvas_id = viewset->canvas_id;
     ASSERT(canvas_id != DVZ_ID_NONE);

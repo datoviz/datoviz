@@ -97,6 +97,7 @@ struct DvzPanel
     DvzOrtho* ortho;
     DvzArcball* arcball;
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
+    int flags;
 };
 
 

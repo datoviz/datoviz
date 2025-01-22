@@ -298,6 +298,14 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
 
 
 
+void dvz_panel_flags(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    panel->flags = flags;
+}
+
+
+
 DvzBatch* dvz_panel_batch(DvzPanel* panel)
 {
     ANN(panel);
@@ -995,7 +1003,7 @@ static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
     dvz_figure_resize(fig, w, h);
 
     // Mark the viewset as dirty to trigger a command buffer record at the next frame.
-    dvz_atomic_set(fig->viewset->status, (int)DVZ_BUILD_DIRTY);
+    dvz_figure_update(fig);
 
     // dvz_app_submit(scene->app);
 }

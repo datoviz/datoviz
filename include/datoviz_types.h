@@ -93,6 +93,7 @@ typedef struct DvzRecorderCommand DvzRecorderCommand;
 
 // Forward declarations.
 typedef struct DvzTimerItem DvzTimerItem;
+typedef struct DvzGuiWindow DvzGuiWindow;
 typedef struct DvzApp DvzApp;
 typedef struct DvzAtlas DvzAtlas;
 typedef struct DvzFont DvzFont;
@@ -246,6 +247,7 @@ struct DvzFrameEvent
 
 struct DvzGuiEvent
 {
+    DvzGuiWindow* gui_window;
     void* user_data;
 };
 

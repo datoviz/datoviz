@@ -16,10 +16,12 @@
 #include "window.h"
 
 // ImGUI includes
+MUTE_ON
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
 #include "imgui.h"
-
+#include "imgui_internal.h"
+MUTE_OFF
 
 
 /*************************************************************************************************/
@@ -106,6 +108,10 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
 
     // Style color.
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
+
+    // NOTE: only move windows from title bar, otherwise, when dragging inside a dialog panel,
+    // conflict between Datoviz panning and ImGui moving.
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 }
 
 
@@ -352,6 +358,18 @@ DvzGuiWindow* dvz_gui_offscreen(DvzGui* gui, DvzImages* images, uint32_t queue_i
 
 
 
+void dvz_gui_window_capture(DvzGuiWindow* gui_window, bool is_captured)
+{
+    ANN(gui_window);
+    if (gui_window->window && gui_window)
+    {
+        log_trace("Datoviz interactions %scaptured", is_captured ? "" : "not ");
+        gui_window->window->is_captured = is_captured;
+    }
+}
+
+
+
 void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
 {
     ANN(gui_window);
@@ -361,8 +379,7 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
     ImGuiIO& io = ImGui::GetIO();
-    if (gui_window->window)
-        gui_window->window->is_captured = io.WantCaptureMouse || io.WantCaptureKeyboard;
+    dvz_gui_window_capture(gui_window, io.WantCaptureMouse || io.WantCaptureKeyboard);
 
     DvzGui* gui = gui_window->gui;
     ANN(gui);
@@ -433,7 +450,7 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 
 
 /*************************************************************************************************/
-/*  DearImGui Wrappers                                                                           */
+/*  GUI dialogs                                                                                  */
 /*************************************************************************************************/
 
 void dvz_gui_pos(vec2 pos, vec2 pivot)
@@ -516,6 +533,10 @@ void dvz_gui_alpha(float alpha)
 
 
 
+/*************************************************************************************************/
+/*  GUI lifecycle                                                                                */
+/*************************************************************************************************/
+
 void dvz_gui_begin(const char* title, int gui_flags)
 {
     // WARNING: the title should be unique for each different dialog!
@@ -526,6 +547,122 @@ void dvz_gui_begin(const char* title, int gui_flags)
 }
 
 
+
+void dvz_gui_end()
+{
+    ImGui::End(); //
+}
+
+
+
+/*************************************************************************************************/
+/*  GUI interactions                                                                             */
+/*************************************************************************************************/
+
+
+bool dvz_gui_moving()
+{
+    ImGuiContext& g = *ImGui::GetCurrentContext();
+    return g.MovingWindow == ImGui::GetCurrentWindow();
+}
+
+
+
+bool dvz_gui_resizing()
+{
+    ImGuiContext& g = *ImGui::GetCurrentContext();
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+    if (window->ResizeBorderHeld != -1)
+        return true;
+
+    for (int corner = 0; corner < 4; corner++)
+    {
+        if (g.ActiveId == ImGui::GetWindowResizeCornerID(window, corner))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+
+bool dvz_gui_moved()
+{
+    // Access the window's storage
+    ImGuiStorage* storage = ImGui::GetStateStorage();
+
+    // Generate unique keys for position
+    ImGuiID key_x = ImGui::GetID("PosX");
+    ImGuiID key_y = ImGui::GetID("PosY");
+
+    // Get the current window position
+    ImVec2 pos = ImGui::GetWindowPos();
+
+    // Retrieve the previous position
+    float prev_x = storage->GetFloat(key_x, -1.0f);
+    float prev_y = storage->GetFloat(key_y, -1.0f);
+
+    // Check if the position has changed
+    bool moved = (prev_x != pos.x) || (prev_y != pos.y);
+
+    // Update the stored position
+    storage->SetFloat(key_x, pos.x);
+    storage->SetFloat(key_y, pos.y);
+
+    return moved;
+}
+
+
+
+bool dvz_gui_resized()
+{
+    // Access the window's storage
+    ImGuiStorage* storage = ImGui::GetStateStorage();
+
+    // Generate unique keys for size
+    ImGuiID key_w = ImGui::GetID("Width");
+    ImGuiID key_h = ImGui::GetID("Height");
+
+    // Get the current window size
+    ImVec2 size = ImGui::GetWindowSize();
+
+    // Retrieve the previous size
+    float prev_w = storage->GetFloat(key_w, -1.0f);
+    float prev_h = storage->GetFloat(key_h, -1.0f);
+
+    // Check if the size has changed
+    bool resized = (prev_w != size.x) || (prev_h != size.y);
+
+    // Update the stored size
+    storage->SetFloat(key_w, size.x);
+    storage->SetFloat(key_h, size.y);
+
+    return resized;
+}
+
+
+
+bool dvz_gui_dragging()
+{
+    return ImGui::IsMouseDragging(ImGuiMouseButton_Left) ||
+           ImGui::IsMouseDragging(ImGuiMouseButton_Right);
+}
+
+
+
+bool dvz_gui_clicked()
+{
+    return ImGui::IsItemClicked(); //
+}
+
+
+
+/*************************************************************************************************/
+/*  GUI widgets                                                                                  */
+/*************************************************************************************************/
 
 void dvz_gui_text(const char* fmt, ...)
 {
@@ -634,10 +771,6 @@ void dvz_gui_pop() { ImGui::TreePop(); }
 
 
 
-bool dvz_gui_clicked() { return ImGui::IsItemClicked(); }
-
-
-
 bool dvz_gui_selectable(const char* name) { return ImGui::Selectable(name); }
 
 
@@ -729,11 +862,4 @@ void dvz_gui_demo()
 {
     bool open = true;
     ImGui::ShowDemoWindow(&open);
-}
-
-
-
-void dvz_gui_end()
-{
-    ImGui::End(); //
 }

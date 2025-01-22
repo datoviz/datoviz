@@ -255,6 +255,16 @@ DVZ_EXPORT DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, fl
 
 
 /**
+ * Set the panel flags
+ *
+ * @param panel the panel
+ * @param flags the panel flags
+ */
+DVZ_EXPORT void dvz_panel_flags(DvzPanel* panel, int flags);
+
+
+
+/**
  * Return the batch from a panel.
  *
  * @param panel the panel
@@ -3513,6 +3523,62 @@ DVZ_EXPORT void dvz_ortho_mvp(DvzOrtho* ortho, DvzMVP* mvp);
 /*  GUI functions                                                                                */
 /*************************************************************************************************/
 /*************************************************************************************************/
+
+/**
+ * Capture a GUI window.
+ *
+ * @param gui_window
+ * @param is_captured
+ *
+ */
+DVZ_EXPORT void dvz_gui_window_capture(DvzGuiWindow* gui_window, bool is_captured);
+
+
+
+/**
+ * Return whether a dialog is being moved.
+ *
+ * @returns whether the dialog is being moved
+ */
+DVZ_EXPORT bool dvz_gui_moving(void);
+
+
+
+/**
+ * Return whether a dialog is being resized
+ *
+ * @returns whether the dialog is being resized
+ */
+DVZ_EXPORT bool dvz_gui_resizing(void);
+
+
+
+/**
+ * Return whether a dialog has just moved.
+ *
+ * @returns whether the dialog has just moved
+ */
+DVZ_EXPORT bool dvz_gui_moved(void);
+
+
+
+/**
+ * Return whether a dialog has just been resized.
+ *
+ * @returns whether the dialog has just been resized
+ */
+DVZ_EXPORT bool dvz_gui_resized(void);
+
+
+
+/**
+ * Return whether mouse is dragging.
+ *
+ * @returns whether the mouse is dragging
+ */
+DVZ_EXPORT bool dvz_gui_dragging(void);
+
+
 
 /**
  * Set the position of the next GUI dialog.
