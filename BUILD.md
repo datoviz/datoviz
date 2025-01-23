@@ -4,6 +4,15 @@ If packages are not available on your system, you can build Datoviz yourself.
 
 **Note:** Datoviz is currently built and tested with the **Vulkan LunarG SDK v1.3.280** (you normally don't need to install it to build Datoviz on Linux and macOS, only on Windows). We'll regularly update this version.
 
+## Dependencies
+
+Versions of the various dependencies, including the bundled ones.
+
+* **Datoviz v0.2.2**
+    * Dear ImGui: `v1.91.7-docking`
+    * Vulkan SDK:
+    * (TODO)
+
 ## Ubuntu 24.04
 
 ```bash
