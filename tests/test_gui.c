@@ -105,13 +105,13 @@ int test_gui_1(TstSuite* suite)
 static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
-    dvz_gui_size((vec2){400, 300});
-    dvz_gui_alpha(0);
+    dvz_gui_size((vec2){300, 200});
 
     dvz_gui_begin("Hello", 0);
 
     // Should capture user events while moving/resizing.
-    dvz_gui_window_capture(ev.gui_window, dvz_gui_moving() || dvz_gui_resizing());
+    bool do_capture = dvz_gui_moving() || dvz_gui_resizing();
+    dvz_gui_window_capture(ev.gui_window, do_capture);
 
     // Display the viewport.
     vec4 viewport = {0};
@@ -144,11 +144,16 @@ int test_gui_2(TstSuite* suite)
     DvzScene* scene = dvz_scene(batch);
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
-    DvzPanel* panel = dvz_panel_default(figure);
+    DvzPanel* panel = dvz_panel(figure, 100, 100, 300, 200);
+
+    // do not stretch the panel when the window is resized
     dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
-    dvz_panel_margins(panel, 20, 20, 20, 20);
+    // dvz_panel_margins(panel, 20, 20, 20, 20);
+
+    // Fill the panel with test data and visual.
     dvz_demo_panel(panel);
 
+    // GUI callback.
     dvz_app_gui(app, dvz_figure_id(figure), _gui_callback_2, panel);
 
     dvz_scene_run(scene, app, N_FRAMES);

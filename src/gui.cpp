@@ -259,7 +259,16 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
 
     // Enable docking.
     if ((flags & DVZ_GUI_FLAGS_DOCKING) > 0)
+    {
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+        // HACK: transparent dialogs do not currently work in Dear ImGui so as a workaround here
+        // we completely disable the window background color of *all* dialogs, and not just the
+        // docked ones.
+        // This is a known issue, see e.g. https://github.com/ocornut/imgui/issues/2700
+        ImGuiStyle& style = ImGui::GetStyle();
+        style.Colors[ImGuiCol_WindowBg].w = 0;
+    }
 
     return gui;
 }
@@ -589,11 +598,10 @@ bool dvz_gui_moving()
     if (!window->DockIsActive || !window->DockNode)
         return false;
 
-    // log_error("hello");
     ImGuiDockNode* dock_node = window->DockNode;
 
     // Check if the active ID corresponds to the tab bar of the dock node
-    // if (dock_node->TabBar && g.ActiveId == dock_node->TabBar->ID)
+    if (dock_node->TabBar && g.ActiveId == dock_node->TabBar->ID)
     {
         // The user is interacting with the tab bar (likely dragging)
         return ImGui::IsMouseDragging(
