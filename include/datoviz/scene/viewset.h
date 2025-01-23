@@ -68,6 +68,7 @@ struct DvzView
     vec4 margins;
     float scale;      // scale (multiplied by the window's content scale)
     DvzList* visuals; // list of visuals in the view
+    bool is_visible;
 };
 
 

@@ -634,6 +634,35 @@ bool dvz_gui_resizing()
 
 
 
+bool dvz_gui_collapsed() { return ImGui::IsWindowCollapsed(); }
+
+
+
+bool dvz_gui_collapse_changed()
+{
+    // Access the window's storage
+    ImGuiStorage* storage = ImGui::GetStateStorage();
+
+    // Generate unique keys for position
+    ImGuiID key_collapsed = ImGui::GetID("Collapsed");
+
+    // Get the current window position
+    bool collapsed = ImGui::IsWindowCollapsed();
+
+    // Retrieve the previous position
+    float prev_collapsed = storage->GetBool(key_collapsed, false);
+
+    // Check if the position has changed
+    bool changed = (prev_collapsed != collapsed);
+
+    // Update the stored position
+    storage->SetBool(key_collapsed, collapsed);
+
+    return changed;
+}
+
+
+
 bool dvz_gui_moved()
 {
     // Access the window's storage

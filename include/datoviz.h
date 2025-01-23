@@ -417,6 +417,16 @@ DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
 
 
 /**
+ * Show or hide a panel.
+ *
+ * @param panel the panel
+ * @param is_visible whether to show or hide the panel
+ */
+DVZ_EXPORT void dvz_panel_show(DvzPanel* panel, bool is_visible);
+
+
+
+/**
  * Trigger a panel update.
  *
  * @param panel the panel
@@ -3568,6 +3578,24 @@ DVZ_EXPORT bool dvz_gui_moved(void);
  * @returns whether the dialog has just been resized
  */
 DVZ_EXPORT bool dvz_gui_resized(void);
+
+
+
+/**
+ * Return whether a dialog is collapsed.
+ *
+ * @returns whether the dialog is collapsed
+ */
+DVZ_EXPORT bool dvz_gui_collapsed(void);
+
+
+
+/**
+ * Return whether a dialog has just been collapsed or uncollapsed.
+ *
+ * @returns whether the dialog has just been collapsed or uncollapsed.
+ */
+DVZ_EXPORT bool dvz_gui_collapse_changed(void);
 
 
 

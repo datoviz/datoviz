@@ -174,6 +174,10 @@ void dvz_viewset_build(DvzViewset* viewset)
         ANN(view);
         ANN(view->visuals);
 
+        // Skip non-visible views.
+        if (!view->is_visible)
+            continue;
+
         // Set the current viewport, corresponding to the current view.
         dvz_record_viewport(batch, canvas_id, view->offset, view->shape);
 
@@ -225,6 +229,7 @@ DvzView* dvz_view(DvzViewset* viewset, vec2 offset, vec2 shape)
 
     DvzView* view = (DvzView*)calloc(1, sizeof(DvzView));
     view->viewset = viewset;
+    view->is_visible = true;
     view->visuals = dvz_list();
 
     // NOTE: the view holds the DvzViewport dual.

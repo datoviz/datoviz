@@ -122,13 +122,31 @@ static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     float h = viewport[3];
     dvz_gui_text("(%.0f, %.0f), (%.0f, %.0f)", viewport[0], viewport[1], viewport[2], viewport[3]);
 
+    // Panel updates when the dialog changes.
     DvzPanel* panel = (DvzPanel*)ev.user_data;
-
-    // Update the panel viewport when the dialog is moved or resized.
-    if (panel != NULL && (dvz_gui_moved() || dvz_gui_resized()))
+    if (panel != NULL)
     {
-        dvz_panel_resize(panel, x, y, w, h);
-        dvz_figure_update(dvz_panel_figure(panel));
+        bool to_update = false;
+
+        // Show/hide the panel if it is collapsed/uncollapsed.
+        if (dvz_gui_collapse_changed())
+        {
+            dvz_panel_show(panel, !dvz_gui_collapsed());
+            to_update = true;
+        }
+
+        // Resize the panel if the dialog has moved or been resized.
+        if ((dvz_gui_moved() || dvz_gui_resized()))
+        {
+            dvz_panel_resize(panel, x, y, w, h);
+            to_update = true;
+        }
+
+        // Update the panel if it has changed.
+        if (to_update)
+        {
+            dvz_figure_update(dvz_panel_figure(panel));
+        }
     }
 
     dvz_gui_end();

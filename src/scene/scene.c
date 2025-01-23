@@ -791,6 +791,16 @@ static void _update_camera(DvzPanel* panel)
 
 
 
+void dvz_panel_show(DvzPanel* panel, bool is_visible)
+{
+    ANN(panel);
+    ANN(panel->view);
+    log_trace("%s panel", is_visible ? "show" : "hide");
+    panel->view->is_visible = is_visible;
+}
+
+
+
 void dvz_panel_update(DvzPanel* panel)
 {
     ANN(panel);
