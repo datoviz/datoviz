@@ -16,6 +16,7 @@
 /*************************************************************************************************/
 
 #include "test_presenter.h"
+#include "_time_utils.h"
 #include "client.h"
 #include "client_input.h"
 #include "datoviz.h"
@@ -712,6 +713,18 @@ int test_presenter_gui(TstSuite* suite)
 
     // GUI callback.
     dvz_presenter_gui(prt, canvas_id, _gui_callback_1, &tex_struct);
+
+    // Timestamps.
+    dvz_client_run(client, 50);
+
+    uint64_t seconds[10] = {0};
+    uint64_t nanoseconds[10] = {0};
+    dvz_canvas_timestamps(dvz_renderer_canvas(rd, canvas_id), 10, &seconds[0], &nanoseconds[0]);
+    for (uint32_t i = 0; i < 10; i++)
+    {
+        printf("%" PRIu64 " s %09" PRIu64 " ns\n", seconds[i], nanoseconds[i]);
+        // dvz_time_print((DvzTime[]){{seconds[i], nanoseconds[i]}});
+    }
 
     // Dequeue and process all pending events.
     dvz_client_run(client, N_FRAMES);

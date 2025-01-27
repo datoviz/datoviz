@@ -612,6 +612,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     // NOTE:
     else // if (prt->awaiting_submit)
     {
+        // Record the rendering time.
+        dvz_time(&canvas->render.frame_timestamps[canvas->render.frame_time_idx++]);
+
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
 
         // At every frame, we refill the command buffer, unless it was already refilled

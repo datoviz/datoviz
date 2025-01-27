@@ -55,6 +55,8 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
     canvas.height = height;
 
     canvas.render.renderpass = renderpass;
+    canvas.render.frame_timestamps = (DvzTime*)calloc(DVZ_MAX_TIMESTAMPS, sizeof(DvzTime));
+    ANN(canvas.render.frame_timestamps);
     ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     dvz_obj_init(&canvas.obj);
@@ -301,6 +303,44 @@ uint8_t* dvz_canvas_download(DvzCanvas* canvas)
 
 
 
+void dvz_canvas_timestamps(
+    DvzCanvas* canvas, uint32_t count, uint64_t* seconds, uint64_t* nanoseconds)
+{
+    ANN(canvas);
+    if (canvas->obj.status == DVZ_OBJECT_STATUS_DESTROYED)
+    {
+        log_warn("impossible to recover the timestamps of a destroyed canvas");
+        return;
+    }
+    if (count > DVZ_MAX_TIMESTAMPS)
+    {
+        log_warn("requesting %u timestamps but only %u are recorded", count, DVZ_MAX_TIMESTAMPS);
+        count = DVZ_MAX_TIMESTAMPS;
+    }
+    ASSERT(count <= DVZ_MAX_TIMESTAMPS);
+
+    ANN(seconds);
+    ANN(nanoseconds);
+
+    int32_t idx = (int32_t)canvas->render.frame_time_idx - (int32_t)count;
+    if (idx < 0)
+        idx += DVZ_MAX_TIMESTAMPS;
+    DvzTime* times = canvas->render.frame_timestamps;
+    ANN(times);
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        ASSERT(0 <= idx && idx < DVZ_MAX_TIMESTAMPS);
+
+        seconds[i] = times[idx].seconds;
+        nanoseconds[i] = times[idx].nanoseconds;
+
+        idx++;
+    }
+}
+
+
+
 void dvz_canvas_destroy(DvzCanvas* canvas)
 {
     if (canvas == NULL || canvas->obj.status != DVZ_OBJECT_STATUS_CREATED)
@@ -354,6 +394,7 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     dvz_fences_destroy(&canvas->sync.fences_render_finished);
 
     FREE(canvas->render.swapchain.images);
+    FREE(canvas->render.frame_timestamps);
 
     dvz_obj_destroyed(&canvas->obj);
 }

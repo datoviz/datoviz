@@ -18,6 +18,7 @@
 /*************************************************************************************************/
 
 #include "_enums.h"
+#include "_time_utils.h"
 #include "surface.h"
 #include "vklite.h"
 
@@ -38,6 +39,7 @@
 #define DVZ_DEFAULT_COMMANDS_TRANSFER 0
 #define DVZ_DEFAULT_COMMANDS_RENDER   1
 #define DVZ_MAX_FRAMES_IN_FLIGHT      2
+#define DVZ_MAX_TIMESTAMPS            (16 * 1024)
 
 
 
@@ -84,6 +86,9 @@ struct DvzRender
     DvzRenderpass* renderpass;
 
     DvzSubmit submit;
+
+    DvzTime* frame_timestamps;
+    size_t frame_time_idx;
 };
 
 
@@ -228,8 +233,25 @@ void dvz_canvas_end(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx);
 
 
 /**
+ * Return the pointer to the image buffer of a canvas.
+ *
+ * @param canvas the canvas
+ * @returns the pointer to the image buffer
  */
 uint8_t* dvz_canvas_download(DvzCanvas* canvas);
+
+
+
+/**
+ * Return the precise rendering timestamps of the last `count` frames.
+ *
+ * @param canvas_id the canvas id
+ * @param count the number of requested timestamps
+ * @param seconds the epoch of the past `count` frames, in seconds
+ * @param nanoseconds the precise rendering time, in nanoseconds within the epochs
+ */
+void dvz_canvas_timestamps(
+    DvzCanvas* canvas, uint32_t count, uint64_t* seconds, uint64_t* nanoseconds);
 
 
 
