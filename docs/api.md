@@ -1022,6 +1022,37 @@ bool dvz_gui_clicked(
 )
 ```
 
+### `dvz_gui_collapse_changed()`
+
+Return whether a dialog has just been collapsed or uncollapsed.
+
+```c
+bool dvz_gui_collapse_changed(  // returns: whether the dialog has just been collapsed or uncollapsed.
+
+)
+```
+
+### `dvz_gui_collapsed()`
+
+Return whether a dialog is collapsed.
+
+```c
+bool dvz_gui_collapsed(  // returns: whether the dialog is collapsed
+
+)
+```
+
+### `dvz_gui_color()`
+
+Set the color of an element.
+
+```c
+void dvz_gui_color(
+    int type,  // the element type for which to change the color
+    cvec4 color,  // the color
+)
+```
+
 ### `dvz_gui_colorpicker()`
 
 Add a color picker
@@ -1051,6 +1082,16 @@ Show the demo GUI.
 
 ```c
 void dvz_gui_demo(
+
+)
+```
+
+### `dvz_gui_dragging()`
+
+Return whether mouse is dragging.
+
+```c
+bool dvz_gui_dragging(  // returns: whether the mouse is dragging
 
 )
 ```
@@ -1087,6 +1128,26 @@ void dvz_gui_image(
 )
 ```
 
+### `dvz_gui_moved()`
+
+Return whether a dialog has just moved.
+
+```c
+bool dvz_gui_moved(  // returns: whether the dialog has just moved
+
+)
+```
+
+### `dvz_gui_moving()`
+
+Return whether a dialog is being moved.
+
+```c
+bool dvz_gui_moving(  // returns: whether the dialog is being moved
+
+)
+```
+
 ### `dvz_gui_node()`
 
 Start a new tree node.
@@ -1115,6 +1176,26 @@ Set the position of the next GUI dialog.
 void dvz_gui_pos(
     vec2 pos,  // the dialog position
     vec2 pivot,  // the pivot
+)
+```
+
+### `dvz_gui_resized()`
+
+Return whether a dialog has just been resized.
+
+```c
+bool dvz_gui_resized(  // returns: whether the dialog has just been resized
+
+)
+```
+
+### `dvz_gui_resizing()`
+
+Return whether a dialog is being resized
+
+```c
+bool dvz_gui_resizing(  // returns: whether the dialog is being resized
+
 )
 ```
 
@@ -1151,6 +1232,17 @@ bool dvz_gui_slider(  // returns: whether the value has changed
 )
 ```
 
+### `dvz_gui_style()`
+
+Set the style of an element.
+
+```c
+void dvz_gui_style(
+    int type,  // the element type for which to change the style
+    float value,  // the value
+)
+```
+
 ### `dvz_gui_table()`
 
 Display a table with selectable rows.
@@ -1173,6 +1265,16 @@ Get the position and size of the current dialog.
 ```c
 void dvz_gui_viewport(
     vec4 viewport,  // the x, y, w, h values
+)
+```
+
+### `dvz_gui_window_capture()`
+
+Capture a GUI window.
+
+```c
+void dvz_gui_window_capture(
+    DvzGuiWindow* gui_window,  // * @param is_captured
 )
 ```
 
@@ -2092,6 +2194,17 @@ DvzFigure* dvz_panel_figure(  // returns: the figure
 )
 ```
 
+### `dvz_panel_flags()`
+
+Set the panel flags
+
+```c
+void dvz_panel_flags(
+    DvzPanel* panel,  // the panel
+    int flags,  // the panel flags
+)
+```
+
 ### `dvz_panel_margins()`
 
 Set the margins of a panel.
@@ -2161,6 +2274,17 @@ void dvz_panel_resize(
     float y,  // the y coordinate of the top left corner, in pixels
     float width,  // the panel width, in pixels
     float height,  // the panel height, in pixels
+)
+```
+
+### `dvz_panel_show()`
+
+Show or hide a panel.
+
+```c
+void dvz_panel_show(
+    DvzPanel* panel,  // the panel
+    bool is_visible,  // whether to show or hide the panel
 )
 ```
 
@@ -5700,6 +5824,7 @@ struct DvzFrameEvent
 
 ```
 struct DvzGuiEvent
+    DvzGuiWindow* gui_window
     void* user_data
 ```
 

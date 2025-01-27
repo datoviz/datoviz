@@ -1693,6 +1693,10 @@ class DvzFont(ctypes.Structure):
     pass
 
 
+class DvzGuiWindow(ctypes.Structure):
+    pass
+
+
 class DvzIndex(ctypes.Structure):
     pass
 
@@ -1868,6 +1872,7 @@ class DvzFrameEvent(ctypes.Structure):
 class DvzGuiEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
+        ("gui_window", ctypes.POINTER(DvzGuiWindow)),
         ("user_data", ctypes.c_void_p),
     ]
 
@@ -2593,6 +2598,23 @@ panel.argtypes = [
 ]
 panel.restype = ctypes.POINTER(DvzPanel)
 
+# Function dvz_panel_flags()
+panel_flags = dvz.dvz_panel_flags
+panel_flags.__doc__ = """
+Set the panel flags
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the panel flags
+"""
+panel_flags.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+
 # Function dvz_panel_batch()
 panel_batch = dvz.dvz_panel_batch
 panel_batch.__doc__ = """
@@ -2890,6 +2912,23 @@ panel_arcball.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_arcball.restype = ctypes.POINTER(DvzArcball)
+
+# Function dvz_panel_show()
+panel_show = dvz.dvz_panel_show
+panel_show.__doc__ = """
+Show or hide a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+is_visible : bool
+    whether to show or hide the panel
+"""
+panel_show.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_bool,  # bool is_visible
+]
 
 # Function dvz_panel_update()
 panel_update = dvz.dvz_panel_update
@@ -8285,6 +8324,126 @@ ortho_mvp.argtypes = [
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
 ]
 
+# Function dvz_gui_window_capture()
+gui_window_capture = dvz.dvz_gui_window_capture
+gui_window_capture.__doc__ = """
+Capture a GUI window.
+
+Parameters
+----------
+gui_window : DvzGuiWindow*
+    * @param is_captured
+"""
+gui_window_capture.argtypes = [
+    ctypes.POINTER(DvzGuiWindow),  # DvzGuiWindow* gui_window
+    ctypes.c_bool,  # bool is_captured
+]
+
+# Function dvz_gui_moving()
+gui_moving = dvz.dvz_gui_moving
+gui_moving.__doc__ = """
+Return whether a dialog is being moved.
+
+
+Returns
+-------
+type
+    whether the dialog is being moved
+"""
+gui_moving.argtypes = [
+]
+gui_moving.restype = ctypes.c_bool
+
+# Function dvz_gui_resizing()
+gui_resizing = dvz.dvz_gui_resizing
+gui_resizing.__doc__ = """
+Return whether a dialog is being resized
+
+
+Returns
+-------
+type
+    whether the dialog is being resized
+"""
+gui_resizing.argtypes = [
+]
+gui_resizing.restype = ctypes.c_bool
+
+# Function dvz_gui_moved()
+gui_moved = dvz.dvz_gui_moved
+gui_moved.__doc__ = """
+Return whether a dialog has just moved.
+
+
+Returns
+-------
+type
+    whether the dialog has just moved
+"""
+gui_moved.argtypes = [
+]
+gui_moved.restype = ctypes.c_bool
+
+# Function dvz_gui_resized()
+gui_resized = dvz.dvz_gui_resized
+gui_resized.__doc__ = """
+Return whether a dialog has just been resized.
+
+
+Returns
+-------
+type
+    whether the dialog has just been resized
+"""
+gui_resized.argtypes = [
+]
+gui_resized.restype = ctypes.c_bool
+
+# Function dvz_gui_collapsed()
+gui_collapsed = dvz.dvz_gui_collapsed
+gui_collapsed.__doc__ = """
+Return whether a dialog is collapsed.
+
+
+Returns
+-------
+type
+    whether the dialog is collapsed
+"""
+gui_collapsed.argtypes = [
+]
+gui_collapsed.restype = ctypes.c_bool
+
+# Function dvz_gui_collapse_changed()
+gui_collapse_changed = dvz.dvz_gui_collapse_changed
+gui_collapse_changed.__doc__ = """
+Return whether a dialog has just been collapsed or uncollapsed.
+
+
+Returns
+-------
+type
+    whether the dialog has just been collapsed or uncollapsed.
+"""
+gui_collapse_changed.argtypes = [
+]
+gui_collapse_changed.restype = ctypes.c_bool
+
+# Function dvz_gui_dragging()
+gui_dragging = dvz.dvz_gui_dragging
+gui_dragging.__doc__ = """
+Return whether mouse is dragging.
+
+
+Returns
+-------
+type
+    whether the mouse is dragging
+"""
+gui_dragging.argtypes = [
+]
+gui_dragging.restype = ctypes.c_bool
+
 # Function dvz_gui_pos()
 gui_pos = dvz.dvz_gui_pos
 gui_pos.__doc__ = """
@@ -8345,6 +8504,40 @@ size : vec2
 """
 gui_size.argtypes = [
     ctypes.c_float * 2,  # vec2 size
+]
+
+# Function dvz_gui_color()
+gui_color = dvz.dvz_gui_color
+gui_color.__doc__ = """
+Set the color of an element.
+
+Parameters
+----------
+type : int
+    the element type for which to change the color
+color : cvec4
+    the color
+"""
+gui_color.argtypes = [
+    ctypes.c_int,  # int type
+    ctypes.c_uint8 * 4,  # cvec4 color
+]
+
+# Function dvz_gui_style()
+gui_style = dvz.dvz_gui_style
+gui_style.__doc__ = """
+Set the style of an element.
+
+Parameters
+----------
+type : int
+    the element type for which to change the style
+value : float
+    the value
+"""
+gui_style.argtypes = [
+    ctypes.c_int,  # int type
+    ctypes.c_float,  # float value
 ]
 
 # Function dvz_gui_flags()
