@@ -72,7 +72,17 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
     }
 
     size_t size = shaderc_result_get_length(result);
-    const uint32_t* spirv_code = (const uint32_t*)shaderc_result_get_bytes(result);
+
+    // NOTE: fixing this warning on macOS:
+    // cast from 'const char *' to 'const uint32_t *' (aka 'const unsigned int *') increases
+    // required alignment from 1 to 4 [-Wcast-align]
+    // const uint32_t* spirv_code = (const uint32_t*)shaderc_result_get_bytes(result);
+    const char* bytes = shaderc_result_get_bytes(result);
+    uint32_t* spirv_code = malloc(size);
+    if (spirv_code != NULL)
+    {
+        memcpy(spirv_code, bytes, size);
+    }
 
     VkShaderModuleCreateInfo create_info = {0};
     create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
