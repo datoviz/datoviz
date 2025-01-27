@@ -71,6 +71,8 @@ static int gettimeofday(struct timeval* tp, struct timezone* tzp)
 // Used for Sleep()
 #if OS_WINDOWS
 #include <Windows.h>
+#elif OS_MACOS
+#include <mach/mach_time.h>
 #endif
 
 
@@ -164,8 +166,8 @@ static inline void dvz_time(DvzTime* time)
     {
         mach_timebase_info(&timebase);
     }
-    uint64_t time = mach_absolute_time();
-    uint64_t nanoseconds = time * timebase.numer / timebase.denom;
+    uint64_t t = mach_absolute_time();
+    uint64_t nanoseconds = t * timebase.numer / timebase.denom;
     time->seconds = nanoseconds / 1000000000;
     time->nanoseconds = nanoseconds % 1000000000;
 
