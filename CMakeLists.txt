@@ -42,6 +42,7 @@ project(datoviz VERSION ${DVZ_VERSION} DESCRIPTION "datoviz")
 # Datoviz options
 # -------------------------------------------------------------------------------------------------
 option(DATOVIZ_WITH_CLI "Build Datoviz command-line interface with tests and demos" ON)
+option(DATOVIZ_WITH_ZLIB "Build Datoviz with zlib" ON) # for gzip decompression for test data
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" OFF)
@@ -178,6 +179,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cglm)
 set(INCL_DIRS ${INCL_DIRS} ${cglm_SOURCE_DIR}/include)
+
+# ---- zlib ---------------------------------------------------------------------------------------
+set(HAS_ZLIB 0)
+
+if(DATOVIZ_WITH_ZLIB)
+    find_package(ZLIB)
+
+    if(ZLIB_FOUND)
+        set(CORE_LIBS ${CORE_LIBS} ZLIB::ZLIB)
+        set(HAS_ZLIB 1)
+    endif()
+endif()
 
 # ---- openmp -------------------------------------------------------------------------------------
 set(HAS_OPENMP 0)
@@ -411,6 +424,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 
     # Dependencies.
     HAS_OPENMP=${HAS_OPENMP}
+    HAS_ZLIB=${HAS_ZLIB}
     HAS_GLFW=${HAS_GLFW}
     HAS_MSDF=${HAS_MSDF}
     HAS_SHADERC=${HAS_SHADERC}

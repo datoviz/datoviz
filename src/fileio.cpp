@@ -7,7 +7,10 @@
 #include "fpng.h"
 #include <errno.h>
 #include <sys/stat.h>
+
+#if HAS_ZLIB
 #include <zlib.h>
+#endif
 
 
 
@@ -174,6 +177,8 @@ char* dvz_parse_npy(DvzSize size, char* npy_bytes)
 
 char* dvz_read_gz(const char* filename, DvzSize* size)
 {
+
+#if HAS_ZLIB
     if (!filename || !size)
     {
         fprintf(stderr, "Error: Invalid arguments.\n");
@@ -248,6 +253,15 @@ char* dvz_read_gz(const char* filename, DvzSize* size)
     }
 
     return buffer;
+
+#else
+
+    log_error(
+        "unable to load .gz file, Datoviz was not built with zlib support. Please activate " //
+        "CMake option DATOVIZ_WITH_ZLIB");
+    return NULL;
+
+#endif
 }
 
 
