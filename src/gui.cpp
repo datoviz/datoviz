@@ -404,7 +404,9 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
     ImGui::NewFrame();
 
     if ((gui->flags & DVZ_GUI_FLAGS_DOCKING) > 0)
+    {
         _imgui_docking();
+    }
 
     dvz_cmd_begin(cmds, cmd_idx);
     dvz_cmd_begin_renderpass(cmds, cmd_idx, &gui->renderpass, &gui_window->framebuffers);
@@ -511,6 +513,7 @@ void dvz_gui_color(int type, cvec4 color)
 }
 
 
+
 void dvz_gui_style(int type, float value)
 {
     ImGui::PushStyleVar(type, value); //
@@ -521,6 +524,7 @@ void dvz_gui_style(int type, float value)
 int dvz_gui_flags(int flags)
 {
     int imgui_flags = ImGuiWindowFlags_NoSavedSettings;
+    float alpha = 0.5;
 
     // Overlay.
     if ((flags & DVZ_DIALOG_FLAGS_OVERLAY) != 0)
@@ -534,14 +538,23 @@ int dvz_gui_flags(int flags)
                        ImGuiWindowFlags_NoDecoration |      //
                        ImGuiWindowFlags_NoMove |            //
                        ImGuiWindowFlags_NoFocusOnAppearing; //
-        dvz_gui_alpha(0.5f);
+        alpha = .5;
     }
 
-    // No background
+    // No background.
     if ((flags & DVZ_DIALOG_FLAGS_BLANK) != 0)
     {
         imgui_flags |= ImGuiWindowFlags_NoBackground;
+        alpha = 0;
     }
+
+    // Panel dialog.
+    if ((flags & DVZ_DIALOG_FLAGS_PANEL) != 0)
+    {
+        alpha = 0;
+    }
+
+    dvz_gui_alpha(alpha);
 
     return imgui_flags;
 }
@@ -588,7 +601,6 @@ void dvz_gui_end()
 /*************************************************************************************************/
 /*  GUI interactions                                                                             */
 /*************************************************************************************************/
-
 
 bool dvz_gui_moving()
 {

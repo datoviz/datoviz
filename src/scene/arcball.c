@@ -258,7 +258,6 @@ static inline void _arcball_gui(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     DvzPanel* panel = (DvzPanel*)arcball->user_data;
 
     dvz_gui_corner(DVZ_DIALOG_CORNER_BOTTOM_RIGHT, (vec2){20, 20});
-    dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY);
     dvz_gui_size((vec2){180, 120});
     dvz_gui_begin("Arcball angles", 0);
 
