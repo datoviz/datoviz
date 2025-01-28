@@ -106,21 +106,31 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
 
 static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_volume)
 {
+    // Path to the .npy.gz file.
     char path[1024] = {0};
     snprintf(
-        path, sizeof(path), "%s/volumes/%s%s.npy", DATA_DIR, "allen_mouse_brain",
+        path, sizeof(path), "%s/volumes/%s%s.npy.gz", DATA_DIR, "allen_mouse_brain",
         use_rgb_volume ? "_rgba" : "");
 
+    // Decompress the .gz file.
     DvzSize size = 0;
-    char* volume = dvz_read_npy(path, &size);
-
-    if (!volume)
+    char* npy_bytes = dvz_read_gz(path, &size);
+    if (size == 0 || npy_bytes == NULL)
     {
         log_error("file not found: %s", path);
         return DVZ_ID_NONE;
     }
+    ASSERT(size > 0);
 
-    log_info("load the Allen Mouse Brain volume (%s)", pretty_size(size));
+    // Parse the NPY file.
+    char* volume = dvz_parse_npy(size, npy_bytes);
+    if (volume == NULL)
+    {
+        log_error("unable to load the volume file: %s", path);
+        return DVZ_ID_NONE;
+    }
+
+    log_info("loaded the Allen Mouse Brain volume (%s)", pretty_size(size));
     DvzFormat format = use_rgb_volume ? DVZ_FORMAT_R8G8B8A8_UNORM : DVZ_FORMAT_R16_UNORM;
     DvzId tex = dvz_tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume);
     FREE(volume);
