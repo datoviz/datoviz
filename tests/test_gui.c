@@ -106,8 +106,7 @@ static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
     dvz_gui_size((vec2){300, 200});
-
-    dvz_gui_begin("Hello", 0);
+    dvz_gui_begin("Hello", DVZ_DIALOG_FLAGS_PANEL);
 
     // Should capture user events while moving/resizing.
     bool do_capture = dvz_gui_moving() || dvz_gui_resizing();

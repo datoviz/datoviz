@@ -559,13 +559,17 @@ void dvz_gui_alpha(float alpha)
 /*  GUI lifecycle                                                                                */
 /*************************************************************************************************/
 
-void dvz_gui_begin(const char* title, int gui_flags)
+void dvz_gui_begin(const char* title, int flags)
 {
     // WARNING: the title should be unique for each different dialog!
     ANN(title);
     ASSERT(strnlen(title, 1024) > 0);
+
+    // NOTE: convert from Datoviz GUI flags to Dear ImGUI flags.
+    int imgui_flags = dvz_gui_flags(flags);
+
     bool open = true;
-    ImGui::Begin(title, &open, gui_flags);
+    ImGui::Begin(title, &open, imgui_flags);
 }
 
 

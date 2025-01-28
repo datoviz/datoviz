@@ -34,8 +34,7 @@ static inline void _gui_callback_fps(DvzGuiWindow* gui_window, void* user_data)
     dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
     dvz_gui_corner(DVZ_DIALOG_CORNER_TOP_RIGHT, (vec2){0, 0});
     dvz_gui_size((vec2){140, 70});
-    dvz_gui_alpha(.5f);
-    dvz_gui_begin("FPS", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    dvz_gui_begin("FPS", DVZ_DIALOG_FLAGS_OVERLAY);
 
     dvz_fps_tick(fps);
     dvz_fps_histogram(fps);
@@ -63,8 +62,7 @@ static inline void _gui_callback_monitoring(DvzGuiWindow* gui_window, void* user
 
     dvz_gui_corner(DVZ_DIALOG_CORNER_TOP_RIGHT, (vec2){0, 70});
     dvz_gui_size((vec2){230, 80});
-    dvz_gui_alpha(.5f);
-    dvz_gui_begin("Monitoring", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    dvz_gui_begin("Monitoring", DVZ_DIALOG_FLAGS_OVERLAY);
 
     // Retrieve the allocation information.
     DvzAllocMonitor monitor = {0};

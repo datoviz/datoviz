@@ -303,7 +303,7 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
 
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 0});
-    dvz_gui_begin("Contour", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    dvz_gui_begin("Contour", DVZ_DIALOG_FLAGS_OVERLAY);
     bool u_changed = dvz_gui_slider("u", -1 + .01, +5.0, &angle[0]);
     bool v_changed = dvz_gui_slider("v", -1 + .01, +5.0, &angle[1]);
     dvz_gui_end();
@@ -501,7 +501,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 300});
-    dvz_gui_begin("Wireframe", dvz_gui_flags(DVZ_DIALOG_FLAGS_OVERLAY));
+    dvz_gui_begin("Wireframe", DVZ_DIALOG_FLAGS_OVERLAY);
     bool width_changed = dvz_gui_slider("Width", 0, 10.0, &stroke[0][3]);
     bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
     dvz_gui_end();
