@@ -67,6 +67,28 @@ char* dvz_read_npy(const char* filename, DvzSize* size);
 
 
 /**
+ * Read a NumPy NPY file from memory.
+ *
+ * @param size of the file
+ * @param npy_bytes the contents of the NPY file
+ * @returns pointer to a buffer containing the array elements
+ */
+char* dvz_parse_npy(DvzSize size, char* npy_bytes);
+
+
+
+/**
+ * Read a compressed GZIP file.
+ *
+ * @param filename path of the GZIP compressed file to open
+ * @param[out] size of the decompressed buffer
+ * @returns pointer to a buffer containing the decompressed buffer
+ */
+char* dvz_read_gz(const char* filename, DvzSize* size);
+
+
+
+/**
  * Save a binary file.
  *
  * @param filename path to the PPM file to create

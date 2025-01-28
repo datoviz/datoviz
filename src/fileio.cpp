@@ -5,6 +5,9 @@
 #include "fileio.h"
 #include "common.h"
 #include "fpng.h"
+#include <errno.h>
+#include <sys/stat.h>
+#include <zlib.h>
 
 
 
@@ -121,6 +124,130 @@ char* dvz_read_npy(const char* filename, DvzSize* size)
 error:
     log_error("unable to read the NPY file %s", filename);
     return NULL;
+}
+
+
+
+char* dvz_parse_npy(DvzSize size, char* npy_bytes)
+{
+    // Ensure the buffer is valid
+    if (size < 10 || npy_bytes == NULL)
+    {
+        return NULL;
+    }
+
+    // Check the .npy magic string
+    if (memcmp(npy_bytes, "\x93NUMPY", 6) != 0)
+    {
+        return NULL;
+    }
+
+    // Extract the header length (at byte 8 and 9 for v1.0/1.1)
+    uint16_t header_len = *(uint16_t*)(npy_bytes + 8);
+
+    // Calculate the offset of the array data
+    DvzSize data_offset = 10 + header_len;
+
+    // Ensure the offset is within bounds
+    if (data_offset > size)
+    {
+        return NULL;
+    }
+
+    // Calculate the size of the array data
+    DvzSize array_data_size = size - data_offset;
+
+    // Allocate memory for the output buffer
+    char* array_data = (char*)malloc(array_data_size);
+    if (array_data == NULL)
+    {
+        return NULL;
+    }
+
+    // Copy the array data to the output buffer
+    memcpy(array_data, npy_bytes + data_offset, array_data_size);
+
+    return array_data;
+}
+
+
+
+char* dvz_read_gz(const char* filename, DvzSize* size)
+{
+    if (!filename || !size)
+    {
+        fprintf(stderr, "Error: Invalid arguments.\n");
+        return NULL;
+    }
+    ANN(filename);
+    ANN(size);
+
+    // Open the gzip file for reading
+    gzFile gz_file = gzopen(filename, "rb");
+    if (gz_file == NULL)
+    {
+        perror("Failed to open gzip file");
+        return NULL;
+    }
+
+    // Allocate an initial buffer to decompress the file into memory
+    size_t buffer_size = 1024 * 1024; // Start with 1 MB
+    char* buffer = (char*)malloc(buffer_size);
+    if (buffer == NULL)
+    {
+        perror("Failed to allocate memory");
+        gzclose(gz_file);
+        return NULL;
+    }
+
+    size_t buffer_used = 0;
+
+    // Read and decompress the gzip file into the buffer
+    while (1)
+    {
+        // Expand the buffer if necessary
+        if (buffer_used + 4096 > buffer_size)
+        {
+            buffer_size *= 2;
+            char* new_buffer = (char*)realloc(buffer, buffer_size);
+            if (new_buffer == NULL)
+            {
+                perror("Failed to reallocate memory");
+                free(buffer);
+                gzclose(gz_file);
+                return NULL;
+            }
+            buffer = new_buffer;
+        }
+
+        // Read data from the gzip file
+        int bytes_read = gzread(gz_file, buffer + buffer_used, 4096);
+        if (bytes_read < 0)
+        {
+            fprintf(stderr, "Decompression error: %s\n", gzerror(gz_file, NULL));
+            free(buffer);
+            gzclose(gz_file);
+            return NULL;
+        }
+
+        if (bytes_read == 0)
+        {
+            // End of file reached
+            break;
+        }
+
+        buffer_used += (size_t)bytes_read;
+    }
+
+    gzclose(gz_file);
+
+    // Set the size of the decompressed data
+    if (size != NULL)
+    {
+        *size = (DvzSize)buffer_used;
+    }
+
+    return buffer;
 }
 
 
