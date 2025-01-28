@@ -526,6 +526,7 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     DvzCommands* cmds = &canvas->cmds;
     DvzSubmit* submit = &canvas->render.submit;
     DvzGuiWindow* gui_window = (DvzGuiWindow*)dvz_map_get(prt->maps.guis, window_id);
+    uint32_t fidx = 0;
 
     ANN(swapchain);
     ANN(cmds);
@@ -613,7 +614,9 @@ void dvz_presenter_frame(DvzPresenter* prt, DvzId window_id)
     else // if (prt->awaiting_submit)
     {
         // Record the rendering time.
-        dvz_time(&canvas->render.frame_timestamps[canvas->render.frame_time_idx++]);
+        fidx = canvas->render.frame_time_idx++ % DVZ_MAX_TIMESTAMPS;
+        ASSERT(fidx < DVZ_MAX_TIMESTAMPS);
+        dvz_time(&canvas->render.frame_timestamps[fidx]);
 
         dvz_fences_copy(fences, canvas->cur_frame, fences_bak, swapchain->img_idx);
 
