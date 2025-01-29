@@ -19,6 +19,7 @@
 
 #include "../_enums.h"
 #include "../_log.h"
+#include "_obj.h"
 #include "datoviz_math.h"
 #include "datoviz_types.h"
 #include "mvp.h"
@@ -65,6 +66,7 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzScene
 {
+    DvzObject obj;
     DvzApp* app;
     DvzBatch* batch;
     DvzList* figures;
@@ -97,6 +99,7 @@ struct DvzPanel
     DvzOrtho* ortho;
     DvzArcball* arcball;
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
+    const char* title;         // used for GUI panels
     int flags;
 };
 

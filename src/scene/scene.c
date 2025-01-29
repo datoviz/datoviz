@@ -89,6 +89,10 @@ DvzScene* dvz_scene(DvzBatch* batch)
     batch->requests[batch->count - 2].id = DVZ_SCENE_DEFAULT_TEX_ID;
     batch->requests[batch->count - 1].id = DVZ_SCENE_DEFAULT_SAMPLER_ID;
 
+    // Init: the scene is initialized but not yet created.
+    // Created: all objects in the scene (figures, panels...) have been created.
+    dvz_obj_init(&scene->obj);
+
     return scene;
 }
 
@@ -308,6 +312,19 @@ void dvz_panel_flags(DvzPanel* panel, int flags)
 {
     ANN(panel);
     panel->flags = flags;
+}
+
+
+
+void dvz_panel_gui(DvzPanel* panel, const char* title, int flags)
+{
+    ANN(panel);
+
+    // Register the GUI panel title.
+    panel->title = title;
+
+    // do not stretch the panel when the window is resized
+    dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
 }
 
 
@@ -880,6 +897,102 @@ static void _scene_build(DvzScene* scene)
             }
         }
     }
+
+    dvz_obj_created(&scene->obj);
+}
+
+
+
+// Display a GUI panel.
+static void _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
+{
+    ANN(panel);
+    ANN(panel->title);
+
+    DvzFigure* fig = dvz_panel_figure(panel);
+    ANN(fig);
+
+    // Initial panel viewport.
+    float x = panel->offset_init[0];
+    float y = panel->offset_init[1];
+    float w = panel->shape_init[0];
+    float h = panel->shape_init[1];
+
+    // Start the GUI.
+    dvz_gui_pos((vec2){x, y}, DVZ_DIALOG_DEFAULT_PIVOT);
+    dvz_gui_size((vec2){w, h});
+    dvz_gui_begin(panel->title, DVZ_DIALOG_FLAGS_PANEL);
+
+
+    // NOTE: the GUI functions below must be called AFTER dvz_gui_begin(), otherwise Dear ImGUI
+    // will create a blank "Debug" dialog.
+
+    // Should capture user events while moving/resizing.
+    bool do_capture = dvz_gui_moving() || dvz_gui_resizing();
+    dvz_gui_window_capture(ev.gui_window, do_capture);
+
+
+    // Update the panel when the GUI is resized/moved.
+    bool to_update = false;
+
+    // Show/hide the panel if it is collapsed/uncollapsed.
+    if (dvz_gui_collapse_changed())
+    {
+        dvz_panel_show(panel, !dvz_gui_collapsed());
+        to_update = true;
+    }
+
+    // Resize the panel if the dialog has moved or been resized.
+    if ((dvz_gui_moved() || dvz_gui_resized()))
+    {
+        vec4 viewport = {0};
+        dvz_gui_viewport(viewport);
+        x = viewport[0];
+        y = viewport[1];
+        w = viewport[2];
+        h = viewport[3];
+
+        dvz_panel_resize(panel, x, y, w, h);
+        to_update = true;
+    }
+
+    // Update the panel if it has changed.
+    if (to_update)
+    {
+        dvz_figure_update(fig);
+    }
+
+    dvz_gui_end();
+}
+
+
+
+// Display all GUI panels in a canvas.
+static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+{
+    // Retrieve the scene.
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ANN(scene);
+
+    // Retrieve the figure.
+    DvzFigure* fig = dvz_scene_figure(scene, canvas_id);
+    ANN(fig);
+
+    // Go through all panels.
+    uint32_t n = dvz_list_count(fig->panels);
+    DvzPanel* panel = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        panel = (DvzPanel*)dvz_list_get(fig->panels, i).p;
+        ANN(panel);
+        ANN(panel->view);
+
+        // Display the GUI panels for those which have a title.
+        if (panel->title != NULL)
+        {
+            _gui_panel(panel, ev);
+        }
+    }
 }
 
 
@@ -1038,6 +1151,30 @@ static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
 
 
 
+static inline bool _figure_has_gui_panels(DvzFigure* fig)
+{
+    ANN(fig);
+    ANN(fig->panels);
+
+    // Go through all panels.
+    uint32_t n = dvz_list_count(fig->panels);
+    DvzPanel* panel = NULL;
+    for (uint32_t i = 0; i < n; i++)
+    {
+        panel = (DvzPanel*)dvz_list_get(fig->panels, i).p;
+        ANN(panel);
+        ANN(panel->view);
+
+        // Display the GUI panels for those which have a title.
+        if (panel->title != NULL)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
 {
     ANN(scene);
@@ -1047,13 +1184,38 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
     // TODO: remove, no longer needed
     scene->app = app;
 
-    // Scene callbacks.
-    dvz_app_onmouse(app, _scene_onmouse, scene);
-    dvz_app_onresize(app, _scene_onresize, scene);
-    dvz_app_onframe(app, _scene_onframe, scene);
+    // The first time, register the callbacks and build the scene.
+    // TODO: dvz_scene_reset() that will unregister the callbacks and set dvz_obj_init().
+    if (!dvz_obj_is_created(&scene->obj))
+    {
+        // Scene callbacks.
+        dvz_app_onmouse(app, _scene_onmouse, scene);
+        dvz_app_onresize(app, _scene_onresize, scene);
+        dvz_app_onframe(app, _scene_onframe, scene);
 
-    // Initial build of the scene.
-    _scene_build(scene);
+        // Initial build of the scene.
+        // NOTE: this call will mark the scene as dvz_obj_created().
+        _scene_build(scene);
+
+        // GUI callbacks for GUI panels.
+
+        // Go through all figures in the scene.
+        ANN(scene->figures);
+        uint32_t n = dvz_list_count(scene->figures);
+        DvzFigure* fig = NULL;
+        for (uint32_t i = 0; i < n; i++)
+        {
+            fig = (DvzFigure*)dvz_list_get(scene->figures, i).p;
+            ANN(fig);
+
+            // Only register the GUI panels callback if the figure has at least one GUI panel.
+            // NOTE: this will fail if a GUI panel is registered *AFTER* dvz_scene_run() is called.
+            if (_figure_has_gui_panels(fig))
+            {
+                dvz_app_gui(app, fig->canvas_id, _scene_gui_panels, scene);
+            }
+        }
+    }
 
     // Run the app.
     dvz_app_run(app, n_frames);

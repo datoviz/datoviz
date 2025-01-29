@@ -102,55 +102,6 @@ int test_gui_1(TstSuite* suite)
 
 
 
-static inline void _gui_callback_2(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
-{
-    dvz_gui_pos((vec2){100, 100}, DVZ_DIALOG_DEFAULT_PIVOT);
-    dvz_gui_size((vec2){300, 200});
-    dvz_gui_begin("Hello", DVZ_DIALOG_FLAGS_PANEL);
-
-    // Should capture user events while moving/resizing.
-    bool do_capture = dvz_gui_moving() || dvz_gui_resizing();
-    dvz_gui_window_capture(ev.gui_window, do_capture);
-
-    // Display the viewport.
-    vec4 viewport = {0};
-    dvz_gui_viewport(viewport);
-    float x = viewport[0];
-    float y = viewport[1];
-    float w = viewport[2];
-    float h = viewport[3];
-    dvz_gui_text("(%.0f, %.0f), (%.0f, %.0f)", viewport[0], viewport[1], viewport[2], viewport[3]);
-
-    // Panel updates when the dialog changes.
-    DvzPanel* panel = (DvzPanel*)ev.user_data;
-    if (panel != NULL)
-    {
-        bool to_update = false;
-
-        // Show/hide the panel if it is collapsed/uncollapsed.
-        if (dvz_gui_collapse_changed())
-        {
-            dvz_panel_show(panel, !dvz_gui_collapsed());
-            to_update = true;
-        }
-
-        // Resize the panel if the dialog has moved or been resized.
-        if ((dvz_gui_moved() || dvz_gui_resized()))
-        {
-            dvz_panel_resize(panel, x, y, w, h);
-            to_update = true;
-        }
-
-        // Update the panel if it has changed.
-        if (to_update)
-        {
-            dvz_figure_update(dvz_panel_figure(panel));
-        }
-    }
-
-    dvz_gui_end();
-}
-
 int test_gui_2(TstSuite* suite)
 {
     ANN(suite);
@@ -162,16 +113,8 @@ int test_gui_2(TstSuite* suite)
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 
     DvzPanel* panel = dvz_panel(figure, 100, 100, 300, 200);
-
-    // do not stretch the panel when the window is resized
-    dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
-    // dvz_panel_margins(panel, 20, 20, 20, 20);
-
-    // Fill the panel with test data and visual.
+    dvz_panel_gui(panel, "GUI panel", 0);
     dvz_demo_panel(panel);
-
-    // GUI callback.
-    dvz_app_gui(app, dvz_figure_id(figure), _gui_callback_2, panel);
 
     dvz_scene_run(scene, app, N_FRAMES);
     dvz_scene_destroy(scene);

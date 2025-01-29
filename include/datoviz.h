@@ -285,6 +285,17 @@ DVZ_EXPORT DvzFigure* dvz_panel_figure(DvzPanel* panel);
 
 
 /**
+ * Set a panel as a GUI panel.
+ *
+ * @param panel the panel
+ * @param title the GUI dialog title
+ * @param flags the GUI dialog flags (unused at the moment)
+ */
+DVZ_EXPORT void dvz_panel_gui(DvzPanel* panel, const char* title, int flags);
+
+
+
+/**
  * Return the default full panel spanning an entire figure.
  *
  * @param fig the figure
