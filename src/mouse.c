@@ -276,7 +276,7 @@ static DvzMouseEvent _after_wheel(DvzMouse* mouse, vec2 dir, int mods)
 
 DvzMouse* dvz_mouse(void)
 {
-    DvzMouse* mouse = calloc(1, sizeof(DvzMouse));
+    DvzMouse* mouse = (DvzMouse*)calloc(1, sizeof(DvzMouse));
     mouse->callbacks = dvz_list();
     return mouse;
 }

@@ -293,6 +293,7 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
     panel->offset_init[1] = y;
     panel->shape_init[0] = width;
     panel->shape_init[1] = height;
+    panel->is_press_valid = true; // false when drag_start within margins
 
     // Create a view.
     panel->view = dvz_view(fig->viewset, (vec2){x, y}, (vec2){width, height});
@@ -325,6 +326,9 @@ void dvz_panel_gui(DvzPanel* panel, const char* title, int flags)
 
     // do not stretch the panel when the window is resized
     dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
+
+    float m = DVZ_PANEL_GUI_MARGIN;
+    dvz_panel_margins(panel, m, m, m, m);
 }
 
 
@@ -455,7 +459,8 @@ bool dvz_panel_contains(DvzPanel* panel, vec2 pos)
     float y1 = y0 + h;
     float x = pos[0];
     float y = pos[1];
-    return (x0 <= x) && (x < x1) && (y0 <= y) && (y < y1);
+    bool contains = (x0 <= x) && (x < x1) && (y0 <= y) && (y < y1);
+    return contains;
 }
 
 
@@ -928,7 +933,10 @@ static void _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
     // will create a blank "Debug" dialog.
 
     // Should capture user events while moving/resizing.
-    bool do_capture = dvz_gui_moving() || dvz_gui_resizing();
+    bool moving = dvz_gui_moving();
+    bool resizing = dvz_gui_resizing();
+    bool do_capture = moving || resizing;
+
     dvz_gui_window_capture(ev.gui_window, do_capture);
 
 
@@ -997,6 +1005,28 @@ static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
 
 
+static inline bool _is_in_margins(vec2 pos, vec2 shape, vec2 margins)
+{
+    // NOTE: take the margins into account
+    float mt = margins[0];
+    float mr = margins[1];
+    float mb = margins[2];
+    float ml = margins[3];
+
+    vec2 s = {0};
+    s[0] = shape[0] - ml - mr;
+    s[1] = shape[1] - mt - mb;
+
+    float w = s[0];
+    float h = s[1];
+
+    bool in_margins = (pos[0] < -1 || pos[1] < -1 || pos[0] > w || pos[1] > h);
+
+    // log_info("pos (%.0f, %.0f), shape (%.0f, %.0f):%d", pos[0], pos[1], w, h, in_margins);
+
+    return in_margins;
+}
+
 static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
     ANN(app);
@@ -1023,13 +1053,33 @@ static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     }
     if (panel == NULL)
     {
-        log_debug("no panel found with mouse event type %d", ev.type);
+        log_debug(
+            "no panel found at (%.0f, %.0f) (mouse event type %d)", //
+            ev.pos[0], ev.pos[1], ev.type);
         return;
     }
 
     // Localize the mouse event (viewport offset).
+    // NOTE: this function detects whether the press position is in the margins.
     DvzMouseEvent mev =
         dvz_view_mouse(panel->view, ev, ev.content_scale, DVZ_MOUSE_REFERENCE_LOCAL);
+
+    // HACK: we indicate here, in the local mouse event, whether the press position is valid,
+    // i.e. whether the press position was NOT within the panel's margins.
+    // With this information, dvz_panzoom_mouse() will avoid handling the pan/zoom event if
+    // the press position was not within the panel's margins.
+    {
+        if (mev.type == DVZ_MOUSE_EVENT_DRAG_START)
+        {
+            panel->is_press_valid = !_is_in_margins( //
+                mev.content.d.press_pos, panel->view->shape, panel->view->margins);
+        }
+        else if (mev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+        {
+            panel->is_press_valid = true;
+        }
+        mev.content.d.is_press_valid = panel->is_press_valid;
+    }
 
     // Panzoom.
     DvzPanzoom* pz = panel->panzoom;

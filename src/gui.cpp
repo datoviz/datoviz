@@ -633,15 +633,18 @@ bool dvz_gui_resizing()
     ImGuiContext& g = *ImGui::GetCurrentContext();
     ImGuiWindow* window = ImGui::GetCurrentWindow();
 
+    if (!window)
+        return false;
+
+    // Check if this window is being resized normally
     if (window->ResizeBorderHeld != -1)
         return true;
 
+    // Check if the resize corner is being dragged
     for (int corner = 0; corner < 4; corner++)
     {
         if (g.ActiveId == ImGui::GetWindowResizeCornerID(window, corner))
-        {
             return true;
-        }
     }
 
     return false;
