@@ -326,6 +326,7 @@ class DvzDialogFlags(CtypesEnum):
     DVZ_DIALOG_FLAGS_NONE = 0x0000
     DVZ_DIALOG_FLAGS_OVERLAY = 0x0001
     DVZ_DIALOG_FLAGS_BLANK = 0x0004
+    DVZ_DIALOG_FLAGS_PANEL = 0x0008
 
 
 class DvzCorner(CtypesEnum):
@@ -1087,6 +1088,7 @@ GUI_FLAGS_DOCKING = 0x0010
 DIALOG_FLAGS_NONE = 0x0000
 DIALOG_FLAGS_OVERLAY = 0x0001
 DIALOG_FLAGS_BLANK = 0x0004
+DIALOG_FLAGS_PANEL = 0x0008
 DIALOG_CORNER_TOP_LEFT = 0
 DIALOG_CORNER_TOP_RIGHT = 1
 DIALOG_CORNER_BOTTOM_LEFT = 2
@@ -2654,6 +2656,26 @@ panel_figure.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_figure.restype = ctypes.POINTER(DvzFigure)
+
+# Function dvz_panel_gui()
+panel_gui = dvz.dvz_panel_gui
+panel_gui.__doc__ = """
+Set a panel as a GUI panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+title : char*
+    the GUI dialog title
+flags : int
+    the GUI dialog flags (unused at the moment)
+"""
+panel_gui.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_char_p,  # char* title
+    ctypes.c_int,  # int flags
+]
 
 # Function dvz_panel_default()
 panel_default = dvz.dvz_panel_default

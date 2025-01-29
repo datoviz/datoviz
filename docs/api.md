@@ -2205,6 +2205,18 @@ void dvz_panel_flags(
 )
 ```
 
+### `dvz_panel_gui()`
+
+Set a panel as a GUI panel.
+
+```c
+void dvz_panel_gui(
+    DvzPanel* panel,  // the panel
+    char* title,  // the GUI dialog title
+    int flags,  // the GUI dialog flags (unused at the moment)
+)
+```
+
 ### `dvz_panel_margins()`
 
 Set the margins of a panel.
@@ -5180,6 +5192,7 @@ DVZ_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC
 DVZ_DIALOG_FLAGS_NONE
 DVZ_DIALOG_FLAGS_OVERLAY
 DVZ_DIALOG_FLAGS_BLANK
+DVZ_DIALOG_FLAGS_PANEL
 ```
 
 ### `DvzEasing`
