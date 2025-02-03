@@ -214,7 +214,6 @@ int dvz_run_tests(const char* match)
 
     // Testing GUI.
     TEST(test_gui_1)
-    TEST(test_gui_2)
     TEST(test_gui_offscreen)
 
     // Testing presenter.
@@ -383,6 +382,7 @@ int dvz_run_tests(const char* match)
     TEST(test_scene_2)
     TEST(test_scene_3)
     TEST(test_scene_offscreen)
+    TEST(test_scene_gui)
 
     // Visual tests.
     TEST(test_basic_1)

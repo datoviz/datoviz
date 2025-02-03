@@ -284,3 +284,30 @@ int test_scene_offscreen(TstSuite* suite)
     FREE(color);
     return 0;
 }
+
+
+
+int test_scene_gui(TstSuite* suite)
+{
+    ANN(suite);
+
+    // Create app objects.
+    DvzApp* app = dvz_app(0);
+    DvzBatch* batch = dvz_app_batch(app);
+    DvzScene* scene = dvz_scene(batch);
+    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
+
+    DvzPanel* panel1 = dvz_panel(figure, 100, 100, 300, 200);
+    dvz_panel_gui(panel1, "GUI panel 1", 0);
+    dvz_demo_panel(panel1);
+
+    DvzPanel* panel2 = dvz_panel(figure, 200, 350, 250, 150);
+    dvz_panel_gui(panel2, "GUI panel 2", 0);
+    dvz_demo_panel(panel2);
+
+    dvz_scene_run(scene, app, N_FRAMES);
+    dvz_scene_destroy(scene);
+    dvz_app_destroy(app);
+
+    return 0;
+}

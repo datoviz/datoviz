@@ -102,29 +102,6 @@ int test_gui_1(TstSuite* suite)
 
 
 
-int test_gui_2(TstSuite* suite)
-{
-    ANN(suite);
-
-    // Create app objects.
-    DvzApp* app = dvz_app(0);
-    DvzBatch* batch = dvz_app_batch(app);
-    DvzScene* scene = dvz_scene(batch);
-    DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
-
-    DvzPanel* panel = dvz_panel(figure, 100, 100, 300, 200);
-    dvz_panel_gui(panel, "GUI panel", 0);
-    dvz_demo_panel(panel);
-
-    dvz_scene_run(scene, app, N_FRAMES);
-    dvz_scene_destroy(scene);
-    dvz_app_destroy(app);
-
-    return 0;
-}
-
-
-
 int test_gui_offscreen(TstSuite* suite)
 {
     ANN(suite);
