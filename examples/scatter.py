@@ -12,6 +12,7 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
+from datoviz import A_
 
 # Boilerplate.
 app = dvz.app(0)
@@ -49,9 +50,7 @@ dvz.point_size(visual, 0, n, size, 0)
 # Add the visual.
 dvz.panel_visual(panel, visual, 0)
 
-# Run the application.
+# Run the application and cleanup.
 dvz.scene_run(scene, app, 0)
-
-# Cleanup.
 dvz.scene_destroy(scene)
 dvz.app_destroy(app)
