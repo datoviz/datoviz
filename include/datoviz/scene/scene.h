@@ -57,7 +57,7 @@ typedef struct DvzVisual DvzVisual;
 // Default object IDs used for empty textures bound to unused texture descriptors.
 #define DVZ_SCENE_DEFAULT_TEX_ID     1
 #define DVZ_SCENE_DEFAULT_SAMPLER_ID 2
-#define DVZ_PANEL_GUI_MARGIN         10.0
+#define DVZ_PANEL_GUI_MARGIN         20.0
 
 
 /*************************************************************************************************/
@@ -100,7 +100,7 @@ struct DvzPanel
     DvzArcball* arcball;
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
     bool is_press_valid;
-    const char* title; // used for GUI panels
+    char* title; // used for GUI panels
     int flags;
 };
 

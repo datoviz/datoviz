@@ -321,8 +321,20 @@ void dvz_panel_gui(DvzPanel* panel, const char* title, int flags)
 {
     ANN(panel);
 
+    ANN(title);
+    size_t len = strnlen(title, 1024);
+    if (len == 0)
+    {
+        log_error("title passed to dvz_panel_gui() should not be the empty string");
+        return;
+    }
+    ASSERT(len > 0);
+    ASSERT(len < 1023);
+
     // Register the GUI panel title.
-    panel->title = title;
+    panel->title = (char*)calloc(len, 1);
+    ANN(panel->title);
+    strncpy(panel->title, title, len);
 
     // do not stretch the panel when the window is resized
     dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
@@ -507,6 +519,10 @@ void dvz_panel_destroy(DvzPanel* panel)
 
     // Destroy the view.
     dvz_view_destroy(panel->view);
+
+    // Free the memory buffer with the panel's title.
+    if (panel->title != NULL)
+        FREE(panel->title);
 
     // Remove the figure from the scene's figures.
     dvz_list_remove_pointer(panel->figure->panels, panel);
