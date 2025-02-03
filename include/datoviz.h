@@ -2257,10 +2257,11 @@ DVZ_EXPORT void dvz_image_alloc(DvzVisual* visual, uint32_t item_count);
  * @param width the texture width
  * @param height the texture height
  * @param data the texture data to upload
+ * @param flags the texture creation flags
  * @returns the texture ID
  */
-DVZ_EXPORT DvzId
-dvz_tex_image(DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data);
+DVZ_EXPORT DvzId dvz_tex_image(
+    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data, int flags);
 
 
 

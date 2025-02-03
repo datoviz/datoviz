@@ -353,7 +353,8 @@ DvzId dvz_font_texture(
     vec4* xywh = dvz_font_layout(font, length, codepoints);
     uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_FLAGS_RGBA, out_size);
     out_size[2] = 1;
-    DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_size[0], out_size[1], bitmap);
+    DvzId tex =
+        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_size[0], out_size[1], bitmap, 0);
 
     // Cleanup.
     FREE(bitmap);

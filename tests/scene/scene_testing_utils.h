@@ -96,7 +96,7 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
     out_shape[1] = w;
 
     DvzId tex =
-        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], png_bytes);
+        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], png_bytes, 0);
 
     // FREE(crate_data);
     return tex;

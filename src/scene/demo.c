@@ -399,7 +399,7 @@ void dvz_demo(void)
                     DVZ_CMAP_VIRIDIS, value, vmin, vmax, (DvzAlpha*)&imgdata[j * wi + i]);
             }
         }
-        DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_COLOR, wi, hi, imgdata);
+        DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_COLOR, wi, hi, imgdata, 0);
 
         dvz_image_alloc(image, 1);
         dvz_image_position(image, 0, 1, (vec3[]){{0, 0, 0}}, 0);

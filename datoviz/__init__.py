@@ -6112,6 +6112,8 @@ height : uint32_t
     the texture height
 data : void*
     the texture data to upload
+flags : int
+    the texture creation flags
 
 Returns
 -------
@@ -6124,6 +6126,7 @@ tex_image.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
     ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ctypes.c_int,  # int flags
 ]
 tex_image.restype = DvzId
 

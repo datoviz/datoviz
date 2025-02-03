@@ -163,7 +163,7 @@ static void _disc_sdf(DvzVisual* visual, uint32_t size)
         texdata[i] = value;
     }
 
-    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, size, size, texdata);
+    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, size, size, texdata, 0);
     DvzId sampler = dvz_create_sampler(
                         visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                         .id;
@@ -270,7 +270,7 @@ int test_marker_msdf(TstSuite* suite)
     FREE(msdf);
 
     // Upload the MSDF image to a texture.
-    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, w, h, msdf_alpha);
+    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, w, h, msdf_alpha, 0);
     DvzId sampler = dvz_create_sampler(
                         visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
                         .id;

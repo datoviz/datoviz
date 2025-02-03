@@ -615,12 +615,14 @@ static DvzDat* _tex_staging(DvzContext* ctx, DvzTex* tex, DvzSize size)
         return stg;
 
     // Need to allocate a staging buffer.
-    log_debug("allocate persistent staging buffer with size %s for tex", pretty_size(size));
+    log_debug("allocate staging buffer with size %s for tex", pretty_size(size));
     stg = _alloc_staging(ctx, size);
 
     // If persistent staging, store it.
     if (_tex_persistent_staging(tex))
+    {
         tex->stg = stg;
+    }
 
     return stg;
 }

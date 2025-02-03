@@ -3266,6 +3266,7 @@ DvzId dvz_tex_image(  // returns: the texture ID
     uint32_t width,  // the texture width
     uint32_t height,  // the texture height
     void* data,  // the texture data to upload
+    int flags,  // the texture creation flags
 )
 ```
 
