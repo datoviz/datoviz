@@ -4,6 +4,13 @@
 
 Development happens on `dev` whereas `main` is stable.
 
+Your local setup is supposed to look like this:
+
+```
+/path/to/datoviz/
+/path/to/datoviz.github.io/
+```
+
 Release checklist from a Linux development machine:
 
 1. **Preparation.**
@@ -36,6 +43,8 @@ Release checklist from a Linux development machine:
     * `just draft`: create a new GitHub Release draft with the built wheels.
     * Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
     * `just upload`: upload the wheels to PyPI.
+    * `just publish`: update the website (this command will temporary go to the directory `../datoviz.github.io/`).
+    * `git checkout dev`: go back to the `dev` branch.
     * `just bump a.b.c-dev`: bump to the new development version (replace with the next expected version number).
     * `git commit -am "Bump to development version" && git push`: bump to the development version.
     * Announce the new release on the various communication channels.
