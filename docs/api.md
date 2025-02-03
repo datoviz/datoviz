@@ -5881,6 +5881,7 @@ struct DvzMouseDragEvent
     DvzMouseButton button
     vec2 press_pos
     vec2 shift
+    bool is_press_valid
 ```
 
 ### `DvzMouseEvent`

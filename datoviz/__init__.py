@@ -1817,6 +1817,7 @@ class DvzMouseDragEvent(ctypes.Structure):
         ("button", ctypes.c_int32),
         ("press_pos", ctypes.c_float * 2),
         ("shift", ctypes.c_float * 2),
+        ("is_press_valid", ctypes.c_bool),
     ]
 
 
