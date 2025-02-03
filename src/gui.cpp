@@ -387,6 +387,9 @@ void dvz_gui_window_begin(DvzGuiWindow* gui_window, uint32_t cmd_idx)
     ANN(cmds);
 
     // When Dear ImGUI captures the mouse and keyboard, Datoviz should not process user events.
+    // NOTE: this fails when using GUI panels because we want Datoviz to process user events even
+    // though the mouse is inside a GUI panel. For this reason, panels may override
+    // dvz_gui_window_capture() by calling it again.
     ImGuiIO& io = ImGui::GetIO();
     dvz_gui_window_capture(gui_window, io.WantCaptureMouse || io.WantCaptureKeyboard);
 
@@ -630,6 +633,10 @@ bool dvz_gui_moving()
 
 bool dvz_gui_resizing()
 {
+    ImGuiMouseCursor cursor = ImGui::GetMouseCursor();
+    if (cursor >= 2 && cursor <= 6)
+        return true;
+
     ImGuiContext& g = *ImGui::GetCurrentContext();
     ImGuiWindow* window = ImGui::GetCurrentWindow();
 
