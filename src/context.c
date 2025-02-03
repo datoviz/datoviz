@@ -36,7 +36,7 @@ static void _buffer_upload_done(DvzDeq* deq, void* item, void* user_data)
     // Only for staging buffers.
     ANN(dat->br.buffer);
     ASSERT(dat->br.buffer->type == DVZ_BUFFER_TYPE_STAGING);
-    log_info("deallocate temporary staging dat with size %s", pretty_size(dat->br.size));
+    log_debug("deallocate temporary staging dat with size %s", pretty_size(dat->br.size));
     dvz_dat_destroy(dat);
 }
 

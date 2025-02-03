@@ -271,7 +271,7 @@ int test_transfers_image_buffer(TstSuite* suite)
         transfers->deq, DVZ_TRANSFER_DEQ_EV, DVZ_TRANSFER_DOWNLOAD_DONE, _dl_done, &res);
 
     // Enqueue an upload transfer task.
-    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data);
+    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data, NULL);
     // NOTE: we need to dequeue the copy proc manually, it is not done by the background thread
     // (the background thread only processes download/upload tasks).
     dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);

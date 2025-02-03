@@ -453,7 +453,7 @@ void dvz_upload_image(
     // NOTE: not optimal at all: we create a special staging DvzBuffer and we delete it at the end.
     // Furthermore, we could avoid using a staging buffer by testing if the buffer is host-visible.
     DvzBufferRegions stg = _standalone_buffer_regions(gpu, DVZ_BUFFER_TYPE_STAGING, 1, size);
-    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data);
+    _enqueue_image_upload(transfers->deq, img, offset, shape, stg, 0, size, data, NULL);
 
     // Destroy the transient staging buffer.
     dvz_deq_dequeue(transfers->deq, DVZ_TRANSFER_PROC_CPY, true);

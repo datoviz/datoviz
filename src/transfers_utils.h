@@ -400,7 +400,7 @@ static void _enqueue_dup_transfer(
 
 static void _enqueue_image_upload(
     DvzDeq* deq, DvzImages* img, uvec3 offset, uvec3 shape, //
-    DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data)
+    DvzBufferRegions stg, DvzSize stg_offset, DvzSize size, void* data, DvzDeqItem* done_item)
 {
     ANN(deq);
 
@@ -429,6 +429,13 @@ static void _enqueue_image_upload(
 
     // Dependency.
     dvz_deq_enqueue_next(deq_item, next_item, false);
+
+    // Enqueue an UPLOAD_DONE event with a custom user pointer. Used for temporary staging buffer
+    // dat deallocation after upload.
+    if (done_item != NULL)
+    {
+        dvz_deq_enqueue_next(next_item, done_item, false);
+    }
 
     dvz_deq_enqueue_submit(deq, deq_item, false);
 }
