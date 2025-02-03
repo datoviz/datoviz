@@ -205,6 +205,20 @@ DVZ_EXPORT void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* fil
 
 
 /**
+ * Return the precise display timestamps of the last `count` frames.
+ *
+ * @param app the app
+ * @param canvas_id the ID of the canvas
+ * @param count number of frames
+ * @param[out] seconds a buffer holding at least `count` uint64_t values (seconds)
+ * @param[out] nanoseconds a buffer holding at least `count` uint64_t values (nanoseconds)
+ */
+DVZ_EXPORT void dvz_app_timestamps(
+    DvzApp* app, DvzId canvas_id, uint32_t count, uint64_t* seconds, uint64_t* nanoseconds);
+
+
+
+/**
  * Destroy the app.
  *
  * @param app the app

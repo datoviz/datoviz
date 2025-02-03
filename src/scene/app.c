@@ -550,6 +550,21 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
 
 
 
+void dvz_app_timestamps(
+    DvzApp* app, DvzId canvas_id, uint32_t count, uint64_t* seconds, uint64_t* nanoseconds)
+{
+    ANN(app);
+    ANN(seconds);
+    ANN(nanoseconds);
+
+    DvzRenderer* rd = app->rd;
+    ANN(rd);
+
+    dvz_canvas_timestamps(dvz_renderer_canvas(rd, canvas_id), count, seconds, nanoseconds);
+}
+
+
+
 void dvz_app_destroy(DvzApp* app)
 {
     ANN(app);

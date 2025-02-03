@@ -325,12 +325,17 @@ void dvz_canvas_timestamps(
     int32_t idx = (int32_t)canvas->render.frame_time_idx - (int32_t)count;
     if (idx < 0)
         idx += DVZ_MAX_TIMESTAMPS;
+    idx = idx % DVZ_MAX_TIMESTAMPS;
+    ASSERT((0 <= idx) && (idx < DVZ_MAX_TIMESTAMPS));
+
     DvzTime* times = canvas->render.frame_timestamps;
     ANN(times);
 
     for (uint32_t i = 0; i < count; i++)
     {
-        ASSERT(0 <= idx && idx < DVZ_MAX_TIMESTAMPS);
+        idx = idx % DVZ_MAX_TIMESTAMPS;
+        // log_error("%d %d %d", i, idx, DVZ_MAX_TIMESTAMPS);
+        ASSERT((0 <= idx) && (idx < DVZ_MAX_TIMESTAMPS));
 
         seconds[i] = times[idx].seconds;
         nanoseconds[i] = times[idx].nanoseconds;

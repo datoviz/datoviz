@@ -9083,6 +9083,32 @@ app_screenshot.argtypes = [
     ctypes.c_char_p,  # char* filename
 ]
 
+# Function dvz_app_timestamps()
+app_timestamps = dvz.dvz_app_timestamps
+app_timestamps.__doc__ = """
+Return the precise display timestamps of the last `count` frames.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the ID of the canvas
+count : uint32_t
+    number of frames
+seconds : uint64_t* (out parameter)
+    a buffer holding at least `count` uint64_t values (seconds)
+nanoseconds : uint64_t* (out parameter)
+    a buffer holding at least `count` uint64_t values (nanoseconds)
+"""
+app_timestamps.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint64_t* seconds
+    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint64_t* nanoseconds
+]
+
 # Function dvz_app_destroy()
 app_destroy = dvz.dvz_app_destroy
 app_destroy.__doc__ = """

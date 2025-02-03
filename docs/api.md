@@ -3869,6 +3869,18 @@ DvzTimerItem* dvz_app_timer(  // returns: the timer
 )
 ```
 
+### `dvz_app_timestamps()`
+
+Return the precise display timestamps of the last `count` frames.
+
+```c
+void dvz_app_timestamps(
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the ID of the canvas
+    uint32_t count,  // number of frames
+)
+```
+
 ### `dvz_free()`
 
 Free a pointer.
