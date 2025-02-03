@@ -1289,6 +1289,7 @@ serve:
     @mkdocs serve
 #
 
+# Publish the mkdocs website on GitHub Pages.
 publish:
     #!/usr/bin/env bash
     set -e
@@ -1303,6 +1304,7 @@ publish:
     fi
 
     pushd ../datoviz.github.io
+    git pull
     mkdocs gh-deploy --config-file ../datoviz/mkdocs.yml --remote-branch main
     popd
 #
