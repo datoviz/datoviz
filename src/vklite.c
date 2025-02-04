@@ -2024,95 +2024,95 @@ DvzSlots dvz_slots(DvzGpu* gpu)
     ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
-    DvzSlots slots = {0};
-    slots.gpu = gpu;
-    dvz_obj_init(&slots.obj);
+    DvzSlots dslots = {0};
+    dslots.gpu = gpu;
+    dvz_obj_init(&dslots.obj);
 
-    return slots;
+    return dslots;
 }
 
 
 
-void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type)
+void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type)
 {
-    ANN(slots);
-    // ASSERT(idx == slots->slot_count);
+    ANN(dslots);
+    // ASSERT(idx == dslots->slot_count);
     ASSERT(idx < DVZ_MAX_BINDINGS);
-    slots->types[idx] = type;
-    slots->slot_count++;
+    dslots->types[idx] = type;
+    dslots->slot_count++;
 }
 
 
 
 void dvz_slots_push(
-    DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
-    ANN(slots);
-    uint32_t idx = slots->push_count;
+    ANN(dslots);
+    uint32_t idx = dslots->push_count;
     ASSERT(idx < DVZ_MAX_PUSH_CONSTANTS);
 
-    slots->push_offsets[idx] = offset;
-    slots->push_sizes[idx] = size;
-    slots->push_shaders[idx] = shaders;
+    dslots->push_offsets[idx] = offset;
+    dslots->push_sizes[idx] = size;
+    dslots->push_shaders[idx] = shaders;
 
-    slots->push_count++;
+    dslots->push_count++;
 }
 
 
 
-void dvz_slots_create(DvzSlots* slots)
+void dvz_slots_create(DvzSlots* dslots)
 {
-    ANN(slots);
-    ANN(slots->gpu);
-    ASSERT(slots->gpu->device != VK_NULL_HANDLE);
+    ANN(dslots);
+    ANN(dslots->gpu);
+    ASSERT(dslots->gpu->device != VK_NULL_HANDLE);
 
-    log_trace("starting creation of slots...");
+    log_trace("starting creation of dslots...");
 
     create_descriptor_set_layout(
-        slots->gpu->device, slots->slot_count, slots->types, &slots->dset_layout);
+        dslots->gpu->device, dslots->slot_count, dslots->types, &dslots->dset_layout);
 
     // Push constants.
     VkPushConstantRange push_constants[DVZ_MAX_PUSH_CONSTANTS] = {0};
-    for (uint32_t i = 0; i < slots->push_count; i++)
+    for (uint32_t i = 0; i < dslots->push_count; i++)
     {
-        push_constants[i].offset = slots->push_offsets[i];
-        push_constants[i].size = slots->push_sizes[i];
-        push_constants[i].stageFlags = slots->push_shaders[i];
+        push_constants[i].offset = dslots->push_offsets[i];
+        push_constants[i].size = dslots->push_sizes[i];
+        push_constants[i].stageFlags = dslots->push_shaders[i];
     }
 
     // Create the pipeline layout.
     create_pipeline_layout(
-        slots->gpu->device, slots->push_count, push_constants, //
-        &slots->dset_layout, &slots->pipeline_layout);
+        dslots->gpu->device, dslots->push_count, push_constants, //
+        &dslots->dset_layout, &dslots->pipeline_layout);
 
-    dvz_obj_created(&slots->obj);
-    log_trace("slots created");
+    dvz_obj_created(&dslots->obj);
+    log_trace("dslots created");
 }
 
 
 
-void dvz_slots_destroy(DvzSlots* slots)
+void dvz_slots_destroy(DvzSlots* dslots)
 {
-    ANN(slots);
-    ANN(slots->gpu);
-    if (!dvz_obj_is_created(&slots->obj))
+    ANN(dslots);
+    ANN(dslots->gpu);
+    if (!dvz_obj_is_created(&dslots->obj))
     {
-        log_trace("skip destruction of already-destroyed slots");
+        log_trace("skip destruction of already-destroyed dslots");
         return;
     }
-    log_trace("destroy slots");
-    VkDevice device = slots->gpu->device;
-    if (slots->pipeline_layout != VK_NULL_HANDLE)
+    log_trace("destroy dslots");
+    VkDevice device = dslots->gpu->device;
+    if (dslots->pipeline_layout != VK_NULL_HANDLE)
     {
-        vkDestroyPipelineLayout(device, slots->pipeline_layout, NULL);
-        slots->pipeline_layout = VK_NULL_HANDLE;
+        vkDestroyPipelineLayout(device, dslots->pipeline_layout, NULL);
+        dslots->pipeline_layout = VK_NULL_HANDLE;
     }
-    if (slots->dset_layout != VK_NULL_HANDLE)
+    if (dslots->dset_layout != VK_NULL_HANDLE)
     {
-        vkDestroyDescriptorSetLayout(device, slots->dset_layout, NULL);
-        slots->dset_layout = VK_NULL_HANDLE;
+        vkDestroyDescriptorSetLayout(device, dslots->dset_layout, NULL);
+        dslots->dset_layout = VK_NULL_HANDLE;
     }
-    dvz_obj_destroyed(&slots->obj);
+    dvz_obj_destroyed(&dslots->obj);
 }
 
 
@@ -2121,29 +2121,29 @@ void dvz_slots_destroy(DvzSlots* slots)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count)
+DvzDescriptors dvz_descriptors(DvzSlots* dslots, uint32_t dset_count)
 {
-    ANN(slots);
-    DvzGpu* gpu = slots->gpu;
+    ANN(dslots);
+    DvzGpu* gpu = dslots->gpu;
     ANN(gpu);
     ASSERT(dvz_obj_is_created(&gpu->obj));
 
     DvzDescriptors descriptors = {0};
-    descriptors.slots = slots;
+    descriptors.dslots = dslots;
     descriptors.gpu = gpu;
 
     dvz_obj_init(&descriptors.obj);
 
-    if (!dvz_obj_is_created(&slots->obj))
-        dvz_slots_create(slots);
+    if (!dvz_obj_is_created(&dslots->obj))
+        dvz_slots_create(dslots);
     ASSERT(dset_count > 0);
-    ASSERT(slots->dset_layout != VK_NULL_HANDLE);
+    ASSERT(dslots->dset_layout != VK_NULL_HANDLE);
 
     log_trace("starting creation of descriptors with %d descriptor sets...", dset_count);
     descriptors.dset_count = dset_count;
 
     allocate_descriptor_sets(
-        gpu->device, gpu->dset_pool, slots->dset_layout, descriptors.dset_count,
+        gpu->device, gpu->dset_pool, dslots->dset_layout, descriptors.dset_count,
         descriptors.dsets);
 
     dvz_obj_created(&descriptors.obj);
@@ -2193,16 +2193,16 @@ void dvz_descriptors_texture(
 void dvz_descriptors_update(DvzDescriptors* descriptors)
 {
     log_trace("update descriptors");
-    ANN(descriptors->slots);
-    ASSERT(dvz_obj_is_created(&descriptors->slots->obj));
-    ASSERT(descriptors->slots->dset_layout != VK_NULL_HANDLE);
+    ANN(descriptors->dslots);
+    ASSERT(dvz_obj_is_created(&descriptors->dslots->obj));
+    ASSERT(descriptors->dslots->dset_layout != VK_NULL_HANDLE);
     ASSERT(descriptors->dset_count > 0);
     ASSERT(descriptors->dset_count <= DVZ_MAX_SWAPCHAIN_IMAGES);
 
     for (uint32_t i = 0; i < descriptors->dset_count; i++)
     {
         update_descriptor_set(
-            descriptors->gpu->device, descriptors->slots->slot_count, descriptors->slots->types,
+            descriptors->gpu->device, descriptors->dslots->slot_count, descriptors->dslots->types,
             descriptors->br, descriptors->images, descriptors->samplers, //
             i, descriptors->dsets[i]);
     }
@@ -2244,7 +2244,7 @@ DvzCompute dvz_compute(DvzGpu* gpu, const char* shader_path)
     if (shader_path != NULL)
         strcpy(compute.shader_path, shader_path);
 
-    compute.slots = dvz_slots(gpu);
+    compute.dslots = dvz_slots(gpu);
 
     return compute;
 }
@@ -2262,7 +2262,7 @@ void dvz_compute_code(DvzCompute* compute, const char* code)
 void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 {
     ANN(compute);
-    dvz_slots_binding(&compute->slots, idx, type);
+    dvz_slots_binding(&compute->dslots, idx, type);
 }
 
 
@@ -2271,7 +2271,7 @@ void dvz_compute_push(
     DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ANN(compute);
-    dvz_slots_push(&compute->slots, offset, size, shaders);
+    dvz_slots_push(&compute->dslots, offset, size, shaders);
 }
 
 
@@ -2291,8 +2291,8 @@ void dvz_compute_create(DvzCompute* compute)
     ANN(compute->gpu);
     ASSERT(compute->gpu->device != VK_NULL_HANDLE);
     ANN(compute->shader_path);
-    if (!dvz_obj_is_created(&compute->slots.obj))
-        dvz_slots_create(&compute->slots);
+    if (!dvz_obj_is_created(&compute->dslots.obj))
+        dvz_slots_create(&compute->dslots);
 
     if (compute->descriptors == NULL)
     {
@@ -2316,7 +2316,7 @@ void dvz_compute_create(DvzCompute* compute)
 
     create_compute_pipeline(
         compute->gpu->device, compute->shader_module, //
-        compute->slots.pipeline_layout, &compute->pipeline);
+        compute->dslots.pipeline_layout, &compute->pipeline);
 
     dvz_obj_created(&compute->obj);
     log_trace("compute created");
@@ -2335,9 +2335,9 @@ void dvz_compute_destroy(DvzCompute* compute)
     }
     log_trace("destroy compute");
 
-    // Destroy the compute slots.
-    if (dvz_obj_is_created(&compute->slots.obj))
-        dvz_slots_destroy(&compute->slots);
+    // Destroy the compute dslots.
+    if (dvz_obj_is_created(&compute->dslots.obj))
+        dvz_slots_destroy(&compute->dslots);
 
     VkDevice device = compute->gpu->device;
     if (compute->shader_module != VK_NULL_HANDLE)
@@ -2370,7 +2370,7 @@ DvzGraphics dvz_graphics(DvzGpu* gpu)
 
     dvz_obj_init(&graphics.obj);
 
-    graphics.slots = dvz_slots(gpu);
+    graphics.dslots = dvz_slots(gpu);
 
     return graphics;
 }
@@ -2527,7 +2527,7 @@ void dvz_graphics_front_face(DvzGraphics* graphics, VkFrontFace front_face)
 void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType type)
 {
     ANN(graphics);
-    dvz_slots_binding(&graphics->slots, idx, type);
+    dvz_slots_binding(&graphics->dslots, idx, type);
 }
 
 
@@ -2536,7 +2536,7 @@ void dvz_graphics_push(
     DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
 {
     ANN(graphics);
-    dvz_slots_push(&graphics->slots, offset, size, shaders);
+    dvz_slots_push(&graphics->dslots, offset, size, shaders);
 }
 
 
@@ -2602,8 +2602,8 @@ void dvz_graphics_create(DvzGraphics* graphics)
         return;
     }
 
-    if (!dvz_obj_is_created(&graphics->slots.obj))
-        dvz_slots_create(&graphics->slots);
+    if (!dvz_obj_is_created(&graphics->dslots.obj))
+        dvz_slots_create(&graphics->dslots);
 
     log_trace("starting creation of graphics pipeline...");
 
@@ -2744,8 +2744,8 @@ void dvz_graphics_create(DvzGraphics* graphics)
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pColorBlendState = &color_blending;
     pipelineInfo.pDepthStencilState = &depth_stencil;
-    ASSERT(graphics->slots.pipeline_layout != VK_NULL_HANDLE);
-    pipelineInfo.layout = graphics->slots.pipeline_layout;
+    ASSERT(graphics->dslots.pipeline_layout != VK_NULL_HANDLE);
+    pipelineInfo.layout = graphics->dslots.pipeline_layout;
     pipelineInfo.renderPass = graphics->renderpass->renderpass;
     pipelineInfo.subpass = graphics->subpass;
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
@@ -2812,9 +2812,9 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
         }
     }
 
-    // Destroy slots.
-    if (dvz_obj_is_created(&graphics->slots.obj))
-        dvz_slots_destroy(&graphics->slots);
+    // Destroy dslots.
+    if (dvz_obj_is_created(&graphics->dslots.obj))
+        dvz_slots_destroy(&graphics->dslots);
 
     dvz_obj_destroyed(&graphics->obj);
 }
@@ -3687,7 +3687,7 @@ void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3
     ANN(compute->descriptors);
     ANN(compute->descriptors->dsets);
     ASSERT(compute->pipeline != VK_NULL_HANDLE);
-    ASSERT(compute->slots.pipeline_layout != VK_NULL_HANDLE);
+    ASSERT(compute->dslots.pipeline_layout != VK_NULL_HANDLE);
     ASSERT(size[0] > 0);
     ASSERT(size[1] > 0);
     ASSERT(size[2] > 0);
@@ -3696,7 +3696,7 @@ void dvz_cmd_compute(DvzCommands* cmds, uint32_t idx, DvzCompute* compute, uvec3
 
     vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->pipeline);
     vkCmdBindDescriptorSets(
-        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->slots.pipeline_layout, 0, 1,
+        cb, VK_PIPELINE_BIND_POINT_COMPUTE, compute->dslots.pipeline_layout, 0, 1,
         compute->descriptors->dsets, 0, 0);
     vkCmdDispatch(cb, size[0], size[1], size[2]);
     CMD_END
@@ -3934,8 +3934,8 @@ void dvz_cmd_viewport(DvzCommands* cmds, uint32_t idx, VkViewport viewport)
 void dvz_cmd_bind_graphics(DvzCommands* cmds, uint32_t idx, DvzGraphics* graphics)
 {
     ANN(graphics);
-    DvzSlots* slots = &graphics->slots;
-    ANN(slots);
+    DvzSlots* dslots = &graphics->dslots;
+    ANN(dslots);
 
     // CMD_START_CLIP(descriptors->dset_count)
     CMD_START
@@ -3955,16 +3955,16 @@ void dvz_cmd_bind_descriptors(
 {
     ANN(descriptors);
 
-    DvzSlots* slots = descriptors->slots;
-    ANN(slots);
+    DvzSlots* dslots = descriptors->dslots;
+    ANN(dslots);
 
     // Count the number of dynamic uniforms.
     uint32_t dyn_count = 0;
     uint32_t dyn_offsets[DVZ_MAX_BINDINGS] = {0};
-    ASSERT(slots->slot_count <= DVZ_MAX_BINDINGS);
-    for (uint32_t i = 0; i < slots->slot_count; i++)
+    ASSERT(dslots->slot_count <= DVZ_MAX_BINDINGS);
+    for (uint32_t i = 0; i < dslots->slot_count; i++)
     {
-        if (slots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
+        if (dslots->types[i] == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC)
         {
             ASSERT(descriptors->br[i].aligned_size > 0);
             dyn_offsets[dyn_count++] = dynamic_idx * descriptors->br[i].aligned_size;
@@ -3973,7 +3973,7 @@ void dvz_cmd_bind_descriptors(
 
     CMD_START_CLIP(descriptors->dset_count)
     vkCmdBindDescriptorSets(
-        cb, VK_PIPELINE_BIND_POINT_GRAPHICS, slots->pipeline_layout, //
+        cb, VK_PIPELINE_BIND_POINT_GRAPHICS, dslots->pipeline_layout, //
         0, 1, &descriptors->dsets[iclip], dyn_count, dyn_offsets);
     CMD_END
 }
@@ -4088,10 +4088,10 @@ void dvz_cmd_copy_buffer(
 
 
 void dvz_cmd_push(
-    DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
+    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
     CMD_START
-    vkCmdPushConstants(cb, slots->pipeline_layout, shaders, offset, size, data);
+    vkCmdPushConstants(cb, dslots->pipeline_layout, shaders, offset, size, data);
     CMD_END
 }

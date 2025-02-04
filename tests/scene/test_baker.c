@@ -63,7 +63,7 @@ int test_baker_1(TstSuite* suite)
     dvz_baker_attr(baker, 1, 0, 1, 2); // attr1
     dvz_baker_attr(baker, 2, 1, 0, 4); // attr2
 
-    // Declare the descriptor slots.
+    // Declare the descriptor dslots.
     // dvz_baker_slot_dat(baker, 0, 5);
     // dvz_baker_slot_dat(baker, 1, 6);
 

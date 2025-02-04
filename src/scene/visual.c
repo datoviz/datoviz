@@ -582,7 +582,7 @@ void dvz_visual_alloc(
         dvz_set_attr(batch, graphics_id, attr->binding_idx, attr_idx, attr->format, attr->offset);
     }
 
-    // The baker slots are declared directly in dvz_visual_params() and dvz_visual_tex().
+    // The baker dslots are declared directly in dvz_visual_params() and dvz_visual_tex().
     // Now, we can create the baker. This will create the arrays and dats.
     dvz_baker_create(baker, index_count, vertex_count);
 

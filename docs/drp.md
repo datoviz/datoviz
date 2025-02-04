@@ -82,7 +82,7 @@ These functions, that start with `dvz_set_`, are used to specify the fixed state
 * the shaders
 * the vertex bindings
 * the vertex attributes
-* the binding slots (descriptors)
+* the binding dslots (descriptors)
 * the specialization constants.
 
 ### Bindings

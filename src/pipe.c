@@ -38,9 +38,9 @@ static void _ensure_descriptors_created(DvzPipe* pipe, uint32_t count)
 
     log_trace("create descriptors with %d descriptors", count);
     if (pipe->type == DVZ_PIPE_GRAPHICS)
-        pipe->descriptors = dvz_descriptors(&pipe->u.graphics.slots, count);
+        pipe->descriptors = dvz_descriptors(&pipe->u.graphics.dslots, count);
     else if (pipe->type == DVZ_PIPE_COMPUTE)
-        pipe->descriptors = dvz_descriptors(&pipe->u.compute.slots, count);
+        pipe->descriptors = dvz_descriptors(&pipe->u.compute.dslots, count);
     else
         log_error("unknown pipe type %d", pipe->type);
 }
@@ -176,9 +176,9 @@ void dvz_pipe_tex(DvzPipe* pipe, uint32_t idx, DvzTex* tex, DvzSampler* sampler)
 bool dvz_pipe_complete(DvzPipe* pipe)
 {
     ANN(pipe);
-    if (pipe->descriptors.slots == NULL)
+    if (pipe->descriptors.dslots == NULL)
         return false;
-    return _all_set(pipe->descriptors.slots->slot_count, pipe->descriptors_set);
+    return _all_set(pipe->descriptors.dslots->slot_count, pipe->descriptors_set);
 }
 
 

@@ -436,7 +436,7 @@ struct DvzDescriptors
     DvzObject obj;
     DvzGpu* gpu;
 
-    DvzSlots* slots;
+    DvzSlots* dslots;
 
     // a Bindings struct holds multiple almost-identical copies of descriptor sets
     // with the same layout, but possibly with the different idx in the DvzBuffer
@@ -459,7 +459,7 @@ struct DvzCompute
     const char* shader_code;
 
     VkPipeline pipeline;
-    DvzSlots slots;
+    DvzSlots dslots;
     DvzDescriptors* descriptors;
     VkShaderModule shader_module;
 };
@@ -507,7 +507,7 @@ struct DvzGraphics
     int drawing;
 
     VkPipeline pipeline;
-    DvzSlots slots;
+    DvzSlots dslots;
 
     uint32_t vertex_binding_count;
     DvzVertexBinding vertex_bindings[DVZ_MAX_VERTEX_BINDINGS];
@@ -1340,46 +1340,46 @@ void dvz_sampler_destroy(DvzSampler* sampler);
 /*************************************************************************************************/
 
 /**
- * Initialize pipeline slots (aka Vulkan descriptor set layout).
+ * Initialize pipeline dslots (aka Vulkan descriptor set layout).
  *
  * @param gpu the GPU
- * @returns the slots
+ * @returns the dslots
  */
 DvzSlots dvz_slots(DvzGpu* gpu);
 
 /**
- * Set the slots descriptor.
+ * Set the dslots descriptor.
  *
- * @param slots the slots
+ * @param dslots the dslots
  * @param idx the slot index to set up
  * @param type the descriptor type for that slot
  */
-void dvz_slots_binding(DvzSlots* slots, uint32_t idx, VkDescriptorType type);
+void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type);
 
 /**
  * Set up push constants.
  *
- * @param slots the slots
+ * @param dslots the dslots
  * @param offset the push constant offset, in bytes
  * @param size the push constant size, in bytes
  * @param shaders the shader stages that will access the push constant
  */
 void dvz_slots_push(
-    DvzSlots* slots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
 
 /**
- * Create the slots after they have been set up.
+ * Create the dslots after they have been set up.
  *
- * @param slots the slots
+ * @param dslots the dslots
  */
-void dvz_slots_create(DvzSlots* slots);
+void dvz_slots_create(DvzSlots* dslots);
 
 /**
- * Destroy the slots
+ * Destroy the dslots
  *
- * @param slots the slots
+ * @param dslots the dslots
  */
-void dvz_slots_destroy(DvzSlots* slots);
+void dvz_slots_destroy(DvzSlots* dslots);
 
 
 
@@ -1388,12 +1388,12 @@ void dvz_slots_destroy(DvzSlots* slots);
 /*************************************************************************************************/
 
 /**
- * Initialize descriptors corresponding to slots.
+ * Initialize descriptors corresponding to dslots.
  *
- * @param slots the slots
+ * @param dslots the dslots
  * @param dset_count the number of descriptor sets (number of swapchain images)
  */
-DvzDescriptors dvz_descriptors(DvzSlots* slots, uint32_t dset_count);
+DvzDescriptors dvz_descriptors(DvzSlots* dslots, uint32_t dset_count);
 
 /**
  * Bind a buffer to a slot.
@@ -2310,14 +2310,14 @@ void dvz_cmd_copy_buffer(
  *
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
- * @param slots the slots
+ * @param dslots the dslots
  * @param shaders the shader stages that have access to the push constant
  * @param offset the offset in the push constant, in bytes
  * @param size the size in the push constant, in bytes
  * @param data the data to send via the push constant
  */
 void dvz_cmd_push(
-    DvzCommands* cmds, uint32_t idx, DvzSlots* slots, VkShaderStageFlagBits shaders, //
+    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits shaders, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 

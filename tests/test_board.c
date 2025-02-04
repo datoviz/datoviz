@@ -45,7 +45,7 @@ int test_board_1(TstSuite* suite)
     DvzGraphics graphics = triangle_graphics(gpu, &renderpass);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.

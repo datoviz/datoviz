@@ -253,7 +253,7 @@ int test_loop_cube(TstSuite* suite)
         dvz_graphics_vertex_attr(
             graphics, 0, 1, (VkFormat)DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
 
-        // Graphics slots.
+        // Graphics dslots.
         dvz_graphics_slot(graphics, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // MVP
         dvz_graphics_slot(graphics, 1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER); // viewport
     }

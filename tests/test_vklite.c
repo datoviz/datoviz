@@ -289,11 +289,11 @@ int test_vklite_compute(TstSuite* suite)
     dvz_buffer_upload(&buffer, 0, size, data);
     dvz_queue_wait(gpu, 0);
 
-    // Create the slots.
+    // Create the dslots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&compute.dslots, 1);
     DvzBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     dvz_descriptors_buffer(&descriptors, 0, br);
     dvz_descriptors_update(&descriptors);
@@ -361,12 +361,12 @@ int test_vklite_push(TstSuite* suite)
     dvz_buffer_upload(&buffer, 0, size, data);
     dvz_queue_wait(gpu, 0);
 
-    // Create the slots.
+    // Create the dslots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_compute_push(&compute, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&compute.dslots, 1);
     DvzBufferRegions br = {.buffer = &buffer, .size = size, .count = 1};
     dvz_descriptors_buffer(&descriptors, 0, br);
     dvz_descriptors_update(&descriptors);
@@ -379,7 +379,7 @@ int test_vklite_push(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, 0, 1);
     dvz_cmd_begin(&cmds, 0);
     float power = 2.0f;
-    dvz_cmd_push(&cmds, 0, &compute.slots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float), &power);
+    dvz_cmd_push(&cmds, 0, &compute.dslots, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float), &power);
     dvz_cmd_compute(&cmds, 0, &compute, (uvec3){20, 1, 1});
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);
@@ -495,11 +495,11 @@ int test_vklite_barrier_buffer(TstSuite* suite)
     snprintf(path, sizeof(path), "%s/test_double.comp.spv", SPIRV_DIR);
     DvzCompute compute = dvz_compute(gpu, path);
 
-    // Create the slots.
+    // Create the dslots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&compute.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&compute.dslots, 1);
     DvzBufferRegions br = {.buffer = &buffer0, .size = size, .count = 1};
     br.offsets[0] = offset;
     dvz_descriptors_buffer(&descriptors, 0, br);
@@ -654,17 +654,17 @@ int test_vklite_submit(TstSuite* suite)
     dvz_buffer_upload(&buffer, 0, size, data);
     dvz_queue_wait(gpu, 0);
 
-    // Create the slots.
+    // Create the dslots.
     dvz_compute_slot(&compute1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
     dvz_compute_slot(&compute2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 
     // Create the descriptors.
-    DvzDescriptors descriptors1 = dvz_descriptors(&compute1.slots, 1);
+    DvzDescriptors descriptors1 = dvz_descriptors(&compute1.dslots, 1);
     DvzBufferRegions br1 = {.buffer = &buffer, .size = size, .count = 1};
     dvz_descriptors_buffer(&descriptors1, 0, br1);
     dvz_descriptors_update(&descriptors1);
 
-    DvzDescriptors descriptors2 = dvz_descriptors(&compute2.slots, 1);
+    DvzDescriptors descriptors2 = dvz_descriptors(&compute2.dslots, 1);
     DvzBufferRegions br2 = {.buffer = &buffer, .size = size, .count = 1};
     dvz_descriptors_buffer(&descriptors2, 0, br2);
     dvz_descriptors_update(&descriptors2);
@@ -815,7 +815,7 @@ int test_vklite_graphics(TstSuite* suite)
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -868,7 +868,7 @@ int test_vklite_indirect(TstSuite* suite)
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -948,7 +948,7 @@ int test_vklite_indexed(TstSuite* suite)
     DvzGraphics graphics = triangle_graphics(gpu, renderpass);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -1051,7 +1051,7 @@ int test_vklite_instanced(TstSuite* suite)
 
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -1129,7 +1129,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
     dvz_graphics_vertex_attr(&graphics, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, 0);
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -1226,7 +1226,7 @@ int test_vklite_constattr(TstSuite* suite)
 
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.
@@ -1326,7 +1326,7 @@ int test_vklite_specialization(TstSuite* suite)
         &graphics, VK_SHADER_STAGE_VERTEX_BIT, 2, sizeof(float), (float[]){.7}); // blue
 
     // Create the descriptors.
-    DvzDescriptors descriptors = dvz_descriptors(&graphics.slots, 1);
+    DvzDescriptors descriptors = dvz_descriptors(&graphics.dslots, 1);
     dvz_descriptors_update(&descriptors);
 
     // Create the graphics pipeline.

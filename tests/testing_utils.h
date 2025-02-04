@@ -335,9 +335,9 @@ static void triangle_commands(
     dvz_cmd_bind_descriptors(cmds, idx, descriptors, 0);
     dvz_cmd_bind_graphics(cmds, idx, graphics);
 
-    if (graphics->slots.push_count > 0)
+    if (graphics->dslots.push_count > 0)
         dvz_cmd_push(
-            cmds, idx, &graphics->slots, VK_SHADER_STAGE_VERTEX_BIT, 0, //
+            cmds, idx, &graphics->dslots, VK_SHADER_STAGE_VERTEX_BIT, 0, //
             sizeof(vec3), graphics->user_data);
 
     dvz_cmd_draw(cmds, idx, 0, n_vertices, 0, 1);
