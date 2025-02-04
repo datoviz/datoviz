@@ -157,6 +157,11 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
     ANN(rd);
     log_trace("create canvas");
 
+    if (rd->workspace == NULL)
+    {
+        return NULL;
+    }
+
     // NOTE: when creating a desktop canvas, we know the requested screen size, but not the
     // framebuffer size yet. This will be determined *after* the window has been created, which
     // will occur in the presenter (client-side), not on the renderer (server-side).
@@ -1019,7 +1024,8 @@ static void _update_mapping(DvzRenderer* rd, DvzRequest req, void* obj)
     {
         // Creation.
     case DVZ_REQUEST_ACTION_CREATE:
-        ANN(obj);
+        if (obj == NULL)
+            break;
         ASSERT(req.id != DVZ_ID_NONE);
 
         log_trace("adding object type %d id 0x%" PRIx64 " to mapping", req.type, req.id);

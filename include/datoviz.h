@@ -52,6 +52,7 @@ Datoviz is still an early stage library and the API may change at any time.
 
 typedef struct DvzApp DvzApp;
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
 typedef struct DvzPanel DvzPanel;
@@ -135,6 +136,24 @@ DVZ_EXPORT DvzQtApp* dvz_qt_app(QApplication* qapp, int flags);
  * @param placeholder placeholder
  */
 DVZ_EXPORT QVulkanWindow* dvz_qt_window(DvzQtApp* app);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzBatch* dvz_qt_batch(DvzQtApp* app);
 
 
 

@@ -194,6 +194,25 @@ QVulkanWindow* dvz_qt_window(DvzQtApp* app)
 
 
 
+void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch)
+{
+    ANN(app);
+    ANN(app->rd);
+    ANN(batch);
+
+    dvz_renderer_requests(app->rd, dvz_batch_size(batch), dvz_batch_requests(batch));
+}
+
+
+
+DvzBatch* dvz_qt_batch(DvzQtApp* app)
+{
+    ANN(app);
+    return app->batch;
+}
+
+
+
 void dvz_qt_app_destroy(DvzQtApp* app)
 {
     // Destroy the batch.
@@ -222,10 +241,14 @@ void dvz_qt_app_destroy(DvzQtApp* app)
 
 
 #else
+
 // Fallbacks.
 DvzQtApp* dvz_qt_app(QApplication* qapp) { return NULL };
 QVulkanWindow* dvz_qt_window(DvzQtApp* app) { return NULL; }
+void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch) { return NULL; }
+DvzBatch* dvz_qt_batch(DvzQtApp* app) { return NULL; }
 void dvz_qt_app_destroy(DvzQtApp* app) { return; }
+
 #endif
 
 EXTERN_C_OFF

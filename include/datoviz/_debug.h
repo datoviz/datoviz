@@ -17,7 +17,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+EXTERN_C_ON
 #include <b64/b64.h>
+EXTERN_C_OFF
+
 #include <stddef.h>
 
 #include "datoviz_math.h"
@@ -39,6 +42,8 @@
 /*  Debugging functions                                                                          */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /* */
 /*
  */
@@ -54,9 +59,11 @@ static bool dvz_is_empty(size_t size, const uint8_t* buf)
  */
 static void dvz_show_base64(size_t size, const void* buffer)
 {
+#if DEBUG
     char* encoded = b64_encode((const unsigned char*)buffer, size);
     printf("base64 is: %s\n", encoded);
     free(encoded);
+#endif
 }
 
 
@@ -77,10 +84,22 @@ static void _show_line(uint32_t group_size, uint32_t cols)
 
 static void dvz_show_buffer(uint32_t group_size, uint32_t cols, DvzSize size, void* data)
 {
-    ANN(data);
-    ASSERT(size > 0);
-    ASSERT(group_size > 0);
-    ASSERT(cols > 0);
+    if (data == NULL)
+    {
+        return;
+    }
+    if (size == 0)
+    {
+        return;
+    }
+    if (group_size == 0)
+    {
+        return;
+    }
+    if (cols == 0)
+    {
+        return;
+    }
 
     printf("buffer with size %s:\n", pretty_size(size));
 
@@ -101,5 +120,7 @@ static void dvz_show_buffer(uint32_t group_size, uint32_t cols, DvzSize size, vo
 }
 
 
+
+EXTERN_C_OFF
 
 #endif
