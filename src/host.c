@@ -38,6 +38,11 @@ static const char** backend_extensions(DvzBackend backend, uint32_t* required_ex
         log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
 #endif
         break;
+    case DVZ_BACKEND_QT:
+        *required_extension_count = 1;
+        required_extensions = (const char**)calloc(*required_extension_count, sizeof(char*));
+        required_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
+        break;
     default:
         break;
     }
@@ -57,6 +62,7 @@ DvzHost* dvz_host(DvzBackend backend)
     log_debug("create the host with backend %d", backend);
 
     DvzHost* host = calloc(1, sizeof(DvzHost));
+    ANN(host);
     dvz_obj_init(&host->obj);
     host->obj.type = DVZ_OBJECT_TYPE_HOST;
 
@@ -77,14 +83,30 @@ DvzHost* dvz_host(DvzBackend backend)
 
     host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
 
+    return host;
+}
+
+
+
+void dvz_host_create(DvzHost* host)
+{
+    ANN(host);
+
     // Which extensions are required? Depends on the backend.
     uint32_t required_extension_count = 0;
-    const char** required_extensions = backend_extensions(backend, &required_extension_count);
+    const char** required_extensions =
+        backend_extensions(host->backend, &required_extension_count);
 
     // Create the instance.
-    create_instance(
-        required_extension_count, required_extensions, &host->instance, &host->debug_messenger,
-        &host->n_errors);
+
+    // NOTE: with Qt, we use Qt to create the Vulkan instance
+    if (host->instance == VK_NULL_HANDLE)
+    {
+        create_instance(
+            required_extension_count, required_extensions, &host->instance, &host->debug_messenger,
+            &host->n_errors);
+    }
+
     if (host->instance == VK_NULL_HANDLE)
     {
         log_error("unable to create Vulkan instance");
@@ -123,8 +145,6 @@ DvzHost* dvz_host(DvzBackend backend)
 
         FREE(physical_devices);
     }
-
-    return host;
 }
 
 
@@ -165,7 +185,7 @@ int dvz_host_destroy(DvzHost* host)
 
     // Destroy the instance.
     log_trace("destroy Vulkan instance");
-    if (host->instance != VK_NULL_HANDLE)
+    if (host->instance != VK_NULL_HANDLE && !host->no_instance_destroy)
     {
         vkDestroyInstance(host->instance, NULL);
         host->instance = 0;

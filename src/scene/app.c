@@ -200,6 +200,7 @@ DvzApp* dvz_app(int flags)
     }
     app->host = dvz_host(backend);
     ANN(app->host);
+    dvz_host_create(app->host);
 
     app->gpu = make_gpu(app->host);
     ANN(app->gpu);

@@ -50,6 +50,8 @@ struct DvzSurface
 /*  Functions                                                                                    */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
  * Create a surface out of a window.
  *
@@ -78,5 +80,7 @@ void dvz_gpu_create_with_surface(DvzGpu* gpu);
 void dvz_surface_destroy(DvzHost* host, DvzSurface surface);
 
 
+
+EXTERN_C_OFF
 
 #endif

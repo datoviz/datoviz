@@ -51,6 +51,7 @@ struct DvzHost
 
     // Vulkan objects.
     VkInstance instance;
+    bool no_instance_destroy;
     VkDebugUtilsMessengerEXT debug_messenger;
 
     // Containers.
@@ -63,16 +64,30 @@ struct DvzHost
 /*  Host                                                                                         */
 /*************************************************************************************************/
 
+EXTERN_C_ON
+
 /**
- * Create a host.
+ * Initialize a host.
  *
  * This object represents a computer with one or multiple GPUs.
  * It holds the Vulkan instance and it is responsible for discovering the available GPUs.
  *
  * @param backend the backend
- * @returns a pointer to the created host
+ * @returns a pointer to the instantiated host
  */
 DvzHost* dvz_host(DvzBackend backend);
+
+
+
+/**
+ * Create a host.
+ *
+ * This creates the Vulkan instance, unless host->instance has been manually set before (used with
+ * Qt backend).
+ *
+ * @param host the host
+ */
+void dvz_host_create(DvzHost* host);
 
 
 
@@ -98,5 +113,7 @@ void dvz_host_wait(DvzHost* host);
 int dvz_host_destroy(DvzHost* host);
 
 
+
+EXTERN_C_OFF
 
 #endif

@@ -88,6 +88,8 @@ int test_vklite_host(TstSuite* suite)
 {
     ANN(suite);
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    ANN(host);
+    dvz_host_create(host);
 
     AT(host->obj.status == DVZ_OBJECT_STATUS_CREATED);
     AT(host->gpus.count >= 1);

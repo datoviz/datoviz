@@ -27,8 +27,12 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
+#ifdef LANG_CPP
+cvec4 BACKGROUND = {102, 153, 204, 255};
+#else
 #define BACKGROUND                                                                                \
     (cvec4) { 102, 153, 204, 255 }
+#endif
 
 
 
@@ -48,11 +52,19 @@ static DvzGpu* make_gpu(DvzHost* host)
         gpu = dvz_gpu_best(host);
 
     _default_queues(gpu, true);
-    dvz_gpu_request_features(gpu, (VkPhysicalDeviceFeatures){.independentBlend = true});
+    INIT(VkPhysicalDeviceFeatures, f);
+    f.independentBlend = true;
+    dvz_gpu_request_features(gpu, f);
 
     if (host->backend == DVZ_BACKEND_GLFW)
     {
         dvz_gpu_create_with_surface(gpu);
+    }
+    else if (host->backend == DVZ_BACKEND_QT)
+    {
+        // HACK: we do NOT call dvz_gpu_create(), rather, we will create an empty window, retrieve
+        // the surface, call dvz_gpu_create() and delete the window, after the call to the current
+        // function.
     }
     else if (host->backend == DVZ_BACKEND_OFFSCREEN)
     {
@@ -76,7 +88,8 @@ make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, ui
     *images = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
 
     dvz_images_format(images, (VkFormat)format);
-    dvz_images_size(images, (uvec3){width, height, 1});
+    uvec3 size = {width, height, 1};
+    dvz_images_size(images, size);
     dvz_images_tiling(images, VK_IMAGE_TILING_OPTIMAL);
     dvz_images_usage(
         images, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
@@ -101,9 +114,10 @@ make_depth(DvzGpu* gpu, DvzImages* depth, uint32_t img_count, uint32_t width, ui
 
     log_trace("making depth image");
     *depth = dvz_images(gpu, VK_IMAGE_TYPE_2D, img_count);
+    uvec3 size = {width, height, 1};
 
     dvz_images_format(depth, VK_FORMAT_D32_SFLOAT);
-    dvz_images_size(depth, (uvec3){width, height, 1});
+    dvz_images_size(depth, size);
     dvz_images_tiling(depth, VK_IMAGE_TILING_OPTIMAL);
     dvz_images_usage(depth, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
     // | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT);
@@ -134,9 +148,10 @@ make_staging(DvzGpu* gpu, DvzImages* staging, DvzFormat format, uint32_t width, 
 
     log_trace("making staging images");
     *staging = dvz_images(gpu, VK_IMAGE_TYPE_2D, 1);
+    uvec3 size = {width, height, 1};
 
     dvz_images_format(staging, (VkFormat)format);
-    dvz_images_size(staging, (uvec3){width, height, 1});
+    dvz_images_size(staging, size);
     dvz_images_tiling(staging, VK_IMAGE_TILING_LINEAR);
     dvz_images_usage(staging, VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     dvz_images_layout(staging, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -317,6 +332,25 @@ static void* screenshot(DvzImages* images, VkDeviceSize bytes_per_component)
     dvz_images_destroy(staging);
     FREE(staging);
     return rgb;
+}
+
+
+
+static void default_clear_color(int flags, cvec4 clear_color)
+{
+    bool white = ((flags & DVZ_RENDERER_FLAGS_WHITE_BACKGROUND) > 0);
+    clear_color[0] = 255;
+    clear_color[1] = 255;
+    clear_color[2] = 255;
+    clear_color[3] = 0;
+    if (!white)
+    {
+        memset(clear_color, 0, 4);
+    }
+    else
+    {
+        log_debug("using a white background in all canvases");
+    }
 }
 
 

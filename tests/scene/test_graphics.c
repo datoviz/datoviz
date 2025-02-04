@@ -39,6 +39,8 @@
     ANN(suite);                                                                                   \
                                                                                                   \
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);                                                   \
+    ANN(host);                                                                                    \
+    dvz_host_create(host);                                                                        \
                                                                                                   \
     DvzGpu* gpu = dvz_gpu_best(host);                                                             \
     _default_queues(gpu, false);                                                                  \

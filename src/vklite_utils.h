@@ -90,7 +90,6 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     ANN(gpu);
     ANN(gpu->host);
 
-    bool has_surface = surface != VK_NULL_HANDLE;
     // bool has_validation = gpu->app->debug_messenger != NULL;
 
     // Find the supported present modes.
@@ -105,6 +104,23 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     // NOTE: we needed to wait until we had a handle to the surface in order to find
     // the queue families supporting PRESENT.
     find_present_queue_family(gpu->physical_device, surface, &gpu->queues);
+
+    // NOTE: find whether there is at least one queue family that has support for present,
+    // which should be the case if a surface was passed, or if gpu->queues was modified manually
+    // before calling create_device() to set up the queue families which support present.
+    // So here, we go through the queue families and check whether there is at least one
+    // that supports present.
+    bool has_surface = false;
+    for (int i = 0; i < DVZ_MAX_QUEUE_FAMILIES; i++)
+    {
+        if (gpu->queues.support_present[i])
+        {
+            has_surface = true;
+            break;
+        }
+    }
+    log_trace("GPU physical device has at least 1 queue family that supports present mode");
+
 
     // Here, we need to determine the queue family and queue index of every requested queue,
     // as a function of the requested queue type, and the discovered queue families.

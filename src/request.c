@@ -1065,7 +1065,7 @@ DvzBatch* dvz_batch(void)
     batch->count = 0;
 
     batch->pointers_to_free = dvz_list();
-    // log_trace("create batch %u", batch);
+    log_trace("create batch %u", batch);
 
     return batch;
 }

@@ -12,6 +12,7 @@
 #include "board.h"
 #include "canvas.h"
 #include "host.h"
+#include "render_utils.h"
 #include "vklite.h"
 #include "window.h"
 
@@ -44,12 +45,8 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
         dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzCanvas), DVZ_OBJECT_TYPE_CANVAS);
 
     // Create the renderpasses.
-    bool white = ((flags & DVZ_RENDERER_FLAGS_WHITE_BACKGROUND) > 0);
-    cvec4 clear_color = {255, 255, 255, 0};
-    if (!white)
-        memset(clear_color, 0, 4);
-    else
-        log_debug("using a white background in all canvases");
+    cvec4 clear_color = {0};
+    default_clear_color(flags, clear_color);
 
     ws->renderpass_overlay =
         dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -118,6 +115,8 @@ dvz_workspace_canvas(DvzWorkspace* workspace, uint32_t width, uint32_t height, i
 
 void dvz_workspace_destroy(DvzWorkspace* workspace)
 {
+    if (workspace == NULL)
+        return;
     ANN(workspace);
 
     CONTAINER_DESTROY_ITEMS(DvzBoard, workspace->boards, dvz_board_destroy)

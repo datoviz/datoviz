@@ -60,6 +60,8 @@ static int setup_host(TstSuite* suite)
 
     log_debug("setup: creating host");
     ctx->host = dvz_host(DVZ_BACKEND_GLFW);
+    ANN(ctx->host);
+    dvz_host_create(ctx->host);
 
     return 0;
 }

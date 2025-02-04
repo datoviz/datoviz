@@ -933,7 +933,8 @@ static void _init_renderer(DvzRenderer* rd)
     rd->ctx = dvz_context(rd->gpu);
     rd->pipelib = dvz_pipelib(rd->ctx);
     // NOTE: the renderer flags are passed directly to the workspace flags for now
-    rd->workspace = dvz_workspace(rd->gpu, rd->flags);
+    if ((rd->flags & DVZ_RENDERER_FLAGS_NO_WORKSPACE) == 0)
+        rd->workspace = dvz_workspace(rd->gpu, rd->flags);
     rd->map = dvz_map();
 
     dvz_obj_init(&rd->obj);
