@@ -46,6 +46,7 @@ option(DATOVIZ_WITH_ZLIB "Build Datoviz with zlib" ON) # for gzip decompression 
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" OFF)
+option(DATOVIZ_WITH_QT "Build Datoviz with Qt6" ON)
 
 # NOTE: disabling for now as it leads to a .dll that is not loadable in ctypes on Windows for
 # some reason.
@@ -189,6 +190,26 @@ if(DATOVIZ_WITH_ZLIB)
     if(ZLIB_FOUND)
         set(CORE_LIBS ${CORE_LIBS} ZLIB::ZLIB)
         set(HAS_ZLIB 1)
+    endif()
+endif()
+
+# ---- qt ---------------------------------------------------------------------------------------
+set(HAS_QT 0)
+
+if(DATOVIZ_WITH_QT)
+    set(CMAKE_MESSAGE_LOG_LEVEL WARNING)
+    find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
+    set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
+
+    if(Qt6_FOUND)
+        set(INCL_DIRS ${INCL_DIRS}
+            ${Qt6Core_INCLUDE_DIRS}
+            ${Qt6Gui_INCLUDE_DIRS}
+            ${Qt6Widgets_INCLUDE_DIRS})
+        set(CORE_LIBS ${CORE_LIBS} Qt6::Core Qt6::Gui Qt6::Widgets)
+        set(HAS_QT 1)
+    else()
+        set(HAS_QT 0)
     endif()
 endif()
 
@@ -428,6 +449,7 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
     HAS_GLFW=${HAS_GLFW}
     HAS_MSDF=${HAS_MSDF}
     HAS_SHADERC=${HAS_SHADERC}
+    HAS_QT=${HAS_QT}
 
     # HACK: this apparently fixes the msdfgen-config.h not found bug
     MSDFGEN_PUBLIC=
@@ -670,7 +692,7 @@ set_target_properties(external_sources PROPERTIES C_VISIBILITY_PRESET hidden)
 # -------------------------------------------------------------------------------------------------
 # Datoviz core
 # -------------------------------------------------------------------------------------------------
-add_library(datoviz_core OBJECT
+set(core_files
 
     # Utils
     "src/_version.c"
@@ -719,6 +741,12 @@ add_library(datoviz_core OBJECT
     "src/gui.cpp"
     "src/fps.cpp"
 )
+
+if(${HAS_QT})
+    set(core_files ${core_files} "src/qtapp.cpp")
+endif()
+
+add_library(datoviz_core OBJECT ${core_files})
 
 target_include_directories(datoviz_core PRIVATE ${INCL_DIRS})
 target_compile_definitions(datoviz_core PRIVATE ${COMPILE_DEFINITIONS})

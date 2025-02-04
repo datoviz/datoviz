@@ -82,6 +82,11 @@ typedef union DvzRequestContent DvzRequestContent;
 typedef struct DvzRequester DvzRequester;
 typedef struct DvzBatch DvzBatch;
 
+// Qt.
+typedef struct DvzQtApp DvzQtApp;
+typedef struct QApplication QApplication;
+typedef struct QVulkanWindow QVulkanWindow;
+
 // Recorder.
 typedef struct DvzRecorderViewport DvzRecorderViewport;
 typedef struct DvzRecorderDraw DvzRecorderDraw;
