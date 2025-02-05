@@ -1063,7 +1063,11 @@ rpath:
     @objdump -x build/libdatoviz.so | grep -i 'R.*PATH'
 #
 
-api: headers symbols ctypes doc docexamples # after every API update
+tryimport:
+    python -c "import datoviz"
+#
+
+api: headers symbols ctypes doc docexamples tryimport # after every API update
 #
 
 
@@ -1213,18 +1217,22 @@ demo:
 #
 
 [linux]
-libdemo:
+pydemo_dll:
     @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
 #
 
 [macos]
-libdemo:
+pydemo_dll:
     @DYLD_LIBRARY_PATH=build/ VK_DRIVER_FILES="$(pwd)/libs/vulkan/macos/MoltenVK_icd.json" python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dylib').dvz_demo()"
 #
 
 [windows]
-libdemo:
+pydemo_dll:
     python -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.dll').dvz_demo()"
+#
+
+pydemo:
+    python -c "import datoviz; datoviz.demo()"
 #
 
 python *args:
