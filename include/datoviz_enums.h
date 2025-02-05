@@ -279,6 +279,7 @@ typedef enum
     DVZ_RECORDER_DRAW_INDEXED_INDIRECT,
     DVZ_RECORDER_VIEWPORT,
     DVZ_RECORDER_END,
+    DVZ_RECORDER_COUNT, // Number of different recorder types
 } DvzRecorderCommandType;
 
 

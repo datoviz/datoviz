@@ -19,190 +19,200 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void
-_process_command(DvzRecorderCommand* record, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
+#define BOARD_OR_CANVAS                                                                           \
+    ANN(recorder);                                                                                \
+    ANN(rd);                                                                                      \
+    ANN(cmds);                                                                                    \
+    DvzCanvas* canvas = NULL;                                                                     \
+    DvzBoard* board = NULL;                                                                       \
+                                                                                                  \
+    ASSERT(                                                                                       \
+        record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||                                       \
+        record->object_type == DVZ_REQUEST_OBJECT_BOARD);                                         \
+    bool is_canvas = record->object_type == DVZ_REQUEST_OBJECT_CANVAS;                            \
+                                                                                                  \
+    if (is_canvas)                                                                                \
+    {                                                                                             \
+        canvas = dvz_renderer_canvas(rd, record->canvas_or_board_id);                             \
+        ANN(canvas);                                                                              \
+    }                                                                                             \
+    else                                                                                          \
+    {                                                                                             \
+        board = dvz_renderer_board(rd, record->canvas_or_board_id);                               \
+        ANN(board);                                                                               \
+    }                                                                                             \
+    ASSERT(canvas != NULL || board != NULL);
+
+
+static void _process_begin(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
 {
-    // NOTE: This function is called inside the presenter event loop.
-    ANN(record);
-    ANN(rd);
-    ANN(cmds);
-    ASSERT(img_idx < cmds->count);
+    BOARD_OR_CANVAS
 
-    DvzCanvas* canvas = NULL;
-    DvzBoard* board = NULL;
+    dvz_cmd_reset(cmds, img_idx);
+    log_debug("recorder: begin (#%d)", img_idx);
+    if (is_canvas)
+        dvz_canvas_begin(canvas, cmds, img_idx);
+    else
+        dvz_board_begin(board, cmds, img_idx);
+}
 
-    ASSERT(
-        record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||
-        record->object_type == DVZ_REQUEST_OBJECT_BOARD);
-    bool is_canvas = record->object_type == DVZ_REQUEST_OBJECT_CANVAS;
+static void _process_viewport(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
+
+    float x = record->contents.v.offset[0];
+    float y = record->contents.v.offset[1];
+    float w = record->contents.v.shape[0];
+    float h = record->contents.v.shape[1];
+
+    // NOTE: ensure the scale is set.
+    float scale = is_canvas ? canvas->scale : 1.0;
+    scale = scale == 0 ? 1 : scale;
+
+    log_debug(
+        "recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d) (scale: %.2f)", //
+        x, y, w, h, img_idx, scale);
+
+    // Take DPI scaling into account. canvas->scale is set by the presenter in _create_canvas()
+    vec2 offset = {x * scale, y * scale};
+    vec2 shape = {w * scale, h * scale};
 
     if (is_canvas)
+        dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
+    else
+        dvz_board_viewport(board, cmds, img_idx, offset, shape);
+}
+
+static void _process_draw(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
+
+    uint32_t first_vertex = record->contents.draw.first_vertex;
+    uint32_t vertex_count = record->contents.draw.vertex_count;
+    uint32_t first_instance = record->contents.draw.first_instance;
+    uint32_t instance_count = record->contents.draw.instance_count;
+
+    log_debug(
+        "recorder: draw direct from vertex #%d for %d vertices, %d instances from idx %d "
+        "(#%d)", //
+        first_vertex, vertex_count, instance_count, first_instance, img_idx);
+
+    // NOTE: this function lazily create the pipe if needed, this is when the graphics pipeline
+    // is created on the Vulkan side.
+
+    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
+    ANN(pipe);
+
+    if (!dvz_pipe_complete(pipe))
     {
-        canvas = dvz_renderer_canvas(rd, record->canvas_or_board_id);
-        ANN(canvas);
+        log_error("cannot draw pipe with incomplete descriptor bindings");
     }
     else
     {
-        board = dvz_renderer_board(rd, record->canvas_or_board_id);
-        ANN(board);
-    }
-    ASSERT(canvas != NULL || board != NULL);
-
-    DvzPipe* pipe = NULL;
-    DvzDat* dat_indirect = NULL;
-
-    switch (record->type)
-    {
-
-    case DVZ_RECORDER_BEGIN:
-    {
-        log_debug("recorder: begin (#%d)", img_idx);
-        dvz_cmd_reset(cmds, img_idx);
-        if (is_canvas)
-            dvz_canvas_begin(canvas, cmds, img_idx);
-        else
-            dvz_board_begin(board, cmds, img_idx);
-        break;
-    }
-
-    case DVZ_RECORDER_VIEWPORT:
-    {
-        float x = record->contents.v.offset[0];
-        float y = record->contents.v.offset[1];
-        float w = record->contents.v.shape[0];
-        float h = record->contents.v.shape[1];
-
-        // NOTE: ensure the scale is set.
-        float scale = is_canvas ? canvas->scale : 1.0;
-        scale = scale == 0 ? 1 : scale;
-
-        log_debug(
-            "recorder: viewport %0.0fx%0.0f -> %0.0fx%0.0f (#%d) (scale: %.2f)", //
-            x, y, w, h, img_idx, scale);
-
-        // Take DPI scaling into account. canvas->scale is set by the presenter in _create_canvas()
-        vec2 offset = {x * scale, y * scale};
-        vec2 shape = {w * scale, h * scale};
-
-        if (is_canvas)
-            dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
-        else
-            dvz_board_viewport(board, cmds, img_idx, offset, shape);
-        break;
-    }
-
-    case DVZ_RECORDER_DRAW:
-    {
-        uint32_t first_vertex = record->contents.draw.first_vertex;
-        uint32_t vertex_count = record->contents.draw.vertex_count;
-        uint32_t first_instance = record->contents.draw.first_instance;
-        uint32_t instance_count = record->contents.draw.instance_count;
-
-        log_debug(
-            "recorder: draw direct from vertex #%d for %d vertices, %d instances from idx %d "
-            "(#%d)", //
-            first_vertex, vertex_count, instance_count, first_instance, img_idx);
-
-        // NOTE: this function lazily create the pipe if needed, this is when the graphics pipeline
-        // is created on the Vulkan side.
-
-        pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
-        ANN(pipe);
-
-        if (!dvz_pipe_complete(pipe))
-        {
-            log_error("cannot draw pipe with incomplete descriptor bindings");
-            break;
-        }
-
         dvz_pipe_draw(
             pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
-        break;
     }
+}
 
-    case DVZ_RECORDER_DRAW_INDEXED:
+static void _process_draw_indexed(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
+
+    uint32_t first_index = record->contents.draw_indexed.first_index;
+    uint32_t index_count = record->contents.draw_indexed.index_count;
+    uint32_t vertex_offset = record->contents.draw_indexed.vertex_offset;
+    uint32_t first_instance = record->contents.draw_indexed.first_instance;
+    uint32_t instance_count = record->contents.draw_indexed.instance_count;
+
+    log_debug(
+        "recorder: draw indexed from index #%d for %d indices (#%d)", //
+        first_index, index_count, img_idx);
+
+    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indexed.pipe_id);
+    ANN(pipe);
+
+    if (!dvz_pipe_complete(pipe))
     {
-        uint32_t first_index = record->contents.draw_indexed.first_index;
-        uint32_t index_count = record->contents.draw_indexed.index_count;
-        uint32_t vertex_offset = record->contents.draw_indexed.vertex_offset;
-        uint32_t first_instance = record->contents.draw_indexed.first_instance;
-        uint32_t instance_count = record->contents.draw_indexed.instance_count;
-
-        log_debug(
-            "recorder: draw indexed from index #%d for %d indices (#%d)", //
-            first_index, index_count, img_idx);
-
-        pipe = dvz_renderer_pipe(rd, record->contents.draw_indexed.pipe_id);
-        ANN(pipe);
-
-        if (!dvz_pipe_complete(pipe))
-        {
-            log_error("cannot draw pipe with incomplete descriptor bindings");
-            break;
-        }
-
+        log_error("cannot draw pipe with incomplete descriptor bindings");
+    }
+    else
+    {
         dvz_pipe_draw_indexed(
             pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
             instance_count);
-        break;
     }
+}
 
-    case DVZ_RECORDER_DRAW_INDIRECT:
+static void _process_draw_indirect(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
+
+    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
+    ANN(pipe);
+
+    if (!dvz_pipe_complete(pipe))
     {
-        pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-        ANN(pipe);
-
-        if (!dvz_pipe_complete(pipe))
-        {
-            log_error("cannot draw pipe with incomplete descriptor bindings");
-            break;
-        }
+        log_error("cannot draw pipe with incomplete descriptor bindings");
+    }
+    else
+    {
 
         uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
-        dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
+        DvzDat* dat_indirect =
+            dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ANN(dat_indirect);
 
         dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
-        break;
     }
+}
 
-    case DVZ_RECORDER_DRAW_INDEXED_INDIRECT:
+static void _process_draw_indexed_indirect(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
+
+    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
+    ANN(pipe);
+
+    if (!dvz_pipe_complete(pipe))
     {
-        pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-        ANN(pipe);
-
-        if (!dvz_pipe_complete(pipe))
-        {
-            log_error("cannot draw pipe with incomplete descriptor bindings");
-            break;
-        }
-
+        log_error("cannot draw pipe with incomplete descriptor bindings");
+    }
+    else
+    {
         uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
-        dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
+        DvzDat* dat_indirect =
+            dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
         ANN(dat_indirect);
 
         dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
-        break;
     }
+}
 
-    case DVZ_RECORDER_END:
-    {
-        log_debug("recorder: end (#%d)", img_idx);
-        if (is_canvas)
-            dvz_canvas_end(canvas, cmds, img_idx);
-        else
-            dvz_board_end(board, cmds, img_idx);
-        break;
-    }
+static void _process_end(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    BOARD_OR_CANVAS
 
-    default:
-    {
-        log_error("unknown record command with type %d", record->type);
-        break;
-    }
-    }
+    log_debug("recorder: end (#%d)", img_idx);
+    if (is_canvas)
+        dvz_canvas_end(canvas, cmds, img_idx);
+    else
+        dvz_board_end(board, cmds, img_idx);
 }
 
 
@@ -224,11 +234,22 @@ DvzRecorder* dvz_recorder(int flags)
     DvzRecorder* recorder = (DvzRecorder*)calloc(1, sizeof(DvzRecorder));
     recorder->flags = flags;
     recorder->capacity = DVZ_RECORDER_COMMAND_COUNT;
-    recorder->commands = calloc(recorder->capacity, sizeof(DvzRecorderCommand));
+    recorder->commands =
+        (DvzRecorderCommand*)calloc(recorder->capacity, sizeof(DvzRecorderCommand));
 
     // Clear the recorder initially, and make sure it is set as dirty. This way, the command buffer
     // will be recorded at the very first frame.
     dvz_recorder_clear(recorder);
+
+    // Register the default recorder callbacks. The caller can customize these.
+    dvz_recorder_register(recorder, DVZ_RECORDER_BEGIN, _process_begin, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_DRAW, _process_draw, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_DRAW_INDEXED, _process_draw_indexed, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_DRAW_INDIRECT, _process_draw_indirect, NULL);
+    dvz_recorder_register(
+        recorder, DVZ_RECORDER_DRAW_INDEXED_INDIRECT, _process_draw_indexed_indirect, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_VIEWPORT, _process_viewport, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_END, _process_end, NULL);
 
     return recorder;
 }
@@ -262,9 +283,22 @@ void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 
 
 
+void dvz_recorder_register(
+    DvzRecorder* recorder, DvzRecorderCommandType ctype, DvzRecorderCallback cb, void* user_data)
+{
+    ANN(recorder);
+    ASSERT(0 < (int)ctype);
+    ASSERT((int)ctype < DVZ_RECORDER_COUNT);
+    recorder->callbacks[(uint32_t)ctype] = cb;
+    recorder->callback_user_data[(uint32_t)ctype] = user_data;
+}
+
+
+
 void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx)
 {
     ANN(recorder);
+    ASSERT(img_idx < DVZ_MAX_SWAPCHAIN_IMAGES);
 
     // this function updates the command buffer for the given swapchain image index, only if needed
     if (_has_cache(recorder) && !recorder->dirty[img_idx])
@@ -273,7 +307,29 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
     // Go through all record commands and update the command buffer
     for (uint32_t i = 0; i < recorder->count; i++)
     {
-        _process_command(&recorder->commands[i], rd, cmds, img_idx);
+        DvzRecorderCommand* record = &recorder->commands[i];
+        // Get the index which is the record type enum number.
+        uint32_t cb_idx = (uint32_t)record->type;
+        if (cb_idx >= DVZ_RECORDER_COUNT)
+        {
+            log_error("unknown record type %d, skipping record #%d", cb_idx, i);
+            continue;
+        }
+
+        // This index is used to fetch the right callback (only one per record type).
+        ASSERT(cb_idx < DVZ_RECORDER_COUNT);
+        DvzRecorderCallback cb = recorder->callbacks[cb_idx];
+        // Same for the callback user data.
+        void* user_data = recorder->callback_user_data[cb_idx];
+        if (cb == NULL)
+        {
+            log_warn(
+                "no recorder callback registered for type %d, skipping record #%d", cb_idx, i);
+        }
+
+        ANN(cb);
+        // We call the recorder callback for the record type.
+        cb(recorder, rd, cmds, img_idx, record, user_data);
     }
 
     recorder->dirty[img_idx] = false;
