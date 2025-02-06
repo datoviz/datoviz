@@ -15,10 +15,10 @@
 
 #include "scene/scene.h"
 #include "_list.h"
+#include "app.h"
 #include "common.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
-#include "scene/app.h"
 #include "scene/arcball.h"
 #include "scene/baker.h"
 #include "scene/camera.h"

@@ -17,9 +17,9 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "app.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
-#include "scene/app.h"
 #include "scene/axis.h"
 #include "scene/camera.h"
 #include "scene/dual.h"

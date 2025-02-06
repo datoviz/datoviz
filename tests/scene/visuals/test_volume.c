@@ -15,12 +15,12 @@
 /*************************************************************************************************/
 
 #include "scene/visuals/test_volume.h"
+#include "app.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "gui.h"
 #include "presenter.h"
 #include "renderer.h"
-#include "scene/app.h"
 #include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/dual.h"

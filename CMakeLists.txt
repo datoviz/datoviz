@@ -769,7 +769,7 @@ set_target_properties(datoviz_requests PROPERTIES C_VISIBILITY_PRESET hidden)
 # Datoviz app
 # -------------------------------------------------------------------------------------------------
 add_library(datoviz_app OBJECT
-    "src/scene/app.c"
+    "src/app.c"
 )
 
 target_include_directories(datoviz_app PRIVATE ${INCL_DIRS})
@@ -946,9 +946,11 @@ if(DATOVIZ_WITH_CLI)
         "tests/test_request.c"
         "tests/test_window.c"
 
+        # App
+        "tests/test_app.c"
+
         # Scene
         "tests/scene/test_animation.c"
-        "tests/scene/test_app.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_array.c"
         "tests/scene/test_atlas.c"

@@ -17,13 +17,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../_enums.h"
-#include "../_log.h"
-#include "../client.h"
-#include "../gui.h"
-#include "../presenter.h"
-#include "../timer.h"
+#include "_enums.h"
+#include "_log.h"
+#include "client.h"
 #include "datoviz_math.h"
+#include "gui.h"
+#include "presenter.h"
+#include "timer.h"
 
 
 

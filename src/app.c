@@ -13,17 +13,17 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/app.h"
-#include "../env_utils.h"
-#include "../render_utils.h"
+#include "app.h"
 #include "board.h"
 #include "client.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
+#include "env_utils.h"
 #include "fileio.h"
 #include "gui.h"
 #include "host.h"
 #include "presenter.h"
+#include "render_utils.h"
 #include "renderer.h"
 #include "timer.h"
 

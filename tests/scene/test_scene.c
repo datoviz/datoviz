@@ -15,9 +15,9 @@
 /*************************************************************************************************/
 
 #include "test_scene.h"
+#include "app.h"
 #include "canvas.h"
 #include "datoviz.h"
-#include "scene/app.h"
 #include "scene/camera.h"
 #include "scene/scene.h"
 #include "scene/transform.h"

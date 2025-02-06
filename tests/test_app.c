@@ -15,11 +15,11 @@
 /*************************************************************************************************/
 
 #include "test_app.h"
+#include "app.h"
 #include "canvas.h"
 #include "client.h"
 #include "datoviz.h"
 #include "presenter.h"
-#include "scene/app.h"
 #include "scene/arcball.h"
 #include "scene/camera.h"
 #include "scene/panzoom.h"

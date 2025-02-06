@@ -15,10 +15,10 @@
 /*************************************************************************************************/
 
 #include "test_animation.h"
+#include "app.h"
 #include "datoviz.h"
 #include "presenter.h"
 #include "renderer.h"
-#include "scene/app.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
