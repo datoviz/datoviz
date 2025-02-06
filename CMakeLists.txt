@@ -720,6 +720,7 @@ set(core_files
     "src/context.c"
     "src/datalloc.c"
     "src/host.c"
+    "src/server.c"
     "src/loop.c"
     "src/pipe.c"
     "src/pipelib.c"

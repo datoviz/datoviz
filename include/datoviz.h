@@ -51,6 +51,7 @@ Datoviz is still an early stage library and the API may change at any time.
 /*************************************************************************************************/
 
 typedef struct DvzApp DvzApp;
+typedef struct DvzServer DvzServer;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzScene DvzScene;
@@ -163,6 +164,76 @@ DVZ_EXPORT DvzBatch* dvz_qt_batch(DvzQtApp* app);
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_qt_app_destroy(DvzQtApp* app);
+
+
+
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  Server                                                                                       */
+/*************************************************************************************************/
+/*************************************************************************************************/
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzServer* dvz_server(int flags);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_server_submit(DvzServer* server, DvzBatch* batch);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_server_mouse(DvzServer* server, DvzId canvas_id, DvzMouseEvent ev);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_server_keyboard(DvzServer* server, DvzId canvas_id, DvzKeyboardEvent ev);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void
+dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flags);
+
+
+
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_server_destroy(DvzServer* server);
 
 
 
