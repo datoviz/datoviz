@@ -194,6 +194,28 @@ void dvz_keyboard_callback(
 
 
 
+void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
+{
+    ANN(keyboard);
+    switch (ev.type)
+    {
+
+    case DVZ_KEYBOARD_EVENT_PRESS:
+        dvz_keyboard_press(keyboard, ev.key);
+        break;
+
+    case DVZ_KEYBOARD_EVENT_RELEASE:
+        dvz_keyboard_release(keyboard, ev.key);
+        break;
+
+    default:
+        log_warn("keyboard event type #%d not supported", ev.type);
+        break;
+    }
+}
+
+
+
 void dvz_keyboard_destroy(DvzKeyboard* keyboard)
 {
     ANN(keyboard);

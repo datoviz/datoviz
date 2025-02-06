@@ -108,6 +108,10 @@ void dvz_keyboard_callback(
 
 
 
+void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent ev);
+
+
+
 void dvz_keyboard_destroy(DvzKeyboard* keyboard);
 
 

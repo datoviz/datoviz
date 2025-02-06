@@ -106,6 +106,10 @@ void dvz_mouse_callback(
 
 
 
+void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev);
+
+
+
 void dvz_mouse_destroy(DvzMouse* mouse);
 
 

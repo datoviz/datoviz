@@ -349,6 +349,63 @@ void dvz_mouse_callback(
 
 
 
+void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev)
+{
+    ANN(mouse);
+    int delay = (int)(1000.0 * DVZ_MOUSE_CLICK_MAX_DELAY / 10.0);
+    switch (ev.type)
+    {
+
+    case DVZ_MOUSE_EVENT_PRESS:
+        dvz_mouse_press(mouse, ev.content.b.button, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_RELEASE:
+        dvz_mouse_release(mouse, ev.content.b.button, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_CLICK:
+        dvz_mouse_press(mouse, ev.content.c.button, ev.mods);
+        dvz_sleep((int)(1000.0 * DVZ_MOUSE_CLICK_MAX_DELAY / 10.0));
+        dvz_mouse_release(mouse, ev.content.c.button, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
+        // First click.
+        dvz_mouse_press(mouse, ev.content.c.button, ev.mods);
+        dvz_sleep(delay);
+        dvz_mouse_release(mouse, ev.content.c.button, ev.mods);
+
+        dvz_sleep(delay);
+
+        // Second click.
+        dvz_mouse_press(mouse, ev.content.c.button, ev.mods);
+        dvz_sleep(delay);
+        dvz_mouse_release(mouse, ev.content.c.button, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_MOVE:
+        dvz_mouse_move(mouse, ev.pos, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_WHEEL:
+        dvz_mouse_wheel(mouse, ev.content.w.dir, ev.mods);
+        break;
+
+    case DVZ_MOUSE_EVENT_DRAG_START:
+    case DVZ_MOUSE_EVENT_DRAG_STOP:
+    case DVZ_MOUSE_EVENT_DRAG:
+        log_warn("drag events not currently implemented, use PRESS/MOVE/RELEASE instead");
+        break;
+
+    default:
+        log_warn("mouse event type #%d not supported", ev.type);
+        break;
+    }
+}
+
+
+
 void dvz_mouse_destroy(DvzMouse* mouse)
 {
     ANN(mouse);
