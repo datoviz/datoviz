@@ -52,15 +52,6 @@ EXTERN_C_ON
 /*************************************************************************************************/
 
 /**
- * Return a default DvzMVP struct
- *
- * @returns the DvzMVP struct
- */
-DvzMVP dvz_mvp_default(void);
-
-
-
-/**
  */
 void dvz_mvp_apply(DvzMVP* mvp, vec4 point, vec4 out);
 

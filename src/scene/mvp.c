@@ -15,7 +15,7 @@
 
 #include "scene/mvp.h"
 #include "_cglm.h"
-#include "datoviz.h"
+#include "datoviz_protocol.h"
 
 
 

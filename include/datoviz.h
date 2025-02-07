@@ -345,22 +345,6 @@ DVZ_EXPORT void dvz_figure_destroy(DvzFigure* figure);
 
 
 /*************************************************************************************************/
-/*  MVP                                                                                          */
-/*************************************************************************************************/
-
-/**
- * Create a MVP structure.
- *
- * @param model the model matrix
- * @param view the view matrix
- * @param proj the projection matrix
- * @returns the MVP structure
- */
-DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
-
-
-
-/*************************************************************************************************/
 /*  Panel                                                                                        */
 /*************************************************************************************************/
 

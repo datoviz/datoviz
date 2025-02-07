@@ -14,6 +14,7 @@
 
 #include "pipelib.h"
 #include "context.h"
+#include "datoviz_protocol.h"
 #include "shader.h"
 
 

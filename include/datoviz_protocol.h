@@ -96,6 +96,42 @@ DVZ_EXPORT void dvz_requester_destroy(DvzRequester* rqr);
 
 
 /*************************************************************************************************/
+/*  Low-level structures                                                                         */
+/*************************************************************************************************/
+
+/**
+ * Create a MVP structure.
+ *
+ * @param model the model matrix
+ * @param view the view matrix
+ * @param proj the projection matrix
+ * @returns the MVP structure
+ */
+DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
+
+
+
+/**
+ * Return a default DvzMVP struct
+ *
+ * @returns the DvzMVP struct
+ */
+DVZ_EXPORT DvzMVP dvz_mvp_default(void);
+
+
+
+/**
+ * Return a default viewport
+ *
+ * @param width the viewport width, in framebuffer pixels
+ * @param height the viewport height, in framebuffer pixels
+ * @returns the viewport
+ */
+DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
+
+
+
+/*************************************************************************************************/
 /*  Batch functions                                                                              */
 /*************************************************************************************************/
 

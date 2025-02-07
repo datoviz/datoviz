@@ -15,6 +15,7 @@
 
 #include "scene/viewport.h"
 #include "_cglm.h"
+#include "datoviz_protocol.h"
 
 
 
