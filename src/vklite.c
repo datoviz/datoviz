@@ -3661,9 +3661,9 @@ void dvz_cmd_begin_renderpass(
     ASSERT(framebuffers->attachment_count > 0);
     uint32_t width = framebuffers->attachments[0]->shape[0];
     uint32_t height = framebuffers->attachments[0]->shape[1];
-    // log_trace("begin renderpass with size %dx%d", width, height);
 
     CMD_START_CLIP(cmds->count)
+    log_trace("begin renderpass #%d/%d with size %dx%d", iclip, cmds->count, width, height);
     ASSERT(framebuffers->framebuffers[iclip] != VK_NULL_HANDLE);
     begin_render_pass(
         renderpass->renderpass, cb, framebuffers->framebuffers[iclip], //

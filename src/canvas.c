@@ -54,10 +54,11 @@ dvz_canvas(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heig
     canvas.width = width;
     canvas.height = height;
 
-    canvas.render.renderpass = renderpass;
     canvas.render.frame_timestamps = (DvzTime*)calloc(DVZ_MAX_TIMESTAMPS, sizeof(DvzTime));
     ANN(canvas.render.frame_timestamps);
-    ASSERT(dvz_obj_is_created(&renderpass->obj));
+
+    canvas.render.renderpass = renderpass;
+    // ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     dvz_obj_init(&canvas.obj);
     return canvas;

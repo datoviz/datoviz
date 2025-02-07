@@ -289,6 +289,10 @@ void dvz_recorder_register(
     ANN(recorder);
     ASSERT(0 < (int)ctype);
     ASSERT((int)ctype < DVZ_RECORDER_COUNT);
+    if (cb == NULL)
+    {
+        log_debug("registering empty recorder callback for record type %d", (int)ctype);
+    }
     recorder->callbacks[(uint32_t)ctype] = cb;
     recorder->callback_user_data[(uint32_t)ctype] = user_data;
 }
@@ -325,6 +329,7 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
         {
             log_warn(
                 "no recorder callback registered for type %d, skipping record #%d", cb_idx, i);
+            continue;
         }
 
         ANN(cb);
