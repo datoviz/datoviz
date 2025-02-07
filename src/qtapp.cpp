@@ -46,7 +46,7 @@ struct Vertex
 class VulkanRenderer : public QVulkanWindowRenderer
 {
 public:
-    VulkanRenderer(VulkanWindow* window, DvzQtApp* app);
+    VulkanRenderer(DvzQtWindow* window, DvzQtApp* app);
 
     void initResources() override;
     void initSwapChainResources() override;
@@ -57,7 +57,7 @@ public:
     void setCanvas(DvzCanvas* canvas);
 
 private:
-    VulkanWindow* m_window;
+    DvzQtWindow* m_window;
     QVulkanDeviceFunctions* m_devFuncs;
     DvzQtApp* m_app;
     DvzCanvas* m_canvas;
@@ -67,10 +67,10 @@ private:
 
 
 
-class VulkanWindow : public QVulkanWindow
+class DvzQtWindow : public QVulkanWindow
 {
 public:
-    VulkanWindow(DvzQtApp* app);
+    DvzQtWindow(DvzQtApp* app);
     QVulkanWindowRenderer* createRenderer() override;
     void setId(DvzId);
     DvzId m_id;
@@ -81,15 +81,15 @@ private:
 
 
 
-VulkanWindow::VulkanWindow(DvzQtApp* app) : m_app(app) {}
+DvzQtWindow::DvzQtWindow(DvzQtApp* app) : m_app(app) {}
 
-QVulkanWindowRenderer* VulkanWindow::createRenderer() { return new VulkanRenderer(this, m_app); }
+QVulkanWindowRenderer* DvzQtWindow::createRenderer() { return new VulkanRenderer(this, m_app); }
 
-void VulkanWindow::setId(DvzId id) { m_id = id; }
+void DvzQtWindow::setId(DvzId id) { m_id = id; }
 
 
 
-VulkanRenderer::VulkanRenderer(VulkanWindow* window, DvzQtApp* app) : m_window(window), m_app(app)
+VulkanRenderer::VulkanRenderer(DvzQtWindow* window, DvzQtApp* app) : m_window(window), m_app(app)
 {
 }
 
@@ -246,12 +246,12 @@ DvzQtApp* dvz_qt_app(QApplication* qapp, int flags)
 
 
 
-VulkanWindow* dvz_qt_window(DvzQtApp* app)
+DvzQtWindow* dvz_qt_window(DvzQtApp* app)
 {
     ANN(app);
-    VulkanWindow* window = new VulkanWindow(app);
+    DvzQtWindow* window = new DvzQtWindow(app);
     window->setVulkanInstance(app->inst);
-    return (VulkanWindow*)window;
+    return (DvzQtWindow*)window;
 }
 
 
@@ -263,7 +263,7 @@ static void _create_canvas(DvzQtApp* app, DvzRequest req)
     DvzRenderer* rd = app->rd;
     ANN(rd);
 
-    VulkanWindow* window = dvz_qt_window(app);
+    DvzQtWindow* window = dvz_qt_window(app);
     ANN(window);
     window->show();
 
@@ -389,7 +389,7 @@ void dvz_qt_app_destroy(DvzQtApp* app)
 
 // Fallbacks.
 DvzQtApp* dvz_qt_app(QApplication* qapp) { return NULL };
-VulkanWindow* dvz_qt_window(DvzQtApp* app) { return NULL; }
+DvzQtWindow* dvz_qt_window(DvzQtApp* app) { return NULL; }
 void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch) { return NULL; }
 DvzBatch* dvz_qt_batch(DvzQtApp* app) { return NULL; }
 void dvz_qt_app_destroy(DvzQtApp* app) { return; }

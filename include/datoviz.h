@@ -136,7 +136,7 @@ DVZ_EXPORT DvzQtApp* dvz_qt_app(QApplication* qapp, int flags);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT VulkanWindow* dvz_qt_window(DvzQtApp* app);
+DVZ_EXPORT DvzQtWindow* dvz_qt_window(DvzQtApp* app);
 
 
 

@@ -87,7 +87,7 @@ typedef struct DvzBatch DvzBatch;
 // Qt.
 typedef struct DvzQtApp DvzQtApp;
 typedef struct QApplication QApplication;
-typedef struct VulkanWindow VulkanWindow;
+typedef struct DvzQtWindow DvzQtWindow;
 
 // Recorder.
 typedef struct DvzRecorderViewport DvzRecorderViewport;
