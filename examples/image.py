@@ -38,7 +38,7 @@ with Image.open(filepath) as f:
     filter = dvz.FILTER_LINEAR
 
     # Create a texture out of a RGB image.
-    tex = dvz.tex_image(batch, format, width, height, A_(image))
+    tex = dvz.tex_image(batch, format, width, height, A_(image), 0)
 
 
 # Create a figure 1000x1000.
