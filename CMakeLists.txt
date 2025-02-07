@@ -196,6 +196,11 @@ endif()
 # ---- qt ---------------------------------------------------------------------------------------
 set(HAS_QT 0)
 
+if(NOT ${OS_LINUX})
+    set(DATOVIZ_WITH_QT 0)
+    message(WARNING "Disabling Qt build on macOS and Windows for now")
+endif()
+
 if(DATOVIZ_WITH_QT)
     set(CMAKE_MESSAGE_LOG_LEVEL WARNING)
     find_package(Qt6 COMPONENTS Core Gui Widgets)
@@ -208,8 +213,6 @@ if(DATOVIZ_WITH_QT)
             ${Qt6Widgets_INCLUDE_DIRS})
         set(CORE_LIBS ${CORE_LIBS} Qt6::Core Qt6::Gui Qt6::Widgets)
         set(HAS_QT 1)
-    else()
-        set(HAS_QT 0)
     endif()
 endif()
 
@@ -741,11 +744,10 @@ set(core_files
     # GUI
     "src/gui.cpp"
     "src/fps.cpp"
-)
 
-if(${HAS_QT})
-    set(core_files ${core_files} "src/qtapp.cpp")
-endif()
+    # Qt: the file is protected by #if HAS_QT
+    "src/qtapp.cpp"
+)
 
 add_library(datoviz_core OBJECT ${core_files})
 

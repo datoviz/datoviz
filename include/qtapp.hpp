@@ -20,11 +20,6 @@
 #include "_obj.h"
 #include "datoviz.h"
 
-#if HAS_QT
-#include <QApplication>
-#include <QVulkanWindow>
-#endif
-
 
 
 /*************************************************************************************************/
@@ -36,6 +31,8 @@ typedef struct DvzGpu DvzGpu;
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzRenderpass DvzRenderpass;
+typedef struct QApplication QApplication;
+typedef struct QVulkanInstance QVulkanInstance;
 
 
 

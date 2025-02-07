@@ -8,6 +8,18 @@
 /*  Qt app                                                                                       */
 /*************************************************************************************************/
 
+#include "qtapp.hpp"
+#include "canvas.h"
+#include "datoviz.h"
+#include "datoviz_protocol.h"
+#include "host.h"
+#include "recorder.h"
+#include "render_utils.h"
+#include "renderer.h"
+#include "vklite.h"
+#include "workspace.h"
+
+
 #if HAS_QT
 
 #include <QFile>
@@ -16,17 +28,6 @@
 #include <QVulkanFunctions>
 #include <QVulkanInstance>
 #include <QVulkanWindow>
-
-#include "canvas.h"
-#include "datoviz.h"
-#include "datoviz_protocol.h"
-#include "host.h"
-#include "qtapp.hpp"
-#include "recorder.h"
-#include "render_utils.h"
-#include "renderer.h"
-#include "vklite.h"
-#include "workspace.h"
 
 
 
@@ -383,17 +384,17 @@ void dvz_qt_app_destroy(DvzQtApp* app)
     FREE(app);
 }
 
+EXTERN_C_OFF
+
 
 
 #else
 
 // Fallbacks.
-DvzQtApp* dvz_qt_app(QApplication* qapp) { return NULL };
+DvzQtApp* dvz_qt_app(QApplication* qapp, int flags) { return NULL; };
 DvzQtWindow* dvz_qt_window(DvzQtApp* app) { return NULL; }
-void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch) { return NULL; }
+void dvz_qt_submit(DvzQtApp* app, DvzBatch* batch) { return; }
 DvzBatch* dvz_qt_batch(DvzQtApp* app) { return NULL; }
 void dvz_qt_app_destroy(DvzQtApp* app) { return; }
 
 #endif
-
-EXTERN_C_OFF
