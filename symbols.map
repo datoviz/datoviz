@@ -165,7 +165,6 @@ dvz_monoglyph_offset
 dvz_monoglyph_position
 dvz_monoglyph_size
 dvz_monoglyph_textarea
-dvz_mvp
 dvz_ortho_end
 dvz_ortho_flags
 dvz_ortho_mvp
@@ -228,6 +227,11 @@ dvz_point_alloc
 dvz_point_color
 dvz_point_position
 dvz_point_size
+dvz_qt_app
+dvz_qt_app_destroy
+dvz_qt_batch
+dvz_qt_submit
+dvz_qt_window
 dvz_resample
 dvz_scene
 dvz_scene_destroy
@@ -240,6 +244,13 @@ dvz_segment_color
 dvz_segment_linewidth
 dvz_segment_position
 dvz_segment_shift
+dvz_server
+dvz_server_destroy
+dvz_server_grab
+dvz_server_keyboard
+dvz_server_mouse
+dvz_server_resize
+dvz_server_submit
 dvz_shape_begin
 dvz_shape_cone
 dvz_shape_cube
@@ -384,6 +395,8 @@ dvz_delete_dat
 dvz_delete_graphics
 dvz_delete_sampler
 dvz_delete_tex
+dvz_mvp
+dvz_mvp_default
 dvz_record_begin
 dvz_record_draw
 dvz_record_draw_indexed
@@ -414,3 +427,4 @@ dvz_set_vertex
 dvz_update_board
 dvz_upload_dat
 dvz_upload_tex
+dvz_viewport_default

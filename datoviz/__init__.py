@@ -201,6 +201,12 @@ def uvec3(x: int = 0, y: int = 0, z: int = 0):
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
+
+# HACK: mock structs for Qt wrapper functions
+class QApplication(ctypes.Structure):
+    pass
+
+
 DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
 DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
 
@@ -417,6 +423,7 @@ class DvzRecorderCommandType(CtypesEnum):
     DVZ_RECORDER_DRAW_INDEXED_INDIRECT = 5
     DVZ_RECORDER_VIEWPORT = 6
     DVZ_RECORDER_END = 7
+    DVZ_RECORDER_COUNT = 8
 
 
 class DvzRequestAction(CtypesEnum):
@@ -1137,6 +1144,7 @@ RECORDER_DRAW_INDIRECT = 4
 RECORDER_DRAW_INDEXED_INDIRECT = 5
 RECORDER_VIEWPORT = 6
 RECORDER_END = 7
+RECORDER_COUNT = 8
 REQUEST_ACTION_NONE = 0
 REQUEST_ACTION_CREATE = 1
 REQUEST_ACTION_DELETE = 2
@@ -1723,7 +1731,19 @@ class DvzParams(ctypes.Structure):
     pass
 
 
+class DvzQtApp(ctypes.Structure):
+    pass
+
+
+class DvzQtWindow(ctypes.Structure):
+    pass
+
+
 class DvzScene(ctypes.Structure):
+    pass
+
+
+class DvzServer(ctypes.Structure):
     pass
 
 
@@ -1763,6 +1783,31 @@ class DvzMVP(ctypes.Structure):
         ("model", ctypes.c_float * 16),
         ("view", ctypes.c_float * 16),
         ("proj", ctypes.c_float * 16),
+    ]
+
+
+class _VkViewport(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("x", ctypes.c_float),
+        ("y", ctypes.c_float),
+        ("width", ctypes.c_float),
+        ("height", ctypes.c_float),
+        ("minDepth", ctypes.c_float),
+        ("maxDepth", ctypes.c_float),
+    ]
+
+
+class DvzViewport(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("viewport", _VkViewport),
+        ("margins", ctypes.c_float * 4),
+        ("offset_screen", ctypes.c_uint32 * 2),
+        ("size_screen", ctypes.c_uint32 * 2),
+        ("offset_framebuffer", ctypes.c_uint32 * 2),
+        ("size_framebuffer", ctypes.c_uint32 * 2),
+        ("flags", ctypes.c_int),
     ]
 
 
@@ -2250,6 +2295,7 @@ class DvzRequester(ctypes.Structure):
 
 AtlasFont = DvzAtlasFont
 MVP = DvzMVP
+Viewport = DvzViewport
 Shape = DvzShape
 KeyboardEvent = DvzKeyboardEvent
 MouseButtonEvent = DvzMouseButtonEvent
@@ -2372,6 +2418,191 @@ cb : DvzErrorCallback
 """
 error_callback.argtypes = [
     DvzErrorCallback,  # DvzErrorCallback cb
+]
+
+# Function dvz_qt_app()
+qt_app = dvz.dvz_qt_app
+qt_app.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+qt_app.argtypes = [
+    ctypes.POINTER(QApplication),  # QApplication* qapp
+    ctypes.c_int,  # int flags
+]
+qt_app.restype = ctypes.POINTER(DvzQtApp)
+
+# Function dvz_qt_window()
+qt_window = dvz.dvz_qt_window
+qt_window.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+qt_window.argtypes = [
+    ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
+]
+qt_window.restype = ctypes.POINTER(DvzQtWindow)
+
+# Function dvz_qt_submit()
+qt_submit = dvz.dvz_qt_submit
+qt_submit.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+qt_submit.argtypes = [
+    ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_qt_batch()
+qt_batch = dvz.dvz_qt_batch
+qt_batch.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+qt_batch.argtypes = [
+    ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
+]
+qt_batch.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_qt_app_destroy()
+qt_app_destroy = dvz.dvz_qt_app_destroy
+qt_app_destroy.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+qt_app_destroy.argtypes = [
+    ctypes.POINTER(DvzQtApp),  # DvzQtApp* app
+]
+
+# Function dvz_server()
+server = dvz.dvz_server
+server.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server.argtypes = [
+    ctypes.c_int,  # int flags
+]
+server.restype = ctypes.POINTER(DvzServer)
+
+# Function dvz_server_submit()
+server_submit = dvz.dvz_server_submit
+server_submit.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_submit.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+]
+
+# Function dvz_server_mouse()
+server_mouse = dvz.dvz_server_mouse
+server_mouse.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_mouse.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    DvzId,  # DvzId canvas_id
+    DvzMouseEvent,  # DvzMouseEvent ev
+]
+
+# Function dvz_server_keyboard()
+server_keyboard = dvz.dvz_server_keyboard
+server_keyboard.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_keyboard.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    DvzId,  # DvzId canvas_id
+    DvzKeyboardEvent,  # DvzKeyboardEvent ev
+]
+
+# Function dvz_server_resize()
+server_resize = dvz.dvz_server_resize
+server_resize.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_resize.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    DvzId,  # DvzId canvas_id
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+
+# Function dvz_server_grab()
+server_grab = dvz.dvz_server_grab
+server_grab.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_grab.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    DvzId,  # DvzId canvas_id
+    ctypes.c_int,  # int flags
+]
+server_grab.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_server_destroy()
+server_destroy = dvz.dvz_server_destroy
+server_destroy.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+server_destroy.argtypes = [
+    ctypes.POINTER(DvzServer),  # DvzServer* server
 ]
 
 # Function dvz_scene()
@@ -2547,32 +2778,6 @@ figure : DvzFigure*
 figure_destroy.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
 ]
-
-# Function dvz_mvp()
-mvp = dvz.dvz_mvp
-mvp.__doc__ = """
-Create a MVP structure.
-
-Parameters
-----------
-model : mat4
-    the model matrix
-view : mat4
-    the view matrix
-proj : mat4
-    the projection matrix
-
-Returns
--------
-type
-    the MVP structure
-"""
-mvp.argtypes = [
-    ctypes.c_float * 16,  # mat4 model
-    ctypes.c_float * 16,  # mat4 view
-    ctypes.c_float * 16,  # mat4 proj
-]
-mvp.restype = DvzMVP
 
 # Function dvz_panel()
 panel = dvz.dvz_panel
@@ -9718,6 +9923,70 @@ rqr : DvzRequester*
 requester_destroy.argtypes = [
     ctypes.POINTER(DvzRequester),  # DvzRequester* rqr
 ]
+
+# Function dvz_mvp()
+mvp = dvz.dvz_mvp
+mvp.__doc__ = """
+Create a MVP structure.
+
+Parameters
+----------
+model : mat4
+    the model matrix
+view : mat4
+    the view matrix
+proj : mat4
+    the projection matrix
+
+Returns
+-------
+type
+    the MVP structure
+"""
+mvp.argtypes = [
+    ctypes.c_float * 16,  # mat4 model
+    ctypes.c_float * 16,  # mat4 view
+    ctypes.c_float * 16,  # mat4 proj
+]
+mvp.restype = DvzMVP
+
+# Function dvz_mvp_default()
+mvp_default = dvz.dvz_mvp_default
+mvp_default.__doc__ = """
+Return a default DvzMVP struct
+
+
+Returns
+-------
+type
+    the DvzMVP struct
+"""
+mvp_default.argtypes = [
+]
+mvp_default.restype = DvzMVP
+
+# Function dvz_viewport_default()
+viewport_default = dvz.dvz_viewport_default
+viewport_default.__doc__ = """
+Return a default viewport
+
+Parameters
+----------
+width : uint32_t
+    the viewport width, in framebuffer pixels
+height : uint32_t
+    the viewport height, in framebuffer pixels
+
+Returns
+-------
+type
+    the viewport
+"""
+viewport_default.argtypes = [
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+viewport_default.restype = DvzViewport
 
 # Function dvz_batch()
 batch = dvz.dvz_batch

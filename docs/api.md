@@ -1973,18 +1973,6 @@ void dvz_monoglyph_textarea(
 )
 ```
 
-### `dvz_mvp()`
-
-Create a MVP structure.
-
-```c
-DvzMVP dvz_mvp(  // returns: the MVP structure
-    mat4 model,  // the model matrix
-    mat4 view,  // the view matrix
-    mat4 proj,  // the projection matrix
-)
-```
-
 ### `dvz_ortho_end()`
 
 End an ortho interaction.
@@ -2696,6 +2684,56 @@ void dvz_point_size(
 )
 ```
 
+### `dvz_qt_app()`
+
+Placeholder.
+
+```c
+DvzQtApp* dvz_qt_app(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_qt_app_destroy()`
+
+Placeholder.
+
+```c
+void dvz_qt_app_destroy(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_qt_batch()`
+
+Placeholder.
+
+```c
+DvzBatch* dvz_qt_batch(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_qt_submit()`
+
+Placeholder.
+
+```c
+void dvz_qt_submit(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_qt_window()`
+
+Placeholder.
+
+```c
+DvzQtWindow* dvz_qt_window(
+     placeholder,  // placeholder
+)
+```
+
 ### `dvz_resample()`
 
 Normalize a value in an interval.
@@ -2842,6 +2880,76 @@ void dvz_segment_shift(
     uint32_t count,  // the number of items to update
     vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
     int flags,  // the data update flags
+)
+```
+
+### `dvz_server()`
+
+Placeholder.
+
+```c
+DvzServer* dvz_server(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_destroy()`
+
+Placeholder.
+
+```c
+void dvz_server_destroy(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_grab()`
+
+Placeholder.
+
+```c
+uint8_t* dvz_server_grab(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_keyboard()`
+
+Placeholder.
+
+```c
+void dvz_server_keyboard(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_mouse()`
+
+Placeholder.
+
+```c
+void dvz_server_mouse(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_resize()`
+
+Placeholder.
+
+```c
+void dvz_server_resize(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_server_submit()`
+
+Placeholder.
+
+```c
+void dvz_server_submit(
+     placeholder,  // placeholder
 )
 ```
 
@@ -4528,6 +4636,28 @@ DvzRequest dvz_delete_tex(  // returns: the request
 )
 ```
 
+### `dvz_mvp()`
+
+Create a MVP structure.
+
+```c
+DvzMVP dvz_mvp(  // returns: the MVP structure
+    mat4 model,  // the model matrix
+    mat4 view,  // the view matrix
+    mat4 proj,  // the projection matrix
+)
+```
+
+### `dvz_mvp_default()`
+
+Return a default DvzMVP struct
+
+```c
+DvzMVP dvz_mvp_default(  // returns: the DvzMVP struct
+
+)
+```
+
 ### `dvz_record_begin()`
 
 Create a request for starting recording of command buffer.
@@ -4902,6 +5032,17 @@ DvzRequest dvz_upload_tex(  // returns: the request
     uvec3 shape,  // the shape
     DvzSize size,  // the number of bytes in data to transfer
     void* data,  // a pointer to the data to upload
+)
+```
+
+### `dvz_viewport_default()`
+
+Return a default viewport
+
+```c
+DvzViewport dvz_viewport_default(  // returns: the viewport
+    uint32_t width,  // the viewport width, in framebuffer pixels
+    uint32_t height,  // the viewport height, in framebuffer pixels
 )
 ```
 
@@ -5500,6 +5641,7 @@ DVZ_RECORDER_DRAW_INDIRECT
 DVZ_RECORDER_DRAW_INDEXED_INDIRECT
 DVZ_RECORDER_VIEWPORT
 DVZ_RECORDER_END
+DVZ_RECORDER_COUNT
 ```
 
 ### `DvzRequestAction`
@@ -6301,6 +6443,19 @@ struct DvzTimerEvent
     void* user_data
 ```
 
+### `DvzViewport`
+
+```
+struct DvzViewport
+    _VkViewport viewport
+    vec4 margins
+    uvec2 offset_screen
+    uvec2 size_screen
+    uvec2 offset_framebuffer
+    uvec2 size_framebuffer
+    int flags
+```
+
 ### `DvzWindowEvent`
 
 ```
@@ -6311,5 +6466,17 @@ struct DvzWindowEvent
     uint32_t screen_height
     int flags
     void* user_data
+```
+
+### `_VkViewport`
+
+```
+struct _VkViewport
+    float x
+    float y
+    float width
+    float height
+    float minDepth
+    float maxDepth
 ```
 

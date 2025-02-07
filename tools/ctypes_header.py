@@ -202,6 +202,12 @@ def uvec3(x: int = 0, y: int = 0, z: int = 0):
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
+
+# HACK: mock structs for Qt wrapper functions
+class QApplication(ctypes.Structure):
+    pass
+
+
 DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
 DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
 

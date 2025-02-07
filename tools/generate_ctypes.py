@@ -61,11 +61,8 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
     elif type == 'void':
         return 'None'
 
-    elif type.startswith('Dvz'):
-        return type
-
     else:
-        return None
+        return type
 
 
 # Original C type to np.dtype, no pointers.
