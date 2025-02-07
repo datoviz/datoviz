@@ -198,7 +198,7 @@ set(HAS_QT 0)
 
 if(DATOVIZ_WITH_QT)
     set(CMAKE_MESSAGE_LOG_LEVEL WARNING)
-    find_package(Qt6 COMPONENTS Core Gui Widgets QUIET)
+    find_package(Qt6 COMPONENTS Core Gui Widgets)
     set(CMAKE_MESSAGE_LOG_LEVEL DEBUG)
 
     if(Qt6_FOUND)
