@@ -692,6 +692,25 @@ void dvz_commands_destroy(DvzCommands* cmds)
 
 
 
+DvzCommands dvz_commands_wrap(DvzGpu* gpu, uint32_t img_count)
+{
+    ANN(gpu);
+    DvzCommands commands = {0};
+    commands.gpu = gpu;
+    commands.count = img_count;
+    return commands;
+}
+
+
+void dvz_commands_set(DvzCommands* cmds, uint32_t img_idx, VkCommandBuffer cmd)
+{
+    ANN(cmds);
+    ASSERT(img_idx < DVZ_MAX_SWAPCHAIN_IMAGES);
+    cmds->cmds[img_idx] = cmd;
+}
+
+
+
 /*************************************************************************************************/
 /*  Buffers                                                                                      */
 /*************************************************************************************************/
@@ -3523,6 +3542,30 @@ void dvz_framebuffers_destroy(DvzFramebuffers* framebuffers)
     log_trace("destroying %d framebuffers", framebuffers->framebuffer_count);
     _framebuffers_destroy(framebuffers);
     dvz_obj_destroyed(&framebuffers->obj);
+}
+
+
+
+DvzFramebuffers dvz_framebuffers_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t img_count)
+{
+    ANN(gpu);
+
+    DvzFramebuffers framebuffers = {0};
+    framebuffers.gpu = gpu;
+    framebuffers.renderpass = renderpass;
+    framebuffers.framebuffer_count = img_count;
+    dvz_obj_created(&framebuffers.obj);
+    return framebuffers;
+}
+
+
+
+void dvz_framebuffers_set(
+    DvzFramebuffers* framebuffers, uint32_t img_idx, VkFramebuffer framebuffer)
+{
+    ANN(framebuffers);
+    ASSERT(img_idx < DVZ_MAX_SWAPCHAIN_IMAGES);
+    framebuffers->framebuffers[img_idx] = framebuffer;
 }
 
 
