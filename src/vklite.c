@@ -11,6 +11,7 @@
 #include "vklite.h"
 #include "_pointer.h"
 #include "common.h"
+#include "datoviz_vulkan.h"
 #include "host.h"
 #include "shader.h"
 #include "vklite_utils.h"
@@ -274,6 +275,23 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     dvz_obj_init(&gpu->obj);
     gpu->queues.queue_count = 0;
     log_trace("GPU #%d destroyed", gpu->idx);
+}
+
+
+
+DvzGpu* dvz_gpu_wrap(DvzHost* host, VkDevice device)
+{
+    ANN(host);
+    uint32_t i = 0;
+    DvzGpu* gpu = (DvzGpu*)dvz_container_alloc(&host->gpus);
+    ANN(gpu);
+
+    gpu->host = host;
+    gpu->idx = i;
+    gpu->device = device;
+
+    dvz_obj_created(&gpu->obj);
+    return gpu;
 }
 
 
