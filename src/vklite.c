@@ -3379,6 +3379,18 @@ void dvz_renderpass_destroy(DvzRenderpass* renderpass)
 
 
 
+DvzRenderpass dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass vk_renderpass)
+{
+    ANN(gpu);
+    DvzRenderpass renderpass = {0};
+    renderpass.gpu = gpu;
+    renderpass.renderpass = vk_renderpass;
+    dvz_obj_created(&renderpass.obj);
+    return renderpass;
+}
+
+
+
 /*************************************************************************************************/
 /*  Framebuffers                                                                                 */
 /*************************************************************************************************/

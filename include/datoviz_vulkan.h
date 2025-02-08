@@ -71,7 +71,7 @@ DVZ_EXPORT DvzGpu* dvz_gpu_wrap(DvzHost* host, VkDevice device);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzRenderpass* dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass renderpass);
+DVZ_EXPORT DvzRenderpass dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass vk_renderpass);
 
 
 
