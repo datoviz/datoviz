@@ -4282,6 +4282,86 @@ void dvz_range(
 )
 ```
 
+### `dvz_canvas_wrap()`
+
+Placeholder.
+
+```c
+DvzCanvas* dvz_canvas_wrap(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_commands_set()`
+
+Placeholder.
+
+```c
+void dvz_commands_set(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_commands_wrap()`
+
+Placeholder.
+
+```c
+DvzCommands dvz_commands_wrap(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_framebuffers_set()`
+
+Placeholder.
+
+```c
+void dvz_framebuffers_set(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_framebuffers_wrap()`
+
+Placeholder.
+
+```c
+DvzFramebuffers dvz_framebuffers_wrap(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_gpu_wrap()`
+
+Placeholder.
+
+```c
+DvzGpu* dvz_gpu_wrap(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_host_wrap()`
+
+Placeholder.
+
+```c
+DvzHost* dvz_host_wrap(
+     placeholder,  // placeholder
+)
+```
+
+### `dvz_renderpass_wrap()`
+
+Placeholder.
+
+```c
+DvzRenderpass dvz_renderpass_wrap(
+     placeholder,  // placeholder
+)
+```
+
 ## Datoviz Rendering Protocol functions
 
 ### `dvz_batch()`

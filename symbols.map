@@ -428,3 +428,11 @@ dvz_update_board
 dvz_upload_dat
 dvz_upload_tex
 dvz_viewport_default
+dvz_canvas_wrap
+dvz_commands_set
+dvz_commands_wrap
+dvz_framebuffers_set
+dvz_framebuffers_wrap
+dvz_gpu_wrap
+dvz_host_wrap
+dvz_renderpass_wrap

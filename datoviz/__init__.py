@@ -202,9 +202,25 @@ DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
 
-# HACK: mock structs for Qt wrapper functions
+# HACK: mock structs for Qt/Vulkan wrappers
 class QApplication(ctypes.Structure):
     pass
+
+class VkInstance(ctypes.Structure):
+    pass
+
+class VkDevice(ctypes.Structure):
+    pass
+
+class VkFramebuffer(ctypes.Structure):
+    pass
+
+class VkRenderPass(ctypes.Structure):
+    pass
+
+class VkCommandBuffer(ctypes.Structure):
+    pass
+
 
 
 DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
@@ -1683,11 +1699,19 @@ class DvzCamera(ctypes.Structure):
     pass
 
 
+class DvzCanvas(ctypes.Structure):
+    pass
+
+
 class DvzCapType(ctypes.Structure):
     pass
 
 
 class DvzColor(ctypes.Structure):
+    pass
+
+
+class DvzCommands(ctypes.Structure):
     pass
 
 
@@ -1703,7 +1727,19 @@ class DvzFont(ctypes.Structure):
     pass
 
 
+class DvzFramebuffers(ctypes.Structure):
+    pass
+
+
+class DvzGpu(ctypes.Structure):
+    pass
+
+
 class DvzGuiWindow(ctypes.Structure):
+    pass
+
+
+class DvzHost(ctypes.Structure):
     pass
 
 
@@ -1736,6 +1772,10 @@ class DvzQtApp(ctypes.Structure):
 
 
 class DvzQtWindow(ctypes.Structure):
+    pass
+
+
+class DvzRenderpass(ctypes.Structure):
     pass
 
 
@@ -11455,6 +11495,135 @@ record_end.argtypes = [
     DvzId,  # DvzId canvas_or_board_id
 ]
 record_end.restype = DvzRequest
+
+# Function dvz_host_wrap()
+host_wrap = dvz.dvz_host_wrap
+host_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+host_wrap.argtypes = [
+    VkInstance,  # VkInstance instance
+]
+host_wrap.restype = ctypes.POINTER(DvzHost)
+
+# Function dvz_gpu_wrap()
+gpu_wrap = dvz.dvz_gpu_wrap
+gpu_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+gpu_wrap.argtypes = [
+    ctypes.POINTER(DvzHost),  # DvzHost* host
+    VkDevice,  # VkDevice device
+]
+gpu_wrap.restype = ctypes.POINTER(DvzGpu)
+
+# Function dvz_renderpass_wrap()
+renderpass_wrap = dvz.dvz_renderpass_wrap
+renderpass_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+renderpass_wrap.argtypes = [
+    ctypes.POINTER(DvzGpu),  # DvzGpu* gpu
+    VkRenderPass,  # VkRenderPass vk_renderpass
+]
+renderpass_wrap.restype = DvzRenderpass
+
+# Function dvz_framebuffers_wrap()
+framebuffers_wrap = dvz.dvz_framebuffers_wrap
+framebuffers_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+framebuffers_wrap.argtypes = [
+    ctypes.POINTER(DvzGpu),  # DvzGpu* gpu
+    ctypes.POINTER(DvzRenderpass),  # DvzRenderpass* renderpass
+    ctypes.c_uint32,  # uint32_t img_count
+]
+framebuffers_wrap.restype = DvzFramebuffers
+
+# Function dvz_framebuffers_set()
+framebuffers_set = dvz.dvz_framebuffers_set
+framebuffers_set.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+framebuffers_set.argtypes = [
+    ctypes.POINTER(DvzFramebuffers),  # DvzFramebuffers* framebuffers
+    ctypes.c_uint32,  # uint32_t img_idx
+    VkFramebuffer,  # VkFramebuffer framebuffer
+]
+
+# Function dvz_commands_wrap()
+commands_wrap = dvz.dvz_commands_wrap
+commands_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+commands_wrap.argtypes = [
+    ctypes.POINTER(DvzGpu),  # DvzGpu* gpu
+    ctypes.c_uint32,  # uint32_t img_count
+]
+commands_wrap.restype = DvzCommands
+
+# Function dvz_commands_set()
+commands_set = dvz.dvz_commands_set
+commands_set.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+commands_set.argtypes = [
+    ctypes.POINTER(DvzCommands),  # DvzCommands* cmds
+    ctypes.c_uint32,  # uint32_t img_idx
+    VkCommandBuffer,  # VkCommandBuffer cmd
+]
+
+# Function dvz_canvas_wrap()
+canvas_wrap = dvz.dvz_canvas_wrap
+canvas_wrap.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+canvas_wrap.argtypes = [
+    ctypes.POINTER(DvzGpu),  # DvzGpu* gpu
+    ctypes.POINTER(DvzRenderpass),  # DvzRenderpass* renderpass
+    ctypes.POINTER(DvzFramebuffers),  # DvzFramebuffers* framebuffers
+]
+canvas_wrap.restype = ctypes.POINTER(DvzCanvas)
 
 DVZ_FORMAT_COLOR = FORMAT_R8G8B8A8_UNORM
 

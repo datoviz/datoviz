@@ -203,9 +203,25 @@ DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
 
 
-# HACK: mock structs for Qt wrapper functions
+# HACK: mock structs for Qt/Vulkan wrappers
 class QApplication(ctypes.Structure):
     pass
+
+class VkInstance(ctypes.Structure):
+    pass
+
+class VkDevice(ctypes.Structure):
+    pass
+
+class VkFramebuffer(ctypes.Structure):
+    pass
+
+class VkRenderPass(ctypes.Structure):
+    pass
+
+class VkCommandBuffer(ctypes.Structure):
+    pass
+
 
 
 DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
