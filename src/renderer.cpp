@@ -9,6 +9,7 @@
 #include "board.h"
 #include "canvas.h"
 #include "context.h"
+#include "datoviz_enums.h"
 #include "pipe.h"
 #include "pipelib.h"
 #include "recorder.h"
@@ -24,10 +25,6 @@
 /*************************************************************************************************/
 /*  Macros                                                                                       */
 /*************************************************************************************************/
-
-#define ROUTE(action, type, function)                                                             \
-    rd->router->router[std::make_pair(DVZ_REQUEST_ACTION_##action, DVZ_REQUEST_OBJECT_##type)] =  \
-        function;
 
 #define SET_ID(x)                                                                                 \
     ASSERT(req.id != DVZ_ID_NONE);                                                                \
@@ -45,20 +42,13 @@
 
 
 /*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-typedef void* (*DvzRouterCallback)(DvzRenderer*, DvzRequest);
-
-
-
-/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
 extern "C" struct DvzRouter
 {
-    std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRouterCallback> router;
+    std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRendererCallback> router;
+    std::map<std::pair<DvzRequestAction, DvzRequestObject>, void*> user_data;
 };
 
 
@@ -67,7 +57,7 @@ extern "C" struct DvzRouter
 /*  Board                                                                                        */
 /*************************************************************************************************/
 
-static void* _board_create(DvzRenderer* rd, DvzRequest req)
+static void* _board_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     log_trace("create board");
@@ -85,7 +75,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _board_update(DvzRenderer* rd, DvzRequest req)
+static void* _board_update(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -100,7 +90,7 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _board_resize(DvzRenderer* rd, DvzRequest req)
+static void* _board_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -118,7 +108,7 @@ static void* _board_resize(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _board_background(DvzRenderer* rd, DvzRequest req)
+static void* _board_background(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -133,7 +123,7 @@ static void* _board_background(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _board_delete(DvzRenderer* rd, DvzRequest req)
+static void* _board_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -152,7 +142,7 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req)
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
-static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
+static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     log_trace("create canvas");
@@ -181,7 +171,7 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
+static void* _canvas_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -205,7 +195,7 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req)
 /*  Shaders                                                                                      */
 /*************************************************************************************************/
 
-static void* _shader_create(DvzRenderer* rd, DvzRequest req)
+static void* _shader_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
 
@@ -232,7 +222,7 @@ static void* _shader_create(DvzRenderer* rd, DvzRequest req)
 /*  Graphics                                                                                     */
 /*************************************************************************************************/
 
-static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
 
@@ -265,7 +255,7 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req)
 
 
 // Helper function to retrieve the DvzGraphics* pointer of graphics creation request.
-static inline DvzGraphics* _get_graphics(DvzRenderer* rd, DvzRequest req)
+static inline DvzGraphics* _get_graphics(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -289,9 +279,9 @@ static inline DvzGraphics* _get_graphics(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_primitive(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_primitive(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_PRIMITIVE);
 
     // NOTE: we assume VkPrimitiveTopology and DvzPrimitiveTopology match.
@@ -302,9 +292,9 @@ static void* _graphics_primitive(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_depth(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_depth(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_DEPTH);
 
     dvz_graphics_depth_test(graphics, req.content.set_depth.depth);
@@ -314,9 +304,9 @@ static void* _graphics_depth(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_blend(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_blend(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_BLEND);
 
     dvz_graphics_blend(graphics, req.content.set_blend.blend);
@@ -326,9 +316,9 @@ static void* _graphics_blend(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_polygon(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_polygon(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_POLYGON);
 
     // NOTE: we assume VkPolygonMode and DvzPolygonMode match.
@@ -339,9 +329,9 @@ static void* _graphics_polygon(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_cull(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_cull(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_CULL);
 
     // NOTE: we assume VkCullModeFlags and DvzCullMode match.
@@ -352,9 +342,9 @@ static void* _graphics_cull(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_front(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_front(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_FRONT);
 
     // NOTE: we assume VkFrontFace and DvzFrontFace match.
@@ -365,9 +355,9 @@ static void* _graphics_front(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_shader(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_shader(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_SHADER);
 
     // Get the shader object.
@@ -399,9 +389,9 @@ static void* _graphics_shader(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_VERTEX);
 
     // NOTE: we assume VkVertexInputRate and DvzVertexInputRate match.
@@ -414,9 +404,9 @@ static void* _graphics_vertex(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_vertex_attr(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_vertex_attr(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_VERTEX_ATTR);
 
     // NOTE: we assume VkFormat and DvzFormat match.
@@ -429,9 +419,9 @@ static void* _graphics_vertex_attr(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_slot(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_SLOT);
 
     // NOTE: we assume VkDescriptorType and DvzDescriptorType match.
@@ -443,9 +433,9 @@ static void* _graphics_slot(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_specialization(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_specialization(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
-    DvzGraphics* graphics = _get_graphics(rd, req);
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_SPECIALIZATION);
 
     // HACK: from DvzShaderType to VkShaderStageFlagBits.
@@ -463,7 +453,7 @@ static void* _graphics_specialization(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -487,7 +477,7 @@ static void* _graphics_delete(DvzRenderer* rd, DvzRequest req)
 /*  Bindings                                                                                     */
 /*************************************************************************************************/
 
-static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -510,7 +500,7 @@ static void* _graphics_bind_vertex(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -532,7 +522,7 @@ static void* _graphics_bind_index(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -556,7 +546,7 @@ static void* _graphics_bind_dat(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _graphics_bind_tex(DvzRenderer* rd, DvzRequest req)
+static void* _graphics_bind_tex(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -587,7 +577,7 @@ static void* _graphics_bind_tex(DvzRenderer* rd, DvzRequest req)
 /*  Dat                                                                                          */
 /*************************************************************************************************/
 
-static void* _dat_create(DvzRenderer* rd, DvzRequest req)
+static void* _dat_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     log_trace("create dat");
@@ -601,7 +591,7 @@ static void* _dat_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
+static void* _dat_upload(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -663,7 +653,7 @@ static void* _dat_upload(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
+static void* _dat_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -681,7 +671,7 @@ static void* _dat_resize(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
+static void* _dat_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -699,7 +689,7 @@ static void* _dat_delete(DvzRenderer* rd, DvzRequest req)
 /*  Tex                                                                                          */
 /*************************************************************************************************/
 
-static void* _tex_create(DvzRenderer* rd, DvzRequest req)
+static void* _tex_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     log_trace("create tex");
@@ -714,7 +704,7 @@ static void* _tex_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
+static void* _tex_upload(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -751,7 +741,7 @@ static void* _tex_upload(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
+static void* _tex_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -766,7 +756,7 @@ static void* _tex_resize(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _tex_delete(DvzRenderer* rd, DvzRequest req)
+static void* _tex_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -784,7 +774,7 @@ static void* _tex_delete(DvzRenderer* rd, DvzRequest req)
 /*  Sampler                                                                                      */
 /*************************************************************************************************/
 
-static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
+static void* _sampler_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
 
     ANN(rd);
@@ -800,7 +790,7 @@ static void* _sampler_create(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _sampler_delete(DvzRenderer* rd, DvzRequest req)
+static void* _sampler_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
@@ -879,7 +869,7 @@ static DvzRecorder* _get_or_create_recorder(DvzRenderer* rd, DvzRequest req)
 
 
 
-static void* _record_append(DvzRenderer* rd, DvzRequest req)
+static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     // NOTE: this function is called whenever a RECORD request is processed by the renderer.
     ANN(rd);
@@ -953,64 +943,101 @@ static void _setup_router(DvzRenderer* rd)
 
     rd->router = new DvzRouter();
     rd->router->router =
-        std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRouterCallback>();
+        std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRendererCallback>();
+    rd->router->user_data = std::map<std::pair<DvzRequestAction, DvzRequestObject>, void*>();
 
     // Board.
-    ROUTE(CREATE, BOARD, _board_create)
-    ROUTE(UPDATE, BOARD, _board_update)
-    ROUTE(RESIZE, BOARD, _board_resize)
-    ROUTE(SET, BACKGROUND, _board_background)
-    ROUTE(DELETE, BOARD, _board_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_BOARD, _board_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_UPDATE, DVZ_REQUEST_OBJECT_BOARD, _board_update, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_BOARD, _board_resize, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BACKGROUND, _board_background, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_BOARD, _board_delete, NULL);
 
     // Canvas.
-    ROUTE(CREATE, CANVAS, _canvas_create)
-    // ROUTE(UPDATE, CANVAS, _canvas_update)
-    ROUTE(DELETE, CANVAS, _canvas_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_delete, NULL);
 
     // Graphics.
-    ROUTE(CREATE, GRAPHICS, _graphics_create)
-    ROUTE(SET, PRIMITIVE, _graphics_primitive)
-    ROUTE(SET, DEPTH, _graphics_depth)
-    ROUTE(SET, BLEND, _graphics_blend)
-    ROUTE(SET, POLYGON, _graphics_polygon)
-    ROUTE(SET, CULL, _graphics_cull)
-    ROUTE(SET, FRONT, _graphics_front)
-    ROUTE(SET, SHADER, _graphics_shader)
-    ROUTE(SET, VERTEX, _graphics_vertex)
-    ROUTE(SET, VERTEX_ATTR, _graphics_vertex_attr)
-    ROUTE(SET, SLOT, _graphics_slot)
-    ROUTE(SET, SPECIALIZATION, _graphics_specialization)
-    ROUTE(DELETE, GRAPHICS, _graphics_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_GRAPHICS, _graphics_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_PRIMITIVE, _graphics_primitive, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_DEPTH, _graphics_depth, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BLEND, _graphics_blend, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_POLYGON, _graphics_polygon, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_CULL, _graphics_cull, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_FRONT, _graphics_front, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SHADER, _graphics_shader, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_VERTEX, _graphics_vertex, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_VERTEX_ATTR, _graphics_vertex_attr, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SLOT, _graphics_slot, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SPECIALIZATION, _graphics_specialization,
+        NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_GRAPHICS, _graphics_delete, NULL);
 
     // Shaders.
-    ROUTE(CREATE, SHADER, _shader_create)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_SHADER, _shader_create, NULL);
 
     // Bindings.
-    ROUTE(BIND, VERTEX, _graphics_bind_vertex)
-    ROUTE(BIND, INDEX, _graphics_bind_index)
-    ROUTE(BIND, DAT, _graphics_bind_dat)
-    ROUTE(BIND, TEX, _graphics_bind_tex)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_VERTEX, _graphics_bind_vertex, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_INDEX, _graphics_bind_index, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_DAT, _graphics_bind_dat, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_TEX, _graphics_bind_tex, NULL);
 
     // TODO: computes.
 
     // Dat.
-    ROUTE(CREATE, DAT, _dat_create)
-    ROUTE(UPLOAD, DAT, _dat_upload)
-    ROUTE(RESIZE, DAT, _dat_resize)
-    ROUTE(DELETE, DAT, _dat_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_DAT, _dat_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_UPLOAD, DVZ_REQUEST_OBJECT_DAT, _dat_upload, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_DAT, _dat_resize, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_DAT, _dat_delete, NULL);
 
     // Tex.
-    ROUTE(CREATE, TEX, _tex_create)
-    ROUTE(UPLOAD, TEX, _tex_upload)
-    ROUTE(RESIZE, TEX, _tex_resize)
-    ROUTE(DELETE, TEX, _tex_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_TEX, _tex_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_UPLOAD, DVZ_REQUEST_OBJECT_TEX, _tex_upload, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_TEX, _tex_resize, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_TEX, _tex_delete, NULL);
 
     // Sampler.
-    ROUTE(CREATE, SAMPLER, _sampler_create)
-    ROUTE(DELETE, SAMPLER, _sampler_delete)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_SAMPLER, _sampler_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_SAMPLER, _sampler_delete, NULL);
 
     // Command buffer recording.
-    ROUTE(RECORD, RECORD, _record_append)
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_RECORD, DVZ_REQUEST_OBJECT_RECORD, _record_append, NULL);
 }
 
 
@@ -1084,11 +1111,24 @@ DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags)
 
 
 
+void dvz_renderer_register(
+    DvzRenderer* rd, DvzRequestAction action, DvzRequestObject object_type, DvzRendererCallback cb,
+    void* user_data)
+{
+    ANN(rd);
+    auto key = std::make_pair(action, object_type);
+    rd->router->router[key] = cb;
+    rd->router->user_data[key] = user_data;
+}
+
+
+
 void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
 
-    DvzRouterCallback cb = rd->router->router[std::make_pair(req.action, req.type)];
+    auto key = std::make_pair(req.action, req.type);
+    DvzRendererCallback cb = rd->router->router[key];
     if (cb == NULL)
     {
         log_error("no router function registered for action %d and type %d", req.action, req.type);
@@ -1096,8 +1136,10 @@ void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
     }
     log_trace("processing renderer request action %d and type %d", req.action, req.type);
 
-    // Call the router callback.
-    void* obj = cb(rd, req);
+    void* user_data = rd->router->user_data[key];
+
+    // Call the renderer callback.
+    void* obj = cb(rd, req, user_data);
 
     // Register the pointer in the map table, associated with its id.
     _update_mapping(rd, req, obj);

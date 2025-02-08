@@ -31,6 +31,8 @@
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzRouter DvzRouter;
 
+typedef void* (*DvzRendererCallback)(DvzRenderer* rd, DvzRequest req, void* user_data);
+
 // Forward declarations.
 typedef struct DvzContext DvzContext;
 typedef struct DvzPipelib DvzPipelib;
@@ -75,6 +77,21 @@ EXTERN_C_ON
  * @returns the renderer
  */
 DvzRenderer* dvz_renderer(DvzGpu* gpu, int flags);
+
+
+
+/**
+ * Register a renderer callback function.
+ *
+ * @param rd the renderer
+ * @param action the request action
+ * @param object_type the request object type
+ * @param cb the renderer callback function for the specified action and object type
+ * @param user_data the user data
+ */
+void dvz_renderer_register(
+    DvzRenderer* rd, DvzRequestAction action, DvzRequestObject object_type, DvzRendererCallback cb,
+    void* user_data);
 
 
 
