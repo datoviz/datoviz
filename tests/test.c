@@ -81,6 +81,7 @@
 #include "test_renderer.h"
 #include "test_request.h"
 #include "test_resources.h"
+#include "test_server.h"
 #include "test_thread.h"
 #include "test_timer.h"
 #include "test_transfers.h"
@@ -376,6 +377,9 @@ int dvz_run_tests(const char* match)
     TEST(test_app_anim)
     TEST(test_app_pixel)
     TEST(test_app_viewset)
+
+    // Testing server.
+    TEST(test_server_1)
 
     // Testing scene.
     TEST(test_scene_1)

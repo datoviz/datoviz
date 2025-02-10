@@ -2780,7 +2780,8 @@ void dvz_graphics_destroy(DvzGraphics* graphics)
     ANN(graphics);
     if (graphics->obj.status <= DVZ_OBJECT_STATUS_INIT || graphics->gpu == NULL)
     {
-        // log_trace("skip destruction of already-destroyed graphics");
+        log_trace(
+            "skip destruction of already-destroyed graphics, status %d", graphics->obj.status);
         return;
     }
     ANN(graphics->gpu);

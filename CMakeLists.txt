@@ -952,6 +952,9 @@ if(DATOVIZ_WITH_CLI)
         # App
         "tests/test_app.c"
 
+        # Server
+        "tests/test_server.c"
+
         # Scene
         "tests/scene/test_animation.c"
         "tests/scene/test_arcball.c"

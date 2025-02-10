@@ -169,6 +169,7 @@ void dvz_pipelib_destroy(DvzPipelib* lib)
 {
     ANN(lib);
 
+    log_trace("destroy pipelib");
     CONTAINER_DESTROY_ITEMS(DvzPipe, lib->graphics, dvz_pipe_destroy)
     dvz_container_destroy(&lib->graphics);
 

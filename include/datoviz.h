@@ -227,6 +227,15 @@ dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint32_t h
 DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flags);
 
 
+/**
+ * Placeholder.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT uint8_t*
+dvz_scene_render(DvzScene* scene, DvzServer* server, DvzId canvas_id, int flags);
+
+
 
 /**
  * Placeholder.

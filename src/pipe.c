@@ -236,9 +236,15 @@ void dvz_pipe_destroy(DvzPipe* pipe)
     ANN(pipe);
 
     if (pipe->type == DVZ_PIPE_GRAPHICS)
+    {
+        log_trace("destroy graphics");
         dvz_graphics_destroy(&pipe->u.graphics);
+    }
     else if (pipe->type == DVZ_PIPE_COMPUTE)
+    {
+        log_trace("destroy compute");
         dvz_compute_destroy(&pipe->u.compute);
+    }
 
     if (dvz_obj_is_created(&pipe->descriptors.obj))
         dvz_descriptors_destroy(&pipe->descriptors);

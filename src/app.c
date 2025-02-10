@@ -543,7 +543,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
 
         // Save to a PNG.
         dvz_write_png(filename, board->width, board->height, rgb);
-        dvz_board_free(board);
+        // dvz_board_free(board);
 
         log_info("screenshot saved to %s (%s)", filename, pretty_size(dvz_file_size(filename)));
     }

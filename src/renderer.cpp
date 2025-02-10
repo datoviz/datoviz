@@ -60,6 +60,8 @@ extern "C" struct DvzRouter
 static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
+    ANN(rd->gpu);
+    ANN(rd->gpu->host);
     log_trace("create canvas");
 
     if (rd->workspace == NULL)
@@ -73,8 +75,30 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     // framebuffer size yet. This will be determined *after* the window has been created, which
     // will occur in the presenter (client-side), not on the renderer (server-side).
 
+    // NOTE: force offscreen rendering for all canvases with offscreen backend.
+    if (rd->gpu->host->backend == DVZ_BACKEND_OFFSCREEN)
+    {
+        log_trace("forcing created canvas to be offscreen as the backend is offscreen");
+        req.content.canvas.is_offscreen = true;
+    }
+
     if (req.content.canvas.is_offscreen)
     {
+        log_trace("renderer create board");
+
+        if (req.content.canvas.framebuffer_width == 0)
+        {
+            log_debug("offscreen canvas creation request has framebuffer_width==0, using "
+                      "screen_width instead");
+            req.content.canvas.framebuffer_width = req.content.canvas.screen_width;
+        }
+        if (req.content.canvas.framebuffer_height == 0)
+        {
+            log_debug("offscreen canvas creation request has framebuffer_height==0, using "
+                      "screen_height instead");
+            req.content.canvas.framebuffer_height = req.content.canvas.screen_height;
+        }
+
         ASSERT(req.content.canvas.framebuffer_width > 0);
         ASSERT(req.content.canvas.framebuffer_height > 0);
 
@@ -89,6 +113,7 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     }
     else
     {
+        log_trace("renderer create canvas");
         canvas = dvz_workspace_canvas(
             rd->workspace,                         //
             req.content.canvas.framebuffer_width,  //
@@ -177,7 +202,6 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
     }
     else if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
     {
-        dvz_board_free(canvas);
         dvz_board_destroy(canvas);
     }
 

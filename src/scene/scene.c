@@ -1295,3 +1295,22 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
     // Run the app.
     dvz_app_run(app, n_frames);
 }
+
+
+
+uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzId canvas_id, int flags)
+{
+    ANN(scene);
+
+    DvzBatch* batch = scene->batch;
+    ANN(batch);
+
+    // Build the scene.
+    _scene_build(scene);
+
+    // Process the scene's batch requests with the renderer.
+    dvz_server_submit(server, batch);
+
+    // Grab and return the image.
+    return dvz_server_grab(server, canvas_id, flags);
+}

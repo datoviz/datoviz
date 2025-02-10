@@ -27,18 +27,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Server functions                                                                             */
 /*************************************************************************************************/
 
@@ -123,9 +111,22 @@ void dvz_server_resize(DvzServer* server, DvzId canvas_id, uint32_t width, uint3
 uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flags)
 {
     ANN(server);
-    // TODO: board update
-    // TODO: return the board framebuffer
-    return NULL;
+    DvzRenderer* rd = server->rd;
+    ANN(rd);
+
+    DvzCanvas* canvas = dvz_renderer_canvas(server->rd, canvas_id);
+    ANN(canvas);
+    ASSERT(dvz_obj_is_created(&canvas->obj));
+
+    // Trigger an update.
+    dvz_cmd_submit_sync(&canvas->cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Grab the image.
+    DvzSize size = 0;
+    uint8_t* rgb = dvz_renderer_image(rd, canvas_id, &size, NULL);
+
+    // Return it (pointer should be managed by the renderer).
+    return rgb;
 }
 
 
