@@ -106,7 +106,11 @@ void dvz_map_remove(DvzMap* map, DvzId key)
 void* dvz_map_get(DvzMap* map, DvzId key)
 {
     ANN(map);
-    ASSERT(key != DVZ_ID_NONE);
+    if (key == DVZ_ID_NONE)
+    {
+        log_trace("calling dvz_map_get() on empty ID");
+        return NULL;
+    }
 
     if (dvz_map_exists(map, key))
         return map->_map[key].second;

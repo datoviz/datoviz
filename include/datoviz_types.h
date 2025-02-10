@@ -640,7 +640,6 @@ struct DvzBatch
     DvzRequest* requests;
 
     DvzList* pointers_to_free; // HACK: list of pointers created when loading requests dumps
-    DvzId board_id; // HACK: keep track of the last used board ID when using offscreen rendering
     int flags;
 };
 

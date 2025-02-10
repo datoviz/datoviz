@@ -487,16 +487,6 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
         // Append a board update request before processing the requests.
 
-        // HACK: we take the board ID from the batch.
-        if (batch->board_id == DVZ_ID_NONE)
-        {
-            log_warn("no board was defined in the application");
-        }
-        else
-        {
-            dvz_update_canvas(batch, batch->board_id);
-        }
-
         // Now that we appended the board update request to the batch, we can have the renderer
         // process the requests.
         dvz_renderer_requests(app->rd, dvz_batch_size(batch), dvz_batch_requests(batch));
@@ -504,9 +494,14 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
         // Set the DVZ_CAPTURE_PNG environment variable to automatically save a screenshot when
         // running.
         char* capture = capture_png(NULL);
-        if (capture != NULL)
+
+        // Canvas screenshot.
+        DvzCanvas* canvas = dvz_renderer_canvas(app->rd, DVZ_ID_NONE);
+        if (capture != NULL && canvas != NULL)
         {
-            dvz_app_screenshot(app, batch->board_id, capture);
+            DvzId canvas_id = canvas->obj.id;
+            dvz_renderer_request(app->rd, dvz_update_canvas(batch, canvas_id));
+            dvz_app_screenshot(app, canvas_id, capture);
         }
     }
 }
@@ -520,6 +515,8 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
     ANN(app);
     DvzRenderer* rd = app->rd;
     ANN(rd);
+
+    ASSERT(canvas_id != DVZ_ID_NONE);
 
     if (app->host->backend == DVZ_BACKEND_GLFW)
     {
