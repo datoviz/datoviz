@@ -74,6 +74,11 @@ static inline bool _is_drag(DvzMouseEvent ev)
 
 DvzScene* dvz_scene(DvzBatch* batch)
 {
+    if (batch == NULL)
+    {
+        log_trace("creating a new Batch as none was provided to dvz_scene()");
+        batch = dvz_batch();
+    }
     ANN(batch);
     DvzScene* scene = (DvzScene*)calloc(1, sizeof(DvzScene));
     scene->batch = batch;
@@ -1298,9 +1303,11 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
 
 
 
-uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzId canvas_id, int flags)
+uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzFigure* figure, int flags)
 {
     ANN(scene);
+    ANN(server);
+    ANN(figure);
 
     DvzBatch* batch = scene->batch;
     ANN(batch);
@@ -1312,5 +1319,5 @@ uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzId canvas_id, i
     dvz_server_submit(server, batch);
 
     // Grab and return the image.
-    return dvz_server_grab(server, canvas_id, flags);
+    return dvz_server_grab(server, dvz_figure_id(figure), flags);
 }

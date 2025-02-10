@@ -233,7 +233,7 @@ DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flag
  * @param placeholder placeholder
  */
 DVZ_EXPORT uint8_t*
-dvz_scene_render(DvzScene* scene, DvzServer* server, DvzId canvas_id, int flags);
+dvz_scene_render(DvzScene* scene, DvzServer* server, DvzFigure* figure, int flags);
 
 
 
