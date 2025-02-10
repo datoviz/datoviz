@@ -2777,6 +2777,16 @@ DvzFigure* dvz_scene_figure(  // returns: the figure
 )
 ```
 
+### `dvz_scene_render()`
+
+Placeholder.
+
+```c
+uint8_t* dvz_scene_render(
+     placeholder,  // placeholder
+)
+```
+
 ### `dvz_scene_run()`
 
 Start the event loop and render the scene in a window.
@@ -4465,20 +4475,6 @@ DvzRequest dvz_bind_vertex(  // returns: the request
 )
 ```
 
-### `dvz_create_board()`
-
-Create a request for board creation.
-
-```c
-DvzRequest dvz_create_board(  // returns: the request, containing a newly-generated id for the board to be created
-    DvzBatch* batch,  // the batch
-    uint32_t width,  // the board width
-    uint32_t height,  // the board height
-    cvec4 background,  // the background color
-    int flags,  // the board creation flags
-)
-```
-
 ### `dvz_create_canvas()`
 
 Create a request for canvas creation.
@@ -4525,7 +4521,7 @@ Create a request for a builtin graphics pipe creation.
 ```c
 DvzRequest dvz_create_graphics(  // returns: the request, containing a newly-generated id for the graphics pipe to be created
     DvzBatch* batch,  // the batch
-     parent,  // either the parent board or canvas id
+     parent,  // the parent canvas id
     DvzGraphicsType type,  // the graphics type
     int flags,  // the graphics creation flags
 )
@@ -4567,17 +4563,6 @@ DvzRequest dvz_create_tex(  // returns: the request, containing a newly-generate
     DvzFormat format,  // the image format
     uvec3 shape,  // the texture shape
     int flags,  // the dat creation flags
-)
-```
-
-### `dvz_delete_board()`
-
-Create a request for a board deletion.
-
-```c
-DvzRequest dvz_delete_board(  // returns: the request
-    DvzBatch* batch,  // the batch
-    DvzId id,  // the board id
 )
 ```
 
@@ -4806,16 +4791,16 @@ DvzBatch* dvz_requester_flush(  // returns: an array with all requests in the re
 )
 ```
 
-### `dvz_resize_board()`
+### `dvz_resize_canvas()`
 
-Create a request to resize a board.
+Create a request to resize an offscreen canvas (regular canvases are resized by the client).
 
 ```c
-DvzRequest dvz_resize_board(  // returns: the request
+DvzRequest dvz_resize_canvas(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId board,  // the board id
-    uint32_t width,  // the new board width
-    uint32_t height,  // the new board height
+    DvzId canvas,  // the canvas id
+    uint32_t width,  // the new canvas width
+    uint32_t height,  // the new canvas height
 )
 ```
 
@@ -4860,12 +4845,12 @@ DvzRequest dvz_set_attr(  // returns: the request
 
 ### `dvz_set_background()`
 
-Change the background color of the board.
+Change the background color of the canvas.
 
 ```c
 DvzRequest dvz_set_background(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId id,  // the board id
+    DvzId id,  // the canvas id
     cvec4 background,  // the background color
 )
 ```
@@ -4995,14 +4980,14 @@ DvzRequest dvz_set_vertex(  // returns: the request
 )
 ```
 
-### `dvz_update_board()`
+### `dvz_update_canvas()`
 
-Create a request for a board redraw (command buffer submission).
+Create a request for a canvas redraw (command buffer submission).
 
 ```c
-DvzRequest dvz_update_board(  // returns: the request
+DvzRequest dvz_update_canvas(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId id,  // the board id
+    DvzId id,  // the canvas id
 )
 ```
 
@@ -5665,7 +5650,6 @@ DVZ_REQUEST_ACTION_GET
 
 ```
 DVZ_REQUEST_OBJECT_NONE
-DVZ_REQUEST_OBJECT_BOARD
 DVZ_REQUEST_OBJECT_CANVAS
 DVZ_REQUEST_OBJECT_DAT
 DVZ_REQUEST_OBJECT_TEX
@@ -5974,7 +5958,6 @@ struct DvzBatch
     uint32_t count
     DvzRequest* requests
     DvzList* pointers_to_free
-    DvzId board_id
     int flags
 ```
 
@@ -6222,6 +6205,7 @@ struct DvzRequestCanvas
     uint32_t framebuffer_height
     uint32_t screen_width
     uint32_t screen_height
+    bool is_offscreen
     cvec4 background
 ```
 

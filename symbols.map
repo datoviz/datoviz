@@ -236,6 +236,7 @@ dvz_resample
 dvz_scene
 dvz_scene_destroy
 dvz_scene_figure
+dvz_scene_render
 dvz_scene_run
 dvz_segment
 dvz_segment_alloc
@@ -381,7 +382,6 @@ dvz_bind_dat
 dvz_bind_index
 dvz_bind_tex
 dvz_bind_vertex
-dvz_create_board
 dvz_create_canvas
 dvz_create_dat
 dvz_create_glsl
@@ -389,7 +389,6 @@ dvz_create_graphics
 dvz_create_sampler
 dvz_create_spirv
 dvz_create_tex
-dvz_delete_board
 dvz_delete_canvas
 dvz_delete_dat
 dvz_delete_graphics
@@ -409,7 +408,7 @@ dvz_requester
 dvz_requester_commit
 dvz_requester_destroy
 dvz_requester_flush
-dvz_resize_board
+dvz_resize_canvas
 dvz_resize_dat
 dvz_resize_tex
 dvz_set_attr
@@ -424,7 +423,7 @@ dvz_set_shader
 dvz_set_slot
 dvz_set_specialization
 dvz_set_vertex
-dvz_update_board
+dvz_update_canvas
 dvz_upload_dat
 dvz_upload_tex
 dvz_viewport_default

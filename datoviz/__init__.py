@@ -459,27 +459,26 @@ class DvzRequestAction(CtypesEnum):
 
 class DvzRequestObject(CtypesEnum):
     DVZ_REQUEST_OBJECT_NONE = 0
-    DVZ_REQUEST_OBJECT_BOARD = 100
-    DVZ_REQUEST_OBJECT_CANVAS = 2
-    DVZ_REQUEST_OBJECT_DAT = 3
-    DVZ_REQUEST_OBJECT_TEX = 4
-    DVZ_REQUEST_OBJECT_SAMPLER = 5
-    DVZ_REQUEST_OBJECT_COMPUTE = 6
-    DVZ_REQUEST_OBJECT_PRIMITIVE = 7
-    DVZ_REQUEST_OBJECT_DEPTH = 8
-    DVZ_REQUEST_OBJECT_BLEND = 9
-    DVZ_REQUEST_OBJECT_POLYGON = 10
-    DVZ_REQUEST_OBJECT_CULL = 11
-    DVZ_REQUEST_OBJECT_FRONT = 12
-    DVZ_REQUEST_OBJECT_SHADER = 13
-    DVZ_REQUEST_OBJECT_VERTEX = 14
-    DVZ_REQUEST_OBJECT_VERTEX_ATTR = 15
-    DVZ_REQUEST_OBJECT_SLOT = 16
-    DVZ_REQUEST_OBJECT_SPECIALIZATION = 17
-    DVZ_REQUEST_OBJECT_GRAPHICS = 18
-    DVZ_REQUEST_OBJECT_INDEX = 19
-    DVZ_REQUEST_OBJECT_BACKGROUND = 20
-    DVZ_REQUEST_OBJECT_RECORD = 21
+    DVZ_REQUEST_OBJECT_CANVAS = 101
+    DVZ_REQUEST_OBJECT_DAT = 2
+    DVZ_REQUEST_OBJECT_TEX = 3
+    DVZ_REQUEST_OBJECT_SAMPLER = 4
+    DVZ_REQUEST_OBJECT_COMPUTE = 5
+    DVZ_REQUEST_OBJECT_PRIMITIVE = 6
+    DVZ_REQUEST_OBJECT_DEPTH = 7
+    DVZ_REQUEST_OBJECT_BLEND = 8
+    DVZ_REQUEST_OBJECT_POLYGON = 9
+    DVZ_REQUEST_OBJECT_CULL = 10
+    DVZ_REQUEST_OBJECT_FRONT = 11
+    DVZ_REQUEST_OBJECT_SHADER = 12
+    DVZ_REQUEST_OBJECT_VERTEX = 13
+    DVZ_REQUEST_OBJECT_VERTEX_ATTR = 14
+    DVZ_REQUEST_OBJECT_SLOT = 15
+    DVZ_REQUEST_OBJECT_SPECIALIZATION = 16
+    DVZ_REQUEST_OBJECT_GRAPHICS = 17
+    DVZ_REQUEST_OBJECT_INDEX = 18
+    DVZ_REQUEST_OBJECT_BACKGROUND = 19
+    DVZ_REQUEST_OBJECT_RECORD = 20
 
 
 class DvzPrimitiveTopology(CtypesEnum):
@@ -1174,27 +1173,26 @@ REQUEST_ACTION_DOWNLOAD = 9
 REQUEST_ACTION_SET = 10
 REQUEST_ACTION_GET = 11
 REQUEST_OBJECT_NONE = 0
-REQUEST_OBJECT_BOARD = 100
-REQUEST_OBJECT_CANVAS = 2
-REQUEST_OBJECT_DAT = 3
-REQUEST_OBJECT_TEX = 4
-REQUEST_OBJECT_SAMPLER = 5
-REQUEST_OBJECT_COMPUTE = 6
-REQUEST_OBJECT_PRIMITIVE = 7
-REQUEST_OBJECT_DEPTH = 8
-REQUEST_OBJECT_BLEND = 9
-REQUEST_OBJECT_POLYGON = 10
-REQUEST_OBJECT_CULL = 11
-REQUEST_OBJECT_FRONT = 12
-REQUEST_OBJECT_SHADER = 13
-REQUEST_OBJECT_VERTEX = 14
-REQUEST_OBJECT_VERTEX_ATTR = 15
-REQUEST_OBJECT_SLOT = 16
-REQUEST_OBJECT_SPECIALIZATION = 17
-REQUEST_OBJECT_GRAPHICS = 18
-REQUEST_OBJECT_INDEX = 19
-REQUEST_OBJECT_BACKGROUND = 20
-REQUEST_OBJECT_RECORD = 21
+REQUEST_OBJECT_CANVAS = 101
+REQUEST_OBJECT_DAT = 2
+REQUEST_OBJECT_TEX = 3
+REQUEST_OBJECT_SAMPLER = 4
+REQUEST_OBJECT_COMPUTE = 5
+REQUEST_OBJECT_PRIMITIVE = 6
+REQUEST_OBJECT_DEPTH = 7
+REQUEST_OBJECT_BLEND = 8
+REQUEST_OBJECT_POLYGON = 9
+REQUEST_OBJECT_CULL = 10
+REQUEST_OBJECT_FRONT = 11
+REQUEST_OBJECT_SHADER = 12
+REQUEST_OBJECT_VERTEX = 13
+REQUEST_OBJECT_VERTEX_ATTR = 14
+REQUEST_OBJECT_SLOT = 15
+REQUEST_OBJECT_SPECIALIZATION = 16
+REQUEST_OBJECT_GRAPHICS = 17
+REQUEST_OBJECT_INDEX = 18
+REQUEST_OBJECT_BACKGROUND = 19
+REQUEST_OBJECT_RECORD = 20
 PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_LINE_LIST = 1
 PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
@@ -2038,6 +2036,7 @@ class DvzRequestCanvas(ctypes.Structure):
         ("framebuffer_height", ctypes.c_uint32),
         ("screen_width", ctypes.c_uint32),
         ("screen_height", ctypes.c_uint32),
+        ("is_offscreen", ctypes.c_bool),
         ("background", ctypes.c_uint8 * 4),
     ]
 
@@ -2286,7 +2285,6 @@ class DvzBatch(ctypes.Structure):
         ("count", ctypes.c_uint32),
         ("requests", ctypes.POINTER(DvzRequest)),
         ("pointers_to_free", ctypes.POINTER(DvzList)),
-        ("board_id", DvzId),
         ("flags", ctypes.c_int),
     ]
 
@@ -2605,6 +2603,24 @@ server_grab.argtypes = [
     ctypes.c_int,  # int flags
 ]
 server_grab.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_scene_render()
+scene_render = dvz.dvz_scene_render
+scene_render.__doc__ = """
+Placeholder.
+
+Parameters
+----------
+placeholder : unknown
+    placeholder
+"""
+scene_render.argtypes = [
+    ctypes.POINTER(DvzScene),  # DvzScene* scene
+    ctypes.POINTER(DvzServer),  # DvzServer* server
+    DvzId,  # DvzId canvas_id
+    ctypes.c_int,  # int flags
+]
+scene_render.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_server_destroy()
 server_destroy = dvz.dvz_server_destroy
@@ -10245,139 +10261,6 @@ request_print.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_create_board()
-create_board = dvz.dvz_create_board
-create_board.__doc__ = """
-Create a request for board creation.  A board is an offscreen canvas.  NOTE: background color not implemented yet
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-width : uint32_t
-    the board width
-height : uint32_t
-    the board height
-background : cvec4
-    the background color
-flags : int
-    the board creation flags
-
-Returns
--------
-type
-    the request, containing a newly-generated id for the board to be created
-"""
-create_board.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    ctypes.c_uint32,  # uint32_t width
-    ctypes.c_uint32,  # uint32_t height
-    ctypes.c_uint8 * 4,  # cvec4 background
-    ctypes.c_int,  # int flags
-]
-create_board.restype = DvzRequest
-
-# Function dvz_set_background()
-set_background = dvz.dvz_set_background
-set_background.__doc__ = """
-Change the background color of the board.
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-id : DvzId
-    the board id
-background : cvec4
-    the background color
-
-Returns
--------
-type
-    the request
-"""
-set_background.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId id
-    ctypes.c_uint8 * 4,  # cvec4 background
-]
-set_background.restype = DvzRequest
-
-# Function dvz_update_board()
-update_board = dvz.dvz_update_board
-update_board.__doc__ = """
-Create a request for a board redraw (command buffer submission).
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-id : DvzId
-    the board id
-
-Returns
--------
-type
-    the request
-"""
-update_board.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId id
-]
-update_board.restype = DvzRequest
-
-# Function dvz_resize_board()
-resize_board = dvz.dvz_resize_board
-resize_board.__doc__ = """
-Create a request to resize a board.
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-board : DvzId
-    the board id
-width : uint32_t
-    the new board width
-height : uint32_t
-    the new board height
-
-Returns
--------
-type
-    the request
-"""
-resize_board.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId board
-    ctypes.c_uint32,  # uint32_t width
-    ctypes.c_uint32,  # uint32_t height
-]
-resize_board.restype = DvzRequest
-
-# Function dvz_delete_board()
-delete_board = dvz.dvz_delete_board
-delete_board.__doc__ = """
-Create a request for a board deletion.
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-id : DvzId
-    the board id
-
-Returns
--------
-type
-    the request
-"""
-delete_board.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId id
-]
-delete_board.restype = DvzRequest
-
 # Function dvz_create_canvas()
 create_canvas = dvz.dvz_create_canvas
 create_canvas.__doc__ = """
@@ -10409,6 +10292,84 @@ create_canvas.argtypes = [
     ctypes.c_int,  # int flags
 ]
 create_canvas.restype = DvzRequest
+
+# Function dvz_set_background()
+set_background = dvz.dvz_set_background
+set_background.__doc__ = """
+Change the background color of the canvas.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the canvas id
+background : cvec4
+    the background color
+
+Returns
+-------
+type
+    the request
+"""
+set_background.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+    ctypes.c_uint8 * 4,  # cvec4 background
+]
+set_background.restype = DvzRequest
+
+# Function dvz_update_canvas()
+update_canvas = dvz.dvz_update_canvas
+update_canvas.__doc__ = """
+Create a request for a canvas redraw (command buffer submission).
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+id : DvzId
+    the canvas id
+
+Returns
+-------
+type
+    the request
+"""
+update_canvas.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId id
+]
+update_canvas.restype = DvzRequest
+
+# Function dvz_resize_canvas()
+resize_canvas = dvz.dvz_resize_canvas
+resize_canvas.__doc__ = """
+Create a request to resize an offscreen canvas (regular canvases are resized by the client).
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas : DvzId
+    the canvas id
+width : uint32_t
+    the new canvas width
+height : uint32_t
+    the new canvas height
+
+Returns
+-------
+type
+    the request
+"""
+resize_canvas.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+resize_canvas.restype = DvzRequest
 
 # Function dvz_delete_canvas()
 delete_canvas = dvz.dvz_delete_canvas
@@ -10775,7 +10736,7 @@ Parameters
 batch : DvzBatch*
     the batch
 parent : unknown
-    either the parent board or canvas id
+    the parent canvas id
 type : DvzGraphicsType
     the graphics type
 flags : int
