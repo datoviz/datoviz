@@ -8,8 +8,8 @@
 /*  Vulkan wrappers                                                                              */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_PUBLIC_VULKAN
-#define DVZ_HEADER_PUBLIC_VULKAN
+#ifndef DVZ_HEADER_PUBLIC_WRAP
+#define DVZ_HEADER_PUBLIC_WRAP
 
 
 
@@ -53,7 +53,7 @@ EXTERN_C_ON
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzHost* dvz_host_wrap(VkInstance instance);
+DvzHost* dvz_host_wrap(VkInstance instance);
 
 
 
@@ -62,7 +62,7 @@ DVZ_EXPORT DvzHost* dvz_host_wrap(VkInstance instance);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzGpu* dvz_gpu_wrap(DvzHost* host, VkDevice device);
+DvzGpu* dvz_gpu_wrap(DvzHost* host, VkDevice device);
 
 
 
@@ -71,7 +71,7 @@ DVZ_EXPORT DvzGpu* dvz_gpu_wrap(DvzHost* host, VkDevice device);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzRenderpass dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass vk_renderpass);
+DvzRenderpass dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass vk_renderpass);
 
 
 
@@ -80,8 +80,7 @@ DVZ_EXPORT DvzRenderpass dvz_renderpass_wrap(DvzGpu* gpu, VkRenderPass vk_render
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzFramebuffers
-dvz_framebuffers_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t img_count);
+DvzFramebuffers dvz_framebuffers_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t img_count);
 
 
 
@@ -90,8 +89,8 @@ dvz_framebuffers_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t img_count
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void
-dvz_framebuffers_set(DvzFramebuffers* framebuffers, uint32_t img_idx, VkFramebuffer framebuffer);
+void dvz_framebuffers_set(
+    DvzFramebuffers* framebuffers, uint32_t img_idx, VkFramebuffer framebuffer);
 
 
 
@@ -100,7 +99,7 @@ dvz_framebuffers_set(DvzFramebuffers* framebuffers, uint32_t img_idx, VkFramebuf
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzCommands dvz_commands_wrap(DvzGpu* gpu, uint32_t img_count);
+DvzCommands dvz_commands_wrap(DvzGpu* gpu, uint32_t img_count);
 
 
 
@@ -109,7 +108,7 @@ DVZ_EXPORT DvzCommands dvz_commands_wrap(DvzGpu* gpu, uint32_t img_count);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void dvz_commands_set(DvzCommands* cmds, uint32_t img_idx, VkCommandBuffer cmd);
+void dvz_commands_set(DvzCommands* cmds, uint32_t img_idx, VkCommandBuffer cmd);
 
 
 
@@ -118,8 +117,7 @@ DVZ_EXPORT void dvz_commands_set(DvzCommands* cmds, uint32_t img_idx, VkCommandB
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzCanvas*
-dvz_canvas_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers);
+DvzCanvas* dvz_canvas_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers);
 
 
 

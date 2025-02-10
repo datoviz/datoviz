@@ -12,7 +12,6 @@
 #include "glfw_utils.h"
 
 #include "common.h"
-#include "datoviz_vulkan.h"
 #include "host.h"
 #include "vklite.h"
 #include "vkutils.h"
@@ -201,22 +200,4 @@ int dvz_host_destroy(DvzHost* host)
     log_trace("host destroyed");
 
     return res;
-}
-
-
-
-/*************************************************************************************************/
-/*  Host wrapper                                                                                 */
-/*************************************************************************************************/
-
-DvzHost* dvz_host_wrap(VkInstance instance)
-{
-    DvzHost* host = (DvzHost*)calloc(1, sizeof(DvzHost));
-    ANN(host);
-    dvz_obj_init(&host->obj);
-    host->obj.type = DVZ_OBJECT_TYPE_HOST;
-    host->backend = DVZ_BACKEND_WRAP;
-    host->instance = instance;
-    host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
-    return host;
 }

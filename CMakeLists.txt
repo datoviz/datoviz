@@ -734,6 +734,7 @@ set(core_files
     "src/surface.c"
     "src/transfers.c"
     "src/vklite.c"
+    "src/wrap.c"
     "src/workspace.c"
 
     # Client

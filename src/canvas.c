@@ -11,7 +11,6 @@
 #include "canvas.h"
 #include "canvas_utils.h"
 #include "common.h"
-#include "datoviz_vulkan.h"
 #include "host.h"
 #include "vklite.h"
 
@@ -406,24 +405,4 @@ void dvz_canvas_destroy(DvzCanvas* canvas)
     FREE(canvas->render.frame_timestamps);
 
     dvz_obj_destroyed(&canvas->obj);
-}
-
-
-
-DvzCanvas* dvz_canvas_wrap(DvzGpu* gpu, DvzRenderpass* renderpass, DvzFramebuffers* framebuffers)
-{
-    ANN(gpu);
-    ANN(renderpass);
-    ANN(framebuffers);
-
-
-    DvzCanvas* canvas = (DvzCanvas*)calloc(1, sizeof(DvzCanvas));
-    canvas->obj.type = DVZ_OBJECT_TYPE_CANVAS;
-    canvas->gpu = gpu;
-
-    canvas->render.renderpass = renderpass;
-    canvas->render.framebuffers = *framebuffers;
-    dvz_obj_created(&canvas->obj);
-
-    return canvas;
 }
