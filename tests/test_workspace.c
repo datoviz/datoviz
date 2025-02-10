@@ -14,6 +14,7 @@
 
 #include "test_workspace.h"
 #include "board.h"
+#include "canvas.h"
 #include "fileio.h"
 #include "test.h"
 #include "test_resources.h"
@@ -35,12 +36,12 @@ int test_workspace_1(TstSuite* suite)
     ANN(gpu);
 
     DvzWorkspace* ws = dvz_workspace(gpu, DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
-    DvzBoard* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
+    DvzCanvas* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);
     ANN(board);
 
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_cmd_begin(&cmds, 0);
-    dvz_cmd_begin_renderpass(&cmds, 0, board->renderpass, &board->framebuffers);
+    dvz_cmd_begin_renderpass(&cmds, 0, board->render.renderpass, &board->render.framebuffers);
     dvz_cmd_end_renderpass(&cmds, 0);
     dvz_cmd_end(&cmds, 0);
     dvz_cmd_submit_sync(&cmds, 0);

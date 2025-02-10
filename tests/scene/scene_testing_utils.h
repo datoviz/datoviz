@@ -61,7 +61,7 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
     // This pointer will be freed automatically by the renderer.
     uint8_t* rgb = dvz_renderer_image(rd, board, &size, NULL);
 
-    DvzBoard* b = dvz_renderer_board(rd, board);
+    DvzCanvas* b = dvz_renderer_board(rd, board);
 
     // Save to a PNG.
     char imgpath[1024] = {0};

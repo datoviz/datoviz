@@ -17,6 +17,7 @@
 #include "test_renderer.h"
 #include "_map.h"
 #include "board.h"
+#include "canvas.h"
 #include "datoviz.h"
 #include "fileio.h"
 #include "renderer.h"
@@ -294,7 +295,7 @@ int test_renderer_resize(TstSuite* suite)
     dvz_renderer_request(rd, req);
 
     // Check board resizing.
-    DvzBoard* board = dvz_renderer_board(rd, board_id);
+    DvzCanvas* board = dvz_renderer_board(rd, board_id);
     AT(board->width == WIDTH);
     AT(board->height == HEIGHT);
 

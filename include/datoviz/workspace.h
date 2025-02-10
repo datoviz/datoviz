@@ -43,7 +43,6 @@ typedef struct DvzWorkspace DvzWorkspace;
 // Forward declarations.
 typedef struct DvzGpu DvzGpu;
 typedef struct DvzCanvas DvzCanvas;
-typedef struct DvzBoard DvzBoard;
 
 
 
@@ -92,7 +91,8 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
  * @param height the board height
  * @param flags the board creation flags
  */
-DvzBoard* dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
+DvzCanvas*
+dvz_workspace_board(DvzWorkspace* workspace, uint32_t width, uint32_t height, int flags);
 
 
 

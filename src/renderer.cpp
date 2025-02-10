@@ -65,7 +65,7 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     ASSERT(req.content.board.width > 0);
     ASSERT(req.content.board.height > 0);
 
-    DvzBoard* board = dvz_workspace_board(
+    DvzCanvas* board = dvz_workspace_board(
         rd->workspace, req.content.board.width, req.content.board.height, req.flags);
     ANN(board);
     SET_ID(board)
@@ -81,7 +81,7 @@ static void* _board_update(DvzRenderer* rd, DvzRequest req, void* user_data)
     ASSERT(req.id != 0);
     log_trace("update board");
 
-    GET_ID(DvzBoard, board, req.id)
+    GET_ID(DvzCanvas, board, req.id)
 
     dvz_cmd_submit_sync(&board->cmds, DVZ_DEFAULT_QUEUE_RENDER);
 
@@ -99,7 +99,7 @@ static void* _board_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
     ASSERT(req.content.board.width > 0);
     ASSERT(req.content.board.height > 0);
 
-    GET_ID(DvzBoard, board, req.id)
+    GET_ID(DvzCanvas, board, req.id)
 
     dvz_board_resize(board, req.content.board.width, req.content.board.height);
 
@@ -113,7 +113,7 @@ static void* _board_background(DvzRenderer* rd, DvzRequest req, void* user_data)
     ANN(rd);
     ASSERT(req.id != 0);
 
-    GET_ID(DvzBoard, board, req.id)
+    GET_ID(DvzCanvas, board, req.id)
 
     // dvz_board_clear_color(board, req.content.board.background);
     dvz_board_recreate(board);
@@ -129,7 +129,7 @@ static void* _board_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
     ASSERT(req.id != 0);
     log_trace("delete board");
 
-    GET_ID(DvzBoard, board, req.id)
+    GET_ID(DvzCanvas, board, req.id)
 
     dvz_board_free(board);
     dvz_board_destroy(board);
@@ -839,7 +839,7 @@ static DvzRecorder* _get_or_create_recorder(DvzRenderer* rd, DvzRequest req)
     if (!is_canvas)
     {
         // Get the board.
-        GET_ID(DvzBoard, board, req.id)
+        GET_ID(DvzCanvas, board, req.id)
 
         // Ensure the board Recorder exists.
         if (!board->recorder)
@@ -907,7 +907,7 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
     {
         log_debug("applying the recorder to board 0x%" PRIx64, req.id);
 
-        DvzBoard* board = dvz_renderer_board(rd, req.id);
+        DvzCanvas* board = dvz_renderer_board(rd, req.id);
         ANN(board);
         dvz_recorder_set(recorder, rd, &board->cmds, 0);
     }
@@ -1162,14 +1162,14 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 
 
 
-DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id)
+DvzCanvas* dvz_renderer_board(DvzRenderer* rd, DvzId id)
 {
     ANN(rd);
 
     // NOTE: if id is None, we take the first board.
-    DvzBoard* board = id == DVZ_ID_NONE
-                          ? (DvzBoard*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_BOARD)
-                          : (DvzBoard*)dvz_map_get(rd->map, id);
+    DvzCanvas* board = id == DVZ_ID_NONE
+                           ? (DvzCanvas*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_BOARD)
+                           : (DvzCanvas*)dvz_map_get(rd->map, id);
     ANN(board);
     return board;
 }
@@ -1240,7 +1240,7 @@ uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t
 
     if (bctype == DVZ_REQUEST_OBJECT_BOARD)
     {
-        DvzBoard* board = (DvzBoard*)dvz_map_get(rd->map, bc_id);
+        DvzCanvas* board = (DvzCanvas*)dvz_map_get(rd->map, bc_id);
         ANN(board);
 
         // Find the pointer: either passed here, or the board-owned pointer.

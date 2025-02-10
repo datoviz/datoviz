@@ -534,7 +534,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
     }
     else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
     {
-        DvzBoard* board = dvz_renderer_board(rd, canvas_id);
+        DvzCanvas* board = dvz_renderer_board(rd, canvas_id);
         ANN(board);
 
         // Get the board image buffer.

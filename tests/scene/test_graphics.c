@@ -52,7 +52,7 @@
                                                                                                   \
     DvzRenderpass renderpass = offscreen_renderpass(gpu);                                         \
                                                                                                   \
-    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);                               \
+    DvzCanvas board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);                              \
     dvz_board_create(&board);
 
 #define GRAPHICS_MVP                                                                              \

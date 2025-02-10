@@ -23,21 +23,21 @@
 /*  Board                                                                                        */
 /*************************************************************************************************/
 
-DvzBoard
+DvzCanvas
 dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t height, int flags)
 {
     ANN(gpu);
     ASSERT(width > 0);
     ASSERT(height > 0);
 
-    DvzBoard board = {0};
+    DvzCanvas board = {0};
     board.obj.type = DVZ_OBJECT_TYPE_BOARD;
     board.gpu = gpu;
     board.flags = flags;
     board.width = width;
     board.height = height;
     board.size = width * height * 3 * sizeof(uint8_t);
-    board.renderpass = renderpass;
+    board.render.renderpass = renderpass;
     ASSERT(dvz_obj_is_created(&renderpass->obj));
 
     dvz_board_format(&board, DVZ_DEFAULT_FORMAT);
@@ -51,7 +51,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
 
 
 
-void dvz_board_format(DvzBoard* board, DvzFormat format)
+void dvz_board_format(DvzCanvas* board, DvzFormat format)
 {
     ANN(board);
     board->format = format;
@@ -62,7 +62,7 @@ void dvz_board_format(DvzBoard* board, DvzFormat format)
 
 
 
-void dvz_board_create(DvzBoard* board)
+void dvz_board_create(DvzCanvas* board)
 {
     ANN(board);
 
@@ -72,16 +72,18 @@ void dvz_board_create(DvzBoard* board)
     log_trace("creating the board");
 
     // Make images.
-    make_images(gpu, &board->images, board->format, board->width, board->height);
+    make_images(gpu, &board->render.images, board->format, board->width, board->height);
 
     // Make depth buffer image.
-    make_depth(gpu, &board->depth, 1, board->width, board->height);
+    make_depth(gpu, &board->render.depth, 1, board->width, board->height);
 
     // Make staging image.
-    make_staging(gpu, &board->staging, board->format, board->width, board->height);
+    make_staging(gpu, &board->render.staging, board->format, board->width, board->height);
 
     // Make framebuffers.
-    make_framebuffers(gpu, &board->framebuffers, board->renderpass, &board->images, &board->depth);
+    make_framebuffers(
+        gpu, &board->render.framebuffers, board->render.renderpass, //
+        &board->render.images, &board->render.depth);
 
     dvz_obj_created(&board->obj);
     log_trace("board created");
@@ -89,7 +91,7 @@ void dvz_board_create(DvzBoard* board)
 
 
 
-void dvz_board_recreate(DvzBoard* board)
+void dvz_board_recreate(DvzCanvas* board)
 {
     ANN(board);
     log_trace("recreating the board");
@@ -97,17 +99,17 @@ void dvz_board_recreate(DvzBoard* board)
     // NOTE: we do not call dvz_board_destroy() because we do not want to destroy the rgb pointer
     // if it is allocated. It is reallocated in dvz_board_resize() (which calls
     // dvz_board_recreate()).
-    dvz_images_destroy(&board->images);
-    dvz_images_destroy(&board->depth);
-    dvz_images_destroy(&board->staging);
-    dvz_framebuffers_destroy(&board->framebuffers);
+    dvz_images_destroy(&board->render.images);
+    dvz_images_destroy(&board->render.depth);
+    dvz_images_destroy(&board->render.staging);
+    dvz_framebuffers_destroy(&board->render.framebuffers);
 
     dvz_board_create(board);
 }
 
 
 
-void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
+void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
 {
     ANN(board);
     board->width = width;
@@ -125,7 +127,7 @@ void dvz_board_resize(DvzBoard* board, uint32_t width, uint32_t height)
 
 
 
-void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
+void dvz_board_begin(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
     ANN(board);
 
@@ -133,12 +135,12 @@ void dvz_board_begin(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
     ANN(gpu);
 
     dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, board->renderpass, &board->framebuffers);
+    dvz_cmd_begin_renderpass(cmds, idx, board->render.renderpass, &board->render.framebuffers);
 }
 
 
 
-void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
+void dvz_board_viewport(DvzCanvas* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
     ANN(board);
 
@@ -165,7 +167,7 @@ void dvz_board_viewport(DvzBoard* board, DvzCommands* cmds, uint32_t idx, vec2 o
 
 
 
-void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
+void dvz_board_end(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
     ANN(board);
     ANN(cmds);
@@ -176,7 +178,7 @@ void dvz_board_end(DvzBoard* board, DvzCommands* cmds, uint32_t idx)
 
 
 
-uint8_t* dvz_board_alloc(DvzBoard* board)
+uint8_t* dvz_board_alloc(DvzCanvas* board)
 {
     ANN(board);
     ASSERT(board->width > 0);
@@ -189,7 +191,7 @@ uint8_t* dvz_board_alloc(DvzBoard* board)
 
 
 
-void dvz_board_free(DvzBoard* board)
+void dvz_board_free(DvzCanvas* board)
 {
     ANN(board);
     if (board->rgb != NULL)
@@ -198,7 +200,7 @@ void dvz_board_free(DvzBoard* board)
 
 
 
-void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
+void dvz_board_download(DvzCanvas* board, DvzSize size, uint8_t* rgb)
 {
     ANN(board);
     ASSERT(size > 0);
@@ -216,14 +218,14 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
 
     DvzBarrier barrier = dvz_barrier(gpu);
     dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    dvz_barrier_images(&barrier, &board->staging);
+    dvz_barrier_images(&barrier, &board->render.staging);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
     dvz_cmd_barrier(&cmds, 0, &barrier);
 
     // Copy the image to the staging image.
-    dvz_cmd_copy_image(&cmds, 0, &board->images, &board->staging);
+    dvz_cmd_copy_image(&cmds, 0, &board->render.images, &board->render.staging);
 
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL);
@@ -235,20 +237,20 @@ void dvz_board_download(DvzBoard* board, DvzSize size, uint8_t* rgb)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
-    dvz_images_download(&board->staging, 0, 1, true, false, rgb);
+    dvz_images_download(&board->render.staging, 0, 1, true, false, rgb);
 }
 
 
 
-void dvz_board_destroy(DvzBoard* board)
+void dvz_board_destroy(DvzCanvas* board)
 {
     ANN(board); //
     log_trace("destroy board");
 
-    dvz_images_destroy(&board->images);
-    dvz_images_destroy(&board->depth);
-    dvz_images_destroy(&board->staging);
-    dvz_framebuffers_destroy(&board->framebuffers);
+    dvz_images_destroy(&board->render.images);
+    dvz_images_destroy(&board->render.depth);
+    dvz_images_destroy(&board->render.staging);
+    dvz_framebuffers_destroy(&board->render.framebuffers);
 
     dvz_board_free(board);
     dvz_obj_destroyed(&board->obj);

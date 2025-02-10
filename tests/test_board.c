@@ -14,6 +14,7 @@
 
 #include "test_board.h"
 #include "board.h"
+#include "canvas.h"
 #include "fileio.h"
 #include "test.h"
 #include "test_resources.h"
@@ -38,7 +39,7 @@ int test_board_1(TstSuite* suite)
     DvzRenderpass renderpass = offscreen_renderpass(gpu);
 
     // Create the board.
-    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
+    DvzCanvas board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Create the graphics.
@@ -70,7 +71,8 @@ int test_board_1(TstSuite* suite)
 
     // Command buffer.
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
-    triangle_commands(&cmds, 0, &renderpass, &board.framebuffers, &graphics, &descriptors, br);
+    triangle_commands(
+        &cmds, 0, &renderpass, &board.render.framebuffers, &graphics, &descriptors, br);
 
     // Render.
     dvz_cmd_submit_sync(&cmds, 0);

@@ -72,6 +72,7 @@ typedef struct DvzRecorder DvzRecorder;
 struct DvzRender
 {
     DvzSwapchain swapchain;
+    DvzImages images; // only used with offscreen canvas
     DvzImages depth;
     DvzImages staging;
 
@@ -113,6 +114,7 @@ struct DvzCanvas
     DvzObject obj;
     DvzGpu* gpu;
     int flags;
+    bool is_offscreen; // true for board (= offscreen canvas), false for normal canvas
 
     DvzSurface surface;
     DvzFormat format;

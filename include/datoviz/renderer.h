@@ -38,7 +38,6 @@ typedef struct DvzContext DvzContext;
 typedef struct DvzPipelib DvzPipelib;
 typedef struct DvzWorkspace DvzWorkspace;
 typedef struct DvzCanvas DvzCanvas;
-typedef struct DvzBoard DvzBoard;
 typedef struct DvzMap DvzMap;
 
 
@@ -123,7 +122,7 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
  * @param id the board id
  * @returns the board
  */
-DvzBoard* dvz_renderer_board(DvzRenderer* rd, DvzId id);
+DvzCanvas* dvz_renderer_board(DvzRenderer* rd, DvzId id);
 
 
 

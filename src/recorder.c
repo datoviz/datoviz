@@ -24,7 +24,7 @@
     ANN(rd);                                                                                      \
     ANN(cmds);                                                                                    \
     DvzCanvas* canvas = NULL;                                                                     \
-    DvzBoard* board = NULL;                                                                       \
+    DvzCanvas* board = NULL;                                                                      \
                                                                                                   \
     ASSERT(                                                                                       \
         record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||                                       \

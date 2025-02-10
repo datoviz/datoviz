@@ -14,6 +14,7 @@
 
 #include "test_pipe.h"
 #include "board.h"
+#include "canvas.h"
 #include "context.h"
 #include "fileio.h"
 #include "scene/graphics.h"
@@ -43,7 +44,7 @@ int test_pipe_1(TstSuite* suite)
     DvzRenderpass renderpass = offscreen_renderpass(gpu);
 
     // Create the board.
-    DvzBoard board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
+    DvzCanvas board = dvz_board(gpu, &renderpass, WIDTH, HEIGHT, 0);
     dvz_board_create(&board);
 
     // Vertex buffer.
