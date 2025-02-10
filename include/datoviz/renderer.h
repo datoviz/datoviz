@@ -174,7 +174,7 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
  * Retrieve the rendered image.
  *
  * @param rd the renderer
- * @param board_id the id of the board
+ * @param board_id the id of the offscreen canvas
  * @param size a pointer to a variable that will store the size, in bytes, of the downloaded image
  * @param rgb a pointer to the image, or NULL if this array should be handled by datoviz
  * @returns a pointer to the image

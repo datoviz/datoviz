@@ -368,7 +368,7 @@ union DvzRecorderUnion
 struct DvzRecorderCommand
 {
     DvzRecorderCommandType type;
-    DvzId canvas_or_board_id;
+    DvzId canvas_id;
     DvzRequestObject object_type;
 
     DvzRecorderUnion contents;
@@ -543,9 +543,6 @@ struct DvzRequestRecord
 
 union DvzRequestContent
 {
-    // Board.
-    DvzRequestBoard board;
-
     // Canvas.
     DvzRequestCanvas canvas;
 

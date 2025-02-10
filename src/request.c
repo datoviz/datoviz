@@ -199,7 +199,9 @@ static void _print_create_board(DvzRequest* req)
         "  content:\n"
         "    width: %d\n"
         "    height: %d\n",
-        req->id, req->flags, req->content.board.width, req->content.board.height);
+        req->id, req->flags,                   //
+        req->content.canvas.framebuffer_width, //
+        req->content.canvas.framebuffer_height);
 }
 
 static void _print_update_board(DvzRequest* req)
@@ -224,7 +226,7 @@ static void _print_resize_board(DvzRequest* req)
         "  content:\n"
         "    width: %d\n"
         "    height: %d\n",
-        req->id, req->content.board.width, req->content.board.height);
+        req->id, req->content.canvas.framebuffer_width, req->content.canvas.framebuffer_height);
 }
 
 static void _print_set_background(DvzRequest* req)
@@ -237,11 +239,11 @@ static void _print_set_background(DvzRequest* req)
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    background: [%d, %d, %d, %d]\n",
-        req->id,                          //
-        req->content.board.background[0], //
-        req->content.board.background[1], //
-        req->content.board.background[2], //
-        req->content.board.background[3]);
+        req->id,                           //
+        req->content.canvas.background[0], //
+        req->content.canvas.background[1], //
+        req->content.canvas.background[2], //
+        req->content.canvas.background[3]);
 }
 
 static void _print_delete_board(DvzRequest* req)
@@ -1398,9 +1400,9 @@ dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 backgro
     CREATE_REQUEST(CREATE, BOARD);
     req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
-    req.content.board.width = width;
-    req.content.board.height = height;
-    memcpy(req.content.board.background, background, sizeof(cvec4));
+    req.content.canvas.framebuffer_width = width;
+    req.content.canvas.framebuffer_height = height;
+    memcpy(req.content.canvas.background, background, sizeof(cvec4));
 
     IF_VERBOSE
     _print_create_board(&req);
@@ -1427,8 +1429,8 @@ DvzRequest dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32
 {
     CREATE_REQUEST(RESIZE, BOARD);
     req.id = board;
-    req.content.board.width = width;
-    req.content.board.height = height;
+    req.content.canvas.framebuffer_width = width;
+    req.content.canvas.framebuffer_height = height;
 
     IF_VERBOSE
     _print_resize_board(&req);
@@ -1442,7 +1444,7 @@ DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background)
 {
     CREATE_REQUEST(SET, BACKGROUND);
     req.id = id;
-    memcpy(req.content.board.background, background, sizeof(cvec4));
+    memcpy(req.content.canvas.background, background, sizeof(cvec4));
 
     IF_VERBOSE
     _print_set_background(&req);
@@ -2018,10 +2020,10 @@ DvzRequest dvz_bind_tex(
 /*  Command buffer                                                                               */
 /*************************************************************************************************/
 
-DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id)
+DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_BEGIN;
 
     IF_VERBOSE
@@ -2032,10 +2034,10 @@ DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id)
 
 
 
-DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2 shape)
+DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, vec2 shape)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
     glm_vec2_copy(offset, req.content.record.command.contents.v.offset);
     glm_vec2_copy(shape, req.content.record.command.contents.v.shape);
@@ -2049,12 +2051,12 @@ DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 o
 
 
 DvzRequest dvz_record_draw(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,              //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,     //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW;
     req.content.record.command.contents.draw.pipe_id = graphics;
     req.content.record.command.contents.draw.first_vertex = first_vertex;
@@ -2071,12 +2073,12 @@ DvzRequest dvz_record_draw(
 
 
 DvzRequest dvz_record_draw_indexed(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics,          //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics,                   //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED;
     req.content.record.command.contents.draw_indexed.pipe_id = graphics;
     req.content.record.command.contents.draw_indexed.first_index = first_index;
@@ -2094,10 +2096,10 @@ DvzRequest dvz_record_draw_indexed(
 
 
 DvzRequest dvz_record_draw_indirect(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDIRECT;
     req.content.record.command.contents.draw_indirect.pipe_id = graphics;
     req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
@@ -2112,10 +2114,10 @@ DvzRequest dvz_record_draw_indirect(
 
 
 DvzRequest dvz_record_draw_indexed_indirect(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED_INDIRECT;
     req.content.record.command.contents.draw_indirect.pipe_id = graphics;
     req.content.record.command.contents.draw_indirect.dat_indirect_id = indirect;
@@ -2129,10 +2131,10 @@ DvzRequest dvz_record_draw_indexed_indirect(
 
 
 
-DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_or_board_id)
+DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_id)
 {
     CREATE_REQUEST(RECORD, RECORD);
-    req.id = canvas_or_board_id;
+    req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_END;
 
     IF_VERBOSE

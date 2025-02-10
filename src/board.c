@@ -127,53 +127,26 @@ void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
 
 
 
+// NOTE: these 3 functions are aliases to their canvas counterparts, they only exist for historical
+// reasons.
 void dvz_board_begin(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
-    ANN(board);
-
-    DvzGpu* gpu = board->gpu;
-    ANN(gpu);
-
-    dvz_cmd_begin(cmds, idx);
-    dvz_cmd_begin_renderpass(cmds, idx, board->render.renderpass, &board->render.framebuffers);
+    dvz_canvas_begin(board, cmds, idx);
 }
 
 
 
-void dvz_board_viewport(DvzCanvas* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
+void dvz_board_viewport( //
+    DvzCanvas* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
-    ANN(board);
-
-    // A value of 0 = full canvas.
-    if (size[0] == 0)
-        size[0] = board->width;
-    if (size[1] == 0)
-        size[1] = board->height;
-
-    ASSERT(size[0] > 0);
-    ASSERT(size[1] > 0);
-
-    dvz_cmd_viewport(
-        cmds, idx,
-        (VkViewport){
-            .x = offset[0],
-            .y = offset[1],
-            .width = size[0],
-            .height = size[1],
-            // WARNING: do not forget this otherwise depth testing may not work!
-            .minDepth = 0,
-            .maxDepth = 1});
+    dvz_canvas_viewport(board, cmds, idx, offset, size);
 }
 
 
 
 void dvz_board_end(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
-    ANN(board);
-    ANN(cmds);
-
-    dvz_cmd_end_renderpass(cmds, idx);
-    dvz_cmd_end(cmds, idx);
+    dvz_canvas_end(board, cmds, idx);
 }
 
 

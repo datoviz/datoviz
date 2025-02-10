@@ -291,7 +291,7 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req, int flags);
 /**
  * Create a request for board creation.
  *
- * A board is an offscreen rectangular area on which to render.
+ * A board is an offscreen canvas.
  *
  * NOTE: background color not implemented yet
  *
@@ -814,10 +814,10 @@ DVZ_EXPORT DvzRequest dvz_bind_tex(
  * Create a request for starting recording of command buffer.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id);
+DVZ_EXPORT DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_id);
 
 
 
@@ -825,13 +825,13 @@ DVZ_EXPORT DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_or_board_id
  * Create a request for setting the viewport during command buffer recording.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @param offset the viewport offset, in framebuffer pixels
  * @param shape the viewport size, in framebuffer pixels
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2 shape);
+dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, vec2 shape);
 
 
 
@@ -839,7 +839,7 @@ dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2
  * Create a request for a direct draw of a graphics during command buffer recording.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @param graphics the id of the graphics pipe to draw
  * @param first_vertex the index of the first vertex to draw
  * @param vertex_count the number of vertices to draw
@@ -848,8 +848,8 @@ dvz_record_viewport(DvzBatch* batch, DvzId canvas_or_board_id, vec2 offset, vec2
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, //
-    uint32_t first_vertex, uint32_t vertex_count,              //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, //
+    uint32_t first_vertex, uint32_t vertex_count,     //
     uint32_t first_instance, uint32_t instance_count);
 
 
@@ -858,7 +858,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw(
  * Create a request for an indexed draw of a graphics during command buffer recording.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @param graphics the id of the graphics pipe to draw
  * @param first_index the index of the first index to draw
  * @param vertex_offset the vertex offset within the vertices indexed by the indexes
@@ -868,7 +868,7 @@ DVZ_EXPORT DvzRequest dvz_record_draw(
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics,          //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics,                   //
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count);
 
@@ -878,15 +878,14 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed(
  * Create a request for an indirect draw of a graphics during command buffer recording.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
  * @param draw_count the number of draws to make
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
-    uint32_t draw_count);
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count);
 
 
 
@@ -894,15 +893,14 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
  * Create a request for an indexed indirect draw of a graphics during command buffer recording.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @param graphics the id of the graphics pipe to draw
  * @param indirect the id of the dat containing the indirect draw data
  * @param draw_count the number of draws to make
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
-    DvzBatch* batch, DvzId canvas_or_board_id, DvzId graphics, DvzId indirect,
-    uint32_t draw_count);
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count);
 
 
 
@@ -910,10 +908,10 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
  * Create a request for ending recording of command buffer.
  *
  * @param batch the batch
- * @param canvas_or_board_id the id of the canvas or board
+ * @param canvas_id the id of the canvas
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_or_board_id);
+DVZ_EXPORT DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_id);
 
 
 

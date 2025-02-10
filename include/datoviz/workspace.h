@@ -84,7 +84,7 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags);
 
 
 /**
- * Create a new board.
+ * Create a new offscreen canvas (board).
  *
  * @param workspace the workspace
  * @param width the board width

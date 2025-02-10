@@ -19,50 +19,33 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-#define BOARD_OR_CANVAS                                                                           \
+#define GET_CANVAS                                                                                \
     ANN(recorder);                                                                                \
     ANN(rd);                                                                                      \
     ANN(cmds);                                                                                    \
-    DvzCanvas* canvas = NULL;                                                                     \
-    DvzCanvas* board = NULL;                                                                      \
-                                                                                                  \
     ASSERT(                                                                                       \
         record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||                                       \
         record->object_type == DVZ_REQUEST_OBJECT_BOARD);                                         \
-    bool is_canvas = record->object_type == DVZ_REQUEST_OBJECT_CANVAS;                            \
-                                                                                                  \
-    if (is_canvas)                                                                                \
-    {                                                                                             \
-        canvas = dvz_renderer_canvas(rd, record->canvas_or_board_id);                             \
-        ANN(canvas);                                                                              \
-    }                                                                                             \
-    else                                                                                          \
-    {                                                                                             \
-        board = dvz_renderer_board(rd, record->canvas_or_board_id);                               \
-        ANN(board);                                                                               \
-    }                                                                                             \
-    ASSERT(canvas != NULL || board != NULL);
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);                               \
+    ANN(canvas);
 
 
 static void _process_begin(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     dvz_cmd_reset(cmds, img_idx);
     log_debug("recorder: begin (#%d)", img_idx);
-    if (is_canvas)
-        dvz_canvas_begin(canvas, cmds, img_idx);
-    else
-        dvz_board_begin(board, cmds, img_idx);
+    dvz_canvas_begin(canvas, cmds, img_idx);
 }
 
 static void _process_viewport(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     float x = record->contents.v.offset[0];
     float y = record->contents.v.offset[1];
@@ -70,7 +53,7 @@ static void _process_viewport(
     float h = record->contents.v.shape[1];
 
     // NOTE: ensure the scale is set.
-    float scale = is_canvas ? canvas->scale : 1.0;
+    float scale = canvas->scale;
     scale = scale == 0 ? 1 : scale;
 
     log_debug(
@@ -81,17 +64,14 @@ static void _process_viewport(
     vec2 offset = {x * scale, y * scale};
     vec2 shape = {w * scale, h * scale};
 
-    if (is_canvas)
-        dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
-    else
-        dvz_board_viewport(board, cmds, img_idx, offset, shape);
+    dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
 }
 
 static void _process_draw(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     uint32_t first_vertex = record->contents.draw.first_vertex;
     uint32_t vertex_count = record->contents.draw.vertex_count;
@@ -124,7 +104,7 @@ static void _process_draw_indexed(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     uint32_t first_index = record->contents.draw_indexed.first_index;
     uint32_t index_count = record->contents.draw_indexed.index_count;
@@ -155,7 +135,7 @@ static void _process_draw_indirect(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
     ANN(pipe);
@@ -181,7 +161,7 @@ static void _process_draw_indexed_indirect(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
     ANN(pipe);
@@ -206,13 +186,10 @@ static void _process_end(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
 {
-    BOARD_OR_CANVAS
+    GET_CANVAS
 
     log_debug("recorder: end (#%d)", img_idx);
-    if (is_canvas)
-        dvz_canvas_end(canvas, cmds, img_idx);
-    else
-        dvz_board_end(board, cmds, img_idx);
+    dvz_canvas_end(canvas, cmds, img_idx);
 }
 
 
@@ -269,7 +246,7 @@ void dvz_recorder_clear(DvzRecorder* recorder)
 void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
 {
     ANN(recorder);
-    ASSERT(rc.canvas_or_board_id != 0);
+    ASSERT(rc.canvas_id != 0);
     log_debug("append recorder command");
 
     if (recorder->count >= recorder->capacity)

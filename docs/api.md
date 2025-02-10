@@ -4665,7 +4665,7 @@ Create a request for starting recording of command buffer.
 ```c
 DvzRequest dvz_record_begin(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
 )
 ```
 
@@ -4676,7 +4676,7 @@ Create a request for a direct draw of a graphics during command buffer recording
 ```c
 DvzRequest dvz_record_draw(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
     DvzId graphics,  // the id of the graphics pipe to draw
     uint32_t first_vertex,  // the index of the first vertex to draw
     uint32_t vertex_count,  // the number of vertices to draw
@@ -4692,7 +4692,7 @@ Create a request for an indexed draw of a graphics during command buffer recordi
 ```c
 DvzRequest dvz_record_draw_indexed(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
     DvzId graphics,  // the id of the graphics pipe to draw
     uint32_t first_index,  // the index of the first index to draw
     uint32_t vertex_offset,  // the vertex offset within the vertices indexed by the indexes
@@ -4709,7 +4709,7 @@ Create a request for an indexed indirect draw of a graphics during command buffe
 ```c
 DvzRequest dvz_record_draw_indexed_indirect(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
     DvzId graphics,  // the id of the graphics pipe to draw
     DvzId indirect,  // the id of the dat containing the indirect draw data
     uint32_t draw_count,  // the number of draws to make
@@ -4723,7 +4723,7 @@ Create a request for an indirect draw of a graphics during command buffer record
 ```c
 DvzRequest dvz_record_draw_indirect(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
     DvzId graphics,  // the id of the graphics pipe to draw
     DvzId indirect,  // the id of the dat containing the indirect draw data
     uint32_t draw_count,  // the number of draws to make
@@ -4737,7 +4737,7 @@ Create a request for ending recording of command buffer.
 ```c
 DvzRequest dvz_record_end(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
 )
 ```
 
@@ -4748,7 +4748,7 @@ Create a request for setting the viewport during command buffer recording.
 ```c
 DvzRequest dvz_record_viewport(  // returns: the request
     DvzBatch* batch,  // the batch
-    DvzId canvas_or_board_id,  // the id of the canvas or board
+    DvzId canvas_id,  // the id of the canvas
     vec2 offset,  // the viewport offset, in framebuffer pixels
     vec2 shape,  // the viewport size, in framebuffer pixels
 )
@@ -6073,7 +6073,7 @@ struct DvzMouseWheelEvent
 ```
 struct DvzRecorderCommand
     DvzRecorderCommandType type
-    DvzId canvas_or_board_id
+    DvzId canvas_id
     DvzRequestObject object_type
     DvzRecorderUnion contents
 ```
@@ -6229,7 +6229,6 @@ struct DvzRequestCanvas
 
 ```
 union DvzRequestContent
-    DvzRequestBoard board
     DvzRequestCanvas canvas
     DvzRequestDat dat
     DvzRequestTex tex

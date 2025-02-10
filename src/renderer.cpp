@@ -62,11 +62,14 @@ static void* _board_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     ANN(rd);
     log_trace("create board");
 
-    ASSERT(req.content.board.width > 0);
-    ASSERT(req.content.board.height > 0);
+    ASSERT(req.content.canvas.framebuffer_width > 0);
+    ASSERT(req.content.canvas.framebuffer_height > 0);
 
     DvzCanvas* board = dvz_workspace_board(
-        rd->workspace, req.content.board.width, req.content.board.height, req.flags);
+        rd->workspace,                         //
+        req.content.canvas.framebuffer_width,  //
+        req.content.canvas.framebuffer_height, //
+        req.flags);
     ANN(board);
     SET_ID(board)
     board->rgb = dvz_board_alloc(board);
@@ -96,12 +99,13 @@ static void* _board_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
     ASSERT(req.id != 0);
     log_trace("resize board");
 
-    ASSERT(req.content.board.width > 0);
-    ASSERT(req.content.board.height > 0);
+    ASSERT(req.content.canvas.framebuffer_width > 0);
+    ASSERT(req.content.canvas.framebuffer_height > 0);
 
     GET_ID(DvzCanvas, board, req.id)
 
-    dvz_board_resize(board, req.content.board.width, req.content.board.height);
+    dvz_board_resize(
+        board, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height);
 
     return NULL;
 }
@@ -808,11 +812,11 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 /*  Command buffer recording                                                                     */
 /*************************************************************************************************/
 
-static inline bool _is_canvas(DvzRenderer* rd, DvzId canvas_or_board_id)
+static inline bool _is_canvas(DvzRenderer* rd, DvzId canvas_id)
 {
-    ASSERT(canvas_or_board_id != 0);
+    ASSERT(canvas_id != 0);
 
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, canvas_or_board_id);
+    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, canvas_id);
 
     if (type != DVZ_REQUEST_OBJECT_CANVAS && type != DVZ_REQUEST_OBJECT_BOARD)
     {
@@ -834,34 +838,16 @@ static DvzRecorder* _get_or_create_recorder(DvzRenderer* rd, DvzRequest req)
     ASSERT(req.id != 0);
 
     bool is_canvas = _is_canvas(rd, req.id);
-    DvzRecorder* recorder = NULL;
+    // Get the canvas.
+    GET_ID(DvzCanvas, canvas, req.id)
 
-    if (!is_canvas)
+    // Ensure the canvas Recorder exists.
+    if (!canvas->recorder)
     {
-        // Get the board.
-        GET_ID(DvzCanvas, board, req.id)
-
-        // Ensure the board Recorder exists.
-        if (!board->recorder)
-        {
-            log_debug("renderer automatically creates recorder for board 0x%" PRIx64, req.id);
-            board->recorder = dvz_recorder(0);
-        }
-        recorder = board->recorder;
+        log_debug("renderer automatically creates recorder for canvas 0x%" PRIx64, req.id);
+        canvas->recorder = dvz_recorder(0);
     }
-    else
-    {
-        // Get the canvas.
-        GET_ID(DvzCanvas, canvas, req.id)
-
-        // Ensure the canvas Recorder exists.
-        if (!canvas->recorder)
-        {
-            log_debug("renderer automatically creates recorder for canvas 0x%" PRIx64, req.id);
-            canvas->recorder = dvz_recorder(0);
-        }
-        recorder = canvas->recorder;
-    }
+    DvzRecorder* recorder = canvas->recorder;
 
     ANN(recorder);
     return recorder;
@@ -884,9 +870,9 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
     DvzRecorderCommand* cmd = &req.content.record.command;
     ANN(cmd);
 
-    // Keep track in DvzRecorderCommand of whether we're in a canvas or board.
+    // Keep track in DvzRecorderCommand of whether we're in a canvas.
     cmd->object_type = (DvzRequestObject)dvz_map_type(rd->map, req.id);
-    cmd->canvas_or_board_id = req.id;
+    cmd->canvas_id = req.id;
 
     DvzRecorder* recorder = _get_or_create_recorder(rd, req);
     ANN(recorder);
@@ -907,7 +893,7 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
     {
         log_debug("applying the recorder to board 0x%" PRIx64, req.id);
 
-        DvzCanvas* board = dvz_renderer_board(rd, req.id);
+        DvzCanvas* board = dvz_renderer_canvas(rd, req.id);
         ANN(board);
         dvz_recorder_set(recorder, rd, &board->cmds, 0);
     }

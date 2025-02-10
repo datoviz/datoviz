@@ -2016,7 +2016,7 @@ class DvzRecorderCommand(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("type", ctypes.c_int32),
-        ("canvas_or_board_id", DvzId),
+        ("canvas_id", DvzId),
         ("object_type", ctypes.c_int32),
         ("contents", DvzRecorderUnion),
     ]
@@ -2238,7 +2238,6 @@ class DvzRequestRecord(ctypes.Structure):
 class DvzRequestContent(ctypes.Union):
     _pack_ = 8
     _fields_ = [
-        ("board", DvzRequestBoard),
         ("canvas", DvzRequestCanvas),
         ("dat", DvzRequestDat),
         ("tex", DvzRequestTex),
@@ -10249,7 +10248,7 @@ request_print.argtypes = [
 # Function dvz_create_board()
 create_board = dvz.dvz_create_board
 create_board.__doc__ = """
-Create a request for board creation.  A board is an offscreen rectangular area on which to render.  NOTE: background color not implemented yet
+Create a request for board creation.  A board is an offscreen canvas.  NOTE: background color not implemented yet
 
 Parameters
 ----------
@@ -11263,8 +11262,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 
 Returns
 -------
@@ -11273,7 +11272,7 @@ type
 """
 record_begin.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
 ]
 record_begin.restype = DvzRequest
 
@@ -11286,8 +11285,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 offset : vec2
     the viewport offset, in framebuffer pixels
 shape : vec2
@@ -11300,7 +11299,7 @@ type
 """
 record_viewport.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
     ctypes.c_float * 2,  # vec2 offset
     ctypes.c_float * 2,  # vec2 shape
 ]
@@ -11315,8 +11314,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
 first_vertex : uint32_t
@@ -11335,7 +11334,7 @@ type
 """
 record_draw.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
     DvzId,  # DvzId graphics
     ctypes.c_uint32,  # uint32_t first_vertex
     ctypes.c_uint32,  # uint32_t vertex_count
@@ -11353,8 +11352,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
 first_index : uint32_t
@@ -11375,7 +11374,7 @@ type
 """
 record_draw_indexed.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
     DvzId,  # DvzId graphics
     ctypes.c_uint32,  # uint32_t first_index
     ctypes.c_uint32,  # uint32_t vertex_offset
@@ -11394,8 +11393,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
 indirect : DvzId
@@ -11410,7 +11409,7 @@ type
 """
 record_draw_indirect.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
     DvzId,  # DvzId graphics
     DvzId,  # DvzId indirect
     ctypes.c_uint32,  # uint32_t draw_count
@@ -11426,8 +11425,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
 indirect : DvzId
@@ -11442,7 +11441,7 @@ type
 """
 record_draw_indexed_indirect.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
     DvzId,  # DvzId graphics
     DvzId,  # DvzId indirect
     ctypes.c_uint32,  # uint32_t draw_count
@@ -11458,8 +11457,8 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-canvas_or_board_id : DvzId
-    the id of the canvas or board
+canvas_id : DvzId
+    the id of the canvas
 
 Returns
 -------
@@ -11468,7 +11467,7 @@ type
 """
 record_end.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId canvas_or_board_id
+    DvzId,  # DvzId canvas_id
 ]
 record_end.restype = DvzRequest
 
