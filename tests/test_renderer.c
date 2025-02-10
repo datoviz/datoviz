@@ -16,7 +16,6 @@
 
 #include "test_renderer.h"
 #include "_map.h"
-#include "board.h"
 #include "canvas.h"
 #include "datoviz.h"
 #include "fileio.h"
@@ -69,12 +68,13 @@ int test_renderer_1(TstSuite* suite)
     DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
-    // Create a board.
-    req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
+    // Create an offscreen canvas.
+    req =
+        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzId canvas_id = req.id;
 
-    // Board clear color.
-    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
+    // Canvas clear color.
+    req = dvz_set_background(batch, canvas_id, (cvec4){32, 64, 128, 255});
 
     // Create a graphics.
     req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
@@ -116,13 +116,13 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
     // Commands.
-    dvz_record_begin(batch, board_id);
-    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(batch, board_id, graphics_id, 0, 3, 0, 1);
-    dvz_record_end(batch, board_id);
+    dvz_record_begin(batch, canvas_id);
+    dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, canvas_id);
 
     // Render.
-    req = dvz_update_board(batch, board_id);
+    req = dvz_update_canvas(batch, canvas_id);
 
     // Submit the batch requests to the renderer.
     uint32_t count = dvz_batch_size(batch);
@@ -134,7 +134,7 @@ int test_renderer_1(TstSuite* suite)
     // Retrieve the image.
     DvzSize size = 0;
     // This pointer will be freed automatically by the renderer.
-    uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
+    uint8_t* rgb = dvz_renderer_image(rd, canvas_id, &size, NULL);
 
     // Save to a PNG.
     char imgpath[1024] = {0};
@@ -142,8 +142,8 @@ int test_renderer_1(TstSuite* suite)
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
-    // Create a board deletion request.
-    req = dvz_delete_board(batch, board_id);
+    // Create a canvas deletion request.
+    req = dvz_delete_canvas(batch, canvas_id);
     dvz_renderer_request(rd, req);
 
     // Create a dat deletion request.
@@ -171,12 +171,13 @@ int test_renderer_graphics(TstSuite* suite)
     DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
-    // Create a boards.
-    req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
+    // Create an offscreen canvas.
+    req =
+        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzId canvas_id = req.id;
 
-    // Board clear color.
-    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
+    // Canvas clear color.
+    req = dvz_set_background(batch, canvas_id, (cvec4){32, 64, 128, 255});
 
 
     // Create a custom graphics.
@@ -238,13 +239,13 @@ int test_renderer_graphics(TstSuite* suite)
     req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
     // Commands.
-    dvz_record_begin(batch, board_id);
-    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_record_draw(batch, board_id, graphics_id, 0, 3, 0, 1);
-    dvz_record_end(batch, board_id);
+    dvz_record_begin(batch, canvas_id);
+    dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, canvas_id);
 
     // Render.
-    req = dvz_update_board(batch, board_id);
+    req = dvz_update_canvas(batch, canvas_id);
 
 
     // Submit the batch requests to the renderer.
@@ -257,7 +258,7 @@ int test_renderer_graphics(TstSuite* suite)
     // Retrieve the image.
     DvzSize size = 0;
     // This pointer will be freed automatically by the renderer.
-    uint8_t* rgb = dvz_renderer_image(rd, board_id, &size, NULL);
+    uint8_t* rgb = dvz_renderer_image(rd, canvas_id, &size, NULL);
 
     // Save to a PNG.
     char imgpath[1024] = {0};
@@ -265,8 +266,8 @@ int test_renderer_graphics(TstSuite* suite)
     dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
     AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
 
-    // Create a board deletion request.
-    req = dvz_delete_board(batch, board_id);
+    // Create a canvas deletion request.
+    req = dvz_delete_canvas(batch, canvas_id);
 
     // Destroy the requester and renderer.
     dvz_batch_destroy(batch);
@@ -285,19 +286,20 @@ int test_renderer_resize(TstSuite* suite)
     DvzBatch* batch = dvz_batch();
     DvzRequest req = {0};
 
-    // Create a board.
-    req = dvz_create_board(batch, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
+    // Create an offscreen canvas.
+    req = dvz_create_canvas(
+        batch, WIDTH / 2, HEIGHT / 2, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzId canvas_id = req.id;
     dvz_renderer_request(rd, req);
 
-    // Resize the board.
-    req = dvz_resize_board(batch, board_id, WIDTH, HEIGHT);
+    // Resize the canvas.
+    req = dvz_resize_canvas(batch, canvas_id, WIDTH, HEIGHT);
     dvz_renderer_request(rd, req);
 
-    // Check board resizing.
-    DvzCanvas* board = dvz_renderer_board(rd, board_id);
-    AT(board->width == WIDTH);
-    AT(board->height == HEIGHT);
+    // Check canvas resizing.
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
+    AT(canvas->width == WIDTH);
+    AT(canvas->height == HEIGHT);
 
     // Create a dat.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
@@ -344,7 +346,7 @@ int test_renderer_resize(TstSuite* suite)
     AT(tex->shape[1] == 30);
     AT(tex->shape[2] == 40);
 
-    // NOTE: the board should be automatically destroyed when destroying the renderer.
+    // NOTE: the canvas should be automatically destroyed when destroying the renderer.
 
     // Create a tex deletion request.
     req = dvz_delete_tex(batch, tex_id);

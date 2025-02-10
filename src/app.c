@@ -494,7 +494,7 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
         }
         else
         {
-            dvz_update_board(batch, batch->board_id);
+            dvz_update_canvas(batch, batch->board_id);
         }
 
         // Now that we appended the board update request to the batch, we can have the renderer
@@ -534,7 +534,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
     }
     else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
     {
-        DvzCanvas* board = dvz_renderer_board(rd, canvas_id);
+        DvzCanvas* board = dvz_renderer_canvas(rd, canvas_id);
         ANN(board);
 
         // Get the board image buffer.

@@ -116,17 +116,6 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs);
 
 
 /**
- * Return a board.
- *
- * @param rd the renderer
- * @param id the board id
- * @returns the board
- */
-DvzCanvas* dvz_renderer_board(DvzRenderer* rd, DvzId id);
-
-
-
-/**
  * Return a canvas.
  *
  * @param rd the renderer
@@ -174,12 +163,12 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id);
  * Retrieve the rendered image.
  *
  * @param rd the renderer
- * @param board_id the id of the offscreen canvas
+ * @param canvas_id the id of the offscreen canvas
  * @param size a pointer to a variable that will store the size, in bytes, of the downloaded image
  * @param rgb a pointer to the image, or NULL if this array should be handled by datoviz
  * @returns a pointer to the image
  */
-uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb);
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize* size, uint8_t* rgb);
 
 
 

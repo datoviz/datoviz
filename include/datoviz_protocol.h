@@ -285,77 +285,6 @@ DVZ_EXPORT void dvz_request_print(DvzRequest* req, int flags);
 
 
 /*************************************************************************************************/
-/*  Board                                                                                        */
-/*************************************************************************************************/
-
-/**
- * Create a request for board creation.
- *
- * A board is an offscreen canvas.
- *
- * NOTE: background color not implemented yet
- *
- * @param batch the batch
- * @param width the board width
- * @param height the board height
- * @param background the background color
- * @param flags the board creation flags
- * @returns the request, containing a newly-generated id for the board to be created
- */
-DVZ_EXPORT DvzRequest
-dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags);
-
-
-
-/**
- * Change the background color of the board.
- *
- * @param batch the batch
- * @param id the board id
- * @param background the background color
- * @returns the request
- */
-DVZ_EXPORT DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background);
-
-
-
-/**
- * Create a request for a board redraw (command buffer submission).
- *
- * @param batch the batch
- * @param id the board id
- * @returns the request
- */
-DVZ_EXPORT DvzRequest dvz_update_board(DvzBatch* batch, DvzId id);
-
-
-
-/**
- * Create a request to resize a board.
- *
- * @param batch the batch
- * @param board the board id
- * @param width the new board width
- * @param height the new board height
- * @returns the request
- */
-DVZ_EXPORT DvzRequest
-dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32_t height);
-
-
-
-/**
- * Create a request for a board deletion.
- *
- * @param batch the batch
- * @param id the board id
- * @returns the request
- */
-DVZ_EXPORT DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id);
-
-
-
-/*************************************************************************************************/
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
@@ -375,6 +304,43 @@ DVZ_EXPORT DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id);
  */
 DVZ_EXPORT DvzRequest
 dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags);
+
+
+
+/**
+ * Change the background color of the canvas.
+ *
+ * @param batch the batch
+ * @param id the canvas id
+ * @param background the background color
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background);
+
+
+
+/**
+ * Create a request for a canvas redraw (command buffer submission).
+ *
+ * @param batch the batch
+ * @param id the canvas id
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_update_canvas(DvzBatch* batch, DvzId id);
+
+
+
+/**
+ * Create a request to resize an offscreen canvas (regular canvases are resized by the client).
+ *
+ * @param batch the batch
+ * @param canvas the canvas id
+ * @param width the new canvas width
+ * @param height the new canvas height
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_resize_canvas(DvzBatch* batch, DvzId canvas, uint32_t width, uint32_t height);
 
 
 
@@ -575,7 +541,7 @@ DVZ_EXPORT DvzRequest dvz_create_spirv(
  * Create a request for a builtin graphics pipe creation.
  *
  * @param batch the batch
- * @param parent either the parent board or canvas id
+ * @param parent the parent canvas id
  * @param type the graphics type
  * @param flags the graphics creation flags
  * @returns the request, containing a newly-generated id for the graphics pipe to be created

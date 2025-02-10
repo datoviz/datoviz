@@ -187,41 +187,43 @@ static void _print_start(void)
 
 
 
-static void _print_create_board(DvzRequest* req)
+static void _print_create_canvas(DvzRequest* req)
 {
-    log_trace("print_create_board");
+    log_trace("print_create_canvas");
     ANN(req);
     printf(
         "- action: create\n"
-        "  type: board\n"
+        "  type: canvas\n"
         "  id: 0x%" PRIx64 "\n"
         "  flags: %d\n"
         "  content:\n"
-        "    width: %d\n"
-        "    height: %d\n",
-        req->id, req->flags,                   //
-        req->content.canvas.framebuffer_width, //
-        req->content.canvas.framebuffer_height);
+        "    framebuffer_width: %d\n"
+        "    framebuffer_height: %d\n"
+        "    screen_width: %d\n"
+        "    screen_height: %d\n",
+        req->id, req->flags, //
+        req->content.canvas.framebuffer_width, req->content.canvas.framebuffer_height,
+        req->content.canvas.screen_width, req->content.canvas.screen_height);
 }
 
-static void _print_update_board(DvzRequest* req)
+static void _print_update_canvas(DvzRequest* req)
 {
-    log_trace("print_update_board");
+    log_trace("print_update_canvas");
     ANN(req);
     printf(
         "- action: update\n"
-        "  type: board\n"
+        "  type: canvas\n"
         "  id: 0x%" PRIx64 "\n",
         req->id);
 }
 
-static void _print_resize_board(DvzRequest* req)
+static void _print_resize_canvas(DvzRequest* req)
 {
-    log_trace("print_resize_board");
+    log_trace("print_resize_canvas");
     ANN(req);
     printf(
         "- action: resize\n"
-        "  type: board\n"
+        "  type: canvas\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
         "    width: %d\n"
@@ -244,38 +246,6 @@ static void _print_set_background(DvzRequest* req)
         req->content.canvas.background[1], //
         req->content.canvas.background[2], //
         req->content.canvas.background[3]);
-}
-
-static void _print_delete_board(DvzRequest* req)
-{
-    log_trace("print_delete_board");
-    ANN(req);
-    printf(
-        "- action: delete\n"
-        "  type: board\n"
-        "  id: 0x%" PRIx64 "\n",
-        req->id);
-}
-
-
-
-static void _print_create_canvas(DvzRequest* req)
-{
-    log_trace("print_create_canvas");
-    ANN(req);
-    printf(
-        "- action: create\n"
-        "  type: canvas\n"
-        "  id: 0x%" PRIx64 "\n"
-        "  flags: %d\n"
-        "  content:\n"
-        "    framebuffer_width: %d\n"
-        "    framebuffer_height: %d\n"
-        "    screen_width: %d\n"
-        "    screen_height: %d\n",
-        req->id, req->flags, //
-        req->content.canvas.framebuffer_width, req->content.canvas.framebuffer_height,
-        req->content.canvas.screen_width, req->content.canvas.screen_height);
 }
 
 static void _print_delete_canvas(DvzRequest* req)
@@ -949,13 +919,10 @@ void dvz_request_print(DvzRequest* req, int flags)
 {
     ANN(req);
 
-    IF_REQ(CREATE, BOARD) _print_create_board(req);
-    IF_REQ(UPDATE, BOARD) _print_update_board(req);
-    IF_REQ(RESIZE, BOARD) _print_resize_board(req);
-    IF_REQ(SET, BACKGROUND) _print_set_background(req);
-    IF_REQ(DELETE, BOARD) _print_delete_board(req);
-
     IF_REQ(CREATE, CANVAS) _print_create_canvas(req);
+    IF_REQ(UPDATE, CANVAS) _print_update_canvas(req);
+    IF_REQ(RESIZE, CANVAS) _print_resize_canvas(req);
+    IF_REQ(SET, BACKGROUND) _print_set_background(req);
     IF_REQ(DELETE, CANVAS) _print_delete_canvas(req);
 
     IF_REQ(CREATE, DAT) _print_create_dat(req);
@@ -1391,49 +1358,73 @@ DvzBatch* dvz_requester_flush(DvzRequester* rqr, uint32_t* count)
 
 
 /*************************************************************************************************/
-/*  Board                                                                                        */
+/*  Canvas                                                                                       */
 /*************************************************************************************************/
 
 DvzRequest
-dvz_create_board(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
+dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
 {
-    CREATE_REQUEST(CREATE, BOARD);
+    // HACK: when using offscreen rendering (including when setting DVZ_CAPTURE_PNG), we hijack
+    // create_canvas() and replace it by create_board() (it's the same interface) as a canvas
+    // does not work in offscreen mode: it is replaced by a board.
+    bool offscreen = (batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+
+    // NOTE: the DVZ_APP_FLAGS_OFFSCREEN flag can ALSO be passed as a canvas flag.
+    offscreen |= (flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
+
+    // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
+    char* capture = capture_png(&offscreen);
+
+    CREATE_REQUEST(CREATE, CANVAS);
     req.id = dvz_prng_uuid(PRNG);
     req.flags = flags;
-    req.content.canvas.framebuffer_width = width;
-    req.content.canvas.framebuffer_height = height;
+    req.content.canvas.is_offscreen = offscreen; // true for boards
+
+    if (offscreen)
+    {
+        req.content.canvas.framebuffer_width = width;
+        req.content.canvas.framebuffer_height = height;
+    }
+    else
+    {
+        req.content.canvas.screen_width = width;
+        req.content.canvas.screen_height = height;
+    }
+
+    // NOTE: the framebuffer size will have to be determined once the window has been created.
+    // As a fallback, the window size will be taken as equal to the screen size.
     memcpy(req.content.canvas.background, background, sizeof(cvec4));
 
     IF_VERBOSE
-    _print_create_board(&req);
+    _print_create_canvas(&req);
 
     RETURN_REQUEST
 }
 
 
 
-DvzRequest dvz_update_board(DvzBatch* batch, DvzId id)
+DvzRequest dvz_update_canvas(DvzBatch* batch, DvzId id)
 {
-    CREATE_REQUEST(UPDATE, BOARD);
+    CREATE_REQUEST(UPDATE, CANVAS);
     req.id = id;
 
     IF_VERBOSE
-    _print_update_board(&req);
+    _print_update_canvas(&req);
 
     RETURN_REQUEST
 }
 
 
 
-DvzRequest dvz_resize_board(DvzBatch* batch, DvzId board, uint32_t width, uint32_t height)
+DvzRequest dvz_resize_canvas(DvzBatch* batch, DvzId canvas, uint32_t width, uint32_t height)
 {
-    CREATE_REQUEST(RESIZE, BOARD);
-    req.id = board;
+    CREATE_REQUEST(RESIZE, CANVAS);
+    req.id = canvas;
     req.content.canvas.framebuffer_width = width;
     req.content.canvas.framebuffer_height = height;
 
     IF_VERBOSE
-    _print_resize_board(&req);
+    _print_resize_canvas(&req);
 
     RETURN_REQUEST
 }
@@ -1448,57 +1439,6 @@ DvzRequest dvz_set_background(DvzBatch* batch, DvzId id, cvec4 background)
 
     IF_VERBOSE
     _print_set_background(&req);
-
-    RETURN_REQUEST
-}
-
-
-
-DvzRequest dvz_delete_board(DvzBatch* batch, DvzId id)
-{
-    CREATE_REQUEST(DELETE, BOARD);
-    req.id = id;
-
-    IF_VERBOSE
-    _print_delete_board(&req);
-
-    RETURN_REQUEST
-}
-
-
-
-/*************************************************************************************************/
-/*  Canvas                                                                                       */
-/*************************************************************************************************/
-
-DvzRequest
-dvz_create_canvas(DvzBatch* batch, uint32_t width, uint32_t height, cvec4 background, int flags)
-{
-    // HACK: when using offscreen rendering (including when setting DVZ_CAPTURE_PNG), we hijack
-    // create_canvas() and replace it by create_board() (it's the same interface) as a canvas
-    // does not work in offscreen mode: it is replaced by a board.
-    bool offscreen = (batch->flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
-    // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
-    char* capture = capture_png(&offscreen);
-    if (offscreen)
-    {
-        DvzRequest req = dvz_create_board(batch, width, height, background, flags);
-        batch->board_id = req.id;
-        return req;
-    }
-
-    CREATE_REQUEST(CREATE, CANVAS);
-    req.id = dvz_prng_uuid(PRNG);
-    req.flags = flags;
-    req.content.canvas.screen_width = width;
-    req.content.canvas.screen_height = height;
-
-    // NOTE: the framebuffer size will have to be determined once the window has been created.
-    // As a fallback, the window size will be taken as equal to the screen size.
-    memcpy(req.content.canvas.background, background, sizeof(cvec4));
-
-    IF_VERBOSE
-    _print_create_canvas(&req);
 
     RETURN_REQUEST
 }

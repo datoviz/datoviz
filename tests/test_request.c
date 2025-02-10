@@ -32,7 +32,8 @@ int test_request_1(TstSuite* suite)
 {
     DvzBatch* batch = dvz_batch();
 
-    DvzRequest req1 = dvz_create_board(batch, 800, 600, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzRequest req1 =
+        dvz_create_canvas(batch, 800, 600, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
     DvzRequest req2 = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
     DvzRequest req3 =
         dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, (uvec3){2, 4, 1}, 0);
@@ -65,7 +66,8 @@ int test_requester_1(TstSuite* suite)
 
     // Create a batch of requests.
     DvzBatch* batch = dvz_batch();
-    DvzRequest req1 = dvz_create_board(batch, 800, 600, DVZ_DEFAULT_CLEAR_COLOR, 0);
+    DvzRequest req1 =
+        dvz_create_canvas(batch, 800, 600, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
     DvzRequest req2 = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 16, 0);
     AT(dvz_batch_size(batch) == 2);
 

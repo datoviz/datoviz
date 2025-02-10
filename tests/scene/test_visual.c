@@ -72,19 +72,20 @@ int test_visual_1(TstSuite* suite)
     // Important: upload the data to the GPU.
     dvz_visual_update(visual);
 
-    // Create a board.
-    DvzRequest req = dvz_create_board(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, 0);
-    DvzId board_id = req.id;
-    req = dvz_set_background(batch, board_id, (cvec4){32, 64, 128, 255});
+    // Create a canvas.
+    DvzRequest req =
+        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzId canvas_id = req.id;
+    req = dvz_set_background(batch, canvas_id, (cvec4){32, 64, 128, 255});
 
     // Record the commands.
-    dvz_record_begin(batch, board_id);
-    dvz_record_viewport(batch, board_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
-    dvz_visual_instance(visual, board_id, 0, 0, n, 0, 1);
-    dvz_record_end(batch, board_id);
+    dvz_record_begin(batch, canvas_id);
+    dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_visual_instance(visual, canvas_id, 0, 0, n, 0, 1);
+    dvz_record_end(batch, canvas_id);
 
     // Render to a PNG.
-    render_requests(batch, get_gpu(suite), board_id, "visual_1");
+    render_requests(batch, get_gpu(suite), canvas_id, "visual_1");
 
     // Cleanup
     dvz_visual_destroy(visual);

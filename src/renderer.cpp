@@ -54,95 +54,6 @@ extern "C" struct DvzRouter
 
 
 /*************************************************************************************************/
-/*  Board                                                                                        */
-/*************************************************************************************************/
-
-static void* _board_create(DvzRenderer* rd, DvzRequest req, void* user_data)
-{
-    ANN(rd);
-    log_trace("create board");
-
-    ASSERT(req.content.canvas.framebuffer_width > 0);
-    ASSERT(req.content.canvas.framebuffer_height > 0);
-
-    DvzCanvas* board = dvz_workspace_board(
-        rd->workspace,                         //
-        req.content.canvas.framebuffer_width,  //
-        req.content.canvas.framebuffer_height, //
-        req.flags);
-    ANN(board);
-    SET_ID(board)
-    board->rgb = dvz_board_alloc(board);
-    return (void*)board;
-}
-
-
-
-static void* _board_update(DvzRenderer* rd, DvzRequest req, void* user_data)
-{
-    ANN(rd);
-    ASSERT(req.id != 0);
-    log_trace("update board");
-
-    GET_ID(DvzCanvas, board, req.id)
-
-    dvz_cmd_submit_sync(&board->cmds, DVZ_DEFAULT_QUEUE_RENDER);
-
-    return NULL;
-}
-
-
-
-static void* _board_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
-{
-    ANN(rd);
-    ASSERT(req.id != 0);
-    log_trace("resize board");
-
-    ASSERT(req.content.canvas.framebuffer_width > 0);
-    ASSERT(req.content.canvas.framebuffer_height > 0);
-
-    GET_ID(DvzCanvas, board, req.id)
-
-    dvz_board_resize(
-        board, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height);
-
-    return NULL;
-}
-
-
-
-static void* _board_background(DvzRenderer* rd, DvzRequest req, void* user_data)
-{
-    ANN(rd);
-    ASSERT(req.id != 0);
-
-    GET_ID(DvzCanvas, board, req.id)
-
-    // dvz_board_clear_color(board, req.content.board.background);
-    dvz_board_recreate(board);
-
-    return NULL;
-}
-
-
-
-static void* _board_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
-{
-    ANN(rd);
-    ASSERT(req.id != 0);
-    log_trace("delete board");
-
-    GET_ID(DvzCanvas, board, req.id)
-
-    dvz_board_free(board);
-    dvz_board_destroy(board);
-    return NULL;
-}
-
-
-
-/*************************************************************************************************/
 /*  Canvas                                                                                       */
 /*************************************************************************************************/
 
@@ -156,21 +67,91 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
         return NULL;
     }
 
+    DvzCanvas* canvas = NULL;
+
     // NOTE: when creating a desktop canvas, we know the requested screen size, but not the
     // framebuffer size yet. This will be determined *after* the window has been created, which
     // will occur in the presenter (client-side), not on the renderer (server-side).
 
-    DvzCanvas* canvas = dvz_workspace_canvas(
-        rd->workspace, //
-        req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height, req.flags);
-    ANN(canvas);
-    SET_ID(canvas)
+    if (req.content.canvas.is_offscreen)
+    {
+        ASSERT(req.content.canvas.framebuffer_width > 0);
+        ASSERT(req.content.canvas.framebuffer_height > 0);
+
+        canvas = dvz_workspace_board(
+            rd->workspace,                         //
+            req.content.canvas.framebuffer_width,  //
+            req.content.canvas.framebuffer_height, //
+            req.flags);
+        ANN(canvas);
+        SET_ID(canvas)
+        canvas->rgb = dvz_board_alloc(canvas);
+    }
+    else
+    {
+        canvas = dvz_workspace_canvas(
+            rd->workspace,                         //
+            req.content.canvas.framebuffer_width,  //
+            req.content.canvas.framebuffer_height, //
+            req.flags);
+        ANN(canvas);
+        SET_ID(canvas)
+    }
 
     // NOTE: we cannot create the canvas recorder yet, as we need the swapchain image count, and
     // this requires the canvas to be actually created. This is done by the presenter, after a
     // window and surface have been created.
 
     return (void*)canvas;
+}
+
+
+
+static void* _canvas_background(DvzRenderer* rd, DvzRequest req, void* user_data)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+
+    GET_ID(DvzCanvas, canvas, req.id)
+
+    // TODO
+    // dvz_board_clear_color(board, req.content.board.background);
+    dvz_board_recreate(canvas);
+
+    return NULL;
+}
+
+static void* _canvas_update(DvzRenderer* rd, DvzRequest req, void* user_data)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+    log_trace("update canvas");
+
+    GET_ID(DvzCanvas, canvas, req.id)
+
+    dvz_cmd_submit_sync(&canvas->cmds, DVZ_DEFAULT_QUEUE_RENDER);
+
+    return NULL;
+}
+
+
+
+static void* _canvas_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
+{
+    ANN(rd);
+    ASSERT(req.id != 0);
+    log_trace("resize canvas");
+
+    ASSERT(req.content.canvas.framebuffer_width > 0);
+    ASSERT(req.content.canvas.framebuffer_height > 0);
+
+    GET_ID(DvzCanvas, canvas, req.id)
+    ASSERT(canvas->obj.type == DVZ_OBJECT_TYPE_BOARD);
+
+    dvz_board_resize(
+        canvas, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height);
+
+    return NULL;
 }
 
 
@@ -182,14 +163,24 @@ static void* _canvas_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
     log_trace("delete canvas");
 
     GET_ID(DvzCanvas, canvas, req.id)
-
     ANN(canvas);
+
     if (canvas->recorder != NULL)
     {
         dvz_recorder_destroy(canvas->recorder);
         canvas->recorder = NULL;
     }
-    dvz_canvas_destroy(canvas);
+
+    if (canvas->obj.type == DVZ_OBJECT_TYPE_CANVAS)
+    {
+        dvz_canvas_destroy(canvas);
+    }
+    else if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
+    {
+        dvz_board_free(canvas);
+        dvz_board_destroy(canvas);
+    }
+
     return NULL;
 }
 
@@ -812,32 +803,12 @@ static void* _sampler_delete(DvzRenderer* rd, DvzRequest req, void* user_data)
 /*  Command buffer recording                                                                     */
 /*************************************************************************************************/
 
-static inline bool _is_canvas(DvzRenderer* rd, DvzId canvas_id)
-{
-    ASSERT(canvas_id != 0);
-
-    DvzRequestObject type = (DvzRequestObject)dvz_map_type(rd->map, canvas_id);
-
-    if (type != DVZ_REQUEST_OBJECT_CANVAS && type != DVZ_REQUEST_OBJECT_BOARD)
-    {
-        log_error(
-            "type %d not supported, should be either BOARD (%d) or CANVAS (%d)", //
-            type, DVZ_REQUEST_OBJECT_BOARD, DVZ_REQUEST_OBJECT_CANVAS);
-        return false;
-    }
-
-    return type == DVZ_REQUEST_OBJECT_CANVAS;
-}
-
-
-
 static DvzRecorder* _get_or_create_recorder(DvzRenderer* rd, DvzRequest req)
 {
     ANN(rd);
     ANN(rd->map);
     ASSERT(req.id != 0);
 
-    bool is_canvas = _is_canvas(rd, req.id);
     // Get the canvas.
     GET_ID(DvzCanvas, canvas, req.id)
 
@@ -888,14 +859,17 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
 
     // If canvas, the presenter will take care of calling dvz_recorder_set() in the event loop.
     // If board, the recorder needs to be applied directly once the recording has finished.
-    if (cmd->object_type == DVZ_REQUEST_OBJECT_BOARD &&
-        req.content.record.command.type == DVZ_RECORDER_END)
+    if (req.content.record.command.type == DVZ_RECORDER_END)
     {
-        log_debug("applying the recorder to board 0x%" PRIx64, req.id);
+        log_debug("applying the recorder to canvas 0x%" PRIx64, req.id);
 
-        DvzCanvas* board = dvz_renderer_canvas(rd, req.id);
-        ANN(board);
-        dvz_recorder_set(recorder, rd, &board->cmds, 0);
+        DvzCanvas* canvas = dvz_renderer_canvas(rd, req.id);
+        ANN(canvas);
+
+        if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
+        {
+            dvz_recorder_set(recorder, rd, &canvas->cmds, 0);
+        }
     }
 
     return NULL;
@@ -932,21 +906,16 @@ static void _setup_router(DvzRenderer* rd)
         std::map<std::pair<DvzRequestAction, DvzRequestObject>, DvzRendererCallback>();
     rd->router->user_data = std::map<std::pair<DvzRequestAction, DvzRequestObject>, void*>();
 
-    // Board.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_BOARD, _board_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_UPDATE, DVZ_REQUEST_OBJECT_BOARD, _board_update, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_BOARD, _board_resize, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BACKGROUND, _board_background, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_BOARD, _board_delete, NULL);
-
     // Canvas.
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_create, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_UPDATE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_update, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_resize, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BACKGROUND, _canvas_background, NULL);
+
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_delete, NULL);
 
@@ -1148,29 +1117,16 @@ void dvz_renderer_requests(DvzRenderer* rd, uint32_t count, DvzRequest* reqs)
 
 
 
-DvzCanvas* dvz_renderer_board(DvzRenderer* rd, DvzId id)
-{
-    ANN(rd);
-
-    // NOTE: if id is None, we take the first board.
-    DvzCanvas* board = id == DVZ_ID_NONE
-                           ? (DvzCanvas*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_BOARD)
-                           : (DvzCanvas*)dvz_map_get(rd->map, id);
-    ANN(board);
-    return board;
-}
-
-
-
 DvzCanvas* dvz_renderer_canvas(DvzRenderer* rd, DvzId id)
 {
     ANN(rd);
 
-    // NOTE: if id is None, we take the first canvas.
-    DvzCanvas* canvas = id == DVZ_ID_NONE
-                            ? (DvzCanvas*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_CANVAS)
-                            : (DvzCanvas*)dvz_map_get(rd->map, id);
-    ANN(canvas);
+    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, id);
+    if (canvas == NULL)
+    {
+        canvas = (DvzCanvas*)dvz_map_first(rd->map, DVZ_REQUEST_OBJECT_CANVAS);
+    }
+
     return canvas;
 }
 
@@ -1218,32 +1174,30 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
 
 
 
-uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId bc_id, DvzSize* size, uint8_t* rgb)
+uint8_t* dvz_renderer_image(DvzRenderer* rd, DvzId canvas_id, DvzSize* size, uint8_t* rgb)
 {
     ANN(rd);
 
-    int bctype = dvz_map_type(rd->map, bc_id);
+    DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, canvas_id);
+    ANN(canvas);
 
-    if (bctype == DVZ_REQUEST_OBJECT_BOARD)
+    if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
     {
-        DvzCanvas* board = (DvzCanvas*)dvz_map_get(rd->map, bc_id);
-        ANN(board);
-
         // Find the pointer: either passed here, or the board-owned pointer.
-        rgb = rgb != NULL ? rgb : board->rgb;
+        rgb = rgb != NULL ? rgb : canvas->rgb;
         ANN(rgb);
 
         // Download the image to the buffer.
-        dvz_board_download(board, board->size, rgb);
+        dvz_board_download(canvas, canvas->size, rgb);
 
         // Set the size.
         ANN(size);
-        *size = board->size;
+        *size = canvas->size;
     }
 
     // else if (bctype == DVZ_REQUEST_OBJECT_CANVAS)
     // {
-    //     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, bc_id);
+    //     DvzCanvas* canvas = (DvzCanvas*)dvz_map_get(rd->map, canvas_id);
     //     ANN(canvas);
 
 

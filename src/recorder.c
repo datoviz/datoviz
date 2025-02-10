@@ -9,7 +9,6 @@
 /*************************************************************************************************/
 
 #include "recorder.h"
-#include "board.h"
 #include "canvas.h"
 #include "renderer.h"
 
@@ -23,9 +22,7 @@
     ANN(recorder);                                                                                \
     ANN(rd);                                                                                      \
     ANN(cmds);                                                                                    \
-    ASSERT(                                                                                       \
-        record->object_type == DVZ_REQUEST_OBJECT_CANVAS ||                                       \
-        record->object_type == DVZ_REQUEST_OBJECT_BOARD);                                         \
+    ASSERT(record->object_type == DVZ_REQUEST_OBJECT_CANVAS);                                     \
     DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);                               \
     ANN(canvas);
 

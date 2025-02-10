@@ -389,6 +389,7 @@ struct DvzRequestCanvas
     uint32_t framebuffer_height;
     uint32_t screen_width;
     uint32_t screen_height;
+    bool is_offscreen;
     cvec4 background;
 };
 

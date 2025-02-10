@@ -19,7 +19,7 @@
 
 #include "../testing_utils.h"
 #include "_map.h"
-#include "board.h"
+#include "canvas.h"
 #include "datoviz.h"
 #include "datoviz_math.h"
 #include "fileio.h"
@@ -43,15 +43,15 @@
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
-static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char* name)
+static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId canvas_id, const char* name)
 {
     ANN(batch);
     ANN(gpu);
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
 
-    // Update the board.
-    dvz_update_board(batch, board);
+    // Update the canvas.
+    dvz_update_canvas(batch, canvas_id);
 
     // Execute the requests.
     dvz_renderer_requests(rd, dvz_batch_size(batch), dvz_batch_requests(batch));
@@ -59,15 +59,15 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId board, const char
     // Retrieve the image.
     DvzSize size = 0;
     // This pointer will be freed automatically by the renderer.
-    uint8_t* rgb = dvz_renderer_image(rd, board, &size, NULL);
+    uint8_t* rgb = dvz_renderer_image(rd, canvas_id, &size, NULL);
 
-    DvzCanvas* b = dvz_renderer_board(rd, board);
+    DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
 
     // Save to a PNG.
     char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/%s.png", ARTIFACTS_DIR, name);
-    dvz_write_png(imgpath, b->width, b->height, rgb);
-    AT(!dvz_is_empty(b->width * b->height * 3, rgb));
+    dvz_write_png(imgpath, canvas->width, canvas->height, rgb);
+    AT(!dvz_is_empty(canvas->width * canvas->height * 3, rgb));
 
     // Destroy the requester and renderer.
     dvz_renderer_destroy(rd);

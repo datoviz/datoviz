@@ -33,6 +33,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
     DvzCanvas board = {0};
     board.obj.type = DVZ_OBJECT_TYPE_BOARD;
     board.gpu = gpu;
+    board.is_offscreen = true; // TODO: really needed? we have obj.type to know
     board.flags = flags;
     board.width = width;
     board.height = height;
@@ -54,6 +55,7 @@ dvz_board(DvzGpu* gpu, DvzRenderpass* renderpass, uint32_t width, uint32_t heigh
 void dvz_board_format(DvzCanvas* board, DvzFormat format)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     board->format = format;
     // NOTE: for now only 4 bytes per pixel. Otherwise need to update board.size as a function of
     // the format.
@@ -65,6 +67,7 @@ void dvz_board_format(DvzCanvas* board, DvzFormat format)
 void dvz_board_create(DvzCanvas* board)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
 
     DvzGpu* gpu = board->gpu;
     ANN(gpu);
@@ -94,6 +97,7 @@ void dvz_board_create(DvzCanvas* board)
 void dvz_board_recreate(DvzCanvas* board)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     log_trace("recreating the board");
 
     // NOTE: we do not call dvz_board_destroy() because we do not want to destroy the rgb pointer
@@ -112,6 +116,7 @@ void dvz_board_recreate(DvzCanvas* board)
 void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     board->width = width;
     board->height = height;
     DvzSize new_size = width * height * 3 * sizeof(uint8_t);
@@ -131,6 +136,7 @@ void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
 // reasons.
 void dvz_board_begin(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     dvz_canvas_begin(board, cmds, idx);
 }
 
@@ -139,6 +145,7 @@ void dvz_board_begin(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 void dvz_board_viewport( //
     DvzCanvas* board, DvzCommands* cmds, uint32_t idx, vec2 offset, vec2 size)
 {
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     dvz_canvas_viewport(board, cmds, idx, offset, size);
 }
 
@@ -146,6 +153,7 @@ void dvz_board_viewport( //
 
 void dvz_board_end(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 {
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     dvz_canvas_end(board, cmds, idx);
 }
 
@@ -154,6 +162,7 @@ void dvz_board_end(DvzCanvas* board, DvzCommands* cmds, uint32_t idx)
 uint8_t* dvz_board_alloc(DvzCanvas* board)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
     if (board->rgb == NULL)
@@ -167,6 +176,7 @@ uint8_t* dvz_board_alloc(DvzCanvas* board)
 void dvz_board_free(DvzCanvas* board)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     if (board->rgb != NULL)
         FREE(board->rgb);
 }
@@ -176,6 +186,7 @@ void dvz_board_free(DvzCanvas* board)
 void dvz_board_download(DvzCanvas* board, DvzSize size, uint8_t* rgb)
 {
     ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     ASSERT(size > 0);
     if (rgb == NULL)
         rgb = board->rgb;
@@ -217,7 +228,8 @@ void dvz_board_download(DvzCanvas* board, DvzSize size, uint8_t* rgb)
 
 void dvz_board_destroy(DvzCanvas* board)
 {
-    ANN(board); //
+    ANN(board);
+    ASSERT(board->obj.type == DVZ_OBJECT_TYPE_BOARD);
     log_trace("destroy board");
 
     dvz_images_destroy(&board->render.images);
