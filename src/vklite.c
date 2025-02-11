@@ -1634,36 +1634,86 @@ static void _pack_image_data(
     log_trace("packing image data, src 4 channels, dst %d channels", n_components);
 
     // Then, convert the image to the requested format, into a contiguous array of pixels.
-    imgdata = (void*)((uint64_t)imgdata + offset);
-    uint32_t src_offset = 0;
-    uint32_t dst_offset = 0;
-    uint32_t y, x, k, l;
-    for (y = 0; y < h; y++)
+    imgdata = (void*)((uintptr_t)imgdata + offset);
+
+#if HAS_OPENMP
+#pragma omp parallel for
+#endif
+    for (uint32_t y = 0; y < h; y++)
     {
-        src_offset = 0;
-        for (x = 0; x < w; x++)
+        for (uint32_t x = 0; x < w; x++)
         {
-            ASSERT(src_offset + 2 < w * h * 4);
-            for (k = 0; k < 4; k++)
+            uint32_t src_offset = x * 4;
+            uint32_t dst_offset = (y * w + x) * n_components;
+            uint8_t* dst_base = (uint8_t*)out + dst_offset * bytes_per_component;
+            uint8_t* src_base =
+                (uint8_t*)imgdata + y * row_pitch + src_offset * bytes_per_component;
+
+            for (uint32_t k = 0; k < 4; k++)
             {
-                l = k <= 2 ? (swizzle ? 2 - k : k) : 3;
-                ASSERT(k <= 3);
-                ASSERT(l <= 3);
-                ASSERT(k < 3 || l == 3);
+                uint32_t l = (k <= 2) ? (swizzle ? 2 - k : k) : 3;
                 if (k == 3 && n_components == 3)
                     continue;
-                memcpy(
-                    (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
-                    (void*)((uint64_t)imgdata + (src_offset + l) * bytes_per_component),
-                    bytes_per_component);
-            }
 
-            src_offset += 4;            // we assume RGBA in the source array
-            dst_offset += n_components; // either RGB or RGBA in the target array
+                memcpy(
+                    dst_base + k * bytes_per_component, src_base + l * bytes_per_component,
+                    bytes_per_component);
+
+                // Equivalent to memcpy below:
+                // for (size_t i = 0; i < bytes_per_component; i++)
+                // {
+                //     dst_base[k * bytes_per_component + i] = src_base[l * bytes_per_component +
+                //     i];
+                // }
+            }
         }
-        imgdata = (void*)((uint64_t)imgdata + row_pitch);
     }
-    ASSERT(dst_offset == w * h * n_components);
+
+    // NOTE: previous version of the code below. Can be safely deleted.
+
+    // imgdata = (void*)((uint64_t)imgdata + offset);
+    // uint32_t src_offset = 0;
+    // uint32_t dst_offset = 0;
+    // uint8_t* out_ptr = NULL;
+    // uint8_t* imgdata_ptr = NULL;
+    // uint32_t y, x, k, l;
+
+    // // #if HAS_OPENMP
+    // // #pragma omp parallel for
+    // // #endif
+    // for (y = 0; y < h; y++)
+    // {
+    //     src_offset = 0;
+    //     for (x = 0; x < w; x++)
+    //     {
+    //         // ASSERT(src_offset + 2 < w * h * 4);
+    //         for (k = 0; k < 4; k++)
+    //         {
+    //             l = k <= 2 ? (swizzle ? 2 - k : k) : 3;
+    //             // ASSERT(k <= 3);
+    //             // ASSERT(l <= 3);
+    //             // ASSERT(k < 3 || l == 3);
+    //             if (k == 3 && n_components == 3)
+    //                 continue;
+    //             // memcpy(
+    //             //     (void*)((uint64_t)out + (dst_offset + k) * bytes_per_component),
+    //             //     (void*)((uint64_t)imgdata + (src_offset + l) * bytes_per_component),
+    //             //     bytes_per_component);
+    //             out_ptr = (uint8_t*)out + (dst_offset + k) * bytes_per_component;
+    //             imgdata_ptr = (uint8_t*)imgdata + (src_offset + l) * bytes_per_component;
+
+    //             for (size_t i = 0; i < bytes_per_component; i++)
+    //             {
+    //                 out_ptr[i] = imgdata_ptr[i];
+    //             }
+    //         }
+
+    //         src_offset += 4;            // we assume RGBA in the source array
+    //         dst_offset += n_components; // either RGB or RGBA in the target array
+    //     }
+    //     imgdata = (void*)((uint64_t)imgdata + row_pitch);
+    // }
+    // ASSERT(dst_offset == w * h * n_components);
 }
 
 void dvz_images_download(

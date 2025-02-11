@@ -46,11 +46,8 @@ option(DATOVIZ_WITH_ZLIB "Build Datoviz with zlib" ON) # for gzip decompression 
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" OFF)
+option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" ON)
 option(DATOVIZ_WITH_QT "Build Datoviz with Qt6" OFF)
-
-# NOTE: disabling for now as it leads to a .dll that is not loadable in ctypes on Windows for
-# some reason.
-option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" OFF)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
 
@@ -218,6 +215,14 @@ endif()
 
 # ---- openmp -------------------------------------------------------------------------------------
 set(HAS_OPENMP 0)
+
+if(${OS_WINDOWS})
+    set(DATOVIZ_WITH_OPENMP OFF)
+
+    message(WARNING
+        "Disabling OpenMP build on Windows for now due to weird bugs (it leads to a .dll that "
+        "is not loadable in ctypes on Windows)")
+endif()
 
 if(DATOVIZ_WITH_OPENMP)
     find_package(OpenMP)
@@ -463,7 +468,6 @@ set(COMPILE_DEFINITIONS ${COMPILE_DEFINITIONS}
 # -------------------------------------------------------------------------------------------------
 
 # ---- common compiler options --------------------------------------------------------------------
-# NOTE: need to remove -pg (gprof profiling) in RELEASE mode?
 set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wall \
     -Wextra \
@@ -472,21 +476,29 @@ set(COMMON_FLAGS "-g -m64 -pedantic \
     -Wcast-qual \
     -Wredundant-decls \
     -Wswitch-default \
-    -Wdisabled-optimization \
     -Wmissing-declarations \
     -Wmissing-include-dirs \
-    -Wshadow \
-    -Wsign-conversion \
-    -Wundef \
-    -Wformat=2 -Winit-self \
     -Wno-unused-result \
     -Wno-unused-function \
     -Wno-unused-variable \
     -Wno-unused-parameter \
     -Wno-format-nonliteral \
     -Wno-strict-overflow \
+    -Wsign-conversion \
+    -Wshadow \
+    -Wformat=2 \
+    -Winit-self \
+    -Wundef \
     ")
 
+# Optimization level.
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(COMMON_FLAGS "${COMMON_FLAGS} -O0 ")
+else()
+    set(COMMON_FLAGS "${COMMON_FLAGS} -O2 ")
+endif()
+
+# -Wdisabled-optimization \
 # -Wno-missing-field-initializers
 # -Wno-variadic-macros")
 
@@ -529,10 +541,10 @@ if(CC_GCC)
     # fsanitize=address fsanitize-trap=undefined
 
     # NOTE: to comment when using valgrind
-    if(NOT OS_WINDOWS)
-        set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
-    endif()
-
+    # Also remove in RELEASE mode?
+    # if(NOT OS_WINDOWS)
+    # set(COMMON_FLAGS "${COMMON_FLAGS} -pg")
+    # endif()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMMON_FLAGS} \
         -std=gnu11 -Wmissing-prototypes -Wimplicit-function-declaration -Wstrict-prototypes")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMMON_FLAGS} -std=c++17")
