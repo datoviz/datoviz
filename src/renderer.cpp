@@ -885,13 +885,12 @@ static void* _record_append(DvzRenderer* rd, DvzRequest req, void* user_data)
     // If board, the recorder needs to be applied directly once the recording has finished.
     if (req.content.record.command.type == DVZ_RECORDER_END)
     {
-        log_debug("applying the recorder to canvas 0x%" PRIx64, req.id);
-
         DvzCanvas* canvas = dvz_renderer_canvas(rd, req.id);
         ANN(canvas);
 
         if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
         {
+            log_debug("applying the recorder to canvas 0x%" PRIx64, req.id);
             dvz_recorder_set(recorder, rd, &canvas->cmds, 0);
         }
     }

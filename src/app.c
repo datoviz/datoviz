@@ -485,10 +485,7 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
         DvzBatch* batch = app->batch;
         ANN(batch);
 
-        // Append a board update request before processing the requests.
-
-        // Now that we appended the board update request to the batch, we can have the renderer
-        // process the requests.
+        // Process the requests.
         dvz_renderer_requests(app->rd, dvz_batch_size(batch), dvz_batch_requests(batch));
 
         // Set the DVZ_CAPTURE_PNG environment variable to automatically save a screenshot when
@@ -497,11 +494,16 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
         // Canvas screenshot.
         DvzCanvas* canvas = dvz_renderer_canvas(app->rd, DVZ_ID_NONE);
-        if (capture != NULL && canvas != NULL)
+        if (canvas != NULL)
         {
             DvzId canvas_id = canvas->obj.id;
+            // Apply a board update request, this submits the recorded command buffer to the GPU.
             dvz_renderer_request(app->rd, dvz_update_canvas(batch, canvas_id));
-            dvz_app_screenshot(app, canvas_id, capture);
+
+            if (capture != NULL)
+            {
+                dvz_app_screenshot(app, canvas_id, capture);
+            }
         }
     }
 }
