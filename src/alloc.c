@@ -222,5 +222,6 @@ void dvz_alloc_destroy(DvzAlloc* alloc)
     ANN(alloc);
 
     dvz_alloc_clear(alloc);
+    FREE(alloc->blocks);
     FREE(alloc);
 }
