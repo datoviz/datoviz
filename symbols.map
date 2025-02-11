@@ -165,6 +165,11 @@ dvz_monoglyph_offset
 dvz_monoglyph_position
 dvz_monoglyph_size
 dvz_monoglyph_textarea
+dvz_mouse_event
+dvz_mouse_move
+dvz_mouse_press
+dvz_mouse_release
+dvz_mouse_wheel
 dvz_ortho_end
 dvz_ortho_flags
 dvz_ortho_mvp
@@ -236,6 +241,7 @@ dvz_resample
 dvz_scene
 dvz_scene_destroy
 dvz_scene_figure
+dvz_scene_mouse
 dvz_scene_render
 dvz_scene_run
 dvz_segment

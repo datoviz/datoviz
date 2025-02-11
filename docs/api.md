@@ -1973,6 +1973,65 @@ void dvz_monoglyph_textarea(
 )
 ```
 
+### `dvz_mouse_event()`
+
+Create a generic mouse event.
+
+```c
+void dvz_mouse_event(
+    DvzMouse* mouse,  // the mouse
+    DvzMouseEvent ev,  // the mouse event
+)
+```
+
+### `dvz_mouse_move()`
+
+Create a mouse move event.
+
+```c
+DvzMouseEvent dvz_mouse_move(  // returns: the generated mouse event
+    DvzMouse* mouse,  // the mouse
+    vec2 pos,  // the cursor position, in pixels
+    int mods,  // the keyboard modifier flags
+)
+```
+
+### `dvz_mouse_press()`
+
+Create a mouse press event.
+
+```c
+DvzMouseEvent dvz_mouse_press(  // returns: the generated mouse event
+    DvzMouse* mouse,  // the mouse
+    DvzMouseButton button,  // the mouse button (enum int)
+    int mods,  // the keyboard modifier flags
+)
+```
+
+### `dvz_mouse_release()`
+
+Create a mouse release event.
+
+```c
+DvzMouseEvent dvz_mouse_release(  // returns: the generated mouse event
+    DvzMouse* mouse,  // the mouse
+    DvzMouseButton button,  // the mouse button (enum int)
+    int mods,  // the keyboard modifier flags
+)
+```
+
+### `dvz_mouse_wheel()`
+
+Create a mouse wheel event.
+
+```c
+DvzMouseEvent dvz_mouse_wheel(  // returns: the generated mouse event
+    DvzMouse* mouse,  // the mouse
+     button,  // the mouse wheel direction (x, y)
+    int mods,  // the keyboard modifier flags
+)
+```
+
 ### `dvz_ortho_end()`
 
 End an ortho interaction.
@@ -2777,6 +2836,18 @@ DvzFigure* dvz_scene_figure(  // returns: the figure
 )
 ```
 
+### `dvz_scene_mouse()`
+
+Manually pass a mouse event to the scene.
+
+```c
+void dvz_scene_mouse(
+    DvzScene* scene,  // the scene
+    DvzFigure* fig,  // the figure
+    DvzMouseEvent ev,  // the mouse event
+)
+```
+
 ### `dvz_scene_render()`
 
 Placeholder.
@@ -2928,7 +2999,7 @@ uint8_t* dvz_server_grab(
 Placeholder.
 
 ```c
-void dvz_server_keyboard(
+DvzKeyboard* dvz_server_keyboard(
      placeholder,  // placeholder
 )
 ```
@@ -2938,7 +3009,7 @@ void dvz_server_keyboard(
 Placeholder.
 
 ```c
-void dvz_server_mouse(
+DvzMouse* dvz_server_mouse(
      placeholder,  // placeholder
 )
 ```

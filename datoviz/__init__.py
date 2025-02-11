@@ -1725,7 +1725,15 @@ class DvzIndex(ctypes.Structure):
     pass
 
 
+class DvzKeyboard(ctypes.Structure):
+    pass
+
+
 class DvzList(ctypes.Structure):
+    pass
+
+
+class DvzMouse(ctypes.Structure):
     pass
 
 
@@ -2550,9 +2558,8 @@ placeholder : unknown
 """
 server_mouse.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
-    DvzId,  # DvzId canvas_id
-    DvzMouseEvent,  # DvzMouseEvent ev
 ]
+server_mouse.restype = ctypes.POINTER(DvzMouse)
 
 # Function dvz_server_keyboard()
 server_keyboard = dvz.dvz_server_keyboard
@@ -2566,9 +2573,8 @@ placeholder : unknown
 """
 server_keyboard.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
-    DvzId,  # DvzId canvas_id
-    DvzKeyboardEvent,  # DvzKeyboardEvent ev
 ]
+server_keyboard.restype = ctypes.POINTER(DvzKeyboard)
 
 # Function dvz_server_resize()
 server_resize = dvz.dvz_server_resize
@@ -2676,6 +2682,26 @@ scene_run.argtypes = [
     ctypes.c_uint64,  # uint64_t n_frames
 ]
 
+# Function dvz_scene_mouse()
+scene_mouse = dvz.dvz_scene_mouse
+scene_mouse.__doc__ = """
+Manually pass a mouse event to the scene.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+fig : DvzFigure*
+    the figure
+ev : DvzMouseEvent
+    the mouse event
+"""
+scene_mouse.argtypes = [
+    ctypes.POINTER(DvzScene),  # DvzScene* scene
+    ctypes.POINTER(DvzFigure),  # DvzFigure* fig
+    DvzMouseEvent,  # DvzMouseEvent ev
+]
+
 # Function dvz_scene_destroy()
 scene_destroy = dvz.dvz_scene_destroy
 scene_destroy.__doc__ = """
@@ -2688,6 +2714,127 @@ scene : DvzScene*
 """
 scene_destroy.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
+]
+
+# Function dvz_mouse_move()
+mouse_move = dvz.dvz_mouse_move
+mouse_move.__doc__ = """
+Create a mouse move event.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+pos : vec2
+    the cursor position, in pixels
+mods : int
+    the keyboard modifier flags
+
+Returns
+-------
+type
+    the generated mouse event
+"""
+mouse_move.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
+    ctypes.c_float * 2,  # vec2 pos
+    ctypes.c_int,  # int mods
+]
+mouse_move.restype = DvzMouseEvent
+
+# Function dvz_mouse_press()
+mouse_press = dvz.dvz_mouse_press
+mouse_press.__doc__ = """
+Create a mouse press event.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+button : DvzMouseButton
+    the mouse button (enum int)
+mods : int
+    the keyboard modifier flags
+
+Returns
+-------
+type
+    the generated mouse event
+"""
+mouse_press.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
+    DvzMouseButton,  # DvzMouseButton button
+    ctypes.c_int,  # int mods
+]
+mouse_press.restype = DvzMouseEvent
+
+# Function dvz_mouse_release()
+mouse_release = dvz.dvz_mouse_release
+mouse_release.__doc__ = """
+Create a mouse release event.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+button : DvzMouseButton
+    the mouse button (enum int)
+mods : int
+    the keyboard modifier flags
+
+Returns
+-------
+type
+    the generated mouse event
+"""
+mouse_release.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
+    DvzMouseButton,  # DvzMouseButton button
+    ctypes.c_int,  # int mods
+]
+mouse_release.restype = DvzMouseEvent
+
+# Function dvz_mouse_wheel()
+mouse_wheel = dvz.dvz_mouse_wheel
+mouse_wheel.__doc__ = """
+Create a mouse wheel event.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+button : unknown
+    the mouse wheel direction (x, y)
+mods : int
+    the keyboard modifier flags
+
+Returns
+-------
+type
+    the generated mouse event
+"""
+mouse_wheel.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
+    ctypes.c_float * 2,  # vec2 dir
+    ctypes.c_int,  # int mods
+]
+mouse_wheel.restype = DvzMouseEvent
+
+# Function dvz_mouse_event()
+mouse_event = dvz.dvz_mouse_event
+mouse_event.__doc__ = """
+Create a generic mouse event.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+ev : DvzMouseEvent
+    the mouse event
+"""
+mouse_event.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
+    DvzMouseEvent,  # DvzMouseEvent ev
 ]
 
 # Function dvz_figure()
