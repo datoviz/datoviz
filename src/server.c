@@ -32,7 +32,7 @@
 
 DvzServer* dvz_server(int flags)
 {
-    DvzServer* server = (DvzServer*)calloc(1, sizeof(DvzServer*));
+    DvzServer* server = (DvzServer*)calloc(1, sizeof(DvzServer));
     ANN(server);
 
     server->host = dvz_host(DVZ_BACKEND_OFFSCREEN);
