@@ -2617,7 +2617,7 @@ placeholder : unknown
 scene_render.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzServer),  # DvzServer* server
-    DvzId,  # DvzId canvas_id
+    ctypes.POINTER(DvzFigure),  # DvzFigure* figure
     ctypes.c_int,  # int flags
 ]
 scene_render.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
