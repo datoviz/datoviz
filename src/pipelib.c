@@ -177,7 +177,7 @@ void dvz_pipelib_destroy(DvzPipelib* lib)
     dvz_container_destroy(&lib->computes);
 
     CONTAINER_DESTROY_ITEMS(DvzShader, lib->shaders, dvz_shader_destroy)
-    dvz_container_destroy(&lib->computes);
+    dvz_container_destroy(&lib->shaders);
 
     dvz_obj_destroyed(&lib->obj);
     FREE(lib);
