@@ -176,10 +176,20 @@ DvzId dvz_figure_id(DvzFigure* figure)
 void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 {
     ANN(fig);
+    ANN(fig->scene);
     log_debug("resize figure to %dx%d", width, height);
 
     fig->shape[0] = width;
     fig->shape[1] = height;
+
+    DvzBatch* batch = fig->scene->batch;
+    ANN(batch);
+
+    DvzId canvas_id = fig->canvas_id;
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
+    // Append a canvas resize command to the batch.
+    dvz_resize_canvas(batch, canvas_id, width, height);
 
     float width_init = fig->shape_init[0];
     float height_init = fig->shape_init[1];

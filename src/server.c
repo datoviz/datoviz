@@ -76,6 +76,8 @@ void dvz_server_submit(DvzServer* server, DvzBatch* batch)
         // Process each request immediately in the renderer.
         dvz_renderer_request(rd, requests[i]);
     }
+
+    dvz_batch_clear(batch);
 }
 
 

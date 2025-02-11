@@ -122,9 +122,12 @@ void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
     DvzSize new_size = width * height * 3 * sizeof(uint8_t);
     DvzSize old_size = board->size;
     board->size = new_size;
-    // Realloc the RGBA CPU buffer storing the downloaded image.
+    // Realloc the RGB CPU buffer storing the downloaded image.
     if (board->rgb != NULL && new_size > old_size)
     {
+        log_debug(
+            "reallocating board rgb buffer to %dx%dx3=%s (from %s before)", //
+            width, height, pretty_size(new_size), pretty_size(old_size));
         REALLOC(board->rgb, new_size)
     }
     dvz_board_recreate(board);
@@ -166,7 +169,13 @@ uint8_t* dvz_board_alloc(DvzCanvas* board)
     ASSERT(board->width > 0);
     ASSERT(board->height > 0);
     if (board->rgb == NULL)
-        board->rgb = (uint8_t*)calloc(board->width * board->height, 3 * sizeof(uint8_t));
+    {
+        DvzSize size = board->width * board->height * 3 * sizeof(uint8_t);
+        log_debug(
+            "allocating board rgb buffer to %dx%dx3=%s", //
+            board->width, board->height, pretty_size(size));
+        board->rgb = (uint8_t*)calloc(size, 1);
+    }
     ANN(board->rgb);
     return board->rgb;
 }
@@ -221,6 +230,8 @@ void dvz_board_download(DvzCanvas* board, DvzSize size, uint8_t* rgb)
     dvz_cmd_submit_sync(&cmds, 0);
 
     // Now, copy the staging image into CPU memory.
+    // NOTE: the GPU image is in RGBA but this function converts it into RGB for the passed
+    // pointer (has_alpha=false below).
     dvz_images_download(&board->render.staging, 0, 1, true, false, rgb);
 }
 

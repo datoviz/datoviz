@@ -165,16 +165,18 @@ static void* _canvas_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     ANN(rd);
     ASSERT(req.id != 0);
-    log_trace("resize canvas");
 
-    ASSERT(req.content.canvas.framebuffer_width > 0);
-    ASSERT(req.content.canvas.framebuffer_height > 0);
+    uint32_t w = req.content.canvas.framebuffer_width;
+    uint32_t h = req.content.canvas.framebuffer_height;
+    ASSERT(w > 0);
+    ASSERT(h > 0);
+
+    log_debug("resize canvas to %dx%d", w, h);
 
     GET_ID(DvzCanvas, canvas, req.id)
     ASSERT(canvas->obj.type == DVZ_OBJECT_TYPE_BOARD);
 
-    dvz_board_resize(
-        canvas, req.content.canvas.framebuffer_width, req.content.canvas.framebuffer_height);
+    dvz_board_resize(canvas, w, h);
 
     return NULL;
 }
@@ -1270,6 +1272,7 @@ void dvz_renderer_destroy(DvzRenderer* rd)
 
     dvz_pipelib_destroy(rd->pipelib);
     dvz_context_destroy(rd->ctx);
+    dvz_gpu_wait(rd->gpu);
 
     dvz_map_destroy(rd->map);
     delete rd->router;

@@ -50,13 +50,13 @@ int test_server_1(TstSuite* suite)
     dvz_demo_panel(panel);
 
     // Submit the requests to the server.
-    uint8_t* rgba = dvz_scene_render(scene, server, figure, 0);
-    ANN(rgba);
+    uint8_t* rgb = dvz_scene_render(scene, server, figure, 0);
+    ANN(rgb);
 
     // Save it to a file.
     char imgpath[1024] = {0};
     snprintf(imgpath, sizeof(imgpath), "%s/server.png", ARTIFACTS_DIR);
-    dvz_write_png(imgpath, WIDTH, HEIGHT, rgba);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
 
     // Cleanup.
     dvz_server_destroy(server);
