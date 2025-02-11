@@ -53,6 +53,8 @@ Datoviz is still an early stage library and the API may change at any time.
 typedef struct DvzApp DvzApp;
 typedef struct DvzServer DvzServer;
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzMouse DvzMouse;
+typedef struct DvzKeyboard DvzKeyboard;
 typedef struct DvzRenderer DvzRenderer;
 typedef struct DvzScene DvzScene;
 typedef struct DvzFigure DvzFigure;
@@ -196,7 +198,7 @@ DVZ_EXPORT void dvz_server_submit(DvzServer* server, DvzBatch* batch);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void dvz_server_mouse(DvzServer* server, DvzId canvas_id, DvzMouseEvent ev);
+DVZ_EXPORT DvzMouse* dvz_server_mouse(DvzServer* server);
 
 
 
@@ -205,7 +207,7 @@ DVZ_EXPORT void dvz_server_mouse(DvzServer* server, DvzId canvas_id, DvzMouseEve
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void dvz_server_keyboard(DvzServer* server, DvzId canvas_id, DvzKeyboardEvent ev);
+DVZ_EXPORT DvzKeyboard* dvz_server_keyboard(DvzServer* server);
 
 
 
@@ -278,11 +280,84 @@ DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames);
 
 
 /**
+ * Manually pass a mouse event to the scene.
+ *
+ * @param scene the scene
+ * @param fig the figure
+ * @param ev the mouse event
+ */
+DVZ_EXPORT void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev);
+
+
+
+/**
  * Destroy a scene.
  *
  * @param scene the scene
  */
 DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
+
+
+
+/*************************************************************************************************/
+/*  Mouse                                                                                        */
+/*************************************************************************************************/
+
+/**
+ * Create a mouse move event.
+ *
+ * @param mouse the mouse
+ * @param pos the cursor position, in pixels
+ * @param mods the keyboard modifier flags
+ * @returns the generated mouse event
+ */
+DVZ_EXPORT DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
+
+
+
+/**
+ * Create a mouse press event.
+ *
+ * @param mouse the mouse
+ * @param button the mouse button (enum int)
+ * @param mods the keyboard modifier flags
+ * @returns the generated mouse event
+ */
+DVZ_EXPORT DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
+
+
+
+/**
+ * Create a mouse release event.
+ *
+ * @param mouse the mouse
+ * @param button the mouse button (enum int)
+ * @param mods the keyboard modifier flags
+ * @returns the generated mouse event
+ */
+DVZ_EXPORT DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
+
+
+
+/**
+ * Create a mouse wheel event.
+ *
+ * @param mouse the mouse
+ * @param button the mouse wheel direction (x, y)
+ * @param mods the keyboard modifier flags
+ * @returns the generated mouse event
+ */
+DVZ_EXPORT DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
+
+
+
+/**
+ * Create a generic mouse event.
+ *
+ * @param mouse the mouse
+ * @param ev the mouse event
+ */
+DVZ_EXPORT void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev);
 
 
 

@@ -11,6 +11,7 @@
 #include "mouse.h"
 #include "_cglm.h"
 #include "common.h"
+#include "datoviz.h"
 #include "datoviz_types.h"
 
 
@@ -283,46 +284,50 @@ DvzMouse* dvz_mouse(void)
 
 
 
-void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
+DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_move(mouse, pos, mods);
     _callbacks(mouse, ev);
+    return ev;
 }
 
 
 
-void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
+DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_press(mouse, button, mods);
     _callbacks(mouse, ev);
+    return ev;
 }
 
 
 
-void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
+DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_release(mouse, button, mods);
     _callbacks(mouse, ev);
+    return ev;
 }
 
 
 
-void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
+DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_wheel(mouse, dir, mods);
     _callbacks(mouse, ev);
+    return ev;
 }
 
 

@@ -1074,10 +1074,64 @@ static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     DvzScene* scene = (DvzScene*)ev.user_data;
     ANN(scene);
 
-    DvzBatch* batch = scene->batch;
-    ANN(batch);
-
     DvzFigure* fig = dvz_scene_figure(scene, window_id);
+    ANN(fig);
+
+    dvz_scene_mouse(scene, fig, ev);
+}
+
+static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
+{
+    ANN(app);
+
+    float w = ev.screen_width;
+    float h = ev.screen_height;
+
+    log_debug("window 0x%" PRIx64 " resized to %.0fx%.0f", window_id, w, h);
+
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ANN(scene);
+
+    // Retrieve the figure that is being resize, thanks to the id that is the same between the
+    // canvas and the window.
+    DvzFigure* fig = dvz_scene_figure(scene, window_id);
+    ANN(fig);
+    ANN(fig->viewset);
+
+    //
+    if (dvz_atomic_get(fig->viewset->status) == DVZ_BUILD_DIRTY)
+    {
+        log_warn("skip figure onresize callback because the viewset is already dirty");
+        return;
+    }
+
+    // Resize the figure, compute each panel's new size and resize them.
+    // This will also call panzoom/ortho/arcball/camera resize for each panel.
+    dvz_figure_resize(fig, w, h);
+
+    // Mark the viewset as dirty to trigger a command buffer record at the next frame.
+    dvz_figure_update(fig);
+
+    // dvz_app_submit(scene->app);
+}
+
+static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
+{
+    ANN(app);
+
+    DvzScene* scene = (DvzScene*)ev.user_data;
+    ANN(scene);
+
+    _scene_build(scene);
+
+    dvz_app_submit(scene->app);
+}
+
+
+
+void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
+{
+    ANN(scene);
     ANN(fig);
 
     // Find the relevant panel for mouse interaction. Depends on whether this is a dragging action
@@ -1190,53 +1244,6 @@ static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 
         dvz_transform_update(tr);
     }
-}
-
-static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
-{
-    ANN(app);
-
-    float w = ev.screen_width;
-    float h = ev.screen_height;
-
-    log_debug("window 0x%" PRIx64 " resized to %.0fx%.0f", window_id, w, h);
-
-    DvzScene* scene = (DvzScene*)ev.user_data;
-    ANN(scene);
-
-    // Retrieve the figure that is being resize, thanks to the id that is the same between the
-    // canvas and the window.
-    DvzFigure* fig = dvz_scene_figure(scene, window_id);
-    ANN(fig);
-    ANN(fig->viewset);
-
-    //
-    if (dvz_atomic_get(fig->viewset->status) == DVZ_BUILD_DIRTY)
-    {
-        log_warn("skip figure onresize callback because the viewset is already dirty");
-        return;
-    }
-
-    // Resize the figure, compute each panel's new size and resize them.
-    // This will also call panzoom/ortho/arcball/camera resize for each panel.
-    dvz_figure_resize(fig, w, h);
-
-    // Mark the viewset as dirty to trigger a command buffer record at the next frame.
-    dvz_figure_update(fig);
-
-    // dvz_app_submit(scene->app);
-}
-
-static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
-{
-    ANN(app);
-
-    DvzScene* scene = (DvzScene*)ev.user_data;
-    ANN(scene);
-
-    _scene_build(scene);
-
-    dvz_app_submit(scene->app);
 }
 
 

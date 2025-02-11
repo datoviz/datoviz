@@ -82,20 +82,18 @@ void dvz_server_submit(DvzServer* server, DvzBatch* batch)
 
 
 
-void dvz_server_mouse(DvzServer* server, DvzId canvas_id, DvzMouseEvent ev)
+DvzMouse* dvz_server_mouse(DvzServer* server)
 {
     ANN(server);
-    ANN(server->mouse);
-    dvz_mouse_event(server->mouse, ev);
+    return server->mouse;
 }
 
 
 
-void dvz_server_keyboard(DvzServer* server, DvzId canvas_id, DvzKeyboardEvent ev)
+DvzKeyboard* dvz_server_keyboard(DvzServer* server)
 {
     ANN(server);
-    ANN(server->keyboard);
-    dvz_keyboard_event(server->keyboard, ev);
+    return server->keyboard;
 }
 
 

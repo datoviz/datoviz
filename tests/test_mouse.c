@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_mouse.h"
+#include "datoviz.h"
 #include "mouse.h"
 #include "test.h"
 #include "testing.h"

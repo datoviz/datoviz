@@ -1631,6 +1631,7 @@ static void _pack_image_data(
     uint32_t n_components = has_alpha ? 4 : 3;
     uint32_t w = img->shape[0];
     uint32_t h = img->shape[1];
+    log_trace("packing image data, src 4 channels, dst %d channels", n_components);
 
     // Then, convert the image to the requested format, into a contiguous array of pixels.
     imgdata = (void*)((uint64_t)imgdata + offset);
@@ -1677,6 +1678,7 @@ void dvz_images_download(
     ANN(staging);
     ANN(out);
     ASSERT(bytes_per_component > 0);
+    log_trace("images download");
 
     VkSubresourceLayout res_layout = {0};
     // Copy via memory mapping the image memory, which is supposed to be linear.

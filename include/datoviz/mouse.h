@@ -81,32 +81,12 @@ DvzMouse* dvz_mouse(void);
 
 
 
-void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
-
-
-
-void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
-
-
-
-void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
-
-
-
-void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
-
-
-
 void dvz_mouse_tick(DvzMouse* mouse, double time);
 
 
 
 void dvz_mouse_callback(
     DvzMouse* mouse, DvzMouseEventType type, DvzMouseCallback callback, void* user_data);
-
-
-
-void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev);
 
 
 
