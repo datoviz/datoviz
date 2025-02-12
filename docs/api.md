@@ -4292,26 +4292,6 @@ int dvz_num_procs(  // returns: the number of processors
 )
 ```
 
-### `dvz_num_threads()`
-
-Set the number of threads to use in OpenMP-aware functions.
-
-```c
-void dvz_num_threads(
-    int num_threads,  // the requested number of threads
-)
-```
-
-### `dvz_num_threads_default()`
-
-Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
-
-```c
-void dvz_num_threads_default(
-
-)
-```
-
 ### `dvz_rand_byte()`
 
 Return a random integer number between 0 and 255.
@@ -4370,6 +4350,36 @@ Compute the range of an array of double values.
 void dvz_range(
     uint32_t n,  // the number of values
     double* values,  // an array of double numbers
+)
+```
+
+### `dvz_threads_default()`
+
+Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
+
+```c
+void dvz_threads_default(
+
+)
+```
+
+### `dvz_threads_get()`
+
+Get the number of threads to use in OpenMP-aware functions.
+
+```c
+int dvz_threads_get(  // returns: the current number of threads specified to OpenMP
+
+)
+```
+
+### `dvz_threads_set()`
+
+Set the number of threads to use in OpenMP-aware functions.
+
+```c
+void dvz_threads_set(
+    int num_threads,  // the requested number of threads
 )
 ```
 

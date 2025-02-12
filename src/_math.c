@@ -35,6 +35,8 @@
 /*  OpenMP                                                                                       */
 /*************************************************************************************************/
 
+static int NUM_THREADS;
+
 int dvz_num_procs(void)
 {
 #if HAS_OPENMP
@@ -46,7 +48,7 @@ int dvz_num_procs(void)
 
 
 
-void dvz_num_threads(int num_threads)
+void dvz_threads_set(int num_threads)
 {
 #if HAS_OPENMP
     int num_procs = dvz_num_procs();
@@ -54,14 +56,27 @@ void dvz_num_threads(int num_threads)
     {
         num_threads += num_procs;
     }
+    num_threads = MIN(num_threads, num_procs);
+    ASSERT(1 <= num_threads);
+    ASSERT(num_threads <= num_procs);
     log_info("Setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
+    NUM_THREADS = num_threads;
     omp_set_num_threads(num_threads);
 #endif
 }
 
 
 
-void dvz_num_threads_default(void)
+int dvz_threads_get()
+{
+#if HAS_OPENMP
+    return NUM_THREADS;
+#endif
+}
+
+
+
+void dvz_threads_default(void)
 {
 #if HAS_OPENMP
     // Set number of threads from DVZ_NUM_THREADS env variable.
@@ -71,12 +86,12 @@ void dvz_num_threads_default(void)
         int n = dvz_num_procs();
         n = MAX(1, n / 2);
         ASSERT(1 <= n);
-        dvz_num_threads(n);
+        dvz_threads_set(n);
     }
     else
     {
         int num_threads = getenvint("DVZ_NUM_THREADS");
-        dvz_num_threads(num_threads);
+        dvz_threads_set(num_threads);
     }
 #endif
 }

@@ -556,7 +556,16 @@ DVZ_EXPORT int dvz_num_procs(void);
  *
  *  @param num_threads the requested number of threads
  */
-DVZ_EXPORT void dvz_num_threads(int num_threads);
+DVZ_EXPORT void dvz_threads_set(int num_threads);
+
+
+
+/**
+ * Get the number of threads to use in OpenMP-aware functions.
+ *
+ * @returns the current number of threads specified to OpenMP
+ */
+DVZ_EXPORT int dvz_threads_get(void);
 
 
 
@@ -564,7 +573,7 @@ DVZ_EXPORT void dvz_num_threads(int num_threads);
  * Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
  * half of dvz_num_procs().
  */
-DVZ_EXPORT void dvz_num_threads_default(void);
+DVZ_EXPORT void dvz_threads_default(void);
 
 
 

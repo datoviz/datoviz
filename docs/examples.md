@@ -781,8 +781,12 @@ Illustrates:
 ```python
 import sys
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
-from PyQt6.QtCore import Qt
+try:
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
+    from PyQt6.QtCore import Qt
+except:
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter
+    from PyQt5.QtCore import Qt
 
 import datoviz as dvz
 from datoviz.backends.pyqt6 import QtServer

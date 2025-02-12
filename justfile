@@ -1207,6 +1207,12 @@ info:
     @build/datoviz.exe info
 #
 
+[linux]
+exec arg:
+    @LD_LIBRARY_PATH=build/ python3 -c "import ctypes; print(ctypes.cdll.LoadLibrary('libdatoviz.so').{{arg}}())"
+#
+
+
 
 # -------------------------------------------------------------------------------------------------
 # Demo
