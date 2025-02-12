@@ -8,9 +8,14 @@
 
 import ctypes
 
-from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout
-from PyQt6.QtGui import QImage, QPixmap
-from PyQt6.QtCore import Qt
+try:
+    from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout
+    from PyQt6.QtGui import QImage, QPixmap
+    from PyQt6.QtCore import Qt
+except:
+    from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout
+    from PyQt5.QtGui import QImage, QPixmap
+    from PyQt5.QtCore import Qt
 
 import datoviz as dvz
 from datoviz import vec2
@@ -75,10 +80,14 @@ class QtFigure(QWidget):
         self.label.setPixmap(self.pixmap)
 
     def _mouse_button_pos(self, event):
-        button = event.button()
-        dvz_button = BUTTON_MAPPING.get(button)
-        x = event.position().x()
-        y = event.position().y()
+        try:
+            button = event.button()
+        except:
+            button = 0
+        dvz_button = BUTTON_MAPPING.get(button, 0)
+        pos = event.pos()
+        x = pos.x()
+        y = pos.y()
         return x, y, dvz_button
 
     def _mouse_move(self, x, y):
