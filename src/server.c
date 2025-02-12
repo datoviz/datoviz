@@ -33,16 +33,7 @@
 DvzServer* dvz_server(int flags)
 {
     // Set number of threads from DVZ_NUM_THREADS env variable.
-    char* env = getenv("DVZ_NUM_THREADS");
-    if (env == NULL)
-    {
-        dvz_num_threads(1);
-    }
-    else
-    {
-        int num_threads = getenvint("DVZ_NUM_THREADS");
-        dvz_num_threads(num_threads);
-    }
+    dvz_num_threads_default();
 
     DvzServer* server = (DvzServer*)calloc(1, sizeof(DvzServer));
     ANN(server);

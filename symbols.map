@@ -366,6 +366,7 @@ dvz_next_pow2
 dvz_normalize_bytes
 dvz_num_procs
 dvz_num_threads
+dvz_num_threads_default
 dvz_rand_byte
 dvz_rand_double
 dvz_rand_float

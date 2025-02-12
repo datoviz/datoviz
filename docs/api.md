@@ -4302,6 +4302,16 @@ void dvz_num_threads(
 )
 ```
 
+### `dvz_num_threads_default()`
+
+Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
+
+```c
+void dvz_num_threads_default(
+
+)
+```
+
 ### `dvz_rand_byte()`
 
 Return a random integer number between 0 and 255.

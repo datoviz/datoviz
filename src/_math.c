@@ -61,6 +61,28 @@ void dvz_num_threads(int num_threads)
 
 
 
+void dvz_num_threads_default(void)
+{
+#if HAS_OPENMP
+    // Set number of threads from DVZ_NUM_THREADS env variable.
+    char* env = getenv("DVZ_NUM_THREADS");
+    if (env == NULL)
+    {
+        int n = dvz_num_procs();
+        n = MAX(1, n / 2);
+        ASSERT(1 <= n);
+        dvz_num_threads(n);
+    }
+    else
+    {
+        int num_threads = getenvint("DVZ_NUM_THREADS");
+        dvz_num_threads(num_threads);
+    }
+#endif
+}
+
+
+
 /*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/

@@ -9552,6 +9552,14 @@ num_threads.argtypes = [
     ctypes.c_int,  # int num_threads
 ]
 
+# Function dvz_num_threads_default()
+num_threads_default = dvz.dvz_num_threads_default
+num_threads_default.__doc__ = """
+Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take half of dvz_num_procs().
+"""
+num_threads_default.argtypes = [
+]
+
 # Function dvz_next_pow2()
 next_pow2 = dvz.dvz_next_pow2
 next_pow2.__doc__ = """

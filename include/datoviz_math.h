@@ -561,6 +561,14 @@ DVZ_EXPORT void dvz_num_threads(int num_threads);
 
 
 /**
+ * Set the number of threads to use in OpenMP-aware functions based on DVZ_NUM_THREADS, or take
+ * half of dvz_num_procs().
+ */
+DVZ_EXPORT void dvz_num_threads_default(void);
+
+
+
+/**
  * Return the smallest power of 2 larger or equal than a positive integer.
  *
  * @param x the value
