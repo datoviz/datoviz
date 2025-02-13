@@ -67,10 +67,12 @@ void dvz_threads_set(int num_threads)
 
 
 
-int dvz_threads_get()
+int dvz_threads_get(void)
 {
 #if HAS_OPENMP
     return NUM_THREADS;
+#else
+    return 0;
 #endif
 }
 

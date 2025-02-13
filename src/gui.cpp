@@ -768,7 +768,10 @@ void dvz_gui_text(const char* fmt, ...)
     ANN(fmt);
     va_list args;
     va_start(args, fmt);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
     ImGui::TextV(fmt, args);
+#pragma clang diagnostic pop
     va_end(args);
 }
 
@@ -806,7 +809,10 @@ void dvz_gui_progress(float fraction, float width, float height, const char* fmt
     va_list args;
     va_start(args, fmt);
     char overlay[1024] = {0};
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
     vsnprintf(overlay, 1024, fmt, args);
+#pragma clang diagnostic pop
     ImGui::ProgressBar(fraction, ImVec2(width, height), overlay);
     va_end(args);
 }

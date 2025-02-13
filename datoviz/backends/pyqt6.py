@@ -75,7 +75,8 @@ class QtFigure(QWidget):
             return
 
         data_bytes = bytearray(ctypes.string_at(data, w * h * 3))
-        self.image = QImage(data_bytes, w, h, 3 * w, QImage.Format.Format_RGB888)
+        self.image = QImage(data_bytes, w, h, 3 * w,
+                            QImage.Format.Format_RGB888)
         self.pixmap = QPixmap.fromImage(self.image)
         self.label.setPixmap(self.pixmap)
 
@@ -85,7 +86,10 @@ class QtFigure(QWidget):
         except:
             button = 0
         dvz_button = BUTTON_MAPPING.get(button, 0)
-        pos = event.pos()
+        try:
+            pos = event.pos()
+        except:
+            pos = event.position()
         x = pos.x()
         y = pos.y()
         return x, y, dvz_button
