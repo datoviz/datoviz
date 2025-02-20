@@ -69,7 +69,8 @@ class QtFigure(QWidget):
 
         dvz.figure_resize(self.figure, w, h)
         dvz.figure_update(self.figure)
-        data = dvz.scene_render(self.scene, self.server, self.figure, 0)
+        dvz.scene_render(self.scene, self.server)
+        data = dvz.server_grab(self.server, dvz.figure_id(self.figure), 0)
 
         if data is None:
             return

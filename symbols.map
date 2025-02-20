@@ -239,6 +239,7 @@ dvz_qt_submit
 dvz_qt_window
 dvz_resample
 dvz_scene
+dvz_scene_batch
 dvz_scene_destroy
 dvz_scene_figure
 dvz_scene_mouse

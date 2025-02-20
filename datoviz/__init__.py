@@ -173,6 +173,16 @@ def char_pointer(s):
     return str(s).encode('utf-8')
 
 
+def pointer_image(rgb, width, height, n_channels=3):
+    """
+    Return a NumPy array of uint8 with shape (height, width, n_channels=3) from an ndpointer
+    referring to a C pointer to a buffer of RGB uint8 values.
+    """
+    c_ptr = ctypes.cast(rgb.value, ctypes.POINTER(ctypes.c_ubyte))
+    arr = np.ctypeslib.as_array(c_ptr, shape=(height, width, n_channels))
+    return arr
+
+
 def vec2(x: float = 0, y: float = 0):
     return (ctypes.c_float * 2)(x, y)
 
@@ -225,6 +235,9 @@ class VkCommandBuffer(ctypes.Structure):
 
 DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
 DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
+
+from_array = array_pointer
+from_pointer = pointer_array
 
 A_ = array_pointer
 S_ = char_pointer
@@ -2623,10 +2636,7 @@ placeholder : unknown
 scene_render.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzServer),  # DvzServer* server
-    ctypes.POINTER(DvzFigure),  # DvzFigure* figure
-    ctypes.c_int,  # int flags
 ]
-scene_render.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_server_destroy()
 server_destroy = dvz.dvz_server_destroy
@@ -2661,6 +2671,26 @@ scene.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
 ]
 scene.restype = ctypes.POINTER(DvzScene)
+
+# Function dvz_scene_batch()
+scene_batch = dvz.dvz_scene_batch
+scene_batch.__doc__ = """
+Return the batch from a scene.
+
+Parameters
+----------
+scene : DvzScene*
+    the scene
+
+Returns
+-------
+type
+    the batch
+"""
+scene_batch.argtypes = [
+    ctypes.POINTER(DvzScene),  # DvzScene* scene
+]
+scene_batch.restype = ctypes.POINTER(DvzBatch)
 
 # Function dvz_scene_run()
 scene_run = dvz.dvz_scene_run

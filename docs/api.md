@@ -2815,6 +2815,16 @@ DvzScene* dvz_scene(  // returns: the scene
 )
 ```
 
+### `dvz_scene_batch()`
+
+Return the batch from a scene.
+
+```c
+DvzBatch* dvz_scene_batch(  // returns: the batch
+    DvzScene* scene,  // the scene
+)
+```
+
 ### `dvz_scene_destroy()`
 
 Destroy a scene.
@@ -2853,7 +2863,7 @@ void dvz_scene_mouse(
 Placeholder.
 
 ```c
-uint8_t* dvz_scene_render(
+void dvz_scene_render(
      placeholder,  // placeholder
 )
 ```
