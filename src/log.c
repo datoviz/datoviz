@@ -165,10 +165,9 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         fprintf(stderr, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
 #endif
         va_start(args, fmt);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
+        MUTE_NONLITERAL_ON
         vfprintf(stderr, fmt, args);
-#pragma clang diagnostic pop
+        MUTE_NONLITERAL_OFF
         va_end(args);
 #ifdef LOG_USE_COLOR
         fprintf(stderr, "\x1b[0m");
@@ -185,10 +184,9 @@ void log_log(int level, const char* file, int line, const char* fmt, ...)
         buf[strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", lt)] = '\0';
         fprintf(L.fp, "%s %-5s %s:%d: ", buf, level_names[level], file, line);
         va_start(args, fmt);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
+        MUTE_NONLITERAL_ON
         vfprintf(L.fp, fmt, args);
-#pragma clang diagnostic pop
+        MUTE_NONLITERAL_OFF
         va_end(args);
         fprintf(L.fp, "\n");
         fflush(L.fp);

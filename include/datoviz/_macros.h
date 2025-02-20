@@ -56,6 +56,18 @@
 #define fsizeof(type, member) sizeof(((type*)0)->member)
 
 
+
+#if CC_CLANG
+#define MUTE_NONLITERAL_ON                                                                        \
+    #pragma clang diagnostic push #pragma clang diagnostic ignored "-Wformat-nonliteral"
+#define MUTE_NONLITERAL_OFF #pragma clang diagnostic pop
+#else
+#define MUTE_NONLITERAL_ON
+#define MUTE_NONLITERAL_OFF
+#endif
+
+
+
 /*************************************************************************************************/
 /*  Environment variables                                                                        */
 /*************************************************************************************************/

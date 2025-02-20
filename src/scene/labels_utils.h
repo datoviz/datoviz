@@ -65,10 +65,9 @@ static inline void _tick_label(double x, char* tick_format, char* out)
     }
     char sign[2] = {0};
     sign[0] = x < 0 ? '-' : '+';
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
+    MUTE_NONLITERAL_ON
     snprintf(out, MAX_GLYPHS_PER_LABEL, tick_format, sign, fabs(x));
-#pragma clang diagnostic pop
+    MUTE_NONLITERAL_OFF
     ASSERT(strnlen(out, 2 * MAX_GLYPHS_PER_LABEL) < MAX_GLYPHS_PER_LABEL);
 }
 
