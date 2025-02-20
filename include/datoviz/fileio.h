@@ -127,6 +127,7 @@ int dvz_write_ppm(const char* filename, uint32_t width, uint32_t height, const u
 uint8_t* dvz_read_ppm(const char* filename, int* width, int* height);
 
 
+
 /**
  * Save an image to a PNG file
  *

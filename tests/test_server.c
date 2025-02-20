@@ -50,7 +50,8 @@ int test_server_1(TstSuite* suite)
     dvz_demo_panel(panel);
 
     // Submit the requests to the server.
-    uint8_t* rgb = dvz_scene_render(scene, server, figure, 0);
+    dvz_scene_render(scene, server);
+    uint8_t* rgb = dvz_server_grab(server, dvz_figure_id(figure), 0);
     ANN(rgb);
 
     // Save it to a file.

@@ -103,6 +103,14 @@ DvzScene* dvz_scene(DvzBatch* batch)
 
 
 
+DvzBatch* dvz_scene_batch(DvzScene* scene)
+{
+    ANN(scene);
+    return scene->batch;
+}
+
+
+
 void dvz_scene_destroy(DvzScene* scene)
 {
     ANN(scene);
@@ -1320,11 +1328,10 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
 
 
 
-uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzFigure* figure, int flags)
+void dvz_scene_render(DvzScene* scene, DvzServer* server)
 {
     ANN(scene);
     ANN(server);
-    ANN(figure);
 
     DvzBatch* batch = scene->batch;
     ANN(batch);
@@ -1334,7 +1341,4 @@ uint8_t* dvz_scene_render(DvzScene* scene, DvzServer* server, DvzFigure* figure,
 
     // Process the scene's batch requests with the renderer.
     dvz_server_submit(server, batch);
-
-    // Grab and return the image.
-    return dvz_server_grab(server, dvz_figure_id(figure), flags);
 }

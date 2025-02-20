@@ -62,7 +62,11 @@ void dvz_server_submit(DvzServer* server, DvzBatch* batch)
     ANN(batch);
 
     uint32_t count = dvz_batch_size(batch);
-    ASSERT(count > 0);
+    if (count == 0)
+    {
+        log_error("batch was empty, unable to submit requests to the server");
+        return;
+    }
 
     DvzRequest* requests = dvz_batch_requests(batch);
     ANN(requests);

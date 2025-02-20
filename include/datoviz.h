@@ -234,8 +234,7 @@ DVZ_EXPORT uint8_t* dvz_server_grab(DvzServer* server, DvzId canvas_id, int flag
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT uint8_t*
-dvz_scene_render(DvzScene* scene, DvzServer* server, DvzFigure* figure, int flags);
+DVZ_EXPORT void dvz_scene_render(DvzScene* scene, DvzServer* server);
 
 
 
@@ -265,6 +264,16 @@ DVZ_EXPORT void dvz_server_destroy(DvzServer* server);
  * @returns the scene
  */
 DVZ_EXPORT DvzScene* dvz_scene(DvzBatch* batch);
+
+
+
+/**
+ * Return the batch from a scene.
+ *
+ * @param scene the scene
+ * @returns the batch
+ */
+DVZ_EXPORT DvzBatch* dvz_scene_batch(DvzScene* scene);
 
 
 
