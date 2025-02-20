@@ -59,8 +59,8 @@
 
 #if CC_CLANG
 #define MUTE_NONLITERAL_ON                                                                        \
-    #pragma clang diagnostic push #pragma clang diagnostic ignored "-Wformat-nonliteral"
-#define MUTE_NONLITERAL_OFF #pragma clang diagnostic pop
+    _Pragma("clang diagnostic push") _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"")
+#define MUTE_NONLITERAL_OFF _Pragma("clang diagnostic pop")
 #else
 #define MUTE_NONLITERAL_ON
 #define MUTE_NONLITERAL_OFF
