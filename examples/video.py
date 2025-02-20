@@ -32,7 +32,7 @@ batch = dvz.scene_batch(scene)
 figure = dvz.figure(scene, WIDTH, HEIGHT, 0)
 panel = dvz.panel(figure, 0, 0, WIDTH, HEIGHT)
 arcball = dvz.panel_arcball(panel)
-
+camera = dvz.panel_camera(panel, 0)
 
 # Cube with one different color per face.
 colors = np.zeros((6, 4), dtype=np.uint8)
@@ -46,6 +46,9 @@ shape = dvz.shape_cube(colors)
 # Mesh visual.
 visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)
 dvz.panel_visual(panel, visual, 0)
+
+# Change the camera position.
+dvz.camera_position(camera, vec3(0, 1.5, 3))
 
 
 # Rendering function.
