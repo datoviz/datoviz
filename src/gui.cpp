@@ -469,7 +469,7 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 
 void dvz_gui_pos(vec2 pos, vec2 pivot)
 {
-    ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Once, ImVec2(pivot[0], pivot[1]));
+    ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_None, ImVec2(pivot[0], pivot[1]));
 }
 
 
