@@ -174,9 +174,10 @@ static void* _canvas_resize(DvzRenderer* rd, DvzRequest req, void* user_data)
     log_debug("resize canvas to %dx%d", w, h);
 
     GET_ID(DvzCanvas, canvas, req.id)
-    ASSERT(canvas->obj.type == DVZ_OBJECT_TYPE_BOARD);
-
-    dvz_board_resize(canvas, w, h);
+    if (canvas->obj.type == DVZ_OBJECT_TYPE_BOARD)
+    {
+        dvz_board_resize(canvas, w, h);
+    }
 
     return NULL;
 }
