@@ -72,11 +72,13 @@ int test_external_1(TstSuite* suite)
 
     DvzSize offset = 0;
     int fd = dvz_external_vertex(rd, visual, 0, &offset);
+    log_info("external handle is %d", fd);
 
     // Destroy the requester and renderer.
     dvz_visual_destroy(visual);
 
     dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    return 0;
+
+    return fd == 0;
 }
