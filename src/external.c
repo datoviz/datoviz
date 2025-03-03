@@ -59,7 +59,7 @@ int dvz_external_vertex(DvzRenderer* rd, DvzVisual* visual, uint32_t binding_idx
     VkMemoryGetFdInfoKHR getFdInfo = {
         .sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR,
         .memory = memory,
-        .handleType = VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT,
+        .handleType = rd->gpu->external_memory_handle_type,
     };
 
     PFN_vkGetMemoryFdKHR vkGetMemoryFdKHR_ =
