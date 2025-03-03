@@ -138,6 +138,15 @@ void dvz_gpu_request_features(DvzGpu* gpu, VkPhysicalDeviceFeatures requested_fe
 
 
 
+void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name)
+{
+    ANN(gpu);
+    ANN(extension_name);
+    gpu->extensions[gpu->extension_count++] = extension_name;
+}
+
+
+
 void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
 {
     ANN(gpu);

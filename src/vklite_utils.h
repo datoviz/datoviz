@@ -25,15 +25,6 @@
 
 
 /*************************************************************************************************/
-/*  Constants                                                                                    */
-/*************************************************************************************************/
-
-// Required device extensions.
-static const char* DVZ_DEVICE_EXTENSIONS[] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-
-
-
-/*************************************************************************************************/
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
@@ -299,16 +290,10 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
     device_info.pEnabledFeatures = &gpu->requested_features;
 
     // Device extensions and layers
-    char* extensions[16] = {0};
-    uint32_t n_extensions = 0;
-
     if (has_surface)
     {
-        uint32_t n = ARRAY_COUNT(DVZ_DEVICE_EXTENSIONS);
-        log_trace("has surface, will add %d extensions", n);
-        ASSERT(n < 16);
-        memcpy(extensions, DVZ_DEVICE_EXTENSIONS, n * sizeof(char*));
-        n_extensions += n;
+        log_trace("has surface, will add 1 extension");
+        dvz_gpu_extension(gpu, VK_KHR_SWAPCHAIN_EXTENSION_NAME);
     }
 
     // Fix for the following validation error (macOS):
@@ -330,20 +315,21 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
                 log_trace("found portability subset, will need to add extension "
                           "VK_KHR_portability_subset");
                 // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
-                extensions[n_extensions++] = "VK_KHR_portability_subset";
+                // extensions[n_extensions++] = "VK_KHR_portability_subset";
+                dvz_gpu_extension(gpu, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
                 break;
             }
         }
         FREE(ext);
     }
 
-    device_info.enabledExtensionCount = n_extensions;
-    device_info.ppEnabledExtensionNames = (const char* const*)extensions;
+    device_info.enabledExtensionCount = gpu->extension_count;
+    device_info.ppEnabledExtensionNames = (const char* const*)gpu->extensions;
 
-    log_trace("loaded %d extension(s):", n_extensions);
-    for (uint32_t i = 0; i < n_extensions; i++)
+    log_trace("loaded %d extension(s):", device_info.enabledExtensionCount);
+    for (uint32_t i = 0; i < device_info.enabledExtensionCount; i++)
     {
-        log_trace("- %s", extensions[i]);
+        log_trace("- %s", device_info.ppEnabledExtensionNames[i]);
     }
 
     // Create the device

@@ -24,6 +24,7 @@
 #include <vulkan/vulkan.h>
 
 MUTE_ON
+#define VMA_EXTERNAL_MEMORY 1
 #include "vk_mem_alloc.h"
 MUTE_OFF
 
@@ -35,6 +36,7 @@ MUTE_OFF
 
 #define DVZ_VULKAN_API VK_API_VERSION_1_3
 
+#define DVZ_MAX_DEVICE_EXTENSIONS           16
 #define DVZ_MAX_DESCRIPTOR_SETS             1024
 #define DVZ_MAX_PRESENT_MODES               16
 #define DVZ_MAX_PUSH_CONSTANTS              16
@@ -268,6 +270,9 @@ struct DvzGpu
 
     uint32_t idx; // GPU index within the host
     const char* name;
+
+    uint32_t extension_count;
+    const char* extensions[DVZ_MAX_DEVICE_EXTENSIONS];
 
     VkPhysicalDevice physical_device;
     VkPhysicalDeviceProperties device_properties;
@@ -660,6 +665,14 @@ DvzGpu* dvz_gpu(DvzHost* host, uint32_t idx);
  * @returns a pointer to the best GPU object
  */
 DvzGpu* dvz_gpu_best(DvzHost* host);
+
+/**
+ * Add a new Vulkan device extension.
+ *
+ * @param gpu the GPU
+ * @param extension_name the extension name
+ */
+void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name);
 
 /**
  * Make a renderpass for a GPU.
