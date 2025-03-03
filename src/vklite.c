@@ -147,6 +147,14 @@ void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name)
 
 
 
+void dvz_gpu_external(DvzGpu* gpu, VkExternalMemoryHandleTypeFlagsKHR flags)
+{
+    ANN(gpu);
+    gpu->external_memory_handle_type = flags;
+}
+
+
+
 void dvz_gpu_queue(DvzGpu* gpu, uint32_t idx, DvzQueueType type)
 {
     ANN(gpu);
@@ -199,8 +207,32 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
     alloc_info.physicalDevice = gpu->physical_device;
     alloc_info.device = gpu->device;
     alloc_info.instance = gpu->host->instance;
+
+    // HACK: get the number of memory types, and create an array of
+    // VkExternalMemoryHandleTypeFlagsKHR to copy gpu->external_memory_handle_type to each memory
+    // type.
+    VkExternalMemoryHandleTypeFlagsKHR* handle_types = NULL;
+    if (gpu->external_memory_handle_type != 0)
+    {
+        VkPhysicalDeviceMemoryProperties memoryProperties = {0};
+        vkGetPhysicalDeviceMemoryProperties(gpu->physical_device, &memoryProperties);
+        handle_types = (VkExternalMemoryHandleTypeFlagsKHR*)calloc(
+            memoryProperties.memoryTypeCount, sizeof(VkExternalMemoryHandleTypeFlagsKHR));
+        for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++)
+        {
+            handle_types[i] = gpu->external_memory_handle_type;
+        }
+        alloc_info.pTypeExternalMemoryHandleTypes = handle_types;
+    }
+
     vmaCreateAllocator(&alloc_info, &gpu->allocator);
     ASSERT(gpu->allocator != VK_NULL_HANDLE);
+
+    // Free handle_types.
+    if (handle_types != NULL)
+    {
+        FREE(handle_types);
+    }
 
     dvz_obj_created(&gpu->obj);
 
@@ -765,6 +797,14 @@ static void _buffer_create(DvzBuffer* buffer)
     buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     buf_info.size = buffer->size;
     buf_info.usage = buffer->usage;
+
+    VkExternalMemoryBufferCreateInfo externalBufferInfo = {0};
+    if (gpu->external_memory_handle_type != 0)
+    {
+        externalBufferInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_BUFFER_CREATE_INFO;
+        externalBufferInfo.handleTypes = gpu->external_memory_handle_type;
+        buf_info.pNext = &externalBufferInfo;
+    }
 
     uint32_t queue_families[DVZ_MAX_QUEUE_FAMILIES];
     make_shared(

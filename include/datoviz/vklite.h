@@ -274,6 +274,8 @@ struct DvzGpu
     uint32_t extension_count;
     const char* extensions[DVZ_MAX_DEVICE_EXTENSIONS];
 
+    VkExternalMemoryHandleTypeFlags external_memory_handle_type;
+
     VkPhysicalDevice physical_device;
     VkPhysicalDeviceProperties device_properties;
     VkPhysicalDeviceFeatures device_features;
@@ -673,6 +675,14 @@ DvzGpu* dvz_gpu_best(DvzHost* host);
  * @param extension_name the extension name
  */
 void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name);
+
+/**
+ * Specify the export memory handle types.
+ *
+ * @param gpu the GPU
+ * @param flags the flags
+ */
+void dvz_gpu_external(DvzGpu* gpu, VkExternalMemoryHandleTypeFlagsKHR flags);
 
 /**
  * Make a renderpass for a GPU.

@@ -64,6 +64,7 @@
 #include "test_client.h"
 #include "test_client_input.h"
 #include "test_datalloc.h"
+#include "test_external.h"
 #include "test_fifo.h"
 #include "test_fileio.h"
 #include "test_gui.h"
@@ -274,6 +275,8 @@ int dvz_run_tests(const char* match)
     TEST(test_renderer_1)
     TEST(test_renderer_graphics)
     TEST(test_renderer_resize)
+
+    TEST(test_external_1)
 
     // Test visuals.
     TEST(test_visual_1)
