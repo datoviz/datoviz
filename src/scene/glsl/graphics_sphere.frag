@@ -18,7 +18,9 @@ params;
 layout(location = 0) in vec4 in_color;
 layout(location = 1) in vec3 in_pos;
 layout(location = 2) in float in_radius;
-layout(location = 3) in vec4 in_eye_pos;
+layout(location = 3) in vec4 in_world_pos;
+layout(location = 4) in vec4 in_view_pos;
+layout(location = 5) in vec4 in_light_pos;
 
 layout(location = 0) out vec4 out_color;
 
@@ -41,10 +43,8 @@ void main()
     vec3 normal = vec3(coord, sqrt(1.0 - dist_squared));
 
     // Calculate the lighting
-    vec3 light_pos = params.light_pos.xyz;
-    // light_pos.y = -light_pos.y;
-    vec3 light_dir = normalize(light_pos.xyz - in_pos);
-    vec3 view_dir = normalize(-in_eye_pos.xyz);
+    vec3 light_dir = normalize(in_light_pos.xyz - in_world_pos.xyz);
+    vec3 view_dir = normalize(-in_view_pos.xyz);
     vec3 reflect_dir = reflect(-light_dir, normal);
 
     // Color.
