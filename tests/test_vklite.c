@@ -16,7 +16,6 @@
 
 #include "test_vklite.h"
 #include "../src/render_utils.h"
-#include "../src/vklite_utils.h"
 #include "fileio.h"
 #include "resources.h"
 #include "shader.h"

@@ -11,7 +11,7 @@
 #include "surface.h"
 #include "common.h"
 #include "glfw_utils.h"
-#include "vklite_utils.h"
+#include "vklite.h"
 #include "window.h"
 
 

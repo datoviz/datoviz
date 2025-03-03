@@ -22,7 +22,6 @@
 #include "recorder.h"
 #include "surface.h"
 #include "vklite.h"
-#include "vklite_utils.h"
 #include "widgets.h"
 
 

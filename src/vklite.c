@@ -214,6 +214,7 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
     VkExternalMemoryHandleTypeFlagsKHR* handle_types = NULL;
     if (gpu->external_memory_handle_type != 0)
     {
+        log_trace("setting external memory handle types to %d", gpu->external_memory_handle_type);
         VkPhysicalDeviceMemoryProperties memoryProperties = {0};
         vkGetPhysicalDeviceMemoryProperties(gpu->physical_device, &memoryProperties);
         handle_types = (VkExternalMemoryHandleTypeFlagsKHR*)calloc(

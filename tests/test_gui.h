@@ -17,13 +17,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "../src/vklite_utils.h"
-#include "glfw_utils.h"
-#include "surface.h"
-#include "test_resources.h"
 #include "testing.h"
-#include "vklite.h"
-#include "window.h"
 
 
 

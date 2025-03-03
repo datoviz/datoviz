@@ -15,7 +15,6 @@
 #include "board.h"
 #include "render_utils.h"
 #include "resources.h"
-#include "vklite_utils.h"
 
 
 
