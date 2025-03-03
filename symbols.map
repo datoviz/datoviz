@@ -306,6 +306,7 @@ dvz_visual_cull
 dvz_visual_dat
 dvz_visual_data
 dvz_visual_depth
+dvz_visual_dynamic
 dvz_visual_fixed
 dvz_visual_front
 dvz_visual_groups

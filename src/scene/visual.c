@@ -233,6 +233,21 @@ void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_
 
 
 
+void dvz_visual_dynamic(DvzVisual* visual, uint32_t attr_idx, uint32_t binding_idx)
+{
+    ANN(visual);
+    if (binding_idx >= 16)
+    {
+        log_error("the binding idx must be <= 15");
+        return;
+    }
+    // Clear the last 4 bits and set them to binding_idx.
+    visual->attrs[attr_idx].flags =
+        (visual->attrs[attr_idx].flags & ~0xF) | ((int)binding_idx & 0xF);
+}
+
+
+
 void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip)
 {
     ANN(visual);

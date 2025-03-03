@@ -3449,6 +3449,26 @@ visual_fixed.argtypes = [
     ctypes.c_bool,  # bool fixed_z
 ]
 
+# Function dvz_visual_dynamic()
+visual_dynamic = dvz.dvz_visual_dynamic
+visual_dynamic.__doc__ = """
+Declare a dynamic attribute, meaning that it is stored in a separate dat rather than being interleaved with the other attributes in the same vertex buffer.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+attr_idx : uint32_t
+    the attribute index
+binding_idx : uint32_t
+    the binding index (0 = common vertex buffer, use 1 or 2, 3... for each
+"""
+visual_dynamic.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t attr_idx
+    ctypes.c_uint32,  # uint32_t binding_idx
+]
+
 # Function dvz_visual_clip()
 visual_clip = dvz.dvz_visual_clip
 visual_clip.__doc__ = """

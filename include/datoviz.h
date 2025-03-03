@@ -696,6 +696,19 @@ DVZ_EXPORT void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, 
 
 
 /**
+ * Declare a dynamic attribute, meaning that it is stored in a separate dat rather than being
+ * interleaved with the other attributes in the same vertex buffer.
+ *
+ * @param visual the visual
+ * @param attr_idx the attribute index
+ * @param binding_idx the binding index (0 = common vertex buffer, use 1 or 2, 3... for each
+ * different independent dat)
+ */
+DVZ_EXPORT void dvz_visual_dynamic(DvzVisual* visual, uint32_t attr_idx, uint32_t binding_idx);
+
+
+
+/**
  * Set the visual clipping.
  *
  * @param visual the visual

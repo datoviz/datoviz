@@ -3607,6 +3607,18 @@ void dvz_visual_depth(
 )
 ```
 
+### `dvz_visual_dynamic()`
+
+Declare a dynamic attribute, meaning that it is stored in a separate dat rather than being
+
+```c
+void dvz_visual_dynamic(
+    DvzVisual* visual,  // the visual
+    uint32_t attr_idx,  // the attribute index
+    uint32_t binding_idx,  // the binding index (0 = common vertex buffer, use 1 or 2, 3... for each
+)
+```
+
 ### `dvz_visual_fixed()`
 
 Fix some axes in a visual.
