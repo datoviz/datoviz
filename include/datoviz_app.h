@@ -38,6 +38,7 @@ typedef struct DvzApp DvzApp;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzHost DvzHost;
 typedef struct DvzGpu DvzGpu;
+typedef struct DvzRenderer DvzRenderer;
 
 
 
@@ -82,7 +83,7 @@ DVZ_EXPORT DvzGpu* dvz_default_gpu(DvzHost* host);
 
 /*************************************************************************************************/
 /*************************************************************************************************/
-/*  App API                                                                                      */
+/*  App creation                                                                                 */
 /*************************************************************************************************/
 /*************************************************************************************************/
 
@@ -105,6 +106,55 @@ DVZ_EXPORT DvzApp* dvz_app(int flags);
 DVZ_EXPORT DvzBatch* dvz_app_batch(DvzApp* app);
 
 
+
+/**
+ * Get or set the app host.
+ *
+ * @param app the app
+ * @param host the host (or NULL to return the app host)
+ * @returns the host
+ */
+DVZ_EXPORT DvzHost* dvz_app_host(DvzApp* app, DvzHost* host);
+
+
+
+/**
+ * Get or set the app GPU.
+ *
+ * @param app the app
+ * @param gpu the GPU (or NULL to return the app GPU)
+ * @returns the GPU
+ */
+DVZ_EXPORT DvzGpu* dvz_app_gpu(DvzApp* app, DvzGpu* gpu);
+
+
+
+/**
+ * Get or set the app renderer.
+ *
+ * @param app the app
+ * @param rd the renderer (or NULL to return the app renderer)
+ * @returns the renderer
+ */
+DVZ_EXPORT DvzRenderer* dvz_app_renderer(DvzApp* app, DvzRenderer* rd);
+
+
+
+/**
+ * Create the app after the host, GPU, renderer have been set.
+ *
+ * @param app the app
+ * @returns the renderer
+ */
+DVZ_EXPORT void dvz_app_create(DvzApp* app);
+
+
+
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  App functions                                                                                */
+/*************************************************************************************************/
+/*************************************************************************************************/
 
 /**
  * Run one frame.
