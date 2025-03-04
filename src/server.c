@@ -38,17 +38,26 @@ DvzServer* dvz_server(int flags)
     DvzServer* server = (DvzServer*)calloc(1, sizeof(DvzServer));
     ANN(server);
 
+    // Host.
     server->host = dvz_host();
     ANN(server->host);
     dvz_host_backend(server->host, DVZ_BACKEND_OFFSCREEN);
     dvz_host_create(server->host);
 
-    server->gpu = make_gpu(server->host);
+    // Create the GPU.
+    int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
+    server->gpu = dvz_host_gpu(server->host, gpu_idx);
     ANN(server->gpu);
+    _default_queues(server->gpu, true);
+    VkPhysicalDeviceFeatures f = {.independentBlend = true};
+    dvz_gpu_request_features(server->gpu, f);
+    dvz_gpu_create(server->gpu, NULL);
 
+    // Renderer.
     server->rd = dvz_renderer(server->gpu, flags);
     ANN(server->rd);
 
+    // Input.
     server->mouse = dvz_mouse();
     server->keyboard = dvz_keyboard();
 
