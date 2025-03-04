@@ -88,14 +88,24 @@ DvzHost* dvz_host(DvzBackend backend)
 
 
 
+void dvz_host_extension(DvzHost* host, const char* extension_name)
+{
+    ANN(host);
+    ANN(extension_name);
+    host->extensions[host->extension_count++] = extension_name;
+}
+
+
+
 void dvz_host_create(DvzHost* host)
 {
     ANN(host);
 
-    // Which extensions are required? Depends on the backend.
-    uint32_t required_extension_count = 0;
-    const char** required_extensions =
-        backend_extensions(host->backend, &required_extension_count);
+    // TODO
+    // // Which extensions are required? Depends on the backend.
+    // uint32_t required_extension_count = 0;
+    // const char** required_extensions =
+    //     backend_extensions(host->backend, &required_extension_count);
 
     // Create the instance.
 
@@ -103,8 +113,8 @@ void dvz_host_create(DvzHost* host)
     if (host->instance == VK_NULL_HANDLE)
     {
         create_instance(
-            required_extension_count, required_extensions, &host->instance, &host->debug_messenger,
-            &host->n_errors);
+            host->extension_count, host->extensions, //
+            &host->instance, &host->debug_messenger, &host->n_errors);
     }
 
     if (host->instance == VK_NULL_HANDLE)
