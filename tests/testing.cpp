@@ -202,7 +202,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
     {
         if (item->setup != NULL)
         {
-            item->setup(suite, NULL);
+            item->setup(suite, item);
         }
 
         print_res_begin(index, item->name);
@@ -213,7 +213,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
 
         if (item->teardown != NULL)
         {
-            item->teardown(suite, NULL);
+            item->teardown(suite, item);
         }
     }
 
