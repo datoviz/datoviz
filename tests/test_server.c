@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_server.h"
+#include "fileio.h"
 #include "server.h"
 #include "test.h"
 #include "testing.h"
