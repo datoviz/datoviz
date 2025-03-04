@@ -18,8 +18,28 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <functional>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "_log.h"
 #include "testing.h"
+
+
+
+/*************************************************************************************************/
+/*  Structs                                                                                      */
+/*************************************************************************************************/
+
+struct PairHash
+{
+    template <typename T1, typename T2> std::size_t operator()(const std::pair<T1, T2>& p) const
+    {
+        return std::hash<T1>{}(p.first) ^ (std::hash<T2>{}(p.second) << 1);
+    }
+};
 
 
 
@@ -70,19 +90,6 @@ static void print_end(int index, int res)
 
 
 /*************************************************************************************************/
-/*  Util functions                                                                               */
-/*************************************************************************************************/
-
-static inline bool test_name_matches(TstTest* test, const char* str)
-{
-    ANN(test);
-    ANN(str);
-    return strstr(test->name, str) != NULL;
-}
-
-
-
-/*************************************************************************************************/
 /*  Main testing functions                                                                       */
 /*************************************************************************************************/
 
@@ -97,7 +104,9 @@ TstSuite tst_suite(void)
 
 
 
-TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* user_data)
+void tst_suite_add(
+    TstSuite* suite, const char* name, const char* tags, //
+    TstFunction test, TstFunction setup, TstFunction teardown, void* user_data, int flags)
 {
     ANN(suite);
     // log_trace(
@@ -114,50 +123,14 @@ TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* 
     }
     ASSERT(suite->n_items < suite->capacity);
     TstItem* item = &suite->items[suite->n_items++];
-    item->type = type;
-    item->active = false;
-    switch (type)
-    {
-    case TST_ITEM_SETUP:
-    case TST_ITEM_TEARDOWN:
-        item->u.f.function = function;
-        item->u.f.user_data = user_data;
-        break;
 
-    case TST_ITEM_TEST:
-        item->u.t.function = function;
-        item->u.t.user_data = user_data;
-        break;
-
-    default:
-        break;
-    }
-    return item;
-}
-
-
-
-void tst_suite_setup(TstSuite* suite, TstFunction setup, void* user_data)
-{
-    ANN(suite);
-    _append(suite, TST_ITEM_SETUP, setup, user_data);
-}
-
-
-
-void tst_suite_add(TstSuite* suite, const char* name, TstFunction test, void* user_data)
-{
-    ANN(suite);
-    TstItem* item = _append(suite, TST_ITEM_TEST, test, user_data);
-    item->u.t.name = name;
-}
-
-
-
-void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user_data)
-{
-    ANN(suite);
-    _append(suite, TST_ITEM_TEARDOWN, teardown, user_data);
+    item->name = name;
+    item->tags = tags;
+    item->test = test;
+    item->setup = setup;
+    item->teardown = teardown;
+    item->flags = flags;
+    item->user_data = user_data;
 }
 
 
@@ -166,81 +139,86 @@ void tst_suite_run(TstSuite* suite, const char* match)
 {
     log_trace("running testing suite");
     ANN(suite);
-    TstItem* item = NULL;
-    TstItem* current_fixture = NULL;
+    ANN(suite->items);
+
     print_start();
 
-    // First pass: mark selected tests and mark fixtures with at least 1 test.
-    for (uint32_t i = 0; i < suite->n_items; i++)
+    std::unordered_map<std::pair<TstFunction, TstFunction>, std::vector<TstItem*>, PairHash>
+        grouped_tests;
+    std::vector<TstItem*> standalone_tests;
+
+    // First step: Collect matching test items and group them
+    for (uint32_t i = 0; i < suite->n_items; ++i)
     {
-        item = &suite->items[i];
-        switch (item->type)
+        TstItem* item = &suite->items[i];
+        if (std::string(item->name).find(match) != std::string::npos ||
+            std::string(item->tags).find(match) != std::string::npos)
         {
-        case TST_ITEM_SETUP:
-            current_fixture = item;
-            break;
-        case TST_ITEM_TEARDOWN:
-            if (current_fixture != NULL)
+            if (item->flags & TST_ITEM_FLAGS_STANDALONE)
             {
-                // The teardown is active iff the associated setup is.
-                item->active = current_fixture->active;
+                standalone_tests.push_back(item);
             }
-            current_fixture = NULL;
-            break;
-        case TST_ITEM_TEST:
-            if (match == NULL || test_name_matches(&item->u.t, match))
+            else
             {
-                item->active = true;
-                if (current_fixture != NULL)
-                    current_fixture->active = true;
+                grouped_tests[{item->setup, item->teardown}].push_back(item);
             }
-            break;
-        default:
-            break;
         }
     }
 
-    // Second pass: run selected tests.
+    int total_res = 0;
     int index = 0;
-    int res = 0, cur_res = 0;
-    for (uint32_t i = 0; i < suite->n_items; i++)
+
+    // Second step: Execute grouped tests
+    for (auto& [setup_teardown, tests] : grouped_tests)
     {
-        item = &suite->items[i];
-        switch (item->type)
+        TstFunction setup = setup_teardown.first;
+        TstFunction teardown = setup_teardown.second;
+
+        // Setup.
+        if (setup != NULL)
         {
-        case TST_ITEM_SETUP:
-        case TST_ITEM_TEARDOWN:
-            if (item->active)
-                item->u.f.function(suite);
+            setup(suite);
+        }
 
-            break;
+        // All shared tests for that setup.
+        for (TstItem* item : tests)
+        {
+            print_res_begin(index, item->name);
+            int res = item->test(suite);
+            print_res_end(index, item->name, res);
+            total_res += (res == 0 ? 0 : 1);
+            ++index;
+        }
 
-        case TST_ITEM_TEST:
-            if (item->active)
-            {
-                item->u.t.res = item->u.t.function(suite);
-                cur_res = item->u.t.res;
-                print_res_begin(index, item->u.t.name);
-                print_res_end(index, item->u.t.name, cur_res);
-                res += cur_res == 0 ? 0 : 1;
-                index++;
-            }
-            break;
-
-        default:
-            break;
+        // Teardown
+        if (teardown != NULL)
+        {
+            teardown(suite);
         }
     }
 
-    // Third pass: reset active to true for all items.
-    for (uint32_t i = 0; i < suite->n_items; i++)
+    // Third step: Execute standalone tests individually
+    for (TstItem* item : standalone_tests)
     {
-        item = &suite->items[i];
-        item->active = true;
+        if (item->setup != NULL)
+        {
+            item->setup(suite);
+        }
+
+        print_res_begin(index, item->name);
+        int res = item->test(suite);
+        print_res_end(index, item->name, res);
+        total_res += (res == 0 ? 0 : 1);
+        ++index;
+
+        if (item->teardown != NULL)
+        {
+            item->teardown(suite);
+        }
     }
 
     // TODO: mark as PASS or FAIL depending on the res
-    print_end(index, res);
+    print_end(index, total_res);
 }
 
 
