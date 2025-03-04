@@ -26,7 +26,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_prng_1(TstSuite*);
+int test_prng_1(TstSuite* suite, TstItem* tstitem);
 
 
 

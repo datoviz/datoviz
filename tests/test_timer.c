@@ -64,7 +64,7 @@ static int assert_firing(DvzTimerItem* item, double time, bool firing)
 /*  Timer tests                                                                                  */
 /*************************************************************************************************/
 
-int test_timer_1(TstSuite* suite)
+int test_timer_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzTimer* timer = dvz_timer();
     AT(dvz_timer_count(timer) == 0);
@@ -125,7 +125,7 @@ static void _on_timer(DvzTimer* timer, DvzInternalTimerEvent ev)
     *res = ev.time;
 }
 
-int test_timer_2(TstSuite* suite)
+int test_timer_2(TstSuite* suite, TstItem* tstitem)
 {
     double period = .1;
     DvzTimer* timer = dvz_timer();

@@ -70,7 +70,7 @@ static void _up_done(DvzDeq* deq, void* item, void* user_data)
 /*  Transfer tests                                                                               */
 /*************************************************************************************************/
 
-int test_transfers_buffer_mappable(TstSuite* suite)
+int test_transfers_buffer_mappable(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -121,7 +121,7 @@ int test_transfers_buffer_mappable(TstSuite* suite)
 
 
 
-int test_transfers_buffer_large(TstSuite* suite)
+int test_transfers_buffer_large(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -176,7 +176,7 @@ int test_transfers_buffer_large(TstSuite* suite)
 
 
 
-int test_transfers_buffer_copy(TstSuite* suite)
+int test_transfers_buffer_copy(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -239,7 +239,7 @@ int test_transfers_buffer_copy(TstSuite* suite)
 
 
 
-int test_transfers_image_buffer(TstSuite* suite)
+int test_transfers_image_buffer(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -309,7 +309,7 @@ int test_transfers_image_buffer(TstSuite* suite)
 /*  Test high-level transfer functions                                                           */
 /*************************************************************************************************/
 
-int test_transfers_direct_buffer(TstSuite* suite)
+int test_transfers_direct_buffer(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -349,7 +349,7 @@ int test_transfers_direct_buffer(TstSuite* suite)
 
 
 
-int test_transfers_direct_image(TstSuite* suite)
+int test_transfers_direct_image(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -393,7 +393,7 @@ int test_transfers_direct_image(TstSuite* suite)
 /*  Test dup transfers                                                                           */
 /*************************************************************************************************/
 
-int test_transfers_dups_util(TstSuite* suite)
+int test_transfers_dups_util(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -477,7 +477,7 @@ int test_transfers_dups_util(TstSuite* suite)
 
 
 
-int test_transfers_dups_upload(TstSuite* suite)
+int test_transfers_dups_upload(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -539,7 +539,7 @@ int test_transfers_dups_upload(TstSuite* suite)
 
 
 
-int test_transfers_dups_copy(TstSuite* suite)
+int test_transfers_dups_copy(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

@@ -31,7 +31,7 @@
 /*  Pipelib tests                                                                                */
 /*************************************************************************************************/
 
-int test_pipelib_1(TstSuite* suite)
+int test_pipelib_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);

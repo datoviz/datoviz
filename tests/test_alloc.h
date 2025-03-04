@@ -25,13 +25,13 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_alloc_1(TstSuite*);
+int test_alloc_1(TstSuite* suite, TstItem* tstitem);
 
-int test_alloc_2(TstSuite*);
+int test_alloc_2(TstSuite* suite, TstItem* tstitem);
 
-int test_alloc_3(TstSuite*);
+int test_alloc_3(TstSuite* suite, TstItem* tstitem);
 
-int test_alloc_4(TstSuite*);
+int test_alloc_4(TstSuite* suite, TstItem* tstitem);
 
 
 

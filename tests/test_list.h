@@ -25,7 +25,7 @@
 /*  List tests                                                                                   */
 /*************************************************************************************************/
 
-int test_list_1(TstSuite*);
+int test_list_1(TstSuite* suite, TstItem* tstitem);
 
 
 

@@ -26,7 +26,7 @@
 /*  Shape tests                                                                                  */
 /*************************************************************************************************/
 
-int test_shape_1(TstSuite* suite)
+int test_shape_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -45,7 +45,7 @@ int test_shape_1(TstSuite* suite)
 
 
 
-int test_shape_surface(TstSuite* suite)
+int test_shape_surface(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -74,7 +74,7 @@ int test_shape_surface(TstSuite* suite)
 
 
 
-int test_shape_transform(TstSuite* suite)
+int test_shape_transform(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -95,7 +95,7 @@ int test_shape_transform(TstSuite* suite)
 
 
 
-int test_shape_obj(TstSuite* suite)
+int test_shape_obj(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

@@ -33,7 +33,7 @@
 /*  Atlas tests                                                                                  */
 /*************************************************************************************************/
 
-int test_atlas_1(TstSuite* suite)
+int test_atlas_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     unsigned long ttf_size = 0;

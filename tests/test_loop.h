@@ -28,13 +28,13 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_loop_1(TstSuite*);
+int test_loop_1(TstSuite* suite, TstItem* tstitem);
 
-int test_loop_2(TstSuite*);
+int test_loop_2(TstSuite* suite, TstItem* tstitem);
 
-int test_loop_cube(TstSuite*);
+int test_loop_cube(TstSuite* suite, TstItem* tstitem);
 
-int test_loop_gui(TstSuite*);
+int test_loop_gui(TstSuite* suite, TstItem* tstitem);
 
 
 

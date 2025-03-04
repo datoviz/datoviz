@@ -25,7 +25,7 @@
 /*  Atlas tests                                                                                  */
 /*************************************************************************************************/
 
-int test_atlas_1(TstSuite*);
+int test_atlas_1(TstSuite* suite, TstItem* tstitem);
 
 
 

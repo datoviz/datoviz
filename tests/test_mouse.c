@@ -35,7 +35,7 @@ static void _on_mouse_move(DvzMouse* mouse, DvzMouseEvent* ev)
     *((float*)ev->user_data) = ev->pos[0];
 }
 
-int test_mouse_move(TstSuite* suite)
+int test_mouse_move(TstSuite* suite, TstItem* tstitem)
 {
     DvzMouse* mouse = dvz_mouse();
 
@@ -72,7 +72,7 @@ static void _on_mouse_click(DvzMouse* mouse, DvzMouseEvent* ev)
     *((float*)ev->user_data) = ev->pos[0];
 }
 
-int test_mouse_press(TstSuite* suite)
+int test_mouse_press(TstSuite* suite, TstItem* tstitem)
 {
     DvzMouse* mouse = dvz_mouse();
 
@@ -127,7 +127,7 @@ static void _on_mouse_wheel(DvzMouse* mouse, DvzMouseEvent* ev)
     *((float*)ev->user_data) = ev->content.w.dir[1];
 }
 
-int test_mouse_wheel(TstSuite* suite)
+int test_mouse_wheel(TstSuite* suite, TstItem* tstitem)
 {
     DvzMouse* mouse = dvz_mouse();
 
@@ -168,7 +168,7 @@ static void _on_mouse_drag_stop(DvzMouse* mouse, DvzMouseEvent* ev)
     *((int*)ev->user_data) = (int)ev->button;
 }
 
-int test_mouse_drag(TstSuite* suite)
+int test_mouse_drag(TstSuite* suite, TstItem* tstitem)
 {
     DvzMouse* mouse = dvz_mouse();
 

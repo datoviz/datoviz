@@ -56,7 +56,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
     dvz_visual_update(visual);
 }
 
-int test_glyph_1(TstSuite* suite)
+int test_glyph_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

@@ -52,7 +52,7 @@
 /*  Ortho tests                                                                                */
 /*************************************************************************************************/
 
-int test_ortho_1(TstSuite* suite)
+int test_ortho_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

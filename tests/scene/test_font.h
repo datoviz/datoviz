@@ -25,7 +25,7 @@
 /*  Font tests                                                                                   */
 /*************************************************************************************************/
 
-int test_font_1(TstSuite*);
+int test_font_1(TstSuite* suite, TstItem* tstitem);
 
 
 

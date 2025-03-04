@@ -27,7 +27,7 @@
 /*  Board tests                                                                                  */
 /*************************************************************************************************/
 
-int test_board_1(TstSuite*);
+int test_board_1(TstSuite* suite, TstItem* tstitem);
 
 
 

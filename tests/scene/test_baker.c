@@ -40,7 +40,7 @@
 /*  Baker tests                                                                                  */
 /*************************************************************************************************/
 
-int test_baker_1(TstSuite* suite)
+int test_baker_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
 
@@ -190,7 +190,7 @@ int test_baker_1(TstSuite* suite)
 
 
 
-int test_baker_2(TstSuite* suite)
+int test_baker_2(TstSuite* suite, TstItem* tstitem)
 {
     // DvzBatch* batch = dvz_requester();
     // dvz_requester_begin(batch);
@@ -224,7 +224,7 @@ int test_baker_2(TstSuite* suite)
 
 
 
-// int test_baker_3(TstSuite* suite)
+// int test_baker_3(TstSuite* suite, TstItem* tstitem)
 // {
 //     DvzBatch* batch = dvz_requester();
 //     dvz_requester_begin(batch);

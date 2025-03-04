@@ -27,7 +27,7 @@
 /*  Pipe tests                                                                                   */
 /*************************************************************************************************/
 
-int test_pipe_1(TstSuite*);
+int test_pipe_1(TstSuite* suite, TstItem* tstitem);
 
 
 

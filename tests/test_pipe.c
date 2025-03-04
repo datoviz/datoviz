@@ -30,7 +30,7 @@
 /*  Resources tests                                                                              */
 /*************************************************************************************************/
 
-int test_pipe_1(TstSuite* suite)
+int test_pipe_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);

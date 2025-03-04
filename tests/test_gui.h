@@ -25,9 +25,9 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_gui_1(TstSuite*);
+int test_gui_1(TstSuite* suite, TstItem* tstitem);
 
-int test_gui_offscreen(TstSuite*);
+int test_gui_offscreen(TstSuite* suite, TstItem* tstitem);
 
 
 

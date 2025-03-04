@@ -25,7 +25,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_window_1(TstSuite*);
+int test_window_1(TstSuite* suite, TstItem* tstitem);
 
 
 

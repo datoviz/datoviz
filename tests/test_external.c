@@ -34,7 +34,7 @@
 /*  External tests                                                                               */
 /*************************************************************************************************/
 
-int test_external_1(TstSuite* suite)
+int test_external_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

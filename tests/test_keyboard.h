@@ -26,9 +26,9 @@
 /*  Keyboard tests                                                                               */
 /*************************************************************************************************/
 
-int test_keyboard_1(TstSuite*);
+int test_keyboard_1(TstSuite* suite, TstItem* tstitem);
 
-int test_keyboard_2(TstSuite*);
+int test_keyboard_2(TstSuite* suite, TstItem* tstitem);
 
 
 

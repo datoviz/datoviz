@@ -25,11 +25,11 @@
 /*  Colormaps tests                                                                              */
 /*************************************************************************************************/
 
-int test_colormaps_default(TstSuite*);
+int test_colormaps_default(TstSuite* suite, TstItem* tstitem);
 
-int test_colormaps_scale(TstSuite*);
+int test_colormaps_scale(TstSuite* suite, TstItem* tstitem);
 
-int test_colormaps_array(TstSuite*);
+int test_colormaps_array(TstSuite* suite, TstItem* tstitem);
 
 
 

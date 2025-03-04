@@ -33,7 +33,7 @@
 /*  Arcball tests                                                                                */
 /*************************************************************************************************/
 
-int test_arcball_1(TstSuite* suite)
+int test_arcball_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzArcball* arcball = dvz_arcball(WIDTH, HEIGHT, 0);

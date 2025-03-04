@@ -25,7 +25,7 @@
 /*  Keyboard tests                                                                               */
 /*************************************************************************************************/
 
-int test_keyboard_1(TstSuite* suite)
+int test_keyboard_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzKeyboard* keyboard = dvz_keyboard();
 
@@ -88,7 +88,7 @@ static void _on_key_release(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
     }
 }
 
-int test_keyboard_2(TstSuite* suite)
+int test_keyboard_2(TstSuite* suite, TstItem* tstitem)
 {
     DvzKeyboard* keyboard = dvz_keyboard();
 

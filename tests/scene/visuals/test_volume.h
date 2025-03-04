@@ -25,9 +25,9 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_volume_1(TstSuite*);
+int test_volume_1(TstSuite* suite, TstItem* tstitem);
 
-int test_volume_2(TstSuite*);
+int test_volume_2(TstSuite* suite, TstItem* tstitem);
 
 
 

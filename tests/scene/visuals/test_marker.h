@@ -25,15 +25,15 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_marker_code(TstSuite*);
+int test_marker_code(TstSuite* suite, TstItem* tstitem);
 
-int test_marker_bitmap(TstSuite*);
+int test_marker_bitmap(TstSuite* suite, TstItem* tstitem);
 
-int test_marker_sdf(TstSuite*);
+int test_marker_sdf(TstSuite* suite, TstItem* tstitem);
 
-int test_marker_msdf(TstSuite*);
+int test_marker_msdf(TstSuite* suite, TstItem* tstitem);
 
-int test_marker_rotation(TstSuite*);
+int test_marker_rotation(TstSuite* suite, TstItem* tstitem);
 
 
 

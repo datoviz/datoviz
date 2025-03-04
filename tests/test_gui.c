@@ -74,7 +74,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
     dvz_gui_end();
 }
 
-int test_gui_1(TstSuite* suite)
+int test_gui_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -102,7 +102,7 @@ int test_gui_1(TstSuite* suite)
 
 
 
-int test_gui_offscreen(TstSuite* suite)
+int test_gui_offscreen(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);

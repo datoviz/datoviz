@@ -29,7 +29,7 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_datalloc_1(TstSuite* suite)
+int test_datalloc_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -107,7 +107,7 @@ int test_datalloc_1(TstSuite* suite)
 
 
 
-int test_datalloc_2(TstSuite* suite)
+int test_datalloc_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);

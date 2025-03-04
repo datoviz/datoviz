@@ -25,7 +25,7 @@
 /*  Axes tests                                                                                   */
 /*************************************************************************************************/
 
-int test_axes_1(TstSuite*);
+int test_axes_1(TstSuite* suite, TstItem* tstitem);
 
 
 

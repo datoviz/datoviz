@@ -25,7 +25,7 @@
 /*  Params tests                                                                                 */
 /*************************************************************************************************/
 
-int test_params_1(TstSuite*);
+int test_params_1(TstSuite* suite, TstItem* tstitem);
 
 
 

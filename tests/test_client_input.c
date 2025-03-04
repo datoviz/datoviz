@@ -60,7 +60,7 @@ static void _on_keyboard(DvzClient* client, DvzClientEvent ev)
     }
 }
 
-int test_client_input(TstSuite* suite)
+int test_client_input(TstSuite* suite, TstItem* tstitem)
 {
     DvzClient* client = dvz_client(DVZ_BACKEND_GLFW);
     dvz_client_input(client);

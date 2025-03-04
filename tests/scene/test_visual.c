@@ -29,7 +29,7 @@
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
-int test_visual_1(TstSuite* suite)
+int test_visual_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
 

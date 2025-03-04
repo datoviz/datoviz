@@ -35,7 +35,7 @@
 /*  Server tests                                                                                 */
 /*************************************************************************************************/
 
-int test_server_1(TstSuite* suite)
+int test_server_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

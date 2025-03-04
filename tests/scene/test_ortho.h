@@ -25,7 +25,7 @@
 /*  Ortho tests                                                                                */
 /*************************************************************************************************/
 
-int test_ortho_1(TstSuite*);
+int test_ortho_1(TstSuite* suite, TstItem* tstitem);
 
 
 

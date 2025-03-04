@@ -25,31 +25,31 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_host(TstSuite*);
-int test_vklite_commands(TstSuite*);
-int test_vklite_buffer_1(TstSuite*);
-int test_vklite_buffer_resize(TstSuite*);
-int test_vklite_load_shader(TstSuite*);
-int test_vklite_compute(TstSuite*);
-int test_vklite_push(TstSuite*);
-int test_vklite_images(TstSuite*);
-int test_vklite_sampler(TstSuite*);
-int test_vklite_barrier_buffer(TstSuite*);
-int test_vklite_barrier_image(TstSuite*);
-int test_vklite_submit(TstSuite*);
-int test_vklite_offscreen(TstSuite*);
-int test_vklite_shader(TstSuite*);
-int test_vklite_surface(TstSuite*);
-int test_vklite_swapchain(TstSuite*);
-int test_vklite_graphics(TstSuite*);
-int test_vklite_indirect(TstSuite*);
-int test_vklite_indexed(TstSuite*);
-int test_vklite_instanced(TstSuite*);
-int test_vklite_vertex_bindings(TstSuite*);
-int test_vklite_constattr(TstSuite*);
-int test_vklite_specialization(TstSuite*);
-int test_vklite_sync_full(TstSuite*);
-int test_vklite_sync_fail(TstSuite*);
+int test_vklite_host(TstSuite* suite, TstItem* tstitem);
+int test_vklite_commands(TstSuite* suite, TstItem* tstitem);
+int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem);
+int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem);
+int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem);
+int test_vklite_compute(TstSuite* suite, TstItem* tstitem);
+int test_vklite_push(TstSuite* suite, TstItem* tstitem);
+int test_vklite_images(TstSuite* suite, TstItem* tstitem);
+int test_vklite_sampler(TstSuite* suite, TstItem* tstitem);
+int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem);
+int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem);
+int test_vklite_submit(TstSuite* suite, TstItem* tstitem);
+int test_vklite_offscreen(TstSuite* suite, TstItem* tstitem);
+int test_vklite_shader(TstSuite* suite, TstItem* tstitem);
+int test_vklite_surface(TstSuite* suite, TstItem* tstitem);
+int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem);
+int test_vklite_graphics(TstSuite* suite, TstItem* tstitem);
+int test_vklite_indirect(TstSuite* suite, TstItem* tstitem);
+int test_vklite_indexed(TstSuite* suite, TstItem* tstitem);
+int test_vklite_instanced(TstSuite* suite, TstItem* tstitem);
+int test_vklite_vertex_bindings(TstSuite* suite, TstItem* tstitem);
+int test_vklite_constattr(TstSuite* suite, TstItem* tstitem);
+int test_vklite_specialization(TstSuite* suite, TstItem* tstitem);
+int test_vklite_sync_full(TstSuite* suite, TstItem* tstitem);
+int test_vklite_sync_fail(TstSuite* suite, TstItem* tstitem);
 
 
 

@@ -29,7 +29,7 @@
 /*  Request tests                                                                                */
 /*************************************************************************************************/
 
-int test_request_1(TstSuite* suite)
+int test_request_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
 
@@ -60,7 +60,7 @@ int test_request_1(TstSuite* suite)
 
 
 
-int test_requester_1(TstSuite* suite)
+int test_requester_1(TstSuite* suite, TstItem* tstitem)
 {
     // Create a requester.
     DvzRequester* rqr = dvz_requester();

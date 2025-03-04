@@ -32,7 +32,7 @@
 /*  Slice tests                                                                                  */
 /*************************************************************************************************/
 
-int test_slice_1(TstSuite* suite)
+int test_slice_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("slice", VISUAL_TEST_ARCBALL, 0);
 

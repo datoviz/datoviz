@@ -44,7 +44,7 @@
 /*  Viewset tests                                                                                */
 /*************************************************************************************************/
 
-int test_viewset_1(TstSuite* suite)
+int test_viewset_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
 
@@ -81,7 +81,7 @@ int test_viewset_1(TstSuite* suite)
 
 
 
-int test_viewset_mouse(TstSuite* suite)
+int test_viewset_mouse(TstSuite* suite, TstItem* tstitem)
 {
     float eps = 1e-6;
     float content_scale = 1;

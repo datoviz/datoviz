@@ -30,7 +30,7 @@
 /*  Axes tests                                                                                   */
 /*************************************************************************************************/
 
-int test_axes_1(TstSuite* suite)
+int test_axes_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

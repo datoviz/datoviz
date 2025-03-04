@@ -27,7 +27,7 @@
 /*  Map tests                                                                                    */
 /*************************************************************************************************/
 
-int test_map_1(TstSuite* suite)
+int test_map_1(TstSuite* suite, TstItem* tstitem)
 {
 
     DvzMap* map = dvz_map();
@@ -65,7 +65,7 @@ int test_map_1(TstSuite* suite)
 
 
 
-int test_map_2(TstSuite* suite)
+int test_map_2(TstSuite* suite, TstItem* tstitem)
 {
 
     DvzMap* map = dvz_map();

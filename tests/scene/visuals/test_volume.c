@@ -51,7 +51,7 @@
 /*  Volume tests                                                                                 */
 /*************************************************************************************************/
 
-int test_volume_1(TstSuite* suite)
+int test_volume_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, 0);
 
@@ -115,7 +115,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
     dvz_gui_end();
 }
 
-int test_volume_2(TstSuite* suite)
+int test_volume_2(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_IMGUI);
 

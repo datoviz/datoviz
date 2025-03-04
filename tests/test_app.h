@@ -25,15 +25,15 @@
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-int test_app_scatter(TstSuite*);
+int test_app_scatter(TstSuite* suite, TstItem* tstitem);
 
-int test_app_arcball(TstSuite*);
+int test_app_arcball(TstSuite* suite, TstItem* tstitem);
 
-int test_app_anim(TstSuite*);
+int test_app_anim(TstSuite* suite, TstItem* tstitem);
 
-int test_app_pixel(TstSuite*);
+int test_app_pixel(TstSuite* suite, TstItem* tstitem);
 
-int test_app_viewset(TstSuite*);
+int test_app_viewset(TstSuite* suite, TstItem* tstitem);
 
 
 

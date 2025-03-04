@@ -25,9 +25,9 @@
 /*  Map tests                                                                                    */
 /*************************************************************************************************/
 
-int test_map_1(TstSuite*);
+int test_map_1(TstSuite* suite, TstItem* tstitem);
 
-int test_map_2(TstSuite*);
+int test_map_2(TstSuite* suite, TstItem* tstitem);
 
 
 

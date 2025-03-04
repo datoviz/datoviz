@@ -32,7 +32,7 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_pixel_1(TstSuite* suite)
+int test_pixel_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("pixel", VISUAL_TEST_PANZOOM, 0);
 

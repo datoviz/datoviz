@@ -34,7 +34,7 @@
 /*  Font tests                                                                                   */
 /*************************************************************************************************/
 
-int test_font_1(TstSuite* suite)
+int test_font_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

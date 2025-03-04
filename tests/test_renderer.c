@@ -59,7 +59,7 @@ _load_shader(DvzBatch* batch, DvzId graphics_id, DvzShaderType shader_type, cons
 /*  Renderer tests                                                                               */
 /*************************************************************************************************/
 
-int test_renderer_1(TstSuite* suite)
+int test_renderer_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzGpu* gpu = get_gpu(suite);
     ANN(gpu);
@@ -168,7 +168,7 @@ int test_renderer_1(TstSuite* suite)
 
 
 
-int test_renderer_graphics(TstSuite* suite)
+int test_renderer_graphics(TstSuite* suite, TstItem* tstitem)
 {
     DvzGpu* gpu = get_gpu(suite);
     ANN(gpu);
@@ -289,7 +289,7 @@ int test_renderer_graphics(TstSuite* suite)
 
 
 
-int test_renderer_push(TstSuite* suite)
+int test_renderer_push(TstSuite* suite, TstItem* tstitem)
 {
     DvzGpu* gpu = get_gpu(suite);
     ANN(gpu);
@@ -411,7 +411,7 @@ int test_renderer_push(TstSuite* suite)
 
 
 
-int test_renderer_resize(TstSuite* suite)
+int test_renderer_resize(TstSuite* suite, TstItem* tstitem)
 {
     DvzGpu* gpu = get_gpu(suite);
     ANN(gpu);

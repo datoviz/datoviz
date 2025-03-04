@@ -26,7 +26,7 @@
 /*  Ref tests                                                                                   */
 /*************************************************************************************************/
 
-int test_ref_1(TstSuite* suite)
+int test_ref_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

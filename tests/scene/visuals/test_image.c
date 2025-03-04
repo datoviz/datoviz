@@ -46,7 +46,7 @@ typedef uint32_t char32_t;
 /*  Image tests                                                                                  */
 /*************************************************************************************************/
 
-int test_image_1(TstSuite* suite)
+int test_image_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("image", VISUAL_TEST_PANZOOM, 0);
 
@@ -134,7 +134,7 @@ static uint32_t* utf32_codepoints(const char* text, uint32_t* out_length)
 #endif
 }
 
-int test_image_2(TstSuite* suite)
+int test_image_2(TstSuite* suite, TstItem* tstitem)
 {
 
 #if OS_MACOS

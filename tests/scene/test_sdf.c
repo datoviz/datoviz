@@ -32,7 +32,7 @@
 /*  Sdf tests                                                                                    */
 /*************************************************************************************************/
 
-int test_sdf_single(TstSuite* suite)
+int test_sdf_single(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     const char* svg_path = "M10,10 L90,10 L90,90 L10,90 Z";
@@ -58,7 +58,7 @@ int test_sdf_single(TstSuite* suite)
 
 
 
-int test_sdf_multi(TstSuite* suite)
+int test_sdf_multi(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

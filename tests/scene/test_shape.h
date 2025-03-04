@@ -25,13 +25,13 @@
 /*  Shape tests                                                                                  */
 /*************************************************************************************************/
 
-int test_shape_1(TstSuite*);
+int test_shape_1(TstSuite* suite, TstItem* tstitem);
 
-int test_shape_surface(TstSuite*);
+int test_shape_surface(TstSuite* suite, TstItem* tstitem);
 
-int test_shape_transform(TstSuite*);
+int test_shape_transform(TstSuite* suite, TstItem* tstitem);
 
-int test_shape_obj(TstSuite*);
+int test_shape_obj(TstSuite* suite, TstItem* tstitem);
 
 
 

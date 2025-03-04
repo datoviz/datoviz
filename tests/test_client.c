@@ -68,7 +68,7 @@ static void _delete_window(DvzClient* client, DvzId id)
 /*  Client tests                                                                                 */
 /*************************************************************************************************/
 
-int test_client_1(TstSuite* suite)
+int test_client_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzClient* client = dvz_client(BACKEND);
 
@@ -84,7 +84,7 @@ int test_client_1(TstSuite* suite)
 
 
 
-int test_client_2(TstSuite* suite)
+int test_client_2(TstSuite* suite, TstItem* tstitem)
 {
     DvzClient* client = dvz_client(BACKEND);
 
@@ -105,7 +105,7 @@ int test_client_2(TstSuite* suite)
 
 
 
-int test_client_thread(TstSuite* suite)
+int test_client_thread(TstSuite* suite, TstItem* tstitem)
 {
 #if OS_MACOS
     return 0;

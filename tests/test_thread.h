@@ -25,13 +25,13 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_thread_1(TstSuite*);
+int test_thread_1(TstSuite* suite, TstItem* tstitem);
 
-int test_mutex_1(TstSuite*);
+int test_mutex_1(TstSuite* suite, TstItem* tstitem);
 
-int test_cond_1(TstSuite*);
+int test_cond_1(TstSuite* suite, TstItem* tstitem);
 
-int test_atomic_1(TstSuite*);
+int test_atomic_1(TstSuite* suite, TstItem* tstitem);
 
 
 

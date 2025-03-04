@@ -32,7 +32,7 @@
 /*  Path tests                                                                                */
 /*************************************************************************************************/
 
-int test_path_1(TstSuite* suite)
+int test_path_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM, 0);
 
@@ -138,7 +138,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
     dvz_path_color(visual, 0, N * n_paths, colors, 0);
 }
 
-int test_path_2(TstSuite* suite)
+int test_path_2(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("path_2", VISUAL_TEST_PANZOOM, 0);
 
@@ -223,7 +223,7 @@ int test_path_2(TstSuite* suite)
 
 
 
-int test_path_closed(TstSuite* suite)
+int test_path_closed(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("path_closed", VISUAL_TEST_PANZOOM, 0);
 

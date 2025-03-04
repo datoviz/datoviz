@@ -26,7 +26,7 @@
 /*  Pipelib tests                                                                                */
 /*************************************************************************************************/
 
-int test_pipelib_1(TstSuite*);
+int test_pipelib_1(TstSuite* suite, TstItem* tstitem);
 
 
 

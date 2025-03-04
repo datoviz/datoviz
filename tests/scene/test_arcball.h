@@ -25,7 +25,7 @@
 /*  Arcball tests                                                                                */
 /*************************************************************************************************/
 
-int test_arcball_1(TstSuite*);
+int test_arcball_1(TstSuite* suite, TstItem* tstitem);
 
 
 

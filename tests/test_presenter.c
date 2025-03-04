@@ -105,7 +105,7 @@ struct ArcballStruct
 /*  Presenter tests                                                                              */
 /*************************************************************************************************/
 
-int test_presenter_1(TstSuite* suite)
+int test_presenter_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -180,7 +180,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
     dvz_presenter_submit(s->prt, batch);
 }
 
-int test_presenter_2(TstSuite* suite)
+int test_presenter_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -355,7 +355,7 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
     dvz_presenter_submit(prt, batch);
 }
 
-int test_presenter_thread(TstSuite* suite)
+int test_presenter_thread(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -491,7 +491,7 @@ static void _client_timer_callback(DvzClient* client, DvzClientEvent ev)
     dvz_presenter_submit(wrapper->prt, batch);
 }
 
-int test_presenter_updates(TstSuite* suite)
+int test_presenter_updates(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -558,7 +558,7 @@ int test_presenter_updates(TstSuite* suite)
 
 
 
-int test_presenter_deserialize(TstSuite* suite)
+int test_presenter_deserialize(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -661,7 +661,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
     dvz_gui_end();
 }
 
-int test_presenter_gui(TstSuite* suite)
+int test_presenter_gui(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -751,7 +751,7 @@ int test_presenter_gui(TstSuite* suite)
 
 
 
-int test_presenter_multi(TstSuite* suite)
+int test_presenter_multi(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

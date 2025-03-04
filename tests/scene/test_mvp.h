@@ -25,7 +25,7 @@
 /*  Mvp tests                                                                                 */
 /*************************************************************************************************/
 
-int test_mvp_1(TstSuite*);
+int test_mvp_1(TstSuite* suite, TstItem* tstitem);
 
 
 

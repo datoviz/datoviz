@@ -32,7 +32,7 @@
 /*  Monoglyph tests */
 /*************************************************************************************************/
 
-int test_monoglyph_1(TstSuite* suite)
+int test_monoglyph_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("monoglyph", VISUAL_TEST_PANZOOM, 0);
 

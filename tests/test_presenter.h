@@ -26,19 +26,19 @@
 /*  Client tests                                                                                 */
 /*************************************************************************************************/
 
-int test_presenter_1(TstSuite*);
+int test_presenter_1(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_2(TstSuite*);
+int test_presenter_2(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_gui(TstSuite*);
+int test_presenter_gui(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_multi(TstSuite*);
+int test_presenter_multi(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_thread(TstSuite*);
+int test_presenter_thread(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_updates(TstSuite*);
+int test_presenter_updates(TstSuite* suite, TstItem* tstitem);
 
-int test_presenter_deserialize(TstSuite*);
+int test_presenter_deserialize(TstSuite* suite, TstItem* tstitem);
 
 
 

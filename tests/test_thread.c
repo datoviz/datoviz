@@ -37,7 +37,7 @@ static void* _thread_callback(void* user_data)
     return NULL;
 }
 
-int test_thread_1(TstSuite* suite)
+int test_thread_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     int data = 0;
@@ -59,7 +59,7 @@ static void* _mutex_callback(void* user_data)
     return NULL;
 }
 
-int test_mutex_1(TstSuite* suite)
+int test_mutex_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzMutex mutex = dvz_mutex();
@@ -85,7 +85,7 @@ static void* _cond_callback(void* user_data)
     return NULL;
 }
 
-int test_cond_1(TstSuite* suite)
+int test_cond_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzCond cond = dvz_cond();
@@ -102,7 +102,7 @@ int test_cond_1(TstSuite* suite)
 
 
 
-int test_atomic_1(TstSuite* suite)
+int test_atomic_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzAtomic atomic = dvz_atomic();

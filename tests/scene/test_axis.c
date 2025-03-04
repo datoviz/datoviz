@@ -48,7 +48,9 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
     dvz_axis_on_panzoom(axis, pz, vt->panel->ref, false);
 }
 
-int test_axis_1(TstSuite* suite)
+
+
+int test_axis_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

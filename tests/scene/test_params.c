@@ -46,7 +46,7 @@ struct TestParams
 /*  Params tests */
 /*************************************************************************************************/
 
-int test_params_1(TstSuite* suite)
+int test_params_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
 

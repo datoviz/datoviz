@@ -26,11 +26,11 @@
 /*  Client tests                                                                                 */
 /*************************************************************************************************/
 
-int test_client_1(TstSuite*);
+int test_client_1(TstSuite* suite, TstItem* tstitem);
 
-int test_client_2(TstSuite*);
+int test_client_2(TstSuite* suite, TstItem* tstitem);
 
-int test_client_thread(TstSuite*);
+int test_client_thread(TstSuite* suite, TstItem* tstitem);
 
 
 
