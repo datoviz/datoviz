@@ -83,7 +83,7 @@ static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_host(TstSuite* suite, TstItem* tstitem)
+int test_host(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
