@@ -40,42 +40,6 @@ cvec4 BACKGROUND = {102, 153, 204, 255};
 /*  Render utils                                                                                 */
 /*************************************************************************************************/
 
-static DvzGpu* make_gpu(DvzHost* host)
-{
-    ANN(host);
-
-    DvzGpu* gpu = NULL;
-    int32_t gpu_idx = getenvint("DVZ_GPU");
-    gpu = dvz_host_gpu(host, gpu_idx);
-
-    _default_queues(gpu, true);
-    INIT(VkPhysicalDeviceFeatures, f);
-    f.independentBlend = true;
-    dvz_gpu_request_features(gpu, f);
-
-    dvz_gpu_create_with_surface(gpu);
-    // if (host->backend == DVZ_BACKEND_GLFW)
-    // {
-    //     dvz_gpu_create_with_surface(gpu);
-    // }
-    // else if (host->backend == DVZ_BACKEND_QT)
-    // {
-    //     // HACK: we do NOT call dvz_gpu_create(), rather, we will create an empty window,
-    //     retrieve
-    //     // the surface, call dvz_gpu_create() and delete the window, after the call to the
-    //     current
-    //     // function.
-    // }
-    // else if (host->backend == DVZ_BACKEND_OFFSCREEN)
-    // {
-    //     dvz_gpu_create(gpu, NULL);
-    // }
-
-    return gpu;
-}
-
-
-
 static void
 make_images(DvzGpu* gpu, DvzImages* images, DvzFormat format, uint32_t width, uint32_t height)
 {

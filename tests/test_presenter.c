@@ -107,13 +107,7 @@ struct ArcballStruct
 
 int test_presenter_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -182,13 +176,7 @@ static void _callback_resize(DvzClient* client, DvzClientEvent ev)
 
 int test_presenter_2(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -349,13 +337,7 @@ static void _on_click(DvzClient* client, DvzClientEvent ev)
 
 int test_presenter_thread(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -485,13 +467,7 @@ static void _client_timer_callback(DvzClient* client, DvzClientEvent ev)
 
 int test_presenter_updates(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -552,13 +528,7 @@ int test_presenter_updates(TstSuite* suite, TstItem* tstitem)
 
 int test_presenter_deserialize(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -655,13 +625,7 @@ static inline void _gui_callback_1(DvzGuiWindow* gui_window, void* user_data)
 
 int test_presenter_gui(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
@@ -745,13 +709,7 @@ int test_presenter_gui(TstSuite* suite, TstItem* tstitem)
 
 int test_presenter_multi(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    // GPU-side.
-    DvzHost* host = get_host(suite);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create a renderer.
     DvzRenderer* rd = dvz_renderer(gpu, 0);
