@@ -32,6 +32,8 @@
 
 DvzServer* dvz_server(int flags)
 {
+    // TODO: merge with app
+
     // Set number of threads from DVZ_NUM_THREADS env variable.
     dvz_threads_default();
 
