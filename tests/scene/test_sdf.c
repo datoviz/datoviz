@@ -15,7 +15,8 @@
 /*************************************************************************************************/
 
 #include "test_sdf.h"
-#include "datoviz.h"
+#include "fileio.h"
+#include "scene/sdf.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"

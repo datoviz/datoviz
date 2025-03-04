@@ -18,6 +18,7 @@
 #include "_cglm.h"
 #include "canvas.h"
 #include "datoviz_math.h"
+#include "fileio.h"
 #include "gui.h"
 #include "loop.h"
 #include "pipe.h"

@@ -1322,6 +1322,7 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
 {
     GET_HOST
+
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
     AT(surface.surface != VK_NULL_HANDLE);

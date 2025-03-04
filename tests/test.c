@@ -159,39 +159,6 @@ int dvz_run_tests(const char* match)
 
 
     /*********************************************************************************************/
-    /*  Input                                                                                    */
-    /*********************************************************************************************/
-
-    tags = "input";
-
-    TEST_NO_FIXTURE(test_keyboard_1)
-    TEST_NO_FIXTURE(test_keyboard_2)
-    TEST_NO_FIXTURE(test_mouse_move)
-    TEST_NO_FIXTURE(test_mouse_press)
-    TEST_NO_FIXTURE(test_mouse_wheel)
-    TEST_NO_FIXTURE(test_mouse_drag)
-    TEST_NO_FIXTURE(test_timer_1)
-    TEST_NO_FIXTURE(test_timer_2)
-    TEST_NO_FIXTURE(test_input_mouse)
-    TEST_NO_FIXTURE(test_input_keyboard)
-    TEST_NO_FIXTURE(test_client_input)
-
-
-
-    /*********************************************************************************************/
-    /*  Client                                                                                   */
-    /*********************************************************************************************/
-
-    tags = "client";
-
-    TEST_NO_FIXTURE(test_window_1)
-    TEST_NO_FIXTURE(test_client_1)
-    TEST_NO_FIXTURE(test_client_2)
-    TEST_NO_FIXTURE(test_client_thread)
-
-
-
-    /*********************************************************************************************/
     /*  Request                                                                                  */
     /*********************************************************************************************/
 
@@ -258,6 +225,41 @@ int dvz_run_tests(const char* match)
 
 
     /*********************************************************************************************/
+    /*  Input                                                                                    */
+    /*********************************************************************************************/
+
+    tags = "input";
+    setup = setup_backend;
+    teardown = teardown_backend;
+
+    TEST_FIXTURE(test_keyboard_1)
+    TEST_FIXTURE(test_keyboard_2)
+    TEST_FIXTURE(test_mouse_move)
+    TEST_FIXTURE(test_mouse_press)
+    TEST_FIXTURE(test_mouse_wheel)
+    TEST_FIXTURE(test_mouse_drag)
+    TEST_FIXTURE(test_timer_1)
+    TEST_FIXTURE(test_timer_2)
+    TEST_FIXTURE(test_input_mouse)
+    TEST_FIXTURE(test_input_keyboard)
+    TEST_FIXTURE(test_client_input)
+
+
+
+    /*********************************************************************************************/
+    /*  Client                                                                                   */
+    /*********************************************************************************************/
+
+    tags = "client";
+
+    TEST_FIXTURE(test_window_1)
+    TEST_FIXTURE(test_client_1)
+    TEST_FIXTURE(test_client_2)
+    TEST_FIXTURE(test_client_thread)
+
+
+
+    /*********************************************************************************************/
     /*  Vklite                                                                                   */
     /*********************************************************************************************/
 
@@ -280,7 +282,6 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_vklite_submit)
     TEST_FIXTURE(test_vklite_offscreen)
     TEST_FIXTURE(test_vklite_shader)
-    TEST_FIXTURE(test_vklite_swapchain)
     TEST_FIXTURE(test_vklite_graphics)
     TEST_FIXTURE(test_vklite_indirect)
     TEST_FIXTURE(test_vklite_indexed)
@@ -288,6 +289,10 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_vklite_vertex_bindings)
     TEST_FIXTURE(test_vklite_constattr)
     TEST_FIXTURE(test_vklite_specialization)
+
+    // setup = setup_host_backend;
+    // teardown = teardown_host_backend;
+    // TEST_FIXTURE(test_vklite_swapchain)
 
     // DEBUGGING Vulkan SDK 1.3.275
     // TEST(test_vklite_sync_full)

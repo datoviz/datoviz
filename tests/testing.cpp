@@ -67,7 +67,11 @@ static void print_res(int index, const char* name, int res)
     printf("\x1b[%dm %s\x1b[0m\n", res == 0 ? 32 : 31, res == 0 ? "passed!" : "FAILED!");
 }
 
-static void print_res_begin(int index, const char* name) { printf("%50s...", name); }
+static void print_res_begin(int index, const char* name)
+{
+    log_debug("starting test #%03d %s", index, name);
+    printf("%50s...", name);
+}
 
 static void print_res_end(int index, const char* name, int res)
 {

@@ -17,6 +17,7 @@
 #include "test_gui.h"
 #include "canvas.h"
 #include "datoviz.h"
+#include "fileio.h"
 #include "gui.h"
 #include "test.h"
 #include "testing.h"

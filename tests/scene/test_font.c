@@ -17,6 +17,7 @@
 #include "test_font.h"
 #include "_cglm.h"
 #include "_string_utils.h"
+#include "fileio.h"
 #include "scene/font.h"
 #include "test.h"
 #include "testing.h"
