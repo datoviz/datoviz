@@ -14,12 +14,13 @@
 /*************************************************************************************************/
 
 #include "backend.h"
+#include "vklite.h"
 #include "window.h"
 
 
 
 /*************************************************************************************************/
-/*  Backend-specific initialization                                                              */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
 
 static void _glfw_error(int error_code, const char* description)
@@ -28,6 +29,28 @@ static void _glfw_error(int error_code, const char* description)
 }
 
 
+
+// static void
+// _glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
+// {
+// #if HAS_GLFW
+//     // WARNING: this callback is only valid for DvzWindows that are not wrapped inside a
+//     DvzCanvas
+//     // This is because the DvzCanvas has its own glfw keyboard callback, and there can be
+//     only 1. DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
+//     ANN(window);
+//     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
+//     {
+//         window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
+//     }
+// #endif
+// }
+
+
+
+/*************************************************************************************************/
+/*  Backend                                                                                      */
+/*************************************************************************************************/
 
 void dvz_backend_init(DvzBackend backend)
 {
@@ -54,6 +77,37 @@ void dvz_backend_init(DvzBackend backend)
 
 
 
+const char**
+dvz_backend_required_extensions(DvzBackend backend, uint32_t* required_extension_count)
+{
+    ASSERT(backend != DVZ_BACKEND_NONE);
+
+    const char** required_extensions = NULL;
+
+    // Backend initialization and required extensions.
+    switch (backend)
+    {
+    case DVZ_BACKEND_GLFW:
+#if HAS_GLFW
+        // ASSERT(glfwVulkanSupported() != 0);
+        required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
+        log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
+#endif
+        break;
+    case DVZ_BACKEND_QT:
+        *required_extension_count = 1;
+        required_extensions = (const char**)calloc(*required_extension_count, sizeof(char*));
+        required_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
+        break;
+    default:
+        break;
+    }
+
+    return required_extensions;
+}
+
+
+
 void dvz_backend_terminate(DvzBackend backend)
 {
     ASSERT(backend != DVZ_BACKEND_NONE);
@@ -72,28 +126,6 @@ void dvz_backend_terminate(DvzBackend backend)
         break;
     }
 }
-
-
-
-/*************************************************************************************************/
-/*  Backend-specific code                                                                        */
-/*************************************************************************************************/
-
-// static void
-// _glfw_esc_callback(GLFWwindow* backend_window, int key, int scancode, int action, int mods)
-// {
-// #if HAS_GLFW
-//     // WARNING: this callback is only valid for DvzWindows that are not wrapped inside a
-//     DvzCanvas
-//     // This is because the DvzCanvas has its own glfw keyboard callback, and there can be
-//     only 1. DvzWindow* window = (DvzWindow*)glfwGetWindowUserPointer(backend_window);
-//     ANN(window);
-//     if (window->close_on_esc && action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
-//     {
-//         window->obj.status = DVZ_OBJECT_STATUS_NEED_DESTROY;
-//     }
-// #endif
-// }
 
 
 

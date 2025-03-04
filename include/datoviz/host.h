@@ -50,9 +50,6 @@ struct DvzHost
     DvzObject obj;
     uint32_t n_errors;
 
-    // Backend
-    DvzBackend backend;
-
     uint32_t extension_count;
     const char* extensions[DVZ_MAX_INSTANCE_EXTENSIONS];
 
@@ -83,10 +80,9 @@ EXTERN_C_ON
  * This object represents a computer with one or multiple GPUs.
  * It holds the Vulkan instance and it is responsible for discovering the available GPUs.
  *
- * @param backend the backend
  * @returns a pointer to the instantiated host
  */
-DvzHost* dvz_host(DvzBackend backend);
+DvzHost* dvz_host(void);
 
 
 
@@ -97,6 +93,16 @@ DvzHost* dvz_host(DvzBackend backend);
  * @param extension_name the extension name
  */
 void dvz_host_extension(DvzHost* host, const char* extension_name);
+
+
+
+/**
+ * Add the extensions required by a backend.
+ *
+ * @param host the host
+ * @param backend the backend
+ */
+void dvz_host_backend(DvzHost* host, DvzBackend backend);
 
 
 

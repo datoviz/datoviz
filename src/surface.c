@@ -45,7 +45,8 @@ void dvz_gpu_create_with_surface(DvzGpu* gpu)
 
     // HACK: temporarily create a blank window so that we can create a GPU with surface rendering
     // capabilities.
-    DvzWindow window = dvz_window(host->backend, 10, 10, DVZ_WINDOW_FLAGS_HIDDEN);
+    // TODO: backend
+    DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 10, 10, DVZ_WINDOW_FLAGS_HIDDEN);
     DvzSurface surface = dvz_window_surface(host, &window);
     surface.gpu = gpu;
     ASSERT(surface.surface != VK_NULL_HANDLE);
