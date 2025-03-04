@@ -15,7 +15,9 @@
 
 #include "shader.h"
 #include "_pointer.h"
+#include "fileio.h"
 #include "vklite.h"
+#include "vkutils.h"
 
 #define BEGIN_IGNORE_STRICT_PROTOTYPES _Pragma("GCC diagnostic ignored \"-Wstrict-prototypes\"")
 #define END_IGNORE_STRICT_PROTOTYPES   _Pragma("GCC diagnostic pop")
@@ -30,12 +32,18 @@
 /*  Compilation                                                                                  */
 /*************************************************************************************************/
 
-VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage)
+
+
+/*************************************************************************************************/
+/*  Shader module                                                                                */
+/*************************************************************************************************/
+
+VkShaderModule
+dvz_shader_module_from_glsl(VkDevice device, const char* code, VkShaderStageFlagBits stage)
 {
     VkShaderModule module = {0};
 
 #if HAS_SHADERC
-    VkDevice device = gpu->device;
     ASSERT(device != VK_NULL_HANDLE);
 
     log_info("starting compilation of GLSL shader into SPIR-V");
@@ -106,6 +114,39 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
     log_error("unable to compile shader to SPIRV, Datoviz was not built with shaderc support");
 #endif
 
+    return module;
+}
+
+
+
+VkShaderModule
+dvz_shader_module_from_spirv(VkDevice device, VkDeviceSize size, const uint32_t* buffer)
+{
+    ASSERT(device != VK_NULL_HANDLE);
+    ASSERT(size > 0);
+    ANN(buffer);
+
+    VkShaderModuleCreateInfo createInfo = {0};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.codeSize = (size_t)size;
+    createInfo.pCode = buffer;
+
+    VkShaderModule module = {0};
+    VK_CHECK_RESULT(vkCreateShaderModule(device, &createInfo, NULL, &module));
+    return module;
+}
+
+
+
+VkShaderModule dvz_shader_module_from_file(VkDevice device, const char* filename)
+{
+    log_trace("create shader module from file %s", filename);
+    DvzSize size = 0;
+    uint32_t* shader_code = (uint32_t*)dvz_read_file(filename, &size);
+    ANN(shader_code);
+    ASSERT(size > 0);
+    VkShaderModule module = dvz_shader_module_from_spirv(device, size, shader_code);
+    FREE(shader_code);
     return module;
 }
 
