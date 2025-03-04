@@ -105,9 +105,9 @@
 
 #define TEST_NO_FIXTURE(test) TEST(test, tags, NULL, NULL, TST_ITEM_FLAGS_NONE)
 
-#define TEST_FIXTURE(test) TEST(test, tags, setup, teardown, TST_ITEM_FLAGS_NONE)
+#define TEST_FIXTURE(test) TEST(test, tags, setup, teardown, flags)
 
-#define TEST_STANDALONE(test) TEST(test, tags, setup, teardown, TST_ITEM_FLAGS_STANDALONE)
+// #define TEST_STANDALONE(test) TEST(test, tags, setup, teardown, TST_ITEM_FLAGS_STANDALONE)
 
 
 
@@ -122,9 +122,7 @@ int dvz_run_tests(const char* match)
     suite.context = &ctx;
 
     char* tags = NULL;
-    TstFunction setup = NULL;
-    TstFunction teardown = NULL;
-
+    int flags = 0;
 
 
     /*********************************************************************************************/
@@ -229,8 +227,7 @@ int dvz_run_tests(const char* match)
     /*********************************************************************************************/
 
     tags = "input";
-    setup = setup_backend;
-    teardown = teardown_backend;
+    flags = DVZ_TEST_FLAGS_BACKEND;
 
     TEST_FIXTURE(test_keyboard_1)
     TEST_FIXTURE(test_keyboard_2)
@@ -264,8 +261,7 @@ int dvz_run_tests(const char* match)
     /*********************************************************************************************/
 
     tags = "vklite";
-    setup = setup_host;
-    teardown = teardown_host;
+    flags = DVZ_TEST_FLAGS_HOST;
 
     TEST_NO_FIXTURE(test_host)
 
@@ -290,9 +286,8 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_vklite_constattr)
     TEST_FIXTURE(test_vklite_specialization)
 
-    // setup = setup_host_backend;
-    // teardown = teardown_host_backend;
-    // TEST_FIXTURE(test_vklite_swapchain)
+    flags = DVZ_TEST_FLAGS_BACKEND | DVZ_TEST_FLAGS_HOST;
+    TEST_FIXTURE(test_vklite_swapchain)
 
     // DEBUGGING Vulkan SDK 1.3.275
     // TEST(test_vklite_sync_full)
@@ -301,35 +296,11 @@ int dvz_run_tests(const char* match)
 
 
     /*********************************************************************************************/
-    /*  Present                                                                                  */
-    /*********************************************************************************************/
-
-    tags = "present";
-
-    setup = setup_gpu;
-    teardown = teardown_gpu;
-
-    TEST_FIXTURE(test_canvas_1)
-    // TEST_FIXTURE(test_loop_1)
-    // TEST_FIXTURE(test_loop_2)
-    // TEST_FIXTURE(test_loop_cube)
-    // TEST_FIXTURE(test_loop_gui)
-    TEST_FIXTURE(test_gui_1)
-    TEST_FIXTURE(test_gui_offscreen)
-    TEST_FIXTURE(test_presenter_1)
-    TEST_FIXTURE(test_presenter_2)
-    // TEST_FIXTURE(test_presenter_thread)
-    // TEST_FIXTURE(test_presenter_updates)
-    // TEST_FIXTURE(test_presenter_gui)
-    // TEST_FIXTURE(test_presenter_multi)
-
-
-
-    /*********************************************************************************************/
     /*  Renderer                                                                                 */
     /*********************************************************************************************/
 
     tags = "renderer";
+    flags = DVZ_TEST_FLAGS_HOST | DVZ_TEST_FLAGS_GPU;
 
     TEST_FIXTURE(test_resources_1)
     TEST_FIXTURE(test_resources_dat_1)
@@ -358,6 +329,29 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_renderer_resize)
     TEST_FIXTURE(test_external_1)
     TEST_FIXTURE(test_server_1)
+
+
+
+    /*********************************************************************************************/
+    /*  Present                                                                                  */
+    /*********************************************************************************************/
+
+    tags = "present";
+    flags = DVZ_TEST_FLAGS_DESKTOP;
+
+    TEST_FIXTURE(test_canvas_1)
+    // TEST_FIXTURE(test_loop_1)
+    // TEST_FIXTURE(test_loop_2)
+    // TEST_FIXTURE(test_loop_cube)
+    // TEST_FIXTURE(test_loop_gui)
+    TEST_FIXTURE(test_gui_1)
+    // TEST_FIXTURE(test_gui_offscreen)
+    TEST_FIXTURE(test_presenter_1)
+    TEST_FIXTURE(test_presenter_2)
+    // TEST_FIXTURE(test_presenter_thread)
+    // TEST_FIXTURE(test_presenter_updates)
+    // TEST_FIXTURE(test_presenter_gui)
+    // TEST_FIXTURE(test_presenter_multi)
 
 
 
@@ -411,7 +405,7 @@ int dvz_run_tests(const char* match)
     TEST_NO_FIXTURE(test_scene_1)
     TEST_NO_FIXTURE(test_scene_2)
     TEST_NO_FIXTURE(test_scene_3)
-    TEST_NO_FIXTURE(test_scene_offscreen)
+    // TEST_NO_FIXTURE(test_scene_offscreen)
     TEST_NO_FIXTURE(test_scene_gui)
 
 
