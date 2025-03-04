@@ -264,8 +264,9 @@ DvzGui* dvz_gui(DvzGpu* gpu, uint32_t queue_idx, int flags)
     gui->gui_windows = dvz_container(
         DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGuiWindow), DVZ_OBJECT_TYPE_GUI_WINDOW);
 
+    // TODO: backend
     bool offscreen =
-        (flags & DVZ_GUI_FLAGS_OFFSCREEN) != 0 || gpu->host->backend == DVZ_BACKEND_OFFSCREEN;
+        ((flags & DVZ_GUI_FLAGS_OFFSCREEN) != 0); //|| gpu->host->backend == DVZ_BACKEND_OFFSCREEN;
     gui->renderpass = _imgui_renderpass(gpu, offscreen);
     ASSERT(dvz_obj_is_created(&gui->renderpass.obj));
 
