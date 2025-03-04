@@ -195,7 +195,7 @@ void dvz_canvas_recreate(DvzCanvas* canvas)
 
     // Resize the image buffer.
     canvas->size = width * height * 3;
-    REALLOC(canvas->rgb, canvas->size);
+    REALLOC(uint8_t*, canvas->rgb, canvas->size);
 }
 
 

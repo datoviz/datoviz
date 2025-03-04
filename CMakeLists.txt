@@ -934,6 +934,7 @@ set_target_properties(libdatoviz PROPERTIES C_VISIBILITY_PRESET hidden)
 if(DATOVIZ_WITH_CLI)
     set(cli_src
         "cli/main.c"
+        "tests/testing.cpp"
 
         # Utils
         "tests/test_alloc.c"

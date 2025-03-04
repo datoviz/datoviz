@@ -26,7 +26,7 @@ static void _realloc_if_needed(DvzList* list)
     if (list->count >= list->capacity)
     {
         list->capacity *= 2;
-        REALLOC(list->values, list->capacity * sizeof(DvzListItem))
+        REALLOC(DvzListItem*, list->values, list->capacity * sizeof(DvzListItem))
     }
     ASSERT(list->count < list->capacity);
 }

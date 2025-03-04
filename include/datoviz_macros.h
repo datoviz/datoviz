@@ -221,9 +221,9 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
     else                                                                                          \
         FREE(x.pointer)
 
-#define REALLOC(x, s)                                                                             \
+#define REALLOC(T, x, s)                                                                          \
     {                                                                                             \
-        void* _new = realloc((x), (s));                                                           \
+        T _new = (T)realloc((x), (s));                                                            \
         if (_new == NULL)                                                                         \
             exit(1);                                                                              \
         else                                                                                      \

@@ -1126,7 +1126,7 @@ void dvz_batch_add(DvzBatch* batch, DvzRequest req)
     if (batch->count == batch->capacity)
     {
         batch->capacity *= 2;
-        REALLOC(batch->requests, batch->capacity * sizeof(DvzRequest));
+        REALLOC(DvzRequest*, batch->requests, batch->capacity * sizeof(DvzRequest));
     }
     ASSERT(batch->count < batch->capacity);
 
