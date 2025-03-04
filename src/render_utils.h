@@ -53,7 +53,6 @@ static DvzGpu* make_gpu(DvzHost* host)
     f.independentBlend = true;
     dvz_gpu_request_features(gpu, f);
 
-    // TODO: backend
     dvz_gpu_create_with_surface(gpu);
     // if (host->backend == DVZ_BACKEND_GLFW)
     // {
