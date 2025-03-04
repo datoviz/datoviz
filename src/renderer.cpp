@@ -39,6 +39,9 @@
     }                                                                                             \
     ANN(n);
 
+#define REGISTER(action, object, cb)                                                              \
+    dvz_renderer_register(rd, DVZ_REQUEST_ACTION_##action, DVZ_REQUEST_OBJECT_##object, cb, NULL);
+
 
 
 /*************************************************************************************************/
@@ -963,96 +966,58 @@ static void _setup_router(DvzRenderer* rd)
     rd->router->user_data = std::map<std::pair<DvzRequestAction, DvzRequestObject>, void*>();
 
     // Canvas.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_UPDATE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_update, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_resize, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BACKGROUND, _canvas_background, NULL);
-
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_CANVAS, _canvas_delete, NULL);
+    REGISTER(CREATE, CANVAS, _canvas_create)
+    REGISTER(UPDATE, CANVAS, _canvas_update)
+    REGISTER(RESIZE, CANVAS, _canvas_resize)
+    REGISTER(SET, BACKGROUND, _canvas_background)
+    REGISTER(DELETE, CANVAS, _canvas_delete)
 
     // Graphics.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_GRAPHICS, _graphics_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_PRIMITIVE, _graphics_primitive, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_DEPTH, _graphics_depth, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BLEND, _graphics_blend, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_MASK, _graphics_mask, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_POLYGON, _graphics_polygon, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_CULL, _graphics_cull, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_FRONT, _graphics_front, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SHADER, _graphics_shader, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_VERTEX, _graphics_vertex, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_VERTEX_ATTR, _graphics_vertex_attr, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SLOT, _graphics_slot, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_PUSH, _graphics_push, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SPECIALIZATION, _graphics_specialization,
-        NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_GRAPHICS, _graphics_delete, NULL);
+    REGISTER(CREATE, GRAPHICS, _graphics_create)
+    REGISTER(SET, PRIMITIVE, _graphics_primitive)
+    REGISTER(SET, DEPTH, _graphics_depth)
+    REGISTER(SET, BLEND, _graphics_blend)
+    REGISTER(SET, MASK, _graphics_mask)
+    REGISTER(SET, POLYGON, _graphics_polygon)
+    REGISTER(SET, CULL, _graphics_cull)
+    REGISTER(SET, FRONT, _graphics_front)
+    REGISTER(SET, SHADER, _graphics_shader)
+    REGISTER(SET, VERTEX, _graphics_vertex)
+    REGISTER(SET, VERTEX_ATTR, _graphics_vertex_attr)
+    REGISTER(SET, SLOT, _graphics_slot)
+    REGISTER(SET, PUSH, _graphics_push)
+    REGISTER(SET, SPECIALIZATION, _graphics_specialization)
+    REGISTER(DELETE, GRAPHICS, _graphics_delete)
 
     // Shaders.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_SHADER, _shader_create, NULL);
+    REGISTER(CREATE, SHADER, _shader_create)
 
     // Bindings.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_VERTEX, _graphics_bind_vertex, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_INDEX, _graphics_bind_index, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_DAT, _graphics_bind_dat, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_BIND, DVZ_REQUEST_OBJECT_TEX, _graphics_bind_tex, NULL);
+    REGISTER(BIND, VERTEX, _graphics_bind_vertex)
+    REGISTER(BIND, INDEX, _graphics_bind_index)
+    REGISTER(BIND, DAT, _graphics_bind_dat)
+    REGISTER(BIND, TEX, _graphics_bind_tex)
 
     // TODO: computes.
 
     // Dat.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_DAT, _dat_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_UPLOAD, DVZ_REQUEST_OBJECT_DAT, _dat_upload, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_DAT, _dat_resize, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_DAT, _dat_delete, NULL);
+    REGISTER(CREATE, DAT, _dat_create)
+    REGISTER(UPLOAD, DAT, _dat_upload)
+    REGISTER(RESIZE, DAT, _dat_resize)
+    REGISTER(DELETE, DAT, _dat_delete)
 
     // Tex.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_TEX, _tex_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_UPLOAD, DVZ_REQUEST_OBJECT_TEX, _tex_upload, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_RESIZE, DVZ_REQUEST_OBJECT_TEX, _tex_resize, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_TEX, _tex_delete, NULL);
+    REGISTER(CREATE, TEX, _tex_create)
+    REGISTER(UPLOAD, TEX, _tex_upload)
+    REGISTER(RESIZE, TEX, _tex_resize)
+    REGISTER(DELETE, TEX, _tex_delete)
 
     // Sampler.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_CREATE, DVZ_REQUEST_OBJECT_SAMPLER, _sampler_create, NULL);
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_DELETE, DVZ_REQUEST_OBJECT_SAMPLER, _sampler_delete, NULL);
+    REGISTER(CREATE, SAMPLER, _sampler_create)
+    REGISTER(DELETE, SAMPLER, _sampler_delete)
 
     // Command buffer recording.
-    dvz_renderer_register(
-        rd, DVZ_REQUEST_ACTION_RECORD, DVZ_REQUEST_OBJECT_RECORD, _record_append, NULL);
+    REGISTER(RECORD, RECORD, _record_append)
 }
 
 
@@ -1222,8 +1187,9 @@ DvzPipe* dvz_renderer_pipe(DvzRenderer* rd, DvzId id)
     DvzPipe* pipe = (DvzPipe*)dvz_map_get(rd->map, id);
     ANN(pipe);
 
-    // NOTE: if the status is NEED_RECREATE, this condition will be false and the dvz_pipe_create()
-    // will be called. That function will ensure the pipeline is destroyed before being recreated.
+    // NOTE: if the status is NEED_RECREATE, this condition will be false and the
+    // dvz_pipe_create() will be called. That function will ensure the pipeline is destroyed
+    // before being recreated.
     if (!dvz_obj_is_created(&pipe->obj))
     {
         log_debug("lazily create pipe before using it for command buffer recording");
