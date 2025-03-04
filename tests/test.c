@@ -68,6 +68,7 @@
 #include "test_fifo.h"
 #include "test_fileio.h"
 #include "test_gui.h"
+#include "test_host.h"
 #include "test_input.h"
 #include "test_keyboard.h"
 #include "test_list.h"
