@@ -1332,7 +1332,7 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
     VkSurfaceKHR surface = 0;
     void* window = NULL;
 #if HAS_GLFW
-    GLFWwindow* bwin = (GLFWwindow*)backend_window(host->backend, 100, 100, 0);
+    GLFWwindow* bwin = (GLFWwindow*)dvz_backend_window(host->backend, 100, 100, 0);
     glfwCreateWindowSurface(host->instance, bwin, NULL, &surface);
     ANN(bwin);
     ASSERT(surface != VK_NULL_HANDLE);
@@ -1341,7 +1341,9 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
     dvz_gpu_create(gpu, surface);
 
     if (window)
-        backend_window_destroy(host->backend, (void*)window);
+    {
+        dvz_backend_window_destroy(host->backend, (void*)window);
+    }
 
     dvz_gpu_destroy(gpu);
     return 0;
