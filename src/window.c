@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #include "window.h"
+#include "backend.h"
 #include "common.h"
-#include "glfw_utils.h"
 
 
 
@@ -33,13 +33,14 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
     window.backend = backend;
 
     // Create the window, depending on the backend.
-    window.backend_window = backend_window(backend, width, height, flags);
+    window.backend_window = dvz_backend_window(backend, width, height, flags);
 
     // Set the initial size.
-    backend_get_window_size(&window, &window.width, &window.height);
+    dvz_backend_get_window_size(&window, &window.width, &window.height);
 
     // NOTE: poll the framebuffer size
-    backend_get_framebuffer_size(&window, &window.framebuffer_width, &window.framebuffer_height);
+    dvz_backend_get_framebuffer_size(
+        &window, &window.framebuffer_width, &window.framebuffer_height);
 
     dvz_obj_created(&window.obj);
     return window;
@@ -50,8 +51,9 @@ DvzWindow dvz_window(DvzBackend backend, uint32_t width, uint32_t height, int fl
 void dvz_window_poll_size(DvzWindow* window)
 {
     ANN(window);
-    backend_get_window_size(window, &window->width, &window->height);
-    backend_get_framebuffer_size(window, &window->framebuffer_width, &window->framebuffer_height);
+    dvz_backend_get_window_size(window, &window->width, &window->height);
+    dvz_backend_get_framebuffer_size(
+        window, &window->framebuffer_width, &window->framebuffer_height);
 }
 
 
@@ -59,8 +61,8 @@ void dvz_window_poll_size(DvzWindow* window)
 void dvz_window_set_size(DvzWindow* window, uint32_t width, uint32_t height)
 {
     ANN(window);
-    backend_set_window_size(window, width, height);
-    backend_get_window_size(window, &window->width, &window->height);
+    dvz_backend_set_window_size(window, width, height);
+    dvz_backend_get_window_size(window, &window->width, &window->height);
 }
 
 
@@ -74,9 +76,9 @@ void dvz_window_destroy(DvzWindow* window)
     }
     ANN(window);
 
-    backend_window_clear_callbacks(window->backend, window->backend_window);
+    dvz_backend_window_clear_callbacks(window->backend, window->backend_window);
 
     log_debug("destroy the window");
-    backend_window_destroy(window->backend, window->backend_window);
+    dvz_backend_window_destroy(window->backend, window->backend_window);
     dvz_obj_destroyed(&window->obj);
 }

@@ -15,12 +15,12 @@
 /*************************************************************************************************/
 
 #include "client_input.h"
+#include "backend.h"
 #include "client.h"
 #include "client_utils.h"
 #include "common.h"
 #include "datoviz_types.h"
 #include "fifo.h"
-#include "glfw_utils.h"
 #include "input.h"
 #include "keyboard.h"
 #include "mouse.h"

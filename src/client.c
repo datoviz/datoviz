@@ -9,10 +9,10 @@
 /*************************************************************************************************/
 
 #include "client.h"
+#include "backend.h"
 #include "client_utils.h"
 #include "common.h"
 #include "fifo.h"
-#include "glfw_utils.h"
 #include "window.h"
 
 
@@ -71,7 +71,8 @@ static void _deq_callback(DvzDeq* deq, void* item, void* user_data)
 static inline bool _should_close(DvzWindow* window)
 {
     ANN(window);
-    return backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY;
+    return dvz_backend_should_close(window) ||
+           window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY;
 }
 
 
@@ -169,7 +170,7 @@ int dvz_client_frame(DvzClient* client)
     ANN(client);
 
     // Poll backend events (mouse, keyboard...).
-    backend_poll_events(client->backend);
+    dvz_backend_poll_events(client->backend);
 
     // Dequeue and process events.
     dvz_client_process(client);
