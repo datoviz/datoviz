@@ -25,7 +25,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_prng_1(TstSuite* suite)
+int test_prng_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzPrng* prng = dvz_prng();
     uint64_t uuid = dvz_prng_uuid(prng);

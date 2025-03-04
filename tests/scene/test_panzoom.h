@@ -25,11 +25,11 @@
 /*  Panzoom tests                                                                                */
 /*************************************************************************************************/
 
-int test_panzoom_1(TstSuite*);
+int test_panzoom_1(TstSuite* suite, TstItem* tstitem);
 
-int test_panzoom_2(TstSuite*);
+int test_panzoom_2(TstSuite* suite, TstItem* tstitem);
 
-int test_panzoom_3(TstSuite*);
+int test_panzoom_3(TstSuite* suite, TstItem* tstitem);
 
 
 

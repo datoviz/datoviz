@@ -35,7 +35,7 @@
 /*  Marker tests                                                                                 */
 /*************************************************************************************************/
 
-int test_marker_code(TstSuite* suite)
+int test_marker_code(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("marker_code", VISUAL_TEST_PANZOOM, 0);
 
@@ -87,7 +87,7 @@ int test_marker_code(TstSuite* suite)
 
 
 
-int test_marker_bitmap(TstSuite* suite)
+int test_marker_bitmap(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("marker_bitmap", VISUAL_TEST_PANZOOM, 0);
 
@@ -166,7 +166,7 @@ static void _disc_sdf(DvzVisual* visual, uint32_t size)
     FREE(texdata);
 }
 
-int test_marker_sdf(TstSuite* suite)
+int test_marker_sdf(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("marker_sdf", VISUAL_TEST_PANZOOM, 0);
 
@@ -226,7 +226,7 @@ int test_marker_sdf(TstSuite* suite)
 
 
 
-int test_marker_msdf(TstSuite* suite)
+int test_marker_msdf(TstSuite* suite, TstItem* tstitem)
 {
 #if !HAS_MSDF
     return 1;
@@ -327,7 +327,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
 }
 
 // Check glyph adaptive size depending on the marker rotation.
-int test_marker_rotation(TstSuite* suite)
+int test_marker_rotation(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("marker_rotation", VISUAL_TEST_PANZOOM, 0);
 

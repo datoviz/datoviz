@@ -37,7 +37,7 @@
 /*  Animation tests                                                                              */
 /*************************************************************************************************/
 
-int test_animation_1(TstSuite* suite)
+int test_animation_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     double t = 0;

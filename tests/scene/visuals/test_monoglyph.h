@@ -25,7 +25,7 @@
 /*  Monoglyph tests */
 /*************************************************************************************************/
 
-int test_monoglyph_1(TstSuite*);
+int test_monoglyph_1(TstSuite* suite, TstItem* tstitem);
 
 
 

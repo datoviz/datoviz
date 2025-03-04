@@ -25,7 +25,7 @@
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
-int test_visual_1(TstSuite*);
+int test_visual_1(TstSuite* suite, TstItem* tstitem);
 
 
 

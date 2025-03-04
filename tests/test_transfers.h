@@ -26,23 +26,23 @@
 /*  Transfers tests                                                                              */
 /*************************************************************************************************/
 
-int test_transfers_buffer_mappable(TstSuite*);
+int test_transfers_buffer_mappable(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_buffer_large(TstSuite*);
+int test_transfers_buffer_large(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_buffer_copy(TstSuite*);
+int test_transfers_buffer_copy(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_image_buffer(TstSuite*);
+int test_transfers_image_buffer(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_direct_buffer(TstSuite*);
+int test_transfers_direct_buffer(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_direct_image(TstSuite*);
+int test_transfers_direct_image(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_dups_util(TstSuite*);
+int test_transfers_dups_util(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_dups_upload(TstSuite*);
+int test_transfers_dups_upload(TstSuite* suite, TstItem* tstitem);
 
-int test_transfers_dups_copy(TstSuite*);
+int test_transfers_dups_copy(TstSuite* suite, TstItem* tstitem);
 
 
 

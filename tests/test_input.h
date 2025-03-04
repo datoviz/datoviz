@@ -26,9 +26,9 @@
 /*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-int test_input_mouse(TstSuite*);
+int test_input_mouse(TstSuite* suite, TstItem* tstitem);
 
-int test_input_keyboard(TstSuite*);
+int test_input_keyboard(TstSuite* suite, TstItem* tstitem);
 
 
 

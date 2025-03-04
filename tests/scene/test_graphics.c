@@ -96,7 +96,7 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_graphics_point(TstSuite* suite)
+int test_graphics_point(TstSuite* suite, TstItem* tstitem)
 {
     // Create the board and context
     GRAPHICS_BEGIN
@@ -160,7 +160,7 @@ int test_graphics_point(TstSuite* suite)
 
 
 
-int test_graphics_triangle(TstSuite* suite)
+int test_graphics_triangle(TstSuite* suite, TstItem* tstitem)
 {
     // Create the board and context
     GRAPHICS_BEGIN

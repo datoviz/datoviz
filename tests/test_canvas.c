@@ -51,7 +51,7 @@ struct TestCanvasStruct
 /*  Canvas tests                                                                                 */
 /*************************************************************************************************/
 
-int test_canvas_1(TstSuite* suite)
+int test_canvas_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);

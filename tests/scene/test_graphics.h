@@ -25,39 +25,39 @@
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_graphics_point(TstSuite*);
+int test_graphics_point(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_triangle(TstSuite*);
+int test_graphics_triangle(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_line_list(TstSuite*);
+int test_graphics_line_list(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_line_strip(TstSuite*);
+int test_graphics_line_strip(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_triangle_list(TstSuite*);
+int test_graphics_triangle_list(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_triangle_strip(TstSuite*);
+int test_graphics_triangle_strip(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_triangle_fan(TstSuite*);
+int test_graphics_triangle_fan(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_raster(TstSuite*);
+int test_graphics_raster(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_marker(TstSuite*);
+int test_graphics_marker(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_segment(TstSuite*);
+int test_graphics_segment(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_path(TstSuite*);
+int test_graphics_path(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_text(TstSuite*);
+int test_graphics_text(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_image_1(TstSuite*);
+int test_graphics_image_1(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_image_cmap(TstSuite*);
+int test_graphics_image_cmap(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_volume_slice(TstSuite*);
+int test_graphics_volume_slice(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_volume_1(TstSuite*);
+int test_graphics_volume_1(TstSuite* suite, TstItem* tstitem);
 
-int test_graphics_mesh(TstSuite*);
+int test_graphics_mesh(TstSuite* suite, TstItem* tstitem);
 
 
 

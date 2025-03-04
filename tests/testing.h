@@ -91,7 +91,7 @@ typedef enum
 typedef struct TstItem TstItem;
 typedef struct TstSuite TstSuite;
 
-typedef int (*TstFunction)(TstSuite* suite);
+typedef int (*TstFunction)(TstSuite* suite, TstItem* item);
 
 
 

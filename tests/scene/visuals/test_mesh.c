@@ -37,7 +37,7 @@
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
-int test_mesh_1(TstSuite* suite)
+int test_mesh_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_1", VISUAL_TEST_ARCBALL, 0);
 
@@ -88,7 +88,7 @@ int test_mesh_1(TstSuite* suite)
 }
 
 
-int test_mesh_2(TstSuite* suite)
+int test_mesh_2(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_2", VISUAL_TEST_ARCBALL, 0);
 
@@ -154,7 +154,7 @@ int test_mesh_2(TstSuite* suite)
 
 
 
-int test_mesh_polygon(TstSuite* suite)
+int test_mesh_polygon(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_ORTHO, 0);
 
@@ -375,7 +375,7 @@ static inline void _edgecolor_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent
     }
 }
 
-int test_mesh_edgecolor(TstSuite* suite)
+int test_mesh_edgecolor(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_edgecolor", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
 
@@ -414,7 +414,7 @@ static inline float dot_ortho_u(vec3 p, vec3 q, vec2 u)
     return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
 }
 
-int test_mesh_contour(TstSuite* suite)
+int test_mesh_contour(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_ORTHO, 0);
 
@@ -484,7 +484,7 @@ int test_mesh_contour(TstSuite* suite)
 
 
 
-int test_mesh_surface(TstSuite* suite)
+int test_mesh_surface(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_surface", VISUAL_TEST_ARCBALL, 0);
 
@@ -578,7 +578,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
         dvz_mesh_linewidth(vt->visual, color[0][3]);
 }
 
-int test_mesh_obj(TstSuite* suite)
+int test_mesh_obj(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
@@ -682,7 +682,7 @@ static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
     return copied;
 }
 
-int test_mesh_geo(TstSuite* suite)
+int test_mesh_geo(TstSuite* suite, TstItem* tstitem)
 {
     DvzColor color = {RED};
 

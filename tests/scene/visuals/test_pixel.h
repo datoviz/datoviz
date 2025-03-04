@@ -25,7 +25,7 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_pixel_1(TstSuite*);
+int test_pixel_1(TstSuite* suite, TstItem* tstitem);
 
 
 

@@ -27,7 +27,7 @@
 /*  Mvp tests                                                                                 */
 /*************************************************************************************************/
 
-int test_mvp_1(TstSuite* suite)
+int test_mvp_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzMVP mvp = {0};

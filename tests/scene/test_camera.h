@@ -25,7 +25,7 @@
 /*  Camera tests                                                                                 */
 /*************************************************************************************************/
 
-int test_camera_1(TstSuite*);
+int test_camera_1(TstSuite* suite, TstItem* tstitem);
 
 
 
