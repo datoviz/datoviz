@@ -139,7 +139,8 @@ int dvz_loop_frame(DvzLoop* loop)
         }
     }
 
-    dvz_backend_poll_events(gpu->host->backend);
+    // TODO: backend
+    dvz_backend_poll_events(DVZ_BACKEND_GLFW); // gpu->host->backend);
 
     // Return with an exit code if the window is closed, so the main loop will stop.
     if (dvz_backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
