@@ -97,6 +97,8 @@ static int setup(TstSuite* suite, TstItem* tstitem)
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
     ANN(ctx);
 
+    bool is_offscreen = !(tstitem->flags & DVZ_TEST_FLAGS_BACKEND);
+
     if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
     {
         log_debug("test fixture: init backend");
@@ -108,7 +110,7 @@ static int setup(TstSuite* suite, TstItem* tstitem)
         if (!ctx->host)
         {
             log_debug("test fixture: init host");
-            ctx->host = dvz_default_host(dvz_default_backend(0));
+            ctx->host = dvz_default_host(is_offscreen ? DVZ_BACKEND_OFFSCREEN : DVZ_BACKEND_GLFW);
         }
         ANN(ctx->host);
     }
@@ -117,10 +119,24 @@ static int setup(TstSuite* suite, TstItem* tstitem)
     {
         if (!ctx->gpu)
         {
-            log_debug("test fixture: init GPU");
+            ANN(ctx->host);
+
             ctx->gpu = dvz_default_gpu(ctx->host);
+            ANN(ctx->gpu);
+
+            if (is_offscreen)
+            {
+                log_debug("test fixture: init GPU without surface");
+                dvz_gpu_create(ctx->gpu, NULL);
+            }
+            else
+            {
+                log_debug("test fixture: init GPU with surface");
+                dvz_gpu_create_with_surface(ctx->gpu);
+            }
         }
         ANN(ctx->gpu);
+        ASSERT(dvz_obj_is_created(&ctx->gpu->obj));
     }
 
     return 0;

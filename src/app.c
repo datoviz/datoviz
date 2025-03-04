@@ -184,6 +184,8 @@ DvzBackend dvz_default_backend(int flags)
 
 DvzHost* dvz_default_host(DvzBackend backend)
 {
+    log_debug("create a default host");
+
     DvzHost* host = dvz_host();
     ANN(host);
 
@@ -197,8 +199,12 @@ DvzHost* dvz_default_host(DvzBackend backend)
 
 DvzGpu* dvz_default_gpu(DvzHost* host)
 {
+    ANN(host);
+
     // Create the GPU.
     int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
+
+    log_debug("create a default GPU #%d for host", gpu_idx);
 
     DvzGpu* gpu = dvz_host_gpu(host, gpu_idx);
     ANN(gpu);
@@ -218,6 +224,8 @@ DvzGpu* dvz_default_gpu(DvzHost* host)
 
 DvzApp* dvz_app(int flags)
 {
+    log_debug("create an app");
+
     // Set number of threads from DVZ_NUM_THREADS env variable.
     dvz_threads_default();
 
@@ -241,6 +249,7 @@ DvzBatch* dvz_app_batch(DvzApp* app)
 
     if (app->batch == NULL)
     {
+        log_debug("create an app batch");
         app->batch = dvz_batch();
     }
     ANN(app->batch);
@@ -290,7 +299,19 @@ DvzGpu* dvz_app_gpu(DvzApp* app, DvzGpu* gpu)
         {
             app->gpu = dvz_default_gpu(app->host);
             ANN(app->gpu);
-            dvz_gpu_create(app->gpu, NULL);
+
+            bool is_offscreen = app->backend == DVZ_BACKEND_OFFSCREEN;
+
+            if (is_offscreen)
+            {
+                log_debug("test fixture: init GPU without surface");
+                dvz_gpu_create(app->gpu, NULL);
+            }
+            else
+            {
+                log_debug("test fixture: init GPU with surface");
+                dvz_gpu_create_with_surface(app->gpu);
+            }
         }
     }
 
