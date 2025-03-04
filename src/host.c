@@ -440,6 +440,7 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
     // HACK: use queue 0 for transfers (convention).
     gpu->cmd = dvz_commands(gpu, 0, 1);
 
+    gpu->extension_count = 0; // reset after GPU creation
     log_trace("GPU #%d created", gpu->idx);
 }
 
