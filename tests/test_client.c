@@ -13,8 +13,8 @@
 /*************************************************************************************************/
 
 #include "test_client.h"
+#include "backend.h"
 #include "client.h"
-#include "glfw_utils.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"

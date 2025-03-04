@@ -9,8 +9,8 @@
 /*************************************************************************************************/
 
 #include "surface.h"
+#include "backend.h"
 #include "common.h"
-#include "glfw_utils.h"
 #include "vklite.h"
 #include "window.h"
 

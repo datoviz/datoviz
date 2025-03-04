@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 
-#include "glfw_utils.h"
+#include "backend.h"
 #include "host.h"
 #include "test_window.h"
 #include "testing.h"

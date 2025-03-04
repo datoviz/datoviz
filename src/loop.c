@@ -9,10 +9,10 @@
 /*************************************************************************************************/
 
 #include "loop.h"
+#include "backend.h"
 #include "canvas.h"
 #include "common.h"
 #include "datoviz_defaults.h"
-#include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"
 #include "surface.h"
@@ -139,10 +139,10 @@ int dvz_loop_frame(DvzLoop* loop)
         }
     }
 
-    backend_poll_events(gpu->host->backend);
+    dvz_backend_poll_events(gpu->host->backend);
 
     // Return with an exit code if the window is closed, so the main loop will stop.
-    if (backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
+    if (dvz_backend_should_close(window) || window->obj.status == DVZ_OBJECT_STATUS_NEED_DESTROY)
         return -1;
 
     // Wait for fence.

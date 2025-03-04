@@ -15,10 +15,10 @@
 /*************************************************************************************************/
 
 #include "test_client_input.h"
+#include "backend.h"
 #include "client.h"
 #include "client_input.h"
 #include "datoviz_types.h"
-#include "glfw_utils.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "test.h"

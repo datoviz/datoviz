@@ -15,9 +15,9 @@
 /*************************************************************************************************/
 
 #include "test_canvas.h"
+#include "backend.h"
 #include "canvas.h"
 #include "context.h"
-#include "glfw_utils.h"
 #include "pipelib.h"
 #include "test.h"
 #include "test_resources.h"

@@ -9,7 +9,7 @@
 /*************************************************************************************************/
 
 // NOTE: glfw is required because it exposes the Vulkan extensions used by the instance
-#include "glfw_utils.h"
+#include "backend.h"
 
 #include "common.h"
 #include "host.h"
@@ -76,7 +76,7 @@ DvzHost* dvz_host(DvzBackend backend)
 
     // Backend-specific initialization code.
     host->backend = backend;
-    backend_init(backend);
+    dvz_backend_init(backend);
 
     // Initialize the global clock.
     host->clock = dvz_clock();
@@ -202,7 +202,7 @@ int dvz_host_destroy(DvzHost* host)
     }
 
     // Backend-specific termination code.
-    backend_terminate(host->backend);
+    dvz_backend_terminate(host->backend);
 
     // Free the App memory.
     int res = (int)host->n_errors;
