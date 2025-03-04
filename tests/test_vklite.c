@@ -1325,7 +1325,6 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
-    // OFFSCREEN_SKIP
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_ALL);
 
@@ -1333,7 +1332,6 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
     VkSurfaceKHR surface = 0;
     void* window = NULL;
 #if HAS_GLFW
-    // TODO: backend
     GLFWwindow* bwin = (GLFWwindow*)dvz_backend_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     glfwCreateWindowSurface(host->instance, bwin, NULL, &surface);
     ANN(bwin);
@@ -1344,7 +1342,6 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 
     if (window)
     {
-        // TODO: backend
         dvz_backend_window_destroy(DVZ_BACKEND_GLFW, (void*)window);
     }
 
@@ -1358,8 +1355,6 @@ int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
-    // OFFSCREEN_SKIP
-    // TODO: backend
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
     AT(surface.surface != VK_NULL_HANDLE);
@@ -1393,7 +1388,6 @@ int test_vklite_sync_full(TstSuite* suite, TstItem* tstitem)
     DvzHost* host = get_host(suite);
 
     // Window.
-    // TODO: backend
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
     AT(surface.surface != VK_NULL_HANDLE);
@@ -1499,7 +1493,6 @@ int test_vklite_sync_fail(TstSuite* suite, TstItem* tstitem)
     DvzHost* host = get_host(suite);
 
     // Window.
-    // TODO: backend
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
     AT(surface.surface != VK_NULL_HANDLE);

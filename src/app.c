@@ -179,15 +179,9 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
 /*  App functions                                                                                */
 /*************************************************************************************************/
 
-DvzApp* dvz_app(int flags)
+DvzBackend dvz_app_backend(int flags)
 {
-    // Set number of threads from DVZ_NUM_THREADS env variable.
-    dvz_threads_default();
-
-    DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
-    ANN(app);
-
-    DvzBackend backend = BACKEND;
+    DvzBackend backend = DVZ_BACKEND_GLFW;
 
     bool offscreen = (flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
     // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
@@ -197,11 +191,26 @@ DvzApp* dvz_app(int flags)
     {
         backend = DVZ_BACKEND_OFFSCREEN;
     }
-    app->backend = backend;
+    return backend;
+}
+
+
+
+DvzHost* dvz_app_host(DvzApp* app, DvzBackend backend)
+{
+    ANN(app);
 
     // Create host.
+    bool host_exists = app->host != NULL;
+    if (host_exists)
+    {
+        return app->host;
+    }
+    ASSERT(app->host == NULL);
+
     app->host = dvz_host();
     ANN(app->host);
+
     dvz_host_backend(app->host, backend);
     dvz_host_create(app->host);
 
@@ -214,12 +223,56 @@ DvzApp* dvz_app(int flags)
     dvz_gpu_request_features(app->gpu, f);
     dvz_gpu_create(app->gpu, NULL);
 
+    return app->host;
+}
+
+
+
+DvzGpu* dvz_app_gpu(DvzApp* app)
+{
+    ANN(app);
+
+    // Create GPU.
+    bool gpu_exists = app->gpu != NULL;
+    if (gpu_exists)
+    {
+        return app->gpu;
+    }
+    ASSERT(app->gpu == NULL);
+
+    // Create the GPU.
+    int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
+
+    app->gpu = dvz_host_gpu(app->host, gpu_idx);
+    ANN(app->gpu);
+
+    _default_queues(app->gpu, true);
+    VkPhysicalDeviceFeatures f = {.independentBlend = true};
+    dvz_gpu_request_features(app->gpu, f);
+    dvz_gpu_create(app->gpu, NULL);
+
+    return app->gpu;
+}
+
+
+
+DvzApp* dvz_app(int flags)
+{
+    // Set number of threads from DVZ_NUM_THREADS env variable.
+    dvz_threads_default();
+
+    DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
+    ANN(app);
+
+    app->backend = dvz_app_backend(flags);
+    app->host = dvz_app_host(app, app->backend);
+    app->gpu = dvz_app_gpu(app);
     app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
 
-    if (!offscreen)
+    if (app->backend == DVZ_BACKEND_OFFSCREEN)
     {
-        app->client = dvz_client(backend);
+        app->client = dvz_client(app->backend);
         ANN(app->client);
 
         app->prt = dvz_presenter(app->rd, app->client, DVZ_CANVAS_FLAGS_IMGUI);
