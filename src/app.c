@@ -227,7 +227,7 @@ DvzGpu* dvz_default_gpu(DvzHost* host)
 
 
 /*************************************************************************************************/
-/*  App functions                                                                                */
+/*  App creation                                                                                 */
 /*************************************************************************************************/
 
 DvzApp* dvz_app(int flags)
@@ -238,17 +238,130 @@ DvzApp* dvz_app(int flags)
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
     ANN(app);
 
+    app->batch = dvz_app_batch(app);
+    ANN(app->batch);
+    app->batch->flags = flags; // Pass the app flags to the batch flags.
+
     app->backend = dvz_default_backend(flags);
 
-    app->host = dvz_default_host(app->backend);
+    return app;
+}
+
+
+
+DvzBatch* dvz_app_batch(DvzApp* app)
+{
+    ANN(app);
+
+    if (app->batch == NULL)
+    {
+        app->batch = dvz_batch();
+    }
+    ANN(app->batch);
+    return app->batch;
+}
+
+
+
+DvzHost* dvz_app_host(DvzApp* app, DvzHost* host)
+{
+    ANN(app);
+
+    if (app->host && host && app->host != host)
+    {
+        log_error("app->host and host are both not null and different");
+        return app->host;
+    }
+
+    if (!app->host)
+    {
+        app->host = host ? host : dvz_default_host(app->backend);
+    }
+
     ANN(app->host);
+    return app->host;
+}
 
-    app->gpu = dvz_default_gpu(app->host);
+
+
+DvzGpu* dvz_app_gpu(DvzApp* app, DvzGpu* gpu)
+{
+    ANN(app);
+
+    if (app->gpu && gpu && app->gpu != gpu)
+    {
+        log_error("app->gpu and gpu are both not null and different");
+        return app->gpu;
+    }
+
+    if (!app->gpu)
+    {
+        if (gpu != NULL)
+        {
+            app->gpu = gpu;
+        }
+        else
+        {
+            app->gpu = dvz_default_gpu(app->host);
+            ANN(app->gpu);
+            dvz_gpu_create(app->gpu, NULL);
+        }
+    }
+
     ANN(app->gpu);
-    dvz_gpu_create(app->gpu, NULL);
+    return app->gpu;
+}
 
-    app->rd = dvz_renderer(app->gpu, flags);
+
+
+DvzRenderer* dvz_app_renderer(DvzApp* app, DvzRenderer* rd)
+{
+    ANN(app);
+
+    if (app->rd && rd && app->rd != rd)
+    {
+        log_error("app->rd and rd are both not null and different");
+        return app->rd;
+    }
+
+    if (!app->rd)
+    {
+        app->rd = rd ? rd : dvz_renderer(app->gpu, 0); // TODO: renderer flags?
+    }
+
     ANN(app->rd);
+    return app->rd;
+}
+
+
+
+void dvz_app_create(DvzApp* app)
+{
+    ANN(app);
+
+    if (app->backend == DVZ_BACKEND_NONE)
+    {
+        log_error("please set the app backend before creating the app");
+        return;
+    }
+
+    if (app->host == NULL)
+    {
+        log_debug("setting default app host");
+        dvz_app_host(app, NULL);
+    }
+
+    if (app->gpu == NULL)
+    {
+        log_debug("setting default app GPU");
+        dvz_app_gpu(app, NULL);
+    }
+
+    if (app->rd == NULL)
+    {
+        log_debug("setting default app renderer");
+        dvz_app_renderer(app, NULL);
+    }
 
     if (app->backend == DVZ_BACKEND_OFFSCREEN)
     {
@@ -280,9 +393,6 @@ DvzApp* dvz_app(int flags)
         // app->offscreen_gui_window = dvz_gui_offscreen(app->offscreen_gui, canvas.images, 0);
     }
 
-    app->batch = dvz_batch();
-    ANN(app->batch);
-    app->batch->flags = flags; // Pass the app flags to the batch flags.
 
     app->timer = dvz_timer();
     ANN(app->timer);
@@ -292,19 +402,13 @@ DvzApp* dvz_app(int flags)
 
     // Send the pending requests to the presenter at every frame.
     dvz_app_on_frame(app, _on_frame, app);
-
-    return app;
 }
 
 
 
-DvzBatch* dvz_app_batch(DvzApp* app)
-{
-    ANN(app);
-    return app->batch;
-}
-
-
+/*************************************************************************************************/
+/*  App functions                                                                                */
+/*************************************************************************************************/
 
 void dvz_app_frame(DvzApp* app)
 {
@@ -592,7 +696,8 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
         if (canvas != NULL)
         {
             DvzId canvas_id = canvas->obj.id;
-            // Apply a board update request, this submits the recorded command buffer to the GPU.
+            // Apply a board update request, this submits the recorded command buffer to the
+            // GPU.
             dvz_renderer_request(app->rd, dvz_update_canvas(batch, canvas_id));
 
             if (capture != NULL)
