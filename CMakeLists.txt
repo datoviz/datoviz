@@ -687,9 +687,9 @@ add_custom_command(
 
 # These files will be compiled with no warnings.
 add_library(external_sources STATIC
-    "external/vk_mem_alloc.cpp"
     "external/fpng.cpp"
     "external/memorymeasure.c"
+    "external/vk_mem_alloc.cpp"
 
     "external/b64/buffer.c"
     "external/b64/encode.c"
@@ -712,55 +712,48 @@ set_target_properties(external_sources PROPERTIES C_VISIBILITY_PRESET hidden)
 # -------------------------------------------------------------------------------------------------
 set(core_files
 
-    # Utils
-    "src/_version.c"
-    "src/_error.c"
     "src/_atomic.cpp"
+    "src/_error.c"
     "src/_list.c"
     "src/_map.cpp"
     "src/_math.c"
     "src/_mutex.c"
     "src/_prng.cpp"
     "src/_thread.c"
-    "src/client_input.c"
-    "src/fifo.c"
-    "src/fileio.cpp"
-    "src/input.c"
-    "src/keyboard.c"
-    "src/log.c"
-    "src/mouse.c"
-    "src/timer.c"
-
-    # Renderer
+    "src/_version.c"
     "src/alloc.c"
     "src/board.c"
     "src/canvas.c"
+    "src/client_input.c"
+    "src/client.c"
     "src/context.c"
     "src/datalloc.c"
     "src/external.c"
+    "src/fifo.c"
+    "src/fileio.cpp"
+    "src/fps.cpp"
+    "src/gui.cpp"
     "src/host.c"
-    "src/server.c"
+    "src/input.c"
+    "src/keyboard.c"
+    "src/log.c"
     "src/loop.c"
+    "src/mouse.c"
     "src/pipe.c"
     "src/pipelib.c"
+    "src/presenter.c"
     "src/recorder.c"
     "src/renderer.cpp"
     "src/resources.c"
+    "src/server.c"
     "src/shader.c"
     "src/surface.c"
+    "src/timer.c"
     "src/transfers.c"
     "src/vklite.c"
-    "src/wrap.c"
-    "src/workspace.c"
-
-    # Client
-    "src/client.c"
-    "src/presenter.c"
     "src/window.c"
-
-    # GUI
-    "src/gui.cpp"
-    "src/fps.cpp"
+    "src/workspace.c"
+    "src/wrap.c"
 
     # Qt: the file is protected by #if HAS_QT
     "src/qtapp.cpp"
@@ -832,21 +825,23 @@ add_library(datoviz_scene OBJECT
     "src/scene/viewport.c"
     "src/scene/viewset.c"
     "src/scene/visual.c"
-
-    # Visuals
     "src/scene/visuals/basic.c"
-    "src/scene/visuals/sphere.c"
     "src/scene/visuals/glyph.c"
-    "src/scene/visuals/monoglyph.c"
     "src/scene/visuals/image.c"
+<<<<<<< HEAD
     "src/scene/visuals/wiggle.c"
     "src/scene/visuals/slice.c"
+=======
+    "src/scene/visuals/marker.c"
+>>>>>>> cb246d09 (Add independent host tests file)
     "src/scene/visuals/mesh.c"
+    "src/scene/visuals/monoglyph.c"
     "src/scene/visuals/path.c"
     "src/scene/visuals/pixel.c"
     "src/scene/visuals/point.c"
-    "src/scene/visuals/marker.c"
     "src/scene/visuals/segment.c"
+    "src/scene/visuals/slice.c"
+    "src/scene/visuals/sphere.c"
     "src/scene/visuals/volume.c"
 )
 
@@ -935,50 +930,42 @@ if(DATOVIZ_WITH_CLI)
     set(cli_src
         "cli/main.c"
         "tests/testing.cpp"
+        "tests/test.c"
 
-        # Utils
         "tests/test_alloc.c"
+        "tests/test_app.c"
+        "tests/test_board.c"
+        "tests/test_canvas.c"
         "tests/test_client_input.c"
+        "tests/test_client.c"
+        "tests/test_datalloc.c"
+        "tests/test_external.c"
         "tests/test_fifo.c"
         "tests/test_fileio.c"
+        "tests/test_gui.c"
+        "tests/test_host.c"
         "tests/test_input.c"
         "tests/test_keyboard.c"
         "tests/test_list.c"
+        "tests/test_loop.c"
         "tests/test_map.c"
         "tests/test_mouse.c"
         "tests/test_obj.c"
-        "tests/test_prng.c"
-        "tests/test_thread.c"
-        "tests/test_timer.c"
-
-        # Renderer
-        "tests/test_board.c"
-        "tests/test_canvas.c"
-        "tests/test_datalloc.c"
-        "tests/test_external.c"
-        "tests/test_gui.c"
-        "tests/test_loop.c"
         "tests/test_pipe.c"
         "tests/test_pipelib.c"
+        "tests/test_presenter.c"
+        "tests/test_prng.c"
         "tests/test_renderer.c"
+        "tests/test_request.c"
         "tests/test_resources.c"
+        "tests/test_server.c"
+        "tests/test_thread.c"
+        "tests/test_timer.c"
         "tests/test_transfers.c"
         "tests/test_vklite.c"
+        "tests/test_window.c"
         "tests/test_workspace.c"
 
-        # Client
-        "tests/test_client.c"
-        "tests/test_presenter.c"
-        "tests/test_request.c"
-        "tests/test_window.c"
-
-        # App
-        "tests/test_app.c"
-
-        # Server
-        "tests/test_server.c"
-
-        # Scene
         "tests/scene/test_animation.c"
         "tests/scene/test_arcball.c"
         "tests/scene/test_array.c"
@@ -997,32 +984,27 @@ if(DATOVIZ_WITH_CLI)
         "tests/scene/test_panzoom.c"
         "tests/scene/test_params.c"
         "tests/scene/test_ref.c"
+        "tests/scene/test_scene.c"
         "tests/scene/test_sdf.c"
         "tests/scene/test_shape.c"
         "tests/scene/test_ticks.c"
         "tests/scene/test_viewset.c"
         "tests/scene/test_visual.c"
-
-        # Visuals
         "tests/scene/visuals/test_basic.c"
-        "tests/scene/visuals/test_sphere.c"
         "tests/scene/visuals/test_glyph.c"
-        "tests/scene/visuals/test_monoglyph.c"
         "tests/scene/visuals/test_image.c"
         "tests/scene/visuals/test_wiggle.c"
         "tests/scene/visuals/test_slice.c"
+        "tests/scene/visuals/test_marker.c"
         "tests/scene/visuals/test_mesh.c"
+        "tests/scene/visuals/test_monoglyph.c"
         "tests/scene/visuals/test_path.c"
         "tests/scene/visuals/test_pixel.c"
         "tests/scene/visuals/test_point.c"
-        "tests/scene/visuals/test_marker.c"
         "tests/scene/visuals/test_segment.c"
+        "tests/scene/visuals/test_slice.c"
+        "tests/scene/visuals/test_sphere.c"
         "tests/scene/visuals/test_volume.c"
-
-        # Scene
-        "tests/scene/test_scene.c"
-
-        "tests/test.c"
     )
 
     if(${OS_WINDOWS})
