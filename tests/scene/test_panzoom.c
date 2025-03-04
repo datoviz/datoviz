@@ -55,7 +55,7 @@
 /*  Panzoom tests                                                                                */
 /*************************************************************************************************/
 
-int test_panzoom_1(TstSuite* suite)
+int test_panzoom_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -109,7 +109,7 @@ int test_panzoom_1(TstSuite* suite)
 
 
 
-int test_panzoom_2(TstSuite* suite)
+int test_panzoom_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -131,7 +131,7 @@ int test_panzoom_2(TstSuite* suite)
 
 
 
-int test_panzoom_3(TstSuite* suite)
+int test_panzoom_3(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

@@ -27,7 +27,7 @@
 /*  Pipe tests                                                                                   */
 /*************************************************************************************************/
 
-int test_workspace_1(TstSuite*);
+int test_workspace_1(TstSuite* suite, TstItem* tstitem);
 
 
 

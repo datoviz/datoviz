@@ -25,17 +25,17 @@
 /*  Box tests                                                                                   */
 /*************************************************************************************************/
 
-int test_box_1(TstSuite*);
+int test_box_1(TstSuite* suite, TstItem* tstitem);
 
-int test_box_2(TstSuite*);
+int test_box_2(TstSuite* suite, TstItem* tstitem);
 
-int test_box_3(TstSuite*);
+int test_box_3(TstSuite* suite, TstItem* tstitem);
 
-int test_box_4(TstSuite*);
+int test_box_4(TstSuite* suite, TstItem* tstitem);
 
-int test_box_5(TstSuite*);
+int test_box_5(TstSuite* suite, TstItem* tstitem);
 
-int test_box_6(TstSuite*);
+int test_box_6(TstSuite* suite, TstItem* tstitem);
 
 
 

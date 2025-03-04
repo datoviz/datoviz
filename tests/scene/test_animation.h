@@ -25,7 +25,7 @@
 /*  Animation tests                                                                              */
 /*************************************************************************************************/
 
-int test_animation_1(TstSuite*);
+int test_animation_1(TstSuite* suite, TstItem* tstitem);
 
 
 

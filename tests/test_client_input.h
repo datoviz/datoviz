@@ -26,7 +26,7 @@
 /*  Mouse tests                                                                                  */
 /*************************************************************************************************/
 
-int test_client_input(TstSuite*);
+int test_client_input(TstSuite* suite, TstItem* tstitem);
 
 
 

@@ -27,7 +27,7 @@
 /* Box tests                                                                                     */
 /*************************************************************************************************/
 
-int test_box_1(TstSuite* suite)
+int test_box_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -45,7 +45,7 @@ int test_box_1(TstSuite* suite)
 
 
 
-int test_box_2(TstSuite* suite)
+int test_box_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -74,7 +74,7 @@ int test_box_2(TstSuite* suite)
 
 
 
-int test_box_3(TstSuite* suite)
+int test_box_3(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -97,7 +97,7 @@ int test_box_3(TstSuite* suite)
 
 
 
-int test_box_4(TstSuite* suite)
+int test_box_4(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -126,7 +126,7 @@ int test_box_4(TstSuite* suite)
         ACn(3, (out), (expected), EPS);                                                           \
     }
 
-int test_box_5(TstSuite* suite)
+int test_box_5(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -143,7 +143,7 @@ int test_box_5(TstSuite* suite)
 
 
 
-int test_box_6(TstSuite* suite)
+int test_box_6(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

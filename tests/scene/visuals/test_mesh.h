@@ -25,21 +25,21 @@
 /*  Pixel tests                                                                                  */
 /*************************************************************************************************/
 
-int test_mesh_1(TstSuite*);
+int test_mesh_1(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_2(TstSuite*);
+int test_mesh_2(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_polygon(TstSuite*);
+int test_mesh_polygon(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_edgecolor(TstSuite*);
+int test_mesh_edgecolor(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_contour(TstSuite*);
+int test_mesh_contour(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_surface(TstSuite*);
+int test_mesh_surface(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_obj(TstSuite*);
+int test_mesh_obj(TstSuite* suite, TstItem* tstitem);
 
-int test_mesh_geo(TstSuite* suite);
+int test_mesh_geo(TstSuite* suite, TstItem* tstitem);
 
 
 

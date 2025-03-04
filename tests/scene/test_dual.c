@@ -40,7 +40,7 @@
 /*  Dual tests                                                                                   */
 /*************************************************************************************************/
 
-int test_dual_1(TstSuite* suite)
+int test_dual_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
     DvzArray* array = dvz_array(16, DVZ_DTYPE_CHAR);
@@ -104,7 +104,7 @@ int test_dual_1(TstSuite* suite)
 
 
 
-int test_dual_2(TstSuite* suite)
+int test_dual_2(TstSuite* suite, TstItem* tstitem)
 {
     DvzBatch* batch = dvz_batch();
     // dvz_requester_begin(batch);

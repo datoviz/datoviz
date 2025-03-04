@@ -147,7 +147,7 @@ static void _scatter_resize(DvzApp* app, DvzId window_id, DvzWindowEvent* ev)
     dvz_app_submit(app);
 }
 
-int test_app_scatter(TstSuite* suite)
+int test_app_scatter(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -285,7 +285,7 @@ static void _arcball_resize(DvzApp* app, DvzId window_id, DvzWindowEvent* ev)
     dvz_app_submit(app);
 }
 
-int test_app_arcball(TstSuite* suite)
+int test_app_arcball(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -377,7 +377,7 @@ static void _anim_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
     dvz_app_submit(app);
 }
 
-int test_app_anim(TstSuite* suite)
+int test_app_anim(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -421,7 +421,7 @@ int test_app_anim(TstSuite* suite)
 
 
 
-int test_app_pixel(TstSuite* suite)
+int test_app_pixel(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -516,7 +516,7 @@ static void _viewset_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
     dvz_app_submit(app);
 }
 
-int test_app_viewset(TstSuite* suite)
+int test_app_viewset(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

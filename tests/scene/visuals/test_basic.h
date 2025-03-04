@@ -25,9 +25,9 @@
 /*  Basic tests                                                                                  */
 /*************************************************************************************************/
 
-int test_basic_1(TstSuite*);
+int test_basic_1(TstSuite* suite, TstItem* tstitem);
 
-int test_basic_2(TstSuite*);
+int test_basic_2(TstSuite* suite, TstItem* tstitem);
 
 
 

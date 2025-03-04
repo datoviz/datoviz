@@ -70,7 +70,7 @@ static void* _fifo_thread_2(void* arg)
 
 
 
-int test_fifo_1(TstSuite* suite)
+int test_fifo_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzFifo* fifo = dvz_fifo(8);
     uint8_t item = 12;
@@ -118,7 +118,7 @@ int test_fifo_1(TstSuite* suite)
 
 
 
-int test_fifo_2(TstSuite* suite)
+int test_fifo_2(TstSuite* suite, TstItem* tstitem)
 {
     DvzFifo* fifo = dvz_fifo(8);
     uint32_t numbers[64] = {0};
@@ -141,7 +141,7 @@ int test_fifo_2(TstSuite* suite)
 
 
 
-int test_fifo_resize(TstSuite* suite)
+int test_fifo_resize(TstSuite* suite, TstItem* tstitem)
 {
     DvzFifo* fifo = dvz_fifo(8);
     uint32_t numbers[256] = {0};
@@ -168,7 +168,7 @@ int test_fifo_resize(TstSuite* suite)
 
 
 
-int test_fifo_discard(TstSuite* suite)
+int test_fifo_discard(TstSuite* suite, TstItem* tstitem)
 {
     DvzFifo* fifo = dvz_fifo(8);
     uint32_t numbers[8] = {0};
@@ -196,7 +196,7 @@ int test_fifo_discard(TstSuite* suite)
 
 
 
-int test_fifo_first(TstSuite* suite)
+int test_fifo_first(TstSuite* suite, TstItem* tstitem)
 {
     DvzFifo* fifo = dvz_fifo(8);
     dvz_fifo_enqueue(fifo, (int[]){1});
@@ -226,7 +226,7 @@ static void _deq_1_callback(DvzDeq* deq, void* item, void* user_data)
     *data = *((int*)item);
 }
 
-int test_deq_1(TstSuite* suite)
+int test_deq_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzDeq* deq = dvz_deq(2, sizeof(int));
     DvzDeqItem item = {0};
@@ -280,7 +280,7 @@ int test_deq_1(TstSuite* suite)
 
 
 
-int test_deq_2(TstSuite* suite)
+int test_deq_2(TstSuite* suite, TstItem* tstitem)
 {
     DvzDeq* deq = dvz_deq(2, sizeof(int));
     dvz_deq_proc(deq, 0, 2, (uint32_t[]){0, 1});
@@ -333,7 +333,7 @@ static void _deq_3_callback_b(DvzDeq* deq, void* item, void* user_data)
     *data *= 2;
 }
 
-int test_deq_3(TstSuite* suite)
+int test_deq_3(TstSuite* suite, TstItem* tstitem)
 {
     // Test the callback order.
     DvzDeq* deq = dvz_deq(2, sizeof(int));

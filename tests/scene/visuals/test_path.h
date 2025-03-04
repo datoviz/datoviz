@@ -25,11 +25,11 @@
 /*  Path tests                                                                                */
 /*************************************************************************************************/
 
-int test_path_1(TstSuite*);
+int test_path_1(TstSuite* suite, TstItem* tstitem);
 
-int test_path_2(TstSuite*);
+int test_path_2(TstSuite* suite, TstItem* tstitem);
 
-int test_path_closed(TstSuite*);
+int test_path_closed(TstSuite* suite, TstItem* tstitem);
 
 
 
