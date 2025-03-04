@@ -35,10 +35,6 @@
 #define SPIRV_DIR ""
 #endif
 
-#ifndef SWIFTSHADER
-#define SWIFTSHADER 0
-#endif
-
 
 
 /*************************************************************************************************/

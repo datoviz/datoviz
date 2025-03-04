@@ -480,12 +480,8 @@ static void create_swapchain(
 
     info.preTransform = caps->currentTransform;
 
-#if SWIFTSHADER
-    log_trace("NOT swapchain as using swiftshader");
-#else
     log_trace("create swapchain");
     VK_CHECK_RESULT(vkCreateSwapchainKHR(device, &info, NULL, swapchain));
-#endif
 }
 
 
