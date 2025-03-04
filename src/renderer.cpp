@@ -77,12 +77,11 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
 
     // NOTE: force offscreen rendering for all canvases with offscreen backend.
 
-    // TODO: backend
-    // if (rd->gpu->host->backend == DVZ_BACKEND_OFFSCREEN)
-    // {
-    //     log_trace("forcing created canvas to be offscreen as the backend is offscreen");
-    //     req.content.canvas.is_offscreen = true;
-    // }
+    if ((rd->flags & DVZ_RENDERER_FLAGS_OFFSCREEN) != 0)
+    {
+        log_trace("forcing created canvas to be offscreen as the backend is offscreen");
+        req.content.canvas.is_offscreen = true;
+    }
 
     if (req.content.canvas.is_offscreen)
     {

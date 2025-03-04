@@ -42,8 +42,8 @@
 // NOTE: these flags are also passed to PipelibFlags.
 typedef enum
 {
-    DVZ_GRAPHICS_REQUEST_FLAGS_NONE = 0x0000,
-    DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x1000,
+    DVZ_GRAPHICS_REQUEST_FLAGS_NONE = 0x000000,
+    DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN = 0x008000,
 } DvzGraphicsRequestFlags;
 
 
