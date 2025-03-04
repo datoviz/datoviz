@@ -29,9 +29,7 @@
 
 int test_resources_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create the resources object.
     DvzResources res = {0};
@@ -58,9 +56,7 @@ int test_resources_1(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_dat_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
@@ -79,9 +75,7 @@ int test_resources_dat_1(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_tex_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create the context.
     DvzContext* ctx = dvz_context(gpu);
@@ -108,9 +102,7 @@ int test_resources_tex_1(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_dat_transfers(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
@@ -156,9 +148,7 @@ int test_resources_dat_transfers(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_dat_resize(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
@@ -201,9 +191,7 @@ int test_resources_dat_resize(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_tex_transfers(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
@@ -247,9 +235,7 @@ int test_resources_tex_transfers(TstSuite* suite, TstItem* tstitem)
 
 int test_resources_tex_resize(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
