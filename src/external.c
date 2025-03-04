@@ -15,7 +15,7 @@
 #include "scene/dual.h"
 #include "scene/visual.h"
 #include "vklite.h"
-#include "vkutils.h"
+#include "vklite_utils.h"
 
 
 
