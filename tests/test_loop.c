@@ -60,7 +60,7 @@ int test_loop_1(TstSuite* suite, TstItem* tstitem)
     dvz_loop_run(loop, N_FRAMES);
 
     dvz_loop_destroy(loop);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
     return 0;
 }
 
@@ -131,7 +131,7 @@ int test_loop_2(TstSuite* suite, TstItem* tstitem)
     dvz_dat_destroy(dat_vertex);
     dvz_pipelib_destroy(lib);
     dvz_context_destroy(ctx);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
     return 0;
 }
 
@@ -343,7 +343,7 @@ int test_loop_cube(TstSuite* suite, TstItem* tstitem)
     dvz_dat_destroy(dat_vertex);
     dvz_pipelib_destroy(lib);
     dvz_context_destroy(ctx);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
     return 0;
 }
 
@@ -372,6 +372,6 @@ int test_loop_gui(TstSuite* suite, TstItem* tstitem)
     dvz_loop_run(loop, N_FRAMES);
 
     dvz_loop_destroy(loop);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
     return 0;
 }

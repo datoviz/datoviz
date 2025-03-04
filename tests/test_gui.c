@@ -81,6 +81,7 @@ int test_gui_1(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.

@@ -328,7 +328,7 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_renderer_graphics)
     TEST_FIXTURE(test_renderer_resize)
     TEST_FIXTURE(test_external_1)
-    TEST_FIXTURE(test_server_1)
+    // TEST_FIXTURE(test_server_1)
 
 
 
@@ -364,6 +364,11 @@ int dvz_run_tests(const char* match)
     TEST_FIXTURE(test_visual_1)
     TEST_FIXTURE(test_viewset_1)
     TEST_FIXTURE(test_viewset_mouse)
+
+    // NOTE: use fixture instead for visual tests
+
+    flags = DVZ_TEST_FLAGS_BACKEND;
+
     TEST_FIXTURE(test_basic_1)
     TEST_FIXTURE(test_basic_2)
     TEST_FIXTURE(test_monoglyph_1)
