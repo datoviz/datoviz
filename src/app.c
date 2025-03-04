@@ -205,8 +205,14 @@ DvzApp* dvz_app(int flags)
     dvz_host_backend(app->host, backend);
     dvz_host_create(app->host);
 
-    app->gpu = make_gpu(app->host);
+    // Create the GPU.
+    int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
+    app->gpu = dvz_host_gpu(app->host, gpu_idx);
     ANN(app->gpu);
+    _default_queues(app->gpu, true);
+    VkPhysicalDeviceFeatures f = {.independentBlend = true};
+    dvz_gpu_request_features(app->gpu, f);
+    dvz_gpu_create(app->gpu, NULL);
 
     app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
