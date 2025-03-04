@@ -107,6 +107,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
 
     // Create app objects.
     DvzApp* app = dvz_app(flags);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
