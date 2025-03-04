@@ -17,7 +17,7 @@
 #include "_pointer.h"
 #include "fileio.h"
 #include "vklite.h"
-#include "vkutils.h"
+#include "vklite_utils.h"
 
 #define BEGIN_IGNORE_STRICT_PROTOTYPES _Pragma("GCC diagnostic ignored \"-Wstrict-prototypes\"")
 #define END_IGNORE_STRICT_PROTOTYPES   _Pragma("GCC diagnostic pop")

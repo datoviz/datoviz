@@ -14,7 +14,6 @@
 #include "datoviz_macros.h"
 #include "vklite.h"
 #include "vklite_utils.h"
-#include "vkutils.h"
 
 
 
