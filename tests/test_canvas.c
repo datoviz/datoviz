@@ -81,6 +81,6 @@ int test_canvas_1(TstSuite* suite, TstItem* tstitem)
     dvz_surface_destroy(host, surface);
     dvz_window_destroy(&window);
     dvz_renderpass_destroy(&renderpass);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
     return 0;
 }

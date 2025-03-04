@@ -144,7 +144,7 @@ int test_presenter_1(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     return 0;
 }
@@ -274,7 +274,7 @@ int test_presenter_2(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     return 0;
 }
@@ -400,7 +400,7 @@ int test_presenter_thread(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     FREE(wrapper.data);
     return 0;
@@ -526,7 +526,7 @@ int test_presenter_updates(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     // FREE(wrapper.data);
     return 0;
@@ -568,7 +568,7 @@ int test_presenter_deserialize(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     return 0;
 }
@@ -706,7 +706,7 @@ int test_presenter_gui(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     FREE(tex_data);
 
@@ -823,7 +823,7 @@ int test_presenter_multi(TstSuite* suite, TstItem* tstitem)
     dvz_presenter_destroy(prt);
     // dvz_batch_destroy(batch);
     dvz_renderer_destroy(rd);
-    dvz_gpu_destroy(gpu);
+    // dvz_gpu_destroy(gpu);
 
     return 0;
 }
