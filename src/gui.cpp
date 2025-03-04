@@ -5,13 +5,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "_pointer.h"
+#include "backend.h"
 #include "canvas.h"
 #include "datoviz.h"
 #include "datoviz_defaults.h"
 #include "datoviz_enums.h"
 #include "fileio.h"
-#include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"
 #include "resources.h"
@@ -205,9 +204,9 @@ static void _imgui_destroy_window(DvzWindow* window)
     if (window != NULL)
     {
         // NOTE: gui_window->window may be NULL if offscreen.
-        backend_poll_events(DVZ_BACKEND_GLFW);
+        dvz_backend_poll_events(DVZ_BACKEND_GLFW);
 
-        backend_window_clear_callbacks(DVZ_BACKEND_GLFW, window->backend_window);
+        dvz_backend_window_clear_callbacks(DVZ_BACKEND_GLFW, window->backend_window);
 
         log_trace("calling ImGui_ImplGlfw_Shutdown()");
         ImGui_ImplGlfw_Shutdown();

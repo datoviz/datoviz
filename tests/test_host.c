@@ -13,7 +13,7 @@
 /*************************************************************************************************/
 
 #include "test_host.h"
-#include "glfw_utils.h"
+#include "backend.h"
 #include "host.h"
 #include "test.h"
 #include "testing.h"
