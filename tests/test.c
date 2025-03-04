@@ -69,6 +69,7 @@
 #include "test_fifo.h"
 #include "test_fileio.h"
 #include "test_gui.h"
+#include "test_host.h"
 #include "test_input.h"
 #include "test_keyboard.h"
 #include "test_list.h"
@@ -162,119 +163,6 @@ int dvz_run_tests(const char* match)
 
     tags = "input";
 
-<<<<<<< HEAD
-    // Setup the host fixture.
-    SETUP(setup_host)
-
-    TEST(test_vklite_commands)
-    TEST(test_vklite_buffer_1)
-    TEST(test_vklite_buffer_resize)
-    TEST(test_vklite_load_shader)
-    TEST(test_vklite_compute)
-    TEST(test_vklite_push)
-    TEST(test_vklite_images)
-    TEST(test_vklite_sampler)
-    TEST(test_vklite_barrier_buffer)
-    TEST(test_vklite_barrier_image)
-    TEST(test_vklite_submit)
-    TEST(test_vklite_offscreen)
-    TEST(test_vklite_shader)
-    TEST(test_vklite_swapchain)
-    TEST(test_vklite_graphics)
-    TEST(test_vklite_indirect)
-    TEST(test_vklite_indexed)
-    TEST(test_vklite_instanced)
-    TEST(test_vklite_vertex_bindings)
-    TEST(test_vklite_constattr)
-    TEST(test_vklite_specialization)
-
-    // DEBUGGING Vulkan SDK 1.3.275
-    // TEST(test_vklite_sync_full)
-    // TEST(test_vklite_sync_fail)
-
-
-    // Testing canvas.
-    TEST(test_canvas_1)
-
-    // Testing simple loop.
-    // TEST(test_loop_1)
-    // TEST(test_loop_2)
-    // TEST(test_loop_cube)
-    // TEST(test_loop_gui)
-
-    // Testing GUI.
-    TEST(test_gui_1)
-    TEST(test_gui_offscreen)
-
-    // Testing presenter.
-    TEST(test_presenter_1)
-    TEST(test_presenter_2)
-    // TEST(test_presenter_thread)
-    // TEST(test_presenter_updates)
-    // TEST(test_presenter_deserialize) // used for debugging with a requests.dvz file
-    // TEST(test_presenter_gui)
-    // TEST(test_presenter_multi)
-
-    // Teardown the host fixture.
-    TEARDOWN(teardown_host)
-
-    //
-
-    // Setup the gpu fixture (offscreen only).
-    SETUP(setup_gpu)
-
-    // Testing resources.
-    TEST(test_resources_1)
-    TEST(test_resources_dat_1)
-    TEST(test_resources_tex_1)
-    TEST(test_datalloc_1)
-    TEST(test_datalloc_2)
-
-    // Testing transfers.
-    TEST(test_transfers_buffer_mappable)
-    TEST(test_transfers_buffer_large)
-    TEST(test_transfers_buffer_copy)
-    TEST(test_transfers_image_buffer)
-    TEST(test_transfers_direct_buffer)
-    TEST(test_transfers_direct_image)
-    TEST(test_transfers_dups_util)
-    TEST(test_transfers_dups_upload)
-    TEST(test_transfers_dups_copy)
-
-    // Testing resources transfers.
-    TEST(test_resources_dat_transfers)
-    TEST(test_resources_dat_resize)
-    TEST(test_resources_tex_transfers)
-    TEST(test_resources_tex_resize)
-
-    // Testing board.
-    TEST(test_board_1)
-
-    // Testing pipe.
-    TEST(test_pipe_1)
-
-    // Testing pipelib.
-    // TEST(test_pipelib_1)
-
-    // Testing workspace.
-    TEST(test_workspace_1)
-
-    // Testing renderer.
-    TEST(test_renderer_1)
-    TEST(test_renderer_graphics)
-    TEST(test_renderer_push)
-    TEST(test_renderer_resize)
-
-    // TEST(test_external_1)
-
-    // Test visuals.
-    TEST(test_visual_1)
-    TEST(test_viewset_1)
-    TEST(test_viewset_mouse)
-
-    // Teardown the gpu fixture.
-    TEARDOWN(teardown_gpu)
-=======
     TEST_NO_FIXTURE(test_keyboard_1)
     TEST_NO_FIXTURE(test_keyboard_2)
     TEST_NO_FIXTURE(test_mouse_move)
@@ -286,7 +174,6 @@ int dvz_run_tests(const char* match)
     TEST_NO_FIXTURE(test_input_mouse)
     TEST_NO_FIXTURE(test_input_keyboard)
     TEST_NO_FIXTURE(test_client_input)
->>>>>>> 491744c0 (WIP: refactoring testing suite with updated testing framework)
 
 
 
