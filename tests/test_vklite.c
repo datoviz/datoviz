@@ -17,6 +17,7 @@
 #include "test_vklite.h"
 #include "../src/render_utils.h"
 #include "fileio.h"
+#include "host.h"
 #include "resources.h"
 #include "shader.h"
 #include "surface.h"
@@ -215,7 +216,7 @@ int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem)
     // Create a shader module.
     char shader_path[1024] = {0};
     snprintf(shader_path, sizeof(shader_path), "%s/test_pow.comp.spv", SPIRV_DIR);
-    VkShaderModule module = create_shader_module_from_file(gpu->device, shader_path);
+    VkShaderModule module = dvz_shader_module_from_file(gpu->device, shader_path);
 
     // Destroy the shader module.
     vkDestroyShaderModule(gpu->device, module, NULL);
@@ -725,8 +726,8 @@ int test_vklite_shader(TstSuite* suite, TstItem* tstitem)
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, VK_NULL_HANDLE);
 
-    VkShaderModule module = dvz_compile_glsl(
-        gpu,
+    VkShaderModule module = dvz_shader_module_from_glsl(
+        gpu->device,
         "#version 450\n"
         "layout (location = 0) in vec3 pos;\n"
         "layout (location = 1) in vec4 color;\n"

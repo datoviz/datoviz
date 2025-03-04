@@ -15,7 +15,9 @@
 #include "alloc.h"
 #include "context.h"
 #include "datalloc.h"
+#include "host.h"
 #include "resources.h"
+#include "vklite.h"
 
 
 

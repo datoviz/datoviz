@@ -2269,13 +2269,13 @@ void dvz_compute_create(DvzCompute* compute)
 
     if (compute->shader_code != NULL)
     {
-        compute->shader_module =
-            dvz_compile_glsl(compute->gpu, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
+        compute->shader_module = dvz_shader_module_from_glsl(
+            compute->gpu->device, compute->shader_code, VK_SHADER_STAGE_COMPUTE_BIT);
     }
     else
     {
         compute->shader_module =
-            create_shader_module_from_file(compute->gpu->device, compute->shader_path);
+            dvz_shader_module_from_file(compute->gpu->device, compute->shader_path);
     }
     ANN(compute->shader_module);
 
@@ -2379,7 +2379,7 @@ void dvz_graphics_shader_glsl(DvzGraphics* graphics, VkShaderStageFlagBits stage
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count] =
-        dvz_compile_glsl(graphics->gpu, code, stage);
+        dvz_shader_module_from_glsl(graphics->gpu->device, code, stage);
     graphics->shader_count++;
 }
 
@@ -2394,7 +2394,7 @@ void dvz_graphics_shader(
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count++] =
-        create_shader_module_from_file(graphics->gpu->device, shader_path);
+        dvz_shader_module_from_file(graphics->gpu->device, shader_path);
 }
 
 
@@ -2409,7 +2409,7 @@ void dvz_graphics_shader_spirv(
 
     graphics->shader_stages[graphics->shader_count] = stage;
     graphics->shader_modules[graphics->shader_count++] =
-        create_shader_module(graphics->gpu->device, size, buffer);
+        dvz_shader_module_from_spirv(graphics->gpu->device, size, buffer);
 }
 
 

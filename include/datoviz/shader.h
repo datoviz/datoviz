@@ -53,7 +53,17 @@ struct DvzShader
 /*  Compilation                                                                                  */
 /*************************************************************************************************/
 
-VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlagBits stage);
+VkShaderModule
+dvz_shader_module_from_glsl(VkDevice device, const char* code, VkShaderStageFlagBits stage);
+
+
+
+VkShaderModule
+dvz_shader_module_from_spirv(VkDevice device, VkDeviceSize size, const uint32_t* buffer);
+
+
+
+VkShaderModule dvz_shader_module_from_file(VkDevice device, const char* filename);
 
 
 
@@ -63,6 +73,7 @@ VkShaderModule dvz_compile_glsl(DvzGpu* gpu, const char* code, VkShaderStageFlag
 
 DvzShader
 dvz_shader(DvzShaderFormat format, DvzShaderType type, DvzSize size, char* code, uint32_t* buffer);
+
 
 
 void dvz_shader_destroy(DvzShader* shader);
