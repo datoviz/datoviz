@@ -26,6 +26,14 @@
 
 
 /*************************************************************************************************/
+/*  Constants                                                                                    */
+/*************************************************************************************************/
+
+#define DVZ_MAX_INSTANCE_EXTENSIONS 16
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -44,6 +52,9 @@ struct DvzHost
 
     // Backend
     DvzBackend backend;
+
+    uint32_t extension_count;
+    const char* extensions[DVZ_MAX_INSTANCE_EXTENSIONS];
 
     // Global clock
     DvzClock clock;
@@ -76,6 +87,16 @@ EXTERN_C_ON
  * @returns a pointer to the instantiated host
  */
 DvzHost* dvz_host(DvzBackend backend);
+
+
+
+/**
+ * Request an instance extension.
+ *
+ * @param host the host
+ * @param extension_name the extension name
+ */
+void dvz_host_extension(DvzHost* host, const char* extension_name);
 
 
 
