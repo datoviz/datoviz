@@ -29,9 +29,7 @@
 
 int test_board_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzContext* ctx = dvz_context(gpu);
     ANN(ctx);
