@@ -31,6 +31,8 @@
 
 int test_visual_1(TstSuite* suite, TstItem* tstitem)
 {
+    GET_HOST_GPU
+
     DvzBatch* batch = dvz_batch();
 
     uint32_t n = 10000;
@@ -87,7 +89,7 @@ int test_visual_1(TstSuite* suite, TstItem* tstitem)
     dvz_record_end(batch, canvas_id);
 
     // Render to a PNG.
-    render_requests(batch, get_gpu(suite), canvas_id, "visual_1");
+    render_requests(batch, gpu, canvas_id, "visual_1");
 
     // Cleanup
     dvz_visual_destroy(visual);
