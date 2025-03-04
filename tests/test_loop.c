@@ -50,7 +50,7 @@ struct TestLoopStruct
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_loop_1(TstSuite* suite)
+int test_loop_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -86,7 +86,7 @@ static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, v
         &pipe->u.graphics, &pipe->descriptors, s->br);
 }
 
-int test_loop_2(TstSuite* suite)
+int test_loop_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -191,7 +191,7 @@ static inline void _load_shader(
     FREE(code);
 }
 
-int test_loop_cube(TstSuite* suite)
+int test_loop_cube(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -375,7 +375,7 @@ static void _gui_callback(DvzLoop* loop, void* user_data)
     dvz_gui_end();
 }
 
-int test_loop_gui(TstSuite* suite)
+int test_loop_gui(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);

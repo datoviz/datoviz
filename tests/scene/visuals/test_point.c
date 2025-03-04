@@ -32,7 +32,7 @@
 /*  Point tests                                                                                  */
 /*************************************************************************************************/
 
-int test_point_1(TstSuite* suite)
+int test_point_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("point", VISUAL_TEST_PANZOOM, 0);
 

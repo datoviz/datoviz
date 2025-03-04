@@ -24,7 +24,7 @@
 /*  Colormaps tests                                                                              */
 /*************************************************************************************************/
 
-int test_colormaps_default(TstSuite* suite)
+int test_colormaps_default(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -53,7 +53,7 @@ int test_colormaps_default(TstSuite* suite)
 
 
 
-int test_colormaps_scale(TstSuite* suite)
+int test_colormaps_scale(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -86,7 +86,7 @@ int test_colormaps_scale(TstSuite* suite)
 
 
 
-int test_colormaps_array(TstSuite* suite)
+int test_colormaps_array(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -119,7 +119,7 @@ int test_colormaps_array(TstSuite* suite)
 
 
 
-// int test_colormaps_uv(TstSuite* suite)
+// int test_colormaps_uv(TstSuite* suite, TstItem* tstitem)
 // {
 //     ANN(suite);
 
@@ -147,7 +147,7 @@ int test_colormaps_array(TstSuite* suite)
 
 
 
-// int test_colormaps_extent(TstSuite* suite)
+// int test_colormaps_extent(TstSuite* suite, TstItem* tstitem)
 // {
 //     ANN(suite);
 
@@ -180,7 +180,7 @@ int test_colormaps_array(TstSuite* suite)
 
 
 
-// int test_colormaps_packuv(TstSuite* suite)
+// int test_colormaps_packuv(TstSuite* suite, TstItem* tstitem)
 // {
 //     ANN(suite);
 
@@ -195,7 +195,7 @@ int test_colormaps_array(TstSuite* suite)
 
 
 
-// int test_colormaps_array(TstSuite* suite)
+// int test_colormaps_array(TstSuite* suite, TstItem* tstitem)
 // {
 //     ANN(suite);
 

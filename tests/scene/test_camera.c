@@ -33,7 +33,7 @@
 /*  Camera tests                                                                                 */
 /*************************************************************************************************/
 
-int test_camera_1(TstSuite* suite)
+int test_camera_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);

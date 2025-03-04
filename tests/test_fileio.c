@@ -26,7 +26,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_png_1(TstSuite* suite)
+int test_png_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

@@ -73,7 +73,7 @@ _print_ticks(DvzTicksSpec* spec, uint32_t count, double lmin, double lmax, doubl
 /*  Ticks tests                                                                                  */
 /*************************************************************************************************/
 
-int test_ticks_1(TstSuite* suite)
+int test_ticks_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTicks* ticks = dvz_ticks(0);
@@ -105,7 +105,7 @@ int test_ticks_1(TstSuite* suite)
 
 
 
-int test_ticks_labels(TstSuite* suite)
+int test_ticks_labels(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -149,7 +149,7 @@ static void _test_ticks(DvzTicks* ticks, double dmin, double dmax, uint32_t req)
     _print_ticks(&ticks->spec, tick_count, ticks->lmin, ticks->lmax, ticks->lstep);
 }
 
-int test_ticks_2(TstSuite* suite)
+int test_ticks_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTicks* ticks = dvz_ticks(0);

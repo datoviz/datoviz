@@ -32,7 +32,7 @@
 /*  Sphere tests                                                                                 */
 /*************************************************************************************************/
 
-int test_sphere_1(TstSuite* suite)
+int test_sphere_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("sphere", VISUAL_TEST_ARCBALL, 0);
 

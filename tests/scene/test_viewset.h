@@ -25,9 +25,9 @@
 /*  Visual tests                                                                                 */
 /*************************************************************************************************/
 
-int test_viewset_1(TstSuite*);
+int test_viewset_1(TstSuite* suite, TstItem* tstitem);
 
-int test_viewset_mouse(TstSuite*);
+int test_viewset_mouse(TstSuite* suite, TstItem* tstitem);
 
 
 

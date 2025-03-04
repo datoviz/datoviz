@@ -25,11 +25,11 @@
 /*  Ticks tests                                                                                  */
 /*************************************************************************************************/
 
-int test_ticks_1(TstSuite*);
+int test_ticks_1(TstSuite* suite, TstItem* tstitem);
 
-int test_ticks_labels(TstSuite*);
+int test_ticks_labels(TstSuite* suite, TstItem* tstitem);
 
-int test_ticks_2(TstSuite*);
+int test_ticks_2(TstSuite* suite, TstItem* tstitem);
 
 
 

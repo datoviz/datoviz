@@ -99,7 +99,7 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent* ev)
     }
 }
 
-int test_input_mouse(TstSuite* suite)
+int test_input_mouse(TstSuite* suite, TstItem* tstitem)
 {
     // Create window and input.
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 800, 600, 0);
@@ -147,7 +147,7 @@ static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
         dvz_keyboard_get(keyboard, 2), dvz_keyboard_get(keyboard, 3));
 }
 
-int test_input_keyboard(TstSuite* suite)
+int test_input_keyboard(TstSuite* suite, TstItem* tstitem)
 {
     // Create window and input.
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 800, 600, 0);
