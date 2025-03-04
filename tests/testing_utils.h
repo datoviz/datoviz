@@ -18,7 +18,6 @@
 /*************************************************************************************************/
 
 #include "../src/render_utils.h"
-#include "../src/vklite_utils.h"
 #include "backend.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
