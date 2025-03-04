@@ -396,7 +396,7 @@ void dvz_array_resize(DvzArray* array, uint32_t item_count)
         log_trace(
             "resize array from %d to %d items of size %d", //
             old_item_count, new_item_count, array->item_size);
-        REALLOC(array->data, new_size);
+        REALLOC(void*, array->data, new_size);
         // Repeat the last element when resizing.
         _repeat_last(old_size / array->item_size, array->item_size, array->data, new_item_count);
         array->buffer_size = new_size;

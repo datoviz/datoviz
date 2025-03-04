@@ -128,7 +128,7 @@ void dvz_board_resize(DvzCanvas* board, uint32_t width, uint32_t height)
         log_debug(
             "reallocating board rgb buffer to %dx%dx3=%s (from %s before)", //
             width, height, pretty_size(new_size), pretty_size(old_size));
-        REALLOC(board->rgb, new_size)
+        REALLOC(uint8_t*, board->rgb, new_size)
     }
     dvz_board_recreate(board);
 }
