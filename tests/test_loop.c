@@ -52,12 +52,7 @@ struct TestLoopStruct
 
 int test_loop_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, 0);
 
@@ -88,12 +83,7 @@ static void _fill_triangle(DvzCanvas* canvas, DvzCommands* cmds, uint32_t idx, v
 
 int test_loop_2(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
@@ -193,12 +183,7 @@ static inline void _load_shader(
 
 int test_loop_cube(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);
@@ -377,12 +362,7 @@ static void _gui_callback(DvzLoop* loop, void* user_data)
 
 int test_loop_gui(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzLoop* loop = dvz_loop(gpu, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);
 

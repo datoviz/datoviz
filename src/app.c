@@ -176,10 +176,10 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
 
 
 /*************************************************************************************************/
-/*  App functions                                                                                */
+/*  Default functions                                                                            */
 /*************************************************************************************************/
 
-DvzBackend dvz_app_backend(int flags)
+DvzBackend dvz_default_backend(int flags)
 {
     DvzBackend backend = DVZ_BACKEND_GLFW;
 
@@ -196,65 +196,39 @@ DvzBackend dvz_app_backend(int flags)
 
 
 
-DvzHost* dvz_app_host(DvzApp* app, DvzBackend backend)
+DvzHost* dvz_default_host(DvzBackend backend)
 {
-    ANN(app);
+    DvzHost* host = dvz_host();
+    ANN(host);
 
-    // Create host.
-    bool host_exists = app->host != NULL;
-    if (host_exists)
-    {
-        return app->host;
-    }
-    ASSERT(app->host == NULL);
+    dvz_host_backend(host, backend);
+    dvz_host_create(host);
 
-    app->host = dvz_host();
-    ANN(app->host);
-
-    dvz_host_backend(app->host, backend);
-    dvz_host_create(app->host);
-
-    // Create the GPU.
-    int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
-    app->gpu = dvz_host_gpu(app->host, gpu_idx);
-    ANN(app->gpu);
-    _default_queues(app->gpu, true);
-    VkPhysicalDeviceFeatures f = {.independentBlend = true};
-    dvz_gpu_request_features(app->gpu, f);
-    dvz_gpu_create(app->gpu, NULL);
-
-    return app->host;
+    return host;
 }
 
 
 
-DvzGpu* dvz_app_gpu(DvzApp* app)
+DvzGpu* dvz_default_gpu(DvzHost* host)
 {
-    ANN(app);
-
-    // Create GPU.
-    bool gpu_exists = app->gpu != NULL;
-    if (gpu_exists)
-    {
-        return app->gpu;
-    }
-    ASSERT(app->gpu == NULL);
-
     // Create the GPU.
     int32_t gpu_idx = getenvint("DVZ_GPU"); // if not set, -1, = 'best' here
 
-    app->gpu = dvz_host_gpu(app->host, gpu_idx);
-    ANN(app->gpu);
+    DvzGpu* gpu = dvz_host_gpu(host, gpu_idx);
+    ANN(gpu);
 
-    _default_queues(app->gpu, true);
+    _default_queues(gpu, true);
     VkPhysicalDeviceFeatures f = {.independentBlend = true};
-    dvz_gpu_request_features(app->gpu, f);
-    dvz_gpu_create(app->gpu, NULL);
+    dvz_gpu_request_features(gpu, f);
 
-    return app->gpu;
+    return gpu;
 }
 
 
+
+/*************************************************************************************************/
+/*  App functions                                                                                */
+/*************************************************************************************************/
 
 DvzApp* dvz_app(int flags)
 {
@@ -264,9 +238,15 @@ DvzApp* dvz_app(int flags)
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
     ANN(app);
 
-    app->backend = dvz_app_backend(flags);
-    app->host = dvz_app_host(app, app->backend);
-    app->gpu = dvz_app_gpu(app);
+    app->backend = dvz_default_backend(flags);
+
+    app->host = dvz_default_host(app->backend);
+    ANN(app->host);
+
+    app->gpu = dvz_default_gpu(app->host);
+    ANN(app->gpu);
+    dvz_gpu_create(app->gpu, NULL);
+
     app->rd = dvz_renderer(app->gpu, flags);
     ANN(app->rd);
 

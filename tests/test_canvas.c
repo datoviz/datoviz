@@ -20,7 +20,6 @@
 #include "context.h"
 #include "pipelib.h"
 #include "test.h"
-#include "test_resources.h"
 #include "testing.h"
 #include "testing_utils.h"
 #include "window.h"
@@ -53,12 +52,7 @@ struct TestCanvasStruct
 
 int test_canvas_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
-
-    DvzGpu* gpu = make_gpu(host);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create the window and surface.
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, WIDTH, HEIGHT, 0);

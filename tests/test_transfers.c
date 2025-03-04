@@ -32,9 +32,7 @@
 
 static DvzTransfers* get_transfers(TstSuite* suite)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzTransfers* transfers = calloc(1, sizeof(DvzTransfers));
     dvz_transfers(gpu, transfers);

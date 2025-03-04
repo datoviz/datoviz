@@ -86,9 +86,7 @@ static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
 
 int test_vklite_commands(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -107,9 +105,7 @@ int test_vklite_commands(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -148,9 +144,7 @@ int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -205,9 +199,7 @@ int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
-    ANN(host);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -229,9 +221,7 @@ int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
@@ -300,9 +290,7 @@ int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_push(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
@@ -373,9 +361,7 @@ int test_vklite_push(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_images(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -399,9 +385,7 @@ int test_vklite_images(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -422,9 +406,7 @@ int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -512,9 +494,7 @@ int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -574,9 +554,7 @@ int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_submit(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    // Use the host setup fixture.
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_COMPUTE);
     dvz_gpu_queue(gpu, 1, DVZ_QUEUE_COMPUTE);
@@ -688,8 +666,7 @@ int test_vklite_submit(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_offscreen(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -718,9 +695,8 @@ int test_vklite_offscreen(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_shader(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
 #if HAS_SHADERC
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
@@ -755,8 +731,7 @@ int test_vklite_shader(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_graphics(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -808,8 +783,7 @@ int test_vklite_graphics(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_indirect(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -888,8 +862,7 @@ int test_vklite_indirect(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_indexed(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -974,8 +947,7 @@ int test_vklite_indexed(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_instanced(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -1054,8 +1026,7 @@ int test_vklite_instanced(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_vertex_bindings(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -1145,8 +1116,7 @@ int test_vklite_vertex_bindings(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_constattr(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -1242,8 +1212,7 @@ int test_vklite_constattr(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_specialization(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -1323,8 +1292,7 @@ int test_vklite_specialization(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_ALL);
 
@@ -1353,8 +1321,7 @@ int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
     AT(surface.surface != VK_NULL_HANDLE);
@@ -1380,12 +1347,10 @@ int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_sync_full(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
 #if !HAS_GLFW
     return 0;
 #endif
-
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     // Window.
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);
@@ -1485,12 +1450,10 @@ int test_vklite_sync_full(TstSuite* suite, TstItem* tstitem)
 
 int test_vklite_sync_fail(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
 #if !HAS_GLFW
     return 0;
 #endif
-
-    DvzHost* host = get_host(suite);
+    GET_HOST
 
     // Window.
     DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, 100, 100, 0);

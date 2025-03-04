@@ -36,10 +36,7 @@
 
 int test_external_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzBatch* batch = dvz_batch();

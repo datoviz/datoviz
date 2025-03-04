@@ -104,8 +104,7 @@ int test_gui_1(TstSuite* suite, TstItem* tstitem)
 
 int test_gui_offscreen(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzHost* host = get_host(suite);
+    GET_HOST
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);

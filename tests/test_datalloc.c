@@ -31,9 +31,7 @@
 
 int test_datalloc_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create the resources object.
     DvzContext* ctx = dvz_context(gpu);
@@ -109,9 +107,7 @@ int test_datalloc_1(TstSuite* suite, TstItem* tstitem)
 
 int test_datalloc_2(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Create the resources object.
     DvzContext* ctx = dvz_context(gpu);

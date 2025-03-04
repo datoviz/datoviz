@@ -31,9 +31,7 @@
 
 int test_workspace_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzWorkspace* ws = dvz_workspace(gpu, DVZ_RENDERER_FLAGS_WHITE_BACKGROUND);
     DvzCanvas* board = dvz_workspace_board(ws, WIDTH, HEIGHT, 0);

@@ -17,6 +17,7 @@
 #include <stdio.h>
 
 #include "_thread_utils.h"
+#include "datoviz_app.h"
 #include "fileio.h"
 #include "input.h"
 #include "scene/test_animation.h"
@@ -107,12 +108,6 @@
 #define TEST_FIXTURE(test) TEST(test, tags, setup, teardown, TST_ITEM_FLAGS_NONE)
 
 #define TEST_STANDALONE(test) TEST(test, tags, setup, teardown, TST_ITEM_FLAGS_STANDALONE)
-
-
-
-/*************************************************************************************************/
-/*  Fixtures                                                                                     */
-/*************************************************************************************************/
 
 
 

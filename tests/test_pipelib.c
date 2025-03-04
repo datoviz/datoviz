@@ -33,9 +33,7 @@
 
 int test_pipelib_1(TstSuite* suite, TstItem* tstitem)
 {
-    ANN(suite);
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     // Context.
     DvzContext* ctx = dvz_context(gpu);

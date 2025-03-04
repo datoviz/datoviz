@@ -46,7 +46,43 @@ EXTERN_C_ON
 
 /*************************************************************************************************/
 /*************************************************************************************************/
-/*  App API                                                                                    */
+/*  Default functions                                                                            */
+/*************************************************************************************************/
+/*************************************************************************************************/
+
+/**
+ * Determine the backend from the app's flags and environment variable.
+ *
+ * @param flags the app creation flags
+ * @returns the backend
+ */
+DVZ_EXPORT DvzBackend dvz_default_backend(int flags);
+
+
+
+/**
+ * Get or create a host.
+ *
+ * @param backend the backend
+ * @returns the host
+ */
+DVZ_EXPORT DvzHost* dvz_default_host(DvzBackend backend);
+
+
+
+/**
+ * Get or create a GPU.
+ *
+ * @param app the host
+ * @returns the GPU
+ */
+DVZ_EXPORT DvzGpu* dvz_default_gpu(DvzHost* host);
+
+
+
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  App API                                                                                      */
 /*************************************************************************************************/
 /*************************************************************************************************/
 
@@ -57,37 +93,6 @@ EXTERN_C_ON
  * @returns the app
  */
 DVZ_EXPORT DvzApp* dvz_app(int flags);
-
-
-
-/**
- * Determine the backend from the app's flags and environment variable.
- *
- * @param flags the app creation flags
- * @returns the backend
- */
-DVZ_EXPORT DvzBackend dvz_app_backend(int flags);
-
-
-
-/**
- * Get or create a host.
- *
- * @param app the app
- * @param backend the backend
- * @returns the host
- */
-DVZ_EXPORT DvzHost* dvz_app_host(DvzApp* app, DvzBackend backend);
-
-
-
-/**
- * Get or create a GPU.
- *
- * @param app the app
- * @returns the GPU
- */
-DVZ_EXPORT DvzGpu* dvz_app_gpu(DvzApp* app);
 
 
 
