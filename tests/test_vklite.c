@@ -177,7 +177,6 @@ int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem)
 int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
 
@@ -227,7 +226,6 @@ int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&buffer);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -260,7 +258,6 @@ int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem)
 int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
 
@@ -324,7 +321,6 @@ int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&buffer);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -333,7 +329,6 @@ int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
 int test_vklite_push(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
 
@@ -399,7 +394,6 @@ int test_vklite_push(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&buffer);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -410,7 +404,6 @@ int test_vklite_images(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -427,7 +420,6 @@ int test_vklite_images(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(&images);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -438,7 +430,6 @@ int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
     ANN(suite);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     DvzGpu* gpu = dvz_gpu_best(host);
     dvz_gpu_queue(gpu, 0, DVZ_QUEUE_RENDER);
     dvz_gpu_create(gpu, 0);
@@ -452,7 +443,6 @@ int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
     dvz_sampler_destroy(&sampler);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -461,7 +451,6 @@ int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
 int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
 
@@ -544,7 +533,6 @@ int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
     dvz_buffer_destroy(&buffer1);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -553,7 +541,6 @@ int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
 int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
     DvzGpu* gpu = dvz_gpu_best(host);
@@ -608,7 +595,6 @@ int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
     dvz_images_destroy(&images);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -617,7 +603,6 @@ int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
 int test_vklite_submit(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
     // Use the host setup fixture.
     DvzHost* host = get_host(suite);
     DvzGpu* gpu = dvz_gpu_best(host);
@@ -724,7 +709,6 @@ int test_vklite_submit(TstSuite* suite, TstItem* tstitem)
     FREE(data2);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -755,7 +739,6 @@ int test_vklite_offscreen(TstSuite* suite, TstItem* tstitem)
     canvas_destroy(&canvas);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
@@ -785,7 +768,6 @@ int test_vklite_shader(TstSuite* suite, TstItem* tstitem)
     vkDestroyShaderModule(gpu->device, module, NULL);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 #else
     log_warn("skip shader compilation test as the library was not compiled with glslc support");
@@ -1419,7 +1401,6 @@ int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
     dvz_window_destroy(&window);
 
     dvz_gpu_destroy(gpu);
-    // dvz_host_destroy(host);
     return 0;
 }
 
