@@ -63,11 +63,11 @@ DvzWorkspace* dvz_workspace(DvzGpu* gpu, int flags)
     // range of the core VkImageLayout enumeration tokens and is not an extension added token. The
     // Vulkan spec states: finalLayout must be a valid VkImageLayout value
 
-    if (gpu->host->backend == DVZ_BACKEND_GLFW)
-    {
-        ws->renderpass_desktop =
-            dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-    }
+    // TODO: backend
+    // if (gpu->host->backend == DVZ_BACKEND_GLFW)
+    // {
+    ws->renderpass_desktop = dvz_gpu_renderpass(gpu, clear_color, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+    // }
 
     dvz_obj_init(&ws->obj);
     return ws;

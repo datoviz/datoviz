@@ -8,47 +8,12 @@
 /*  Host                                                                                         */
 /*************************************************************************************************/
 
-// NOTE: glfw is required because it exposes the Vulkan extensions used by the instance
-#include "backend.h"
-
-#include "common.h"
 #include "host.h"
+#include "backend.h"
+#include "common.h"
+#include "datoviz_macros.h"
 #include "vklite.h"
 #include "vkutils.h"
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-static const char** backend_extensions(DvzBackend backend, uint32_t* required_extension_count)
-{
-    ASSERT(backend != DVZ_BACKEND_NONE);
-
-    const char** required_extensions = NULL;
-
-    // Backend initialization and required extensions.
-    switch (backend)
-    {
-    case DVZ_BACKEND_GLFW:
-#if HAS_GLFW
-        // ASSERT(glfwVulkanSupported() != 0);
-        required_extensions = glfwGetRequiredInstanceExtensions(required_extension_count);
-        log_trace("%d extension(s) required by backend GLFW", *required_extension_count);
-#endif
-        break;
-    case DVZ_BACKEND_QT:
-        *required_extension_count = 1;
-        required_extensions = (const char**)calloc(*required_extension_count, sizeof(char*));
-        required_extensions[0] = VK_KHR_SURFACE_EXTENSION_NAME;
-        break;
-    default:
-        break;
-    }
-
-    return required_extensions;
-}
 
 
 
@@ -56,33 +21,22 @@ static const char** backend_extensions(DvzBackend backend, uint32_t* required_ex
 /*  Host                                                                                         */
 /*************************************************************************************************/
 
-DvzHost* dvz_host(DvzBackend backend)
+DvzHost* dvz_host(void)
 {
     log_set_level_env();
-    log_debug("create the host with backend %d", backend);
+    log_debug("create the host");
 
     DvzHost* host = calloc(1, sizeof(DvzHost));
     ANN(host);
-    dvz_obj_init(&host->obj);
+
     host->obj.type = DVZ_OBJECT_TYPE_HOST;
-
-#if SWIFTSHADER
-    if (backend != DVZ_BACKEND_OFFSCREEN)
-    {
-        log_warn("when the library is compiled for switshader, offscreen rendering is mandatory");
-        backend = DVZ_BACKEND_OFFSCREEN;
-    }
-#endif
-
-    // Backend-specific initialization code.
-    host->backend = backend;
-    dvz_backend_init(backend);
 
     // Initialize the global clock.
     host->clock = dvz_clock();
 
     host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
 
+    dvz_obj_init(&host->obj);
     return host;
 }
 
@@ -97,18 +51,24 @@ void dvz_host_extension(DvzHost* host, const char* extension_name)
 
 
 
+void dvz_host_backend(DvzHost* host, DvzBackend backend)
+{
+    // Add required extensions from a backend.
+    uint32_t n = 0;
+    const char** required_extensions = dvz_backend_required_extensions(backend, &n);
+    for (uint32_t i = 0; i < n; i++)
+    {
+        dvz_host_extension(host, required_extensions[i]);
+    }
+}
+
+
+
 void dvz_host_create(DvzHost* host)
 {
     ANN(host);
 
-    // TODO
-    // // Which extensions are required? Depends on the backend.
-    // uint32_t required_extension_count = 0;
-    // const char** required_extensions =
-    //     backend_extensions(host->backend, &required_extension_count);
-
     // Create the instance.
-
     // NOTE: with Qt, we use Qt to create the Vulkan instance
     if (host->instance == VK_NULL_HANDLE)
     {
@@ -179,7 +139,7 @@ int dvz_host_destroy(DvzHost* host)
 {
     ANN(host);
 
-    log_debug("destroy the host with backend %d", host->backend);
+    log_debug("destroy the host");
     dvz_host_wait(host);
 
     // Destroy the GPUs.
@@ -200,9 +160,6 @@ int dvz_host_destroy(DvzHost* host)
         vkDestroyInstance(host->instance, NULL);
         host->instance = 0;
     }
-
-    // Backend-specific termination code.
-    dvz_backend_terminate(host->backend);
 
     // Free the App memory.
     int res = (int)host->n_errors;

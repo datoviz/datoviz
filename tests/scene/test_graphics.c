@@ -38,8 +38,9 @@
 #define GRAPHICS_BEGIN                                                                            \
     ANN(suite);                                                                                   \
                                                                                                   \
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);                                                   \
+    DvzHost* host = dvz_host();                                                                   \
     ANN(host);                                                                                    \
+    dvz_host_backend(host, DVZ_BACKEND_GLFW);                                                     \
     dvz_host_create(host);                                                                        \
                                                                                                   \
     DvzGpu* gpu = dvz_gpu_best(host);                                                             \

@@ -76,11 +76,13 @@ static void* _canvas_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     // will occur in the presenter (client-side), not on the renderer (server-side).
 
     // NOTE: force offscreen rendering for all canvases with offscreen backend.
-    if (rd->gpu->host->backend == DVZ_BACKEND_OFFSCREEN)
-    {
-        log_trace("forcing created canvas to be offscreen as the backend is offscreen");
-        req.content.canvas.is_offscreen = true;
-    }
+
+    // TODO: backend
+    // if (rd->gpu->host->backend == DVZ_BACKEND_OFFSCREEN)
+    // {
+    //     log_trace("forcing created canvas to be offscreen as the backend is offscreen");
+    //     req.content.canvas.is_offscreen = true;
+    // }
 
     if (req.content.canvas.is_offscreen)
     {
@@ -255,12 +257,14 @@ static void* _graphics_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     DvzPipe* pipe = NULL;
 
     bool is_offscreen = (req.flags & DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN) != 0;
-    if (gpu->host->backend && !is_offscreen)
-    {
-        log_debug("non-offscreen graphics pipeline creation was requested with an offscreen "
-                  "backend, forcing offscreen pipepline");
-        is_offscreen = true;
-    }
+
+    // TODO: backend
+    // if (gpu->host->backend && !is_offscreen)
+    // {
+    //     log_debug("non-offscreen graphics pipeline creation was requested with an offscreen "
+    //               "backend, forcing offscreen pipepline");
+    //     is_offscreen = true;
+    // }
     DvzRenderpass* renderpass =
         is_offscreen ? &rd->workspace->renderpass_offscreen : &rd->workspace->renderpass_desktop;
 

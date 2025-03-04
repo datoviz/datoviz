@@ -61,7 +61,7 @@ int test_canvas_1(TstSuite* suite, TstItem* tstitem)
     ANN(gpu);
 
     // Create the window and surface.
-    DvzWindow window = dvz_window(host->backend, WIDTH, HEIGHT, 0);
+    DvzWindow window = dvz_window(DVZ_BACKEND_GLFW, WIDTH, HEIGHT, 0);
     DvzSurface surface = dvz_window_surface(host, &window);
 
     // Create the renderpass.

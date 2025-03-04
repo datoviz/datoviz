@@ -38,8 +38,9 @@ DvzServer* dvz_server(int flags)
     DvzServer* server = (DvzServer*)calloc(1, sizeof(DvzServer));
     ANN(server);
 
-    server->host = dvz_host(DVZ_BACKEND_OFFSCREEN);
+    server->host = dvz_host();
     ANN(server->host);
+    dvz_host_backend(server->host, DVZ_BACKEND_OFFSCREEN);
     dvz_host_create(server->host);
 
     server->gpu = make_gpu(server->host);

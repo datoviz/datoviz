@@ -29,8 +29,9 @@
 int test_host(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
-    DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
+    DvzHost* host = dvz_host();
     ANN(host);
+    dvz_host_backend(host, DVZ_BACKEND_GLFW);
     dvz_host_create(host);
 
     AT(host->obj.status == DVZ_OBJECT_STATUS_CREATED);

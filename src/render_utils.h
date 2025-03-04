@@ -56,20 +56,24 @@ static DvzGpu* make_gpu(DvzHost* host)
     f.independentBlend = true;
     dvz_gpu_request_features(gpu, f);
 
-    if (host->backend == DVZ_BACKEND_GLFW)
-    {
-        dvz_gpu_create_with_surface(gpu);
-    }
-    else if (host->backend == DVZ_BACKEND_QT)
-    {
-        // HACK: we do NOT call dvz_gpu_create(), rather, we will create an empty window, retrieve
-        // the surface, call dvz_gpu_create() and delete the window, after the call to the current
-        // function.
-    }
-    else if (host->backend == DVZ_BACKEND_OFFSCREEN)
-    {
-        dvz_gpu_create(gpu, NULL);
-    }
+    // TODO: backend
+    dvz_gpu_create_with_surface(gpu);
+    // if (host->backend == DVZ_BACKEND_GLFW)
+    // {
+    //     dvz_gpu_create_with_surface(gpu);
+    // }
+    // else if (host->backend == DVZ_BACKEND_QT)
+    // {
+    //     // HACK: we do NOT call dvz_gpu_create(), rather, we will create an empty window,
+    //     retrieve
+    //     // the surface, call dvz_gpu_create() and delete the window, after the call to the
+    //     current
+    //     // function.
+    // }
+    // else if (host->backend == DVZ_BACKEND_OFFSCREEN)
+    // {
+    //     dvz_gpu_create(gpu, NULL);
+    // }
 
     return gpu;
 }

@@ -69,6 +69,7 @@ struct DvzAppGuiPayload
 
 struct DvzApp
 {
+    DvzBackend backend;
     DvzHost* host;
     DvzClient* client;
     DvzGpu* gpu;

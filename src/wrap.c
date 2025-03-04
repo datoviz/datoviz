@@ -28,7 +28,7 @@ DvzHost* dvz_host_wrap(VkInstance instance)
     ANN(host);
     dvz_obj_init(&host->obj);
     host->obj.type = DVZ_OBJECT_TYPE_HOST;
-    host->backend = DVZ_BACKEND_WRAP;
+    // host->backend = DVZ_BACKEND_WRAP;
     host->instance = instance;
     host->gpus = dvz_container(DVZ_CONTAINER_DEFAULT_COUNT, sizeof(DvzGpu), DVZ_OBJECT_TYPE_GPU);
     return host;

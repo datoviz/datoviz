@@ -37,6 +37,9 @@ EXTERN_C_ON
 
 void dvz_backend_init(DvzBackend backend);
 
+const char**
+dvz_backend_required_extensions(DvzBackend backend, uint32_t* required_extension_count);
+
 void dvz_backend_terminate(DvzBackend backend);
 
 void* dvz_backend_window(DvzBackend backend, uint32_t width, uint32_t height, int flags);
