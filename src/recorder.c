@@ -273,7 +273,9 @@ void dvz_recorder_append(DvzRecorder* recorder, DvzRecorderCommand rc)
     if (recorder->count >= recorder->capacity)
     {
         recorder->capacity *= 2;
-        REALLOC(recorder->commands, recorder->capacity * sizeof(DvzRecorderCommand))
+        REALLOC(
+            DvzRecorderCommand*, recorder->commands,
+            recorder->capacity * sizeof(DvzRecorderCommand))
     }
     ASSERT(recorder->count < recorder->capacity);
     recorder->commands[recorder->count++] = rc;
