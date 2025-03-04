@@ -18,6 +18,7 @@
 #include "backend.h"
 #include "canvas.h"
 #include "context.h"
+#include "fileio.h"
 #include "pipelib.h"
 #include "test.h"
 #include "testing.h"
