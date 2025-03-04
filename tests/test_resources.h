@@ -41,6 +41,11 @@ static int setup_gpu(TstSuite* suite)
 
     DvzGpu* gpu = dvz_gpu_best(ctx->host);
     _default_queues(gpu, false);
+
+    // HACK
+    // dvz_gpu_extension(gpu, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
+    // dvz_gpu_external(gpu, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
+
     dvz_gpu_create(gpu, 0);
     ctx->gpu = gpu;
 
