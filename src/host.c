@@ -19,6 +19,65 @@
 
 
 /*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+
+static void find_queue_families(VkPhysicalDevice device, DvzQueues* queues)
+{
+    ASSERT(device != VK_NULL_HANDLE);
+    ANN(queues);
+
+    // Get the queue family properties.
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_family_count, NULL);
+    log_trace("found %d queue families", queues->queue_family_count);
+    ASSERT(queues->queue_family_count > 0);
+    ASSERT(queues->queue_family_count <= DVZ_MAX_QUEUE_FAMILIES);
+    VkQueueFamilyProperties queue_families[DVZ_MAX_QUEUE_FAMILIES];
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queues->queue_family_count, queue_families);
+    ASSERT(queues->queue_family_count <= DVZ_MAX_QUEUE_FAMILIES);
+
+    for (uint32_t i = 0; i < queues->queue_family_count; i++)
+    {
+        queues->support_transfer[i] = queue_families[i].queueFlags & VK_QUEUE_TRANSFER_BIT;
+        queues->support_graphics[i] = queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT;
+        queues->support_compute[i] = queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT;
+        queues->max_queue_count[i] = queue_families[i].queueCount;
+        log_trace(
+            "queue family #%d (max %d): transfer %d, graphics %d, compute %d", //
+            i, queues->max_queue_count[i],                                     //
+            queues->support_transfer[i], queues->support_graphics[i], queues->support_compute[i]);
+    }
+}
+
+
+
+static void discover_gpu(VkPhysicalDevice physical_device, DvzGpu* gpu)
+{
+    vkGetPhysicalDeviceProperties(physical_device, &gpu->device_properties);
+    vkGetPhysicalDeviceFeatures(physical_device, &gpu->device_features);
+    vkGetPhysicalDeviceMemoryProperties(physical_device, &gpu->memory_properties);
+
+    gpu->physical_device = physical_device;
+    gpu->name = gpu->device_properties.deviceName;
+
+    // Find the total amount of VRAM.
+    VkMemoryHeap* heap = NULL;
+    for (uint32_t j = 0; j < gpu->memory_properties.memoryHeapCount; j++)
+    {
+        heap = &gpu->memory_properties.memoryHeaps[j];
+        if (heap->size > 0 && ((heap->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) != 0))
+        {
+            ASSERT(heap->size > 0);
+            gpu->vram += heap->size;
+        }
+    }
+
+    find_queue_families(gpu->physical_device, &gpu->queues);
+}
+
+
+
+/*************************************************************************************************/
 /*  Host                                                                                         */
 /*************************************************************************************************/
 
