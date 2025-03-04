@@ -299,6 +299,11 @@ static void create_instance(
 #endif
 
     info_inst.enabledExtensionCount = extension_count;
+    log_trace("enable instance extensions:");
+    for (uint32_t i = 0; i < extension_count; i++)
+    {
+        log_trace("- %s", extensions[i]);
+    }
     info_inst.ppEnabledExtensionNames = (const char* const*)extensions;
 
     // Validation layers.
@@ -651,8 +656,6 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
             {
                 log_trace("found portability subset, will need to add extension "
                           "VK_KHR_portability_subset");
-                // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
-                // extensions[n_extensions++] = "VK_KHR_portability_subset";
                 dvz_gpu_extension(gpu, "VK_KHR_portability_subset");
                 break;
             }
