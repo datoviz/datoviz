@@ -28,7 +28,7 @@
 /*  GPU fixture                                                                                  */
 /*************************************************************************************************/
 
-static int setup_gpu(TstSuite* suite)
+static int setup_gpu(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
@@ -54,7 +54,7 @@ static int setup_gpu(TstSuite* suite)
 
 
 
-static int teardown_gpu(TstSuite* suite)
+static int teardown_gpu(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
@@ -94,11 +94,11 @@ static DvzGpu* get_gpu(TstSuite* suite)
 /*  Resources tests                                                                              */
 /*************************************************************************************************/
 
-int test_resources_1(TstSuite*);
+int test_resources_1(TstSuite* suite, TstItem* tstitem);
 
-int test_resources_dat_1(TstSuite*);
+int test_resources_dat_1(TstSuite* suite, TstItem* tstitem);
 
-int test_resources_tex_1(TstSuite*);
+int test_resources_tex_1(TstSuite* suite, TstItem* tstitem);
 
 
 
@@ -106,13 +106,13 @@ int test_resources_tex_1(TstSuite*);
 /*  Resources data transfers tests                                                               */
 /*************************************************************************************************/
 
-int test_resources_dat_transfers(TstSuite* suite);
+int test_resources_dat_transfers(TstSuite* suite, TstItem* tstitem);
 
-int test_resources_dat_resize(TstSuite* suite);
+int test_resources_dat_resize(TstSuite* suite, TstItem* tstitem);
 
-int test_resources_tex_transfers(TstSuite* suite);
+int test_resources_tex_transfers(TstSuite* suite, TstItem* tstitem);
 
-int test_resources_tex_resize(TstSuite* suite);
+int test_resources_tex_resize(TstSuite* suite, TstItem* tstitem);
 
 
 

@@ -32,7 +32,7 @@
 /*  Basic tests                                                                                  */
 /*************************************************************************************************/
 
-int test_basic_1(TstSuite* suite)
+int test_basic_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("basic", VISUAL_TEST_PANZOOM, 0);
 
@@ -68,7 +68,7 @@ int test_basic_1(TstSuite* suite)
 
 
 
-int test_basic_2(TstSuite* suite)
+int test_basic_2(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("basic_group", VISUAL_TEST_PANZOOM, 0);
 

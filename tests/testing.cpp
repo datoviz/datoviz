@@ -177,14 +177,14 @@ void tst_suite_run(TstSuite* suite, const char* match)
         // Setup.
         if (setup != NULL)
         {
-            setup(suite);
+            setup(suite, NULL);
         }
 
         // All shared tests for that setup.
         for (TstItem* item : tests)
         {
             print_res_begin(index, item->name);
-            int res = item->test(suite);
+            int res = item->test(suite, item);
             print_res_end(index, item->name, res);
             total_res += (res == 0 ? 0 : 1);
             ++index;
@@ -193,7 +193,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
         // Teardown
         if (teardown != NULL)
         {
-            teardown(suite);
+            teardown(suite, NULL);
         }
     }
 
@@ -202,18 +202,18 @@ void tst_suite_run(TstSuite* suite, const char* match)
     {
         if (item->setup != NULL)
         {
-            item->setup(suite);
+            item->setup(suite, NULL);
         }
 
         print_res_begin(index, item->name);
-        int res = item->test(suite);
+        int res = item->test(suite, item);
         print_res_end(index, item->name, res);
         total_res += (res == 0 ? 0 : 1);
         ++index;
 
         if (item->teardown != NULL)
         {
-            item->teardown(suite);
+            item->teardown(suite, NULL);
         }
     }
 

@@ -71,7 +71,7 @@ static void _common_axis_params(DvzAxis* axis)
 /*  Axis tests                                                                                   */
 /*************************************************************************************************/
 
-int test_axis_1(TstSuite* suite)
+int test_axis_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 #if !HAS_MSDF
@@ -130,7 +130,7 @@ int test_axis_1(TstSuite* suite)
 
 
 
-int test_axis_get(TstSuite* suite)
+int test_axis_get(TstSuite* suite, TstItem* tstitem)
 {
     double dmin = -10;
     double dmax = +10;
@@ -209,7 +209,7 @@ static void _onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
     log_info("%f %f", d[0], d[1]);
 }
 
-int test_axis_2(TstSuite* suite)
+int test_axis_2(TstSuite* suite, TstItem* tstitem)
 {
 #if !HAS_MSDF
     return 1;
@@ -408,7 +408,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     dvz_atomic_set(vt->figure->viewset->status, (int)DVZ_BUILD_DIRTY);
 }
 
-int test_axis_update(TstSuite* suite)
+int test_axis_update(TstSuite* suite, TstItem* tstitem)
 {
 #if !HAS_MSDF
     return 1;

@@ -37,7 +37,7 @@
 /*  Mesh tests                                                                                   */
 /*************************************************************************************************/
 
-int test_mesh_1(TstSuite* suite)
+int test_mesh_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
 
@@ -87,7 +87,7 @@ int test_mesh_1(TstSuite* suite)
 
 
 
-int test_mesh_polygon(TstSuite* suite)
+int test_mesh_polygon(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_polygon", VISUAL_TEST_ORTHO, 0);
 
@@ -314,7 +314,7 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
     }
 }
 
-int test_mesh_stroke(TstSuite* suite)
+int test_mesh_stroke(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
 
@@ -353,7 +353,7 @@ static inline float dot_ortho_u(vec3 p, vec3 q, vec2 u)
     return -(q[0] - p[0]) * u[1] + (q[1] - p[1]) * u[0];
 }
 
-int test_mesh_contour(TstSuite* suite)
+int test_mesh_contour(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_contour", VISUAL_TEST_ORTHO, 0);
 
@@ -419,7 +419,7 @@ int test_mesh_contour(TstSuite* suite)
 
 
 
-int test_mesh_surface(TstSuite* suite)
+int test_mesh_surface(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_surface", VISUAL_TEST_ARCBALL, 0);
 
@@ -517,7 +517,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
         dvz_mesh_linewidth(vt->visual, stroke[0][3]);
 }
 
-int test_mesh_obj(TstSuite* suite)
+int test_mesh_obj(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
@@ -624,7 +624,7 @@ static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
     return copied;
 }
 
-int test_mesh_geo(TstSuite* suite)
+int test_mesh_geo(TstSuite* suite, TstItem* tstitem)
 {
     DvzColor color = {TO_ALPHA(255), TO_ALPHA(128), TO_ALPHA(64), TO_ALPHA(255)};
 

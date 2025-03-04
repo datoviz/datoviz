@@ -27,7 +27,7 @@
 /*  List tests                                                                                   */
 /*************************************************************************************************/
 
-int test_list_1(TstSuite* suite)
+int test_list_1(TstSuite* suite, TstItem* tstitem)
 {
     DvzList* list = dvz_list();
 

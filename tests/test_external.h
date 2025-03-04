@@ -25,7 +25,7 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_external_1(TstSuite*);
+int test_external_1(TstSuite* suite, TstItem* tstitem);
 
 
 

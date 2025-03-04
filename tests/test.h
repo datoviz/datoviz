@@ -52,7 +52,7 @@ struct DvzTestCtx
 /*  Host fixture                                                                                 */
 /*************************************************************************************************/
 
-static int setup_host(TstSuite* suite)
+static int setup_host(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
@@ -68,7 +68,7 @@ static int setup_host(TstSuite* suite)
 
 
 
-static int teardown_host(TstSuite* suite)
+static int teardown_host(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;

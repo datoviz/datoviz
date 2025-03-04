@@ -25,13 +25,13 @@
 /*  Axis tests                                                                                   */
 /*************************************************************************************************/
 
-int test_axis_1(TstSuite*);
+int test_axis_1(TstSuite* suite, TstItem* tstitem);
 
-int test_axis_2(TstSuite*);
+int test_axis_2(TstSuite* suite, TstItem* tstitem);
 
-int test_axis_get(TstSuite* suite);
+int test_axis_get(TstSuite* suite, TstItem* tstitem);
 
-int test_axis_update(TstSuite* suite);
+int test_axis_update(TstSuite* suite, TstItem* tstitem);
 
 
 

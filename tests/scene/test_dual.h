@@ -25,9 +25,9 @@
 /*  Dual tests                                                                                   */
 /*************************************************************************************************/
 
-int test_dual_1(TstSuite*);
+int test_dual_1(TstSuite* suite, TstItem* tstitem);
 
-int test_dual_2(TstSuite*);
+int test_dual_2(TstSuite* suite, TstItem* tstitem);
 
 
 

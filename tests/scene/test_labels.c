@@ -33,7 +33,7 @@
 /*  Labels tests                                                                                 */
 /*************************************************************************************************/
 
-int test_labels_1(TstSuite* suite)
+int test_labels_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzLabels* labels = dvz_labels();
@@ -85,7 +85,7 @@ static inline void _test_factored(DvzLabels* labels, double lmin, double lmax)
     printf("\n\n");
 }
 
-int test_labels_factored(TstSuite* suite)
+int test_labels_factored(TstSuite* suite, TstItem* tstitem)
 {
     DvzLabels* labels = dvz_labels();
 

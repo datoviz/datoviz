@@ -49,7 +49,7 @@
 /*  Scene tests                                                                                  */
 /*************************************************************************************************/
 
-int test_scene_1(TstSuite* suite)
+int test_scene_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -114,7 +114,7 @@ int test_scene_1(TstSuite* suite)
 
 
 
-int test_scene_2(TstSuite* suite)
+int test_scene_2(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -182,7 +182,7 @@ int test_scene_2(TstSuite* suite)
 
 
 
-int test_scene_3(TstSuite* suite)
+int test_scene_3(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -233,7 +233,7 @@ int test_scene_3(TstSuite* suite)
 
 
 
-int test_scene_offscreen(TstSuite* suite)
+int test_scene_offscreen(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
@@ -287,7 +287,7 @@ int test_scene_offscreen(TstSuite* suite)
 
 
 
-int test_scene_gui(TstSuite* suite)
+int test_scene_gui(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 
