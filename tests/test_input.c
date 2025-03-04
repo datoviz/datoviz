@@ -15,8 +15,8 @@
 /*************************************************************************************************/
 
 #include "test_input.h"
+#include "backend.h"
 #include "datoviz_types.h"
-#include "glfw_utils.h"
 #include "input.h"
 #include "keyboard.h"
 #include "mouse.h"
@@ -112,7 +112,7 @@ int test_input_mouse(TstSuite* suite, TstItem* tstitem)
     dvz_mouse_callback(mouse, DVZ_MOUSE_EVENT_ALL, _on_mouse, NULL);
 
     // Main loop.
-    backend_loop(&window, N_FRAMES);
+    dvz_backend_loop(&window, N_FRAMES);
 
     // Cleanup.
     dvz_input_destroy(input);
@@ -161,7 +161,7 @@ int test_input_keyboard(TstSuite* suite, TstItem* tstitem)
     dvz_keyboard_callback(keyboard, DVZ_KEYBOARD_EVENT_RELEASE, _on_keyboard, NULL);
 
     // Main loop.
-    backend_loop(&window, N_FRAMES);
+    dvz_backend_loop(&window, N_FRAMES);
 
     // Cleanup.
     dvz_input_destroy(input);

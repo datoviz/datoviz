@@ -722,6 +722,7 @@ set(core_files
     "src/_thread.c"
     "src/_version.c"
     "src/alloc.c"
+    "src/backend.c"
     "src/board.c"
     "src/canvas.c"
     "src/client_input.c"

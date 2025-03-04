@@ -15,11 +15,11 @@
 /*************************************************************************************************/
 
 #include "input.h"
+#include "backend.h"
 #include "common.h"
 #include "datoviz.h"
 #include "datoviz_app.h"
 #include "datoviz_types.h"
-#include "glfw_utils.h"
 #include "keyboard.h"
 #include "mouse.h"
 #include "window.h"
@@ -176,13 +176,13 @@ void dvz_input_destroy(DvzInput* input)
     ANN(input);
     log_trace("destroy the input");
 
-    backend_poll_events(DVZ_BACKEND_GLFW);
+    dvz_backend_poll_events(DVZ_BACKEND_GLFW);
 
     ANN(input->window);
     GLFWwindow* w = input->window->backend_window;
     ANN(w);
 
-    backend_window_clear_callbacks(DVZ_BACKEND_GLFW, w);
+    dvz_backend_window_clear_callbacks(DVZ_BACKEND_GLFW, w);
 
     dvz_mouse_destroy(input->mouse);
     dvz_keyboard_destroy(input->keyboard);
