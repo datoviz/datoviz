@@ -289,8 +289,7 @@ int test_renderer_graphics(TstSuite* suite, TstItem* tstitem)
 
 int test_renderer_push(TstSuite* suite, TstItem* tstitem)
 {
-    DvzGpu* gpu = get_gpu(suite);
-    ANN(gpu);
+    GET_HOST_GPU
 
     DvzRenderer* rd = dvz_renderer(gpu, 0);
     DvzBatch* batch = dvz_batch();
