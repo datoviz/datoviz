@@ -217,10 +217,12 @@ DvzQtApp* dvz_qt_app(QApplication* qapp, int flags)
     dvz_host_create(app->host);
     log_info("host created");
 
-    // Start creating a GPU, but with QT backend, do NOT call dvz_gpu_create() just yet
-    // as we want to create a mock window/surface first.
-    app->gpu = make_gpu(app->host);
-    ANN(app->gpu);
+// Start creating a GPU, but with QT backend, do NOT call dvz_gpu_create() just yet
+// as we want to create a mock window/surface first.
+TODO:
+    qt
+        // app->gpu = make_gpu(app->host);
+        ANN(app->gpu);
 
 
     // HACK: Create a mock window to get a surface handle and call
