@@ -15,6 +15,7 @@
 /*************************************************************************************************/
 
 #include "test_sdf.h"
+#include "fileio.h"
 #include "scene/sdf.h"
 #include "test.h"
 #include "testing.h"
