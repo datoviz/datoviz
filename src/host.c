@@ -11,6 +11,7 @@
 #include "host.h"
 #include "backend.h"
 #include "common.h"
+#include "datoviz_defaults.h"
 #include "datoviz_macros.h"
 #include "vklite.h"
 #include "vklite_utils.h"
