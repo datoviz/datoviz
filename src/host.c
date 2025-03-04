@@ -116,6 +116,7 @@ void dvz_host_backend(DvzHost* host, DvzBackend backend)
     // Add required extensions from a backend.
     uint32_t n = 0;
     const char** required_extensions = dvz_backend_required_extensions(backend, &n);
+    log_debug("adding %d required extensions for backend %d", n, backend);
     for (uint32_t i = 0; i < n; i++)
     {
         dvz_host_extension(host, required_extensions[i]);
@@ -517,5 +518,4 @@ void dvz_gpu_destroy(DvzGpu* gpu)
     // dvz_obj_destroyed(&gpu->obj);
     dvz_obj_init(&gpu->obj);
     gpu->queues.queue_count = 0;
-    log_trace("GPU #%d destroyed", gpu->idx);
 }

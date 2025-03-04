@@ -153,6 +153,7 @@ int test_app_scatter(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
@@ -291,6 +292,7 @@ int test_app_arcball(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     const uint32_t n = 1000;
@@ -383,6 +385,7 @@ int test_app_anim(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     const uint32_t n = (uint32_t)DVZ_EASING_COUNT;
@@ -427,6 +430,7 @@ int test_app_pixel(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create the visual.
@@ -522,6 +526,7 @@ int test_app_viewset(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     ANN(app);
 
     DvzBatch* batch = dvz_app_batch(app);

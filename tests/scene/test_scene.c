@@ -55,6 +55,7 @@ int test_scene_1(TstSuite* suite, TstItem* tstitem)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
@@ -120,6 +121,7 @@ int test_scene_2(TstSuite* suite, TstItem* tstitem)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
@@ -188,6 +190,7 @@ int test_scene_3(TstSuite* suite, TstItem* tstitem)
 
     // Create app object.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
@@ -242,6 +245,7 @@ int test_scene_offscreen(TstSuite* suite, TstItem* tstitem)
 
     // Create app object.
     DvzApp* app = dvz_app(DVZ_APP_FLAGS_OFFSCREEN);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
 
     // Create a scene.
@@ -296,6 +300,7 @@ int test_scene_gui(TstSuite* suite, TstItem* tstitem)
 
     // Create app objects.
     DvzApp* app = dvz_app(0);
+    dvz_app_create(app);
     DvzBatch* batch = dvz_app_batch(app);
     DvzScene* scene = dvz_scene(batch);
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, DVZ_CANVAS_FLAGS_IMGUI);

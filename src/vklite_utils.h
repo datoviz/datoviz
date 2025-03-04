@@ -449,11 +449,11 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
         if (gpu->queues.support_present[i])
         {
             has_surface = true;
+            log_trace(
+                "GPU physical device has at least 1 queue family that supports present mode");
             break;
         }
     }
-    log_trace("GPU physical device has at least 1 queue family that supports present mode");
-
 
     // Here, we need to determine the queue family and queue index of every requested queue,
     // as a function of the requested queue type, and the discovered queue families.
