@@ -25,11 +25,11 @@
 /*  Map tests                                                                                    */
 /*************************************************************************************************/
 
-int test_renderer_1(TstSuite*);
+int test_renderer_1(TstSuite* suite, TstItem* tstitem);
 
-int test_renderer_graphics(TstSuite*);
+int test_renderer_graphics(TstSuite* suite, TstItem* tstitem);
 
-int test_renderer_resize(TstSuite*);
+int test_renderer_resize(TstSuite* suite, TstItem* tstitem);
 
 
 

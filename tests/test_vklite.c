@@ -83,7 +83,7 @@ static void _save_screenshot(DvzFramebuffers* framebuffers, const char* name)
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_host(TstSuite* suite)
+int test_vklite_host(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -112,7 +112,7 @@ int test_vklite_host(TstSuite* suite)
 
 
 
-int test_vklite_commands(TstSuite* suite)
+int test_vklite_commands(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // Use the host setup fixture.
@@ -133,7 +133,7 @@ int test_vklite_commands(TstSuite* suite)
 
 
 
-int test_vklite_buffer_1(TstSuite* suite)
+int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // Use the host setup fixture.
@@ -174,7 +174,7 @@ int test_vklite_buffer_1(TstSuite* suite)
 
 
 
-int test_vklite_buffer_resize(TstSuite* suite)
+int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -233,7 +233,7 @@ int test_vklite_buffer_resize(TstSuite* suite)
 
 
 
-int test_vklite_load_shader(TstSuite* suite)
+int test_vklite_load_shader(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -257,7 +257,7 @@ int test_vklite_load_shader(TstSuite* suite)
 
 
 
-int test_vklite_compute(TstSuite* suite)
+int test_vklite_compute(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -330,7 +330,7 @@ int test_vklite_compute(TstSuite* suite)
 
 
 
-int test_vklite_push(TstSuite* suite)
+int test_vklite_push(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -405,7 +405,7 @@ int test_vklite_push(TstSuite* suite)
 
 
 
-int test_vklite_images(TstSuite* suite)
+int test_vklite_images(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // Use the host setup fixture.
@@ -433,7 +433,7 @@ int test_vklite_images(TstSuite* suite)
 
 
 
-int test_vklite_sampler(TstSuite* suite)
+int test_vklite_sampler(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // Use the host setup fixture.
@@ -458,7 +458,7 @@ int test_vklite_sampler(TstSuite* suite)
 
 
 
-int test_vklite_barrier_buffer(TstSuite* suite)
+int test_vklite_barrier_buffer(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -550,7 +550,7 @@ int test_vklite_barrier_buffer(TstSuite* suite)
 
 
 
-int test_vklite_barrier_image(TstSuite* suite)
+int test_vklite_barrier_image(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -614,7 +614,7 @@ int test_vklite_barrier_image(TstSuite* suite)
 
 
 
-int test_vklite_submit(TstSuite* suite)
+int test_vklite_submit(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     // DvzHost* host = dvz_host(DVZ_BACKEND_GLFW);
@@ -730,7 +730,7 @@ int test_vklite_submit(TstSuite* suite)
 
 
 
-int test_vklite_offscreen(TstSuite* suite)
+int test_vklite_offscreen(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -761,7 +761,7 @@ int test_vklite_offscreen(TstSuite* suite)
 
 
 
-int test_vklite_shader(TstSuite* suite)
+int test_vklite_shader(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 #if HAS_SHADERC
@@ -799,7 +799,7 @@ int test_vklite_shader(TstSuite* suite)
 /*  Graphics tests                                                                               */
 /*************************************************************************************************/
 
-int test_vklite_graphics(TstSuite* suite)
+int test_vklite_graphics(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -852,7 +852,7 @@ int test_vklite_graphics(TstSuite* suite)
 
 
 
-int test_vklite_indirect(TstSuite* suite)
+int test_vklite_indirect(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -932,7 +932,7 @@ int test_vklite_indirect(TstSuite* suite)
 
 
 
-int test_vklite_indexed(TstSuite* suite)
+int test_vklite_indexed(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1018,7 +1018,7 @@ int test_vklite_indexed(TstSuite* suite)
 
 
 
-int test_vklite_instanced(TstSuite* suite)
+int test_vklite_instanced(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1098,7 +1098,7 @@ int test_vklite_instanced(TstSuite* suite)
 
 
 
-int test_vklite_vertex_bindings(TstSuite* suite)
+int test_vklite_vertex_bindings(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1189,7 +1189,7 @@ int test_vklite_vertex_bindings(TstSuite* suite)
 
 
 
-int test_vklite_constattr(TstSuite* suite)
+int test_vklite_constattr(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1286,7 +1286,7 @@ int test_vklite_constattr(TstSuite* suite)
 
 
 
-int test_vklite_specialization(TstSuite* suite)
+int test_vklite_specialization(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1367,7 +1367,7 @@ int test_vklite_specialization(TstSuite* suite)
 /*  Tests with window                                                                            */
 /*************************************************************************************************/
 
-int test_vklite_surface(TstSuite* suite)
+int test_vklite_surface(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1396,7 +1396,7 @@ int test_vklite_surface(TstSuite* suite)
 
 
 
-int test_vklite_swapchain(TstSuite* suite)
+int test_vklite_swapchain(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzHost* host = get_host(suite);
@@ -1425,7 +1425,7 @@ int test_vklite_swapchain(TstSuite* suite)
 
 
 
-int test_vklite_sync_full(TstSuite* suite)
+int test_vklite_sync_full(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 #if !HAS_GLFW
@@ -1530,7 +1530,7 @@ int test_vklite_sync_full(TstSuite* suite)
 
 
 
-int test_vklite_sync_fail(TstSuite* suite)
+int test_vklite_sync_fail(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 #if !HAS_GLFW

@@ -56,7 +56,7 @@ struct _mvp
 /*  Array tests                                                                                  */
 /*************************************************************************************************/
 
-int test_array_1(TstSuite* suite)
+int test_array_1(TstSuite* suite, TstItem* tstitem)
 {
     uint8_t values[] = {1, 2, 3, 4, 5, 6};
     DvzArray* arr = dvz_array(6, DVZ_DTYPE_CHAR);
@@ -75,7 +75,7 @@ int test_array_1(TstSuite* suite)
 
 
 
-int test_array_2(TstSuite* suite)
+int test_array_2(TstSuite* suite, TstItem* tstitem)
 {
     float values[] = {1, 2, 3, 4, 5, 6};
 
@@ -113,7 +113,7 @@ int test_array_2(TstSuite* suite)
 
 
 
-int test_array_3(TstSuite* suite)
+int test_array_3(TstSuite* suite, TstItem* tstitem)
 {
     // uint8, float32
     DvzArray* arr = dvz_array_struct(3, sizeof(TestDtype));
@@ -155,7 +155,7 @@ int test_array_3(TstSuite* suite)
 
 
 
-int test_array_4(TstSuite* suite)
+int test_array_4(TstSuite* suite, TstItem* tstitem)
 {
     // uint8, float32
     DvzArray* arr = dvz_array_struct(4, sizeof(TestDtype));
@@ -196,7 +196,7 @@ int test_array_4(TstSuite* suite)
 
 
 
-int test_array_5(TstSuite* suite)
+int test_array_5(TstSuite* suite, TstItem* tstitem)
 {
     uint8_t values[] = {1, 2, 3, 4, 5, 6};
 
@@ -214,7 +214,7 @@ int test_array_5(TstSuite* suite)
 
 
 
-int test_array_6(TstSuite* suite)
+int test_array_6(TstSuite* suite, TstItem* tstitem)
 {
     int32_t values[] = {1, 2, 3, 4, 5, 6};
 
@@ -245,7 +245,7 @@ int test_array_6(TstSuite* suite)
 
 
 
-int test_array_7(TstSuite* suite)
+int test_array_7(TstSuite* suite, TstItem* tstitem)
 {
     int32_t values[] = {0, 1, 2, 3, 4, 5};
 
@@ -273,7 +273,7 @@ int test_array_7(TstSuite* suite)
 
 
 
-int test_array_cast(TstSuite* suite)
+int test_array_cast(TstSuite* suite, TstItem* tstitem)
 {
     // uint8, float32
     DvzArray* arr = dvz_array_struct(4, sizeof(TestDtype));
@@ -296,7 +296,7 @@ int test_array_cast(TstSuite* suite)
 
 
 
-int test_array_mvp(TstSuite* suite)
+int test_array_mvp(TstSuite* suite, TstItem* tstitem)
 {
     DvzArray* arr = dvz_array_struct(1, sizeof(_mvp));
 
@@ -332,7 +332,7 @@ int test_array_mvp(TstSuite* suite)
 
 
 
-int test_array_3D(TstSuite* suite)
+int test_array_3D(TstSuite* suite, TstItem* tstitem)
 {
     DvzArray* arr = dvz_array_3D(2, 2, 3, 1, DVZ_DTYPE_CHAR);
 

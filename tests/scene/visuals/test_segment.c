@@ -32,7 +32,7 @@
 /*  Segment tests                                                                                */
 /*************************************************************************************************/
 
-int test_segment_1(TstSuite* suite)
+int test_segment_1(TstSuite* suite, TstItem* tstitem)
 {
     VisualTest vt = visual_test_start("segment", VISUAL_TEST_PANZOOM, 0);
 

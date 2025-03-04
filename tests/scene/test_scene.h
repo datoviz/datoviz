@@ -25,15 +25,15 @@
 /*  Scene tests                                                                                  */
 /*************************************************************************************************/
 
-int test_scene_1(TstSuite*);
+int test_scene_1(TstSuite* suite, TstItem* tstitem);
 
-int test_scene_2(TstSuite*);
+int test_scene_2(TstSuite* suite, TstItem* tstitem);
 
-int test_scene_3(TstSuite*);
+int test_scene_3(TstSuite* suite, TstItem* tstitem);
 
-int test_scene_offscreen(TstSuite*);
+int test_scene_offscreen(TstSuite* suite, TstItem* tstitem);
 
-int test_scene_gui(TstSuite*);
+int test_scene_gui(TstSuite* suite, TstItem* tstitem);
 
 
 

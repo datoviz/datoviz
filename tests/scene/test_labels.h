@@ -25,9 +25,9 @@
 /*  Labels tests                                                                                 */
 /*************************************************************************************************/
 
-int test_labels_1(TstSuite*);
+int test_labels_1(TstSuite* suite, TstItem* tstitem);
 
-int test_labels_factored(TstSuite*);
+int test_labels_factored(TstSuite* suite, TstItem* tstitem);
 
 
 

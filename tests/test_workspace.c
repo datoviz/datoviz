@@ -29,7 +29,7 @@
 /*  Workspace tests                                                                              */
 /*************************************************************************************************/
 
-int test_workspace_1(TstSuite* suite)
+int test_workspace_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);

@@ -26,7 +26,7 @@
 /*  Canvas tests                                                                                 */
 /*************************************************************************************************/
 
-int test_canvas_1(TstSuite*);
+int test_canvas_1(TstSuite* suite, TstItem* tstitem);
 
 
 

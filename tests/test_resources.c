@@ -27,7 +27,7 @@
 /*  Resources tests                                                                              */
 /*************************************************************************************************/
 
-int test_resources_1(TstSuite* suite)
+int test_resources_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -56,7 +56,7 @@ int test_resources_1(TstSuite* suite)
 
 
 
-int test_resources_dat_1(TstSuite* suite)
+int test_resources_dat_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -77,7 +77,7 @@ int test_resources_dat_1(TstSuite* suite)
 
 
 
-int test_resources_tex_1(TstSuite* suite)
+int test_resources_tex_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -106,7 +106,7 @@ int test_resources_tex_1(TstSuite* suite)
 /*  Resources data transfers tests                                                               */
 /*************************************************************************************************/
 
-int test_resources_dat_transfers(TstSuite* suite)
+int test_resources_dat_transfers(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -154,7 +154,7 @@ int test_resources_dat_transfers(TstSuite* suite)
 
 
 
-int test_resources_dat_resize(TstSuite* suite)
+int test_resources_dat_resize(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -199,7 +199,7 @@ int test_resources_dat_resize(TstSuite* suite)
 
 
 
-int test_resources_tex_transfers(TstSuite* suite)
+int test_resources_tex_transfers(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);
@@ -245,7 +245,7 @@ int test_resources_tex_transfers(TstSuite* suite)
 
 
 
-int test_resources_tex_resize(TstSuite* suite)
+int test_resources_tex_resize(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzGpu* gpu = get_gpu(suite);

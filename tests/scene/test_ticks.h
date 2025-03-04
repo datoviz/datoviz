@@ -25,7 +25,7 @@
 /*  Ticks tests                                                                                  */
 /*************************************************************************************************/
 
-int test_ticks_1(TstSuite*);
+int test_ticks_1(TstSuite* suite, TstItem* tstitem);
 
 
 

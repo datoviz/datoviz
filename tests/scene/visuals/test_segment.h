@@ -25,7 +25,7 @@
 /*  Segment tests                                                                                */
 /*************************************************************************************************/
 
-int test_segment_1(TstSuite*);
+int test_segment_1(TstSuite* suite, TstItem* tstitem);
 
 
 

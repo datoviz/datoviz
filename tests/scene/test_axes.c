@@ -46,7 +46,7 @@ static void _axes_onkeyboard(DvzClient* client, DvzClientEvent ev)
     }
 }
 
-int test_axes_1(TstSuite* suite)
+int test_axes_1(TstSuite* suite, TstItem* tstitem)
 {
 #if !HAS_MSDF
     return 1;

@@ -32,7 +32,7 @@
 /*  Ticks tests                                                                                  */
 /*************************************************************************************************/
 
-int test_ticks_1(TstSuite* suite)
+int test_ticks_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
     DvzTicks* ticks = dvz_ticks(0);

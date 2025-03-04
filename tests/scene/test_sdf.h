@@ -25,9 +25,9 @@
 /*  Sdf tests                                                                                   */
 /*************************************************************************************************/
 
-int test_sdf_single(TstSuite*);
+int test_sdf_single(TstSuite* suite, TstItem* tstitem);
 
-int test_sdf_multi(TstSuite*);
+int test_sdf_multi(TstSuite* suite, TstItem* tstitem);
 
 
 

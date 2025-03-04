@@ -25,7 +25,7 @@
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-int test_server_1(TstSuite*);
+int test_server_1(TstSuite* suite, TstItem* tstitem);
 
 
 

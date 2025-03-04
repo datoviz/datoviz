@@ -53,7 +53,7 @@ static void _on_timer(DvzClient* client, DvzClientEvent ev)
     dvz_visual_update(visual);
 }
 
-int test_glyph_1(TstSuite* suite)
+int test_glyph_1(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
 

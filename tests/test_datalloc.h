@@ -25,9 +25,9 @@
 /*  Alloc tests                                                                                  */
 /*************************************************************************************************/
 
-int test_datalloc_1(TstSuite*);
+int test_datalloc_1(TstSuite* suite, TstItem* tstitem);
 
-int test_datalloc_2(TstSuite*);
+int test_datalloc_2(TstSuite* suite, TstItem* tstitem);
 
 
 
