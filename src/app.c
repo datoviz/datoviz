@@ -185,8 +185,10 @@ DvzApp* dvz_app(int flags)
     dvz_threads_default();
 
     DvzApp* app = (DvzApp*)calloc(1, sizeof(DvzApp));
+    ANN(app);
 
     DvzBackend backend = BACKEND;
+
     bool offscreen = (flags & DVZ_APP_FLAGS_OFFSCREEN) != 0;
     // NOTE: this call can modify offscreen (force set to true) if DVZ_CAPTURE_PNG is set
     char* capture = capture_png(&offscreen);
@@ -195,8 +197,12 @@ DvzApp* dvz_app(int flags)
     {
         backend = DVZ_BACKEND_OFFSCREEN;
     }
-    app->host = dvz_host(backend);
+    app->backend = backend;
+
+    // Create host.
+    app->host = dvz_host();
     ANN(app->host);
+    dvz_host_backend(app->host, backend);
     dvz_host_create(app->host);
 
     app->gpu = make_gpu(app->host);
@@ -525,7 +531,7 @@ void dvz_app_run(DvzApp* app, uint64_t frame_count)
     }
 
     // Offscreen mini event loop.
-    else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
+    else if (app->backend == DVZ_BACKEND_OFFSCREEN)
     {
         log_trace("run offscreen app, discarding frame_count=%d in dvz_app_run()", frame_count);
 
@@ -587,7 +593,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
 
     ASSERT(canvas_id != DVZ_ID_NONE);
 
-    if (app->host->backend == DVZ_BACKEND_GLFW)
+    if (app->backend == DVZ_BACKEND_GLFW)
     {
         DvzCanvas* canvas = dvz_renderer_canvas(rd, canvas_id);
         ANN(canvas);
@@ -598,7 +604,7 @@ void dvz_app_screenshot(DvzApp* app, DvzId canvas_id, const char* filename)
         // Save to a PNG.
         dvz_write_png(filename, canvas->width, canvas->height, rgb);
     }
-    else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
+    else if (app->backend == DVZ_BACKEND_OFFSCREEN)
     {
         DvzCanvas* board = dvz_renderer_canvas(rd, canvas_id);
         ANN(board);
