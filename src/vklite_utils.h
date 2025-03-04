@@ -314,8 +314,9 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
             {
                 log_trace("found portability subset, will need to add extension "
                           "VK_KHR_portability_subset");
-                // dvz_gpu_extension(gpu, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-                dvz_gpu_extension(gpu, "VK_KHR_portability_subset");
+                // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
+                // extensions[n_extensions++] = "VK_KHR_portability_subset";
+                dvz_gpu_extension(gpu, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
                 break;
             }
         }

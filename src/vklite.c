@@ -142,7 +142,6 @@ void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name)
 {
     ANN(gpu);
     ANN(extension_name);
-    ASSERT(gpu->extension_count < DVZ_MAX_DEVICE_EXTENSIONS - 1);
     gpu->extensions[gpu->extension_count++] = extension_name;
 }
 
@@ -240,7 +239,7 @@ void dvz_gpu_create(DvzGpu* gpu, VkSurfaceKHR surface)
 
     // HACK: use queue 0 for transfers (convention).
     gpu->cmd = dvz_commands(gpu, 0, 1);
-    gpu->extension_count = 0; // reset after GPU creation
+
     log_trace("GPU #%d created", gpu->idx);
 }
 

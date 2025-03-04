@@ -288,11 +288,6 @@ static void create_instance(
 #endif
 
     info_inst.enabledExtensionCount = extension_count;
-    log_trace("enable instance extensions:");
-    for (uint32_t i = 0; i < extension_count; i++)
-    {
-        log_trace("- %s", extensions[i]);
-    }
     info_inst.ppEnabledExtensionNames = (const char* const*)extensions;
 
     // Validation layers.
