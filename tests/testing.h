@@ -78,11 +78,9 @@ EXTERN_C_ON
 
 typedef enum
 {
-    TST_ITEM_NONE,
-    TST_ITEM_TEST,
-    TST_ITEM_SETUP,
-    TST_ITEM_TEARDOWN,
-} TstItemType;
+    TST_ITEM_FLAGS_NONE = 0x0000,
+    TST_ITEM_FLAGS_STANDALONE = 0x0001,
+} TstItemFlags;
 
 
 
@@ -90,11 +88,8 @@ typedef enum
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct TstItem TstItem;
 typedef struct TstSuite TstSuite;
-typedef struct TstTest TstTest;
-typedef struct TstFixture TstFixture;
-typedef struct TstItem TstItem; // either a test or a fixture
-typedef union TstItemUnion TstItemUnion;
 
 typedef int (*TstFunction)(TstSuite* suite);
 
@@ -104,46 +99,17 @@ typedef int (*TstFunction)(TstSuite* suite);
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
-struct TstTest
-{
-    const char* name;
-    TstFunction function;
-    int res;
-    void* user_data;
-};
-
-
-
-struct TstFixture
-{
-    TstFunction function;
-    void* user_data;
-};
-
-
-
-union TstItemUnion
-{
-    TstTest t;
-    TstFixture f;
-};
-
-
-
 struct TstItem
 {
-    // remove these, and replace by:
-    // name
-    // tags
-    // flags
-    // function
-    // setup
-    // teardown
-    // res
-    // user_data
-    TstItemType type;
-    TstItemUnion u;
-    bool active;
+    const char* name;
+    const char* tags;
+    TstFunction test;
+    TstFunction setup;
+    TstFunction teardown;
+    int flags;
+    void* user_data;
+
+    int res;
 };
 
 
@@ -162,16 +128,11 @@ struct TstSuite
 /*  Main testing functions                                                                       */
 /*************************************************************************************************/
 
-
 TstSuite tst_suite(void);
 
-TstItem* _append(TstSuite* suite, TstItemType type, TstFunction function, void* user_data);
-
-void tst_suite_setup(TstSuite* suite, TstFunction setup, void* user_data);
-
-void tst_suite_add(TstSuite* suite, const char* name, TstFunction test, void* user_data);
-
-void tst_suite_teardown(TstSuite* suite, TstFunction teardown, void* user_data);
+void tst_suite_add(
+    TstSuite* suite, const char* name, const char* tags, //
+    TstFunction test, TstFunction setup, TstFunction teardown, void* user_data, int flags);
 
 void tst_suite_run(TstSuite* suite, const char* match);
 
