@@ -20,26 +20,12 @@
 
 #include <functional>
 #include <iostream>
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "_log.h"
 #include "testing.h"
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-struct PairHash
-{
-    template <typename T1, typename T2> std::size_t operator()(const std::pair<T1, T2>& p) const
-    {
-        return std::hash<T1>{}(p.first) ^ (std::hash<T2>{}(p.second) << 1);
-    }
-};
 
 
 
@@ -147,8 +133,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
 
     print_start();
 
-    std::unordered_map<std::pair<TstFunction, TstFunction>, std::vector<TstItem*>, PairHash>
-        grouped_tests;
+    std::map<std::tuple<TstFunction, TstFunction, int>, std::vector<TstItem*>> grouped_tests;
     std::vector<TstItem*> standalone_tests;
 
     // First step: Collect matching test items and group them
@@ -164,7 +149,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
             }
             else
             {
-                grouped_tests[{item->setup, item->teardown}].push_back(item);
+                grouped_tests[{item->setup, item->teardown, item->flags}].push_back(item);
             }
         }
     }
@@ -173,15 +158,20 @@ void tst_suite_run(TstSuite* suite, const char* match)
     int index = 0;
 
     // Second step: Execute grouped tests
-    for (auto& [setup_teardown, tests] : grouped_tests)
+    for (auto& [setup_teardown_flags, tests] : grouped_tests)
     {
-        TstFunction setup = setup_teardown.first;
-        TstFunction teardown = setup_teardown.second;
+        TstFunction setup = std::get<0>(setup_teardown_flags);
+        TstFunction teardown = std::get<1>(setup_teardown_flags);
+        int flags = std::get<2>(setup_teardown_flags);
+
+        // HACK: get the first item to get the flags, which should be common to all items in tests
+        // since we group by triplet with flags.
+        TstItem* first_item = tests.front();
 
         // Setup.
         if (setup != NULL)
         {
-            setup(suite, NULL);
+            setup(suite, first_item);
         }
 
         // All shared tests for that setup.
@@ -197,7 +187,7 @@ void tst_suite_run(TstSuite* suite, const char* match)
         // Teardown
         if (teardown != NULL)
         {
-            teardown(suite, NULL);
+            teardown(suite, first_item);
         }
     }
 

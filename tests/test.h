@@ -39,6 +39,23 @@ typedef struct DvzResources DvzResources;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                        */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_TEST_FLAGS_NONE = 0x00,
+    DVZ_TEST_FLAGS_BACKEND = 0x01,
+    DVZ_TEST_FLAGS_HOST = 0x02,
+    DVZ_TEST_FLAGS_GPU = 0x04,
+
+    DVZ_TEST_FLAGS_DESKTOP = DVZ_TEST_FLAGS_BACKEND | DVZ_TEST_FLAGS_HOST | DVZ_TEST_FLAGS_GPU,
+    DVZ_TEST_FLAGS_OFFSCREEN = DVZ_TEST_FLAGS_HOST | DVZ_TEST_FLAGS_GPU,
+} DvzTestFlags;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -72,234 +89,78 @@ struct DvzTestCtx
 /*  Fixtures                                                                                     */
 /*************************************************************************************************/
 
-static int setup_host(TstSuite* suite, TstItem* tstitem)
+static int setup(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
+    ANN(tstitem);
 
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
     ANN(ctx);
 
-    if (ctx->host == NULL)
+    if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
     {
-        ctx->host = dvz_default_host(dvz_default_backend(0));
-    }
-    ANN(ctx->host);
-
-    return 0;
-}
-
-static int teardown_host(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    if (ctx->host != NULL)
-    {
-        dvz_host_destroy(ctx->host);
-        ctx->host = NULL;
+        log_debug("test fixture: init backend");
+        dvz_backend_init(DVZ_BACKEND_GLFW);
     }
 
-    return 0;
-}
-
-
-
-static int setup_gpu(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    // Get or create the host.
-    setup_host(suite, tstitem);
-    ANN(ctx->host);
-
-    // Get or create the GPU.
-    if (ctx->gpu == NULL)
+    if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
     {
-        ctx->gpu = dvz_default_gpu(ctx->host);
-    }
-    ANN(ctx->gpu);
-
-    return 0;
-}
-
-static int teardown_gpu(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    if (ctx->gpu != NULL)
-    {
-        dvz_gpu_destroy(ctx->gpu);
-        ctx->gpu = NULL;
+        if (!ctx->host)
+        {
+            log_debug("test fixture: init host");
+            ctx->host = dvz_default_host(dvz_default_backend(0));
+        }
+        ANN(ctx->host);
     }
 
-    teardown_host(suite, tstitem);
-
-    return 0;
-}
-
-
-
-static int setup_backend(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    dvz_backend_init(DVZ_BACKEND_GLFW);
-
-    return 0;
-}
-
-static int teardown_backend(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    dvz_backend_terminate(DVZ_BACKEND_GLFW);
-
-    return 0;
-}
-
-
-
-static int setup_host_backend(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    setup_backend(suite, tstitem);
-    setup_host(suite, tstitem);
-
-    return 0;
-}
-
-static int teardown_host_backend(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    teardown_host(suite, tstitem);
-    teardown_backend(suite, tstitem);
-
-    return 0;
-}
-
-
-
-static int setup_desktop(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    // Init the backend.
-    setup_backend(suite, tstitem);
-
-    // Get or create the host.
-    if (ctx->host == NULL)
+    if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
     {
-        ctx->host = dvz_default_host(DVZ_BACKEND_GLFW);
-    }
-    ANN(ctx->host);
-
-    // Get or create the GPU.
-    if (ctx->gpu == NULL)
-    {
-        ctx->gpu = dvz_default_gpu(ctx->host);
-    }
-    ANN(ctx->gpu);
-
-    return 0;
-}
-
-static int teardown_desktop(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    if (ctx->gpu != NULL)
-    {
-        dvz_gpu_destroy(ctx->gpu);
-        ctx->gpu = NULL;
+        if (!ctx->gpu)
+        {
+            log_debug("test fixture: init GPU");
+            ctx->gpu = dvz_default_gpu(ctx->host);
+        }
+        ANN(ctx->gpu);
     }
 
-    teardown_host(suite, tstitem);
-
-    // Terminate the backend.
-    teardown_backend(suite, tstitem);
-
     return 0;
 }
 
 
 
-static int setup_offscreen(TstSuite* suite, TstItem* tstitem)
+static int teardown(TstSuite* suite, TstItem* tstitem)
 {
     ANN(suite);
+    ANN(tstitem);
 
     DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
     ANN(ctx);
 
-    // TODO
+    if (tstitem->flags & DVZ_TEST_FLAGS_GPU)
+    {
+        if (ctx->gpu)
+        {
+            log_debug("test fixture: destroy GPU");
+            dvz_gpu_destroy(ctx->gpu);
+            ctx->gpu = NULL;
+        }
+    }
 
-    return 0;
-}
+    if (tstitem->flags & DVZ_TEST_FLAGS_HOST)
+    {
+        if (ctx->host)
+        {
+            log_debug("test fixture: destroy host");
+            dvz_host_destroy(ctx->host);
+            ctx->host = NULL;
+        }
+    }
 
-static int teardown_offscreen(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    // TODO
-
-    return 0;
-}
-
-
-
-static int setup_external(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    // TODO
-
-    // dvz_gpu_extension(gpu, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    // dvz_gpu_external(gpu, VK_EXTERNAL_MEMORY_HANDLE_TYPE_OPAQUE_FD_BIT);
-
-    return 0;
-}
-
-static int teardown_external(TstSuite* suite, TstItem* tstitem)
-{
-    ANN(suite);
-
-    DvzTestCtx* ctx = (DvzTestCtx*)suite->context;
-    ANN(ctx);
-
-    // TODO
+    if (tstitem->flags & DVZ_TEST_FLAGS_BACKEND)
+    {
+        log_debug("test fixture: destroy backend");
+        dvz_backend_terminate(DVZ_BACKEND_GLFW);
+    }
 
     return 0;
 }
