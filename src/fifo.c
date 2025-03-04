@@ -66,7 +66,7 @@ static void _fifo_resize(DvzFifo* fifo)
 
         fifo->capacity *= 2;
         log_debug("FIFO queue is full, enlarging it to %d", fifo->capacity);
-        REALLOC(fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
+        REALLOC(void**, fifo->items, (uint32_t)fifo->capacity * sizeof(void*));
     }
 
     if ((fifo->tail + 1) % fifo->capacity == fifo->head)
