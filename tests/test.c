@@ -377,7 +377,7 @@ int dvz_run_tests(const char* match)
     setup = setup_host;
     teardown = teardown_host;
 
-    TEST_NO_FIXTURE(test_vklite_host)
+    TEST_NO_FIXTURE(test_host)
 
     TEST_FIXTURE(test_vklite_commands)
     TEST_FIXTURE(test_vklite_buffer_1)

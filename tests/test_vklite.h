@@ -25,7 +25,7 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-int test_vklite_host(TstSuite* suite, TstItem* tstitem);
+int test_host(TstSuite* suite, TstItem* tstitem);
 int test_vklite_commands(TstSuite* suite, TstItem* tstitem);
 int test_vklite_buffer_1(TstSuite* suite, TstItem* tstitem);
 int test_vklite_buffer_resize(TstSuite* suite, TstItem* tstitem);
