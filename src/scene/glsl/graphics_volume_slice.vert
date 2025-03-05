@@ -13,6 +13,6 @@ layout (location = 1) in vec3 uvw;
 layout (location = 0) out vec3 out_uvw;
 
 void main() {
-    gl_Position = transform(pos);
+    gl_Position = transform(dvz_to_vulkan(pos));
     out_uvw = uvw;
 }

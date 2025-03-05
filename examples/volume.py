@@ -86,7 +86,7 @@ dvz.panel_visual(panel, visual, 0)
 # -------------------------------------------------------------------------------------------------
 
 # Initial arcball angles.
-dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
+dvz.arcball_initial(arcball, vec3(2.25, -0.65, -1.5))
 
 # Initial camera position.
 camera = dvz.panel_camera(panel, 0)
