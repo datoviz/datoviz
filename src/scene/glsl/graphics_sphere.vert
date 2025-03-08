@@ -21,34 +21,21 @@ layout(location = 2) in float radius;
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_pos;
 layout(location = 2) out float out_radius;
-layout(location = 3) out vec4 out_world_pos;
-layout(location = 4) out vec4 out_view_pos;
-layout(location = 5) out vec4 out_light_pos;
+layout(location = 3) out vec4 out_eye_pos;
 
 void main()
 {
-    out_pos = vec4(pos, 1.0);
-    out_pos.z *= -1.0;
-
-    out_light_pos = params.light_pos;
-    out_light_pos.yz *= -1.0;
-
     out_radius = radius;
     out_color = color;
 
-    // Calculate the eye-space position
-    vec4 world_pos =  mvp.model * out_pos;
-    world_pos.y *= -1.0;
-    out_world_pos = world_pos;
-
-    vec4 view_pos = mvp.view * world_pos;
-    view_pos.y *= -1.0;
-    out_view_pos = view_pos;
+    // Calculate position and eye-space position
+    out_pos = mvp.model * vec4(pos, 1.0);
+    out_eye_pos = mvp.view * out_pos;
 
     // Project the position to clip space using the transform function
-    gl_Position = transform(out_pos.xyz);
+    gl_Position = transform(pos);
 
     // Set the point size to the diameter of the sphere in pixels
-    float distance_to_camera = length(view_pos.xyz);
+    float distance_to_camera = length(out_eye_pos.xyz);
     gl_PointSize = (2.0 * radius) / distance_to_camera;
 }

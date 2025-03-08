@@ -111,7 +111,7 @@ size = np.random.uniform(size=(n,), low=50, high=100).astype(np.float32)
 dvz.sphere_size(visual, 0, n, size, 0)
 
 # Light position.
-dvz.sphere_light_pos(visual, vec3(+0.0, +50.0, -0.0))
+dvz.sphere_light_pos(visual, vec3(-5, +5, +100))
 
 # Light parameters.
 dvz.sphere_light_params(visual, vec4(.4, .8, 2, 32))
