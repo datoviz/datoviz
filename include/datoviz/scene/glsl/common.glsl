@@ -106,14 +106,6 @@ vec4 to_vulkan(vec4 tr)
 
 
 
-vec3 dvz_to_vulkan(vec3 pos)
-{
-    // Convert dvz coordinates to vulkan coordinates.
-    return vec3(pos.x, -pos.y, -pos.z);
-}
-
-
-
 mat4 get_ortho_matrix(vec2 size)
 {
     // The orthographic projection is:
@@ -269,7 +261,7 @@ vec4 transform(vec3 pos, vec2 shift)
     tr = transform_fixed(tr, pos);
     tr = transform_margins(tr);
     tr = transform_shift(tr, shift);
-    // tr = to_vulkan(tr);
+    tr = to_vulkan(tr);
     return tr;
 }
 

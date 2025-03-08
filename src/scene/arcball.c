@@ -314,9 +314,9 @@ bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev)
 
             vec2 cur_pos, last_pos;
             cur_pos[0] = -1 + 2 * ev.pos[0] / width;
-            cur_pos[1] = -1 + 2 * ev.pos[1] / height;
+            cur_pos[1] = +1 - 2 * ev.pos[1] / height;
             last_pos[0] = -1 + 2 * ev.content.d.press_pos[0] / width; // press position
-            last_pos[1] = -1 + 2 * ev.content.d.press_pos[1] / height;
+            last_pos[1] = +1 - 2 * ev.content.d.press_pos[1] / height;
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }

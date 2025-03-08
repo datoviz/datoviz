@@ -81,7 +81,7 @@ dvz.panel_visual(panel, visual, 0)
 
 # Initial arcball angles.
 angle = -0.39686
-dvz.arcball_initial(arcball, vec3(-0.42339, angle, -0.00554))
+dvz.arcball_initial(arcball, vec3(0.42339, angle, -0.00554))
 dvz.panel_update(panel)
 
 
@@ -90,7 +90,7 @@ dvz.panel_update(panel)
 def _on_timer(app, window_id, ev):
     global angle
     angle += .01
-    dvz.arcball_set(arcball, vec3(-0.42339, angle, -0.00554))
+    dvz.arcball_set(arcball, vec3(0.42339, angle, -0.00554))
     dvz.panel_update(panel)
 
 

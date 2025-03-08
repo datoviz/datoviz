@@ -59,7 +59,7 @@ dvz.mesh_color(visual, 0, nv, colors, 0)
 dvz.panel_visual(panel, visual, 0)
 
 # Initial arcball angles.
-dvz.arcball_initial(arcball, vec3(-0.5, -1.2, +3.0))
+dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))
 dvz.panel_update(panel)
 
 

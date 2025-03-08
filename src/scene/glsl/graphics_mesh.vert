@@ -38,11 +38,10 @@ layout(location = 7) out float out_isoline;
 
 void main()
 {
-    vec3 vpos = dvz_to_vulkan(pos);
-    gl_Position = transform(vpos);
+    gl_Position = transform(pos);
 
-    out_pos = transform(vpos).xyz;
-    out_normal = ((transpose(inverse(mvp.model)) * vec4(dvz_to_vulkan(normal), 1.0))).xyz;
+    out_pos = pos.xyz;
+    out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
 
     // // DEBUG
