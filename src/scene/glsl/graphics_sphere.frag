@@ -44,7 +44,7 @@ void main()
     vec4 view_pos = in_eye_pos;
     float d = length(view_pos * viewport.size.x);
     view_pos.xyz += (in_radius * normal)/d;
-    gl_FragDepth = 1.0 - 1.0/(1.0 + length(view_pos));
+    gl_FragDepth = 1.0 - 1.0/(1.0 + length(view_pos.xyz));
 
     // Calculate the lighting
     vec3 light_pos = params.light_pos.xyz;
