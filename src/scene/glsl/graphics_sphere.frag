@@ -16,7 +16,7 @@ layout(binding = 2) uniform SphereParams
 params;
 
 layout(location = 0) in vec4 in_color;
-layout(location = 1) in vec3 in_pos;
+layout(location = 1) in vec4 in_pos;
 layout(location = 2) in float in_radius;
 layout(location = 3) in vec4 in_eye_pos;
 
@@ -40,39 +40,34 @@ void main()
     // Calculate the normal of the sphere at this fragment
     vec3 normal = vec3(coord, sqrt(1.0 - dist_squared));
 
+    // Update depth
+    vec4 view_pos = in_eye_pos;
+    float d = length(view_pos * viewport.size.x);
+    view_pos.xyz += (in_radius * normal)/d;
+    gl_FragDepth = 1.0 - 1.0/(1.0 + length(view_pos.xyz));
+
     // Calculate the lighting
     vec3 light_pos = params.light_pos.xyz;
-    // light_pos.y = -light_pos.y;
-    vec3 light_dir = normalize(light_pos.xyz - in_pos);
-    vec3 view_dir = normalize(-in_eye_pos.xyz);
-    vec3 reflect_dir = reflect(-light_dir, normal);
 
-    // Color.
-    vec3 ambient = params.light_params.x * vec3(1.0);
+    vec3 light_dir = normalize(light_pos.xyz - in_pos.xyz);
+    light_dir.y *= -1.0;  // Correction for vulkan y positions reversed.
+    vec3 view_dir = normalize(-view_pos.xyz);
+    vec3 reflect_dir = reflect(light_dir, normal);
+
+    float spec = pow(max(dot(view_dir, -reflect_dir), 0.0), params.light_params.w);
+    vec3 specular = params.light_params.z * spec * light_color;
+    vec3 color = specular * smoothstep(0.0, 0.5, normal.z);  // Reduced at edges.
+
     float diff = max(dot(normal, light_dir), 0.0);
     vec3 diffuse = params.light_params.y * diff * light_color;
-    float spec = pow(max(dot(view_dir, reflect_dir), 0.0), params.light_params.w);
-    vec3 specular = params.light_params.z * spec * light_color;
-    vec3 final_color = (ambient + diffuse + specular) * in_color.rgb;
+    color += diffuse * (1.0 - color) * in_color.xyz;
+
+    float ambient = params.light_params.x;
+    color += ambient * (1.0 - color) * in_color.xyz;
 
     // TODO: border antialias.
     float alpha = in_color.a;
     // if (dist_squared > 1.0)
     //     alpha *= compute_distance(dist_squared - 1, 1.0).z;
-    out_color = vec4(final_color, alpha);
-
-    // Depth.
-    vec4 vm = mvp.view * mvp.model * vec4(in_pos, 1);
-    float d = length(vm.xyz);
-
-    // Viewport size.
-    float w = viewport.size.x;
-    float h = viewport.size.y;
-    float a = w / h;
-    float v = w;
-
-    vm += in_radius / (d * v) * vec4(normal, 1);
-    vec4 clipPos = mvp.proj * vm;
-    clipPos.z /= clipPos.w;
-    gl_FragDepth = clipPos.z;
+    out_color = vec4(color, alpha);
 }
