@@ -316,7 +316,7 @@ static void create_device(DvzGpu* gpu, VkSurfaceKHR surface)
                           "VK_KHR_portability_subset");
                 // extensions[n_extensions++] = "VK_KHR_get_physical_device_properties2";
                 // extensions[n_extensions++] = "VK_KHR_portability_subset";
-                dvz_gpu_extension(gpu, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+                dvz_gpu_extension(gpu, "VK_KHR_portability_subset");
                 break;
             }
         }
