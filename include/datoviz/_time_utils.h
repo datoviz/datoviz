@@ -155,7 +155,8 @@ static inline void dvz_time(DvzTime* time)
     LARGE_INTEGER frequency, counter;
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&counter);
-    uint64_t nanoseconds = (counter.QuadPart * 1000000000) / frequency.QuadPart;
+    uint64_t nanoseconds = (long long unsigned int)(counter.QuadPart * 1000000000) /
+                           (long long unsigned int)frequency.QuadPart;
     time->seconds = nanoseconds / 1000000000;
     time->nanoseconds = nanoseconds % 1000000000;
 
