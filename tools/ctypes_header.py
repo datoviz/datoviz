@@ -204,6 +204,18 @@ def uvec3(x: int = 0, y: int = 0, z: int = 0):
     return (ctypes.c_uint32 * 3)(x, y, z)
 
 
+def uvec3(x: int = 0, y: int = 0, z: int = 0, a: int = 0):
+    return (ctypes.c_uint32 * 4)(x, y, z, a)
+
+
+def ivec3(r: int = 0, g: int = 0, b: int = 0):
+    return (ctypes.c_int32 * 3)(r, g, b)
+
+
+def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
+    return (ctypes.c_int32 * 4)(r, g, b, a)
+
+
 
 # ===============================================================================
 # Aliases

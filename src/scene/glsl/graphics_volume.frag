@@ -25,12 +25,13 @@ layout(constant_id = 2) const int VOLUME_DIR = VOLUME_DIR_FRONT_BACK;
 // Uniform variables.
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    vec2 xlim; /* xlim */
-    vec2 ylim; /* ylim */
-    vec2 zlim; /* zlim */
-    vec4 uvw0; /* texture coordinates of the 2 corner points */
-    vec4 uvw1; /* texture coordinates of the 2 corner points */
-    vec4 transfer;
+    vec2 xlim;         /* xlim */
+    vec2 ylim;         /* ylim */
+    vec2 zlim;         /* zlim */
+    vec4 uvw0;         /* texture coordinates of the 2 corner points */
+    vec4 uvw1;         /* texture coordinates of the 2 corner points */
+    vec4 transfer;     /* transfer function */
+    ivec4 permutation; /* (0,1,2,0) by default */
 }
 params;
 
@@ -110,6 +111,10 @@ void main()
 
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
+
+        // Texture coordinate index permutation.
+        uvw =
+            vec3(uvw[params.permutation.x], uvw[params.permutation.y], uvw[params.permutation.z]);
 
         // Fetch the color from the 3D texture.
         fetched = fetch_color(modes, tex_density, uvw, params.transfer.x);

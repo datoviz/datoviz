@@ -328,6 +328,7 @@ dvz_visual_transform
 dvz_visual_update
 dvz_volume
 dvz_volume_bounds
+dvz_volume_permutation
 dvz_volume_texcoords
 dvz_volume_texture
 dvz_volume_transfer

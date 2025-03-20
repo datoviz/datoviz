@@ -67,12 +67,13 @@ struct DvzVolumeVertex
 
 struct DvzVolumeParams
 {
-    vec2 xlim; /* xlim */
-    vec2 ylim; /* ylim */
-    vec2 zlim; /* zlim */
-    vec4 uvw0; /* texture coordinates of the 2 corner points */
-    vec4 uvw1; /* texture coordinates of the 2 corner points */
-    vec4 transfer;
+    vec2 xlim;         /* xlim */
+    vec2 ylim;         /* ylim */
+    vec2 zlim;         /* zlim */
+    vec4 uvw0;         /* texture coordinates of the 2 corner points */
+    vec4 uvw1;         /* texture coordinates of the 2 corner points */
+    vec4 transfer;     /* transfer function */
+    ivec4 permutation; /* (0,1,2,0) by default */
 };
 
 

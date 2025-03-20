@@ -124,10 +124,12 @@ int test_volume_2(TstSuite* suite)
 
         // Volume parameters.
         double scaling = .5 / (float)MOUSE_D;
-        float x = MOUSE_W * scaling;
-        float y = MOUSE_H * scaling;
-        float z = MOUSE_D * scaling;
+        float z = MOUSE_W * scaling;
+        float x = MOUSE_H * scaling;
+        float y = MOUSE_D * scaling;
         dvz_volume_bounds(visual, (vec2){-x, +x}, (vec2){-y, +y}, (vec2){-z, +z});
+
+        dvz_volume_permutation(visual, (ivec3){2, 0, 1});
 
         // Add the visual to the panel AFTER setting the visual's data.
         dvz_panel_visual(vt.panel, visual, 0);
@@ -137,9 +139,11 @@ int test_volume_2(TstSuite* suite)
         DvzId tex = load_brain_volume(vt.batch, shape, true);
 
         if (tex != DVZ_ID_NONE)
+        {
             // Bind the volume texture to the visual.
             dvz_volume_texture(
                 visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+        }
 
         // GUI callback.
         vt.visual = visual;
@@ -174,7 +178,7 @@ int test_volume_2(TstSuite* suite)
 
     dvz_arcball_gui(vt.arcball, vt.app, vt.figure->canvas_id, vt.panel);
 
-    dvz_arcball_initial(vt.arcball, (vec3){-2.4, +.7, +1.5});
+    dvz_arcball_initial(vt.arcball, (vec3){2, .2, .9});
     dvz_camera_initial(vt.camera, (vec3){0, 0, 1.5}, vt.camera->lookat, vt.camera->up);
     dvz_panel_update(vt.panel);
 

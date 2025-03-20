@@ -3875,6 +3875,17 @@ void dvz_volume_bounds(
 )
 ```
 
+### `dvz_volume_permutation()`
+
+Set the texture coordinates index permutation.
+
+```c
+void dvz_volume_permutation(
+    DvzVisual* visual,  // the visual
+    ivec3 ijk,  // index permutation
+)
+```
+
 ### `dvz_volume_texcoords()`
 
 Set the texture coordinates of two corner points.

@@ -203,6 +203,18 @@ def uvec3(x: int = 0, y: int = 0, z: int = 0):
     return (ctypes.c_uint32 * 3)(x, y, z)
 
 
+def uvec3(x: int = 0, y: int = 0, z: int = 0, a: int = 0):
+    return (ctypes.c_uint32 * 4)(x, y, z, a)
+
+
+def ivec3(r: int = 0, g: int = 0, b: int = 0):
+    return (ctypes.c_int32 * 3)(r, g, b)
+
+
+def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
+    return (ctypes.c_int32 * 4)(r, g, b, a)
+
+
 
 # ===============================================================================
 # Aliases
@@ -7264,6 +7276,23 @@ volume_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float * 3,  # vec3 uvw0
     ctypes.c_float * 3,  # vec3 uvw1
+]
+
+# Function dvz_volume_permutation()
+volume_permutation = dvz.dvz_volume_permutation
+volume_permutation.__doc__ = """
+Set the texture coordinates index permutation.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+ijk : ivec3
+    index permutation
+"""
+volume_permutation.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_int32 * 3,  # ivec3 ijk
 ]
 
 # Function dvz_volume_transfer()

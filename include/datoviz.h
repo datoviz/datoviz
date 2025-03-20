@@ -2872,6 +2872,16 @@ DVZ_EXPORT void dvz_volume_texcoords(DvzVisual* visual, vec3 uvw0, vec3 uvw1);
 
 
 /**
+ * Set the texture coordinates index permutation.
+ *
+ * @param visual the visual
+ * @param ijk index permutation
+ */
+DVZ_EXPORT void dvz_volume_permutation(DvzVisual* visual, ivec3 ijk);
+
+
+
+/**
  * Set the volume size.
  *
  * @param visual the visual
