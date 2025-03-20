@@ -76,15 +76,20 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzVolumeParams));
 
-    dvz_params_attr(params, 0, FIELD(DvzVolumeParams, box_size));
-    dvz_params_attr(params, 1, FIELD(DvzVolumeParams, uvw0));
-    dvz_params_attr(params, 2, FIELD(DvzVolumeParams, uvw1));
-    dvz_params_attr(params, 3, FIELD(DvzVolumeParams, transfer));
+    dvz_params_attr(params, 0, FIELD(DvzVolumeParams, xlim));
+    dvz_params_attr(params, 1, FIELD(DvzVolumeParams, ylim));
+    dvz_params_attr(params, 2, FIELD(DvzVolumeParams, zlim));
+    dvz_params_attr(params, 3, FIELD(DvzVolumeParams, uvw0));
+    dvz_params_attr(params, 4, FIELD(DvzVolumeParams, uvw1));
+    dvz_params_attr(params, 5, FIELD(DvzVolumeParams, transfer));
 
-    dvz_visual_param(visual, 2, 0, (vec4){1, 1, 1, 0}); // box_size
-    dvz_visual_param(visual, 2, 1, (vec4){0, 0, 0, 0}); // uvw0
-    dvz_visual_param(visual, 2, 2, (vec4){1, 1, 1, 0}); // uvw1
-    dvz_visual_param(visual, 2, 3, (vec4){1, 0, 0, 0}); // transfer
+    float v = .5;
+    dvz_visual_param(visual, 2, 0, (vec2){-v, +v});     // xlim
+    dvz_visual_param(visual, 2, 1, (vec2){-v, +v});     // ylim
+    dvz_visual_param(visual, 2, 2, (vec2){-v, +v});     // zlim
+    dvz_visual_param(visual, 2, 3, (vec4){0, 0, 0, 0}); // uvw0
+    dvz_visual_param(visual, 2, 4, (vec4){1, 1, 1, 0}); // uvw1
+    dvz_visual_param(visual, 2, 5, (vec4){1, 0, 0, 0}); // transfer
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -94,22 +99,40 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
 
 
 
-void dvz_volume_alloc(DvzVisual* visual, uint32_t item_count)
+void dvz_volume_texture(
+    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
 {
     ANN(visual);
-    log_debug("allocating the volume visual");
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
+    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
+
+    // Bind the texture to the visual.
+    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+}
+
+
+
+void dvz_volume_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim, vec2 zlim)
+{
+    ANN(visual);
+    DvzBatch* batch = visual->batch;
+    ANN(batch);
+
+    const uint32_t item_count = 1;
     const uint32_t K = 36;
 
     // Allocate the visual.
     dvz_visual_alloc(visual, item_count, K * item_count, 0);
 
-    // TODO
-    float u = .5;
-    float x0 = -u, x1 = +u, y0 = -u, y1 = +u, z0 = -u, z1 = +u;
+    float x0 = xlim[0];
+    float x1 = xlim[1];
+    float y0 = ylim[0];
+    float y1 = ylim[1];
+    float z0 = zlim[0];
+    float z1 = zlim[1];
 
     // Vertex positions.
     vec3* pos = (vec3*)calloc(K * item_count, sizeof(vec3));
@@ -164,30 +187,12 @@ void dvz_volume_alloc(DvzVisual* visual, uint32_t item_count)
     }
     dvz_visual_data(visual, 0, 0, item_count * K, pos);
     FREE(pos);
-}
 
 
 
-void dvz_volume_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
-{
-    ANN(visual);
-
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
-
-    // Bind the texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
-}
-
-
-
-void dvz_volume_size(DvzVisual* visual, float w, float h, float d)
-{
-    ANN(visual);
-    dvz_visual_param(visual, 2, 0, (vec4){w, h, d, 0});
+    dvz_visual_param(visual, 2, 0, xlim);
+    dvz_visual_param(visual, 2, 1, ylim);
+    dvz_visual_param(visual, 2, 2, zlim);
 }
 
 
@@ -195,8 +200,8 @@ void dvz_volume_size(DvzVisual* visual, float w, float h, float d)
 void dvz_volume_texcoords(DvzVisual* visual, vec3 uvw0, vec3 uvw1)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, 1, (vec4){uvw0[0], uvw0[1], uvw0[2], 0});
-    dvz_visual_param(visual, 2, 2, (vec4){uvw1[0], uvw1[1], uvw1[2], 0});
+    dvz_visual_param(visual, 2, 3, (vec4){uvw0[0], uvw0[1], uvw0[2], 0});
+    dvz_visual_param(visual, 2, 4, (vec4){uvw1[0], uvw1[1], uvw1[2], 0});
 }
 
 
@@ -204,7 +209,7 @@ void dvz_volume_texcoords(DvzVisual* visual, vec3 uvw0, vec3 uvw1)
 void dvz_volume_transfer(DvzVisual* visual, vec4 transfer)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, 3, transfer);
+    dvz_visual_param(visual, 2, 5, transfer);
 }
 
 

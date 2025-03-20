@@ -2836,16 +2836,6 @@ DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
 
 
 /**
- * Allocate memory for a visual.
- *
- * @param visual the visual
- * @param item_count the total number of volumes to allocate for this visual
- */
-DVZ_EXPORT void dvz_volume_alloc(DvzVisual* visual, uint32_t item_count);
-
-
-
-/**
  * Assign a 3D texture to a volume visual.
  *
  * @param visual the visual
@@ -2859,14 +2849,14 @@ DVZ_EXPORT void dvz_volume_texture(
 
 
 /**
- * Set the volume size.
+ * Set the volume bounds.
  *
  * @param visual the visual
- * @param w the texture width
- * @param h the texture height
- * @param d the texture depth
+ * @param xlim xmin and xmax
+ * @param ylim ymin and ymax
+ * @param zlim zmin and zmax
  */
-DVZ_EXPORT void dvz_volume_size(DvzVisual* visual, float w, float h, float d);
+DVZ_EXPORT void dvz_volume_bounds(DvzVisual* visual, vec2 xlim, vec2 ylim, vec2 zlim);
 
 
 

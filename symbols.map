@@ -327,8 +327,7 @@ dvz_visual_tex
 dvz_visual_transform
 dvz_visual_update
 dvz_volume
-dvz_volume_alloc
-dvz_volume_size
+dvz_volume_bounds
 dvz_volume_texcoords
 dvz_volume_texture
 dvz_volume_transfer
@@ -348,6 +347,10 @@ dvz_app_submit
 dvz_app_timer
 dvz_app_timestamps
 dvz_free
+dvz_external_dat
+dvz_external_index
+dvz_external_tex
+dvz_external_vertex
 dvz_earcut
 dvz_mean
 dvz_min_max

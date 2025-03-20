@@ -58,7 +58,8 @@ int test_volume_1(TstSuite* suite)
     // Volume visual.
     DvzVisual* visual =
         dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_COLORMAP | DVZ_VOLUME_FLAGS_BACK_FRONT);
-    dvz_volume_alloc(visual, 1);
+    float v = .5;
+    dvz_volume_bounds(visual, (vec2){-v, v}, (vec2){-v, v}, (vec2){-v, v});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -107,12 +108,12 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     dvz_gui_size((vec2){250, 80});
     dvz_gui_begin("Parameters", 0);
 
-    float* param = visual->user_data;
+    vec4* param = (vec4*)visual->user_data;
     ANN(param);
 
-    if (dvz_gui_slider("param", 0, 10, param))
+    if (dvz_gui_slider("param", 0, 10, &param[0][0]))
     {
-        dvz_visual_param(visual, 2, 3, (float*)param);
+        dvz_volume_transfer(visual, *param);
     }
 
     dvz_gui_end();
@@ -123,14 +124,16 @@ int test_volume_2(TstSuite* suite)
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Volume visual.
-    float param = 1.0;
+    vec4 param = {1, 0, 0, 0};
     {
         DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
-        dvz_volume_alloc(visual, 1);
 
         // Volume parameters.
         double scaling = 1 / (float)MOUSE_D;
-        dvz_volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1);
+        float x = MOUSE_W * scaling;
+        float y = MOUSE_H * scaling;
+        float z = 1;
+        dvz_volume_bounds(visual, (vec2){-x, +x}, (vec2){-y, +y}, (vec2){-z, +z});
 
         // Add the visual to the panel AFTER setting the visual's data.
         dvz_panel_visual(vt.panel, visual, 0);

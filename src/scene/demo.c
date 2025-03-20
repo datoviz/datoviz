@@ -461,7 +461,8 @@ void dvz_demo(void)
     DvzVisual* volume = dvz_volume(batch, DVZ_VOLUME_FLAGS_RGBA | DVZ_VOLUME_FLAGS_BACK_FRONT);
     DvzId tex = 0;
     {
-        dvz_volume_alloc(volume, 1);
+        float v = .5;
+        dvz_volume_bounds(volume, (vec2){-v, v}, (vec2){-v, v}, (vec2){-v, v});
         uint32_t va = 7;
         uint32_t vb = va;
         uint32_t vc = va;

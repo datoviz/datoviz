@@ -91,7 +91,6 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
 
     // // Volume visual.
     // DvzVisual* volume = dvz_volume(vt.batch, 0);
-    // dvz_volume_alloc(volume, 1);
 
     // // Add the visual to the panel AFTER setting the visual's data.
     // dvz_panel_visual(vt.panel, volume, 0);

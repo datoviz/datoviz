@@ -63,11 +63,15 @@ struct DvzVolumeVertex
     vec3 pos; /* position */
 };
 
+
+
 struct DvzVolumeParams
 {
-    vec4 box_size; /* size of the box containing the volume, in NDC */
-    vec4 uvw0;     /* texture coordinates of the 2 corner points */
-    vec4 uvw1;     /* texture coordinates of the 2 corner points */
+    vec2 xlim; /* xlim */
+    vec2 ylim; /* ylim */
+    vec2 zlim; /* zlim */
+    vec4 uvw0; /* texture coordinates of the 2 corner points */
+    vec4 uvw1; /* texture coordinates of the 2 corner points */
     vec4 transfer;
 };
 

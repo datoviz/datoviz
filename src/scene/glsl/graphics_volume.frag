@@ -1,8 +1,8 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 #version 450
 #include "colormaps.glsl"
@@ -25,9 +25,11 @@ layout(constant_id = 2) const int VOLUME_DIR = VOLUME_DIR_FRONT_BACK;
 // Uniform variables.
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    vec4 box_size; /* size of the box containing the volume, in NDC */
-    vec4 uvw0;     /* texture coordinates of the 2 corner points */
-    vec4 uvw1;     /* texture coordinates of the 2 corner points */
+    vec2 xlim; /* xlim */
+    vec2 ylim; /* ylim */
+    vec2 zlim; /* zlim */
+    vec4 uvw0; /* texture coordinates of the 2 corner points */
+    vec4 uvw1; /* texture coordinates of the 2 corner points */
     vec4 transfer;
 }
 params;
@@ -67,8 +69,8 @@ void main()
     vec4 o_ = mi * vec4(-mvp.view[3].xyz, 1);
     vec3 o = o_.xyz / o_.w;
 
-    vec3 b0 = -params.box_size.xyz / 2;
-    vec3 b1 = +params.box_size.xyz / 2;
+    vec3 b0 = vec3(params.xlim.x, params.ylim.x, params.zlim.x);
+    vec3 b1 = vec3(params.xlim.y, params.ylim.y, params.zlim.y);
     vec3 d = vec3(1) / (b1 - b0);
     intersect_box(o, u, b0, b1, t0, t1);
 
