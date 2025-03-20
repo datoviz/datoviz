@@ -56,41 +56,35 @@ int test_volume_1(TstSuite* suite)
     VisualTest vt = visual_test_start("volume", VISUAL_TEST_ARCBALL, 0);
 
     // Volume visual.
-    DvzVisual* visual =
-        dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_COLORMAP | DVZ_VOLUME_FLAGS_BACK_FRONT);
-    float v = .5;
-    dvz_volume_bounds(visual, (vec2){-v, v}, (vec2){-v, v}, (vec2){-v, v});
+    DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA | DVZ_VOLUME_FLAGS_BACK_FRONT);
+
+    float x = .75;
+    float y = .5;
+    float z = .25;
+    dvz_volume_bounds(visual, (vec2){-x, +x}, (vec2){-y, +y}, (vec2){-z, +z});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    // Texture parameters.
-    uint32_t a = 7;
-    uint32_t b = a;
-    uint32_t c = a;
-    uint32_t a0 = a / 2;
-    uint32_t d0 = 1;
-    DvzSize size = a * b * c * sizeof(uint8_t);
-
-    // Generate the texture data.
-    uint8_t* tex_data = (uint8_t*)calloc(size, sizeof(uint8_t));
-    memset(tex_data, 2, size);
-    for (uint32_t i = a0 - d0; i <= a0 + d0; i++)
-        for (uint32_t j = a0 - d0; j <= a0 + d0; j++)
-            for (uint32_t k = a0 - d0; k <= a0 + d0; k++)
-            {
-                tex_data[b * c * i + c * j + k] = 10;
-            }
+    // Texture data.
+    uint8_t a = 10;
+    cvec4 tex_data[] = {
+        {255, 0, 0, a},   //
+        {0, 255, 0, a},   //
+        {0, 0, 255, a},   //
+        {255, 255, 0, a}, //
+        {255, 0, 255, a}, //
+        {0, 255, 255, a}, //
+    };
 
     // Create the texture and upload the volume data.
-    DvzId tex = dvz_tex_volume(vt.batch, DVZ_FORMAT_R8_UNORM, a, b, c, tex_data);
+    DvzId tex = dvz_tex_volume(vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, 3, 2, 1, tex_data);
 
     // Bind the volume texture to the visual.
     dvz_volume_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
 
     visual_test_end(vt);
 
-    FREE(tex_data);
     return 0;
 }
 

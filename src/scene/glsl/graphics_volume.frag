@@ -10,7 +10,7 @@
 #include "utils_volume.glsl"
 
 // Constants.
-#define STEP_SIZE 0.01
+#define STEP_SIZE 0.005
 #define MAX_ITER  10 / STEP_SIZE
 
 // Volume type specialization constant.
@@ -106,6 +106,7 @@ void main()
     {
         // Normalize 3D pos within cube in [0,1]^3
         uvw = (pos - b0) * d;
+        uvw.y = 1 - uvw.y;
 
         // Now, normalize between uvw0 and uvw1.
         uvw = params.uvw0.xyz + uvw * (params.uvw1 - params.uvw0).xyz;
