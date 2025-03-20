@@ -3862,27 +3862,16 @@ DvzVisual* dvz_volume(  // returns: the visual
 )
 ```
 
-### `dvz_volume_alloc()`
+### `dvz_volume_bounds()`
 
-Allocate memory for a visual.
-
-```c
-void dvz_volume_alloc(
-    DvzVisual* visual,  // the visual
-    uint32_t item_count,  // the total number of volumes to allocate for this visual
-)
-```
-
-### `dvz_volume_size()`
-
-Set the volume size.
+Set the volume bounds.
 
 ```c
-void dvz_volume_size(
+void dvz_volume_bounds(
     DvzVisual* visual,  // the visual
-    float w,  // the texture width
-    float h,  // the texture height
-    float d,  // the texture depth
+    vec2 xlim,  // xmin and xmax
+    vec2 ylim,  // ymin and ymax
+    vec2 zlim,  // zmin and zmax
 )
 ```
 
@@ -4100,6 +4089,53 @@ Free a pointer.
 ```c
 void dvz_free(
     void* pointer,  // a pointer
+)
+```
+
+### `dvz_external_dat()`
+
+Get an external memory handle of a dat.
+
+```c
+int dvz_external_dat(  // returns: the external memory handle of that buffer
+    DvzRenderer* rd,  // the renderer
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index of the dat
+)
+```
+
+### `dvz_external_index()`
+
+Get an external memory handle of an index dat.
+
+```c
+int dvz_external_index(  // returns: the external memory handle of that buffer
+    DvzRenderer* rd,  // the renderer
+    DvzVisual* visual,  // the visual
+)
+```
+
+### `dvz_external_tex()`
+
+Get an external memory handle of a tex's staging buffer.
+
+```c
+int dvz_external_tex(  // returns: the external memory handle of that buffer
+    DvzRenderer* rd,  // the renderer
+    DvzVisual* visual,  // the visual
+    uint32_t slot_idx,  // the slot index of the tex
+)
+```
+
+### `dvz_external_vertex()`
+
+Get an external memory handle of a vertex dat.
+
+```c
+int dvz_external_vertex(  // returns: the external memory handle of that buffer
+    DvzRenderer* rd,  // the renderer
+    DvzVisual* visual,  // the visual
+    uint32_t binding_idx,  // the binding index of the dat that is being used as vertex buffer
 )
 ```
 

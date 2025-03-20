@@ -222,7 +222,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, S_, vec3, vec4
+from datoviz import A_, S_, vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -243,11 +243,14 @@ def load_mouse_volume():
 
 def create_volume(tex, MOUSE_D, MOUSE_H, MOUSE_W):
     volume = dvz.volume(batch, dvz.VOLUME_FLAGS_RGBA)
-    dvz.volume_alloc(volume, 1)
+
     scaling = 1.0 / MOUSE_D
     dvz.volume_texture(
         volume, tex, dvz.FILTER_LINEAR, dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-    dvz.volume_size(volume, MOUSE_W * scaling, MOUSE_H * scaling, 1)
+
+    x, y, z = MOUSE_W * scaling, MOUSE_H * scaling, 1
+    dvz.volume_bounds(volume, vec2(-x, +x), vec2(-y, +y), vec2(-z, +z))
+
     dvz.volume_transfer(volume, vec4(1, 0, 0, 0))
     return volume
 
@@ -1393,7 +1396,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, vec3, vec4
+from datoviz import A_, vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1442,15 +1445,13 @@ tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
 # Create the volume visual.
 visual = dvz.volume(batch, dvz.VOLUME_FLAGS_RGBA)
 
-# Visual data allocation (1 volumetric object).
-dvz.volume_alloc(visual, 1)
-
 # Bind the volume texture to the visual.
 volume_tex = dvz.volume_texture(
     visual, tex, dvz.FILTER_LINEAR, dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
 
 # Volume parameters.
-dvz.volume_size(visual, MOUSE_W * scaling, MOUSE_H * scaling, 1)
+x, y, z = MOUSE_W * scaling, MOUSE_H * scaling, 1
+dvz.volume_bounds(visual, vec2(-x, +x), vec2(-y, +y), vec2(-z, +z))
 dvz.volume_transfer(visual, vec4(1, 0, 0, 0))
 
 

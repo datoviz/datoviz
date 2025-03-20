@@ -1774,11 +1774,19 @@ class DvzQtWindow(ctypes.Structure):
     pass
 
 
+class DvzRenderer(ctypes.Structure):
+    pass
+
+
 class DvzScene(ctypes.Structure):
     pass
 
 
 class DvzServer(ctypes.Structure):
+    pass
+
+
+class DvzSize(ctypes.Structure):
     pass
 
 
@@ -7192,23 +7200,6 @@ volume.argtypes = [
 ]
 volume.restype = ctypes.POINTER(DvzVisual)
 
-# Function dvz_volume_alloc()
-volume_alloc = dvz.dvz_volume_alloc
-volume_alloc.__doc__ = """
-Allocate memory for a visual.
-
-Parameters
-----------
-visual : DvzVisual*
-    the visual
-item_count : uint32_t
-    the total number of volumes to allocate for this visual
-"""
-volume_alloc.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint32,  # uint32_t item_count
-]
-
 # Function dvz_volume_texture()
 volume_texture = dvz.dvz_volume_texture
 volume_texture.__doc__ = """
@@ -7232,27 +7223,27 @@ volume_texture.argtypes = [
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
 
-# Function dvz_volume_size()
-volume_size = dvz.dvz_volume_size
-volume_size.__doc__ = """
-Set the volume size.
+# Function dvz_volume_bounds()
+volume_bounds = dvz.dvz_volume_bounds
+volume_bounds.__doc__ = """
+Set the volume bounds.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-w : float
-    the texture width
-h : float
-    the texture height
-d : float
-    the texture depth
+xlim : vec2
+    xmin and xmax
+ylim : vec2
+    ymin and ymax
+zlim : vec2
+    zmin and zmax
 """
-volume_size.argtypes = [
+volume_bounds.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float w
-    ctypes.c_float,  # float h
-    ctypes.c_float,  # float d
+    ctypes.c_float * 2,  # vec2 xlim
+    ctypes.c_float * 2,  # vec2 ylim
+    ctypes.c_float * 2,  # vec2 zlim
 ]
 
 # Function dvz_volume_texcoords()
@@ -9572,6 +9563,119 @@ pointer : void*
 free.argtypes = [
     ctypes.c_void_p,  # void* pointer
 ]
+
+# Function dvz_external_vertex()
+external_vertex = dvz.dvz_external_vertex
+external_vertex.__doc__ = """
+Get an external memory handle of a vertex dat.
+
+Parameters
+----------
+rd : DvzRenderer*
+    the renderer
+visual : DvzVisual*
+    the visual
+binding_idx : uint32_t
+    the binding index of the dat that is being used as vertex buffer
+offset : DvzSize* (out parameter)
+    the offset, in bytes, of the dat, within the buffer containing that dat
+
+Returns
+-------
+type
+    the external memory handle of that buffer
+"""
+external_vertex.argtypes = [
+    ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t binding_idx
+    ctypes.POINTER(DvzSize),  # DvzSize* offset
+]
+external_vertex.restype = ctypes.c_int
+
+# Function dvz_external_index()
+external_index = dvz.dvz_external_index
+external_index.__doc__ = """
+Get an external memory handle of an index dat.
+
+Parameters
+----------
+rd : DvzRenderer*
+    the renderer
+visual : DvzVisual*
+    the visual
+offset : DvzSize* (out parameter)
+    the offset, in bytes, of the dat, within the buffer containing that dat
+
+Returns
+-------
+type
+    the external memory handle of that buffer
+"""
+external_index.argtypes = [
+    ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.POINTER(DvzSize),  # DvzSize* offset
+]
+external_index.restype = ctypes.c_int
+
+# Function dvz_external_dat()
+external_dat = dvz.dvz_external_dat
+external_dat.__doc__ = """
+Get an external memory handle of a dat.
+
+Parameters
+----------
+rd : DvzRenderer*
+    the renderer
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index of the dat
+offset : DvzSize* (out parameter)
+    the offset, in bytes, of the dat, within the buffer containing that dat
+
+Returns
+-------
+type
+    the external memory handle of that buffer
+"""
+external_dat.argtypes = [
+    ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    ctypes.POINTER(DvzSize),  # DvzSize* offset
+]
+external_dat.restype = ctypes.c_int
+
+# Function dvz_external_tex()
+external_tex = dvz.dvz_external_tex
+external_tex.__doc__ = """
+Get an external memory handle of a tex's staging buffer.
+
+Parameters
+----------
+rd : DvzRenderer*
+    the renderer
+visual : DvzVisual*
+    the visual
+slot_idx : uint32_t
+    the slot index of the tex
+offset : DvzSize* (out parameter)
+    the offset, in bytes, of the tex's staging dat, within the buffer containing
+
+Returns
+-------
+type
+    the external memory handle of that buffer
+"""
+external_tex.argtypes = [
+    ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t slot_idx
+    ctypes.POINTER(DvzSize),  # DvzSize* offset
+]
+external_tex.restype = ctypes.c_int
 
 # Function dvz_num_procs()
 num_procs = dvz.dvz_num_procs
