@@ -129,10 +129,10 @@ int test_volume_2(TstSuite* suite)
         DvzVisual* visual = dvz_volume(vt.batch, DVZ_VOLUME_FLAGS_RGBA);
 
         // Volume parameters.
-        double scaling = 1 / (float)MOUSE_D;
+        double scaling = .5 / (float)MOUSE_D;
         float x = MOUSE_W * scaling;
         float y = MOUSE_H * scaling;
-        float z = 1;
+        float z = MOUSE_D * scaling;
         dvz_volume_bounds(visual, (vec2){-x, +x}, (vec2){-y, +y}, (vec2){-z, +z});
 
         // Add the visual to the panel AFTER setting the visual's data.
