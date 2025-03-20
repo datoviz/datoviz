@@ -3886,6 +3886,17 @@ void dvz_volume_permutation(
 )
 ```
 
+### `dvz_volume_slice()`
+
+Set the bounding box face index on which to slice (showing the texture itself).
+
+```c
+void dvz_volume_slice(
+    DvzVisual* visual,  // the visual
+    int32_t face_index,  // -1 to disable, or the face index between 0 and 5 included
+)
+```
+
 ### `dvz_volume_texcoords()`
 
 Set the texture coordinates of two corner points.

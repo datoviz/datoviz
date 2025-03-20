@@ -7295,6 +7295,23 @@ volume_permutation.argtypes = [
     ctypes.c_int32 * 3,  # ivec3 ijk
 ]
 
+# Function dvz_volume_slice()
+volume_slice = dvz.dvz_volume_slice
+volume_slice.__doc__ = """
+Set the bounding box face index on which to slice (showing the texture itself).
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+face_index : int32_t
+    -1 to disable, or the face index between 0 and 5 included
+"""
+volume_slice.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_int32,  # int32_t face_index
+]
+
 # Function dvz_volume_transfer()
 volume_transfer = dvz.dvz_volume_transfer
 volume_transfer.__doc__ = """

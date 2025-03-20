@@ -2882,6 +2882,16 @@ DVZ_EXPORT void dvz_volume_permutation(DvzVisual* visual, ivec3 ijk);
 
 
 /**
+ * Set the bounding box face index on which to slice (showing the texture itself).
+ *
+ * @param visual the visual
+ * @param face_index -1 to disable, or the face index between 0 and 5 included
+ */
+DVZ_EXPORT void dvz_volume_slice(DvzVisual* visual, int32_t face_index);
+
+
+
+/**
  * Set the volume size.
  *
  * @param visual the visual

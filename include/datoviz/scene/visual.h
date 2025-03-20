@@ -297,6 +297,18 @@ static inline void* _repeat_group(
 
 
 
+static void* _get_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx)
+{
+    ANN(visual);
+
+    DvzParams* params = visual->params[slot_idx];
+    ANN(params);
+
+    return dvz_params_get(params, attr_idx);
+}
+
+
+
 EXTERN_C_OFF
 
 #endif

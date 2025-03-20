@@ -85,13 +85,13 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
     dvz_params_attr(params, 6, FIELD(DvzVolumeParams, permutation));
 
     float v = .5;
-    dvz_visual_param(visual, 2, 0, (vec2){-v, +v});      // xlim
-    dvz_visual_param(visual, 2, 1, (vec2){-v, +v});      // ylim
-    dvz_visual_param(visual, 2, 2, (vec2){-v, +v});      // zlim
-    dvz_visual_param(visual, 2, 3, (vec4){0, 0, 0, 0});  // uvw0
-    dvz_visual_param(visual, 2, 4, (vec4){1, 1, 1, 0});  // uvw1
-    dvz_visual_param(visual, 2, 5, (vec4){1, 0, 0, 0});  // transfer
-    dvz_visual_param(visual, 2, 6, (ivec4){0, 1, 2, 0}); // permutation
+    dvz_visual_param(visual, 2, 0, (vec2){-v, +v});       // xlim
+    dvz_visual_param(visual, 2, 1, (vec2){-v, +v});       // ylim
+    dvz_visual_param(visual, 2, 2, (vec2){-v, +v});       // zlim
+    dvz_visual_param(visual, 2, 3, (vec4){0, 0, 0, 0});   // uvw0
+    dvz_visual_param(visual, 2, 4, (vec4){1, 1, 1, 0});   // uvw1
+    dvz_visual_param(visual, 2, 5, (vec4){1, 0, 0, 0});   // transfer
+    dvz_visual_param(visual, 2, 6, (ivec4){0, 1, 2, -1}); // permutation
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -219,7 +219,19 @@ void dvz_volume_transfer(DvzVisual* visual, vec4 transfer)
 void dvz_volume_permutation(DvzVisual* visual, ivec3 ijk)
 {
     ANN(visual);
-    ivec4 permutation = {ijk[0], ijk[1], ijk[2], 0};
+
+    int32_t* p = _get_param(visual, 2, 6);
+    ivec4 permutation = {ijk[0], ijk[1], ijk[2], p[3]};
+    dvz_visual_param(visual, 2, 6, permutation);
+}
+
+
+
+void dvz_volume_slice(DvzVisual* visual, int32_t face_index)
+{
+    ANN(visual);
+    int32_t* p = _get_param(visual, 2, 6);
+    ivec4 permutation = {p[0], p[1], p[2], face_index};
     dvz_visual_param(visual, 2, 6, permutation);
 }
 

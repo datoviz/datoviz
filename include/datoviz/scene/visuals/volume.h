@@ -73,7 +73,7 @@ struct DvzVolumeParams
     vec4 uvw0;         /* texture coordinates of the 2 corner points */
     vec4 uvw1;         /* texture coordinates of the 2 corner points */
     vec4 transfer;     /* transfer function */
-    ivec4 permutation; /* (0,1,2,0) by default */
+    ivec4 permutation; /* (0,1,2,-1) by default, last is face on which to disable ray casting */
 };
 
 

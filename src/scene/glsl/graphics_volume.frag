@@ -31,7 +31,7 @@ layout(std140, binding = USER_BINDING) uniform Params
     vec4 uvw0;         /* texture coordinates of the 2 corner points */
     vec4 uvw1;         /* texture coordinates of the 2 corner points */
     vec4 transfer;     /* transfer function */
-    ivec4 permutation; /* (0,1,2,0) by default */
+    ivec4 permutation; /* (0,1,2,-1) by default */
 }
 params;
 
@@ -41,6 +41,8 @@ layout(binding = (USER_BINDING + 1)) uniform sampler3D tex_density; // 3D vol wi
 // Varying variables.
 layout(location = 0) in vec3 in_pos;
 layout(location = 1) in vec3 in_ray;
+layout(location = 2) in flat int in_face_index;
+
 layout(location = 0) out vec4 out_color;
 
 // Functions
@@ -122,6 +124,17 @@ void main()
         rgbVoxel = fetched.rgb;
         intensity = fetched.a;
         alpha = intensity;
+
+        // Disable ray marching on a sliced face, indicated by the last argument in permutation,
+        // which is just an index between 0 and 5 identifying the face of the bounding box that
+        // is being sliced.
+        if (i == 0 && in_face_index == params.permutation[3] && alpha > 0)
+        {
+            rgbAcc = rgbVoxel;
+            alphaAcc = 1;
+            break;
+        }
+
         rgbAcc = (1 - alpha) * rgbAcc + alpha * rgbVoxel;
         alphaAcc += alpha;
         if (alphaAcc >= 1)
