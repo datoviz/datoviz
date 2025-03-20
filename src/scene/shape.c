@@ -73,6 +73,7 @@ void dvz_compute_normals(
 
     uint32_t face_count = index_count / 3;
 
+    // BUG: this doesn't work if HAS_OPENMP is true
 #if HAS_OPENMP
 #pragma omp parallel for
 #endif

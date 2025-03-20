@@ -46,7 +46,7 @@ option(DATOVIZ_WITH_ZLIB "Build Datoviz with zlib" ON) # for gzip decompression 
 option(DATOVIZ_WITH_GLFW "Build Datoviz with glfw" ON)
 option(DATOVIZ_WITH_MSDF "Build Datoviz with msdfgen" ON)
 option(DATOVIZ_WITH_SHADERC "Build Datoviz with shaderc" OFF)
-option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" ON)
+option(DATOVIZ_WITH_OPENMP "Build Datoviz with OpenMP support" OFF) # disabling for now
 option(DATOVIZ_WITH_QT "Build Datoviz with Qt6" OFF)
 
 # option(DATOVIZ_WITH_SWIFTSHADER "Build Datoviz with Swiftshader support" OFF)
