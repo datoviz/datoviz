@@ -683,6 +683,21 @@ dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorTy
 
 
 /**
+ * Create a request for setting a push constant layout for a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param shader the shader with the push constant
+ * @param offset the byte offset for the push data visibility from the shader
+ * @param size how much bytes the shader can see from the push constant
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest
+dvz_set_push(DvzBatch* batch, DvzId graphics, DvzShaderType shader, DvzSize offset, DvzSize size);
+
+
+
+/**
  * Create a request for setting a specialization constant of a graphics pipe.
  *
  * @param batch the batch
@@ -867,6 +882,24 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indirect(
  */
 DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
     DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count);
+
+
+
+/**
+ * Create a request for sending a push constant value while recording a command buffer.
+ *
+ * @param batch the batch
+ * @param canvas_id the id of the canvas
+ * @param graphics_id the id of the graphics pipeline
+ * @param shader the shader stage
+ * @param offset the byte offset
+ * @param size the size of the data to upload
+ * @param data the push constant data to upload
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_record_push(
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderType shader, //
+    DvzSize offset, DvzSize size, void* data);
 
 
 

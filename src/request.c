@@ -713,6 +713,27 @@ static void _print_set_slot(DvzRequest* req)
         req->id, req->content.set_slot.slot_idx, req->content.set_slot.type);
 }
 
+static void _print_set_push(DvzRequest* req, int flags)
+{
+    log_trace("print_create_push");
+    ANN(req);
+
+    DvzShaderType shader = req->content.set_push.shader;
+    DvzSize offset = req->content.set_push.offset;
+    DvzSize size = req->content.set_push.size;
+    ASSERT(size > 0);
+
+    printf(
+        "- action: set\n"
+        "  type: push\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    shader: %d\n"
+        "    offset: %" PRId64 "\n"
+        "    size: %" PRId64 "\n",
+        req->id, shader, offset, size);
+}
+
 static void _print_set_specialization(DvzRequest* req, int flags)
 {
     log_trace("print_create_specialization");
@@ -813,6 +834,25 @@ static void _print_record_viewport(DvzRequest* req)
         req->content.record.command.contents.v.offset[1],
         req->content.record.command.contents.v.shape[0],
         req->content.record.command.contents.v.shape[1]);
+}
+
+static void _print_record_push(DvzRequest* req)
+{
+    log_trace("print_record_push");
+    ANN(req);
+    printf(
+        "- action: record\n"
+        "  type: push\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    shader: %u\n"
+        "    offset: %" PRId64 "\n"
+        "    size: %" PRId64 "\n",
+        req->id, //
+        req->content.record.command.contents.p.shader,
+        req->content.record.command.contents.p.offset,
+        req->content.record.command.contents.p.size);
+    // TODO: display push constant data
 }
 
 static void _print_record_draw(DvzRequest* req)
@@ -951,6 +991,7 @@ void dvz_request_print(DvzRequest* req, int flags)
     IF_REQ(SET, VERTEX) _print_set_vertex(req);
     IF_REQ(SET, VERTEX_ATTR) _print_set_attr(req);
     IF_REQ(SET, SLOT) _print_set_slot(req);
+    IF_REQ(SET, PUSH) _print_set_push(req, flags);
     IF_REQ(SET, SPECIALIZATION) _print_set_specialization(req, flags);
 
     IF_REQ(BIND, DAT) _print_bind_dat(req);
@@ -962,6 +1003,8 @@ void dvz_request_print(DvzRequest* req, int flags)
             _print_record_begin(req);
         if (req->content.record.command.type == DVZ_RECORDER_VIEWPORT)
             _print_record_viewport(req);
+        if (req->content.record.command.type == DVZ_RECORDER_PUSH)
+            _print_record_push(req);
         if (req->content.record.command.type == DVZ_RECORDER_DRAW)
             _print_record_draw(req);
         if (req->content.record.command.type == DVZ_RECORDER_DRAW_INDEXED)
@@ -1851,6 +1894,25 @@ DvzRequest dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzD
 
 
 
+DvzRequest
+dvz_set_push(DvzBatch* batch, DvzId graphics, DvzShaderType shader, DvzSize offset, DvzSize size)
+{
+    ASSERT(size > 0);
+
+    CREATE_REQUEST(SET, PUSH);
+    req.id = graphics;
+    req.content.set_push.shader = shader;
+    req.content.set_push.offset = offset;
+    req.content.set_push.size = size;
+
+    IF_VERBOSE
+    _print_set_push(&req, DVZ_PRINT_FLAGS_DATA);
+
+    RETURN_REQUEST
+}
+
+
+
 DvzRequest dvz_set_specialization(
     DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size, void* value)
 {
@@ -1984,6 +2046,28 @@ DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, ve
 
     IF_VERBOSE
     _print_record_viewport(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_record_push(
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderType shader, //
+    DvzSize offset, DvzSize size, void* data)
+{
+    CREATE_REQUEST(RECORD, RECORD);
+    req.id = canvas_id;
+    req.content.record.command.type = DVZ_RECORDER_PUSH;
+    req.content.record.command.contents.p.pipe_id = graphics_id;
+    req.content.record.command.contents.p.shader = shader;
+    req.content.record.command.contents.p.offset = offset;
+    req.content.record.command.contents.p.size = size;
+    req.content.record.command.contents.p.data =
+        _cpy(size, data); // NOTE: the recorder will have to free it.
+
+    IF_VERBOSE
+    _print_record_push(&req);
 
     RETURN_REQUEST
 }

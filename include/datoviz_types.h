@@ -72,6 +72,7 @@ typedef struct DvzRequestShaderSet DvzRequestShaderSet;
 typedef struct DvzRequestVertex DvzRequestVertex;
 typedef struct DvzRequestAttr DvzRequestAttr;
 typedef struct DvzRequestSlot DvzRequestSlot;
+typedef struct DvzRequestPush DvzRequestPush;
 typedef struct DvzRequestSpecialization DvzRequestSpecialization;
 typedef struct DvzRequestBindVertex DvzRequestBindVertex;
 typedef struct DvzRequestBindIndex DvzRequestBindIndex;
@@ -91,6 +92,7 @@ typedef struct DvzQtWindow DvzQtWindow;
 
 // Recorder.
 typedef struct DvzRecorderViewport DvzRecorderViewport;
+typedef struct DvzRecorderPush DvzRecorderPush;
 typedef struct DvzRecorderDraw DvzRecorderDraw;
 typedef struct DvzRecorderDrawIndexed DvzRecorderDrawIndexed;
 typedef struct DvzRecorderDrawIndirect DvzRecorderDrawIndirect;
@@ -314,6 +316,15 @@ struct DvzRecorderViewport
     vec2 shape; // in framebuffer pixels
 };
 
+struct DvzRecorderPush
+{
+    DvzId pipe_id;
+    DvzShaderType shader;
+    DvzSize offset;
+    DvzSize size;
+    void* data;
+};
+
 struct DvzRecorderDraw
 {
     DvzId pipe_id;
@@ -351,6 +362,9 @@ union DvzRecorderUnion
 {
     // Viewport.
     DvzRecorderViewport v;
+
+    // Push constant.
+    DvzRecorderPush p;
 
     // Direct draw.
     DvzRecorderDraw draw;
@@ -499,6 +513,13 @@ struct DvzRequestSlot
     DvzDescriptorType type;
 };
 
+struct DvzRequestPush
+{
+    DvzShaderType shader;
+    DvzSize offset;
+    DvzSize size;
+};
+
 struct DvzRequestSpecialization
 {
     DvzShaderType shader;
@@ -597,6 +618,9 @@ union DvzRequestContent
 
     // Set descriptor slot.
     DvzRequestSlot set_slot;
+
+    // Set push layout.
+    DvzRequestPush set_push;
 
     // Set specialization constant.
     DvzRequestSpecialization set_specialization;

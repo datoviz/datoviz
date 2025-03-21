@@ -274,6 +274,7 @@ int dvz_run_tests(const char* match)
     // Testing renderer.
     TEST(test_renderer_1)
     TEST(test_renderer_graphics)
+    TEST(test_renderer_push)
     TEST(test_renderer_resize)
 
     TEST(test_external_1)

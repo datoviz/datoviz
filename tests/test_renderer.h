@@ -29,6 +29,8 @@ int test_renderer_1(TstSuite*);
 
 int test_renderer_graphics(TstSuite*);
 
+int test_renderer_push(TstSuite*);
+
 int test_renderer_resize(TstSuite*);
 
 

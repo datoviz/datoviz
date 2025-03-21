@@ -64,6 +64,34 @@ static void _process_viewport(
     dvz_canvas_viewport(canvas, cmds, img_idx, offset, shape);
 }
 
+static void _process_push(
+    DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
+    DvzRecorderCommand* record, void* user_data)
+{
+    GET_CANVAS
+
+    DvzRecorderPush* p = &record->contents.p;
+    ANN(p);
+
+    log_debug("recorder: push constant offset=%d, size=%d", p->offset, p->size);
+
+    DvzPipe* pipe = dvz_renderer_pipe(rd, p->pipe_id);
+    ANN(pipe);
+
+    if (!dvz_pipe_complete(pipe))
+    {
+        log_error("cannot draw pipe with incomplete descriptor bindings");
+        return;
+    }
+
+    dvz_cmd_push(
+        cmds, img_idx, pipe->descriptors.dslots, (VkShaderStageFlagBits)p->shader, //
+        p->offset, p->size, p->data);
+
+    // NOTE: the data was copied by the requester, now we can free it.
+    FREE(p->data);
+}
+
 static void _process_draw(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
     DvzRecorderCommand* record, void* user_data)
@@ -223,6 +251,7 @@ DvzRecorder* dvz_recorder(int flags)
     dvz_recorder_register(
         recorder, DVZ_RECORDER_DRAW_INDEXED_INDIRECT, _process_draw_indexed_indirect, NULL);
     dvz_recorder_register(recorder, DVZ_RECORDER_VIEWPORT, _process_viewport, NULL);
+    dvz_recorder_register(recorder, DVZ_RECORDER_PUSH, _process_push, NULL);
     dvz_recorder_register(recorder, DVZ_RECORDER_END, _process_end, NULL);
 
     return recorder;
@@ -267,6 +296,7 @@ void dvz_recorder_register(
     {
         log_debug("registering empty recorder callback for record type %d", (int)ctype);
     }
+    log_info("register callback for recorder command type %d", (int)ctype);
     recorder->callbacks[(uint32_t)ctype] = cb;
     recorder->callback_user_data[(uint32_t)ctype] = user_data;
 }

@@ -455,6 +455,22 @@ static void* _graphics_slot(DvzRenderer* rd, DvzRequest req, void* user_data)
 
 
 
+static void* _graphics_push(DvzRenderer* rd, DvzRequest req, void* user_data)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_PUSH);
+
+    // HACK: from DvzShaderType to VkShaderStageFlagBits.
+    VkShaderStageFlagBits stage = req.content.set_push.shader == DVZ_SHADER_VERTEX
+                                      ? VK_SHADER_STAGE_VERTEX_BIT
+                                      : VK_SHADER_STAGE_FRAGMENT_BIT;
+    dvz_graphics_push(graphics, req.content.set_push.offset, req.content.set_push.size, stage);
+
+    return NULL;
+}
+
+
+
 static void* _graphics_specialization(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     DvzGraphics* graphics = _get_graphics(rd, req, user_data);
@@ -968,6 +984,8 @@ static void _setup_router(DvzRenderer* rd)
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_VERTEX_ATTR, _graphics_vertex_attr, NULL);
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SLOT, _graphics_slot, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_PUSH, _graphics_push, NULL);
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_SPECIALIZATION, _graphics_specialization,
         NULL);

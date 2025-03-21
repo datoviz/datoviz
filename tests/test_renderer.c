@@ -277,6 +277,124 @@ int test_renderer_graphics(TstSuite* suite)
 
 
 
+int test_renderer_push(TstSuite* suite)
+{
+    DvzGpu* gpu = get_gpu(suite);
+    ANN(gpu);
+
+    DvzRenderer* rd = dvz_renderer(gpu, 0);
+    DvzBatch* batch = dvz_batch();
+    DvzRequest req = {0};
+
+    // Create an offscreen canvas.
+    req =
+        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzId canvas_id = req.id;
+
+    // Canvas clear color.
+    req = dvz_set_background(batch, canvas_id, (cvec4){32, 64, 128, 255});
+
+
+    // Create a custom graphics.
+    req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
+    DvzId graphics_id = req.id;
+
+
+    // Load shaders.
+    char path[1024] = {0};
+    snprintf(path, sizeof(path), "%s/test_triangle_push.vert.spv", SPIRV_DIR);
+    unsigned long shader_size = 0;
+    uint32_t* shader_code = (uint32_t*)dvz_read_file(path, &shader_size);
+    ASSERT(shader_size > 0);
+    req =
+        dvz_create_spirv(batch, DVZ_SHADER_VERTEX, shader_size, (const unsigned char*)shader_code);
+    ASSERT(req.id != DVZ_ID_NONE);
+    dvz_set_shader(batch, graphics_id, req.id);
+    FREE(shader_code);
+
+    snprintf(path, sizeof(path), "%s/test_triangle.frag.spv", SPIRV_DIR);
+    shader_size = 0;
+    shader_code = (uint32_t*)dvz_read_file(path, &shader_size);
+    ASSERT(shader_size > 0);
+    req = dvz_create_spirv(
+        batch, DVZ_SHADER_FRAGMENT, shader_size, (const unsigned char*)shader_code);
+    ASSERT(req.id != DVZ_ID_NONE);
+    dvz_set_shader(batch, graphics_id, req.id);
+    FREE(shader_code);
+
+
+    // Primitive topology.
+    dvz_set_primitive(batch, graphics_id, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    // Polygon mode.
+    dvz_set_polygon(batch, graphics_id, DVZ_POLYGON_MODE_FILL);
+
+    // Vertex binding.
+    dvz_set_vertex(batch, graphics_id, 0, sizeof(DvzVertex), DVZ_VERTEX_INPUT_RATE_VERTEX);
+
+    // Vertex attrs.
+    dvz_set_attr(batch, graphics_id, 0, 0, DVZ_FORMAT_R32G32B32_SFLOAT, offsetof(DvzVertex, pos));
+    dvz_set_attr(batch, graphics_id, 0, 1, DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
+
+    // Push constant.
+    dvz_set_push(batch, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(vec3));
+
+    // Create the vertex buffer dat.
+    req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
+    DvzId dat_id = req.id;
+
+    // Bind the vertex buffer dat to the graphics pipe.
+    req = dvz_bind_vertex(batch, graphics_id, 0, dat_id, 0);
+
+    // Upload the triangle data.
+    DvzVertex data[] = {
+        {{-1, -1, 0}, {255, 0, 0, 255}},
+        {{+1, -1, 0}, {0, 255, 0, 255}},
+        {{+0, +1, 0}, {0, 0, 255, 255}},
+    };
+    req = dvz_upload_dat(batch, dat_id, 0, sizeof(data), data, 0);
+
+    // Commands.
+    dvz_record_begin(batch, canvas_id);
+    dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    dvz_record_push(
+        batch, canvas_id, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(vec3), (vec3){1, 1, 0});
+    dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
+    dvz_record_end(batch, canvas_id);
+
+    // Render.
+    req = dvz_update_canvas(batch, canvas_id);
+
+
+    // Submit the batch requests to the renderer.
+    uint32_t count = dvz_batch_size(batch);
+    AT(count > 0);
+    DvzRequest* reqs = dvz_batch_requests(batch);
+    AT(reqs != NULL);
+    dvz_renderer_requests(rd, count, reqs);
+
+    // Retrieve the image.
+    DvzSize size = 0;
+    // This pointer will be freed automatically by the renderer.
+    uint8_t* rgb = dvz_renderer_image(rd, canvas_id, &size, NULL);
+
+    // Save to a PNG.
+    char imgpath[1024] = {0};
+    snprintf(imgpath, sizeof(imgpath), "%s/renderer_push.png", ARTIFACTS_DIR);
+    dvz_write_png(imgpath, WIDTH, HEIGHT, rgb);
+    AT(!dvz_is_empty(WIDTH * HEIGHT * 3, rgb));
+
+    // Create a canvas deletion request.
+    req = dvz_delete_canvas(batch, canvas_id);
+
+    // Destroy the requester and renderer.
+    dvz_batch_destroy(batch);
+    dvz_renderer_destroy(rd);
+    return 0;
+}
+
+
+
 int test_renderer_resize(TstSuite* suite)
 {
     DvzGpu* gpu = get_gpu(suite);

@@ -792,6 +792,19 @@ DVZ_EXPORT void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face);
 
 
 /**
+ * Set a push constant of a visual.
+ *
+ * @param visual the visual
+ * @param shader the shader type
+ * @param offset the offset, in bytes
+ * @param size the size, in bytes
+ */
+DVZ_EXPORT void
+dvz_visual_push(DvzVisual* visual, DvzShaderType shader, DvzSize offset, DvzSize size);
+
+
+
+/**
  * Set a specialization constant of a visual.
  *
  * @param visual the visual
