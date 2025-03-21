@@ -430,7 +430,7 @@ struct DvzSlots
     uint32_t push_count;
     VkDeviceSize push_offsets[DVZ_MAX_PUSH_CONSTANTS];
     VkDeviceSize push_sizes[DVZ_MAX_PUSH_CONSTANTS];
-    VkShaderStageFlagBits push_shaders[DVZ_MAX_PUSH_CONSTANTS];
+    VkShaderStageFlagBits push_stages[DVZ_MAX_PUSH_CONSTANTS];
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
@@ -1383,12 +1383,12 @@ void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type);
  * Set up push constants.
  *
  * @param dslots the dslots
+ * @param stages the shader stages that will access the push constant
  * @param offset the push constant offset, in bytes
  * @param size the push constant size, in bytes
- * @param shaders the shader stages that will access the push constant
  */
 void dvz_slots_push(
-    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
+    DvzSlots* dslots, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Create the dslots after they have been set up.
@@ -1494,12 +1494,12 @@ void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type);
  * Set up push constant.
  *
  * @param compute the compute pipeline
+ * @param stages the stages that will need to access the push constant
  * @param offset the push constant offset, in bytes
  * @param size the push constant size, in bytes
- * @param shaders the shaders that will need to access the push constant
  */
 void dvz_compute_push(
-    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
+    DvzCompute* compute, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Associate a descriptors object to a compute pipeline.
@@ -1684,12 +1684,12 @@ void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType typ
  * Set a graphics pipeline push constant.
  *
  * @param graphics the graphics pipeline
+ * @param stages the shader stages that will access the push constant
  * @param offset the push constant offset, in bytes
  * @param offset the push size, in bytes
- * @param shaders the shader stages that will access the push constant
  */
 void dvz_graphics_push(
-    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
+    DvzGraphics* graphics, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size);
 
 /**
  * Declare a specialization constant for a graphics pipeline.
@@ -2334,13 +2334,13 @@ void dvz_cmd_copy_buffer(
  * @param cmds the set of command buffers to record
  * @param idx the index of the command buffer to record
  * @param dslots the dslots
- * @param shaders the shader stages that have access to the push constant
+ * @param stages the shader stages that have access to the push constant
  * @param offset the offset in the push constant, in bytes
  * @param size the size in the push constant, in bytes
  * @param data the data to send via the push constant
  */
 void dvz_cmd_push(
-    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits shaders, //
+    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits stages, //
     VkDeviceSize offset, VkDeviceSize size, const void* data);
 
 

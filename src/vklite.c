@@ -2147,15 +2147,15 @@ void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type)
 
 
 void dvz_slots_push(
-    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
+    DvzSlots* dslots, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size)
 {
     ANN(dslots);
     uint32_t idx = dslots->push_count;
     ASSERT(idx < DVZ_MAX_PUSH_CONSTANTS);
 
+    dslots->push_stages[idx] = stages;
     dslots->push_offsets[idx] = offset;
     dslots->push_sizes[idx] = size;
-    dslots->push_shaders[idx] = shaders;
 
     dslots->push_count++;
 }
@@ -2179,7 +2179,7 @@ void dvz_slots_create(DvzSlots* dslots)
     {
         push_constants[i].offset = dslots->push_offsets[i];
         push_constants[i].size = dslots->push_sizes[i];
-        push_constants[i].stageFlags = dslots->push_shaders[i];
+        push_constants[i].stageFlags = dslots->push_stages[i];
     }
 
     // Create the pipeline layout.
@@ -2370,10 +2370,10 @@ void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 
 
 void dvz_compute_push(
-    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
+    DvzCompute* compute, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size)
 {
     ANN(compute);
-    dvz_slots_push(&compute->dslots, offset, size, shaders);
+    dvz_slots_push(&compute->dslots, stages, offset, size);
 }
 
 
@@ -2635,10 +2635,10 @@ void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType typ
 
 
 void dvz_graphics_push(
-    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
+    DvzGraphics* graphics, VkShaderStageFlagBits stages, VkDeviceSize offset, VkDeviceSize size)
 {
     ANN(graphics);
-    dvz_slots_push(&graphics->dslots, offset, size, shaders);
+    dvz_slots_push(&graphics->dslots, stages, offset, size);
 }
 
 
@@ -4191,10 +4191,10 @@ void dvz_cmd_copy_buffer(
 
 
 void dvz_cmd_push(
-    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits shaders, //
+    DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits stages, //
     VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
     CMD_START
-    vkCmdPushConstants(cb, dslots->pipeline_layout, shaders, offset, size, data);
+    vkCmdPushConstants(cb, dslots->pipeline_layout, stages, offset, size, data);
     CMD_END
 }
