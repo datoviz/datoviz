@@ -430,7 +430,7 @@ struct DvzSlots
     uint32_t push_count;
     VkDeviceSize push_offsets[DVZ_MAX_PUSH_CONSTANTS];
     VkDeviceSize push_sizes[DVZ_MAX_PUSH_CONSTANTS];
-    VkShaderStageFlags push_shaders[DVZ_MAX_PUSH_CONSTANTS];
+    VkShaderStageFlagBits push_shaders[DVZ_MAX_PUSH_CONSTANTS];
 
     VkPipelineLayout pipeline_layout;
     VkDescriptorSetLayout dset_layout;
@@ -1388,7 +1388,7 @@ void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type);
  * @param shaders the shader stages that will access the push constant
  */
 void dvz_slots_push(
-    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
 
 /**
  * Create the dslots after they have been set up.
@@ -1499,7 +1499,7 @@ void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type);
  * @param shaders the shaders that will need to access the push constant
  */
 void dvz_compute_push(
-    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
 
 /**
  * Associate a descriptors object to a compute pipeline.
@@ -1689,7 +1689,7 @@ void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType typ
  * @param shaders the shader stages that will access the push constant
  */
 void dvz_graphics_push(
-    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders);
+    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders);
 
 /**
  * Declare a specialization constant for a graphics pipeline.

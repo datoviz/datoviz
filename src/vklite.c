@@ -2147,7 +2147,7 @@ void dvz_slots_binding(DvzSlots* dslots, uint32_t idx, VkDescriptorType type)
 
 
 void dvz_slots_push(
-    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+    DvzSlots* dslots, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
 {
     ANN(dslots);
     uint32_t idx = dslots->push_count;
@@ -2370,7 +2370,7 @@ void dvz_compute_slot(DvzCompute* compute, uint32_t idx, VkDescriptorType type)
 
 
 void dvz_compute_push(
-    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+    DvzCompute* compute, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
 {
     ANN(compute);
     dvz_slots_push(&compute->dslots, offset, size, shaders);
@@ -2635,7 +2635,7 @@ void dvz_graphics_slot(DvzGraphics* graphics, uint32_t idx, VkDescriptorType typ
 
 
 void dvz_graphics_push(
-    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlags shaders)
+    DvzGraphics* graphics, VkDeviceSize offset, VkDeviceSize size, VkShaderStageFlagBits shaders)
 {
     ANN(graphics);
     dvz_slots_push(&graphics->dslots, offset, size, shaders);
