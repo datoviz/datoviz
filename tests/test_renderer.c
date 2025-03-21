@@ -303,7 +303,7 @@ int test_renderer_push(TstSuite* suite)
     // Load shaders.
     char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/test_triangle_push.vert.spv", SPIRV_DIR);
-    unsigned long shader_size = 0;
+    DvzSize shader_size = 0;
     uint32_t* shader_code = (uint32_t*)dvz_read_file(path, &shader_size);
     ASSERT(shader_size > 0);
     req =
