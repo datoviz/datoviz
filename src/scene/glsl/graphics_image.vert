@@ -1,12 +1,15 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 #version 450
 #include "common.glsl"
 #include "params_image.glsl"
+
+layout(constant_id = 0) const int SIZE_NDC = 0;
+layout(constant_id = 1) const int RESCALE = 0; // 1 = rescale_keep_ratio, 2 = rescale
 
 // Attributes.
 layout(location = 0) in vec3 pos;    // in NDC

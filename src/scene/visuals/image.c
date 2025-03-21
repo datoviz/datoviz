@@ -89,7 +89,6 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &size_ndc);
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &size_ndc);
 
     // Rescale specialization constant.
     int rescale = 0;
@@ -98,12 +97,10 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     if ((flags & DVZ_IMAGE_FLAGS_RESCALE) > 0)
         rescale = 2;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &rescale);
 
     // Filled specialization constant.
     int fill = (flags & DVZ_IMAGE_FLAGS_FILL) > 0;
-    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 2, sizeof(int), &fill);
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 2, sizeof(int), &fill);
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &fill);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);

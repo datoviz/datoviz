@@ -1,14 +1,16 @@
 /*
-* Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
-* Licensed under the MIT license. See LICENSE file in the project root for details.
-* SPDX-License-Identifier: MIT
-*/
+ * Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+ * Licensed under the MIT license. See LICENSE file in the project root for details.
+ * SPDX-License-Identifier: MIT
+ */
 
 #version 450
 #include "antialias.glsl"
 #include "common.glsl"
 #include "markers.glsl"
 #include "params_image.glsl"
+
+layout(constant_id = 0) const int FILL = 0; // 0=textured, 1=fill color
 
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
