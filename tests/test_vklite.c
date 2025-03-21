@@ -364,7 +364,7 @@ int test_vklite_push(TstSuite* suite)
 
     // Create the dslots.
     dvz_compute_slot(&compute, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
-    dvz_compute_push(&compute, 0, sizeof(float), VK_SHADER_STAGE_COMPUTE_BIT);
+    dvz_compute_push(&compute, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(float));
 
     // Create the descriptors.
     DvzDescriptors descriptors = dvz_descriptors(&compute.dslots, 1);
