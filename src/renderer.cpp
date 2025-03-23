@@ -620,6 +620,8 @@ static void* _dat_create(DvzRenderer* rd, DvzRequest req, void* user_data)
     ANN(rd);
     log_trace("create dat");
 
+    ASSERT(req.content.dat.size > 0);
+
     DvzDat* dat = dvz_dat(rd->ctx, req.content.dat.type, req.content.dat.size, req.flags);
     ANN(dat);
     SET_ID(dat)
@@ -1134,6 +1136,7 @@ void dvz_renderer_request(DvzRenderer* rd, DvzRequest req)
         return;
     }
     log_trace("processing renderer request action %d and type %d", req.action, req.type);
+    // dvz_request_print(&req, 0);
 
     void* user_data = rd->router->user_data[key];
 

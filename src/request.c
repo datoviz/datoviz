@@ -1524,6 +1524,7 @@ DvzRequest dvz_create_dat(DvzBatch* batch, DvzBufferType type, DvzSize size, int
 DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size)
 {
     ASSERT(size > 0);
+    ASSERT(dat != DVZ_ID_NONE);
 
     CREATE_REQUEST(RESIZE, DAT);
     req.id = dat;
@@ -1542,6 +1543,7 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
 {
     ASSERT(size > 0);
     ANN(data);
+    ASSERT(dat != DVZ_ID_NONE);
 
     CREATE_REQUEST(UPLOAD, DAT);
     req.id = dat;
@@ -1567,6 +1569,8 @@ dvz_upload_dat(DvzBatch* batch, DvzId dat, DvzSize offset, DvzSize size, void* d
 
 DvzRequest dvz_delete_dat(DvzBatch* batch, DvzId id)
 {
+    ASSERT(id != DVZ_ID_NONE);
+
     CREATE_REQUEST(DELETE, DAT);
     req.id = id;
 
@@ -1602,6 +1606,8 @@ dvz_create_tex(DvzBatch* batch, DvzTexDims dims, DvzFormat format, uvec3 shape, 
 
 DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape)
 {
+    ASSERT(tex != DVZ_ID_NONE);
+
     CREATE_REQUEST(RESIZE, TEX);
     req.id = tex;
     memcpy(req.content.tex.shape, shape, sizeof(uvec3));
@@ -1617,6 +1623,8 @@ DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape)
 DvzRequest dvz_upload_tex(
     DvzBatch* batch, DvzId tex, uvec3 offset, uvec3 shape, DvzSize size, void* data, int flags)
 {
+    ASSERT(tex != DVZ_ID_NONE);
+
     CREATE_REQUEST(UPLOAD, TEX);
     req.id = tex;
     req.flags = flags;
@@ -1639,6 +1647,8 @@ DvzRequest dvz_upload_tex(
 
 DvzRequest dvz_delete_tex(DvzBatch* batch, DvzId id)
 {
+    ASSERT(id != DVZ_ID_NONE);
+
     CREATE_REQUEST(DELETE, TEX);
     req.id = id;
 
@@ -1671,6 +1681,8 @@ DvzRequest dvz_create_sampler(DvzBatch* batch, DvzFilter filter, DvzSamplerAddre
 
 DvzRequest dvz_delete_sampler(DvzBatch* batch, DvzId id)
 {
+    ASSERT(id != DVZ_ID_NONE);
+
     CREATE_REQUEST(DELETE, SAMPLER);
     req.id = id;
 
@@ -1746,6 +1758,8 @@ DvzRequest dvz_create_graphics(DvzBatch* batch, DvzGraphicsType type, int flags)
 
 DvzRequest dvz_set_primitive(DvzBatch* batch, DvzId graphics, DvzPrimitiveTopology primitive)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, PRIMITIVE);
     req.id = graphics;
     req.content.set_primitive.primitive = primitive;
@@ -1760,6 +1774,8 @@ DvzRequest dvz_set_primitive(DvzBatch* batch, DvzId graphics, DvzPrimitiveTopolo
 
 DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_type)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, BLEND);
     req.id = graphics;
     req.content.set_blend.blend = blend_type;
@@ -1774,6 +1790,8 @@ DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_typ
 
 DvzRequest dvz_set_depth(DvzBatch* batch, DvzId graphics, DvzDepthTest depth_test)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, DEPTH);
     req.id = graphics;
     req.content.set_depth.depth = depth_test;
@@ -1788,6 +1806,8 @@ DvzRequest dvz_set_depth(DvzBatch* batch, DvzId graphics, DvzDepthTest depth_tes
 
 DvzRequest dvz_set_polygon(DvzBatch* batch, DvzId graphics, DvzPolygonMode polygon_mode)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, POLYGON);
     req.id = graphics;
     req.content.set_polygon.polygon = polygon_mode;
@@ -1802,6 +1822,8 @@ DvzRequest dvz_set_polygon(DvzBatch* batch, DvzId graphics, DvzPolygonMode polyg
 
 DvzRequest dvz_set_cull(DvzBatch* batch, DvzId graphics, DvzCullMode cull_mode)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, CULL);
     req.id = graphics;
     req.content.set_cull.cull = cull_mode;
@@ -1816,6 +1838,8 @@ DvzRequest dvz_set_cull(DvzBatch* batch, DvzId graphics, DvzCullMode cull_mode)
 
 DvzRequest dvz_set_front(DvzBatch* batch, DvzId graphics, DvzFrontFace front_face)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, FRONT);
     req.id = graphics;
     req.content.set_front.front = front_face;
@@ -1830,6 +1854,8 @@ DvzRequest dvz_set_front(DvzBatch* batch, DvzId graphics, DvzFrontFace front_fac
 
 DvzRequest dvz_set_shader(DvzBatch* batch, DvzId graphics, DvzId shader)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, SHADER);
     req.id = graphics;
     req.content.set_shader.shader = shader;
@@ -1846,6 +1872,8 @@ DvzRequest dvz_set_vertex(
     DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzSize stride,
     DvzVertexInputRate input_rate)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, VERTEX);
     req.id = graphics;
     req.content.set_vertex.binding_idx = binding_idx;
@@ -1864,6 +1892,8 @@ DvzRequest dvz_set_attr(
     DvzBatch* batch, DvzId graphics, uint32_t binding_idx, uint32_t location, DvzFormat format,
     DvzSize offset)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, VERTEX_ATTR);
     req.id = graphics;
     req.content.set_attr.binding_idx = binding_idx;
@@ -1881,6 +1911,8 @@ DvzRequest dvz_set_attr(
 
 DvzRequest dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorType type)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(SET, SLOT);
     req.id = graphics;
     req.content.set_slot.slot_idx = slot_idx;
@@ -1898,6 +1930,7 @@ DvzRequest
 dvz_set_push(DvzBatch* batch, DvzId graphics, DvzShaderType shader, DvzSize offset, DvzSize size)
 {
     ASSERT(size > 0);
+    ASSERT(graphics != DVZ_ID_NONE);
 
     CREATE_REQUEST(SET, PUSH);
     req.id = graphics;
@@ -1917,6 +1950,7 @@ DvzRequest dvz_set_specialization(
     DvzBatch* batch, DvzId graphics, DvzShaderType shader, uint32_t idx, DvzSize size, void* value)
 {
     ASSERT(size > 0);
+    ASSERT(graphics != DVZ_ID_NONE);
     ANN(value);
 
     CREATE_REQUEST(SET, SPECIALIZATION);
@@ -1937,6 +1971,8 @@ DvzRequest dvz_set_specialization(
 
 DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id)
 {
+    ASSERT(id != DVZ_ID_NONE);
+
     CREATE_REQUEST(DELETE, GRAPHICS);
     req.id = id;
 
@@ -1955,6 +1991,9 @@ DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id)
 DvzRequest
 dvz_bind_vertex(DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+    ASSERT(dat != DVZ_ID_NONE);
+
     CREATE_REQUEST(BIND, VERTEX);
     req.id = graphics;
     req.content.bind_vertex.binding_idx = binding_idx;
@@ -1971,6 +2010,9 @@ dvz_bind_vertex(DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzId dat
 
 DvzRequest dvz_bind_index(DvzBatch* batch, DvzId graphics, DvzId dat, DvzSize offset)
 {
+    ASSERT(graphics != DVZ_ID_NONE);
+    ASSERT(dat != DVZ_ID_NONE);
+
     CREATE_REQUEST(BIND, INDEX);
     req.id = graphics;
     req.content.bind_index.dat = dat;
@@ -1986,6 +2028,9 @@ DvzRequest dvz_bind_index(DvzBatch* batch, DvzId graphics, DvzId dat, DvzSize of
 
 DvzRequest dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize offset)
 {
+    ASSERT(pipe != DVZ_ID_NONE);
+    ASSERT(dat != DVZ_ID_NONE);
+
     CREATE_REQUEST(BIND, DAT);
     req.id = pipe;
     req.content.bind_dat.slot_idx = slot_idx;
@@ -2003,6 +2048,10 @@ DvzRequest dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId da
 DvzRequest dvz_bind_tex(
     DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId tex, DvzId sampler, uvec3 offset)
 {
+    ASSERT(pipe != DVZ_ID_NONE);
+    ASSERT(tex != DVZ_ID_NONE);
+    ASSERT(sampler != DVZ_ID_NONE);
+
     CREATE_REQUEST(BIND, TEX);
     req.id = pipe;
     req.content.bind_tex.slot_idx = slot_idx;
@@ -2024,6 +2073,8 @@ DvzRequest dvz_bind_tex(
 
 DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_id)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_BEGIN;
@@ -2038,6 +2089,8 @@ DvzRequest dvz_record_begin(DvzBatch* batch, DvzId canvas_id)
 
 DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, vec2 shape)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
@@ -2056,6 +2109,9 @@ DvzRequest dvz_record_push(
     DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderType shader, //
     DvzSize offset, DvzSize size, void* data)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+    ASSERT(graphics_id != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_PUSH;
@@ -2079,6 +2135,9 @@ DvzRequest dvz_record_draw(
     uint32_t first_vertex, uint32_t vertex_count,     //
     uint32_t first_instance, uint32_t instance_count)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW;
@@ -2101,6 +2160,9 @@ DvzRequest dvz_record_draw_indexed(
     uint32_t first_index, uint32_t vertex_offset, uint32_t index_count, //
     uint32_t first_instance, uint32_t instance_count)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+    ASSERT(graphics != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED;
@@ -2122,6 +2184,10 @@ DvzRequest dvz_record_draw_indexed(
 DvzRequest dvz_record_draw_indirect(
     DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+    ASSERT(graphics != DVZ_ID_NONE);
+    ASSERT(indirect != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDIRECT;
@@ -2140,6 +2206,10 @@ DvzRequest dvz_record_draw_indirect(
 DvzRequest dvz_record_draw_indexed_indirect(
     DvzBatch* batch, DvzId canvas_id, DvzId graphics, DvzId indirect, uint32_t draw_count)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+    ASSERT(graphics != DVZ_ID_NONE);
+    ASSERT(indirect != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_DRAW_INDEXED_INDIRECT;
@@ -2157,6 +2227,8 @@ DvzRequest dvz_record_draw_indexed_indirect(
 
 DvzRequest dvz_record_end(DvzBatch* batch, DvzId canvas_id)
 {
+    ASSERT(canvas_id != DVZ_ID_NONE);
+
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_END;
