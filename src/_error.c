@@ -28,7 +28,7 @@ DvzErrorCallback error_callback = NULL;
 
 
 
-void _dvz_assert(bool assertion, const char* message, const char* filename, int line)
+void dvz_assert(bool assertion, const char* message, const char* filename, int line)
 {
     if (!assertion)
     {
