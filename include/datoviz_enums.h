@@ -539,6 +539,7 @@ typedef enum
 {
     DVZ_BLEND_DISABLE,
     DVZ_BLEND_STANDARD,
+    DVZ_BLEND_DESTINATION,
     DVZ_BLEND_OIT,
 } DvzBlendType;
 

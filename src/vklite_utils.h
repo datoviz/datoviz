@@ -993,10 +993,27 @@ static VkPipelineColorBlendAttachmentState create_color_blend_attachment(DvzBlen
     attachment.blendEnable = blend_type != DVZ_BLEND_DISABLE;
 
     // NOTE: different blend types.
-    if (blend_type == DVZ_BLEND_STANDARD)
+    if (blend_type == DVZ_BLEND_DISABLE)
+    {
+        // HACK: for datostim, remove it
+        // attachment.colorWriteMask = VK_COLOR_COMPONENT_A_BIT;
+    }
+
+    else if (blend_type == DVZ_BLEND_STANDARD)
     {
         attachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
         attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        attachment.colorBlendOp = VK_BLEND_OP_ADD;
+
+        attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+        attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+        attachment.alphaBlendOp = VK_BLEND_OP_ADD;
+    }
+
+    else if (blend_type == DVZ_BLEND_DESTINATION)
+    {
+        attachment.srcColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
+        attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
         attachment.colorBlendOp = VK_BLEND_OP_ADD;
 
         attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
