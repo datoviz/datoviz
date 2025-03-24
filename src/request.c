@@ -582,6 +582,20 @@ static void _print_set_blend(DvzRequest* req)
         req->id, req->content.set_blend.blend);
 }
 
+static void _print_set_mask(DvzRequest* req)
+{
+    log_trace("print_set_mask");
+    ANN(req);
+
+    printf(
+        "- action: set\n"
+        "  type: mask\n"
+        "  id: 0x%" PRIx64 "\n"
+        "  content:\n"
+        "    mask: %d\n",
+        req->id, req->content.set_mask.mask);
+}
+
 static void _print_set_depth(DvzRequest* req)
 {
     log_trace("print_set_depth");
@@ -983,6 +997,7 @@ void dvz_request_print(DvzRequest* req, int flags)
     IF_REQ(BIND, INDEX) _print_bind_index(req);
     IF_REQ(SET, PRIMITIVE) _print_set_primitive(req);
     IF_REQ(SET, BLEND) _print_set_blend(req);
+    IF_REQ(SET, MASK) _print_set_mask(req);
     IF_REQ(SET, DEPTH) _print_set_depth(req);
     IF_REQ(SET, POLYGON) _print_set_polygon(req);
     IF_REQ(SET, CULL) _print_set_cull(req);
@@ -1016,6 +1031,8 @@ void dvz_request_print(DvzRequest* req, int flags)
         if (req->content.record.command.type == DVZ_RECORDER_END)
             _print_record_end(req);
     }
+
+    printf("\n");
 }
 
 
@@ -1782,6 +1799,22 @@ DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendType blend_typ
 
     IF_VERBOSE
     _print_set_blend(&req);
+
+    RETURN_REQUEST
+}
+
+
+
+DvzRequest dvz_set_mask(DvzBatch* batch, DvzId graphics, int32_t mask)
+{
+    ASSERT(graphics != DVZ_ID_NONE);
+
+    CREATE_REQUEST(SET, MASK);
+    req.id = graphics;
+    req.content.set_mask.mask = mask;
+
+    IF_VERBOSE
+    _print_set_mask(&req);
 
     RETURN_REQUEST
 }

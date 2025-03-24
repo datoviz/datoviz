@@ -2474,6 +2474,9 @@ DvzGraphics dvz_graphics(DvzGpu* gpu)
 
     graphics.dslots = dvz_slots(gpu);
 
+    // By default, mask on all color channels.
+    dvz_graphics_mask(&graphics, DVZ_MASK_COLOR_ALL);
+
     return graphics;
 }
 
@@ -2578,6 +2581,14 @@ void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type)
 {
     ANN(graphics);
     graphics->blend_type = blend_type;
+}
+
+
+
+void dvz_graphics_mask(DvzGraphics* graphics, int32_t mask)
+{
+    ANN(graphics);
+    graphics->color_mask = mask;
 }
 
 
@@ -2818,10 +2829,10 @@ void dvz_graphics_create(DvzGraphics* graphics)
     VkPipelineMultisampleStateCreateInfo multisampling = create_multisampling();
 
     // Blend attachments.
-    VkPipelineColorBlendAttachmentState color_attachment =
-        create_color_blend_attachment(graphics->blend_type);
+    VkPipelineColorBlendAttachmentState color_attachment = create_color_blend_attachment(
+        graphics->blend_type, (VkColorComponentFlags)graphics->color_mask);
     VkPipelineColorBlendAttachmentState pick_attachment =
-        create_color_blend_attachment(DVZ_BLEND_DISABLE);
+        create_color_blend_attachment(DVZ_BLEND_DISABLE, DVZ_MASK_COLOR_ALL);
     VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
         graphics->support_pick ? 2 : 1,
         (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});

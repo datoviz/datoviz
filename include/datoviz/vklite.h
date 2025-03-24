@@ -507,6 +507,7 @@ struct DvzGraphics
 
     VkPrimitiveTopology topology;
     DvzBlendType blend_type;
+    int32_t color_mask; // flags DvzColorMask
     DvzDepthTest depth_test;
     VkPolygonMode polygon_mode;
     VkCullModeFlags cull_mode;
@@ -1618,6 +1619,14 @@ void dvz_graphics_vertex_attr(
  * @param blend_type the blend type
  */
 void dvz_graphics_blend(DvzGraphics* graphics, DvzBlendType blend_type);
+
+/**
+ * Set the graphics color mask.
+ *
+ * @param graphics the graphics pipeline
+ * @param mask the color mask
+ */
+void dvz_graphics_mask(DvzGraphics* graphics, int32_t mask);
 
 /**
  * Set the graphics depth test.

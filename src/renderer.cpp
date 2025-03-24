@@ -338,6 +338,18 @@ static void* _graphics_blend(DvzRenderer* rd, DvzRequest req, void* user_data)
 
 
 
+static void* _graphics_mask(DvzRenderer* rd, DvzRequest req, void* user_data)
+{
+    DvzGraphics* graphics = _get_graphics(rd, req, user_data);
+    ASSERT(req.type == DVZ_REQUEST_OBJECT_MASK);
+
+    dvz_graphics_mask(graphics, req.content.set_mask.mask);
+
+    return NULL;
+}
+
+
+
 static void* _graphics_polygon(DvzRenderer* rd, DvzRequest req, void* user_data)
 {
     DvzGraphics* graphics = _get_graphics(rd, req, user_data);
@@ -969,6 +981,8 @@ static void _setup_router(DvzRenderer* rd)
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_DEPTH, _graphics_depth, NULL);
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_BLEND, _graphics_blend, NULL);
+    dvz_renderer_register(
+        rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_MASK, _graphics_mask, NULL);
     dvz_renderer_register(
         rd, DVZ_REQUEST_ACTION_SET, DVZ_REQUEST_OBJECT_POLYGON, _graphics_polygon, NULL);
     dvz_renderer_register(

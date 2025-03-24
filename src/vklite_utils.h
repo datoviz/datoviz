@@ -985,18 +985,15 @@ static VkPipelineMultisampleStateCreateInfo create_multisampling(void)
 
 
 
-static VkPipelineColorBlendAttachmentState create_color_blend_attachment(DvzBlendType blend_type)
+static VkPipelineColorBlendAttachmentState
+create_color_blend_attachment(DvzBlendType blend_type, VkColorComponentFlags mask)
 {
     VkPipelineColorBlendAttachmentState attachment = {0};
-    attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-                                VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    attachment.colorWriteMask = mask;
     attachment.blendEnable = blend_type != DVZ_BLEND_DISABLE;
 
-    // NOTE: different blend types.
     if (blend_type == DVZ_BLEND_DISABLE)
     {
-        // HACK: for datostim, remove it
-        // attachment.colorWriteMask = VK_COLOR_COMPONENT_A_BIT;
     }
 
     else if (blend_type == DVZ_BLEND_STANDARD)

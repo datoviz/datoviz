@@ -64,6 +64,7 @@ typedef struct DvzRequestTexUpload DvzRequestTexUpload;
 typedef struct DvzRequestGraphics DvzRequestGraphics;
 typedef struct DvzRequestPrimitive DvzRequestPrimitive;
 typedef struct DvzRequestBlend DvzRequestBlend;
+typedef struct DvzRequestMask DvzRequestMask;
 typedef struct DvzRequestDepth DvzRequestDepth;
 typedef struct DvzRequestPolygon DvzRequestPolygon;
 typedef struct DvzRequestCull DvzRequestCull;
@@ -467,6 +468,11 @@ struct DvzRequestBlend
     DvzBlendType blend;
 };
 
+struct DvzRequestMask
+{
+    int32_t mask;
+};
+
 struct DvzRequestDepth
 {
     DvzDepthTest depth;
@@ -594,6 +600,9 @@ union DvzRequestContent
 
     // Set blend type.
     DvzRequestBlend set_blend;
+
+    // Set color mask.
+    DvzRequestMask set_mask;
 
     // Set depth test.
     DvzRequestDepth set_depth;

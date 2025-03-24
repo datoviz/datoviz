@@ -576,6 +576,18 @@ DVZ_EXPORT DvzRequest dvz_set_blend(DvzBatch* batch, DvzId graphics, DvzBlendTyp
 
 
 /**
+ * Create a request for setting the color mask of a graphics pipe.
+ *
+ * @param batch the batch
+ * @param graphics the graphics pipe id
+ * @param mask the mask with RGBA boolean masks on the lower bits
+ * @returns the request
+ */
+DVZ_EXPORT DvzRequest dvz_set_mask(DvzBatch* batch, DvzId graphics, int32_t mask);
+
+
+
+/**
  * Create a request for setting the depth test of a graphics pipe.
  *
  * @param batch the batch
