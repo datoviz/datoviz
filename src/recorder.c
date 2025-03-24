@@ -72,6 +72,8 @@ static void _process_push(
 
     DvzRecorderPush* p = &record->contents.p;
     ANN(p);
+    ASSERT(p->size > 0);
+    ANN(p->data);
 
     log_debug("recorder: push constant offset=%d, size=%d", p->offset, p->size);
 
@@ -89,7 +91,8 @@ static void _process_push(
         p->offset, p->size, p->data);
 
     // NOTE: the data was copied by the requester, now we can free it.
-    FREE(p->data);
+
+    recorder->to_free = p->data;
 }
 
 static void _process_draw(
@@ -342,6 +345,16 @@ void dvz_recorder_set(DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds,
     }
 
     recorder->dirty[img_idx] = false;
+
+
+    // HACK: push constant data value once all command buffers have been recorded.
+    bool zeros[DVZ_MAX_SWAPCHAIN_IMAGES] = {0};
+    if (recorder->to_free != NULL &&
+        memcmp(recorder->dirty, zeros, DVZ_MAX_SWAPCHAIN_IMAGES * sizeof(bool)) == 0)
+    {
+        log_trace("free push constant copy after finished recording the command buffer");
+        FREE(recorder->to_free);
+    }
 }
 
 

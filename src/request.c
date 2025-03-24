@@ -2112,6 +2112,8 @@ DvzRequest dvz_record_push(
 {
     ASSERT(canvas_id != DVZ_ID_NONE);
     ASSERT(graphics_id != DVZ_ID_NONE);
+    ASSERT(size > 0);
+    ANN(data);
 
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
@@ -2120,8 +2122,10 @@ DvzRequest dvz_record_push(
     req.content.record.command.contents.p.shader_stages = shader_stages;
     req.content.record.command.contents.p.offset = offset;
     req.content.record.command.contents.p.size = size;
-    req.content.record.command.contents.p.data =
-        _cpy(size, data); // NOTE: the recorder will have to free it.
+
+    // NOTE: the recorder will have to free it.
+    req.content.record.command.contents.p.data = _cpy(size, data);
+    ANN(req.content.record.command.contents.p.data);
 
     IF_VERBOSE
     _print_record_push(&req);

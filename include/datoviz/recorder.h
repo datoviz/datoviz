@@ -27,7 +27,9 @@
 /*************************************************************************************************/
 
 #define DVZ_RECORDER_COMMAND_COUNT 16
-#define DVZ_MAX_SWAPCHAIN_IMAGES   4
+
+// HACK: repeats value from vklite.h
+#define DVZ_MAX_SWAPCHAIN_IMAGES 4
 
 
 
@@ -79,6 +81,8 @@ struct DvzRecorder
     // callbacks for processing the recorder commands, one per recorder type
     DvzRecorderCallback callbacks[DVZ_RECORDER_COUNT];
     void* callback_user_data[DVZ_RECORDER_COUNT];
+
+    void* to_free; // HACK: free push constant once all command buffers have been set
 };
 
 

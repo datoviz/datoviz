@@ -4194,6 +4194,10 @@ void dvz_cmd_push(
     DvzCommands* cmds, uint32_t idx, DvzSlots* dslots, VkShaderStageFlagBits stages, //
     VkDeviceSize offset, VkDeviceSize size, const void* data)
 {
+    ANN(dslots);
+    ASSERT(size > 0);
+    ANN(data);
+
     CMD_START
     vkCmdPushConstants(cb, dslots->pipeline_layout, stages, offset, size, data);
     CMD_END
