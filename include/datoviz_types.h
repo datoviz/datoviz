@@ -319,7 +319,7 @@ struct DvzRecorderViewport
 struct DvzRecorderPush
 {
     DvzId pipe_id;
-    DvzShaderType shader;
+    DvzShaderStageFlags shader_stages;
     DvzSize offset;
     DvzSize size;
     void* data;
@@ -515,7 +515,7 @@ struct DvzRequestSlot
 
 struct DvzRequestPush
 {
-    DvzShaderType shader;
+    DvzShaderStageFlags shader_stages;
     DvzSize offset;
     DvzSize size;
 };

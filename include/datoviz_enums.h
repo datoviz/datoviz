@@ -472,6 +472,10 @@ typedef enum
 
 
 
+typedef int32_t DvzShaderStageFlags;
+
+
+
 // VkDescriptorType wrapper.
 typedef enum
 {
@@ -545,6 +549,7 @@ typedef enum
 {
     DVZ_SLOT_DAT,
     DVZ_SLOT_TEX,
+    DVZ_SLOT_COUNT,
 } DvzSlotType;
 
 

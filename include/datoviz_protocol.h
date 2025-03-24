@@ -687,13 +687,14 @@ dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzDescriptorTy
  *
  * @param batch the batch
  * @param graphics the graphics pipe id
- * @param shader the shader with the push constant
+ * @param shader_stages the shader stages with the push constant
  * @param offset the byte offset for the push data visibility from the shader
  * @param size how much bytes the shader can see from the push constant
  * @returns the request
  */
-DVZ_EXPORT DvzRequest
-dvz_set_push(DvzBatch* batch, DvzId graphics, DvzShaderType shader, DvzSize offset, DvzSize size);
+DVZ_EXPORT DvzRequest dvz_set_push(
+    DvzBatch* batch, DvzId graphics, DvzShaderStageFlags shader_stages, DvzSize offset,
+    DvzSize size);
 
 
 
@@ -891,14 +892,14 @@ DVZ_EXPORT DvzRequest dvz_record_draw_indexed_indirect(
  * @param batch the batch
  * @param canvas_id the id of the canvas
  * @param graphics_id the id of the graphics pipeline
- * @param shader the shader stage
+ * @param shader_stages the shader stages
  * @param offset the byte offset
  * @param size the size of the data to upload
  * @param data the push constant data to upload
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_record_push(
-    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderType shader, //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderStageFlags shader_stages, //
     DvzSize offset, DvzSize size, void* data);
 
 

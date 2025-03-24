@@ -85,7 +85,7 @@ static void _process_push(
     }
 
     dvz_cmd_push(
-        cmds, img_idx, pipe->descriptors.dslots, (VkShaderStageFlagBits)p->shader, //
+        cmds, img_idx, pipe->descriptors.dslots, (VkShaderStageFlagBits)p->shader_stages, //
         p->offset, p->size, p->data);
 
     // NOTE: the data was copied by the requester, now we can free it.
@@ -296,7 +296,7 @@ void dvz_recorder_register(
     {
         log_debug("registering empty recorder callback for record type %d", (int)ctype);
     }
-    log_info("register callback for recorder command type %d", (int)ctype);
+    log_trace("register callback for recorder command type %d", (int)ctype);
     recorder->callbacks[(uint32_t)ctype] = cb;
     recorder->callback_user_data[(uint32_t)ctype] = user_data;
 }

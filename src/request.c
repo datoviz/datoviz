@@ -718,7 +718,7 @@ static void _print_set_push(DvzRequest* req, int flags)
     log_trace("print_create_push");
     ANN(req);
 
-    DvzShaderType shader = req->content.set_push.shader;
+    DvzShaderStageFlags shader_stages = req->content.set_push.shader_stages;
     DvzSize offset = req->content.set_push.offset;
     DvzSize size = req->content.set_push.size;
     ASSERT(size > 0);
@@ -728,10 +728,10 @@ static void _print_set_push(DvzRequest* req, int flags)
         "  type: push\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    shader: %d\n"
+        "    shader_stages: %d\n"
         "    offset: %" PRId64 "\n"
         "    size: %" PRId64 "\n",
-        req->id, shader, offset, size);
+        req->id, shader_stages, offset, size);
 }
 
 static void _print_set_specialization(DvzRequest* req, int flags)
@@ -845,11 +845,11 @@ static void _print_record_push(DvzRequest* req)
         "  type: push\n"
         "  id: 0x%" PRIx64 "\n"
         "  content:\n"
-        "    shader: %u\n"
+        "    shader_stages: %u\n"
         "    offset: %" PRId64 "\n"
         "    size: %" PRId64 "\n",
         req->id, //
-        req->content.record.command.contents.p.shader,
+        req->content.record.command.contents.p.shader_stages,
         req->content.record.command.contents.p.offset,
         req->content.record.command.contents.p.size);
     // TODO: display push constant data
@@ -1926,15 +1926,16 @@ DvzRequest dvz_set_slot(DvzBatch* batch, DvzId graphics, uint32_t slot_idx, DvzD
 
 
 
-DvzRequest
-dvz_set_push(DvzBatch* batch, DvzId graphics, DvzShaderType shader, DvzSize offset, DvzSize size)
+DvzRequest dvz_set_push(
+    DvzBatch* batch, DvzId graphics, DvzShaderStageFlags shader_stages, DvzSize offset,
+    DvzSize size)
 {
     ASSERT(size > 0);
     ASSERT(graphics != DVZ_ID_NONE);
 
     CREATE_REQUEST(SET, PUSH);
     req.id = graphics;
-    req.content.set_push.shader = shader;
+    req.content.set_push.shader_stages = shader_stages;
     req.content.set_push.offset = offset;
     req.content.set_push.size = size;
 
@@ -2106,7 +2107,7 @@ DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, ve
 
 
 DvzRequest dvz_record_push(
-    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderType shader, //
+    DvzBatch* batch, DvzId canvas_id, DvzId graphics_id, DvzShaderStageFlags shader_stages, //
     DvzSize offset, DvzSize size, void* data)
 {
     ASSERT(canvas_id != DVZ_ID_NONE);
@@ -2116,7 +2117,7 @@ DvzRequest dvz_record_push(
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_PUSH;
     req.content.record.command.contents.p.pipe_id = graphics_id;
-    req.content.record.command.contents.p.shader = shader;
+    req.content.record.command.contents.p.shader_stages = shader_stages;
     req.content.record.command.contents.p.offset = offset;
     req.content.record.command.contents.p.size = size;
     req.content.record.command.contents.p.data =

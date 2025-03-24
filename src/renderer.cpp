@@ -460,10 +460,7 @@ static void* _graphics_push(DvzRenderer* rd, DvzRequest req, void* user_data)
     DvzGraphics* graphics = _get_graphics(rd, req, user_data);
     ASSERT(req.type == DVZ_REQUEST_OBJECT_PUSH);
 
-    // HACK: from DvzShaderType to VkShaderStageFlagBits.
-    VkShaderStageFlagBits stages = req.content.set_push.shader == DVZ_SHADER_VERTEX
-                                       ? VK_SHADER_STAGE_VERTEX_BIT
-                                       : VK_SHADER_STAGE_FRAGMENT_BIT;
+    VkShaderStageFlagBits stages = (VkShaderStageFlagBits)req.content.set_push.shader_stages;
     dvz_graphics_push(graphics, stages, req.content.set_push.offset, req.content.set_push.size);
 
     return NULL;

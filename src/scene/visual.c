@@ -203,13 +203,14 @@ void dvz_visual_front(DvzVisual* visual, DvzFrontFace front_face)
 
 
 
-void dvz_visual_push(DvzVisual* visual, DvzShaderType shader, DvzSize offset, DvzSize size)
+void dvz_visual_push(
+    DvzVisual* visual, DvzShaderStageFlags shader_stages, DvzSize offset, DvzSize size)
 {
     ANN(visual);
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
-    dvz_set_push(batch, visual->graphics_id, shader, offset, size);
+    dvz_set_push(batch, visual->graphics_id, shader_stages, offset, size);
 }
 
 
