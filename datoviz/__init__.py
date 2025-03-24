@@ -222,6 +222,7 @@ def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
+DvzShaderStageFlags = ctypes.c_int32
 
 
 # HACK: mock structs for Qt/Vulkan wrappers
@@ -463,8 +464,9 @@ class DvzRecorderCommandType(CtypesEnum):
     DVZ_RECORDER_DRAW_INDIRECT = 4
     DVZ_RECORDER_DRAW_INDEXED_INDIRECT = 5
     DVZ_RECORDER_VIEWPORT = 6
-    DVZ_RECORDER_END = 7
-    DVZ_RECORDER_COUNT = 8
+    DVZ_RECORDER_PUSH = 7
+    DVZ_RECORDER_END = 8
+    DVZ_RECORDER_COUNT = 9
 
 
 class DvzRequestAction(CtypesEnum):
@@ -492,18 +494,20 @@ class DvzRequestObject(CtypesEnum):
     DVZ_REQUEST_OBJECT_PRIMITIVE = 6
     DVZ_REQUEST_OBJECT_DEPTH = 7
     DVZ_REQUEST_OBJECT_BLEND = 8
-    DVZ_REQUEST_OBJECT_POLYGON = 9
-    DVZ_REQUEST_OBJECT_CULL = 10
-    DVZ_REQUEST_OBJECT_FRONT = 11
-    DVZ_REQUEST_OBJECT_SHADER = 12
-    DVZ_REQUEST_OBJECT_VERTEX = 13
-    DVZ_REQUEST_OBJECT_VERTEX_ATTR = 14
-    DVZ_REQUEST_OBJECT_SLOT = 15
-    DVZ_REQUEST_OBJECT_SPECIALIZATION = 16
-    DVZ_REQUEST_OBJECT_GRAPHICS = 17
-    DVZ_REQUEST_OBJECT_INDEX = 18
-    DVZ_REQUEST_OBJECT_BACKGROUND = 19
-    DVZ_REQUEST_OBJECT_RECORD = 20
+    DVZ_REQUEST_OBJECT_MASK = 9
+    DVZ_REQUEST_OBJECT_POLYGON = 10
+    DVZ_REQUEST_OBJECT_CULL = 11
+    DVZ_REQUEST_OBJECT_FRONT = 12
+    DVZ_REQUEST_OBJECT_SHADER = 13
+    DVZ_REQUEST_OBJECT_VERTEX = 14
+    DVZ_REQUEST_OBJECT_VERTEX_ATTR = 15
+    DVZ_REQUEST_OBJECT_SLOT = 16
+    DVZ_REQUEST_OBJECT_PUSH = 17
+    DVZ_REQUEST_OBJECT_SPECIALIZATION = 18
+    DVZ_REQUEST_OBJECT_GRAPHICS = 19
+    DVZ_REQUEST_OBJECT_INDEX = 20
+    DVZ_REQUEST_OBJECT_BACKGROUND = 21
+    DVZ_REQUEST_OBJECT_RECORD = 22
 
 
 class DvzPrimitiveTopology(CtypesEnum):
@@ -548,6 +552,14 @@ class DvzFormat(CtypesEnum):
     DVZ_FORMAT_R32G32B32A32_UINT = 107
     DVZ_FORMAT_R32G32B32A32_SINT = 108
     DVZ_FORMAT_R32G32B32A32_SFLOAT = 109
+
+
+class DvzColorMask(CtypesEnum):
+    DVZ_MASK_COLOR_R = 0x00000001
+    DVZ_MASK_COLOR_G = 0x00000002
+    DVZ_MASK_COLOR_B = 0x00000004
+    DVZ_MASK_COLOR_A = 0x00000008
+    DVZ_MASK_COLOR_ALL = 0x0000000F
 
 
 class DvzFilter(CtypesEnum):
@@ -633,12 +645,14 @@ class DvzSamplerAxis(CtypesEnum):
 class DvzBlendType(CtypesEnum):
     DVZ_BLEND_DISABLE = 0
     DVZ_BLEND_STANDARD = 1
-    DVZ_BLEND_OIT = 2
+    DVZ_BLEND_DESTINATION = 2
+    DVZ_BLEND_OIT = 3
 
 
 class DvzSlotType(CtypesEnum):
     DVZ_SLOT_DAT = 0
     DVZ_SLOT_TEX = 1
+    DVZ_SLOT_COUNT = 2
 
 
 class DvzMarkerShape(CtypesEnum):
@@ -1183,8 +1197,9 @@ RECORDER_DRAW_INDEXED = 3
 RECORDER_DRAW_INDIRECT = 4
 RECORDER_DRAW_INDEXED_INDIRECT = 5
 RECORDER_VIEWPORT = 6
-RECORDER_END = 7
-RECORDER_COUNT = 8
+RECORDER_PUSH = 7
+RECORDER_END = 8
+RECORDER_COUNT = 9
 REQUEST_ACTION_NONE = 0
 REQUEST_ACTION_CREATE = 1
 REQUEST_ACTION_DELETE = 2
@@ -1206,18 +1221,20 @@ REQUEST_OBJECT_COMPUTE = 5
 REQUEST_OBJECT_PRIMITIVE = 6
 REQUEST_OBJECT_DEPTH = 7
 REQUEST_OBJECT_BLEND = 8
-REQUEST_OBJECT_POLYGON = 9
-REQUEST_OBJECT_CULL = 10
-REQUEST_OBJECT_FRONT = 11
-REQUEST_OBJECT_SHADER = 12
-REQUEST_OBJECT_VERTEX = 13
-REQUEST_OBJECT_VERTEX_ATTR = 14
-REQUEST_OBJECT_SLOT = 15
-REQUEST_OBJECT_SPECIALIZATION = 16
-REQUEST_OBJECT_GRAPHICS = 17
-REQUEST_OBJECT_INDEX = 18
-REQUEST_OBJECT_BACKGROUND = 19
-REQUEST_OBJECT_RECORD = 20
+REQUEST_OBJECT_MASK = 9
+REQUEST_OBJECT_POLYGON = 10
+REQUEST_OBJECT_CULL = 11
+REQUEST_OBJECT_FRONT = 12
+REQUEST_OBJECT_SHADER = 13
+REQUEST_OBJECT_VERTEX = 14
+REQUEST_OBJECT_VERTEX_ATTR = 15
+REQUEST_OBJECT_SLOT = 16
+REQUEST_OBJECT_PUSH = 17
+REQUEST_OBJECT_SPECIALIZATION = 18
+REQUEST_OBJECT_GRAPHICS = 19
+REQUEST_OBJECT_INDEX = 20
+REQUEST_OBJECT_BACKGROUND = 21
+REQUEST_OBJECT_RECORD = 22
 PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_LINE_LIST = 1
 PRIMITIVE_TOPOLOGY_LINE_STRIP = 2
@@ -1256,6 +1273,11 @@ FORMAT_R32G32B32_SFLOAT = 106
 FORMAT_R32G32B32A32_UINT = 107
 FORMAT_R32G32B32A32_SINT = 108
 FORMAT_R32G32B32A32_SFLOAT = 109
+MASK_COLOR_R = 0x00000001
+MASK_COLOR_G = 0x00000002
+MASK_COLOR_B = 0x00000004
+MASK_COLOR_A = 0x00000008
+MASK_COLOR_ALL = 0x0000000F
 FILTER_NEAREST = 0
 FILTER_LINEAR = 1
 FILTER_CUBIC_IMG = 1000015000
@@ -1305,9 +1327,11 @@ SAMPLER_AXIS_V = 1
 SAMPLER_AXIS_W = 2
 BLEND_DISABLE = 0
 BLEND_STANDARD = 1
-BLEND_OIT = 2
+BLEND_DESTINATION = 2
+BLEND_OIT = 3
 SLOT_DAT = 0
 SLOT_TEX = 1
+SLOT_COUNT = 2
 MARKER_SHAPE_DISC = 0
 MARKER_SHAPE_ASTERISK = 1
 MARKER_SHAPE_CHEVRON = 2
@@ -1999,6 +2023,17 @@ class DvzRecorderViewport(ctypes.Structure):
     ]
 
 
+class DvzRecorderPush(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("pipe_id", DvzId),
+        ("shader_stages", DvzShaderStageFlags),
+        ("offset", DvzSize),
+        ("size", DvzSize),
+        ("data", ctypes.c_void_p),
+    ]
+
+
 class DvzRecorderDraw(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
@@ -2044,6 +2079,7 @@ class DvzRecorderUnion(ctypes.Union):
     _pack_ = 8
     _fields_ = [
         ("v", DvzRecorderViewport),
+        ("p", DvzRecorderPush),
         ("draw", DvzRecorderDraw),
         ("draw_indexed", DvzRecorderDrawIndexed),
         ("draw_indirect", DvzRecorderDrawIndirect),
@@ -2160,6 +2196,13 @@ class DvzRequestBlend(ctypes.Structure):
     ]
 
 
+class DvzRequestMask(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("mask", ctypes.c_int32),
+    ]
+
+
 class DvzRequestDepth(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
@@ -2219,6 +2262,15 @@ class DvzRequestSlot(ctypes.Structure):
     _fields_ = [
         ("slot_idx", ctypes.c_uint32),
         ("type", ctypes.c_int32),
+    ]
+
+
+class DvzRequestPush(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("shader_stages", DvzShaderStageFlags),
+        ("offset", DvzSize),
+        ("size", DvzSize),
     ]
 
 
@@ -2288,6 +2340,7 @@ class DvzRequestContent(ctypes.Union):
         ("graphics", DvzRequestGraphics),
         ("set_primitive", DvzRequestPrimitive),
         ("set_blend", DvzRequestBlend),
+        ("set_mask", DvzRequestMask),
         ("set_depth", DvzRequestDepth),
         ("set_polygon", DvzRequestPolygon),
         ("set_cull", DvzRequestCull),
@@ -2296,6 +2349,7 @@ class DvzRequestContent(ctypes.Union):
         ("set_vertex", DvzRequestVertex),
         ("set_attr", DvzRequestAttr),
         ("set_slot", DvzRequestSlot),
+        ("set_push", DvzRequestPush),
         ("set_specialization", DvzRequestSpecialization),
         ("bind_vertex", DvzRequestBindVertex),
         ("bind_index", DvzRequestBindIndex),
@@ -2363,6 +2417,7 @@ FrameEvent = DvzFrameEvent
 GuiEvent = DvzGuiEvent
 TimerEvent = DvzTimerEvent
 RecorderViewport = DvzRecorderViewport
+RecorderPush = DvzRecorderPush
 RecorderDraw = DvzRecorderDraw
 RecorderDrawIndexed = DvzRecorderDrawIndexed
 RecorderDrawIndirect = DvzRecorderDrawIndirect
@@ -2380,6 +2435,7 @@ RequestTexUpload = DvzRequestTexUpload
 RequestGraphics = DvzRequestGraphics
 RequestPrimitive = DvzRequestPrimitive
 RequestBlend = DvzRequestBlend
+RequestMask = DvzRequestMask
 RequestDepth = DvzRequestDepth
 RequestPolygon = DvzRequestPolygon
 RequestCull = DvzRequestCull
@@ -2388,6 +2444,7 @@ RequestShaderSet = DvzRequestShaderSet
 RequestVertex = DvzRequestVertex
 RequestAttr = DvzRequestAttr
 RequestSlot = DvzRequestSlot
+RequestPush = DvzRequestPush
 RequestSpecialization = DvzRequestSpecialization
 RequestBindVertex = DvzRequestBindVertex
 RequestBindIndex = DvzRequestBindIndex
@@ -3623,6 +3680,29 @@ front_face : DvzFrontFace
 visual_front.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzFrontFace,  # DvzFrontFace front_face
+]
+
+# Function dvz_visual_push()
+visual_push = dvz.dvz_visual_push
+visual_push.__doc__ = """
+Set a push constant of a visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+shader_stages : DvzShaderStageFlags
+    the shader stage flags
+offset : DvzSize
+    the offset, in bytes
+size : DvzSize
+    the size, in bytes
+"""
+visual_push.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzShaderStageFlags,  # DvzShaderStageFlags shader_stages
+    DvzSize,  # DvzSize offset
+    DvzSize,  # DvzSize size
 ]
 
 # Function dvz_visual_specialization()
@@ -11176,6 +11256,32 @@ set_blend.argtypes = [
 ]
 set_blend.restype = DvzRequest
 
+# Function dvz_set_mask()
+set_mask = dvz.dvz_set_mask
+set_mask.__doc__ = """
+Create a request for setting the color mask of a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+mask : int32_t
+    the mask with RGBA boolean masks on the lower bits
+
+Returns
+-------
+type
+    the request
+"""
+set_mask.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    ctypes.c_int32,  # int32_t mask
+]
+set_mask.restype = DvzRequest
+
 # Function dvz_set_depth()
 set_depth = dvz.dvz_set_depth
 set_depth.__doc__ = """
@@ -11399,6 +11505,38 @@ set_slot.argtypes = [
     DvzDescriptorType,  # DvzDescriptorType type
 ]
 set_slot.restype = DvzRequest
+
+# Function dvz_set_push()
+set_push = dvz.dvz_set_push
+set_push.__doc__ = """
+Create a request for setting a push constant layout for a graphics pipe.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+graphics : DvzId
+    the graphics pipe id
+shader_stages : DvzShaderStageFlags
+    the shader stages with the push constant
+offset : DvzSize
+    the byte offset for the push data visibility from the shader
+size : DvzSize
+    how much bytes the shader can see from the push constant
+
+Returns
+-------
+type
+    the request
+"""
+set_push.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId graphics
+    DvzShaderStageFlags,  # DvzShaderStageFlags shader_stages
+    DvzSize,  # DvzSize offset
+    DvzSize,  # DvzSize size
+]
+set_push.restype = DvzRequest
 
 # Function dvz_set_specialization()
 set_specialization = dvz.dvz_set_specialization
@@ -11778,6 +11916,44 @@ record_draw_indexed_indirect.argtypes = [
     ctypes.c_uint32,  # uint32_t draw_count
 ]
 record_draw_indexed_indirect.restype = DvzRequest
+
+# Function dvz_record_push()
+record_push = dvz.dvz_record_push
+record_push.__doc__ = """
+Create a request for sending a push constant value while recording a command buffer.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+canvas_id : DvzId
+    the id of the canvas
+graphics_id : DvzId
+    the id of the graphics pipeline
+shader_stages : DvzShaderStageFlags
+    the shader stages
+offset : DvzSize
+    the byte offset
+size : DvzSize
+    the size of the data to upload
+data : void*
+    the push constant data to upload
+
+Returns
+-------
+type
+    the request
+"""
+record_push.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzId,  # DvzId canvas_id
+    DvzId,  # DvzId graphics_id
+    DvzShaderStageFlags,  # DvzShaderStageFlags shader_stages
+    DvzSize,  # DvzSize offset
+    DvzSize,  # DvzSize size
+    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+]
+record_push.restype = DvzRequest
 
 # Function dvz_record_end()
 record_end = dvz.dvz_record_end

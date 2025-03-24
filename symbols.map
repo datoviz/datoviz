@@ -315,6 +315,7 @@ dvz_visual_param
 dvz_visual_params
 dvz_visual_polygon
 dvz_visual_primitive
+dvz_visual_push
 dvz_visual_quads
 dvz_visual_resize
 dvz_visual_shader
@@ -417,6 +418,7 @@ dvz_record_draw_indexed
 dvz_record_draw_indexed_indirect
 dvz_record_draw_indirect
 dvz_record_end
+dvz_record_push
 dvz_record_viewport
 dvz_request_print
 dvz_requester
@@ -432,8 +434,10 @@ dvz_set_blend
 dvz_set_cull
 dvz_set_depth
 dvz_set_front
+dvz_set_mask
 dvz_set_polygon
 dvz_set_primitive
+dvz_set_push
 dvz_set_shader
 dvz_set_slot
 dvz_set_specialization

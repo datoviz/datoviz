@@ -223,6 +223,7 @@ def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
 
 DvzId = ctypes.c_uint64
 DvzSize = ctypes.c_uint64
+DvzShaderStageFlags = ctypes.c_int32
 
 
 # HACK: mock structs for Qt/Vulkan wrappers

@@ -3715,6 +3715,19 @@ void dvz_visual_primitive(
 )
 ```
 
+### `dvz_visual_push()`
+
+Set a push constant of a visual.
+
+```c
+void dvz_visual_push(
+    DvzVisual* visual,  // the visual
+    DvzShaderStageFlags shader_stages,  // the shader stage flags
+    DvzSize offset,  // the offset, in bytes
+    DvzSize size,  // the size, in bytes
+)
+```
+
 ### `dvz_visual_quads()`
 
 Set visual data as quads.
@@ -4897,6 +4910,22 @@ DvzRequest dvz_record_end(  // returns: the request
 )
 ```
 
+### `dvz_record_push()`
+
+Create a request for sending a push constant value while recording a command buffer.
+
+```c
+DvzRequest dvz_record_push(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId canvas_id,  // the id of the canvas
+    DvzId graphics_id,  // the id of the graphics pipeline
+    DvzShaderStageFlags shader_stages,  // the shader stages
+    DvzSize offset,  // the byte offset
+    DvzSize size,  // the size of the data to upload
+    void* data,  // the push constant data to upload
+)
+```
+
 ### `dvz_record_viewport()`
 
 Create a request for setting the viewport during command buffer recording.
@@ -5074,6 +5103,18 @@ DvzRequest dvz_set_front(  // returns: the request
 )
 ```
 
+### `dvz_set_mask()`
+
+Create a request for setting the color mask of a graphics pipe.
+
+```c
+DvzRequest dvz_set_mask(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    int32_t mask,  // the mask with RGBA boolean masks on the lower bits
+)
+```
+
 ### `dvz_set_polygon()`
 
 Create a request for setting the polygon mode of a graphics pipe.
@@ -5095,6 +5136,20 @@ DvzRequest dvz_set_primitive(  // returns: the request
     DvzBatch* batch,  // the batch
     DvzId graphics,  // the graphics pipe id
     DvzPrimitiveTopology primitive,  // the graphics primitive topology
+)
+```
+
+### `dvz_set_push()`
+
+Create a request for setting a push constant layout for a graphics pipe.
+
+```c
+DvzRequest dvz_set_push(  // returns: the request
+    DvzBatch* batch,  // the batch
+    DvzId graphics,  // the graphics pipe id
+    DvzShaderStageFlags shader_stages,  // the shader stages with the push constant
+    DvzSize offset,  // the byte offset for the push data visibility from the shader
+    DvzSize size,  // how much bytes the shader can see from the push constant
 )
 ```
 
@@ -5224,6 +5279,7 @@ DVZ_ARCBALL_FLAGS_CONSTRAIN
 ```
 DVZ_BLEND_DISABLE
 DVZ_BLEND_STANDARD
+DVZ_BLEND_DESTINATION
 DVZ_BLEND_OIT
 ```
 
@@ -5283,6 +5339,16 @@ DVZ_CAP_TRIANGLE_OUT
 DVZ_CAP_SQUARE
 DVZ_CAP_BUTT
 DVZ_CAP_COUNT
+```
+
+### `DvzColorMask`
+
+```
+DVZ_MASK_COLOR_R
+DVZ_MASK_COLOR_G
+DVZ_MASK_COLOR_B
+DVZ_MASK_COLOR_A
+DVZ_MASK_COLOR_ALL
 ```
 
 ### `DvzColormap`
@@ -5796,6 +5862,7 @@ DVZ_RECORDER_DRAW_INDEXED
 DVZ_RECORDER_DRAW_INDIRECT
 DVZ_RECORDER_DRAW_INDEXED_INDIRECT
 DVZ_RECORDER_VIEWPORT
+DVZ_RECORDER_PUSH
 DVZ_RECORDER_END
 DVZ_RECORDER_COUNT
 ```
@@ -5829,6 +5896,7 @@ DVZ_REQUEST_OBJECT_COMPUTE
 DVZ_REQUEST_OBJECT_PRIMITIVE
 DVZ_REQUEST_OBJECT_DEPTH
 DVZ_REQUEST_OBJECT_BLEND
+DVZ_REQUEST_OBJECT_MASK
 DVZ_REQUEST_OBJECT_POLYGON
 DVZ_REQUEST_OBJECT_CULL
 DVZ_REQUEST_OBJECT_FRONT
@@ -5836,6 +5904,7 @@ DVZ_REQUEST_OBJECT_SHADER
 DVZ_REQUEST_OBJECT_VERTEX
 DVZ_REQUEST_OBJECT_VERTEX_ATTR
 DVZ_REQUEST_OBJECT_SLOT
+DVZ_REQUEST_OBJECT_PUSH
 DVZ_REQUEST_OBJECT_SPECIALIZATION
 DVZ_REQUEST_OBJECT_GRAPHICS
 DVZ_REQUEST_OBJECT_INDEX
@@ -5901,6 +5970,7 @@ DVZ_SHAPE_OTHER
 ```
 DVZ_SLOT_DAT
 DVZ_SLOT_TEX
+DVZ_SLOT_COUNT
 ```
 
 ### `DvzTexDims`
@@ -6273,11 +6343,23 @@ struct DvzRecorderDrawIndirect
     uint32_t draw_count
 ```
 
+### `DvzRecorderPush`
+
+```
+struct DvzRecorderPush
+    DvzId pipe_id
+    DvzShaderStageFlags shader_stages
+    DvzSize offset
+    DvzSize size
+    void* data
+```
+
 ### `DvzRecorderUnion`
 
 ```
 union DvzRecorderUnion
     DvzRecorderViewport v
+    DvzRecorderPush p
     DvzRecorderDraw draw
     DvzRecorderDrawIndexed draw_indexed
     DvzRecorderDrawIndirect draw_indirect
@@ -6394,6 +6476,7 @@ union DvzRequestContent
     DvzRequestGraphics graphics
     DvzRequestPrimitive set_primitive
     DvzRequestBlend set_blend
+    DvzRequestMask set_mask
     DvzRequestDepth set_depth
     DvzRequestPolygon set_polygon
     DvzRequestCull set_cull
@@ -6402,6 +6485,7 @@ union DvzRequestContent
     DvzRequestVertex set_vertex
     DvzRequestAttr set_attr
     DvzRequestSlot set_slot
+    DvzRequestPush set_push
     DvzRequestSpecialization set_specialization
     DvzRequestBindVertex bind_vertex
     DvzRequestBindIndex bind_index
@@ -6456,6 +6540,13 @@ struct DvzRequestGraphics
     DvzGraphicsType type
 ```
 
+### `DvzRequestMask`
+
+```
+struct DvzRequestMask
+    int32_t mask
+```
+
 ### `DvzRequestPolygon`
 
 ```
@@ -6468,6 +6559,15 @@ struct DvzRequestPolygon
 ```
 struct DvzRequestPrimitive
     DvzPrimitiveTopology primitive
+```
+
+### `DvzRequestPush`
+
+```
+struct DvzRequestPush
+    DvzShaderStageFlags shader_stages
+    DvzSize offset
+    DvzSize size
 ```
 
 ### `DvzRequestRecord`
