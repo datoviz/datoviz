@@ -556,6 +556,15 @@ void dvz_app_timestamps(
 
 
 
+void dvz_app_wait(DvzApp* app)
+{
+    ANN(app);
+    ANN(app->gpu);
+    dvz_gpu_wait(app->gpu);
+}
+
+
+
 void dvz_app_destroy(DvzApp* app)
 {
     ANN(app);

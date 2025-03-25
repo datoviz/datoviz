@@ -219,6 +219,15 @@ DVZ_EXPORT void dvz_app_timestamps(
 
 
 /**
+ * Wait until the GPU has finished processing.
+ *
+ * @param app the app
+ */
+DVZ_EXPORT void dvz_app_wait(DvzApp* app);
+
+
+
+/**
  * Destroy the app.
  *
  * @param app the app
