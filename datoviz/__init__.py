@@ -1774,6 +1774,10 @@ class DvzIndex(ctypes.Structure):
     pass
 
 
+class DvzKeyCode(ctypes.Structure):
+    pass
+
+
 class DvzKeyboard(ctypes.Structure):
     pass
 
@@ -1783,6 +1787,10 @@ class DvzList(ctypes.Structure):
 
 
 class DvzMouse(ctypes.Structure):
+    pass
+
+
+class DvzMouseButton(ctypes.Structure):
     pass
 
 
@@ -1908,6 +1916,14 @@ class DvzShape(ctypes.Structure):
         ("d_right", ctypes.POINTER(ctypes.c_float * 3)),
         ("contour", ctypes.POINTER(ctypes.c_uint8 * 4)),
         ("index", ctypes.POINTER(ctypes.c_uint32)),
+    ]
+
+
+class DvzTime(ctypes.Structure):
+    _pack_ = 8
+    _fields_ = [
+        ("seconds", ctypes.c_uint64),
+        ("nanoseconds", ctypes.c_uint64),
     ]
 
 
@@ -2405,6 +2421,7 @@ AtlasFont = DvzAtlasFont
 MVP = DvzMVP
 Viewport = DvzViewport
 Shape = DvzShape
+Time = DvzTime
 KeyboardEvent = DvzKeyboardEvent
 MouseButtonEvent = DvzMouseButtonEvent
 MouseWheelEvent = DvzMouseWheelEvent
@@ -9662,6 +9679,20 @@ app_timestamps.argtypes = [
     ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint64_t* nanoseconds
 ]
 
+# Function dvz_app_wait()
+app_wait = dvz.dvz_app_wait
+app_wait.__doc__ = """
+Wait until the GPU has finished processing.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+"""
+app_wait.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
 # Function dvz_app_destroy()
 app_destroy = dvz.dvz_app_destroy
 app_destroy.__doc__ = """
@@ -9674,6 +9705,80 @@ app : DvzApp*
 """
 app_destroy.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
+]
+
+# Function dvz_time()
+time = dvz.dvz_time
+time.__doc__ = """
+Get the current time.
+
+Parameters
+----------
+time : DvzTime* (out parameter)
+    fill a structure with seconds and nanoseconds integers
+"""
+time.argtypes = [
+    ctypes.POINTER(DvzTime),  # DvzTime* time
+]
+
+# Function dvz_time_print()
+time_print = dvz.dvz_time_print
+time_print.__doc__ = """
+Display a time.
+
+Parameters
+----------
+time : DvzTime*
+    a time structure
+"""
+time_print.argtypes = [
+    ctypes.POINTER(DvzTime),  # DvzTime* time
+]
+
+# Function dvz_app_mouse()
+app_mouse = dvz.dvz_app_mouse
+app_mouse.__doc__ = """
+Return the last mouse position and pressed button.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the canvas id
+x : double* (out parameter)
+    a pointer to the mouse x position
+y : double* (out parameter)
+    a pointer to the mouse y position
+button : DvzMouseButton* (out parameter)
+    a pointer to the pressed button
+"""
+app_mouse.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* x
+    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* y
+    ctypes.POINTER(DvzMouseButton),  # DvzMouseButton* button
+]
+
+# Function dvz_app_keyboard()
+app_keyboard = dvz.dvz_app_keyboard
+app_keyboard.__doc__ = """
+Return the last keyboard key pressed.
+
+Parameters
+----------
+app : DvzApp*
+    the app
+canvas_id : DvzId
+    the canvas id
+key : DvzKeyCode* (out parameter)
+    a pointer to the last pressed key
+"""
+app_keyboard.argtypes = [
+    ctypes.POINTER(DvzApp),  # DvzApp* app
+    DvzId,  # DvzId canvas_id
+    ctypes.POINTER(DvzKeyCode),  # DvzKeyCode* key
 ]
 
 # Function dvz_free()

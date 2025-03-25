@@ -3999,6 +3999,28 @@ void dvz_app_gui(
 )
 ```
 
+### `dvz_app_keyboard()`
+
+Return the last keyboard key pressed.
+
+```c
+void dvz_app_keyboard(
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the canvas id
+)
+```
+
+### `dvz_app_mouse()`
+
+Return the last mouse position and pressed button.
+
+```c
+void dvz_app_mouse(
+    DvzApp* app,  // the app
+    DvzId canvas_id,  // the canvas id
+)
+```
+
 ### `dvz_app_onframe()`
 
 Register a frame callback.
@@ -4117,6 +4139,16 @@ void dvz_app_timestamps(
 )
 ```
 
+### `dvz_app_wait()`
+
+Wait until the GPU has finished processing.
+
+```c
+void dvz_app_wait(
+    DvzApp* app,  // the app
+)
+```
+
 ### `dvz_free()`
 
 Free a pointer.
@@ -4124,6 +4156,26 @@ Free a pointer.
 ```c
 void dvz_free(
     void* pointer,  // a pointer
+)
+```
+
+### `dvz_time()`
+
+Get the current time.
+
+```c
+void dvz_time(
+
+)
+```
+
+### `dvz_time_print()`
+
+Display a time.
+
+```c
+void dvz_time_print(
+    DvzTime* time,  // a time structure
 )
 ```
 
@@ -6684,6 +6736,14 @@ struct DvzShape
     vec3* d_right
     cvec4* contour
     DvzIndex* index
+```
+
+### `DvzTime`
+
+```
+struct DvzTime
+    uint64_t seconds
+    uint64_t nanoseconds
 ```
 
 ### `DvzTimerEvent`

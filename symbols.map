@@ -339,6 +339,8 @@ dvz_app_batch
 dvz_app_destroy
 dvz_app_frame
 dvz_app_gui
+dvz_app_keyboard
+dvz_app_mouse
 dvz_app_onframe
 dvz_app_onkeyboard
 dvz_app_onmouse
@@ -349,7 +351,10 @@ dvz_app_screenshot
 dvz_app_submit
 dvz_app_timer
 dvz_app_timestamps
+dvz_app_wait
 dvz_free
+dvz_time
+dvz_time_print
 dvz_external_dat
 dvz_external_index
 dvz_external_tex
