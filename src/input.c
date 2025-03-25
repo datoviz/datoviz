@@ -17,6 +17,7 @@
 #include "input.h"
 #include "common.h"
 #include "datoviz.h"
+#include "datoviz_app.h"
 #include "datoviz_types.h"
 #include "glfw_utils.h"
 #include "keyboard.h"
@@ -186,4 +187,61 @@ void dvz_input_destroy(DvzInput* input)
     dvz_mouse_destroy(input->mouse);
     dvz_keyboard_destroy(input->keyboard);
     FREE(input);
+}
+
+
+
+/*************************************************************************************************/
+/*  Time functions                                                                               */
+/*************************************************************************************************/
+
+void dvz_time(DvzTime* time)
+{
+    ANN(time)
+
+#if OS_WINDOWS
+
+    LARGE_INTEGER frequency, counter;
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&counter);
+    uint64_t nanoseconds = (long long unsigned int)(counter.QuadPart * 1000000000) /
+                           (long long unsigned int)frequency.QuadPart;
+    time->seconds = nanoseconds / 1000000000;
+    time->nanoseconds = nanoseconds % 1000000000;
+
+#elif OS_MACOS
+
+    static mach_timebase_info_data_t timebase;
+    if (timebase.denom == 0)
+    {
+        mach_timebase_info(&timebase);
+    }
+    uint64_t t = mach_absolute_time();
+    uint64_t nanoseconds = t * timebase.numer / timebase.denom;
+    time->seconds = nanoseconds / 1000000000;
+    time->nanoseconds = nanoseconds % 1000000000;
+
+#elif OS_LINUX
+
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    time->seconds = (uint64_t)ts.tv_sec;
+    time->nanoseconds = (uint64_t)ts.tv_nsec;
+
+#endif
+
+    // dvz_time_print(time);
+}
+
+
+
+void dvz_time_print(DvzTime* time)
+{
+    ANN(time);
+    printf(
+        "%03" PRIu64 " s %03" PRIu64 " ms %03" PRIu64 " us %03" PRIu64 " ns\n", time->seconds,
+        time->nanoseconds / 1000000,          // Milliseconds
+        (time->nanoseconds % 1000000) / 1000, // Microseconds
+        time->nanoseconds % 1000              // Nanoseconds
+    );
 }

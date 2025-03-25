@@ -37,6 +37,7 @@ typedef struct DvzViewport DvzViewport;
 typedef struct _VkViewport _VkViewport;
 typedef struct DvzBox DvzBox;
 typedef struct DvzAtlasFont DvzAtlasFont;
+typedef struct DvzTime DvzTime;
 
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
@@ -209,6 +210,14 @@ struct DvzShape
 struct DvzBox
 {
     double xmin, xmax, ymin, ymax, zmin, zmax;
+};
+
+
+
+struct DvzTime
+{
+    uint64_t seconds;
+    uint64_t nanoseconds;
 };
 
 

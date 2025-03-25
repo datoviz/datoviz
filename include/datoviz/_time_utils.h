@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include "_macros.h"
+#include "datoviz_types.h"
 
 
 
@@ -82,7 +83,6 @@ static int gettimeofday(struct timeval* tp, struct timezone* tzp)
 /*************************************************************************************************/
 
 typedef struct DvzClock DvzClock;
-typedef struct DvzTime DvzTime;
 
 
 
@@ -94,14 +94,6 @@ struct DvzClock
 {
     struct timeval start, current;
     double tick;
-};
-
-
-
-struct DvzTime
-{
-    uint64_t seconds;
-    uint64_t nanoseconds;
 };
 
 
@@ -125,63 +117,6 @@ static inline void dvz_sleep(int milliseconds)
     ts.tv_nsec = (milliseconds % 1000) * 1000000;
     nanosleep(&ts, NULL);
 #endif
-}
-
-
-
-/*************************************************************************************************/
-/*  Timestamps                                                                                   */
-/*************************************************************************************************/
-
-static inline void dvz_time_print(DvzTime* time)
-{
-    ANN(time);
-    printf(
-        "%03" PRIu64 " s %03" PRIu64 " ms %03" PRIu64 " us %03" PRIu64 " ns\n", time->seconds,
-        time->nanoseconds / 1000000,          // Milliseconds
-        (time->nanoseconds % 1000000) / 1000, // Microseconds
-        time->nanoseconds % 1000              // Nanoseconds
-    );
-}
-
-
-
-static inline void dvz_time(DvzTime* time)
-{
-    ANN(time)
-
-#if OS_WINDOWS
-
-    LARGE_INTEGER frequency, counter;
-    QueryPerformanceFrequency(&frequency);
-    QueryPerformanceCounter(&counter);
-    uint64_t nanoseconds = (long long unsigned int)(counter.QuadPart * 1000000000) /
-                           (long long unsigned int)frequency.QuadPart;
-    time->seconds = nanoseconds / 1000000000;
-    time->nanoseconds = nanoseconds % 1000000000;
-
-#elif OS_MACOS
-
-    static mach_timebase_info_data_t timebase;
-    if (timebase.denom == 0)
-    {
-        mach_timebase_info(&timebase);
-    }
-    uint64_t t = mach_absolute_time();
-    uint64_t nanoseconds = t * timebase.numer / timebase.denom;
-    time->seconds = nanoseconds / 1000000000;
-    time->nanoseconds = nanoseconds % 1000000000;
-
-#elif OS_LINUX
-
-    struct timespec ts;
-    clock_gettime(CLOCK_REALTIME, &ts);
-    time->seconds = (uint64_t)ts.tv_sec;
-    time->nanoseconds = (uint64_t)ts.tv_nsec;
-
-#endif
-
-    // dvz_time_print(time);
 }
 
 

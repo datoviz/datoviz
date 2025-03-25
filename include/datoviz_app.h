@@ -236,6 +236,29 @@ DVZ_EXPORT void dvz_app_destroy(DvzApp* app);
 
 
 
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  Utils                                                                                        */
+/*************************************************************************************************/
+/*************************************************************************************************/
+
+/**
+ * Get the current time.
+ *
+ * @param[out] time fill a structure with seconds and nanoseconds integers
+ */
+DVZ_EXPORT void dvz_time(DvzTime* time);
+
+
+/**
+ * Display a time.
+ *
+ * @param time a time structure
+ */
+DVZ_EXPORT void dvz_time_print(DvzTime* time);
+
+
+
 /**
  * Free a pointer.
  *
