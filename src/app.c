@@ -22,6 +22,7 @@
 #include "fileio.h"
 #include "gui.h"
 #include "host.h"
+#include "input.h"
 #include "presenter.h"
 #include "render_utils.h"
 #include "renderer.h"
@@ -301,6 +302,36 @@ void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_da
     dvz_client_callback(
         app->client, DVZ_CLIENT_EVENT_WINDOW_RESIZE, DVZ_CLIENT_CALLBACK_SYNC, //
         _client_callback, payload);
+}
+
+
+
+void dvz_app_mouse(DvzApp* app, DvzId canvas_id, double* x, double* y, DvzMouseButton* button)
+{
+    ANN(app);
+    DvzWindow* window = dvz_client_window(app->client, canvas_id);
+    if (window == NULL)
+    {
+        log_error("canvas #%" PRIx64 " does not exist");
+        return;
+    }
+    ANN(window);
+    dvz_window_mouse(window, x, y, button);
+}
+
+
+
+void dvz_app_keyboard(DvzApp* app, DvzId canvas_id, DvzKeyCode* key)
+{
+    ANN(app);
+    DvzWindow* window = dvz_client_window(app->client, canvas_id);
+    if (window == NULL)
+    {
+        log_error("canvas #%" PRIx64 " does not exist");
+        return;
+    }
+    ANN(window);
+    dvz_window_keyboard(window, key);
 }
 
 

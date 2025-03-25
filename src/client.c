@@ -258,6 +258,26 @@ int dvz_client_frame(DvzClient* client)
 
 
 
+DvzWindow* dvz_client_window(DvzClient* client, DvzId id)
+{
+    ANN(client);
+    DvzContainerIterator iter = dvz_container_iterator(&client->windows);
+    DvzWindow* window = NULL;
+    while (iter.item != NULL)
+    {
+        window = (DvzWindow*)iter.item;
+        ANN(window);
+        if (dvz_obj_is_created(&window->obj) && window->obj.id == id)
+        {
+            return window;
+        }
+        dvz_container_iter(&iter);
+    }
+    return NULL;
+}
+
+
+
 void dvz_client_run(DvzClient* client, uint64_t n_frames)
 {
     ANN(client);

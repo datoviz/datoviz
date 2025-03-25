@@ -260,6 +260,31 @@ DVZ_EXPORT void dvz_time_print(DvzTime* time);
 
 
 /**
+ * Return the last mouse position and pressed button.
+ *
+ * @param app the app
+ * @param canvas_id the canvas id
+ * @param[out] x a pointer to the mouse x position
+ * @param[out] y a pointer to the mouse y position
+ * @param[out] button a pointer to the pressed button
+ */
+DVZ_EXPORT void
+dvz_app_mouse(DvzApp* app, DvzId canvas_id, double* x, double* y, DvzMouseButton* button);
+
+
+
+/**
+ * Return the last keyboard key pressed.
+ *
+ * @param app the app
+ * @param canvas_id the canvas id
+ * @param[out] key a pointer to the last pressed key
+ */
+DVZ_EXPORT void dvz_app_keyboard(DvzApp* app, DvzId canvas_id, DvzKeyCode* key);
+
+
+
+/**
  * Free a pointer.
  *
  * @param pointer a pointer

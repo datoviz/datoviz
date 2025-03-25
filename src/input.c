@@ -192,6 +192,84 @@ void dvz_input_destroy(DvzInput* input)
 
 
 /*************************************************************************************************/
+/*  Synchronous input functions                                                                  */
+/*************************************************************************************************/
+
+void dvz_window_mouse(DvzWindow* window, double* x, double* y, DvzMouseButton* button)
+{
+    ANN(window);
+
+    GLFWwindow* w = (GLFWwindow*)window->backend_window;
+    ANN(w);
+
+    // Get mouse position.
+    if (x != NULL && y != NULL)
+        glfwGetCursorPos(w, x, y);
+
+    // Get mouse pressed button.
+    if (button != NULL)
+    {
+        // NOTE: this function signature can only report 1 pressed button at a time.
+        if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+            *button = DVZ_MOUSE_BUTTON_LEFT;
+
+        if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+            *button = DVZ_MOUSE_BUTTON_MIDDLE;
+
+        if (glfwGetMouseButton(w, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+            *button = DVZ_MOUSE_BUTTON_RIGHT;
+    }
+}
+
+
+
+void dvz_window_keyboard(DvzWindow* window, DvzKeyCode* key)
+{
+    ANN(window);
+    if (key == NULL)
+        return;
+
+    GLFWwindow* w = (GLFWwindow*)window->backend_window;
+    ANN(w);
+
+    DvzKeyCode k = (DvzKeyCode)0;
+
+    k = DVZ_KEY_SPACE;
+    if (glfwGetKey(w, k) == GLFW_PRESS)
+    {
+        *key = k;
+        return;
+    }
+
+    k = DVZ_KEY_APOSTROPHE;
+    if (glfwGetKey(w, k) == GLFW_PRESS)
+    {
+        *key = k;
+        return;
+    }
+
+    for (k = DVZ_KEY_COMMA; (int)k <= (int)DVZ_KEY_GRAVE_ACCENT; k = (DvzKeyCode)(k + 1))
+    {
+        if (glfwGetKey(w, k) == GLFW_PRESS)
+        {
+            *key = k;
+            return;
+        }
+    }
+
+    for (k = DVZ_KEY_ESCAPE; (int)k <= (int)DVZ_KEY_LAST; k = (DvzKeyCode)(k + 1))
+    {
+        if (glfwGetKey(w, k) == GLFW_PRESS)
+        {
+            *key = k;
+            return;
+        }
+    }
+}
+
+
+
+/*************************************************************************************************/
 /*  Time functions                                                                               */
 /*************************************************************************************************/
 

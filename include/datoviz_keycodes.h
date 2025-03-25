@@ -17,6 +17,7 @@
 /*  Keyboard key codes (must correspond to glfw for now)                                         */
 /*************************************************************************************************/
 
+// see https://www.glfw.org/docs/3.3/group__keys.html
 typedef enum
 {
     DVZ_KEY_UNKNOWN = -1,

@@ -80,6 +80,7 @@ typedef uint64_t DvzId;
 typedef struct DvzDeq DvzDeq;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzTimerItem DvzTimerItem;
+typedef struct DvzWindow DvzWindow;
 
 // Callback types.
 typedef void (*DvzClientCallback)(DvzClient* client, DvzClientEvent ev);
@@ -186,6 +187,10 @@ void dvz_client_callback(
 
 
 void dvz_client_process(DvzClient* client);
+
+
+
+DvzWindow* dvz_client_window(DvzClient* client, DvzId id);
 
 
 

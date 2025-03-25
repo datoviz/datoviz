@@ -68,6 +68,8 @@ typedef enum
 
 
 // Mouse buttons
+// WARNING: these don't match to GLFW_MOUSE_BUTTON because the left button is 0 which
+// is inconvenient. Use _from_glfw_button() from input.c if needed.
 typedef enum
 {
     DVZ_MOUSE_BUTTON_NONE = 0,
