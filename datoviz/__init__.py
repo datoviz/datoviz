@@ -1746,10 +1746,6 @@ class DvzCamera(ctypes.Structure):
     pass
 
 
-class DvzCapType(ctypes.Structure):
-    pass
-
-
 class DvzColor(ctypes.Structure):
     pass
 
@@ -1774,10 +1770,6 @@ class DvzIndex(ctypes.Structure):
     pass
 
 
-class DvzKeyCode(ctypes.Structure):
-    pass
-
-
 class DvzKeyboard(ctypes.Structure):
     pass
 
@@ -1787,10 +1779,6 @@ class DvzList(ctypes.Structure):
 
 
 class DvzMouse(ctypes.Structure):
-    pass
-
-
-class DvzMouseButton(ctypes.Structure):
     pass
 
 
@@ -1827,6 +1815,10 @@ class DvzScene(ctypes.Structure):
 
 
 class DvzServer(ctypes.Structure):
+    pass
+
+
+class DvzSize(ctypes.Structure):
     pass
 
 
@@ -5437,8 +5429,8 @@ segment_cap.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(DvzCapType),  # DvzCapType* initial
-    ctypes.POINTER(DvzCapType),  # DvzCapType* terminal
+    ctypes.POINTER(ctypes.c_int32),  # DvzCapType* initial
+    ctypes.POINTER(ctypes.c_int32),  # DvzCapType* terminal
     ctypes.c_int,  # int flags
 ]
 
@@ -9754,7 +9746,7 @@ app_mouse.argtypes = [
     DvzId,  # DvzId canvas_id
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* x
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* y
-    ctypes.POINTER(DvzMouseButton),  # DvzMouseButton* button
+    ctypes.POINTER(ctypes.c_int32),  # DvzMouseButton* button
 ]
 
 # Function dvz_app_keyboard()
@@ -9774,7 +9766,7 @@ key : DvzKeyCode* (out parameter)
 app_keyboard.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
-    ctypes.POINTER(DvzKeyCode),  # DvzKeyCode* key
+    ctypes.POINTER(ctypes.c_int32),  # DvzKeyCode* key
 ]
 
 # Function dvz_free()
