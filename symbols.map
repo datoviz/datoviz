@@ -93,6 +93,7 @@ dvz_gui_corner
 dvz_gui_demo
 dvz_gui_dragging
 dvz_gui_end
+dvz_gui_fixed
 dvz_gui_flags
 dvz_gui_image
 dvz_gui_moved

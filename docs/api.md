@@ -1106,6 +1106,17 @@ void dvz_gui_end(
 )
 ```
 
+### `dvz_gui_fixed()`
+
+Set a fixed position for a GUI dialog.
+
+```c
+void dvz_gui_fixed(
+    vec2 pos,  // the dialog position
+    vec2 pivot,  // the pivot
+)
+```
+
 ### `dvz_gui_flags()`
 
 Set the flags of the next GUI dialog.

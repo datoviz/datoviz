@@ -3868,6 +3868,17 @@ DVZ_EXPORT void dvz_gui_pos(vec2 pos, vec2 pivot);
 
 
 /**
+ * Set a fixed position for a GUI dialog.
+ *
+ * @param pos the dialog position
+ * @param pivot the pivot
+ *
+ */
+DVZ_EXPORT void dvz_gui_fixed(vec2 pos, vec2 pivot);
+
+
+
+/**
  * Get the position and size of the current dialog.
  *
  * @param viewport the x, y, w, h values

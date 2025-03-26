@@ -469,6 +469,13 @@ void dvz_gui_window_destroy(DvzGuiWindow* gui_window)
 
 void dvz_gui_pos(vec2 pos, vec2 pivot)
 {
+    ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_Once, ImVec2(pivot[0], pivot[1]));
+}
+
+
+
+void dvz_gui_fixed(vec2 pos, vec2 pivot)
+{
     ImGui::SetNextWindowPos(ImVec2(pos[0], pos[1]), ImGuiCond_None, ImVec2(pivot[0], pivot[1]));
 }
 
@@ -498,7 +505,7 @@ void dvz_gui_corner(DvzCorner corner, vec2 pad)
 
     vec2 pos_ = {pos.x, pos.y};
     vec2 pivot_ = {pivot.x, pivot.y};
-    dvz_gui_pos(pos_, pivot_);
+    dvz_gui_fixed(pos_, pivot_);
 }
 
 

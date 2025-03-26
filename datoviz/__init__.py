@@ -9042,6 +9042,23 @@ gui_pos.argtypes = [
     ctypes.c_float * 2,  # vec2 pivot
 ]
 
+# Function dvz_gui_fixed()
+gui_fixed = dvz.dvz_gui_fixed
+gui_fixed.__doc__ = """
+Set a fixed position for a GUI dialog.
+
+Parameters
+----------
+pos : vec2
+    the dialog position
+pivot : vec2
+    the pivot
+"""
+gui_fixed.argtypes = [
+    ctypes.c_float * 2,  # vec2 pos
+    ctypes.c_float * 2,  # vec2 pivot
+]
+
 # Function dvz_gui_viewport()
 gui_viewport = dvz.dvz_gui_viewport
 gui_viewport.__doc__ = """
