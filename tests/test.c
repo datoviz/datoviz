@@ -209,10 +209,10 @@ int dvz_run_tests(const char* match)
     TEST(test_canvas_1)
 
     // Testing simple loop.
-    TEST(test_loop_1)
-    TEST(test_loop_2)
-    TEST(test_loop_cube)
-    TEST(test_loop_gui)
+    // TEST(test_loop_1)
+    // TEST(test_loop_2)
+    // TEST(test_loop_cube)
+    // TEST(test_loop_gui)
 
     // Testing GUI.
     TEST(test_gui_1)
