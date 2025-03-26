@@ -353,7 +353,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     forward = ""
     for dtype in sorted(TYPES):
         # Remove the structure from the forward declarations if it is already defined.
-        if dtype not in struct_names and dtype not in ENUMS:
+        if dtype not in struct_names and dtype not in ENUMS and dtype != 'DvzSize':
             forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 

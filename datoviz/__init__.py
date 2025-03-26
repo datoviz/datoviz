@@ -1818,10 +1818,6 @@ class DvzServer(ctypes.Structure):
     pass
 
 
-class DvzSize(ctypes.Structure):
-    pass
-
-
 class DvzTex(ctypes.Structure):
     pass
 
