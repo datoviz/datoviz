@@ -4,6 +4,43 @@
 
 Work in progress.
 
+### Ongoing developments
+
+* Internal backend-related refactoring to better support Qt and offscreen rendering
+* Better support for compute shaders
+* More Vulkan/graphics features: multipass rendering, antialiasing, order-independent transparency...
+* Integration with other GPU APIs such as CUDA/CuPy.
+
+
+## v0.2.3 (??) [UPCOMING]
+
+### Visuals
+
+* Fixed lighting and positioning in sphere visual ([#80](https://github.com/datoviz/datoviz/issues/80) by @ron-adam).
+
+### GUI
+
+* Added docking support in ImGui wrapper.
+* Added initial support for GUI panels, Datoviz panels that are movable and dockable with ImGui.
+
+### Datoviz Rendering Protocol (DRP)
+
+* Added support for push constants in DRP.
+* Added support for color masks in DRP.
+
+### App
+
+* Added a way to recover the precise timestamps of the presentation of the last frames (`dvz_app_timestamps()`).
+
+### Examples
+
+* Added an example of recording a video of a Datoviz animation in Python using `imageio` (`examples/video.py`).
+
+### Miscellaneous
+
+* Implemented various bug fixes and optimizations.
+
+
 ## v0.2.2 (2025-01-19) [LATEST RELEASE]
 
 Minor release with a few improvements to the mesh visual, a couple of new GUI features, and preparatory work for the API export of the *Datoviz Rendering Protocol* (DRP) layer for more advanced used-cases from Python or C/C++.
