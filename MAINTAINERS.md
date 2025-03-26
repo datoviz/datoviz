@@ -18,10 +18,10 @@ Release checklist from a Linux development machine:
     * Write the `CHANGELOG.md` for the new version.
 2. **Cross-platform release build and test.**
     * For each of Linux, macOS arm64, macOS x86_64, Windows, do:
-    * `just clean release api`: rebuild in release mode.
-    * `just test`: run the C testing suite.
-    * `just pytest`: run the Python testing suite.
-    * `just act test-linux`: **on Linux only**, simulate the GitHub Actions tests locally.
+        * `just clean release api`: rebuild in release mode.
+        * `just test`: run the C testing suite.
+        * `just pytest`: run the Python testing suite.
+        * `just act test-linux`: **on Linux only**, simulate the GitHub Actions tests locally.
 3. **Version bump.**
     * `version=x.y.z`: set up the new version.
     * `just bump $version`: bump the codebase to the new version.
@@ -32,8 +32,8 @@ Release checklist from a Linux development machine:
     * `just wheels`: build the wheels on GitHub Actions.
     * Wait until the [wheels have been successfully built on all supported platforms](https://github.com/datoviz/datoviz/actions/workflows/wheels.yml). **This will take about 15 minutes** (the Windows build is currently much longer than macOS and Linux builds because GitHub Actions does not support Windows Docker containers yet).
     * For each of Linux, macOS arm64, macOS x86_64, Windows, do:
-    * `just checkartifact`
-    * Fix and go back to (2) if there is any problem.
+        * `just checkartifact`
+        * Fix and go back to (2) if there is any problem.
 5. **Release.**
     * `git fetch --all && git status` : check we're up to date and on the `dev` branch.
     * `git checkout main && git pull` : switch to `main` before merging.
