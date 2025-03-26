@@ -142,6 +142,24 @@ void dvz_gpu_extension(DvzGpu* gpu, const char* extension_name)
 {
     ANN(gpu);
     ANN(extension_name);
+
+    // Check for duplicates
+    for (uint32_t i = 0; i < gpu->extension_count; i++)
+    {
+        if (strcmp(gpu->extensions[i], extension_name) == 0)
+        {
+            // Extension already exists, do nothing
+            return;
+        }
+    }
+
+    // Check for overflow
+    if (gpu->extension_count >= DVZ_MAX_DEVICE_EXTENSIONS)
+    {
+        log_error("Maximum number of device extensions reached.");
+        return;
+    }
+
     gpu->extensions[gpu->extension_count++] = extension_name;
 }
 
