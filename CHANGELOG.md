@@ -18,7 +18,7 @@ Work in progress.
 
 * Fixed lighting and positioning in sphere visual ([#80](https://github.com/datoviz/datoviz/issues/80) by @ron-adam).
 
-### GUI
+### GUI
 
 * Added docking support in ImGui wrapper.
 * Added initial support for GUI panels, Datoviz panels that are movable and dockable with ImGui.
