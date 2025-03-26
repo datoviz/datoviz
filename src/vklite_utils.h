@@ -1035,19 +1035,19 @@ create_color_blend_attachment(DvzBlendType blend_type, VkColorComponentFlags mas
 
 
 static VkPipelineColorBlendStateCreateInfo
-create_color_blending(uint32_t count, VkPipelineColorBlendAttachmentState* attachments)
+create_color_blend(uint32_t count, VkPipelineColorBlendAttachmentState* attachments)
 {
-    VkPipelineColorBlendStateCreateInfo color_blending = {0};
-    color_blending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    color_blending.logicOpEnable = VK_FALSE;
-    color_blending.logicOp = VK_LOGIC_OP_COPY;
-    color_blending.attachmentCount = count;
-    color_blending.pAttachments = attachments;
-    color_blending.blendConstants[0] = 0.0f;
-    color_blending.blendConstants[1] = 0.0f;
-    color_blending.blendConstants[2] = 0.0f;
-    color_blending.blendConstants[3] = 0.0f;
-    return color_blending;
+    VkPipelineColorBlendStateCreateInfo color_blend = {0};
+    color_blend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    color_blend.logicOpEnable = VK_FALSE;
+    color_blend.logicOp = VK_LOGIC_OP_COPY;
+    color_blend.attachmentCount = count;
+    color_blend.pAttachments = attachments;
+    color_blend.blendConstants[0] = 0.0f;
+    color_blend.blendConstants[1] = 0.0f;
+    color_blend.blendConstants[2] = 0.0f;
+    color_blend.blendConstants[3] = 0.0f;
+    return color_blend;
 }
 
 

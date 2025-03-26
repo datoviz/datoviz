@@ -3539,12 +3539,12 @@ void dvz_visual_attr(
 
 ### `dvz_visual_blend()`
 
-Set the blending type of a visual.
+Set the blend type of a visual.
 
 ```c
 void dvz_visual_blend(
     DvzVisual* visual,  // the visual
-    DvzBlendType blend_type,  // the blending type
+    DvzBlendType blend_type,  // the blend type
 )
 ```
 

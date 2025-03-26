@@ -2833,7 +2833,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
         graphics->blend_type, (VkColorComponentFlags)graphics->color_mask);
     VkPipelineColorBlendAttachmentState pick_attachment =
         create_color_blend_attachment(DVZ_BLEND_DISABLE, DVZ_MASK_COLOR_ALL);
-    VkPipelineColorBlendStateCreateInfo color_blending = create_color_blending(
+    VkPipelineColorBlendStateCreateInfo color_blend = create_color_blend(
         graphics->support_pick ? 2 : 1,
         (VkPipelineColorBlendAttachmentState[]){color_attachment, pick_attachment});
 
@@ -2855,7 +2855,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
     pipelineInfo.pDynamicState = &dynamic_state;
     pipelineInfo.pRasterizationState = &rasterizer;
     pipelineInfo.pMultisampleState = &multisampling;
-    pipelineInfo.pColorBlendState = &color_blending;
+    pipelineInfo.pColorBlendState = &color_blend;
     pipelineInfo.pDepthStencilState = &depth_stencil;
     ASSERT(graphics->dslots.pipeline_layout != VK_NULL_HANDLE);
     pipelineInfo.layout = graphics->dslots.pipeline_layout;

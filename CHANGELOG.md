@@ -51,7 +51,7 @@ Minor release with a few improvements to the mesh visual, a couple of new GUI fe
 
 * Improved transparency capabilities (still imperfect, no order-independent transparency yet).
 * Added support for multiple directional lights.
-* Started support for multiple blending types.
+* Started support for multiple blend types.
 * Added an example of using the mesh visual with dynamic updates.
 
 #### Volume visual

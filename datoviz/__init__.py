@@ -3634,14 +3634,14 @@ visual_primitive.argtypes = [
 # Function dvz_visual_blend()
 visual_blend = dvz.dvz_visual_blend
 visual_blend.__doc__ = """
-Set the blending type of a visual.
+Set the blend type of a visual.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
 blend_type : DvzBlendType
-    the blending type
+    the blend type
 """
 visual_blend.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual

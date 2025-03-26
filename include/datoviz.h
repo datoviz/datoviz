@@ -752,10 +752,10 @@ DVZ_EXPORT void dvz_visual_primitive(DvzVisual* visual, DvzPrimitiveTopology pri
 
 
 /**
- * Set the blending type of a visual.
+ * Set the blend type of a visual.
  *
  * @param visual the visual
- * @param blend_type the blending type
+ * @param blend_type the blend type
  */
 DVZ_EXPORT void dvz_visual_blend(DvzVisual* visual, DvzBlendType blend_type);
 
