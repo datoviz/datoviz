@@ -1,6 +1,6 @@
 """WARNING: DO NOT EDIT: automatically-generated file"""
 
-__version__ = "0.2.3-dev"
+__version__ = "0.2.3"
 
 
 # ===============================================================================
