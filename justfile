@@ -949,15 +949,35 @@ checkwheel path="":
     exit $res
 #
 
+checkartifactversion temp_dir:
+    #!/usr/bin/env sh
+    set -e
+    version=$(just version)
+    wheel_file=$(find "{{temp_dir}}" -name 'datoviz*.whl' | head -n 1)
+    if [ -z "$wheel_file" ]; then
+        echo "❌ No wheel file found!"
+        rm -rf "{{temp_dir}}"
+        exit 1
+    fi
+
+    if ! echo "$wheel_file" | grep -q "$version"; then
+        echo "❌ Version mismatch: wheel '$wheel_file' does not contain expected version '$version'"
+        rm -rf "{{temp_dir}}"
+        exit 1
+    fi
+#
+
 [linux]
 checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    set -e
     run_id={{RUN_ID}}
     if [ -z "$run_id" ]; then
         run_id=$(just runid)
     fi
     temp_dir=$(mktemp -d)
     gh run download $run_id -n wheel-linux_x86_64 -D $temp_dir
+    just checkartifactversion $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
@@ -967,6 +987,7 @@ checkartifact RUN_ID="":
 [macos]
 checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    set -e
     run_id={{RUN_ID}}
     if [ -z "$run_id" ]; then
         run_id=$(just runid)
@@ -982,6 +1003,7 @@ checkartifact RUN_ID="":
 
     temp_dir=$(mktemp -d)
     gh run download $run_id -n "wheel-macosx_$platform" -D $temp_dir
+    just checkartifactversion $temp_dir
     ls $temp_dir/datoviz*.whl
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
@@ -992,12 +1014,14 @@ checkartifact RUN_ID="":
 [windows]
 checkartifact RUN_ID="":
     #!/usr/bin/env sh
+    set -e
     run_id={{RUN_ID}}
     if [ -z "$run_id" ]; then
         run_id=$(just runid)
     fi
     temp_dir=$(mktemp -d)
     gh run download $run_id -n wheel-win_amd64 -D $temp_dir
+    just checkartifactversion $temp_dir
     just checkwheel $temp_dir/datoviz*.whl
     exit_code=$?
     rm -rf "${temp_dir}"
