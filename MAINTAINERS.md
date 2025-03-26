@@ -39,7 +39,7 @@ Release checklist from a Linux development machine:
     * `git checkout main && git pull` : switch to `main` before merging.
     * `git merge dev`: merge `dev` to `main`.
     * `just tag $version`: once on `main`, tag with the new version.
-    * `git push origin --tags`: push the tag.
+    * `git push origin main && git push origin --tags`: push the tag.
     * `just draft`: create a new GitHub Release draft with the built wheels.
     * Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
     * `just upload`: upload the wheels to PyPI.
