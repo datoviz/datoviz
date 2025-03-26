@@ -12,7 +12,7 @@ Work in progress.
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
-## v0.2.3 (??) [UPCOMING]
+## v0.2.3 (2025-03-26) [LATEST RELEASE]
 
 ### Visuals
 
@@ -41,7 +41,7 @@ Work in progress.
 * Implemented various bug fixes and optimizations.
 
 
-## v0.2.2 (2025-01-19) [LATEST RELEASE]
+## v0.2.2 (2025-01-19)
 
 Minor release with a few improvements to the mesh visual, a couple of new GUI features, and preparatory work for the API export of the *Datoviz Rendering Protocol* (DRP) layer for more advanced used-cases from Python or C/C++.
 
