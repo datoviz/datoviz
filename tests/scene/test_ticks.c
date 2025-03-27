@@ -44,6 +44,20 @@ int test_ticks_1(TstSuite* suite)
     dvz_ticks_compute(ticks, 1.23e6, 1.24e6, 10);
     dvz_ticks_print(ticks);
 
+    dvz_ticks_compute(ticks, -12, -10.987, 5);
+    dvz_ticks_print(ticks);
+
+    dvz_ticks_compute(ticks, -12, -10.987, 5);
+    dvz_ticks_print(ticks);
+
+    dvz_ticks_clear(ticks);
+    AT(dvz_ticks_compute(ticks, 0, 1, 10));
+    AT(!dvz_ticks_compute(ticks, 0, 1.01, 10));
+    AT(!dvz_ticks_compute(ticks, -0.01, 1.01, 10));
+    AT(dvz_ticks_compute(ticks, 0, 1.1, 10));
+    AT(!dvz_ticks_compute(ticks, 0.01, 1.1, 10));
+    AT(dvz_ticks_compute(ticks, 0.05, 1.1, 10));
+
     dvz_ticks_destroy(ticks);
     return 0;
 }

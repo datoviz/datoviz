@@ -140,6 +140,10 @@ void dvz_ticks_print(DvzTicks* ticks);
 
 
 
+void dvz_ticks_clear(DvzTicks* ticks);
+
+
+
 void dvz_ticks_destroy(DvzTicks* ticks);
 
 

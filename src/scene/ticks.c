@@ -30,11 +30,8 @@
 #define Z_MAX          18
 #define PRECISION      2
 #define TARGET_DENSITY .2
-#define SCORE_WEIGHTS                                                                             \
-    {                                                                                             \
-        0.2, 0.25, 0.5, 0.05                                                                      \
-    }
-#define CLOSE(x, y) (fabs((x) - (y)) < EPSILON)
+#define SCORE_WEIGHTS  {0.2, 0.25, 0.5, 0.05}
+#define CLOSE(x, y)    (fabs((x) - (y)) < EPSILON)
 
 
 
@@ -489,8 +486,7 @@ DvzTicks* dvz_ticks(int flags)
 
 
 
-// range_size is in the same unit as glyph size, it's the size between dmin
-// and dmax (below)
+// range_size is in the same unit as glyph size, it's the size between dmin and dmax (below)
 void dvz_ticks_size(DvzTicks* ticks, double range_size, double glyph_size)
 {
     ANN(ticks);
@@ -503,6 +499,11 @@ void dvz_ticks_size(DvzTicks* ticks, double range_size, double glyph_size)
 bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t requested_count)
 {
     ANN(ticks);
+    if (dmin >= dmax)
+    {
+        log_error("invalid range [%.3f, %.3f]", dmin, dmax);
+        return false;
+    }
     ticks->dmin = dmin;
     ticks->dmax = dmax;
 
@@ -527,7 +528,7 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     log_info(
         "extended Wilkinson algorithm finished (changed %d): "
         "lmin=%.3f, lmax=%.3f, lstep=%.3f",
-        has_changed, lmin, lmax, lstep);
+        has_changed, ticks->lmin, ticks->lmax, ticks->lstep);
 
     return has_changed;
 }
@@ -597,6 +598,17 @@ void dvz_ticks_print(DvzTicks* ticks)
     log_info(
         "%.6f -> %.6f (step %.6f), format %d", //
         ticks->lmin, ticks->lmax, ticks->lstep, ticks->format);
+}
+
+
+
+void dvz_ticks_clear(DvzTicks* ticks)
+{
+    ANN(ticks);
+    ticks->lmin = 0;
+    ticks->lmax = 0;
+    ticks->lstep = 0;
+    ticks->format = 0;
 }
 
 
