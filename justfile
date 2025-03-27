@@ -1122,7 +1122,7 @@ swiftshader +args:
 # -------------------------------------------------------------------------------------------------
 wasm:
     set -e
-    python3 tools/generate_constjs.py
+    python3 tools/generate_wasm.py
     emcc @wasm_sources.txt -o build/datoviz.js \
         -Iinclude/ -Iinclude/datoviz/ \
         -Ibuild/_deps/cglm-src/include/ \
