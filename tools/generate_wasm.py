@@ -42,6 +42,7 @@ def map_type(dtype):
         return "number"
     return "number"
 
+
 def strip_prefix(name):
     return name[4:] if name.startswith("DVZ_") else name
 
@@ -78,8 +79,7 @@ def resolve_constants(raw_constants):
 # Entry-point
 # -------------------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     with open(HEADERS_JSON) as f:
         data = json.load(f)
 
@@ -90,7 +90,6 @@ if __name__ == '__main__':
     raw_constants = {}
 
     for header in data.values():
-
         # Functions
         for fn in header.get("functions", {}).values():
             name = fn["name"]
@@ -98,7 +97,7 @@ if __name__ == '__main__':
                 continue
             ret = map_type(fn["returns"])
             args = [map_type(arg["dtype"]) for arg in fn["args"]]
-            short_name = name[4:] if name.startswith('dvz_') else name
+            short_name = name[4:] if name.startswith("dvz_") else name
             wrappers.append(
                 f"    '{short_name}': Module.cwrap('{name}', {json.dumps(ret)}, {json.dumps(args)}),"
             )

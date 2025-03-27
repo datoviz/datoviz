@@ -17,13 +17,13 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz_math.h"
+
 EXTERN_C_ON
 #include <b64/b64.h>
 EXTERN_C_OFF
 
 #include <stddef.h>
-
-#include "datoviz_math.h"
 
 
 

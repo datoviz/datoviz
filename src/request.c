@@ -8,11 +8,11 @@
 /*  Request                                                                                      */
 /*************************************************************************************************/
 
-#include "datoviz_math.h"
-#include "_list.h"
 #include "_debug.h"
+#include "_list.h"
 #include "_pointer.h"
 #include "_prng.h"
+#include "datoviz_math.h"
 #include "datoviz_protocol.h"
 #include "env_utils.h"
 #include "fifo.h"
