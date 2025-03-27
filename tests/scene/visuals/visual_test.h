@@ -20,7 +20,7 @@
 #include "app.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
-#include "scene/axis.h"
+// #include "scene/axis.h"
 #include "scene/camera.h"
 #include "scene/dual.h"
 #include "scene/scene.h"
@@ -70,8 +70,8 @@ struct VisualTest
     DvzArcball* arcball;
     DvzCamera* camera;
     DvzVisual* volume;
-    DvzAxis* haxis;
-    DvzAxis* vaxis;
+    // DvzAxis* haxis;
+    // DvzAxis* vaxis;
     uint32_t n, m, p;
     void* user_data;
 };
