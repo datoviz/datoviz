@@ -23,16 +23,19 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 * v0.3 (mid 2025?): 2D axes
 * After v0.3 is released, we will focus on improving many internal aspects of Datoviz in order to support more features in the near future:
 
-    * Improved 3D rendering of meshes and volumes (correct transparency)
-    * Multisample Anti-Aliasing
-    * Picking
-    * CUDA compatibility
-    * Vulkan compute shaders (similar to CUDA kernels)
-    * Mixing GPGPU compute and graphics
-    * Sharing GPU data across visuals
-    * IPython integration
-    * Qt backend
-    * WebGPU backend
+    * 📐 More visuals: arrows, polygons, graphs planar straight-line graphs (PSLG)...
+    * 🧊 Improved 3D rendering of meshes and volumes (correct transparency)
+    * ✨ Multisample Anti-Aliasing
+    * 🎯 Picking
+    * 📈 Nonlinear transforms
+    * ⚡ CUDA compatibility
+    * 🧮 Vulkan compute shaders (similar to CUDA kernels)
+    * 🖌️ Dynamic shaders
+    * 🎛️ Mixing GPGPU compute and graphics
+    * 🔗 Sharing GPU data across visuals
+    * 🐍 IPython integration
+    * 🖥️ Qt backend
+    * 🌐 WebGPU backend
 
 
 <!-- SCREENSHOTS -->
@@ -46,7 +49,7 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 
 <!-- FEATURES -->
 
-## ✨ Features
+## ✨ Current features
 
 * **📊 High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
 * **🌐 3D visuals**: meshes, volumes, volume slices
@@ -59,27 +62,6 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 ### List of visuals
 
 ![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
-
-### Work in progress
-
-These features are currently planned for **v0.3**:
-
-* **➕ Axes**: ticks, grids, labels
-* **🎨 Colorbars**
-* **🖱️ More interactivity patterns**
-* **📖 More documentation**
-
-### Future work
-
-These features are currently planned for **v0.4 and later**:
-
-* **📐 More visuals**: arrows, polygons, planar straight-line graphs (PSLG), histograms, areas, graphs
-* **🎯 Picking**
-* **📈 Nonlinear transforms**
-* **🖌️ Dynamic shaders**
-* **🌐 WebGPU/WebAssembly compatibility**
-* **🧮 Compute shaders**
-* **🐍 IPython, Jupyter, Qt integration**
 
 
 <!-- INSTALLATION -->
@@ -187,6 +169,8 @@ Over the next three years, the technology matured, aided by a [Chan Zuckerberg I
 
 In **2024**, Datoviz **v0.2** is released. This version is redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
 It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers (thanks to a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/)).
+
+In **2025**, development continues towards v0.3 and v0.4 who will bring many more features.
 
 Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0, initiated by Cyrille Rossant and Nicolas Rougier, will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
 
