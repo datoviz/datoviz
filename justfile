@@ -1124,7 +1124,7 @@ wasm:
     set -e
     python3 tools/generate_wasm.py
     emcc @wasm_sources.txt -o build/datoviz.js \
-        -Iinclude/ -Iinclude/datoviz/ \
+        -Iinclude/ -Iinclude/datoviz/ -Iexternal/ \
         -Ibuild/_deps/cglm-src/include/ \
         -s MODULARIZE=1 \
         -s EXPORT_NAME='datoviz' \

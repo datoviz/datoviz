@@ -1,2 +1,8 @@
 log_log
+b64_encode
 dvz_easing
+dvz_batch
+dvz_batch_clear
+dvz_batch_add
+dvz_batch_print
+dvz_batch_destroy

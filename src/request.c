@@ -8,10 +8,9 @@
 /*  Request                                                                                      */
 /*************************************************************************************************/
 
-#include "_atomic.h"
-#include "_cglm.h"
-#include "_debug.h"
+#include "datoviz_math.h"
 #include "_list.h"
+#include "_debug.h"
 #include "_pointer.h"
 #include "_prng.h"
 #include "datoviz_protocol.h"
@@ -2128,8 +2127,10 @@ DvzRequest dvz_record_viewport(DvzBatch* batch, DvzId canvas_id, vec2 offset, ve
     CREATE_REQUEST(RECORD, RECORD);
     req.id = canvas_id;
     req.content.record.command.type = DVZ_RECORDER_VIEWPORT;
-    glm_vec2_copy(offset, req.content.record.command.contents.v.offset);
-    glm_vec2_copy(shape, req.content.record.command.contents.v.shape);
+    req.content.record.command.contents.v.offset[0] = offset[0];
+    req.content.record.command.contents.v.offset[1] = offset[1];
+    req.content.record.command.contents.v.shape[0] = shape[0];
+    req.content.record.command.contents.v.shape[1] = shape[1];
 
     IF_VERBOSE
     _print_record_viewport(&req);

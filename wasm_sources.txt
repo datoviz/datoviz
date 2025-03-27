@@ -1,3 +1,12 @@
+external/b64/buffer.c
+external/b64/encode.c
+external/b64/decode.c
+
 src/wasm/log.c
 
 src/scene/animation.c
+src/request.c
+src/_prng.cpp
+src/_list.c
+src/_error.c
+src/_mutex.c
