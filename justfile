@@ -1118,6 +1118,24 @@ swiftshader +args:
 
 
 # -------------------------------------------------------------------------------------------------
+# WebAssembly
+# -------------------------------------------------------------------------------------------------
+wasm:
+    set -e
+    python3 tools/generate_constjs.py
+    emcc @wasm_sources.txt -o build/datoviz.js \
+        -Iinclude/ -Iinclude/datoviz/ \
+        -Ibuild/_deps/cglm-src/include/ \
+        -s MODULARIZE=1 \
+        -s EXPORT_NAME='datoviz' \
+        -s EXPORTED_FUNCTIONS=["$(sed 's/^/_/' wasm_functions.txt | paste -sd, -)"] \
+        -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
+        -s ALLOW_MEMORY_GROWTH=1 \
+        -O3
+#
+
+
+# -------------------------------------------------------------------------------------------------
 # Code quality
 # -------------------------------------------------------------------------------------------------
 

@@ -1,0 +1,3 @@
+src/wasm/log.c
+
+src/scene/animation.c
