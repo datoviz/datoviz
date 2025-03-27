@@ -67,6 +67,7 @@ typedef struct DvzArcball DvzArcball;
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzOrtho DvzOrtho;
 typedef struct DvzParams DvzParams;
+typedef struct DvzRef DvzRef;
 
 typedef struct DvzShape DvzShape;
 typedef struct DvzFont DvzFont;
@@ -3482,7 +3483,7 @@ DVZ_EXPORT DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeSt
  * @param[out] out pointer to an array with the normalized positions to compute (single precision)
  */
 DVZ_EXPORT void
-dvz_box_normalize(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
+dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
 
 
 
@@ -3773,6 +3774,113 @@ DVZ_EXPORT void dvz_ortho_zoom_wheel(DvzOrtho* ortho, vec2 dir, vec2 center_px);
  * @param mvp the MVP
  */
 DVZ_EXPORT void dvz_ortho_mvp(DvzOrtho* ortho, DvzMVP* mvp);
+
+
+
+/*************************************************************************************************/
+/*************************************************************************************************/
+/*  Axis-related functions                                                                       */
+/*************************************************************************************************/
+/*************************************************************************************************/
+
+/**
+ * Create a reference frame (wrapping a 3D box representing the data in its original coordinates).
+ *
+ * @param flags the flags
+ * @returns the reference frame
+ */
+DVZ_EXPORT DvzRef* dvz_ref(int flags);
+
+
+
+/**
+ * Set the range on a given axis.
+ *
+ * @param ref the reference frame
+ * @param dim the dimension axis
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ */
+DVZ_EXPORT void dvz_ref_set(DvzRef* ref, DvzDim dim, double vmin, double vmax);
+
+
+
+/**
+ * Get the range on a given axis.
+ *
+ * @param ref the reference frame
+ * @param dim the dimension axis
+ * @param[out] vmin the minimum value
+ * @param[out] vmax the maximum value
+ */
+DVZ_EXPORT void dvz_ref_get(DvzRef* ref, DvzDim dim, double* vmin, double* vmax);
+
+
+
+/**
+ * Expand the reference by ensuring it contains the specified range.
+ *
+ * @param ref the reference frame
+ * @param dim the dimension axis
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ */
+DVZ_EXPORT void dvz_ref_expand(DvzRef* ref, DvzDim dim, double vmin, double vmax);
+
+
+
+/**
+ * Expand the reference by ensuring it contains the specified 2D data.
+ *
+ * @param ref the reference frame
+ * @param count the number of positions
+ * @param pos the 2D positions
+ */
+DVZ_EXPORT void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos);
+
+
+
+/**
+ * Expand the reference by ensuring it contains the specified 3D data.
+ *
+ * @param ref the reference frame
+ * @param count the number of positions
+ * @param pos the 3D positions
+ */
+DVZ_EXPORT void dvz_ref_expand3D(DvzRef* ref, uint32_t count, dvec3* pos);
+
+
+
+/**
+ * Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
+ *
+ * @param ref the reference frame
+ * @param count the number of positions
+ * @param pos the 2D positions
+ * @param[out] pos_tr the transformed positions
+ */
+DVZ_EXPORT void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
+
+
+
+/**
+ * Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
+ *
+ * @param ref the reference frame
+ * @param count the number of positions
+ * @param pos the 3D positions
+ * @param[out] pos_tr the transformed positions
+ */
+DVZ_EXPORT void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
+
+
+
+/**
+ * Destroy a reference frame.
+ *
+ * @param ref the reference frame
+ */
+DVZ_EXPORT void dvz_ref_destroy(DvzRef* ref);
 
 
 

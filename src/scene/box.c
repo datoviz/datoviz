@@ -165,7 +165,29 @@ DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy stra
 
 
 
-void dvz_box_normalize(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
+void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
+{
+    ANN(pos);
+    ANN(out);
+
+    double scale_x =
+        source.xmax != source.xmin ? (target.xmax - target.xmin) / (source.xmax - source.xmin) : 1;
+    double scale_y =
+        source.ymax != source.ymin ? (target.ymax - target.ymin) / (source.ymax - source.ymin) : 1;
+
+#if HAS_OPENMP
+#pragma omp parallel for
+#endif
+    for (uint32_t i = 0; i < count; i++)
+    {
+        out[i][0] = (float)((pos[i][0] - source.xmin) * scale_x + target.xmin);
+        out[i][1] = (float)((pos[i][1] - source.ymin) * scale_y + target.ymin);
+    }
+}
+
+
+
+void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);
@@ -185,28 +207,6 @@ void dvz_box_normalize(DvzBox source, DvzBox target, uint32_t count, dvec3* pos,
         out[i][0] = (float)((pos[i][0] - source.xmin) * scale_x + target.xmin);
         out[i][1] = (float)((pos[i][1] - source.ymin) * scale_y + target.ymin);
         out[i][2] = (float)((pos[i][2] - source.zmin) * scale_z + target.zmin);
-    }
-}
-
-
-
-void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
-{
-    ANN(pos);
-    ANN(out);
-
-    double scale_x =
-        source.xmax != source.xmin ? (target.xmax - target.xmin) / (source.xmax - source.xmin) : 1;
-    double scale_y =
-        source.ymax != source.ymin ? (target.ymax - target.ymin) / (source.ymax - source.ymin) : 1;
-
-#if HAS_OPENMP
-#pragma omp parallel for
-#endif
-    for (uint32_t i = 0; i < count; i++)
-    {
-        out[i][0] = (float)((pos[i][0] - source.xmin) * scale_x + target.xmin);
-        out[i][1] = (float)((pos[i][1] - source.ymin) * scale_y + target.ymin);
     }
 }
 

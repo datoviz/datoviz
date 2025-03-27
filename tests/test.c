@@ -23,8 +23,6 @@
 #include "scene/test_arcball.h"
 #include "scene/test_array.h"
 #include "scene/test_atlas.h"
-// #include "scene/test_axes.h"
-// #include "scene/test_axis.h"
 #include "scene/test_baker.h"
 #include "scene/test_box.h"
 #include "scene/test_camera.h"
@@ -32,11 +30,11 @@
 #include "scene/test_dual.h"
 #include "scene/test_font.h"
 #include "scene/test_graphics.h"
-// #include "scene/test_labels.h"
 #include "scene/test_mvp.h"
 #include "scene/test_ortho.h"
 #include "scene/test_panzoom.h"
 #include "scene/test_params.h"
+#include "scene/test_ref.h"
 #include "scene/test_scene.h"
 #include "scene/test_sdf.h"
 #include "scene/test_shape.h"
@@ -362,8 +360,7 @@ int dvz_run_tests(const char* match)
     TEST(test_box_5)
     TEST(test_box_6)
     TEST(test_ticks_1)
-    // TEST(test_labels_1)
-    // TEST(test_labels_factored)
+    TEST(test_ref_1)
 
     // Testing atlas.
     TEST(test_atlas_1)

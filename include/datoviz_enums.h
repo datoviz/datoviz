@@ -152,6 +152,15 @@ typedef enum
 
 
 
+// Ref flags.
+typedef enum
+{
+    DVZ_REF_FLAGS_NONE = 0x00,
+    DVZ_REF_FLAGS_EQUAL = 0x01,
+} DvzRefFlags;
+
+
+
 // Arcball flags.
 typedef enum
 {
