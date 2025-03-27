@@ -94,26 +94,17 @@ int test_glyph_1(TstSuite* suite)
 
 
     // Create the atlas.
-    unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
-    ASSERT(ttf_size > 0);
-    ANN(ttf_bytes);
-    DvzAtlas* atlas = dvz_atlas(ttf_size, ttf_bytes);
-
-    // Generate the atlas.
-    dvz_atlas_generate(atlas);
+    DvzAtlasFont af = dvz_atlas_font(font_size);
 
     // Upload the atlas texture to the glyph visual.
-    dvz_glyph_atlas(visual, atlas);
+    dvz_glyph_atlas_font(visual, &af);
 
     // Set the texture coordinates.
     dvz_glyph_ascii(visual, text);
 
 
     // For shift and size, we will use a font to compute the layout (positions of the letters).
-    DvzFont* font = dvz_font(ttf_size, ttf_bytes);
-    dvz_font_size(font, font_size);
-    vec4* xywh = dvz_font_ascii(font, text);
+    vec4* xywh = dvz_font_ascii(af.font, text);
     // for (uint32_t i = 0; i < n; i++)
     // {
     //     log_info(
@@ -140,8 +131,8 @@ int test_glyph_1(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_font_destroy(font);
-    dvz_atlas_destroy(atlas);
+    dvz_font_destroy(af.font);
+    dvz_atlas_destroy(af.atlas);
 
     return 0;
 }
@@ -150,7 +141,41 @@ int test_glyph_1(TstSuite* suite)
 
 int test_glyph_strings(TstSuite* suite)
 {
-    ANN(suite); //
+    ANN(suite);
+
+#if !HAS_MSDF
+    return 1;
+#endif
+    VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, 0);
+
+    char* strings[] = {"Hello", "world", "how", "are", "you"};
+    vec3 string_positions[] = {
+        {-.5, +.5, 0}, {+.5, +.5, 0}, {0, 0, 0}, {-.5, -.5, 0}, {+.5, -.5, 0}};
+
+    uint32_t string_count = 5;
+    float font_size = 48;
+
+    // Create the visual.
+    DvzVisual* visual = dvz_glyph(vt.batch, 0);
+
+    // Background color.
+    // dvz_glyph_bgcolor(visual, (vec4){1, 1, 1, .5});
+
+    // Create the atlas.
+    DvzAtlasFont af = dvz_atlas_font(font_size);
+    dvz_glyph_atlas_font(visual, &af);
+
+    dvz_glyph_strings(visual, string_count, strings, string_positions, (cvec4){255, 255, 0, 255});
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_font_destroy(af.font);
+    dvz_atlas_destroy(af.atlas);
 
     return 0;
 }

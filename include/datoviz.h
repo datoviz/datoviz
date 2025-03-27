@@ -2181,12 +2181,12 @@ DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
 
 
 /**
- * Associate an atlas with a glyph visual.
+ * Associate an atlas and font with a glyph visual.
  *
  * @param visual the visual
- * @param atlas the atlas
+ * @param af the atlas font
  */
-DVZ_EXPORT void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas);
+DVZ_EXPORT void dvz_glyph_atlas_font(DvzVisual* visual, DvzAtlasFont* af);
 
 
 
@@ -2227,17 +2227,17 @@ DVZ_EXPORT void dvz_glyph_xywh(
 
 
 /**
- * Set multiple strings on a glyph visual.
+ * Helper function to easily set multiple strings of the same size and color on a glyph visual.
  *
  * @param visual the visual
- * @param af the atlas font
  * @param string_count the number of strings
  * @param strings the strings
  * @param positions the positions of each string
+ * @param color the same color for all strings
  */
 DVZ_EXPORT
 void dvz_glyph_strings(
-    DvzVisual* visual, DvzAtlasFont* af, uint32_t string_count, char** strings, vec3* positions);
+    DvzVisual* visual, uint32_t string_count, char** strings, vec3* positions, DvzColor color);
 
 
 

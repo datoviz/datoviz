@@ -35,8 +35,13 @@
 
 static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasFont* af)
 {
+    ANN(batch);
+    ANN(panel);
+    ANN(text);
+    ANN(af);
+
     DvzVisual* glyph = dvz_glyph(batch, 0);
-    dvz_glyph_atlas(glyph, af->atlas);
+    dvz_glyph_atlas_font(glyph, af);
 
     uint32_t n = strnlen(text, 1024);
     dvz_glyph_alloc(glyph, n);
@@ -292,7 +297,7 @@ void dvz_demo(void)
     DvzVisual* glyph = dvz_glyph(batch, 0);
     {
         const char* text = "ABCDEF";
-        dvz_glyph_atlas(glyph, af.atlas);
+        dvz_glyph_atlas_font(glyph, &af);
         dvz_glyph_alloc(glyph, n);
         dvz_glyph_position(glyph, 0, n, pos, 0);
         dvz_glyph_color(glyph, 0, n, color, 0);

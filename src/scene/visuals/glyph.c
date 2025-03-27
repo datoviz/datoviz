@@ -265,19 +265,21 @@ void dvz_glyph_texture(DvzVisual* visual, DvzId tex)
 
 
 
-void dvz_glyph_atlas(DvzVisual* visual, DvzAtlas* atlas)
+void dvz_glyph_atlas_font(DvzVisual* visual, DvzAtlasFont* af)
 {
     ANN(visual);
-    ANN(atlas);
+    ANN(af);
+    ANN(af->atlas);
+    ANN(af->font);
 
     DvzBatch* batch = visual->batch;
     ANN(batch);
 
     // Store the pointer to the atlas.
-    visual->user_data = (void*)atlas;
+    visual->user_data = (void*)af;
 
     // Create the atlas texture.
-    DvzId tex = dvz_atlas_texture(atlas, batch);
+    DvzId tex = dvz_atlas_texture(af->atlas, batch);
     if (tex == DVZ_ID_NONE)
     {
         log_error("failed creating atlas texture");
@@ -297,20 +299,21 @@ void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints)
     ANN(codepoints);
     ASSERT(count > 0);
 
-    DvzAtlas* atlas = (DvzAtlas*)visual->user_data;
-    if (atlas == NULL)
+    DvzAtlasFont* af = (DvzAtlasFont*)visual->user_data;
+    if (af == NULL)
     {
-        log_error("please call dvz_glyph_atlas() first");
+        log_error("please call dvz_glyph_atlas_font() first");
         return;
     }
-    ANN(atlas);
+    ANN(af);
+    ANN(af->atlas);
 
     uvec3 shape = {0};
-    dvz_atlas_shape(atlas, shape);
+    dvz_atlas_shape(af->atlas, shape);
     float w = shape[0];
     float h = shape[1];
 
-    vec4* texcoords = dvz_atlas_glyphs(atlas, count, codepoints); // to free
+    vec4* texcoords = dvz_atlas_glyphs(af->atlas, count, codepoints); // to free
 
     // HACK: remove the padding around the glyphs in the atlas, because the freetype positioning
     // implementation assumes no padding, whereas the atlas requires them to prevent edge effects
@@ -416,12 +419,197 @@ void dvz_glyph_xywh(
 
 
 
-void dvz_glyph_strings(
-    DvzVisual* visual, DvzAtlasFont* af, uint32_t string_count, char** strings, vec3* positions)
+// NOTE: size of positions array is group_count=tick_count
+static inline void set_glyph_pos(
+    DvzVisual* glyph, uint32_t glyph_count, uint32_t string_count, //
+    uint32_t* string_sizes, vec3* string_positions)
 {
-    ANN(visual);
-    ANN(af);
-    ANN(strings);
-    ANN(positions);
+    ASSERT(glyph_count > 0);
     ASSERT(string_count > 0);
+    ANN(string_sizes);
+    ANN(string_positions);
+
+    vec3* pos = _repeat_group(
+        sizeof(vec3), glyph_count, string_count, string_sizes, (void*)string_positions, false);
+    dvz_glyph_position(glyph, 0, glyph_count, pos, 0);
+    FREE(pos);
+}
+
+
+
+static inline void set_glyphs(
+    DvzVisual* glyph, DvzAtlasFont* af, uint32_t glyph_count, uint32_t string_count, //
+    uint32_t* string_sizes, const char* concatenated, uint32_t* string_offsets)
+{
+    ANN(glyph);
+    ANN(af);
+    ANN(string_sizes);
+    ANN(concatenated);
+    ANN(string_offsets);
+
+    ASSERT(glyph_count > 0);
+    ASSERT(string_count > 0);
+
+    // TODO
+    vec2 offset = {0};
+
+    // Set the size and shift properties of the glyph vsual by using the font to compute the
+    // layout.
+    vec4* xywh = dvz_font_ascii(af->font, concatenated);
+
+    // Prepare a copy of the string with all glyphs concatenated, but without the spaces
+    // between the groups.
+    vec4* xywh_trimmed = (vec4*)calloc(glyph_count, sizeof(vec4));
+    char* glyphs_trimmed = (char*)calloc(glyph_count, sizeof(char));
+
+    float x0 = 0.0;
+    uint32_t idx = 0;
+    uint32_t k = 0;
+    for (uint32_t i = 0; i < string_count; i++)
+    {
+        idx = string_offsets[i];
+        x0 = xywh[idx][0];
+        for (uint32_t j = 0; j < string_sizes[i]; j++)
+        {
+            // NOTE: remove the x0 offset for each group.
+            xywh_trimmed[k][0] = xywh[idx + j][0] - x0;
+            xywh_trimmed[k][1] = xywh[idx + j][1];
+            xywh_trimmed[k][2] = xywh[idx + j][2];
+            xywh_trimmed[k][3] = xywh[idx + j][3];
+
+            glyphs_trimmed[k] = concatenated[idx + j];
+            k++;
+        }
+    }
+    ASSERT(k == glyph_count);
+
+    dvz_glyph_xywh(glyph, 0, glyph_count, xywh_trimmed, offset, 0);
+    FREE(xywh);
+
+    dvz_glyph_ascii(glyph, glyphs_trimmed);
+    FREE(glyphs_trimmed);
+}
+
+
+
+// NOTE: the caller must free the result
+static char* concatenate_with_spaces(
+    uint32_t count, char** strings, uint32_t K, uint32_t* string_offsets, uint32_t* string_sizes,
+    uint32_t* glyph_count)
+{
+    if (!strings || count == 0)
+        return NULL;
+    ASSERT(K > 0);
+
+    uint32_t total_len = 0;            // total size of the concatenated strings with all spaces
+    uint32_t computed_glyph_count = 0; // number of glyphs
+    uint32_t space_len = K;
+    uint32_t string_size = 0;
+
+    // Compute the size of each string and the total size of the concatenated string.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        string_size = strlen(strings[i]);
+
+        if (string_sizes != NULL)
+        {
+            string_sizes[i] = string_size;
+        }
+
+        if (string_offsets != NULL)
+        {
+            string_offsets[i] = total_len;
+        }
+
+        total_len += string_size;
+        computed_glyph_count += string_size;
+        if (i < count - 1)
+            total_len += space_len;
+    }
+
+    if (glyph_count != NULL)
+    {
+        *glyph_count = computed_glyph_count;
+    }
+
+    // Allocate the concatenated string.
+    char* result = (char*)calloc(total_len + 1, sizeof(char));
+    ANN(result);
+
+    // Concatenate the strings.
+    char* ptr = result;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t len = strlen(strings[i]);
+        memcpy(ptr, strings[i], len);
+        ptr += len;
+
+        if (i < count - 1)
+        {
+            memset(ptr, ' ', space_len);
+            ptr += space_len;
+        }
+    }
+
+    *ptr = '\0';
+    return result;
+}
+
+
+
+void dvz_glyph_strings(
+    DvzVisual* glyph, uint32_t string_count, char** strings, vec3* string_positions,
+    DvzColor color)
+{
+    ANN(glyph);
+    ANN(strings);
+    ANN(string_positions);
+    ASSERT(string_count > 0);
+
+    DvzAtlasFont* af = (DvzAtlasFont*)glyph->user_data;
+    if (af == NULL)
+    {
+        log_error("please call dvz_glyph_atlas_font() first");
+        return;
+    }
+    ANN(af);
+
+    // NOTE: to avoid calling freetype() too many times, we concatenate all strings, call freetype
+    // once, and the get back the offsets of each glyph.
+
+    uint32_t space_count = 3; // spaces between strings.
+    uint32_t glyph_count = 0;
+    uint32_t* string_sizes = (uint32_t*)calloc(string_count, sizeof(uint32_t));
+    uint32_t* string_offsets = (uint32_t*)calloc(string_count, sizeof(uint32_t));
+
+    // Concatenate the strings with spaces.
+    char* concatenated = concatenate_with_spaces(
+        string_count, strings, space_count, string_offsets, string_sizes, &glyph_count);
+
+    if (glyph_count == 0)
+    {
+        log_error("no glyphs to draw");
+    }
+    else
+    {
+        // Allocate the number of glyphs.
+        dvz_glyph_alloc(glyph, glyph_count);
+
+        // Compute the glyph offsets and sizes with freetype called on the concatenated string,
+        // then update the glyph visual with that information.
+        set_glyphs(
+            glyph, af, glyph_count, string_count, string_sizes, concatenated, string_offsets);
+
+        // Set the positions of the glyphs.
+        set_glyph_pos(glyph, glyph_count, string_count, string_sizes, string_positions);
+
+        DvzColor* glyph_color = dvz_mock_monochrome(glyph_count, color);
+        dvz_glyph_color(glyph, 0, glyph_count, glyph_color, 0);
+        FREE(glyph_color);
+    }
+
+    // Cleanup.
+    FREE(concatenated);
+    FREE(string_offsets);
+    FREE(string_sizes);
 }
