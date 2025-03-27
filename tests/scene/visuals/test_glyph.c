@@ -145,3 +145,12 @@ int test_glyph_1(TstSuite* suite)
 
     return 0;
 }
+
+
+
+int test_glyph_strings(TstSuite* suite)
+{
+    ANN(suite); //
+
+    return 0;
+}

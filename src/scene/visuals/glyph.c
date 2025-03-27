@@ -413,3 +413,15 @@ void dvz_glyph_xywh(
     FREE(size);
     FREE(shift);
 }
+
+
+
+void dvz_glyph_strings(
+    DvzVisual* visual, DvzAtlasFont* af, uint32_t string_count, char** strings, vec3* positions)
+{
+    ANN(visual);
+    ANN(af);
+    ANN(strings);
+    ANN(positions);
+    ASSERT(string_count > 0);
+}

@@ -27,6 +27,8 @@
 
 int test_glyph_1(TstSuite*);
 
+int test_glyph_strings(TstSuite*);
+
 
 
 #endif

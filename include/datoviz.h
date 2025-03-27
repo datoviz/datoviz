@@ -2226,6 +2226,21 @@ DVZ_EXPORT void dvz_glyph_xywh(
 
 
 
+/**
+ * Set multiple strings on a glyph visual.
+ *
+ * @param visual the visual
+ * @param af the atlas font
+ * @param string_count the number of strings
+ * @param strings the strings
+ * @param positions the positions of each string
+ */
+DVZ_EXPORT
+void dvz_glyph_strings(
+    DvzVisual* visual, DvzAtlasFont* af, uint32_t string_count, char** strings, vec3* positions);
+
+
+
 /*************************************************************************************************/
 /*  Monoglyph visual                                                                             */
 /*************************************************************************************************/
