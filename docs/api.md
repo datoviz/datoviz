@@ -5634,6 +5634,14 @@ DVZ_DIALOG_FLAGS_BLANK
 DVZ_DIALOG_FLAGS_PANEL
 ```
 
+### `DvzDim`
+
+```
+DVZ_DIM_X
+DVZ_DIM_Y
+DVZ_DIM_Z
+```
+
 ### `DvzEasing`
 
 ```

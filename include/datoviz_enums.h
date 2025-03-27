@@ -142,6 +142,16 @@ typedef enum
 
 
 
+// Dimension.
+typedef enum
+{
+    DVZ_DIM_X,
+    DVZ_DIM_Y,
+    DVZ_DIM_Z,
+} DvzDim;
+
+
+
 // Arcball flags.
 typedef enum
 {
@@ -810,11 +820,9 @@ typedef enum
 
 #define DVZ_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
 
-#define DVZ_DEFAULT_VIEWPORT                                                                      \
-    (vec2) { 0, 0 }
+#define DVZ_DEFAULT_VIEWPORT (vec2){0, 0}
 
-#define DVZ_DEFAULT_CLEAR_COLOR                                                                   \
-    (cvec4) { 0, 0, 0, 0 }
+#define DVZ_DEFAULT_CLEAR_COLOR (cvec4){0, 0, 0, 0}
 
 
 
