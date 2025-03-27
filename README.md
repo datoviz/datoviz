@@ -12,9 +12,27 @@
 
 Designed for speed, visual quality, and scalability to datasets comprising millions of points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
 
-**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now. The current version is **v0.2**. The previous **v0.1** version is now deprecated.
+**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now.
 
-**🕐 Roadmap.** In the medium term: increasing OS and hardware compatibility, providing more visuals, interactivity patterns, and GUI controls. In the long term: picking, custom visuals and shaders, nonlinear transforms, WebGPU/WebAssembly compatibility, integration with IPython, Jupyter and Qt.
+<!-- ROADMAP -->
+
+## 🕐 Current status and roadmap [March 2025]
+
+**The current version is v0.2.3**. Next expected milestones are:
+
+* v0.3 (mid 2025?): 2D axes
+* After v0.3 is released, we will focus on improving many internal aspects of Datoviz in order to support more features in the near future:
+
+    * Improved 3D rendering of meshes and volumes (correct transparency)
+    * Multisample Anti-Aliasing
+    * Picking
+    * CUDA compatibility
+    * Vulkan compute shaders (similar to CUDA kernels)
+    * Mixing GPGPU compute and graphics
+    * Sharing GPU data across visuals
+    * IPython integration
+    * Qt backend
+    * WebGPU backend
 
 
 <!-- SCREENSHOTS -->
@@ -155,7 +173,7 @@ Check out the [examples documentation](docs/examples.md) for more usage examples
 * [**🛠️ Maintainers** instructions](MAINTAINERS.md)
 
 
-## 🕰️ History and current status
+## 🕰️ History
 
 In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
 
