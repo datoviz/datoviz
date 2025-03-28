@@ -117,6 +117,14 @@ int test_box_4(TstSuite* suite)
 
 
 
+// static int _test_box(DvzBox* source, DvzBox* target, vec3 pos, dvec3 expected)
+#define TEST_BOX(pos, expected)                                                                   \
+    {                                                                                             \
+        dvec3 out;                                                                                \
+        dvz_box_inverse((source), (target), (pos), &out);                                         \
+        ACn(3, (out), (expected), EPS);                                                           \
+    }
+
 int test_box_5(TstSuite* suite)
 {
     ANN(suite);
@@ -124,13 +132,10 @@ int test_box_5(TstSuite* suite)
     // Test dvz_box_inverse
     DvzBox source = dvz_box(0.0, 10.0, 0.0, 10.0, 0.0, 10.0);
     DvzBox target = dvz_box(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-    vec3 pos = {0.0f, 0.0f, 0.0f};
-    dvec3 out;
-    dvz_box_inverse(source, target, pos, &out);
 
-    // Check the inverse transform
-    dvec3 expected = {5.0, 5.0, 5.0};
-    ACn(3, out, expected, EPS);
+    TEST_BOX(((vec3){0, 0, 0}), ((dvec3){5, 5, 5}))
+    TEST_BOX(((vec3){1, 1, 1}), ((dvec3){10, 10, 10}))
+    TEST_BOX(((vec3){-1, 0, 1}), ((dvec3){0, 5, 10}))
 
     return 0;
 }
