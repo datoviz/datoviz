@@ -15,7 +15,9 @@
 /*************************************************************************************************/
 
 #include "test_axis.h"
+#include "datoviz.h"
 #include "scene/axis.h"
+#include "scene/ticks.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
@@ -26,6 +28,43 @@
 /*************************************************************************************************/
 /*  Axis tests                                                                                   */
 /*************************************************************************************************/
+
+static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
+{
+    ANN(app);
+
+    // The timer callbacks are called here.
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    DvzPanzoom* pz = vt->panzoom;
+    ANN(pz);
+
+    DvzAxis* axis = vt->haxis;
+    ANN(axis);
+
+    DvzTicks* ticks = axis->ticks;
+    ANN(ticks);
+
+    // Find the extent.
+    DvzBox box = dvz_panzoom_extent(pz);
+    dvec3 pos = {0};
+
+    dvz_ref_inverse(axis->ref, (vec3){box.xmin, 0, 0}, &pos[0]);
+    double xmin = pos[0];
+
+    dvz_ref_inverse(axis->ref, (vec3){box.xmax, 0, 0}, &pos[0]);
+    double xmax = pos[0];
+
+    // If the extent is the same, do not recompute the ticks.
+    if ((fabs(xmin - ticks->dmin) < 1e-12) && (fabs(xmax - ticks->dmax) < 1e-12))
+    {
+        return;
+    }
+
+    // Otherwise, recompute the ticks and only update the axes if the ticks have changed.
+    bool updated = dvz_axis_update(axis, xmin, xmax);
+}
 
 int test_axis_1(TstSuite* suite)
 {
@@ -44,8 +83,8 @@ int test_axis_1(TstSuite* suite)
     // Parameters.
     float font_size = 24;
     DvzDim dim = DVZ_DIM_X;
-    double dmin = 0;
-    double dmax = 10;
+    double dmin = -102.5;
+    double dmax = -92.5;
     double range_size = WIDTH - 2 * m;
     double glyph_size = font_size;
 
@@ -73,11 +112,13 @@ int test_axis_1(TstSuite* suite)
     dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
     dvz_axis_horizontal(axis, 0);
+    vt.haxis = axis;
 
 
     // Compute ticks.
     dvz_axis_update(axis, dmin, dmax);
 
+    dvz_app_onframe(vt.app, _on_frame, &vt);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, glyph, 0);

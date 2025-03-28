@@ -29,18 +29,18 @@
 /*************************************************************************************************/
 
 // TODO: customizable
-#define TICK_DENSITY             0.5
+#define TICK_DENSITY             0.2
 #define MINOR_TICKS_PER_INTERVAL 4
 
 #define ANCHOR_H (vec2){+.5, 0}
 #define OFFSET_H (vec2){0, -50}
 #define DIR_H    (vec2){0, -1}
-#define POS_H    -0.8
+#define POS_H    -1
 
 #define ANCHOR_V (vec2){+1, 0}
 #define OFFSET_V (vec2){-50, -10}
 #define DIR_V    (vec2){-1, 0}
-#define POS_V    -0.8
+#define POS_V    -1
 
 #define WIDTH_LIM   2
 #define WIDTH_GRID  1
@@ -375,7 +375,7 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
 
     // req_count depends on the viewport size vs glyph size.
     uint32_t req_count = TICK_DENSITY * ticks->range_size / ticks->glyph_size;
-    log_debug("request %d ticks on [%g, %g]", req_count, dmin, dmax);
+    // log_debug("request %d ticks on [%g, %g]", req_count, dmin, dmax);
     ASSERT(req_count > 0);
 
     bool has_changed = dvz_ticks_compute(ticks, dmin, dmax, req_count);
@@ -414,7 +414,6 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
     }
     for (uint32_t i = 0; i < tick_count; i++)
     {
-        // log_info("%g : %g %g %g", tick_pos[i], positions[i][0], positions[i][1],
         positions[i][fixed_dim] = axis->spec.pos;
     }
 
