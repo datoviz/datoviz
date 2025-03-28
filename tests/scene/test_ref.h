@@ -8,8 +8,8 @@
 /*  Tests                                                                                        */
 /*************************************************************************************************/
 
-#ifndef DVZ_HEADER_TEST_Ref
-#define DVZ_HEADER_TEST_Ref
+#ifndef DVZ_HEADER_TEST_REF
+#define DVZ_HEADER_TEST_REF
 
 
 

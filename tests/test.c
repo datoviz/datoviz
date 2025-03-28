@@ -23,6 +23,7 @@
 #include "scene/test_arcball.h"
 #include "scene/test_array.h"
 #include "scene/test_atlas.h"
+#include "scene/test_axis.h"
 #include "scene/test_baker.h"
 #include "scene/test_box.h"
 #include "scene/test_camera.h"
@@ -361,6 +362,7 @@ int dvz_run_tests(const char* match)
     TEST(test_box_6)
     TEST(test_ticks_1)
     TEST(test_ref_1)
+    TEST(test_axis_1)
 
     // Testing atlas.
     TEST(test_atlas_1)

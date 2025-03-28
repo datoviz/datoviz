@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/*  Axis                                                                                         */
+/*  Testing axis                                                                                 */
 /*************************************************************************************************/
 
 
@@ -14,14 +14,32 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "test_axis.h"
 #include "scene/axis.h"
-#include "_cglm.h"
-#include "_macros.h"
-#include "datoviz.h"
-#include "datoviz_types.h"
+#include "test.h"
+#include "testing.h"
+#include "testing_utils.h"
 
 
 
 /*************************************************************************************************/
-/*  Axis                                                                                         */
+/*  Axis tests                                                                                   */
 /*************************************************************************************************/
+
+int test_axis_1(TstSuite* suite)
+{
+    ANN(suite);
+
+    DvzRef* ref = dvz_ref(0);
+
+    DvzDim dim = 0;
+    double vmin = -1;
+    double vmax = +1;
+    uint32_t count = 3;
+
+
+
+    dvz_ref_destroy(ref);
+
+    return 0;
+}

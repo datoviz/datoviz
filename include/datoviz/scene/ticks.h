@@ -37,6 +37,7 @@
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
+typedef struct DvzTicksSpec DvzTicksSpec;
 typedef struct DvzTicks DvzTicks;
 
 
@@ -74,6 +75,16 @@ typedef enum
 /*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
+
+struct DvzTicksSpec
+{
+    DvzTicksFormat format;
+    uint32_t precision;
+    int32_t exponent;
+    double offset;
+};
+
+
 
 struct DvzTicks
 {
