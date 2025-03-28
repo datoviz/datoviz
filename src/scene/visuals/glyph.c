@@ -458,7 +458,9 @@ static inline void set_glyphs(
     // Prepare a copy of the string with all glyphs concatenated, but without the spaces
     // between the groups.
     vec4* xywh_trimmed = (vec4*)calloc(glyph_count, sizeof(vec4));
-    char* glyphs_trimmed = (char*)calloc(glyph_count, sizeof(char));
+
+    // WARNING, BUG FIX: +1 for trailing 0
+    char* glyphs_trimmed = (char*)calloc(glyph_count + 1, sizeof(char));
 
     float x0 = 0.0;
     uint32_t idx = 0;
@@ -535,7 +537,7 @@ static char* concatenate_with_spaces(
     }
 
     // Allocate the concatenated string.
-    char* result = (char*)calloc(total_len + 1, sizeof(char));
+    char* result = (char*)calloc(total_len + 1, sizeof(char)); // WARNING: +1 for trailing 0
     ANN(result);
 
     // Concatenate the strings.
