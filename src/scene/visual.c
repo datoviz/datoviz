@@ -28,8 +28,14 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
+/*  Utils                                                                                        */
 /*************************************************************************************************/
+
+static void _set_visual_dirty(DvzVisual* visual)
+{
+    ANN(visual);
+    dvz_atomic_set(visual->status, (int32_t)DVZ_BUILD_DIRTY);
+}
 
 
 
@@ -90,7 +96,7 @@ void dvz_visual_update(DvzVisual* visual)
     }
     else
     {
-        log_debug("skipping update of clean visual");
+        log_trace("skipping update of clean visual");
         return;
     }
 
@@ -334,6 +340,8 @@ void dvz_visual_resize(
 
     // Resize the baker, resize the underlying arrays, emit the dat resize commands.
     dvz_baker_resize(visual->baker, vertex_count, index_count);
+
+    _set_visual_dirty(visual);
 }
 
 
@@ -721,12 +729,6 @@ void dvz_visual_viewport(DvzVisual* visual, DvzViewport* viewport)
 /*************************************************************************************************/
 /*  Visual data                                                                                  */
 /*************************************************************************************************/
-
-static void _set_visual_dirty(DvzVisual* visual)
-{
-    ANN(visual);
-    dvz_atomic_set(visual->status, (int32_t)DVZ_BUILD_DIRTY);
-}
 
 void dvz_visual_data(
     DvzVisual* visual, uint32_t attr_idx, uint32_t first, uint32_t count, void* data)

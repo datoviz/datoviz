@@ -908,6 +908,38 @@ static void _scene_build(DvzScene* scene)
 
         // Build status.
         status = (DvzBuildStatus)dvz_atomic_get(fig->viewset->status);
+
+
+        if (status != DVZ_BUILD_DIRTY)
+        {
+            // Go through all visuals to determine if there is at least one that is dirty, in which
+            // case, trigger a rebuild of the scene.
+            view_count = dvz_list_count(fig->viewset->views);
+            view = NULL;
+            for (uint64_t view_idx = 0; view_idx < view_count; view_idx++)
+            {
+                view = (DvzView*)dvz_list_get(fig->viewset->views, view_idx).p;
+                ANN(view);
+
+                // Go through the visuals of the view.
+                visual_count = dvz_list_count(view->visuals);
+                for (uint64_t visual_idx = 0; visual_idx < visual_count; visual_idx++)
+                {
+                    visual = (DvzVisual*)dvz_list_get(view->visuals, visual_idx).p;
+                    ANN(visual);
+
+                    if ((DvzBuildStatus)dvz_atomic_get(visual->status) == DVZ_BUILD_DIRTY)
+                    {
+                        // There is one dirty visual so we set the status to dirty and the viewset
+                        // will be rebuilt just afterwards.
+                        status = DVZ_BUILD_DIRTY;
+                        break;
+                    }
+                }
+            }
+        }
+
+
         // if viewset state == dirty, build viewset, and set the viewset state to clear
         if (status == DVZ_BUILD_DIRTY)
         {
