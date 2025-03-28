@@ -20,9 +20,7 @@
 #include "app.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
-// #include "scene/axis.h"
 #include "scene/camera.h"
-#include "scene/dual.h"
 #include "scene/scene.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
@@ -50,6 +48,13 @@ typedef enum
 
 typedef struct VisualTest VisualTest;
 
+// Forward declarations.
+typedef struct DvzAxis DvzAxis;
+typedef struct DvzCamera DvzCamera;
+typedef struct DvzVisual DvzVisual;
+typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzArcball DvzArcball;
+
 
 
 /*************************************************************************************************/
@@ -70,8 +75,8 @@ struct VisualTest
     DvzArcball* arcball;
     DvzCamera* camera;
     DvzVisual* volume;
-    // DvzAxis* haxis;
-    // DvzAxis* vaxis;
+    DvzAxis* haxis;
+    DvzAxis* vaxis;
     uint32_t n, m, p;
     void* user_data;
 };
