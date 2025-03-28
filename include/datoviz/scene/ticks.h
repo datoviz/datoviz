@@ -96,8 +96,7 @@ struct DvzTicks
     double dmin, dmax; // requested min and max of the range
 
     double lmin, lmax, lstep; // computed min and max of the ticks
-    DvzTicksFormat format;    // computed tick format
-    uint32_t precision;       // computed tick precision
+    DvzTicksSpec spec;
 };
 
 
@@ -137,11 +136,7 @@ uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* ls
 
 
 
-DvzTicksFormat dvz_ticks_format(DvzTicks* ticks);
-
-
-
-// uint32_t dvz_ticks_precision(DvzTicks* ticks);
+DvzTicksSpec dvz_ticks_spec(DvzTicks* ticks);
 
 
 
@@ -157,13 +152,17 @@ void dvz_ticks_clear(DvzTicks* ticks);
 
 
 
+void dvz_ticks_destroy(DvzTicks* ticks);
+
+
+
+/*************************************************************************************************/
+/*  Tick label generation                                                                        */
+/*************************************************************************************************/
+
 void dvz_ticks_linspace(
     DvzTicksSpec* spec, uint32_t tick_count, double lmin, double lmax, double lstep, //
-    char** out_labels, double* out_tick_pos, int32_t* out_exponent, double* out_offset);
-
-
-
-void dvz_ticks_destroy(DvzTicks* ticks);
+    char** out_labels, double* out_tick_pos);
 
 
 

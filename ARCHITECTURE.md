@@ -188,7 +188,7 @@ Viktor Chlumský's [msdfgen-atlas library](https://github.com/Chlumsky/msdf-atla
     * The **GUI** wraps Omar Cornut's [Dear ImGui library](https://github.com/ocornut/imgui/) to provide basic interactive GUI components. It should be straightforward to support the entire Dear ImGui API when using Datoviz in C++ (testing required).
 
 * **Axis components**: (*note*: work in progress)
-    * **Ticks**: implement an automatic tick positioning system (extended Wilkinson algorithm)
+    * **Ticks**: implement an automatic tick positioning system
     * **Labels**: generate tick labels
     * **Axis**: handle an axis with ticks and labels
     * **Axes**: handle multiple Axis components

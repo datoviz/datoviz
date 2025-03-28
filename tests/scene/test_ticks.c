@@ -28,7 +28,44 @@
 
 #define MAX_TICKS            32
 #define LABEL_LEN            64
-#define REQUESTED_TICK_COUNT 10
+#define REQUESTED_TICK_COUNT 8
+
+
+
+/*************************************************************************************************/
+/*  Test utils                                                                                   */
+/*************************************************************************************************/
+
+static void
+_print_ticks(DvzTicksSpec* spec, uint32_t count, double lmin, double lmax, double lstep)
+{
+    double tick_pos[MAX_TICKS] = {0};
+    char* labels[MAX_TICKS];
+    for (uint32_t i = 0; i < count; i++)
+        labels[i] = calloc(LABEL_LEN, sizeof(char));
+
+    dvz_ticks_linspace(spec, count, lmin, lmax, lstep, labels, tick_pos);
+
+    printf("=== Test : [%g, %g], precision = %d ===\n", lmin, lmax, spec->precision);
+
+    printf("Labels:    ");
+    for (uint32_t i = 0; i < count; i++)
+        printf("%s  ", labels[i]);
+    if (spec->exponent != 0)
+        printf("E%s%d", spec->exponent > 0 ? "+" : "", spec->exponent);
+    if (spec->offset != 0)
+        printf("(%s%g)", spec->offset > 0 ? "+" : "", spec->offset);
+    printf("\n");
+
+    printf("Positions: ");
+    for (uint32_t i = 0; i < count; i++)
+        printf("%g  ", tick_pos[i]);
+    printf("\n");
+    printf("\n\n");
+
+    for (uint32_t i = 0; i < count; i++)
+        FREE(labels[i]);
+}
 
 
 
@@ -51,7 +88,7 @@ int test_ticks_1(TstSuite* suite)
     dvz_ticks_compute(ticks, -12, -10.987, 5);
     dvz_ticks_print(ticks);
 
-    dvz_ticks_compute(ticks, -12, -10.987, 5);
+    dvz_ticks_compute(ticks, 1234, 1234.001, 10);
     dvz_ticks_print(ticks);
 
     dvz_ticks_clear(ticks);
@@ -68,50 +105,38 @@ int test_ticks_1(TstSuite* suite)
 
 
 
-static void _test_ticks_case(
-    DvzTicksFormat format, uint32_t count, double lmin, double lmax, double lstep,
-    uint32_t precision)
-{
-    DvzTicksSpec spec = {
-        .format = format,
-        .precision = precision,
-        .exponent = 0,
-        .offset = 0,
-    };
-
-    double tick_pos[MAX_TICKS] = {0};
-    char* labels[MAX_TICKS];
-    for (uint32_t i = 0; i < count; i++)
-        labels[i] = calloc(LABEL_LEN, sizeof(char));
-
-    int32_t exponent = 0;
-    double offset = 0;
-
-    dvz_ticks_linspace(&spec, count, lmin, lmax, lstep, labels, tick_pos, &exponent, &offset);
-
-    printf("=== Test : [%.3f, %.3f], precision = %d ===\n", lmin, lmax, precision);
-    printf("Offset: %.6f, Exponent: %d\n", offset, exponent);
-    for (uint32_t i = 0; i < count; i++)
-        printf("  Tick %2u: pos=%g, label='%s'\n", i, tick_pos[i], labels[i]);
-    printf("\n");
-
-    for (uint32_t i = 0; i < count; i++)
-        FREE(labels[i]);
-}
-
 int test_ticks_labels(TstSuite* suite)
 {
     ANN(suite);
 
-    _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL, 5, 10.0, 50.0, 10.0, 2);
-    _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL_FACTORED, 5, 1010.0, 1050.0, 10.0, 2);
-    _test_ticks_case(DVZ_TICKS_FORMAT_SCIENTIFIC, 4, 1e-5, 4e-5, 1e-5, 2);
-    _test_ticks_case(DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED, 4, 1.01e-5, 1.04e-5, 1e-7, 2);
+    DvzTicksSpec spec = {
+        .precision = 2,
+        .exponent = 0,
+        .offset = 0,
+    };
 
-    // _test_ticks_case(DVZ_TICKS_FORMAT_THOUSANDS, 4, 0, 3000, 1000, 1);
-    // _test_ticks_case(DVZ_TICKS_FORMAT_THOUSANDS_FACTORED, 4, 2000, 5000, 1000, 1);
-    // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS, 3, 0, 2e6, 1e6, 1);
-    // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS_FACTORED, 3, 3e6, 5e6, 1e6, 2);
+    spec.format = DVZ_TICKS_FORMAT_DECIMAL;
+    _print_ticks(&spec, 5, 10.0, 50.0, 10.0);
+
+    spec.format = DVZ_TICKS_FORMAT_DECIMAL_FACTORED;
+    spec.exponent = 1;
+    spec.offset = 1000;
+    _print_ticks(&spec, 5, 1010.0, 1050.0, 10.0);
+
+    spec.format = DVZ_TICKS_FORMAT_SCIENTIFIC;
+    spec.exponent = 0;
+    spec.offset = 0;
+    _print_ticks(&spec, 4, 1e-5, 4e-5, 1e-5);
+
+    spec.format = DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
+    spec.exponent = -5;
+    spec.offset = 1e-5;
+    _print_ticks(&spec, 4, 1.01e-5, 1.04e-5, 1e-7);
+
+    // _print_ticks(DVZ_TICKS_FORMAT_THOUSANDS, 4, 0, 3000, 1000, 1);
+    // _print_ticks(DVZ_TICKS_FORMAT_THOUSANDS_FACTORED, 4, 2000, 5000, 1000, 1);
+    // _print_ticks(DVZ_TICKS_FORMAT_MILLIONS, 3, 0, 2e6, 1e6, 1);
+    // _print_ticks(DVZ_TICKS_FORMAT_MILLIONS_FACTORED, 3, 3e6, 5e6, 1e6, 2);
 
     return 0;
 }
@@ -123,12 +148,10 @@ static void _test_ticks(DvzTicks* ticks, double dmin, double dmax)
     ANN(ticks);
     ASSERT(dmin < dmax);
 
+    dvz_ticks_clear(ticks);
     dvz_ticks_compute(ticks, dmin, dmax, REQUESTED_TICK_COUNT);
-
     uint32_t tick_count = get_tick_count(ticks->lmin, ticks->lmax, ticks->lstep);
-
-    _test_ticks_case(
-        ticks->format, tick_count, ticks->lmin, ticks->lmax, ticks->lstep, ticks->precision);
+    _print_ticks(&ticks->spec, tick_count, ticks->lmin, ticks->lmax, ticks->lstep);
 }
 
 int test_ticks_2(TstSuite* suite)
@@ -138,6 +161,17 @@ int test_ticks_2(TstSuite* suite)
     dvz_ticks_size(ticks, 500.0, 20.0);
 
     _test_ticks(ticks, 0, 1);
+    _test_ticks(ticks, -1, 1);
+    _test_ticks(ticks, 0, 10);
+    _test_ticks(ticks, .1, .2);
+    _test_ticks(ticks, 1001, 1002);
+    for (int32_t i = -9; i <= 9; i++)
+    {
+        // _test_ticks(ticks, -pow((double)10, i), +pow((double)10, i));
+    }
+
+    _test_ticks(ticks, 1e3 + .123, 1e3 + .124);
+    _test_ticks(ticks, 1.234e8 + .123, 1.234e8 + .1230001);
 
     dvz_ticks_destroy(ticks);
     return 0;
