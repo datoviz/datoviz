@@ -61,13 +61,15 @@ typedef enum
     DVZ_TICKS_FORMAT_UNDEFINED,
     DVZ_TICKS_FORMAT_DECIMAL,
     DVZ_TICKS_FORMAT_DECIMAL_FACTORED,
+    DVZ_TICKS_FORMAT_SCIENTIFIC,
+    DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED,
+    DVZ_TICKS_FORMAT_COUNT,
+
+    // NOTE: disable these formats for now, not that useful in practice
     DVZ_TICKS_FORMAT_THOUSANDS,
     DVZ_TICKS_FORMAT_THOUSANDS_FACTORED,
     DVZ_TICKS_FORMAT_MILLIONS,
     DVZ_TICKS_FORMAT_MILLIONS_FACTORED,
-    DVZ_TICKS_FORMAT_SCIENTIFIC,
-    DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED,
-    DVZ_TICKS_FORMAT_COUNT,
 } DvzTicksFormat;
 
 
@@ -152,6 +154,12 @@ void dvz_ticks_print(DvzTicks* ticks);
 
 
 void dvz_ticks_clear(DvzTicks* ticks);
+
+
+
+void dvz_ticks_linspace(
+    DvzTicksSpec* spec, uint32_t tick_count, double lmin, double lmax, double lstep, //
+    char** out_labels, double* out_tick_pos, int32_t* out_exponent, double* out_offset);
 
 
 

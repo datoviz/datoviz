@@ -13,8 +13,12 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/ticks.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "_macros.h"
+#include "scene/ticks.h"
 
 #include "_debug.h"
 
@@ -31,7 +35,16 @@
 #define PRECISION      2
 #define TARGET_DENSITY .2
 #define SCORE_WEIGHTS  {0.2, 0.25, 0.5, 0.05}
-#define CLOSE(x, y)    (fabs((x) - (y)) < EPSILON)
+#define MAX_LABEL_LEN  64
+
+
+
+/*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define CLOSE(x, y) (fabs((x) - (y)) < EPSILON)
+#define IDIV(x)     ((int32_t)(x) / pow(10, oom))
 
 
 
@@ -53,6 +66,16 @@ struct Q
     double value;
     uint32_t len;
 };
+
+
+
+/*************************************************************************************************/
+/*  Util functions                                                                               */
+/*************************************************************************************************/
+
+DVZ_INLINE int32_t round_log10(double value) { return (int32_t)floor(log10(fabs(value))); }
+
+DVZ_INLINE double pow10_(int32_t exp) { return pow(10.0, (double)exp); }
 
 
 
@@ -609,6 +632,203 @@ void dvz_ticks_clear(DvzTicks* ticks)
     ticks->lmax = 0;
     ticks->lstep = 0;
     ticks->format = 0;
+}
+
+
+
+static void
+find_exponent_offset(double lmin, double lmax, int32_t* out_exponent, double* out_offset)
+{
+    // Loose translation of:
+    // https://github.com/matplotlib/matplotlib/blob/main/lib/matplotlib/ticker.py#L708
+
+    if (lmin == lmax)
+        return;
+
+    // # min, max comparing absolute values (we want division to round towards
+    // # zero so we work on absolute values).
+    // abs_min, abs_max = sorted([abs(float(lmin)), abs(float(lmax))])
+    double abs_min = fabs(lmin);
+    double abs_max = fabs(lmax);
+    abs_min = MIN(abs_min, abs_max);
+    abs_max = MAX(abs_min, abs_max);
+
+    // sign = math.copysign(1, lmin)
+    double sign = copysign(1, lmin);
+
+    // # What is the smallest power of ten such that abs_min and abs_max are
+    // # equal up to that precision?
+    // # Note: Internally using oom instead of 10 ** oom avoids some numerical
+    // # accuracy issues.
+    // oom_max = np.ceil(math.log10(abs_max))
+    // oom = 1 + next(oom for oom in itertools.count(oom_max, -1)
+    //                if abs_min // 10 ** oom != abs_max // 10 ** oom)
+    int32_t oom_max = (int32_t)ceil(log10(abs_max));
+
+    int32_t oom = oom_max;
+    for (; oom >= 0; oom--)
+    {
+        if (IDIV(abs_min) != IDIV(abs_max))
+            break;
+    }
+    oom += 1;
+
+    // if (abs_max - abs_min) / 10 ** oom <= 1e-2:
+    //     # Handle the case of straddling a multiple of a large power of ten
+    //     # (relative to the span).
+    if ((abs_max - abs_min) / pow(10, oom) <= 1e-2)
+    {
+        // # What is the smallest power of ten such that abs_min and abs_max
+        // # are no more than 1 apart at that precision?
+        // oom = 1 + next(oom for oom in itertools.count(oom_max, -1)
+        //                if abs_max // 10 ** oom - abs_min // 10 ** oom > 1)
+        oom = oom_max;
+        for (; oom >= 0; oom--)
+        {
+            if ((IDIV(abs_max) - IDIV(abs_min)) > 1)
+                break;
+        }
+        oom += 1;
+    }
+
+    // see eg: https://github.com/matplotlib/matplotlib/issues/7104
+    int32_t offset_threshold = 4;
+
+    // # Only use offset if it saves at least _offset_threshold digits.
+    // n = self._offset_threshold - 1
+    int32_t n = offset_threshold - 1;
+
+    // self.offset = (sign * (abs_max // 10 ** oom) * 10 ** oom
+    //                if abs_max // 10 ** oom >= 10**n
+    //                else 0)
+    double offset = IDIV(abs_max) >= pow(10, n) ? sign * (IDIV(abs_max) * pow(10, oom)) : 0;
+
+    // if self.offset:
+    //     oom = math.floor(math.log10(vmax - vmin))
+    if (offset)
+    {
+        // NOTE: this should be dmax and dmin but we don't have them in this function
+        // at the moment. TODO FIXME?
+        oom = floor(log10(lmax - lmin));
+    }
+    // else:
+    //     val = locs.max()
+    //     if val == 0:
+    //         oom = 0
+    //     else:
+    //         oom = math.floor(math.log10(val))
+    else
+    {
+        double val = lmax; // TODO: should be dmax?
+        if (val == 0)
+        {
+            oom = 0;
+        }
+        else
+        {
+            oom = floor(log10(val));
+        }
+    }
+
+    *out_offset = offset;
+    *out_exponent = oom;
+}
+
+// Free tick labels
+static void free_tick_labels(uint32_t count, char** strings)
+{
+    if (!strings)
+        return;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        FREE(strings[i]);
+    }
+
+    FREE(strings);
+}
+
+void dvz_ticks_linspace(
+    DvzTicksSpec* spec, uint32_t tick_count, double lmin, double lmax, double lstep,
+    char** out_labels, double* out_tick_pos, int32_t* out_exponent, double* out_offset)
+{
+    ASSERT(tick_count > 0);
+    ASSERT(lmax > lmin);
+
+    // Step 1: Generate raw ticks.
+    for (uint32_t i = 0; i < tick_count; i++)
+    {
+        double val = lmin + i * lstep;
+        out_tick_pos[i] = val;
+    }
+
+    // Step 2: Determine offset and exponent (if factored format)
+    int factored = spec->format == DVZ_TICKS_FORMAT_DECIMAL_FACTORED ||
+                   spec->format == DVZ_TICKS_FORMAT_THOUSANDS_FACTORED ||
+                   spec->format == DVZ_TICKS_FORMAT_MILLIONS_FACTORED ||
+                   spec->format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
+
+    double offset = 0.0;
+    int32_t exponent = 0;
+
+    if (factored)
+    {
+        offset = out_tick_pos[0]; // Try first tick as offset
+
+        // Find max magnitude after removing offset
+        double max_val = 0.0;
+        for (uint32_t i = 0; i < tick_count; i++)
+        {
+            double v = out_tick_pos[i] - offset;
+            if (fabs(v) > max_val)
+                max_val = fabs(v);
+        }
+        exponent = round_log10(max_val);
+    }
+    *out_offset = offset;
+    *out_exponent = exponent;
+
+    // Step 3: Format labels
+    for (uint32_t i = 0; i < tick_count; i++)
+    {
+        double val = out_tick_pos[i];
+        double display_val = val;
+
+        if (factored)
+            display_val = (val - offset) / pow10_(exponent);
+
+        char* label = (char*)calloc(MAX_LABEL_LEN, sizeof(char));
+        out_labels[i] = label;
+
+        switch (spec->format)
+        {
+        case DVZ_TICKS_FORMAT_DECIMAL:
+        case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+            snprintf(label, MAX_LABEL_LEN, "%.*f", spec->precision, display_val);
+            break;
+
+        case DVZ_TICKS_FORMAT_THOUSANDS:
+        case DVZ_TICKS_FORMAT_THOUSANDS_FACTORED:
+            display_val = display_val / 1e3;
+            snprintf(label, MAX_LABEL_LEN, "%.*fK", spec->precision, display_val);
+            break;
+
+        case DVZ_TICKS_FORMAT_MILLIONS:
+        case DVZ_TICKS_FORMAT_MILLIONS_FACTORED:
+            display_val = display_val / 1e6;
+            snprintf(label, MAX_LABEL_LEN, "%.*fM", spec->precision, display_val);
+            break;
+
+        case DVZ_TICKS_FORMAT_SCIENTIFIC:
+        case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
+            snprintf(label, MAX_LABEL_LEN, "%.*e", spec->precision, display_val);
+            break;
+
+        default:
+            snprintf(label, MAX_LABEL_LEN, "%.*f", spec->precision, display_val);
+            break;
+        }
+    }
 }
 
 

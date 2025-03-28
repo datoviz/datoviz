@@ -27,6 +27,8 @@
 
 int test_ticks_1(TstSuite*);
 
+int test_ticks_labels(TstSuite*);
+
 
 
 #endif

@@ -361,6 +361,7 @@ int dvz_run_tests(const char* match)
     TEST(test_box_5)
     TEST(test_box_6)
     TEST(test_ticks_1)
+    TEST(test_ticks_labels)
     TEST(test_ref_1)
     TEST(test_axis_1)
 

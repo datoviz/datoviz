@@ -23,8 +23,11 @@
 
 
 /*************************************************************************************************/
-/*  Ticks test utils                                                                             */
+/*  Constants                                                                                    */
 /*************************************************************************************************/
+
+#define MAX_TICKS 32
+#define LABEL_LEN 64
 
 
 
@@ -57,6 +60,59 @@ int test_ticks_1(TstSuite* suite)
     AT(dvz_ticks_compute(ticks, 0, 1.1, 10));
     AT(!dvz_ticks_compute(ticks, 0.01, 1.1, 10));
     AT(dvz_ticks_compute(ticks, 0.05, 1.1, 10));
+
+    dvz_ticks_destroy(ticks);
+    return 0;
+}
+
+
+
+static void _test_ticks_case(
+    DvzTicksFormat format, uint32_t count, double lmin, double lmax, double lstep,
+    uint32_t precision)
+{
+    DvzTicksSpec spec = {
+        .format = format,
+        .precision = precision,
+        .exponent = 0,
+        .offset = 0,
+    };
+
+    double tick_pos[MAX_TICKS] = {0};
+    char* labels[MAX_TICKS];
+    for (uint32_t i = 0; i < count; i++)
+        labels[i] = calloc(LABEL_LEN, sizeof(char));
+
+    int32_t exponent = 0;
+    double offset = 0;
+
+    dvz_ticks_linspace(&spec, count, lmin, lmax, lstep, labels, tick_pos, &exponent, &offset);
+
+    printf("=== Test : [%.3f, %.3f], precision = %d ===\n", lmin, lmax, precision);
+    printf("Offset: %.6f, Exponent: %d\n", offset, exponent);
+    for (uint32_t i = 0; i < count; i++)
+        printf("  Tick %2u: pos=%g, label='%s'\n", i, tick_pos[i], labels[i]);
+    printf("\n");
+
+    for (uint32_t i = 0; i < count; i++)
+        FREE(labels[i]);
+}
+
+int test_ticks_labels(TstSuite* suite)
+{
+    ANN(suite);
+
+    DvzTicks* ticks = dvz_ticks(0);
+
+    _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL, 5, 10.0, 50.0, 10.0, 2);
+    _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL_FACTORED, 5, 1010.0, 1050.0, 10.0, 2);
+    _test_ticks_case(DVZ_TICKS_FORMAT_SCIENTIFIC, 4, 1e-5, 4e-5, 1e-5, 2);
+    _test_ticks_case(DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED, 4, 1.01e-5, 1.04e-5, 1e-7, 2);
+
+    // _test_ticks_case(DVZ_TICKS_FORMAT_THOUSANDS, 4, 0, 3000, 1000, 1);
+    // _test_ticks_case(DVZ_TICKS_FORMAT_THOUSANDS_FACTORED, 4, 2000, 5000, 1000, 1);
+    // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS, 3, 0, 2e6, 1e6, 1);
+    // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS_FACTORED, 3, 3e6, 5e6, 1e6, 2);
 
     dvz_ticks_destroy(ticks);
     return 0;
