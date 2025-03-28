@@ -3922,6 +3922,17 @@ DVZ_EXPORT void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec
 
 
 /**
+ * Inverse transform from normalized device coordinates [-1..+1] to the reference frame.
+ *
+ * @param ref the reference frame
+ * @param pos_tr the 3D position in normalized device coordinates
+ * @param[out] pos the original position
+ */
+DVZ_EXPORT void dvz_ref_inverse(DvzRef* ref, vec3 pos_tr, dvec3 pos);
+
+
+
+/**
  * Destroy a reference frame.
  *
  * @param ref the reference frame
