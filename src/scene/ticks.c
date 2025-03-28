@@ -248,7 +248,7 @@ DVZ_INLINE double min_distance_labels(DvzTicks* ticks)
         return 0;
     ASSERT(lmax - lmin > 0);
 
-    uint32_t n = tick_count(lmin, lmax, lstep); // number of labels
+    uint32_t n = get_tick_count(lmin, lmax, lstep); // number of labels
     ASSERT(n > 0);
     double label_length = 0, x = 0;
     for (uint32_t i = 0; i < n; i++)
@@ -271,7 +271,7 @@ static inline double legibility(DvzTicks* ticks)
     double lmin = ticks->lmin;
     double lmax = ticks->lmax;
     double lstep = ticks->lstep;
-    uint32_t n = tick_count(lmin, lmax, lstep);
+    uint32_t n = get_tick_count(lmin, lmax, lstep);
     if (n == 0)
         return -INF;
 
@@ -569,7 +569,7 @@ uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* ls
     *lmax = ticks->lmax;
     *lstep = ticks->lstep;
 
-    return tick_count(*lmin, *lmax, *lstep);
+    return get_tick_count(*lmin, *lmax, *lstep);
 }
 
 

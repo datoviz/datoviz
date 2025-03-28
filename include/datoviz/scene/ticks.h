@@ -97,7 +97,7 @@ struct DvzTicks
 
     double lmin, lmax, lstep; // computed min and max of the ticks
     DvzTicksFormat format;    // computed tick format
-    // uint32_t precision;       // computed tick precision
+    uint32_t precision;       // computed tick precision
 };
 
 
@@ -106,7 +106,7 @@ struct DvzTicks
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-DVZ_INLINE uint32_t tick_count(double lmin, double lmax, double lstep)
+DVZ_INLINE uint32_t get_tick_count(double lmin, double lmax, double lstep)
 {
     ASSERT(lstep != 0);
     // TODO: replace by "round()"?

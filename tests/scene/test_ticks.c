@@ -26,8 +26,9 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define MAX_TICKS 32
-#define LABEL_LEN 64
+#define MAX_TICKS            32
+#define LABEL_LEN            64
+#define REQUESTED_TICK_COUNT 10
 
 
 
@@ -102,8 +103,6 @@ int test_ticks_labels(TstSuite* suite)
 {
     ANN(suite);
 
-    DvzTicks* ticks = dvz_ticks(0);
-
     _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL, 5, 10.0, 50.0, 10.0, 2);
     _test_ticks_case(DVZ_TICKS_FORMAT_DECIMAL_FACTORED, 5, 1010.0, 1050.0, 10.0, 2);
     _test_ticks_case(DVZ_TICKS_FORMAT_SCIENTIFIC, 4, 1e-5, 4e-5, 1e-5, 2);
@@ -113,6 +112,32 @@ int test_ticks_labels(TstSuite* suite)
     // _test_ticks_case(DVZ_TICKS_FORMAT_THOUSANDS_FACTORED, 4, 2000, 5000, 1000, 1);
     // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS, 3, 0, 2e6, 1e6, 1);
     // _test_ticks_case(DVZ_TICKS_FORMAT_MILLIONS_FACTORED, 3, 3e6, 5e6, 1e6, 2);
+
+    return 0;
+}
+
+
+
+static void _test_ticks(DvzTicks* ticks, double dmin, double dmax)
+{
+    ANN(ticks);
+    ASSERT(dmin < dmax);
+
+    dvz_ticks_compute(ticks, dmin, dmax, REQUESTED_TICK_COUNT);
+
+    uint32_t tick_count = get_tick_count(ticks->lmin, ticks->lmax, ticks->lstep);
+
+    _test_ticks_case(
+        ticks->format, tick_count, ticks->lmin, ticks->lmax, ticks->lstep, ticks->precision);
+}
+
+int test_ticks_2(TstSuite* suite)
+{
+    ANN(suite);
+    DvzTicks* ticks = dvz_ticks(0);
+    dvz_ticks_size(ticks, 500.0, 20.0);
+
+    _test_ticks(ticks, 0, 1);
 
     dvz_ticks_destroy(ticks);
     return 0;
