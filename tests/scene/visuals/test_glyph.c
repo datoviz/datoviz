@@ -139,6 +139,45 @@ int test_glyph_1(TstSuite* suite)
 
 
 
+static void _set_strings_1(DvzVisual* visual)
+{
+    uint32_t string_count = 5;
+    char* strings[] = {"Hello", "world", "how", "are", "you"};
+    vec3 string_positions[] = {
+        {-.5, +.5, 0}, {+.5, +.5, 0}, {0, 0, 0}, {-.5, -.5, 0}, {+.5, -.5, 0}};
+    dvz_glyph_strings(
+        visual, string_count, strings, string_positions, //
+        (cvec4){255, 255, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
+}
+
+static void _set_strings_2(DvzVisual* visual)
+{
+    uint32_t string_count = 2;
+    char* strings[] = {"Hey", "so"};
+    vec3 string_positions[] = {{-.5, -.5, 0}, {0, +.5, 0}};
+
+    dvz_glyph_strings(
+        visual, string_count, strings, string_positions, //
+        (cvec4){0, 255, 255, 255}, (vec2){0, 0}, (vec2){0, 0});
+}
+
+static void _switch_strings(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+{
+    ANN(app);
+
+    VisualTest* vt = (VisualTest*)ev.user_data;
+    ANN(vt);
+
+    if (ev.type == DVZ_MOUSE_EVENT_PRESS)
+    {
+        _set_strings_2(vt->visual);
+    }
+    else if (ev.type == DVZ_MOUSE_EVENT_RELEASE)
+    {
+        _set_strings_1(vt->visual);
+    }
+}
+
 int test_glyph_strings(TstSuite* suite)
 {
     ANN(suite);
@@ -148,29 +187,21 @@ int test_glyph_strings(TstSuite* suite)
 #endif
     VisualTest vt = visual_test_start("glyph", VISUAL_TEST_PANZOOM, 0);
 
-    char* strings[] = {"Hello", "world", "how", "are", "you"};
-    vec3 string_positions[] = {
-        {-.5, +.5, 0}, {+.5, +.5, 0}, {0, 0, 0}, {-.5, -.5, 0}, {+.5, -.5, 0}};
-
-    uint32_t string_count = 5;
-    float font_size = 48;
-
     // Create the visual.
     DvzVisual* visual = dvz_glyph(vt.batch, 0);
 
-    // Background color.
-    // dvz_glyph_bgcolor(visual, (vec4){1, 1, 1, .5});
-
     // Create the atlas.
+    float font_size = 48;
     DvzAtlasFont af = dvz_atlas_font(font_size);
     dvz_glyph_atlas_font(visual, &af);
 
-    dvz_glyph_strings(
-        visual, string_count, strings, string_positions, //
-        (cvec4){255, 255, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
+    _set_strings_1(visual);
 
     // Add the visual to the panel AFTER setting the visual's data.
+    vt.visual = visual;
     dvz_panel_visual(vt.panel, visual, 0);
+
+    dvz_app_onmouse(vt.app, _switch_strings, &vt);
 
     // Run the test.
     visual_test_end(vt);
