@@ -172,6 +172,7 @@ int test_ticks_2(TstSuite* suite)
 
     _test_ticks(ticks, 1e3 + .123, 1e3 + .124);
     _test_ticks(ticks, 1.234e8 + .123, 1.234e8 + .1230001);
+    _test_ticks(ticks, -2e+07, -1.8e+07);
 
     dvz_ticks_destroy(ticks);
     return 0;

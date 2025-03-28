@@ -171,6 +171,8 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
 {
     ANN(ticks);
     ASSERT(requested_count > 0);
+    log_debug(
+        "computing ticks on [%.3f, %.3f] (requesting %d ticks)", dmin, dmax, requested_count);
     if (dmin >= dmax)
     {
         log_error("invalid range [%.3f, %.3f]", dmin, dmax);
