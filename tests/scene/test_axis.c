@@ -19,6 +19,7 @@
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
+#include "visuals/visual_test.h"
 
 
 
@@ -30,15 +31,64 @@ int test_axis_1(TstSuite* suite)
 {
     ANN(suite);
 
+#if !HAS_MSDF
+    return 1;
+#endif
+    VisualTest vt = visual_test_start("axis", VISUAL_TEST_PANZOOM, DVZ_APP_FLAGS_WHITE_BACKGROUND);
+
+    // Margins.
+    float m = 100;
+    dvz_panel_margins(vt.panel, m, m, m, m);
+
+
+    // Parameters.
+    float font_size = 24;
+    DvzDim dim = DVZ_DIM_X;
+    double dmin = 0;
+    double dmax = 10;
+    double range_size = WIDTH - 2 * m;
+    double glyph_size = font_size;
+
+
+    // Create the atlas.
+    DvzAtlasFont af = dvz_atlas_font(font_size);
+
+
+    // Create the reference frame.
     DvzRef* ref = dvz_ref(0);
-
-    DvzDim dim = 0;
-    double vmin = -1;
-    double vmax = +1;
-    uint32_t count = 3;
+    dvz_ref_set(ref, dim, dmin, dmax);
 
 
+    // Create the glyph visual.
+    DvzVisual* glyph = dvz_glyph(vt.batch, 0);
+    dvz_glyph_atlas_font(glyph, &af);
 
+
+    // Create the segment visual.
+    DvzVisual* segment = dvz_segment(vt.batch, 0);
+
+
+    // Create the axis.
+    DvzAxis* axis = dvz_axis(glyph, segment, dim, 0);
+    dvz_axis_ref(axis, ref);
+    dvz_axis_size(axis, range_size, glyph_size);
+    dvz_axis_horizontal(axis, 0);
+
+
+    // Compute ticks.
+    dvz_axis_update(axis, dmin, dmax);
+
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(vt.panel, glyph, 0);
+    dvz_panel_visual(vt.panel, segment, 0);
+
+    // Run the test.
+    visual_test_end(vt);
+
+    // Cleanup.
+    dvz_font_destroy(af.font);
+    dvz_atlas_destroy(af.atlas);
     dvz_ref_destroy(ref);
 
     return 0;

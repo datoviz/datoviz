@@ -88,23 +88,6 @@ DVZ_INLINE bool _are_spec_equal(DvzTicksSpec* spec1, DvzTicksSpec* spec2)
 
 
 
-// NOTE: to be called in axis.c instead?
-// Free tick labels
-DVZ_INLINE void free_tick_labels(uint32_t count, char** strings)
-{
-    if (!strings)
-        return;
-
-    for (uint32_t i = 0; i < count; i++)
-    {
-        FREE(strings[i]);
-    }
-
-    FREE(strings);
-}
-
-
-
 /*************************************************************************************************/
 /*  Scoring functions                                                                            */
 /*************************************************************************************************/
@@ -470,5 +453,7 @@ void dvz_ticks_linspace(
             snprintf(label, MAX_LABEL_LEN, "%.*f", spec->precision, display_val);
             break;
         }
+
+        // log_info("tick #%d: %s (%g)", i, label, val);
     }
 }

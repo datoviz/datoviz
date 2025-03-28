@@ -2237,7 +2237,8 @@ DVZ_EXPORT void dvz_glyph_xywh(
  */
 DVZ_EXPORT
 void dvz_glyph_strings(
-    DvzVisual* visual, uint32_t string_count, char** strings, vec3* positions, DvzColor color);
+    DvzVisual* visual, uint32_t string_count, char** strings, vec3* positions, DvzColor color,
+    vec2 offset, vec2 anchor);
 
 
 
@@ -3489,16 +3490,18 @@ DVZ_EXPORT DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeSt
 
 
 /**
- * Normalize 3D input positions into a target box.
+ * Normalize 1D input positions into a target box.
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
+ * @param dim which dimension
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
  * @param[out] out pointer to an array with the normalized positions to compute (single precision)
  */
-DVZ_EXPORT void
-dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
+DVZ_EXPORT
+void dvz_box_normalize_1D(
+    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, double* pos, vec3* out);
 
 
 
@@ -3513,6 +3516,20 @@ dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, v
  */
 DVZ_EXPORT void
 dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
+
+
+
+/**
+ * Normalize 3D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ */
+DVZ_EXPORT void
+dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
 
 
 
@@ -3863,6 +3880,20 @@ DVZ_EXPORT void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos);
  * @param pos the 3D positions
  */
 DVZ_EXPORT void dvz_ref_expand3D(DvzRef* ref, uint32_t count, dvec3* pos);
+
+
+
+/**
+ * Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
+ *
+ * @param ref the reference frame
+ * @param dim which dimension
+ * @param count the number of positions
+ * @param pos the 1D positions
+ * @param[out] pos_tr the transformed positions
+ */
+DVZ_EXPORT void
+dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
 
 
 

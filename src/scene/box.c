@@ -165,6 +165,52 @@ DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy stra
 
 
 
+void dvz_box_normalize_1D(
+    DvzBox source, DvzBox target, DvzDim dim, uint32_t count, double* pos, vec3* out)
+{
+    ANN(pos);
+    ANN(out);
+    ASSERT(dim < DVZ_DIM_COUNT);
+
+    double scale = 0;
+    double source_min = 0;
+    double target_min = 0;
+    if (dim == DVZ_DIM_X)
+    {
+        scale = source.xmax != source.xmin
+                    ? (target.xmax - target.xmin) / (source.xmax - source.xmin)
+                    : 1;
+        source_min = source.xmin;
+        target_min = target.xmin;
+    }
+    else if (dim == DVZ_DIM_Y)
+    {
+        scale = source.ymax != source.ymin
+                    ? (target.ymax - target.ymin) / (source.ymax - source.ymin)
+                    : 1;
+        source_min = source.ymin;
+        target_min = target.ymin;
+    }
+    else if (dim == DVZ_DIM_Z)
+    {
+        scale = source.zmax != source.zmin
+                    ? (target.zmax - target.zmin) / (source.zmax - source.zmin)
+                    : 1;
+        source_min = source.zmin;
+        target_min = target.zmin;
+    }
+
+#if HAS_OPENMP
+#pragma omp parallel for
+#endif
+    for (uint32_t i = 0; i < count; i++)
+    {
+        out[i][dim] = (float)((pos[i] - source_min) * scale + target_min);
+    }
+}
+
+
+
 void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
 {
     ANN(pos);

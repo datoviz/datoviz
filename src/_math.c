@@ -59,7 +59,7 @@ void dvz_threads_set(int num_threads)
     num_threads = MIN(num_threads, num_procs);
     ASSERT(1 <= num_threads);
     ASSERT(num_threads <= num_procs);
-    log_info("Setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
+    log_info("setting the number of OpenMP threads to %d/%d", num_threads, num_procs);
     NUM_THREADS = num_threads;
     omp_set_num_threads(num_threads);
 #endif

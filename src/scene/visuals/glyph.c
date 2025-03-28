@@ -439,7 +439,8 @@ static inline void set_glyph_pos(
 
 static inline void set_glyphs(
     DvzVisual* glyph, DvzAtlasFont* af, uint32_t glyph_count, uint32_t string_count, //
-    uint32_t* string_sizes, const char* concatenated, uint32_t* string_offsets)
+    uint32_t* string_sizes, const char* concatenated, uint32_t* string_offsets, vec2 offset,
+    vec2 anchor)
 {
     ANN(glyph);
     ANN(af);
@@ -449,9 +450,6 @@ static inline void set_glyphs(
 
     ASSERT(glyph_count > 0);
     ASSERT(string_count > 0);
-
-    // TODO
-    vec2 offset = {0};
 
     // Set the size and shift properties of the glyph vsual by using the font to compute the
     // layout.
@@ -485,6 +483,10 @@ static inline void set_glyphs(
 
     dvz_glyph_xywh(glyph, 0, glyph_count, xywh_trimmed, offset, 0);
     FREE(xywh);
+
+    vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), (void*)anchor);
+    dvz_glyph_anchor(glyph, 0, glyph_count, anchors, 0);
+    FREE(anchors);
 
     dvz_glyph_ascii(glyph, glyphs_trimmed);
     FREE(glyphs_trimmed);
@@ -559,7 +561,7 @@ static char* concatenate_with_spaces(
 
 void dvz_glyph_strings(
     DvzVisual* glyph, uint32_t string_count, char** strings, vec3* string_positions,
-    DvzColor color)
+    DvzColor color, vec2 offset, vec2 anchor)
 {
     ANN(glyph);
     ANN(strings);
@@ -598,7 +600,8 @@ void dvz_glyph_strings(
         // Compute the glyph offsets and sizes with freetype called on the concatenated string,
         // then update the glyph visual with that information.
         set_glyphs(
-            glyph, af, glyph_count, string_count, string_sizes, concatenated, string_offsets);
+            glyph, af, glyph_count, string_count, string_sizes, concatenated, string_offsets,
+            offset, anchor);
 
         // Set the positions of the glyphs.
         set_glyph_pos(glyph, glyph_count, string_count, string_sizes, string_positions);

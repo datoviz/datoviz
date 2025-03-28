@@ -145,9 +145,10 @@ typedef enum
 // Dimension.
 typedef enum
 {
-    DVZ_DIM_X,
-    DVZ_DIM_Y,
-    DVZ_DIM_Z,
+    DVZ_DIM_X = 0x0000,
+    DVZ_DIM_Y = 0x0001,
+    DVZ_DIM_Z = 0x0002,
+    DVZ_DIM_COUNT,
 } DvzDim;
 
 

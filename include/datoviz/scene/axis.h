@@ -33,6 +33,10 @@ typedef struct DvzAxes DvzAxes;
 
 // Forward declarations.
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzPanel DvzPanel;
+typedef struct DvzRef DvzRef;
+typedef struct DvzTicks DvzTicks;
+typedef struct DvzAxisSpec DvzAxisSpec;
 
 
 
@@ -40,10 +44,36 @@ typedef struct DvzVisual DvzVisual;
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
+struct DvzAxisSpec
+{
+    // Tick width.
+    vec4 tick_width;  // lim, grid, major, minor
+    vec4 tick_length; // lim, grid, major, minor
+
+    vec2 tick_dir;
+    vec2 anchor;
+    vec2 offset;
+    float pos;
+
+    // Color.
+    DvzColor color_glyph;
+    DvzColor color_lim;
+    DvzColor color_grid;
+    DvzColor color_major;
+    DvzColor color_minor;
+};
+
+
+
 struct DvzAxis
 {
+    DvzAxisSpec spec;
+
     DvzVisual* glyph;
     DvzVisual* segment;
+    DvzRef* ref;
+    DvzTicks* ticks;
+
     DvzDim dim;
     int flags;
 };
@@ -52,8 +82,189 @@ struct DvzAxis
 
 struct DvzAxes
 {
-    DvzAxis axis_xyz[3];
+    DvzAxis* axis_xyz[3];
 };
+
+
+
+/*************************************************************************************************/
+/*  Functions                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzDim dim, int flags);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_ref(DvzAxis* axis, DvzRef* ref);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_size(DvzAxis* axis, double range_size, double glyph_size);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels, vec3* positions);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_segment(DvzAxis* axis, uint32_t tick_count, vec3* positions);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_destroy(DvzAxis* axis);
+
+
+
+/*************************************************************************************************/
+/*  Axis spec                                                                                    */
+/*************************************************************************************************/
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_pos(DvzAxis* axis, float pos); // x0 for y axis, y0 for x axis
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_width(DvzAxis* axis, float lim, float grid, float major, float minor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_length(DvzAxis* axis, float lim, float grid, float major, float minor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_color(
+    DvzAxis* axis, DvzColor glyph, DvzColor lim, DvzColor grid, DvzColor major, DvzColor minor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_anchor(DvzAxis* axis, vec2 anchor);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_dir(DvzAxis* axis, vec2 tick_dir);
+
+
+
+/*************************************************************************************************/
+/*  Axis helpers                                                                                 */
+/*************************************************************************************************/
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_horizontal(DvzAxis* axis, int flags);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void dvz_axis_vertical(DvzAxis* axis, int flags);
+
+
+
+/*************************************************************************************************/
+/*  Axes                                                                                         */
+/*************************************************************************************************/
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzAxes* dvz_axes(DvzBatch* batch, int flags);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzAxis* dvz_axes_get(DvzAxes* axes, DvzDim dim);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axes_destroy(DvzAxes* axes);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT DvzAxes* dvz_panel_axes2D(DvzPanel* panel, int flags);
 
 
 

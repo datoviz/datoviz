@@ -165,7 +165,9 @@ int test_glyph_strings(TstSuite* suite)
     DvzAtlasFont af = dvz_atlas_font(font_size);
     dvz_glyph_atlas_font(visual, &af);
 
-    dvz_glyph_strings(visual, string_count, strings, string_positions, (cvec4){255, 255, 0, 255});
+    dvz_glyph_strings(
+        visual, string_count, strings, string_positions, //
+        (cvec4){255, 255, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
