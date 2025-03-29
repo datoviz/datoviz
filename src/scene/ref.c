@@ -195,7 +195,7 @@ void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr)
 
 
 
-void dvz_ref_inverse(DvzRef* ref, vec3 pos_tr, dvec3 pos)
+void dvz_ref_inverse(DvzRef* ref, vec3 pos_tr, dvec3* pos)
 {
     ANN(ref);
     dvz_box_inverse(ref->box, DVZ_BOX_NDC, pos_tr, pos);

@@ -50,10 +50,10 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
     DvzBox box = dvz_panzoom_extent(pz);
     dvec3 pos = {0};
 
-    dvz_ref_inverse(axis->ref, (vec3){box.xmin, 0, 0}, &pos[0]);
+    dvz_ref_inverse(axis->ref, (vec3){box.xmin, 0, 0}, &pos);
     double xmin = pos[0];
 
-    dvz_ref_inverse(axis->ref, (vec3){box.xmax, 0, 0}, &pos[0]);
+    dvz_ref_inverse(axis->ref, (vec3){box.xmax, 0, 0}, &pos);
     double xmax = pos[0];
 
     // If the extent is the same, do not recompute the ticks.
