@@ -3093,7 +3093,7 @@ DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
  * @param t the normalized value
  * @param[out] out the 2D position
  */
-DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
+DVZ_EXPORT void dvz_circular2D(vec2 center, float radius, float angle, float t, vec2 out);
 
 
 
@@ -3133,7 +3133,7 @@ DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
  * @param t the normalized value
  * @returns the interpolated point
  */
-DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
+DVZ_EXPORT void dvz_interpolate2D(vec2 p0, vec2 p1, float t, vec2 out);
 
 
 
@@ -3515,7 +3515,7 @@ void dvz_box_normalize_1D(
  * @param[out] out pointer to an array with the normalized positions to compute (single precision)
  */
 DVZ_EXPORT void
-dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
+dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
 
 
 

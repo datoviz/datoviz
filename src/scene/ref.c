@@ -178,7 +178,7 @@ void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr)
     ANN(pos_tr);
     ASSERT(count > 0);
 
-    dvz_box_normalize_2D(ref->box, DVZ_BOX_NDC, count, pos, pos_tr);
+    dvz_box_normalize2D(ref->box, DVZ_BOX_NDC, count, pos, pos_tr);
 }
 
 

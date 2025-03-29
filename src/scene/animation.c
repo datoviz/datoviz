@@ -339,7 +339,7 @@ double dvz_resample(double t0, double t1, double t) { return (t - t0) / (t1 - t0
 
 
 
-void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out)
+void dvz_circular2D(vec2 center, float radius, float angle, float t, vec2 out)
 {
     float a = M_2PI * t + angle;
     vec2 u = {cos(a), sin(a)};
@@ -356,7 +356,7 @@ void dvz_circular_3D(vec3 center, vec3 u, vec3 v, float radius, float angle, flo
     center_p[1] = center[1];
 
     vec2 out_p = {0};
-    dvz_circular_2D(center_p, radius, angle, t, out_p);
+    dvz_circular2D(center_p, radius, angle, t, out_p);
     float x = out_p[0];
     float y = out_p[1];
 
@@ -372,7 +372,7 @@ float dvz_interpolate(float p0, float p1, float t) { return p0 + p1 * t; }
 
 
 
-void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out) { glm_vec2_lerp(p0, p1, t, out); }
+void dvz_interpolate2D(vec2 p0, vec2 p1, float t, vec2 out) { glm_vec2_lerp(p0, p1, t, out); }
 
 
 
