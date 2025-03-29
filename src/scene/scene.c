@@ -1205,8 +1205,8 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
     {
         if (mev.type == DVZ_MOUSE_EVENT_DRAG_START)
         {
-            panel->is_press_valid = !_is_in_margins( //
-                mev.content.d.press_pos, panel->view->shape, panel->view->margins);
+            panel->is_press_valid = true;
+            // !_is_in_margins(mev.content.d.press_pos, panel->view->shape, panel->view->margins);
         }
         else if (mev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
         {
