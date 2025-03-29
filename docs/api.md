@@ -240,112 +240,6 @@ void dvz_basic_size(
 )
 ```
 
-### `dvz_box()`
-
-Create a box.
-
-```c
-DvzBox dvz_box(  // returns: the box
-    double xmin,  // minimum x value
-    double xmax,  // maximum x value
-    double ymin,  // minimum y value
-    double ymax,  // maximum y value
-    double zmin,  // minimum z value
-    double zmax,  // maximum z value
-)
-```
-
-### `dvz_box_aspect()`
-
-Return the aspect ratio of a box.
-
-```c
-double dvz_box_aspect(  // returns: the aspect ratio width/height
-    DvzBox box,  // the box
-)
-```
-
-### `dvz_box_center()`
-
-Return the box center.
-
-```c
-void dvz_box_center(
-    DvzBox box,  // the box
-)
-```
-
-### `dvz_box_extent()`
-
-Return the extent of a box, in the same coordinate system, depending on the aspect ratio.
-
-```c
-DvzBox dvz_box_extent(  // returns: the extent box
-    DvzBox box,  // the original box
-    float width,  // the viewport width
-    float height,  // the viewport height
-    DvzBoxExtentStrategy strategy,  // indicates how the extent box should be computed
-)
-```
-
-### `dvz_box_inverse()`
-
-Perform an inverse transformation of a position from a target box to a source box.
-
-```c
-void dvz_box_inverse(
-
-)
-```
-
-### `dvz_box_merge()`
-
-Merge a number of boxes into a single box.
-
-```c
-DvzBox dvz_box_merge(  // returns: the merged box
-    uint32_t box_count,  // the number of boxes to merge
-    DvzBox* boxes,  // the boxes to merge
-    DvzBoxMergeStrategy strategy,  // the merge strategy
-)
-```
-
-### `dvz_box_normalize()`
-
-Normalize 3D input positions into a target box.
-
-```c
-void dvz_box_normalize(
-    DvzBox source,  // the source box, in data coordinates
-    DvzBox target,  // the target box, typically in normalized coordinates
-    uint32_t count,  // the number of positions to normalize
-    dvec3* pos,  // the positions to normalize (double precision)
-)
-```
-
-### `dvz_box_normalize_2D()`
-
-Normalize 2D input positions into a target box.
-
-```c
-void dvz_box_normalize_2D(
-    DvzBox source,  // the source box, in data coordinates
-    DvzBox target,  // the target box, typically in normalized coordinates
-    uint32_t count,  // the number of positions to normalize
-    dvec2* pos,  // the positions to normalize (double precision)
-)
-```
-
-### `dvz_box_print()`
-
-Display information about a box.
-
-```c
-void dvz_box_print(
-
-)
-```
-
 ### `dvz_camera_initial()`
 
 Set the initial camera parameters.
@@ -482,12 +376,12 @@ void dvz_camera_zrange(
 )
 ```
 
-### `dvz_circular_2D()`
+### `dvz_circular2D()`
 
 Generate a 2D circular motion.
 
 ```c
-void dvz_circular_2D(
+void dvz_circular2D(
     vec2 center,  // the circle center
     float radius,  // the circle radius
     float angle,  // the initial angle
@@ -811,14 +705,14 @@ void dvz_glyph_ascii(
 )
 ```
 
-### `dvz_glyph_atlas()`
+### `dvz_glyph_atlas_font()`
 
-Associate an atlas with a glyph visual.
+Associate an atlas and font with a glyph visual.
 
 ```c
-void dvz_glyph_atlas(
+void dvz_glyph_atlas_font(
     DvzVisual* visual,  // the visual
-    DvzAtlas* atlas,  // the atlas
+    DvzAtlasFont* af,  // the atlas font
 )
 ```
 
@@ -914,6 +808,20 @@ void dvz_glyph_size(
     uint32_t count,  // the number of items to update
     vec2* values,  // the sizes (width and height) of the items to update
     int flags,  // the data update flags
+)
+```
+
+### `dvz_glyph_strings()`
+
+Helper function to easily set multiple strings of the same size and color on a glyph visual.
+
+```c
+void dvz_glyph_strings(
+    DvzVisual* visual,  // the visual
+    uint32_t string_count,  // the number of strings
+    char** strings,  // the strings
+    vec3* positions,  // the positions of each string
+    DvzColor color,  // the same color for all strings
 )
 ```
 
@@ -1439,12 +1347,12 @@ float dvz_interpolate(  // returns: the interpolated value
 )
 ```
 
-### `dvz_interpolate_2D()`
+### `dvz_interpolate2D()`
 
 Make a linear interpolation between two 2D points.
 
 ```c
-void dvz_interpolate_2D(  // returns: the interpolated point
+void dvz_interpolate2D(  // returns: the interpolated point
     vec2 p0,  // the first point
     vec2 p1,  // the second point
     float t,  // the normalized value
@@ -2405,7 +2313,7 @@ void dvz_panzoom_end(
 Get the extent box.
 
 ```c
-DvzBox dvz_panzoom_extent(  // returns: the extent box in normalized coordinates
+void dvz_panzoom_extent(
     DvzPanzoom* pz,  // the panzoom
 )
 ```
@@ -2484,7 +2392,7 @@ Set the extent box.
 ```c
 void dvz_panzoom_set(
     DvzPanzoom* pz,  // the panzoom
-    DvzBox extent,  // the extent box
+    DvzBox* extent,  // the extent box
 )
 ```
 
@@ -2801,6 +2709,135 @@ Placeholder.
 ```c
 DvzQtWindow* dvz_qt_window(
      placeholder,  // placeholder
+)
+```
+
+### `dvz_ref()`
+
+Create a reference frame (wrapping a 3D box representing the data in its original coordinates).
+
+```c
+DvzRef* dvz_ref(  // returns: the reference frame
+    int flags,  // the flags
+)
+```
+
+### `dvz_ref_destroy()`
+
+Destroy a reference frame.
+
+```c
+void dvz_ref_destroy(
+    DvzRef* ref,  // the reference frame
+)
+```
+
+### `dvz_ref_expand()`
+
+Expand the reference by ensuring it contains the specified range.
+
+```c
+void dvz_ref_expand(
+    DvzRef* ref,  // the reference frame
+    DvzDim dim,  // the dimension axis
+    double vmin,  // the minimum value
+    double vmax,  // the maximum value
+)
+```
+
+### `dvz_ref_expand2D()`
+
+Expand the reference by ensuring it contains the specified 2D data.
+
+```c
+void dvz_ref_expand2D(
+    DvzRef* ref,  // the reference frame
+    uint32_t count,  // the number of positions
+    dvec2* pos,  // the 2D positions
+)
+```
+
+### `dvz_ref_expand3D()`
+
+Expand the reference by ensuring it contains the specified 3D data.
+
+```c
+void dvz_ref_expand3D(
+    DvzRef* ref,  // the reference frame
+    uint32_t count,  // the number of positions
+    dvec3* pos,  // the 3D positions
+)
+```
+
+### `dvz_ref_get()`
+
+Get the range on a given axis.
+
+```c
+void dvz_ref_get(
+    DvzRef* ref,  // the reference frame
+    DvzDim dim,  // the dimension axis
+)
+```
+
+### `dvz_ref_inverse()`
+
+Inverse transform from normalized device coordinates [-1..+1] to the reference frame.
+
+```c
+void dvz_ref_inverse(
+    DvzRef* ref,  // the reference frame
+    vec3 pos_tr,  // the 3D position in normalized device coordinates
+)
+```
+
+### `dvz_ref_set()`
+
+Set the range on a given axis.
+
+```c
+void dvz_ref_set(
+    DvzRef* ref,  // the reference frame
+    DvzDim dim,  // the dimension axis
+    double vmin,  // the minimum value
+    double vmax,  // the maximum value
+)
+```
+
+### `dvz_ref_transform1D()`
+
+Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
+
+```c
+void dvz_ref_transform1D(
+    DvzRef* ref,  // the reference frame
+    DvzDim dim,  // which dimension
+    uint32_t count,  // the number of positions
+    double* pos,  // the 1D positions
+)
+```
+
+### `dvz_ref_transform2D()`
+
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
+
+```c
+void dvz_ref_transform2D(
+    DvzRef* ref,  // the reference frame
+    uint32_t count,  // the number of positions
+    dvec2* pos,  // the 2D positions
+)
+```
+
+### `dvz_ref_transform3D()`
+
+Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
+
+```c
+void dvz_ref_transform3D(
+    DvzRef* ref,  // the reference frame
+    uint32_t count,  // the number of positions
+    dvec3* pos,  // the 3D positions
 )
 ```
 
@@ -5640,6 +5677,7 @@ DVZ_DIALOG_FLAGS_PANEL
 DVZ_DIM_X
 DVZ_DIM_Y
 DVZ_DIM_Z
+DVZ_DIM_COUNT
 ```
 
 ### `DvzEasing`
@@ -5936,6 +5974,13 @@ DVZ_RECORDER_VIEWPORT
 DVZ_RECORDER_PUSH
 DVZ_RECORDER_END
 DVZ_RECORDER_COUNT
+```
+
+### `DvzRefFlags`
+
+```
+DVZ_REF_FLAGS_NONE
+DVZ_REF_FLAGS_EQUAL
 ```
 
 ### `DvzRequestAction`

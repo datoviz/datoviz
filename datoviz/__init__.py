@@ -385,9 +385,15 @@ class DvzCorner(CtypesEnum):
 
 
 class DvzDim(CtypesEnum):
-    DVZ_DIM_X = 0
-    DVZ_DIM_Y = 1
-    DVZ_DIM_Z = 2
+    DVZ_DIM_X = 0x0000
+    DVZ_DIM_Y = 0x0001
+    DVZ_DIM_Z = 0x0002
+    DVZ_DIM_COUNT = 3
+
+
+class DvzRefFlags(CtypesEnum):
+    DVZ_REF_FLAGS_NONE = 0x00
+    DVZ_REF_FLAGS_EQUAL = 0x01
 
 
 class DvzArcballFlags(CtypesEnum):
@@ -1160,9 +1166,12 @@ DIALOG_CORNER_TOP_LEFT = 0
 DIALOG_CORNER_TOP_RIGHT = 1
 DIALOG_CORNER_BOTTOM_LEFT = 2
 DIALOG_CORNER_BOTTOM_RIGHT = 3
-DIM_X = 0
-DIM_Y = 1
-DIM_Z = 2
+DIM_X = 0x0000
+DIM_Y = 0x0001
+DIM_Z = 0x0002
+DIM_COUNT = 3
+REF_FLAGS_NONE = 0x00
+REF_FLAGS_EQUAL = 0x01
 ARCBALL_FLAGS_NONE = 0
 ARCBALL_FLAGS_CONSTRAIN = 1
 PANZOOM_FLAGS_NONE = 0x00
@@ -1812,6 +1821,10 @@ class DvzQtApp(ctypes.Structure):
 
 
 class DvzQtWindow(ctypes.Structure):
+    pass
+
+
+class DvzRef(ctypes.Structure):
     pass
 
 
@@ -6114,21 +6127,21 @@ glyph_texture.argtypes = [
     DvzId,  # DvzId tex
 ]
 
-# Function dvz_glyph_atlas()
-glyph_atlas = dvz.dvz_glyph_atlas
-glyph_atlas.__doc__ = """
-Associate an atlas with a glyph visual.
+# Function dvz_glyph_atlas_font()
+glyph_atlas_font = dvz.dvz_glyph_atlas_font
+glyph_atlas_font.__doc__ = """
+Associate an atlas and font with a glyph visual.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-atlas : DvzAtlas*
-    the atlas
+af : DvzAtlasFont*
+    the atlas font
 """
-glyph_atlas.argtypes = [
+glyph_atlas_font.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.POINTER(DvzAtlas),  # DvzAtlas* atlas
+    ctypes.POINTER(DvzAtlasFont),  # DvzAtlasFont* af
 ]
 
 # Function dvz_glyph_unicode()
@@ -6195,6 +6208,34 @@ glyph_xywh.argtypes = [
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* values
     ctypes.c_float * 2,  # vec2 offset
     ctypes.c_int,  # int flags
+]
+
+# Function dvz_glyph_strings()
+glyph_strings = dvz.dvz_glyph_strings
+glyph_strings.__doc__ = """
+Helper function to easily set multiple strings of the same size and color on a glyph visual.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+string_count : uint32_t
+    the number of strings
+strings : char**
+    the strings
+positions : vec3*
+    the positions of each string
+color : DvzColor
+    the same color for all strings
+"""
+glyph_strings.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t string_count
+    ctypes.POINTER(ctypes.c_char_p),  # char** strings
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
+    DvzColor,  # DvzColor color
+    ctypes.c_float * 2,  # vec2 offset
+    ctypes.c_float * 2,  # vec2 anchor
 ]
 
 # Function dvz_monoglyph()
@@ -7688,9 +7729,9 @@ easing.argtypes = [
 ]
 easing.restype = ctypes.c_double
 
-# Function dvz_circular_2D()
-circular_2D = dvz.dvz_circular_2D
-circular_2D.__doc__ = """
+# Function dvz_circular2D()
+circular2D = dvz.dvz_circular2D
+circular2D.__doc__ = """
 Generate a 2D circular motion.
 
 Parameters
@@ -7706,7 +7747,7 @@ t : float
 out : vec2 (out parameter)
     the 2D position
 """
-circular_2D.argtypes = [
+circular2D.argtypes = [
     ctypes.c_float * 2,  # vec2 center
     ctypes.c_float,  # float radius
     ctypes.c_float,  # float angle
@@ -7772,9 +7813,9 @@ interpolate.argtypes = [
 ]
 interpolate.restype = ctypes.c_float
 
-# Function dvz_interpolate_2D()
-interpolate_2D = dvz.dvz_interpolate_2D
-interpolate_2D.__doc__ = """
+# Function dvz_interpolate2D()
+interpolate2D = dvz.dvz_interpolate2D
+interpolate2D.__doc__ = """
 Make a linear interpolation between two 2D points.
 
 Parameters
@@ -7791,7 +7832,7 @@ Returns
 type
     the interpolated point
 """
-interpolate_2D.argtypes = [
+interpolate2D.argtypes = [
     ctypes.c_float * 2,  # vec2 p0
     ctypes.c_float * 2,  # vec2 p1
     ctypes.c_float,  # float t
@@ -8270,206 +8311,6 @@ camera_print.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
 ]
 
-# Function dvz_box()
-box = dvz.dvz_box
-box.__doc__ = """
-Create a box.
-
-Parameters
-----------
-xmin : double
-    minimum x value
-xmax : double
-    maximum x value
-ymin : double
-    minimum y value
-ymax : double
-    maximum y value
-zmin : double
-    minimum z value
-zmax : double
-    maximum z value
-
-Returns
--------
-type
-    the box
-"""
-box.argtypes = [
-    ctypes.c_double,  # double xmin
-    ctypes.c_double,  # double xmax
-    ctypes.c_double,  # double ymin
-    ctypes.c_double,  # double ymax
-    ctypes.c_double,  # double zmin
-    ctypes.c_double,  # double zmax
-]
-box.restype = DvzBox
-
-# Function dvz_box_aspect()
-box_aspect = dvz.dvz_box_aspect
-box_aspect.__doc__ = """
-Return the aspect ratio of a box.
-
-Parameters
-----------
-box : DvzBox
-    the box
-
-Returns
--------
-type
-    the aspect ratio width/height
-"""
-box_aspect.argtypes = [
-    DvzBox,  # DvzBox box
-]
-box_aspect.restype = ctypes.c_double
-
-# Function dvz_box_center()
-box_center = dvz.dvz_box_center
-box_center.__doc__ = """
-Return the box center.
-
-Parameters
-----------
-box : DvzBox
-    the box
-the : unknown (out parameter)
-    box's center
-"""
-box_center.argtypes = [
-    DvzBox,  # DvzBox box
-    ctypes.c_double * 3,  # dvec3 center
-]
-
-# Function dvz_box_extent()
-box_extent = dvz.dvz_box_extent
-box_extent.__doc__ = """
-Return the extent of a box, in the same coordinate system, depending on the aspect ratio. This will return the same box if the aspect ratio is unconstrained.
-
-Parameters
-----------
-box : DvzBox
-    the original box
-width : float
-    the viewport width
-height : float
-    the viewport height
-strategy : DvzBoxExtentStrategy
-    indicates how the extent box should be computed
-
-Returns
--------
-type
-    the extent box
-"""
-box_extent.argtypes = [
-    DvzBox,  # DvzBox box
-    ctypes.c_float,  # float width
-    ctypes.c_float,  # float height
-    DvzBoxExtentStrategy,  # DvzBoxExtentStrategy strategy
-]
-box_extent.restype = DvzBox
-
-# Function dvz_box_merge()
-box_merge = dvz.dvz_box_merge
-box_merge.__doc__ = """
-Merge a number of boxes into a single box.
-
-Parameters
-----------
-box_count : uint32_t
-    the number of boxes to merge
-boxes : DvzBox*
-    the boxes to merge
-strategy : DvzBoxMergeStrategy
-    the merge strategy
-
-Returns
--------
-type
-    the merged box
-"""
-box_merge.argtypes = [
-    ctypes.c_uint32,  # uint32_t box_count
-    ctypes.POINTER(DvzBox),  # DvzBox* boxes
-    DvzBoxMergeStrategy,  # DvzBoxMergeStrategy strategy
-]
-box_merge.restype = DvzBox
-
-# Function dvz_box_normalize()
-box_normalize = dvz.dvz_box_normalize
-box_normalize.__doc__ = """
-Normalize 3D input positions into a target box.
-
-Parameters
-----------
-source : DvzBox
-    the source box, in data coordinates
-target : DvzBox
-    the target box, typically in normalized coordinates
-count : uint32_t
-    the number of positions to normalize
-pos : dvec3*
-    the positions to normalize (double precision)
-out : vec3* (out parameter)
-    pointer to an array with the normalized positions to compute (single precision)
-"""
-box_normalize.argtypes = [
-    DvzBox,  # DvzBox source
-    DvzBox,  # DvzBox target
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* out
-]
-
-# Function dvz_box_normalize_2D()
-box_normalize_2D = dvz.dvz_box_normalize_2D
-box_normalize_2D.__doc__ = """
-Normalize 2D input positions into a target box.
-
-Parameters
-----------
-source : DvzBox
-    the source box, in data coordinates
-target : DvzBox
-    the target box, typically in normalized coordinates
-count : uint32_t
-    the number of positions to normalize
-pos : dvec2*
-    the positions to normalize (double precision)
-out : vec3* (out parameter)
-    pointer to an array with the normalized positions to compute (single precision)
-"""
-box_normalize_2D.argtypes = [
-    DvzBox,  # DvzBox source
-    DvzBox,  # DvzBox target
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* out
-]
-
-# Function dvz_box_inverse()
-box_inverse = dvz.dvz_box_inverse
-box_inverse.__doc__ = """
-Perform an inverse transformation of a position from a target box to a source box.
-"""
-box_inverse.argtypes = [
-    DvzBox,  # DvzBox source
-    DvzBox,  # DvzBox target
-    ctypes.c_float * 3,  # vec3 pos
-    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* out
-]
-
-# Function dvz_box_print()
-box_print = dvz.dvz_box_print
-box_print.__doc__ = """
-Display information about a box.
-"""
-box_print.argtypes = [
-    DvzBox,  # DvzBox box
-]
-
 # Function dvz_panzoom_reset()
 panzoom_reset = dvz.dvz_panzoom_reset
 panzoom_reset.__doc__ = """
@@ -8689,16 +8530,13 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-
-Returns
--------
-type
+extent : DvzBox* (out parameter)
     the extent box in normalized coordinates
 """
 panzoom_extent.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
+    ctypes.POINTER(DvzBox),  # DvzBox* extent
 ]
-panzoom_extent.restype = DvzBox
 
 # Function dvz_panzoom_set()
 panzoom_set = dvz.dvz_panzoom_set
@@ -8709,12 +8547,12 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-extent : DvzBox
+extent : DvzBox*
     the extent box
 """
 panzoom_set.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    DvzBox,  # DvzBox extent
+    ctypes.POINTER(DvzBox),  # DvzBox* extent
 ]
 
 # Function dvz_panzoom_mvp()
@@ -8908,6 +8746,241 @@ mvp : DvzMVP*
 ortho_mvp.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
+]
+
+# Function dvz_ref()
+ref = dvz.dvz_ref
+ref.__doc__ = """
+Create a reference frame (wrapping a 3D box representing the data in its original coordinates).
+
+Parameters
+----------
+flags : int
+    the flags
+
+Returns
+-------
+type
+    the reference frame
+"""
+ref.argtypes = [
+    ctypes.c_int,  # int flags
+]
+ref.restype = ctypes.POINTER(DvzRef)
+
+# Function dvz_ref_set()
+ref_set = dvz.dvz_ref_set
+ref_set.__doc__ = """
+Set the range on a given axis.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+dim : DvzDim
+    the dimension axis
+vmin : double
+    the minimum value
+vmax : double
+    the maximum value
+"""
+ref_set.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    DvzDim,  # DvzDim dim
+    ctypes.c_double,  # double vmin
+    ctypes.c_double,  # double vmax
+]
+
+# Function dvz_ref_get()
+ref_get = dvz.dvz_ref_get
+ref_get.__doc__ = """
+Get the range on a given axis.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+dim : DvzDim
+    the dimension axis
+vmin : double* (out parameter)
+    the minimum value
+vmax : double* (out parameter)
+    the maximum value
+"""
+ref_get.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    DvzDim,  # DvzDim dim
+    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* vmin
+    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* vmax
+]
+
+# Function dvz_ref_expand()
+ref_expand = dvz.dvz_ref_expand
+ref_expand.__doc__ = """
+Expand the reference by ensuring it contains the specified range.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+dim : DvzDim
+    the dimension axis
+vmin : double
+    the minimum value
+vmax : double
+    the maximum value
+"""
+ref_expand.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    DvzDim,  # DvzDim dim
+    ctypes.c_double,  # double vmin
+    ctypes.c_double,  # double vmax
+]
+
+# Function dvz_ref_expand2D()
+ref_expand2D = dvz.dvz_ref_expand2D
+ref_expand2D.__doc__ = """
+Expand the reference by ensuring it contains the specified 2D data.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+count : uint32_t
+    the number of positions
+pos : dvec2*
+    the 2D positions
+"""
+ref_expand2D.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
+]
+
+# Function dvz_ref_expand3D()
+ref_expand3D = dvz.dvz_ref_expand3D
+ref_expand3D.__doc__ = """
+Expand the reference by ensuring it contains the specified 3D data.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+count : uint32_t
+    the number of positions
+pos : dvec3*
+    the 3D positions
+"""
+ref_expand3D.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
+]
+
+# Function dvz_ref_transform1D()
+ref_transform1D = dvz.dvz_ref_transform1D
+ref_transform1D.__doc__ = """
+Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+dim : DvzDim
+    which dimension
+count : uint32_t
+    the number of positions
+pos : double*
+    the 1D positions
+pos_tr : vec3* (out parameter)
+    the transformed positions
+"""
+ref_transform1D.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    DvzDim,  # DvzDim dim
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* pos
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+]
+
+# Function dvz_ref_transform2D()
+ref_transform2D = dvz.dvz_ref_transform2D
+ref_transform2D.__doc__ = """
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+count : uint32_t
+    the number of positions
+pos : dvec2*
+    the 2D positions
+pos_tr : vec3* (out parameter)
+    the transformed positions
+"""
+ref_transform2D.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+]
+
+# Function dvz_ref_transform3D()
+ref_transform3D = dvz.dvz_ref_transform3D
+ref_transform3D.__doc__ = """
+Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+count : uint32_t
+    the number of positions
+pos : dvec3*
+    the 3D positions
+pos_tr : vec3* (out parameter)
+    the transformed positions
+"""
+ref_transform3D.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+]
+
+# Function dvz_ref_inverse()
+ref_inverse = dvz.dvz_ref_inverse
+ref_inverse.__doc__ = """
+Inverse transform from normalized device coordinates [-1..+1] to the reference frame.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+pos_tr : vec3
+    the 3D position in normalized device coordinates
+pos : dvec3* (out parameter)
+    the original position
+"""
+ref_inverse.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_float * 3,  # vec3 pos_tr
+    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
+]
+
+# Function dvz_ref_destroy()
+ref_destroy = dvz.dvz_ref_destroy
+ref_destroy.__doc__ = """
+Destroy a reference frame.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+"""
+ref_destroy.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
 ]
 
 # Function dvz_gui_window_capture()
