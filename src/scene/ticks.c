@@ -250,6 +250,7 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
 
         ticks->spec.offset = 0;
     }
+    log_debug("found format %d", format);
 
     // Compute precision based on step size
     uint32_t precision = 0;
@@ -261,21 +262,31 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     else if (
         format == DVZ_TICKS_FORMAT_SCIENTIFIC || format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED)
     {
-        // Check how far step is from an exact power of 10
-        double log_step = log10(step);
-        double nearest_int = round(log_step);
-        double diff = fabs(log_step - nearest_int);
+        int32_t exponent = 0;
 
-        if (diff < 1e-6)
+        if (format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED)
         {
-            precision = 0; // step is already a power of 10
+            exponent = (int32_t)floor(log10(fabs(lmax - lmin)));
+        }
+        else if (format == DVZ_TICKS_FORMAT_SCIENTIFIC)
+        {
+            exponent = (int32_t)floor(log10(fmax(fabs(lmin), fabs(lmax))));
+        }
+
+        double scale = pow(10, exponent);
+        double ratio = step / scale;
+
+        if (ratio >= 1)
+        {
+            precision = 0;
         }
         else
         {
-            // Use enough digits to show differences between ticks
-            precision = count_decimal_places(step / pow(10, floor(log10(step))));
+            // How many digits needed to express ratio
+            precision = (uint32_t)(ceil(-log10(ratio)));
         }
     }
+    log_debug("found precision %d", precision);
 
     ticks->spec.format = format;
     ticks->spec.precision = precision;

@@ -52,9 +52,9 @@ _print_ticks(DvzTicksSpec* spec, uint32_t count, double lmin, double lmax, doubl
     for (uint32_t i = 0; i < count; i++)
         printf("%s  ", labels[i]);
     if (spec->exponent != 0)
-        printf("E%s%d", spec->exponent > 0 ? "+" : "", spec->exponent);
+        printf("1e%s%d", spec->exponent > 0 ? "+" : "", spec->exponent);
     if (spec->offset != 0)
-        printf("(%s%g)", spec->offset > 0 ? "+" : "", spec->offset);
+        printf("%s%g", spec->offset > 0 ? "+" : "", spec->offset);
     printf("\n");
 
     printf("Positions: ");
@@ -167,12 +167,13 @@ int test_ticks_2(TstSuite* suite)
     _test_ticks(ticks, 1001, 1002);
     for (int32_t i = -9; i <= 9; i++)
     {
-        // _test_ticks(ticks, -pow((double)10, i), +pow((double)10, i));
+        _test_ticks(ticks, -pow((double)10, i), +pow((double)10, i));
     }
 
     _test_ticks(ticks, 1e3 + .123, 1e3 + .124);
     _test_ticks(ticks, 1.234e8 + .123, 1.234e8 + .1230001);
     _test_ticks(ticks, -2e+07, -1.8e+07);
+    _test_ticks(ticks, -2e-07, -1.8e-07);
 
     dvz_ticks_destroy(ticks);
     return 0;
