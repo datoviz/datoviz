@@ -14,7 +14,10 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "datoviz.h"
+#include "datoviz_enums.h"
+#include "datoviz_math.h"
+
+#include "scene/box.h"
 
 
 

@@ -18,6 +18,7 @@
 /*************************************************************************************************/
 
 #include "_log.h"
+#include "box.h"
 #include "datoviz_enums.h"
 #include "datoviz_math.h"
 #include "datoviz_types.h"

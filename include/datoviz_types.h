@@ -35,7 +35,6 @@ typedef struct DvzShape DvzShape;
 typedef struct DvzMVP DvzMVP;
 typedef struct DvzViewport DvzViewport;
 typedef struct _VkViewport _VkViewport;
-typedef struct DvzBox DvzBox;
 typedef struct DvzAtlasFont DvzAtlasFont;
 typedef struct DvzTime DvzTime;
 
@@ -203,13 +202,6 @@ struct DvzShape
     // UGLY HACK: this seems to be necessary to ensure struct size equality between C and ctypes
     // (just checkstructs), maybe some alignment issue.
     // double _;
-};
-
-
-
-struct DvzBox
-{
-    double xmin, xmax, ymin, ymax, zmin, zmax;
 };
 
 

@@ -16,6 +16,7 @@
 #include "scene/panzoom.h"
 #include "datoviz.h"
 #include "mouse.h"
+#include "scene/box.h"
 
 
 
@@ -303,7 +304,7 @@ void dvz_panzoom_end(DvzPanzoom* pz)
 
 
 
-DvzBox dvz_panzoom_extent(DvzPanzoom* pz)
+void dvz_panzoom_extent(DvzPanzoom* pz, DvzBox* box)
 {
     ANN(pz);
 
@@ -312,23 +313,23 @@ DvzBox dvz_panzoom_extent(DvzPanzoom* pz)
     float ymin = -pz->pan[1] - 1.0f / pz->zoom[1];
     float ymax = -pz->pan[1] + 1.0f / pz->zoom[1];
 
-    return dvz_box(xmin, xmax, ymin, ymax, pz->zlim[0], pz->zlim[1]);
+    *box = dvz_box(xmin, xmax, ymin, ymax, pz->zlim[0], pz->zlim[1]);
 }
 
 
 
-void dvz_panzoom_set(DvzPanzoom* pz, DvzBox extent)
+void dvz_panzoom_set(DvzPanzoom* pz, DvzBox* extent)
 {
     ANN(pz);
 
-    float width = extent.xmax - extent.xmin;
-    float height = extent.ymax - extent.ymin;
+    float width = extent->xmax - extent->xmin;
+    float height = extent->ymax - extent->ymin;
 
     pz->zoom[0] = 2.0f / width;
     pz->zoom[1] = 2.0f / height;
 
-    pz->pan[0] = -(extent.xmin + extent.xmax) / 2.0f;
-    pz->pan[1] = -(extent.ymin + extent.ymax) / 2.0f;
+    pz->pan[0] = -(extent->xmin + extent->xmax) / 2.0f;
+    pz->pan[1] = -(extent->ymin + extent->ymax) / 2.0f;
 
     // pz->zlim[0] = extent.zmin;
     // pz->zlim[1] = extent.zmax;

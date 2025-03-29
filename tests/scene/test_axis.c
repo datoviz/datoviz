@@ -17,6 +17,7 @@
 #include "test_axis.h"
 #include "datoviz.h"
 #include "scene/axis.h"
+#include "scene/box.h"
 #include "scene/ticks.h"
 #include "test.h"
 #include "testing.h"
@@ -47,7 +48,8 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
     ANN(ticks);
 
     // Find the extent.
-    DvzBox box = dvz_panzoom_extent(pz);
+    DvzBox box = {0};
+    dvz_panzoom_extent(pz, &box);
     dvec3 pos = {0};
 
     dvz_ref_inverse(axis->ref, (vec3){box.xmin, 0, 0}, &pos);

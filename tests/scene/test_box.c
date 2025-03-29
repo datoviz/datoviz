@@ -16,6 +16,7 @@
 
 #include "test_box.h"
 #include "datoviz.h"
+#include "scene/box.h"
 #include "test.h"
 #include "testing.h"
 #include "testing_utils.h"
