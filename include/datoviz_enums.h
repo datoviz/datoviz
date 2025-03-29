@@ -832,6 +832,38 @@ typedef enum
 
 
 
+// Alignment.
+typedef enum
+{
+    DVZ_ALIGN_NONE,
+    DVZ_ALIGN_LOW,
+    DVZ_ALIGN_MIDDLE,
+    DVZ_ALIGN_HIGH,
+} DvzAlign;
+
+
+
+// Orientation.
+typedef enum
+{
+    DVZ_ORIENTATION_DEFAULT,
+    DVZ_ORIENTATION_UP,
+    DVZ_ORIENTATION_REVERSE,
+    DVZ_ORIENTATION_DOWN,
+} DvzOrientation;
+
+
+
+// Predefined font for scene module.
+typedef enum
+{
+    DVZ_SCENE_FONT_MONO,
+    DVZ_SCENE_FONT_LABEL,
+    DVZ_SCENE_FONT_COUNT,
+} DvzSceneFont;
+
+
+
 /*************************************************************************************************/
 /*  Defaults                                                                                     */
 /*************************************************************************************************/
