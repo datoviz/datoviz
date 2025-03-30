@@ -383,7 +383,14 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
         return false;
 
     double lmin = 0, lmax = 0, lstep = 0;
-    uint32_t tick_count = dvz_ticks_range(ticks, &lmin, &lmax, &lstep);
+    dvz_ticks_range(ticks, &lmin, &lmax, &lstep);
+
+    // NOTE: extend left and right for aesthetical purposes.
+    double extra = (lmax - lmin) * .5;
+    lmin -= extra;
+    lmax += extra;
+
+    uint32_t tick_count = get_tick_count(lmin, lmax, lstep);
     if (tick_count < 2)
         return false;
     log_debug("found %d ticks", tick_count);

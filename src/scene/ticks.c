@@ -210,7 +210,7 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     {
         double abs_center = fabs(0.5 * (lmin + lmax));
         double abs_range = fabs(lmax - lmin);
-        if (abs_center > 0 && abs_range / abs_center < 0.1)
+        if (abs_center > 0 && abs_range / abs_center < 0.01)
             clustered = true;
     }
 
@@ -309,7 +309,7 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
 
 
 
-uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep)
+void dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep)
 {
     ANN(ticks);
     ANN(lmin);
@@ -320,7 +320,7 @@ uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* ls
     *lmax = ticks->lmax;
     *lstep = ticks->lstep;
 
-    return get_tick_count(*lmin, *lmax, *lstep);
+    // return get_tick_count(*lmin, *lmax, *lstep);
 }
 
 

@@ -132,7 +132,7 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
 
 
 
-uint32_t dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep);
+void dvz_ticks_range(DvzTicks* ticks, double* lmin, double* lmax, double* lstep);
 
 
 
