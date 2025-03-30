@@ -386,7 +386,8 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
     dvz_ticks_range(ticks, &lmin, &lmax, &lstep);
 
     // NOTE: extend left and right for aesthetical purposes.
-    double extra = (lmax - lmin) * .5;
+    // WARNING: extra should be a multiple of step
+    double extra = 3 * lstep;
     lmin -= extra;
     lmax += extra;
 
