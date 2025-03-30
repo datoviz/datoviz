@@ -65,8 +65,9 @@ int test_axis_1(TstSuite* suite)
     // Parameters.
     float font_size = 24;
     DvzDim dim = DVZ_DIM_X;
-    double dmin = -102.5;
-    double dmax = -92.5;
+    double dmin = -5; // -102.5;
+    double dmax = +5; //-92.5;
+    // float inner_viewport_size = WIDTH;
     double range_size = WIDTH - 2 * m;
     double glyph_size = font_size;
 
@@ -89,10 +90,16 @@ int test_axis_1(TstSuite* suite)
     DvzVisual* segment = dvz_segment(vt.batch, 0);
 
 
+    // Create the glyph visual for the exponent and offset (factorized formats only).
+    DvzVisual* factor = dvz_glyph(vt.batch, 0);
+    dvz_glyph_atlas_font(factor, &af);
+
+
     // Create the axis.
-    DvzAxis* axis = dvz_axis(glyph, segment, dim, 0);
+    DvzAxis* axis = dvz_axis(glyph, segment, factor, dim, 0);
     dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
+    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, +50, -70);
     dvz_axis_horizontal(axis, 0);
     vt.haxis = axis;
 
@@ -105,6 +112,7 @@ int test_axis_1(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, glyph, 0);
     dvz_panel_visual(vt.panel, segment, 0);
+    dvz_panel_visual(vt.panel, factor, 0);
 
     // Run the test.
     visual_test_end(vt);
