@@ -208,10 +208,21 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     // Check if values are far from zero and tightly clustered
     bool clustered = false;
     {
-        double abs_center = fabs(0.5 * (lmin + lmax));
-        double abs_range = fabs(lmax - lmin);
-        if (abs_center > 0 && abs_range / abs_center < 0.01)
-            clustered = true;
+        // How many digits differ between lmin and lmax?
+        double diff = fabs(lmax - lmin);
+        double max_abs = fmax(fabs(lmin), fabs(lmax));
+
+        if (diff <= 0 || max_abs <= 0)
+            clustered = false;
+        else
+        {
+            int digits_diff = (int)floor(log10(diff));
+            int digits_common = (int)floor(log10(max_abs)) - digits_diff;
+
+            // Consider values clustered if at least 3 common leading digits
+            if (digits_common >= 3)
+                clustered = true;
+        }
     }
 
     if (clustered)

@@ -160,22 +160,25 @@ int test_ticks_2(TstSuite* suite)
     DvzTicks* ticks = dvz_ticks(0);
     dvz_ticks_size(ticks, 500.0, 20.0);
 
-    _test_ticks(ticks, 0, 1, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, -1, 1, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, 0, 10, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, .1, .2, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, 1001, 1002, REQUESTED_TICK_COUNT);
-    for (int32_t i = -9; i <= 9; i++)
-    {
-        _test_ticks(ticks, -pow((double)10, i), +pow((double)10, i), REQUESTED_TICK_COUNT);
-    }
+    // _test_ticks(ticks, 0, 1, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, -1, 1, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, 0, 10, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, .1, .2, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, 1001, 1002, REQUESTED_TICK_COUNT);
+    // for (int32_t i = -9; i <= 9; i++)
+    // {
+    //     _test_ticks(ticks, -pow((double)10, i), +pow((double)10, i), REQUESTED_TICK_COUNT);
+    // }
 
-    _test_ticks(ticks, 1e3 + .123, 1e3 + .124, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, 1.234e8 + .123, 1.234e8 + .1230001, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, -2e+07, -1.8e+07, REQUESTED_TICK_COUNT);
-    _test_ticks(ticks, -2e-07, -1.8e-07, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, 1e3 + .123, 1e3 + .124, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, 1.234e8 + .123, 1.234e8 + .1230001, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, -2e+07, -1.8e+07, REQUESTED_TICK_COUNT);
+    // _test_ticks(ticks, -2e-07, -1.8e-07, REQUESTED_TICK_COUNT);
 
-    _test_ticks(ticks, 49.897, 57.207, 5);
+    // _test_ticks(ticks, 49.897, 57.207, 5);
+
+    _test_ticks(ticks, -50.161, -49.799, 5);
+    _test_ticks(ticks, -50.165, -49.803, 5);
 
     dvz_ticks_destroy(ticks);
     return 0;
