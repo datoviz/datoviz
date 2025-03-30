@@ -930,5 +930,9 @@ void dvz_visual_callback(DvzVisual* visual, DvzVisualCallback callback)
 void dvz_visual_show(DvzVisual* visual, bool is_visible)
 {
     ANN(visual);
+    if (visual->is_visible != is_visible)
+    {
+        _set_visual_dirty(visual);
+    }
     visual->is_visible = is_visible;
 }
