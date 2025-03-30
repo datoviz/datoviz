@@ -29,6 +29,8 @@
 /*************************************************************************************************/
 
 typedef struct DvzAxis DvzAxis;
+typedef struct DvzAxisSpec DvzAxisSpec;
+typedef struct DvzLayout DvzLayout;
 typedef struct DvzAxes DvzAxes;
 
 // Forward declarations.
@@ -37,7 +39,6 @@ typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzPanel DvzPanel;
 typedef struct DvzRef DvzRef;
 typedef struct DvzTicks DvzTicks;
-typedef struct DvzAxisSpec DvzAxisSpec;
 
 
 
@@ -66,12 +67,25 @@ struct DvzAxisSpec
 
 
 
+struct DvzLayout
+{
+    vec2 pos;
+    vec2 size;
+    vec2 offset;
+    DvzAlign align[2];
+};
+
+
+
 struct DvzAxis
 {
     DvzAxisSpec spec;
+    DvzLayout factor_layout;
 
     DvzVisual* glyph;
     DvzVisual* segment;
+    DvzVisual* factor;
+
     DvzRef* ref;
     DvzTicks* ticks;
 
@@ -97,7 +111,8 @@ struct DvzAxes
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzDim dim, int flags);
+DVZ_EXPORT DvzAxis*
+dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDim dim, int flags);
 
 
 
@@ -134,6 +149,15 @@ DVZ_EXPORT void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_axis_segment(DvzAxis* axis, uint32_t tick_count, vec3* positions);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset);
 
 
 
@@ -217,6 +241,14 @@ DVZ_EXPORT void dvz_axis_offset(DvzAxis* axis, vec2 offset);
  *
  */
 DVZ_EXPORT void dvz_axis_dir(DvzAxis* axis, vec2 tick_dir);
+
+
+
+/**
+ *
+ */
+DVZ_EXPORT void
+dvz_axis_factor_layout(DvzAxis* axis, DvzAlign align, float xoffset, float yoffset);
 
 
 

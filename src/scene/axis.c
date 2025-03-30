@@ -242,6 +242,11 @@ static void axis_common_params(DvzAxis* axis)
     dvz_axis_color(axis, COLOR_GLYPH, COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
 
     dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
+
+    if (axis->factor != NULL)
+    {
+        dvz_visual_fixed(axis->factor, true, true, true);
+    }
 }
 
 
@@ -282,11 +287,53 @@ static void axis_vertical_params(DvzAxis* axis)
 
 
 
+static void compute_layout(
+    // float viewport_size, // size of the INNER viewport in pixels along a given axis
+    DvzAlign align, // alignment of the factor visual along a given axis
+    float pos,      // position of the factor visual along a given axis
+    // float offset,        // offset in pixels
+    float* out_pos // out position in NDC
+    // float* out_offset   // out offset in NDC
+)
+{
+    ANN(out_pos);
+
+    switch (align)
+    {
+    case DVZ_ALIGN_NONE:
+        *out_pos = pos;
+        // NOTE: no out_offset in this case.
+        break;
+
+    case DVZ_ALIGN_LOW:
+        // ANN(out_offset);
+        *out_pos = -1;
+        // *out_offset = 2.0 * offset / viewport_size;
+        break;
+
+    case DVZ_ALIGN_MIDDLE:
+        *out_pos = 0;
+        // NOTE: no out_offset in this case.
+        break;
+
+    case DVZ_ALIGN_HIGH:
+        // ANN(out_offset);
+        *out_pos = +1;
+        // *out_offset = -2.0 * offset / viewport_size;
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+
 /*************************************************************************************************/
 /*  Axis                                                                                         */
 /*************************************************************************************************/
 
-DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzDim dim, int flags)
+DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDim dim, int flags)
 {
     ANN(glyph);
     ANN(segment);
@@ -294,10 +341,16 @@ DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzDim dim, int flags)
     DvzAxis* axis = (DvzAxis*)calloc(1, sizeof(DvzAxis));
     axis->glyph = glyph;
     axis->segment = segment;
+    axis->factor = factor; // used only with factored formats: offset and exponent
     axis->dim = dim;
     axis->flags = flags;
 
     axis->ticks = dvz_ticks(0);
+
+    // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
+    // at the moment.
+    dvz_glyph_strings(
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
 
     return axis;
 }
@@ -357,6 +410,52 @@ void dvz_axis_segment(DvzAxis* axis, uint32_t tick_count, vec3* positions)
     set_segment_color(segment, tick_count, spec->color_major, spec->color_minor);
     set_segment_shift(segment, tick_count, spec->tick_length, spec->tick_dir);
     set_segment_width(segment, tick_count, spec->tick_width);
+}
+
+
+
+void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
+{
+    ANN(axis);
+    if (axis->factor == NULL)
+    {
+        log_trace("skip setting of axis factor as axis->factor visual is not set (NULL)");
+        return;
+    }
+    const char* sign = offset > 0 ? "+" : "";
+    const char* s1e = exponent != 0 ? "1e" : "";
+    char label[64] = {0};
+    if (exponent == 0)
+    {
+        sprintf(label, "%s%g", sign, offset);
+    }
+    else
+    {
+        sprintf(label, "1e%d %s%g", exponent, sign, offset);
+    }
+
+    vec3 pos = {0};
+
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        compute_layout(
+            axis->factor_layout.align[i], axis->factor_layout.pos[i], //
+            &pos[i]);
+    }
+
+    vec2 anchor = {0};
+    if (axis->dim == DVZ_DIM_X)
+    {
+        anchor[0] = 1;
+        anchor[1] = 1;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        anchor[0] = -1;
+        anchor[1] = -1;
+    }
+    dvz_glyph_strings(
+        axis->factor, 1, (char*[]){label}, &pos, LABEL_COLOR, axis->factor_layout.offset, anchor);
 }
 
 
@@ -430,6 +529,18 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
 
     // Update the segment visual.
     dvz_axis_segment(axis, tick_count, positions);
+
+    // Show offset and exponent in factored formats.
+
+    bool is_factored = _is_format_factored(&axis->ticks->spec);
+    if (is_factored)
+    {
+        dvz_axis_factor(axis, ticks->spec.exponent, ticks->spec.offset);
+    }
+    if (axis->factor != NULL)
+    {
+        dvz_visual_show(axis->factor, is_factored);
+    }
 
     // Free the labels array and all labels in it.
     free_tick_labels(tick_count, labels);
@@ -554,6 +665,27 @@ void dvz_axis_dir(DvzAxis* axis, vec2 tick_dir)
 {
     ANN(axis);
     glm_vec2_copy(tick_dir, axis->spec.tick_dir);
+}
+
+
+
+void dvz_axis_factor_layout(DvzAxis* axis, DvzAlign align, float xoffset, float yoffset)
+{
+    ANN(axis);
+
+    if (axis->dim == DVZ_DIM_X)
+    {
+        axis->factor_layout.align[0] = align;
+        axis->factor_layout.align[1] = DVZ_ALIGN_LOW;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        axis->factor_layout.align[0] = DVZ_ALIGN_LOW;
+        axis->factor_layout.align[1] = align;
+    }
+
+    axis->factor_layout.offset[0] = xoffset;
+    axis->factor_layout.offset[1] = yoffset;
 }
 
 
