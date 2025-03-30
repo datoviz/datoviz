@@ -442,6 +442,42 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
 
 
 
+bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz)
+{
+    ANN(axis);
+    ANN(pz);
+
+    DvzTicks* ticks = axis->ticks;
+    ANN(ticks);
+
+    DvzRef* ref = axis->ref;
+    ANN(ref);
+
+    // Find the extent.
+    DvzBox box = {0};
+    dvz_panzoom_extent(pz, &box);
+    dvec3 pos = {0};
+
+    dvz_ref_inverse(ref, (vec3){box.xmin, 0, 0}, &pos);
+    double xmin = pos[0];
+
+    dvz_ref_inverse(ref, (vec3){box.xmax, 0, 0}, &pos);
+    double xmax = pos[0];
+
+    // If the extent is the same, do not recompute the ticks.
+    if ((fabs(xmin - ticks->dmin) < 1e-12) && (fabs(xmax - ticks->dmax) < 1e-12))
+    {
+        return false;
+    }
+
+    // Otherwise, recompute the ticks and only update the axes if the ticks have changed.
+    bool updated = dvz_axis_update(axis, xmin, xmax);
+
+    return updated;
+}
+
+
+
 void dvz_axis_destroy(DvzAxis* axis)
 {
     ANN(axis);

@@ -33,6 +33,7 @@ typedef struct DvzAxes DvzAxes;
 
 // Forward declarations.
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzPanel DvzPanel;
 typedef struct DvzRef DvzRef;
 typedef struct DvzTicks DvzTicks;
@@ -142,6 +143,15 @@ DVZ_EXPORT void dvz_axis_segment(DvzAxis* axis, uint32_t tick_count, vec3* posit
  * @param placeholder placeholder
  */
 DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz);
 
 
 

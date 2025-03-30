@@ -44,28 +44,8 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
     DvzAxis* axis = vt->haxis;
     ANN(axis);
 
-    DvzTicks* ticks = axis->ticks;
-    ANN(ticks);
-
-    // Find the extent.
-    DvzBox box = {0};
-    dvz_panzoom_extent(pz, &box);
-    dvec3 pos = {0};
-
-    dvz_ref_inverse(axis->ref, (vec3){box.xmin, 0, 0}, &pos);
-    double xmin = pos[0];
-
-    dvz_ref_inverse(axis->ref, (vec3){box.xmax, 0, 0}, &pos);
-    double xmax = pos[0];
-
-    // If the extent is the same, do not recompute the ticks.
-    if ((fabs(xmin - ticks->dmin) < 1e-12) && (fabs(xmax - ticks->dmax) < 1e-12))
-    {
-        return;
-    }
-
-    // Otherwise, recompute the ticks and only update the axes if the ticks have changed.
-    bool updated = dvz_axis_update(axis, xmin, xmax);
+    // Update the axis if the panzoom has been updated and if the ticks have changed.
+    dvz_axis_onpanzoom(axis, pz);
 }
 
 int test_axis_1(TstSuite* suite)
