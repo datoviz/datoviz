@@ -57,7 +57,7 @@ struct DvzGlyphVertex
     vec2 uv;          /* 5: texture coordinates */
     float angle;      /* 6: angle */
     DvzColor color;   /* 7: color */
-    float group_size; /* 8: group_size */
+    vec2 group_shape; /* 8: group width and height, in pixels, used for anchor computation */
 };
 
 

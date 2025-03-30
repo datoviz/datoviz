@@ -79,7 +79,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
     dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
     dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_COLOR, af);
-    dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, group_size), DVZ_FORMAT_R32_SFLOAT, af);
+    dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, group_shape), DVZ_FORMAT_R32G32_SFLOAT, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzGlyphVertex));
@@ -232,8 +232,8 @@ void dvz_glyph_color(
 
 
 
-void dvz_glyph_groupsize(
-    DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+void dvz_glyph_group_shapes(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 8, first, count, (void*)values);
@@ -382,35 +382,41 @@ void dvz_glyph_xywh(
 
     if (group_count > 0)
     {
-        float* group_widths = (float*)calloc(group_count, sizeof(float));
+        vec2* group_shapes = (vec2*)calloc(group_count, sizeof(vec2));
         uint32_t k = 0;
         float group_width = 0.0;
+        float group_height = 0.0;
 
         // Loop over the groups.
         for (uint32_t i = 0; i < group_count; i++)
         {
             // Reset the width of the current group.
             group_width = 0;
+            group_height = 0;
 
             // Loop over the glyphs in each group.
             for (uint32_t j = 0; j < group_size[i]; j++)
             {
+                // NOTE: we add the width of all glyphs, but we take the max of the height of all
+                // glyphs, to get the group width and height (group shape).
                 group_width += size[k][0];
+                group_height = MAX(group_height, size[k][1]);
                 k++;
             }
 
-            group_widths[i] = group_width;
+            group_shapes[i][0] = group_width;
+            group_shapes[i][1] = group_height;
         }
 
         // We need to pass the group size to each glyph, so that the vertex shader can compute
         // the displacement in pixels, relative to the group size (the coefficient is the
         // anchor).
-        float* groupsize = _repeat_group(
-            sizeof(float), count, group_count, group_size, (void*)group_widths, false);
-        dvz_glyph_groupsize(visual, first, count, groupsize, 0);
-        FREE(groupsize);
+        vec2* group_shapes_repeated = _repeat_group(
+            sizeof(vec2), count, group_count, group_size, (void*)group_shapes, false);
+        dvz_glyph_group_shapes(visual, first, count, group_shapes_repeated, 0);
+        FREE(group_shapes_repeated);
 
-        FREE(group_widths);
+        FREE(group_shapes);
     }
 
     FREE(size);
@@ -598,6 +604,9 @@ void dvz_glyph_strings(
     {
         // Allocate the number of glyphs.
         dvz_glyph_alloc(glyph, glyph_count);
+
+        // Set the groups.
+        dvz_visual_groups(glyph, string_count, string_sizes);
 
         // Compute the glyph offsets and sizes with freetype called on the concatenated string,
         // then update the glyph visual with that information.

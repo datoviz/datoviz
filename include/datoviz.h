@@ -2153,11 +2153,11 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* val
  * @param visual the visual
  * @param first the index of the first item to update
  * @param count the number of items to update
- * @param values the glyph group sizes
+ * @param values the glyph group shapes (width and height, in pixels)
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_glyph_groupsize(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+dvz_glyph_group_shapes(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
 
 
 
