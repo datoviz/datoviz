@@ -34,6 +34,15 @@
 
 
 /*************************************************************************************************/
+/*  Macros                                                                                       */
+/*************************************************************************************************/
+
+#define CLOSE(x, y) (fabs((x) - (y)) < EPSILON)
+#define IDIV(x)     ((int32_t)(x) / pow(10, oom))
+
+
+
+/*************************************************************************************************/
 /*  Typedefs                                                                                     */
 /*************************************************************************************************/
 
@@ -60,16 +69,9 @@ typedef enum
 {
     DVZ_TICKS_FORMAT_UNDEFINED,
     DVZ_TICKS_FORMAT_DECIMAL,
-    DVZ_TICKS_FORMAT_DECIMAL_FACTORED,
     DVZ_TICKS_FORMAT_SCIENTIFIC,
-    DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED,
+    DVZ_TICKS_FORMAT_FACTORED, // with possible shared offset and/or possible shared exponent
     DVZ_TICKS_FORMAT_COUNT,
-
-    // NOTE: disable these formats for now, not that useful in practice
-    DVZ_TICKS_FORMAT_THOUSANDS,
-    DVZ_TICKS_FORMAT_THOUSANDS_FACTORED,
-    DVZ_TICKS_FORMAT_MILLIONS,
-    DVZ_TICKS_FORMAT_MILLIONS_FACTORED,
 } DvzTicksFormat;
 
 
@@ -110,6 +112,30 @@ DVZ_INLINE uint32_t get_tick_count(double lmin, double lmax, double lstep)
     ASSERT(lstep != 0);
     // TODO: replace by "round()"?
     return floor(1 + (lmax - lmin) / lstep);
+}
+
+
+
+DVZ_INLINE bool _is_format_factored(DvzTicksSpec* spec)
+{
+    return spec->format == DVZ_TICKS_FORMAT_FACTORED;
+    //  DVZ_TICKS_FORMAT_DECIMAL_FACTORED ||
+    //        spec->format == DVZ_TICKS_FORMAT_THOUSANDS_FACTORED ||
+    //        spec->format == DVZ_TICKS_FORMAT_MILLIONS_FACTORED ||
+    //        spec->format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
+}
+
+
+
+DVZ_INLINE bool _are_spec_equal(DvzTicksSpec* spec1, DvzTicksSpec* spec2)
+{
+    ANN(spec1);
+    ANN(spec2);
+    return (
+        (spec1->format == spec2->format) &&       //
+        (spec1->exponent == spec2->exponent) &&   //
+        (spec1->precision == spec2->precision) && //
+        (CLOSE(spec1->offset, spec2->offset)));
 }
 
 

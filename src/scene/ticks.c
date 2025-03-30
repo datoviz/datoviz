@@ -33,58 +33,18 @@
 
 
 /*************************************************************************************************/
-/*  Macros                                                                                       */
-/*************************************************************************************************/
-
-#define CLOSE(x, y) (fabs((x) - (y)) < EPSILON)
-#define IDIV(x)     ((int32_t)(x) / pow(10, oom))
-
-
-
-/*************************************************************************************************/
-/*  Typedefs                                                                                     */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
-/*  Structs                                                                                      */
-/*************************************************************************************************/
-
-
-
-/*************************************************************************************************/
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-DVZ_INLINE int32_t round_log10(double value) { return (int32_t)floor(log10(fabs(value))); }
+DVZ_INLINE int32_t rlog10(double value)
+{
+    double a = fabs(value);
+    return a > 1e-14 ? (int32_t)floor(log10(a)) : -INFINITY;
+}
 
 
 
 DVZ_INLINE double pow10_(int32_t exp) { return pow(10.0, (double)exp); }
-
-
-
-DVZ_INLINE bool _is_format_factored(DvzTicksSpec* spec)
-{
-    return spec->format == DVZ_TICKS_FORMAT_DECIMAL_FACTORED ||
-           spec->format == DVZ_TICKS_FORMAT_THOUSANDS_FACTORED ||
-           spec->format == DVZ_TICKS_FORMAT_MILLIONS_FACTORED ||
-           spec->format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
-}
-
-
-
-DVZ_INLINE bool _are_spec_equal(DvzTicksSpec* spec1, DvzTicksSpec* spec2)
-{
-    ANN(spec1);
-    ANN(spec2);
-    return (
-        (spec1->format == spec2->format) &&       //
-        (spec1->exponent == spec2->exponent) &&   //
-        (spec1->precision == spec2->precision) && //
-        (CLOSE(spec1->offset, spec2->offset)));
-}
 
 
 
@@ -131,6 +91,10 @@ DVZ_INLINE uint32_t count_decimal_places(double step)
 {
     if (step <= 0.0)
         return 0;
+
+    // HACK: work around precision issues.
+    step = round(step * pow10_(14)) / pow10_(14);
+
     double frac = step - floor(step);
     uint32_t precision = 0;
     while (frac > 1e-10 && precision < 10)
@@ -187,7 +151,6 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     double lstep_orig = ticks->lstep;
     DvzTicksSpec spec_orig = ticks->spec;
 
-
     double range = dmax - dmin;
     double raw_step = range / requested_count;
 
@@ -205,101 +168,147 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     // Step 3: Decide formatting
     DvzTicksFormat format = DVZ_TICKS_FORMAT_DECIMAL;
 
-    // Check if values are far from zero and tightly clustered
-    bool clustered = false;
+    double almin = fabs(lmin);
+    double almax = fabs(lmax);
+    double abs_max = fmax(almin, almax);
+    double diff = fabs(lmax - lmin);
+
+    int32_t expdiff = rlog10(diff);
+    int32_t expmin = rlog10(almin);
+    int32_t expmax = rlog10(almax);
+    int32_t global_exponent = rlog10(abs_max);
+
+    bool is_factored_exp = false;
+    bool is_factored_offset = false;
+    int32_t exponent = 0;
+    uint32_t precision = 0;
+    double offset = 0;
+
+    // To determine if the format should be factored: two cases:
+    if (lmin * lmax <= 0)
     {
-        // How many digits differ between lmin and lmax?
-        double diff = fabs(lmax - lmin);
-        double max_abs = fmax(fabs(lmin), fabs(lmax));
+        // 0 is in the interval: no offset, exponent depends on scale of lmax.
+        is_factored_exp = fabs((double)global_exponent) >= 4; // fabs(MAX(expmin, expmax)) >= 4;
+        is_factored_offset = false;
 
-        if (diff <= 0 || max_abs <= 0)
-            clustered = false;
-        else
-        {
-            int digits_diff = (int)floor(log10(diff));
-            int digits_common = (int)floor(log10(max_abs)) - digits_diff;
-
-            // Consider values clustered if at least 3 common leading digits
-            if (digits_common >= 3)
-                clustered = true;
-        }
-    }
-
-    if (clustered)
-    {
-        // Use factored format
-        format = DVZ_TICKS_FORMAT_DECIMAL_FACTORED;
-
-        // Decide between decimal and scientific based on tick range
-        double local_range = fabs(lmax - lmin);
-        int32_t local_exponent = (int32_t)floor(log10(local_range));
-        if (fabs((double)local_exponent) >= 4 || fabs(step) < 1e-3)
-            format = DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
-
-        // Offset = start of tick range
-        ticks->spec.offset = lmin;
-
-        // Exponent = based on range, not absolute values
-        ticks->spec.exponent =
-            (format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED) ? local_exponent : 0;
+        exponent = is_factored_exp ? global_exponent : 0;
+        offset = 0;
     }
     else
     {
-        // Use standard (non-factored) formats
-        double abs_max = fmax(fabs(lmin), fabs(lmax));
-        int32_t global_exponent = (int32_t)floor(log10(abs_max));
-        if (fabs((double)global_exponent) >= 4 || fabs(step) < 1e-3)
-        {
-            format = DVZ_TICKS_FORMAT_SCIENTIFIC;
-            // ticks->spec.exponent = global_exponent;
-        }
-        else
-        {
-            format = DVZ_TICKS_FORMAT_DECIMAL;
-            ticks->spec.exponent = 0;
-        }
+        // 0 is not in the interval: offset depends on relative scale of diff vs almin, exponent
+        // depends on scale of diff.
+        is_factored_exp = fabs((double)rlog10(diff)) >= 4;
+        is_factored_offset = fabs((double)rlog10(diff / almin)) >= 4;
 
-        ticks->spec.offset = 0;
+        offset = is_factored_offset ? .5 * (lmin + lmax) : 0;
+        exponent = is_factored_exp ? expdiff : 0;
+    }
+    format = is_factored_exp || is_factored_offset ? DVZ_TICKS_FORMAT_FACTORED
+                                                   : DVZ_TICKS_FORMAT_DECIMAL;
+
+    {
+        // // Check if values are far from zero and tightly clustered
+        // bool clustered = false;
+        // {
+        //     // How many digits differ between lmin and lmax?
+        //     double diff = fabs(lmax - lmin);
+        //     double max_abs = fmax(fabs(lmin), fabs(lmax));
+
+        //     if (diff <= 0 || max_abs <= 0)
+        //     {
+        //         clustered = false;
+        //     }
+        //     else
+        //     {
+        //         int digits_diff = (int)floor(log10(diff));
+        //         int digits_common = (int)floor(log10(max_abs)) - digits_diff;
+
+        //         // Consider values clustered if at least 3 common leading digits
+        //         if (digits_common >= 3)
+        //             clustered = true;
+        //     }
+        // }
+
+        // // Check exponent clustering (shared magnitude)
+        // {
+        //     int exp_min = (int)floor(log10(fabs(lmin)));
+        //     int exp_max = (int)floor(log10(fabs(lmax)));
+
+        //     if (abs(exp_min - exp_max) <= 1 && abs(exp_min) >= 4)
+        //         clustered = true;
+        // }
+
+        // if (clustered)
+        // {
+        //     // Use factored format
+        //     // format = DVZ_TICKS_FORMAT_DECIMAL_FACTORED;
+        //     format = DVZ_TICKS_FORMAT_FACTORED;
+
+        //     // Decide between decimal and scientific based on tick range
+        //     double local_range = fabs(lmax - lmin);
+        //     int32_t local_exponent = (int32_t)floor(log10(local_range));
+        //     // if (fabs((double)local_exponent) >= 4 ||
+        //     //     fabs(step / pow10_((double)local_exponent)) < 1e-3)
+        //     //     format = DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
+
+        //     // Offset = start of tick range
+        //     ticks->spec.offset = .5 * (lmin + lmax);
+
+        //     // Exponent = based on range, not absolute values
+        //     ticks->spec.exponent = local_exponent;
+        //     // (format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED) ? local_exponent : 0;
+        // }
+        // else
+        // {
+        //     // Use standard (non-factored) formats
+        //     double abs_max = fmax(fabs(lmin), fabs(lmax));
+        //     int32_t global_exponent = (int32_t)floor(log10(abs_max));
+        //     if (fabs((double)global_exponent) >= 4 || fabs(step) < 1e-3)
+        //     {
+        //         format = DVZ_TICKS_FORMAT_SCIENTIFIC;
+        //         // ticks->spec.exponent = global_exponent;
+        //     }
+        //     else
+        //     {
+        //         format = DVZ_TICKS_FORMAT_DECIMAL;
+        //         ticks->spec.exponent = 0;
+        //     }
+
+        //     ticks->spec.offset = 0;
+        // }
     }
     log_debug("found format %d", format);
 
     // Compute precision based on step size
-    uint32_t precision = 0;
 
-    if (format == DVZ_TICKS_FORMAT_DECIMAL || format == DVZ_TICKS_FORMAT_DECIMAL_FACTORED)
+
+    if (format == DVZ_TICKS_FORMAT_DECIMAL)
     {
         precision = count_decimal_places(step);
     }
-    else if (
-        format == DVZ_TICKS_FORMAT_SCIENTIFIC || format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED)
+    else if (format == DVZ_TICKS_FORMAT_SCIENTIFIC)
     {
-        int32_t exponent = 0;
-
-        if (format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED)
-        {
-            exponent = (int32_t)floor(log10(fabs(lmax - lmin)));
-        }
-        else if (format == DVZ_TICKS_FORMAT_SCIENTIFIC)
-        {
-            exponent = (int32_t)floor(log10(fmax(fabs(lmin), fabs(lmax))));
-        }
-
-        double scale = pow(10, exponent);
+        double scale = pow(10, global_exponent);
         double ratio = step / scale;
 
-        if (ratio >= 1)
-        {
-            precision = 0;
-        }
-        else
-        {
-            // How many digits needed to express ratio
-            precision = (uint32_t)(ceil(-log10(ratio)));
-        }
+        // How many digits needed to express ratio
+        precision = ratio >= 1 ? 0 : (uint32_t)(ceil(-log10(ratio)));
     }
+    else if (is_factored_exp)
+    {
+        precision = count_decimal_places(step / pow10_(exponent));
+    }
+    else if (is_factored_offset)
+    {
+        precision = count_decimal_places(step);
+    }
+
     log_debug("found precision %d", precision);
 
     ticks->spec.format = format;
+    ticks->spec.offset = offset;
+    ticks->spec.exponent = exponent;
     ticks->spec.precision = precision;
 
     // Determine whether the parameters are different.
@@ -452,24 +461,11 @@ void dvz_ticks_linspace(
         switch (spec->format)
         {
         case DVZ_TICKS_FORMAT_DECIMAL:
-        case DVZ_TICKS_FORMAT_DECIMAL_FACTORED:
+        case DVZ_TICKS_FORMAT_FACTORED:
             snprintf(label, MAX_LABEL_LEN, "%.*f", spec->precision, display_val);
             break;
 
-            // case DVZ_TICKS_FORMAT_THOUSANDS:
-            // case DVZ_TICKS_FORMAT_THOUSANDS_FACTORED:
-            //     display_val = display_val / 1e3;
-            //     snprintf(label, MAX_LABEL_LEN, "%.*fK", spec->precision, display_val);
-            //     break;
-
-            // case DVZ_TICKS_FORMAT_MILLIONS:
-            // case DVZ_TICKS_FORMAT_MILLIONS_FACTORED:
-            //     display_val = display_val / 1e6;
-            //     snprintf(label, MAX_LABEL_LEN, "%.*fM", spec->precision, display_val);
-            //     break;
-
         case DVZ_TICKS_FORMAT_SCIENTIFIC:
-        case DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED:
             snprintf(label, MAX_LABEL_LEN, "%.*e", spec->precision, display_val);
             break;
 
@@ -477,7 +473,5 @@ void dvz_ticks_linspace(
             snprintf(label, MAX_LABEL_LEN, "%.*f", spec->precision, display_val);
             break;
         }
-
-        // log_info("tick #%d: %s (%g)", i, label, val);
     }
 }
