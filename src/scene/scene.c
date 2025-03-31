@@ -380,6 +380,19 @@ DvzBatch* dvz_panel_batch(DvzPanel* panel)
 
 
 
+DvzRef* dvz_panel_ref(DvzPanel* panel, int flags)
+{
+    ANN(panel);
+    if (panel->ref == NULL)
+    {
+        panel->ref = dvz_ref(flags);
+    }
+    ANN(panel->ref);
+    return panel->ref;
+}
+
+
+
 DvzFigure* dvz_panel_figure(DvzPanel* panel)
 {
     ANN(panel);
@@ -549,6 +562,11 @@ void dvz_panel_destroy(DvzPanel* panel)
 
     // Remove the figure from the scene's figures.
     dvz_list_remove_pointer(panel->figure->panels, panel);
+
+    if (panel->ref != NULL)
+    {
+        dvz_ref_destroy(panel->ref);
+    }
 
     FREE(panel);
 }

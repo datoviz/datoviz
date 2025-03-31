@@ -88,6 +88,7 @@ struct DvzAxis
     DvzVisual* segment; // major and minor ticks
     DvzVisual* factor;  // exponent and offset with factored formats
     DvzVisual* label;   // axis label
+    DvzVisual* spine;   // spine
 
     DvzRef* ref;
     DvzTicks* ticks;

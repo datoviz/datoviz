@@ -47,6 +47,8 @@ typedef struct DvzTransform DvzTransform;
 typedef struct DvzView DvzView;
 typedef struct DvzViewset DvzViewset;
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzRef DvzRef;
+typedef struct DvzAxes DvzAxes;
 typedef struct DvzLegend DvzLegend;
 typedef struct DvzTitle DvzTitle;
 typedef struct DvzColorbar DvzColorbar;
@@ -103,7 +105,9 @@ struct DvzPanel
     DvzOrtho* ortho;
     DvzArcball* arcball;
 
-    // Panel decorations.
+    // Panel axes and decorations.
+    DvzRef* ref;
+    DvzAxes* axes;
     DvzLegend* legend;
     DvzTitle* title;
     DvzColorbar* colorbar;
