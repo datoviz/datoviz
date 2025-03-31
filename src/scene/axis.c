@@ -429,6 +429,10 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     {
         sprintf(label, "%s%g", sign, offset);
     }
+    else if (offset == 0)
+    {
+        sprintf(label, "1e%d %s", exponent, sign);
+    }
     else
     {
         sprintf(label, "1e%d %s%g", exponent, sign, offset);

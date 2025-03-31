@@ -175,6 +175,7 @@ int test_ticks_2(TstSuite* suite)
     _test_ticks(ticks, -50.165, -49.803, 5);
 
     _test_ticks(ticks, 79864.565, 79870.161, 5);
+    _test_ticks(ticks, 60000, 62000, 5);
 
     dvz_ticks_destroy(ticks);
     return 0;

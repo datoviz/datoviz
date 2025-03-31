@@ -198,86 +198,17 @@ bool dvz_ticks_compute(DvzTicks* ticks, double dmin, double dmax, uint32_t reque
     {
         // 0 is not in the interval: offset depends on relative scale of diff vs almin, exponent
         // depends on scale of diff.
-        is_factored_exp = fabs((double)rlog10(diff)) >= 4;
-        is_factored_offset = fabs((double)rlog10(diff / almin)) >= 4;
+        double tmp_exp = fabs((double)rlog10(diff));
+        is_factored_exp = tmp_exp >= 4;
+        double tmp_offset = fabs((double)rlog10(diff / almin));
+        is_factored_offset = tmp_offset >= 4 || global_exponent >= 4;
 
-        offset = is_factored_offset ? .5 * (lmin + lmax) : 0;
+        offset = is_factored_offset ? lmin : 0;
         exponent = is_factored_exp ? expdiff : 0;
     }
     format = is_factored_exp || is_factored_offset ? DVZ_TICKS_FORMAT_FACTORED
                                                    : DVZ_TICKS_FORMAT_DECIMAL;
 
-    {
-        // // Check if values are far from zero and tightly clustered
-        // bool clustered = false;
-        // {
-        //     // How many digits differ between lmin and lmax?
-        //     double diff = fabs(lmax - lmin);
-        //     double max_abs = fmax(fabs(lmin), fabs(lmax));
-
-        //     if (diff <= 0 || max_abs <= 0)
-        //     {
-        //         clustered = false;
-        //     }
-        //     else
-        //     {
-        //         int digits_diff = (int)floor(log10(diff));
-        //         int digits_common = (int)floor(log10(max_abs)) - digits_diff;
-
-        //         // Consider values clustered if at least 3 common leading digits
-        //         if (digits_common >= 3)
-        //             clustered = true;
-        //     }
-        // }
-
-        // // Check exponent clustering (shared magnitude)
-        // {
-        //     int exp_min = (int)floor(log10(fabs(lmin)));
-        //     int exp_max = (int)floor(log10(fabs(lmax)));
-
-        //     if (abs(exp_min - exp_max) <= 1 && abs(exp_min) >= 4)
-        //         clustered = true;
-        // }
-
-        // if (clustered)
-        // {
-        //     // Use factored format
-        //     // format = DVZ_TICKS_FORMAT_DECIMAL_FACTORED;
-        //     format = DVZ_TICKS_FORMAT_FACTORED;
-
-        //     // Decide between decimal and scientific based on tick range
-        //     double local_range = fabs(lmax - lmin);
-        //     int32_t local_exponent = (int32_t)floor(log10(local_range));
-        //     // if (fabs((double)local_exponent) >= 4 ||
-        //     //     fabs(step / pow10_((double)local_exponent)) < 1e-3)
-        //     //     format = DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED;
-
-        //     // Offset = start of tick range
-        //     ticks->spec.offset = .5 * (lmin + lmax);
-
-        //     // Exponent = based on range, not absolute values
-        //     ticks->spec.exponent = local_exponent;
-        //     // (format == DVZ_TICKS_FORMAT_SCIENTIFIC_FACTORED) ? local_exponent : 0;
-        // }
-        // else
-        // {
-        //     // Use standard (non-factored) formats
-        //     double abs_max = fmax(fabs(lmin), fabs(lmax));
-        //     int32_t global_exponent = (int32_t)floor(log10(abs_max));
-        //     if (fabs((double)global_exponent) >= 4 || fabs(step) < 1e-3)
-        //     {
-        //         format = DVZ_TICKS_FORMAT_SCIENTIFIC;
-        //         // ticks->spec.exponent = global_exponent;
-        //     }
-        //     else
-        //     {
-        //         format = DVZ_TICKS_FORMAT_DECIMAL;
-        //         ticks->spec.exponent = 0;
-        //     }
-
-        //     ticks->spec.offset = 0;
-        // }
-    }
     log_debug("found format %d", format);
 
     // Compute precision based on step size
