@@ -118,6 +118,7 @@ int test_axis_1(TstSuite* suite)
     dvz_panel_visual(vt.panel, segment, 0);
     dvz_panel_visual(vt.panel, factor, 0);
     dvz_panel_visual(vt.panel, label, 0);
+    dvz_panel_visual(vt.panel, axis->spine, 0);
 
     // Run the test.
     visual_test_end(vt);

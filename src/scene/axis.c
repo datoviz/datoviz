@@ -21,6 +21,7 @@
 #include "datoviz_types.h"
 #include "scene/ref.h"
 #include "scene/ticks.h"
+#include "scene/visual.h"
 
 
 
@@ -59,8 +60,7 @@
 
 #define COLOR_GLYPH                                                                               \
     (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
-#define COLOR_LIM                                                                                 \
-    (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
+#define COLOR_LIM {0, 0, 0, DVZ_ALPHA_MAX}
 #define COLOR_GRID                                                                                \
     (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
 #define COLOR_MAJOR                                                                               \
@@ -241,7 +241,7 @@ static void axis_common_params(DvzAxis* axis)
 {
     dvz_axis_width(axis, WIDTH_LIM, WIDTH_GRID, WIDTH_MAJOR, WIDTH_MINOR);
     dvz_axis_length(axis, LENGTH_LIM, LENGTH_GRID, LENGTH_MAJOR, LENGTH_MINOR);
-    dvz_axis_color(axis, COLOR_GLYPH, COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
+    dvz_axis_color(axis, COLOR_GLYPH, (cvec4)COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
 
     dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
 
@@ -364,6 +364,30 @@ DvzAxis* dvz_axis(
         axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
     dvz_glyph_strings(
         axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
+
+    // Set spine.
+    axis->spine = dvz_segment(glyph->batch, 0);
+    dvz_segment_alloc(axis->spine, 1);
+    vec3 start = {0};
+    vec3 end = {0};
+    if (dim == DVZ_DIM_X)
+    {
+        start[0] = -1;
+        start[1] = -1;
+        end[0] = +2;
+        end[1] = -1;
+    }
+    else if (dim == DVZ_DIM_Y)
+    {
+        start[0] = -1;
+        start[1] = -1;
+        end[0] = -1;
+        end[1] = +2;
+    }
+    dvz_segment_position(axis->spine, 0, 1, &start, &end, 0);
+    dvz_segment_color(axis->spine, 0, 1, (DvzColor[]){{0, 0, 0, 255}}, 0);
+    dvz_segment_linewidth(axis->spine, 0, 1, (float[]){1}, 0);
+    dvz_visual_fixed(axis->spine, true, true, true);
 
     return axis;
 }
@@ -494,17 +518,6 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
     }
 
     vec2 anchor = {0};
-    if (axis->dim == DVZ_DIM_X)
-    {
-        anchor[0] = 1;
-        anchor[1] = 1;
-    }
-    else if (axis->dim == DVZ_DIM_Y)
-    {
-        anchor[0] = -1;
-        anchor[1] = -1;
-    }
-
     dvz_glyph_strings(
         axis->label, 1, (char*[]){text}, &pos, LABEL_COLOR, axis->label_layout.offset, anchor);
 }
