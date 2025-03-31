@@ -71,7 +71,7 @@ int test_path_1(TstSuite* suite)
     for (uint32_t j = 0; j < n_paths; j++)
     {
         offset = n_paths > 1 ? -.75 + 1.5 * j / (double)(n_paths - 1) : 0;
-        f = j;
+        f = j * .25;
         for (int32_t i = 0; i < (int32_t)N; i++)
         {
             t = -.9 + 1.8 * i * d;
@@ -80,7 +80,7 @@ int test_path_1(TstSuite* suite)
 
             dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_paths - 1, colors[k]);
 
-            linewidths[k] = 10.0 + 20.0 * pow(cos(M_PI * f * (float)i / (float)N), 2);
+            linewidths[k] = 5.0 + 15.0 * pow(cos(M_PI * f * (float)i / (float)N), 2);
 
             k++;
         }
