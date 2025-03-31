@@ -61,7 +61,6 @@ int test_axis_1(TstSuite* suite)
     float m = 100;
     dvz_panel_margins(vt.panel, m, m, m, m);
 
-
     // Parameters.
     float font_size = 18;
     DvzDim dim = DVZ_DIM_X;
@@ -71,54 +70,30 @@ int test_axis_1(TstSuite* suite)
     double range_size = WIDTH - 2 * m;
     double glyph_size = font_size;
 
-
     // Create the atlas.
     DvzAtlasFont af = dvz_atlas_font(font_size);
-
 
     // Create the reference frame.
     DvzRef* ref = dvz_ref(0);
     dvz_ref_set(ref, dim, dmin, dmax);
 
-
-    // Create the glyph visual.
-    DvzVisual* glyph = dvz_glyph(vt.batch, 0);
-    dvz_glyph_atlas_font(glyph, &af);
-
-
-    // Create the segment visual.
-    DvzVisual* segment = dvz_segment(vt.batch, 0);
-
-
-    // Create the glyph visual for the exponent and offset (factorized formats only).
-    DvzVisual* factor = dvz_glyph(vt.batch, 0);
-    dvz_glyph_atlas_font(factor, &af);
-
-    DvzAtlasFont af_label = dvz_atlas_font(28);
-    DvzVisual* label = dvz_glyph(vt.batch, 0);
-    dvz_glyph_atlas_font(label, &af_label);
-
+    // DvzAtlasFont af_label = dvz_atlas_font(28);
 
     // Create the axis.
-    DvzAxis* axis = dvz_axis(glyph, segment, factor, label, dim, 0);
+    DvzAxis* axis = dvz_axis(vt.batch, &af, dim, 0);
     dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
     dvz_axis_horizontal(axis, 0);
     dvz_axis_label(axis, "Axis", 10, DVZ_ORIENTATION_DEFAULT);
     vt.haxis = axis;
 
-
     // Compute ticks.
     dvz_axis_update(axis, dmin, dmax);
 
-    dvz_app_onframe(vt.app, _on_frame, &vt);
+    // Add the axis to the panel.
+    dvz_axis_panel(axis, vt.panel);
 
-    // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, glyph, 0);
-    dvz_panel_visual(vt.panel, segment, 0);
-    dvz_panel_visual(vt.panel, factor, 0);
-    dvz_panel_visual(vt.panel, label, 0);
-    dvz_panel_visual(vt.panel, axis->spine, 0);
+    dvz_app_onframe(vt.app, _on_frame, &vt);
 
     // Run the test.
     visual_test_end(vt);

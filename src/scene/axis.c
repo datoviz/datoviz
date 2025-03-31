@@ -37,7 +37,7 @@
 #define OFFSET_H        (vec2){0, -35}
 #define DIR_H           (vec2){0, -1}
 #define FACTOR_OFFSET_H 70, -50
-#define LABEL_OFFSET_H  0, -60
+#define LABEL_OFFSET_H  0, -50
 #define POS_H           -1
 
 #define ANCHOR_V (vec2){+1, 0}
@@ -53,7 +53,7 @@
 #define LENGTH_LIM   1
 #define LENGTH_GRID  1
 #define LENGTH_MAJOR 16
-#define LENGTH_MINOR 8
+#define LENGTH_MINOR 10
 
 #define LABEL_COLOR   (cvec4){0, 0, 0, 255}
 #define LABEL_BGCOLOR (vec4){1, 1, 1, 1}
@@ -337,37 +337,11 @@ static void compute_layout(
 
 
 
-/*************************************************************************************************/
-/*  Axis                                                                                         */
-/*************************************************************************************************/
-
-DvzAxis* dvz_axis(
-    DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzVisual* label, //
-    DvzDim dim, int flags)
+static void create_spine(DvzVisual* spine, DvzDim dim)
 {
-    ANN(glyph);
-    ANN(segment);
-
-    DvzAxis* axis = (DvzAxis*)calloc(1, sizeof(DvzAxis));
-    axis->glyph = glyph;
-    axis->segment = segment;
-    axis->factor = factor; // used only with factored formats: offset and exponent
-    axis->label = label;
-    axis->dim = dim;
-    axis->flags = flags;
-
-    axis->ticks = dvz_ticks(0);
-
-    // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
-    // at the moment.
-    dvz_glyph_strings(
-        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
-    dvz_glyph_strings(
-        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
-
+    ANN(spine);
     // Set spine.
-    axis->spine = dvz_segment(glyph->batch, 0);
-    dvz_segment_alloc(axis->spine, 1);
+    dvz_segment_alloc(spine, 1);
     vec3 start = {0};
     vec3 end = {0};
     if (dim == DVZ_DIM_X)
@@ -384,10 +358,56 @@ DvzAxis* dvz_axis(
         end[0] = -1;
         end[1] = +2;
     }
-    dvz_segment_position(axis->spine, 0, 1, &start, &end, 0);
-    dvz_segment_color(axis->spine, 0, 1, (DvzColor[]){{0, 0, 0, 255}}, 0);
-    dvz_segment_linewidth(axis->spine, 0, 1, (float[]){1}, 0);
-    dvz_visual_fixed(axis->spine, true, true, true);
+    dvz_segment_position(spine, 0, 1, &start, &end, 0);
+    dvz_segment_color(spine, 0, 1, (DvzColor[]){{0, 0, 0, 255}}, 0);
+    dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
+    dvz_visual_fixed(spine, true, true, true);
+}
+
+
+
+/*************************************************************************************************/
+/*  Axis                                                                                         */
+/*************************************************************************************************/
+
+DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
+{
+    ANN(batch);
+
+    DvzAxis* axis = (DvzAxis*)calloc(1, sizeof(DvzAxis));
+    axis->batch = batch;
+    axis->dim = dim;
+    axis->flags = flags;
+
+    // Create the glyph visual.
+    axis->glyph = dvz_glyph(batch, 0);
+    dvz_glyph_atlas_font(axis->glyph, af);
+
+    // Create the segment visual.
+    axis->segment = dvz_segment(batch, 0);
+
+    // Create the glyph visual for the exponent and offset (factorized formats only).
+    axis->factor = dvz_glyph(batch, 0);
+    dvz_glyph_atlas_font(axis->factor, af);
+
+    // Create the label visual.
+    axis->label = dvz_glyph(batch, 0);
+    dvz_glyph_atlas_font(axis->label, af);
+
+    // Create the spine visual.
+    axis->spine = dvz_segment(batch, 0);
+    create_spine(axis->spine, dim);
+
+
+    // Create the ticks.
+    axis->ticks = dvz_ticks(0);
+
+    // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
+    // at the moment.
+    dvz_glyph_strings(
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
+    dvz_glyph_strings(
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
 
     return axis;
 }
@@ -517,7 +537,7 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
         compute_layout(axis->label_layout.align[i], axis->label_layout.pos[i], &pos[i]);
     }
 
-    vec2 anchor = {0};
+    vec2 anchor = {0, 1};
     dvz_glyph_strings(
         axis->label, 1, (char*[]){text}, &pos, LABEL_COLOR, axis->label_layout.offset, anchor);
 }
@@ -649,6 +669,21 @@ bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz)
     bool updated = dvz_axis_update(axis, xmin, xmax);
 
     return updated;
+}
+
+
+
+void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
+{
+    ANN(axis);
+    ANN(panel);
+
+    // Add the visual to the panel AFTER setting the visual's data.
+    dvz_panel_visual(panel, axis->glyph, 0);
+    dvz_panel_visual(panel, axis->segment, 0);
+    dvz_panel_visual(panel, axis->factor, 0);
+    dvz_panel_visual(panel, axis->label, 0);
+    dvz_panel_visual(panel, axis->spine, 0);
 }
 
 

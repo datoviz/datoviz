@@ -83,6 +83,7 @@ struct DvzAxis
     DvzLayout factor_layout;
     DvzLayout label_layout;
 
+    DvzBatch* batch;
     // Axis visuals.
     DvzVisual* glyph;   // tick labels
     DvzVisual* segment; // major and minor ticks
@@ -115,9 +116,7 @@ struct DvzAxes
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzAxis* dvz_axis(
-    DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzVisual* label, //
-    DvzDim dim, int flags);
+DVZ_EXPORT DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags);
 
 
 
@@ -191,6 +190,15 @@ DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax);
  * @param placeholder placeholder
  */
 DVZ_EXPORT bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel);
 
 
 
