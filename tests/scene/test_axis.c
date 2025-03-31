@@ -94,12 +94,17 @@ int test_axis_1(TstSuite* suite)
     DvzVisual* factor = dvz_glyph(vt.batch, 0);
     dvz_glyph_atlas_font(factor, &af);
 
+    DvzAtlasFont af_label = dvz_atlas_font(28);
+    DvzVisual* label = dvz_glyph(vt.batch, 0);
+    dvz_glyph_atlas_font(label, &af_label);
+
 
     // Create the axis.
-    DvzAxis* axis = dvz_axis(glyph, segment, factor, dim, 0);
+    DvzAxis* axis = dvz_axis(glyph, segment, factor, label, dim, 0);
     dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
     dvz_axis_horizontal(axis, 0);
+    dvz_axis_label(axis, "Axis", 10, DVZ_ORIENTATION_DEFAULT);
     vt.haxis = axis;
 
 
@@ -112,6 +117,7 @@ int test_axis_1(TstSuite* suite)
     dvz_panel_visual(vt.panel, glyph, 0);
     dvz_panel_visual(vt.panel, segment, 0);
     dvz_panel_visual(vt.panel, factor, 0);
+    dvz_panel_visual(vt.panel, label, 0);
 
     // Run the test.
     visual_test_end(vt);

@@ -58,15 +58,20 @@ int test_path_1(TstSuite* suite)
     // Allocate the colors array.
     DvzColor* colors = (DvzColor*)calloc(total_length, sizeof(DvzColor));
 
+    // Variable line widths.
+    float* linewidths = (float*)calloc(total_length, sizeof(float));
+
     // Generate the path data.
     double t = 0;
     double d = 1.0 / (double)(N - 1);
     double a = .15;
     double offset = 0;
+    double f = 0;
     uint32_t k = 0;
     for (uint32_t j = 0; j < n_paths; j++)
     {
         offset = n_paths > 1 ? -.75 + 1.5 * j / (double)(n_paths - 1) : 0;
+        f = j;
         for (int32_t i = 0; i < (int32_t)N; i++)
         {
             t = -.9 + 1.8 * i * d;
@@ -75,6 +80,8 @@ int test_path_1(TstSuite* suite)
 
             dvz_colormap_scale(DVZ_CMAP_HSV, j, 0, n_paths - 1, colors[k]);
 
+            linewidths[k] = 10.0 + 20.0 * pow(cos(M_PI * f * (float)i / (float)N), 2);
+
             k++;
         }
     }
@@ -82,17 +89,8 @@ int test_path_1(TstSuite* suite)
     // Set the visual's position and color data.
     dvz_path_position(visual, total_length, positions, n_paths, path_lengths, 0);
     dvz_path_color(visual, 0, total_length, colors, 0);
-
-
-    // Variable line widths.
-    float* linewidths = (float*)calloc(total_length, sizeof(float));
-    for (uint32_t i = 0; i < total_length; i++)
-    {
-        linewidths[i] = 5.0 + 20 * pow(cos(M_2PI * 7 * (float)i / (float)total_length), 2);
-    }
     dvz_path_linewidth(visual, 0, total_length, linewidths, 0);
     FREE(linewidths);
-
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

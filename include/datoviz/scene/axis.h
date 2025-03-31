@@ -81,10 +81,13 @@ struct DvzAxis
 {
     DvzAxisSpec spec;
     DvzLayout factor_layout;
+    DvzLayout label_layout;
 
-    DvzVisual* glyph;
-    DvzVisual* segment;
-    DvzVisual* factor;
+    // Axis visuals.
+    DvzVisual* glyph;   // tick labels
+    DvzVisual* segment; // major and minor ticks
+    DvzVisual* factor;  // exponent and offset with factored formats
+    DvzVisual* label;   // axis label
 
     DvzRef* ref;
     DvzTicks* ticks;
@@ -111,8 +114,9 @@ struct DvzAxes
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzAxis*
-dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDim dim, int flags);
+DVZ_EXPORT DvzAxis* dvz_axis(
+    DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzVisual* label, //
+    DvzDim dim, int flags);
 
 
 
@@ -158,6 +162,16 @@ DVZ_EXPORT void dvz_axis_segment(DvzAxis* axis, uint32_t tick_count, vec3* posit
  * @param placeholder placeholder
  */
 DVZ_EXPORT void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void
+dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orientation);
 
 
 
@@ -249,6 +263,15 @@ DVZ_EXPORT void dvz_axis_dir(DvzAxis* axis, vec2 tick_dir);
  */
 DVZ_EXPORT void
 dvz_axis_factor_layout(DvzAxis* axis, DvzAlign align, float xoffset, float yoffset);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axis_label_layout(DvzAxis* axis, DvzAlign align, float xoffset, float yoffset);
 
 
 

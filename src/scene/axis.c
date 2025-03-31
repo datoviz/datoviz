@@ -36,6 +36,7 @@
 #define OFFSET_H        (vec2){0, -35}
 #define DIR_H           (vec2){0, -1}
 #define FACTOR_OFFSET_H 70, -50
+#define LABEL_OFFSET_H  0, -60
 #define POS_H           -1
 
 #define ANCHOR_V (vec2){+1, 0}
@@ -248,6 +249,10 @@ static void axis_common_params(DvzAxis* axis)
     {
         dvz_visual_fixed(axis->factor, true, true, true);
     }
+    if (axis->label != NULL)
+    {
+        dvz_visual_fixed(axis->label, true, true, true);
+    }
 }
 
 
@@ -261,6 +266,7 @@ static void axis_horizontal_params(DvzAxis* axis)
     dvz_axis_dir(axis, DIR_H);
     dvz_axis_pos(axis, POS_H);
     dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_H);
+    dvz_axis_label_layout(axis, DVZ_ALIGN_MIDDLE, LABEL_OFFSET_H);
 
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
@@ -335,7 +341,9 @@ static void compute_layout(
 /*  Axis                                                                                         */
 /*************************************************************************************************/
 
-DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDim dim, int flags)
+DvzAxis* dvz_axis(
+    DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzVisual* label, //
+    DvzDim dim, int flags)
 {
     ANN(glyph);
     ANN(segment);
@@ -344,6 +352,7 @@ DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDi
     axis->glyph = glyph;
     axis->segment = segment;
     axis->factor = factor; // used only with factored formats: offset and exponent
+    axis->label = label;
     axis->dim = dim;
     axis->flags = flags;
 
@@ -353,6 +362,8 @@ DvzAxis* dvz_axis(DvzVisual* glyph, DvzVisual* segment, DvzVisual* factor, DvzDi
     // at the moment.
     dvz_glyph_strings(
         axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
+    dvz_glyph_strings(
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
 
     return axis;
 }
@@ -460,8 +471,42 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
         anchor[0] = -1;
         anchor[1] = -1;
     }
+
     dvz_glyph_strings(
         axis->factor, 1, (char*[]){label}, &pos, LABEL_COLOR, axis->factor_layout.offset, anchor);
+}
+
+
+
+void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orientation)
+{
+    ANN(axis);
+    if (axis->factor == NULL)
+    {
+        log_trace("skip setting of axis label as axis->label visual is not set (NULL)");
+        return;
+    }
+
+    vec3 pos = {0};
+    for (uint32_t i = 0; i < 2; i++)
+    {
+        compute_layout(axis->label_layout.align[i], axis->label_layout.pos[i], &pos[i]);
+    }
+
+    vec2 anchor = {0};
+    if (axis->dim == DVZ_DIM_X)
+    {
+        anchor[0] = 1;
+        anchor[1] = 1;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        anchor[0] = -1;
+        anchor[1] = -1;
+    }
+
+    dvz_glyph_strings(
+        axis->label, 1, (char*[]){text}, &pos, LABEL_COLOR, axis->label_layout.offset, anchor);
 }
 
 
@@ -692,6 +737,27 @@ void dvz_axis_factor_layout(DvzAxis* axis, DvzAlign align, float xoffset, float 
 
     axis->factor_layout.offset[0] = xoffset;
     axis->factor_layout.offset[1] = yoffset;
+}
+
+
+
+void dvz_axis_label_layout(DvzAxis* axis, DvzAlign align, float xoffset, float yoffset)
+{
+    ANN(axis);
+
+    if (axis->dim == DVZ_DIM_X)
+    {
+        axis->label_layout.align[0] = align;
+        axis->label_layout.align[1] = DVZ_ALIGN_LOW;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        axis->label_layout.align[0] = DVZ_ALIGN_LOW;
+        axis->label_layout.align[1] = align;
+    }
+
+    axis->label_layout.offset[0] = xoffset;
+    axis->label_layout.offset[1] = yoffset;
 }
 
 
