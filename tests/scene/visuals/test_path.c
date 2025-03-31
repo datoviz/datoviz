@@ -37,8 +37,8 @@ int test_path_1(TstSuite* suite)
     VisualTest vt = visual_test_start("path", VISUAL_TEST_PANZOOM, 0);
 
     // Number of items.
-    uint32_t N = 100; // size of each path
-    uint32_t n_paths = 20;
+    uint32_t N = 1000; // size of each path
+    uint32_t n_paths = 10;
     uint32_t total_length = N * n_paths;
 
     // Path lengths.
@@ -82,6 +82,17 @@ int test_path_1(TstSuite* suite)
     // Set the visual's position and color data.
     dvz_path_position(visual, total_length, positions, n_paths, path_lengths, 0);
     dvz_path_color(visual, 0, total_length, colors, 0);
+
+
+    // Variable line widths.
+    float* linewidths = (float*)calloc(total_length, sizeof(float));
+    for (uint32_t i = 0; i < total_length; i++)
+    {
+        linewidths[i] = 5.0 + 20 * pow(cos(M_2PI * 7 * (float)i / (float)total_length), 2);
+    }
+    dvz_path_linewidth(visual, 0, total_length, linewidths, 0);
+    FREE(linewidths);
+
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -155,6 +166,9 @@ int test_path_2(TstSuite* suite)
     // Allocate the colors array.
     DvzColor* colors = (DvzColor*)calloc(total_length, sizeof(DvzColor));
 
+    // Allocate the line widths array.
+    float* linewidths = (float*)calloc(total_length, sizeof(float));
+
     // Generate the path data.
     double t = 0;
     double r = .1;
@@ -175,6 +189,9 @@ int test_path_2(TstSuite* suite)
             colors[k][2] = 128;
             // colors[k][3] = 255;
 
+            // Variable line width.
+            linewidths[k] = 20.0;
+
             k++;
         }
     }
@@ -182,7 +199,7 @@ int test_path_2(TstSuite* suite)
     // Set the visual's position and color data.
     dvz_path_position(visual, total_length, positions, n_paths, path_lengths, 0);
     dvz_path_color(visual, 0, total_length, colors, 0);
-    dvz_path_linewidth(visual, 5);
+    dvz_path_linewidth(visual, 0, total_length, linewidths, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -202,6 +219,7 @@ int test_path_2(TstSuite* suite)
     FREE(path_lengths);
     FREE(positions);
     FREE(colors);
+    FREE(linewidths);
 
     return 0;
 }
@@ -220,7 +238,6 @@ int test_path_closed(TstSuite* suite)
     // Create the visual.
     DvzVisual* visual = dvz_path(vt.batch, DVZ_PATH_FLAGS_CLOSED);
     dvz_path_alloc(visual, 2 * n);
-    dvz_path_linewidth(visual, linewidth);
 
 
     // Two circles.
@@ -246,6 +263,16 @@ int test_path_closed(TstSuite* suite)
     memcpy(colors, colors_0, n * sizeof(DvzColor));
     memcpy(&colors[n], colors_0, n * sizeof(DvzColor));
     dvz_path_color(visual, 0, 2 * n, colors, 0);
+
+
+    // Set the line widths.
+    float* linewidths = (float*)calloc(2 * n, sizeof(float));
+    for (uint32_t i = 0; i < 2 * n; i++)
+    {
+        linewidths[i] = linewidth;
+    }
+    dvz_path_linewidth(visual, 0, 2 * n, linewidths, 0);
+    FREE(linewidths);
 
 
     // Add the visual to the panel AFTER setting the visual's data.

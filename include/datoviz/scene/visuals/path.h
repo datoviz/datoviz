@@ -48,18 +48,18 @@ typedef struct DvzVisual DvzVisual;
 
 struct DvzPathVertex
 {
-    vec3 p0;        /* previous position */
-    vec3 p1;        /* current position */
-    vec3 p2;        /* next position */
-    vec3 p3;        /* next next position */
-    DvzColor color; /* point color */
+    vec3 p0;         /* previous position */
+    vec3 p1;         /* current position */
+    vec3 p2;         /* next position */
+    vec3 p3;         /* next next position */
+    DvzColor color;  /* point color */
+    float linewidth; /* line width in pixels */
 };
 
 
 
 struct DvzPathParams
 {
-    float linewidth;    /* line width in pixels */
     float miter_limit;  /* miter limit for joins */
     int32_t cap_type;   /* type of the ends of the path */
     int32_t round_join; /* whether to use round joins */

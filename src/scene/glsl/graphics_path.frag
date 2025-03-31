@@ -14,7 +14,7 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    float linewidth;
+    // float linewidth;
     float miter_limit;
     int cap_type;
     int round_join;
@@ -26,6 +26,7 @@ layout(location = 1) in vec2 in_caps;
 layout(location = 2) in float in_length;
 layout(location = 3) in vec2 in_texcoord;
 layout(location = 4) in vec2 in_bevel_distance;
+layout(location = 5) in float in_linewidth;
 
 layout(location = 0) out vec4 out_color;
 
@@ -46,7 +47,7 @@ void main()
 
     float distance = in_texcoord.y;
     vec4 color = in_color;
-    float linewidth = params.linewidth;
+    float linewidth = in_linewidth;
     float miter_limit = params.miter_limit;
 
     if (in_caps.x < 0.0)

@@ -13,7 +13,6 @@
 
 layout(std140, binding = USER_BINDING) uniform Params
 {
-    float linewidth;
     float miter_limit;
     int cap_type;
     int round_join;
@@ -27,12 +26,14 @@ layout(location = 1) in vec3 p1_ndc;
 layout(location = 2) in vec3 p2_ndc;
 layout(location = 3) in vec3 p3_ndc;
 layout(location = 4) in vec4 color;
+layout(location = 5) in float linewidth;
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec2 out_caps;
 layout(location = 2) out float out_length;
 layout(location = 3) out vec2 out_texcoord;
 layout(location = 4) out vec2 out_bevel_distance;
+layout(location = 5) out float out_linewidth;
 
 
 float compute_u(vec2 p0, vec2 p1, vec2 p)
@@ -83,8 +84,8 @@ void main()
     float z = p1_.z / p1_.w;
 
     out_color = color;
+    out_linewidth = linewidth;
 
-    float linewidth = params.linewidth;
     float miter_limit = params.miter_limit;
 
     // Determine the direction of each of the 3 segments (previous, current, next)

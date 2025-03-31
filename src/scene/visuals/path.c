@@ -73,6 +73,7 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 2, FIELD(DvzPathVertex, p2), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 3, FIELD(DvzPathVertex, p3), DVZ_FORMAT_R32G32B32_SFLOAT, attr_flag);
     dvz_visual_attr(visual, 4, FIELD(DvzPathVertex, color), DVZ_FORMAT_COLOR, attr_flag);
+    dvz_visual_attr(visual, 5, FIELD(DvzPathVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, attr_flag);
 
     // Uniforms.
     dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
@@ -84,17 +85,17 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzPathParams));
-    dvz_params_attr(params, 0, FIELD(DvzPathParams, linewidth));
-    dvz_params_attr(params, 1, FIELD(DvzPathParams, miter_limit));
-    dvz_params_attr(params, 2, FIELD(DvzPathParams, cap_type));
-    dvz_params_attr(params, 3, FIELD(DvzPathParams, round_join));
+    // dvz_params_attr(params, 0, FIELD(DvzPathParams, linewidth));
+    dvz_params_attr(params, 0, FIELD(DvzPathParams, miter_limit));
+    dvz_params_attr(params, 1, FIELD(DvzPathParams, cap_type));
+    dvz_params_attr(params, 2, FIELD(DvzPathParams, round_join));
 
     // Default params.
     bool closed = (visual->flags & DVZ_PATH_FLAGS_CLOSED) > 0;
-    dvz_visual_param(visual, 2, 0, (float[]){10.0});
-    dvz_visual_param(visual, 2, 1, (float[]){4.0});
-    dvz_visual_param(visual, 2, 2, (int32_t[]){closed ? DVZ_CAP_NONE : DVZ_CAP_ROUND});
-    dvz_visual_param(visual, 2, 3, (int32_t[]){DVZ_JOIN_ROUND});
+    // dvz_visual_param(visual, 2, 0, (float[]){10.0});
+    dvz_visual_param(visual, 2, 0, (float[]){4.0}); // miter_limit
+    dvz_visual_param(visual, 2, 1, (int32_t[]){closed ? DVZ_CAP_NONE : DVZ_CAP_ROUND}); // cap_type
+    dvz_visual_param(visual, 2, 2, (int32_t[]){DVZ_JOIN_ROUND}); // round_join
 
     return visual;
 }
@@ -211,11 +212,12 @@ void dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor*
 
 
 
-void dvz_path_linewidth(DvzVisual* visual, float width)
+void dvz_path_linewidth(
+    DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 0, &width);
+    dvz_visual_data(visual, 5, first, count, (void*)values);
 }
 
 
@@ -224,7 +226,7 @@ void dvz_path_cap(DvzVisual* visual, DvzCapType cap)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 2, (int32_t[]){(int32_t)cap});
+    dvz_visual_param(visual, 2, 1, (int32_t[]){(int32_t)cap});
 }
 
 
@@ -233,5 +235,5 @@ void dvz_path_join(DvzVisual* visual, DvzJoinType join)
 {
     ANN(visual);
     // NOTE: this is safe because a copy is made immediately.
-    dvz_visual_param(visual, 2, 3, (int32_t[]){(int32_t)join});
+    dvz_visual_param(visual, 2, 2, (int32_t[]){(int32_t)join});
 }

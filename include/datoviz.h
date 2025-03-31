@@ -1856,12 +1856,16 @@ dvz_path_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* valu
 
 
 /**
- * Set the path line width.
+ * Set the path line width (may be variable along a path).
  *
  * @param visual the visual
- * @param width the line width
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the line width of the vertex, in pixels
+ * @param flags the data update flags
  */
-DVZ_EXPORT void dvz_path_linewidth(DvzVisual* visual, float width);
+DVZ_EXPORT void
+dvz_path_linewidth(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
 
 
 
