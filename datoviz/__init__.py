@@ -829,6 +829,26 @@ class DvzDepthTest(CtypesEnum):
     DVZ_DEPTH_TEST_ENABLE = 1
 
 
+class DvzAlign(CtypesEnum):
+    DVZ_ALIGN_NONE = 0
+    DVZ_ALIGN_LOW = 1
+    DVZ_ALIGN_MIDDLE = 2
+    DVZ_ALIGN_HIGH = 3
+
+
+class DvzOrientation(CtypesEnum):
+    DVZ_ORIENTATION_DEFAULT = 0
+    DVZ_ORIENTATION_UP = 1
+    DVZ_ORIENTATION_REVERSE = 2
+    DVZ_ORIENTATION_DOWN = 3
+
+
+class DvzSceneFont(CtypesEnum):
+    DVZ_SCENE_FONT_MONO = 0
+    DVZ_SCENE_FONT_LABEL = 1
+    DVZ_SCENE_FONT_COUNT = 2
+
+
 class DvzColormap(CtypesEnum):
     DVZ_CMAP_BINARY = 0
     DVZ_CMAP_HSV = 1
@@ -1464,6 +1484,17 @@ VIEWPORT_CLIP_BOTTOM = 0x0004
 VIEWPORT_CLIP_LEFT = 0x0008
 DEPTH_TEST_DISABLE = 0
 DEPTH_TEST_ENABLE = 1
+ALIGN_NONE = 0
+ALIGN_LOW = 1
+ALIGN_MIDDLE = 2
+ALIGN_HIGH = 3
+ORIENTATION_DEFAULT = 0
+ORIENTATION_UP = 1
+ORIENTATION_REVERSE = 2
+ORIENTATION_DOWN = 3
+SCENE_FONT_MONO = 0
+SCENE_FONT_LABEL = 1
+SCENE_FONT_COUNT = 2
 CMAP_BINARY = 0
 CMAP_HSV = 1
 CMAP_CIVIDIS = 2
@@ -5550,18 +5581,27 @@ path_color.argtypes = [
 # Function dvz_path_linewidth()
 path_linewidth = dvz.dvz_path_linewidth
 path_linewidth.__doc__ = """
-Set the path line width.
+Set the path line width (may be variable along a path).
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-width : float
-    the line width
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the line width of the vertex, in pixels
+flags : int
+    the data update flags
 """
 path_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float width
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ctypes.c_int,  # int flags
 ]
 
 # Function dvz_path_cap()
@@ -6067,9 +6107,9 @@ glyph_color.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_glyph_groupsize()
-glyph_groupsize = dvz.dvz_glyph_groupsize
-glyph_groupsize.__doc__ = """
+# Function dvz_glyph_group_shapes()
+glyph_group_shapes = dvz.dvz_glyph_group_shapes
+glyph_group_shapes.__doc__ = """
 Set the glyph group size.
 
 Parameters
@@ -6080,16 +6120,16 @@ first : uint32_t
     the index of the first item to update
 count : uint32_t
     the number of items to update
-values : float*
-    the glyph group sizes
+values : vec2*
+    the glyph group shapes (width and height, in pixels)
 flags : int
     the data update flags
 """
-glyph_groupsize.argtypes = [
+glyph_group_shapes.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ndpointer(dtype=np.float32, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # vec2* values
     ctypes.c_int,  # int flags
 ]
 

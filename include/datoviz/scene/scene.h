@@ -47,6 +47,9 @@ typedef struct DvzTransform DvzTransform;
 typedef struct DvzView DvzView;
 typedef struct DvzViewset DvzViewset;
 typedef struct DvzVisual DvzVisual;
+typedef struct DvzLegend DvzLegend;
+typedef struct DvzTitle DvzTitle;
+typedef struct DvzColorbar DvzColorbar;
 
 
 
@@ -94,13 +97,20 @@ struct DvzPanel
     vec2 offset_init, shape_init; // initial viewport size
     DvzTransform* transform;
     DvzTransform* static_transform;
+
     DvzCamera* camera;
     DvzPanzoom* panzoom;
     DvzOrtho* ortho;
     DvzArcball* arcball;
+
+    // Panel decorations.
+    DvzLegend* legend;
+    DvzTitle* title;
+    DvzColorbar* colorbar;
+
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
     bool is_press_valid;
-    char* title; // used for GUI panels
+    char* gui_title; // used for GUI panels
     int flags;
 };
 

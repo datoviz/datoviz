@@ -355,9 +355,9 @@ void dvz_panel_gui(DvzPanel* panel, const char* title, int flags)
     ASSERT(len < 1023);
 
     // Register the GUI panel title.
-    panel->title = (char*)calloc(len, 1);
-    ANN(panel->title);
-    strncpy(panel->title, title, len);
+    panel->gui_title = (char*)calloc(len, 1);
+    ANN(panel->gui_title);
+    strncpy(panel->gui_title, title, len);
 
     // do not stretch the panel when the window is resized
     dvz_panel_flags(panel, DVZ_PANEL_RESIZE_FIXED);
@@ -544,8 +544,8 @@ void dvz_panel_destroy(DvzPanel* panel)
     dvz_view_destroy(panel->view);
 
     // Free the memory buffer with the panel's title.
-    if (panel->title != NULL)
-        FREE(panel->title);
+    if (panel->gui_title != NULL)
+        FREE(panel->gui_title);
 
     // Remove the figure from the scene's figures.
     dvz_list_remove_pointer(panel->figure->panels, panel);
@@ -983,7 +983,7 @@ static void _scene_build(DvzScene* scene)
 static bool _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
 {
     ANN(panel);
-    ANN(panel->title);
+    ANN(panel->gui_title);
 
     DvzFigure* fig = dvz_panel_figure(panel);
     ANN(fig);
@@ -997,7 +997,7 @@ static bool _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
     // Start the GUI.
     dvz_gui_pos((vec2){x, y}, DVZ_DIALOG_DEFAULT_PIVOT);
     dvz_gui_size((vec2){w, h});
-    dvz_gui_begin(panel->title, DVZ_DIALOG_FLAGS_PANEL);
+    dvz_gui_begin(panel->gui_title, DVZ_DIALOG_FLAGS_PANEL);
 
 
     // NOTE: the GUI functions below must be called AFTER dvz_gui_begin(), otherwise Dear ImGUI
@@ -1071,7 +1071,7 @@ static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
         ANN(panel->view);
 
         // Display the GUI panels for those which have a title.
-        if (panel->title != NULL)
+        if (panel->gui_title != NULL)
         {
             do_capture |= _gui_panel(panel, ev);
         }
@@ -1303,7 +1303,7 @@ static inline bool _figure_has_gui_panels(DvzFigure* fig)
         ANN(panel->view);
 
         // Display the GUI panels for those which have a title.
-        if (panel->title != NULL)
+        if (panel->gui_title != NULL)
         {
             return true;
         }

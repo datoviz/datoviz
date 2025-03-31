@@ -755,16 +755,16 @@ void dvz_glyph_color(
 )
 ```
 
-### `dvz_glyph_groupsize()`
+### `dvz_glyph_group_shapes()`
 
 Set the glyph group size.
 
 ```c
-void dvz_glyph_groupsize(
+void dvz_glyph_group_shapes(
     DvzVisual* visual,  // the visual
     uint32_t first,  // the index of the first item to update
     uint32_t count,  // the number of items to update
-    float* values,  // the glyph group sizes
+    vec2* values,  // the glyph group shapes (width and height, in pixels)
     int flags,  // the data update flags
 )
 ```
@@ -2524,12 +2524,15 @@ void dvz_path_join(
 
 ### `dvz_path_linewidth()`
 
-Set the path line width.
+Set the path line width (may be variable along a path).
 
 ```c
 void dvz_path_linewidth(
     DvzVisual* visual,  // the visual
-    float width,  // the line width
+    uint32_t first,  // the index of the first item to update
+    uint32_t count,  // the number of items to update
+    float* values,  // the line width of the vertex, in pixels
+    int flags,  // the data update flags
 )
 ```
 
@@ -5359,6 +5362,15 @@ DvzViewport dvz_viewport_default(  // returns: the viewport
 
 ## Enumerations
 
+### `DvzAlign`
+
+```
+DVZ_ALIGN_NONE
+DVZ_ALIGN_LOW
+DVZ_ALIGN_MIDDLE
+DVZ_ALIGN_HIGH
+```
+
 ### `DvzAppFlags`
 
 ```
@@ -5926,6 +5938,15 @@ DVZ_MOUSE_STATE_DOUBLE_CLICK
 DVZ_MOUSE_STATE_DRAGGING
 ```
 
+### `DvzOrientation`
+
+```
+DVZ_ORIENTATION_DEFAULT
+DVZ_ORIENTATION_UP
+DVZ_ORIENTATION_REVERSE
+DVZ_ORIENTATION_DOWN
+```
+
 ### `DvzPanzoomFlags`
 
 ```
@@ -6044,6 +6065,14 @@ DVZ_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE
 DVZ_SAMPLER_AXIS_U
 DVZ_SAMPLER_AXIS_V
 DVZ_SAMPLER_AXIS_W
+```
+
+### `DvzSceneFont`
+
+```
+DVZ_SCENE_FONT_MONO
+DVZ_SCENE_FONT_LABEL
+DVZ_SCENE_FONT_COUNT
 ```
 
 ### `DvzShaderFormat`
