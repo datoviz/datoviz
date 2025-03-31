@@ -32,10 +32,11 @@
 #define TICK_DENSITY             0.2
 #define MINOR_TICKS_PER_INTERVAL 4
 
-#define ANCHOR_H (vec2){+.5, 0}
-#define OFFSET_H (vec2){0, -50}
-#define DIR_H    (vec2){0, -1}
-#define POS_H    -1
+#define ANCHOR_H        (vec2){+.5, 0}
+#define OFFSET_H        (vec2){0, -35}
+#define DIR_H           (vec2){0, -1}
+#define FACTOR_OFFSET_H 70, -50
+#define POS_H           -1
 
 #define ANCHOR_V (vec2){+1, 0}
 #define OFFSET_V (vec2){-50, -10}
@@ -49,8 +50,8 @@
 
 #define LENGTH_LIM   1
 #define LENGTH_GRID  1
-#define LENGTH_MAJOR 20
-#define LENGTH_MINOR 10
+#define LENGTH_MAJOR 16
+#define LENGTH_MINOR 8
 
 #define LABEL_COLOR   (cvec4){0, 0, 0, 255}
 #define LABEL_BGCOLOR (vec4){1, 1, 1, 1}
@@ -259,6 +260,7 @@ static void axis_horizontal_params(DvzAxis* axis)
     dvz_axis_offset(axis, OFFSET_H);
     dvz_axis_dir(axis, DIR_H);
     dvz_axis_pos(axis, POS_H);
+    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_H);
 
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
@@ -431,11 +433,11 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     }
     else if (offset == 0)
     {
-        sprintf(label, "1e%d %s", exponent, sign);
+        sprintf(label, "1e%d  %s", exponent, sign);
     }
     else
     {
-        sprintf(label, "1e%d %s%g", exponent, sign, offset);
+        sprintf(label, "1e%d  %s%g", exponent, sign, offset);
     }
 
     vec3 pos = {0};

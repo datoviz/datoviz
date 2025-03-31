@@ -63,7 +63,7 @@ int test_axis_1(TstSuite* suite)
 
 
     // Parameters.
-    float font_size = 24;
+    float font_size = 18;
     DvzDim dim = DVZ_DIM_X;
     double dmin = -5; // -102.5;
     double dmax = +5; //-92.5;
@@ -99,7 +99,6 @@ int test_axis_1(TstSuite* suite)
     DvzAxis* axis = dvz_axis(glyph, segment, factor, dim, 0);
     dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
-    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, +50, -70);
     dvz_axis_horizontal(axis, 0);
     vt.haxis = axis;
 
