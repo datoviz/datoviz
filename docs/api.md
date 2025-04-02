@@ -2241,6 +2241,17 @@ DvzPanzoom* dvz_panel_panzoom(  // returns: the panzoom
 )
 ```
 
+### `dvz_panel_ref()`
+
+Get or create a Reference for a panel.
+
+```c
+DvzRef* dvz_panel_ref(  // returns: the reference
+    DvzPanel* panel,  // the panel
+    int flags,  // the reference creation flags.
+)
+```
+
 ### `dvz_panel_resize()`
 
 Resize a panel.

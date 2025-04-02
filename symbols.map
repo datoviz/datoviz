@@ -189,6 +189,7 @@ dvz_panel_mvp
 dvz_panel_mvpmat
 dvz_panel_ortho
 dvz_panel_panzoom
+dvz_panel_ref
 dvz_panel_resize
 dvz_panel_show
 dvz_panel_transform

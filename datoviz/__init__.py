@@ -131,7 +131,8 @@ def array_pointer(x, dtype=None):
         print(
             f"Warning: array is not C contiguous, ensure your array is in row-major (C) order "
             "to avoid potential issues")
-    # x = x.astype(dtype)
+    if dtype and x.dtype != dtype:
+        x = x.astype(dtype)
     return x.ctypes.data_as(P_(_ctype(dtype)))
 
 
@@ -3181,6 +3182,29 @@ panel_batch.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
 panel_batch.restype = ctypes.POINTER(DvzBatch)
+
+# Function dvz_panel_ref()
+panel_ref = dvz.dvz_panel_ref
+panel_ref.__doc__ = """
+Get or create a Reference for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+flags : int
+    the reference creation flags.
+
+Returns
+-------
+type
+    the reference
+"""
+panel_ref.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
+]
+panel_ref.restype = ctypes.POINTER(DvzRef)
 
 # Function dvz_panel_figure()
 panel_figure = dvz.dvz_panel_figure
