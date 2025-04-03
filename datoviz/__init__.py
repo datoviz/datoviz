@@ -1796,10 +1796,6 @@ class DvzCamera(ctypes.Structure):
     pass
 
 
-class DvzColor(ctypes.Structure):
-    pass
-
-
 class DvzFifo(ctypes.Structure):
     pass
 

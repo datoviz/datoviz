@@ -9,6 +9,7 @@ ROOT_DIR = Path(__file__).parent.parent
 TYPES = set()
 ENUMS = set()
 
+EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
 DvzColor = 'ctypes.c_uint8 * 4' if DVZ_COLOR_CVEC4 else 'ctypes.c_float * 4'
@@ -353,7 +354,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     forward = ""
     for dtype in sorted(TYPES):
         # Remove the structure from the forward declarations if it is already defined.
-        if dtype not in struct_names and dtype not in ENUMS and dtype != 'DvzSize':
+        if dtype not in struct_names and dtype not in ENUMS and dtype not in EXCLUDE_STRUCTS:
             forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
