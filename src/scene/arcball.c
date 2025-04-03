@@ -10,7 +10,7 @@
 
 // References:
 // https://github.com/Twinklebear/arcball-cpp
-// http://www.talisman.org/~erlkonig/misc/shoemake92-arcball.pdf
+// https://tommyhinks.com/wp-content/uploads/2012/02/shoemake92_arcball.pdf
 
 
 /*************************************************************************************************/
