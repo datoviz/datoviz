@@ -2855,6 +2855,18 @@ void dvz_ref_transform3D(
 )
 ```
 
+### `dvz_ref_transform_polygon()`
+
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
+
+```c
+void dvz_ref_transform_polygon(
+    DvzRef* ref,  // the reference frame
+    uint32_t count,  // the number of positions
+    dvec2* pos,  // the 2D positions
+)
+```
+
 ### `dvz_resample()`
 
 Normalize a value in an interval.

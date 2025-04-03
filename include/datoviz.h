@@ -3794,9 +3794,21 @@ dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* 
  * @param ref the reference frame
  * @param count the number of positions
  * @param pos the 2D positions
- * @param[out] pos_tr the transformed positions
+ * @param[out] pos_tr the transformed 3D positions
  */
 DVZ_EXPORT void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
+
+
+
+/**
+ * Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
+ *
+ * @param ref the reference frame
+ * @param count the number of positions
+ * @param pos the 2D positions
+ * @param[out] pos_tr the transformed 2D positions
+ */
+DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* pos, dvec2* pos_tr);
 
 
 

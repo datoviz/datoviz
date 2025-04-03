@@ -8977,13 +8977,36 @@ count : uint32_t
 pos : dvec2*
     the 2D positions
 pos_tr : vec3* (out parameter)
-    the transformed positions
+    the transformed 3D positions
 """
 ref_transform2D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+]
+
+# Function dvz_ref_transform_polygon()
+ref_transform_polygon = dvz.dvz_ref_transform_polygon
+ref_transform_polygon.__doc__ = """
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+count : uint32_t
+    the number of positions
+pos : dvec2*
+    the 2D positions
+pos_tr : dvec2* (out parameter)
+    the transformed 2D positions
+"""
+ref_transform_polygon.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos_tr
 ]
 
 # Function dvz_ref_transform3D()

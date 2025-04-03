@@ -242,6 +242,7 @@ dvz_ref_set
 dvz_ref_transform1D
 dvz_ref_transform2D
 dvz_ref_transform3D
+dvz_ref_transform_polygon
 dvz_resample
 dvz_scene
 dvz_scene_batch

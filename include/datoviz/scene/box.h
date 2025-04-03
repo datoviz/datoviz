@@ -140,13 +140,28 @@ void dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* po
 
 
 /**
- * Normalize 3D input positions into a target box.
+ * Normalize 2D input positions into a target box, using dvec2* as output format.
  *
  * @param source the source box, in data coordinates
  * @param target the target box, typically in normalized coordinates
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
  * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ */
+void dvz_box_normalize_polygon(
+    DvzBox source, DvzBox target, uint32_t count, dvec2* pos, dvec2* out);
+
+
+
+/**
+ * Normalize 3D input positions into a target box.
+ *
+ * @param source the source box, in data coordinates
+ * @param target the target box, typically in normalized coordinates
+ * @param count the number of positions to normalize
+ * @param pos the positions to normalize (double precision)
+ * @param[out] out pointer to an array with the normalized positions to compute (single
+ * precision)
  */
 void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);
 
