@@ -724,8 +724,20 @@ typedef enum
     DVZ_CONTOUR_NONE = 0x00,   // no contours
     DVZ_CONTOUR_EDGES = 0x01,  // set edge on some vertices (those on the contour)
     DVZ_CONTOUR_JOINTS = 0x02, // set joints on some vertices (those with 1 exterior adjacent edge)
-    DVZ_CONTOUR_FULL = 0xF0,   // set edge on all vertices
+    DVZ_CONTOUR_FULL = 0x04,   // set edge on all vertices
 } DvzContourFlags;
+
+
+
+// Indexing flags.
+// This indicates how a mesh is being triangulated. This is used to specify predefine contours
+// in the mesh visual, when using a DvzShape.
+typedef enum
+{
+    DVZ_SHAPE_INDEXING_NONE = 0x00,    // no indexing
+    DVZ_SHAPE_INDEXING_EARCUT = 0x10,  // polygon contour = consecutive indices i..(i+1)
+    DVZ_SHAPE_INDEXING_SURFACE = 0x20, // indexing of mesh grid for surface
+} DvzShapeIndexingFlags;
 
 
 

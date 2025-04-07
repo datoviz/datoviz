@@ -337,15 +337,39 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         v1r = v1;
         v2r = v2;
 
-        // Whether there should be an edge on the other side of the v0 vertex.
-        e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
-             ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
-        // Whether there should be an edge on the other side of the v1 vertex.
-        e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
-             ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
-        // Whether there should be an edge on the other side of the v2 vertex.
-        e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
-             ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
+        // NOTE: the logic below that determines which edge of each face should have a border,
+        // depends on the specific indexing method. The current logic is meant for the earcut
+        // triangulation algorithm that only uses existing points for the triangulation,
+        // using only indexing to triangulate the polygon.
+
+        // TODO: the user should be able to provide (e0, e1, e2) for each face (1 byte per face
+        // sufficient).
+
+        if ((flags & DVZ_SHAPE_INDEXING_EARCUT) > 0)
+        {
+            // Whether there should be an edge on the other side of the v0 vertex.
+            e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
+                 ((abs(v1 - v2) % vertex_count) == vertex_count - 1);
+            // Whether there should be an edge on the other side of the v1 vertex.
+            e1 = ((abs(v0 - v2) % vertex_count) == 1) ||
+                 ((abs(v0 - v2) % vertex_count) == vertex_count - 1);
+            // Whether there should be an edge on the other side of the v2 vertex.
+            e2 = ((abs(v0 - v1) % vertex_count) == 1) ||
+                 ((abs(v0 - v1) % vertex_count) == vertex_count - 1);
+        }
+
+        // When using a surface mesh triangulated by Datoviz, this scheme ensures that all
+        // quads have a contour.
+        else if ((flags & DVZ_SHAPE_INDEXING_SURFACE) > 0)
+        {
+            e0 = 0;
+            e1 = 1;
+            e2 = 1;
+        }
+
+        // Other indexing strategies, defining (e0, e1, e2) as a function of a face's indices,
+        // could be implemented here.
+
 
         glm_vec3_copy(shape->pos[v0r], face[0]);
         glm_vec3_copy(shape->pos[v1r], face[1]);
