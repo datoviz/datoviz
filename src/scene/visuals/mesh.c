@@ -33,21 +33,17 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define STROKE    TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
-#define LINEWIDTH 2.0f
-#define DEFAULT_LIGHT_DIR                                                                         \
-    (vec3) { 0.25, -0.25, -1 }
+#define STROKE            TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
+#define LINEWIDTH         2.0f
+#define DEFAULT_LIGHT_DIR (vec3){0.25, -0.25, -1}
 
 #if DVZ_COLOR_CVEC4
-#define DEFAULT_LIGHT_COLOR                                                                       \
-    (cvec4) { 255, 255, 255, 255 }
+#define DEFAULT_LIGHT_COLOR (cvec4){255, 255, 255, 255}
 #else
-#define DEFAULT_LIGHT_COLOR                                                                       \
-    (vec3) { 1, 1, 1, 1 }
+#define DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
 #endif
 
-#define DEFAULT_LIGHT_PARAMS                                                                      \
-    (vec4) { .3, .7, .4, 16 }
+#define DEFAULT_LIGHT_PARAMS (vec4){.3, .7, .4, 16}
 
 
 
@@ -165,6 +161,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_COLOR, FIELD(DvzMeshParams, light_color));
     dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_PARAMS, FIELD(DvzMeshParams, light_params));
     dvz_params_attr(params, DVZ_MESH_PARAMS_STROKE, FIELD(DvzMeshParams, stroke));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_LINEWIDTH, FIELD(DvzMeshParams, linewidth));
     dvz_params_attr(params, DVZ_MESH_PARAMS_ISOLINE_COUNT, FIELD(DvzMeshParams, isoline_count));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
@@ -401,27 +398,19 @@ void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba)
 {
     ANN(visual);
 
-    // HACK: this is to keep the alpha component.
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = DVZ_MESH_PARAMS_STROKE;
-
-    vec4* item = _get_param(visual, slot_idx, attr_idx);
-    ANN(item);
-
     vec4 stroke = {0};
-
 #if DVZ_COLOR_CVEC4
     stroke[0] = rgba[0] / 255.0;
     stroke[1] = rgba[1] / 255.0;
     stroke[2] = rgba[2] / 255.0;
-    stroke[3] = item[0][3] / 255.0;
+    stroke[3] = rgba[3] / 255.0;
 #else
     stroke[0] = rgba[0];
     stroke[1] = rgba[1];
     stroke[2] = rgba[2];
-    stroke[3] = item[0][3];
+    stroke[3] = rgba[3];
 #endif
-    dvz_visual_param(visual, slot_idx, attr_idx, stroke);
+    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_STROKE, stroke);
 }
 
 
@@ -429,17 +418,7 @@ void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba)
 void dvz_mesh_linewidth(DvzVisual* visual, float stroke_width)
 {
     ANN(visual);
-
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = DVZ_MESH_PARAMS_STROKE;
-
-    vec4* item = _get_param(visual, slot_idx, attr_idx);
-    ANN(item);
-
-    vec4 stroke = {0};
-    memcpy(stroke, item, sizeof(vec4));
-    stroke[3] = stroke_width;
-    dvz_visual_param(visual, 2, attr_idx, stroke);
+    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_LINEWIDTH, &stroke_width);
 }
 
 

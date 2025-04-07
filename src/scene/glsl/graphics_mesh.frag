@@ -147,8 +147,9 @@ void main()
     float diff, spec, view_facing;
 
     // Stroke parameters.
-    float linewidth = params.stroke.a;
+    float linewidth = params.linewidth;
     vec3 stroke = params.stroke.rgb;
+    float stroke_alpha = params.stroke.a;
     vec3 pos_tr;
 
     normal = normalize(in_normal);
@@ -230,13 +231,20 @@ void main()
         if (bedge.x > 0 || bedge.y > 0 || bedge.z > 0)
             ea = edge(in_barycentric, deltas, bedge, linewidth);
         float e = ea.x;
-        float alpha = ea.y;
+        // float alpha = ea.y;
 
         // Corners.
         float c = corner(in_d_left, in_d_right, in_contour, linewidth);
 
+        // Merge edge and corner into a single value.
+        float f = min(e, c);
+
+        // Take into account stroke alpha.
+        float g = mix(1 - stroke_alpha, 1, e);
+
         // Final color.
-        out_color.rgb = mix(stroke, out_color.rgb, min(e, c));
+        vec3 rgb = mix(stroke, out_color.rgb, g);
+        out_color.rgb = rgb;
 
         // // Antialiasing.
         // if (c == 0 && e > 0)
