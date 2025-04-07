@@ -849,8 +849,8 @@ DvzShape dvz_shape_surface(
     // TODO: flag for closed surface on i or j
     // TODO: flag planar or cylindric
 
-    ASSERT(row_count > 0);
-    ASSERT(col_count > 0);
+    ASSERT(row_count > 1);
+    ASSERT(col_count > 1);
 
     DvzShape shape = {0};
     shape.type = DVZ_SHAPE_SURFACE;
@@ -865,6 +865,7 @@ DvzShape dvz_shape_surface(
     shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
     shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
     shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape.texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
 
     uint32_t point_idx = 0;
     uint32_t index = 0;
@@ -895,6 +896,11 @@ DvzShape dvz_shape_surface(
             shape.color[point_idx][1] = colors != NULL ? colors[point_idx][1] : DVZ_ALPHA_MAX;
             shape.color[point_idx][2] = colors != NULL ? colors[point_idx][2] : DVZ_ALPHA_MAX;
             shape.color[point_idx][3] = colors != NULL ? colors[point_idx][3] : DVZ_ALPHA_MAX;
+
+            shape.texcoords[point_idx][0] = i / (float)(row_count - 1); // in [0, 1] along i axis
+            shape.texcoords[point_idx][1] = j / (float)(col_count - 1); // in [0, 1] along j axis
+            // shape.texcoords[point_idx][2];     // unused for now
+            shape.texcoords[point_idx][3] = 1; // alpha
 
             // Index.
             // TODO: shape topology (flags) to implement here
