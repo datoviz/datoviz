@@ -349,7 +349,7 @@ def generate_api():
     with open(HEADERS_FILE, 'r') as f:
         objects = json.load(f)
     md = dedent("""
-    # C API Reference
+    # API Reference
 
     """).lstrip()
 

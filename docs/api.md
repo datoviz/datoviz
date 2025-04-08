@@ -1,4 +1,4 @@
-# C API Reference
+# API Reference
 
 ## Main functions
 

@@ -47,7 +47,7 @@ nav:
     - Examples: 'examples.md'
   - Reference:
     - Colormaps reference: 'colormaps.md'
-    - C API reference: 'api.md'
+    - API reference: 'api.md'
   - Discussions:
     - Architecture: 'ARCHITECTURE.md'
     - Building instructions: 'BUILD.md'
