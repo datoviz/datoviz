@@ -240,7 +240,7 @@ void main()
         float f = min(e, c);
 
         // Take into account stroke alpha.
-        float g = mix(1 - stroke_alpha, 1, e);
+        float g = mix(1 - stroke_alpha, 1, f);
 
         // Final color.
         vec3 rgb = mix(stroke, out_color.rgb, g);
