@@ -946,14 +946,14 @@ Run a demo.
     void dvz_demo();
     ```
 
-### `dvz_demo_panel()`
+### `dvz_demo_panel2D()`
 
 Demo panel (random scatter plot).
 
 === "Python"
 
     ``` python
-    dvz.demo_panel(  # returns: the marker visual (LP_DvzVisual)
+    dvz.demo_panel2D(  # returns: the marker visual (LP_DvzVisual)
         panel,  # the panel (LP_DvzPanel)
     )
     ```
@@ -961,7 +961,27 @@ Demo panel (random scatter plot).
 === "C"
 
     ``` c
-    DvzVisual* dvz_demo_panel(  // returns: the marker visual
+    DvzVisual* dvz_demo_panel2D(  // returns: the marker visual
+        DvzPanel* panel,  // the panel
+    );
+    ```
+
+### `dvz_demo_panel3D()`
+
+Demo panel (random scatter plot).
+
+=== "Python"
+
+    ``` python
+    dvz.demo_panel3D(  # returns: the marker visual (LP_DvzVisual)
+        panel,  # the panel (LP_DvzPanel)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzVisual* dvz_demo_panel3D(  // returns: the marker visual
         DvzPanel* panel,  // the panel
     );
     ```

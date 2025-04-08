@@ -98,7 +98,17 @@ DVZ_EXPORT void dvz_demo(void);
  * @param panel the panel
  * @returns the marker visual
  */
-DVZ_EXPORT DvzVisual* dvz_demo_panel(DvzPanel* panel);
+DVZ_EXPORT DvzVisual* dvz_demo_panel2D(DvzPanel* panel);
+
+
+
+/**
+ * Demo panel (random scatter plot).
+ *
+ * @param panel the panel
+ * @returns the marker visual
+ */
+DVZ_EXPORT DvzVisual* dvz_demo_panel3D(DvzPanel* panel);
 
 
 

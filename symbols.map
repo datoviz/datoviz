@@ -39,7 +39,8 @@ dvz_colormap_array
 dvz_colormap_scale
 dvz_compute_normals
 dvz_demo
-dvz_demo_panel
+dvz_demo_panel2D
+dvz_demo_panel3D
 dvz_easing
 dvz_error_callback
 dvz_figure

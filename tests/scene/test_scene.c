@@ -299,11 +299,11 @@ int test_scene_gui(TstSuite* suite)
 
     DvzPanel* panel1 = dvz_panel(figure, 100, 100, 300, 200);
     dvz_panel_gui(panel1, "GUI panel 1", 0);
-    dvz_demo_panel(panel1);
+    dvz_demo_panel2D(panel1);
 
     DvzPanel* panel2 = dvz_panel(figure, 200, 350, 250, 150);
     dvz_panel_gui(panel2, "GUI panel 2", 0);
-    dvz_demo_panel(panel2);
+    dvz_demo_panel2D(panel2);
 
     dvz_scene_run(scene, app, N_FRAMES);
     dvz_scene_destroy(scene);

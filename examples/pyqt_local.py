@@ -42,8 +42,8 @@ class ExampleWindow(QMainWindow):
         self.qt_figure2 = self.qt_server.create_figure(w, h)
 
         # Fill the figures with mock data.
-        dvz.demo_panel(dvz.panel(self.qt_figure1.figure, 0, 0, w, h))
-        dvz.demo_panel(dvz.panel(self.qt_figure2.figure, 0, 0, w, h))
+        dvz.demo_panel2D(dvz.panel(self.qt_figure1.figure, 0, 0, w, h))
+        dvz.demo_panel2D(dvz.panel(self.qt_figure2.figure, 0, 0, w, h))
 
         # Add the two figures in the main window.
         splitter = QSplitter(Qt.Orientation.Horizontal)

@@ -2542,9 +2542,9 @@ Run a demo.
 demo.argtypes = [
 ]
 
-# Function dvz_demo_panel()
-demo_panel = dvz.dvz_demo_panel
-demo_panel.__doc__ = """
+# Function dvz_demo_panel2D()
+demo_panel2D = dvz.dvz_demo_panel2D
+demo_panel2D.__doc__ = """
 Demo panel (random scatter plot).
 
 Parameters
@@ -2557,10 +2557,30 @@ Returns
 type
     the marker visual
 """
-demo_panel.argtypes = [
+demo_panel2D.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
-demo_panel.restype = ctypes.POINTER(DvzVisual)
+demo_panel2D.restype = ctypes.POINTER(DvzVisual)
+
+# Function dvz_demo_panel3D()
+demo_panel3D = dvz.dvz_demo_panel3D
+demo_panel3D.__doc__ = """
+Demo panel (random scatter plot).
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the marker visual
+"""
+demo_panel3D.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+demo_panel3D.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_version()
 version = dvz.dvz_version

@@ -21,7 +21,7 @@ scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 
 panel = dvz.panel_default(figure)
-dvz.demo_panel(panel)
+dvz.demo_panel2D(panel)
 
 # Frame presentation timestamps.
 # Every second, we show the timestamps of the last `count` frames.

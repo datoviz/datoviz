@@ -69,34 +69,48 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasF
 /*  Demo panel                                                                                   */
 /*************************************************************************************************/
 
-DvzVisual* dvz_demo_panel(DvzPanel* panel)
+DvzVisual* dvz_demo_panel2D(DvzPanel* panel)
 {
     ANN(panel);
-    DvzVisual* marker = dvz_marker(dvz_panel_batch(panel), 0);
 
-    uint32_t n = 200;
+    uint32_t n = 1000;
     vec3* pos = dvz_mock_pos2D(n, .25);
     DvzColor* color = dvz_mock_color(n, 200);
     float* size = dvz_mock_uniform(n, 20.0, 50.0);
 
-    dvz_marker_alloc(marker, n);
-    dvz_marker_position(marker, 0, n, pos, 0);
-    dvz_marker_color(marker, 0, n, color, 0);
-    dvz_marker_size(marker, 0, n, size, 0);
-
-    float* angle = dvz_mock_linspace(n, 0, M_2PI / n * (n + 1));
-    dvz_marker_angle(marker, 0, n, angle, 0);
-    FREE(angle);
-
-    dvz_marker_aspect(marker, DVZ_MARKER_ASPECT_OUTLINE);
-    dvz_marker_shape(marker, DVZ_MARKER_SHAPE_ARROW);
-    dvz_marker_edge_color(marker, DVZ_WHITE);
-    dvz_marker_edge_width(marker, (float){2.0});
+    DvzVisual* visual = dvz_point(dvz_panel_batch(panel), 0);
+    dvz_point_alloc(visual, n);
+    dvz_point_position(visual, 0, n, pos, 0);
+    dvz_point_color(visual, 0, n, color, 0);
+    dvz_point_size(visual, 0, n, size, 0);
 
     dvz_panel_panzoom(panel);
-    dvz_panel_visual(panel, marker, 0);
+    dvz_panel_visual(panel, visual, 0);
 
-    return marker;
+    return visual;
+}
+
+
+
+DvzVisual* dvz_demo_panel3D(DvzPanel* panel)
+{
+    ANN(panel);
+
+    uint32_t n = 1000;
+    vec3* pos = dvz_mock_pos3D(n, .25);
+    DvzColor* color = dvz_mock_color(n, 255);
+    float* size = dvz_mock_uniform(n, 20.0, 50.0);
+
+    DvzVisual* visual = dvz_sphere(dvz_panel_batch(panel), 0);
+    dvz_sphere_alloc(visual, n);
+    dvz_sphere_position(visual, 0, n, pos, 0);
+    dvz_sphere_color(visual, 0, n, color, 0);
+    dvz_sphere_size(visual, 0, n, size, 0);
+
+    dvz_panel_arcball(panel);
+    dvz_panel_visual(panel, visual, 0);
+
+    return visual;
 }
 
 
