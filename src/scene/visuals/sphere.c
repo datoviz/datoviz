@@ -74,6 +74,10 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
     dvz_params_attr(params, 0, FIELD(DvzSphereParams, light_pos));
     dvz_params_attr(params, 1, FIELD(DvzSphereParams, light_param));
 
+    // Default light settings.
+    dvz_sphere_light_pos(visual, DVZ_DEFAULT_LIGHT_POS);
+    dvz_sphere_light_params(visual, DVZ_DEFAULT_LIGHT_PARAMS);
+
     return visual;
 }
 

@@ -19,6 +19,8 @@
 
 #include <stdint.h>
 
+#include "datoviz_macros.h"
+
 
 
 /*************************************************************************************************/
@@ -885,6 +887,18 @@ typedef enum
 #define DVZ_DEFAULT_VIEWPORT (vec2){0, 0}
 
 #define DVZ_DEFAULT_CLEAR_COLOR (cvec4){0, 0, 0, 0}
+
+#define DVZ_DEFAULT_LIGHT_POS (vec3){-1, 0, +10}
+
+#define DVZ_DEFAULT_LIGHT_DIR (vec3){0.25, -0.25, -1}
+
+#if DVZ_COLOR_CVEC4
+#define DVZ_DEFAULT_LIGHT_COLOR (cvec4){255, 255, 255, 255}
+#else
+#define DVZ_DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
+#endif
+
+#define DVZ_DEFAULT_LIGHT_PARAMS (vec4){.3, .6, 1, 32}
 
 
 

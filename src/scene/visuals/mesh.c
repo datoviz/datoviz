@@ -33,17 +33,8 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define STROKE            TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
-#define LINEWIDTH         2.0f
-#define DEFAULT_LIGHT_DIR (vec3){0.25, -0.25, -1}
-
-#if DVZ_COLOR_CVEC4
-#define DEFAULT_LIGHT_COLOR (cvec4){255, 255, 255, 255}
-#else
-#define DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
-#endif
-
-#define DEFAULT_LIGHT_PARAMS (vec4){.3, .7, .4, 16}
+#define STROKE    TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
+#define LINEWIDTH 2.0f
 
 
 
@@ -171,9 +162,9 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Default stroke parameters.
     if (lighting > 0)
     {
-        dvz_mesh_light_color(visual, 0, DEFAULT_LIGHT_COLOR);
-        dvz_mesh_light_dir(visual, 0, DEFAULT_LIGHT_DIR);
-        dvz_mesh_light_params(visual, 0, DEFAULT_LIGHT_PARAMS);
+        dvz_mesh_light_color(visual, 0, DVZ_DEFAULT_LIGHT_COLOR);
+        dvz_mesh_light_dir(visual, 0, DVZ_DEFAULT_LIGHT_DIR);
+        dvz_mesh_light_params(visual, 0, DVZ_DEFAULT_LIGHT_PARAMS);
     }
     dvz_mesh_stroke(visual, (DvzColor){STROKE});
     dvz_mesh_linewidth(visual, LINEWIDTH);
