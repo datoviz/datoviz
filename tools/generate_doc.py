@@ -342,8 +342,10 @@ def parse_doxygen_docstring(docstring):
         'returns': returns
     }
 
-from itertools import zip_longest
+
 def generate_api():
+    import datoviz as dvz
+
     with open(HEADERS_FILE, 'r') as f:
         objects = json.load(f)
     md = dedent("""
@@ -386,7 +388,6 @@ def generate_api():
 
             # ctypes argument type mapping
             mtypes = []
-            import datoviz as dvz
             func = getattr(dvz, py_func_name, None)
             if func:
                 mtypes = [_.__name__ for _ in func.argtypes]
