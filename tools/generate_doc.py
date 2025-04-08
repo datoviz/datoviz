@@ -4,13 +4,12 @@
 # -------------------------------------------------------------------------------------------------
 
 from operator import itemgetter
-from textwrap import dedent
+from textwrap import indent, dedent
 import json
 import itertools
 from pathlib import Path
 import re
 import sys
-from textwrap import indent
 
 
 # Constants
@@ -343,7 +342,7 @@ def parse_doxygen_docstring(docstring):
         'returns': returns
     }
 
-
+from itertools import zip_longest
 def generate_api():
     with open(HEADERS_FILE, 'r') as f:
         objects = json.load(f)
@@ -373,20 +372,50 @@ def generate_api():
             parsed_docstring = parse_doxygen_docstring(docstring)
 
             return_type = func_info["returns"]
-            return_type = return_type + " " if return_type else ""
+            return_type_ = return_type + " " if return_type else ""
 
             return_desc = parsed_docstring["returns"]
-            return_desc = f"  // returns: {return_desc}" if return_desc else ""
             dtypes = {_["name"]: _["dtype"] for _ in func_info["args"]}
 
+            desc = parsed_docstring['description'].replace('* ', '')
+
+            md += desc + "\n\n"
+
+            # Python-style
+            py_func_name = func_name.replace("dvz_", "")
+
+            # ctypes argument type mapping
+            mtypes = []
+            import datoviz as dvz
+            func = getattr(dvz, py_func_name, None)
+            if func:
+                mtypes = [_.__name__ for _ in func.argtypes]
+
+            py_args = "\n".join(
+                f"    {arg_name},  # {arg_desc} ({arg_type})"
+                for (arg_name, arg_desc), arg_type in zip(parsed_docstring["params"], mtypes))
+            py_return_type = func.restype.__name__
+            py_return_desc = f"  # returns: {return_desc} ({py_return_type})" if return_desc else ""
+            py_func_desc = f"``` python\ndvz.{py_func_name}("
+            if py_args:
+                py_func_desc += f"{py_return_desc}\n{py_args}\n)"
+            else:
+                py_func_desc += f"){py_return_desc}"
+            py_func_desc += "\n```\n\n"
+            md += f"""=== "Python"\n\n{indent(py_func_desc, '    ')}"""
+
+            # C-style
             args = "\n".join(
                 f"    {dtypes.get(arg_name, '')} {arg_name},  // {arg_desc}"
                 for (arg_name, arg_desc) in parsed_docstring["params"])
-
-            func_desc = (
-                f"{parsed_docstring['description'].replace('* ', '')}\n\n"
-                f"```c\n{return_type}{func_name}({return_desc}\n{args}\n)\n```") + "\n\n"
-            md += func_desc
+            return_desc = f"  // returns: {return_desc}" if return_desc else ""
+            func_desc = f"``` c\n{return_type_}{func_name}("
+            if args:
+                func_desc += f"{return_desc}\n{args}\n);"
+            else:
+                func_desc += f");{return_desc}"
+            func_desc += "\n```\n\n"
+            md += f"""=== "C"\n\n{indent(func_desc, '    ')}"""
 
     # Enumerations
     md += f"## Enumerations"

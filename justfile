@@ -1337,12 +1337,12 @@ examples: runexamples docexamples
 # Documentation
 # -------------------------------------------------------------------------------------------------
 
-doc: headers
+doc: #headers
     @python tools/generate_doc.py api
 #
 
 serve:
-    @mkdocs serve
+    @mkdocs serve -a localhost:8294
 #
 
 # Publish the mkdocs website on GitHub Pages.
