@@ -367,6 +367,11 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
             e2 = 1;
         }
 
+        else
+        {
+            e0 = e1 = e2 = 0;
+        }
+
         // Other indexing strategies, defining (e0, e1, e2) as a function of a face's indices,
         // could be implemented here.
 
