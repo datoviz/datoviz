@@ -85,6 +85,9 @@ def c_to_dtype(type, enum_int=False, unsigned=None):
         else:
             return 'np.float'
 
+    elif type == 'DvzCapType':
+        return 'np.int32'
+
     elif type == 'float':
         return 'np.float32'
 

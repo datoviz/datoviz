@@ -5835,8 +5835,8 @@ segment_cap.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_int32),  # DvzCapType* initial
-    ctypes.POINTER(ctypes.c_int32),  # DvzCapType* terminal
+    ndpointer(dtype=np.int32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzCapType* initial
+    ndpointer(dtype=np.int32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzCapType* terminal
     ctypes.c_int,  # int flags
 ]
 
