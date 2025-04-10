@@ -118,7 +118,8 @@ DvzBox dvz_box_merge(uint32_t box_count, DvzBox* boxes, DvzBoxMergeStrategy stra
  * @param dim which dimension
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
- * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ * @param[out] out (array) pointer to an array with the normalized positions to compute (single
+ * precision)
  */
 DVZ_EXPORT
 void dvz_box_normalize_1D(
@@ -133,7 +134,8 @@ void dvz_box_normalize_1D(
  * @param target the target box, typically in normalized coordinates
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
- * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ * @param[out] out (array) pointer to an array with the normalized positions to compute (single
+ * precision)
  */
 void dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
 
@@ -146,7 +148,8 @@ void dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* po
  * @param target the target box, typically in normalized coordinates
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
- * @param[out] out pointer to an array with the normalized positions to compute (single precision)
+ * @param[out] out (array) pointer to an array with the normalized positions to compute (single
+ * precision)
  */
 void dvz_box_normalize_polygon(
     DvzBox source, DvzBox target, uint32_t count, dvec2* pos, dvec2* out);
@@ -160,7 +163,7 @@ void dvz_box_normalize_polygon(
  * @param target the target box, typically in normalized coordinates
  * @param count the number of positions to normalize
  * @param pos the positions to normalize (double precision)
- * @param[out] out pointer to an array with the normalized positions to compute (single
+ * @param[out] out (array) pointer to an array with the normalized positions to compute (single
  * precision)
  */
 void dvz_box_normalize_3D(DvzBox source, DvzBox target, uint32_t count, dvec3* pos, vec3* out);

@@ -299,7 +299,7 @@ void dvz_upload_buffer(
  * @param br the buffer regions to update
  * @param offset the offset within the buffer regions, in bytes
  * @param size the size of the data to upload, in bytes
- * @param[out] data pointer to a buffer already allocated to contain `size` bytes
+ * @param[out] data (array) pointer to a buffer already allocated to contain `size` bytes
  */
 void dvz_download_buffer(
     DvzTransfers* transfers, DvzBufferRegions br, //
@@ -356,7 +356,7 @@ void dvz_upload_image(
  * @param offset the offset within the image
  * @param shape the shape of the region to update within the image
  * @param size the size of the downloaded data, in bytes
- * @param[out] data pointer to the buffer that will hold the downloaded data
+ * @param[out] data (array) pointer to the buffer that will hold the downloaded data
  */
 void dvz_download_image(
     DvzTransfers* transfers, DvzImages* img, //

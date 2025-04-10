@@ -1022,7 +1022,7 @@ void dvz_buffer_unmap(DvzBuffer* buffer);
  * @param buffer the buffer
  * @param offset the offset within the buffer, in bytes
  * @param size the size of the region to download, in bytes
- * @param[out] data the buffer to download on (must be allocated with the appropriate size)
+ * @param[out] data (array) the buffer to download on (must be allocated with the appropriate size)
  */
 void dvz_buffer_download(DvzBuffer* buffer, VkDeviceSize offset, VkDeviceSize size, void* data);
 
@@ -1248,7 +1248,8 @@ void dvz_images_transition(DvzImages* img);
  * @param bytes_per_component number of bytes per component
  * @param swizzle whether the RGB(A) values need to be transposed
  * @param has_alpha whether there is an Alpha component in the output buffer
- * @param[out] out the buffer that will be filled with the image data (must be already allocated)
+ * @param[out] out (array) the buffer that will be filled with the image data (must be already
+ * allocated)
  */
 void dvz_images_download(
     DvzImages* staging, uint32_t idx, VkDeviceSize bytes_per_component, bool swizzle,

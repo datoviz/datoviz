@@ -1102,7 +1102,7 @@ dvz_colormap_scale(DvzColormap cmap, float value, float vmin, float vmax, DvzCol
  * @param values pointer to the array of float numbers
  * @param vmin the minimum value
  * @param vmax the maximum value
- * @param[out] out the fetched colors
+ * @param[out] out (array) the fetched colors
  */
 DVZ_EXPORT void dvz_colormap_array(
     DvzColormap cmap, uint32_t count, float* values, float vmin, float vmax, DvzColor* out);
@@ -1120,7 +1120,7 @@ DVZ_EXPORT void dvz_colormap_array(
  * @param index_count number of indices (triple of the number of faces)
  * @param pos array of vec3 positions
  * @param index pos array of uint32_t indices
- * @param[out] normal array of vec3 normals (to be overwritten by this function)
+ * @param[out] normal (array) the vec3 normals (to be overwritten by this function)
  */
 DVZ_EXPORT void dvz_compute_normals(
     uint32_t vertex_count, uint32_t index_count, vec3* pos, DvzIndex* index, vec3* normal);
@@ -3791,7 +3791,7 @@ DVZ_EXPORT void dvz_ref_expand3D(DvzRef* ref, uint32_t count, dvec3* pos);
  * @param dim which dimension
  * @param count the number of positions
  * @param pos the 1D positions
- * @param[out] pos_tr the transformed positions
+ * @param[out] pos_tr (array) the transformed positions
  */
 DVZ_EXPORT void
 dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
@@ -3804,7 +3804,7 @@ dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* 
  * @param ref the reference frame
  * @param count the number of positions
  * @param pos the 2D positions
- * @param[out] pos_tr the transformed 3D positions
+ * @param[out] pos_tr (array) the transformed 3D positions
  */
 DVZ_EXPORT void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
 
@@ -3816,7 +3816,7 @@ DVZ_EXPORT void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec
  * @param ref the reference frame
  * @param count the number of positions
  * @param pos the 2D positions
- * @param[out] pos_tr the transformed 2D positions
+ * @param[out] pos_tr (array) the transformed 2D positions
  */
 DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* pos, dvec2* pos_tr);
 
@@ -3828,7 +3828,7 @@ DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* po
  * @param ref the reference frame
  * @param count the number of positions
  * @param pos the 3D positions
- * @param[out] pos_tr the transformed positions
+ * @param[out] pos_tr (array) the transformed positions
  */
 DVZ_EXPORT void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
 
@@ -3863,8 +3863,8 @@ DVZ_EXPORT void dvz_ref_destroy(DvzRef* ref);
 /**
  * Capture a GUI window.
  *
- * @param gui_window
- * @param is_captured
+ * @param gui_window the GUI window
+ * @param is_captured whether the windows should be captured
  *
  */
 DVZ_EXPORT void dvz_gui_window_capture(DvzGuiWindow* gui_window, bool is_captured);
@@ -4054,7 +4054,7 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
  * @param name the slider name
  * @param vmin the minimum value
  * @param vmax the maximum value
- * @param value the pointer to the value
+ * @param[out] value the pointer to the value
  * @returns whether the value has changed
  */
 DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value);
