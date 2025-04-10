@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 
 import datoviz as dvz
-from datoviz import S_
 
 
 CURDIR = Path(__file__).parent
@@ -15,6 +14,22 @@ IMGDIR.mkdir(exist_ok=True, parents=True)
 
 
 class DatovizTests(unittest.TestCase):
+    def test_struct(self):
+        ev = dvz.MouseDragEvent()
+        ev.button = 1
+        ev.press_pos[0] = -1.23
+        ev.press_pos[1] = +4.56
+        ev.shift[0] = +10.987
+        ev.shift[1] = -20.456
+        ev.is_press_valid = True
+
+        self.assertEqual(ev.button, 1)
+        self.assertEqual(ev.is_press_valid, True)
+        self.assertAlmostEqual(ev.press_pos[0], -1.23, places=4)
+        self.assertAlmostEqual(ev.press_pos[1], +4.56, places=4)
+        self.assertAlmostEqual(ev.shift[0], +10.987, places=4)
+        self.assertAlmostEqual(ev.shift[1], -20.456, places=4)
+
     def test_offscreen(self):
         """Generate an offscreen image and check that it worked."""
 
@@ -47,7 +62,7 @@ class DatovizTests(unittest.TestCase):
         path = IMGDIR / "offscreen_python.png"
         self.assertFalse(path.exists())
 
-        dvz.app_screenshot(app, dvz.figure_id(figure), S_(path))
+        dvz.app_screenshot(app, dvz.figure_id(figure), path)
         dvz.scene_destroy(scene)
         dvz.app_destroy(app)
 
