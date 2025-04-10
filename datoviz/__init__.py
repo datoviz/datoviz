@@ -334,6 +334,18 @@ def from_enum(enum_cls, value):
         if not name.startswith('_') and isinstance(val, int) and val == value:
             return name
     return None
+
+
+def key_name(key_code):
+    name = from_enum(KeyCode, key_code)
+    name = name.replace('DVZ_KEY_', '')
+    return name
+
+
+def button_name(button):
+    name = from_enum(MouseButton, button)
+    name = name.replace('DVZ_MOUSE_BUTTON_', '')
+    return name
 DVZ_ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
 DvzColor = cvec4
@@ -1222,73 +1234,73 @@ class DvzPrintFlagsFlags(CtypesEnum):
 
 # Function aliases
 
-BufferType = DvzBufferType
-BlendType = DvzBlendType
-KeyCode = DvzKeyCode
-Orientation = DvzOrientation
-MouseButton = DvzMouseButton
-SlotType = DvzSlotType
-SceneFont = DvzSceneFont
-VolumeFlags = DvzVolumeFlags
-ShaderFormat = DvzShaderFormat
-UploadFlags = DvzUploadFlags
-CapType = DvzCapType
 TexDims = DvzTexDims
-PanzoomFlags = DvzPanzoomFlags
 Easing = DvzEasing
-Filter = DvzFilter
-KeyboardModifiers = DvzKeyboardModifiers
-CullMode = DvzCullMode
-MouseState = DvzMouseState
-TexFlags = DvzTexFlags
-GraphicsRequestFlags = DvzGraphicsRequestFlags
-PathFlags = DvzPathFlags
-BoxMergeStrategy = DvzBoxMergeStrategy
-Dim = DvzDim
-DialogFlags = DvzDialogFlags
 Align = DvzAlign
-KeyboardEventType = DvzKeyboardEventType
-MouseEventType = DvzMouseEventType
-VisualFlags = DvzVisualFlags
-MarkerAspect = DvzMarkerAspect
-MockFlags = DvzMockFlags
-FrontFace = DvzFrontFace
-DescriptorType = DvzDescriptorType
-ContourFlags = DvzContourFlags
-RefFlags = DvzRefFlags
-ShapeIndexingFlags = DvzShapeIndexingFlags
 BoxExtentStrategy = DvzBoxExtentStrategy
 ViewportClip = DvzViewportClip
-VertexInputRate = DvzVertexInputRate
-MarkerShape = DvzMarkerShape
-MeshFlags = DvzMeshFlags
-AppFlags = DvzAppFlags
-RequestObject = DvzRequestObject
+PanzoomFlags = DvzPanzoomFlags
+SlotType = DvzSlotType
+UploadFlags = DvzUploadFlags
+TexFlags = DvzTexFlags
+BoxMergeStrategy = DvzBoxMergeStrategy
 DepthTest = DvzDepthTest
 JoinType = DvzJoinType
-ImageFlags = DvzImageFlags
-RecorderCommandType = DvzRecorderCommandType
-SamplerAxis = DvzSamplerAxis
-MarkerMode = DvzMarkerMode
-PrimitiveTopology = DvzPrimitiveTopology
-ViewFlags = DvzViewFlags
-DatFlags = DvzDatFlags
-ColorMask = DvzColorMask
 CanvasFlags = DvzCanvasFlags
-ArcballFlags = DvzArcballFlags
-SamplerAddressMode = DvzSamplerAddressMode
-CameraFlags = DvzCameraFlags
-PolygonMode = DvzPolygonMode
-FontFlags = DvzFontFlags
-ShaderType = DvzShaderType
-PrintFlagsFlags = DvzPrintFlagsFlags
-Colormap = DvzColormap
-GraphicsType = DvzGraphicsType
-Corner = DvzCorner
-GuiFlags = DvzGuiFlags
-Format = DvzFormat
-ShapeType = DvzShapeType
+KeyCode = DvzKeyCode
+SceneFont = DvzSceneFont
 RequestAction = DvzRequestAction
+MarkerMode = DvzMarkerMode
+Format = DvzFormat
+MeshFlags = DvzMeshFlags
+ShapeType = DvzShapeType
+Dim = DvzDim
+ShapeIndexingFlags = DvzShapeIndexingFlags
+FontFlags = DvzFontFlags
+PrintFlagsFlags = DvzPrintFlagsFlags
+RefFlags = DvzRefFlags
+CameraFlags = DvzCameraFlags
+Filter = DvzFilter
+VolumeFlags = DvzVolumeFlags
+ImageFlags = DvzImageFlags
+KeyboardEventType = DvzKeyboardEventType
+ViewFlags = DvzViewFlags
+GraphicsType = DvzGraphicsType
+DescriptorType = DvzDescriptorType
+BlendType = DvzBlendType
+MouseButton = DvzMouseButton
+PathFlags = DvzPathFlags
+Colormap = DvzColormap
+BufferType = DvzBufferType
+PrimitiveTopology = DvzPrimitiveTopology
+MouseEventType = DvzMouseEventType
+GuiFlags = DvzGuiFlags
+ShaderType = DvzShaderType
+KeyboardModifiers = DvzKeyboardModifiers
+Corner = DvzCorner
+VisualFlags = DvzVisualFlags
+MockFlags = DvzMockFlags
+MarkerAspect = DvzMarkerAspect
+ShaderFormat = DvzShaderFormat
+SamplerAxis = DvzSamplerAxis
+ArcballFlags = DvzArcballFlags
+RequestObject = DvzRequestObject
+CapType = DvzCapType
+ContourFlags = DvzContourFlags
+ColorMask = DvzColorMask
+AppFlags = DvzAppFlags
+DatFlags = DvzDatFlags
+MarkerShape = DvzMarkerShape
+SamplerAddressMode = DvzSamplerAddressMode
+MouseState = DvzMouseState
+Orientation = DvzOrientation
+RecorderCommandType = DvzRecorderCommandType
+FrontFace = DvzFrontFace
+GraphicsRequestFlags = DvzGraphicsRequestFlags
+VertexInputRate = DvzVertexInputRate
+CullMode = DvzCullMode
+PolygonMode = DvzPolygonMode
+DialogFlags = DvzDialogFlags
 
 APP_FLAGS_NONE = 0x000000
 APP_FLAGS_OFFSCREEN = 0x008000

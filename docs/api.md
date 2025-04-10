@@ -2350,7 +2350,8 @@ Capture a GUI window.
 
     ``` python
     dvz.gui_window_capture(
-        gui_window,  # * @param is_captured (LP_DvzGuiWindow)
+        gui_window,  # the GUI window (LP_DvzGuiWindow)
+        is_captured,  # whether the windows should be captured (bool)
     )
     ```
 
@@ -2358,7 +2359,8 @@ Capture a GUI window.
 
     ``` c
     void dvz_gui_window_capture(
-        DvzGuiWindow* gui_window,  // * @param is_captured
+        DvzGuiWindow* gui_window,  // the GUI window
+        bool is_captured,  // whether the windows should be captured
     );
     ```
 

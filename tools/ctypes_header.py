@@ -335,3 +335,15 @@ def from_enum(enum_cls, value):
         if not name.startswith('_') and isinstance(val, int) and val == value:
             return name
     return None
+
+
+def key_name(key_code):
+    name = from_enum(KeyCode, key_code)
+    name = name.replace('DVZ_KEY_', '')
+    return name
+
+
+def button_name(button):
+    name = from_enum(MouseButton, button)
+    name = name.replace('DVZ_MOUSE_BUTTON_', '')
+    return name
