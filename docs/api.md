@@ -31,7 +31,7 @@ Add arcball constraints.
     ``` python
     dvz.arcball_constrain(
         arcball,  # the arcball (LP_DvzArcball)
-        constrain,  # the constrain values (c_float_Array_3)
+        constrain,  # the constrain values (vec3)
     )
     ```
 
@@ -73,7 +73,7 @@ Set the arcball flags.
     ``` python
     dvz.arcball_flags(
         arcball,  # the arcball (LP_DvzArcball)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -96,7 +96,7 @@ Show a GUI with sliders controlling the three arcball angles.
     dvz.arcball_gui(
         arcball,  # the arcball (LP_DvzArcball)
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the canvas (or figure) ID (c_ulong)
+        canvas_id,  # the canvas (or figure) ID (int, 64-bit unsigned)
         panel,  # the panel (LP_DvzPanel)
     )
     ```
@@ -121,7 +121,7 @@ Set the initial arcball angles.
     ``` python
     dvz.arcball_initial(
         arcball,  # the arcball (LP_DvzArcball)
-        angles,  # the initial angles (c_float_Array_3)
+        angles,  # the initial angles (vec3)
     )
     ```
 
@@ -225,8 +225,8 @@ Inform an arcball of a panel resize.
     ``` python
     dvz.arcball_resize(
         arcball,  # the arcball (LP_DvzArcball)
-        width,  # the panel width (c_float)
-        height,  # the panel height (c_float)
+        width,  # the panel width (float, 64-bit)
+        height,  # the panel height (float, 64-bit)
     )
     ```
 
@@ -249,8 +249,8 @@ Apply a rotation to an arcball.
     ``` python
     dvz.arcball_rotate(
         arcball,  # the arcball (LP_DvzArcball)
-        cur_pos,  # the initial position (c_float_Array_2)
-        last_pos,  # the final position (c_float_Array_2)
+        cur_pos,  # the initial position (vec2)
+        last_pos,  # the final position (vec2)
     )
     ```
 
@@ -273,7 +273,7 @@ Set the arcball angles.
     ``` python
     dvz.arcball_set(
         arcball,  # the arcball (LP_DvzArcball)
-        angles,  # the angles (c_float_Array_3)
+        angles,  # the angles (vec3)
     )
     ```
 
@@ -314,7 +314,7 @@ Load the default atlas and font.
 
     ``` python
     dvz.atlas_font(  # returns: a DvzAtlasFont struct with DvzAtlas and DvzFont objects. (DvzAtlasFont)
-        font_size,  # the font size (c_double)
+        font_size,  # the font size (float, 32-bit)
     )
     ```
 
@@ -336,7 +336,7 @@ Create a basic visual using the few GPU visual primitives (point, line, triangle
     dvz.basic(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
         topology,  # the primitive topology (DvzPrimitiveTopology)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -359,7 +359,7 @@ Allocate memory for a visual.
     ``` python
     dvz.basic_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -381,10 +381,10 @@ Set the vertex colors.
     ``` python
     dvz.basic_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -409,10 +409,10 @@ Set the vertex group index.
     ``` python
     dvz.basic_group(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the group index of each vertex (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -437,10 +437,10 @@ Set the vertex positions.
     ``` python
     dvz.basic_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -465,7 +465,7 @@ Set the point size (for POINT_LIST topology only).
     ``` python
     dvz.basic_size(
         visual,  # the visual (LP_DvzVisual)
-        size,  # the point size in pixels (c_float)
+        size,  # the point size in pixels (float, 64-bit)
     )
     ```
 
@@ -487,9 +487,9 @@ Set the initial camera parameters.
     ``` python
     dvz.camera_initial(
         camera,  # the camera (LP_DvzCamera)
-        pos,  # the initial position (c_float_Array_3)
-        lookat,  # the lookat position (c_float_Array_3)
-        up,  # the up vector (c_float_Array_3)
+        pos,  # the initial position (vec3)
+        lookat,  # the lookat position (vec3)
+        up,  # the up vector (vec3)
     )
     ```
 
@@ -513,7 +513,7 @@ Set a camera lookat position.
     ``` python
     dvz.camera_lookat(
         camera,  # the camera (LP_DvzCamera)
-        lookat,  # the lookat position (c_float_Array_3)
+        lookat,  # the lookat position (vec3)
     )
     ```
 
@@ -557,10 +557,10 @@ Make an orthographic camera.
     ``` python
     dvz.camera_ortho(
         camera,  # the camera (LP_DvzCamera)
-        left,  # the left value (c_float)
-        right,  # the right value (c_float)
-        bottom,  # the bottom value (c_float)
-        top,  # the top value (c_float)
+        left,  # the left value (float, 64-bit)
+        right,  # the right value (float, 64-bit)
+        bottom,  # the bottom value (float, 64-bit)
+        top,  # the top value (float, 64-bit)
     )
     ```
 
@@ -585,7 +585,7 @@ Set a camera perspective.
     ``` python
     dvz.camera_perspective(
         camera,  # the camera (LP_DvzCamera)
-        fov,  # the field of view angle (in radians) (c_float)
+        fov,  # the field of view angle (in radians) (float, 64-bit)
     )
     ```
 
@@ -607,7 +607,7 @@ Set a camera position.
     ``` python
     dvz.camera_position(
         camera,  # the camera (LP_DvzCamera)
-        pos,  # the pos (c_float_Array_3)
+        pos,  # the pos (vec3)
     )
     ```
 
@@ -669,8 +669,8 @@ Inform a camera of a panel resize.
     ``` python
     dvz.camera_resize(
         camera,  # the camera (LP_DvzCamera)
-        width,  # the panel width (c_float)
-        height,  # the panel height (c_float)
+        width,  # the panel width (float, 64-bit)
+        height,  # the panel height (float, 64-bit)
     )
     ```
 
@@ -693,7 +693,7 @@ Set a camera up vector.
     ``` python
     dvz.camera_up(
         camera,  # the camera (LP_DvzCamera)
-        up,  # the up vector (c_float_Array_3)
+        up,  # the up vector (vec3)
     )
     ```
 
@@ -735,8 +735,8 @@ Set the camera zrange.
     ``` python
     dvz.camera_zrange(
         camera,  # the camera (LP_DvzCamera)
-        near,  # the near value (c_float)
-        far,  # the far value (c_float)
+        near,  # the near value (float, 64-bit)
+        far,  # the far value (float, 64-bit)
     )
     ```
 
@@ -758,10 +758,10 @@ Generate a 2D circular motion.
 
     ``` python
     dvz.circular2D(
-        center,  # the circle center (c_float_Array_2)
-        radius,  # the circle radius (c_float)
-        angle,  # the initial angle (c_float)
-        t,  # the normalized value (c_float)
+        center,  # the circle center (vec2)
+        radius,  # the circle radius (float, 64-bit)
+        angle,  # the initial angle (float, 64-bit)
+        t,  # the normalized value (float, 64-bit)
     )
     ```
 
@@ -784,12 +784,12 @@ Generate a 3D circular motion.
 
     ``` python
     dvz.circular_3D(
-        center,  # the circle center (c_float_Array_3)
-        u,  # the first 3D vector defining the plane containing the circle (c_float_Array_3)
-        v,  # the second 3D vector defining the plane containing the circle (c_float_Array_3)
-        radius,  # the circle radius (c_float)
-        angle,  # the initial angle (c_float)
-        t,  # the normalized value (c_float)
+        center,  # the circle center (vec3)
+        u,  # the first 3D vector defining the plane containing the circle (vec3)
+        v,  # the second 3D vector defining the plane containing the circle (vec3)
+        radius,  # the circle radius (float, 64-bit)
+        angle,  # the initial angle (float, 64-bit)
+        t,  # the normalized value (float, 64-bit)
     )
     ```
 
@@ -815,7 +815,7 @@ Fetch a color from a colormap and a value (either 8-bit or float, depending on D
     ``` python
     dvz.colormap(
         cmap,  # the colormap (DvzColormap)
-        value,  # the value (c_ubyte)
+        value,  # the value (int, 8-bit unsigned)
     )
     ```
 
@@ -837,7 +837,7 @@ Fetch a color from a colormap and a value (8-bit version).
     ``` python
     dvz.colormap_8bit(
         cmap,  # the colormap (DvzColormap)
-        value,  # the value (c_ubyte)
+        value,  # the value (int, 8-bit unsigned)
     )
     ```
 
@@ -859,10 +859,10 @@ Fetch colors from a colormap and an array of values.
     ``` python
     dvz.colormap_array(
         cmap,  # the colormap (DvzColormap)
-        count,  # the number of values (c_uint)
+        count,  # the number of values (int, 32-bit unsigned)
         values,  # pointer to the array of float numbers (ndpointer_<f4_C_CONTIGUOUS)
-        vmin,  # the minimum value (c_float)
-        vmax,  # the maximum value (c_float)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
     )
     ```
 
@@ -887,9 +887,9 @@ Fetch a color from a colormap and an interpolated value.
     ``` python
     dvz.colormap_scale(
         cmap,  # the colormap (DvzColormap)
-        value,  # the value (c_float)
-        vmin,  # the minimum value (c_float)
-        vmax,  # the maximum value (c_float)
+        value,  # the value (float, 64-bit)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
     )
     ```
 
@@ -912,8 +912,8 @@ Compute face normals.
 
     ``` python
     dvz.compute_normals(
-        vertex_count,  # number of vertices (c_uint)
-        index_count,  # number of indices (triple of the number of faces) (c_uint)
+        vertex_count,  # number of vertices (int, 32-bit unsigned)
+        index_count,  # number of indices (triple of the number of faces) (int, 32-bit unsigned)
         pos,  # array of vec3 positions (ndpointer_<f4_C_CONTIGUOUS)
         index,  # pos array of uint32_t indices (ndpointer_<u4_C_CONTIGUOUS)
     )
@@ -995,7 +995,7 @@ Apply an easing function to a normalized value.
     ``` python
     dvz.easing(  # returns: the eased value (c_double)
         easing,  # the easing mode (DvzEasing)
-        t,  # the normalized value (c_double)
+        t,  # the normalized value (float, 32-bit)
     )
     ```
 
@@ -1037,9 +1037,9 @@ Create a figure, a desktop window with panels and visuals.
     ``` python
     dvz.figure(  # returns: the figure (LP_DvzFigure)
         scene,  # the scene (LP_DvzScene)
-        width,  # the window width (c_uint)
-        height,  # the window height (c_uint)
-        flags,  # the figure creation flags (not yet stabilized) (c_int)
+        width,  # the window width (int, 32-bit unsigned)
+        height,  # the window height (int, 32-bit unsigned)
+        flags,  # the figure creation flags (not yet stabilized) (int, 32-bit signed)
     )
     ```
 
@@ -1103,8 +1103,8 @@ Resize a figure.
     ``` python
     dvz.figure_resize(
         fig,  # the figure (LP_DvzFigure)
-        width,  # the window width (c_uint)
-        height,  # the window height (c_uint)
+        width,  # the window width (int, 32-bit unsigned)
+        height,  # the window height (int, 32-bit unsigned)
     )
     ```
 
@@ -1146,8 +1146,8 @@ Create a font.
 
     ``` python
     dvz.font(  # returns: the font (LP_DvzFont)
-        ttf_size,  # size in bytes of a TTF font raw buffer (c_long)
-        ttf_bytes,  # TTF font raw buffer (c_char_p)
+        ttf_size,  # size in bytes of a TTF font raw buffer (int, 64-bit signed)
+        ttf_bytes,  # TTF font raw buffer (CStringBuffer)
     )
     ```
 
@@ -1169,7 +1169,7 @@ Compute the shift of each glyph in an ASCII string, using the Freetype library.
     ``` python
     dvz.font_ascii(  # returns: an array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
         font,  # the font (LP_DvzFont)
-        string,  # the ASCII string (c_char_p)
+        string,  # the ASCII string (CStringBuffer)
     )
     ```
 
@@ -1211,10 +1211,10 @@ Render a string using Freetype.
     ``` python
     dvz.font_draw(  # returns: an RGBA array allocated by this function and that MUST be freed by the caller (ndpointer_|u1_C_CONTIGUOUS)
         font,  # the font (LP_DvzFont)
-        length,  # the number of glyphs (c_uint)
+        length,  # the number of glyphs (int, 32-bit unsigned)
         codepoints,  # the Unicode codepoints of the glyphs (ndpointer_<u4_C_CONTIGUOUS)
         xywh,  # an array of (x,y,w,h) shifts, returned by dvz_font_layout() (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the font flags (c_int)
+        flags,  # the font flags (int, 32-bit signed)
     )
     ```
 
@@ -1239,7 +1239,7 @@ Compute the shift of each glyph in a Unicode string, using the Freetype library.
     ``` python
     dvz.font_layout(  # returns: an array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
         font,  # the font (LP_DvzFont)
-        length,  # the number of glyphs (c_uint)
+        length,  # the number of glyphs (int, 32-bit unsigned)
         codepoints,  # the Unicode codepoints of the glyphs (ndpointer_<u4_C_CONTIGUOUS)
     )
     ```
@@ -1263,7 +1263,7 @@ Set the font size.
     ``` python
     dvz.font_size(
         font,  # the font (LP_DvzFont)
-        size,  # the font size (c_double)
+        size,  # the font size (float, 32-bit)
     )
     ```
 
@@ -1286,7 +1286,7 @@ Generate a texture with a rendered text.
     dvz.font_texture(  # returns: a tex ID (c_ulong)
         font,  # the font (LP_DvzFont)
         batch,  # the batch (LP_DvzBatch)
-        length,  # the number of Unicode codepoints (c_uint)
+        length,  # the number of Unicode codepoints (int, 32-bit unsigned)
         codepoints,  # the Unicode codepoints (ndpointer_<u4_C_CONTIGUOUS)
     )
     ```
@@ -1311,7 +1311,7 @@ Create a glyph visual.
     ``` python
     dvz.glyph(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -1333,7 +1333,7 @@ Allocate memory for a visual.
     ``` python
     dvz.glyph_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -1355,10 +1355,10 @@ Set the glyph anchors.
     ``` python
     dvz.glyph_anchor(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the anchors (x and y) of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1383,10 +1383,10 @@ Set the glyph angles.
     ``` python
     dvz.glyph_angle(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the angles of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1411,7 +1411,7 @@ Set the glyph ascii characters.
     ``` python
     dvz.glyph_ascii(
         visual,  # the visual (LP_DvzVisual)
-        string,  # the characters (c_char_p)
+        string,  # the characters (CStringBuffer)
     )
     ```
 
@@ -1455,10 +1455,10 @@ Set the glyph axes.
     ``` python
     dvz.glyph_axis(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D axis vectors of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1483,7 +1483,7 @@ Set the glyph background color.
     ``` python
     dvz.glyph_bgcolor(
         visual,  # the visual (LP_DvzVisual)
-        bgcolor,  # the background color (c_float_Array_4)
+        bgcolor,  # the background color (vec4)
     )
     ```
 
@@ -1505,10 +1505,10 @@ Set the glyph colors.
     ``` python
     dvz.glyph_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1533,10 +1533,10 @@ Set the glyph group size.
     ``` python
     dvz.glyph_group_shapes(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the glyph group shapes (width and height, in pixels) (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1561,10 +1561,10 @@ Set the glyph positions.
     ``` python
     dvz.glyph_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1589,10 +1589,10 @@ Set the glyph shifts.
     ``` python
     dvz.glyph_shift(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the shifts (x and y) of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1617,10 +1617,10 @@ Set the glyph sizes.
     ``` python
     dvz.glyph_size(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the sizes (width and height) of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1645,10 +1645,10 @@ Helper function to easily set multiple strings of the same size and color on a g
     ``` python
     dvz.glyph_strings(
         visual,  # the visual (LP_DvzVisual)
-        string_count,  # the number of strings (c_uint)
-        strings,  # the strings (LP_c_char_p)
+        string_count,  # the number of strings (int, 32-bit unsigned)
+        strings,  # the strings (CStringArrayType)
         positions,  # the positions of each string (ndpointer_<f4_C_CONTIGUOUS)
-        color,  # the same color for all strings (c_ubyte_Array_4)
+        color,  # the same color for all strings (cvec4)
     )
     ```
 
@@ -1673,10 +1673,10 @@ Set the glyph texture coordinates.
     ``` python
     dvz.glyph_texcoords(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         coords,  # the x,y,w,h texture coordinates (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1701,7 +1701,7 @@ Assign a texture to a glyph visual.
     ``` python
     dvz.glyph_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
     )
     ```
 
@@ -1723,7 +1723,7 @@ Set the glyph unicode code points.
     ``` python
     dvz.glyph_unicode(
         visual,  # the visual (LP_DvzVisual)
-        count,  # the number of glyphs (c_uint)
+        count,  # the number of glyphs (int, 32-bit unsigned)
         codepoints,  # the unicode codepoints (ndpointer_<u4_C_CONTIGUOUS)
     )
     ```
@@ -1747,11 +1747,11 @@ Set the xywh parameters of each glyph.
     ``` python
     dvz.glyph_xywh(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the xywh values of each glyph (ndpointer_<f4_C_CONTIGUOUS)
-        offset,  # the xy offsets of each glyph (c_float_Array_2)
-        flags,  # the data update flags (c_int)
+        offset,  # the xy offsets of each glyph (vec2)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -1776,7 +1776,7 @@ Set the alpha transparency of the next GUI dialog.
 
     ``` python
     dvz.gui_alpha(
-        alpha,  # the alpha transparency value (c_float)
+        alpha,  # the alpha transparency value (float, 64-bit)
     )
     ```
 
@@ -1796,8 +1796,8 @@ Start a new dialog.
 
     ``` python
     dvz.gui_begin(
-        title,  # the dialog title (c_char_p)
-        flags,  # the flags (c_int)
+        title,  # the dialog title (CStringBuffer)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -1818,9 +1818,9 @@ Add a button.
 
     ``` python
     dvz.gui_button(  # returns: whether the button was pressed (c_bool)
-        name,  # the button name (c_char_p)
-        width,  # the button width (c_float)
-        height,  # the button height (c_float)
+        name,  # the button name (CStringBuffer)
+        width,  # the button width (float, 64-bit)
+        height,  # the button height (float, 64-bit)
     )
     ```
 
@@ -1842,7 +1842,7 @@ Add a checkbox.
 
     ``` python
     dvz.gui_checkbox(  # returns: whether the checkbox's state has changed (c_bool)
-        name,  # the button name (c_char_p)
+        name,  # the button name (CStringBuffer)
     )
     ```
 
@@ -1910,8 +1910,8 @@ Set the color of an element.
 
     ``` python
     dvz.gui_color(
-        type,  # the element type for which to change the color (c_int)
-        color,  # the color (c_ubyte_Array_4)
+        type,  # the element type for which to change the color (int, 32-bit signed)
+        color,  # the color (cvec4)
     )
     ```
 
@@ -1932,9 +1932,9 @@ Add a color picker
 
     ``` python
     dvz.gui_colorpicker(
-        name,  # the widget name (c_char_p)
-        color,  # the color (c_float_Array_3)
-        flags,  # the widget flags (c_int)
+        name,  # the widget name (CStringBuffer)
+        color,  # the color (vec3)
+        flags,  # the widget flags (int, 32-bit signed)
     )
     ```
 
@@ -1957,7 +1957,7 @@ Set the corner position of the next GUI dialog.
     ``` python
     dvz.gui_corner(
         corner,  # which corner (DvzCorner)
-        pad,  # the pad (c_float_Array_2)
+        pad,  # the pad (vec2)
     )
     ```
 
@@ -2026,8 +2026,8 @@ Set a fixed position for a GUI dialog.
 
     ``` python
     dvz.gui_fixed(
-        pos,  # the dialog position (c_float_Array_2)
-        pivot,  # the pivot (c_float_Array_2)
+        pos,  # the dialog position (vec2)
+        pivot,  # the pivot (vec2)
     )
     ```
 
@@ -2048,7 +2048,7 @@ Set the flags of the next GUI dialog.
 
     ``` python
     dvz.gui_flags(
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -2069,8 +2069,8 @@ Add an image in a GUI dialog.
     ``` python
     dvz.gui_image(
         tex,  # the texture (LP_DvzTex)
-        width,  # the image width (c_float)
-        height,  # the image height (c_float)
+        width,  # the image width (float, 64-bit)
+        height,  # the image height (float, 64-bit)
     )
     ```
 
@@ -2124,7 +2124,7 @@ Start a new tree node.
 
     ``` python
     dvz.gui_node(
-        name,  # the widget name (c_char_p)
+        name,  # the widget name (CStringBuffer)
     )
     ```
 
@@ -2160,8 +2160,8 @@ Set the position of the next GUI dialog.
 
     ``` python
     dvz.gui_pos(
-        pos,  # the dialog position (c_float_Array_2)
-        pivot,  # the pivot (c_float_Array_2)
+        pos,  # the dialog position (vec2)
+        pivot,  # the pivot (vec2)
     )
     ```
 
@@ -2214,7 +2214,7 @@ Close the current tree node.
 
     ``` python
     dvz.gui_selectable(
-        name,  # the widget name (c_char_p)
+        name,  # the widget name (CStringBuffer)
     )
     ```
 
@@ -2234,7 +2234,7 @@ Set the size of the next GUI dialog.
 
     ``` python
     dvz.gui_size(
-        size,  # the size (c_float_Array_2)
+        size,  # the size (vec2)
     )
     ```
 
@@ -2254,10 +2254,9 @@ Add a slider.
 
     ``` python
     dvz.gui_slider(  # returns: whether the value has changed (c_bool)
-        name,  # the slider name (c_char_p)
-        vmin,  # the minimum value (c_float)
-        vmax,  # the maximum value (c_float)
-        value,  # the pointer to the value (ndpointer_<f4_C_CONTIGUOUS)
+        name,  # the slider name (CStringBuffer)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
     )
     ```
 
@@ -2268,7 +2267,6 @@ Add a slider.
         char* name,  // the slider name
         float vmin,  // the minimum value
         float vmax,  // the maximum value
-        float* value,  // the pointer to the value
     );
     ```
 
@@ -2280,8 +2278,8 @@ Set the style of an element.
 
     ``` python
     dvz.gui_style(
-        type,  # the element type for which to change the style (c_int)
-        value,  # the value (c_float)
+        type,  # the element type for which to change the style (int, 32-bit signed)
+        value,  # the value (float, 64-bit)
     )
     ```
 
@@ -2302,12 +2300,12 @@ Display a table with selectable rows.
 
     ``` python
     dvz.gui_table(  # returns: whether the row selection has changed (in the selected array) (c_bool)
-        name,  # the widget name (c_char_p)
-        row_count,  # the number of rows (c_uint)
-        column_count,  # the number of columns (c_uint)
-        labels,  # all cell labels (LP_c_char_p)
+        name,  # the widget name (CStringBuffer)
+        row_count,  # the number of rows (int, 32-bit unsigned)
+        column_count,  # the number of columns (int, 32-bit unsigned)
+        labels,  # all cell labels (CStringArrayType)
         selected,  # a pointer to an array of boolean indicated which rows are selected (ndpointer_|b1_C_CONTIGUOUS)
-        flags,  # the Dear ImGui flags (c_int)
+        flags,  # the Dear ImGui flags (int, 32-bit signed)
     )
     ```
 
@@ -2332,7 +2330,7 @@ Get the position and size of the current dialog.
 
     ``` python
     dvz.gui_viewport(
-        viewport,  # the x, y, w, h values (c_float_Array_4)
+        viewport,  # the x, y, w, h values (vec4)
     )
     ```
 
@@ -2373,7 +2371,7 @@ Create an image visual.
     ``` python
     dvz.image(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -2395,7 +2393,7 @@ Allocate memory for a visual.
     ``` python
     dvz.image_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of images to allocate for this visual (c_uint)
+        item_count,  # the total number of images to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -2417,10 +2415,10 @@ Set the image anchors.
     ``` python
     dvz.image_anchor(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the relative anchors of each image, (0,0 = position pertains to top left corner) (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2445,10 +2443,10 @@ Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
     ``` python
     dvz.image_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the image colors (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2473,7 +2471,7 @@ Set the edge color.
     ``` python
     dvz.image_edge_color(
         visual,  # the visual (LP_DvzVisual)
-        color,  # the edge color (c_ubyte_Array_4)
+        color,  # the edge color (cvec4)
     )
     ```
 
@@ -2495,7 +2493,7 @@ Set the edge width.
     ``` python
     dvz.image_edge_width(
         visual,  # the visual (LP_DvzVisual)
-        width,  # the edge width (c_float)
+        width,  # the edge width (float, 64-bit)
     )
     ```
 
@@ -2517,10 +2515,10 @@ Set the image positions.
     ``` python
     dvz.image_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the top left corner (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2545,7 +2543,7 @@ Use a rounded rectangle for images, with a given radius in pixels.
     ``` python
     dvz.image_radius(
         visual,  # the visual (LP_DvzVisual)
-        radius,  # the rounded corner radius, in pixel (c_float)
+        radius,  # the rounded corner radius, in pixel (float, 64-bit)
     )
     ```
 
@@ -2567,10 +2565,10 @@ Set the image sizes.
     ``` python
     dvz.image_size(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the sizes of each image, in pixels (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2595,10 +2593,10 @@ Set the image texture coordinates.
     ``` python
     dvz.image_texcoords(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         tl_br,  # the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1) (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2623,7 +2621,7 @@ Assign a texture to an image visual.
     ``` python
     dvz.image_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
         filter,  # the texture filtering mode (DvzFilter)
         address_mode,  # the texture address mode (DvzSamplerAddressMode)
     )
@@ -2648,9 +2646,9 @@ Make a linear interpolation between two scalar value.
 
     ``` python
     dvz.interpolate(  # returns: the interpolated value (c_float)
-        p0,  # the first value (c_float)
-        p1,  # the second value (c_float)
-        t,  # the normalized value (c_float)
+        p0,  # the first value (float, 64-bit)
+        p1,  # the second value (float, 64-bit)
+        t,  # the normalized value (float, 64-bit)
     )
     ```
 
@@ -2672,9 +2670,9 @@ Make a linear interpolation between two 2D points.
 
     ``` python
     dvz.interpolate2D(  # returns: the interpolated point (c_int)
-        p0,  # the first point (c_float_Array_2)
-        p1,  # the second point (c_float_Array_2)
-        t,  # the normalized value (c_float)
+        p0,  # the first point (vec2)
+        p1,  # the second point (vec2)
+        t,  # the normalized value (float, 64-bit)
     )
     ```
 
@@ -2696,9 +2694,9 @@ Make a linear interpolation between two 3D points.
 
     ``` python
     dvz.interpolate_3D(  # returns: the interpolated point (c_int)
-        p0,  # the first point (c_float_Array_3)
-        p1,  # the second point (c_float_Array_3)
-        t,  # the normalized value (c_float)
+        p0,  # the first point (vec3)
+        p1,  # the second point (vec3)
+        t,  # the normalized value (float, 64-bit)
     )
     ```
 
@@ -2721,7 +2719,7 @@ Create a marker visual.
     ``` python
     dvz.marker(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -2743,7 +2741,7 @@ Allocate memory for a visual.
     ``` python
     dvz.marker_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -2765,10 +2763,10 @@ Set the marker angles.
     ``` python
     dvz.marker_angle(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the angles of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2815,10 +2813,10 @@ Set the marker colors.
     ``` python
     dvz.marker_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2843,7 +2841,7 @@ Set the marker edge color.
     ``` python
     dvz.marker_edge_color(
         visual,  # the visual (LP_DvzVisual)
-        color,  # the edge color (c_ubyte_Array_4)
+        color,  # the edge color (cvec4)
     )
     ```
 
@@ -2865,7 +2863,7 @@ Set the marker edge width.
     ``` python
     dvz.marker_edge_width(
         visual,  # the visual (LP_DvzVisual)
-        width,  # the edge width (c_float)
+        width,  # the edge width (float, 64-bit)
     )
     ```
 
@@ -2909,10 +2907,10 @@ Set the marker positions.
     ``` python
     dvz.marker_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2959,10 +2957,10 @@ Set the marker sizes.
     ``` python
     dvz.marker_size(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -2987,8 +2985,8 @@ Set the marker texture.
     ``` python
     dvz.marker_tex(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
-        sampler,  # the sampler ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
+        sampler,  # the sampler ID (int, 64-bit unsigned)
     )
     ```
 
@@ -3011,7 +3009,7 @@ Set the texture scale.
     ``` python
     dvz.marker_tex_scale(
         visual,  # the visual (LP_DvzVisual)
-        scale,  # the texture scale (c_float)
+        scale,  # the texture scale (float, 64-bit)
     )
     ```
 
@@ -3033,7 +3031,7 @@ Create a mesh visual.
     ``` python
     dvz.mesh(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -3055,8 +3053,8 @@ Allocate memory for a visual.
     ``` python
     dvz.mesh_alloc(
         visual,  # the visual (LP_DvzVisual)
-        vertex_count,  # the number of vertices (c_uint)
-        index_count,  # the number of indices (c_uint)
+        vertex_count,  # the number of vertices (int, 32-bit unsigned)
+        index_count,  # the number of indices (int, 32-bit unsigned)
     )
     ```
 
@@ -3079,10 +3077,10 @@ Set the mesh colors.
     ``` python
     dvz.mesh_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the vertex colors (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3107,10 +3105,10 @@ Set the contour information for polygon contours.
     ``` python
     dvz.mesh_contour(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # for vertex A, B, C, the least significant bit is 1 if the opposite edge is a (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3135,7 +3133,7 @@ Set the number of isolines
     ``` python
     dvz.mesh_density(
         visual,  # the mesh (LP_DvzVisual)
-        count,  # the number of isolines (c_uint)
+        count,  # the number of isolines (int, 32-bit unsigned)
     )
     ```
 
@@ -3157,10 +3155,10 @@ Set the mesh indices.
     ``` python
     dvz.mesh_index(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the face indices (three vertex indices per triangle) (ndpointer_<u4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3185,10 +3183,10 @@ Set the isolines values.
     ``` python
     dvz.mesh_isoline(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the scalar field for which to draw isolines (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3213,10 +3211,10 @@ Set the distance between the current vertex to the left edge at corner A, B, or 
     ``` python
     dvz.mesh_left(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the distance to the left edge adjacent to each triangle vertex (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3241,8 +3239,8 @@ Set the light color.
     ``` python
     dvz.mesh_light_color(
         visual,  # the mesh (LP_DvzVisual)
-        idx,  # the light index (0, 1, 2, or 3) (c_uint)
-        color,  # the light color (rgba, but the a component is ignored) (c_ubyte_Array_4)
+        idx,  # the light index (0, 1, 2, or 3) (int, 32-bit unsigned)
+        color,  # the light color (rgba, but the a component is ignored) (cvec4)
     )
     ```
 
@@ -3265,8 +3263,8 @@ Set the light direction.
     ``` python
     dvz.mesh_light_dir(
         visual,  # the mesh (LP_DvzVisual)
-        idx,  # the light index (0, 1, 2, or 3) (c_uint)
-        dir,  # the light direction (c_float_Array_3)
+        idx,  # the light index (0, 1, 2, or 3) (int, 32-bit unsigned)
+        dir,  # the light direction (vec3)
     )
     ```
 
@@ -3289,8 +3287,8 @@ Set the light parameters.
     ``` python
     dvz.mesh_light_params(
         visual,  # the mesh (LP_DvzVisual)
-        idx,  # the light index (0, 1, 2, or 3) (c_uint)
-        params,  # the light parameters (vec4 ambient, diffuse, specular, exponent) (c_float_Array_4)
+        idx,  # the light index (0, 1, 2, or 3) (int, 32-bit unsigned)
+        params,  # the light parameters (vec4 ambient, diffuse, specular, exponent) (vec4)
     )
     ```
 
@@ -3313,7 +3311,7 @@ Set the stroke linewidth (wireframe or isoline).
     ``` python
     dvz.mesh_linewidth(
         visual,  # the mesh (LP_DvzVisual)
-        linewidth,  # the line width (c_float)
+        linewidth,  # the line width (float, 64-bit)
     )
     ```
 
@@ -3335,10 +3333,10 @@ Set the mesh normals.
     ``` python
     dvz.mesh_normal(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the vertex normal vectors (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3363,10 +3361,10 @@ Set the mesh vertex positions.
     ``` python
     dvz.mesh_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D vertex positions (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3413,10 +3411,10 @@ Set the distance between the current vertex to the right edge at corner A, B, or
     ``` python
     dvz.mesh_right(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the distance to the right edge adjacent to each triangle vertex (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3442,7 +3440,7 @@ Create a mesh out of a shape.
     dvz.mesh_shape(  # returns: the mesh (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
         shape,  # the shape (LP_DvzShape)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -3465,7 +3463,7 @@ Set the stroke color.
     ``` python
     dvz.mesh_stroke(
         visual,  # the mesh (LP_DvzVisual)
-        stroke,  # the rgba components (c_ubyte_Array_4)
+        stroke,  # the rgba components (cvec4)
     )
     ```
 
@@ -3487,10 +3485,10 @@ Set the mesh texture coordinates.
     ``` python
     dvz.mesh_texcoords(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the vertex texture coordinates (vec4 u,v,*,alpha) (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3515,7 +3513,7 @@ Assign a 2D texture to a mesh visual.
     ``` python
     dvz.mesh_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
         filter,  # the texture filtering mode (DvzFilter)
         address_mode,  # the texture address mode (DvzSamplerAddressMode)
     )
@@ -3541,7 +3539,7 @@ Create a monoglyph visual.
     ``` python
     dvz.monoglyph(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -3563,7 +3561,7 @@ Allocate memory for a visual.
     ``` python
     dvz.monoglyph_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -3585,7 +3583,7 @@ Set the glyph anchor (relative to the glyph size).
     ``` python
     dvz.monoglyph_anchor(
         visual,  # the visual (LP_DvzVisual)
-        anchor,  # the anchor (c_float_Array_2)
+        anchor,  # the anchor (vec2)
     )
     ```
 
@@ -3607,10 +3605,10 @@ Set the glyph colors.
     ``` python
     dvz.monoglyph_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3635,7 +3633,7 @@ Set the text.
     ``` python
     dvz.monoglyph_glyph(
         visual,  # the visual (LP_DvzVisual)
-        text,  # the ASCII test (string length without the null terminal byte = number of glyphs) (c_uint)
+        text,  # the ASCII test (string length without the null terminal byte = number of glyphs) (int, 32-bit unsigned)
     )
     ```
 
@@ -3657,10 +3655,10 @@ Set the glyph offsets.
     ``` python
     dvz.monoglyph_offset(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
-        values,  # the glyph offsets (ivec2 integers: row,column) (LP_c_int_Array_2)
-        flags,  # the data update flags (c_int)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
+        values,  # the glyph offsets (ivec2 integers: row,column) (LP_ivec2)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3685,10 +3683,10 @@ Set the glyph positions.
     ``` python
     dvz.monoglyph_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -3713,7 +3711,7 @@ Set the glyph size (relative to the initial glyph size).
     ``` python
     dvz.monoglyph_size(
         visual,  # the visual (LP_DvzVisual)
-        size,  # the glyph size (c_float)
+        size,  # the glyph size (float, 64-bit)
     )
     ```
 
@@ -3735,10 +3733,10 @@ All-in-one function for multiline text.
     ``` python
     dvz.monoglyph_textarea(
         visual,  # the visual (LP_DvzVisual)
-        pos,  # the text position (c_float_Array_3)
-        color,  # the text color (c_ubyte_Array_4)
-        size,  # the glyph size (c_float)
-        text,  # the text, can contain `\n` new lines (c_char_p)
+        pos,  # the text position (vec3)
+        color,  # the text color (cvec4)
+        size,  # the glyph size (float, 64-bit)
+        text,  # the text, can contain `\n` new lines (CStringBuffer)
     )
     ```
 
@@ -3785,8 +3783,8 @@ Create a mouse move event.
     ``` python
     dvz.mouse_move(  # returns: the generated mouse event (DvzMouseEvent)
         mouse,  # the mouse (LP_DvzMouse)
-        pos,  # the cursor position, in pixels (c_float_Array_2)
-        mods,  # the keyboard modifier flags (c_int)
+        pos,  # the cursor position, in pixels (vec2)
+        mods,  # the keyboard modifier flags (int, 32-bit signed)
     )
     ```
 
@@ -3810,7 +3808,7 @@ Create a mouse press event.
     dvz.mouse_press(  # returns: the generated mouse event (DvzMouseEvent)
         mouse,  # the mouse (LP_DvzMouse)
         button,  # the mouse button (enum int) (DvzMouseButton)
-        mods,  # the keyboard modifier flags (c_int)
+        mods,  # the keyboard modifier flags (int, 32-bit signed)
     )
     ```
 
@@ -3834,7 +3832,7 @@ Create a mouse release event.
     dvz.mouse_release(  # returns: the generated mouse event (DvzMouseEvent)
         mouse,  # the mouse (LP_DvzMouse)
         button,  # the mouse button (enum int) (DvzMouseButton)
-        mods,  # the keyboard modifier flags (c_int)
+        mods,  # the keyboard modifier flags (int, 32-bit signed)
     )
     ```
 
@@ -3857,8 +3855,8 @@ Create a mouse wheel event.
     ``` python
     dvz.mouse_wheel(  # returns: the generated mouse event (DvzMouseEvent)
         mouse,  # the mouse (LP_DvzMouse)
-        button,  # the mouse wheel direction (x, y) (c_float_Array_2)
-        mods,  # the keyboard modifier flags (c_int)
+        button,  # the mouse wheel direction (x, y) (vec2)
+        mods,  # the keyboard modifier flags (int, 32-bit signed)
     )
     ```
 
@@ -3901,7 +3899,7 @@ Set the ortho flags.
     ``` python
     dvz.ortho_flags(
         ortho,  # the ortho (LP_DvzOrtho)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -3945,7 +3943,7 @@ Apply a pan value to an ortho.
     ``` python
     dvz.ortho_pan(
         ortho,  # the ortho (LP_DvzOrtho)
-        pan,  # the pan, in NDC (c_float_Array_2)
+        pan,  # the pan, in NDC (vec2)
     )
     ```
 
@@ -3967,8 +3965,8 @@ Apply a pan shift to an ortho.
     ``` python
     dvz.ortho_pan_shift(
         ortho,  # the ortho (LP_DvzOrtho)
-        shift_px,  # the shift value, in pixels (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        shift_px,  # the shift value, in pixels (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4011,8 +4009,8 @@ Inform an ortho of a panel resize.
     ``` python
     dvz.ortho_resize(
         ortho,  # the ortho (LP_DvzOrtho)
-        width,  # the panel width (c_float)
-        height,  # the panel height (c_float)
+        width,  # the panel width (float, 64-bit)
+        height,  # the panel height (float, 64-bit)
     )
     ```
 
@@ -4035,7 +4033,7 @@ Apply a zoom value to an ortho.
     ``` python
     dvz.ortho_zoom(
         ortho,  # the ortho (LP_DvzOrtho)
-        zoom,  # the zoom level (c_float)
+        zoom,  # the zoom level (float, 64-bit)
     )
     ```
 
@@ -4057,8 +4055,8 @@ Apply a zoom shift to an ortho.
     ``` python
     dvz.ortho_zoom_shift(
         ortho,  # the ortho (LP_DvzOrtho)
-        shift_px,  # the shift value, in pixels (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        shift_px,  # the shift value, in pixels (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4081,8 +4079,8 @@ Apply a wheel zoom to an ortho.
     ``` python
     dvz.ortho_zoom_wheel(
         ortho,  # the ortho (LP_DvzOrtho)
-        dir,  # the wheel direction (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        dir,  # the wheel direction (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4105,10 +4103,10 @@ Create a panel in a figure (partial or complete rectangular portion of a figure)
     ``` python
     dvz.panel(
         fig,  # the figure (LP_DvzFigure)
-        x,  # the x coordinate of the top left corner, in pixels (c_float)
-        y,  # the y coordinate of the top left corner, in pixels (c_float)
-        width,  # the panel width, in pixels (c_float)
-        height,  # the panel height, in pixels (c_float)
+        x,  # the x coordinate of the top left corner, in pixels (float, 64-bit)
+        y,  # the y coordinate of the top left corner, in pixels (float, 64-bit)
+        width,  # the panel width, in pixels (float, 64-bit)
+        height,  # the panel height, in pixels (float, 64-bit)
     )
     ```
 
@@ -4153,7 +4151,7 @@ Return the panel containing a given point.
     ``` python
     dvz.panel_at(  # returns: the panel containing the point, or NULL if there is none (LP_DvzPanel)
         figure,  # the figure (LP_DvzFigure)
-        pos,  # the position (c_float_Array_2)
+        pos,  # the position (vec2)
     )
     ```
 
@@ -4195,7 +4193,7 @@ Set a camera for a panel.
     ``` python
     dvz.panel_camera(  # returns: the camera (LP_DvzCamera)
         panel,  # the panel (LP_DvzPanel)
-        flags,  # the camera flags (c_int)
+        flags,  # the camera flags (int, 32-bit signed)
     )
     ```
 
@@ -4217,7 +4215,7 @@ Return whether a point is inside a panel.
     ``` python
     dvz.panel_contains(  # returns: true if the position lies within the panel (c_bool)
         panel,  # the panel (LP_DvzPanel)
-        pos,  # the position (c_float_Array_2)
+        pos,  # the position (vec2)
     )
     ```
 
@@ -4299,7 +4297,7 @@ Set the panel flags
     ``` python
     dvz.panel_flags(
         panel,  # the panel (LP_DvzPanel)
-        flags,  # the panel flags (c_int)
+        flags,  # the panel flags (int, 32-bit signed)
     )
     ```
 
@@ -4321,8 +4319,8 @@ Set a panel as a GUI panel.
     ``` python
     dvz.panel_gui(
         panel,  # the panel (LP_DvzPanel)
-        title,  # the GUI dialog title (c_char_p)
-        flags,  # the GUI dialog flags (unused at the moment) (c_int)
+        title,  # the GUI dialog title (CStringBuffer)
+        flags,  # the GUI dialog flags (unused at the moment) (int, 32-bit signed)
     )
     ```
 
@@ -4345,10 +4343,10 @@ Set the margins of a panel.
     ``` python
     dvz.panel_margins(
         panel,  # the panel (LP_DvzPanel)
-        top,  # the top margin, in pixels (c_float)
-        right,  # the right margin, in pixels (c_float)
-        bottom,  # the bottom margin, in pixels (c_float)
-        left,  # the left margin, in pixels (c_float)
+        top,  # the top margin, in pixels (float, 64-bit)
+        right,  # the right margin, in pixels (float, 64-bit)
+        bottom,  # the bottom margin, in pixels (float, 64-bit)
+        left,  # the left margin, in pixels (float, 64-bit)
     )
     ```
 
@@ -4395,9 +4393,9 @@ Assign the model-view-proj matrices to a panel.
     ``` python
     dvz.panel_mvpmat(
         panel,  # the panel (LP_DvzPanel)
-        model,  # the model matrix (c_float_Array_16)
-        view,  # the view matrix (c_float_Array_16)
-        proj,  # the projection matrix (c_float_Array_16)
+        model,  # the model matrix (mat4)
+        view,  # the view matrix (mat4)
+        proj,  # the projection matrix (mat4)
     )
     ```
 
@@ -4461,7 +4459,7 @@ Get or create a Reference for a panel.
     ``` python
     dvz.panel_ref(  # returns: the reference (LP_DvzRef)
         panel,  # the panel (LP_DvzPanel)
-        flags,  # the reference creation flags. (c_int)
+        flags,  # the reference creation flags. (int, 32-bit signed)
     )
     ```
 
@@ -4483,10 +4481,10 @@ Resize a panel.
     ``` python
     dvz.panel_resize(
         panel,  # the panel (LP_DvzPanel)
-        x,  # the x coordinate of the top left corner, in pixels (c_float)
-        y,  # the y coordinate of the top left corner, in pixels (c_float)
-        width,  # the panel width, in pixels (c_float)
-        height,  # the panel height, in pixels (c_float)
+        x,  # the x coordinate of the top left corner, in pixels (float, 64-bit)
+        y,  # the y coordinate of the top left corner, in pixels (float, 64-bit)
+        width,  # the panel width, in pixels (float, 64-bit)
+        height,  # the panel height, in pixels (float, 64-bit)
     )
     ```
 
@@ -4511,7 +4509,7 @@ Show or hide a panel.
     ``` python
     dvz.panel_show(
         panel,  # the panel (LP_DvzPanel)
-        is_visible,  # whether to show or hide the panel (c_bool)
+        is_visible,  # whether to show or hide the panel (bool)
     )
     ```
 
@@ -4637,7 +4635,7 @@ Set the panzoom flags.
     ``` python
     dvz.panzoom_flags(
         pz,  # the panzoom (LP_DvzPanzoom)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -4681,7 +4679,7 @@ Apply a pan value to a panzoom.
     ``` python
     dvz.panzoom_pan(
         pz,  # the panzoom (LP_DvzPanzoom)
-        pan,  # the pan, in NDC (c_float_Array_2)
+        pan,  # the pan, in NDC (vec2)
     )
     ```
 
@@ -4703,8 +4701,8 @@ Apply a pan shift to a panzoom.
     ``` python
     dvz.panzoom_pan_shift(
         pz,  # the panzoom (LP_DvzPanzoom)
-        shift_px,  # the shift value, in pixels (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        shift_px,  # the shift value, in pixels (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4747,8 +4745,8 @@ Inform a panzoom of a panel resize.
     ``` python
     dvz.panzoom_resize(
         pz,  # the panzoom (LP_DvzPanzoom)
-        width,  # the panel width (c_float)
-        height,  # the panel height (c_float)
+        width,  # the panel width (float, 64-bit)
+        height,  # the panel height (float, 64-bit)
     )
     ```
 
@@ -4793,7 +4791,7 @@ Set a panzoom x limits.
     ``` python
     dvz.panzoom_xlim(
         pz,  # the panzoom (LP_DvzPanzoom)
-        xlim,  # the xlim (FLOAT_MIN/MAX=no lim) (c_float_Array_2)
+        xlim,  # the xlim (FLOAT_MIN/MAX=no lim) (vec2)
     )
     ```
 
@@ -4815,7 +4813,7 @@ Set a panzoom y limits.
     ``` python
     dvz.panzoom_ylim(
         pz,  # the panzoom (LP_DvzPanzoom)
-        ylim,  # the ylim (FLOAT_MIN/MAX=no lim) (c_float_Array_2)
+        ylim,  # the ylim (FLOAT_MIN/MAX=no lim) (vec2)
     )
     ```
 
@@ -4837,7 +4835,7 @@ Set a panzoom z limits.
     ``` python
     dvz.panzoom_zlim(
         pz,  # the panzoom (LP_DvzPanzoom)
-        zlim,  # the zlim (FLOAT_MIN/MAX=no lim) (c_float_Array_2)
+        zlim,  # the zlim (FLOAT_MIN/MAX=no lim) (vec2)
     )
     ```
 
@@ -4859,7 +4857,7 @@ Apply a zoom value to a panzoom.
     ``` python
     dvz.panzoom_zoom(
         pz,  # the panzoom (LP_DvzPanzoom)
-        zoom,  # the zoom, in NDC (c_float_Array_2)
+        zoom,  # the zoom, in NDC (vec2)
     )
     ```
 
@@ -4881,8 +4879,8 @@ Apply a zoom shift to a panzoom.
     ``` python
     dvz.panzoom_zoom_shift(
         pz,  # the panzoom (LP_DvzPanzoom)
-        shift_px,  # the shift value, in pixels (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        shift_px,  # the shift value, in pixels (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4905,8 +4903,8 @@ Apply a wheel zoom to a panzoom.
     ``` python
     dvz.panzoom_zoom_wheel(
         pz,  # the panzoom (LP_DvzPanzoom)
-        dir,  # the wheel direction (c_float_Array_2)
-        center_px,  # the center position, in pixels (c_float_Array_2)
+        dir,  # the wheel direction (vec2)
+        center_px,  # the center position, in pixels (vec2)
     )
     ```
 
@@ -4929,7 +4927,7 @@ Create a path visual.
     ``` python
     dvz.path(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -4951,7 +4949,7 @@ Allocate memory for a visual.
     ``` python
     dvz.path_alloc(
         visual,  # the visual (LP_DvzVisual)
-        total_point_count,  # the total number of points to allocate for this visual (c_uint)
+        total_point_count,  # the total number of points to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -4995,10 +4993,10 @@ Set the path colors.
     ``` python
     dvz.path_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5045,10 +5043,10 @@ Set the path line width (may be variable along a path).
     ``` python
     dvz.path_linewidth(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the line width of the vertex, in pixels (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5073,11 +5071,11 @@ Set the path positions. Note: all path point positions must be updated at once f
     ``` python
     dvz.path_position(
         visual,  # the visual (LP_DvzVisual)
-        vertex_count,  # the total number of points across all paths (c_uint)
+        vertex_count,  # the total number of points across all paths (int, 32-bit unsigned)
         positions,  # the path point positions (ndpointer_<f4_C_CONTIGUOUS)
-        path_count,  # the number of different paths (c_uint)
+        path_count,  # the number of different paths (int, 32-bit unsigned)
         path_lengths,  # the number of points in each path (ndpointer_<u4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5103,7 +5101,7 @@ Create a pixel visual.
     ``` python
     dvz.pixel(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -5125,7 +5123,7 @@ Allocate memory for a visual.
     ``` python
     dvz.pixel_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -5147,10 +5145,10 @@ Set the pixel colors.
     ``` python
     dvz.pixel_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5175,10 +5173,10 @@ Set the pixel positions.
     ``` python
     dvz.pixel_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5203,7 +5201,7 @@ Create a point visual.
     ``` python
     dvz.point(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -5225,7 +5223,7 @@ Allocate memory for a visual.
     ``` python
     dvz.point_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -5247,10 +5245,10 @@ Set the point colors.
     ``` python
     dvz.point_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5275,10 +5273,10 @@ Set the point positions.
     ``` python
     dvz.point_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the 3D positions of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5303,10 +5301,10 @@ Set the point sizes.
     ``` python
     dvz.point_size(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the sizes of the items to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5430,7 +5428,7 @@ Create a reference frame (wrapping a 3D box representing the data in its origina
 
     ``` python
     dvz.ref(  # returns: the reference frame (LP_DvzRef)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -5472,8 +5470,8 @@ Expand the reference by ensuring it contains the specified range.
     dvz.ref_expand(
         ref,  # the reference frame (LP_DvzRef)
         dim,  # the dimension axis (DvzDim)
-        vmin,  # the minimum value (c_double)
-        vmax,  # the maximum value (c_double)
+        vmin,  # the minimum value (float, 32-bit)
+        vmax,  # the maximum value (float, 32-bit)
     )
     ```
 
@@ -5497,7 +5495,7 @@ Expand the reference by ensuring it contains the specified 2D data.
     ``` python
     dvz.ref_expand2D(
         ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5521,7 +5519,7 @@ Expand the reference by ensuring it contains the specified 3D data.
     ``` python
     dvz.ref_expand3D(
         ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5567,7 +5565,7 @@ Inverse transform from normalized device coordinates [-1..+1] to the reference f
     ``` python
     dvz.ref_inverse(
         ref,  # the reference frame (LP_DvzRef)
-        pos_tr,  # the 3D position in normalized device coordinates (c_float_Array_3)
+        pos_tr,  # the 3D position in normalized device coordinates (vec3)
     )
     ```
 
@@ -5590,8 +5588,8 @@ Set the range on a given axis.
     dvz.ref_set(
         ref,  # the reference frame (LP_DvzRef)
         dim,  # the dimension axis (DvzDim)
-        vmin,  # the minimum value (c_double)
-        vmax,  # the maximum value (c_double)
+        vmin,  # the minimum value (float, 32-bit)
+        vmax,  # the maximum value (float, 32-bit)
     )
     ```
 
@@ -5616,7 +5614,7 @@ Transform 1D data from the reference frame to normalized device coordinates [-1.
     dvz.ref_transform1D(
         ref,  # the reference frame (LP_DvzRef)
         dim,  # which dimension (DvzDim)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 1D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5641,7 +5639,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
     ``` python
     dvz.ref_transform2D(
         ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5665,7 +5663,7 @@ Transform 3D data from the reference frame to normalized device coordinates [-1.
     ``` python
     dvz.ref_transform3D(
         ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5689,7 +5687,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
     ``` python
     dvz.ref_transform_polygon(
         ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (c_uint)
+        count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -5712,9 +5710,9 @@ Normalize a value in an interval.
 
     ``` python
     dvz.resample(  # returns: the normalized value between 0 and 1 (c_double)
-        t0,  # the interval start (c_double)
-        t1,  # the interval end (c_double)
-        t,  # the value within the interval (c_double)
+        t0,  # the interval start (float, 32-bit)
+        t1,  # the interval end (float, 32-bit)
+        t,  # the value within the interval (float, 32-bit)
     )
     ```
 
@@ -5797,7 +5795,7 @@ Get a figure from its id.
     ``` python
     dvz.scene_figure(  # returns: the figure (LP_DvzFigure)
         scene,  # the scene (LP_DvzScene)
-        id,  # the figure id (c_ulong)
+        id,  # the figure id (int, 64-bit unsigned)
     )
     ```
 
@@ -5864,7 +5862,7 @@ Start the event loop and render the scene in a window.
     dvz.scene_run(
         scene,  # the scene (LP_DvzScene)
         app,  # the app (LP_DvzApp)
-        n_frames,  # the maximum number of frames, 0 for infinite loop (c_ulong)
+        n_frames,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
     )
     ```
 
@@ -5887,7 +5885,7 @@ Create a segment visual.
     ``` python
     dvz.segment(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -5909,7 +5907,7 @@ Allocate memory for a visual.
     ``` python
     dvz.segment_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of items to allocate for this visual (c_uint)
+        item_count,  # the total number of items to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -5931,11 +5929,11 @@ Set the segment cap types.
     ``` python
     dvz.segment_cap(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         initial,  # the initial segment cap types (LP_c_int)
         terminal,  # the terminal segment cap types (LP_c_int)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5961,10 +5959,10 @@ Set the segment colors.
     ``` python
     dvz.segment_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the colors of the items to update (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -5989,10 +5987,10 @@ Set the segment line widths.
     ``` python
     dvz.segment_linewidth(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the segment line widths (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6017,11 +6015,11 @@ Set the segment positions.
     ``` python
     dvz.segment_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         initial,  # the initial 3D positions of the segments (ndpointer_<f4_C_CONTIGUOUS)
         terminal,  # the terminal 3D positions of the segments (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6047,10 +6045,10 @@ Set the segment shift.
     ``` python
     dvz.segment_shift(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         values,  # the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6074,7 +6072,7 @@ Placeholder.
 
     ``` python
     dvz.server(
-        placeholder,  # placeholder (c_int)
+        placeholder,  # placeholder (int, 32-bit signed)
     )
     ```
 
@@ -6215,8 +6213,8 @@ Start a transformation sequence.
     ``` python
     dvz.shape_begin(
         shape,  # the shape (LP_DvzShape)
-        first,  # the first vertex to modify (c_uint)
-        count,  # the number of vertices to modify (c_uint)
+        first,  # the first vertex to modify (int, 32-bit unsigned)
+        count,  # the number of vertices to modify (int, 32-bit unsigned)
     )
     ```
 
@@ -6238,8 +6236,8 @@ Create a cone shape.
 
     ``` python
     dvz.shape_cone(  # returns: the shape (DvzShape)
-        count,  # the number of points along the disc border (c_uint)
-        color,  # the cone color (c_ubyte_Array_4)
+        count,  # the number of points along the disc border (int, 32-bit unsigned)
+        color,  # the cone color (cvec4)
     )
     ```
 
@@ -6280,8 +6278,8 @@ Create a cylinder shape.
 
     ``` python
     dvz.shape_cylinder(  # returns: the shape (DvzShape)
-        count,  # the number of points along the cylinder border (c_uint)
-        color,  # the cylinder color (c_ubyte_Array_4)
+        count,  # the number of points along the cylinder border (int, 32-bit unsigned)
+        color,  # the cylinder color (cvec4)
     )
     ```
 
@@ -6322,8 +6320,8 @@ Create a disc shape.
 
     ``` python
     dvz.shape_disc(  # returns: the shape (DvzShape)
-        count,  # the number of points along the disc border (c_uint)
-        color,  # the disc color (c_ubyte_Array_4)
+        count,  # the number of points along the disc border (int, 32-bit unsigned)
+        color,  # the disc color (cvec4)
     )
     ```
 
@@ -6364,7 +6362,7 @@ Merge several shapes.
 
     ``` python
     dvz.shape_merge(  # returns: the merged shape (DvzShape)
-        count,  # the number of shapes to merge (c_uint)
+        count,  # the number of shapes to merge (int, 32-bit unsigned)
         shapes,  # the shapes to merge (LP_DvzShape)
     )
     ```
@@ -6426,7 +6424,7 @@ Load a .obj shape.
 
     ``` python
     dvz.shape_obj(  # returns: the shape (DvzShape)
-        file_path,  # the path to the .obj file (c_char_p)
+        file_path,  # the path to the .obj file (CStringBuffer)
     )
     ```
 
@@ -6446,9 +6444,9 @@ Create a polygon shape using the simple earcut polygon triangulation algorithm.
 
     ``` python
     dvz.shape_polygon(  # returns: the shape (DvzShape)
-        count,  # the number of points along the polygon border (c_uint)
+        count,  # the number of points along the polygon border (int, 32-bit unsigned)
         points,  # the points 2D coordinates (ndpointer_<f8_C_CONTIGUOUS)
-        color,  # the polygon color (c_ubyte_Array_4)
+        color,  # the polygon color (cvec4)
     )
     ```
 
@@ -6491,7 +6489,7 @@ Compute the rescaling factor to renormalize a shape.
     ``` python
     dvz.shape_rescaling(
         shape,  # the shape (LP_DvzShape)
-        flags,  # the rescaling flags (c_int)
+        flags,  # the rescaling flags (int, 32-bit signed)
     )
     ```
 
@@ -6513,8 +6511,8 @@ Append a rotation to a shape.
     ``` python
     dvz.shape_rotate(
         shape,  # the shape (LP_DvzShape)
-        angle,  # the rotation angle (c_float)
-        axis,  # the rotation axis (c_float_Array_3)
+        angle,  # the rotation angle (float, 64-bit)
+        axis,  # the rotation axis (vec3)
     )
     ```
 
@@ -6537,7 +6535,7 @@ Append a scaling transform to a shape.
     ``` python
     dvz.shape_scale(
         shape,  # the shape (LP_DvzShape)
-        scale,  # the scaling factors (c_float_Array_3)
+        scale,  # the scaling factors (vec3)
     )
     ```
 
@@ -6558,9 +6556,9 @@ Create a sphere shape.
 
     ``` python
     dvz.shape_sphere(  # returns: the shape (DvzShape)
-        rows,  # the number of rows (c_uint)
-        cols,  # the number of columns (c_uint)
-        color,  # the sphere color (c_ubyte_Array_4)
+        rows,  # the number of rows (int, 32-bit unsigned)
+        cols,  # the number of columns (int, 32-bit unsigned)
+        color,  # the sphere color (cvec4)
     )
     ```
 
@@ -6582,7 +6580,7 @@ Create a square shape.
 
     ``` python
     dvz.shape_square(  # returns: the shape (DvzShape)
-        color,  # the square color (c_ubyte_Array_4)
+        color,  # the square color (cvec4)
     )
     ```
 
@@ -6602,14 +6600,14 @@ Create a grid shape.
 
     ``` python
     dvz.shape_surface(  # returns: the shape (DvzShape)
-        row_count,  # number of rows (c_uint)
-        col_count,  # number of cols (c_uint)
+        row_count,  # number of rows (int, 32-bit unsigned)
+        col_count,  # number of cols (int, 32-bit unsigned)
         heights,  # a pointer to row_count*col_count height values (floats) (ndpointer_<f4_C_CONTIGUOUS)
         colors,  # a pointer to row_count*col_count color values (cvec4 or vec4) (ndpointer_|u1_C_CONTIGUOUS)
-        o,  # the origin (c_float_Array_3)
-        u,  # the unit vector parallel to each column (c_float_Array_3)
-        v,  # the unit vector parallel to each row (c_float_Array_3)
-        flags,  # the grid creation flags (c_int)
+        o,  # the origin (vec3)
+        u,  # the unit vector parallel to each column (vec3)
+        v,  # the unit vector parallel to each row (vec3)
+        flags,  # the grid creation flags (int, 32-bit signed)
     )
     ```
 
@@ -6637,7 +6635,7 @@ Append an arbitrary transformation.
     ``` python
     dvz.shape_transform(
         shape,  # the shape (LP_DvzShape)
-        transform,  # the transform mat4 matrix (c_float_Array_16)
+        transform,  # the transform mat4 matrix (mat4)
     )
     ```
 
@@ -6659,7 +6657,7 @@ Append a translation to a shape.
     ``` python
     dvz.shape_translate(
         shape,  # the shape (LP_DvzShape)
-        translate,  # the translation vector (c_float_Array_3)
+        translate,  # the translation vector (vec3)
     )
     ```
 
@@ -6681,7 +6679,7 @@ Convert an indexed shape to a non-indexed one by duplicating the vertex values a
     ``` python
     dvz.shape_unindex(
         shape,  # the shape (LP_DvzShape)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -6703,7 +6701,7 @@ Create a slice visual (multiple 2D images with slices of a 3D texture).
     ``` python
     dvz.slice(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -6725,7 +6723,7 @@ Allocate memory for a visual.
     ``` python
     dvz.slice_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of slices to allocate for this visual (c_uint)
+        item_count,  # the total number of slices to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -6747,7 +6745,7 @@ Set the slice transparency alpha value.
     ``` python
     dvz.slice_alpha(
         visual,  # the visual (LP_DvzVisual)
-        alpha,  # the alpha value (c_float)
+        alpha,  # the alpha value (float, 64-bit)
     )
     ```
 
@@ -6769,13 +6767,13 @@ Set the slice positions.
     ``` python
     dvz.slice_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         p0,  # the 3D positions of the top left corner (ndpointer_<f4_C_CONTIGUOUS)
         p1,  # the 3D positions of the top right corner (ndpointer_<f4_C_CONTIGUOUS)
         p2,  # the 3D positions of the bottom left corner (ndpointer_<f4_C_CONTIGUOUS)
         p3,  # the 3D positions of the bottom right corner (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6803,13 +6801,13 @@ Set the slice texture coordinates.
     ``` python
     dvz.slice_texcoords(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         uvw0,  # the 3D texture coordinates of the top left corner (ndpointer_<f4_C_CONTIGUOUS)
         uvw1,  # the 3D texture coordinates of the top right corner (ndpointer_<f4_C_CONTIGUOUS)
         uvw2,  # the 3D texture coordinates of the bottom left corner (ndpointer_<f4_C_CONTIGUOUS)
         uvw3,  # the 3D texture coordinates of the bottom right corner (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6837,7 +6835,7 @@ Assign a texture to a slice visual.
     ``` python
     dvz.slice_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
         filter,  # the texture filtering mode (DvzFilter)
         address_mode,  # the texture address mode (DvzSamplerAddressMode)
     )
@@ -6863,7 +6861,7 @@ Create a sphere visual.
     ``` python
     dvz.sphere(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -6885,7 +6883,7 @@ Allocate memory for a visual.
     ``` python
     dvz.sphere_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the total number of spheres to allocate for this visual (c_uint)
+        item_count,  # the total number of spheres to allocate for this visual (int, 32-bit unsigned)
     )
     ```
 
@@ -6907,10 +6905,10 @@ Set the sphere colors.
     ``` python
     dvz.sphere_color(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         color,  # the sphere colors (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -6935,7 +6933,7 @@ Set the sphere light parameters.
     ``` python
     dvz.sphere_light_params(
         visual,  # the visual (LP_DvzVisual)
-        params,  # the light parameters (vec4 ambient, diffuse, specular, exponent) (c_float_Array_4)
+        params,  # the light parameters (vec4 ambient, diffuse, specular, exponent) (vec4)
     )
     ```
 
@@ -6957,7 +6955,7 @@ Set the sphere light position.
     ``` python
     dvz.sphere_light_pos(
         visual,  # the visual (LP_DvzVisual)
-        pos,  # the light position (c_float_Array_3)
+        pos,  # the light position (vec3)
     )
     ```
 
@@ -6979,10 +6977,10 @@ Set the sphere positions.
     ``` python
     dvz.sphere_position(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         pos,  # the 3D positions of the sphere centers (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -7007,10 +7005,10 @@ Set the sphere sizes.
     ``` python
     dvz.sphere_size(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (c_uint)
-        count,  # the number of items to update (c_uint)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
         size,  # the radius of the spheres (ndpointer_<f4_C_CONTIGUOUS)
-        flags,  # the data update flags (c_int)
+        flags,  # the data update flags (int, 32-bit signed)
     )
     ```
 
@@ -7036,10 +7034,10 @@ Create a 2D texture to be used in an image visual.
     dvz.tex_image(  # returns: the texture ID (c_ulong)
         batch,  # the batch (LP_DvzBatch)
         format,  # the texture format (DvzFormat)
-        width,  # the texture width (c_uint)
-        height,  # the texture height (c_uint)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
         data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
-        flags,  # the texture creation flags (c_int)
+        flags,  # the texture creation flags (int, 32-bit signed)
     )
     ```
 
@@ -7066,9 +7064,9 @@ Create a 3D texture to be used in a slice visual.
     dvz.tex_slice(  # returns: the texture ID (c_ulong)
         batch,  # the batch (LP_DvzBatch)
         format,  # the texture format (DvzFormat)
-        width,  # the texture width (c_uint)
-        height,  # the texture height (c_uint)
-        depth,  # the texture depth (c_uint)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        depth,  # the texture depth (int, 32-bit unsigned)
         data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -7096,9 +7094,9 @@ Create a 3D texture to be used in a volume visual.
     dvz.tex_volume(  # returns: the texture ID (c_ulong)
         batch,  # the batch (LP_DvzBatch)
         format,  # the texture format (DvzFormat)
-        width,  # the texture width (c_uint)
-        height,  # the texture height (c_uint)
-        depth,  # the texture depth (c_uint)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        depth,  # the texture depth (int, 32-bit unsigned)
         data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -7141,9 +7139,9 @@ Allocate a visual.
     ``` python
     dvz.visual_alloc(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the number of items (c_uint)
-        vertex_count,  # the number of vertices (c_uint)
-        index_count,  # the number of indices (c_uint)
+        item_count,  # the number of items (int, 32-bit unsigned)
+        vertex_count,  # the number of vertices (int, 32-bit unsigned)
+        index_count,  # the number of indices (int, 32-bit unsigned)
     )
     ```
 
@@ -7167,11 +7165,11 @@ Declare a visual attribute.
     ``` python
     dvz.visual_attr(
         visual,  # the visual (LP_DvzVisual)
-        attr_idx,  # the attribute index (c_uint)
-        offset,  # the attribute offset within the vertex buffer, in bytes (c_ulong)
-        item_size,  # the attribute size, in bytes (c_ulong)
+        attr_idx,  # the attribute index (int, 32-bit unsigned)
+        offset,  # the attribute offset within the vertex buffer, in bytes (int, 64-bit unsigned)
+        item_size,  # the attribute size, in bytes (int, 64-bit unsigned)
         format,  # the attribute data format (DvzFormat)
-        flags,  # the attribute flags (c_int)
+        flags,  # the attribute flags (int, 32-bit signed)
     )
     ```
 
@@ -7263,8 +7261,8 @@ Bind a dat to a visual slot.
     ``` python
     dvz.visual_dat(
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index (c_uint)
-        dat,  # the dat ID (c_ulong)
+        slot_idx,  # the slot index (int, 32-bit unsigned)
+        dat,  # the dat ID (int, 64-bit unsigned)
     )
     ```
 
@@ -7287,9 +7285,9 @@ Set visual data.
     ``` python
     dvz.visual_data(
         visual,  # the visual (LP_DvzVisual)
-        attr_idx,  # the attribute index (c_uint)
-        first,  # the index of the first item to set (c_uint)
-        count,  # the number of items to set (c_uint)
+        attr_idx,  # the attribute index (int, 32-bit unsigned)
+        first,  # the index of the first item to set (int, 32-bit unsigned)
+        count,  # the number of items to set (int, 32-bit unsigned)
         data,  # a pointer to the data buffer (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -7337,8 +7335,8 @@ Declare a dynamic attribute, meaning that it is stored in a separate dat rather 
     ``` python
     dvz.visual_dynamic(
         visual,  # the visual (LP_DvzVisual)
-        attr_idx,  # the attribute index (c_uint)
-        binding_idx,  # the binding index (0 = common vertex buffer, use 1 or 2, 3... for each (c_uint)
+        attr_idx,  # the attribute index (int, 32-bit unsigned)
+        binding_idx,  # the binding index (0 = common vertex buffer, use 1 or 2, 3... for each (int, 32-bit unsigned)
     )
     ```
 
@@ -7361,9 +7359,9 @@ Fix some axes in a visual.
     ``` python
     dvz.visual_fixed(
         visual,  # the visual (LP_DvzVisual)
-        fixed_x,  # whether the x axis should be fixed (c_bool)
-        fixed_y,  # whether the y axis should be fixed (c_bool)
-        fixed_z,  # whether the z axis should be fixed (c_bool)
+        fixed_x,  # whether the x axis should be fixed (bool)
+        fixed_y,  # whether the y axis should be fixed (bool)
+        fixed_z,  # whether the z axis should be fixed (bool)
     )
     ```
 
@@ -7409,7 +7407,7 @@ Set groups in a visual.
     ``` python
     dvz.visual_groups(
         visual,  # the visual (LP_DvzVisual)
-        group_count,  # the number of groups (c_uint)
+        group_count,  # the number of groups (int, 32-bit unsigned)
         group_sizes,  # the size of each group (ndpointer_<u4_C_CONTIGUOUS)
     )
     ```
@@ -7433,8 +7431,8 @@ Set the visual index data.
     ``` python
     dvz.visual_index(
         visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first index to set (c_uint)
-        count,  # the number of indices (c_uint)
+        first,  # the index of the first index to set (int, 32-bit unsigned)
+        count,  # the number of indices (int, 32-bit unsigned)
         data,  # a pointer to a buffer of DvzIndex (uint32_t) values with the indices (ndpointer_<u4_C_CONTIGUOUS)
     )
     ```
@@ -7459,9 +7457,9 @@ Set a visual parameter value.
     ``` python
     dvz.visual_param(
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index (c_uint)
-        attr_idx,  # the index of the parameter attribute within the params structure (c_uint)
-        item,  # a pointer to the value to use for that parameter (c_void_p)
+        slot_idx,  # the slot index (int, 32-bit unsigned)
+        attr_idx,  # the index of the parameter attribute within the params structure (int, 32-bit unsigned)
+        item,  # a pointer to the value to use for that parameter (array)
     )
     ```
 
@@ -7485,8 +7483,8 @@ Declare a set of visual parameters.
     ``` python
     dvz.visual_params(
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index of the uniform buffer storing the parameter values (c_uint)
-        size,  # the size, in bytes, of that uniform buffer (c_ulong)
+        slot_idx,  # the slot index of the uniform buffer storing the parameter values (int, 32-bit unsigned)
+        size,  # the size, in bytes, of that uniform buffer (int, 64-bit unsigned)
     )
     ```
 
@@ -7553,9 +7551,9 @@ Set a push constant of a visual.
     ``` python
     dvz.visual_push(
         visual,  # the visual (LP_DvzVisual)
-        shader_stages,  # the shader stage flags (c_int)
-        offset,  # the offset, in bytes (c_ulong)
-        size,  # the size, in bytes (c_ulong)
+        shader_stages,  # the shader stage flags (int, 32-bit signed)
+        offset,  # the offset, in bytes (int, 64-bit unsigned)
+        size,  # the size, in bytes (int, 64-bit unsigned)
     )
     ```
 
@@ -7579,9 +7577,9 @@ Set visual data as quads.
     ``` python
     dvz.visual_quads(
         visual,  # the visual (LP_DvzVisual)
-        attr_idx,  # the attribute index (c_uint)
-        first,  # the index of the first item to set (c_uint)
-        count,  # the number of items to set (c_uint)
+        attr_idx,  # the attribute index (int, 32-bit unsigned)
+        first,  # the index of the first item to set (int, 32-bit unsigned)
+        count,  # the number of items to set (int, 32-bit unsigned)
         tl_br,  # a pointer to a buffer of vec4 with the 2D coordinates of the top-left and (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
@@ -7607,9 +7605,9 @@ Resize a visual allocation.
     ``` python
     dvz.visual_resize(
         visual,  # the visual (LP_DvzVisual)
-        item_count,  # the number of items (c_uint)
-        vertex_count,  # the number of vertices (c_uint)
-        index_count,  # the number of indices (0 if there is no index buffer) (c_uint)
+        item_count,  # the number of items (int, 32-bit unsigned)
+        vertex_count,  # the number of vertices (int, 32-bit unsigned)
+        index_count,  # the number of indices (0 if there is no index buffer) (int, 32-bit unsigned)
     )
     ```
 
@@ -7633,7 +7631,7 @@ Set the shader SPIR-V name of a visual.
     ``` python
     dvz.visual_shader(
         visual,  # the visual (LP_DvzVisual)
-        name,  # the built-in resource name of the shader (_vert and _frag are appended) (c_char_p)
+        name,  # the built-in resource name of the shader (_vert and _frag are appended) (CStringBuffer)
     )
     ```
 
@@ -7655,7 +7653,7 @@ Set the visibility of a visual.
     ``` python
     dvz.visual_show(
         visual,  # the visual (LP_DvzVisual)
-        is_visible,  # the visual visibility (c_bool)
+        is_visible,  # the visual visibility (bool)
     )
     ```
 
@@ -7677,7 +7675,7 @@ Declare a visual slot.
     ``` python
     dvz.visual_slot(
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index (c_uint)
+        slot_idx,  # the slot index (int, 32-bit unsigned)
         type,  # the slot type (DvzSlotType)
     )
     ```
@@ -7702,9 +7700,9 @@ Set a specialization constant of a visual.
     dvz.visual_specialization(
         visual,  # the visual (LP_DvzVisual)
         shader,  # the shader type (DvzShaderType)
-        idx,  # the specialization constant index (c_uint)
-        size,  # the size, in bytes, of the value passed to this function (c_ulong)
-        value,  # a pointer to the value to use for that specialization constant (c_void_p)
+        idx,  # the specialization constant index (int, 32-bit unsigned)
+        size,  # the size, in bytes, of the value passed to this function (int, 64-bit unsigned)
+        value,  # a pointer to the value to use for that specialization constant (array)
     )
     ```
 
@@ -7730,8 +7728,8 @@ Set the shader SPIR-V code of a visual.
     dvz.visual_spirv(
         visual,  # the visual (LP_DvzVisual)
         type,  # the shader type (DvzShaderType)
-        size,  # the size, in bytes, of the SPIR-V buffer (c_ulong)
-        buffer,  # a pointer to the SPIR-V buffer (c_char_p)
+        size,  # the size, in bytes, of the SPIR-V buffer (int, 64-bit unsigned)
+        buffer,  # a pointer to the SPIR-V buffer (CStringBuffer)
     )
     ```
 
@@ -7755,8 +7753,8 @@ Declare a visual binding.
     ``` python
     dvz.visual_stride(
         visual,  # the visual (LP_DvzVisual)
-        binding_idx,  # the binding index (c_uint)
-        stride,  # the binding stride, in bytes (c_ulong)
+        binding_idx,  # the binding index (int, 32-bit unsigned)
+        stride,  # the binding stride, in bytes (int, 64-bit unsigned)
     )
     ```
 
@@ -7779,10 +7777,10 @@ Bind a tex to a visual slot.
     ``` python
     dvz.visual_tex(
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index (c_uint)
-        tex,  # the tex ID (c_ulong)
-        sampler,  # the sampler ID (c_ulong)
-        offset,  # the texture offset (c_uint_Array_3)
+        slot_idx,  # the slot index (int, 32-bit unsigned)
+        tex,  # the tex ID (int, 64-bit unsigned)
+        sampler,  # the sampler ID (int, 64-bit unsigned)
+        offset,  # the texture offset (uvec3)
     )
     ```
 
@@ -7808,7 +7806,7 @@ Set a visual transform.
     dvz.visual_transform(
         visual,  # the visual (LP_DvzVisual)
         tr,  # the transform (LP_DvzTransform)
-        vertex_attr,  # the vertex attribute on which the transform applies to (c_uint)
+        vertex_attr,  # the vertex attribute on which the transform applies to (int, 32-bit unsigned)
     )
     ```
 
@@ -7851,7 +7849,7 @@ Create a volume visual.
     ``` python
     dvz.volume(  # returns: the visual (LP_DvzVisual)
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the visual creation flags (c_int)
+        flags,  # the visual creation flags (int, 32-bit signed)
     )
     ```
 
@@ -7873,9 +7871,9 @@ Set the volume bounds.
     ``` python
     dvz.volume_bounds(
         visual,  # the visual (LP_DvzVisual)
-        xlim,  # xmin and xmax (c_float_Array_2)
-        ylim,  # ymin and ymax (c_float_Array_2)
-        zlim,  # zmin and zmax (c_float_Array_2)
+        xlim,  # xmin and xmax (vec2)
+        ylim,  # ymin and ymax (vec2)
+        zlim,  # zmin and zmax (vec2)
     )
     ```
 
@@ -7899,7 +7897,7 @@ Set the texture coordinates index permutation.
     ``` python
     dvz.volume_permutation(
         visual,  # the visual (LP_DvzVisual)
-        ijk,  # index permutation (c_int_Array_3)
+        ijk,  # index permutation (ivec3)
     )
     ```
 
@@ -7921,7 +7919,7 @@ Set the bounding box face index on which to slice (showing the texture itself).
     ``` python
     dvz.volume_slice(
         visual,  # the visual (LP_DvzVisual)
-        face_index,  # -1 to disable, or the face index between 0 and 5 included (c_int)
+        face_index,  # -1 to disable, or the face index between 0 and 5 included (int, 32-bit signed)
     )
     ```
 
@@ -7943,8 +7941,8 @@ Set the texture coordinates of two corner points.
     ``` python
     dvz.volume_texcoords(
         visual,  # the visual (LP_DvzVisual)
-        uvw0,  # coordinates of one of the corner points (c_float_Array_3)
-        uvw1,  # coordinates of one of the corner points (c_float_Array_3)
+        uvw0,  # coordinates of one of the corner points (vec3)
+        uvw1,  # coordinates of one of the corner points (vec3)
     )
     ```
 
@@ -7967,7 +7965,7 @@ Assign a 3D texture to a volume visual.
     ``` python
     dvz.volume_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (c_ulong)
+        tex,  # the texture ID (int, 64-bit unsigned)
         filter,  # the texture filtering mode (DvzFilter)
         address_mode,  # the texture address mode (DvzSamplerAddressMode)
     )
@@ -7993,7 +7991,7 @@ Set the volume size.
     ``` python
     dvz.volume_transfer(
         visual,  # the visual (LP_DvzVisual)
-        transfer,  # transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor (c_float_Array_4)
+        transfer,  # transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor (vec4)
     )
     ```
 
@@ -8014,7 +8012,7 @@ Create an app.
 
     ``` python
     dvz.app(  # returns: the app (LP_DvzApp)
-        flags,  # the app creation flags (c_int)
+        flags,  # the app creation flags (int, 32-bit signed)
     )
     ```
 
@@ -8095,9 +8093,9 @@ Register a GUI callback.
     ``` python
     dvz.app_gui(
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the canvas ID (c_ulong)
+        canvas_id,  # the canvas ID (int, 64-bit unsigned)
         callback,  # the GUI callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8121,7 +8119,7 @@ Return the last keyboard key pressed.
     ``` python
     dvz.app_keyboard(
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the canvas id (c_ulong)
+        canvas_id,  # the canvas id (int, 64-bit unsigned)
     )
     ```
 
@@ -8143,7 +8141,7 @@ Return the last mouse position and pressed button.
     ``` python
     dvz.app_mouse(
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the canvas id (c_ulong)
+        canvas_id,  # the canvas id (int, 64-bit unsigned)
     )
     ```
 
@@ -8166,7 +8164,7 @@ Register a frame callback.
     dvz.app_onframe(
         app,  # the app (LP_DvzApp)
         callback,  # the callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8190,7 +8188,7 @@ Register a keyboard callback.
     dvz.app_onkeyboard(
         app,  # the app (LP_DvzApp)
         callback,  # the callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8214,7 +8212,7 @@ Register a mouse callback.
     dvz.app_onmouse(
         app,  # the app (LP_DvzApp)
         callback,  # the callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8238,7 +8236,7 @@ Register a resize callback.
     dvz.app_onresize(
         app,  # the app (LP_DvzApp)
         callback,  # the callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8262,7 +8260,7 @@ Register a timer callback.
     dvz.app_ontimer(
         app,  # the app (LP_DvzApp)
         callback,  # the timer callback (CFunctionType)
-        user_data,  # the user data (c_void_p)
+        user_data,  # the user data (array)
     )
     ```
 
@@ -8285,7 +8283,7 @@ Start the application event loop.
     ``` python
     dvz.app_run(
         app,  # the app (LP_DvzApp)
-        n_frames,  # the maximum number of frames, 0 for infinite loop (c_ulong)
+        n_frames,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
     )
     ```
 
@@ -8307,8 +8305,8 @@ Make a screenshot of a canvas.
     ``` python
     dvz.app_screenshot(
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the ID of the canvas (c_ulong)
-        filename,  # the path to the PNG file with the screenshot (c_char_p)
+        canvas_id,  # the ID of the canvas (int, 64-bit unsigned)
+        filename,  # the path to the PNG file with the screenshot (CStringBuffer)
     )
     ```
 
@@ -8351,9 +8349,9 @@ Create a timer.
     ``` python
     dvz.app_timer(  # returns: the timer (LP_DvzTimerItem)
         app,  # the app (LP_DvzApp)
-        delay,  # the delay, in seconds, until the first event (c_double)
-        period,  # the period, in seconds, between two events (c_double)
-        max_count,  # the maximum number of events (c_ulong)
+        delay,  # the delay, in seconds, until the first event (float, 32-bit)
+        period,  # the period, in seconds, between two events (float, 32-bit)
+        max_count,  # the maximum number of events (int, 64-bit unsigned)
     )
     ```
 
@@ -8377,8 +8375,8 @@ Return the precise display timestamps of the last `count` frames.
     ``` python
     dvz.app_timestamps(
         app,  # the app (LP_DvzApp)
-        canvas_id,  # the ID of the canvas (c_ulong)
-        count,  # number of frames (c_uint)
+        canvas_id,  # the ID of the canvas (int, 64-bit unsigned)
+        count,  # number of frames (int, 32-bit unsigned)
     )
     ```
 
@@ -8420,7 +8418,7 @@ Free a pointer.
 
     ``` python
     dvz.free(
-        pointer,  # a pointer (c_void_p)
+        pointer,  # a pointer (array)
     )
     ```
 
@@ -8478,7 +8476,7 @@ Get an external memory handle of a dat.
     dvz.external_dat(  # returns: the external memory handle of that buffer (c_int)
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index of the dat (c_uint)
+        slot_idx,  # the slot index of the dat (int, 32-bit unsigned)
     )
     ```
 
@@ -8524,7 +8522,7 @@ Get an external memory handle of a tex's staging buffer.
     dvz.external_tex(  # returns: the external memory handle of that buffer (c_int)
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
-        slot_idx,  # the slot index of the tex (c_uint)
+        slot_idx,  # the slot index of the tex (int, 32-bit unsigned)
     )
     ```
 
@@ -8548,7 +8546,7 @@ Get an external memory handle of a vertex dat.
     dvz.external_vertex(  # returns: the external memory handle of that buffer (c_int)
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
-        binding_idx,  # the binding index of the dat that is being used as vertex buffer (c_uint)
+        binding_idx,  # the binding index of the dat that is being used as vertex buffer (int, 32-bit unsigned)
     )
     ```
 
@@ -8570,7 +8568,7 @@ Compute a polygon triangulation with only indexing on the polygon contour vertic
 
     ``` python
     dvz.earcut(  # returns: the computed indices (must be FREED by the caller) (ndpointer_<u4_C_CONTIGUOUS)
-        point_count,  # the number of points (c_uint)
+        point_count,  # the number of points (int, 32-bit unsigned)
         polygon,  # the polygon 2D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -8592,7 +8590,7 @@ Compute the mean of an array of double values.
 
     ``` python
     dvz.mean(  # returns: the mean (c_double)
-        n,  # the number of values (c_uint)
+        n,  # the number of values (int, 32-bit unsigned)
         values,  # an array of double numbers (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -8614,9 +8612,9 @@ Compute the min and max of an array of float values.
 
     ``` python
     dvz.min_max(  # returns: the mean (c_int)
-        n,  # the number of values (c_uint)
+        n,  # the number of values (int, 32-bit unsigned)
         values,  # an array of float numbers (ndpointer_<f4_C_CONTIGUOUS)
-        out_min_max,  # the min and max (c_float_Array_2)
+        out_min_max,  # the min and max (vec2)
     )
     ```
 
@@ -8638,8 +8636,8 @@ Generate points on a band.
 
     ``` python
     dvz.mock_band(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        size,  # the size of the band (c_float_Array_2)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        size,  # the size of the band (vec2)
     )
     ```
 
@@ -8660,8 +8658,8 @@ Generate points on a circle.
 
     ``` python
     dvz.mock_circle(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        radius,  # the radius of the circle (c_float)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        radius,  # the radius of the circle (float, 64-bit)
     )
     ```
 
@@ -8682,7 +8680,7 @@ Generate a set of HSV colors.
 
     ``` python
     dvz.mock_cmap(  # returns: colors (ndpointer_|u1_C_CONTIGUOUS)
-        count,  # the number of colors to generate (c_uint)
+        count,  # the number of colors to generate (int, 32-bit unsigned)
         alpha,  # the alpha value (DvzColormap)
     )
     ```
@@ -8704,8 +8702,8 @@ Generate a set of random colors.
 
     ``` python
     dvz.mock_color(  # returns: random colors (ndpointer_|u1_C_CONTIGUOUS)
-        count,  # the number of colors to generate (c_uint)
-        alpha,  # the alpha value (c_ubyte)
+        count,  # the number of colors to generate (int, 32-bit unsigned)
+        alpha,  # the alpha value (int, 8-bit unsigned)
     )
     ```
 
@@ -8726,8 +8724,8 @@ Generate identical 3D positions.
 
     ``` python
     dvz.mock_fixed(  # returns: the repeated positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        fixed,  # the position (c_float_Array_3)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        fixed,  # the position (vec3)
     )
     ```
 
@@ -8748,8 +8746,8 @@ Generate an array with the same value.
 
     ``` python
     dvz.mock_full(  # returns: the values (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of scalars to generate (c_uint)
-        value,  # the value (c_float)
+        count,  # the number of scalars to generate (int, 32-bit unsigned)
+        value,  # the value (float, 64-bit)
     )
     ```
 
@@ -8770,9 +8768,9 @@ Generate 3D positions on a line.
 
     ``` python
     dvz.mock_line(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        p0,  # initial position (c_float_Array_3)
-        p1,  # terminal position (c_float_Array_3)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        p0,  # initial position (vec3)
+        p1,  # terminal position (vec3)
     )
     ```
 
@@ -8794,9 +8792,9 @@ Generate an array ranging from an initial value to a final value.
 
     ``` python
     dvz.mock_linspace(  # returns: the values (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of scalars to generate (c_uint)
-        initial,  # the initial value (c_float)
-        final,  # the final value (c_float)
+        count,  # the number of scalars to generate (int, 32-bit unsigned)
+        initial,  # the initial value (float, 64-bit)
+        final,  # the final value (float, 64-bit)
     )
     ```
 
@@ -8818,8 +8816,8 @@ Repeat a color in an array.
 
     ``` python
     dvz.mock_monochrome(  # returns: colors (ndpointer_|u1_C_CONTIGUOUS)
-        count,  # the number of colors to generate (c_uint)
-        mono,  # the color to repeat (c_ubyte_Array_4)
+        count,  # the number of colors to generate (int, 32-bit unsigned)
+        mono,  # the color to repeat (cvec4)
     )
     ```
 
@@ -8840,8 +8838,8 @@ Generate a set of random 2D positions.
 
     ``` python
     dvz.mock_pos2D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        std,  # the standard deviation (c_float)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        std,  # the standard deviation (float, 64-bit)
     )
     ```
 
@@ -8862,8 +8860,8 @@ Generate a set of random 3D positions.
 
     ``` python
     dvz.mock_pos3D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of positions to generate (c_uint)
-        std,  # the standard deviation (c_float)
+        count,  # the number of positions to generate (int, 32-bit unsigned)
+        std,  # the standard deviation (float, 64-bit)
     )
     ```
 
@@ -8884,8 +8882,8 @@ Generate an array of consecutive positive numbers.
 
     ``` python
     dvz.mock_range(  # returns: the values (ndpointer_<u4_C_CONTIGUOUS)
-        count,  # the number of consecutive integers to generate (c_uint)
-        initial,  # the initial value (c_uint)
+        count,  # the number of consecutive integers to generate (int, 32-bit unsigned)
+        initial,  # the initial value (int, 32-bit unsigned)
     )
     ```
 
@@ -8906,9 +8904,9 @@ Generate a set of uniformly random scalar values.
 
     ``` python
     dvz.mock_uniform(  # returns: the values (ndpointer_<f4_C_CONTIGUOUS)
-        count,  # the number of values to generate (c_uint)
-        vmin,  # the minimum value of the interval (c_float)
-        vmax,  # the maximum value of the interval (c_float)
+        count,  # the number of values to generate (int, 32-bit unsigned)
+        vmin,  # the minimum value of the interval (float, 64-bit)
+        vmax,  # the maximum value of the interval (float, 64-bit)
     )
     ```
 
@@ -8930,7 +8928,7 @@ Return the smallest power of 2 larger or equal than a positive integer.
 
     ``` python
     dvz.next_pow2(  # returns: the power of 2 (c_ulong)
-        x,  # the value (c_ulong)
+        x,  # the value (int, 64-bit unsigned)
     )
     ```
 
@@ -8950,7 +8948,7 @@ Normalize the array.
 
     ``` python
     dvz.normalize_bytes(  # returns: the normalized array (ndpointer_|u1_C_CONTIGUOUS)
-        count,  # the number of values (c_uint)
+        count,  # the number of values (int, 32-bit unsigned)
         values,  # an array of float numbers (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
@@ -9068,7 +9066,7 @@ Compute the range of an array of double values.
 
     ``` python
     dvz.range(
-        n,  # the number of values (c_uint)
+        n,  # the number of values (int, 32-bit unsigned)
         values,  # an array of double numbers (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
@@ -9122,7 +9120,7 @@ Set the number of threads to use in OpenMP-aware functions.
 
     ``` python
     dvz.threads_set(
-        num_threads,  # the requested number of threads (c_int)
+        num_threads,  # the requested number of threads (int, 32-bit signed)
     )
     ```
 
@@ -9223,7 +9221,7 @@ Set the description of the last added request.
     ``` python
     dvz.batch_desc(
         batch,  # the batch (LP_DvzBatch)
-        desc,  # the description (c_char_p)
+        desc,  # the description (CStringBuffer)
     )
     ```
 
@@ -9265,7 +9263,7 @@ Dump all batch requests in raw binary file.
     ``` python
     dvz.batch_dump(
         batch,  # the batch (LP_DvzBatch)
-        filename,  # the dump filename (c_char_p)
+        filename,  # the dump filename (CStringBuffer)
     )
     ```
 
@@ -9287,7 +9285,7 @@ Load a dump of batch requests into an existing batch object.
     ``` python
     dvz.batch_load(
         batch,  # the batch (LP_DvzBatch)
-        filename,  # the dump filename (c_char_p)
+        filename,  # the dump filename (CStringBuffer)
     )
     ```
 
@@ -9309,7 +9307,7 @@ Display information about all requests in the batch.
     ``` python
     dvz.batch_print(
         batch,  # the batch (LP_DvzBatch)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -9371,7 +9369,7 @@ Export requests in a YAML file.
     ``` python
     dvz.batch_yaml(
         batch,  # the batch (LP_DvzBatch)
-        filename,  # the YAML filename (c_char_p)
+        filename,  # the YAML filename (CStringBuffer)
     )
     ```
 
@@ -9393,10 +9391,10 @@ Create a request for associating a dat to a pipe's slot.
     ``` python
     dvz.bind_dat(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        pipe,  # the id of the pipe (c_ulong)
-        slot_idx,  # the index of the descriptor slot (c_uint)
-        dat,  # the id of the dat to bind to the pipe (c_ulong)
-        offset,  # the offset (c_ulong)
+        pipe,  # the id of the pipe (int, 64-bit unsigned)
+        slot_idx,  # the index of the descriptor slot (int, 32-bit unsigned)
+        dat,  # the id of the dat to bind to the pipe (int, 64-bit unsigned)
+        offset,  # the offset (int, 64-bit unsigned)
     )
     ```
 
@@ -9421,9 +9419,9 @@ Create a request for associating an index dat to a graphics pipe.
     ``` python
     dvz.bind_index(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the id of the graphics pipe (c_ulong)
-        dat,  # the id of the dat with the index data (c_ulong)
-        offset,  # the offset within the dat (c_ulong)
+        graphics,  # the id of the graphics pipe (int, 64-bit unsigned)
+        dat,  # the id of the dat with the index data (int, 64-bit unsigned)
+        offset,  # the offset within the dat (int, 64-bit unsigned)
     )
     ```
 
@@ -9447,11 +9445,11 @@ Create a request for associating a tex to a pipe's slot.
     ``` python
     dvz.bind_tex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        pipe,  # the id of the pipe (c_ulong)
-        slot_idx,  # the index of the descriptor slot (c_uint)
-        tex,  # the id of the tex to bind to the pipe (c_ulong)
-        tex,  # the id of the sampler (c_ulong)
-        offset,  # the offset (c_uint_Array_3)
+        pipe,  # the id of the pipe (int, 64-bit unsigned)
+        slot_idx,  # the index of the descriptor slot (int, 32-bit unsigned)
+        tex,  # the id of the tex to bind to the pipe (int, 64-bit unsigned)
+        tex,  # the id of the sampler (int, 64-bit unsigned)
+        offset,  # the offset (uvec3)
     )
     ```
 
@@ -9477,9 +9475,9 @@ Create a request for associating a vertex dat to a graphics pipe.
     ``` python
     dvz.bind_vertex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the id of the graphics pipe (c_ulong)
-        dat,  # the id of the dat with the vertex data (c_uint)
-        offset,  # the offset within the dat (c_ulong)
+        graphics,  # the id of the graphics pipe (int, 64-bit unsigned)
+        dat,  # the id of the dat with the vertex data (int, 32-bit unsigned)
+        offset,  # the offset within the dat (int, 64-bit unsigned)
     )
     ```
 
@@ -9503,10 +9501,10 @@ Create a request for canvas creation.
     ``` python
     dvz.create_canvas(  # returns: the request, containing a newly-generated id for the canvas to be created (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        width,  # the canvas width (in screen pixels) (c_uint)
-        height,  # the canvas height (in screen pixels) (c_uint)
-        background,  # the background color (c_ubyte_Array_4)
-        flags,  # the canvas creation flags (c_int)
+        width,  # the canvas width (in screen pixels) (int, 32-bit unsigned)
+        height,  # the canvas height (in screen pixels) (int, 32-bit unsigned)
+        background,  # the background color (cvec4)
+        flags,  # the canvas creation flags (int, 32-bit signed)
     )
     ```
 
@@ -9532,8 +9530,8 @@ Create a request for a dat creation.
     dvz.create_dat(  # returns: the request, containing a newly-generated id for the dat to be created (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
         type,  # the buffer type (DvzBufferType)
-        size,  # the dat size, in bytes (c_ulong)
-        flags,  # the dat creation flags (c_int)
+        size,  # the dat size, in bytes (int, 64-bit unsigned)
+        flags,  # the dat creation flags (int, 32-bit signed)
     )
     ```
 
@@ -9558,7 +9556,7 @@ Create a request for GLSL shader creation.
     dvz.create_glsl(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
         shader_type,  # the shader type (DvzShaderType)
-        code,  # an ASCII string with the GLSL code (c_char_p)
+        code,  # an ASCII string with the GLSL code (CStringBuffer)
     )
     ```
 
@@ -9582,7 +9580,7 @@ Create a request for a builtin graphics pipe creation.
     dvz.create_graphics(  # returns: the request, containing a newly-generated id for the graphics pipe to be created (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
         parent,  # the parent canvas id (DvzGraphicsType)
-        type,  # the graphics type (c_int)
+        type,  # the graphics type (int, 32-bit signed)
     )
     ```
 
@@ -9631,8 +9629,8 @@ Create a request for SPIR-V shader creation.
     dvz.create_spirv(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
         shader_type,  # the shader type (DvzShaderType)
-        size,  # the size in bytes of the SPIR-V buffer (c_ulong)
-        buffer,  # pointer to a buffer with the SPIR-V bytecode (c_char_p)
+        size,  # the size in bytes of the SPIR-V buffer (int, 64-bit unsigned)
+        buffer,  # pointer to a buffer with the SPIR-V bytecode (CStringBuffer)
     )
     ```
 
@@ -9658,8 +9656,8 @@ Create a request for a tex creation.
         batch,  # the batch (LP_DvzBatch)
         dims,  # the number of dimensions, 1, 2, or 3 (DvzTexDims)
         format,  # the image format (DvzFormat)
-        shape,  # the texture shape (c_uint_Array_3)
-        flags,  # the dat creation flags (c_int)
+        shape,  # the texture shape (uvec3)
+        flags,  # the dat creation flags (int, 32-bit signed)
     )
     ```
 
@@ -9684,7 +9682,7 @@ Create a request for a canvas deletion.
     ``` python
     dvz.delete_canvas(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the canvas id (c_ulong)
+        id,  # the canvas id (int, 64-bit unsigned)
     )
     ```
 
@@ -9706,7 +9704,7 @@ Create a request for dat deletion.
     ``` python
     dvz.delete_dat(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the dat id (c_ulong)
+        id,  # the dat id (int, 64-bit unsigned)
     )
     ```
 
@@ -9728,7 +9726,7 @@ Create a request for graphics deletion.
     ``` python
     dvz.delete_graphics(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the graphics id (c_ulong)
+        id,  # the graphics id (int, 64-bit unsigned)
     )
     ```
 
@@ -9750,7 +9748,7 @@ Create a request for sampler deletion.
     ``` python
     dvz.delete_sampler(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the sampler id (c_ulong)
+        id,  # the sampler id (int, 64-bit unsigned)
     )
     ```
 
@@ -9772,7 +9770,7 @@ Create a request for tex deletion.
     ``` python
     dvz.delete_tex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the tex id (c_ulong)
+        id,  # the tex id (int, 64-bit unsigned)
     )
     ```
 
@@ -9793,9 +9791,9 @@ Create a MVP structure.
 
     ``` python
     dvz.mvp(  # returns: the MVP structure (DvzMVP)
-        model,  # the model matrix (c_float_Array_16)
-        view,  # the view matrix (c_float_Array_16)
-        proj,  # the projection matrix (c_float_Array_16)
+        model,  # the model matrix (mat4)
+        view,  # the view matrix (mat4)
+        proj,  # the projection matrix (mat4)
     )
     ```
 
@@ -9834,7 +9832,7 @@ Create a request for starting recording of command buffer.
     ``` python
     dvz.record_begin(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
     )
     ```
 
@@ -9856,12 +9854,12 @@ Create a request for a direct draw of a graphics during command buffer recording
     ``` python
     dvz.record_draw(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        graphics,  # the id of the graphics pipe to draw (c_ulong)
-        first_vertex,  # the index of the first vertex to draw (c_uint)
-        vertex_count,  # the number of vertices to draw (c_uint)
-        first_instance,  # the index of the first instance to draw (c_uint)
-        instance_count,  # the number of instances to draw (c_uint)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        graphics,  # the id of the graphics pipe to draw (int, 64-bit unsigned)
+        first_vertex,  # the index of the first vertex to draw (int, 32-bit unsigned)
+        vertex_count,  # the number of vertices to draw (int, 32-bit unsigned)
+        first_instance,  # the index of the first instance to draw (int, 32-bit unsigned)
+        instance_count,  # the number of instances to draw (int, 32-bit unsigned)
     )
     ```
 
@@ -9888,13 +9886,13 @@ Create a request for an indexed draw of a graphics during command buffer recordi
     ``` python
     dvz.record_draw_indexed(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        graphics,  # the id of the graphics pipe to draw (c_ulong)
-        first_index,  # the index of the first index to draw (c_uint)
-        vertex_offset,  # the vertex offset within the vertices indexed by the indexes (c_uint)
-        index_count,  # the number of indexes to draw (c_uint)
-        first_instance,  # the index of the first instance to draw (c_uint)
-        instance_count,  # the number of instances to draw (c_uint)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        graphics,  # the id of the graphics pipe to draw (int, 64-bit unsigned)
+        first_index,  # the index of the first index to draw (int, 32-bit unsigned)
+        vertex_offset,  # the vertex offset within the vertices indexed by the indexes (int, 32-bit unsigned)
+        index_count,  # the number of indexes to draw (int, 32-bit unsigned)
+        first_instance,  # the index of the first instance to draw (int, 32-bit unsigned)
+        instance_count,  # the number of instances to draw (int, 32-bit unsigned)
     )
     ```
 
@@ -9922,10 +9920,10 @@ Create a request for an indexed indirect draw of a graphics during command buffe
     ``` python
     dvz.record_draw_indexed_indirect(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        graphics,  # the id of the graphics pipe to draw (c_ulong)
-        indirect,  # the id of the dat containing the indirect draw data (c_ulong)
-        draw_count,  # the number of draws to make (c_uint)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        graphics,  # the id of the graphics pipe to draw (int, 64-bit unsigned)
+        indirect,  # the id of the dat containing the indirect draw data (int, 64-bit unsigned)
+        draw_count,  # the number of draws to make (int, 32-bit unsigned)
     )
     ```
 
@@ -9950,10 +9948,10 @@ Create a request for an indirect draw of a graphics during command buffer record
     ``` python
     dvz.record_draw_indirect(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        graphics,  # the id of the graphics pipe to draw (c_ulong)
-        indirect,  # the id of the dat containing the indirect draw data (c_ulong)
-        draw_count,  # the number of draws to make (c_uint)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        graphics,  # the id of the graphics pipe to draw (int, 64-bit unsigned)
+        indirect,  # the id of the dat containing the indirect draw data (int, 64-bit unsigned)
+        draw_count,  # the number of draws to make (int, 32-bit unsigned)
     )
     ```
 
@@ -9978,7 +9976,7 @@ Create a request for ending recording of command buffer.
     ``` python
     dvz.record_end(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
     )
     ```
 
@@ -10000,11 +9998,11 @@ Create a request for sending a push constant value while recording a command buf
     ``` python
     dvz.record_push(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        graphics_id,  # the id of the graphics pipeline (c_ulong)
-        shader_stages,  # the shader stages (c_int)
-        offset,  # the byte offset (c_ulong)
-        size,  # the size of the data to upload (c_ulong)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        graphics_id,  # the id of the graphics pipeline (int, 64-bit unsigned)
+        shader_stages,  # the shader stages (int, 32-bit signed)
+        offset,  # the byte offset (int, 64-bit unsigned)
+        size,  # the size of the data to upload (int, 64-bit unsigned)
         data,  # the push constant data to upload (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -10032,9 +10030,9 @@ Create a request for setting the viewport during command buffer recording.
     ``` python
     dvz.record_viewport(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas_id,  # the id of the canvas (c_ulong)
-        offset,  # the viewport offset, in framebuffer pixels (c_float_Array_2)
-        shape,  # the viewport size, in framebuffer pixels (c_float_Array_2)
+        canvas_id,  # the id of the canvas (int, 64-bit unsigned)
+        offset,  # the viewport offset, in framebuffer pixels (vec2)
+        shape,  # the viewport size, in framebuffer pixels (vec2)
     )
     ```
 
@@ -10058,7 +10056,7 @@ Display information about a request.
     ``` python
     dvz.request_print(
         req,  # the request (LP_DvzRequest)
-        flags,  # the flags (c_int)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -10158,9 +10156,9 @@ Create a request to resize an offscreen canvas (regular canvases are resized by 
     ``` python
     dvz.resize_canvas(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        canvas,  # the canvas id (c_ulong)
-        width,  # the new canvas width (c_uint)
-        height,  # the new canvas height (c_uint)
+        canvas,  # the canvas id (int, 64-bit unsigned)
+        width,  # the new canvas width (int, 32-bit unsigned)
+        height,  # the new canvas height (int, 32-bit unsigned)
     )
     ```
 
@@ -10184,8 +10182,8 @@ Create a request to resize a dat.
     ``` python
     dvz.resize_dat(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        dat,  # the dat id (c_ulong)
-        size,  # the new dat size, in bytes (c_ulong)
+        dat,  # the dat id (int, 64-bit unsigned)
+        size,  # the new dat size, in bytes (int, 64-bit unsigned)
     )
     ```
 
@@ -10208,8 +10206,8 @@ Create a request to resize a tex.
     ``` python
     dvz.resize_tex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        tex,  # the tex id (c_ulong)
-        shape,  # the new tex shape (c_uint_Array_3)
+        tex,  # the tex id (int, 64-bit unsigned)
+        shape,  # the new tex shape (uvec3)
     )
     ```
 
@@ -10232,11 +10230,11 @@ Create a request for setting a vertex attribute of a graphics pipe.
     ``` python
     dvz.set_attr(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        binding_idx,  # the index of the vertex binding (c_uint)
-        location,  # the GLSL attribute location (c_uint)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        binding_idx,  # the index of the vertex binding (int, 32-bit unsigned)
+        location,  # the GLSL attribute location (int, 32-bit unsigned)
         format,  # the attribute format (DvzFormat)
-        offset,  # the byte offset of the attribute within the vertex binding (c_ulong)
+        offset,  # the byte offset of the attribute within the vertex binding (int, 64-bit unsigned)
     )
     ```
 
@@ -10262,8 +10260,8 @@ Change the background color of the canvas.
     ``` python
     dvz.set_background(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the canvas id (c_ulong)
-        background,  # the background color (c_ubyte_Array_4)
+        id,  # the canvas id (int, 64-bit unsigned)
+        background,  # the background color (cvec4)
     )
     ```
 
@@ -10286,7 +10284,7 @@ Create a request for setting the blend type of a graphics pipe.
     ``` python
     dvz.set_blend(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         blend_type,  # the graphics blend type (DvzBlendType)
     )
     ```
@@ -10310,7 +10308,7 @@ Create a request for setting the cull mode of a graphics pipe.
     ``` python
     dvz.set_cull(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         cull_mode,  # the cull mode (DvzCullMode)
     )
     ```
@@ -10334,7 +10332,7 @@ Create a request for setting the depth test of a graphics pipe.
     ``` python
     dvz.set_depth(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         depth_test,  # the graphics depth test (DvzDepthTest)
     )
     ```
@@ -10358,7 +10356,7 @@ Create a request for setting the front face of a graphics pipe.
     ``` python
     dvz.set_front(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         front_face,  # the front face (DvzFrontFace)
     )
     ```
@@ -10382,8 +10380,8 @@ Create a request for setting the color mask of a graphics pipe.
     ``` python
     dvz.set_mask(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        mask,  # the mask with RGBA boolean masks on the lower bits (c_int)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        mask,  # the mask with RGBA boolean masks on the lower bits (int, 32-bit signed)
     )
     ```
 
@@ -10406,7 +10404,7 @@ Create a request for setting the polygon mode of a graphics pipe.
     ``` python
     dvz.set_polygon(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         polygon_mode,  # the polygon mode (DvzPolygonMode)
     )
     ```
@@ -10430,7 +10428,7 @@ Create a request for setting the primitive topology of a graphics pipe.
     ``` python
     dvz.set_primitive(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         primitive,  # the graphics primitive topology (DvzPrimitiveTopology)
     )
     ```
@@ -10454,10 +10452,10 @@ Create a request for setting a push constant layout for a graphics pipe.
     ``` python
     dvz.set_push(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        shader_stages,  # the shader stages with the push constant (c_int)
-        offset,  # the byte offset for the push data visibility from the shader (c_ulong)
-        size,  # how much bytes the shader can see from the push constant (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        shader_stages,  # the shader stages with the push constant (int, 32-bit signed)
+        offset,  # the byte offset for the push data visibility from the shader (int, 64-bit unsigned)
+        size,  # how much bytes the shader can see from the push constant (int, 64-bit unsigned)
     )
     ```
 
@@ -10482,8 +10480,8 @@ Create a request for setting a shader a graphics pipe.
     ``` python
     dvz.set_shader(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        shader,  # the id of the shader object (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        shader,  # the id of the shader object (int, 64-bit unsigned)
     )
     ```
 
@@ -10506,8 +10504,8 @@ Create a request for setting a binding slot (descriptor) of a graphics pipe.
     ``` python
     dvz.set_slot(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        slot_idx,  # the index of the GLSL binding slot (c_uint)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        slot_idx,  # the index of the GLSL binding slot (int, 32-bit unsigned)
         type,  # the descriptor type (DvzDescriptorType)
     )
     ```
@@ -10532,11 +10530,11 @@ Create a request for setting a specialization constant of a graphics pipe.
     ``` python
     dvz.set_specialization(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
         shader,  # the shader with the specialization constant (DvzShaderType)
-        idx,  # the specialization constant index as specified in the GLSL code (c_uint)
-        size,  # the byte size of the value (c_ulong)
-        value,  # a pointer to the specialization constant value (c_void_p)
+        idx,  # the specialization constant index as specified in the GLSL code (int, 32-bit unsigned)
+        size,  # the byte size of the value (int, 64-bit unsigned)
+        value,  # a pointer to the specialization constant value (array)
     )
     ```
 
@@ -10562,9 +10560,9 @@ Create a request for setting a vertex binding of a graphics pipe.
     ``` python
     dvz.set_vertex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        graphics,  # the graphics pipe id (c_ulong)
-        binding_idx,  # the index of the vertex binding (c_uint)
-        stride,  # the binding stride (c_ulong)
+        graphics,  # the graphics pipe id (int, 64-bit unsigned)
+        binding_idx,  # the index of the vertex binding (int, 32-bit unsigned)
+        stride,  # the binding stride (int, 64-bit unsigned)
     )
     ```
 
@@ -10588,7 +10586,7 @@ Create a request for a canvas redraw (command buffer submission).
     ``` python
     dvz.update_canvas(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        id,  # the canvas id (c_ulong)
+        id,  # the canvas id (int, 64-bit unsigned)
     )
     ```
 
@@ -10610,9 +10608,9 @@ Create a request for dat upload.
     ``` python
     dvz.upload_dat(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        dat,  # the id of the dat to upload to (c_ulong)
-        offset,  # the byte offset of the upload transfer (c_ulong)
-        size,  # the number of bytes in data to transfer (c_ulong)
+        dat,  # the id of the dat to upload to (int, 64-bit unsigned)
+        offset,  # the byte offset of the upload transfer (int, 64-bit unsigned)
+        size,  # the number of bytes in data to transfer (int, 64-bit unsigned)
         data,  # a pointer to the data to upload (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -10638,10 +10636,10 @@ Create a request for tex upload.
     ``` python
     dvz.upload_tex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        tex,  # the id of the tex to upload to (c_ulong)
-        offset,  # the offset (c_uint_Array_3)
-        shape,  # the shape (c_uint_Array_3)
-        size,  # the number of bytes in data to transfer (c_ulong)
+        tex,  # the id of the tex to upload to (int, 64-bit unsigned)
+        offset,  # the offset (uvec3)
+        shape,  # the shape (uvec3)
+        size,  # the number of bytes in data to transfer (int, 64-bit unsigned)
         data,  # a pointer to the data to upload (ndpointer_any_C_CONTIGUOUS)
     )
     ```
@@ -10667,8 +10665,8 @@ Return a default viewport
 
     ``` python
     dvz.viewport_default(  # returns: the viewport (DvzViewport)
-        width,  # the viewport width, in framebuffer pixels (c_uint)
-        height,  # the viewport height, in framebuffer pixels (c_uint)
+        width,  # the viewport width, in framebuffer pixels (int, 32-bit unsigned)
+        height,  # the viewport height, in framebuffer pixels (int, 32-bit unsigned)
     )
     ```
 

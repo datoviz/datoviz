@@ -111,12 +111,7 @@ Illustrates:
 ```python
 import numpy as np
 import datoviz as dvz
-from datoviz import (
-    S_,  # Python string to ctypes char*
-    vec2,
-    vec3,
-    vec4,
-)
+from datoviz import vec2, vec3
 
 
 # GUI callback function.
@@ -126,11 +121,11 @@ def ongui(app, fid, ev):
     dvz.gui_size(vec2(170, 110))
 
     # Start a GUI dialog with a dialog title.
-    dvz.gui_begin(S_("My GUI"), 0)
+    dvz.gui_begin("My GUI", 0)
 
     # Add two buttons. The functions return whether the button was pressed.
-    incr = dvz.gui_button(S_("Increase"), 150, 30)
-    decr = dvz.gui_button(S_("Decrease"), 150, 30)
+    incr = dvz.gui_button("Increase", 150, 30)
+    decr = dvz.gui_button("Decrease", 150, 30)
 
     # Scaling factor.
     scale = 1.0
@@ -222,7 +217,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, S_, vec2, vec3, vec4
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -237,7 +232,7 @@ def load_mouse_volume():
     shape = volume_data.shape
     MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
     format = dvz.FORMAT_R8G8B8A8_UNORM
-    tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
+    tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume_data)
     return tex, MOUSE_D, MOUSE_H, MOUSE_W
 
 
@@ -272,7 +267,7 @@ panel1 = dvz.panel(figure, 100, 100, 300, 200)
 arcball = dvz.panel_arcball(panel1)
 volume = create_volume(*load_mouse_volume())
 dvz.panel_visual(panel1, volume, 0)
-dvz.panel_gui(panel1, S_("Panel 1"), 0)
+dvz.panel_gui(panel1, "Panel 1", 0)
 
 # Initial view
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
@@ -299,7 +294,7 @@ dvz.point_position(visual, 0, n, pos, 0)
 dvz.point_color(visual, 0, n, color, 0)
 dvz.point_size(visual, 0, n, size, 0)
 dvz.panel_visual(panel2, visual, 0)
-dvz.panel_gui(panel2, S_("Panel 2"), 0)
+dvz.panel_gui(panel2, "Panel 2", 0)
 
 
 # Run and cleanup
@@ -336,7 +331,6 @@ import numpy as np
 from PIL import Image
 
 import datoviz as dvz
-from datoviz import A_
 
 # Boilerplate.
 app = dvz.app(0)
@@ -357,7 +351,7 @@ with Image.open(filepath) as f:
     filter = dvz.FILTER_LINEAR
 
     # Create a texture out of a RGB image.
-    tex = dvz.tex_image(batch, format, width, height, A_(image), 0)
+    tex = dvz.tex_image(batch, format, width, height, image, 0)
 
 
 # Create a figure 1000x1000.
@@ -434,7 +428,7 @@ Illustrates:
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import vec3, vec4, S_
+from datoviz import vec3
 
 # Boilerplate.
 app = dvz.app(0)
@@ -453,7 +447,7 @@ arcball = dvz.panel_arcball(panel)
 # Load a .OBJ mesh file.
 CURDIR = Path(__file__).parent
 filepath = (CURDIR / "../data/mesh/brain.obj").resolve()
-shape = dvz.shape_obj(S_(filepath))
+shape = dvz.shape_obj(filepath)
 
 # Fill artificial colors.
 nv = shape.vertex_count
@@ -525,9 +519,6 @@ Illustrates:
 ```python
 import numpy as np
 import datoviz as dvz
-from datoviz import (
-    S_,  # Python string to ctypes char*
-)
 
 offscreen = True
 
@@ -572,7 +563,7 @@ color = np.repeat(color, path_size, axis=0)
 dvz.path_color(visual, 0, n, color, 0)
 
 # Line width.
-dvz.path_linewidth(visual, 3.0)
+dvz.path_linewidth(visual, 0, n, np.full(n, 3.0, dtype=np.float32), 0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual, 0)
@@ -582,7 +573,7 @@ dvz.scene_run(scene, app, 0)
 
 # Screenshot to ./offscreen.png.
 if offscreen:
-    dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
+    dvz.app_screenshot(app, dvz.figure_id(figure), "offscreen_python.png")
 
 # Cleanup.
 dvz.scene_destroy(scene)
@@ -615,7 +606,7 @@ Illustrates:
 import ctypes
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, S_, V_
+from datoviz import vec2, Out
 
 
 # -------------------------------------------------------------------------------------------------
@@ -716,7 +707,7 @@ dvz.panel_visual(panel1, visual1, 0)
 # iv.   Call `dvz.app_gui(...)`
 
 # A wrapped boolean value with initial value False.
-checked = V_(True, ctypes.c_bool)
+checked = Out(True)
 
 
 @dvz.gui
@@ -727,12 +718,12 @@ def ongui(app, fid, ev):
     dvz.gui_size(vec2(170, 110))
 
     # Start a GUI dialog with a dialog title.
-    dvz.gui_begin(S_("My GUI"), 0)
+    dvz.gui_begin("My GUI", 0)
 
     # Add a checkbox
     with checked:  # Wrap the boolean value.
         # Return True if the checkbox's state has changed.
-        if dvz.gui_checkbox(S_("Show visual"), checked.P_):
+        if dvz.gui_checkbox("Show visual", checked.P_):
             #                                  ^^^^^^^^^^ pass a C pointer to our wrapped bool
             is_checked = checked.value  # Python variable with the checkbox's state
 
@@ -859,7 +850,6 @@ Illustrates:
 ```python
 import numpy as np
 import datoviz as dvz
-from datoviz import A_
 
 # Boilerplate.
 app = dvz.app(0)
@@ -927,7 +917,7 @@ Illustrates:
 ```python
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, vec4, S_
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -982,12 +972,10 @@ color = np.full((n, 4), 255, dtype=np.uint8)
 dvz.glyph_color(glyph, 0, n, color, 0)
 
 # We specify the ASCII string (we could also specify unicode uint32 codepoints with glyph_unicode)
-# NOTE: we need to use S_() to pass a Python string to this ctypes-wrapped C function expecting
-# a const char*.
-dvz.glyph_ascii(glyph, S_(text))
+dvz.glyph_ascii(glyph, text)
 
 # Now we compute the glyph shifts (called "xywh") using our font.
-xywh = dvz.font_ascii(af.font, S_(text))
+xywh = dvz.font_ascii(af.font, text)
 # We also define a global relative anchor point, in pixels (xy), for the string.
 # By default, the anchor is (0, 0) which represents the lower left corner of the string. The
 # anchor position is the string position defined above (1, 1, 0).
@@ -1241,7 +1229,6 @@ Illustrates:
 ```python
 import numpy as np
 import datoviz as dvz
-from datoviz import A_
 
 app = dvz.app(0)
 batch = dvz.app_batch(app)
@@ -1263,7 +1250,7 @@ nanoseconds = np.zeros(count, dtype=np.uint64) # number of ns within the second
 def on_timer(app, window_id, ev):
     # The timestamps are automatically recorded at every frame, this call fetches the last
     # `count` ones.
-    dvz.app_timestamps(app, dvz.figure_id(figure), count, A_(seconds), A_(nanoseconds))
+    dvz.app_timestamps(app, dvz.figure_id(figure), count, seconds, nanoseconds)
 
     # We display the values.
     print(f"Last {count} frames:")
@@ -1396,7 +1383,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, vec2, vec3, vec4
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1435,7 +1422,7 @@ scaling = 1.0 / MOUSE_D
 
 # Create the 3D texture.
 format = dvz.FORMAT_R8G8B8A8_UNORM
-tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
+tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume_data)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -1549,7 +1536,7 @@ void main()
 """
 
 req = dvz.create_glsl(
-    batch, dvz.SHADER_VERTEX, dvz.S_(vertex_glsl))
+    batch, dvz.SHADER_VERTEX, vertex_glsl)
 
 # Assign the shader to the graphics pipe.
 vertex_id = req.id
@@ -1570,7 +1557,7 @@ void main()
 """
 
 req = dvz.create_glsl(
-    batch, dvz.SHADER_FRAGMENT, dvz.S_(fragment_glsl))
+    batch, dvz.SHADER_FRAGMENT, fragment_glsl)
 
 # Assign the shader to the graphics pipe.
 fragment_id = req.id
@@ -1606,7 +1593,7 @@ data = np.array([
     ((+1, +1, 0), (0, 255, 0, 255)),
     ((+0, -1, 0), (0, 0, 255, 255)),
 ], dtype=vertex_dtype)
-req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, dvz.A_(data), 0)
+req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, data, 0)
 
 
 # Commands.
