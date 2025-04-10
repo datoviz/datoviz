@@ -4447,6 +4447,156 @@ colormap_array.argtypes = [
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # out DvzColor* out
 ]
 
+# Function dvz_sdf_from_svg()
+sdf_from_svg = dvz.dvz_sdf_from_svg
+sdf_from_svg.__doc__ = """
+Generate an SDF from an SVG path.
+
+Parameters
+----------
+svg_path : char*
+    the SVG path
+width : uint32_t
+    the width of the generated SDF, in pixels
+height : uint32_t
+    the height of the generated SDF, in pixels
+
+Returns
+-------
+type
+    the generated texture as RGB floats
+"""
+sdf_from_svg.argtypes = [
+    CStringBuffer,  # char* svg_path
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+sdf_from_svg.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_msdf_from_svg()
+msdf_from_svg = dvz.dvz_msdf_from_svg
+msdf_from_svg.__doc__ = """
+Generate a multichannel SDF from an SVG path.
+
+Parameters
+----------
+svg_path : char*
+    the SVG path
+width : uint32_t
+    the width of the generated SDF, in pixels
+height : uint32_t
+    the height of the generated SDF, in pixels
+
+Returns
+-------
+type
+    the generated texture as RGB floats
+"""
+msdf_from_svg.argtypes = [
+    CStringBuffer,  # char* svg_path
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+msdf_from_svg.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_sdf_to_rgb()
+sdf_to_rgb = dvz.dvz_sdf_to_rgb
+sdf_to_rgb.__doc__ = """
+Convert an SDF float texture to a byte texture.
+
+Parameters
+----------
+sdf : float*
+    the SDF float texture
+width : uint32_t
+    the width of the texture
+height : uint32_t
+    the height of the texture
+
+Returns
+-------
+type
+    the byte texture
+"""
+sdf_to_rgb.argtypes = [
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* sdf
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+sdf_to_rgb.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_msdf_to_rgb()
+msdf_to_rgb = dvz.dvz_msdf_to_rgb
+msdf_to_rgb.__doc__ = """
+Convert a multichannel SDF float texture to a byte texture.
+
+Parameters
+----------
+sdf : float*
+    the SDF float texture
+width : uint32_t
+    the width of the texture
+height : uint32_t
+    the height of the texture
+
+Returns
+-------
+type
+    the byte texture
+"""
+msdf_to_rgb.argtypes = [
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* sdf
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+]
+msdf_to_rgb.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_rgb_to_rgba_char()
+rgb_to_rgba_char = dvz.dvz_rgb_to_rgba_char
+rgb_to_rgba_char.__doc__ = """
+Convert an RGB byte texture to an RGBA one.
+
+Parameters
+----------
+count : uint32_t
+    the number of pixels (and NOT the number of bytes) in the byte texture
+rgb : uint8_t*
+    the RGB texture
+
+Returns
+-------
+type
+    the RGBA texture
+"""
+rgb_to_rgba_char.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* rgb
+]
+rgb_to_rgba_char.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
+# Function dvz_rgb_to_rgba_float()
+rgb_to_rgba_float = dvz.dvz_rgb_to_rgba_float
+rgb_to_rgba_float.__doc__ = """
+Convert an RGB float texture to an RGBA one.
+
+Parameters
+----------
+count : uint32_t
+    the number of pixels (and NOT the number of bytes) in the float texture
+rgb : float*
+    the RGB texture
+
+Returns
+-------
+type
+    the RGBA texture
+"""
+rgb_to_rgba_float.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* rgb
+]
+rgb_to_rgba_float.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
+
 # Function dvz_compute_normals()
 compute_normals = dvz.dvz_compute_normals
 compute_normals.__doc__ = """

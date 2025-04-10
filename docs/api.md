@@ -3872,6 +3872,54 @@ Create a mouse wheel event.
     );
     ```
 
+### `dvz_msdf_from_svg()`
+
+Generate a multichannel SDF from an SVG path.
+
+=== "Python"
+
+    ``` python
+    dvz.msdf_from_svg(  # returns: the generated texture as RGB floats (ndpointer_<f4_C_CONTIGUOUS)
+        svg_path,  # the SVG path (CStringBuffer)
+        width,  # the width of the generated SDF, in pixels (int, 32-bit unsigned)
+        height,  # the height of the generated SDF, in pixels (int, 32-bit unsigned)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    float* dvz_msdf_from_svg(  // returns: the generated texture as RGB floats
+        char* svg_path,  // the SVG path
+        uint32_t width,  // the width of the generated SDF, in pixels
+        uint32_t height,  // the height of the generated SDF, in pixels
+    );
+    ```
+
+### `dvz_msdf_to_rgb()`
+
+Convert a multichannel SDF float texture to a byte texture.
+
+=== "Python"
+
+    ``` python
+    dvz.msdf_to_rgb(  # returns: the byte texture (ndpointer_|u1_C_CONTIGUOUS)
+        sdf,  # the SDF float texture (ndpointer_<f4_C_CONTIGUOUS)
+        width,  # the width of the texture (int, 32-bit unsigned)
+        height,  # the height of the texture (int, 32-bit unsigned)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    uint8_t* dvz_msdf_to_rgb(  // returns: the byte texture
+        float* sdf,  // the SDF float texture
+        uint32_t width,  // the width of the texture
+        uint32_t height,  // the height of the texture
+    );
+    ```
+
 ### `dvz_ortho_end()`
 
 End an ortho interaction.
@@ -5706,6 +5754,50 @@ Normalize a value in an interval.
     );
     ```
 
+### `dvz_rgb_to_rgba_char()`
+
+Convert an RGB byte texture to an RGBA one.
+
+=== "Python"
+
+    ``` python
+    dvz.rgb_to_rgba_char(  # returns: the RGBA texture (ndpointer_|u1_C_CONTIGUOUS)
+        count,  # the number of pixels (and NOT the number of bytes) in the byte texture (int, 32-bit unsigned)
+        rgb,  # the RGB texture (ndpointer_|u1_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    uint8_t* dvz_rgb_to_rgba_char(  // returns: the RGBA texture
+        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the byte texture
+        uint8_t* rgb,  // the RGB texture
+    );
+    ```
+
+### `dvz_rgb_to_rgba_float()`
+
+Convert an RGB float texture to an RGBA one.
+
+=== "Python"
+
+    ``` python
+    dvz.rgb_to_rgba_float(  # returns: the RGBA texture (ndpointer_<f4_C_CONTIGUOUS)
+        count,  # the number of pixels (and NOT the number of bytes) in the float texture (int, 32-bit unsigned)
+        rgb,  # the RGB texture (ndpointer_<f4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    float* dvz_rgb_to_rgba_float(  // returns: the RGBA texture
+        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the float texture
+        float* rgb,  // the RGB texture
+    );
+    ```
+
 ### `dvz_scene()`
 
 Create a scene.
@@ -5853,6 +5945,54 @@ Start the event loop and render the scene in a window.
         DvzScene* scene,  // the scene
         DvzApp* app,  // the app
         uint64_t n_frames,  // the maximum number of frames, 0 for infinite loop
+    );
+    ```
+
+### `dvz_sdf_from_svg()`
+
+Generate an SDF from an SVG path.
+
+=== "Python"
+
+    ``` python
+    dvz.sdf_from_svg(  # returns: the generated texture as RGB floats (ndpointer_<f4_C_CONTIGUOUS)
+        svg_path,  # the SVG path (CStringBuffer)
+        width,  # the width of the generated SDF, in pixels (int, 32-bit unsigned)
+        height,  # the height of the generated SDF, in pixels (int, 32-bit unsigned)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    float* dvz_sdf_from_svg(  // returns: the generated texture as RGB floats
+        char* svg_path,  // the SVG path
+        uint32_t width,  // the width of the generated SDF, in pixels
+        uint32_t height,  // the height of the generated SDF, in pixels
+    );
+    ```
+
+### `dvz_sdf_to_rgb()`
+
+Convert an SDF float texture to a byte texture.
+
+=== "Python"
+
+    ``` python
+    dvz.sdf_to_rgb(  # returns: the byte texture (ndpointer_|u1_C_CONTIGUOUS)
+        sdf,  # the SDF float texture (ndpointer_<f4_C_CONTIGUOUS)
+        width,  # the width of the texture (int, 32-bit unsigned)
+        height,  # the height of the texture (int, 32-bit unsigned)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    uint8_t* dvz_sdf_to_rgb(  // returns: the byte texture
+        float* sdf,  // the SDF float texture
+        uint32_t width,  // the width of the texture
+        uint32_t height,  // the height of the texture
     );
     ```
 

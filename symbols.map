@@ -164,6 +164,8 @@ dvz_mouse_move
 dvz_mouse_press
 dvz_mouse_release
 dvz_mouse_wheel
+dvz_msdf_from_svg
+dvz_msdf_to_rgb
 dvz_ortho_end
 dvz_ortho_flags
 dvz_ortho_mvp
@@ -244,6 +246,8 @@ dvz_ref_transform2D
 dvz_ref_transform3D
 dvz_ref_transform_polygon
 dvz_resample
+dvz_rgb_to_rgba_char
+dvz_rgb_to_rgba_float
 dvz_scene
 dvz_scene_batch
 dvz_scene_destroy
@@ -251,6 +255,8 @@ dvz_scene_figure
 dvz_scene_mouse
 dvz_scene_render
 dvz_scene_run
+dvz_sdf_from_svg
+dvz_sdf_to_rgb
 dvz_segment
 dvz_segment_alloc
 dvz_segment_cap
