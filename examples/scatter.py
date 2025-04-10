@@ -12,7 +12,6 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
-from datoviz import A_
 
 # Boilerplate.
 app = dvz.app(0)

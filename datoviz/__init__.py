@@ -13,6 +13,7 @@ from ctypes import c_char_p
 import faulthandler
 import os
 import pathlib
+from pathlib import Path
 import platform
 
 from enum import IntEnum
@@ -123,6 +124,70 @@ class WrappedValue:
         return str(self.value)
 
 
+class CStringArrayType:
+    @classmethod
+    def from_param(cls, value):
+        if not isinstance(value, list):
+            raise TypeError("Expected a list of strings")
+
+        encoded = [s.encode('utf-8') for s in value]
+        bufs = [ctypes.create_string_buffer(s) for s in encoded]
+        arr = (ctypes.c_char_p * len(bufs))(*[ctypes.cast(b, ctypes.c_char_p) for b in bufs])
+
+        # keep references alive
+        arr._buffers = bufs
+        return arr
+
+
+class CStringBuffer:
+    @classmethod
+    def from_param(cls, value):
+        if isinstance(value, Path):
+            value = str(value)
+        if not isinstance(value, str):
+            raise TypeError("Expected a string")
+        buf = ctypes.create_string_buffer(value.encode('utf-8'))
+        # keep reference to buffer so it's not GC'd
+        buf._keepalive = buf
+        return buf
+
+
+# ===============================================================================
+# Out wrapper
+# ===============================================================================
+
+class Out:
+    _ctype_map = {
+        float: ctypes.c_float,
+        int: ctypes.c_int,
+        bool: ctypes.c_bool,
+    }
+
+    def __init__(self, initial):
+        py_type = type(initial)
+        if py_type not in self._ctype_map:
+            raise TypeError(f"Unsupported type: {py_type}")
+        self._ctype = self._ctype_map[py_type]
+        self._buffer = self._ctype(initial)
+
+    @property
+    def value(self):
+        return self._buffer.value
+
+    def __ctypes_from_outparam__(self):
+        return ctypes.byref(self._buffer)
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise TypeError("Expected an Out instance")
+        return ctypes.byref(obj._buffer)
+
+
+# ===============================================================================
+# Array wrappers
+# ===============================================================================
+
 def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
@@ -144,8 +209,8 @@ def pointer_array(pointer, length, n_components, dtype=np.float32):
 
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
-    ndim = kwargs.pop('ndim', 1)
-    ncol = kwargs.pop('ncol', 1)
+    ndim = kwargs.pop('ndim', None)
+    ncol = kwargs.pop('ncol', None)
     base = ndpointer_(*args, **kwargs)
 
     @classmethod
@@ -154,10 +219,10 @@ def ndpointer(*args, **kwargs):
             return obj
         if isinstance(obj, np.ndarray):
             s = f"array <{obj.dtype}>{obj.shape}"
-            if obj.ndim != ndim:
+            if ndim and obj.ndim != ndim:
                 raise ValueError(
                     f"Wrong ndim {obj.ndim} (expected {ndim}) for {s}")
-            if ncol > 1 and obj.shape[1] != ncol:
+            if ncol and ncol > 1 and obj.shape[1] != ncol:
                 raise ValueError(
                     f"Wrong shape {obj.shape} (expected (*, {ncol})) for {s}")
             out = base.from_param(obj)
@@ -184,37 +249,47 @@ def pointer_image(rgb, width, height, n_channels=3):
     return arr
 
 
-def vec2(x: float = 0, y: float = 0):
-    return (ctypes.c_float * 2)(x, y)
+# ===============================================================================
+# Vec types
+# ===============================================================================
+
+class CVectorBase(ctypes.Array):
+    _type_ = ctypes.c_float
+    _length_ = 0
+    _name_ = ''
+
+    def __new__(cls, *values):
+        values = list(values) + [0] * (cls._length_ - len(values))
+        return super().__new__(cls, *values[:cls._length_])
+
+    def __repr__(self):
+        vals = ', '.join(f'{v:.6g}' for v in self)
+        return f'{self._name_}({vals})'
 
 
-def vec3(x: float = 0, y: float = 0, z: float = 0):
-    return (ctypes.c_float * 3)(x, y, z)
+def make_vector_type(name, ctype, length):
+    return type(name, (CVectorBase,), {
+        '_type_': ctype,
+        '_length_': length,
+        '_name_': name,
+    })
 
 
-def vec4(x: float = 0, y: float = 0, z: float = 0, w: float = 0):
-    return (ctypes.c_float * 4)(x, y, z, w)
-
-
-def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
-    return (ctypes.c_uint8 * 4)(r, g, b, a)
-
-
-def uvec3(x: int = 0, y: int = 0, z: int = 0):
-    return (ctypes.c_uint32 * 3)(x, y, z)
-
-
-def uvec3(x: int = 0, y: int = 0, z: int = 0, a: int = 0):
-    return (ctypes.c_uint32 * 4)(x, y, z, a)
-
-
-def ivec3(r: int = 0, g: int = 0, b: int = 0):
-    return (ctypes.c_int32 * 3)(r, g, b)
-
-
-def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
-    return (ctypes.c_int32 * 4)(r, g, b, a)
-
+vec2 = make_vector_type('vec2', ctypes.c_float, 2)
+vec3 = make_vector_type('vec3', ctypes.c_float, 3)
+vec4 = make_vector_type('vec4', ctypes.c_float, 4)
+dvec2 = make_vector_type('dvec2', ctypes.c_double, 2)
+dvec3 = make_vector_type('dvec3', ctypes.c_double, 3)
+dvec4 = make_vector_type('dvec4', ctypes.c_double, 4)
+cvec4 = make_vector_type('cvec4', ctypes.c_uint8, 4)
+uvec2 = make_vector_type('uvec2', ctypes.c_uint32, 2)
+uvec3 = make_vector_type('uvec3', ctypes.c_uint32, 3)
+uvec4 = make_vector_type('uvec4', ctypes.c_uint32, 4)
+ivec2 = make_vector_type('ivec2', ctypes.c_int32, 2)
+ivec3 = make_vector_type('ivec3', ctypes.c_int32, 3)
+ivec4 = make_vector_type('ivec4', ctypes.c_int32, 4)
+mat3 = make_vector_type('mat3', ctypes.c_int32, 3*3)
+mat4 = make_vector_type('mat4', ctypes.c_int32, 4*4)
 
 
 # ===============================================================================
@@ -247,8 +322,8 @@ class VkCommandBuffer(ctypes.Structure):
 
 
 
-DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
-DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
+DEFAULT_CLEAR_COLOR = cvec4()
+DEFAULT_VIEWPORT = vec2()
 
 from_array = array_pointer
 from_pointer = pointer_array
@@ -258,7 +333,7 @@ S_ = char_pointer
 V_ = WrappedValue
 DVZ_ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
-DvzColor = ctypes.c_uint8 * 4
+DvzColor = cvec4
 DvzAlpha = ctypes.c_uint8
 
 
@@ -1910,9 +1985,9 @@ class DvzAtlasFont(ctypes.Structure):
 class DvzMVP(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
-        ("model", ctypes.c_float * 16),
-        ("view", ctypes.c_float * 16),
-        ("proj", ctypes.c_float * 16),
+        ("model", mat4),
+        ("view", mat4),
+        ("proj", mat4),
     ]
 
 
@@ -1932,11 +2007,11 @@ class DvzViewport(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("viewport", _VkViewport),
-        ("margins", ctypes.c_float * 4),
-        ("offset_screen", ctypes.c_uint32 * 2),
-        ("size_screen", ctypes.c_uint32 * 2),
-        ("offset_framebuffer", ctypes.c_uint32 * 2),
-        ("size_framebuffer", ctypes.c_uint32 * 2),
+        ("margins", vec4),
+        ("offset_screen", uvec2),
+        ("size_screen", uvec2),
+        ("offset_framebuffer", uvec2),
+        ("size_framebuffer", uvec2),
         ("flags", ctypes.c_int),
     ]
 
@@ -1944,20 +2019,20 @@ class DvzViewport(ctypes.Structure):
 class DvzShape(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
-        ("transform", ctypes.c_float * 16),
+        ("transform", mat4),
         ("first", ctypes.c_uint32),
         ("count", ctypes.c_uint32),
         ("type", ctypes.c_int32),
         ("vertex_count", ctypes.c_uint32),
         ("index_count", ctypes.c_uint32),
-        ("pos", ctypes.POINTER(ctypes.c_float * 3)),
-        ("normal", ctypes.POINTER(ctypes.c_float * 3)),
+        ("pos", ctypes.POINTER(vec3)),
+        ("normal", ctypes.POINTER(vec3)),
         ("color", ctypes.POINTER(DvzColor)),
-        ("texcoords", ctypes.POINTER(ctypes.c_float * 4)),
+        ("texcoords", ctypes.POINTER(vec4)),
         ("isoline", ctypes.POINTER(ctypes.c_float)),
-        ("d_left", ctypes.POINTER(ctypes.c_float * 3)),
-        ("d_right", ctypes.POINTER(ctypes.c_float * 3)),
-        ("contour", ctypes.POINTER(ctypes.c_uint8 * 4)),
+        ("d_left", ctypes.POINTER(vec3)),
+        ("d_right", ctypes.POINTER(vec3)),
+        ("contour", ctypes.POINTER(cvec4)),
         ("index", ctypes.POINTER(ctypes.c_uint32)),
     ]
 
@@ -1990,7 +2065,7 @@ class DvzMouseButtonEvent(ctypes.Structure):
 class DvzMouseWheelEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
-        ("dir", ctypes.c_float * 2),
+        ("dir", vec2),
     ]
 
 
@@ -1998,8 +2073,8 @@ class DvzMouseDragEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("button", ctypes.c_int32),
-        ("press_pos", ctypes.c_float * 2),
-        ("shift", ctypes.c_float * 2),
+        ("press_pos", vec2),
+        ("shift", vec2),
         ("is_press_valid", ctypes.c_bool),
     ]
 
@@ -2026,7 +2101,7 @@ class DvzMouseEvent(ctypes.Structure):
     _fields_ = [
         ("type", ctypes.c_int32),
         ("content", DvzMouseEventUnion),
-        ("pos", ctypes.c_float * 2),
+        ("pos", vec2),
         ("mods", ctypes.c_int),
         ("content_scale", ctypes.c_float),
         ("user_data", ctypes.c_void_p),
@@ -2077,8 +2152,8 @@ class DvzTimerEvent(ctypes.Structure):
 class DvzRecorderViewport(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
-        ("offset", ctypes.c_float * 2),
-        ("shape", ctypes.c_float * 2),
+        ("offset", vec2),
+        ("shape", vec2),
     ]
 
 
@@ -2161,7 +2236,7 @@ class DvzRequestBoard(ctypes.Structure):
     _fields_ = [
         ("width", ctypes.c_uint32),
         ("height", ctypes.c_uint32),
-        ("background", ctypes.c_uint8 * 4),
+        ("background", cvec4),
     ]
 
 
@@ -2173,7 +2248,7 @@ class DvzRequestCanvas(ctypes.Structure):
         ("screen_width", ctypes.c_uint32),
         ("screen_height", ctypes.c_uint32),
         ("is_offscreen", ctypes.c_bool),
-        ("background", ctypes.c_uint8 * 4),
+        ("background", cvec4),
     ]
 
 
@@ -2189,7 +2264,7 @@ class DvzRequestTex(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("dims", ctypes.c_int32),
-        ("shape", ctypes.c_uint32 * 3),
+        ("shape", uvec3),
         ("format", ctypes.c_int32),
     ]
 
@@ -2227,8 +2302,8 @@ class DvzRequestTexUpload(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
         ("upload_type", ctypes.c_int),
-        ("offset", ctypes.c_uint32 * 3),
-        ("shape", ctypes.c_uint32 * 3),
+        ("offset", uvec3),
+        ("shape", uvec3),
         ("size", DvzSize),
         ("data", ctypes.c_void_p),
     ]
@@ -2375,7 +2450,7 @@ class DvzRequestBindTex(ctypes.Structure):
         ("slot_idx", ctypes.c_uint32),
         ("tex", DvzId),
         ("sampler", DvzId),
-        ("offset", ctypes.c_uint32 * 3),
+        ("offset", uvec3),
     ]
 
 
@@ -2924,7 +2999,7 @@ type
 """
 mouse_move.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
-    ctypes.c_float * 2,  # vec2 pos
+    vec2,  # vec2 pos
     ctypes.c_int,  # int mods
 ]
 mouse_move.restype = DvzMouseEvent
@@ -3002,7 +3077,7 @@ type
 """
 mouse_wheel.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
-    ctypes.c_float * 2,  # vec2 dir
+    vec2,  # vec2 dir
     ctypes.c_int,  # int mods
 ]
 mouse_wheel.restype = DvzMouseEvent
@@ -3267,7 +3342,7 @@ flags : int
 """
 panel_gui.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
-    ctypes.c_char_p,  # char* title
+    CStringBuffer,  # char* title
     ctypes.c_int,  # int flags
 ]
 
@@ -3343,9 +3418,9 @@ proj : mat4
 """
 panel_mvpmat.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
-    ctypes.c_float * 16,  # mat4 model
-    ctypes.c_float * 16,  # mat4 view
-    ctypes.c_float * 16,  # mat4 proj
+    mat4,  # mat4 model
+    mat4,  # mat4 view
+    mat4,  # mat4 proj
 ]
 
 # Function dvz_panel_resize()
@@ -3419,7 +3494,7 @@ type
 """
 panel_contains.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
-    ctypes.c_float * 2,  # vec2 pos
+    vec2,  # vec2 pos
 ]
 panel_contains.restype = ctypes.c_bool
 
@@ -3442,7 +3517,7 @@ type
 """
 panel_at.argtypes = [
     ctypes.POINTER(DvzFigure),  # DvzFigure* figure
-    ctypes.c_float * 2,  # vec2 pos
+    vec2,  # vec2 pos
 ]
 panel_at.restype = ctypes.POINTER(DvzPanel)
 
@@ -3854,7 +3929,7 @@ visual_spirv.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzShaderType,  # DvzShaderType type
     DvzSize,  # DvzSize size
-    ctypes.c_char_p,  # char* buffer
+    CStringBuffer,  # char* buffer
 ]
 
 # Function dvz_visual_shader()
@@ -3871,7 +3946,7 @@ name : char*
 """
 visual_shader.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
 ]
 
 # Function dvz_visual_resize()
@@ -4050,7 +4125,7 @@ visual_tex.argtypes = [
     ctypes.c_uint32,  # uint32_t slot_idx
     DvzId,  # DvzId tex
     DvzId,  # DvzId sampler
-    ctypes.c_uint32 * 3,  # uvec3 offset
+    uvec3,  # uvec3 offset
 ]
 
 # Function dvz_visual_alloc()
@@ -4119,7 +4194,7 @@ visual_data.argtypes = [
     ctypes.c_uint32,  # uint32_t attr_idx
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
 ]
 
 # Function dvz_visual_quads()
@@ -4211,7 +4286,7 @@ color : DvzColor (out parameter)
 colormap.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint8,  # uint8_t value
-    DvzColor,  # DvzColor color
+    DvzColor,  # out DvzColor color
 ]
 
 # Function dvz_colormap_8bit()
@@ -4231,7 +4306,7 @@ color : cvec4 (out parameter)
 colormap_8bit.argtypes = [
     DvzColormap,  # DvzColormap cmap
     ctypes.c_uint8,  # uint8_t value
-    ctypes.c_uint8 * 4,  # cvec4 color
+    cvec4,  # out cvec4 color
 ]
 
 # Function dvz_colormap_scale()
@@ -4257,7 +4332,7 @@ colormap_scale.argtypes = [
     ctypes.c_float,  # float value
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    DvzColor,  # DvzColor color
+    DvzColor,  # out DvzColor color
 ]
 
 # Function dvz_colormap_array()
@@ -4278,7 +4353,7 @@ vmin : float
 vmax : float
     the maximum value
 out : DvzColor* (out parameter)
-    the fetched colors
+    (array) the fetched colors
 """
 colormap_array.argtypes = [
     DvzColormap,  # DvzColormap cmap
@@ -4286,7 +4361,7 @@ colormap_array.argtypes = [
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* out
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # out DvzColor* out
 ]
 
 # Function dvz_compute_normals()
@@ -4305,14 +4380,14 @@ pos : vec3*
 index : DvzIndex*
     pos array of uint32_t indices
 normal : vec3* (out parameter)
-    array of vec3 normals (to be overwritten by this function)
+    (array) the vec3 normals (to be overwritten by this function)
 """
 compute_normals.argtypes = [
     ctypes.c_uint32,  # uint32_t vertex_count
     ctypes.c_uint32,  # uint32_t index_count
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* index
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* normal
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* normal
 ]
 
 # Function dvz_shape_normals()
@@ -4431,7 +4506,7 @@ scale : vec3
 """
 shape_scale.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
-    ctypes.c_float * 3,  # vec3 scale
+    vec3,  # vec3 scale
 ]
 
 # Function dvz_shape_translate()
@@ -4448,7 +4523,7 @@ translate : vec3
 """
 shape_translate.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
-    ctypes.c_float * 3,  # vec3 translate
+    vec3,  # vec3 translate
 ]
 
 # Function dvz_shape_rotate()
@@ -4468,7 +4543,7 @@ axis : vec3
 shape_rotate.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_float,  # float angle
-    ctypes.c_float * 3,  # vec3 axis
+    vec3,  # vec3 axis
 ]
 
 # Function dvz_shape_transform()
@@ -4485,7 +4560,7 @@ transform : mat4
 """
 shape_transform.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
-    ctypes.c_float * 16,  # mat4 transform
+    mat4,  # mat4 transform
 ]
 
 # Function dvz_shape_rescaling()
@@ -4505,7 +4580,7 @@ out_scale : vec3 (out parameter)
 shape_rescaling.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_int,  # int flags
-    ctypes.c_float * 3,  # vec3 out_scale
+    vec3,  # out vec3 out_scale
 ]
 shape_rescaling.restype = ctypes.c_float
 
@@ -4626,9 +4701,9 @@ shape_surface.argtypes = [
     ctypes.c_uint32,  # uint32_t col_count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* heights
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
-    ctypes.c_float * 3,  # vec3 o
-    ctypes.c_float * 3,  # vec3 u
-    ctypes.c_float * 3,  # vec3 v
+    vec3,  # vec3 o
+    vec3,  # vec3 u
+    vec3,  # vec3 v
     ctypes.c_int,  # int flags
 ]
 shape_surface.restype = DvzShape
@@ -4755,7 +4830,7 @@ type
     the shape
 """
 shape_obj.argtypes = [
-    ctypes.c_char_p,  # char* file_path
+    CStringBuffer,  # char* file_path
 ]
 shape_obj.restype = DvzShape
 
@@ -5757,7 +5832,7 @@ type
 """
 font.argtypes = [
     ctypes.c_long,  # long ttf_size
-    ctypes.c_char_p,  # char* ttf_bytes
+    CStringBuffer,  # char* ttf_bytes
 ]
 font.restype = ctypes.POINTER(DvzFont)
 
@@ -5823,7 +5898,7 @@ type
 """
 font_ascii.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
-    ctypes.c_char_p,  # char* string
+    CStringBuffer,  # char* string
 ]
 font_ascii.restype = ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
@@ -5858,7 +5933,7 @@ font_draw.argtypes = [
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* xywh
     ctypes.c_int,  # int flags
-    ctypes.c_uint32 * 2,  # uvec2 out_size
+    uvec2,  # out uvec2 out_size
 ]
 font_draw.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
@@ -5890,7 +5965,7 @@ font_texture.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_uint32,  # uint32_t length
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
-    ctypes.c_uint32 * 3,  # uvec3 size
+    uvec3,  # out uvec3 size
 ]
 font_texture.restype = DvzId
 
@@ -6196,7 +6271,7 @@ bgcolor : vec4
 """
 glyph_bgcolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 4,  # vec4 bgcolor
+    vec4,  # vec4 bgcolor
 ]
 
 # Function dvz_glyph_texture()
@@ -6267,7 +6342,7 @@ string : char*
 """
 glyph_ascii.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_char_p,  # char* string
+    CStringBuffer,  # char* string
 ]
 
 # Function dvz_glyph_xywh()
@@ -6295,7 +6370,7 @@ glyph_xywh.argtypes = [
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* values
-    ctypes.c_float * 2,  # vec2 offset
+    vec2,  # vec2 offset
     ctypes.c_int,  # int flags
 ]
 
@@ -6320,11 +6395,11 @@ color : DvzColor
 glyph_strings.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t string_count
-    ctypes.POINTER(ctypes.c_char_p),  # char** strings
+    CStringArrayType,  # char** strings
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
     DvzColor,  # DvzColor color
-    ctypes.c_float * 2,  # vec2 offset
-    ctypes.c_float * 2,  # vec2 anchor
+    vec2,  # vec2 offset
+    vec2,  # vec2 anchor
 ]
 
 # Function dvz_monoglyph()
@@ -6398,7 +6473,7 @@ monoglyph_offset.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(ctypes.c_int32 * 2),  # ivec2* values
+    ctypes.POINTER(ivec2),  # ivec2* values
     ctypes.c_int,  # int flags
 ]
 
@@ -6443,7 +6518,7 @@ text : char*
 monoglyph_glyph.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
-    ctypes.c_char_p,  # char* text
+    CStringBuffer,  # char* text
     ctypes.c_int,  # int flags
 ]
 
@@ -6461,7 +6536,7 @@ anchor : vec2
 """
 monoglyph_anchor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 2,  # vec2 anchor
+    vec2,  # vec2 anchor
 ]
 
 # Function dvz_monoglyph_size()
@@ -6501,10 +6576,10 @@ text : char*
 """
 monoglyph_textarea.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 3,  # vec3 pos
+    vec3,  # vec3 pos
     DvzColor,  # DvzColor color
     ctypes.c_float,  # float size
-    ctypes.c_char_p,  # char* text
+    CStringBuffer,  # char* text
 ]
 
 # Function dvz_monoglyph_alloc()
@@ -6798,7 +6873,7 @@ tex_image.argtypes = [
     DvzFormat,  # DvzFormat format
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
 tex_image.restype = DvzId
@@ -7120,7 +7195,7 @@ dir : vec3
 mesh_light_dir.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t idx
-    ctypes.c_float * 3,  # vec3 dir
+    vec3,  # vec3 dir
 ]
 
 # Function dvz_mesh_light_color()
@@ -7160,7 +7235,7 @@ params : vec4
 mesh_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t idx
-    ctypes.c_float * 4,  # vec4 params
+    vec4,  # vec4 params
 ]
 
 # Function dvz_mesh_stroke()
@@ -7389,7 +7464,7 @@ pos : vec3
 """
 sphere_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 3,  # vec3 pos
+    vec3,  # vec3 pos
 ]
 
 # Function dvz_sphere_light_params()
@@ -7406,7 +7481,7 @@ params : vec4
 """
 sphere_light_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 4,  # vec4 params
+    vec4,  # vec4 params
 ]
 
 # Function dvz_volume()
@@ -7473,9 +7548,9 @@ zlim : vec2
 """
 volume_bounds.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 2,  # vec2 xlim
-    ctypes.c_float * 2,  # vec2 ylim
-    ctypes.c_float * 2,  # vec2 zlim
+    vec2,  # vec2 xlim
+    vec2,  # vec2 ylim
+    vec2,  # vec2 zlim
 ]
 
 # Function dvz_volume_texcoords()
@@ -7494,8 +7569,8 @@ uvw1 : vec3
 """
 volume_texcoords.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 3,  # vec3 uvw0
-    ctypes.c_float * 3,  # vec3 uvw1
+    vec3,  # vec3 uvw0
+    vec3,  # vec3 uvw1
 ]
 
 # Function dvz_volume_permutation()
@@ -7512,7 +7587,7 @@ ijk : ivec3
 """
 volume_permutation.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_int32 * 3,  # ivec3 ijk
+    ivec3,  # ivec3 ijk
 ]
 
 # Function dvz_volume_slice()
@@ -7546,7 +7621,7 @@ transfer : vec4
 """
 volume_transfer.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float * 4,  # vec4 transfer
+    vec4,  # vec4 transfer
 ]
 
 # Function dvz_tex_volume()
@@ -7580,7 +7655,7 @@ tex_volume.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
     ctypes.c_uint32,  # uint32_t depth
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
 ]
 tex_volume.restype = DvzId
 
@@ -7748,7 +7823,7 @@ tex_slice.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
     ctypes.c_uint32,  # uint32_t depth
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
 ]
 tex_slice.restype = DvzId
 
@@ -7837,11 +7912,11 @@ out : vec2 (out parameter)
     the 2D position
 """
 circular2D.argtypes = [
-    ctypes.c_float * 2,  # vec2 center
+    vec2,  # vec2 center
     ctypes.c_float,  # float radius
     ctypes.c_float,  # float angle
     ctypes.c_float,  # float t
-    ctypes.c_float * 2,  # vec2 out
+    vec2,  # out vec2 out
 ]
 
 # Function dvz_circular_3D()
@@ -7867,13 +7942,13 @@ out : vec3 (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
-    ctypes.c_float * 3,  # vec3 center
-    ctypes.c_float * 3,  # vec3 u
-    ctypes.c_float * 3,  # vec3 v
+    vec3,  # vec3 center
+    vec3,  # vec3 u
+    vec3,  # vec3 v
     ctypes.c_float,  # float radius
     ctypes.c_float,  # float angle
     ctypes.c_float,  # float t
-    ctypes.c_float * 3,  # vec3 out
+    vec3,  # out vec3 out
 ]
 
 # Function dvz_interpolate()
@@ -7922,10 +7997,10 @@ type
     the interpolated point
 """
 interpolate2D.argtypes = [
-    ctypes.c_float * 2,  # vec2 p0
-    ctypes.c_float * 2,  # vec2 p1
+    vec2,  # vec2 p0
+    vec2,  # vec2 p1
     ctypes.c_float,  # float t
-    ctypes.c_float * 2,  # vec2 out
+    vec2,  # vec2 out
 ]
 
 # Function dvz_interpolate_3D()
@@ -7948,10 +8023,10 @@ type
     the interpolated point
 """
 interpolate_3D.argtypes = [
-    ctypes.c_float * 3,  # vec3 p0
-    ctypes.c_float * 3,  # vec3 p1
+    vec3,  # vec3 p0
+    vec3,  # vec3 p1
     ctypes.c_float,  # float t
-    ctypes.c_float * 3,  # vec3 out
+    vec3,  # vec3 out
 ]
 
 # Function dvz_arcball_initial()
@@ -7968,7 +8043,7 @@ angles : vec3
 """
 arcball_initial.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 3,  # vec3 angles
+    vec3,  # vec3 angles
 ]
 
 # Function dvz_arcball_reset()
@@ -8036,7 +8111,7 @@ constrain : vec3
 """
 arcball_constrain.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 3,  # vec3 constrain
+    vec3,  # vec3 constrain
 ]
 
 # Function dvz_arcball_set()
@@ -8053,7 +8128,7 @@ angles : vec3
 """
 arcball_set.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 3,  # vec3 angles
+    vec3,  # vec3 angles
 ]
 
 # Function dvz_arcball_angles()
@@ -8070,7 +8145,7 @@ out_angles : vec3 (out parameter)
 """
 arcball_angles.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 3,  # vec3 out_angles
+    vec3,  # out vec3 out_angles
 ]
 
 # Function dvz_arcball_rotate()
@@ -8089,8 +8164,8 @@ last_pos : vec2
 """
 arcball_rotate.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 2,  # vec2 cur_pos
-    ctypes.c_float * 2,  # vec2 last_pos
+    vec2,  # vec2 cur_pos
+    vec2,  # vec2 last_pos
 ]
 
 # Function dvz_arcball_model()
@@ -8107,7 +8182,7 @@ model : mat4 (out parameter)
 """
 arcball_model.argtypes = [
     ctypes.POINTER(DvzArcball),  # DvzArcball* arcball
-    ctypes.c_float * 16,  # mat4 model
+    mat4,  # out mat4 model
 ]
 
 # Function dvz_arcball_end()
@@ -8196,9 +8271,9 @@ up : vec3
 """
 camera_initial.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
-    ctypes.c_float * 3,  # vec3 pos
-    ctypes.c_float * 3,  # vec3 lookat
-    ctypes.c_float * 3,  # vec3 up
+    vec3,  # vec3 pos
+    vec3,  # vec3 lookat
+    vec3,  # vec3 up
 ]
 
 # Function dvz_camera_reset()
@@ -8295,7 +8370,7 @@ pos : vec3
 """
 camera_position.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
-    ctypes.c_float * 3,  # vec3 pos
+    vec3,  # vec3 pos
 ]
 
 # Function dvz_camera_lookat()
@@ -8312,7 +8387,7 @@ lookat : vec3
 """
 camera_lookat.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
-    ctypes.c_float * 3,  # vec3 lookat
+    vec3,  # vec3 lookat
 ]
 
 # Function dvz_camera_up()
@@ -8329,7 +8404,7 @@ up : vec3
 """
 camera_up.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
-    ctypes.c_float * 3,  # vec3 up
+    vec3,  # vec3 up
 ]
 
 # Function dvz_camera_perspective()
@@ -8365,8 +8440,8 @@ proj : mat4 (out parameter)
 """
 camera_viewproj.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
-    ctypes.c_float * 16,  # mat4 view
-    ctypes.c_float * 16,  # mat4 proj
+    mat4,  # out mat4 view
+    mat4,  # out mat4 proj
 ]
 
 # Function dvz_camera_mvp()
@@ -8465,7 +8540,7 @@ xlim : vec2
 """
 panzoom_xlim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 xlim
+    vec2,  # vec2 xlim
 ]
 
 # Function dvz_panzoom_ylim()
@@ -8482,7 +8557,7 @@ ylim : vec2
 """
 panzoom_ylim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 ylim
+    vec2,  # vec2 ylim
 ]
 
 # Function dvz_panzoom_zlim()
@@ -8499,7 +8574,7 @@ zlim : vec2
 """
 panzoom_zlim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 zlim
+    vec2,  # vec2 zlim
 ]
 
 # Function dvz_panzoom_pan()
@@ -8516,7 +8591,7 @@ pan : vec2
 """
 panzoom_pan.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 pan
+    vec2,  # vec2 pan
 ]
 
 # Function dvz_panzoom_zoom()
@@ -8533,7 +8608,7 @@ zoom : vec2
 """
 panzoom_zoom.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 zoom
+    vec2,  # vec2 zoom
 ]
 
 # Function dvz_panzoom_pan_shift()
@@ -8552,8 +8627,8 @@ center_px : vec2
 """
 panzoom_pan_shift.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 shift_px
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 shift_px
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_panzoom_zoom_shift()
@@ -8572,8 +8647,8 @@ center_px : vec2
 """
 panzoom_zoom_shift.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 shift_px
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 shift_px
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_panzoom_end()
@@ -8606,8 +8681,8 @@ center_px : vec2
 """
 panzoom_zoom_wheel.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.c_float * 2,  # vec2 dir
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 dir
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_panzoom_extent()
@@ -8624,7 +8699,7 @@ extent : DvzBox* (out parameter)
 """
 panzoom_extent.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    ctypes.POINTER(DvzBox),  # DvzBox* extent
+    Out,  # out DvzBox* extent
 ]
 
 # Function dvz_panzoom_set()
@@ -8726,7 +8801,7 @@ pan : vec2
 """
 ortho_pan.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
-    ctypes.c_float * 2,  # vec2 pan
+    vec2,  # vec2 pan
 ]
 
 # Function dvz_ortho_zoom()
@@ -8762,8 +8837,8 @@ center_px : vec2
 """
 ortho_pan_shift.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
-    ctypes.c_float * 2,  # vec2 shift_px
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 shift_px
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_ortho_zoom_shift()
@@ -8782,8 +8857,8 @@ center_px : vec2
 """
 ortho_zoom_shift.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
-    ctypes.c_float * 2,  # vec2 shift_px
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 shift_px
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_ortho_end()
@@ -8816,8 +8891,8 @@ center_px : vec2
 """
 ortho_zoom_wheel.argtypes = [
     ctypes.POINTER(DvzOrtho),  # DvzOrtho* ortho
-    ctypes.c_float * 2,  # vec2 dir
-    ctypes.c_float * 2,  # vec2 center_px
+    vec2,  # vec2 dir
+    vec2,  # vec2 center_px
 ]
 
 # Function dvz_ortho_mvp()
@@ -8899,8 +8974,8 @@ vmax : double* (out parameter)
 ref_get.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     DvzDim,  # DvzDim dim
-    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* vmin
-    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* vmax
+    Out,  # out double* vmin
+    Out,  # out double* vmax
 ]
 
 # Function dvz_ref_expand()
@@ -8982,14 +9057,14 @@ count : uint32_t
 pos : double*
     the 1D positions
 pos_tr : vec3* (out parameter)
-    the transformed positions
+    (array) the transformed positions
 """
 ref_transform1D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     DvzDim,  # DvzDim dim
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* pos
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
 # Function dvz_ref_transform2D()
@@ -9006,13 +9081,13 @@ count : uint32_t
 pos : dvec2*
     the 2D positions
 pos_tr : vec3* (out parameter)
-    the transformed 3D positions
+    (array) the transformed 3D positions
 """
 ref_transform2D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
 # Function dvz_ref_transform_polygon()
@@ -9029,13 +9104,13 @@ count : uint32_t
 pos : dvec2*
     the 2D positions
 pos_tr : dvec2* (out parameter)
-    the transformed 2D positions
+    (array) the transformed 2D positions
 """
 ref_transform_polygon.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
-    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos_tr
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # out dvec2* pos_tr
 ]
 
 # Function dvz_ref_transform3D()
@@ -9052,13 +9127,13 @@ count : uint32_t
 pos : dvec3*
     the 3D positions
 pos_tr : vec3* (out parameter)
-    the transformed positions
+    (array) the transformed positions
 """
 ref_transform3D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
-    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* pos_tr
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
 # Function dvz_ref_inverse()
@@ -9077,8 +9152,8 @@ pos : dvec3* (out parameter)
 """
 ref_inverse.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
-    ctypes.c_float * 3,  # vec3 pos_tr
-    ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
+    vec3,  # vec3 pos_tr
+    Out,  # out dvec3* pos
 ]
 
 # Function dvz_ref_destroy()
@@ -9103,7 +9178,9 @@ Capture a GUI window.
 Parameters
 ----------
 gui_window : DvzGuiWindow*
-    * @param is_captured
+    the GUI window
+is_captured : bool
+    whether the windows should be captured
 """
 gui_window_capture.argtypes = [
     ctypes.POINTER(DvzGuiWindow),  # DvzGuiWindow* gui_window
@@ -9228,8 +9305,8 @@ pivot : vec2
     the pivot
 """
 gui_pos.argtypes = [
-    ctypes.c_float * 2,  # vec2 pos
-    ctypes.c_float * 2,  # vec2 pivot
+    vec2,  # vec2 pos
+    vec2,  # vec2 pivot
 ]
 
 # Function dvz_gui_fixed()
@@ -9245,8 +9322,8 @@ pivot : vec2
     the pivot
 """
 gui_fixed.argtypes = [
-    ctypes.c_float * 2,  # vec2 pos
-    ctypes.c_float * 2,  # vec2 pivot
+    vec2,  # vec2 pos
+    vec2,  # vec2 pivot
 ]
 
 # Function dvz_gui_viewport()
@@ -9260,7 +9337,7 @@ viewport : vec4
     the x, y, w, h values
 """
 gui_viewport.argtypes = [
-    ctypes.c_float * 4,  # vec4 viewport
+    vec4,  # vec4 viewport
 ]
 
 # Function dvz_gui_corner()
@@ -9277,7 +9354,7 @@ pad : vec2
 """
 gui_corner.argtypes = [
     DvzCorner,  # DvzCorner corner
-    ctypes.c_float * 2,  # vec2 pad
+    vec2,  # vec2 pad
 ]
 
 # Function dvz_gui_size()
@@ -9291,7 +9368,7 @@ size : vec2
     the size
 """
 gui_size.argtypes = [
-    ctypes.c_float * 2,  # vec2 size
+    vec2,  # vec2 size
 ]
 
 # Function dvz_gui_color()
@@ -9308,7 +9385,7 @@ color : cvec4
 """
 gui_color.argtypes = [
     ctypes.c_int,  # int type
-    ctypes.c_uint8 * 4,  # cvec4 color
+    cvec4,  # cvec4 color
 ]
 
 # Function dvz_gui_style()
@@ -9370,7 +9447,7 @@ flags : int
     the flags
 """
 gui_begin.argtypes = [
-    ctypes.c_char_p,  # char* title
+    CStringBuffer,  # char* title
     ctypes.c_int,  # int flags
 ]
 
@@ -9387,7 +9464,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : float*
+value : float* (out parameter)
     the pointer to the value
 
 Returns
@@ -9396,10 +9473,10 @@ type
     whether the value has changed
 """
 gui_slider.argtypes = [
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
     ctypes.c_float,  # float vmin
     ctypes.c_float,  # float vmax
-    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* value
+    Out,  # out float* value
 ]
 gui_slider.restype = ctypes.c_bool
 
@@ -9423,7 +9500,7 @@ type
     whether the button was pressed
 """
 gui_button.argtypes = [
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
     ctypes.c_float,  # float width
     ctypes.c_float,  # float height
 ]
@@ -9447,8 +9524,8 @@ type
     whether the checkbox's state has changed
 """
 gui_checkbox.argtypes = [
-    ctypes.c_char_p,  # char* name
-    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* checked
+    CStringBuffer,  # char* name
+    Out,  # out bool* checked
 ]
 gui_checkbox.restype = ctypes.c_bool
 
@@ -9487,8 +9564,8 @@ flags : int
     the widget flags
 """
 gui_colorpicker.argtypes = [
-    ctypes.c_char_p,  # char* name
-    ctypes.c_float * 3,  # vec3 color
+    CStringBuffer,  # char* name
+    vec3,  # vec3 color
     ctypes.c_int,  # int flags
 ]
 gui_colorpicker.restype = ctypes.c_bool
@@ -9504,7 +9581,7 @@ name : char*
     the widget name
 """
 gui_node.argtypes = [
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
 ]
 gui_node.restype = ctypes.c_bool
 
@@ -9536,7 +9613,7 @@ name : char*
     the widget name
 """
 gui_selectable.argtypes = [
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
 ]
 gui_selectable.restype = ctypes.c_bool
 
@@ -9566,10 +9643,10 @@ type
     whether the row selection has changed (in the selected array)
 """
 gui_table.argtypes = [
-    ctypes.c_char_p,  # char* name
+    CStringBuffer,  # char* name
     ctypes.c_uint32,  # uint32_t row_count
     ctypes.c_uint32,  # uint32_t column_count
-    ctypes.POINTER(ctypes.c_char_p),  # char** labels
+    CStringArrayType,  # char** labels
     ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* selected
     ctypes.c_int,  # int flags
 ]
@@ -9845,7 +9922,7 @@ filename : char*
 app_screenshot.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
-    ctypes.c_char_p,  # char* filename
+    CStringBuffer,  # char* filename
 ]
 
 # Function dvz_app_timestamps()
@@ -9870,8 +9947,8 @@ app_timestamps.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
     ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint64_t* seconds
-    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint64_t* nanoseconds
+    Out,  # out uint64_t* seconds
+    Out,  # out uint64_t* nanoseconds
 ]
 
 # Function dvz_app_wait()
@@ -9913,7 +9990,7 @@ time : DvzTime* (out parameter)
     fill a structure with seconds and nanoseconds integers
 """
 time.argtypes = [
-    ctypes.POINTER(DvzTime),  # DvzTime* time
+    Out,  # out DvzTime* time
 ]
 
 # Function dvz_time_print()
@@ -9951,9 +10028,9 @@ button : DvzMouseButton* (out parameter)
 app_mouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
-    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* x
-    ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* y
-    ctypes.POINTER(ctypes.c_int32),  # DvzMouseButton* button
+    Out,  # out double* x
+    Out,  # out double* y
+    Out,  # out DvzMouseButton* button
 ]
 
 # Function dvz_app_keyboard()
@@ -9973,7 +10050,7 @@ key : DvzKeyCode* (out parameter)
 app_keyboard.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
-    ctypes.POINTER(ctypes.c_int32),  # DvzKeyCode* key
+    Out,  # out DvzKeyCode* key
 ]
 
 # Function dvz_free()
@@ -10015,7 +10092,7 @@ external_vertex.argtypes = [
     ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t binding_idx
-    ctypes.POINTER(DvzSize),  # DvzSize* offset
+    Out,  # out DvzSize* offset
 ]
 external_vertex.restype = ctypes.c_int
 
@@ -10041,7 +10118,7 @@ type
 external_index.argtypes = [
     ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.POINTER(DvzSize),  # DvzSize* offset
+    Out,  # out DvzSize* offset
 ]
 external_index.restype = ctypes.c_int
 
@@ -10070,7 +10147,7 @@ external_dat.argtypes = [
     ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t slot_idx
-    ctypes.POINTER(DvzSize),  # DvzSize* offset
+    Out,  # out DvzSize* offset
 ]
 external_dat.restype = ctypes.c_int
 
@@ -10099,7 +10176,7 @@ external_tex.argtypes = [
     ctypes.POINTER(DvzRenderer),  # DvzRenderer* rd
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t slot_idx
-    ctypes.POINTER(DvzSize),  # DvzSize* offset
+    Out,  # out DvzSize* offset
 ]
 external_tex.restype = ctypes.c_int
 
@@ -10220,7 +10297,7 @@ type
 min_max.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
-    ctypes.c_float * 2,  # vec2 out_min_max
+    vec2,  # vec2 out_min_max
 ]
 
 # Function dvz_normalize_bytes()
@@ -10263,7 +10340,7 @@ the : unknown (out parameter)
 range.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* values
-    ctypes.c_double * 2,  # dvec2 min_max
+    dvec2,  # dvec2 min_max
 ]
 
 # Function dvz_earcut()
@@ -10288,7 +10365,7 @@ type
 earcut.argtypes = [
     ctypes.c_uint32,  # uint32_t point_count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* polygon
-    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* out_index_count
+    Out,  # out uint32_t* out_index_count
 ]
 earcut.restype = ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
@@ -10432,7 +10509,7 @@ type
 """
 mock_band.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_float * 2,  # vec2 size
+    vec2,  # vec2 size
 ]
 mock_band.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
@@ -10478,7 +10555,7 @@ type
 """
 mock_fixed.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_float * 3,  # vec3 fixed
+    vec3,  # vec3 fixed
 ]
 mock_fixed.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
@@ -10503,8 +10580,8 @@ type
 """
 mock_line.argtypes = [
     ctypes.c_uint32,  # uint32_t count
-    ctypes.c_float * 3,  # vec3 p0
-    ctypes.c_float * 3,  # vec3 p1
+    vec3,  # vec3 p0
+    vec3,  # vec3 p1
 ]
 mock_line.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
@@ -10725,9 +10802,9 @@ type
     the MVP structure
 """
 mvp.argtypes = [
-    ctypes.c_float * 16,  # mat4 model
-    ctypes.c_float * 16,  # mat4 view
-    ctypes.c_float * 16,  # mat4 proj
+    mat4,  # mat4 model
+    mat4,  # mat4 view
+    mat4,  # mat4 proj
 ]
 mvp.restype = DvzMVP
 
@@ -10823,7 +10900,7 @@ desc : char*
 """
 batch_desc.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    ctypes.c_char_p,  # char* desc
+    CStringBuffer,  # char* desc
 ]
 
 # Function dvz_batch_requests()
@@ -10887,7 +10964,7 @@ filename : char*
 """
 batch_yaml.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    ctypes.c_char_p,  # char* filename
+    CStringBuffer,  # char* filename
 ]
 
 # Function dvz_batch_dump()
@@ -10904,7 +10981,7 @@ filename : char*
 """
 batch_dump.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    ctypes.c_char_p,  # char* filename
+    CStringBuffer,  # char* filename
 ]
 batch_dump.restype = ctypes.c_int
 
@@ -10922,7 +10999,7 @@ filename : char*
 """
 batch_load.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    ctypes.c_char_p,  # char* filename
+    CStringBuffer,  # char* filename
 ]
 
 # Function dvz_batch_copy()
@@ -10990,7 +11067,7 @@ type
 """
 requester_flush.argtypes = [
     ctypes.POINTER(DvzRequester),  # DvzRequester* rqr
-    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* count
+    Out,  # out uint32_t* count
 ]
 requester_flush.restype = ctypes.POINTER(DvzBatch)
 
@@ -11038,7 +11115,7 @@ create_canvas.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
-    ctypes.c_uint8 * 4,  # cvec4 background
+    cvec4,  # cvec4 background
     ctypes.c_int,  # int flags
 ]
 create_canvas.restype = DvzRequest
@@ -11065,7 +11142,7 @@ type
 set_background.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzId,  # DvzId id
-    ctypes.c_uint8 * 4,  # cvec4 background
+    cvec4,  # cvec4 background
 ]
 set_background.restype = DvzRequest
 
@@ -11227,7 +11304,7 @@ upload_dat.argtypes = [
     DvzId,  # DvzId dat
     DvzSize,  # DvzSize offset
     DvzSize,  # DvzSize size
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
 upload_dat.restype = DvzRequest
@@ -11282,7 +11359,7 @@ create_tex.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzTexDims,  # DvzTexDims dims
     DvzFormat,  # DvzFormat format
-    ctypes.c_uint32 * 3,  # uvec3 shape
+    uvec3,  # uvec3 shape
     ctypes.c_int,  # int flags
 ]
 create_tex.restype = DvzRequest
@@ -11309,7 +11386,7 @@ type
 resize_tex.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzId,  # DvzId tex
-    ctypes.c_uint32 * 3,  # uvec3 shape
+    uvec3,  # uvec3 shape
 ]
 resize_tex.restype = DvzRequest
 
@@ -11341,10 +11418,10 @@ type
 upload_tex.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzId,  # DvzId tex
-    ctypes.c_uint32 * 3,  # uvec3 offset
-    ctypes.c_uint32 * 3,  # uvec3 shape
+    uvec3,  # uvec3 offset
+    uvec3,  # uvec3 shape
     DvzSize,  # DvzSize size
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
 upload_tex.restype = DvzRequest
@@ -11443,7 +11520,7 @@ type
 create_glsl.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzShaderType,  # DvzShaderType shader_type
-    ctypes.c_char_p,  # char* code
+    CStringBuffer,  # char* code
 ]
 create_glsl.restype = DvzRequest
 
@@ -11472,7 +11549,7 @@ create_spirv.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzShaderType,  # DvzShaderType shader_type
     DvzSize,  # DvzSize size
-    ctypes.c_char_p,  # char* buffer
+    CStringBuffer,  # char* buffer
 ]
 create_spirv.restype = DvzRequest
 
@@ -12018,7 +12095,7 @@ bind_tex.argtypes = [
     ctypes.c_uint32,  # uint32_t slot_idx
     DvzId,  # DvzId tex
     DvzId,  # DvzId sampler
-    ctypes.c_uint32 * 3,  # uvec3 offset
+    uvec3,  # uvec3 offset
 ]
 bind_tex.restype = DvzRequest
 
@@ -12069,8 +12146,8 @@ type
 record_viewport.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzId,  # DvzId canvas_id
-    ctypes.c_float * 2,  # vec2 offset
-    ctypes.c_float * 2,  # vec2 shape
+    vec2,  # vec2 offset
+    vec2,  # vec2 shape
 ]
 record_viewport.restype = DvzRequest
 
@@ -12251,7 +12328,7 @@ record_push.argtypes = [
     DvzShaderStageFlags,  # DvzShaderStageFlags shader_stages
     DvzSize,  # DvzSize offset
     DvzSize,  # DvzSize size
-    ndpointer(flags="C_CONTIGUOUS"),  # void* data
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
 ]
 record_push.restype = DvzRequest
 

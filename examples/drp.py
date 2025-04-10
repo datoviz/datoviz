@@ -54,7 +54,7 @@ void main()
 """
 
 req = dvz.create_glsl(
-    batch, dvz.SHADER_VERTEX, dvz.S_(vertex_glsl))
+    batch, dvz.SHADER_VERTEX, vertex_glsl)
 
 # Assign the shader to the graphics pipe.
 vertex_id = req.id
@@ -75,7 +75,7 @@ void main()
 """
 
 req = dvz.create_glsl(
-    batch, dvz.SHADER_FRAGMENT, dvz.S_(fragment_glsl))
+    batch, dvz.SHADER_FRAGMENT, fragment_glsl)
 
 # Assign the shader to the graphics pipe.
 fragment_id = req.id
@@ -111,7 +111,7 @@ data = np.array([
     ((+1, +1, 0), (0, 255, 0, 255)),
     ((+0, -1, 0), (0, 0, 255, 255)),
 ], dtype=vertex_dtype)
-req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, dvz.A_(data), 0)
+req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, data, 0)
 
 
 # Commands.

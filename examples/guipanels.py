@@ -13,7 +13,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, S_, vec2, vec3, vec4
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ def load_mouse_volume():
     shape = volume_data.shape
     MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
     format = dvz.FORMAT_R8G8B8A8_UNORM
-    tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
+    tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume_data)
     return tex, MOUSE_D, MOUSE_H, MOUSE_W
 
 
@@ -63,7 +63,7 @@ panel1 = dvz.panel(figure, 100, 100, 300, 200)
 arcball = dvz.panel_arcball(panel1)
 volume = create_volume(*load_mouse_volume())
 dvz.panel_visual(panel1, volume, 0)
-dvz.panel_gui(panel1, S_("Panel 1"), 0)
+dvz.panel_gui(panel1, "Panel 1", 0)
 
 # Initial view
 dvz.arcball_initial(arcball, vec3(-2.25, 0.65, 1.5))
@@ -90,7 +90,7 @@ dvz.point_position(visual, 0, n, pos, 0)
 dvz.point_color(visual, 0, n, color, 0)
 dvz.point_size(visual, 0, n, size, 0)
 dvz.panel_visual(panel2, visual, 0)
-dvz.panel_gui(panel2, S_("Panel 2"), 0)
+dvz.panel_gui(panel2, "Panel 2", 0)
 
 
 # Run and cleanup

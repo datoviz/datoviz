@@ -17,7 +17,7 @@ Illustrates:
 import ctypes
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, S_, V_
+from datoviz import vec2, Out
 
 
 # -------------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ dvz.panel_visual(panel1, visual1, 0)
 # iv.   Call `dvz.app_gui(...)`
 
 # A wrapped boolean value with initial value False.
-checked = V_(True, ctypes.c_bool)
+checked = Out(True)
 
 
 @dvz.gui
@@ -129,12 +129,12 @@ def ongui(app, fid, ev):
     dvz.gui_size(vec2(170, 110))
 
     # Start a GUI dialog with a dialog title.
-    dvz.gui_begin(S_("My GUI"), 0)
+    dvz.gui_begin("My GUI", 0)
 
     # Add a checkbox
     with checked:  # Wrap the boolean value.
         # Return True if the checkbox's state has changed.
-        if dvz.gui_checkbox(S_("Show visual"), checked.P_):
+        if dvz.gui_checkbox("Show visual", checked.P_):
             #                                  ^^^^^^^^^^ pass a C pointer to our wrapped bool
             is_checked = checked.value  # Python variable with the checkbox's state
 

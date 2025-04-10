@@ -20,12 +20,7 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
-from datoviz import (
-    S_,  # Python string to ctypes char*
-    vec2,
-    vec3,
-    vec4,
-)
+from datoviz import vec2, vec3
 
 
 # GUI callback function.
@@ -35,11 +30,11 @@ def ongui(app, fid, ev):
     dvz.gui_size(vec2(170, 110))
 
     # Start a GUI dialog with a dialog title.
-    dvz.gui_begin(S_("My GUI"), 0)
+    dvz.gui_begin("My GUI", 0)
 
     # Add two buttons. The functions return whether the button was pressed.
-    incr = dvz.gui_button(S_("Increase"), 150, 30)
-    decr = dvz.gui_button(S_("Decrease"), 150, 30)
+    incr = dvz.gui_button("Increase", 150, 30)
+    decr = dvz.gui_button("Decrease", 150, 30)
 
     # Scaling factor.
     scale = 1.0

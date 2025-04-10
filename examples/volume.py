@@ -16,7 +16,7 @@ import gzip
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import A_, vec2, vec3, vec4
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -55,7 +55,7 @@ scaling = 1.0 / MOUSE_D
 
 # Create the 3D texture.
 format = dvz.FORMAT_R8G8B8A8_UNORM
-tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, A_(volume_data))
+tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume_data)
 
 
 # -------------------------------------------------------------------------------------------------

@@ -19,7 +19,7 @@ Illustrates:
 from pathlib import Path
 import numpy as np
 import datoviz as dvz
-from datoviz import vec3, vec4, S_
+from datoviz import vec3
 
 # Boilerplate.
 app = dvz.app(0)
@@ -38,7 +38,7 @@ arcball = dvz.panel_arcball(panel)
 # Load a .OBJ mesh file.
 CURDIR = Path(__file__).parent
 filepath = (CURDIR / "../data/mesh/brain.obj").resolve()
-shape = dvz.shape_obj(S_(filepath))
+shape = dvz.shape_obj(filepath)
 
 # Fill artificial colors.
 nv = shape.vertex_count

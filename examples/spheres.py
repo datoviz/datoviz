@@ -15,7 +15,7 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, vec4, S_
+from datoviz import vec2, vec3, vec4
 
 
 # -------------------------------------------------------------------------------------------------
@@ -70,12 +70,10 @@ color = np.full((n, 4), 255, dtype=np.uint8)
 dvz.glyph_color(glyph, 0, n, color, 0)
 
 # We specify the ASCII string (we could also specify unicode uint32 codepoints with glyph_unicode)
-# NOTE: we need to use S_() to pass a Python string to this ctypes-wrapped C function expecting
-# a const char*.
-dvz.glyph_ascii(glyph, S_(text))
+dvz.glyph_ascii(glyph, text)
 
 # Now we compute the glyph shifts (called "xywh") using our font.
-xywh = dvz.font_ascii(af.font, S_(text))
+xywh = dvz.font_ascii(af.font, text)
 # We also define a global relative anchor point, in pixels (xy), for the string.
 # By default, the anchor is (0, 0) which represents the lower left corner of the string. The
 # anchor position is the string position defined above (1, 1, 0).

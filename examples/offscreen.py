@@ -13,9 +13,6 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
-from datoviz import (
-    S_,  # Python string to ctypes char*
-)
 
 offscreen = True
 
@@ -60,7 +57,7 @@ color = np.repeat(color, path_size, axis=0)
 dvz.path_color(visual, 0, n, color, 0)
 
 # Line width.
-dvz.path_linewidth(visual, 3.0)
+dvz.path_linewidth(visual, 0, n, np.full(n, 3.0, dtype=np.float32), 0)
 
 # Add the visual.
 dvz.panel_visual(panel, visual, 0)
@@ -70,7 +67,7 @@ dvz.scene_run(scene, app, 0)
 
 # Screenshot to ./offscreen.png.
 if offscreen:
-    dvz.app_screenshot(app, dvz.figure_id(figure), S_("offscreen_python.png"))
+    dvz.app_screenshot(app, dvz.figure_id(figure), "offscreen_python.png")
 
 # Cleanup.
 dvz.scene_destroy(scene)

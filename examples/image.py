@@ -17,7 +17,6 @@ import numpy as np
 from PIL import Image
 
 import datoviz as dvz
-from datoviz import A_
 
 # Boilerplate.
 app = dvz.app(0)
@@ -38,7 +37,7 @@ with Image.open(filepath) as f:
     filter = dvz.FILTER_LINEAR
 
     # Create a texture out of a RGB image.
-    tex = dvz.tex_image(batch, format, width, height, A_(image), 0)
+    tex = dvz.tex_image(batch, format, width, height, image, 0)
 
 
 # Create a figure 1000x1000.

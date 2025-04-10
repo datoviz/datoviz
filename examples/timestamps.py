@@ -13,7 +13,6 @@ Illustrates:
 
 import numpy as np
 import datoviz as dvz
-from datoviz import A_
 
 app = dvz.app(0)
 batch = dvz.app_batch(app)
@@ -35,7 +34,7 @@ nanoseconds = np.zeros(count, dtype=np.uint64) # number of ns within the second
 def on_timer(app, window_id, ev):
     # The timestamps are automatically recorded at every frame, this call fetches the last
     # `count` ones.
-    dvz.app_timestamps(app, dvz.figure_id(figure), count, A_(seconds), A_(nanoseconds))
+    dvz.app_timestamps(app, dvz.figure_id(figure), count, seconds, nanoseconds)
 
     # We display the values.
     print(f"Last {count} frames:")
