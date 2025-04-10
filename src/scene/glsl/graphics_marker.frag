@@ -197,6 +197,11 @@ void main()
     mat2 rot = mat2(c, s, -s, c);
     P = rot * P;
 
+    // NOTE: the eps is to remove tiny artifacts with rotated MSDF (ex with 5-branch star).
+    float eps = 5e-3;
+    if (abs(P.x) >= .5-eps || abs(P.y) >= .5-eps)
+        discard;
+
     // Marker SDF.
     float distance = 0;
     float sd = 0;
@@ -211,16 +216,14 @@ void main()
         break;
 
     case DVZ_MARKER_MODE_BITMAP:
-        out_color = texture(tex, uv);
+        out_color = texture(tex, P + .5);
         // NOTE: take into account the alpha component of the vertex.
         out_color.a *= color.a;
-        if (abs(P.x) > .5 || abs(P.y) > .5)
-            discard;
         return;
         break;
 
     case DVZ_MARKER_MODE_SDF:
-        sd = texture(tex, uv).r;
+        sd = texture(tex, P + .5).r;
 
         size_ = size + 2 * params.edge_width + antialias;
         distance = 4 * sd * size_ / params.tex_scale - 2;
@@ -228,7 +231,7 @@ void main()
         break;
 
     case DVZ_MARKER_MODE_MSDF:
-        vec3 msd = texture(tex, uv).rgb;
+        vec3 msd = texture(tex, P + .5).rgb;
         sd = median(msd.r, msd.g, msd.b);
 
         size_ = size + 2 * params.edge_width + antialias;
