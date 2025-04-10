@@ -219,12 +219,18 @@ def parse_functions(text):
         signature("signature")
     for item, start, stop in func.scanString(text):
         args = []
+        # Detect if there is are out params.
+        out_params = re.findall(r'@param\[out\]\s+(\w+)\s', item.docstring)
         for i, entry in enumerate(item.args):
             b = Bunch(
                 dtype=entry.dtype,
                 name=entry.name)
             if entry.const:
                 b.const = entry.const
+            if entry.name in out_params:
+                b.out = True
+                if " (array) " in item.docstring:
+                    b.out_type = "array"
             args.append(b)
         funcs[item.name] = Bunch(
             name=item.name,

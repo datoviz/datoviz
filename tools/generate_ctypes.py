@@ -12,7 +12,7 @@ ENUMS = set()
 EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
-DvzColor = 'ctypes.c_uint8 * 4' if DVZ_COLOR_CVEC4 else 'ctypes.c_float * 4'
+DvzColor = 'cvec4' if DVZ_COLOR_CVEC4 else 'vec4'
 DvzAlpha = 'ctypes.c_uint8' if DVZ_COLOR_CVEC4 else 'ctypes.c_float'
 
 
@@ -26,26 +26,11 @@ def _extract_int(s):
 # Original C type to ctype, no pointers.
 def c_to_ctype(type, enum_int=False, unsigned=None):
     assert '*' not in type
-    n = _extract_int(type)
+    # n = _extract_int(type)
     type_ = type if not type.endswith('_t') else type[:-2]
 
-    if type.startswith('vec'):
-        return f'ctypes.c_float * {n}'
-
-    if type.startswith('mat'):
-        return f'ctypes.c_float * {n * n}'
-
-    elif type.startswith('cvec'):
-        return f'ctypes.c_uint8 * {n}'
-
-    elif type.startswith('uvec'):
-        return f'ctypes.c_uint32 * {n}'
-
-    elif type.startswith('ivec'):
-        return f'ctypes.c_int32 * {n}'
-
-    elif type.startswith('dvec'):
-        return f'ctypes.c_double * {n}'
+    if type.startswith('vec') or type[1:].startswith('vec') or type.startswith('mat'):
+        return type
 
     elif type == 'DvzIndex':
         return 'ctypes.c_uint32'
@@ -142,24 +127,33 @@ def cpointer_to_ndpointer(type, unsigned=None, ndpointer=True):
 
 
 # Final type mapping.
-def map_type(type, enum_int=False, unsigned=None, ndpointer=True):
+def map_type(type, enum_int=False, unsigned=None, ndpointer=True, out=None, out_type=None, argtypes=None):
     assert type
     if type == 'char*' and not unsigned:
-        return 'ctypes.c_char_p'
+        return 'ctypes.c_char_p' if not argtypes else 'CStringBuffer'
 
     elif type == 'char**' and not unsigned:
-        return 'ctypes.POINTER(ctypes.c_char_p)'
+        return 'ctypes.POINTER(ctypes.c_char_p)' if not argtypes else 'CStringArrayType'
 
     elif type == "void*":
         # NOTE: void* becomes either "ctypes.c_void_p", or an ndpointer if the argument is
         # typically expected to be an ndarray
         if ndpointer:
-            return 'ndpointer(flags="C_CONTIGUOUS")'
+            return 'ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS")'
         else:
             return "ctypes.c_void_p"
 
     elif type.endswith('*'):
-        return cpointer_to_ndpointer(type, unsigned=unsigned, ndpointer=ndpointer)
+        if not out or out_type == 'array':
+            return cpointer_to_ndpointer(type, unsigned=unsigned, ndpointer=ndpointer)
+        else:
+            # Passing out parameter, normal ctypes Pointer, and caller uses Out(py_var)
+            return 'Out'
+            # assert '*' in type
+            # assert type.endswith('*')
+            # btype = type[:-1]
+            # ctype = c_to_ctype(btype, enum_int=True) or btype
+            # return f'ctypes.POINTER({ctype})'
 
     else:
         return c_to_ctype(type, enum_int=enum_int, unsigned=unsigned)
@@ -336,9 +330,14 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
                     else:
                         ndpointer = True
 
-                    mtype = map_type(arg["dtype"], ndpointer=ndpointer)
+                    mtype = map_type(
+                        arg["dtype"],
+                        ndpointer=ndpointer,
+                        out=arg.get("out", None),
+                        out_type=arg.get("out_type", None),
+                        argtypes=True)
                     out += (f'    {mtype},  '
-                            f'# {arg["dtype"]} {arg["name"]}\n')
+                            f'# {"out " if arg.get('out', None) else ""}{arg["dtype"]} {arg["name"]}\n')
                     # annotations[arg["name"]] = mtype
             out += ']\n'
             restype = map_type(func_info["returns"])

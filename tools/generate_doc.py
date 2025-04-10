@@ -49,6 +49,19 @@ ICONS = {
     'out': ':octicons-arrow-left-16:',
 }
 
+MTYPE_MAPPING = {
+    "c_bool": "bool",
+    "c_char_p": "string",
+    "c_double": "float, 32-bit",
+    "c_float": "float, 64-bit",
+    "c_int": "int, 32-bit signed",
+    "c_long": "int, 64-bit signed",
+    "c_ubyte": "int, 8-bit unsigned",
+    "c_uint": "int, 32-bit unsigned",
+    "c_ulong": "int, 64-bit unsigned",
+    "c_void_p": "array",
+}
+
 
 # Utils
 # -------------------------------------------------------------------------------------------------
@@ -85,6 +98,10 @@ def _parse_markdown_enums(api_text):
     r = re.compile(r'#{2,}\s+`(\w+)`')  # ex: "### `DvzMyEnum`"
     enums = r.finditer(api_text)
     return enums
+
+
+def _display_mtype(mtype):
+    return MTYPE_MAPPING.get(mtype, mtype)
 
 
 # Doc generation
@@ -390,7 +407,7 @@ def generate_api():
             mtypes = []
             func = getattr(dvz, py_func_name, None)
             if func:
-                mtypes = [_.__name__ for _ in func.argtypes]
+                mtypes = [_display_mtype(_.__name__) for _ in func.argtypes]
 
             py_args = "\n".join(
                 f"    {arg_name},  # {arg_desc} ({arg_type})"

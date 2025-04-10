@@ -14,6 +14,7 @@ from ctypes import c_char_p
 import faulthandler
 import os
 import pathlib
+from pathlib import Path
 import platform
 
 from enum import IntEnum
@@ -124,6 +125,70 @@ class WrappedValue:
         return str(self.value)
 
 
+class CStringArrayType:
+    @classmethod
+    def from_param(cls, value):
+        if not isinstance(value, list):
+            raise TypeError("Expected a list of strings")
+
+        encoded = [s.encode('utf-8') for s in value]
+        bufs = [ctypes.create_string_buffer(s) for s in encoded]
+        arr = (ctypes.c_char_p * len(bufs))(*[ctypes.cast(b, ctypes.c_char_p) for b in bufs])
+
+        # keep references alive
+        arr._buffers = bufs
+        return arr
+
+
+class CStringBuffer:
+    @classmethod
+    def from_param(cls, value):
+        if isinstance(value, Path):
+            value = str(value)
+        if not isinstance(value, str):
+            raise TypeError("Expected a string")
+        buf = ctypes.create_string_buffer(value.encode('utf-8'))
+        # keep reference to buffer so it's not GC'd
+        buf._keepalive = buf
+        return buf
+
+
+# ===============================================================================
+# Out wrapper
+# ===============================================================================
+
+class Out:
+    _ctype_map = {
+        float: ctypes.c_float,
+        int: ctypes.c_int,
+        bool: ctypes.c_bool,
+    }
+
+    def __init__(self, initial):
+        py_type = type(initial)
+        if py_type not in self._ctype_map:
+            raise TypeError(f"Unsupported type: {py_type}")
+        self._ctype = self._ctype_map[py_type]
+        self._buffer = self._ctype(initial)
+
+    @property
+    def value(self):
+        return self._buffer.value
+
+    def __ctypes_from_outparam__(self):
+        return ctypes.byref(self._buffer)
+
+    @classmethod
+    def from_param(cls, obj):
+        if not isinstance(obj, cls):
+            raise TypeError("Expected an Out instance")
+        return ctypes.byref(obj._buffer)
+
+
+# ===============================================================================
+# Array wrappers
+# ===============================================================================
+
 def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
         return x
@@ -145,8 +210,8 @@ def pointer_array(pointer, length, n_components, dtype=np.float32):
 
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
-    ndim = kwargs.pop('ndim', 1)
-    ncol = kwargs.pop('ncol', 1)
+    ndim = kwargs.pop('ndim', None)
+    ncol = kwargs.pop('ncol', None)
     base = ndpointer_(*args, **kwargs)
 
     @classmethod
@@ -155,10 +220,10 @@ def ndpointer(*args, **kwargs):
             return obj
         if isinstance(obj, np.ndarray):
             s = f"array <{obj.dtype}>{obj.shape}"
-            if obj.ndim != ndim:
+            if ndim and obj.ndim != ndim:
                 raise ValueError(
                     f"Wrong ndim {obj.ndim} (expected {ndim}) for {s}")
-            if ncol > 1 and obj.shape[1] != ncol:
+            if ncol and ncol > 1 and obj.shape[1] != ncol:
                 raise ValueError(
                     f"Wrong shape {obj.shape} (expected (*, {ncol})) for {s}")
             out = base.from_param(obj)
@@ -185,37 +250,47 @@ def pointer_image(rgb, width, height, n_channels=3):
     return arr
 
 
-def vec2(x: float = 0, y: float = 0):
-    return (ctypes.c_float * 2)(x, y)
+# ===============================================================================
+# Vec types
+# ===============================================================================
+
+class CVectorBase(ctypes.Array):
+    _type_ = ctypes.c_float
+    _length_ = 0
+    _name_ = ''
+
+    def __new__(cls, *values):
+        values = list(values) + [0] * (cls._length_ - len(values))
+        return super().__new__(cls, *values[:cls._length_])
+
+    def __repr__(self):
+        vals = ', '.join(f'{v:.6g}' for v in self)
+        return f'{self._name_}({vals})'
 
 
-def vec3(x: float = 0, y: float = 0, z: float = 0):
-    return (ctypes.c_float * 3)(x, y, z)
+def make_vector_type(name, ctype, length):
+    return type(name, (CVectorBase,), {
+        '_type_': ctype,
+        '_length_': length,
+        '_name_': name,
+    })
 
 
-def vec4(x: float = 0, y: float = 0, z: float = 0, w: float = 0):
-    return (ctypes.c_float * 4)(x, y, z, w)
-
-
-def cvec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
-    return (ctypes.c_uint8 * 4)(r, g, b, a)
-
-
-def uvec3(x: int = 0, y: int = 0, z: int = 0):
-    return (ctypes.c_uint32 * 3)(x, y, z)
-
-
-def uvec3(x: int = 0, y: int = 0, z: int = 0, a: int = 0):
-    return (ctypes.c_uint32 * 4)(x, y, z, a)
-
-
-def ivec3(r: int = 0, g: int = 0, b: int = 0):
-    return (ctypes.c_int32 * 3)(r, g, b)
-
-
-def ivec4(r: int = 0, g: int = 0, b: int = 0, a: int = 0):
-    return (ctypes.c_int32 * 4)(r, g, b, a)
-
+vec2 = make_vector_type('vec2', ctypes.c_float, 2)
+vec3 = make_vector_type('vec3', ctypes.c_float, 3)
+vec4 = make_vector_type('vec4', ctypes.c_float, 4)
+dvec2 = make_vector_type('dvec2', ctypes.c_double, 2)
+dvec3 = make_vector_type('dvec3', ctypes.c_double, 3)
+dvec4 = make_vector_type('dvec4', ctypes.c_double, 4)
+cvec4 = make_vector_type('cvec4', ctypes.c_uint8, 4)
+uvec2 = make_vector_type('uvec2', ctypes.c_uint32, 2)
+uvec3 = make_vector_type('uvec3', ctypes.c_uint32, 3)
+uvec4 = make_vector_type('uvec4', ctypes.c_uint32, 4)
+ivec2 = make_vector_type('ivec2', ctypes.c_int32, 2)
+ivec3 = make_vector_type('ivec3', ctypes.c_int32, 3)
+ivec4 = make_vector_type('ivec4', ctypes.c_int32, 4)
+mat3 = make_vector_type('mat3', ctypes.c_int32, 3*3)
+mat4 = make_vector_type('mat4', ctypes.c_int32, 4*4)
 
 
 # ===============================================================================
@@ -248,12 +323,8 @@ class VkCommandBuffer(ctypes.Structure):
 
 
 
-DEFAULT_CLEAR_COLOR = (ctypes.c_ubyte * 4)()
-DEFAULT_VIEWPORT = (ctypes.c_float * 2)()
+DEFAULT_CLEAR_COLOR = cvec4()
+DEFAULT_VIEWPORT = vec2()
 
 from_array = array_pointer
 from_pointer = pointer_array
-
-A_ = array_pointer
-S_ = char_pointer
-V_ = WrappedValue
