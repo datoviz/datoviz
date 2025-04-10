@@ -48,6 +48,10 @@ static inline bool _is_vec2_null(vec2 v) { return memcmp(v, (vec2){0, 0}, sizeof
 
 
 
+static inline bool _is_dvec2_null(dvec2 v) { return fabs(v[0]) < 1e-12 && fabs(v[1]) < 1e-12; }
+
+
+
 static inline void _normalize_pos(DvzPanzoom* pz, vec2 in, vec2 out)
 {
     // From pixel coordinates (origin is top left corner) to NDC (origin is center of
@@ -117,10 +121,6 @@ void dvz_panzoom_reset(DvzPanzoom* pz)
 
     pz->zoom_center[0] = 1;
     pz->zoom_center[1] = 1;
-
-    // pz->mvp = dvz_mvp_default();
-    pz->zlim[0] = -1;
-    pz->zlim[1] = +1;
 }
 
 
@@ -138,46 +138,6 @@ void dvz_panzoom_flags(DvzPanzoom* pz, int flags)
 {
     ANN(pz);
     pz->flags = flags;
-}
-
-
-
-void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim)
-{
-    ANN(pz);
-    if (_is_vec2_null(xlim))
-    {
-        // TODO: compute xlim from pan and zoom
-        // FLOAT_MIN/MAX=no lim
-    }
-    else
-    {
-        _vec2_copy(xlim, pz->xlim);
-    }
-}
-
-
-
-void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim)
-{
-    ANN(pz);
-    if (_is_vec2_null(ylim))
-    {
-        // TODO: compute ylim from pan and zoom
-        // FLOAT_MIN/MAX=no lim
-    }
-    else
-    {
-        _vec2_copy(ylim, pz->ylim);
-    }
-}
-
-
-
-void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim)
-{
-    ANN(pz);
-    _vec2_copy(zlim, pz->zlim);
 }
 
 
@@ -313,7 +273,7 @@ void dvz_panzoom_extent(DvzPanzoom* pz, DvzBox* box)
     float ymin = -pz->pan[1] - 1.0f / pz->zoom[1];
     float ymax = -pz->pan[1] + 1.0f / pz->zoom[1];
 
-    *box = dvz_box(xmin, xmax, ymin, ymax, pz->zlim[0], pz->zlim[1]);
+    *box = dvz_box(xmin, xmax, ymin, ymax, -1, +1);
 }
 
 
@@ -331,8 +291,8 @@ void dvz_panzoom_set(DvzPanzoom* pz, DvzBox* extent)
     pz->pan[0] = -(extent->xmin + extent->xmax) / 2.0f;
     pz->pan[1] = -(extent->ymin + extent->ymax) / 2.0f;
 
-    // pz->zlim[0] = extent.zmin;
-    // pz->zlim[1] = extent.zmax;
+    pz->pan_center[0] = pz->pan[0];
+    pz->pan_center[1] = pz->pan[1];
 }
 
 
@@ -356,6 +316,82 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
         float zx = pz->zoom[0];
         float zy = pz->zoom[1];
         glm_ortho(-1.0f / zx, +1.0f / zx, -1.0f / zy, 1.0f / zy, -10.0f, 10.0f, mvp->proj);
+    }
+}
+
+
+
+void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, dvec2 xlim)
+{
+    ANN(pz);
+    ANN(ref);
+
+    // GET
+    if (_is_dvec2_null(xlim))
+    {
+        // Find the extent.
+        DvzBox box = {0};
+        dvz_panzoom_extent(pz, &box);
+        dvec3 pos = {0};
+
+        dvz_ref_inverse(ref, (vec3){box.xmin, 0, 0}, &pos);
+        xlim[0] = pos[0];
+
+        dvz_ref_inverse(ref, (vec3){box.xmax, 0, 0}, &pos);
+        xlim[1] = pos[0];
+    }
+    // SET
+    else
+    {
+        // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
+        vec3 xlim_ndc[2];
+        dvz_ref_transform1D(ref, DVZ_DIM_X, 2, xlim, xlim_ndc);
+        float xmin = xlim_ndc[0][DVZ_DIM_X];
+        float xmax = xlim_ndc[1][DVZ_DIM_X];
+
+        DvzBox extent = {0};
+        dvz_panzoom_extent(pz, &extent);
+        extent.xmin = xmin;
+        extent.xmax = xmax;
+        dvz_panzoom_set(pz, &extent);
+    }
+}
+
+
+
+void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, dvec2 ylim)
+{
+    ANN(pz);
+    ANN(ref);
+
+    // GET
+    if (_is_dvec2_null(ylim))
+    {
+        // Find the extent.
+        DvzBox box = {0};
+        dvz_panzoom_extent(pz, &box);
+        dvec3 pos = {0};
+
+        dvz_ref_inverse(ref, (vec3){0, box.ymin, 0}, &pos);
+        ylim[0] = pos[0];
+
+        dvz_ref_inverse(ref, (vec3){0, box.ymax, 0}, &pos);
+        ylim[1] = pos[0];
+    }
+    // SET
+    else
+    {
+        // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
+        vec3 ylim_ndc[2];
+        dvz_ref_transform1D(ref, DVZ_DIM_Y, 2, ylim, ylim_ndc);
+        float ymin = ylim_ndc[0][DVZ_DIM_Y];
+        float ymax = ylim_ndc[1][DVZ_DIM_Y];
+
+        DvzBox extent = {0};
+        dvz_panzoom_extent(pz, &extent);
+        extent.ymin = ymin;
+        extent.ymax = ymax;
+        dvz_panzoom_set(pz, &extent);
     }
 }
 

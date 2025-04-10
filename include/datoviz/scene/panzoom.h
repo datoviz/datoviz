@@ -40,16 +40,12 @@ typedef struct DvzPanzoom DvzPanzoom;
 struct DvzPanzoom
 {
     vec2 viewport_size;
-    vec2 xlim;
-    vec2 ylim;
-    vec2 zlim;
     int flags;
 
     vec2 pan;
     vec2 pan_center;
     vec2 zoom;
     vec2 zoom_center;
-    // DvzMVP mvp;
 };
 
 

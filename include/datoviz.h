@@ -3483,36 +3483,6 @@ DVZ_EXPORT void dvz_panzoom_flags(DvzPanzoom* pz, int flags);
 
 
 /**
- * Set a panzoom x limits.
- *
- * @param pz the panzoom
- * @param xlim the xlim (FLOAT_MIN/MAX=no lim)
- */
-DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, vec2 xlim);
-
-
-
-/**
- * Set a panzoom y limits.
- *
- * @param pz the panzoom
- * @param ylim the ylim (FLOAT_MIN/MAX=no lim)
- */
-DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, vec2 ylim);
-
-
-
-/**
- * Set a panzoom z limits.
- *
- * @param pz the panzoom
- * @param zlim the zlim (FLOAT_MIN/MAX=no lim)
- */
-DVZ_EXPORT void dvz_panzoom_zlim(DvzPanzoom* pz, vec2 zlim);
-
-
-
-/**
  * Apply a pan value to a panzoom.
  *
  * @param pz the panzoom
@@ -3601,6 +3571,28 @@ DVZ_EXPORT void dvz_panzoom_set(DvzPanzoom* pz, DvzBox* extent);
  * @param mvp the MVP
  */
 DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
+
+
+
+/**
+ * Get the xmin and xmax.
+ *
+ * @param pz the panzoom
+ * @param ref the ref
+ * @param[out] xlim the x coordinate of the left and right ends of the view
+ */
+DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, dvec2 xlim);
+
+
+
+/**
+ * Get the ymin and ymax.
+ *
+ * @param pz the panzoom
+ * @param ref the ref
+ * @param[out] ylim the y coordinate of the left and right ends of the view
+ */
+DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, dvec2 ylim);
 
 
 
