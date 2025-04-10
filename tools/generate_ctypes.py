@@ -255,6 +255,10 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             out += '\n\n'
     # Aliases without the DVZ_ prefix.
     out += '# Function aliases\n\n'
+    for name in ENUMS:
+        if name.startswith('Dvz'):
+            out += f'{name[3:]} = {name}\n'
+    out += '\n'
     for name, value in enum_values:
         if name.startswith('DVZ_'):
             name = name[4:]

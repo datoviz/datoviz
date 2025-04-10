@@ -328,3 +328,10 @@ DEFAULT_VIEWPORT = vec2()
 
 from_array = array_pointer
 from_pointer = pointer_array
+
+
+def from_enum(enum_cls, value):
+    for name, val in enum_cls.__dict__.items():
+        if not name.startswith('_') and isinstance(val, int) and val == value:
+            return name
+    return None

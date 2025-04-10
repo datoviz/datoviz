@@ -328,9 +328,12 @@ DEFAULT_VIEWPORT = vec2()
 from_array = array_pointer
 from_pointer = pointer_array
 
-A_ = array_pointer
-S_ = char_pointer
-V_ = WrappedValue
+
+def from_enum(enum_cls, value):
+    for name, val in enum_cls.__dict__.items():
+        if not name.startswith('_') and isinstance(val, int) and val == value:
+            return name
+    return None
 DVZ_ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
 DvzColor = cvec4
@@ -1218,6 +1221,74 @@ class DvzPrintFlagsFlags(CtypesEnum):
 
 
 # Function aliases
+
+BufferType = DvzBufferType
+BlendType = DvzBlendType
+KeyCode = DvzKeyCode
+Orientation = DvzOrientation
+MouseButton = DvzMouseButton
+SlotType = DvzSlotType
+SceneFont = DvzSceneFont
+VolumeFlags = DvzVolumeFlags
+ShaderFormat = DvzShaderFormat
+UploadFlags = DvzUploadFlags
+CapType = DvzCapType
+TexDims = DvzTexDims
+PanzoomFlags = DvzPanzoomFlags
+Easing = DvzEasing
+Filter = DvzFilter
+KeyboardModifiers = DvzKeyboardModifiers
+CullMode = DvzCullMode
+MouseState = DvzMouseState
+TexFlags = DvzTexFlags
+GraphicsRequestFlags = DvzGraphicsRequestFlags
+PathFlags = DvzPathFlags
+BoxMergeStrategy = DvzBoxMergeStrategy
+Dim = DvzDim
+DialogFlags = DvzDialogFlags
+Align = DvzAlign
+KeyboardEventType = DvzKeyboardEventType
+MouseEventType = DvzMouseEventType
+VisualFlags = DvzVisualFlags
+MarkerAspect = DvzMarkerAspect
+MockFlags = DvzMockFlags
+FrontFace = DvzFrontFace
+DescriptorType = DvzDescriptorType
+ContourFlags = DvzContourFlags
+RefFlags = DvzRefFlags
+ShapeIndexingFlags = DvzShapeIndexingFlags
+BoxExtentStrategy = DvzBoxExtentStrategy
+ViewportClip = DvzViewportClip
+VertexInputRate = DvzVertexInputRate
+MarkerShape = DvzMarkerShape
+MeshFlags = DvzMeshFlags
+AppFlags = DvzAppFlags
+RequestObject = DvzRequestObject
+DepthTest = DvzDepthTest
+JoinType = DvzJoinType
+ImageFlags = DvzImageFlags
+RecorderCommandType = DvzRecorderCommandType
+SamplerAxis = DvzSamplerAxis
+MarkerMode = DvzMarkerMode
+PrimitiveTopology = DvzPrimitiveTopology
+ViewFlags = DvzViewFlags
+DatFlags = DvzDatFlags
+ColorMask = DvzColorMask
+CanvasFlags = DvzCanvasFlags
+ArcballFlags = DvzArcballFlags
+SamplerAddressMode = DvzSamplerAddressMode
+CameraFlags = DvzCameraFlags
+PolygonMode = DvzPolygonMode
+FontFlags = DvzFontFlags
+ShaderType = DvzShaderType
+PrintFlagsFlags = DvzPrintFlagsFlags
+Colormap = DvzColormap
+GraphicsType = DvzGraphicsType
+Corner = DvzCorner
+GuiFlags = DvzGuiFlags
+Format = DvzFormat
+ShapeType = DvzShapeType
+RequestAction = DvzRequestAction
 
 APP_FLAGS_NONE = 0x000000
 APP_FLAGS_OFFSCREEN = 0x008000
