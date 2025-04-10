@@ -405,9 +405,11 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
     // HACK: add the visual with an empty string because empty visuals cannot be added to a panel
     // at the moment.
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
+        axis->factor, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
+        (vec2){0});
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, LABEL_COLOR, (vec2){0}, (vec2){0});
+        axis->label, 1, (char*[]){" "}, (vec3[]){{0, 0, 0}}, NULL, LABEL_COLOR, (vec2){0},
+        (vec2){0});
 
     return axis;
 }
@@ -441,7 +443,7 @@ void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels, vec3* pos
     ANN(axis->ref);
 
     dvz_glyph_strings(
-        axis->glyph, tick_count, labels, positions, LABEL_COLOR, axis->spec.offset,
+        axis->glyph, tick_count, labels, positions, NULL, LABEL_COLOR, axis->spec.offset,
         axis->spec.anchor);
 }
 
@@ -517,7 +519,8 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     }
 
     dvz_glyph_strings(
-        axis->factor, 1, (char*[]){label}, &pos, LABEL_COLOR, axis->factor_layout.offset, anchor);
+        axis->factor, 1, (char*[]){label}, &pos, NULL, LABEL_COLOR, axis->factor_layout.offset,
+        anchor);
 }
 
 
@@ -539,7 +542,8 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
 
     vec2 anchor = {0, 1};
     dvz_glyph_strings(
-        axis->label, 1, (char*[]){text}, &pos, LABEL_COLOR, axis->label_layout.offset, anchor);
+        axis->label, 1, (char*[]){text}, &pos, NULL, LABEL_COLOR, axis->label_layout.offset,
+        anchor);
 }
 
 

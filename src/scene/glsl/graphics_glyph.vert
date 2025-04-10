@@ -14,9 +14,10 @@ layout(location = 2) in vec2 size;
 layout(location = 3) in vec2 anchor;
 layout(location = 4) in vec2 shift;
 layout(location = 5) in vec2 uv;
-layout(location = 6) in float angle;
-layout(location = 7) in vec4 color;
-layout(location = 8) in vec2 group_shape; // size, in pixels of the group this vertex belongs to
+layout(location = 6) in vec2 group_shape; // size, in pixels of the group this vertex belongs to
+layout(location = 7) in float scale;
+layout(location = 8) in float angle;
+layout(location = 9) in vec4 color;
 
 layout(location = 0) out vec2 out_uv;
 layout(location = 1) out vec4 out_color;
@@ -31,12 +32,14 @@ void main()
     int idx = gl_VertexIndex % 4;
 
     // Rectangle vertex displacement (one glyph = one rectangle = 6 vertices)
-    float dx = size.x * dxs[idx];
-    float dy = size.y * dys[idx];
+    // NOTE: we assume the scale is the same across all glyphs of each string.
+    float s = (scale == 0.0) ? 1.0 : scale; // Default scale: 1.
+    float dx = size.x * dxs[idx] * s;
+    float dy = size.y * dys[idx] * s;
 
     // Shift in pixels.
     vec2 trans = vec2(dx, dy);
-    trans += shift;
+    trans += shift * s;  // NOTE: we multiply the shift by the glyph scaling
 
     // NOTE: the x anchor is relative to the group size
     trans -= anchor * (group_shape != vec2(0) ? group_shape : size);

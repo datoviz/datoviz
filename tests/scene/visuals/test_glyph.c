@@ -146,7 +146,7 @@ static void _set_strings_1(DvzVisual* visual)
     vec3 string_positions[] = {
         {-.5, +.5, 0}, {+.5, +.5, 0}, {0, 0, 0}, {-.5, -.5, 0}, {+.5, -.5, 0}};
     dvz_glyph_strings(
-        visual, string_count, strings, string_positions, //
+        visual, string_count, strings, string_positions, NULL, //
         (cvec4){255, 255, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
 }
 
@@ -157,7 +157,7 @@ static void _set_strings_2(DvzVisual* visual)
     vec3 string_positions[] = {{-.5, -.5, 0}, {0, +.5, 0}};
 
     dvz_glyph_strings(
-        visual, string_count, strings, string_positions, //
+        visual, string_count, strings, string_positions, NULL, //
         (cvec4){0, 255, 255, 255}, (vec2){0, 0}, (vec2){0, 0});
 }
 

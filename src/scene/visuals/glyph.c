@@ -77,9 +77,10 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 3, FIELD(DvzGlyphVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 4, FIELD(DvzGlyphVertex, shift), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 5, FIELD(DvzGlyphVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0); // no rep
-    dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
-    dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_COLOR, af);
-    dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, group_shape), DVZ_FORMAT_R32G32_SFLOAT, af);
+    dvz_visual_attr(visual, 6, FIELD(DvzGlyphVertex, group_shape), DVZ_FORMAT_R32G32_SFLOAT, af);
+    dvz_visual_attr(visual, 7, FIELD(DvzGlyphVertex, scale), DVZ_FORMAT_R32_SFLOAT, af);
+    dvz_visual_attr(visual, 8, FIELD(DvzGlyphVertex, angle), DVZ_FORMAT_R32_SFLOAT, af);
+    dvz_visual_attr(visual, 9, FIELD(DvzGlyphVertex, color), DVZ_FORMAT_COLOR, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzGlyphVertex));
@@ -215,10 +216,27 @@ void dvz_glyph_texcoords(
 
 
 
-void dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+void dvz_glyph_group_shapes(
+    DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
 {
     ANN(visual);
     dvz_visual_data(visual, 6, first, count, (void*)values);
+}
+
+
+
+void dvz_glyph_scale(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 7, first, count, (void*)values);
+}
+
+
+
+void dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags)
+{
+    ANN(visual);
+    dvz_visual_data(visual, 8, first, count, (void*)values);
 }
 
 
@@ -227,16 +245,7 @@ void dvz_glyph_color(
     DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
-    dvz_visual_data(visual, 7, first, count, (void*)values);
-}
-
-
-
-void dvz_glyph_group_shapes(
-    DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
-{
-    ANN(visual);
-    dvz_visual_data(visual, 8, first, count, (void*)values);
+    dvz_visual_data(visual, 9, first, count, (void*)values);
 }
 
 
@@ -568,7 +577,7 @@ static char* concatenate_with_spaces(
 
 
 void dvz_glyph_strings(
-    DvzVisual* glyph, uint32_t string_count, char** strings, vec3* string_positions,
+    DvzVisual* glyph, uint32_t string_count, char** strings, vec3* string_positions, float* scales,
     DvzColor color, vec2 offset, vec2 anchor)
 {
     ANN(glyph);
@@ -620,6 +629,17 @@ void dvz_glyph_strings(
         DvzColor* glyph_color = dvz_mock_monochrome(glyph_count, color);
         dvz_glyph_color(glyph, 0, glyph_count, glyph_color, 0);
         FREE(glyph_color);
+
+        // String scale are defined per string, we need to repeat them for each glyph.
+        // NOTE: the vertex shader assumes all scales are identical across all glyphs of a given
+        // string. Otherwise the vertex displacement computation will be wrong.
+        if (scales != NULL)
+        {
+            float* glyph_scales = _repeat_group(
+                sizeof(float), glyph_count, string_count, string_sizes, (void*)scales, false);
+            dvz_glyph_scale(glyph, 0, glyph_count, glyph_scales, 0);
+            FREE(glyph_scales);
+        }
     }
 
     // Cleanup.

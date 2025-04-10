@@ -2215,6 +2215,34 @@ dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coo
 
 
 /**
+ * Set the glyph group size.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the glyph group shapes (width and height, in pixels)
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_glyph_group_shapes(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+
+
+
+/**
+ * Set the glyph scaling.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the scaling of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_glyph_scale(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
  * Set the glyph angles.
  *
  * @param visual the visual
@@ -2239,20 +2267,6 @@ dvz_glyph_angle(DvzVisual* visual, uint32_t first, uint32_t count, float* values
  */
 DVZ_EXPORT void
 dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
-
-
-
-/**
- * Set the glyph group size.
- *
- * @param visual the visual
- * @param first the index of the first item to update
- * @param count the number of items to update
- * @param values the glyph group shapes (width and height, in pixels)
- * @param flags the data update flags
- */
-DVZ_EXPORT void
-dvz_glyph_group_shapes(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
 
 
 
@@ -2329,12 +2343,15 @@ DVZ_EXPORT void dvz_glyph_xywh(
  * @param string_count the number of strings
  * @param strings the strings
  * @param positions the positions of each string
+ * @param scales the scaling of each string
  * @param color the same color for all strings
+ * @param offset the same offset for all strings
+ * @param anchor the same anchor for all strings
  */
 DVZ_EXPORT
 void dvz_glyph_strings(
-    DvzVisual* visual, uint32_t string_count, char** strings, vec3* positions, DvzColor color,
-    vec2 offset, vec2 anchor);
+    DvzVisual* visual, uint32_t string_count, char** strings, vec3* positions, float* scales,
+    DvzColor color, vec2 offset, vec2 anchor);
 
 
 
