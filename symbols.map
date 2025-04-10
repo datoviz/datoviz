@@ -66,6 +66,7 @@ dvz_glyph_bgcolor
 dvz_glyph_color
 dvz_glyph_group_shapes
 dvz_glyph_position
+dvz_glyph_scale
 dvz_glyph_shift
 dvz_glyph_size
 dvz_glyph_strings

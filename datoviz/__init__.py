@@ -6412,6 +6412,58 @@ glyph_texcoords.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_glyph_group_shapes()
+glyph_group_shapes = dvz.dvz_glyph_group_shapes
+glyph_group_shapes.__doc__ = """
+Set the glyph group size.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : vec2*
+    the glyph group shapes (width and height, in pixels)
+flags : int
+    the data update flags
+"""
+glyph_group_shapes.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # vec2* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_glyph_scale()
+glyph_scale = dvz.dvz_glyph_scale
+glyph_scale.__doc__ = """
+Set the glyph scaling.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : float*
+    the scaling of the items to update
+flags : int
+    the data update flags
+"""
+glyph_scale.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ctypes.c_int,  # int flags
+]
+
 # Function dvz_glyph_angle()
 glyph_angle = dvz.dvz_glyph_angle
 glyph_angle.__doc__ = """
@@ -6461,32 +6513,6 @@ glyph_color.argtypes = [
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
-    ctypes.c_int,  # int flags
-]
-
-# Function dvz_glyph_group_shapes()
-glyph_group_shapes = dvz.dvz_glyph_group_shapes
-glyph_group_shapes.__doc__ = """
-Set the glyph group size.
-
-Parameters
-----------
-visual : DvzVisual*
-    the visual
-first : uint32_t
-    the index of the first item to update
-count : uint32_t
-    the number of items to update
-values : vec2*
-    the glyph group shapes (width and height, in pixels)
-flags : int
-    the data update flags
-"""
-glyph_group_shapes.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint32,  # uint32_t first
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.float32, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # vec2* values
     ctypes.c_int,  # int flags
 ]
 
@@ -6622,14 +6648,21 @@ strings : char**
     the strings
 positions : vec3*
     the positions of each string
+scales : float*
+    the scaling of each string
 color : DvzColor
     the same color for all strings
+offset : vec2
+    the same offset for all strings
+anchor : vec2
+    the same anchor for all strings
 """
 glyph_strings.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t string_count
     CStringArrayType,  # char** strings
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* scales
     DvzColor,  # DvzColor color
     vec2,  # vec2 offset
     vec2,  # vec2 anchor

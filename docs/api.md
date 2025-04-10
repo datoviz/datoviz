@@ -1580,6 +1580,34 @@ Set the glyph positions.
     );
     ```
 
+### `dvz_glyph_scale()`
+
+Set the glyph scaling.
+
+=== "Python"
+
+    ``` python
+    dvz.glyph_scale(
+        visual,  # the visual (LP_DvzVisual)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
+        values,  # the scaling of the items to update (ndpointer_<f4_C_CONTIGUOUS)
+        flags,  # the data update flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_glyph_scale(
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the scaling of the items to update
+        int flags,  // the data update flags
+    );
+    ```
+
 ### `dvz_glyph_shift()`
 
 Set the glyph shifts.
@@ -1648,7 +1676,10 @@ Helper function to easily set multiple strings of the same size and color on a g
         string_count,  # the number of strings (int, 32-bit unsigned)
         strings,  # the strings (CStringArrayType)
         positions,  # the positions of each string (ndpointer_<f4_C_CONTIGUOUS)
+        scales,  # the scaling of each string (ndpointer_<f4_C_CONTIGUOUS)
         color,  # the same color for all strings (cvec4)
+        offset,  # the same offset for all strings (vec2)
+        anchor,  # the same anchor for all strings (vec2)
     )
     ```
 
@@ -1660,7 +1691,10 @@ Helper function to easily set multiple strings of the same size and color on a g
         uint32_t string_count,  // the number of strings
         char** strings,  // the strings
         vec3* positions,  // the positions of each string
+        float* scales,  // the scaling of each string
         DvzColor color,  // the same color for all strings
+        vec2 offset,  // the same offset for all strings
+        vec2 anchor,  // the same anchor for all strings
     );
     ```
 
@@ -6051,8 +6085,8 @@ Set the segment cap types.
         visual,  # the visual (LP_DvzVisual)
         first,  # the index of the first item to update (int, 32-bit unsigned)
         count,  # the number of items to update (int, 32-bit unsigned)
-        initial,  # the initial segment cap types (LP_c_int)
-        terminal,  # the terminal segment cap types (LP_c_int)
+        initial,  # the initial segment cap types (ndpointer_<i4_C_CONTIGUOUS)
+        terminal,  # the terminal segment cap types (ndpointer_<i4_C_CONTIGUOUS)
         flags,  # the data update flags (int, 32-bit signed)
     )
     ```
