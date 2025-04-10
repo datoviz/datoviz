@@ -1307,8 +1307,8 @@ runexample name="":
     ./build/example_{{name}}.exe
 #
 
-example name="":
-    gcc -o build/example_{{name}} examples/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+example section name="":
+    gcc -o build/example_{{name}} examples/{{section}}/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
     just runexample {{name}}
 #
 
@@ -1316,7 +1316,7 @@ runexamples:
     #!/usr/bin/env sh
     # set -e  # do not stop if one example fails
     mkdir -p data/screenshots/examples
-    for file in examples/*.py; do
+    for file in examples/*/*.py; do
         bn=$(basename $file)
         name="${bn%.*}"
         echo "Running $name..."

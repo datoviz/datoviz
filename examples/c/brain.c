@@ -79,7 +79,7 @@ int main(int argc, char** argv)
     // NOTE: transparent meshes require special care.
     dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE); // disable depth test
     dvz_visual_cull(visual, DVZ_CULL_MODE_BACK);      // cull mode
-    dvz_visual_blend(visual, DVZ_BLEND_OIT); // special, imperfect order-independent blend
+    dvz_visual_blend(visual, DVZ_BLEND_OIT);          // special, imperfect order-independent blend
     dvz_mesh_light_params(visual, 0, (vec4){.75, .1, .1, 16}); // light parameters
 
     // Add the visual to the panel AFTER setting the visual's data.
