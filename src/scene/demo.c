@@ -99,7 +99,7 @@ DvzVisual* dvz_demo_panel3D(DvzPanel* panel)
     uint32_t n = 1000;
     vec3* pos = dvz_mock_pos3D(n, .25);
     DvzColor* color = dvz_mock_color(n, 255);
-    float* size = dvz_mock_uniform(n, 20.0, 50.0);
+    float* size = dvz_mock_uniform(n, 25.0, 50.0);
 
     DvzVisual* visual = dvz_sphere(dvz_panel_batch(panel), 0);
     dvz_sphere_alloc(visual, n);
@@ -109,6 +109,7 @@ DvzVisual* dvz_demo_panel3D(DvzPanel* panel)
 
     dvz_panel_arcball(panel);
     dvz_panel_visual(panel, visual, 0);
+    dvz_camera_initial(dvz_panel_camera(panel, 0), (vec3){0, 0, 3}, (vec3){0}, (vec3){0, 1, 0});
 
     return visual;
 }
