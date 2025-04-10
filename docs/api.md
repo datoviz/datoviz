@@ -4786,14 +4786,14 @@ Set the extent box.
 
 ### `dvz_panzoom_xlim()`
 
-Set a panzoom x limits.
+Get the xmin and xmax.
 
 === "Python"
 
     ``` python
     dvz.panzoom_xlim(
         pz,  # the panzoom (LP_DvzPanzoom)
-        xlim,  # the xlim (FLOAT_MIN/MAX=no lim) (vec2)
+        ref,  # the ref (LP_DvzRef)
     )
     ```
 
@@ -4802,20 +4802,20 @@ Set a panzoom x limits.
     ``` c
     void dvz_panzoom_xlim(
         DvzPanzoom* pz,  // the panzoom
-        vec2 xlim,  // the xlim (FLOAT_MIN/MAX=no lim)
+        DvzRef* ref,  // the ref
     );
     ```
 
 ### `dvz_panzoom_ylim()`
 
-Set a panzoom y limits.
+Get the ymin and ymax.
 
 === "Python"
 
     ``` python
     dvz.panzoom_ylim(
         pz,  # the panzoom (LP_DvzPanzoom)
-        ylim,  # the ylim (FLOAT_MIN/MAX=no lim) (vec2)
+        ref,  # the ref (LP_DvzRef)
     )
     ```
 
@@ -4824,29 +4824,7 @@ Set a panzoom y limits.
     ``` c
     void dvz_panzoom_ylim(
         DvzPanzoom* pz,  // the panzoom
-        vec2 ylim,  // the ylim (FLOAT_MIN/MAX=no lim)
-    );
-    ```
-
-### `dvz_panzoom_zlim()`
-
-Set a panzoom z limits.
-
-=== "Python"
-
-    ``` python
-    dvz.panzoom_zlim(
-        pz,  # the panzoom (LP_DvzPanzoom)
-        zlim,  # the zlim (FLOAT_MIN/MAX=no lim) (vec2)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_panzoom_zlim(
-        DvzPanzoom* pz,  // the panzoom
-        vec2 zlim,  // the zlim (FLOAT_MIN/MAX=no lim)
+        DvzRef* ref,  // the ref
     );
     ```
 

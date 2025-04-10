@@ -207,7 +207,6 @@ dvz_panzoom_resize
 dvz_panzoom_set
 dvz_panzoom_xlim
 dvz_panzoom_ylim
-dvz_panzoom_zlim
 dvz_panzoom_zoom
 dvz_panzoom_zoom_shift
 dvz_panzoom_zoom_wheel
