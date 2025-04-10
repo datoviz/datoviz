@@ -19,7 +19,6 @@
 #include "datoviz_protocol.h"
 #include "renderer.h"
 #include "scene/scene_testing_utils.h"
-#include "scene/sdf.h"
 #include "scene/viewport.h"
 #include "scene/visual.h"
 #include "scene/visuals/marker.h"

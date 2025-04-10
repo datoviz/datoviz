@@ -1109,6 +1109,76 @@ DVZ_EXPORT void dvz_colormap_array(
 
 
 
+/**
+ * Generate an SDF from an SVG path.
+ *
+ * @param svg_path the SVG path
+ * @param width the width of the generated SDF, in pixels
+ * @param height the height of the generated SDF, in pixels
+ * @returns the generated texture as RGB floats
+ */
+DVZ_EXPORT float* dvz_sdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Generate a multichannel SDF from an SVG path.
+ *
+ * @param svg_path the SVG path
+ * @param width the width of the generated SDF, in pixels
+ * @param height the height of the generated SDF, in pixels
+ * @returns the generated texture as RGB floats
+ */
+DVZ_EXPORT float* dvz_msdf_from_svg(const char* svg_path, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Convert an SDF float texture to a byte texture.
+ *
+ * @param sdf the SDF float texture
+ * @param width the width of the texture
+ * @param height the height of the texture
+ * @returns the byte texture
+ */
+DVZ_EXPORT uint8_t* dvz_sdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Convert a multichannel SDF float texture to a byte texture.
+ *
+ * @param sdf the SDF float texture
+ * @param width the width of the texture
+ * @param height the height of the texture
+ * @returns the byte texture
+ */
+DVZ_EXPORT uint8_t* dvz_msdf_to_rgb(float* sdf, uint32_t width, uint32_t height);
+
+
+
+/**
+ * Convert an RGB byte texture to an RGBA one.
+ *
+ * @param count the number of pixels (and NOT the number of bytes) in the byte texture
+ * @param rgb the RGB texture
+ * @returns the RGBA texture
+ */
+DVZ_EXPORT uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb);
+
+
+
+/**
+ * Convert an RGB float texture to an RGBA one.
+ *
+ * @param count the number of pixels (and NOT the number of bytes) in the float texture
+ * @param rgb the RGB texture
+ * @returns the RGBA texture
+ */
+DVZ_EXPORT float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb);
+
+
+
 /*************************************************************************************************/
 /*  Shape functions                                                                              */
 /*************************************************************************************************/
