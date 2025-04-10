@@ -101,7 +101,7 @@ int test_mesh_polygon(TstSuite* suite)
         r = .5 + .1 * (+1 - 2 * ((int32_t)i % 2));
         // NOTE: (float) is required otherwise -i overflows as i is unsigned...
         points[i][0] = r * cos(-(float)i * M_2PI / n);
-        points[i][1] = r * sin(-(float)i * M_2PI / n) * WIDTH / (float)HEIGHT;
+        points[i][1] = r * sin(-(float)i * M_2PI / n);
     }
     DvzColor color = {TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)};
     DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
