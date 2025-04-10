@@ -10011,16 +10011,16 @@ canvas_id : DvzId
 count : uint32_t
     number of frames
 seconds : uint64_t* (out parameter)
-    a buffer holding at least `count` uint64_t values (seconds)
+    (array) a buffer holding at least `count` uint64_t values (seconds)
 nanoseconds : uint64_t* (out parameter)
-    a buffer holding at least `count` uint64_t values (nanoseconds)
+    (array) a buffer holding at least `count` uint64_t values (nanoseconds)
 """
 app_timestamps.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzId,  # DvzId canvas_id
     ctypes.c_uint32,  # uint32_t count
-    Out,  # out uint64_t* seconds
-    Out,  # out uint64_t* nanoseconds
+    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # out uint64_t* seconds
+    ndpointer(dtype=np.uint64, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # out uint64_t* nanoseconds
 ]
 
 # Function dvz_app_wait()
