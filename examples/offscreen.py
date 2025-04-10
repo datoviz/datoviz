@@ -50,9 +50,8 @@ pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
 dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
 
 # Colors.
-t = np.linspace(0, 1, n_paths).astype(np.float32)
-color = np.full((n_paths, 4), 255, dtype=np.uint8)
-dvz.colormap_array(dvz.CMAP_HSV, n_paths, t, 0, 1, color)
+t = np.linspace(0, 1, n_paths)
+color = dvz.cmap(dvz.CMAP_HSV, t)
 color = np.repeat(color, path_size, axis=0)
 dvz.path_color(visual, 0, n, color, 0)
 

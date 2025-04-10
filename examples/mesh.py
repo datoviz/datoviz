@@ -51,8 +51,7 @@ visual = dvz.mesh_shape(batch, shape, flags)
 
 # Set artificial vertex colors.
 t = np.linspace(0, 1, nv).astype(np.float32)
-colors = np.empty((nv, 4), dtype=np.uint8)
-dvz.colormap_array(dvz.CMAP_COOLWARM, nv, t, 0, 1, colors)
+colors = dvz.cmap(dvz.CMAP_COOLWARM, t)
 dvz.mesh_color(visual, 0, nv, colors, 0)
 
 # Add the visual to the panel.
@@ -69,12 +68,12 @@ def _on_timer(app, window_id, ev):
     a = 20 * (ev.time % 1)
     u = 1 / (1 + np.exp(-a * (t - 0.5)))
 
-    dvz.colormap_array(dvz.CMAP_COOLWARM, nv, u.astype(np.float32), 0, 1, colors)
+    colors = dvz.cmap(dvz.CMAP_COOLWARM, u)
     dvz.mesh_color(visual, 0, nv, colors, 0)
 
 
 # Create a timer (60 events per second).
-dvz.app_timer(app, 0, 1. / 60., 0)
+dvz.app_timer(app, 0, 1.0 / 60.0, 0)
 
 # Register a timer callback.
 dvz.app_ontimer(app, _on_timer, None)

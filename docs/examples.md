@@ -723,6 +723,7 @@ Show how to generate an offscreen video.
 
 ```python
 from pathlib import Path
+import os
 import numpy as np
 
 try:
@@ -770,7 +771,8 @@ fps = 60  # number of frames per second in the video
 laps = 1  # number of rotations
 lap_duration = 4.0  # duration of each rotation
 n_frames = int(lap_duration * laps * fps)  # total number of frames to generate
-output_file = Path(__file__).parent / "video.mp4"  # path to video file to write
+# path to video file to write
+output_file = Path(__file__).parent / "video.mp4"
 kwargs = dict(
     fps=fps,
     format="FFMPEG",
@@ -783,9 +785,10 @@ kwargs = dict(
     ).split(" "),
     pixelformat="yuv420p",
 )
-with imageio.get_writer(output_file, **kwargs) as writer:
-    for angle in tqdm.tqdm(np.linspace(0, 2 * np.pi, n_frames)[:-1]):
-        writer.append_data(render(angle))
+if 'DVZ_CAPTURE' not in os.env:
+    with imageio.get_writer(output_file, **kwargs) as writer:
+        for angle in tqdm.tqdm(np.linspace(0, 2 * np.pi, n_frames)[:-1]):
+            writer.append_data(render(angle))
 
 # Cleanup.
 dvz.server_destroy(server)

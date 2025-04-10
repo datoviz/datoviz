@@ -46,7 +46,7 @@ n = 10_000
 dvz.point_alloc(visual0, n)
 
 # Point positions.
-pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+pos = np.random.normal(size=(n, 3), scale=0.25).astype(np.float32)
 dvz.point_position(visual0, 0, n, pos, 0)
 
 # Point colors.
@@ -73,7 +73,7 @@ n = 1_000
 dvz.marker_alloc(visual1, n)
 
 # Marker positions.
-pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+pos = np.random.normal(size=(n, 3), scale=0.25).astype(np.float32)
 dvz.marker_position(visual1, 0, n, pos, 0)
 
 # Marker colors.
@@ -132,17 +132,15 @@ def ongui(app, fid, ev):
     dvz.gui_begin("My GUI", 0)
 
     # Add a checkbox
-    with checked:  # Wrap the boolean value.
-        # Return True if the checkbox's state has changed.
-        if dvz.gui_checkbox("Show visual", checked.P_):
-            #                                  ^^^^^^^^^^ pass a C pointer to our wrapped bool
-            is_checked = checked.value  # Python variable with the checkbox's state
+    # Return True if the checkbox's state has changed.
+    if dvz.gui_checkbox("Show visual", checked):
+        is_checked = checked.value  # Python variable with the checkbox's state
 
-            # Show/hide the visual.
-            dvz.visual_show(visual0, is_checked)
+        # Show/hide the visual.
+        dvz.visual_show(visual0, is_checked)
 
-            # Update the figure after its composition has changed.
-            dvz.figure_update(figure)
+        # Update the figure after its composition has changed.
+        dvz.figure_update(figure)
 
     # End the GUI dialog.
     dvz.gui_end()
