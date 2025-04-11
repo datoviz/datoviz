@@ -1433,6 +1433,56 @@ DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, DvzColor color);
 
 
 /**
+ * Create a tetrahedron.
+ *
+ * @param color the color
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_tetrahedron(DvzColor color);
+
+
+
+/**
+ * Create a tetrahedron.
+ *
+ * @param color the color
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_hexahedron(DvzColor color);
+
+
+
+/**
+ * Create a octahedron.
+ *
+ * @param color the color
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_octahedron(DvzColor color);
+
+
+
+/**
+ * Create a dodecahedron.
+ *
+ * @param color the color
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_dodecahedron(DvzColor color);
+
+
+
+/**
+ * Create a icosahedron.
+ *
+ * @param color the color
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape dvz_shape_icosahedron(DvzColor color);
+
+
+
+/**
  * Normalize a shape.
  *
  * @param shape the shape

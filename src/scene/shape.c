@@ -54,6 +54,179 @@ static inline float line_distance(vec3 p, vec3 q, vec2 u)
     return d;
 }
 
+static inline void normalize_vec3(float* v)
+{
+    float len = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    if (len > 0.0f)
+    {
+        v[0] /= len;
+        v[1] /= len;
+        v[2] /= len;
+    }
+}
+
+
+
+/*************************************************************************************************/
+/*  Polyhedrons                                                                                  */
+/*************************************************************************************************/
+
+static void generate_tetrahedron(DvzShape* shape)
+{
+    float v[4][3] = {
+        {-1, -1, -1},
+        {-1, 1, 1},
+        {1, -1, 1},
+        {1, 1, -1},
+    };
+    DvzIndex idx[] = {
+        1, 0, 2, 0, 1, 3, 3, 1, 2, 0, 3, 2,
+    };
+
+    shape->vertex_count = 4;
+    shape->index_count = 12;
+    shape->pos = calloc(4, sizeof(vec3));
+    shape->texcoords = calloc(4, sizeof(vec4));
+    shape->index = calloc(12, sizeof(DvzIndex));
+
+    for (uint32_t i = 0; i < 4; i++)
+    {
+        memcpy(shape->pos[i], v[i], sizeof(vec3));
+        normalize_vec3(shape->pos[i]);
+        float x = shape->pos[i][0], y = shape->pos[i][1], z = shape->pos[i][2];
+        shape->texcoords[i][0] = 0.5f + atan2f(z, x) / (2 * M_PI);
+        shape->texcoords[i][1] = 0.5f - asinf(y) / M_PI;
+    }
+
+    memcpy(shape->index, idx, sizeof(idx));
+}
+
+
+
+static void generate_hexahedron(DvzShape* shape)
+{
+    float v[8][3] = {
+        {1, 1, -1},   {1, -1, 1},  {1, -1, -1}, {1, 1, 1},
+        {-1, -1, -1}, {-1, 1, -1}, {-1, 1, 1},  {-1, -1, 1},
+    };
+    DvzIndex idx[] = {
+        0, 1, 2, 1, 0, 3, 0, 4, 5, 4, 0, 2, 6, 0, 5, 0, 6, 3,
+        1, 6, 7, 6, 1, 3, 1, 4, 2, 4, 1, 7, 6, 4, 7, 4, 6, 5,
+    };
+
+    shape->vertex_count = 8;
+    shape->index_count = 36;
+    shape->pos = calloc(8, sizeof(vec3));
+    shape->texcoords = calloc(8, sizeof(vec4));
+    shape->index = calloc(36, sizeof(DvzIndex));
+
+    for (uint32_t i = 0; i < 8; i++)
+    {
+        memcpy(shape->pos[i], v[i], sizeof(vec3));
+        normalize_vec3(shape->pos[i]);
+        float x = shape->pos[i][0], y = shape->pos[i][1], z = shape->pos[i][2];
+        shape->texcoords[i][0] = 0.5f + atan2f(z, x) / (2 * M_PI);
+        shape->texcoords[i][1] = 0.5f - asinf(y) / M_PI;
+    }
+
+    memcpy(shape->index, idx, sizeof(idx));
+}
+
+
+
+static void generate_octahedron(DvzShape* shape)
+{
+    float v[6][3] = {{0, 0, -1}, {-1, 0, 0}, {0, 1, 0}, {1, 0, 0}, {0, -1, 0}, {0, 0, 1}};
+    DvzIndex idx[] = {0, 1, 2, 3, 0, 2, 1, 0, 4, 2, 1, 5, 3, 2, 5, 4, 0, 3, 5, 1, 4, 5, 4, 3};
+
+    shape->vertex_count = 6;
+    shape->index_count = 24;
+    shape->pos = calloc(6, sizeof(vec3));
+    shape->texcoords = calloc(6, sizeof(vec4));
+    shape->index = calloc(24, sizeof(DvzIndex));
+
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        memcpy(shape->pos[i], v[i], sizeof(vec3));
+        normalize_vec3(shape->pos[i]);
+        float x = shape->pos[i][0], y = shape->pos[i][1], z = shape->pos[i][2];
+        shape->texcoords[i][0] = 0.5f + atan2f(z, x) / (2 * M_PI);
+        shape->texcoords[i][1] = 0.5f - asinf(y) / M_PI;
+    }
+
+    memcpy(shape->index, idx, sizeof(idx));
+}
+
+
+
+static void generate_dodecahedron(DvzShape* shape)
+{
+    float phi = 1.618033988749895f;
+    float iphi = 1.0f / phi;
+
+    float v[20][3] = {{-1, 1, -1},      {-phi, 0, iphi}, {-phi, 0, -iphi}, {-1, 1, 1},
+                      {-iphi, phi, 0},  {1, 1, 1},       {iphi, phi, 0},   {0, iphi, phi},
+                      {-1, -1, 1},      {0, -iphi, phi}, {-1, -1, -1},     {-iphi, -phi, 0},
+                      {0, -iphi, -phi}, {0, iphi, -phi}, {1, 1, -1},       {phi, 0, -iphi},
+                      {phi, 0, iphi},   {1, -1, 1},      {iphi, -phi, 0},  {1, -1, -1}};
+
+    DvzIndex idx[] = {1,  0,  2,  0,  1,  3,  0,  3,  4,  4,  5,  6,  5,  4,  3,  5,  3,  7,
+                      8,  3,  1,  3,  8,  7,  7,  8,  9,  8,  10, 11, 10, 8,  2,  2,  8,  1,
+                      0,  10, 2,  10, 0,  12, 12, 0,  13, 0,  14, 13, 14, 0,  6,  6,  0,  4,
+                      15, 5,  16, 5,  15, 14, 5,  14, 6,  9,  5,  7,  5,  9,  17, 5,  17, 16,
+                      18, 8,  11, 8,  18, 17, 8,  17, 9,  19, 10, 12, 10, 19, 11, 11, 19, 18,
+                      13, 19, 12, 19, 13, 14, 19, 14, 15, 19, 17, 18, 17, 19, 16, 16, 19, 15};
+
+    shape->vertex_count = 20;
+    shape->index_count = sizeof(idx) / sizeof(DvzIndex);
+    shape->pos = calloc(shape->vertex_count, sizeof(vec3));
+    shape->texcoords = calloc(shape->vertex_count, sizeof(vec4));
+    shape->index = calloc(shape->index_count, sizeof(DvzIndex));
+
+    for (uint32_t i = 0; i < shape->vertex_count; i++)
+    {
+        memcpy(shape->pos[i], v[i], sizeof(vec3));
+        normalize_vec3(shape->pos[i]);
+        float x = shape->pos[i][0], y = shape->pos[i][1], z = shape->pos[i][2];
+        shape->texcoords[i][0] = 0.5f + atan2f(z, x) / (2 * M_PI);
+        shape->texcoords[i][1] = 0.5f - asinf(y) / M_PI;
+    }
+
+    memcpy(shape->index, idx, sizeof(idx));
+}
+
+
+
+static void generate_icosahedron(DvzShape* shape)
+{
+    float phi = 1.618033988749895f;
+
+    float v[12][3] = {{-1, 0, -phi}, {0, phi, -1}, {1, 0, -phi}, {0, phi, 1},
+                      {phi, 1, 0},   {1, 0, phi},  {-phi, 1, 0}, {-phi, -1, 0},
+                      {-1, 0, phi},  {0, -phi, 1}, {phi, -1, 0}, {0, -phi, -1}};
+
+    DvzIndex idx[] = {1, 6, 3, 0, 6, 1, 3, 4, 1, 3,  6, 8,  6, 0,  7,  2, 0, 1,  4,  3,
+                      5, 4, 2, 1, 7, 8, 6, 5, 3, 8,  0, 11, 7, 11, 0,  2, 4, 5,  10, 10,
+                      2, 4, 8, 7, 9, 8, 9, 5, 7, 11, 9, 11, 2, 10, 10, 5, 9, 11, 10, 9};
+
+    shape->vertex_count = 12;
+    shape->index_count = sizeof(idx) / sizeof(DvzIndex);
+    shape->pos = calloc(shape->vertex_count, sizeof(vec3));
+    shape->texcoords = calloc(shape->vertex_count, sizeof(vec4));
+    shape->index = calloc(shape->index_count, sizeof(DvzIndex));
+
+    for (uint32_t i = 0; i < shape->vertex_count; i++)
+    {
+        memcpy(shape->pos[i], v[i], sizeof(vec3));
+        normalize_vec3(shape->pos[i]);
+        float x = shape->pos[i][0], y = shape->pos[i][1], z = shape->pos[i][2];
+        shape->texcoords[i][0] = 0.5f + atan2f(z, x) / (2 * M_PI);
+        shape->texcoords[i][1] = 0.5f - asinf(y) / M_PI;
+    }
+
+    memcpy(shape->index, idx, sizeof(idx));
+}
+
 
 
 /*************************************************************************************************/
@@ -790,7 +963,10 @@ void dvz_shape_end(DvzShape* shape)
     {
         ASSERT(i < shape->vertex_count);
         transform_pos(shape->transform, shape->pos[i]);
-        transform_normal(shape->transform, shape->normal[i]);
+        if (shape->normal != NULL)
+        {
+            transform_normal(shape->transform, shape->normal[i]);
+        }
     }
 
     // Reset the transformation matrix.
@@ -1232,5 +1408,64 @@ DvzShape dvz_shape_cylinder(uint32_t count, DvzColor color)
     shape.type = DVZ_SHAPE_CYLINDER;
     // TODO
     log_error("dvz_shape_cylinder() not yet implemented");
+    return shape;
+}
+
+
+
+/*************************************************************************************************/
+/*  Platonic solids                                                                              */
+/*************************************************************************************************/
+
+DvzShape dvz_shape_tetrahedron(DvzColor color)
+{
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_TETRAHEDRON;
+    generate_tetrahedron(&shape);
+    shape.color = dvz_mock_monochrome(shape.vertex_count, color);
+    return shape;
+}
+
+
+
+DvzShape dvz_shape_hexahedron(DvzColor color)
+{
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_HEXAHEDRON;
+    generate_hexahedron(&shape);
+    shape.color = dvz_mock_monochrome(shape.vertex_count, color);
+    return shape;
+}
+
+
+
+DvzShape dvz_shape_octahedron(DvzColor color)
+{
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_OCTAHEDRON;
+    generate_octahedron(&shape);
+    shape.color = dvz_mock_monochrome(shape.vertex_count, color);
+    return shape;
+}
+
+
+
+DvzShape dvz_shape_dodecahedron(DvzColor color)
+{
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_DODECAHEDRON;
+    generate_dodecahedron(&shape);
+    shape.color = dvz_mock_monochrome(shape.vertex_count, color);
+    return shape;
+}
+
+
+
+DvzShape dvz_shape_icosahedron(DvzColor color)
+{
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_ICOSAHEDRON;
+    generate_icosahedron(&shape);
+    shape.color = dvz_mock_monochrome(shape.vertex_count, color);
     return shape;
 }
