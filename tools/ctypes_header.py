@@ -375,3 +375,7 @@ def cmap(cm, values):
     colors = np.full((n, 4), 255, dtype=np.uint8)
     colormap_array(cm, n, values.ravel(), 0, 1, colors)
     return colors
+
+
+def merge_shapes(shapes):
+    return shape_merge(len(shapes), (Shape * len(shapes))(*shapes))
