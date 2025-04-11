@@ -272,6 +272,7 @@ dvz_server_keyboard
 dvz_server_mouse
 dvz_server_resize
 dvz_server_submit
+dvz_shape
 dvz_shape_begin
 dvz_shape_cone
 dvz_shape_cube

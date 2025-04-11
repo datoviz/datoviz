@@ -5095,6 +5095,39 @@ shape_obj.argtypes = [
 ]
 shape_obj.restype = DvzShape
 
+# Function dvz_shape()
+shape = dvz.dvz_shape
+shape.__doc__ = """
+Create a shape out of an array of vertices and faces.
+
+Parameters
+----------
+vertex_count : uint32_t
+    number of vertices
+positions : vec3*
+    3D positions of the vertices
+normals : vec3*
+    normal vectors (optional, will be otherwise computed automatically)
+colors : DvzColor*
+    vertex vectors (optional)
+texcoords : vec4*
+    texture uv*a coordinates (optional)
+index_count : uint32_t
+    number of indices (3x the number of triangular faces)
+indices : DvzIndex*
+    vertex indices, three per face
+"""
+shape.argtypes = [
+    ctypes.c_uint32,  # uint32_t vertex_count
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
+    ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* normals
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
+    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* texcoords
+    ctypes.c_uint32,  # uint32_t index_count
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* indices
+]
+shape.restype = DvzShape
+
 # Function dvz_basic()
 basic = dvz.dvz_basic
 basic.__doc__ = """

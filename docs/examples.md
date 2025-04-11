@@ -6,6 +6,7 @@
     * [Datoviz Rendering Protocol (DRP) example](#datoviz-rendering-protocol-(drp)-example)
     * [GUI example](#gui-example)
     * [GUI panel example](#gui-panel-example)
+    * [Visibility example](#visibility-example)
     * [Keyboard example](#keyboard-example)
     * [Mouse example](#mouse-example)
     * [Offscreen example](#offscreen-example)
@@ -406,6 +407,49 @@ dvz.app_destroy(app)
 ```
 </details>
 
+## Visibility example
+
+Show how to show/hide a visual.
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/hide.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/hide.py</code></summary>
+
+```python
+import ctypes
+import numpy as np
+import datoviz as dvz
+from datoviz import vec2, vec3, Out
+
+app = dvz.app(0)
+batch = dvz.app_batch(app)
+scene = dvz.scene(batch)
+# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
+figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
+panel = dvz.panel_default(figure)
+visual = dvz.demo_panel2D(panel)
+
+visible = Out(True)
+
+
+@dvz.gui
+def ongui(app, fid, ev):
+    dvz.gui_begin("GUI", 0)
+    if dvz.gui_checkbox("Visible?", visible):
+        dvz.visual_show(visual, visible.value)
+        dvz.figure_update(figure)
+    dvz.gui_end()
+
+
+dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+
+dvz.scene_run(scene, app, 0)
+dvz.scene_destroy(scene)
+dvz.app_destroy(app)
+```
+</details>
+
 ## Keyboard example
 
 Show how to react to keyboard events.
@@ -785,7 +829,7 @@ kwargs = dict(
     ).split(" "),
     pixelformat="yuv420p",
 )
-if 'DVZ_CAPTURE' not in os.env:
+if 'DVZ_CAPTURE' not in os.environ:  # HACK: avoid recording the video with `just runexamples`
     with imageio.get_writer(output_file, **kwargs) as writer:
         for angle in tqdm.tqdm(np.linspace(0, 2 * np.pi, n_frames)[:-1]):
             writer.append_data(render(angle))

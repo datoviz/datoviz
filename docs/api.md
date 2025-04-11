@@ -6358,6 +6358,38 @@ Placeholder.
     );
     ```
 
+### `dvz_shape()`
+
+Create a shape out of an array of vertices and faces.
+
+=== "Python"
+
+    ``` python
+    dvz.shape(
+        vertex_count,  # number of vertices (int, 32-bit unsigned)
+        positions,  # 3D positions of the vertices (ndpointer_<f4_C_CONTIGUOUS)
+        normals,  # normal vectors (optional, will be otherwise computed automatically) (ndpointer_<f4_C_CONTIGUOUS)
+        colors,  # vertex vectors (optional) (ndpointer_|u1_C_CONTIGUOUS)
+        texcoords,  # texture uv*a coordinates (optional) (ndpointer_<f4_C_CONTIGUOUS)
+        index_count,  # number of indices (3x the number of triangular faces) (int, 32-bit unsigned)
+        indices,  # vertex indices, three per face (ndpointer_<u4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape(
+        uint32_t vertex_count,  // number of vertices
+        vec3* positions,  // 3D positions of the vertices
+        vec3* normals,  // normal vectors (optional, will be otherwise computed automatically)
+        DvzColor* colors,  // vertex vectors (optional)
+        vec4* texcoords,  // texture uv*a coordinates (optional)
+        uint32_t index_count,  // number of indices (3x the number of triangular faces)
+        DvzIndex* indices,  // vertex indices, three per face
+    );
+    ```
+
 ### `dvz_shape_begin()`
 
 Start a transformation sequence.
