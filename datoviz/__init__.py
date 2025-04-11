@@ -862,9 +862,14 @@ class DvzShapeType(CtypesEnum):
     DVZ_SHAPE_SPHERE = 5
     DVZ_SHAPE_CYLINDER = 6
     DVZ_SHAPE_CONE = 7
-    DVZ_SHAPE_SURFACE = 8
-    DVZ_SHAPE_OBJ = 9
-    DVZ_SHAPE_OTHER = 10
+    DVZ_SHAPE_TETRAHEDRON = 8
+    DVZ_SHAPE_HEXAHEDRON = 9
+    DVZ_SHAPE_OCTAHEDRON = 10
+    DVZ_SHAPE_DODECAHEDRON = 11
+    DVZ_SHAPE_ICOSAHEDRON = 12
+    DVZ_SHAPE_SURFACE = 13
+    DVZ_SHAPE_OBJ = 14
+    DVZ_SHAPE_OTHER = 15
 
 
 class DvzContourFlags(CtypesEnum):
@@ -1928,16 +1933,21 @@ SHAPE_CONE = 7
 SHAPE_CUBE = 4
 SHAPE_CYLINDER = 6
 SHAPE_DISC = 2
+SHAPE_DODECAHEDRON = 11
+SHAPE_HEXAHEDRON = 9
+SHAPE_ICOSAHEDRON = 12
 SHAPE_INDEXING_EARCUT = 0x10
 SHAPE_INDEXING_NONE = 0x00
 SHAPE_INDEXING_SURFACE = 0x20
 SHAPE_NONE = 0
-SHAPE_OBJ = 9
-SHAPE_OTHER = 10
+SHAPE_OBJ = 14
+SHAPE_OCTAHEDRON = 10
+SHAPE_OTHER = 15
 SHAPE_POLYGON = 3
 SHAPE_SPHERE = 5
 SHAPE_SQUARE = 1
-SHAPE_SURFACE = 8
+SHAPE_SURFACE = 13
+SHAPE_TETRAHEDRON = 8
 SLOT_COUNT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
@@ -5060,6 +5070,106 @@ shape_cylinder.argtypes = [
     DvzColor,  # DvzColor color
 ]
 shape_cylinder.restype = DvzShape
+
+# Function dvz_shape_tetrahedron()
+shape_tetrahedron = dvz.dvz_shape_tetrahedron
+shape_tetrahedron.__doc__ = """
+Create a tetrahedron.
+
+Parameters
+----------
+color : DvzColor
+    the color
+
+Returns
+-------
+type
+    the shape
+"""
+shape_tetrahedron.argtypes = [
+    DvzColor,  # DvzColor color
+]
+shape_tetrahedron.restype = DvzShape
+
+# Function dvz_shape_hexahedron()
+shape_hexahedron = dvz.dvz_shape_hexahedron
+shape_hexahedron.__doc__ = """
+Create a tetrahedron.
+
+Parameters
+----------
+color : DvzColor
+    the color
+
+Returns
+-------
+type
+    the shape
+"""
+shape_hexahedron.argtypes = [
+    DvzColor,  # DvzColor color
+]
+shape_hexahedron.restype = DvzShape
+
+# Function dvz_shape_octahedron()
+shape_octahedron = dvz.dvz_shape_octahedron
+shape_octahedron.__doc__ = """
+Create a octahedron.
+
+Parameters
+----------
+color : DvzColor
+    the color
+
+Returns
+-------
+type
+    the shape
+"""
+shape_octahedron.argtypes = [
+    DvzColor,  # DvzColor color
+]
+shape_octahedron.restype = DvzShape
+
+# Function dvz_shape_dodecahedron()
+shape_dodecahedron = dvz.dvz_shape_dodecahedron
+shape_dodecahedron.__doc__ = """
+Create a dodecahedron.
+
+Parameters
+----------
+color : DvzColor
+    the color
+
+Returns
+-------
+type
+    the shape
+"""
+shape_dodecahedron.argtypes = [
+    DvzColor,  # DvzColor color
+]
+shape_dodecahedron.restype = DvzShape
+
+# Function dvz_shape_icosahedron()
+shape_icosahedron = dvz.dvz_shape_icosahedron
+shape_icosahedron.__doc__ = """
+Create a icosahedron.
+
+Parameters
+----------
+color : DvzColor
+    the color
+
+Returns
+-------
+type
+    the shape
+"""
+shape_icosahedron.argtypes = [
+    DvzColor,  # DvzColor color
+]
+shape_icosahedron.restype = DvzShape
 
 # Function dvz_shape_normalize()
 shape_normalize = dvz.dvz_shape_normalize

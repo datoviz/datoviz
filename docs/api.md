@@ -6520,6 +6520,26 @@ Create a disc shape.
     );
     ```
 
+### `dvz_shape_dodecahedron()`
+
+Create a dodecahedron.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_dodecahedron(  # returns: the shape (DvzShape)
+        color,  # the color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape_dodecahedron(  // returns: the shape
+        DvzColor color,  // the color
+    );
+    ```
+
 ### `dvz_shape_end()`
 
 Apply the transformation sequence and reset it.
@@ -6537,6 +6557,46 @@ Apply the transformation sequence and reset it.
     ``` c
     void dvz_shape_end(
         DvzShape* shape,  // the shape
+    );
+    ```
+
+### `dvz_shape_hexahedron()`
+
+Create a tetrahedron.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_hexahedron(  # returns: the shape (DvzShape)
+        color,  # the color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape_hexahedron(  // returns: the shape
+        DvzColor color,  // the color
+    );
+    ```
+
+### `dvz_shape_icosahedron()`
+
+Create a icosahedron.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_icosahedron(  # returns: the shape (DvzShape)
+        color,  # the color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape_icosahedron(  // returns: the shape
+        DvzColor color,  // the color
     );
     ```
 
@@ -6619,6 +6679,26 @@ Load a .obj shape.
     ``` c
     DvzShape dvz_shape_obj(  // returns: the shape
         char* file_path,  // the path to the .obj file
+    );
+    ```
+
+### `dvz_shape_octahedron()`
+
+Create a octahedron.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_octahedron(  # returns: the shape (DvzShape)
+        color,  # the color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape_octahedron(  // returns: the shape
+        DvzColor color,  // the color
     );
     ```
 
@@ -6809,6 +6889,26 @@ Create a grid shape.
         vec3 u,  // the unit vector parallel to each column
         vec3 v,  // the unit vector parallel to each row
         int flags,  // the grid creation flags
+    );
+    ```
+
+### `dvz_shape_tetrahedron()`
+
+Create a tetrahedron.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_tetrahedron(  # returns: the shape (DvzShape)
+        color,  # the color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzShape dvz_shape_tetrahedron(  // returns: the shape
+        DvzColor color,  // the color
     );
     ```
 
@@ -11618,6 +11718,11 @@ DVZ_SHAPE_CUBE
 DVZ_SHAPE_SPHERE
 DVZ_SHAPE_CYLINDER
 DVZ_SHAPE_CONE
+DVZ_SHAPE_TETRAHEDRON
+DVZ_SHAPE_HEXAHEDRON
+DVZ_SHAPE_OCTAHEDRON
+DVZ_SHAPE_DODECAHEDRON
+DVZ_SHAPE_ICOSAHEDRON
 DVZ_SHAPE_SURFACE
 DVZ_SHAPE_OBJ
 DVZ_SHAPE_OTHER
