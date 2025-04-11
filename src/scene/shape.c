@@ -16,6 +16,7 @@
 #include "_cglm.h"
 #include "_log.h"
 #include "_macros.h"
+#include "_pointer.h"
 #include "datoviz_math.h"
 
 #include "datoviz.h"
@@ -71,7 +72,25 @@ void dvz_compute_normals(
     vec3 v0, v1, v2;
     vec3 n0, n1, n2;
 
+    // Default indices.
+    if (index_count == 0)
+    {
+        if (index != NULL)
+        {
+            FREE(index)
+        };
+        index_count = vertex_count;
+        index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+        for (uint32_t i = 0; i < index_count; i++)
+        {
+            index[i] = i;
+        }
+    }
+    ASSERT(index_count % 3 == 0);
+
     uint32_t face_count = index_count / 3;
+
+    log_trace("starting to compute shape normals");
 
     // BUG: this doesn't work if HAS_OPENMP is true
 #if HAS_OPENMP
@@ -80,9 +99,15 @@ void dvz_compute_normals(
     // Go through all triangle faces.
     for (uint32_t i = 0; i < face_count; i++)
     {
+        ASSERT(3 * i + 2 < index_count);
+
         i0 = index[3 * i + 0];
         i1 = index[3 * i + 1];
         i2 = index[3 * i + 2];
+
+        ASSERT(i0 < vertex_count);
+        ASSERT(i1 < vertex_count);
+        ASSERT(i2 < vertex_count);
 
         glm_vec3_copy(pos[i0], v0);
         glm_vec3_copy(pos[i1], v1);
@@ -101,6 +126,7 @@ void dvz_compute_normals(
         glm_vec3_add(normal[i2], n, normal[i2]);
     }
 
+    log_trace("starting normal normalization");
 #if HAS_OPENMP
 #pragma omp parallel for
 #endif
@@ -114,14 +140,62 @@ void dvz_compute_normals(
 
 
 
+DvzShape dvz_shape(
+    uint32_t vertex_count, vec3* positions, vec3* normals, DvzColor* colors, vec4* texcoords,
+    uint32_t index_count, DvzIndex* indices)
+{
+    ANN(positions);
+    ANN(indices);
+    ASSERT(vertex_count > 0);
+    ASSERT(index_count > 0);
+
+    DvzShape shape = {0};
+    shape.type = DVZ_SHAPE_OTHER;
+    shape.vertex_count = vertex_count;
+    shape.index_count = index_count;
+
+    shape.pos = (vec3*)_cpy(vertex_count * sizeof(vec3), positions);
+
+    shape.index = (DvzIndex*)_cpy(index_count * sizeof(DvzIndex), indices);
+
+    if (colors != NULL)
+    {
+        shape.color = (DvzColor*)_cpy(vertex_count * sizeof(DvzColor), colors);
+    }
+
+    if (texcoords != NULL)
+    {
+        shape.texcoords = (vec4*)_cpy(vertex_count * sizeof(vec4), texcoords);
+    }
+
+    if (normals != NULL)
+    {
+        shape.normal = (vec3*)_cpy(vertex_count * sizeof(vec3), normals);
+    }
+
+    log_trace("shape created with %d vertices and %d indices", vertex_count, index_count);
+
+    return shape;
+}
+
+
+
 void dvz_shape_normals(DvzShape* shape)
 {
     ANN(shape);
     ANN(shape->pos);
     ANN(shape->index);
-    ANN(shape->normal);
+
     uint32_t vertex_count = shape->vertex_count;
     uint32_t index_count = shape->index_count;
+    ASSERT(vertex_count > 0);
+
+    if (shape->normal == NULL)
+    {
+        shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    }
+    ANN(shape->normal);
+
     dvz_compute_normals(vertex_count, index_count, shape->pos, shape->index, shape->normal);
 }
 
@@ -129,6 +203,9 @@ void dvz_shape_normals(DvzShape* shape)
 
 DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
 {
+    ASSERT(count > 0);
+    ANN(shapes);
+
     DvzShape merged_shape = {0};
 
     glm_mat4_identity(merged_shape.transform);
@@ -158,27 +235,54 @@ DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes)
         has_d_left |= shapes[i].d_left != NULL;
         has_d_right |= shapes[i].d_right != NULL;
         has_contour |= shapes[i].contour != NULL;
-        has_index |= shapes[i].index != NULL;
+        has_index |= shapes[i].index_count > 0;
     }
 
+    ASSERT(merged_shape.vertex_count > 0);
+
     // Allocate memory for the merged shape's data.
-    merged_shape.pos = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    merged_shape.pos = (vec3*)calloc(merged_shape.vertex_count, sizeof(vec3));
+
     if (has_normal)
-        merged_shape.normal = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    {
+        merged_shape.normal = (vec3*)calloc(merged_shape.vertex_count, sizeof(vec3));
+    }
+
     if (has_color)
-        merged_shape.color = (DvzColor*)malloc(merged_shape.vertex_count * sizeof(DvzColor));
+    {
+        merged_shape.color = (DvzColor*)calloc(merged_shape.vertex_count, sizeof(DvzColor));
+    }
+
     if (has_texcoords)
-        merged_shape.texcoords = (vec4*)malloc(merged_shape.vertex_count * sizeof(vec4));
+    {
+        merged_shape.texcoords = (vec4*)calloc(merged_shape.vertex_count, sizeof(vec4));
+    }
+
     if (has_isoline)
-        merged_shape.isoline = (float*)malloc(merged_shape.vertex_count * sizeof(float));
+    {
+        merged_shape.isoline = (float*)calloc(merged_shape.vertex_count, sizeof(float));
+    }
+
     if (has_d_left)
-        merged_shape.d_left = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    {
+        merged_shape.d_left = (vec3*)calloc(merged_shape.vertex_count, sizeof(vec3));
+    }
+
     if (has_d_right)
-        merged_shape.d_right = (vec3*)malloc(merged_shape.vertex_count * sizeof(vec3));
+    {
+        merged_shape.d_right = (vec3*)calloc(merged_shape.vertex_count, sizeof(vec3));
+    }
+
     if (has_contour)
-        merged_shape.contour = (cvec4*)malloc(merged_shape.vertex_count * sizeof(cvec4));
+    {
+        merged_shape.contour = (cvec4*)calloc(merged_shape.vertex_count, sizeof(cvec4));
+    }
+
     if (has_index)
-        merged_shape.index = (DvzIndex*)malloc(merged_shape.index_count * sizeof(DvzIndex));
+    {
+        ASSERT(merged_shape.index_count > 0);
+        merged_shape.index = (DvzIndex*)calloc(merged_shape.index_count, sizeof(DvzIndex));
+    }
 
     uint32_t vertex_offset = 0;
     uint32_t index_offset = 0;

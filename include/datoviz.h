@@ -1451,6 +1451,23 @@ DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
 
 
 
+/**
+ * Create a shape out of an array of vertices and faces.
+ *
+ * @param vertex_count number of vertices
+ * @param positions 3D positions of the vertices
+ * @param normals normal vectors (optional, will be otherwise computed automatically)
+ * @param colors vertex vectors (optional)
+ * @param texcoords texture uv*a coordinates (optional)
+ * @param index_count number of indices (3x the number of triangular faces)
+ * @param indices vertex indices, three per face
+ */
+DVZ_EXPORT DvzShape dvz_shape(
+    uint32_t vertex_count, vec3* positions, vec3* normals, DvzColor* colors, vec4* texcoords,
+    uint32_t index_count, DvzIndex* indices);
+
+
+
 /*************************************************************************************************/
 /*  Basic visual                                                                                 */
 /*************************************************************************************************/

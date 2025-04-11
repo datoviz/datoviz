@@ -14,8 +14,8 @@
 /*************************************************************************************************/
 
 #include "scene/font.h"
-#include "../_pointer.h"
 #include "_macros.h"
+#include "_pointer.h"
 #include "_string_utils.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
@@ -79,8 +79,9 @@ DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes)
         // FT_Done_FreeType(&font->library);
     }
 #else
-    log_error("Datoviz has not been compiled with freetype support, ensure it was built with "
-              "HAS_MSDF=1");
+    log_error(
+        "Datoviz has not been compiled with freetype support, ensure it was built with "
+        "HAS_MSDF=1");
 #endif
 
     dvz_font_size(font, DVZ_DEFAULT_FONT_SIZE);

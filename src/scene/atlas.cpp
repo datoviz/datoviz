@@ -8,7 +8,7 @@
 /*************************************************************************************************/
 
 #include "scene/atlas.h"
-#include "../_pointer.h"
+#include "_pointer.h"
 #include "_macros.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
