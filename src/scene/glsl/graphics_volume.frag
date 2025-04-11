@@ -119,7 +119,7 @@ void main()
             vec3(uvw[params.permutation.x], uvw[params.permutation.y], uvw[params.permutation.z]);
 
         // Fetch the color from the 3D texture.
-        fetched = fetch_color(modes, tex_density, uvw, params.transfer.x);
+        fetched = fetch_color(modes, tex_density, uvw, params.transfer);
 
         rgbVoxel = fetched.rgb;
         intensity = fetched.a;

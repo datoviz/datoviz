@@ -45,7 +45,7 @@ void main()
 
     ivec2 modes = ivec2(VOLUME_TYPE, VOLUME_COLOR);
 
-    vec4 color = fetch_color(modes, tex_density, in_uvw, 1);
+    vec4 color = fetch_color(modes, tex_density, in_uvw, vec4(1, 0, 0, 0));
 
     out_color = color;
     if (out_color.a < .01)

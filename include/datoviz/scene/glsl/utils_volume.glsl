@@ -15,8 +15,14 @@
 #define VOLUME_DIR_BACK_FRONT 1
 
 
-vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
+vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, vec4 transfer)
 {
+    // Colormap selection: last parameter of the vec4 transfer.
+    int cmap = DVZ_CMAP_HSV;
+    if (transfer.a != 0) {
+        cmap = int(round(transfer.a));
+    }
+
     if ((min(min(uvw.x, uvw.y), uvw.z) <= 0) || (max(max(uvw.x, uvw.y), uvw.z) >= 1))
     {
         return vec4(0);
@@ -36,7 +42,7 @@ vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
         else if (modes.y == VOLUME_COLOR_COLORMAP)
         {
             // TODO: the colormap should be a parameter.
-            color = colormap(DVZ_CMAP_HSV, v);
+            color = colormap(cmap, v);
             color.a = v;
         }
     }
@@ -46,7 +52,7 @@ vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, float transfer)
     }
 
     // Transfer function.
-    color.a = clamp(color.a * transfer, 0, 1);
+    color.a = clamp(color.a * transfer.x, 0, 1);
 
     return color;
 }
