@@ -29,17 +29,18 @@ void main()
 
     vec2 P = in_uv - .5;
 
-    float lw = params.edge_width;
-    vec2 c = size + 2 * lw + antialias;
-
-    float radius = params.radius * zoom;
-    float d = marker_rounded_rect(P * c, size, radius);
-
-    vec4 base_color = in_color;
+    out_color = in_color;
     if (FILL == 0)
     {
-        base_color = texture(tex, in_uv);
+        out_color = texture(tex, in_uv);
     }
-    vec4 edge_color = params.edge_color;
-    out_color = outline(d, lw, edge_color, base_color);
+
+    float lw = params.edge_width;
+    if (lw > 0) {
+        vec2 c = size + 2 * lw + antialias;
+        float radius = params.radius * zoom;
+        float d = marker_rounded_rect(P * c, size, radius);
+        vec4 edge_color = params.edge_color;
+        out_color = outline(d, lw, edge_color, out_color);
+    }
 }
