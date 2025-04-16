@@ -368,14 +368,22 @@ def button_name(button):
     return name
 
 
-def cmap(cm, values):
+def cmap(cm, values, vmin=0.0, vmax=10.):
     values = np.asanyarray(values, dtype=np.float32)
     # shape = values.shape
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
-    colormap_array(cm, n, values.ravel(), 0, 1, colors)
+    colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
     return colors
 
 
 def merge_shapes(shapes):
     return shape_merge(len(shapes), (Shape * len(shapes))(*shapes))
+
+
+def to_byte(arr, vmin, vmax):
+    assert vmin < vmax
+    normalized = (arr - vmin) * 1. / (vmax - vmin)
+    normalized = np.clip(normalized, 0, 1)
+    normalized *= 255
+    return normalized.astype(np.uint8)
