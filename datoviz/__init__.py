@@ -367,17 +367,25 @@ def button_name(button):
     return name
 
 
-def cmap(cm, values):
+def cmap(cm, values, vmin=0.0, vmax=10.):
     values = np.asanyarray(values, dtype=np.float32)
     # shape = values.shape
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
-    colormap_array(cm, n, values.ravel(), 0, 1, colors)
+    colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
     return colors
 
 
 def merge_shapes(shapes):
     return shape_merge(len(shapes), (Shape * len(shapes))(*shapes))
+
+
+def to_byte(arr, vmin, vmax):
+    assert vmin < vmax
+    normalized = (arr - vmin) * 1. / (vmax - vmin)
+    normalized = np.clip(normalized, 0, 1)
+    normalized *= 255
+    return normalized.astype(np.uint8)
 DVZ_ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
 DvzColor = cvec4
@@ -854,8 +862,10 @@ class DvzImageFlags(CtypesEnum):
     DVZ_IMAGE_FLAGS_SIZE_NDC = 0x0001
     DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004
     DVZ_IMAGE_FLAGS_RESCALE = 0x0008
-    DVZ_IMAGE_FLAGS_FILL = 0x0010
-    DVZ_IMAGE_FLAGS_BORDER = 0x0020
+    DVZ_IMAGE_FLAGS_MODE_RGBA = 0x0000
+    DVZ_IMAGE_FLAGS_MODE_COLORMAP = 0x0010
+    DVZ_IMAGE_FLAGS_MODE_FILL = 0x0020
+    DVZ_IMAGE_FLAGS_BORDER = 0x0080
 
 
 class DvzShapeType(CtypesEnum):
@@ -1645,8 +1655,10 @@ GRAPHICS_TRIANGLE = 2
 GUI_FLAGS_DOCKING = 0x0010
 GUI_FLAGS_NONE = 0x0000
 GUI_FLAGS_OFFSCREEN = 0x0001
-IMAGE_FLAGS_BORDER = 0x0020
-IMAGE_FLAGS_FILL = 0x0010
+IMAGE_FLAGS_BORDER = 0x0080
+IMAGE_FLAGS_MODE_COLORMAP = 0x0010
+IMAGE_FLAGS_MODE_FILL = 0x0020
+IMAGE_FLAGS_MODE_RGBA = 0x0000
 IMAGE_FLAGS_RESCALE = 0x0008
 IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004
 IMAGE_FLAGS_SIZE_NDC = 0x0001
@@ -7267,6 +7279,23 @@ radius : float
 image_radius.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float radius
+]
+
+# Function dvz_image_colormap()
+image_colormap = dvz.dvz_image_colormap
+image_colormap.__doc__ = """
+Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+cmap : DvzColormap
+    the colormap
+"""
+image_colormap.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    DvzColormap,  # DvzColormap cmap
 ]
 
 # Function dvz_image_alloc()

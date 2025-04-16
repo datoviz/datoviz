@@ -2498,6 +2498,28 @@ Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
     );
     ```
 
+### `dvz_image_colormap()`
+
+Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
+
+=== "Python"
+
+    ``` python
+    dvz.image_colormap(
+        visual,  # the visual (LP_DvzVisual)
+        cmap,  # the colormap (DvzColormap)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_image_colormap(
+        DvzVisual* visual,  // the visual
+        DvzColormap cmap,  // the colormap
+    );
+    ```
+
 ### `dvz_image_edgecolor()`
 
 Set the edge color.
@@ -11417,7 +11439,9 @@ DVZ_IMAGE_FLAGS_SIZE_PIXELS
 DVZ_IMAGE_FLAGS_SIZE_NDC
 DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO
 DVZ_IMAGE_FLAGS_RESCALE
-DVZ_IMAGE_FLAGS_FILL
+DVZ_IMAGE_FLAGS_MODE_RGBA
+DVZ_IMAGE_FLAGS_MODE_COLORMAP
+DVZ_IMAGE_FLAGS_MODE_FILL
 DVZ_IMAGE_FLAGS_BORDER
 ```
 

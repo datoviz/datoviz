@@ -108,6 +108,7 @@ dvz_image
 dvz_image_alloc
 dvz_image_anchor
 dvz_image_color
+dvz_image_colormap
 dvz_image_edgecolor
 dvz_image_linewidth
 dvz_image_position
