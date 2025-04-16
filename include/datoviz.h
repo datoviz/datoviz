@@ -2663,6 +2663,16 @@ DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
 
 
 /**
+ * Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
+ *
+ * @param visual the visual
+ * @param cmap the colormap
+ */
+DVZ_EXPORT void dvz_image_colormap(DvzVisual* visual, DvzColormap cmap);
+
+
+
+/**
  * Allocate memory for a visual.
  *
  * @param visual the visual

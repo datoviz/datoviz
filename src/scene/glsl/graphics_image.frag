@@ -7,10 +7,11 @@
 #version 450
 #include "antialias.glsl"
 #include "common.glsl"
+#include "colormaps.glsl"
 #include "markers.glsl"
 #include "params_image.glsl"
 
-layout(constant_id = 0) const int FILL = 0; // 0=textured, 1=fill color
+layout(constant_id = 0) const int MODE = 0; // color mode, 0=fill color, 1=RGBA texture, 2=R texture with colormap
 layout(constant_id = 1) const int BORDER = 0; // 0=no border, 1=border
 
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
@@ -30,10 +31,19 @@ void main()
 
     vec2 P = in_uv - .5;
 
-    out_color = in_color;
-    if (FILL == 0)
+    if (MODE == 0)
+    {
+        out_color = in_color;
+    }
+    else if (MODE == 1)
     {
         out_color = texture(tex, in_uv);
+    }
+    else if (MODE == 2)
+    {
+        float value = texture(tex, in_uv).r;
+        // NOTE: only works with a few colormaps, to improve
+        out_color = colormap(params.cmap, value);
     }
 
     if (BORDER == 1)

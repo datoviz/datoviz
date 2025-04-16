@@ -697,8 +697,10 @@ typedef enum
     DVZ_IMAGE_FLAGS_SIZE_NDC = 0x0001, // image size is specified in normalized device coordinates
     DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004, // image size ~ to total zoom level
     DVZ_IMAGE_FLAGS_RESCALE = 0x0008,            // image size ~ to axis zoom level
-    DVZ_IMAGE_FLAGS_FILL = 0x0010,   // image does not show a texture but a uniform color
-    DVZ_IMAGE_FLAGS_BORDER = 0x0020, // show a square or rounded border around the image
+    DVZ_IMAGE_FLAGS_MODE_RGBA = 0x0000,          // image mode: RGBA texture
+    DVZ_IMAGE_FLAGS_MODE_COLORMAP = 0x0010, // image mode: single-channel texture with colormap
+    DVZ_IMAGE_FLAGS_MODE_FILL = 0x0020,     // image mode: fill color
+    DVZ_IMAGE_FLAGS_BORDER = 0x0080,        // square or rounded border around the image
 } DvzImageFlags;
 
 

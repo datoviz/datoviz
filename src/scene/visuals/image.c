@@ -86,6 +86,7 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_EDGECOLOR, FIELD(DvzImageParams, edgecolor));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_LINEWIDTH, FIELD(DvzImageParams, linewidth));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_RADIUS, FIELD(DvzImageParams, radius));
+    dvz_params_attr(params, DVZ_IMAGE_PARAMS_COLORMAP, FIELD(DvzImageParams, cmap));
 
 
     // Vertex shader specialization constants.
@@ -105,9 +106,14 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
 
     // Fragment shader specialization constants.
 
-    // Filled specialization constant.
-    int fill = (flags & DVZ_IMAGE_FLAGS_FILL) > 0;
-    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &fill);
+    // Color mode: FILL, RGBA, or COLORMAP.
+    // Fragment shader: 0 = fill color, 1 = RGBA texture, 2 = R texture with colormap
+    int mode = 1; // default = RGBA because DVZ_IMAGE_FLAGS_MODE_RGBA = 0
+    if ((flags & DVZ_IMAGE_FLAGS_MODE_FILL) > 0)
+        mode = 0;
+    else if ((flags & DVZ_IMAGE_FLAGS_MODE_COLORMAP) > 0)
+        mode = 2;
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &mode);
 
     // Border specialization constant.
     int border = (flags & DVZ_IMAGE_FLAGS_BORDER) > 0;
@@ -222,6 +228,21 @@ void dvz_image_radius(DvzVisual* visual, float radius)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_RADIUS, &radius);
+}
+
+
+
+void dvz_image_colormap(DvzVisual* visual, DvzColormap cmap)
+{
+    ANN(visual);
+    if (!(visual->flags & DVZ_IMAGE_FLAGS_MODE_COLORMAP))
+    {
+        log_warn(
+            "The image visual must be created with the DVZ_IMAGE_FLAGS_MODE_COLORMAP flag if the "
+            "colormap is set");
+        return;
+    }
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_COLORMAP, &cmap);
 }
 
 
