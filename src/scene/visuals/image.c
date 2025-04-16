@@ -86,6 +86,9 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_params_attr(params, 1, FIELD(DvzImageParams, linewidth));
     dvz_params_attr(params, 2, FIELD(DvzImageParams, edgecolor));
 
+
+    // Vertex shader specialization constants.
+
     // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &size_ndc);
@@ -98,9 +101,17 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
         rescale = 2;
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
 
+
+    // Fragment shader specialization constants.
+
     // Filled specialization constant.
     int fill = (flags & DVZ_IMAGE_FLAGS_FILL) > 0;
     dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 0, sizeof(int), &fill);
+
+    // Border specialization constant.
+    int border = (flags & DVZ_IMAGE_FLAGS_BORDER) > 0;
+    dvz_visual_specialization(visual, DVZ_SHADER_FRAGMENT, 1, sizeof(int), &border);
+
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
@@ -176,6 +187,13 @@ void dvz_image_radius(DvzVisual* visual, float radius)
 void dvz_image_linewidth(DvzVisual* visual, float width)
 {
     ANN(visual);
+    if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
+    {
+        log_warn(
+            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
+            "linewidth is set");
+        return;
+    }
     dvz_visual_param(visual, 2, 1, &width);
 }
 
@@ -184,6 +202,13 @@ void dvz_image_linewidth(DvzVisual* visual, float width)
 void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
 {
     ANN(visual);
+    if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
+    {
+        log_warn(
+            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
+            "edgecolor is set");
+        return;
+    }
 
 #if DVZ_COLOR_CVEC4
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)

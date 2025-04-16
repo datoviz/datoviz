@@ -11,6 +11,7 @@
 #include "params_image.glsl"
 
 layout(constant_id = 0) const int FILL = 0; // 0=textured, 1=fill color
+layout(constant_id = 1) const int BORDER = 0; // 0=no border, 1=border
 
 layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
 
@@ -35,8 +36,9 @@ void main()
         out_color = texture(tex, in_uv);
     }
 
-    float lw = params.linewidth;
-    if (lw > 0) {
+    if (BORDER == 1)
+    {
+        float lw = params.linewidth;
         vec2 c = size + 2 * lw + antialias;
         float radius = params.radius * zoom;
         float d = marker_rounded_rect(P * c, size, radius);
