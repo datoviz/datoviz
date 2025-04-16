@@ -57,8 +57,8 @@ struct DvzMarkerVertex
 
 struct DvzMarkerParams
 {
-    vec4 edge_color;
-    float edge_width;
+    vec4 edgecolor;
+    float linewidth;
     float tex_scale;
 };
 

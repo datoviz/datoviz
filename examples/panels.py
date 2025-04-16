@@ -88,8 +88,8 @@ dvz.marker_size(visual1, 0, n, size, 0)
 # Marker parameters.
 dvz.marker_aspect(visual1, dvz.MARKER_ASPECT_OUTLINE)
 dvz.marker_shape(visual1, dvz.MARKER_SHAPE_CROSS)
-# dvz.marker_edge_color(visual1, cvec4(255, 255, 255, 255))
-# dvz.marker_edge_width(visual1, 3.0)
+# dvz.marker_edgecolor(visual1, cvec4(255, 255, 255, 255))
+# dvz.marker_linewidth(visual1, 3.0)
 
 
 # -------------------------------------------------------------------------------------------------

@@ -108,8 +108,8 @@ dvz_image
 dvz_image_alloc
 dvz_image_anchor
 dvz_image_color
-dvz_image_edge_color
-dvz_image_edge_width
+dvz_image_edgecolor
+dvz_image_linewidth
 dvz_image_position
 dvz_image_radius
 dvz_image_size
@@ -123,8 +123,8 @@ dvz_marker_alloc
 dvz_marker_angle
 dvz_marker_aspect
 dvz_marker_color
-dvz_marker_edge_color
-dvz_marker_edge_width
+dvz_marker_edgecolor
+dvz_marker_linewidth
 dvz_marker_mode
 dvz_marker_position
 dvz_marker_shape
@@ -136,6 +136,7 @@ dvz_mesh_alloc
 dvz_mesh_color
 dvz_mesh_contour
 dvz_mesh_density
+dvz_mesh_edgecolor
 dvz_mesh_index
 dvz_mesh_isoline
 dvz_mesh_left
@@ -148,7 +149,6 @@ dvz_mesh_position
 dvz_mesh_reshape
 dvz_mesh_right
 dvz_mesh_shape
-dvz_mesh_stroke
 dvz_mesh_texcoords
 dvz_mesh_texture
 dvz_monoglyph

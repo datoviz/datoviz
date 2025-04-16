@@ -35,12 +35,12 @@ void main()
         out_color = texture(tex, in_uv);
     }
 
-    float lw = params.edge_width;
+    float lw = params.linewidth;
     if (lw > 0) {
         vec2 c = size + 2 * lw + antialias;
         float radius = params.radius * zoom;
         float d = marker_rounded_rect(P * c, size, radius);
-        vec4 edge_color = params.edge_color;
-        out_color = outline(d, lw, edge_color, out_color);
+        vec4 edgecolor = params.edgecolor;
+        out_color = outline(d, lw, edgecolor, out_color);
     }
 }

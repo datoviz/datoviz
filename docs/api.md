@@ -2498,14 +2498,14 @@ Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
     );
     ```
 
-### `dvz_image_edge_color()`
+### `dvz_image_edgecolor()`
 
 Set the edge color.
 
 === "Python"
 
     ``` python
-    dvz.image_edge_color(
+    dvz.image_edgecolor(
         visual,  # the visual (LP_DvzVisual)
         color,  # the edge color (cvec4)
     )
@@ -2514,20 +2514,20 @@ Set the edge color.
 === "C"
 
     ``` c
-    void dvz_image_edge_color(
+    void dvz_image_edgecolor(
         DvzVisual* visual,  // the visual
         DvzColor color,  // the edge color
     );
     ```
 
-### `dvz_image_edge_width()`
+### `dvz_image_linewidth()`
 
 Set the edge width.
 
 === "Python"
 
     ``` python
-    dvz.image_edge_width(
+    dvz.image_linewidth(
         visual,  # the visual (LP_DvzVisual)
         width,  # the edge width (float, 64-bit)
     )
@@ -2536,7 +2536,7 @@ Set the edge width.
 === "C"
 
     ``` c
-    void dvz_image_edge_width(
+    void dvz_image_linewidth(
         DvzVisual* visual,  // the visual
         float width,  // the edge width
     );
@@ -2868,14 +2868,14 @@ Set the marker colors.
     );
     ```
 
-### `dvz_marker_edge_color()`
+### `dvz_marker_edgecolor()`
 
 Set the marker edge color.
 
 === "Python"
 
     ``` python
-    dvz.marker_edge_color(
+    dvz.marker_edgecolor(
         visual,  # the visual (LP_DvzVisual)
         color,  # the edge color (cvec4)
     )
@@ -2884,20 +2884,20 @@ Set the marker edge color.
 === "C"
 
     ``` c
-    void dvz_marker_edge_color(
+    void dvz_marker_edgecolor(
         DvzVisual* visual,  // the visual
         DvzColor color,  // the edge color
     );
     ```
 
-### `dvz_marker_edge_width()`
+### `dvz_marker_linewidth()`
 
 Set the marker edge width.
 
 === "Python"
 
     ``` python
-    dvz.marker_edge_width(
+    dvz.marker_linewidth(
         visual,  # the visual (LP_DvzVisual)
         width,  # the edge width (float, 64-bit)
     )
@@ -2906,7 +2906,7 @@ Set the marker edge width.
 === "C"
 
     ``` c
-    void dvz_marker_edge_width(
+    void dvz_marker_linewidth(
         DvzVisual* visual,  // the visual
         float width,  // the edge width
     );
@@ -3179,6 +3179,28 @@ Set the number of isolines
     void dvz_mesh_density(
         DvzVisual* visual,  // the mesh
         uint32_t count,  // the number of isolines
+    );
+    ```
+
+### `dvz_mesh_edgecolor()`
+
+Set the stroke color.
+
+=== "Python"
+
+    ``` python
+    dvz.mesh_edgecolor(
+        visual,  # the mesh (LP_DvzVisual)
+        stroke,  # the rgba components (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_mesh_edgecolor(
+        DvzVisual* visual,  // the mesh
+         stroke,  // the rgba components
     );
     ```
 
@@ -3487,28 +3509,6 @@ Create a mesh out of a shape.
         DvzBatch* batch,  // the batch
         DvzShape* shape,  // the shape
         int flags,  // the visual creation flags
-    );
-    ```
-
-### `dvz_mesh_stroke()`
-
-Set the stroke color.
-
-=== "Python"
-
-    ``` python
-    dvz.mesh_stroke(
-        visual,  # the mesh (LP_DvzVisual)
-        stroke,  # the rgba components (cvec4)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_mesh_stroke(
-        DvzVisual* visual,  // the mesh
-         stroke,  // the rgba components
     );
     ```
 

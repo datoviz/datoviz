@@ -83,8 +83,8 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzImageParams));
     dvz_params_attr(params, 0, FIELD(DvzImageParams, radius));
-    dvz_params_attr(params, 1, FIELD(DvzImageParams, edge_width));
-    dvz_params_attr(params, 2, FIELD(DvzImageParams, edge_color));
+    dvz_params_attr(params, 1, FIELD(DvzImageParams, linewidth));
+    dvz_params_attr(params, 2, FIELD(DvzImageParams, edgecolor));
 
     // Size specialization constant.
     int size_ndc = (flags & DVZ_IMAGE_FLAGS_SIZE_NDC) > 0;
@@ -173,7 +173,7 @@ void dvz_image_radius(DvzVisual* visual, float radius)
 
 
 
-void dvz_image_edge_width(DvzVisual* visual, float width)
+void dvz_image_linewidth(DvzVisual* visual, float width)
 {
     ANN(visual);
     dvz_visual_param(visual, 2, 1, &width);
@@ -181,7 +181,7 @@ void dvz_image_edge_width(DvzVisual* visual, float width)
 
 
 
-void dvz_image_edge_color(DvzVisual* visual, DvzColor color)
+void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
 {
     ANN(visual);
 

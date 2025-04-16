@@ -65,8 +65,8 @@ layout(constant_id = 2) const int MARKER_SHAPE = 0;  // when using CODE mode, wh
 // Uniform variables.
 layout(binding = USER_BINDING) uniform MarkersParams
 {
-    vec4 edge_color;
-    float edge_width;
+    vec4 edgecolor;
+    float linewidth;
     float tex_scale;
 }
 params;
@@ -212,7 +212,7 @@ void main()
     {
 
     case DVZ_MARKER_MODE_CODE:
-        distance = select_marker(P * (size + 2 * params.edge_width + antialias), size);
+        distance = select_marker(P * (size + 2 * params.linewidth + antialias), size);
         break;
 
     case DVZ_MARKER_MODE_BITMAP:
@@ -225,7 +225,7 @@ void main()
     case DVZ_MARKER_MODE_SDF:
         sd = texture(tex, P + .5).r;
 
-        size_ = size + 2 * params.edge_width + antialias;
+        size_ = size + 2 * params.linewidth + antialias;
         distance = 4 * sd * size_ / params.tex_scale - 2;
         // distance = size_ * sd;
         break;
@@ -234,7 +234,7 @@ void main()
         vec3 msd = texture(tex, P + .5).rgb;
         sd = median(msd.r, msd.g, msd.b);
 
-        size_ = size + 2 * params.edge_width + antialias;
+        size_ = size + 2 * params.linewidth + antialias;
         distance = 4 * sd * size_ / params.tex_scale - 2;
         break;
 
@@ -252,15 +252,15 @@ void main()
     {
 
     case DVZ_MARKER_ASPECT_FILLED:
-        out_color = filled(distance, params.edge_width, color);
+        out_color = filled(distance, params.linewidth, color);
         break;
 
     case DVZ_MARKER_ASPECT_STROKE:
-        out_color = stroke(distance, params.edge_width, params.edge_color);
+        out_color = stroke(distance, params.linewidth, params.edgecolor);
         break;
 
     case DVZ_MARKER_ASPECT_OUTLINE:
-        out_color = outline(distance, params.edge_width, params.edge_color, color);
+        out_color = outline(distance, params.linewidth, params.edgecolor, color);
         break;
 
     default:

@@ -122,7 +122,7 @@ int test_mesh_polygon(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Set up the wireframe stroke parameters.
-    dvz_mesh_stroke(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 10.0);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -281,7 +281,7 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     dvz_mesh_contour(visual, 0, 9, (void*)contour, 0);
 }
 
-static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _edgecolor_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 {
     VisualTest* vt = ev.user_data;
     ANN(vt);
@@ -302,9 +302,9 @@ static inline void _stroke_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev
     }
 }
 
-int test_mesh_stroke(TstSuite* suite)
+int test_mesh_edgecolor(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_stroke", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
+    VisualTest vt = visual_test_start("mesh_edgecolor", VISUAL_TEST_ORTHO, DVZ_CANVAS_FLAGS_IMGUI);
 
     // Create the visual.
     DvzVisual* visual = dvz_mesh(vt.batch, DVZ_MESH_FLAGS_CONTOUR);
@@ -315,7 +315,7 @@ int test_mesh_stroke(TstSuite* suite)
     dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 50);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -326,7 +326,7 @@ int test_mesh_stroke(TstSuite* suite)
     float angle[2] = {0.75, 0.75};
     _update_angle(visual, angle);
     vt.user_data = &angle[0];
-    dvz_app_gui(vt.app, vt.figure->canvas_id, _stroke_callback, &vt);
+    dvz_app_gui(vt.app, vt.figure->canvas_id, _edgecolor_callback, &vt);
 
     // Run the test.
     visual_test_end(vt);
@@ -393,7 +393,7 @@ int test_mesh_contour(TstSuite* suite)
     dvz_mesh_color(visual, 0, 3, color, 0);
 
     // Stroke.
-    dvz_mesh_stroke(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 20);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -458,7 +458,7 @@ int test_mesh_surface(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
     // Wireframe.
-    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
     // dvz_mesh_linewidth(visual, .5);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -495,7 +495,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     dvz_gui_end();
 
     if (stroke_changed)
-        dvz_mesh_stroke( //
+        dvz_mesh_edgecolor( //
             vt->visual,
             (DvzColor){
                 TO_ALPHA(stroke[0][0] * 255), //
@@ -572,7 +572,7 @@ int test_mesh_obj(TstSuite* suite)
     }
 
     vec4 stroke = {.25, .25, .25, .5f};
-    // dvz_mesh_stroke(visual, (cvec4){100, 100, 100, 255});
+    // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
     dvz_mesh_linewidth(visual, 1);
     dvz_mesh_density(visual, 10);
 

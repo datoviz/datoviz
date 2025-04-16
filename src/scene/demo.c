@@ -294,8 +294,8 @@ void dvz_demo(void)
 
         dvz_marker_aspect(marker, DVZ_MARKER_ASPECT_OUTLINE);
         dvz_marker_shape(marker, DVZ_MARKER_SHAPE_CLUB);
-        dvz_marker_edge_color(marker, DVZ_WHITE);
-        dvz_marker_edge_width(marker, (float){3.0});
+        dvz_marker_edgecolor(marker, DVZ_WHITE);
+        dvz_marker_linewidth(marker, (float){3.0});
     }
 
     legend(batch, p13, "MARKER", &af);

@@ -166,7 +166,7 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
         dvz_mesh_light_dir(visual, 0, DVZ_DEFAULT_LIGHT_DIR);
         dvz_mesh_light_params(visual, 0, DVZ_DEFAULT_LIGHT_PARAMS);
     }
-    dvz_mesh_stroke(visual, (DvzColor){STROKE});
+    dvz_mesh_edgecolor(visual, (DvzColor){STROKE});
     dvz_mesh_linewidth(visual, LINEWIDTH);
     dvz_mesh_density(visual, 10);
 
@@ -385,7 +385,7 @@ void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params)
 
 
 
-void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba)
+void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba)
 {
     ANN(visual);
 

@@ -69,8 +69,8 @@ DvzVisual* dvz_marker(DvzBatch* batch, int flags)
 
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMarkerParams));
-    dvz_params_attr(params, 0, FIELD(DvzMarkerParams, edge_color));
-    dvz_params_attr(params, 1, FIELD(DvzMarkerParams, edge_width));
+    dvz_params_attr(params, 0, FIELD(DvzMarkerParams, edgecolor));
+    dvz_params_attr(params, 1, FIELD(DvzMarkerParams, linewidth));
     dvz_params_attr(params, 2, FIELD(DvzMarkerParams, tex_scale));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
@@ -165,7 +165,7 @@ void dvz_marker_color(
 
 
 
-void dvz_marker_edge_color(DvzVisual* visual, DvzColor color)
+void dvz_marker_edgecolor(DvzVisual* visual, DvzColor color)
 {
 #if DVZ_COLOR_CVEC4
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
@@ -182,7 +182,7 @@ void dvz_marker_edge_color(DvzVisual* visual, DvzColor color)
 
 
 
-void dvz_marker_edge_width(DvzVisual* visual, float width)
+void dvz_marker_linewidth(DvzVisual* visual, float width)
 {
     dvz_visual_param(visual, 2, 1, &width);
 }

@@ -1825,7 +1825,7 @@ dvz_marker_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* va
  * @param visual the visual
  * @param color the edge color
  */
-DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, DvzColor color);
+DVZ_EXPORT void dvz_marker_edgecolor(DvzVisual* visual, DvzColor color);
 
 
 
@@ -1835,7 +1835,7 @@ DVZ_EXPORT void dvz_marker_edge_color(DvzVisual* visual, DvzColor color);
  * @param visual the visual
  * @param width the edge width
  */
-DVZ_EXPORT void dvz_marker_edge_width(DvzVisual* visual, float width);
+DVZ_EXPORT void dvz_marker_linewidth(DvzVisual* visual, float width);
 
 
 
@@ -2648,7 +2648,7 @@ DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
  * @param visual the visual
  * @param width the edge width
  */
-DVZ_EXPORT void dvz_image_edge_width(DvzVisual* visual, float width);
+DVZ_EXPORT void dvz_image_linewidth(DvzVisual* visual, float width);
 
 
 
@@ -2658,7 +2658,7 @@ DVZ_EXPORT void dvz_image_edge_width(DvzVisual* visual, float width);
  * @param visual the visual
  * @param color the edge color
  */
-DVZ_EXPORT void dvz_image_edge_color(DvzVisual* visual, DvzColor color);
+DVZ_EXPORT void dvz_image_edgecolor(DvzVisual* visual, DvzColor color);
 
 
 
@@ -2897,7 +2897,7 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 para
  * @param visual the mesh
  * @param stroke the rgba components
  */
-DVZ_EXPORT void dvz_mesh_stroke(DvzVisual* visual, DvzColor rgba);
+DVZ_EXPORT void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba);
 
 
 

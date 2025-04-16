@@ -5768,9 +5768,9 @@ marker_color.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_marker_edge_color()
-marker_edge_color = dvz.dvz_marker_edge_color
-marker_edge_color.__doc__ = """
+# Function dvz_marker_edgecolor()
+marker_edgecolor = dvz.dvz_marker_edgecolor
+marker_edgecolor.__doc__ = """
 Set the marker edge color.
 
 Parameters
@@ -5780,14 +5780,14 @@ visual : DvzVisual*
 color : DvzColor
     the edge color
 """
-marker_edge_color.argtypes = [
+marker_edgecolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzColor,  # DvzColor color
 ]
 
-# Function dvz_marker_edge_width()
-marker_edge_width = dvz.dvz_marker_edge_width
-marker_edge_width.__doc__ = """
+# Function dvz_marker_linewidth()
+marker_linewidth = dvz.dvz_marker_linewidth
+marker_linewidth.__doc__ = """
 Set the marker edge width.
 
 Parameters
@@ -5797,7 +5797,7 @@ visual : DvzVisual*
 width : float
     the edge width
 """
-marker_edge_width.argtypes = [
+marker_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float width
 ]
@@ -7233,9 +7233,9 @@ image_radius.argtypes = [
     ctypes.c_float,  # float radius
 ]
 
-# Function dvz_image_edge_width()
-image_edge_width = dvz.dvz_image_edge_width
-image_edge_width.__doc__ = """
+# Function dvz_image_linewidth()
+image_linewidth = dvz.dvz_image_linewidth
+image_linewidth.__doc__ = """
 Set the edge width.
 
 Parameters
@@ -7245,14 +7245,14 @@ visual : DvzVisual*
 width : float
     the edge width
 """
-image_edge_width.argtypes = [
+image_linewidth.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_float,  # float width
 ]
 
-# Function dvz_image_edge_color()
-image_edge_color = dvz.dvz_image_edge_color
-image_edge_color.__doc__ = """
+# Function dvz_image_edgecolor()
+image_edgecolor = dvz.dvz_image_edgecolor
+image_edgecolor.__doc__ = """
 Set the edge color.
 
 Parameters
@@ -7262,7 +7262,7 @@ visual : DvzVisual*
 color : DvzColor
     the edge color
 """
-image_edge_color.argtypes = [
+image_edgecolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzColor,  # DvzColor color
 ]
@@ -7679,9 +7679,9 @@ mesh_light_params.argtypes = [
     vec4,  # vec4 params
 ]
 
-# Function dvz_mesh_stroke()
-mesh_stroke = dvz.dvz_mesh_stroke
-mesh_stroke.__doc__ = """
+# Function dvz_mesh_edgecolor()
+mesh_edgecolor = dvz.dvz_mesh_edgecolor
+mesh_edgecolor.__doc__ = """
 Set the stroke color.  Note: the alpha component is currently unused.
 
 Parameters
@@ -7691,7 +7691,7 @@ visual : DvzVisual*
 stroke : unknown
     the rgba components
 """
-mesh_stroke.argtypes = [
+mesh_edgecolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     DvzColor,  # DvzColor rgba
 ]

@@ -80,9 +80,9 @@ int test_image_1(TstSuite* suite)
         visual, 0, 1, (DvzColor[]){{0, TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255)}}, 0);
 
     // Image parameters.
-    dvz_image_radius(visual, 100.0);    // rounded corners
-    dvz_image_edge_width(visual, 10.0); // stroke width
-    dvz_image_edge_color(
+    dvz_image_radius(visual, 100.0);   // rounded corners
+    dvz_image_linewidth(visual, 10.0); // stroke width
+    dvz_image_edgecolor(
         visual, (DvzColor){0, TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)}); // stroke color
 
     // Add the visual to the panel AFTER setting the visual's data.
