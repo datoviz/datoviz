@@ -35,9 +35,9 @@
 // macOS NOTE: if INCLUDE_VK_DRIVER_FILES is #defined, set the vulkan driver files to the path
 // to the MoltenVK_icd.json file.
 #ifdef INCLUDE_VK_DRIVER_FILES
-#if OS_MACOS
 __attribute__((constructor)) static void set_vk_driver_files(void)
 {
+#if OS_MACOS
     char file_path[1024] = {0};
     strncpy(file_path, __FILE__, sizeof(file_path));
 
@@ -46,9 +46,9 @@ __attribute__((constructor)) static void set_vk_driver_files(void)
         path, 1024, "%s%s", dirname(file_path),
         "/../libs/vulkan/macos/MoltenVK_icd.json:/usr/local/lib/datoviz/MoltenVK_icd.json");
     setenv("VK_DRIVER_FILES", path, 1);
-    // log_error("Setting VK_DRIVER_FILES to %s", path);
-}
+// log_error("Setting VK_DRIVER_FILES to %s", path);
 #endif
+}
 #endif
 
 

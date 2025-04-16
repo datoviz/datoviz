@@ -99,33 +99,6 @@ class CtypesEnum(IntEnum):
         return int(obj)
 
 
-class WrappedValue:
-    def __init__(self, initial_value, ctype_type=ctypes.c_float):
-        self._value = ctype_type(initial_value)
-        self.python_value = initial_value
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.python_value = self._value.value
-
-    @property
-    def P_(self):
-        return ctypes.byref(self._value)
-
-    @property
-    def value(self):
-        return self._value.value
-
-    @value.setter
-    def value(self, new_value):
-        self._value.value = new_value
-
-    def __repr__(self):
-        return str(self.value)
-
-
 class CStringArrayType:
     @classmethod
     def from_param(cls, value):
