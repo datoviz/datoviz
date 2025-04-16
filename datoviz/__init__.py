@@ -855,6 +855,7 @@ class DvzImageFlags(CtypesEnum):
     DVZ_IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004
     DVZ_IMAGE_FLAGS_RESCALE = 0x0008
     DVZ_IMAGE_FLAGS_FILL = 0x0010
+    DVZ_IMAGE_FLAGS_BORDER = 0x0020
 
 
 class DvzShapeType(CtypesEnum):
@@ -1644,6 +1645,7 @@ GRAPHICS_TRIANGLE = 2
 GUI_FLAGS_DOCKING = 0x0010
 GUI_FLAGS_NONE = 0x0000
 GUI_FLAGS_OFFSCREEN = 0x0001
+IMAGE_FLAGS_BORDER = 0x0020
 IMAGE_FLAGS_FILL = 0x0010
 IMAGE_FLAGS_RESCALE = 0x0008
 IMAGE_FLAGS_RESCALE_KEEP_RATIO = 0x0004
@@ -7216,21 +7218,21 @@ image_texture.argtypes = [
     DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
 ]
 
-# Function dvz_image_radius()
-image_radius = dvz.dvz_image_radius
-image_radius.__doc__ = """
-Use a rounded rectangle for images, with a given radius in pixels.
+# Function dvz_image_edgecolor()
+image_edgecolor = dvz.dvz_image_edgecolor
+image_edgecolor.__doc__ = """
+Set the edge color.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-radius : float
-    the rounded corner radius, in pixel
+color : DvzColor
+    the edge color
 """
-image_radius.argtypes = [
+image_edgecolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_float,  # float radius
+    DvzColor,  # DvzColor color
 ]
 
 # Function dvz_image_linewidth()
@@ -7250,21 +7252,21 @@ image_linewidth.argtypes = [
     ctypes.c_float,  # float width
 ]
 
-# Function dvz_image_edgecolor()
-image_edgecolor = dvz.dvz_image_edgecolor
-image_edgecolor.__doc__ = """
-Set the edge color.
+# Function dvz_image_radius()
+image_radius = dvz.dvz_image_radius
+image_radius.__doc__ = """
+Use a rounded rectangle for images, with a given radius in pixels.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : DvzColor
-    the edge color
+radius : float
+    the rounded corner radius, in pixel
 """
-image_edgecolor.argtypes = [
+image_radius.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzColor,  # DvzColor color
+    ctypes.c_float,  # float radius
 ]
 
 # Function dvz_image_alloc()

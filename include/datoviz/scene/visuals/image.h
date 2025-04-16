@@ -32,6 +32,19 @@ typedef struct DvzImageParams DvzImageParams;
 
 
 /*************************************************************************************************/
+/*  Enums                                                                                     */
+/*************************************************************************************************/
+
+typedef enum
+{
+    DVZ_IMAGE_PARAMS_EDGECOLOR,
+    DVZ_IMAGE_PARAMS_LINEWIDTH,
+    DVZ_IMAGE_PARAMS_RADIUS,
+} DvzImageParamsEnum;
+
+
+
+/*************************************************************************************************/
 /*  Structs                                                                                      */
 /*************************************************************************************************/
 
@@ -48,9 +61,9 @@ struct DvzImageVertex
 
 struct DvzImageParams
 {
-    float radius;    /* rounded rectangle radius, 0 for sharp corners */
-    float linewidth; /* width of the border, 0 for no border */
     vec4 edgecolor;  /* color of the border */
+    float linewidth; /* width of the border, 0 for no border */
+    float radius;    /* rounded rectangle radius, 0 for sharp corners */
 };
 
 

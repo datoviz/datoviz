@@ -80,11 +80,12 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 
+
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzImageParams));
-    dvz_params_attr(params, 0, FIELD(DvzImageParams, radius));
-    dvz_params_attr(params, 1, FIELD(DvzImageParams, linewidth));
-    dvz_params_attr(params, 2, FIELD(DvzImageParams, edgecolor));
+    dvz_params_attr(params, DVZ_IMAGE_PARAMS_EDGECOLOR, FIELD(DvzImageParams, edgecolor));
+    dvz_params_attr(params, DVZ_IMAGE_PARAMS_LINEWIDTH, FIELD(DvzImageParams, linewidth));
+    dvz_params_attr(params, DVZ_IMAGE_PARAMS_RADIUS, FIELD(DvzImageParams, radius));
 
 
     // Vertex shader specialization constants.
@@ -176,29 +177,6 @@ void dvz_image_color(
 
 
 
-void dvz_image_radius(DvzVisual* visual, float radius)
-{
-    ANN(visual);
-    dvz_visual_param(visual, 2, 0, &radius);
-}
-
-
-
-void dvz_image_linewidth(DvzVisual* visual, float width)
-{
-    ANN(visual);
-    if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
-    {
-        log_warn(
-            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
-            "linewidth is set");
-        return;
-    }
-    dvz_visual_param(visual, 2, 1, &width);
-}
-
-
-
 void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
 {
     ANN(visual);
@@ -217,10 +195,33 @@ void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
     float b = color[2] / 255.0;
     float a = color[3] / 255.0;
 
-    dvz_visual_param(visual, 2, 2, (vec4){r, g, b, a});
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, (vec4){r, g, b, a});
 #else
-    dvz_visual_param(visual, 2, 2, color);
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, color);
 #endif
+}
+
+
+
+void dvz_image_linewidth(DvzVisual* visual, float width)
+{
+    ANN(visual);
+    if (!(visual->flags & DVZ_IMAGE_FLAGS_BORDER))
+    {
+        log_warn(
+            "The image visual must be created with the DVZ_IMAGE_FLAGS_BORDER flag if the "
+            "linewidth is set");
+        return;
+    }
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_LINEWIDTH, &width);
+}
+
+
+
+void dvz_image_radius(DvzVisual* visual, float radius)
+{
+    ANN(visual);
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_RADIUS, &radius);
 }
 
 

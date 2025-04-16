@@ -2633,12 +2633,12 @@ DVZ_EXPORT void dvz_image_texture(
 
 
 /**
- * Use a rounded rectangle for images, with a given radius in pixels.
+ * Set the edge color.
  *
  * @param visual the visual
- * @param radius the rounded corner radius, in pixel
+ * @param color the edge color
  */
-DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
+DVZ_EXPORT void dvz_image_edgecolor(DvzVisual* visual, DvzColor color);
 
 
 
@@ -2653,12 +2653,12 @@ DVZ_EXPORT void dvz_image_linewidth(DvzVisual* visual, float width);
 
 
 /**
- * Set the edge color.
+ * Use a rounded rectangle for images, with a given radius in pixels.
  *
  * @param visual the visual
- * @param color the edge color
+ * @param radius the rounded corner radius, in pixel
  */
-DVZ_EXPORT void dvz_image_edgecolor(DvzVisual* visual, DvzColor color);
+DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
 
 
 
