@@ -65,9 +65,7 @@ heights = np.exp(-.0001 * d ** 2) * np.sin(a*xv) * np.cos(b*yv)
 heights = heights.ravel().astype(np.float32)
 
 # Colors.
-colors = np.empty((n, 4), dtype=np.uint8)
-dvz.colormap_array(
-    dvz.CMAP_PLASMA, n, heights, hmin, hmax, colors)
+colors = dvz.cmap(dvz.CMAP_PLASMA, heights, hmin, hmax)
 
 # Create the surface shape.
 shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)

@@ -3739,24 +3739,41 @@ DVZ_EXPORT void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp);
 
 
 /**
- * Get the xmin and xmax.
+ * Get x-y bounds.
  *
  * @param pz the panzoom
  * @param ref the ref
- * @param[out] xlim the x coordinate of the left and right ends of the view
+ * @param[out] xmin xmin
+ * @param[out] xmax xmax
+ * @param[out] ymin ymin
+ * @param[out] ymax ymax
  */
-DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, dvec2 xlim);
+DVZ_EXPORT void dvz_panzoom_bounds(
+    DvzPanzoom* pz, DvzRef* ref, double* xmin, double* xmax, double* ymin, double* ymax);
 
 
 
 /**
- * Get the ymin and ymax.
+ * Set x bounds.
  *
  * @param pz the panzoom
  * @param ref the ref
- * @param[out] ylim the y coordinate of the left and right ends of the view
+ * @param xmin xmin
+ * @param xmax xmax
  */
-DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, dvec2 ylim);
+DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, double xmin, double xmax);
+
+
+
+/**
+ * Set y bounds.
+ *
+ * @param pz the panzoom
+ * @param ref the ref
+ * @param ymin ymin
+ * @param ymax ymax
+ */
+DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, double ymin, double ymax);
 
 
 

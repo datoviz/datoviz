@@ -4692,6 +4692,28 @@ Add a visual to a panel.
     );
     ```
 
+### `dvz_panzoom_bounds()`
+
+Get x-y bounds.
+
+=== "Python"
+
+    ``` python
+    dvz.panzoom_bounds(
+        pz,  # the panzoom (LP_DvzPanzoom)
+        ref,  # the ref (LP_DvzRef)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_panzoom_bounds(
+        DvzPanzoom* pz,  // the panzoom
+        DvzRef* ref,  // the ref
+    );
+    ```
+
 ### `dvz_panzoom_end()`
 
 End a panzoom interaction.
@@ -4890,7 +4912,7 @@ Set the extent box.
 
 ### `dvz_panzoom_xlim()`
 
-Get the xmin and xmax.
+Set x bounds.
 
 === "Python"
 
@@ -4898,6 +4920,8 @@ Get the xmin and xmax.
     dvz.panzoom_xlim(
         pz,  # the panzoom (LP_DvzPanzoom)
         ref,  # the ref (LP_DvzRef)
+        xmin,  # xmin (float, 32-bit)
+        xmax,  # xmax (float, 32-bit)
     )
     ```
 
@@ -4907,12 +4931,14 @@ Get the xmin and xmax.
     void dvz_panzoom_xlim(
         DvzPanzoom* pz,  // the panzoom
         DvzRef* ref,  // the ref
+        double xmin,  // xmin
+        double xmax,  // xmax
     );
     ```
 
 ### `dvz_panzoom_ylim()`
 
-Get the ymin and ymax.
+Set y bounds.
 
 === "Python"
 
@@ -4920,6 +4946,8 @@ Get the ymin and ymax.
     dvz.panzoom_ylim(
         pz,  # the panzoom (LP_DvzPanzoom)
         ref,  # the ref (LP_DvzRef)
+        ymin,  # ymin (float, 32-bit)
+        ymax,  # ymax (float, 32-bit)
     )
     ```
 
@@ -4929,6 +4957,8 @@ Get the ymin and ymax.
     void dvz_panzoom_ylim(
         DvzPanzoom* pz,  // the panzoom
         DvzRef* ref,  // the ref
+        double ymin,  // ymin
+        double ymax,  // ymax
     );
     ```
 

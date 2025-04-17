@@ -200,6 +200,7 @@ dvz_panel_show
 dvz_panel_transform
 dvz_panel_update
 dvz_panel_visual
+dvz_panzoom_bounds
 dvz_panzoom_end
 dvz_panzoom_extent
 dvz_panzoom_flags

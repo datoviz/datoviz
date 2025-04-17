@@ -90,39 +90,11 @@ if PLATFORM == "macos":
 # Util classes
 # ===============================================================================
 
-
 # see https://v4.chriskrycho.com/2015/ctypes-structures-and-dll-exports.html
 class CtypesEnum(IntEnum):
     @classmethod
     def from_param(cls, obj):
         return int(obj)
-
-
-class WrappedValue:
-    def __init__(self, initial_value, ctype_type=ctypes.c_float):
-        self._value = ctype_type(initial_value)
-        self.python_value = initial_value
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.python_value = self._value.value
-
-    @property
-    def P_(self):
-        return ctypes.byref(self._value)
-
-    @property
-    def value(self):
-        return self._value.value
-
-    @value.setter
-    def value(self, new_value):
-        self._value.value = new_value
-
-    def __repr__(self):
-        return str(self.value)
 
 
 class CStringArrayType:
@@ -158,7 +130,6 @@ class CStringBuffer:
 # Out wrapper
 # ===============================================================================
 
-
 class Out:
     _ctype_map = {
         float: ctypes.c_float,
@@ -166,11 +137,14 @@ class Out:
         bool: ctypes.c_bool,
     }
 
-    def __init__(self, initial):
-        py_type = type(initial)
-        if py_type not in self._ctype_map:
-            raise TypeError(f"Unsupported type: {py_type}")
-        self._ctype = self._ctype_map[py_type]
+    def __init__(self, initial, ctype=None):
+        if ctype:
+            self._ctype = getattr(ctypes, f'c_{ctype}') if isinstance(ctype, str) else ctype
+        else:
+            py_type = type(initial)
+            if py_type not in self._ctype_map:
+                raise TypeError(f"Unsupported type: {py_type}")
+            self._ctype = self._ctype_map[py_type]
         self._buffer = self._ctype(initial)
 
     @property
@@ -185,6 +159,9 @@ class Out:
         if not isinstance(obj, cls):
             raise TypeError("Expected an Out instance")
         return ctypes.byref(obj._buffer)
+
+    def __str__(self):
+        return f'Out({self.value})'
 
 
 # ===============================================================================
@@ -9157,10 +9134,10 @@ panzoom_mvp.argtypes = [
     ctypes.POINTER(DvzMVP),  # DvzMVP* mvp
 ]
 
-# Function dvz_panzoom_xlim()
-panzoom_xlim = dvz.dvz_panzoom_xlim
-panzoom_xlim.__doc__ = """
-Get the xmin and xmax.
+# Function dvz_panzoom_bounds()
+panzoom_bounds = dvz.dvz_panzoom_bounds
+panzoom_bounds.__doc__ = """
+Get x-y bounds.
 
 Parameters
 ----------
@@ -9168,19 +9145,51 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-xlim : dvec2 (out parameter)
-    the x coordinate of the left and right ends of the view
+xmin : double* (out parameter)
+    xmin
+xmax : double* (out parameter)
+    xmax
+ymin : double* (out parameter)
+    ymin
+ymax : double* (out parameter)
+    ymax
+"""
+panzoom_bounds.argtypes = [
+    ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    Out,  # out double* xmin
+    Out,  # out double* xmax
+    Out,  # out double* ymin
+    Out,  # out double* ymax
+]
+
+# Function dvz_panzoom_xlim()
+panzoom_xlim = dvz.dvz_panzoom_xlim
+panzoom_xlim.__doc__ = """
+Set x bounds.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+ref : DvzRef*
+    the ref
+xmin : double
+    xmin
+xmax : double
+    xmax
 """
 panzoom_xlim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.POINTER(DvzRef),  # DvzRef* ref
-    dvec2,  # out dvec2 xlim
+    ctypes.c_double,  # double xmin
+    ctypes.c_double,  # double xmax
 ]
 
 # Function dvz_panzoom_ylim()
 panzoom_ylim = dvz.dvz_panzoom_ylim
 panzoom_ylim.__doc__ = """
-Get the ymin and ymax.
+Set y bounds.
 
 Parameters
 ----------
@@ -9188,13 +9197,16 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-ylim : dvec2 (out parameter)
-    the y coordinate of the left and right ends of the view
+ymin : double
+    ymin
+ymax : double
+    ymax
 """
 panzoom_ylim.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
     ctypes.POINTER(DvzRef),  # DvzRef* ref
-    dvec2,  # out dvec2 ylim
+    ctypes.c_double,  # double ymin
+    ctypes.c_double,  # double ymax
 ]
 
 # Function dvz_ortho_reset()

@@ -321,78 +321,65 @@ void dvz_panzoom_mvp(DvzPanzoom* pz, DvzMVP* mvp)
 
 
 
-void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, dvec2 xlim)
+void dvz_panzoom_bounds(
+    DvzPanzoom* pz, DvzRef* ref, double* xmin, double* xmax, double* ymin, double* ymax)
 {
     ANN(pz);
     ANN(ref);
 
-    // GET
-    if (_is_dvec2_null(xlim))
-    {
-        // Find the extent.
-        DvzBox box = {0};
-        dvz_panzoom_extent(pz, &box);
-        dvec3 pos = {0};
+    // Find the extent.
+    DvzBox box = {0};
+    dvz_panzoom_extent(pz, &box);
+    dvec3 pos = {0};
 
-        dvz_ref_inverse(ref, (vec3){box.xmin, 0, 0}, &pos);
-        xlim[0] = pos[0];
+    dvz_ref_inverse(ref, (vec3){box.xmin, box.ymin, 0}, &pos);
+    // log_error("%f %f %f", pos[0], pos[1], pos[2]);
+    *xmin = pos[0];
+    *ymin = pos[1];
 
-        dvz_ref_inverse(ref, (vec3){box.xmax, 0, 0}, &pos);
-        xlim[1] = pos[0];
-    }
-    // SET
-    else
-    {
-        // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
-        vec3 xlim_ndc[2];
-        dvz_ref_transform1D(ref, DVZ_DIM_X, 2, xlim, xlim_ndc);
-        float xmin = xlim_ndc[0][DVZ_DIM_X];
-        float xmax = xlim_ndc[1][DVZ_DIM_X];
-
-        DvzBox extent = {0};
-        dvz_panzoom_extent(pz, &extent);
-        extent.xmin = xmin;
-        extent.xmax = xmax;
-        dvz_panzoom_set(pz, &extent);
-    }
+    dvz_ref_inverse(ref, (vec3){box.xmax, box.ymax, 0}, &pos);
+    *xmax = pos[0];
+    *ymax = pos[1];
 }
 
 
 
-void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, dvec2 ylim)
+void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, double xmin, double xmax)
 {
     ANN(pz);
     ANN(ref);
 
-    // GET
-    if (_is_dvec2_null(ylim))
-    {
-        // Find the extent.
-        DvzBox box = {0};
-        dvz_panzoom_extent(pz, &box);
-        dvec3 pos = {0};
+    // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
+    vec3 xlim_ndc[2];
+    dvz_ref_transform1D(ref, DVZ_DIM_X, 2, (double[]){xmin, xmax}, xlim_ndc);
+    float xmin_ndc = xlim_ndc[0][DVZ_DIM_X];
+    float xmax_ndc = xlim_ndc[1][DVZ_DIM_X];
 
-        dvz_ref_inverse(ref, (vec3){0, box.ymin, 0}, &pos);
-        ylim[0] = pos[0];
+    DvzBox extent = {0};
+    dvz_panzoom_extent(pz, &extent);
+    extent.xmin = xmin_ndc;
+    extent.xmax = xmax_ndc;
+    dvz_panzoom_set(pz, &extent);
+}
 
-        dvz_ref_inverse(ref, (vec3){0, box.ymax, 0}, &pos);
-        ylim[1] = pos[0];
-    }
-    // SET
-    else
-    {
-        // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
-        vec3 ylim_ndc[2];
-        dvz_ref_transform1D(ref, DVZ_DIM_Y, 2, ylim, ylim_ndc);
-        float ymin = ylim_ndc[0][DVZ_DIM_Y];
-        float ymax = ylim_ndc[1][DVZ_DIM_Y];
 
-        DvzBox extent = {0};
-        dvz_panzoom_extent(pz, &extent);
-        extent.ymin = ymin;
-        extent.ymax = ymax;
-        dvz_panzoom_set(pz, &extent);
-    }
+
+void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, double ymin, double ymax)
+{
+    ANN(pz);
+    ANN(ref);
+
+    // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
+    vec3 ylim_ndc[2];
+    dvz_ref_transform1D(ref, DVZ_DIM_Y, 2, (double[]){ymin, ymax}, ylim_ndc);
+    float ymin_ndc = ylim_ndc[0][DVZ_DIM_Y];
+    float ymax_ndc = ylim_ndc[1][DVZ_DIM_Y];
+
+    DvzBox extent = {0};
+    dvz_panzoom_extent(pz, &extent);
+    extent.ymin = ymin_ndc;
+    extent.ymax = ymax_ndc;
+    dvz_panzoom_set(pz, &extent);
 }
 
 

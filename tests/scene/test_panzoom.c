@@ -155,7 +155,7 @@ int test_panzoom_3(TstSuite* suite)
     AC(pz->zoom[1], .5, EPS);
 
     DvzBox new_extent = {0};
-    dvz_panzoom_extent(pz, &extent);
+    dvz_panzoom_extent(pz, &new_extent);
     AC(new_extent.xmin, extent.xmin, EPS);
     AC(new_extent.xmax, extent.xmax, EPS);
     AC(new_extent.ymin, extent.ymin, EPS);

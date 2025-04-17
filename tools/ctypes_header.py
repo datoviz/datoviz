@@ -91,7 +91,6 @@ if PLATFORM == "macos":
 # Util classes
 # ===============================================================================
 
-
 # see https://v4.chriskrycho.com/2015/ctypes-structures-and-dll-exports.html
 class CtypesEnum(IntEnum):
     @classmethod
@@ -132,7 +131,6 @@ class CStringBuffer:
 # Out wrapper
 # ===============================================================================
 
-
 class Out:
     _ctype_map = {
         float: ctypes.c_float,
@@ -140,11 +138,14 @@ class Out:
         bool: ctypes.c_bool,
     }
 
-    def __init__(self, initial):
-        py_type = type(initial)
-        if py_type not in self._ctype_map:
-            raise TypeError(f"Unsupported type: {py_type}")
-        self._ctype = self._ctype_map[py_type]
+    def __init__(self, initial, ctype=None):
+        if ctype:
+            self._ctype = getattr(ctypes, f'c_{ctype}') if isinstance(ctype, str) else ctype
+        else:
+            py_type = type(initial)
+            if py_type not in self._ctype_map:
+                raise TypeError(f"Unsupported type: {py_type}")
+            self._ctype = self._ctype_map[py_type]
         self._buffer = self._ctype(initial)
 
     @property
@@ -159,6 +160,9 @@ class Out:
         if not isinstance(obj, cls):
             raise TypeError("Expected an Out instance")
         return ctypes.byref(obj._buffer)
+
+    def __str__(self):
+        return f'Out({self.value})'
 
 
 # ===============================================================================
