@@ -160,6 +160,9 @@ class Out:
             raise TypeError("Expected an Out instance")
         return ctypes.byref(obj._buffer)
 
+    def __format__(self, format_spec):
+        return format(self.value, format_spec)
+
     def __str__(self):
         return f'Out({self.value})'
 
@@ -9099,6 +9102,24 @@ panzoom_zoom_wheel.argtypes = [
     vec2,  # vec2 dir
     vec2,  # vec2 center_px
 ]
+
+# Function dvz_panzoom_level()
+panzoom_level = dvz.dvz_panzoom_level
+panzoom_level.__doc__ = """
+Get the current zoom level.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+dim : DvzDim
+    the dimension
+"""
+panzoom_level.argtypes = [
+    ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
+    DvzDim,  # DvzDim dim
+]
+panzoom_level.restype = ctypes.c_float
 
 # Function dvz_panzoom_extent()
 panzoom_extent = dvz.dvz_panzoom_extent

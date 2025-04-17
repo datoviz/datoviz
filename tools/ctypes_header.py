@@ -161,6 +161,9 @@ class Out:
             raise TypeError("Expected an Out instance")
         return ctypes.byref(obj._buffer)
 
+    def __format__(self, format_spec):
+        return format(self.value, format_spec)
+
     def __str__(self):
         return f'Out({self.value})'
 

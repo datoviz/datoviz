@@ -4798,6 +4798,28 @@ Set the panzoom flags.
     );
     ```
 
+### `dvz_panzoom_level()`
+
+Get the current zoom level.
+
+=== "Python"
+
+    ``` python
+    dvz.panzoom_level(
+        pz,  # the panzoom (LP_DvzPanzoom)
+        dim,  # the dimension (DvzDim)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    float dvz_panzoom_level(
+        DvzPanzoom* pz,  // the panzoom
+        DvzDim dim,  // the dimension
+    );
+    ```
+
 ### `dvz_panzoom_mvp()`
 
 Apply an MVP matrix to a panzoom.

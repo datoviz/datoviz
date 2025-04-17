@@ -3719,6 +3719,16 @@ DVZ_EXPORT void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
 
 
 /**
+ * Get the current zoom level.
+ *
+ * @param pz the panzoom
+ * @param dim the dimension
+ */
+DVZ_EXPORT float dvz_panzoom_level(DvzPanzoom* pz, DvzDim dim);
+
+
+
+/**
  * Get the extent box.
  *
  * @param pz the panzoom

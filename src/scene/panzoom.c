@@ -158,6 +158,15 @@ void dvz_panzoom_zoom(DvzPanzoom* pz, vec2 zoom)
 
 
 
+float dvz_panzoom_level(DvzPanzoom* pz, DvzDim dim)
+{
+    ANN(pz);
+    ASSERT(dim < 2);
+    return pz->zoom[dim];
+}
+
+
+
 void dvz_panzoom_pan_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
 {
     // NOTE: center_px is unused here
