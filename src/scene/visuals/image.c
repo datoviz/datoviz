@@ -84,10 +84,13 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzImageParams));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_EDGECOLOR, FIELD(DvzImageParams, edgecolor));
+    dvz_params_attr(params, DVZ_IMAGE_PARAMS_PERMUTATION, FIELD(DvzImageParams, permutation));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_LINEWIDTH, FIELD(DvzImageParams, linewidth));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_RADIUS, FIELD(DvzImageParams, radius));
     dvz_params_attr(params, DVZ_IMAGE_PARAMS_COLORMAP, FIELD(DvzImageParams, cmap));
 
+    // Default permutation.
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_PERMUTATION, (ivec2){0, 1});
 
     // Vertex shader specialization constants.
 
@@ -205,6 +208,15 @@ void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
 #else
     dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, color);
 #endif
+}
+
+
+
+void dvz_image_permutation(DvzVisual* visual, ivec2 ij)
+{
+    ANN(visual);
+
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_PERMUTATION, ij);
 }
 
 

@@ -41,7 +41,8 @@ void main()
     }
     else if (MODE == 2)
     {
-        float value = texture(tex, in_uv).r;
+        vec2 uv = vec2(in_uv[params.permutation.x], in_uv[params.permutation.y]);
+        float value = texture(tex, uv).r;
         // NOTE: only works with a few colormaps, to improve
         out_color = colormap(params.cmap, value);
     }

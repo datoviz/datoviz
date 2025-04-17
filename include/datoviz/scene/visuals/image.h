@@ -38,6 +38,7 @@ typedef struct DvzImageParams DvzImageParams;
 typedef enum
 {
     DVZ_IMAGE_PARAMS_EDGECOLOR,
+    DVZ_IMAGE_PARAMS_PERMUTATION,
     DVZ_IMAGE_PARAMS_LINEWIDTH,
     DVZ_IMAGE_PARAMS_RADIUS,
     DVZ_IMAGE_PARAMS_COLORMAP,
@@ -62,9 +63,10 @@ struct DvzImageVertex
 
 struct DvzImageParams
 {
-    vec4 edgecolor;  /* color of the border */
-    float linewidth; /* width of the border, 0 for no border */
-    float radius;    /* rounded rectangle radius, 0 for sharp corners */
+    vec4 edgecolor;    /* color of the border */
+    ivec2 permutation; /* (0,1) by default */
+    float linewidth;   /* width of the border, 0 for no border */
+    float radius;      /* rounded rectangle radius, 0 for sharp corners */
     int cmap;
 };
 

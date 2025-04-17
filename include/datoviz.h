@@ -2643,6 +2643,16 @@ DVZ_EXPORT void dvz_image_edgecolor(DvzVisual* visual, DvzColor color);
 
 
 /**
+ * Set the texture coordinates index permutation.
+ *
+ * @param visual the visual
+ * @param ij index permutation
+ */
+DVZ_EXPORT void dvz_image_permutation(DvzVisual* visual, ivec2 ij);
+
+
+
+/**
  * Set the edge width.
  *
  * @param visual the visual
