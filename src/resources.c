@@ -270,8 +270,9 @@ void dvz_dat_upload(DvzDat* dat, DvzSize offset, DvzSize size, void* data, bool 
     {
         // Need to allocate a temporary staging buffer.
         ASSERT(!_dat_persistent_staging(dat));
-        log_warn("allocate temporary staging dat, not efficient -- if this message is displayed "
-                 "frequently, you should have a permanent staging dat");
+        log_warn(
+            "allocate temporary staging dat, not efficient -- if this message is displayed "
+            "frequently, you should have a permanent staging dat");
         stg = _alloc_staging(dat->ctx, size);
         need_dealloc_stg = true;
     }

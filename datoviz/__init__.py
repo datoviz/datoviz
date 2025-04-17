@@ -7224,6 +7224,23 @@ image_edgecolor.argtypes = [
     DvzColor,  # DvzColor color
 ]
 
+# Function dvz_image_permutation()
+image_permutation = dvz.dvz_image_permutation
+image_permutation.__doc__ = """
+Set the texture coordinates index permutation.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+ij : ivec2
+    index permutation
+"""
+image_permutation.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ivec2,  # ivec2 ij
+]
+
 # Function dvz_image_linewidth()
 image_linewidth = dvz.dvz_image_linewidth
 image_linewidth.__doc__ = """

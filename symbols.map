@@ -111,6 +111,7 @@ dvz_image_color
 dvz_image_colormap
 dvz_image_edgecolor
 dvz_image_linewidth
+dvz_image_permutation
 dvz_image_position
 dvz_image_radius
 dvz_image_size

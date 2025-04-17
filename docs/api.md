@@ -2564,6 +2564,28 @@ Set the edge width.
     );
     ```
 
+### `dvz_image_permutation()`
+
+Set the texture coordinates index permutation.
+
+=== "Python"
+
+    ``` python
+    dvz.image_permutation(
+        visual,  # the visual (LP_DvzVisual)
+        ij,  # index permutation (ivec2)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_image_permutation(
+        DvzVisual* visual,  // the visual
+        ivec2 ij,  // index permutation
+    );
+    ```
+
 ### `dvz_image_position()`
 
 Set the image positions.

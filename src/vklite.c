@@ -942,8 +942,9 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     bool proceed = true;
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
     {
-        log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
-                 "data cannot be kept while resizing it");
+        log_warn(
+            "buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
+            "data cannot be kept while resizing it");
         proceed = false;
     }
     new_buffer.size = size;

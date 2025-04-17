@@ -414,7 +414,7 @@ static void _enqueue_image_upload(
     ASSERT(size > 0);
     ANN(data);
 
-    log_trace("enqueue image upload");
+    log_trace("enqueue image upload, shape (%d, %d, %d)", shape[0], shape[1], shape[2]);
 
     DvzDeqItem* deq_item = NULL;
     DvzDeqItem* next_item = NULL;

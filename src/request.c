@@ -179,9 +179,10 @@ static char* show_string(const char* src)
 static void _print_start(void)
 {
     log_trace("print_start");
-    printf("---\n"
-           "version: '1.0'\n"
-           "requests:\n");
+    printf(
+        "---\n"
+        "version: '1.0'\n"
+        "requests:\n");
 }
 
 
