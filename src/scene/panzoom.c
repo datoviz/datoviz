@@ -145,7 +145,10 @@ void dvz_panzoom_flags(DvzPanzoom* pz, int flags)
 void dvz_panzoom_pan(DvzPanzoom* pz, vec2 pan)
 {
     ANN(pz);
-    _vec2_copy(pan, pz->pan);
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
+        pz->pan[0] = pan[0];
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
+        pz->pan[1] = pan[1];
 }
 
 
@@ -212,8 +215,10 @@ void dvz_panzoom_zoom_shift(DvzPanzoom* pz, vec2 shift_px, vec2 center_px)
     float h = pz->viewport_size[1];
     float a = .5 * (w + h);
 
-    pz->zoom[0] = zx0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[0]);
-    pz->zoom[1] = zy0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[1]);
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_X))
+        pz->zoom[0] = zx0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[0]);
+    if (!(pz->flags & DVZ_PANZOOM_FLAGS_FIXED_Y))
+        pz->zoom[1] = zy0 * exp(DVZ_PANZOOM_ZOOM_DRAG_COEF * a * shift[1]);
 
     float zx = pz->zoom[0];
     float zy = pz->zoom[1];
