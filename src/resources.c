@@ -436,7 +436,9 @@ void dvz_tex_upload(DvzTex* tex, uvec3 offset, uvec3 shape, DvzSize size, void* 
 
     // May use shape[i] = 0 to indicate the full shape along that axis.
     for (uint32_t i = 0; i < 3; i++)
-        shape[i] = shape[i] | tex->shape[i];
+    {
+        shape[i] = shape[i] > 0 ? shape[i] : tex->shape[i];
+    }
     _enqueue_image_upload(transfers->deq, tex->img, offset, shape, stg->br, 0, size, data, done);
 
     if (wait)
