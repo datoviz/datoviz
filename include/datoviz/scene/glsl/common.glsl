@@ -199,12 +199,16 @@ vec4 transform_mvp(vec3 pos)
 vec4 transform_fixed(vec4 tr, vec3 pos)
 {
     // Fixed axes.
-    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_X) > 0)
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_X) > 0) {
         tr.x = pos.x;
-    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Y) > 0)
+    }
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Y) > 0) {
         tr.y = pos.y;
-    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Z) > 0)
+    }
+    if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Z) > 0) {
         tr.z = pos.z;
+        tr.w = 1;
+    }
     return tr;
 }
 
