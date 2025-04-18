@@ -18,7 +18,7 @@
 vec4 fetch_color(ivec2 modes, sampler3D tex_density, vec3 uvw, vec4 transfer)
 {
     // Colormap selection: last parameter of the vec4 transfer.
-    int cmap = DVZ_CMAP_HSV;
+    int cmap = DVZ_CMAP_BINARY;
     if (transfer.a != 0) {
         cmap = int(round(transfer.a));
     }
