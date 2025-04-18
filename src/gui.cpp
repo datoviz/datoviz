@@ -809,6 +809,45 @@ bool dvz_gui_checkbox(const char* name, bool* checked)
 
 
 
+bool dvz_gui_dropdown(
+    const char* name, uint32_t count, const char** items, uint32_t* selected, int flags)
+{
+    ANN(name);
+    if (count == 0 || items == NULL)
+    {
+        return false;
+    }
+    uint32_t selected_idx = 0;
+    if (selected != NULL)
+        selected_idx = *selected;
+
+    const char* value = items[selected_idx];
+    bool is_selected = false;
+    if (ImGui::BeginCombo(name, value, flags))
+    {
+        for (uint32_t n = 0; n < count; n++)
+        {
+            if (selected != NULL)
+            {
+                is_selected = (*selected == n);
+                if (ImGui::Selectable(items[n], is_selected))
+                {
+                    *selected = n;
+                }
+            }
+            if (is_selected)
+            {
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+        return true;
+    }
+    return false;
+}
+
+
+
 void dvz_gui_progress(float fraction, float width, float height, const char* fmt, ...)
 {
     ANN(fmt);

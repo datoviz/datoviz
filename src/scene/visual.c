@@ -244,7 +244,6 @@ void dvz_visual_fixed(DvzVisual* visual, bool fixed_x, bool fixed_y, bool fixed_
         transform_flags |= DVZ_TRANSFORM_FIXED_Y;
     if (fixed_z)
         transform_flags |= DVZ_TRANSFORM_FIXED_Z;
-
     dvz_visual_specialization(
         visual, DVZ_SHADER_VERTEX, DVZ_SPECIALIZATION_TRANSFORM, sizeof(int), &transform_flags);
 }

@@ -4278,6 +4278,20 @@ DVZ_EXPORT bool dvz_gui_checkbox(const char* name, bool* checked);
 
 
 /**
+ * Add a dropdown menu.
+ *
+ * @param name the menu name
+ * @param count the number of menu items
+ * @param items the item labels
+ * @param[out] selected a pointer to the selected index
+ * @param flags the dropdown menu flags
+ */
+DVZ_EXPORT bool dvz_gui_dropdown(
+    const char* name, uint32_t count, const char** items, uint32_t* selected, int flags);
+
+
+
+/**
  * Add a progress widget.
  *
  * @param fraction the fraction between 0 and 1

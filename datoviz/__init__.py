@@ -151,6 +151,10 @@ class Out:
     def value(self):
         return self._buffer.value
 
+    @value.setter
+    def value(self, new_value):
+        self._buffer.value = new_value
+
     def __ctypes_from_outparam__(self):
         return ctypes.byref(self._buffer)
 
@@ -10063,6 +10067,33 @@ gui_checkbox.argtypes = [
     Out,  # out bool* checked
 ]
 gui_checkbox.restype = ctypes.c_bool
+
+# Function dvz_gui_dropdown()
+gui_dropdown = dvz.dvz_gui_dropdown
+gui_dropdown.__doc__ = """
+Add a dropdown menu.
+
+Parameters
+----------
+name : char*
+    the menu name
+count : uint32_t
+    the number of menu items
+items : char**
+    the item labels
+selected : uint32_t* (out parameter)
+    a pointer to the selected index
+flags : int
+    the dropdown menu flags
+"""
+gui_dropdown.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_uint32,  # uint32_t count
+    CStringArrayType,  # char** items
+    Out,  # out uint32_t* selected
+    ctypes.c_int,  # int flags
+]
+gui_dropdown.restype = ctypes.c_bool
 
 # Function dvz_gui_image()
 gui_image = dvz.dvz_gui_image

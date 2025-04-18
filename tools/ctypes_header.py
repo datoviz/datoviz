@@ -152,6 +152,10 @@ class Out:
     def value(self):
         return self._buffer.value
 
+    @value.setter
+    def value(self, new_value):
+        self._buffer.value = new_value
+
     def __ctypes_from_outparam__(self):
         return ctypes.byref(self._buffer)
 

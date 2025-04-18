@@ -86,6 +86,7 @@ dvz_gui_colorpicker
 dvz_gui_corner
 dvz_gui_demo
 dvz_gui_dragging
+dvz_gui_dropdown
 dvz_gui_end
 dvz_gui_fixed
 dvz_gui_flags

@@ -2036,6 +2036,32 @@ Return whether mouse is dragging.
     bool dvz_gui_dragging();  // returns: whether the mouse is dragging
     ```
 
+### `dvz_gui_dropdown()`
+
+Add a dropdown menu.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_dropdown(
+        name,  # the menu name (CStringBuffer)
+        count,  # the number of menu items (int, 32-bit unsigned)
+        items,  # the item labels (CStringArrayType)
+        flags,  # the dropdown menu flags (Out)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_dropdown(
+        char* name,  // the menu name
+        uint32_t count,  // the number of menu items
+        char** items,  // the item labels
+        int flags,  // the dropdown menu flags
+    );
+    ```
+
 ### `dvz_gui_end()`
 
 Stop the creation of the dialog.
