@@ -5,7 +5,7 @@
  */
 
 /*************************************************************************************************/
-/* Axes                                                                                          */
+/* Axis                                                                                          */
 /*************************************************************************************************/
 
 #ifndef DVZ_HEADER_AXIS
@@ -31,7 +31,6 @@
 typedef struct DvzAxis DvzAxis;
 typedef struct DvzAxisSpec DvzAxisSpec;
 typedef struct DvzLayout DvzLayout;
-typedef struct DvzAxes DvzAxes;
 
 // Forward declarations.
 typedef struct DvzVisual DvzVisual;
@@ -96,13 +95,6 @@ struct DvzAxis
 
     DvzDim dim;
     int flags;
-};
-
-
-
-struct DvzAxes
-{
-    DvzAxis* axis_xyz[3];
 };
 
 
@@ -299,46 +291,6 @@ DVZ_EXPORT void dvz_axis_horizontal(DvzAxis* axis, int flags);
  *
  */
 DVZ_EXPORT void dvz_axis_vertical(DvzAxis* axis, int flags);
-
-
-
-/*************************************************************************************************/
-/*  Axes                                                                                         */
-/*************************************************************************************************/
-
-/**
- * Create an axis.
- *
- * @param placeholder placeholder
- */
-DVZ_EXPORT DvzAxes* dvz_axes(DvzBatch* batch, int flags);
-
-
-
-/**
- * Create an axis.
- *
- * @param placeholder placeholder
- */
-DVZ_EXPORT DvzAxis* dvz_axes_get(DvzAxes* axes, DvzDim dim);
-
-
-
-/**
- * Create an axis.
- *
- * @param placeholder placeholder
- */
-DVZ_EXPORT void dvz_axes_destroy(DvzAxes* axes);
-
-
-
-/**
- * Create an axis.
- *
- * @param placeholder placeholder
- */
-DVZ_EXPORT DvzAxes* dvz_panel_axes2D(DvzPanel* panel, int flags);
 
 
 
