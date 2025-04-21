@@ -5,6 +5,10 @@ external/b64/decode.c
 src/wasm/log.c
 
 src/scene/animation.c
+src/scene/panzoom.c
+src/scene/box.c
+src/scene/ref.c
+src/mouse.c
 src/request.c
 src/_prng.cpp
 src/_list.c

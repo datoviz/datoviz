@@ -325,6 +325,15 @@ DVZ_EXPORT void dvz_scene_destroy(DvzScene* scene);
 /*************************************************************************************************/
 
 /**
+ * Create a mouse object.
+ *
+ * @returns the mouse
+ */
+DVZ_EXPORT DvzMouse* dvz_mouse(void);
+
+
+
+/**
  * Create a mouse move event.
  *
  * @param mouse the mouse
@@ -379,6 +388,15 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
  * @param ev the mouse event
  */
 DVZ_EXPORT void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev);
+
+
+
+/**
+ * Destroy a mouse.
+ *
+ * @param mouse the mouse
+ */
+DVZ_EXPORT void dvz_mouse_destroy(DvzMouse* mouse);
 
 
 
@@ -3627,6 +3645,18 @@ DVZ_EXPORT void dvz_camera_print(DvzCamera* camera);
 /*************************************************************************************************/
 
 /**
+ * Create a panzoom object (usually you'd rather use `dvz_panel_panzoom()`).
+ *
+ * @param width the panel width
+ * @param height the panel height
+ * @param flags the panzoom creation flags
+ * @returns the Panzoom object
+ */
+DVZ_EXPORT DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
+
+
+
+/**
  * Reset a panzoom.
  *
  * @param pz the panzoom
@@ -3794,6 +3824,26 @@ DVZ_EXPORT void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, double xmin, doubl
  * @param ymax ymax
  */
 DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, double ymin, double ymax);
+
+
+
+/**
+ * Register a mouse event to a panzoom.
+ *
+ * @param pz the panzoom
+ * @param ev the mouse event
+ * @returns whether the panzoom is affected by the mouse event
+ */
+DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
+
+
+
+/**
+ * Destroy a panzoom.
+ *
+ * @param pz the pz
+ */
+DVZ_EXPORT void dvz_panzoom_destroy(DvzPanzoom* pz);
 
 
 

@@ -54,33 +54,6 @@ EXTERN_C_ON
 
 
 
-/*************************************************************************************************/
-/*  Panzoom event functions                                                                      */
-/*************************************************************************************************/
-
-/**
- *
- */
-DvzPanzoom* dvz_panzoom(float width, float height, int flags); // inner viewport size
-
-
-
-/**
- *
- */
-bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
-
-
-
-/**
- * Function.
- *
- * @param pz the pz
- */
-void dvz_panzoom_destroy(DvzPanzoom* pz);
-
-
-
 EXTERN_C_OFF
 
 #endif

@@ -128,6 +128,7 @@ if __name__ == "__main__":
         }}
 
         if (typeof module !== 'undefined') module.exports = wrapAll;
+        export {{ wrapAll }};
     """)
 
     WRAPPERS_JS.parent.mkdir(parents=True, exist_ok=True)

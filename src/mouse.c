@@ -31,7 +31,10 @@
 static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
 {
     ANN(mouse);
-    ANN(mouse->callbacks);
+    if (!mouse->callbacks)
+    {
+        return;
+    }
 
     DvzMousePayload* payload = NULL;
     uint32_t n = dvz_list_count(mouse->callbacks);

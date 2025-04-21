@@ -3125,6 +3125,21 @@ scene_destroy.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
 ]
 
+# Function dvz_mouse()
+mouse = dvz.dvz_mouse
+mouse.__doc__ = """
+Create a mouse object.
+
+
+Returns
+-------
+type
+    the mouse
+"""
+mouse.argtypes = [
+]
+mouse.restype = ctypes.POINTER(DvzMouse)
+
 # Function dvz_mouse_move()
 mouse_move = dvz.dvz_mouse_move
 mouse_move.__doc__ = """
@@ -3244,6 +3259,20 @@ ev : DvzMouseEvent
 mouse_event.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
     DvzMouseEvent,  # DvzMouseEvent ev
+]
+
+# Function dvz_mouse_destroy()
+mouse_destroy = dvz.dvz_mouse_destroy
+mouse_destroy.__doc__ = """
+Destroy a mouse.
+
+Parameters
+----------
+mouse : DvzMouse*
+    the mouse
+"""
+mouse_destroy.argtypes = [
+    ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
 ]
 
 # Function dvz_figure()
@@ -8972,6 +9001,32 @@ camera_print.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
 ]
 
+# Function dvz_panzoom()
+panzoom = dvz.dvz_panzoom
+panzoom.__doc__ = """
+Create a panzoom object (usually you'd rather use `dvz_panel_panzoom()`).
+
+Parameters
+----------
+width : float
+    the panel width
+height : float
+    the panel height
+flags : int
+    the panzoom creation flags
+
+Returns
+-------
+type
+    the Panzoom object
+"""
+panzoom.argtypes = [
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+    ctypes.c_int,  # int flags
+]
+panzoom.restype = ctypes.POINTER(DvzPanzoom)
+
 # Function dvz_panzoom_reset()
 panzoom_reset = dvz.dvz_panzoom_reset
 panzoom_reset.__doc__ = """
@@ -9273,6 +9328,43 @@ panzoom_ylim.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_double,  # double ymin
     ctypes.c_double,  # double ymax
+]
+
+# Function dvz_panzoom_mouse()
+panzoom_mouse = dvz.dvz_panzoom_mouse
+panzoom_mouse.__doc__ = """
+Register a mouse event to a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the panzoom
+ev : DvzMouseEvent
+    the mouse event
+
+Returns
+-------
+type
+    whether the panzoom is affected by the mouse event
+"""
+panzoom_mouse.argtypes = [
+    ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
+    DvzMouseEvent,  # DvzMouseEvent ev
+]
+panzoom_mouse.restype = ctypes.c_bool
+
+# Function dvz_panzoom_destroy()
+panzoom_destroy = dvz.dvz_panzoom_destroy
+panzoom_destroy.__doc__ = """
+Destroy a panzoom.
+
+Parameters
+----------
+pz : DvzPanzoom*
+    the pz
+"""
+panzoom_destroy.argtypes = [
+    ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
 ]
 
 # Function dvz_ortho_reset()

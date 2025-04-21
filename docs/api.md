@@ -3858,6 +3858,42 @@ All-in-one function for multiline text.
     );
     ```
 
+### `dvz_mouse()`
+
+Create a mouse object.
+
+=== "Python"
+
+    ``` python
+    dvz.mouse()  # returns: the mouse (LP_DvzMouse)
+    ```
+
+=== "C"
+
+    ``` c
+    DvzMouse* dvz_mouse();  // returns: the mouse
+    ```
+
+### `dvz_mouse_destroy()`
+
+Destroy a mouse.
+
+=== "Python"
+
+    ``` python
+    dvz.mouse_destroy(
+        mouse,  # the mouse (LP_DvzMouse)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_mouse_destroy(
+        DvzMouse* mouse,  // the mouse
+    );
+    ```
+
 ### `dvz_mouse_event()`
 
 Create a generic mouse event.
@@ -4740,6 +4776,30 @@ Add a visual to a panel.
     );
     ```
 
+### `dvz_panzoom()`
+
+Create a panzoom object (usually you'd rather use `dvz_panel_panzoom()`).
+
+=== "Python"
+
+    ``` python
+    dvz.panzoom(  # returns: the Panzoom object (LP_DvzPanzoom)
+        width,  # the panel width (float, 64-bit)
+        height,  # the panel height (float, 64-bit)
+        flags,  # the panzoom creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzPanzoom* dvz_panzoom(  // returns: the Panzoom object
+        float width,  // the panel width
+        float height,  // the panel height
+        int flags,  // the panzoom creation flags
+    );
+    ```
+
 ### `dvz_panzoom_bounds()`
 
 Get x-y bounds.
@@ -4759,6 +4819,26 @@ Get x-y bounds.
     void dvz_panzoom_bounds(
         DvzPanzoom* pz,  // the panzoom
         DvzRef* ref,  // the ref
+    );
+    ```
+
+### `dvz_panzoom_destroy()`
+
+Destroy a panzoom.
+
+=== "Python"
+
+    ``` python
+    dvz.panzoom_destroy(
+        pz,  # the pz (LP_DvzPanzoom)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_panzoom_destroy(
+        DvzPanzoom* pz,  // the pz
     );
     ```
 
@@ -4843,6 +4923,28 @@ Get the current zoom level.
     float dvz_panzoom_level(
         DvzPanzoom* pz,  // the panzoom
         DvzDim dim,  // the dimension
+    );
+    ```
+
+### `dvz_panzoom_mouse()`
+
+Register a mouse event to a panzoom.
+
+=== "Python"
+
+    ``` python
+    dvz.panzoom_mouse(  # returns: whether the panzoom is affected by the mouse event (c_bool)
+        pz,  # the panzoom (LP_DvzPanzoom)
+        ev,  # the mouse event (DvzMouseEvent)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_panzoom_mouse(  // returns: whether the panzoom is affected by the mouse event
+        DvzPanzoom* pz,  // the panzoom
+        DvzMouseEvent ev,  // the mouse event
     );
     ```
 

@@ -1123,12 +1123,13 @@ swiftshader +args:
 wasm:
     set -e
     python3 tools/generate_wasm.py
-    emcc @wasm_sources.txt -o build/datoviz.js \
+    ../emsdk/upstream/emscripten/emcc @wasm_sources.txt -o build/datoviz.js \
         -Iinclude/ -Iinclude/datoviz/ -Iexternal/ \
         -Ibuild/_deps/cglm-src/include/ \
         -s MODULARIZE=1 \
         -s EXPORT_NAME='datoviz' \
-        -s EXPORTED_FUNCTIONS=["$(sed 's/^/_/' wasm_functions.txt | paste -sd, -)"] \
+        -s EXPORT_ES6=1 \
+        -s EXPORTED_FUNCTIONS=["$(sed 's/^/_/' wasm_functions.txt | paste -sd, -),_free"] \
         -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap'] \
         -s ALLOW_MEMORY_GROWTH=1 \
         -O3

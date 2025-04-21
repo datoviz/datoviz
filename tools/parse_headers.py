@@ -85,6 +85,8 @@ def _resolve_defines(defines, ctx=None):
 def iter_header_files():
     for h in sorted(HEADER_DIR.glob('*.h')):
         yield h
+    # for h in sorted(HEADER_DIR.glob('*/*.h')):
+    #     yield h
 
 
 def count_header_files():
