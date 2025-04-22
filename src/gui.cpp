@@ -1178,7 +1178,7 @@ bool dvz_gui_tree(
         {
             const float sq = ImGui::GetFontSize() * 0.80f;
             char col_id[32] = {0};
-            sprintf(col_id, "##col%u", i);
+            snprintf(col_id, 32, "##col%u", i);
             ImVec4 col_f(
                 colors[i][0] / 255.0f, colors[i][1] / 255.0f, colors[i][2] / 255.0f,
                 colors[i][3] / 255.0f);
