@@ -10521,9 +10521,9 @@ app_onframe.argtypes = [
     ctypes.c_void_p,  # void* user_data
 ]
 
-# Function dvz_app_onmouse()
-app_onmouse = dvz.dvz_app_onmouse
-app_onmouse.__doc__ = """
+# Function dvz_app_on_mouse()
+app_on_mouse = dvz.dvz_app_on_mouse
+app_on_mouse.__doc__ = """
 Register a mouse callback.
 
 Parameters
@@ -10535,15 +10535,15 @@ callback : DvzAppMouseCallback
 user_data : void*
     the user data
 """
-app_onmouse.argtypes = [
+app_on_mouse.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppMouseCallback,  # DvzAppMouseCallback callback
     ctypes.c_void_p,  # void* user_data
 ]
 
-# Function dvz_app_onkeyboard()
-app_onkeyboard = dvz.dvz_app_onkeyboard
-app_onkeyboard.__doc__ = """
+# Function dvz_app_on_keyboard()
+app_on_keyboard = dvz.dvz_app_on_keyboard
+app_on_keyboard.__doc__ = """
 Register a keyboard callback.
 
 Parameters
@@ -10555,7 +10555,7 @@ callback : DvzAppKeyboardCallback
 user_data : void*
     the user data
 """
-app_onkeyboard.argtypes = [
+app_on_keyboard.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppKeyboardCallback,  # DvzAppKeyboardCallback callback
     ctypes.c_void_p,  # void* user_data

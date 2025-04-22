@@ -15,7 +15,7 @@ static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     if (ev.type != DVZ_MOUSE_EVENT_DRAG_STOP)
         return;
 
-    // The user data is passed as last argument in dvz_app_onmouse().
+    // The user data is passed as last argument in dvz_app_on_mouse().
     DvzArcball* arcball = (DvzArcball*)ev.user_data;
     ANN(arcball);
 
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
     dvz_panel_visual(panel, visual, 0);
 
     // Print the arcball angles in the terminal.
-    dvz_app_onmouse(app, show_arcball_angles, arcball);
+    dvz_app_on_mouse(app, show_arcball_angles, arcball);
 
     // Run the app.
     dvz_scene_run(scene, app, 0);

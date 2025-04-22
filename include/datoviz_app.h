@@ -110,7 +110,7 @@ DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback callback, void*
  * @param callback the callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback callback, void* user_data);
+DVZ_EXPORT void dvz_app_on_mouse(DvzApp* app, DvzAppMouseCallback callback, void* user_data);
 
 
 
@@ -121,7 +121,7 @@ DVZ_EXPORT void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback callback, void*
  * @param callback the callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback callback, void* user_data);
+DVZ_EXPORT void dvz_app_on_keyboard(DvzApp* app, DvzAppKeyboardCallback callback, void* user_data);
 
 
 

@@ -171,7 +171,7 @@ def on_keyboard(app, window_id, ev):
 
 
 # We register the keyboard callback function.
-dvz.app_onkeyboard(app, on_keyboard, None)
+dvz.app_on_keyboard(app, on_keyboard, None)
 
 
 # -------------------------------------------------------------------------------------------------

@@ -122,7 +122,7 @@ checked = Out(True)
 
 
 @dvz.gui
-def ongui(app, fid, ev):
+def on_gui(app, fid, ev):
     """GUI callback function."""
 
     # Set the size of the next GUI dialog.
@@ -147,7 +147,7 @@ def ongui(app, fid, ev):
 
 
 # Associate a GUI callback function with a figure.
-dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 
 
 # -------------------------------------------------------------------------------------------------

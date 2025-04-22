@@ -136,7 +136,7 @@ def on_keyboard(app, window_id, ev):
 
 
 # We register the keyboard callback function.
-dvz.app_onkeyboard(app, on_keyboard, None)
+dvz.app_on_keyboard(app, on_keyboard, None)
 
 dvz.scene_run(scene, app, 0)
 dvz.scene_destroy(scene)
@@ -306,7 +306,7 @@ w = 300
 labels = [
     "col0", "col1", "col2",
     "0",    "1",    "2",
-    "3",    "4",    "5"    ]
+    "3",    "4",    "5"]
 rows = 2
 cols = 3
 selected = np.array([False, True], dtype=np.bool)
@@ -319,8 +319,10 @@ slider = Out(25.0)  # Warning: needs to be a float as it is passed to a function
 
 # GUI callback function, called at every frame. This is using Dear ImGui, an immediate-mode
 # GUI system. This means the GUI is recreated from scratch at every frame.
+
+
 @dvz.gui
-def ongui(app, fid, ev):
+def on_gui(app, fid, ev):
 
     # Set the size of the next GUI dialog.
     dvz.gui_pos(vec2(25, 25), vec2(0, 0))
@@ -366,8 +368,9 @@ def ongui(app, fid, ev):
     # End the GUI dialog.
     dvz.gui_end()
 
+
 # Associate a GUI callback function with a figure.
-dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 
 dvz.scene_run(scene, app, 0)
 dvz.scene_destroy(scene)
@@ -437,7 +440,7 @@ visible = Out(True)
 
 
 @dvz.gui
-def ongui(app, fid, ev):
+def on_gui(app, fid, ev):
     dvz.gui_begin("GUI", 0)
     if dvz.gui_checkbox("Visible?", visible):
         dvz.visual_show(visual, visible.value)
@@ -445,7 +448,7 @@ def ongui(app, fid, ev):
     dvz.gui_end()
 
 
-dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 
 dvz.scene_run(scene, app, 0)
 dvz.scene_destroy(scene)
@@ -470,12 +473,15 @@ batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 
+
 @dvz.keyboard
 def on_keyboard(app, window_id, ev):
-    action = {dvz.KEYBOARD_EVENT_RELEASE: "released", dvz.KEYBOARD_EVENT_PRESS: "pressed"}.get(ev.type)
+    action = {dvz.KEYBOARD_EVENT_RELEASE: "released",
+              dvz.KEYBOARD_EVENT_PRESS: "pressed"}.get(ev.type)
     print(f"{action} key {ev.key} ({dvz.key_name(ev.key)})")
 
-dvz.app_onkeyboard(app, on_keyboard, None)
+
+dvz.app_on_keyboard(app, on_keyboard, None)
 
 dvz.scene_run(scene, app, 0)
 dvz.scene_destroy(scene)
@@ -523,7 +529,7 @@ def on_mouse(app, window_id, ev):
     print()
 
 
-dvz.app_onmouse(app, on_mouse, None)
+dvz.app_on_mouse(app, on_mouse, None)
 
 dvz.scene_run(scene, app, 0)
 dvz.scene_destroy(scene)
@@ -873,7 +879,7 @@ static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     if (ev.type != DVZ_MOUSE_EVENT_DRAG_STOP)
         return;
 
-    // The user data is passed as last argument in dvz_app_onmouse().
+    // The user data is passed as last argument in dvz_app_on_mouse().
     DvzArcball* arcball = (DvzArcball*)ev.user_data;
     ANN(arcball);
 
@@ -944,7 +950,7 @@ int main(int argc, char** argv)
     dvz_panel_visual(panel, visual, 0);
 
     // Print the arcball angles in the terminal.
-    dvz_app_onmouse(app, show_arcball_angles, arcball);
+    dvz_app_on_mouse(app, show_arcball_angles, arcball);
 
     // Run the app.
     dvz_scene_run(scene, app, 0);

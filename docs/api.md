@@ -8724,6 +8724,54 @@ Return the last mouse position and pressed button.
     );
     ```
 
+### `dvz_app_on_keyboard()`
+
+Register a keyboard callback.
+
+=== "Python"
+
+    ``` python
+    dvz.app_on_keyboard(
+        app,  # the app (LP_DvzApp)
+        callback,  # the callback (CFunctionType)
+        user_data,  # the user data (array)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_app_on_keyboard(
+        DvzApp* app,  // the app
+        DvzAppKeyboardCallback callback,  // the callback
+        void* user_data,  // the user data
+    );
+    ```
+
+### `dvz_app_on_mouse()`
+
+Register a mouse callback.
+
+=== "Python"
+
+    ``` python
+    dvz.app_on_mouse(
+        app,  # the app (LP_DvzApp)
+        callback,  # the callback (CFunctionType)
+        user_data,  # the user data (array)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_app_on_mouse(
+        DvzApp* app,  // the app
+        DvzAppMouseCallback callback,  // the callback
+        void* user_data,  // the user data
+    );
+    ```
+
 ### `dvz_app_onframe()`
 
 Register a frame callback.
@@ -8744,54 +8792,6 @@ Register a frame callback.
     void dvz_app_onframe(
         DvzApp* app,  // the app
         DvzAppFrameCallback callback,  // the callback
-        void* user_data,  // the user data
-    );
-    ```
-
-### `dvz_app_onkeyboard()`
-
-Register a keyboard callback.
-
-=== "Python"
-
-    ``` python
-    dvz.app_onkeyboard(
-        app,  # the app (LP_DvzApp)
-        callback,  # the callback (CFunctionType)
-        user_data,  # the user data (array)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_app_onkeyboard(
-        DvzApp* app,  // the app
-        DvzAppKeyboardCallback callback,  // the callback
-        void* user_data,  // the user data
-    );
-    ```
-
-### `dvz_app_onmouse()`
-
-Register a mouse callback.
-
-=== "Python"
-
-    ``` python
-    dvz.app_onmouse(
-        app,  # the app (LP_DvzApp)
-        callback,  # the callback (CFunctionType)
-        user_data,  # the user data (array)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_app_onmouse(
-        DvzApp* app,  // the app
-        DvzAppMouseCallback callback,  // the callback
         void* user_data,  // the user data
     );
     ```

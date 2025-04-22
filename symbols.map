@@ -372,9 +372,9 @@ dvz_app_frame
 dvz_app_gui
 dvz_app_keyboard
 dvz_app_mouse
+dvz_app_on_keyboard
+dvz_app_on_mouse
 dvz_app_onframe
-dvz_app_onkeyboard
-dvz_app_onmouse
 dvz_app_onresize
 dvz_app_ontimer
 dvz_app_run

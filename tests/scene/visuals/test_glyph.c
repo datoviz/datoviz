@@ -201,7 +201,7 @@ int test_glyph_strings(TstSuite* suite)
     vt.visual = visual;
     dvz_panel_visual(vt.panel, visual, 0);
 
-    dvz_app_onmouse(vt.app, _switch_strings, &vt);
+    dvz_app_on_mouse(vt.app, _switch_strings, &vt);
 
     // Run the test.
     visual_test_end(vt);

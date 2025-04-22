@@ -164,7 +164,7 @@ int test_app_scatter(TstSuite* suite)
     // Panzoom callback.
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
     PanzoomStruct ps = {.mvp_id = wrapper.mvp_id, .app = app, .pz = pz, .wrapper = &wrapper};
-    dvz_app_onmouse(app, _scatter_mouse, &ps);
+    dvz_app_on_mouse(app, _scatter_mouse, &ps);
     dvz_app_onresize(app, _scatter_resize, &ps);
 
     dvz_app_run(app, N_FRAMES);
@@ -333,7 +333,7 @@ int test_app_arcball(TstSuite* suite)
     // Submit a dat upload request with the new MVP matrices.
     dvz_upload_dat(batch, arc.mvp_id, 0, sizeof(DvzMVP), &arc.mvp, 0);
 
-    dvz_app_onmouse(app, _arcball_mouse, &arc);
+    dvz_app_on_mouse(app, _arcball_mouse, &arc);
     dvz_app_onresize(app, _arcball_resize, &arc);
 
     dvz_app_run(app, N_FRAMES);
@@ -567,7 +567,7 @@ int test_app_viewset(TstSuite* suite)
         .pz = pz,
         .tr = tr,
     };
-    dvz_app_onmouse(app, _viewset_mouse, &ps);
+    dvz_app_on_mouse(app, _viewset_mouse, &ps);
 
     // Run the app.
     dvz_app_run(app, N_FRAMES);

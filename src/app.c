@@ -264,7 +264,7 @@ void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 
 
 
-void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
+void dvz_app_on_mouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
 {
     ANN(app);
     if (!app->client)
@@ -278,7 +278,7 @@ void dvz_app_onmouse(DvzApp* app, DvzAppMouseCallback on_mouse, void* user_data)
 
 
 
-void dvz_app_onkeyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* user_data)
+void dvz_app_on_keyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* user_data)
 {
     ANN(app);
     if (!app->client)

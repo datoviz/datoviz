@@ -25,7 +25,7 @@ from datoviz import vec2, vec3
 
 # GUI callback function.
 @dvz.gui
-def ongui(app, fid, ev):
+def on_gui(app, fid, ev):
     # Set the size of the next GUI dialog.
     dvz.gui_size(vec2(170, 110))
 
@@ -89,7 +89,7 @@ visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)
 dvz.panel_visual(panel, visual, 0)
 
 # Associate a GUI callback function with a figure.
-dvz.app_gui(app, dvz.figure_id(figure), ongui, None)
+dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
 
 # Initial arcball angles.
 dvz.arcball_initial(arcball, vec3(+0.6, -1.2, +3.0))

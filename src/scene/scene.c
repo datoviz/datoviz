@@ -1125,7 +1125,7 @@ static inline bool _is_in_margins(vec2 pos, vec2 shape, vec2 margins)
     return in_margins;
 }
 
-static void _scene_onmouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _scene_on_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 {
     ANN(app);
 
@@ -1344,7 +1344,7 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
     if (!dvz_obj_is_created(&scene->obj))
     {
         // Scene callbacks.
-        dvz_app_onmouse(app, _scene_onmouse, scene);
+        dvz_app_on_mouse(app, _scene_on_mouse, scene);
         dvz_app_onresize(app, _scene_onresize, scene);
         dvz_app_onframe(app, _scene_onframe, scene);
 
