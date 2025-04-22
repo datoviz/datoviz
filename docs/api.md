@@ -2410,18 +2410,36 @@ Add a text box in a dialog.
 
 ### `dvz_gui_tree()`
 
-Display a collapsable tree.
+Display a collapsible tree. Assumes the data is in the right order, with level encoding the
 
 === "Python"
 
     ``` python
-    dvz.gui_tree()
+    dvz.gui_tree(  # returns: whether the selection has changed (c_bool)
+        count,  # the number of rows (int, 32-bit unsigned)
+        ids,  # short id of each row (CStringArrayType)
+        labels,  # full label of each row (CStringArrayType)
+        levels,  # a positive integer indicate (ndpointer_<u4_C_CONTIGUOUS)
+        colors,  # the color of each square in each row (ndpointer_|u1_C_CONTIGUOUS)
+        folded,  # whether each row is currently folded (modified by this function) (ndpointer_|b1_C_CONTIGUOUS)
+        selected,  # whether each row is currently selected (modified by this function) (ndpointer_|b1_C_CONTIGUOUS)
+        visible,  # whether each row is visible (used for filtering) (ndpointer_|b1_C_CONTIGUOUS)
+    )
     ```
 
 === "C"
 
     ``` c
-    bool dvz_gui_tree();
+    bool dvz_gui_tree(  // returns: whether the selection has changed
+        uint32_t count,  // the number of rows
+        char** ids,  // short id of each row
+        char** labels,  // full label of each row
+        uint32_t* levels,  // a positive integer indicate
+        DvzColor* colors,  // the color of each square in each row
+        bool* folded,  // whether each row is currently folded (modified by this function)
+        bool* selected,  // whether each row is currently selected (modified by this function)
+        bool* visible,  // whether each row is visible (used for filtering)
+    );
     ```
 
 ### `dvz_gui_viewport()`

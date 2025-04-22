@@ -10392,7 +10392,31 @@ gui_table.restype = ctypes.c_bool
 # Function dvz_gui_tree()
 gui_tree = dvz.dvz_gui_tree
 gui_tree.__doc__ = """
-Display a collapsable tree.  TODO
+Display a collapsible tree. Assumes the data is in the right order, with level encoding the depth of each row within the tree.  Filtering can be implemented with the "visible" parameter. Note that this function automatically propagates the visibility of each node to all its descendents and ascendents, without modifying in-place the "visible" array.
+
+Parameters
+----------
+count : uint32_t
+    the number of rows
+ids : char**
+    short id of each row
+labels : char**
+    full label of each row
+levels : uint32_t*
+    a positive integer indicate
+colors : DvzColor*
+    the color of each square in each row
+folded : bool*
+    whether each row is currently folded (modified by this function)
+selected : bool*
+    whether each row is currently selected (modified by this function)
+visible : bool*
+    whether each row is visible (used for filtering)
+
+Returns
+-------
+type
+    whether the selection has changed
 """
 gui_tree.argtypes = [
     ctypes.c_uint32,  # uint32_t count
@@ -10402,7 +10426,7 @@ gui_tree.argtypes = [
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
     ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* folded
     ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* selected
-    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* hidden
+    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* visible
 ]
 gui_tree.restype = ctypes.c_bool
 

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "_pointer.h"
 #include "canvas.h"
 #include "datoviz.h"
 #include "datoviz_enums.h"
@@ -1034,9 +1035,73 @@ bool dvz_gui_table(
 
 
 
+static void propagate_visible(uint32_t count, uint32_t* levels, bool* visible, bool* visible_pr)
+{
+    /*  ----------------------------------------------------------------
+     * Propagate visibility upward *and* downward in a linearised tree
+     * -----------------------------------------------------------------
+     * – `visible[i] == true` makes every   parent   row   visible
+     * – afterwards another O(n) scan makes every descendant visible too
+     * -------------------------------------------------------------- */
+
+    if (count == 0)
+        return;
+    ASSERT(levels);
+    ASSERT(visible);
+    ASSERT(visible_pr);
+
+    /* A stack of row indices, stack[d] == latest row seen at level d.*
+     * Worst‑case depth == count, so one malloc is enough and O(n).   */
+    uint32_t* stack = (uint32_t*)malloc(count * sizeof(uint32_t));
+    ANN(stack);
+
+    uint32_t depth = 0;
+    int32_t under_visible = -1;
+    bool started_under_visible = false;
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        uint32_t lvl = levels[i];
+
+        while (depth > lvl) /* climb back in the tree */
+            --depth;
+
+
+        // NOTE: this part also propagate the visibility to the descendents.
+        visible_pr[i] = visible[i];
+        if (visible[i])
+        {
+            if (under_visible < 0)
+            {
+                under_visible = (int32_t)lvl;
+                started_under_visible = true;
+            }
+
+            /* mark every ancestor */
+            for (uint32_t d = 0; d < depth; ++d)
+                visible_pr[stack[d]] = true;
+        }
+
+        if (under_visible >= 0 && (int32_t)lvl > under_visible)
+        {
+            visible_pr[i] = true;
+        }
+        else if (under_visible >= 0 && !started_under_visible && (int32_t)lvl <= under_visible)
+        {
+            under_visible = -1;
+        }
+
+
+        stack[depth++] = i; /* push this node */
+        started_under_visible = false;
+    }
+
+    FREE(stack);
+}
+
 bool dvz_gui_tree(
     uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
-    bool* selected, bool* hidden)
+    bool* selected, bool* visible)
 {
     // TODO: improve the selection, currently one needs to ctrl+click on the text label and not
     // outside in a given row. May need to use ImGui::Selectable().
@@ -1050,6 +1115,14 @@ bool dvz_gui_tree(
     ASSERT(levels != NULL);
     ASSERT(folded != NULL);
 
+    // Propagate the visibility of every item to all of its ascendents.
+    bool* visible_pr = NULL;
+    if (visible != NULL)
+    {
+        visible_pr = (bool*)calloc(count, sizeof(bool));
+        propagate_visible(count, levels, visible, visible_pr);
+    }
+
     bool selection_changed = false;
     uint32_t current_level = 0;
     int skip_level = -1;
@@ -1060,7 +1133,8 @@ bool dvz_gui_tree(
 
     for (uint32_t i = 0; i < count; ++i)
     {
-        if (hidden != NULL && hidden[i])
+        // Skip non-visible elements.
+        if (visible_pr != NULL && !visible_pr[i])
             continue;
 
         uint32_t level = levels[i];
@@ -1160,6 +1234,9 @@ bool dvz_gui_tree(
         ImGui::TreePop();
         --current_level;
     }
+
+    if (visible_pr != NULL)
+        FREE(visible_pr);
 
     return selection_changed;
 }

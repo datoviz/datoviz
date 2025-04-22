@@ -4438,13 +4438,26 @@ DVZ_EXPORT bool dvz_gui_table(                                   //
 
 
 /**
- * Display a collapsable tree.
+ * Display a collapsible tree. Assumes the data is in the right order, with level encoding the
+ * depth of each row within the tree.
  *
- * TODO
+ * Filtering can be implemented with the "visible" parameter. Note that this function automatically
+ * propagates the visibility of each node to all its descendents and ascendents, without modifying
+ * in-place the "visible" array.
+ *
+ * @param count the number of rows
+ * @param ids short id of each row
+ * @param labels full label of each row
+ * @param levels a positive integer indicate
+ * @param colors the color of each square in each row
+ * @param folded whether each row is currently folded (modified by this function)
+ * @param selected whether each row is currently selected (modified by this function)
+ * @param visible whether each row is visible (used for filtering)
+ * @returns whether the selection has changed
  */
 DVZ_EXPORT bool dvz_gui_tree(
     uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
-    bool* selected, bool* hidden);
+    bool* selected, bool* visible);
 
 
 
