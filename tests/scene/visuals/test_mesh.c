@@ -115,7 +115,7 @@ int test_mesh_polygon(TstSuite* suite)
     //     printf("%d ", shape.index[i]);
     // }
 
-    dvz_shape_unindex(&shape, DVZ_SHAPE_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
+    dvz_shape_unindex(&shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
@@ -450,7 +450,7 @@ int test_mesh_surface(TstSuite* suite)
 
     // Create the surface shape.
     DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
-    dvz_shape_unindex(&shape, DVZ_SHAPE_INDEXING_SURFACE | DVZ_CONTOUR_FULL);
+    dvz_shape_unindex(&shape, DVZ_INDEXING_SURFACE | DVZ_CONTOUR_FULL);
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
@@ -542,7 +542,7 @@ int test_mesh_obj(TstSuite* suite)
     }
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
-    dvz_shape_unindex(&shape, DVZ_SHAPE_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
+    dvz_shape_unindex(&shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
@@ -662,7 +662,7 @@ int test_mesh_geo(TstSuite* suite)
         // Polygon triangulation.
         dvec2* polygon = copy_polygon(poly_length, &poly_pos[vertex_offset]);
         shapes[i] = dvz_shape_polygon(poly_length, (const dvec2*)polygon, color);
-        dvz_shape_unindex(&shapes[i], DVZ_SHAPE_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
+        dvz_shape_unindex(&shapes[i], DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
         FREE(polygon);
 
         vertex_offset += poly_length;

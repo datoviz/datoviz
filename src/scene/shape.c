@@ -622,7 +622,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
         // TODO: the user should be able to provide (e0, e1, e2) for each face (1 byte per face
         // sufficient).
 
-        if ((flags & DVZ_SHAPE_INDEXING_EARCUT) > 0)
+        if ((flags & DVZ_INDEXING_EARCUT) > 0)
         {
             // Whether there should be an edge on the other side of the v0 vertex.
             e0 = ((abs(v1 - v2) % vertex_count) == 1) ||
@@ -637,7 +637,7 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
         // When using a surface mesh triangulated by Datoviz, this scheme ensures that all
         // quads have a contour.
-        else if ((flags & DVZ_SHAPE_INDEXING_SURFACE) > 0)
+        else if ((flags & DVZ_INDEXING_SURFACE) > 0)
         {
             e0 = 0;
             e1 = 1;
