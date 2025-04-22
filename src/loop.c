@@ -225,11 +225,11 @@ int dvz_loop_frame(DvzLoop* loop)
 
 
 
-void dvz_loop_run(DvzLoop* loop, uint64_t n_frames)
+void dvz_loop_run(DvzLoop* loop, uint64_t frame_count)
 {
     ANN(loop);
 
-    uint64_t n = (n_frames > 0 ? n_frames : INFINITY);
+    uint64_t n = (frame_count > 0 ? frame_count : INFINITY);
     for (loop->frame_idx = 0; loop->frame_idx < n; loop->frame_idx++)
     {
         log_trace("running loop frame #%d", loop->frame_idx);

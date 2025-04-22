@@ -91,7 +91,7 @@ int dvz_loop_frame(DvzLoop* loop);
 
 /**
  */
-void dvz_loop_run(DvzLoop* loop, uint64_t n_frames);
+void dvz_loop_run(DvzLoop* loop, uint64_t frame_count);
 
 /**
  */

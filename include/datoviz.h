@@ -294,9 +294,9 @@ DVZ_EXPORT DvzBatch* dvz_scene_batch(DvzScene* scene);
  *
  * @param scene the scene
  * @param app the app
- * @param n_frames the maximum number of frames, 0 for infinite loop
+ * @param frame_count the maximum number of frames, 0 for infinite loop
  */
-DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames);
+DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count);
 
 
 

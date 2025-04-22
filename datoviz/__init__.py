@@ -2794,12 +2794,13 @@ Requester = DvzRequester
 # FUNCTION CALLBACK TYPES
 # ===============================================================================
 
-gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
-mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
-keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
-frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
-timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
-resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
+
+on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
+on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
+on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
+on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
+on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
+on_resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
 DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 
 # ===============================================================================
@@ -3132,13 +3133,13 @@ scene : DvzScene*
     the scene
 app : DvzApp*
     the app
-n_frames : uint64_t
+frame_count : uint64_t
     the maximum number of frames, 0 for infinite loop
 """
 scene_run.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_uint64,  # uint64_t n_frames
+    ctypes.c_uint64,  # uint64_t frame_count
 ]
 
 # Function dvz_scene_mouse()
@@ -10661,12 +10662,12 @@ Parameters
 ----------
 app : DvzApp*
     the app
-n_frames : uint64_t
+frame_count : uint64_t
     the maximum number of frames, 0 for infinite loop
 """
 app_run.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
-    ctypes.c_uint64,  # uint64_t n_frames
+    ctypes.c_uint64,  # uint64_t frame_count
 ]
 
 # Function dvz_app_submit()

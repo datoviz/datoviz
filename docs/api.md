@@ -6252,7 +6252,7 @@ Start the event loop and render the scene in a window.
     dvz.scene_run(
         scene,  # the scene (LP_DvzScene)
         app,  # the app (LP_DvzApp)
-        n_frames,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
+        frame_count,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
     )
     ```
 
@@ -6262,7 +6262,7 @@ Start the event loop and render the scene in a window.
     void dvz_scene_run(
         DvzScene* scene,  // the scene
         DvzApp* app,  // the app
-        uint64_t n_frames,  // the maximum number of frames, 0 for infinite loop
+        uint64_t frame_count,  // the maximum number of frames, 0 for infinite loop
     );
     ```
 
@@ -8853,7 +8853,7 @@ Start the application event loop.
     ``` python
     dvz.app_run(
         app,  # the app (LP_DvzApp)
-        n_frames,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
+        frame_count,  # the maximum number of frames, 0 for infinite loop (int, 64-bit unsigned)
     )
     ```
 
@@ -8862,7 +8862,7 @@ Start the application event loop.
     ``` c
     void dvz_app_run(
         DvzApp* app,  // the app
-        uint64_t n_frames,  // the maximum number of frames, 0 for infinite loop
+        uint64_t frame_count,  // the maximum number of frames, 0 for infinite loop
     );
     ```
 

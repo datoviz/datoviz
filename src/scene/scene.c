@@ -1330,7 +1330,7 @@ static inline bool _figure_has_gui_panels(DvzFigure* fig)
     return false;
 }
 
-void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
+void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
 {
     ANN(scene);
     ANN(app);
@@ -1373,7 +1373,7 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t n_frames)
     }
 
     // Run the app.
-    dvz_app_run(app, n_frames);
+    dvz_app_run(app, frame_count);
 }
 
 

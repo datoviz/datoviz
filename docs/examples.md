@@ -500,7 +500,8 @@ batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 
-@dvz.mouse
+
+@dvz.on_mouse
 def on_mouse(app, window_id, ev):
     action = dvz.from_enum(dvz.MouseEventType, ev.type)
     x, y = ev.pos
@@ -520,6 +521,7 @@ def on_mouse(app, window_id, ev):
         print(f"wheel direction {w}", end="")
 
     print()
+
 
 dvz.app_onmouse(app, on_mouse, None)
 
@@ -819,7 +821,7 @@ def render(angle):
 fps = 60  # number of frames per second in the video
 laps = 1  # number of rotations
 lap_duration = 4.0  # duration of each rotation
-n_frames = int(lap_duration * laps * fps)  # total number of frames to generate
+frame_count = int(lap_duration * laps * fps)  # total number of frames to generate
 # path to video file to write
 output_file = Path(__file__).parent / "video.mp4"
 kwargs = dict(
@@ -836,7 +838,7 @@ kwargs = dict(
 )
 if 'DVZ_CAPTURE' not in os.environ:  # HACK: avoid recording the video with `just runexamples`
     with imageio.get_writer(output_file, **kwargs) as writer:
-        for angle in tqdm.tqdm(np.linspace(0, 2 * np.pi, n_frames)[:-1]):
+        for angle in tqdm.tqdm(np.linspace(0, 2 * np.pi, frame_count)[:-1]):
             writer.append_data(render(angle))
 
 # Cleanup.

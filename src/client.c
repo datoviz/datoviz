@@ -278,15 +278,15 @@ DvzWindow* dvz_client_window(DvzClient* client, DvzId id)
 
 
 
-void dvz_client_run(DvzClient* client, uint64_t n_frames)
+void dvz_client_run(DvzClient* client, uint64_t frame_count)
 {
     ANN(client);
     dvz_atomic_set(client->to_stop, 0);
-    log_trace("start client event loop with %d frames", n_frames);
+    log_trace("start client event loop with %d frames", frame_count);
     int window_count = 0;
-    client->n_frames = n_frames;
-    for (client->frame_idx = 0;                                //
-         n_frames > 0 ? (client->frame_idx < n_frames) : true; //
+    client->frame_count = frame_count;
+    for (client->frame_idx = 0;                                      //
+         frame_count > 0 ? (client->frame_idx < frame_count) : true; //
          client->frame_idx++)
     {
         window_count = dvz_client_frame(client);
@@ -300,7 +300,7 @@ void dvz_client_run(DvzClient* client, uint64_t n_frames)
     }
 
     dvz_client_stop(client);
-    log_trace("stop client event loop after %d/%d frames", client->frame_idx + 1, n_frames);
+    log_trace("stop client event loop after %d/%d frames", client->frame_idx + 1, frame_count);
 }
 
 
@@ -310,14 +310,14 @@ static void* client_thread(void* user_data)
     DvzClient* client = (DvzClient*)user_data;
     ANN(client);
     log_trace("start client event loop in background thread");
-    dvz_client_run(client, client->n_frames);
+    dvz_client_run(client, client->frame_count);
     return NULL;
 }
 
-void dvz_client_thread(DvzClient* client, uint64_t n_frames)
+void dvz_client_thread(DvzClient* client, uint64_t frame_count)
 {
     ANN(client);
-    client->n_frames = n_frames;
+    client->frame_count = frame_count;
     log_trace("start client thread");
     client->thread = dvz_thread(client_thread, (void*)client);
 }

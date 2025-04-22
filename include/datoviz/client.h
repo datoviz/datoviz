@@ -142,7 +142,7 @@ struct DvzClient
     DvzBackend backend;
 
     DvzDeq* deq;
-    uint64_t frame_idx, n_frames;
+    uint64_t frame_idx, frame_count;
 
     DvzClock clock;
 
@@ -198,11 +198,11 @@ int dvz_client_frame(DvzClient* client);
 
 
 
-void dvz_client_run(DvzClient* client, uint64_t n_frames);
+void dvz_client_run(DvzClient* client, uint64_t frame_count);
 
 
 
-void dvz_client_thread(DvzClient* client, uint64_t n_frames);
+void dvz_client_thread(DvzClient* client, uint64_t frame_count);
 
 
 

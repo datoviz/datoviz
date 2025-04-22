@@ -469,7 +469,7 @@ void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void*
 
 
 
-void dvz_app_run(DvzApp* app, uint64_t n_frames)
+void dvz_app_run(DvzApp* app, uint64_t frame_count)
 {
     ANN(app);
     ANN(app->batch);
@@ -490,7 +490,7 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
 
         // Start the event loop.
         app->is_running = true;
-        dvz_client_run(app->client, n_frames);
+        dvz_client_run(app->client, frame_count);
         app->is_running = false;
 
         dvz_context_wait(app->prt->rd->ctx);
@@ -499,7 +499,7 @@ void dvz_app_run(DvzApp* app, uint64_t n_frames)
     // Offscreen mini event loop.
     else if (app->host->backend == DVZ_BACKEND_OFFSCREEN)
     {
-        log_trace("run offscreen app, discarding n_frames=%d in dvz_app_run()", n_frames);
+        log_trace("run offscreen app, discarding frame_count=%d in dvz_app_run()", frame_count);
 
         DvzRenderer* rd = app->rd;
         ANN(rd);

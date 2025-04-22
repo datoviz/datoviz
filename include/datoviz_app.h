@@ -178,9 +178,9 @@ dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void* user
  * Start the application event loop.
  *
  * @param app the app
- * @param n_frames the maximum number of frames, 0 for infinite loop
+ * @param frame_count the maximum number of frames, 0 for infinite loop
  */
-DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t n_frames);
+DVZ_EXPORT void dvz_app_run(DvzApp* app, uint64_t frame_count);
 
 
 
