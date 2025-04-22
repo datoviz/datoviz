@@ -16,7 +16,7 @@ layout(location = 0) in vec3 pos;    // in NDC
 layout(location = 1) in vec2 size;   // in pixels
 layout(location = 2) in vec2 anchor; // in relative coordinates
 layout(location = 3) in vec2 uv;     // in texel coordinates
-layout(location = 4) in vec4 color;
+layout(location = 4) in vec4 facecolor; // rectangle facecolor in FILL mode (no texture)
 
 // Varyings.
 layout(location = 0) out vec2 out_uv;
@@ -54,5 +54,5 @@ void main()
     out_uv = uv;
     out_size.xy = size * zoom;
     out_size.z = .5 * (zoom.x + zoom.y);
-    out_color = color;
+    out_color = facecolor;
 }

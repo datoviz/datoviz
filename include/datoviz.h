@@ -2632,8 +2632,8 @@ dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* tl_
  * @param values the image colors
  * @param flags the data update flags
  */
-DVZ_EXPORT void
-dvz_image_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
+DVZ_EXPORT void dvz_image_facecolor(
+    DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 

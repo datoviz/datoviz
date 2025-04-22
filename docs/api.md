@@ -2556,34 +2556,6 @@ Set the image anchors.
     );
     ```
 
-### `dvz_image_color()`
-
-Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
-
-=== "Python"
-
-    ``` python
-    dvz.image_color(
-        visual,  # the visual (LP_DvzVisual)
-        first,  # the index of the first item to update (int, 32-bit unsigned)
-        count,  # the number of items to update (int, 32-bit unsigned)
-        values,  # the image colors (ndpointer_|u1_C_CONTIGUOUS)
-        flags,  # the data update flags (int, 32-bit signed)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_image_color(
-        DvzVisual* visual,  // the visual
-        uint32_t first,  // the index of the first item to update
-        uint32_t count,  // the number of items to update
-        DvzColor* values,  // the image colors
-        int flags,  // the data update flags
-    );
-    ```
-
 ### `dvz_image_colormap()`
 
 Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
@@ -2625,6 +2597,34 @@ Set the edge color.
     void dvz_image_edgecolor(
         DvzVisual* visual,  // the visual
         DvzColor color,  // the edge color
+    );
+    ```
+
+### `dvz_image_facecolor()`
+
+Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
+
+=== "Python"
+
+    ``` python
+    dvz.image_facecolor(
+        visual,  # the visual (LP_DvzVisual)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
+        count,  # the number of items to update (int, 32-bit unsigned)
+        values,  # the image colors (ndpointer_|u1_C_CONTIGUOUS)
+        flags,  # the data update flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_image_facecolor(
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        DvzColor* values,  // the image colors
+        int flags,  // the data update flags
     );
     ```
 

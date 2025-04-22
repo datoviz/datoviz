@@ -75,8 +75,8 @@ int test_image_1(TstSuite* suite)
     // Image texture coordinates.
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
 
-    // Image colors.
-    dvz_image_color(
+    // Image face colors.
+    dvz_image_facecolor(
         visual, 0, 1, (DvzColor[]){{0, TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255)}}, 0);
 
     // Image parameters.

@@ -110,9 +110,9 @@ dvz_gui_window_capture
 dvz_image
 dvz_image_alloc
 dvz_image_anchor
-dvz_image_color
 dvz_image_colormap
 dvz_image_edgecolor
+dvz_image_facecolor
 dvz_image_linewidth
 dvz_image_permutation
 dvz_image_position

@@ -52,11 +52,11 @@ typedef enum
 
 struct DvzImageVertex
 {
-    vec3 pos;       /* position */
-    vec2 size;      /* size */
-    vec2 anchor;    /* anchor */
-    vec2 uv;        /* texture coordinates */
-    DvzColor color; /* color */
+    vec3 pos;           /* position */
+    vec2 size;          /* size */
+    vec2 anchor;        /* anchor */
+    vec2 uv;            /* texture coordinates */
+    DvzColor facecolor; /* face color (in FILL mode) */
 };
 
 

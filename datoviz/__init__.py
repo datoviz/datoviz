@@ -7269,9 +7269,9 @@ image_texcoords.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_image_color()
-image_color = dvz.dvz_image_color
-image_color.__doc__ = """
+# Function dvz_image_facecolor()
+image_facecolor = dvz.dvz_image_facecolor
+image_facecolor.__doc__ = """
 Set the image colors (only when using DVZ_IMAGE_FLAGS_FILL).
 
 Parameters
@@ -7287,7 +7287,7 @@ values : DvzColor*
 flags : int
     the data update flags
 """
-image_color.argtypes = [
+image_facecolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count

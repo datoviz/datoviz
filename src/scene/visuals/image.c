@@ -69,7 +69,7 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 1, FIELD(DvzImageVertex, size), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 2, FIELD(DvzImageVertex, anchor), DVZ_FORMAT_R32G32_SFLOAT, af);
     dvz_visual_attr(visual, 3, FIELD(DvzImageVertex, uv), DVZ_FORMAT_R32G32_SFLOAT, 0);
-    dvz_visual_attr(visual, 4, FIELD(DvzImageVertex, color), DVZ_FORMAT_COLOR, af);
+    dvz_visual_attr(visual, 4, FIELD(DvzImageVertex, facecolor), DVZ_FORMAT_COLOR, af);
 
     // Vertex stride.
     dvz_visual_stride(visual, 0, sizeof(DvzImageVertex));
@@ -177,7 +177,7 @@ void dvz_image_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4
 
 
 
-void dvz_image_color(
+void dvz_image_facecolor(
     DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags)
 {
     ANN(visual);
