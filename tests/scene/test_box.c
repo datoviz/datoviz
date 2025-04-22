@@ -152,7 +152,7 @@ int test_box_6(TstSuite* suite)
     DvzBox target = dvz_box(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     dvec2 pos[2] = {{5.0, 5.0}, {10.0, 10.0}};
     vec3 out[2];
-    dvz_box_normalize2D(source, target, 2, pos, out);
+    dvz_box_normalize_2D(source, target, 2, pos, out);
 
     // Check normalized positions
     vec3 expected[2] = {{0.0f, 0.0f, 0.0f}, {1.0f, 1.0f, 0.0f}};

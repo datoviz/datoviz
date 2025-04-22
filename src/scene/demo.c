@@ -69,12 +69,12 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasF
 /*  Demo panel                                                                                   */
 /*************************************************************************************************/
 
-DvzVisual* dvz_demo_panel2D(DvzPanel* panel)
+DvzVisual* dvz_demo_panel_2D(DvzPanel* panel)
 {
     ANN(panel);
 
     uint32_t n = 1000;
-    vec3* pos = dvz_mock_pos2D(n, .25);
+    vec3* pos = dvz_mock_pos_2D(n, .25);
     DvzColor* color = dvz_mock_color(n, 200);
     float* size = dvz_mock_uniform(n, 20.0, 50.0);
 
@@ -92,12 +92,12 @@ DvzVisual* dvz_demo_panel2D(DvzPanel* panel)
 
 
 
-DvzVisual* dvz_demo_panel3D(DvzPanel* panel)
+DvzVisual* dvz_demo_panel_3D(DvzPanel* panel)
 {
     ANN(panel);
 
     uint32_t n = 1000;
-    vec3* pos = dvz_mock_pos3D(n, .25);
+    vec3* pos = dvz_mock_pos_3D(n, .25);
     DvzColor* color = dvz_mock_color(n, 255);
     float* size = dvz_mock_uniform(n, 25.0, 50.0);
 

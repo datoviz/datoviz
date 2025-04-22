@@ -43,7 +43,7 @@ scene = dvz.scene(batch)
 # NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
 figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
-visual = dvz.demo_panel3D(panel)
+visual = dvz.demo_panel_3D(panel)
 
 # Get or create an arcball interaction for a panel.
 arcball = dvz.panel_arcball(panel)
@@ -82,7 +82,7 @@ scene = dvz.scene(batch)
 # NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
 figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
-visual = dvz.demo_panel3D(panel)
+visual = dvz.demo_panel_3D(panel)
 
 # Get or create the panel's 3D perspective camera.
 camera = dvz.panel_camera(panel, 0)
@@ -97,6 +97,8 @@ dvz.camera_initial(camera, eye, lookat, up)
 dvz.panel_update(panel)
 
 # Keyboard event callback function.
+
+
 @dvz.keyboard
 def on_keyboard(app, window_id, ev):
     global eye
@@ -131,6 +133,7 @@ def on_keyboard(app, window_id, ev):
         # Important: we must update the panel after the panel transformation parameters
         # have changed.
         dvz.panel_update(panel)
+
 
 # We register the keyboard callback function.
 dvz.app_onkeyboard(app, on_keyboard, None)
@@ -392,13 +395,13 @@ figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
 
 # Create a panel, specifying the panel offset and size (x, y, width, height, in pixels).
 panel1 = dvz.panel(figure, 50, 50, 300, 300)
-dvz.demo_panel3D(panel1)
+dvz.demo_panel_3D(panel1)
 
 # Wrap a panel in a GUI dialog.
 dvz.panel_gui(panel1, "Panel 1", 0)
 
 panel2 = dvz.panel(figure, 400, 100, 300, 300)
-dvz.demo_panel2D(panel2)
+dvz.demo_panel_2D(panel2)
 dvz.panel_gui(panel2, "Panel 2", 0)
 
 dvz.scene_run(scene, app, 0)
@@ -428,7 +431,7 @@ scene = dvz.scene(batch)
 # NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
 figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
 panel = dvz.panel_default(figure)
-visual = dvz.demo_panel2D(panel)
+visual = dvz.demo_panel_2D(panel)
 
 visible = Out(True)
 
@@ -544,7 +547,7 @@ app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
 batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
-dvz.demo_panel2D(dvz.panel_default(figure))
+dvz.demo_panel_2D(dvz.panel_default(figure))
 
 # Need to run at least one frame before capturing a screenshot.
 dvz.scene_run(scene, app, 1)
@@ -579,8 +582,8 @@ panel1 = dvz.panel(figure, 0, 0, 400, 600)
 panel2 = dvz.panel(figure, 400, 0, 400, 600)
 
 # Add demo visuals to the panels.
-visual1 = dvz.demo_panel2D(panel1)
-visual2 = dvz.demo_panel3D(panel2)
+visual1 = dvz.demo_panel_2D(panel1)
+visual2 = dvz.demo_panel_3D(panel2)
 
 # Set some margins for the first panel, which affects the panel's coordinate systems.
 # [-1, +1] map to the "inner" viewport.
@@ -613,7 +616,7 @@ scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
 panzoom = dvz.panel_panzoom(panel)
-visual = dvz.demo_panel2D(panel)
+visual = dvz.demo_panel_2D(panel)
 
 # Create a data coordinate system [0, 100] x [0, 10].
 ref = dvz.ref(0)
@@ -683,8 +686,8 @@ class ExampleWindow(QMainWindow):
         self.qt_figure2 = self.qt_server.create_figure(w, h)
 
         # Fill the figures with mock data.
-        dvz.demo_panel2D(dvz.panel(self.qt_figure1.figure, 0, 0, w, h))
-        dvz.demo_panel2D(dvz.panel(self.qt_figure2.figure, 0, 0, w, h))
+        dvz.demo_panel_2D(dvz.panel(self.qt_figure1.figure, 0, 0, w, h))
+        dvz.demo_panel_2D(dvz.panel(self.qt_figure2.figure, 0, 0, w, h))
 
         # Add the two figures in the main window.
         splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -724,7 +727,7 @@ batch = dvz.app_batch(app)
 scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 panel = dvz.panel_default(figure)
-dvz.demo_panel2D(panel)
+dvz.demo_panel_2D(panel)
 
 # Frame presentation timestamps.
 # Every second, we show the timestamps of the last `count` frames.
@@ -734,15 +737,17 @@ count = 5
 seconds = np.zeros(count, dtype=np.uint64)  # epoch, in seconds
 nanoseconds = np.zeros(count, dtype=np.uint64)  # number of ns within the second
 
+
 @dvz.timer
 def on_timer(app, window_id, ev):
-    # The timestamps are automatically recorded at every frame, this call fetches the last
+    #  The timestamps are automatically recorded at every frame, this call fetches the last
     # `count` ones.
     dvz.app_timestamps(app, dvz.figure_id(figure), count, seconds, nanoseconds)
 
     # We display the values.
     print(f"Last {count} frames:")
     print(np.c_[seconds, nanoseconds])
+
 
 # Timer: retrieve and display the timestamps every second.
 # NOTE: it is currently impossible to call dvz.app_timestamps() after the window has been closed.
@@ -790,7 +795,7 @@ scene = dvz.scene(None)
 batch = dvz.scene_batch(scene)
 figure = dvz.figure(scene, WIDTH, HEIGHT, 0)
 panel = dvz.panel_default(figure)
-visual = dvz.demo_panel3D(panel)
+visual = dvz.demo_panel_3D(panel)
 arcball = dvz.panel_arcball(panel)
 camera = dvz.panel_camera(panel, 0)
 
@@ -1130,7 +1135,7 @@ int main(int argc, char** argv)
     dvz_point_alloc(visual, n);
 
     // Set the point positions.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_point_position(visual, 0, n, pos, 0);
     FREE(pos);
 
@@ -1205,7 +1210,7 @@ int main(int argc, char** argv)
     dvz_point_alloc(visual, n);
 
     // Set the point positions.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_point_position(visual, 0, n, pos, 0);
     FREE(pos);
 

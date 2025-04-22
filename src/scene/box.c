@@ -214,7 +214,7 @@ void dvz_box_normalize_1D(
 
 
 
-void dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
+void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out)
 {
     ANN(pos);
     ANN(out);

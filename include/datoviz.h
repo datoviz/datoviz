@@ -98,7 +98,7 @@ DVZ_EXPORT void dvz_demo(void);
  * @param panel the panel
  * @returns the marker visual
  */
-DVZ_EXPORT DvzVisual* dvz_demo_panel2D(DvzPanel* panel);
+DVZ_EXPORT DvzVisual* dvz_demo_panel_2D(DvzPanel* panel);
 
 
 
@@ -108,7 +108,7 @@ DVZ_EXPORT DvzVisual* dvz_demo_panel2D(DvzPanel* panel);
  * @param panel the panel
  * @returns the marker visual
  */
-DVZ_EXPORT DvzVisual* dvz_demo_panel3D(DvzPanel* panel);
+DVZ_EXPORT DvzVisual* dvz_demo_panel_3D(DvzPanel* panel);
 
 
 
@@ -3311,7 +3311,7 @@ DVZ_EXPORT double dvz_easing(DvzEasing easing, double t);
  * @param t the normalized value
  * @param[out] out the 2D position
  */
-DVZ_EXPORT void dvz_circular2D(vec2 center, float radius, float angle, float t, vec2 out);
+DVZ_EXPORT void dvz_circular_2D(vec2 center, float radius, float angle, float t, vec2 out);
 
 
 
@@ -3351,7 +3351,7 @@ DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
  * @param t the normalized value
  * @returns the interpolated point
  */
-DVZ_EXPORT void dvz_interpolate2D(vec2 p0, vec2 p1, float t, vec2 out);
+DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
 
 
@@ -4012,7 +4012,7 @@ DVZ_EXPORT void dvz_ref_expand(DvzRef* ref, DvzDim dim, double vmin, double vmax
  * @param count the number of positions
  * @param pos the 2D positions
  */
-DVZ_EXPORT void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos);
+DVZ_EXPORT void dvz_ref_expand_2D(DvzRef* ref, uint32_t count, dvec2* pos);
 
 
 
@@ -4023,7 +4023,7 @@ DVZ_EXPORT void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos);
  * @param count the number of positions
  * @param pos the 3D positions
  */
-DVZ_EXPORT void dvz_ref_expand3D(DvzRef* ref, uint32_t count, dvec3* pos);
+DVZ_EXPORT void dvz_ref_expand_3D(DvzRef* ref, uint32_t count, dvec3* pos);
 
 
 
@@ -4049,7 +4049,7 @@ dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* 
  * @param pos the 2D positions
  * @param[out] pos_tr (array) the transformed 3D positions
  */
-DVZ_EXPORT void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
+DVZ_EXPORT void dvz_ref_transform_2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
 
 
 
@@ -4073,7 +4073,7 @@ DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* po
  * @param pos the 3D positions
  * @param[out] pos_tr (array) the transformed positions
  */
-DVZ_EXPORT void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
+DVZ_EXPORT void dvz_ref_transform_3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
 
 
 

@@ -51,7 +51,7 @@ int test_marker_code(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
@@ -113,7 +113,7 @@ int test_marker_bitmap(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
@@ -192,7 +192,7 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
@@ -280,7 +280,7 @@ int test_marker_msdf(TstSuite* suite)
     dvz_marker_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos3D(n, 0.25);
+    vec3* pos = dvz_mock_pos_3D(n, 0.25);
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.

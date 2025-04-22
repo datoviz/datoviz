@@ -87,7 +87,7 @@ int test_scene_1(TstSuite* suite)
 
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
@@ -135,7 +135,7 @@ int test_scene_2(TstSuite* suite)
 
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
@@ -256,7 +256,7 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_pixel_alloc(pixel, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
@@ -299,11 +299,11 @@ int test_scene_gui(TstSuite* suite)
 
     DvzPanel* panel1 = dvz_panel(figure, 100, 100, 300, 200);
     dvz_panel_gui(panel1, "GUI panel 1", 0);
-    dvz_demo_panel2D(panel1);
+    dvz_demo_panel_2D(panel1);
 
     DvzPanel* panel2 = dvz_panel(figure, 200, 350, 250, 150);
     dvz_panel_gui(panel2, "GUI panel 2", 0);
-    dvz_demo_panel2D(panel2);
+    dvz_demo_panel_2D(panel2);
 
     dvz_scene_run(scene, app, N_FRAMES);
     dvz_scene_destroy(scene);

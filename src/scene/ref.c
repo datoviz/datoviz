@@ -120,7 +120,7 @@ void dvz_ref_expand(DvzRef* ref, DvzDim dim, double vmin, double vmax)
 
 
 
-void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos)
+void dvz_ref_expand_2D(DvzRef* ref, uint32_t count, dvec2* pos)
 {
     ANN(ref);
     ANN(pos);
@@ -138,7 +138,7 @@ void dvz_ref_expand2D(DvzRef* ref, uint32_t count, dvec2* pos)
 
 
 
-void dvz_ref_expand3D(DvzRef* ref, uint32_t count, dvec3* pos)
+void dvz_ref_expand_3D(DvzRef* ref, uint32_t count, dvec3* pos)
 {
     ANN(ref);
     ANN(pos);
@@ -171,14 +171,14 @@ void dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, v
 
 
 
-void dvz_ref_transform2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr)
+void dvz_ref_transform_2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr)
 {
     ANN(ref);
     ANN(pos);
     ANN(pos_tr);
     ASSERT(count > 0);
 
-    dvz_box_normalize2D(ref->box, DVZ_BOX_NDC, count, pos, pos_tr);
+    dvz_box_normalize_2D(ref->box, DVZ_BOX_NDC, count, pos, pos_tr);
 }
 
 
@@ -195,7 +195,7 @@ void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* pos, dvec2* p
 
 
 
-void dvz_ref_transform3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr)
+void dvz_ref_transform_3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr)
 {
     ANN(ref);
     ANN(pos);

@@ -435,7 +435,7 @@ int test_app_pixel(TstSuite* suite)
     dvz_pixel_alloc(pixel, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
@@ -541,7 +541,7 @@ int test_app_viewset(TstSuite* suite)
     dvz_pixel_alloc(pixel, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.

@@ -137,7 +137,7 @@ void dvz_box_normalize_1D(
  * @param[out] out (array) pointer to an array with the normalized positions to compute (single
  * precision)
  */
-void dvz_box_normalize2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
+void dvz_box_normalize_2D(DvzBox source, DvzBox target, uint32_t count, dvec2* pos, vec3* out);
 
 
 

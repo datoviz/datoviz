@@ -46,7 +46,7 @@ int test_sphere_1(TstSuite* suite)
     dvz_sphere_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos3D(n, 0.25);
+    vec3* pos = dvz_mock_pos_3D(n, 0.25);
     dvz_sphere_position(visual, 0, n, pos, 0);
 
     // Color.

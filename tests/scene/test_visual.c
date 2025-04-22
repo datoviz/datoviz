@@ -62,7 +62,7 @@ int test_visual_1(TstSuite* suite)
 
     // Vertex data.
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_visual_data(visual, 0, 0, n, pos);
 
     // Color.

@@ -53,13 +53,13 @@ int test_ref_1(TstSuite* suite)
     pos2D[0][0] = -2;
     pos2D[2][0] = +4;
 
-    dvz_ref_expand2D(ref, count, pos2D);
+    dvz_ref_expand_2D(ref, count, pos2D);
     dvz_ref_get(ref, dim, &vmin, &vmax);
     AT(vmin == -2);
     AT(vmax == +4);
 
     // [-2, +4] into [-1, +1]
-    dvz_ref_transform2D(ref, count, pos2D, pos_tr);
+    dvz_ref_transform_2D(ref, count, pos2D, pos_tr);
     AC(pos_tr[0][dim], -1, EPS);
     AC(pos_tr[2][dim], +1, EPS);
 
@@ -70,13 +70,13 @@ int test_ref_1(TstSuite* suite)
     pos3D[1][dim] = +10;
     pos3D[2][dim] = +40;
 
-    dvz_ref_expand3D(ref, count, pos3D);
+    dvz_ref_expand_3D(ref, count, pos3D);
     dvz_ref_get(ref, dim, &vmin, &vmax);
     AT(vmin == -20);
     AT(vmax == +40);
 
     // [-20, +40] into [-1, +1]
-    dvz_ref_transform3D(ref, count, pos3D, pos_tr);
+    dvz_ref_transform_3D(ref, count, pos3D, pos_tr);
     AC(pos_tr[0][dim], -1, EPS);
     AC(pos_tr[1][dim], 0, EPS);
     AC(pos_tr[2][dim], +1, EPS);

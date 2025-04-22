@@ -750,14 +750,14 @@ Set the camera zrange.
     );
     ```
 
-### `dvz_circular2D()`
+### `dvz_circular_2D()`
 
 Generate a 2D circular motion.
 
 === "Python"
 
     ``` python
-    dvz.circular2D(
+    dvz.circular_2D(
         center,  # the circle center (vec2)
         radius,  # the circle radius (float, 64-bit)
         angle,  # the initial angle (float, 64-bit)
@@ -768,7 +768,7 @@ Generate a 2D circular motion.
 === "C"
 
     ``` c
-    void dvz_circular2D(
+    void dvz_circular_2D(
         vec2 center,  // the circle center
         float radius,  // the circle radius
         float angle,  // the initial angle
@@ -946,14 +946,14 @@ Run a demo.
     void dvz_demo();
     ```
 
-### `dvz_demo_panel2D()`
+### `dvz_demo_panel_2D()`
 
 Demo panel (random scatter plot).
 
 === "Python"
 
     ``` python
-    dvz.demo_panel2D(  # returns: the marker visual (LP_DvzVisual)
+    dvz.demo_panel_2D(  # returns: the marker visual (LP_DvzVisual)
         panel,  # the panel (LP_DvzPanel)
     )
     ```
@@ -961,19 +961,19 @@ Demo panel (random scatter plot).
 === "C"
 
     ``` c
-    DvzVisual* dvz_demo_panel2D(  // returns: the marker visual
+    DvzVisual* dvz_demo_panel_2D(  // returns: the marker visual
         DvzPanel* panel,  // the panel
     );
     ```
 
-### `dvz_demo_panel3D()`
+### `dvz_demo_panel_3D()`
 
 Demo panel (random scatter plot).
 
 === "Python"
 
     ``` python
-    dvz.demo_panel3D(  # returns: the marker visual (LP_DvzVisual)
+    dvz.demo_panel_3D(  # returns: the marker visual (LP_DvzVisual)
         panel,  # the panel (LP_DvzPanel)
     )
     ```
@@ -981,7 +981,7 @@ Demo panel (random scatter plot).
 === "C"
 
     ``` c
-    DvzVisual* dvz_demo_panel3D(  // returns: the marker visual
+    DvzVisual* dvz_demo_panel_3D(  // returns: the marker visual
         DvzPanel* panel,  // the panel
     );
     ```
@@ -2828,14 +2828,14 @@ Make a linear interpolation between two scalar value.
     );
     ```
 
-### `dvz_interpolate2D()`
+### `dvz_interpolate_2D()`
 
 Make a linear interpolation between two 2D points.
 
 === "Python"
 
     ``` python
-    dvz.interpolate2D(  # returns: the interpolated point (c_int)
+    dvz.interpolate_2D(  # returns: the interpolated point (c_int)
         p0,  # the first point (vec2)
         p1,  # the second point (vec2)
         t,  # the normalized value (float, 64-bit)
@@ -2845,7 +2845,7 @@ Make a linear interpolation between two 2D points.
 === "C"
 
     ``` c
-    void dvz_interpolate2D(  // returns: the interpolated point
+    void dvz_interpolate_2D(  // returns: the interpolated point
         vec2 p0,  // the first point
         vec2 p1,  // the second point
         float t,  // the normalized value
@@ -5832,14 +5832,14 @@ Expand the reference by ensuring it contains the specified range.
     );
     ```
 
-### `dvz_ref_expand2D()`
+### `dvz_ref_expand_2D()`
 
 Expand the reference by ensuring it contains the specified 2D data.
 
 === "Python"
 
     ``` python
-    dvz.ref_expand2D(
+    dvz.ref_expand_2D(
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
@@ -5849,21 +5849,21 @@ Expand the reference by ensuring it contains the specified 2D data.
 === "C"
 
     ``` c
-    void dvz_ref_expand2D(
+    void dvz_ref_expand_2D(
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec2* pos,  // the 2D positions
     );
     ```
 
-### `dvz_ref_expand3D()`
+### `dvz_ref_expand_3D()`
 
 Expand the reference by ensuring it contains the specified 3D data.
 
 === "Python"
 
     ``` python
-    dvz.ref_expand3D(
+    dvz.ref_expand_3D(
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
@@ -5873,7 +5873,7 @@ Expand the reference by ensuring it contains the specified 3D data.
 === "C"
 
     ``` c
-    void dvz_ref_expand3D(
+    void dvz_ref_expand_3D(
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec3* pos,  // the 3D positions
@@ -5976,14 +5976,14 @@ Transform 1D data from the reference frame to normalized device coordinates [-1.
     );
     ```
 
-### `dvz_ref_transform2D()`
+### `dvz_ref_transform_2D()`
 
 Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
 
 === "Python"
 
     ``` python
-    dvz.ref_transform2D(
+    dvz.ref_transform_2D(
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
@@ -5993,21 +5993,21 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
 === "C"
 
     ``` c
-    void dvz_ref_transform2D(
+    void dvz_ref_transform_2D(
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec2* pos,  // the 2D positions
     );
     ```
 
-### `dvz_ref_transform3D()`
+### `dvz_ref_transform_3D()`
 
 Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
 
 === "Python"
 
     ``` python
-    dvz.ref_transform3D(
+    dvz.ref_transform_3D(
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
@@ -6017,7 +6017,7 @@ Transform 3D data from the reference frame to normalized device coordinates [-1.
 === "C"
 
     ``` c
-    void dvz_ref_transform3D(
+    void dvz_ref_transform_3D(
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec3* pos,  // the 3D positions
@@ -9400,14 +9400,14 @@ Repeat a color in an array.
     );
     ```
 
-### `dvz_mock_pos2D()`
+### `dvz_mock_pos_2D()`
 
 Generate a set of random 2D positions.
 
 === "Python"
 
     ``` python
-    dvz.mock_pos2D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
+    dvz.mock_pos_2D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
         count,  # the number of positions to generate (int, 32-bit unsigned)
         std,  # the standard deviation (float, 64-bit)
     )
@@ -9416,20 +9416,20 @@ Generate a set of random 2D positions.
 === "C"
 
     ``` c
-    vec3* dvz_mock_pos2D(  // returns: the positions
+    vec3* dvz_mock_pos_2D(  // returns: the positions
         uint32_t count,  // the number of positions to generate
         float std,  // the standard deviation
     );
     ```
 
-### `dvz_mock_pos3D()`
+### `dvz_mock_pos_3D()`
 
 Generate a set of random 3D positions.
 
 === "Python"
 
     ``` python
-    dvz.mock_pos3D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
+    dvz.mock_pos_3D(  # returns: the positions (ndpointer_<f4_C_CONTIGUOUS)
         count,  # the number of positions to generate (int, 32-bit unsigned)
         std,  # the standard deviation (float, 64-bit)
     )
@@ -9438,7 +9438,7 @@ Generate a set of random 3D positions.
 === "C"
 
     ``` c
-    vec3* dvz_mock_pos3D(  // returns: the positions
+    vec3* dvz_mock_pos_3D(  // returns: the positions
         uint32_t count,  // the number of positions to generate
         float std,  // the standard deviation
     );

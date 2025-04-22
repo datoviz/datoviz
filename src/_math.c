@@ -224,7 +224,7 @@ inline double dvz_rand_normal(void)
 /*  Mock random data                                                                             */
 /*************************************************************************************************/
 
-vec3* dvz_mock_pos2D(uint32_t count, float std)
+vec3* dvz_mock_pos_2D(uint32_t count, float std)
 {
     ASSERT(count > 0);
     vec3* pos = (vec3*)calloc(count, sizeof(vec3));
@@ -270,7 +270,7 @@ vec3* dvz_mock_band(uint32_t count, vec2 size)
 
 
 
-vec3* dvz_mock_pos3D(uint32_t count, float std)
+vec3* dvz_mock_pos_3D(uint32_t count, float std)
 {
     ASSERT(count > 0);
     vec3* pos = (vec3*)calloc(count, sizeof(vec3));

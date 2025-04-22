@@ -46,7 +46,7 @@ int test_point_1(TstSuite* suite)
     dvz_point_alloc(visual, n);
 
     // Position.
-    vec3* pos = dvz_mock_pos2D(n, 0.25);
+    vec3* pos = dvz_mock_pos_2D(n, 0.25);
     dvz_point_position(visual, 0, n, pos, 0);
 
     // Color.

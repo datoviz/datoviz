@@ -2814,9 +2814,9 @@ Run a demo.
 demo.argtypes = [
 ]
 
-# Function dvz_demo_panel2D()
-demo_panel2D = dvz.dvz_demo_panel2D
-demo_panel2D.__doc__ = """
+# Function dvz_demo_panel_2D()
+demo_panel_2D = dvz.dvz_demo_panel_2D
+demo_panel_2D.__doc__ = """
 Demo panel (random scatter plot).
 
 Parameters
@@ -2829,14 +2829,14 @@ Returns
 type
     the marker visual
 """
-demo_panel2D.argtypes = [
+demo_panel_2D.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
-demo_panel2D.restype = ctypes.POINTER(DvzVisual)
+demo_panel_2D.restype = ctypes.POINTER(DvzVisual)
 
-# Function dvz_demo_panel3D()
-demo_panel3D = dvz.dvz_demo_panel3D
-demo_panel3D.__doc__ = """
+# Function dvz_demo_panel_3D()
+demo_panel_3D = dvz.dvz_demo_panel_3D
+demo_panel_3D.__doc__ = """
 Demo panel (random scatter plot).
 
 Parameters
@@ -2849,10 +2849,10 @@ Returns
 type
     the marker visual
 """
-demo_panel3D.argtypes = [
+demo_panel_3D.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
 ]
-demo_panel3D.restype = ctypes.POINTER(DvzVisual)
+demo_panel_3D.restype = ctypes.POINTER(DvzVisual)
 
 # Function dvz_version()
 version = dvz.dvz_version
@@ -8469,9 +8469,9 @@ easing.argtypes = [
 ]
 easing.restype = ctypes.c_double
 
-# Function dvz_circular2D()
-circular2D = dvz.dvz_circular2D
-circular2D.__doc__ = """
+# Function dvz_circular_2D()
+circular_2D = dvz.dvz_circular_2D
+circular_2D.__doc__ = """
 Generate a 2D circular motion.
 
 Parameters
@@ -8487,7 +8487,7 @@ t : float
 out : vec2 (out parameter)
     the 2D position
 """
-circular2D.argtypes = [
+circular_2D.argtypes = [
     vec2,  # vec2 center
     ctypes.c_float,  # float radius
     ctypes.c_float,  # float angle
@@ -8553,9 +8553,9 @@ interpolate.argtypes = [
 ]
 interpolate.restype = ctypes.c_float
 
-# Function dvz_interpolate2D()
-interpolate2D = dvz.dvz_interpolate2D
-interpolate2D.__doc__ = """
+# Function dvz_interpolate_2D()
+interpolate_2D = dvz.dvz_interpolate_2D
+interpolate_2D.__doc__ = """
 Make a linear interpolation between two 2D points.
 
 Parameters
@@ -8572,7 +8572,7 @@ Returns
 type
     the interpolated point
 """
-interpolate2D.argtypes = [
+interpolate_2D.argtypes = [
     vec2,  # vec2 p0
     vec2,  # vec2 p1
     ctypes.c_float,  # float t
@@ -9682,9 +9682,9 @@ ref_expand.argtypes = [
     ctypes.c_double,  # double vmax
 ]
 
-# Function dvz_ref_expand2D()
-ref_expand2D = dvz.dvz_ref_expand2D
-ref_expand2D.__doc__ = """
+# Function dvz_ref_expand_2D()
+ref_expand_2D = dvz.dvz_ref_expand_2D
+ref_expand_2D.__doc__ = """
 Expand the reference by ensuring it contains the specified 2D data.
 
 Parameters
@@ -9696,15 +9696,15 @@ count : uint32_t
 pos : dvec2*
     the 2D positions
 """
-ref_expand2D.argtypes = [
+ref_expand_2D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
 ]
 
-# Function dvz_ref_expand3D()
-ref_expand3D = dvz.dvz_ref_expand3D
-ref_expand3D.__doc__ = """
+# Function dvz_ref_expand_3D()
+ref_expand_3D = dvz.dvz_ref_expand_3D
+ref_expand_3D.__doc__ = """
 Expand the reference by ensuring it contains the specified 3D data.
 
 Parameters
@@ -9716,7 +9716,7 @@ count : uint32_t
 pos : dvec3*
     the 3D positions
 """
-ref_expand3D.argtypes = [
+ref_expand_3D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
@@ -9748,9 +9748,9 @@ ref_transform1D.argtypes = [
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
-# Function dvz_ref_transform2D()
-ref_transform2D = dvz.dvz_ref_transform2D
-ref_transform2D.__doc__ = """
+# Function dvz_ref_transform_2D()
+ref_transform_2D = dvz.dvz_ref_transform_2D
+ref_transform_2D.__doc__ = """
 Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9764,7 +9764,7 @@ pos : dvec2*
 pos_tr : vec3* (out parameter)
     (array) the transformed 3D positions
 """
-ref_transform2D.argtypes = [
+ref_transform_2D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
@@ -9794,9 +9794,9 @@ ref_transform_polygon.argtypes = [
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # out dvec2* pos_tr
 ]
 
-# Function dvz_ref_transform3D()
-ref_transform3D = dvz.dvz_ref_transform3D
-ref_transform3D.__doc__ = """
+# Function dvz_ref_transform_3D()
+ref_transform_3D = dvz.dvz_ref_transform_3D
+ref_transform_3D.__doc__ = """
 Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9810,7 +9810,7 @@ pos : dvec3*
 pos_tr : vec3* (out parameter)
     (array) the transformed positions
 """
-ref_transform3D.argtypes = [
+ref_transform_3D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
@@ -11222,9 +11222,9 @@ rand_normal.argtypes = [
 ]
 rand_normal.restype = ctypes.c_double
 
-# Function dvz_mock_pos2D()
-mock_pos2D = dvz.dvz_mock_pos2D
-mock_pos2D.__doc__ = """
+# Function dvz_mock_pos_2D()
+mock_pos_2D = dvz.dvz_mock_pos_2D
+mock_pos_2D.__doc__ = """
 Generate a set of random 2D positions.
 
 Parameters
@@ -11239,11 +11239,11 @@ Returns
 type
     the positions
 """
-mock_pos2D.argtypes = [
+mock_pos_2D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
 ]
-mock_pos2D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+mock_pos_2D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_circle()
 mock_circle = dvz.dvz_mock_circle
@@ -11291,9 +11291,9 @@ mock_band.argtypes = [
 ]
 mock_band.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
-# Function dvz_mock_pos3D()
-mock_pos3D = dvz.dvz_mock_pos3D
-mock_pos3D.__doc__ = """
+# Function dvz_mock_pos_3D()
+mock_pos_3D = dvz.dvz_mock_pos_3D
+mock_pos_3D.__doc__ = """
 Generate a set of random 3D positions.
 
 Parameters
@@ -11308,11 +11308,11 @@ Returns
 type
     the positions
 """
-mock_pos3D.argtypes = [
+mock_pos_3D.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float std
 ]
-mock_pos3D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
+mock_pos_3D.restype = ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS")
 
 # Function dvz_mock_fixed()
 mock_fixed = dvz.dvz_mock_fixed

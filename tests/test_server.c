@@ -47,7 +47,7 @@ int test_server_1(TstSuite* suite)
     DvzScene* scene = dvz_scene(NULL);
     DvzFigure* figure = dvz_figure(scene, WIDTH, HEIGHT, 0);
     DvzPanel* panel = dvz_panel(figure, 0, 0, WIDTH, HEIGHT);
-    dvz_demo_panel2D(panel);
+    dvz_demo_panel_2D(panel);
 
     // Submit the requests to the server.
     dvz_scene_render(scene, server);
