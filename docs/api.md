@@ -2382,6 +2382,32 @@ Display a table with selectable rows.
     );
     ```
 
+### `dvz_gui_textbox()`
+
+Add a text box in a dialog.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_textbox(  # returns: whether the text has changed (c_bool)
+        label,  # the label (CStringBuffer)
+        str_len,  # the size of the str buffer (int, 32-bit unsigned)
+        str,  # the modified string (CStringBuffer)
+        flags,  # the flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_textbox(  // returns: whether the text has changed
+        char* label,  // the label
+        uint32_t str_len,  // the size of the str buffer
+        char* str,  // the modified string
+        int flags,  // the flags
+    );
+    ```
+
 ### `dvz_gui_tree()`
 
 Display a collapsable tree.

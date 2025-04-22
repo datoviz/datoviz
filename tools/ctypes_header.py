@@ -115,16 +115,67 @@ class CStringArrayType:
 
 
 class CStringBuffer:
+    """
+    A tiny helper for C `char*` arguments.
+
+    • You can still pass a plain Python `str` — a temporary buffer will be
+      created exactly like before (read‑only use‑case).
+
+    • Or allocate an *in/out* buffer yourself:
+
+          buf = CStringBuffer("initial text", size=256)
+          lib.dvz_gui_textbox(b"Label", buf, buf.size, 0)
+          print("New text is:", buf.value)
+
+      After the C call,   buf.value   holds the updated UTF‑8 string.
+    """
+
+    # -------- allocate an explicit, reusable buffer -----------------
+    def __init__(self, initial: str = "", size: int | None = 64):
+        if isinstance(initial, Path):
+            initial = str(initial)
+        if not isinstance(initial, str):
+            raise TypeError("Expected a string")
+
+        raw = initial.encode("utf-8")
+        size = (len(raw) + 1) if size is None else size
+        if size < len(raw) + 1:
+            raise ValueError("Buffer too small for initial contents")
+
+        self._buf = ctypes.create_string_buffer(size)
+        ctypes.memmove(self._buf, raw, len(raw))   # copy text, keep final NUL
+
+    # -------- read the current value --------------------------------
+    @property
+    def value(self) -> str:
+        """Return the UTF‑8 text currently stored in the buffer."""
+        return self._buf.value.decode("utf‑8")
+
+    # convenience: expose total capacity (bytes, inc. NUL)
+    @property
+    def size(self) -> int:
+        return ctypes.sizeof(self._buf)
+
+    # -------- interface for ctypes ----------------------------------
     @classmethod
     def from_param(cls, value):
+        """
+        Called automatically by ctypes when this object (or a str/Path)
+        appears in `argtypes`.
+        """
+        # 1) already a CStringBuffer → pass its internal buffer
+        if isinstance(value, cls):
+            return value._buf
+
+        # 2) plain Path or str (read‑only one‑shot)
         if isinstance(value, Path):
             value = str(value)
-        if not isinstance(value, str):
-            raise TypeError("Expected a string")
-        buf = ctypes.create_string_buffer(value.encode("utf-8"))
-        # keep reference to buffer so it's not GC'd
-        buf._keepalive = buf
-        return buf
+        if isinstance(value, str):
+            buf = ctypes.create_string_buffer(value.encode("utf‑8"))
+            buf._keepalive = buf           # prevent premature GC
+            return buf
+
+        raise TypeError("Expected CStringBuffer or str")
 
 
 # ===============================================================================
@@ -175,7 +226,6 @@ class Out:
 # ===============================================================================
 # Array wrappers
 # ===============================================================================
-
 
 def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):

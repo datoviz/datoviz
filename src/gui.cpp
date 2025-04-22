@@ -796,6 +796,20 @@ void dvz_gui_text(const char* fmt, ...)
 
 
 
+bool dvz_gui_textbox(const char* label, uint32_t str_len, char* str, int flags)
+{
+    ANN(label);
+    ANN(str);
+    ASSERT(str_len > 0);
+
+    // Ensure the last character is 0 to terminate the string.
+    // str[str_len - 1] = 0;
+    flags |= ImGuiInputTextFlags_EscapeClearsAll;
+    return ImGui::InputText(label, str, (size_t)str_len, (ImGuiInputTextFlags)flags);
+}
+
+
+
 bool dvz_gui_slider(const char* name, float vmin, float vmax, float* value)
 {
     ANN(name);
@@ -1022,10 +1036,19 @@ bool dvz_gui_table(
 
 bool dvz_gui_tree(
     uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
-    bool* selected)
+    bool* selected, bool* hidden)
 {
     // TODO: improve the selection, currently one needs to ctrl+click on the text label and not
     // outside in a given row. May need to use ImGui::Selectable().
+
+    if (count == 0)
+        return false;
+
+    ASSERT(count > 0);
+    ASSERT(ids != NULL);
+    ASSERT(labels != NULL);
+    ASSERT(levels != NULL);
+    ASSERT(folded != NULL);
 
     bool selection_changed = false;
     uint32_t current_level = 0;
@@ -1037,6 +1060,9 @@ bool dvz_gui_tree(
 
     for (uint32_t i = 0; i < count; ++i)
     {
+        if (hidden != NULL && hidden[i])
+            continue;
+
         uint32_t level = levels[i];
 
         /* Skip children of a closed branch ----------------------------- */
@@ -1060,28 +1086,35 @@ bool dvz_gui_tree(
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
         if (is_leaf)
             flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-        if (selected[i])
+        if (selected != NULL && selected[i])
             flags |= ImGuiTreeNodeFlags_Selected;
 
         ImGui::SetNextItemOpen(!folded[i], ImGuiCond_Always);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-zero-length"
         bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, flags, "");
+#pragma GCC diagnostic pop
 
         /* ---- Custom content on the same line ------------------------ */
         ImGui::SameLine();
 
         /* Colour square (height 60 % of font size)                      */
-        const float sq = ImGui::GetFontSize() * 0.80f;
-        char col_id[32] = {0};
-        sprintf(col_id, "##col%u", i);
-        ImVec4 col_f(
-            colors[i][0] / 255.0f, colors[i][1] / 255.0f, colors[i][2] / 255.0f,
-            colors[i][3] / 255.0f);
-        ImGui::ColorButton(
-            col_id, col_f,
-            ImGuiColorEditFlags_NoTooltip |      //
-                ImGuiColorEditFlags_NoDragDrop | //
-                ImGuiColorEditFlags_NoBorder,
-            ImVec2(sq, sq));
+        if (colors != NULL)
+        {
+            const float sq = ImGui::GetFontSize() * 0.80f;
+            char col_id[32] = {0};
+            sprintf(col_id, "##col%u", i);
+            ImVec4 col_f(
+                colors[i][0] / 255.0f, colors[i][1] / 255.0f, colors[i][2] / 255.0f,
+                colors[i][3] / 255.0f);
+            ImGui::ColorButton(
+                col_id, col_f,
+                ImGuiColorEditFlags_NoTooltip |      //
+                    ImGuiColorEditFlags_NoDragDrop | //
+                    ImGuiColorEditFlags_NoBorder,
+                ImVec2(sq, sq));
+        }
 
         ImGui::SameLine(0.0f, 8.0f); /* tiny gap after square */
 
@@ -1098,7 +1131,7 @@ bool dvz_gui_tree(
         ImGui::Text("%s", labels[i]);
 
         /* ---- Selection handling ------------------------------------- */
-        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        if (selected != NULL && ImGui::IsItemClicked(ImGuiMouseButton_Left))
         {
             if (!ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift)
                 for (uint32_t j = 0; j < count; ++j)

@@ -4292,6 +4292,19 @@ DVZ_EXPORT void dvz_gui_text(const char* fmt, ...);
 
 
 /**
+ * Add a text box in a dialog.
+ *
+ * @param label the label
+ * @param str_len the size of the str buffer
+ * @param str the modified string
+ * @param flags the flags
+ * @returns whether the text has changed
+ */
+DVZ_EXPORT bool dvz_gui_textbox(const char* label, uint32_t str_len, char* str, int flags);
+
+
+
+/**
  * Add a slider.
  *
  * @param name the slider name
@@ -4431,7 +4444,7 @@ DVZ_EXPORT bool dvz_gui_table(                                   //
  */
 DVZ_EXPORT bool dvz_gui_tree(
     uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
-    bool* selected);
+    bool* selected, bool* hidden);
 
 
 
