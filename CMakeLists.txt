@@ -649,6 +649,9 @@ set(font_files
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Medium.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/Roboto_Medium_atlas.bin" # serialized font atlas
 
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Regular.ttf"
+    "${CMAKE_SOURCE_DIR}/data/fonts/Roboto-Bold.ttf"
+
     # "${CMAKE_SOURCE_DIR}/data/fonts/NotoSansMono-Light.ttf"
     # "${CMAKE_SOURCE_DIR}/data/fonts/NotoEmoji-Regular.ttf"
     "${CMAKE_SOURCE_DIR}/data/fonts/fontawesome-webfont.ttf")

@@ -10310,6 +10310,22 @@ gui_table.argtypes = [
 ]
 gui_table.restype = ctypes.c_bool
 
+# Function dvz_gui_tree()
+gui_tree = dvz.dvz_gui_tree
+gui_tree.__doc__ = """
+Display a collapsable tree.  TODO
+"""
+gui_tree.argtypes = [
+    ctypes.c_uint32,  # uint32_t count
+    CStringArrayType,  # char** ids
+    CStringArrayType,  # char** labels
+    ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* levels
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
+    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* folded
+    ndpointer(dtype=bool, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # bool* selected
+]
+gui_tree.restype = ctypes.c_bool
+
 # Function dvz_gui_demo()
 gui_demo = dvz.dvz_gui_demo
 gui_demo.__doc__ = """

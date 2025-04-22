@@ -3,6 +3,7 @@
 /*************************************************************************************************/
 
 #include <stdarg.h>
+#include <string.h>
 
 #include "canvas.h"
 #include "datoviz.h"
@@ -97,14 +98,26 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
     ImGui_ImplVulkan_Init(&init_info); //, renderpass->renderpass);
 
 
-    // Load a font.
-    unsigned long ttf_size = 0;
-    unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
-    ASSERT(ttf_size > 0);
-    ANN(ttf_bytes);
-    ImFontConfig font_cfg;
-    font_cfg.FontDataOwnedByAtlas = false;
-    io.Fonts->AddFontFromMemoryTTF(ttf_bytes, (int)ttf_size, 16, &font_cfg);
+    /* ---------- regular (default) font ---------- */
+    size_t sz_regular;
+    unsigned char* bytes_regular = dvz_resource_font("Roboto_Regular", &sz_regular);
+
+    ImFontConfig cfg_reg = {};
+    cfg_reg.FontDataOwnedByAtlas = false;
+    ImFont* font_regular =
+        io.Fonts->AddFontFromMemoryTTF(bytes_regular, (int)sz_regular, 16.0f, &cfg_reg);
+
+    /* ---------- bold font ---------- */
+    size_t sz_bold;
+    unsigned char* bytes_bold = dvz_resource_font("Roboto_Bold", &sz_bold);
+
+    ImFontConfig cfg_bold = {};
+    cfg_bold.FontDataOwnedByAtlas = false;
+    ImFont* font_bold = io.Fonts->AddFontFromMemoryTTF(bytes_bold, (int)sz_bold, 16.0f, &cfg_bold);
+
+    /* Make the regular face the default if you like */
+    io.FontDefault = font_regular;
+
 
     // Style color.
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(.2, .5, .8, 1));
@@ -1003,6 +1016,119 @@ bool dvz_gui_table(
         ImGui::EndTable();
     }
     return out;
+}
+
+
+
+bool dvz_gui_tree(
+    uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
+    bool* selected)
+{
+    // TODO: improve the selection, currently one needs to ctrl+click on the text label and not
+    // outside in a given row. May need to use ImGui::Selectable().
+
+    bool selection_changed = false;
+    uint32_t current_level = 0;
+    int skip_level = -1;
+
+    /* Try to fetch a bold font (second font in the atlas).               */
+    ImFont* bold_font =
+        (ImGui::GetIO().Fonts->Fonts.Size > 1) ? ImGui::GetIO().Fonts->Fonts[1] : (ImFont*)0;
+
+    for (uint32_t i = 0; i < count; ++i)
+    {
+        uint32_t level = levels[i];
+
+        /* Skip children of a closed branch ----------------------------- */
+        if (skip_level != -1)
+        {
+            if (level > (uint32_t)skip_level)
+                continue;
+            skip_level = -1; /* back to or above skip_level */
+        }
+
+        /* Close open ImGui levels if needed ---------------------------- */
+        while (current_level > level)
+        {
+            ImGui::TreePop();
+            --current_level;
+        }
+
+        /* Leaf? -------------------------------------------------------- */
+        bool is_leaf = (i + 1 == count) || (levels[i + 1] <= level);
+
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
+        if (is_leaf)
+            flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        if (selected[i])
+            flags |= ImGuiTreeNodeFlags_Selected;
+
+        ImGui::SetNextItemOpen(!folded[i], ImGuiCond_Always);
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, flags, "");
+
+        /* ---- Custom content on the same line ------------------------ */
+        ImGui::SameLine();
+
+        /* Colour square (height 60 % of font size)                      */
+        const float sq = ImGui::GetFontSize() * 0.80f;
+        char col_id[32] = {0};
+        sprintf(col_id, "##col%u", i);
+        ImVec4 col_f(
+            colors[i][0] / 255.0f, colors[i][1] / 255.0f, colors[i][2] / 255.0f,
+            colors[i][3] / 255.0f);
+        ImGui::ColorButton(
+            col_id, col_f,
+            ImGuiColorEditFlags_NoTooltip |      //
+                ImGuiColorEditFlags_NoDragDrop | //
+                ImGuiColorEditFlags_NoBorder,
+            ImVec2(sq, sq));
+
+        ImGui::SameLine(0.0f, 8.0f); /* tiny gap after square */
+
+        /* Bold ID                                                      */
+        if (bold_font)
+            ImGui::PushFont(bold_font);
+        ImGui::Text("%s", ids[i]);
+        if (bold_font)
+            ImGui::PopFont();
+
+        ImGui::SameLine(0.0f, 12.0f); /* 6‑pixel gap ID → label */
+
+        /* Plain label                                                  */
+        ImGui::Text("%s", labels[i]);
+
+        /* ---- Selection handling ------------------------------------- */
+        if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+        {
+            if (!ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift)
+                for (uint32_t j = 0; j < count; ++j)
+                    selected[j] = false;
+
+            selected[i] = !selected[i];
+            selection_changed = true;
+        }
+
+        /* ---- Folded state & skip logic ------------------------------ */
+        if (!is_leaf)
+        {
+            folded[i] = !node_open;
+            if (node_open)
+                ++current_level; /* children will follow */
+            else
+                skip_level = (int)level; /* ignore deeper items */
+        }
+        else
+            folded[i] = true; /* leaves are always 'folded' */
+    }
+
+    /* Close any remaining open nodes ---------------------------------- */
+    while (current_level > 0)
+    {
+        ImGui::TreePop();
+        --current_level;
+    }
+
+    return selection_changed;
 }
 
 

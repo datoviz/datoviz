@@ -2382,6 +2382,22 @@ Display a table with selectable rows.
     );
     ```
 
+### `dvz_gui_tree()`
+
+Display a collapsable tree.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_tree()
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_tree();
+    ```
+
 ### `dvz_gui_viewport()`
 
 Get the position and size of the current dialog.

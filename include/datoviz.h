@@ -4425,6 +4425,17 @@ DVZ_EXPORT bool dvz_gui_table(                                   //
 
 
 /**
+ * Display a collapsable tree.
+ *
+ * TODO
+ */
+DVZ_EXPORT bool dvz_gui_tree(
+    uint32_t count, char** ids, char** labels, uint32_t* levels, DvzColor* colors, bool* folded,
+    bool* selected);
+
+
+
+/**
  * Show the demo GUI.
  */
 DVZ_EXPORT void dvz_gui_demo(void);

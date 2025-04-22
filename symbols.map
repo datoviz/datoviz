@@ -103,6 +103,7 @@ dvz_gui_size
 dvz_gui_slider
 dvz_gui_style
 dvz_gui_table
+dvz_gui_tree
 dvz_gui_viewport
 dvz_gui_window_capture
 dvz_image
