@@ -187,7 +187,7 @@ int test_image_2(TstSuite* suite)
     dvz_image_size(visual, 0, 1, (vec2[]){{w, h}}, 0);
 
     // Image anchor.
-    dvz_image_anchor(visual, 0, 1, (vec2[]){{.5, .5}}, 0);
+    dvz_image_anchor(visual, 0, 1, (vec2[]){{0, 0}}, 0);
 
     // Image texture coordinates.
     dvz_image_texcoords(visual, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);

@@ -64,7 +64,7 @@ size = np.array([[width, height]], dtype=np.float32)
 dvz.image_size(visual, 0, 1, size, 0)
 
 # Image anchor.
-anchor = np.array([[.5, .5]], dtype=np.float32)
+anchor = np.array([[0, 0]], dtype=np.float32)
 dvz.image_anchor(visual, 0, 1, anchor, 0)
 
 # uv coordinates of the top left corner, and bottom right corner.

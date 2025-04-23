@@ -63,7 +63,7 @@ dvz.panel_update(panel)
 
 
 # Timer callback: update the arcball angles in real time.
-@dvz.timer
+@dvz.on_timer
 def _on_timer(app, window_id, ev):
     a = 20 * (ev.time % 1)
     u = 1 / (1 + np.exp(-a * (t - 0.5)))
