@@ -10,6 +10,7 @@
 
 layout(location = 0) in vec4 in_color;
 layout(location = 1) in float in_size;
+
 layout(location = 0) out vec4 out_color;
 
 float marker_disc(vec2 P, float size) { return length(P) - size / 2; }

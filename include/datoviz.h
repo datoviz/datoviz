@@ -1707,20 +1707,6 @@ dvz_point_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* valu
 
 
 /**
- * Set the point colors.
- *
- * @param visual the visual
- * @param first the index of the first item to update
- * @param count the number of items to update
- * @param values the colors of the items to update
- * @param flags the data update flags
- */
-DVZ_EXPORT void
-dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
-
-
-
-/**
  * Set the point sizes.
  *
  * @param visual the visual
@@ -1731,6 +1717,20 @@ dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* val
  */
 DVZ_EXPORT void
 dvz_point_size(DvzVisual* visual, uint32_t first, uint32_t count, float* values, int flags);
+
+
+
+/**
+ * Set the point colors.
+ *
+ * @param visual the visual
+ * @param first the index of the first item to update
+ * @param count the number of items to update
+ * @param values the colors of the items to update
+ * @param flags the data update flags
+ */
+DVZ_EXPORT void
+dvz_point_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* values, int flags);
 
 
 

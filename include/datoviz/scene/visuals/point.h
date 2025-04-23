@@ -47,8 +47,8 @@ typedef struct DvzVisual DvzVisual;
 struct DvzPointVertex
 {
     vec3 pos;       /* position */
-    DvzColor color; /* color */
     float size;     /* size */
+    DvzColor color; /* color */
 };
 
 

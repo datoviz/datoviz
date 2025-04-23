@@ -5622,32 +5622,6 @@ point_position.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_point_color()
-point_color = dvz.dvz_point_color
-point_color.__doc__ = """
-Set the point colors.
-
-Parameters
-----------
-visual : DvzVisual*
-    the visual
-first : uint32_t
-    the index of the first item to update
-count : uint32_t
-    the number of items to update
-values : DvzColor*
-    the colors of the items to update
-flags : int
-    the data update flags
-"""
-point_color.argtypes = [
-    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint32,  # uint32_t first
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
-    ctypes.c_int,  # int flags
-]
-
 # Function dvz_point_size()
 point_size = dvz.dvz_point_size
 point_size.__doc__ = """
@@ -5671,6 +5645,32 @@ point_size.argtypes = [
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ctypes.c_int,  # int flags
+]
+
+# Function dvz_point_color()
+point_color = dvz.dvz_point_color
+point_color.__doc__ = """
+Set the point colors.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+first : uint32_t
+    the index of the first item to update
+count : uint32_t
+    the number of items to update
+values : DvzColor*
+    the colors of the items to update
+flags : int
+    the data update flags
+"""
+point_color.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* values
     ctypes.c_int,  # int flags
 ]
 

@@ -746,7 +746,7 @@ seconds = np.zeros(count, dtype=np.uint64)  # epoch, in seconds
 nanoseconds = np.zeros(count, dtype=np.uint64)  # number of ns within the second
 
 
-@dvz.timer
+@dvz.on_timer
 def on_timer(app, window_id, ev):
     #  The timestamps are automatically recorded at every frame, this call fetches the last
     # `count` ones.
