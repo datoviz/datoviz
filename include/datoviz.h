@@ -2279,7 +2279,7 @@ dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
  * string bounding box. Each string comes with a local coordinate system extending from (-1, -1)
  * (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the
  * string. The anchor is the point, in this local coordinate system, that matches the glyph 3D
- * position. For example, to center a string around the glyph 3D position, use (0, 0) for anchor.
+ * position. For example, to center a string around the glyph 3D position, use (0, 0) as anchor.
  * To align the string to the right of the glyph 3D position, use (-1, -1) for example.
  *
  * @param visual the visual
@@ -2621,6 +2621,14 @@ dvz_image_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
 
 /**
  * Set the image anchors.
+ *
+ * The anchor determines the relationship between the image 3D position, and the position of the
+ * image on the screen. Each images comes with a local coordinate system extending from (-1, -1)
+ * (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the
+ * image. The anchor is the point, in this local coordinate system, that matches the image 3D
+ * position. For example, to center an image around the image 3D position, use (0, 0) as anchor.
+ * To align the image to the right and bottom of the image 3D position, so that this position
+ * refers to the top-left corner, use (-1, +1) as anchor.
  *
  * @param visual the visual
  * @param first the index of the first item to update

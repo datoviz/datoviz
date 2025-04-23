@@ -6616,7 +6616,7 @@ glyph_size.argtypes = [
 # Function dvz_glyph_anchor()
 glyph_anchor = dvz.dvz_glyph_anchor
 glyph_anchor.__doc__ = """
-Set the glyph anchors.  The anchor should be the same for each glyph in a given string. In addition, it is important to set dvz_glyph_group_size() (the size of each string in pixels) for the anchor computation to be correct.  The anchor determines the relationship between the glyph 3D position, and the position of the string bounding box. Each string comes with a local coordinate system extending from (-1, -1) (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the string. The anchor is the point, in this local coordinate system, that matches the glyph 3D position. For example, to center a string around the glyph 3D position, use (0, 0) for anchor. To align the string to the right of the glyph 3D position, use (-1, -1) for example.
+Set the glyph anchors.  The anchor should be the same for each glyph in a given string. In addition, it is important to set dvz_glyph_group_size() (the size of each string in pixels) for the anchor computation to be correct.  The anchor determines the relationship between the glyph 3D position, and the position of the string bounding box. Each string comes with a local coordinate system extending from (-1, -1) (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the string. The anchor is the point, in this local coordinate system, that matches the glyph 3D position. For example, to center a string around the glyph 3D position, use (0, 0) as anchor. To align the string to the right of the glyph 3D position, use (-1, -1) for example.
 
 Parameters
 ----------
@@ -7222,7 +7222,7 @@ image_size.argtypes = [
 # Function dvz_image_anchor()
 image_anchor = dvz.dvz_image_anchor
 image_anchor.__doc__ = """
-Set the image anchors.
+Set the image anchors.  The anchor determines the relationship between the image 3D position, and the position of the image on the screen. Each images comes with a local coordinate system extending from (-1, -1) (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the image. The anchor is the point, in this local coordinate system, that matches the image 3D position. For example, to center an image around the image 3D position, use (0, 0) as anchor. To align the image to the right and bottom of the image 3D position, so that this position refers to the top-left corner, use (-1, +1) as anchor.
 
 Parameters
 ----------

@@ -30,7 +30,7 @@ void main()
     vec4 tr = transform(pos);
 
     int idx = gl_VertexIndex % 6;
-    vec2 d = size * (ds[idx] - anchor);
+    vec2 d = size * (ds[idx] - .5 * (vec2(anchor.x + 1, -anchor.y + 1))); // local coordinate system (-1..+1)
     vec2 zoom = vec2(1, 1);
 
     // Keep aspect ratio.
