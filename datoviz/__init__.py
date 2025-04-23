@@ -5539,6 +5539,23 @@ pixel_color.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_pixel_size()
+pixel_size = dvz.dvz_pixel_size
+pixel_size.__doc__ = """
+Set the pixel size.
+
+Parameters
+----------
+visual : DvzVisual*
+    the visual
+size : float
+    the point size in pixels
+"""
+pixel_size.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float size
+]
+
 # Function dvz_pixel_alloc()
 pixel_alloc = dvz.dvz_pixel_alloc
 pixel_alloc.__doc__ = """

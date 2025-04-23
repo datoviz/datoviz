@@ -64,3 +64,10 @@ void dvz_pixel_color(DvzVisual* pixel, uint32_t first, uint32_t count, DvzColor*
 {
     dvz_basic_color(pixel, first, count, values, flags);
 }
+
+
+
+void dvz_pixel_size(DvzVisual* pixel, float size)
+{
+    dvz_basic_size(pixel, size); //
+}

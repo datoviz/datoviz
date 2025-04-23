@@ -53,6 +53,8 @@ int test_pixel_1(TstSuite* suite)
     DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
     dvz_pixel_color(visual, 0, n, color, 0);
 
+    dvz_pixel_size(visual, 2);
+
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 

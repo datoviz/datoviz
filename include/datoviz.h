@@ -1658,6 +1658,16 @@ dvz_pixel_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* val
 
 
 /**
+ * Set the pixel size.
+ *
+ * @param visual the visual
+ * @param size the point size in pixels
+ */
+DVZ_EXPORT void dvz_pixel_size(DvzVisual* visual, float size);
+
+
+
+/**
  * Allocate memory for a visual.
  *
  * @param visual the visual

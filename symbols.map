@@ -236,6 +236,7 @@ dvz_pixel
 dvz_pixel_alloc
 dvz_pixel_color
 dvz_pixel_position
+dvz_pixel_size
 dvz_point
 dvz_point_alloc
 dvz_point_color

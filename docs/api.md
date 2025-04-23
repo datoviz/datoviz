@@ -5540,6 +5540,28 @@ Set the pixel positions.
     );
     ```
 
+### `dvz_pixel_size()`
+
+Set the pixel size.
+
+=== "Python"
+
+    ``` python
+    dvz.pixel_size(
+        visual,  # the visual (LP_DvzVisual)
+        size,  # the point size in pixels (float, 64-bit)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_pixel_size(
+        DvzVisual* visual,  // the visual
+        float size,  // the point size in pixels
+    );
+    ```
+
 ### `dvz_point()`
 
 Create a point visual.
