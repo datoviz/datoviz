@@ -1524,14 +1524,14 @@ Set the glyph colors.
     );
     ```
 
-### `dvz_glyph_group_shapes()`
+### `dvz_glyph_group_size()`
 
-Set the glyph group size.
+Set the glyph group size, in pixels (size of each string).
 
 === "Python"
 
     ``` python
-    dvz.glyph_group_shapes(
+    dvz.glyph_group_size(
         visual,  # the visual (LP_DvzVisual)
         first,  # the index of the first item to update (int, 32-bit unsigned)
         count,  # the number of items to update (int, 32-bit unsigned)
@@ -1543,7 +1543,7 @@ Set the glyph group size.
 === "C"
 
     ``` c
-    void dvz_glyph_group_shapes(
+    void dvz_glyph_group_size(
         DvzVisual* visual,  // the visual
         uint32_t first,  // the index of the first item to update
         uint32_t count,  // the number of items to update
@@ -1582,7 +1582,7 @@ Set the glyph positions.
 
 ### `dvz_glyph_scale()`
 
-Set the glyph scaling.
+Set the glyph scaling applied to the size of all individual glyphs.
 
 === "Python"
 
@@ -1638,7 +1638,7 @@ Set the glyph shifts.
 
 ### `dvz_glyph_size()`
 
-Set the glyph sizes.
+Set the glyph sizes, in pixels.
 
 === "Python"
 
@@ -8748,6 +8748,30 @@ Return the last mouse position and pressed button.
     );
     ```
 
+### `dvz_app_on_frame()`
+
+Register a frame callback.
+
+=== "Python"
+
+    ``` python
+    dvz.app_on_frame(
+        app,  # the app (LP_DvzApp)
+        callback,  # the callback (CFunctionType)
+        user_data,  # the user data (array)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_app_on_frame(
+        DvzApp* app,  // the app
+        DvzAppFrameCallback callback,  // the callback
+        void* user_data,  // the user data
+    );
+    ```
+
 ### `dvz_app_on_keyboard()`
 
 Register a keyboard callback.
@@ -8796,38 +8820,14 @@ Register a mouse callback.
     );
     ```
 
-### `dvz_app_onframe()`
-
-Register a frame callback.
-
-=== "Python"
-
-    ``` python
-    dvz.app_onframe(
-        app,  # the app (LP_DvzApp)
-        callback,  # the callback (CFunctionType)
-        user_data,  # the user data (array)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_app_onframe(
-        DvzApp* app,  // the app
-        DvzAppFrameCallback callback,  // the callback
-        void* user_data,  // the user data
-    );
-    ```
-
-### `dvz_app_onresize()`
+### `dvz_app_on_resize()`
 
 Register a resize callback.
 
 === "Python"
 
     ``` python
-    dvz.app_onresize(
+    dvz.app_on_resize(
         app,  # the app (LP_DvzApp)
         callback,  # the callback (CFunctionType)
         user_data,  # the user data (array)
@@ -8837,21 +8837,21 @@ Register a resize callback.
 === "C"
 
     ``` c
-    void dvz_app_onresize(
+    void dvz_app_on_resize(
         DvzApp* app,  // the app
         DvzAppResizeCallback callback,  // the callback
         void* user_data,  // the user data
     );
     ```
 
-### `dvz_app_ontimer()`
+### `dvz_app_on_timer()`
 
 Register a timer callback.
 
 === "Python"
 
     ``` python
-    dvz.app_ontimer(
+    dvz.app_on_timer(
         app,  # the app (LP_DvzApp)
         callback,  # the timer callback (CFunctionType)
         user_data,  # the user data (array)
@@ -8861,7 +8861,7 @@ Register a timer callback.
 === "C"
 
     ``` c
-    void dvz_app_ontimer(
+    void dvz_app_on_timer(
         DvzApp* app,  // the app
         DvzAppTimerCallback callback,  // the timer callback
         void* user_data,  // the user data

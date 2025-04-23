@@ -759,7 +759,7 @@ def on_timer(app, window_id, ev):
 
 # Timer: retrieve and display the timestamps every second.
 # NOTE: it is currently impossible to call dvz.app_timestamps() after the window has been closed.
-dvz.app_ontimer(app, on_timer, None)
+dvz.app_on_timer(app, on_timer, None)
 dvz.app_timer(app, 0, 1, 0)
 
 # Run the application and cleanup.

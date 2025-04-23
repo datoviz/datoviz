@@ -6590,7 +6590,7 @@ glyph_axis.argtypes = [
 # Function dvz_glyph_size()
 glyph_size = dvz.dvz_glyph_size
 glyph_size.__doc__ = """
-Set the glyph sizes.
+Set the glyph sizes, in pixels.
 
 Parameters
 ----------
@@ -6616,7 +6616,7 @@ glyph_size.argtypes = [
 # Function dvz_glyph_anchor()
 glyph_anchor = dvz.dvz_glyph_anchor
 glyph_anchor.__doc__ = """
-Set the glyph anchors.
+Set the glyph anchors.  The anchor should be the same for each glyph in a given string. In addition, it is important to set dvz_glyph_group_size() (the size of each string in pixels) for the anchor computation to be correct.  The anchor determines the relationship between the glyph 3D position, and the position of the string bounding box. Each string comes with a local coordinate system extending from (-1, -1) (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the string. The anchor is the point, in this local coordinate system, that matches the glyph 3D position. For example, to center a string around the glyph 3D position, use (0, 0) for anchor. To align the string to the right of the glyph 3D position, use (-1, -1) for example.
 
 Parameters
 ----------
@@ -6691,10 +6691,10 @@ glyph_texcoords.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
-# Function dvz_glyph_group_shapes()
-glyph_group_shapes = dvz.dvz_glyph_group_shapes
-glyph_group_shapes.__doc__ = """
-Set the glyph group size.
+# Function dvz_glyph_group_size()
+glyph_group_size = dvz.dvz_glyph_group_size
+glyph_group_size.__doc__ = """
+Set the glyph group size, in pixels (size of each string).
 
 Parameters
 ----------
@@ -6709,7 +6709,7 @@ values : vec2*
 flags : int
     the data update flags
 """
-glyph_group_shapes.argtypes = [
+glyph_group_size.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t count
@@ -6720,7 +6720,7 @@ glyph_group_shapes.argtypes = [
 # Function dvz_glyph_scale()
 glyph_scale = dvz.dvz_glyph_scale
 glyph_scale.__doc__ = """
-Set the glyph scaling.
+Set the glyph scaling applied to the size of all individual glyphs.  We assume that the scaling is the same within each string (group of glyphs).
 
 Parameters
 ----------
@@ -10503,9 +10503,9 @@ app_frame.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
 ]
 
-# Function dvz_app_onframe()
-app_onframe = dvz.dvz_app_onframe
-app_onframe.__doc__ = """
+# Function dvz_app_on_frame()
+app_on_frame = dvz.dvz_app_on_frame
+app_on_frame.__doc__ = """
 Register a frame callback.
 
 Parameters
@@ -10517,7 +10517,7 @@ callback : DvzAppFrameCallback
 user_data : void*
     the user data
 """
-app_onframe.argtypes = [
+app_on_frame.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppFrameCallback,  # DvzAppFrameCallback callback
     ctypes.c_void_p,  # void* user_data
@@ -10563,9 +10563,9 @@ app_on_keyboard.argtypes = [
     ctypes.c_void_p,  # void* user_data
 ]
 
-# Function dvz_app_onresize()
-app_onresize = dvz.dvz_app_onresize
-app_onresize.__doc__ = """
+# Function dvz_app_on_resize()
+app_on_resize = dvz.dvz_app_on_resize
+app_on_resize.__doc__ = """
 Register a resize callback.
 
 Parameters
@@ -10577,7 +10577,7 @@ callback : DvzAppResizeCallback
 user_data : void*
     the user data
 """
-app_onresize.argtypes = [
+app_on_resize.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppResizeCallback,  # DvzAppResizeCallback callback
     ctypes.c_void_p,  # void* user_data
@@ -10612,9 +10612,9 @@ app_timer.argtypes = [
 ]
 app_timer.restype = ctypes.POINTER(DvzTimerItem)
 
-# Function dvz_app_ontimer()
-app_ontimer = dvz.dvz_app_ontimer
-app_ontimer.__doc__ = """
+# Function dvz_app_on_timer()
+app_on_timer = dvz.dvz_app_on_timer
+app_on_timer.__doc__ = """
 Register a timer callback.
 
 Parameters
@@ -10626,7 +10626,7 @@ callback : DvzAppTimerCallback
 user_data : void*
     the user data
 """
-app_ontimer.argtypes = [
+app_on_timer.argtypes = [
     ctypes.POINTER(DvzApp),  # DvzApp* app
     DvzAppTimerCallback,  # DvzAppTimerCallback callback
     ctypes.c_void_p,  # void* user_data
