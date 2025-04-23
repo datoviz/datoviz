@@ -514,11 +514,11 @@ def on_mouse(app, window_id, ev):
     print(f"{action} ({x:.0f}, {y:.0f}) ", end="")
 
     if ev.type in (dvz.MOUSE_EVENT_CLICK, dvz.MOUSE_EVENT_DOUBLE_CLICK):
-        button = ev.content.b.button
+        button = ev.button
         print(f"{dvz.button_name(button)} button", end="")
 
     if ev.type in (dvz.MOUSE_EVENT_DRAG_START, dvz.MOUSE_EVENT_DRAG_STOP, dvz.MOUSE_EVENT_DRAG):
-        button = ev.content.d.button
+        button = ev.button
         xd, yd = ev.content.d.press_pos
         print(f"{dvz.button_name(button)} button pressed at ({xd:.0f}, {yd:.0f})", end="")
 

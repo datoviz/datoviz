@@ -2252,13 +2252,6 @@ class DvzKeyboardEvent(ctypes.Structure):
     ]
 
 
-class DvzMouseButtonEvent(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = [
-        ("button", ctypes.c_int32),
-    ]
-
-
 class DvzMouseWheelEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
@@ -2269,27 +2262,17 @@ class DvzMouseWheelEvent(ctypes.Structure):
 class DvzMouseDragEvent(ctypes.Structure):
     _pack_ = 8
     _fields_ = [
-        ("button", ctypes.c_int32),
         ("press_pos", vec2),
         ("shift", vec2),
         ("is_press_valid", ctypes.c_bool),
     ]
 
 
-class DvzMouseClickEvent(ctypes.Structure):
-    _pack_ = 8
-    _fields_ = [
-        ("button", ctypes.c_int32),
-    ]
-
-
 class DvzMouseEventUnion(ctypes.Union):
     _pack_ = 8
     _fields_ = [
-        ("b", DvzMouseButtonEvent),
         ("w", DvzMouseWheelEvent),
         ("d", DvzMouseDragEvent),
-        ("c", DvzMouseClickEvent),
     ]
 
 
@@ -2299,6 +2282,7 @@ class DvzMouseEvent(ctypes.Structure):
         ("type", ctypes.c_int32),
         ("content", DvzMouseEventUnion),
         ("pos", vec2),
+        ("button", ctypes.c_int32),
         ("mods", ctypes.c_int),
         ("content_scale", ctypes.c_float),
         ("user_data", ctypes.c_void_p),
@@ -2738,10 +2722,8 @@ Viewport = DvzViewport
 Shape = DvzShape
 Time = DvzTime
 KeyboardEvent = DvzKeyboardEvent
-MouseButtonEvent = DvzMouseButtonEvent
 MouseWheelEvent = DvzMouseWheelEvent
 MouseDragEvent = DvzMouseDragEvent
-MouseClickEvent = DvzMouseClickEvent
 MouseEventUnion = DvzMouseEventUnion
 MouseEvent = DvzMouseEvent
 WindowEvent = DvzWindowEvent

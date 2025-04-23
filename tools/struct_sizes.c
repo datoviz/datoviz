@@ -14,10 +14,8 @@ int main(void)
     printf("  \"DvzMVP\": %u,\n", (unsigned)sizeof(DvzMVP));
     printf("  \"DvzGuiEvent\": %u,\n", (unsigned)sizeof(DvzGuiEvent));
     printf("  \"DvzKeyboardEvent\": %u,\n", (unsigned)sizeof(DvzKeyboardEvent));
-    printf("  \"DvzMouseButtonEvent\": %u,\n", (unsigned)sizeof(DvzMouseButtonEvent));
     printf("  \"DvzMouseWheelEvent\": %u,\n", (unsigned)sizeof(DvzMouseWheelEvent));
     printf("  \"DvzMouseDragEvent\": %u,\n", (unsigned)sizeof(DvzMouseDragEvent));
-    printf("  \"DvzMouseClickEvent\": %u,\n", (unsigned)sizeof(DvzMouseClickEvent));
     printf("  \"DvzMouseEventUnion\": %u,\n", (unsigned)sizeof(DvzMouseEventUnion));
     printf("  \"DvzMouseEvent\": %u,\n", (unsigned)sizeof(DvzMouseEvent));
     printf("  \"DvzWindowEvent\": %u,\n", (unsigned)sizeof(DvzWindowEvent));

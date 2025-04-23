@@ -199,7 +199,7 @@ static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     // Dragging: pan.
     if (ev.type == DVZ_MOUSE_EVENT_DRAG)
     {
-        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev.button == DVZ_MOUSE_BUTTON_LEFT)
         {
             float width = arcball->viewport_size[0];
             float height = arcball->viewport_size[1];
@@ -212,7 +212,7 @@ static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
-        // else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        // else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT)
         // {
         // }
     }

@@ -41,10 +41,8 @@ typedef struct DvzTime DvzTime;
 typedef struct DvzKeyboardEvent DvzKeyboardEvent;
 typedef struct DvzMouseEvent DvzMouseEvent;
 typedef union DvzMouseEventUnion DvzMouseEventUnion;
-typedef struct DvzMouseButtonEvent DvzMouseButtonEvent;
 typedef struct DvzMouseWheelEvent DvzMouseWheelEvent;
 typedef struct DvzMouseDragEvent DvzMouseDragEvent;
-typedef struct DvzMouseClickEvent DvzMouseClickEvent;
 
 typedef struct DvzWindowEvent DvzWindowEvent;
 typedef struct DvzFrameEvent DvzFrameEvent;
@@ -228,11 +226,6 @@ struct DvzKeyboardEvent
 
 
 
-struct DvzMouseButtonEvent
-{
-    DvzMouseButton button;
-};
-
 struct DvzMouseWheelEvent
 {
     vec2 dir;
@@ -240,23 +233,15 @@ struct DvzMouseWheelEvent
 
 struct DvzMouseDragEvent
 {
-    DvzMouseButton button;
     vec2 press_pos;
     vec2 shift;
     bool is_press_valid; // whether the press event was valid
 };
 
-struct DvzMouseClickEvent
-{
-    DvzMouseButton button;
-};
-
 union DvzMouseEventUnion
 {
-    DvzMouseButtonEvent b;
     DvzMouseWheelEvent w;
     DvzMouseDragEvent d;
-    DvzMouseClickEvent c;
 };
 
 struct DvzMouseEvent
@@ -264,6 +249,7 @@ struct DvzMouseEvent
     DvzMouseEventType type;
     DvzMouseEventUnion content;
     vec2 pos; // current position
+    DvzMouseButton button;
     int mods;
     float content_scale;
     void* user_data;

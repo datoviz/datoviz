@@ -418,11 +418,11 @@ bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
     {
     // Dragging: pan.
     case DVZ_MOUSE_EVENT_DRAG:
-        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT && ev.content.d.is_press_valid)
+        if (ev.button == DVZ_MOUSE_BUTTON_LEFT && ev.content.d.is_press_valid)
         {
             dvz_panzoom_pan_shift(pz, ev.content.d.shift, (vec2){0});
         }
-        else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT && ev.content.d.is_press_valid)
+        else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT && ev.content.d.is_press_valid)
         {
             vec2 shift = {0};
             glm_vec2_copy(ev.content.d.shift, shift);

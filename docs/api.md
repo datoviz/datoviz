@@ -12301,25 +12301,10 @@ struct DvzMVP
     mat4 proj
 ```
 
-### `DvzMouseButtonEvent`
-
-```
-struct DvzMouseButtonEvent
-    DvzMouseButton button
-```
-
-### `DvzMouseClickEvent`
-
-```
-struct DvzMouseClickEvent
-    DvzMouseButton button
-```
-
 ### `DvzMouseDragEvent`
 
 ```
 struct DvzMouseDragEvent
-    DvzMouseButton button
     vec2 press_pos
     vec2 shift
     bool is_press_valid
@@ -12332,6 +12317,7 @@ struct DvzMouseEvent
     DvzMouseEventType type
     DvzMouseEventUnion content
     vec2 pos
+    DvzMouseButton button
     int mods
     float content_scale
     void* user_data
@@ -12341,10 +12327,8 @@ struct DvzMouseEvent
 
 ```
 union DvzMouseEventUnion
-    DvzMouseButtonEvent b
     DvzMouseWheelEvent w
     DvzMouseDragEvent d
-    DvzMouseClickEvent c
 ```
 
 ### `DvzMouseWheelEvent`

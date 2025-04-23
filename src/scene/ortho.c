@@ -312,11 +312,11 @@ bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent ev)
     {
     // Dragging: pan.
     case DVZ_MOUSE_EVENT_DRAG:
-        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev.button == DVZ_MOUSE_BUTTON_LEFT)
         {
             dvz_ortho_pan_shift(ortho, ev.content.d.shift, (vec2){0});
         }
-        else if (ev.content.d.button == DVZ_MOUSE_BUTTON_RIGHT)
+        else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT)
         {
             vec2 shift = {0};
             glm_vec2_copy(ev.content.d.shift, shift);

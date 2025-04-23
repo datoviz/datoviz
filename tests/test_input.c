@@ -47,31 +47,31 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     case DVZ_MOUSE_EVENT_CLICK:
         log_debug(
             "mouse click button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.c.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
         log_debug(
             "mouse double click button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.c.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG:
         log_debug(
             "mouse drag button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_START:
         log_debug(
             "mouse drag start button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_STOP:
         log_debug(
             "mouse drag stop button #%d at (%.1f, %.1f), mods %d", //
-            ev.content.d.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev.button, ev.pos[0], ev.pos[1], ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_MOVE:
@@ -81,11 +81,11 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
         break;
 
     case DVZ_MOUSE_EVENT_PRESS:
-        log_debug("mouse press button #%d, mods %d", ev.content.b.button, ev.mods);
+        log_debug("mouse press button #%d, mods %d", ev.button, ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_RELEASE:
-        log_debug("mouse release button #%d, mods %d", ev.content.b.button, ev.mods);
+        log_debug("mouse release button #%d, mods %d", ev.button, ev.mods);
         break;
 
     case DVZ_MOUSE_EVENT_WHEEL:

@@ -307,7 +307,7 @@ bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev)
     {
     // Dragging: pan.
     case DVZ_MOUSE_EVENT_DRAG:
-        if (ev.content.d.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev.button == DVZ_MOUSE_BUTTON_LEFT)
         {
             float width = arcball->viewport_size[0];
             float height = arcball->viewport_size[1];
