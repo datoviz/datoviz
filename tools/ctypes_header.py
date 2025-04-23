@@ -294,7 +294,6 @@ def pointer_image(rgb, width, height, n_channels=3):
 # Vec types
 # ===============================================================================
 
-
 class CVectorBase(ctypes.Array):
     _type_ = ctypes.c_float
     _length_ = 0
@@ -382,6 +381,13 @@ from_pointer = pointer_array
 # ===============================================================================
 # Helpers
 # ===============================================================================
+
+def get_version():
+    return {
+        'ctypes_wrapper': __version__,
+        'libdatoviz': version().decode('utf-8'),
+    }
+
 
 def from_enum(enum_cls, value):
     for name, val in enum_cls.__dict__.items():
