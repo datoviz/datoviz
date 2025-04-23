@@ -34,22 +34,29 @@
 /*  Glyph tests                                                                                  */
 /*************************************************************************************************/
 
-static void _on_timer(DvzClient* client, DvzClientEvent ev)
+static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
 {
-    ANN(client);
-
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
 
     DvzVisual* visual = vt->visual;
     ANN(visual);
-    float t = ev.content.t.time;
+    float t = ev.time;
 
-    // float x = sin(t);
-    // float z = cos(t);
-    // dvz_glyph_axis(visual, 0, 1, (vec3[]){{x, 0, z}}, 0);
+    uint32_t n = vt->n;
+    ASSERT(n > 0);
 
-    dvz_glyph_angle(visual, 0, 1, (float[]){M_PI * t}, 0);
+    float a = cos(.25 * 2 * M_PI * t);
+    float b = sin(.25 * 2 * M_PI * t);
+    // log_info("%f", b);
+    vec2* anchor = (vec2*)_repeat(n, sizeof(vec2), (vec2){a, b});
+    dvz_glyph_anchor(visual, 0, n, anchor, 0);
+    FREE(anchor);
+
+    vec2* group_size = (vec2*)_repeat(n, sizeof(vec2), (vec2){300, 50});
+    dvz_glyph_group_size(visual, 0, n, group_size, 0);
+    FREE(group_size);
+
     dvz_visual_update(visual);
 }
 
@@ -67,7 +74,7 @@ int test_glyph_1(TstSuite* suite)
     // const char* text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     // const char* text = "abcdefghijklmnopqrstuvwxyz";
     // const char* text = "dfghijkl!01234";
-    const char* text = "Hello world! gih";
+    const char* text = "Hello world!";
     float font_size = 96;
     const uint32_t n = strnlen(text, 4096);
     AT(n > 0);
@@ -121,11 +128,11 @@ int test_glyph_1(TstSuite* suite)
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
 
-    // LATER
-    // // Animation.
-    // vt.visual = visual;
-    // dvz_app_timer(vt.app, 0, 1. / 60., 0);
-    // dvz_app_ontimer(vt.app, _on_timer, &vt);
+    // Animation.
+    vt.visual = visual;
+    vt.n = n;
+    dvz_app_timer(vt.app, 0, 1. / 60., 0);
+    dvz_app_on_timer(vt.app, _on_timer, &vt);
 
     // Run the test.
     visual_test_end(vt);
@@ -153,7 +160,7 @@ static void _set_strings_1(DvzVisual* visual)
 static void _set_strings_2(DvzVisual* visual)
 {
     uint32_t string_count = 2;
-    char* strings[] = {"Hey", "so"};
+    char* strings[] = {"string 1/2", "string 2/2"};
     vec3 string_positions[] = {{-.5, -.5, 0}, {0, +.5, 0}};
 
     dvz_glyph_strings(
@@ -168,13 +175,13 @@ static void _switch_strings(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     VisualTest* vt = (VisualTest*)ev.user_data;
     ANN(vt);
 
-    if (ev.type == DVZ_MOUSE_EVENT_PRESS)
+    if (ev.type == DVZ_MOUSE_EVENT_CLICK)
     {
-        _set_strings_2(vt->visual);
-    }
-    else if (ev.type == DVZ_MOUSE_EVENT_RELEASE)
-    {
-        _set_strings_1(vt->visual);
+        if (vt->m % 2 == 1)
+            _set_strings_1(vt->visual);
+        else
+            _set_strings_2(vt->visual);
+        vt->m++;
     }
 }
 
@@ -201,6 +208,7 @@ int test_glyph_strings(TstSuite* suite)
     vt.visual = visual;
     dvz_panel_visual(vt.panel, visual, 0);
 
+    vt.m = 0;
     dvz_app_on_mouse(vt.app, _switch_strings, &vt);
 
     // Run the test.

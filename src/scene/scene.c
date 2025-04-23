@@ -1345,8 +1345,8 @@ void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count)
     {
         // Scene callbacks.
         dvz_app_on_mouse(app, _scene_on_mouse, scene);
-        dvz_app_onresize(app, _scene_onresize, scene);
-        dvz_app_onframe(app, _scene_onframe, scene);
+        dvz_app_on_resize(app, _scene_onresize, scene);
+        dvz_app_on_frame(app, _scene_onframe, scene);
 
         // Initial build of the scene.
         // NOTE: this call will mark the scene as dvz_obj_created().

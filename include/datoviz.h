@@ -2255,7 +2255,7 @@ dvz_glyph_axis(DvzVisual* visual, uint32_t first, uint32_t count, vec3* values, 
 
 
 /**
- * Set the glyph sizes.
+ * Set the glyph sizes, in pixels.
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -2270,6 +2270,17 @@ dvz_glyph_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, 
 
 /**
  * Set the glyph anchors.
+ *
+ * The anchor should be the same for each glyph in a given string. In addition, it is important to
+ * set dvz_glyph_group_size() (the size of each string in pixels) for the anchor computation to be
+ * correct.
+ *
+ * The anchor determines the relationship between the glyph 3D position, and the position of the
+ * string bounding box. Each string comes with a local coordinate system extending from (-1, -1)
+ * (bottom-left corner) to (+1, +1) (top-right corner), and (0, 0) refers to the center of the
+ * string. The anchor is the point, in this local coordinate system, that matches the glyph 3D
+ * position. For example, to center a string around the glyph 3D position, use (0, 0) for anchor.
+ * To align the string to the right of the glyph 3D position, use (-1, -1) for example.
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -2311,7 +2322,7 @@ dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coo
 
 
 /**
- * Set the glyph group size.
+ * Set the glyph group size, in pixels (size of each string).
  *
  * @param visual the visual
  * @param first the index of the first item to update
@@ -2320,12 +2331,14 @@ dvz_glyph_texcoords(DvzVisual* visual, uint32_t first, uint32_t count, vec4* coo
  * @param flags the data update flags
  */
 DVZ_EXPORT void
-dvz_glyph_group_shapes(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
+dvz_glyph_group_size(DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags);
 
 
 
 /**
- * Set the glyph scaling.
+ * Set the glyph scaling applied to the size of all individual glyphs.
+ *
+ * We assume that the scaling is the same within each string (group of glyphs).
  *
  * @param visual the visual
  * @param first the index of the first item to update

@@ -93,7 +93,7 @@ int test_axis_1(TstSuite* suite)
     // Add the axis to the panel.
     dvz_axis_panel(axis, vt.panel);
 
-    dvz_app_onframe(vt.app, _on_frame, &vt);
+    dvz_app_on_frame(vt.app, _on_frame, &vt);
 
     // Run the test.
     visual_test_end(vt);

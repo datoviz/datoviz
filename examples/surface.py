@@ -96,7 +96,7 @@ def _on_timer(app, window_id, ev):
 dvz.app_timer(app, 0, 1. / 60., 0)
 
 # Register a timer callback.
-dvz.app_ontimer(app, _on_timer, None)
+dvz.app_on_timer(app, _on_timer, None)
 
 # Run the application.
 dvz.scene_run(scene, app, 0)

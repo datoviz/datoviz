@@ -208,7 +208,7 @@ int test_path_2(TstSuite* suite)
     vt.visual = visual;
     vt.user_data = (void*)colors;
     dvz_app_timer(vt.app, 0, 1. / 60., 0);
-    dvz_app_ontimer(vt.app, _on_timer, &vt);
+    dvz_app_on_timer(vt.app, _on_timer, &vt);
 
     // Run the test.
     visual_test_end(vt);

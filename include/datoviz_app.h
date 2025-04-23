@@ -99,7 +99,7 @@ DVZ_EXPORT void dvz_app_frame(DvzApp* app);
  * @param callback the callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback callback, void* user_data);
+DVZ_EXPORT void dvz_app_on_frame(DvzApp* app, DvzAppFrameCallback callback, void* user_data);
 
 
 
@@ -132,7 +132,7 @@ DVZ_EXPORT void dvz_app_on_keyboard(DvzApp* app, DvzAppKeyboardCallback callback
  * @param callback the callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback callback, void* user_data);
+DVZ_EXPORT void dvz_app_on_resize(DvzApp* app, DvzAppResizeCallback callback, void* user_data);
 
 
 
@@ -157,7 +157,7 @@ dvz_app_timer(DvzApp* app, double delay, double period, uint64_t max_count);
  * @param callback the timer callback
  * @param user_data the user data
  */
-DVZ_EXPORT void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback callback, void* user_data);
+DVZ_EXPORT void dvz_app_on_timer(DvzApp* app, DvzAppTimerCallback callback, void* user_data);
 
 
 

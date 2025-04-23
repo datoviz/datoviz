@@ -384,12 +384,13 @@ DvzColor* dvz_mock_color(uint32_t count, DvzAlpha alpha)
 {
     ASSERT(count > 0);
     DvzColor* color = (DvzColor*)calloc(count, sizeof(DvzColor));
+    const uint8_t k = 64;
     for (uint32_t i = 0; i < count; i++)
     {
         // dvz_colormap(DVZ_CMAP_HSV, i % 256, color[i]);
-        color[i][0] = 32 + (dvz_rand_byte() % (256 - 32));
-        color[i][1] = 32 + (dvz_rand_byte() % (256 - 32));
-        color[i][2] = 32 + (dvz_rand_byte() % (256 - 32));
+        color[i][0] = k + (dvz_rand_byte() % (256 - k));
+        color[i][1] = k + (dvz_rand_byte() % (256 - k));
+        color[i][2] = k + (dvz_rand_byte() % (256 - k));
         color[i][3] = alpha;
     }
     return color;

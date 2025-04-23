@@ -226,7 +226,7 @@ DvzApp* dvz_app(int flags)
     app->payloads = dvz_list();
 
     // Send the pending requests to the presenter at every frame.
-    dvz_app_onframe(app, _on_frame, app);
+    dvz_app_on_frame(app, _on_frame, app);
 
     return app;
 }
@@ -250,7 +250,7 @@ void dvz_app_frame(DvzApp* app)
 
 
 
-void dvz_app_onframe(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
+void dvz_app_on_frame(DvzApp* app, DvzAppFrameCallback on_frame, void* user_data)
 {
     ANN(app);
     if (!app->client)
@@ -292,7 +292,7 @@ void dvz_app_on_keyboard(DvzApp* app, DvzAppKeyboardCallback on_keyboard, void* 
 
 
 
-void dvz_app_onresize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_data)
+void dvz_app_on_resize(DvzApp* app, DvzAppResizeCallback on_resize, void* user_data)
 {
     ANN(app);
     if (!app->client)
@@ -383,7 +383,7 @@ DvzTimerItem* dvz_app_timer(DvzApp* app, double delay, double period, uint64_t m
 
 
 
-void dvz_app_ontimer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
+void dvz_app_on_timer(DvzApp* app, DvzAppTimerCallback on_timer, void* user_data)
 {
     ANN(app);
     if (!app->client)

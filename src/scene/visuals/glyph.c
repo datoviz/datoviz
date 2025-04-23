@@ -216,7 +216,7 @@ void dvz_glyph_texcoords(
 
 
 
-void dvz_glyph_group_shapes(
+void dvz_glyph_group_size(
     DvzVisual* visual, uint32_t first, uint32_t count, vec2* values, int flags)
 {
     ANN(visual);
@@ -422,7 +422,7 @@ void dvz_glyph_xywh(
         // anchor).
         vec2* group_shapes_repeated = _repeat_group(
             sizeof(vec2), count, group_count, group_size, (void*)group_shapes, false);
-        dvz_glyph_group_shapes(visual, first, count, group_shapes_repeated, 0);
+        dvz_glyph_group_size(visual, first, count, group_shapes_repeated, 0);
         FREE(group_shapes_repeated);
 
         FREE(group_shapes);
