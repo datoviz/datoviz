@@ -47,7 +47,7 @@ y = d * np.sin(w * x)
 y += np.linspace(-1, 1, n_paths).reshape((-1, 1))
 z = np.zeros((n_paths, path_size))
 pos = np.c_[x.flat, y.flat, z.flat].astype(np.float32)
-dvz.path_position(visual, n, pos, n_paths, path_lengths, 0)
+dvz.path_position(visual, 0, n, pos, n_paths, path_lengths, 0)
 
 # Colors.
 t = np.linspace(0, 1, n_paths)

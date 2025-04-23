@@ -381,7 +381,7 @@ void dvz_demo(void)
             positions[i][1] = a / 2. * sin(M_2PI * i * 2.0 / n2);
         }
 
-        dvz_path_position(path, n2, positions, 1, (uint32_t[]){n2}, 0);
+        dvz_path_position(path, 0, n2, positions, 1, (uint32_t[]){n2}, 0);
         dvz_path_color(path, 0, n2, color2, 0);
 
         FREE(positions)

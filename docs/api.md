@@ -5417,6 +5417,7 @@ Set the path positions. Note: all path point positions must be updated at once f
     ``` python
     dvz.path_position(
         visual,  # the visual (LP_DvzVisual)
+        first,  # the index of the first item to update (int, 32-bit unsigned)
         vertex_count,  # the total number of points across all paths (int, 32-bit unsigned)
         positions,  # the path point positions (ndpointer_<f4_C_CONTIGUOUS)
         path_count,  # the number of different paths (int, 32-bit unsigned)
@@ -5430,6 +5431,7 @@ Set the path positions. Note: all path point positions must be updated at once f
     ``` c
     void dvz_path_position(
         DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
          vertex_count,  // the total number of points across all paths
         vec3* positions,  // the path point positions
         uint32_t path_count,  // the number of different paths

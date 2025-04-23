@@ -117,7 +117,7 @@ void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count)
 
 
 void dvz_path_position(
-    DvzVisual* visual, uint32_t point_count, vec3* positions, //
+    DvzVisual* visual, uint32_t first, uint32_t point_count, vec3* positions, //
     uint32_t path_count, uint32_t* path_lengths, int flags)
 {
     ANN(visual);
@@ -190,10 +190,10 @@ void dvz_path_position(
 
     // NOTE: we did not use REPEAT attr flag for position as we do the repeat manually with a
     // shift.
-    dvz_visual_data(visual, 0, 0, total_length, (void*)p0);
-    dvz_visual_data(visual, 1, 0, total_length, (void*)p1);
-    dvz_visual_data(visual, 2, 0, total_length, (void*)p2);
-    dvz_visual_data(visual, 3, 0, total_length, (void*)p3);
+    dvz_visual_data(visual, 0, first, total_length, (void*)p0);
+    dvz_visual_data(visual, 1, first, total_length, (void*)p1);
+    dvz_visual_data(visual, 2, first, total_length, (void*)p2);
+    dvz_visual_data(visual, 3, first, total_length, (void*)p3);
 
     FREE(p0);
     FREE(p1);

@@ -2005,6 +2005,7 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
  * Set the path positions. Note: all path point positions must be updated at once for now.
  *
  * @param visual the visual
+ * @param first the index of the first item to update
  * @param vertex_count the total number of points across all paths
  * @param positions the path point positions
  * @param path_count the number of different paths
@@ -2012,7 +2013,7 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
  * @param flags the data update flags
  */
 DVZ_EXPORT void dvz_path_position(
-    DvzVisual* visual, uint32_t point_count, vec3* positions, //
+    DvzVisual* visual, uint32_t first, uint32_t point_count, vec3* positions, //
     uint32_t path_count, uint32_t* path_lengths, int flags);
 
 

@@ -6148,6 +6148,8 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
+first : uint32_t
+    the index of the first item to update
 vertex_count : unknown
     the total number of points across all paths
 positions : vec3*
@@ -6161,6 +6163,7 @@ flags : int
 """
 path_position.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t first
     ctypes.c_uint32,  # uint32_t point_count
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
     ctypes.c_uint32,  # uint32_t path_count

@@ -87,7 +87,7 @@ int test_path_1(TstSuite* suite)
     }
 
     // Set the visual's position and color data.
-    dvz_path_position(visual, total_length, positions, n_paths, path_lengths, 0);
+    dvz_path_position(visual, 0, total_length, positions, n_paths, path_lengths, 0);
     dvz_path_color(visual, 0, total_length, colors, 0);
     dvz_path_linewidth(visual, 0, total_length, linewidths, 0);
     FREE(linewidths);
@@ -195,7 +195,7 @@ int test_path_2(TstSuite* suite)
     }
 
     // Set the visual's position and color data.
-    dvz_path_position(visual, total_length, positions, n_paths, path_lengths, 0);
+    dvz_path_position(visual, 0, total_length, positions, n_paths, path_lengths, 0);
     dvz_path_color(visual, 0, total_length, colors, 0);
     dvz_path_linewidth(visual, 0, total_length, linewidths, 0);
 
@@ -252,7 +252,7 @@ int test_path_closed(TstSuite* suite)
     }
     memcpy(&positions[n], pos_0, n * sizeof(vec3));
 
-    dvz_path_position(visual, 2 * n, positions, 2, (uint32_t[]){n, n}, 0);
+    dvz_path_position(visual, 0, 2 * n, positions, 2, (uint32_t[]){n, n}, 0);
 
 
     // Colors.
