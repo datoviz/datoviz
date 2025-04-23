@@ -121,7 +121,7 @@ int test_mesh_polygon(TstSuite* suite)
     int flags = DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
-    // Set up the wireframe stroke parameters.
+    // Set up the wireframe contour parameters.
     dvz_mesh_edgecolor(visual, DVZ_WHITE);
     dvz_mesh_linewidth(visual, 10.0);
 
@@ -485,24 +485,24 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     VisualTest* vt = ev.user_data;
     ANN(vt);
 
-    vec4* stroke = (vec4*)vt->user_data;
+    vec4* color = (vec4*)vt->user_data;
 
     dvz_gui_pos((vec2){0, 0}, (vec2){0, 0});
     dvz_gui_size((vec2){200, 300});
     dvz_gui_begin("Wireframe", DVZ_DIALOG_FLAGS_OVERLAY);
-    bool width_changed = dvz_gui_slider("Width", 0, 10.0, &stroke[0][3]);
-    bool stroke_changed = dvz_gui_colorpicker("Color", (float*)*stroke, 0);
+    bool width_changed = dvz_gui_slider("Width", 0, 10.0, &color[0][3]);
+    bool color_changed = dvz_gui_colorpicker("Color", (float*)*color, 0);
     dvz_gui_end();
 
-    if (stroke_changed)
+    if (color_changed)
         dvz_mesh_edgecolor( //
             vt->visual,
             (DvzColor){
-                TO_ALPHA(stroke[0][0] * 255), //
-                TO_ALPHA(stroke[0][1] * 255), //
-                TO_ALPHA(stroke[0][2] * 255)});
+                TO_ALPHA(color[0][0] * 255), //
+                TO_ALPHA(color[0][1] * 255), //
+                TO_ALPHA(color[0][2] * 255)});
     if (width_changed)
-        dvz_mesh_linewidth(vt->visual, stroke[0][3]);
+        dvz_mesh_linewidth(vt->visual, color[0][3]);
 }
 
 int test_mesh_obj(TstSuite* suite)
@@ -571,7 +571,7 @@ int test_mesh_obj(TstSuite* suite)
 #endif
     }
 
-    vec4 stroke = {.25, .25, .25, .5f};
+    vec4 color = {.25, .25, .25, .5f};
     // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
     dvz_mesh_linewidth(visual, 1);
     dvz_mesh_density(visual, 10);
@@ -583,7 +583,7 @@ int test_mesh_obj(TstSuite* suite)
     dvz_panel_update(vt.panel);
 
     vt.visual = visual;
-    vt.user_data = &stroke[0];
+    vt.user_data = &color[0];
     // dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
 
     // Run the test.
@@ -677,7 +677,7 @@ int test_mesh_geo(TstSuite* suite)
     int flags = DVZ_MESH_FLAGS_CONTOUR;
     DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
 
-    // Set up the wireframe stroke parameters.
+    // Set up the wireframe contour parameters.
     dvz_mesh_linewidth(visual, 1);
 
     // Add the visual to the panel AFTER setting the visual's data.

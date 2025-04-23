@@ -373,7 +373,7 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton butto
  * Create a mouse wheel event.
  *
  * @param mouse the mouse
- * @param button the mouse wheel direction (x, y)
+ * @param dir the mouse wheel direction (x, y)
  * @param mods the keyboard modifier flags
  * @returns the generated mouse event
  */
@@ -692,6 +692,7 @@ DVZ_EXPORT void dvz_panel_update(DvzPanel* panel);
  *
  * @param panel the panel
  * @param visual the visual
+ * @param flags the flags
  */
 DVZ_EXPORT void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags);
 
@@ -2016,7 +2017,7 @@ DVZ_EXPORT DvzVisual* dvz_path(DvzBatch* batch, int flags);
  *
  * @param visual the visual
  * @param first the index of the first item to update
- * @param vertex_count the total number of points across all paths
+ * @param point_count the total number of points across all paths
  * @param positions the path point positions
  * @param path_count the number of different paths
  * @param path_lengths the number of points in each path
@@ -2942,7 +2943,7 @@ DVZ_EXPORT void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir);
  *
  * @param visual the mesh
  * @param idx the light index (0, 1, 2, or 3)
- * @param color the light color (rgba, but the a component is ignored)
+ * @param rgba the light color (rgba, but the a component is ignored)
  */
 DVZ_EXPORT void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba);
 
@@ -2960,19 +2961,19 @@ DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 para
 
 
 /**
- * Set the stroke color.
+ * Set the marker edge color.
  *
  * Note: the alpha component is currently unused.
  *
  * @param visual the mesh
- * @param stroke the rgba components
+ * @param rgba the rgba components
  */
 DVZ_EXPORT void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba);
 
 
 
 /**
- * Set the stroke linewidth (wireframe or isoline).
+ * Set the mesh contour linewidth (wireframe or isoline).
  *
  * @param visual the mesh
  * @param linewidth the line width
@@ -3381,7 +3382,7 @@ DVZ_EXPORT float dvz_interpolate(float p0, float p1, float t);
  * @param p0 the first point
  * @param p1 the second point
  * @param t the normalized value
- * @returns the interpolated point
+ * @param[out] out the interpolated point
  */
 DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
 
@@ -3393,7 +3394,7 @@ DVZ_EXPORT void dvz_interpolate_2D(vec2 p0, vec2 p1, float t, vec2 out);
  * @param p0 the first point
  * @param p1 the second point
  * @param t the normalized value
- * @returns the interpolated point
+ * @param[out] out the interpolated point
  */
 DVZ_EXPORT void dvz_interpolate_3D(vec3 p0, vec3 p1, float t, vec3 out);
 

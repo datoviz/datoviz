@@ -624,7 +624,7 @@ DVZ_EXPORT uint8_t* dvz_normalize_bytes(uint32_t count, float* values);
  *
  * @param n the number of values
  * @param values an array of double numbers
- * @param[out] the min and max values
+ * @param[out] min_max the min and max values
  */
 DVZ_EXPORT void dvz_range(uint32_t n, double* values, dvec2 min_max);
 
@@ -836,9 +836,10 @@ DVZ_EXPORT DvzColor* dvz_mock_monochrome(uint32_t count, DvzColor mono);
 
 
 /**
- * Generate a set of HSV colors.
+ * Generate a set of colormap colors.
  *
  * @param count the number of colors to generate
+ * @param cmap the colormap
  * @param alpha the alpha value
  * @returns colors
  */

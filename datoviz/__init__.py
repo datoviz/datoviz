@@ -3260,7 +3260,7 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-button : unknown
+dir : vec2
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
@@ -3855,6 +3855,8 @@ panel : DvzPanel*
     the panel
 visual : DvzVisual*
     the visual
+flags : int
+    the flags
 """
 panel_visual.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
@@ -6167,7 +6169,7 @@ visual : DvzVisual*
     the visual
 first : uint32_t
     the index of the first item to update
-vertex_count : unknown
+point_count : uint32_t
     the total number of points across all paths
 positions : vec3*
     the path point positions
@@ -7788,7 +7790,7 @@ visual : DvzVisual*
     the mesh
 idx : uint32_t
     the light index (0, 1, 2, or 3)
-color : unknown
+rgba : DvzColor
     the light color (rgba, but the a component is ignored)
 """
 mesh_light_color.argtypes = [
@@ -7820,13 +7822,13 @@ mesh_light_params.argtypes = [
 # Function dvz_mesh_edgecolor()
 mesh_edgecolor = dvz.dvz_mesh_edgecolor
 mesh_edgecolor.__doc__ = """
-Set the stroke color.  Note: the alpha component is currently unused.
+Set the marker edge color.  Note: the alpha component is currently unused.
 
 Parameters
 ----------
 visual : DvzVisual*
     the mesh
-stroke : unknown
+rgba : DvzColor
     the rgba components
 """
 mesh_edgecolor.argtypes = [
@@ -7837,7 +7839,7 @@ mesh_edgecolor.argtypes = [
 # Function dvz_mesh_linewidth()
 mesh_linewidth = dvz.dvz_mesh_linewidth
 mesh_linewidth.__doc__ = """
-Set the stroke linewidth (wireframe or isoline).
+Set the mesh contour linewidth (wireframe or isoline).
 
 Parameters
 ----------
@@ -8569,17 +8571,14 @@ p1 : vec2
     the second point
 t : float
     the normalized value
-
-Returns
--------
-type
+out : vec2 (out parameter)
     the interpolated point
 """
 interpolate_2D.argtypes = [
     vec2,  # vec2 p0
     vec2,  # vec2 p1
     ctypes.c_float,  # float t
-    vec2,  # vec2 out
+    vec2,  # out vec2 out
 ]
 
 # Function dvz_interpolate_3D()
@@ -8595,17 +8594,14 @@ p1 : vec3
     the second point
 t : float
     the normalized value
-
-Returns
--------
-type
+out : vec3 (out parameter)
     the interpolated point
 """
 interpolate_3D.argtypes = [
     vec3,  # vec3 p0
     vec3,  # vec3 p1
     ctypes.c_float,  # float t
-    vec3,  # vec3 out
+    vec3,  # out vec3 out
 ]
 
 # Function dvz_arcball_initial()
@@ -11115,13 +11111,13 @@ n : uint32_t
     the number of values
 values : double*
     an array of double numbers
-the : unknown (out parameter)
-    min and max values
+min_max : dvec2 (out parameter)
+    the min and max values
 """
 range.argtypes = [
     ctypes.c_uint32,  # uint32_t n
     ndpointer(dtype=np.double, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # double* values
-    dvec2,  # dvec2 min_max
+    dvec2,  # out dvec2 min_max
 ]
 
 # Function dvz_earcut()
@@ -11513,12 +11509,14 @@ mock_monochrome.restype = ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CON
 # Function dvz_mock_cmap()
 mock_cmap = dvz.dvz_mock_cmap
 mock_cmap.__doc__ = """
-Generate a set of HSV colors.
+Generate a set of colormap colors.
 
 Parameters
 ----------
 count : uint32_t
     the number of colors to generate
+cmap : DvzColormap
+    the colormap
 alpha : DvzAlpha
     the alpha value
 
@@ -12074,6 +12072,8 @@ size : DvzSize
     the number of bytes in data to transfer
 data : void*
     a pointer to the data to upload
+flags : int
+    the upload flags
 
 Returns
 -------
@@ -12190,6 +12190,8 @@ size : DvzSize
     the number of bytes in data to transfer
 data : void*
     a pointer to the data to upload
+flags : int
+    the upload flags
 
 Returns
 -------
@@ -12343,8 +12345,6 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-parent : unknown
-    the parent canvas id
 type : DvzGraphicsType
     the graphics type
 flags : int
@@ -12585,6 +12585,8 @@ binding_idx : uint32_t
     the index of the vertex binding
 stride : DvzSize
     the binding stride
+input_rate : DvzVertexInputRate
+    the vertex input rate, per-vertex or per-instance
 
 Returns
 -------
@@ -12763,8 +12765,10 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-graphics : unknown
+graphics : DvzId
     the id of the graphics pipe
+binding_idx : uint32_t
+    the vertex binding index
 dat : DvzId
     the id of the dat with the vertex data
 offset : DvzSize
@@ -12777,7 +12781,7 @@ type
 """
 bind_vertex.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId pipe
+    DvzId,  # DvzId graphics
     ctypes.c_uint32,  # uint32_t binding_idx
     DvzId,  # DvzId dat
     DvzSize,  # DvzSize offset
@@ -12793,7 +12797,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-graphics : unknown
+graphics : DvzId
     the id of the graphics pipe
 dat : DvzId
     the id of the dat with the index data
@@ -12807,7 +12811,7 @@ type
 """
 bind_index.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzId,  # DvzId pipe
+    DvzId,  # DvzId graphics
     DvzId,  # DvzId dat
     DvzSize,  # DvzSize offset
 ]
@@ -12860,7 +12864,7 @@ slot_idx : uint32_t
     the index of the descriptor slot
 tex : DvzId
     the id of the tex to bind to the pipe
-tex : DvzId
+sampler : DvzId
     the id of the sampler
 offset : uvec3
     the offset

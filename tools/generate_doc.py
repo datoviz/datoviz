@@ -373,7 +373,7 @@ def generate_examples():
 def parse_doxygen_docstring(docstring):
     # Regular expression patterns for different components of the docstring
     description_pattern = re.compile(r"/\*\*\s*\n\s*([^\n]+)", re.DOTALL)
-    param_pattern = re.compile(r"@param\s+(\w+)\s+([^\n]+)", re.DOTALL)
+    param_pattern = re.compile(r"@param\s*(?:\[\w+\])?\s*(\w+)\s+([^\n]+)", re.DOTALL)
     returns_pattern = re.compile(r"@returns\s+([^\n]+)", re.DOTALL)
 
     # Extract the description
@@ -470,10 +470,14 @@ def generate_api():
             md += f"""=== "Python"\n\n{indent(py_func_desc, "    ")}"""
 
             # C-style
-            args = "\n".join(
-                f"    {dtypes.get(arg_name, '')} {arg_name},  // {arg_desc}"
-                for (arg_name, arg_desc) in parsed_docstring["params"]
-            )
+            try:
+                args = "\n".join(
+                    f"    {dtypes[arg_name]} {arg_name},  // {arg_desc}"
+                    for (arg_name, arg_desc) in parsed_docstring["params"]
+                )
+            except KeyError as e:
+                # print(f"Argument mismatch on {e} in docstring with function {func_name}")
+                pass
             return_desc = f"  // returns: {return_desc}" if return_desc else ""
             func_desc = f"``` c\n{return_type_}{func_name}("
             if args:

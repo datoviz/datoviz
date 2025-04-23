@@ -72,7 +72,7 @@ struct DvzMeshParams
     mat4 light_dir;         /* x, y, z, *** */
     mat4 light_color;       /* r, g, b, *** */
     mat4 light_params;      /* ambient, diffuse, specular, exponent */
-    vec4 stroke;            /* r, g, b, a contour color */
+    vec4 edgecolor;         /* r, g, b, a contour color */
     float linewidth;        /* contour line width */
     uint32_t isoline_count; /* number of isolines */
 };
@@ -84,7 +84,7 @@ typedef enum
     DVZ_MESH_PARAMS_LIGHT_DIR,
     DVZ_MESH_PARAMS_LIGHT_COLOR,
     DVZ_MESH_PARAMS_LIGHT_PARAMS,
-    DVZ_MESH_PARAMS_STROKE,
+    DVZ_MESH_PARAMS_EDGECOLOR,
     DVZ_MESH_PARAMS_LINEWIDTH,
     DVZ_MESH_PARAMS_ISOLINE_COUNT,
 } DvzMeshParamsEnum;

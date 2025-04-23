@@ -11,6 +11,7 @@ Get the current arcball angles.
     ``` python
     dvz.arcball_angles(
         arcball,  # the arcball (LP_DvzArcball)
+        out_angles,  # the arcball angles (vec3)
     )
     ```
 
@@ -19,6 +20,7 @@ Get the current arcball angles.
     ``` c
     void dvz_arcball_angles(
         DvzArcball* arcball,  // the arcball
+        vec3 out_angles,  // the arcball angles
     );
     ```
 
@@ -143,6 +145,7 @@ Return the model matrix of an arcball.
     ``` python
     dvz.arcball_model(
         arcball,  # the arcball (LP_DvzArcball)
+        model,  # the model (mat4)
     )
     ```
 
@@ -151,6 +154,7 @@ Return the model matrix of an arcball.
     ``` c
     void dvz_arcball_model(
         DvzArcball* arcball,  // the arcball
+        mat4 model,  // the model
     );
     ```
 
@@ -715,6 +719,8 @@ Return the view and proj matrices of the camera.
     ``` python
     dvz.camera_viewproj(
         camera,  # the camera (LP_DvzCamera)
+        view,  # the view matrix (mat4)
+        proj,  # the proj matrix (mat4)
     )
     ```
 
@@ -723,6 +729,8 @@ Return the view and proj matrices of the camera.
     ``` c
     void dvz_camera_viewproj(
         DvzCamera* camera,  // the camera
+        mat4 view,  // the view matrix
+        mat4 proj,  // the proj matrix
     );
     ```
 
@@ -762,6 +770,7 @@ Generate a 2D circular motion.
         radius,  # the circle radius (float, 64-bit)
         angle,  # the initial angle (float, 64-bit)
         t,  # the normalized value (float, 64-bit)
+        out,  # the 2D position (vec2)
     )
     ```
 
@@ -773,6 +782,7 @@ Generate a 2D circular motion.
         float radius,  // the circle radius
         float angle,  // the initial angle
         float t,  // the normalized value
+        vec2 out,  // the 2D position
     );
     ```
 
@@ -790,6 +800,7 @@ Generate a 3D circular motion.
         radius,  # the circle radius (float, 64-bit)
         angle,  # the initial angle (float, 64-bit)
         t,  # the normalized value (float, 64-bit)
+        out,  # the 3D position (vec3)
     )
     ```
 
@@ -803,6 +814,7 @@ Generate a 3D circular motion.
         float radius,  // the circle radius
         float angle,  // the initial angle
         float t,  // the normalized value
+        vec3 out,  // the 3D position
     );
     ```
 
@@ -816,6 +828,7 @@ Fetch a color from a colormap and a value (either 8-bit or float, depending on D
     dvz.colormap(
         cmap,  # the colormap (DvzColormap)
         value,  # the value (int, 8-bit unsigned)
+        color,  # the fetched color (cvec4)
     )
     ```
 
@@ -825,6 +838,7 @@ Fetch a color from a colormap and a value (either 8-bit or float, depending on D
     void dvz_colormap(
         DvzColormap cmap,  // the colormap
         uint8_t value,  // the value
+        DvzColor color,  // the fetched color
     );
     ```
 
@@ -838,6 +852,7 @@ Fetch a color from a colormap and a value (8-bit version).
     dvz.colormap_8bit(
         cmap,  # the colormap (DvzColormap)
         value,  # the value (int, 8-bit unsigned)
+        color,  # the fetched color (cvec4)
     )
     ```
 
@@ -847,6 +862,7 @@ Fetch a color from a colormap and a value (8-bit version).
     void dvz_colormap_8bit(
         DvzColormap cmap,  // the colormap
         uint8_t value,  // the value
+        cvec4 color,  // the fetched color
     );
     ```
 
@@ -863,6 +879,7 @@ Fetch colors from a colormap and an array of values.
         values,  # pointer to the array of float numbers (ndpointer_<f4_C_CONTIGUOUS)
         vmin,  # the minimum value (float, 64-bit)
         vmax,  # the maximum value (float, 64-bit)
+        out,  # (array) the fetched colors (ndpointer_|u1_C_CONTIGUOUS)
     )
     ```
 
@@ -875,6 +892,7 @@ Fetch colors from a colormap and an array of values.
         float* values,  // pointer to the array of float numbers
         float vmin,  // the minimum value
         float vmax,  // the maximum value
+        DvzColor* out,  // (array) the fetched colors
     );
     ```
 
@@ -890,6 +908,7 @@ Fetch a color from a colormap and an interpolated value.
         value,  # the value (float, 64-bit)
         vmin,  # the minimum value (float, 64-bit)
         vmax,  # the maximum value (float, 64-bit)
+        color,  # the fetched color (cvec4)
     )
     ```
 
@@ -901,6 +920,7 @@ Fetch a color from a colormap and an interpolated value.
         float value,  // the value
         float vmin,  // the minimum value
         float vmax,  // the maximum value
+        DvzColor color,  // the fetched color
     );
     ```
 
@@ -916,6 +936,7 @@ Compute face normals.
         index_count,  # number of indices (triple of the number of faces) (int, 32-bit unsigned)
         pos,  # array of vec3 positions (ndpointer_<f4_C_CONTIGUOUS)
         index,  # pos array of uint32_t indices (ndpointer_<u4_C_CONTIGUOUS)
+        normal,  # (array) the vec3 normals (to be overwritten by this function) (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
@@ -927,6 +948,7 @@ Compute face normals.
         uint32_t index_count,  // number of indices (triple of the number of faces)
         vec3* pos,  // array of vec3 positions
         DvzIndex* index,  // pos array of uint32_t indices
+        vec3* normal,  // (array) the vec3 normals (to be overwritten by this function)
     );
     ```
 
@@ -1215,6 +1237,7 @@ Render a string using Freetype.
         codepoints,  # the Unicode codepoints of the glyphs (ndpointer_<u4_C_CONTIGUOUS)
         xywh,  # an array of (x,y,w,h) shifts, returned by dvz_font_layout() (ndpointer_<f4_C_CONTIGUOUS)
         flags,  # the font flags (int, 32-bit signed)
+        out_size,  # the number of bytes in the returned image (uvec2)
     )
     ```
 
@@ -1227,6 +1250,7 @@ Render a string using Freetype.
         uint32_t* codepoints,  // the Unicode codepoints of the glyphs
         vec4* xywh,  // an array of (x,y,w,h) shifts, returned by dvz_font_layout()
         int flags,  // the font flags
+        uvec2 out_size,  // the number of bytes in the returned image
     );
     ```
 
@@ -1288,6 +1312,7 @@ Generate a texture with a rendered text.
         batch,  # the batch (LP_DvzBatch)
         length,  # the number of Unicode codepoints (int, 32-bit unsigned)
         codepoints,  # the Unicode codepoints (ndpointer_<u4_C_CONTIGUOUS)
+        size,  # the generated texture size (uvec3)
     )
     ```
 
@@ -1299,6 +1324,7 @@ Generate a texture with a rendered text.
         DvzBatch* batch,  // the batch
         uint32_t length,  // the number of Unicode codepoints
         uint32_t* codepoints,  // the Unicode codepoints
+        uvec3 size,  // the generated texture size
     );
     ```
 
@@ -1877,6 +1903,7 @@ Add a checkbox.
     ``` python
     dvz.gui_checkbox(  # returns: whether the checkbox's state has changed (c_bool)
         name,  # the button name (CStringBuffer)
+        checked,  # whether the checkbox is checked (Out)
     )
     ```
 
@@ -1885,6 +1912,7 @@ Add a checkbox.
     ``` c
     bool dvz_gui_checkbox(  // returns: whether the checkbox's state has changed
         char* name,  // the button name
+        bool* checked,  // whether the checkbox is checked
     );
     ```
 
@@ -2047,7 +2075,8 @@ Add a dropdown menu.
         name,  # the menu name (CStringBuffer)
         count,  # the number of menu items (int, 32-bit unsigned)
         items,  # the item labels (CStringArrayType)
-        flags,  # the dropdown menu flags (Out)
+        selected,  # a pointer to the selected index (Out)
+        flags,  # the dropdown menu flags (int, 32-bit signed)
     )
     ```
 
@@ -2058,6 +2087,7 @@ Add a dropdown menu.
         char* name,  // the menu name
         uint32_t count,  // the number of menu items
         char** items,  // the item labels
+        uint32_t* selected,  // a pointer to the selected index
         int flags,  // the dropdown menu flags
     );
     ```
@@ -2317,6 +2347,7 @@ Add a slider.
         name,  # the slider name (CStringBuffer)
         vmin,  # the minimum value (float, 64-bit)
         vmax,  # the maximum value (float, 64-bit)
+        value,  # the pointer to the value (Out)
     )
     ```
 
@@ -2327,6 +2358,7 @@ Add a slider.
         char* name,  // the slider name
         float vmin,  // the minimum value
         float vmax,  // the maximum value
+        float* value,  // the pointer to the value
     );
     ```
 
@@ -2835,20 +2867,22 @@ Make a linear interpolation between two 2D points.
 === "Python"
 
     ``` python
-    dvz.interpolate_2D(  # returns: the interpolated point (c_int)
+    dvz.interpolate_2D(
         p0,  # the first point (vec2)
         p1,  # the second point (vec2)
         t,  # the normalized value (float, 64-bit)
+        out,  # the interpolated point (vec2)
     )
     ```
 
 === "C"
 
     ``` c
-    void dvz_interpolate_2D(  // returns: the interpolated point
+    void dvz_interpolate_2D(
         vec2 p0,  // the first point
         vec2 p1,  // the second point
         float t,  // the normalized value
+        vec2 out,  // the interpolated point
     );
     ```
 
@@ -2859,20 +2893,22 @@ Make a linear interpolation between two 3D points.
 === "Python"
 
     ``` python
-    dvz.interpolate_3D(  # returns: the interpolated point (c_int)
+    dvz.interpolate_3D(
         p0,  # the first point (vec3)
         p1,  # the second point (vec3)
         t,  # the normalized value (float, 64-bit)
+        out,  # the interpolated point (vec3)
     )
     ```
 
 === "C"
 
     ``` c
-    void dvz_interpolate_3D(  // returns: the interpolated point
+    void dvz_interpolate_3D(
         vec3 p0,  // the first point
         vec3 p1,  // the second point
         float t,  // the normalized value
+        vec3 out,  // the interpolated point
     );
     ```
 
@@ -3314,14 +3350,14 @@ Set the number of isolines
 
 ### `dvz_mesh_edgecolor()`
 
-Set the stroke color.
+Set the marker edge color.
 
 === "Python"
 
     ``` python
     dvz.mesh_edgecolor(
         visual,  # the mesh (LP_DvzVisual)
-        stroke,  # the rgba components (cvec4)
+        rgba,  # the rgba components (cvec4)
     )
     ```
 
@@ -3330,7 +3366,7 @@ Set the stroke color.
     ``` c
     void dvz_mesh_edgecolor(
         DvzVisual* visual,  // the mesh
-         stroke,  // the rgba components
+        DvzColor rgba,  // the rgba components
     );
     ```
 
@@ -3428,7 +3464,7 @@ Set the light color.
     dvz.mesh_light_color(
         visual,  # the mesh (LP_DvzVisual)
         idx,  # the light index (0, 1, 2, or 3) (int, 32-bit unsigned)
-        color,  # the light color (rgba, but the a component is ignored) (cvec4)
+        rgba,  # the light color (rgba, but the a component is ignored) (cvec4)
     )
     ```
 
@@ -3438,7 +3474,7 @@ Set the light color.
     void dvz_mesh_light_color(
         DvzVisual* visual,  // the mesh
         uint32_t idx,  // the light index (0, 1, 2, or 3)
-         color,  // the light color (rgba, but the a component is ignored)
+        DvzColor rgba,  // the light color (rgba, but the a component is ignored)
     );
     ```
 
@@ -3492,7 +3528,7 @@ Set the light parameters.
 
 ### `dvz_mesh_linewidth()`
 
-Set the stroke linewidth (wireframe or isoline).
+Set the mesh contour linewidth (wireframe or isoline).
 
 === "Python"
 
@@ -4057,7 +4093,7 @@ Create a mouse wheel event.
     ``` python
     dvz.mouse_wheel(  # returns: the generated mouse event (DvzMouseEvent)
         mouse,  # the mouse (LP_DvzMouse)
-        button,  # the mouse wheel direction (x, y) (vec2)
+        dir,  # the mouse wheel direction (x, y) (vec2)
         mods,  # the keyboard modifier flags (int, 32-bit signed)
     )
     ```
@@ -4067,7 +4103,7 @@ Create a mouse wheel event.
     ``` c
     DvzMouseEvent dvz_mouse_wheel(  // returns: the generated mouse event
         DvzMouse* mouse,  // the mouse
-         button,  // the mouse wheel direction (x, y)
+        vec2 dir,  // the mouse wheel direction (x, y)
         int mods,  // the keyboard modifier flags
     );
     ```
@@ -4824,6 +4860,7 @@ Add a visual to a panel.
     dvz.panel_visual(
         panel,  # the panel (LP_DvzPanel)
         visual,  # the visual (LP_DvzVisual)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -4833,6 +4870,7 @@ Add a visual to a panel.
     void dvz_panel_visual(
         DvzPanel* panel,  // the panel
         DvzVisual* visual,  // the visual
+        int flags,  // the flags
     );
     ```
 
@@ -4870,6 +4908,10 @@ Get x-y bounds.
     dvz.panzoom_bounds(
         pz,  # the panzoom (LP_DvzPanzoom)
         ref,  # the ref (LP_DvzRef)
+        xmin,  # xmin (Out)
+        xmax,  # xmax (Out)
+        ymin,  # ymin (Out)
+        ymax,  # ymax (Out)
     )
     ```
 
@@ -4879,6 +4921,10 @@ Get x-y bounds.
     void dvz_panzoom_bounds(
         DvzPanzoom* pz,  // the panzoom
         DvzRef* ref,  // the ref
+        double* xmin,  // xmin
+        double* xmax,  // xmax
+        double* ymin,  // ymin
+        double* ymax,  // ymax
     );
     ```
 
@@ -4931,6 +4977,7 @@ Get the extent box.
     ``` python
     dvz.panzoom_extent(
         pz,  # the panzoom (LP_DvzPanzoom)
+        extent,  # the extent box in normalized coordinates (Out)
     )
     ```
 
@@ -4939,6 +4986,7 @@ Get the extent box.
     ``` c
     void dvz_panzoom_extent(
         DvzPanzoom* pz,  // the panzoom
+        DvzBox* extent,  // the extent box in normalized coordinates
     );
     ```
 
@@ -5418,7 +5466,7 @@ Set the path positions. Note: all path point positions must be updated at once f
     dvz.path_position(
         visual,  # the visual (LP_DvzVisual)
         first,  # the index of the first item to update (int, 32-bit unsigned)
-        vertex_count,  # the total number of points across all paths (int, 32-bit unsigned)
+        point_count,  # the total number of points across all paths (int, 32-bit unsigned)
         positions,  # the path point positions (ndpointer_<f4_C_CONTIGUOUS)
         path_count,  # the number of different paths (int, 32-bit unsigned)
         path_lengths,  # the number of points in each path (ndpointer_<u4_C_CONTIGUOUS)
@@ -5432,7 +5480,7 @@ Set the path positions. Note: all path point positions must be updated at once f
     void dvz_path_position(
         DvzVisual* visual,  // the visual
         uint32_t first,  // the index of the first item to update
-         vertex_count,  // the total number of points across all paths
+        uint32_t point_count,  // the total number of points across all paths
         vec3* positions,  // the path point positions
         uint32_t path_count,  // the number of different paths
         uint32_t* path_lengths,  // the number of points in each path
@@ -5706,7 +5754,11 @@ Placeholder.
 
     ``` c
     DvzQtApp* dvz_qt_app(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the sizes of the items to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -5726,7 +5778,11 @@ Placeholder.
 
     ``` c
     void dvz_qt_app_destroy(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the sizes of the items to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -5746,7 +5802,11 @@ Placeholder.
 
     ``` c
     DvzBatch* dvz_qt_batch(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the sizes of the items to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -5766,7 +5826,11 @@ Placeholder.
 
     ``` c
     void dvz_qt_submit(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the sizes of the items to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -5786,7 +5850,11 @@ Placeholder.
 
     ``` c
     DvzQtWindow* dvz_qt_window(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        float* values,  // the sizes of the items to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -5914,6 +5982,8 @@ Get the range on a given axis.
     dvz.ref_get(
         ref,  # the reference frame (LP_DvzRef)
         dim,  # the dimension axis (DvzDim)
+        vmin,  # the minimum value (Out)
+        vmax,  # the maximum value (Out)
     )
     ```
 
@@ -5923,6 +5993,8 @@ Get the range on a given axis.
     void dvz_ref_get(
         DvzRef* ref,  // the reference frame
         DvzDim dim,  // the dimension axis
+        double* vmin,  // the minimum value
+        double* vmax,  // the maximum value
     );
     ```
 
@@ -5936,6 +6008,7 @@ Inverse transform from normalized device coordinates [-1..+1] to the reference f
     dvz.ref_inverse(
         ref,  # the reference frame (LP_DvzRef)
         pos_tr,  # the 3D position in normalized device coordinates (vec3)
+        pos,  # the original position (Out)
     )
     ```
 
@@ -5945,6 +6018,7 @@ Inverse transform from normalized device coordinates [-1..+1] to the reference f
     void dvz_ref_inverse(
         DvzRef* ref,  // the reference frame
         vec3 pos_tr,  // the 3D position in normalized device coordinates
+        dvec3* pos,  // the original position
     );
     ```
 
@@ -5986,6 +6060,7 @@ Transform 1D data from the reference frame to normalized device coordinates [-1.
         dim,  # which dimension (DvzDim)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 1D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
@@ -5997,6 +6072,7 @@ Transform 1D data from the reference frame to normalized device coordinates [-1.
         DvzDim dim,  // which dimension
         uint32_t count,  // the number of positions
         double* pos,  // the 1D positions
+        vec3* pos_tr,  // (array) the transformed positions
     );
     ```
 
@@ -6011,6 +6087,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed 3D positions (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
@@ -6021,6 +6098,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec2* pos,  // the 2D positions
+        vec3* pos_tr,  // (array) the transformed 3D positions
     );
     ```
 
@@ -6035,6 +6113,7 @@ Transform 3D data from the reference frame to normalized device coordinates [-1.
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
@@ -6045,6 +6124,7 @@ Transform 3D data from the reference frame to normalized device coordinates [-1.
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec3* pos,  // the 3D positions
+        vec3* pos_tr,  // (array) the transformed positions
     );
     ```
 
@@ -6059,6 +6139,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
         ref,  # the reference frame (LP_DvzRef)
         count,  # the number of positions (int, 32-bit unsigned)
         pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed 2D positions (ndpointer_<f8_C_CONTIGUOUS)
     )
     ```
 
@@ -6069,6 +6150,7 @@ Transform 2D data from the reference frame to normalized device coordinates [-1.
         DvzRef* ref,  // the reference frame
         uint32_t count,  // the number of positions
         dvec2* pos,  // the 2D positions
+        dvec2* pos_tr,  // (array) the transformed 2D positions
     );
     ```
 
@@ -6262,7 +6344,9 @@ Placeholder.
 
     ``` c
     void dvz_scene_render(
-         placeholder,  // placeholder
+        DvzScene* scene,  // the scene
+        DvzFigure* fig,  // the figure
+        DvzMouseEvent ev,  // the mouse event
     );
     ```
 
@@ -6542,7 +6626,11 @@ Placeholder.
 
     ``` c
     DvzServer* dvz_server(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6562,7 +6650,11 @@ Placeholder.
 
     ``` c
     void dvz_server_destroy(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6582,7 +6674,11 @@ Placeholder.
 
     ``` c
     uint8_t* dvz_server_grab(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6602,7 +6698,11 @@ Placeholder.
 
     ``` c
     DvzKeyboard* dvz_server_keyboard(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6622,7 +6722,11 @@ Placeholder.
 
     ``` c
     DvzMouse* dvz_server_mouse(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6642,7 +6746,11 @@ Placeholder.
 
     ``` c
     void dvz_server_resize(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -6662,7 +6770,11 @@ Placeholder.
 
     ``` c
     void dvz_server_submit(
-         placeholder,  // placeholder
+        DvzVisual* visual,  // the visual
+        uint32_t first,  // the index of the first item to update
+        uint32_t count,  // the number of items to update
+        vec4* values,  // the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
+        int flags,  // the data update flags
     );
     ```
 
@@ -7064,6 +7176,7 @@ Compute the rescaling factor to renormalize a shape.
     dvz.shape_rescaling(
         shape,  # the shape (LP_DvzShape)
         flags,  # the rescaling flags (int, 32-bit signed)
+        out_scale,  # the computed scaling factors (vec3)
     )
     ```
 
@@ -7073,6 +7186,7 @@ Compute the rescaling factor to renormalize a shape.
     float dvz_shape_rescaling(
         DvzShape* shape,  // the shape
         int flags,  // the rescaling flags
+        vec3 out_scale,  // the computed scaling factors
     );
     ```
 
@@ -8714,6 +8828,7 @@ Return the last keyboard key pressed.
     dvz.app_keyboard(
         app,  # the app (LP_DvzApp)
         canvas_id,  # the canvas id (int, 64-bit unsigned)
+        key,  # a pointer to the last pressed key (Out)
     )
     ```
 
@@ -8723,6 +8838,7 @@ Return the last keyboard key pressed.
     void dvz_app_keyboard(
         DvzApp* app,  // the app
         DvzId canvas_id,  // the canvas id
+        DvzKeyCode* key,  // a pointer to the last pressed key
     );
     ```
 
@@ -8736,6 +8852,9 @@ Return the last mouse position and pressed button.
     dvz.app_mouse(
         app,  # the app (LP_DvzApp)
         canvas_id,  # the canvas id (int, 64-bit unsigned)
+        x,  # a pointer to the mouse x position (Out)
+        y,  # a pointer to the mouse y position (Out)
+        button,  # a pointer to the pressed button (Out)
     )
     ```
 
@@ -8745,6 +8864,9 @@ Return the last mouse position and pressed button.
     void dvz_app_mouse(
         DvzApp* app,  // the app
         DvzId canvas_id,  // the canvas id
+        double* x,  // a pointer to the mouse x position
+        double* y,  // a pointer to the mouse y position
+        DvzMouseButton* button,  // a pointer to the pressed button
     );
     ```
 
@@ -8971,6 +9093,8 @@ Return the precise display timestamps of the last `count` frames.
         app,  # the app (LP_DvzApp)
         canvas_id,  # the ID of the canvas (int, 64-bit unsigned)
         count,  # number of frames (int, 32-bit unsigned)
+        seconds,  # (array) a buffer holding at least `count` uint64_t values (seconds) (ndpointer_<u8_C_CONTIGUOUS)
+        nanoseconds,  # (array) a buffer holding at least `count` uint64_t values (nanoseconds) (ndpointer_<u8_C_CONTIGUOUS)
     )
     ```
 
@@ -8981,6 +9105,8 @@ Return the precise display timestamps of the last `count` frames.
         DvzApp* app,  // the app
         DvzId canvas_id,  // the ID of the canvas
         uint32_t count,  // number of frames
+        uint64_t* seconds,  // (array) a buffer holding at least `count` uint64_t values (seconds)
+        uint64_t* nanoseconds,  // (array) a buffer holding at least `count` uint64_t values (nanoseconds)
     );
     ```
 
@@ -9031,13 +9157,17 @@ Get the current time.
 === "Python"
 
     ``` python
-    dvz.time()
+    dvz.time(
+        time,  # fill a structure with seconds and nanoseconds integers (Out)
+    )
     ```
 
 === "C"
 
     ``` c
-    void dvz_time();
+    void dvz_time(
+        DvzTime* time,  // fill a structure with seconds and nanoseconds integers
+    );
     ```
 
 ### `dvz_time_print()`
@@ -9071,6 +9201,7 @@ Get an external memory handle of a dat.
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
         slot_idx,  # the slot index of the dat (int, 32-bit unsigned)
+        offset,  # the offset, in bytes, of the dat, within the buffer containing that dat (Out)
     )
     ```
 
@@ -9081,6 +9212,7 @@ Get an external memory handle of a dat.
         DvzRenderer* rd,  // the renderer
         DvzVisual* visual,  // the visual
         uint32_t slot_idx,  // the slot index of the dat
+        DvzSize* offset,  // the offset, in bytes, of the dat, within the buffer containing that dat
     );
     ```
 
@@ -9094,6 +9226,7 @@ Get an external memory handle of an index dat.
     dvz.external_index(  # returns: the external memory handle of that buffer (c_int)
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
+        offset,  # the offset, in bytes, of the dat, within the buffer containing that dat (Out)
     )
     ```
 
@@ -9103,6 +9236,7 @@ Get an external memory handle of an index dat.
     int dvz_external_index(  // returns: the external memory handle of that buffer
         DvzRenderer* rd,  // the renderer
         DvzVisual* visual,  // the visual
+        DvzSize* offset,  // the offset, in bytes, of the dat, within the buffer containing that dat
     );
     ```
 
@@ -9117,6 +9251,7 @@ Get an external memory handle of a tex's staging buffer.
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
         slot_idx,  # the slot index of the tex (int, 32-bit unsigned)
+        offset,  # the offset, in bytes, of the tex's staging dat, within the buffer containing (Out)
     )
     ```
 
@@ -9127,6 +9262,7 @@ Get an external memory handle of a tex's staging buffer.
         DvzRenderer* rd,  // the renderer
         DvzVisual* visual,  // the visual
         uint32_t slot_idx,  // the slot index of the tex
+        DvzSize* offset,  // the offset, in bytes, of the tex's staging dat, within the buffer containing
     );
     ```
 
@@ -9141,6 +9277,7 @@ Get an external memory handle of a vertex dat.
         rd,  # the renderer (LP_DvzRenderer)
         visual,  # the visual (LP_DvzVisual)
         binding_idx,  # the binding index of the dat that is being used as vertex buffer (int, 32-bit unsigned)
+        offset,  # the offset, in bytes, of the dat, within the buffer containing that dat (Out)
     )
     ```
 
@@ -9151,6 +9288,7 @@ Get an external memory handle of a vertex dat.
         DvzRenderer* rd,  // the renderer
         DvzVisual* visual,  // the visual
         uint32_t binding_idx,  // the binding index of the dat that is being used as vertex buffer
+        DvzSize* offset,  // the offset, in bytes, of the dat, within the buffer containing that dat
     );
     ```
 
@@ -9164,6 +9302,7 @@ Compute a polygon triangulation with only indexing on the polygon contour vertic
     dvz.earcut(  # returns: the computed indices (must be FREED by the caller) (ndpointer_<u4_C_CONTIGUOUS)
         point_count,  # the number of points (int, 32-bit unsigned)
         polygon,  # the polygon 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+        out_index_count,  # the computed index count (Out)
     )
     ```
 
@@ -9173,6 +9312,7 @@ Compute a polygon triangulation with only indexing on the polygon contour vertic
     DvzIndex* dvz_earcut(  // returns: the computed indices (must be FREED by the caller)
         uint32_t point_count,  // the number of points
         dvec2* polygon,  // the polygon 2D positions
+        uint32_t* out_index_count,  // the computed index count
     );
     ```
 
@@ -9268,14 +9408,15 @@ Generate points on a circle.
 
 ### `dvz_mock_cmap()`
 
-Generate a set of HSV colors.
+Generate a set of colormap colors.
 
 === "Python"
 
     ``` python
     dvz.mock_cmap(  # returns: colors (ndpointer_|u1_C_CONTIGUOUS)
         count,  # the number of colors to generate (int, 32-bit unsigned)
-        alpha,  # the alpha value (DvzColormap)
+        cmap,  # the colormap (DvzColormap)
+        alpha,  # the alpha value (int, 8-bit unsigned)
     )
     ```
 
@@ -9284,6 +9425,7 @@ Generate a set of HSV colors.
     ``` c
     DvzColor* dvz_mock_cmap(  // returns: colors
         uint32_t count,  // the number of colors to generate
+        DvzColormap cmap,  // the colormap
         DvzAlpha alpha,  // the alpha value
     );
     ```
@@ -9662,6 +9804,7 @@ Compute the range of an array of double values.
     dvz.range(
         n,  # the number of values (int, 32-bit unsigned)
         values,  # an array of double numbers (ndpointer_<f8_C_CONTIGUOUS)
+        min_max,  # the min and max values (dvec2)
     )
     ```
 
@@ -9671,6 +9814,7 @@ Compute the range of an array of double values.
     void dvz_range(
         uint32_t n,  // the number of values
         double* values,  // an array of double numbers
+        dvec2 min_max,  // the min and max values
     );
     ```
 
@@ -10024,7 +10168,7 @@ Create a request for associating an index dat to a graphics pipe.
     ``` c
     DvzRequest dvz_bind_index(  // returns: the request
         DvzBatch* batch,  // the batch
-         graphics,  // the id of the graphics pipe
+        DvzId graphics,  // the id of the graphics pipe
         DvzId dat,  // the id of the dat with the index data
         DvzSize offset,  // the offset within the dat
     );
@@ -10042,7 +10186,7 @@ Create a request for associating a tex to a pipe's slot.
         pipe,  # the id of the pipe (int, 64-bit unsigned)
         slot_idx,  # the index of the descriptor slot (int, 32-bit unsigned)
         tex,  # the id of the tex to bind to the pipe (int, 64-bit unsigned)
-        tex,  # the id of the sampler (int, 64-bit unsigned)
+        sampler,  # the id of the sampler (int, 64-bit unsigned)
         offset,  # the offset (uvec3)
     )
     ```
@@ -10055,7 +10199,7 @@ Create a request for associating a tex to a pipe's slot.
         DvzId pipe,  // the id of the pipe
         uint32_t slot_idx,  // the index of the descriptor slot
         DvzId tex,  // the id of the tex to bind to the pipe
-        DvzId tex,  // the id of the sampler
+        DvzId sampler,  // the id of the sampler
         uvec3 offset,  // the offset
     );
     ```
@@ -10070,7 +10214,8 @@ Create a request for associating a vertex dat to a graphics pipe.
     dvz.bind_vertex(  # returns: the request (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
         graphics,  # the id of the graphics pipe (int, 64-bit unsigned)
-        dat,  # the id of the dat with the vertex data (int, 32-bit unsigned)
+        binding_idx,  # the vertex binding index (int, 32-bit unsigned)
+        dat,  # the id of the dat with the vertex data (int, 64-bit unsigned)
         offset,  # the offset within the dat (int, 64-bit unsigned)
     )
     ```
@@ -10080,7 +10225,8 @@ Create a request for associating a vertex dat to a graphics pipe.
     ``` c
     DvzRequest dvz_bind_vertex(  // returns: the request
         DvzBatch* batch,  // the batch
-         graphics,  // the id of the graphics pipe
+        DvzId graphics,  // the id of the graphics pipe
+        uint32_t binding_idx,  // the vertex binding index
         DvzId dat,  // the id of the dat with the vertex data
         DvzSize offset,  // the offset within the dat
     );
@@ -10173,8 +10319,8 @@ Create a request for a builtin graphics pipe creation.
     ``` python
     dvz.create_graphics(  # returns: the request, containing a newly-generated id for the graphics pipe to be created (DvzRequest)
         batch,  # the batch (LP_DvzBatch)
-        parent,  # the parent canvas id (DvzGraphicsType)
-        type,  # the graphics type (int, 32-bit signed)
+        type,  # the graphics type (DvzGraphicsType)
+        flags,  # the graphics creation flags (int, 32-bit signed)
     )
     ```
 
@@ -10183,7 +10329,6 @@ Create a request for a builtin graphics pipe creation.
     ``` c
     DvzRequest dvz_create_graphics(  // returns: the request, containing a newly-generated id for the graphics pipe to be created
         DvzBatch* batch,  // the batch
-         parent,  // the parent canvas id
         DvzGraphicsType type,  // the graphics type
         int flags,  // the graphics creation flags
     );
@@ -10730,6 +10875,7 @@ Return the requests in the requester and clear it.
     ``` python
     dvz.requester_flush(  # returns: an array with all requests in the requester (LP_DvzBatch)
         rqr,  # the requester (LP_DvzRequester)
+        count,  # pointer to the number of requests, set by this function (Out)
     )
     ```
 
@@ -10738,6 +10884,7 @@ Return the requests in the requester and clear it.
     ``` c
     DvzBatch* dvz_requester_flush(  // returns: an array with all requests in the requester
         DvzRequester* rqr,  // the requester
+        uint32_t* count,  // pointer to the number of requests, set by this function
     );
     ```
 
@@ -11157,6 +11304,7 @@ Create a request for setting a vertex binding of a graphics pipe.
         graphics,  # the graphics pipe id (int, 64-bit unsigned)
         binding_idx,  # the index of the vertex binding (int, 32-bit unsigned)
         stride,  # the binding stride (int, 64-bit unsigned)
+        input_rate,  # the vertex input rate, per-vertex or per-instance (DvzVertexInputRate)
     )
     ```
 
@@ -11168,6 +11316,7 @@ Create a request for setting a vertex binding of a graphics pipe.
         DvzId graphics,  // the graphics pipe id
         uint32_t binding_idx,  // the index of the vertex binding
         DvzSize stride,  // the binding stride
+        DvzVertexInputRate input_rate,  // the vertex input rate, per-vertex or per-instance
     );
     ```
 
@@ -11206,6 +11355,7 @@ Create a request for dat upload.
         offset,  # the byte offset of the upload transfer (int, 64-bit unsigned)
         size,  # the number of bytes in data to transfer (int, 64-bit unsigned)
         data,  # a pointer to the data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the upload flags (int, 32-bit signed)
     )
     ```
 
@@ -11218,6 +11368,7 @@ Create a request for dat upload.
         DvzSize offset,  // the byte offset of the upload transfer
         DvzSize size,  // the number of bytes in data to transfer
         void* data,  // a pointer to the data to upload
+        int flags,  // the upload flags
     );
     ```
 
@@ -11235,6 +11386,7 @@ Create a request for tex upload.
         shape,  # the shape (uvec3)
         size,  # the number of bytes in data to transfer (int, 64-bit unsigned)
         data,  # a pointer to the data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the upload flags (int, 32-bit signed)
     )
     ```
 
@@ -11248,6 +11400,7 @@ Create a request for tex upload.
         uvec3 shape,  // the shape
         DvzSize size,  // the number of bytes in data to transfer
         void* data,  // a pointer to the data to upload
+        int flags,  // the upload flags
     );
     ```
 

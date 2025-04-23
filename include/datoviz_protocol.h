@@ -395,6 +395,7 @@ DVZ_EXPORT DvzRequest dvz_resize_dat(DvzBatch* batch, DvzId dat, DvzSize size);
  * @param offset the byte offset of the upload transfer
  * @param size the number of bytes in data to transfer
  * @param data a pointer to the data to upload
+ * @param flags the upload flags
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
@@ -456,6 +457,7 @@ DVZ_EXPORT DvzRequest dvz_resize_tex(DvzBatch* batch, DvzId tex, uvec3 shape);
  * @param shape the shape
  * @param size the number of bytes in data to transfer
  * @param data a pointer to the data to upload
+ * @param flags the upload flags
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_upload_tex(
@@ -541,7 +543,6 @@ DVZ_EXPORT DvzRequest dvz_create_spirv(
  * Create a request for a builtin graphics pipe creation.
  *
  * @param batch the batch
- * @param parent the parent canvas id
  * @param type the graphics type
  * @param flags the graphics creation flags
  * @returns the request, containing a newly-generated id for the graphics pipe to be created
@@ -655,6 +656,7 @@ DVZ_EXPORT DvzRequest dvz_set_shader(DvzBatch* batch, DvzId graphics, DvzId shad
  * @param graphics the graphics pipe id
  * @param binding_idx the index of the vertex binding
  * @param stride the binding stride
+ * @param input_rate the vertex input rate, per-vertex or per-instance
  * @returns the request
  */
 DVZ_EXPORT DvzRequest dvz_set_vertex(
@@ -747,12 +749,13 @@ DVZ_EXPORT DvzRequest dvz_delete_graphics(DvzBatch* batch, DvzId id);
  *
  * @param batch the batch
  * @param graphics the id of the graphics pipe
+ * @param binding_idx the vertex binding index
  * @param dat the id of the dat with the vertex data
  * @param offset the offset within the dat
  * @returns the request
  */
 DVZ_EXPORT DvzRequest
-dvz_bind_vertex(DvzBatch* batch, DvzId pipe, uint32_t binding_idx, DvzId dat, DvzSize offset);
+dvz_bind_vertex(DvzBatch* batch, DvzId graphics, uint32_t binding_idx, DvzId dat, DvzSize offset);
 
 
 
@@ -765,7 +768,7 @@ dvz_bind_vertex(DvzBatch* batch, DvzId pipe, uint32_t binding_idx, DvzId dat, Dv
  * @param offset the offset within the dat
  * @returns the request
  */
-DVZ_EXPORT DvzRequest dvz_bind_index(DvzBatch* batch, DvzId pipe, DvzId dat, DvzSize offset);
+DVZ_EXPORT DvzRequest dvz_bind_index(DvzBatch* batch, DvzId graphics, DvzId dat, DvzSize offset);
 
 
 
@@ -791,7 +794,7 @@ dvz_bind_dat(DvzBatch* batch, DvzId pipe, uint32_t slot_idx, DvzId dat, DvzSize 
  * @param pipe the id of the pipe
  * @param slot_idx the index of the descriptor slot
  * @param tex the id of the tex to bind to the pipe
- * @param tex the id of the sampler
+ * @param sampler the id of the sampler
  * @param offset the offset
  * @returns the request
  */

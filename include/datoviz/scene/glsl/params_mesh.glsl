@@ -9,7 +9,7 @@ layout(std140, binding = USER_BINDING) uniform MeshParams
     mat4 light_dir;    /* x, y, z, *** */
     mat4 light_color;  /* r, g, b, *** */
     mat4 light_params; /* ambient, diffuse, specular, exponent */
-    vec4 stroke;       // r, g, b, a
+    vec4 edgecolor;       // r, g, b, a
     float linewidth;       // contour line width
     int isoline_count; // number of isolines
 }

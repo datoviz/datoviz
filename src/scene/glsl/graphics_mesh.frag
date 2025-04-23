@@ -148,8 +148,8 @@ void main()
 
     // Stroke parameters.
     float linewidth = params.linewidth;
-    vec3 stroke = params.stroke.rgb;
-    float stroke_alpha = params.stroke.a;
+    vec3 edgecolor = params.edgecolor.rgb;
+    float edge_alpha = params.edgecolor.a;
     vec3 pos_tr;
 
     normal = normalize(in_normal);
@@ -239,11 +239,11 @@ void main()
         // Merge edge and corner into a single value.
         float f = min(e, c);
 
-        // Take into account stroke alpha.
-        float g = mix(1 - stroke_alpha, 1, f);
+        // Take into account edge alpha.
+        float g = mix(1 - edge_alpha, 1, f);
 
         // Final color.
-        vec3 rgb = mix(stroke, out_color.rgb, g);
+        vec3 rgb = mix(edgecolor, out_color.rgb, g);
         out_color.rgb = rgb;
 
         // // Antialiasing.
@@ -262,6 +262,6 @@ void main()
         // Calculate the normalized distance to the nearest contour line
         float value = in_isoline; //(1 + in_pos.y)
         float isoline = logContours(value, params.isoline_count, linewidth);
-        out_color.rgb = mix(out_color.rgb, stroke, isoline);
+        out_color.rgb = mix(out_color.rgb, edgecolor, isoline);
     }
 }
