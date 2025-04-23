@@ -2726,6 +2726,25 @@ DVZ_EXPORT void dvz_image_radius(DvzVisual* visual, float radius);
 /**
  * Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
  *
+ * Only the following colormaps are available on the GPU at the moment:
+ *
+ * `CMAP_BINARY`
+ * `CMAP_HSV`
+ * `CMAP_CIVIDIS`
+ * `CMAP_INFERNO`
+ * `CMAP_MAGMA`
+ * `CMAP_PLASMA`
+ * `CMAP_VIRIDIS`
+ * `CMAP_AUTUMN`
+ * `CMAP_BONE`
+ * `CMAP_COOL`
+ * `CMAP_COPPER`
+ * `CMAP_HOT`
+ * `CMAP_SPRING`
+ * `CMAP_SUMMER`
+ * `CMAP_WINTER`
+ * `CMAP_JET`
+ *
  * @param visual the visual
  * @param cmap the colormap
  */
