@@ -121,7 +121,7 @@ dvz.panel_visual(panel1, visual1, 0)
 checked = Out(True)
 
 
-@dvz.gui
+@dvz.on_gui
 def on_gui(app, fid, ev):
     """GUI callback function."""
 

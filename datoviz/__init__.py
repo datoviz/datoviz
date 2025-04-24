@@ -7399,7 +7399,7 @@ image_radius.argtypes = [
 # Function dvz_image_colormap()
 image_colormap = dvz.dvz_image_colormap
 image_colormap.__doc__ = """
-Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.
+Specify the colormap when using DVZ_IMAGE_FLAGS_MODE_COLORMAP.  Only the following colormaps are available on the GPU at the moment:  `CMAP_BINARY` `CMAP_HSV` `CMAP_CIVIDIS` `CMAP_INFERNO` `CMAP_MAGMA` `CMAP_PLASMA` `CMAP_VIRIDIS` `CMAP_AUTUMN` `CMAP_BONE` `CMAP_COOL` `CMAP_COPPER` `CMAP_HOT` `CMAP_SPRING` `CMAP_SUMMER` `CMAP_WINTER` `CMAP_JET`
 
 Parameters
 ----------

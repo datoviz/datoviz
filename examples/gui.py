@@ -24,7 +24,7 @@ from datoviz import vec2, vec3
 
 
 # GUI callback function.
-@dvz.gui
+@dvz.on_gui
 def on_gui(app, fid, ev):
     # Set the size of the next GUI dialog.
     dvz.gui_size(vec2(170, 110))

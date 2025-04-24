@@ -50,7 +50,7 @@ glyph = dvz.glyph(batch, 0)
 # is possible but undocumented yet.
 font_size = 32
 af = dvz.atlas_font(font_size)
-dvz.glyph_atlas(glyph, af.atlas)
+dvz.glyph_atlas_font(glyph, af)
 
 # Glyph text.
 text = "Press the arrow keys!"
@@ -142,7 +142,7 @@ d = .2
 
 
 # Keyboard event callback function.
-@dvz.keyboard
+@dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
     global eye
     # Keyboard events are PRESS, RELEASE, and REPEAT.
