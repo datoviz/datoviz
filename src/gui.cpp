@@ -100,7 +100,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
 
 
     /* ---------- regular (default) font ---------- */
-    size_t sz_regular;
+    unsigned long sz_regular;
     unsigned char* bytes_regular = dvz_resource_font("Roboto_Regular", &sz_regular);
 
     ImFontConfig cfg_reg = {};
@@ -109,7 +109,7 @@ static void _imgui_init(DvzGpu* gpu, uint32_t queue_idx, DvzRenderpass* renderpa
         io.Fonts->AddFontFromMemoryTTF(bytes_regular, (int)sz_regular, 16.0f, &cfg_reg);
 
     /* ---------- bold font ---------- */
-    size_t sz_bold;
+    unsigned long sz_bold;
     unsigned char* bytes_bold = dvz_resource_font("Roboto_Bold", &sz_bold);
 
     ImFontConfig cfg_bold = {};
