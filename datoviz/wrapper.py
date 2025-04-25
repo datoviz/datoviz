@@ -23,8 +23,9 @@ DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
 PROPS = {
     'pixel': {
-        'position': {'dtype': np.float32, 'shape': (-1, 3)},
-        'color': {'dtype': np.uint8, 'shape': (-1, 4)},
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'size': {'type': float},
     },
 }
 
@@ -66,11 +67,12 @@ class App:
         c_figure = dvz.figure(self.c_scene, width, height, 0)
         return Figure(c_figure)
 
-    def pixel(self, position: np.ndarray = None, color: np.ndarray = None):
+    def pixel(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
         c_visual = dvz.pixel(self.c_batch, 0)
         visual = Visual(c_visual, 'pixel')
         visual.position[:] = position
         visual.color[:] = color
+        visual.size = size
         return visual
 
     def on_timer(self):
@@ -122,20 +124,43 @@ class Figure:
 class Visual:
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
+    _prop_classes: dict = None
 
     def __init__(self, c_visual: dvz.DvzVisual, visual_name: str):
         assert visual_name
         assert visual_name in PROPS
         assert c_visual
 
-        self.visual_name = visual_name
+        # UGLY HACK: we override __setattr__() which only works AFTER self.visual_name has been
+        # set, but we can't set self.visual_name the usual way because it calls __setattr__()
+        # which requires self.visual_name! So we directly manipulate the __dict__ instead.
+        self.__dict__['visual_name'] = visual_name
         self.c_visual = c_visual
+        self._prop_classes = {}
+
+    def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
+        self._prop_classes[prop_name] = prop_cls
 
     def __getattr__(self, prop_name: str):
-        if prop_name in PROPS[self.visual_name]:
-            return Prop(self, prop_name)
+        prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
+        if prop_type == np.ndarray:
+            prop_cls = self._prop_classes.get(prop_name, Prop)
+            return prop_cls(self, prop_name)
         else:
-            raise Exception(f"Prop '{prop_name}' is not a recognized property for visual {self}")
+            raise Exception(f"Prop '{prop_name}' is not a valid array property for visual {self}")
+
+    def __setattr__(self, prop_name: str, value: object):
+        prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
+        if not prop_type:
+            return super().__setattr__(prop_name, value)
+        elif prop_type != np.ndarray:
+            prop_cls = self._prop_classes.get(prop_name, Prop)
+            prop = prop_cls(self, prop_name)
+            if value is not None:
+                value = prop_type(value)
+                prop.call(self.c_visual, value)
+        else:
+            raise Exception(f"Prop '{prop_name}' is not a valid scalar property for visual {self}")
 
 
 class Prop:
@@ -170,7 +195,14 @@ class Prop:
             raise ValueError(
                 f"Visual property {self.visual_name}.{self.prop_name} should have shape "
                 f"{shape} instead of {pvalue.shape}")
+        assert ndim == pvalue.ndim
+        for dim in range(ndim):
+            if shape[dim] > 0 and pvalue.shape[dim] != shape[dim]:
+                raise ValueError(f"Incorrect shape {pvalue.shape[dim]} != {shape[dim]}")
         return pvalue
+
+    def call(self, *args):
+        return self._fn(*args)
 
     def __setitem__(self, idx, value):
         if value is None:
@@ -228,7 +260,7 @@ if __name__ == '__main__':
     n = 10_000
     position = np.random.normal(size=(n, 3), scale=.25)
     color = np.random.randint(size=(n, 4), low=100, high=255)
-    pixel = app.pixel(position=position, color=color)
-    panel.add(pixel)
+    pixel = app.pixel(position=position, color=color, size=2)
 
+    panel.add(pixel)
     app.run()
