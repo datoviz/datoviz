@@ -22,6 +22,13 @@ import datoviz as dvz
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
 PROPS = {
+    'basic': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'group': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'size': {'type': float},
+    },
+
     'pixel': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
@@ -66,6 +73,18 @@ class App:
     def figure(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT):
         c_figure = dvz.figure(self.c_scene, width, height, 0)
         return Figure(c_figure)
+
+    def basic(
+            self, topology: str = None, position: np.ndarray = None, color: np.ndarray = None,
+            group: np.ndarray = None, size: float = None):
+        c_topology = dvz.to_enum(f'primitive_topology_{topology}')
+        c_visual = dvz.basic(self.c_batch, c_topology, 0)
+        visual = Visual(c_visual, 'basic')
+        visual.position[:] = position
+        visual.color[:] = color
+        visual.group[:] = group
+        visual.size = size
+        return visual
 
     def pixel(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
         c_visual = dvz.pixel(self.c_batch, 0)
@@ -260,7 +279,8 @@ if __name__ == '__main__':
     n = 10_000
     position = np.random.normal(size=(n, 3), scale=.25)
     color = np.random.randint(size=(n, 4), low=100, high=255)
-    pixel = app.pixel(position=position, color=color, size=2)
 
-    panel.add(pixel)
+    visual = app.basic('line_list', position=position, color=color, size=2)
+
+    panel.add(visual)
     app.run()

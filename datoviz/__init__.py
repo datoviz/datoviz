@@ -401,6 +401,10 @@ def from_enum(enum_cls, value):
     return None
 
 
+def to_enum(enumstr):
+    return globals().get(enumstr.upper())
+
+
 def key_name(key_code):
     name = from_enum(KeyCode, key_code)
     name = name.replace("DVZ_KEY_", "")
