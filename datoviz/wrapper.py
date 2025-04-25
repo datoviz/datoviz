@@ -63,6 +63,103 @@ PROPS = {
 
         'tex': {'type': 'tex'},
     },
+
+    'segment': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'linewidth': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+
+        'cap': {'type': 'enum', 'enum': 'DVZ_CAP'},
+    },
+
+    'path': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'linewidth': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+
+        'cap': {'type': 'enum', 'enum': 'DVZ_CAP'},
+        'join': {'type': 'enum', 'enum': 'DVZ_JOIN'},
+    },
+
+    'glyph': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'axis': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'anchor': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'group_size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'scale': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'angle': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+
+        'bgcolor': {'type': dvz.vec4},
+        'tex': {'type': 'tex'},
+    },
+
+    'image': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'anchor': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
+        'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'facecolor': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+
+        'edgecolor': {'type': dvz.vec4},
+        'permutation': {'type': dvz.ivec2},
+        'linewidth': {'type': float},
+        'ardius': {'type': float},
+        'colormap': {'type': 'enum', 'enum': 'DVZ_CMAP'},
+
+        'tex': {'type': 'tex'},
+    },
+
+    'mesh': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'normal': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'isoline': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'left': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'right': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'contour': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'index': {'type': np.ndarray, 'dtype': np.uint32, 'shape': (-1,)},
+
+        'light_dir': {'type': dvz.vec3},
+        'light_color': {'type': dvz.cvec4},
+        'light_params': {'type': dvz.vec4},
+        'edgecolor': {'type': dvz.cvec4},
+        'linewidth': {'type': float},
+        'density': {'type': int},
+
+        'tex': {'type': 'tex'},
+    },
+
+    'sphere': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+
+        'light_pos': {'type': dvz.vec3},
+        'light_params': {'type': dvz.vec4},
+    },
+
+    'volume': {
+        'bounds': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'permutation': {'type': dvz.ivec3},
+        'slice': {'type': int},
+        'transfer': {'type': dvz.vec4},
+        'tex': {'type': 'tex'},
+    },
+
+    'slice': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
+        'alpha': {'type': float},
+        'tex': {'type': 'tex'},
+    },
+
 }
 
 
@@ -365,7 +462,7 @@ class Prop:
         info = PROPS[self.visual_name][self.prop_name]
         return info.get('shape', None)
 
-    def prepare_data(self, value):
+    def prepare_data_array(self, value):
         dtype = self.dtype
         shape = self.shape
         ndim = len(shape)
@@ -385,6 +482,34 @@ class Prop:
                 raise ValueError(f"Incorrect shape {pvalue.shape[dim]} != {shape[dim]}")
         return pvalue
 
+    def prepare_data_scalar(self, value):
+        size = self.visual.get_count()
+        if size == 0:
+            raise ValueError(
+                f"Property {self.visual_name}.{self.prop_name} needs to be set after the position")
+        pvalue = np.full(size, value, dtype=self.dtype)
+        return pvalue
+
+    def prepare_data(self, value):
+        # if doing visual.prop[idx] = scalar, need to create an array
+        if not isinstance(value, np.ndarray):
+            pvalue = self.prepare_data_scalar(value)
+            size = self.visual.get_count()
+
+        # otherwise, just need to prepare the array with the right shape and dtype
+        else:
+            pvalue = self.prepare_data_array(value)
+            size = pvalue.shape[0]
+
+        return pvalue, size
+
+    def allocate(self, count):
+        self._fn_alloc(self.visual.c_visual, count)
+        self.visual.set_count(count)
+
+    def set(self, offset, length, pvalue, flags: int = 0):
+        self.call(self.visual.c_visual, offset, length, pvalue, 0)
+
     def call(self, *args):
         return self._fn(*args)
 
@@ -392,34 +517,20 @@ class Prop:
         if value is None:
             return
 
-        # if doing visual.prop[idx] = scalar, need to create an array
-        if not isinstance(value, np.ndarray):
-            size = self.visual.get_count()
-            if size == 0:
-                raise ValueError(
-                    f"Property {self.visual_name}.{self.prop_name} needs to be set after the position")
-            pvalue = np.full(size, value, dtype=self.dtype)
-
-        # otherwise, just need to prepare the array with the right shape and dtype
-        else:
-            pvalue = self.prepare_data(value)
-            size = pvalue.shape[0]
+        # Convert the data to a ndarray to be passed to the setter function.
+        pvalue, size = self.prepare_data(value)
 
         # extract the offset and length from the index (may be a slice object)
         offset, length = parse_index(idx, size)
-
         assert offset >= 0
         assert length > 0
 
         # allocate the data and register the item count
-        if value is not None:
-            count = offset + length
-            self._fn_alloc(self.visual.c_visual, count)
-            self.visual.set_count(count)
+        count = offset + length
+        self.allocate(count)
 
         # call the C property setter
-        if value is not None:
-            self._fn(self.visual.c_visual, offset, length, pvalue, 0)
+        self.set(offset, length, pvalue)
 
 
 class Tex:
