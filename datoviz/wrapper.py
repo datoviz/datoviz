@@ -21,6 +21,8 @@ import datoviz as dvz
 
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
+VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
+
 PROPS = {
     'basic': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
@@ -34,6 +36,27 @@ PROPS = {
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
         'size': {'type': float},
     },
+
+    'point': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+        'size': {'type': float},
+    },
+
+    'marker': {
+        'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
+        'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'angle': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
+        'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
+
+        'edgecolor': {'type': dvz.cvec4},
+        'linewidth': {'type': float},
+        'tex_scale': {'type': float},
+
+        'mode': {'type': 'enum', 'enum': 'DVZ_MARKER_MODE'},
+        'aspect': {'type': 'enum', 'enum': 'DVZ_MARKER_ASPECT'},
+        'shape': {'type': 'enum', 'enum': 'DVZ_MARKER_SHAPE'},
+    },
 }
 
 
@@ -41,16 +64,14 @@ PROPS = {
 # Utils
 # -------------------------------------------------------------------------------------------------
 
-def parse_index(idx, value):
-    if value is None:
-        return 0, 0
-    assert value.size > 0
-    assert value.ndim >= 1
+def parse_index(idx, total_size=0):
     offset = size = 0
     if isinstance(idx, slice):
         offset = idx.start or 0
         step = idx.step or 1
-        size = (idx.stop or value.shape[0] - offset) // step
+        size = (idx.stop or total_size - offset) // step
+    else:
+        raise ValueError(idx)
     return offset, size
 
 
@@ -74,26 +95,6 @@ class App:
         c_figure = dvz.figure(self.c_scene, width, height, 0)
         return Figure(c_figure)
 
-    def basic(
-            self, topology: str = None, position: np.ndarray = None, color: np.ndarray = None,
-            group: np.ndarray = None, size: float = None):
-        c_topology = dvz.to_enum(f'primitive_topology_{topology}')
-        c_visual = dvz.basic(self.c_batch, c_topology, 0)
-        visual = Visual(c_visual, 'basic')
-        visual.position[:] = position
-        visual.color[:] = color
-        visual.group[:] = group
-        visual.size = size
-        return visual
-
-    def pixel(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
-        c_visual = dvz.pixel(self.c_batch, 0)
-        visual = Visual(c_visual, 'pixel')
-        visual.position[:] = position
-        visual.color[:] = color
-        visual.size = size
-        return visual
-
     def on_timer(self):
         pass
 
@@ -107,8 +108,79 @@ class App:
         self.destroy()
 
     def destroy(self):
-        dvz.scene_destroy(self.c_scene)
-        dvz.app_destroy(self.c_app)
+        if self.c_app is not None:
+            dvz.scene_destroy(self.c_scene)
+            dvz.app_destroy(self.c_app)
+            self.c_app = None
+
+    # Visuals
+    # ---------------------------------------------------------------------------------------------
+
+    def basic(
+            self, topology: str = None, position: np.ndarray = None, color: np.ndarray = None,
+            group: np.ndarray = None, size: float = None):
+
+        c_topology = dvz.to_enum(f'primitive_topology_{topology}')
+        c_visual = dvz.basic(self.c_batch, c_topology, 0)
+
+        visual = Visual(c_visual, 'basic')
+        visual.position[:] = position
+        visual.color[:] = color
+        visual.group[:] = group
+        visual.size = size
+
+        return visual
+
+    def pixel(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
+
+        c_visual = dvz.pixel(self.c_batch, 0)
+        visual = Visual(c_visual, 'pixel')
+
+        visual.position[:] = position
+        visual.color[:] = color
+        visual.size = size
+
+        return visual
+
+    def point(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
+
+        c_visual = dvz.point(self.c_batch, 0)
+        visual = Visual(c_visual, 'point')
+
+        visual.position[:] = position
+        visual.color[:] = color
+        visual.size = size
+
+        return visual
+
+    def marker(
+        self,
+        position: np.ndarray = None,
+        color: np.ndarray = None,
+        size: float = None,
+        angle: np.ndarray = None,
+        edgecolor: tuple = None,
+        linewidth: float = None,
+        mode: str = None,
+        aspect: str = None,
+        shape: str = None,
+    ):
+
+        c_visual = dvz.marker(self.c_batch, 0)
+        visual = Visual(c_visual, 'marker')
+
+        visual.position[:] = position
+        visual.color[:] = color
+        visual.size[:] = size
+        visual.angle[:] = angle
+
+        visual.edgecolor = edgecolor
+        visual.linewidth = linewidth
+        visual.mode = mode
+        visual.aspect = aspect
+        visual.shape = shape
+
+        return visual
 
 
 # -------------------------------------------------------------------------------------------------
@@ -143,6 +215,7 @@ class Figure:
 class Visual:
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
+    count: int = 0
     _prop_classes: dict = None
 
     def __init__(self, c_visual: dvz.DvzVisual, visual_name: str):
@@ -157,6 +230,12 @@ class Visual:
         self.c_visual = c_visual
         self._prop_classes = {}
 
+    def set_count(self, count):
+        self.count = count
+
+    def get_count(self):
+        return self.count
+
     def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
         self._prop_classes[prop_name] = prop_cls
 
@@ -169,21 +248,48 @@ class Visual:
             raise Exception(f"Prop '{prop_name}' is not a valid array property for visual {self}")
 
     def __setattr__(self, prop_name: str, value: object):
-        prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
+        # handle visual.prop = value
+        prop_info = PROPS[self.visual_name].get(prop_name, {})
+        prop_type = prop_info.get('type', None)
         if not prop_type:
             return super().__setattr__(prop_name, value)
+
+        # case where value is not an array
         elif prop_type != np.ndarray:
+            # generic or custom Prop class
             prop_cls = self._prop_classes.get(prop_name, Prop)
+
+            # instantiate the Prop
             prop = prop_cls(self, prop_name)
-            if value is not None:
+
+            # do nothing if the value is None
+            if value is None:
+                return
+
+            # enum props
+            if prop_type == 'enum':
+                enum_prefix = prop_info['enum']
+                enum_prefix = enum_prefix.replace('DVZ_', '')
+                value = dvz.to_enum(f'{enum_prefix}_{value}')
+
+            elif prop_type in VEC_TYPES:
+                assert hasattr(value, '__len__')
+                value = prop_type(*value)
+
+            # Python type props
+            else:
                 value = prop_type(value)
-                prop.call(self.c_visual, value)
+
+            # call the prop function
+            assert value is not None
+            prop.call(self.c_visual, value)
         else:
             raise Exception(f"Prop '{prop_name}' is not a valid scalar property for visual {self}")
 
 
 class Prop:
     visual: Visual = None
+    visual_name: str = ''
     prop_name: str = ''
     _fn: tp.Callable = None
     _fn_alloc: tp.Callable = None
@@ -199,10 +305,19 @@ class Prop:
         self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}")
         self._fn_alloc = getattr(dvz, f"{visual.visual_name}_alloc")
 
-    def prepare_data(self, value):
+    @property
+    def dtype(self):
         info = PROPS[self.visual_name][self.prop_name]
-        dtype = info['dtype']
-        shape = info['shape']
+        return info.get('dtype', None)
+
+    @property
+    def shape(self):
+        info = PROPS[self.visual_name][self.prop_name]
+        return info.get('shape', None)
+
+    def prepare_data(self, value):
+        dtype = self.dtype
+        shape = self.shape
         ndim = len(shape)
         pvalue = np.asanyarray(value, dtype=dtype)
         if pvalue.ndim < ndim:
@@ -226,18 +341,33 @@ class Prop:
     def __setitem__(self, idx, value):
         if value is None:
             return
-        offset, length = parse_index(idx, value)
-        pvalue = self.prepare_data(value)
+
+        # if doing visual.prop[idx] = scalar, need to create an array
+        if not isinstance(value, np.ndarray):
+            size = self.visual.get_count()
+            if size == 0:
+                raise ValueError(
+                    f"Property {self.visual_name}.{self.prop_name} needs to be set after the position")
+            pvalue = np.full(size, value, dtype=self.dtype)
+
+        # otherwise, just need to prepare the array with the right shape and dtype
+        else:
+            pvalue = self.prepare_data(value)
+            size = pvalue.shape[0]
+
+        # extract the offset and length from the index (may be a slice object)
+        offset, length = parse_index(idx, size)
 
         assert offset >= 0
         assert length > 0
 
-        # Allocation
+        # allocate the data and register the item count
         if value is not None:
             count = offset + length
             self._fn_alloc(self.visual.c_visual, count)
+            self.visual.set_count(count)
 
-        # Property setter
+        # call the C property setter
         if value is not None:
             self._fn(self.visual.c_visual, offset, length, pvalue, 0)
 
@@ -276,11 +406,18 @@ if __name__ == '__main__':
     panel = fig.panel()
     panzoom = panel.panzoom()
 
-    n = 10_000
+    n = 1_000
     position = np.random.normal(size=(n, 3), scale=.25)
     color = np.random.randint(size=(n, 4), low=100, high=255)
+    size = np.random.uniform(size=(n,), low=20, high=40)
 
-    visual = app.basic('line_list', position=position, color=color, size=2)
+    visual = app.marker(
+        position=position, color=color, size=size,
+        shape='asterisk',
+        edgecolor=(255, 255, 255, 255),
+        linewidth=1.0,
+        aspect='outline')
 
     panel.add(visual)
     app.run()
+    app.destroy()
