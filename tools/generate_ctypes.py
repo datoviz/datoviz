@@ -9,6 +9,16 @@ ROOT_DIR = Path(__file__).parent.parent
 TYPES = set()
 ENUMS = set()
 
+HEADER = '''"""
+Copyright (c) 2021 Cyrille Rossant and contributors. All rights reserved.
+Licensed under the MIT license. See LICENSE file in the project root for details.
+SPDX-License-Identifier: MIT
+"""
+
+# WARNING: DO NOT EDIT: automatically-generated file
+
+'''.lstrip()
+
 EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
@@ -373,7 +383,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
                     f.readline()
                 file.write(f.read())
 
-        file.write('"""WARNING: DO NOT EDIT: automatically-generated file"""\n\n')
+        file.write(HEADER)
         file.write(f'__version__ = "{version}"\n')
         _include_py(file, "ctypes_header.py")
 
