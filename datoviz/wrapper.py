@@ -21,8 +21,12 @@ import datoviz as dvz
 
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
+DEFAULT_INTERPOLATION = 'linear'
+DEFAULT_ADDRESS_MODE = 'clamp_to_border'
 VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
-
+DTYPE_FORMATS = {
+    ('np.uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
+}
 PROPS = {
     'basic': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
@@ -56,6 +60,8 @@ PROPS = {
         'mode': {'type': 'enum', 'enum': 'DVZ_MARKER_MODE'},
         'aspect': {'type': 'enum', 'enum': 'DVZ_MARKER_ASPECT'},
         'shape': {'type': 'enum', 'enum': 'DVZ_MARKER_SHAPE'},
+
+        'tex': {'type': 'tex'},
     },
 }
 
@@ -73,6 +79,10 @@ def parse_index(idx, total_size=0):
     else:
         raise ValueError(idx)
     return offset, size
+
+
+def dtype_to_format(dtype, n_channels):
+    return DTYPE_FORMATS[dtype, n_channels]
 
 
 # -------------------------------------------------------------------------------------------------
@@ -113,6 +123,33 @@ class App:
             dvz.app_destroy(self.c_app)
             self.c_app = None
 
+    # Objects
+    # ---------------------------------------------------------------------------------------------
+
+    def tex(self,
+            image: np.ndarray = None,
+            ndim: int = 2,
+            shape: tuple = None,
+            n_channels: int = None,
+            dtype: np.dtype = None,
+            interpolation: str = 'nearest',
+            address_mode: str = 'clamp_to_border',
+            ):
+        if image is not None:
+            shape = shape or image.shape[:ndim]
+            n_channels = n_channels or (image.shape[-1] if ndim == image.ndim - 1 else 1)
+            dtype = dtype or image.dtype
+        format = dtype_to_format(dtype)
+        shape = dvz.uvec3(*shape)
+        tex = dvz.create_tex(self.c_batch, getattr(dvz, f'TEX_{ndim}D'), format, shape, 0).id
+        return Tex(tex, interpolation=interpolation, address_mode=address_mode)
+
+    def sampler(self, interpolation, address_mode):
+        c_filter = dvz.to_enum(f'filter_{interpolation}')
+        c_address_mode = dvz.to_enum(f'sampler_address_mode_{address_mode}')
+        sampler = dvz.create_sampler(self.c_batch, c_filter, c_address_mode).id
+        return sampler
+
     # Visuals
     # ---------------------------------------------------------------------------------------------
 
@@ -123,7 +160,7 @@ class App:
         c_topology = dvz.to_enum(f'primitive_topology_{topology}')
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
 
-        visual = Visual(c_visual, 'basic')
+        visual = Visual(self, c_visual, 'basic')
         visual.position[:] = position
         visual.color[:] = color
         visual.group[:] = group
@@ -134,7 +171,7 @@ class App:
     def pixel(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
 
         c_visual = dvz.pixel(self.c_batch, 0)
-        visual = Visual(c_visual, 'pixel')
+        visual = Visual(self, c_visual, 'pixel')
 
         visual.position[:] = position
         visual.color[:] = color
@@ -145,7 +182,7 @@ class App:
     def point(self, position: np.ndarray = None, color: np.ndarray = None, size: float = None):
 
         c_visual = dvz.point(self.c_batch, 0)
-        visual = Visual(c_visual, 'point')
+        visual = Visual(self, c_visual, 'point')
 
         visual.position[:] = position
         visual.color[:] = color
@@ -167,7 +204,7 @@ class App:
     ):
 
         c_visual = dvz.marker(self.c_batch, 0)
-        visual = Visual(c_visual, 'marker')
+        visual = Visual(self, c_visual, 'marker')
 
         visual.position[:] = position
         visual.color[:] = color
@@ -213,12 +250,14 @@ class Figure:
 # -------------------------------------------------------------------------------------------------
 
 class Visual:
+    app: App = None
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
     count: int = 0
     _prop_classes: dict = None
 
-    def __init__(self, c_visual: dvz.DvzVisual, visual_name: str):
+    def __init__(self, app: App, c_visual: dvz.DvzVisual, visual_name: str):
+        assert app
         assert visual_name
         assert visual_name in PROPS
         assert c_visual
@@ -227,6 +266,7 @@ class Visual:
         # set, but we can't set self.visual_name the usual way because it calls __setattr__()
         # which requires self.visual_name! So we directly manipulate the __dict__ instead.
         self.__dict__['visual_name'] = visual_name
+        self.app = app
         self.c_visual = c_visual
         self._prop_classes = {}
 
@@ -271,18 +311,28 @@ class Visual:
                 enum_prefix = prop_info['enum']
                 enum_prefix = enum_prefix.replace('DVZ_', '')
                 value = dvz.to_enum(f'{enum_prefix}_{value}')
+                values = (value,)
+
+            # texture
+            elif prop_type == 'tex':
+                if isinstance(value, np.ndarray):
+                    tex = self.app.tex(value)
+                c_sampler = self.app.sampler(tex.interpolation, tex.address_mode)
+                values = (tex.c_tex, c_sampler)
 
             elif prop_type in VEC_TYPES:
                 assert hasattr(value, '__len__')
                 value = prop_type(*value)
+                values = (value,)
 
             # Python type props
             else:
                 value = prop_type(value)
+                values = (value,)
 
             # call the prop function
-            assert value is not None
-            prop.call(self.c_visual, value)
+            prop.call(self.c_visual, *values)
+
         else:
             raise Exception(f"Prop '{prop_name}' is not a valid scalar property for visual {self}")
 
@@ -370,6 +420,21 @@ class Prop:
         # call the C property setter
         if value is not None:
             self._fn(self.visual.c_visual, offset, length, pvalue, 0)
+
+
+class Tex:
+    c_tex: dvz.DvzId = None
+    interpolation: str = DEFAULT_INTERPOLATION
+    address_mode: str = DEFAULT_ADDRESS_MODE
+
+    def __init__(
+            self, c_tex: dvz.DvzId = None,
+            interpolation=DEFAULT_INTERPOLATION,
+            address_mode=DEFAULT_ADDRESS_MODE):
+        assert c_tex is not None
+        self.c_tex = c_tex
+        self.interpolation = interpolation
+        self.address_mode = address_mode
 
 
 # -------------------------------------------------------------------------------------------------
