@@ -538,7 +538,7 @@ if(CC_GCC)
     # -Wno-analyzer-double-free \
 
     # -Wdouble-promotion \
-    # fsanitize=address fsanitize-trap=undefined
+    # fsanitize=undefined,address
 
     # NOTE: to comment when using valgrind
     # Also remove in RELEASE mode?
