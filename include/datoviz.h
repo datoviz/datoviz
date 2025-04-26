@@ -1316,9 +1316,9 @@ DVZ_EXPORT uint8_t* dvz_msdf_to_rgb(float* sdf, uint32_t width, uint32_t height)
  *
  * @param count the number of pixels (and NOT the number of bytes) in the byte texture
  * @param rgb the RGB texture
- * @returns the RGBA texture
+ * @param rgba the returned RGBA texture
  */
-DVZ_EXPORT uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb);
+DVZ_EXPORT void dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb, uint8_t* rgba);
 
 
 
@@ -1327,9 +1327,9 @@ DVZ_EXPORT uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb);
  *
  * @param count the number of pixels (and NOT the number of bytes) in the float texture
  * @param rgb the RGB texture
- * @returns the RGBA texture
+ * @params rgba the returned RGBA texture
  */
-DVZ_EXPORT float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb);
+DVZ_EXPORT void dvz_rgb_to_rgba_float(uint32_t count, float* rgb, float* rgba);
 
 
 

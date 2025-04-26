@@ -6229,18 +6229,20 @@ Convert an RGB byte texture to an RGBA one.
 === "Python"
 
     ``` python
-    dvz.rgb_to_rgba_char(  # returns: the RGBA texture (ndpointer_|u1_C_CONTIGUOUS)
+    dvz.rgb_to_rgba_char(
         count,  # the number of pixels (and NOT the number of bytes) in the byte texture (int, 32-bit unsigned)
         rgb,  # the RGB texture (ndpointer_|u1_C_CONTIGUOUS)
+        rgba,  # the returned RGBA texture (ndpointer_|u1_C_CONTIGUOUS)
     )
     ```
 
 === "C"
 
     ``` c
-    uint8_t* dvz_rgb_to_rgba_char(  // returns: the RGBA texture
+    void dvz_rgb_to_rgba_char(
         uint32_t count,  // the number of pixels (and NOT the number of bytes) in the byte texture
         uint8_t* rgb,  // the RGB texture
+        uint8_t* rgba,  // the returned RGBA texture
     );
     ```
 
@@ -6251,18 +6253,20 @@ Convert an RGB float texture to an RGBA one.
 === "Python"
 
     ``` python
-    dvz.rgb_to_rgba_float(  # returns: the RGBA texture (ndpointer_<f4_C_CONTIGUOUS)
+    dvz.rgb_to_rgba_float(
         count,  # the number of pixels (and NOT the number of bytes) in the float texture (int, 32-bit unsigned)
         rgb,  # the RGB texture (ndpointer_<f4_C_CONTIGUOUS)
+        s,  # rgba the returned RGBA texture (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
 === "C"
 
     ``` c
-    float* dvz_rgb_to_rgba_float(  // returns: the RGBA texture
-        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the float texture
-        float* rgb,  // the RGB texture
+    void dvz_rgb_to_rgba_float(
+        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the byte texture
+        uint8_t* rgb,  // the RGB texture
+        uint8_t* rgba,  // the returned RGBA texture
     );
     ```
 

@@ -399,7 +399,8 @@ DvzTexture* dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
     // HACK: Vulkan does not support RGB textures so we create a RGBA texture with a full alpha
     // channel.
     ANN(atlas->rgb);
-    uint8_t* rgba = dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb);
+    uint8_t* rgba = (uint8_t*)calloc(size, sizeof(uint8_t));
+    dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb, rgba);
     // TODO: mtsdf with 4 channels
     DvzTexture* texture = dvz_texture_image(
         batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,

@@ -9,8 +9,8 @@
 
 #include "scene/sdf.h"
 #include "_macros.h"
-#include "datoviz.h"
 #include "_pointer.h"
+#include "datoviz.h"
 #include "datoviz_math.h"
 #include "datoviz_protocol.h"
 #include "fileio.h"
@@ -216,13 +216,11 @@ uint8_t* dvz_msdf_to_rgb(float* msdf, uint32_t width, uint32_t height)
 /*  Image utils                                                                                  */
 /*************************************************************************************************/
 
-// NOTE: the caller must FREE the returned pointer.
-uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb)
+void dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb, uint8_t* rgba)
 {
     ASSERT(count > 0);
     ANN(rgb);
     DvzSize size = 4 * count * sizeof(uint8_t);
-    uint8_t* rgba = (uint8_t*)malloc(size);
     for (uint32_t i = 0; i < count; i++)
     {
         rgba[4 * i + 0] = rgb[3 * i + 0];
@@ -230,18 +228,15 @@ uint8_t* dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb)
         rgba[4 * i + 2] = rgb[3 * i + 2];
         rgba[4 * i + 3] = 255;
     }
-    return rgba;
 }
 
 
 
-// NOTE: the caller must FREE the returned pointer.
-float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb)
+void dvz_rgb_to_rgba_float(uint32_t count, float* rgb, float* rgba)
 {
     ASSERT(count > 0);
     ANN(rgb);
     DvzSize size = 4 * count * sizeof(float);
-    float* rgba = (float*)malloc(size);
     for (uint32_t i = 0; i < count; i++)
     {
         rgba[4 * i + 0] = rgb[3 * i + 0];
@@ -249,5 +244,4 @@ float* dvz_rgb_to_rgba_float(uint32_t count, float* rgb)
         rgba[4 * i + 2] = rgb[3 * i + 2];
         rgba[4 * i + 3] = 1;
     }
-    return rgba;
 }

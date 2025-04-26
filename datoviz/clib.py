@@ -4864,17 +4864,14 @@ count : uint32_t
     the number of pixels (and NOT the number of bytes) in the byte texture
 rgb : uint8_t*
     the RGB texture
-
-Returns
--------
-type
-    the RGBA texture
+rgba : uint8_t*
+    the returned RGBA texture
 """
 rgb_to_rgba_char.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* rgb
+    ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* rgba
 ]
-rgb_to_rgba_char.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_rgb_to_rgba_float()
 rgb_to_rgba_float = dvz.dvz_rgb_to_rgba_float
@@ -4887,17 +4884,12 @@ count : uint32_t
     the number of pixels (and NOT the number of bytes) in the float texture
 rgb : float*
     the RGB texture
-
-Returns
--------
-type
-    the RGBA texture
 """
 rgb_to_rgba_float.argtypes = [
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* rgb
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* rgba
 ]
-rgb_to_rgba_float.restype = ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_compute_normals()
 compute_normals = dvz.dvz_compute_normals
