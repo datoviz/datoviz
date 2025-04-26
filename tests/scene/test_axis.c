@@ -30,12 +30,12 @@
 /*  Axis tests                                                                                   */
 /*************************************************************************************************/
 
-static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
+static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
 {
     ANN(app);
 
     // The timer callbacks are called here.
-    VisualTest* vt = (VisualTest*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev->user_data;
     ANN(vt);
 
     DvzPanzoom* pz = vt->panzoom;

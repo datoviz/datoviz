@@ -1173,11 +1173,11 @@ static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
     // dvz_app_submit(scene->app);
 }
 
-static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
+static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
 {
     ANN(app);
 
-    DvzScene* scene = (DvzScene*)ev.user_data;
+    DvzScene* scene = (DvzScene*)ev->user_data;
     ANN(scene);
 
     _scene_build(scene);

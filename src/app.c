@@ -42,12 +42,12 @@
 /*  Util functions                                                                               */
 /*************************************************************************************************/
 
-static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
+static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
 {
     ANN(app);
 
     // The timer callbacks are called here.
-    dvz_timer_tick(app->timer, ev.time);
+    dvz_timer_tick(app->timer, ev->time);
 }
 
 
@@ -154,7 +154,7 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
         // Pass the user_data to the frame event.
         ev.content.f.user_data = payload.user_data;
         // Call the frame callback.
-        cb(app, window_id, ev.content.f);
+        cb(app, window_id, &ev.content.f);
     }
 
     // Timer callback.
