@@ -998,7 +998,7 @@ static void _scene_build(DvzScene* scene)
 
 
 // Display a GUI panel.
-static bool _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
+static bool _gui_panel(DvzPanel* panel, DvzGuiEvent* ev)
 {
     ANN(panel);
     ANN(panel->gui_title);
@@ -1027,7 +1027,7 @@ static bool _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
     bool do_capture = moving || resizing;
     // log_error("%d", moving);
 
-    // dvz_gui_window_capture(ev.gui_window, do_capture);
+    // dvz_gui_window_capture(ev->gui_window, do_capture);
 
 
     // Update the panel when the GUI is resized/moved.
@@ -1068,10 +1068,10 @@ static bool _gui_panel(DvzPanel* panel, DvzGuiEvent ev)
 
 
 // Display all GUI panels in a canvas.
-static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
     // Retrieve the scene.
-    DvzScene* scene = (DvzScene*)ev.user_data;
+    DvzScene* scene = (DvzScene*)ev->user_data;
     ANN(scene);
 
     // Retrieve the figure.
@@ -1098,7 +1098,7 @@ static void _scene_gui_panels(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
     // NOTE: we override the default (dvz_gui_window_capture()) which is going to be true
     // when we interact with a GUI panel as it is inside a GUI dialog. We capture the mouse (i.e.
     // bypassing Datoviz) iff there is at least one panel that is being resized or moved.
-    dvz_gui_window_capture(ev.gui_window, do_capture);
+    dvz_gui_window_capture(ev->gui_window, do_capture);
 }
 
 

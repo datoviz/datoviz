@@ -20,7 +20,7 @@ SPDX-License-Identifier: MIT
 
 FUNCTION_CALLBACKS = dedent("""
 
-on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
+on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzGuiEvent))
 on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzMouseEvent))
 on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
 on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)

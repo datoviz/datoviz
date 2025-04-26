@@ -248,11 +248,11 @@ void dvz_arcball_print(DvzArcball* arcball)
 
 
 
-static inline void _arcball_gui(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _arcball_gui(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
     ANN(app);
 
-    DvzArcball* arcball = (DvzArcball*)ev.user_data;
+    DvzArcball* arcball = (DvzArcball*)ev->user_data;
     ANN(arcball);
 
     DvzPanel* panel = (DvzPanel*)arcball->user_data;

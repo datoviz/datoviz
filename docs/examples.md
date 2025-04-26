@@ -510,6 +510,7 @@ figure = dvz.figure(scene, 800, 600, 0)
 
 @dvz.on_mouse
 def on_mouse(app, window_id, ev):
+    ev = ev.contents
     action = dvz.from_enum(dvz.MouseEventType, ev.type)
     x, y = ev.pos
     print(f"{action} ({x:.0f}, {y:.0f}) ", end="")

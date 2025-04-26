@@ -28,7 +28,7 @@
 /*  Tests GUI                                                                                    */
 /*************************************************************************************************/
 
-static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
     dvz_gui_demo();
 
@@ -55,7 +55,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
 
     // Table.
     uint32_t selected_count = 0;
-    bool* selected = (bool*)ev.user_data;
+    bool* selected = (bool*)ev->user_data;
     ANN(selected);
     const char* labels[] = {
         "col0", "col1", "col2", //

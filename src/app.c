@@ -445,7 +445,7 @@ static inline void _gui_callback(DvzGuiWindow* gui_window, void* internal_payloa
         .gui_window = gui_window,
         .user_data = user_data,
     };
-    callback(app, canvas_id, ev);
+    callback(app, canvas_id, &ev);
 }
 
 void dvz_app_gui(DvzApp* app, DvzId canvas_id, DvzAppGuiCallback callback, void* user_data)

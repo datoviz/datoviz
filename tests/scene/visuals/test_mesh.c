@@ -281,9 +281,9 @@ static inline void _update_angle(DvzVisual* visual, vec2 angle)
     dvz_mesh_contour(visual, 0, 9, (void*)contour, 0);
 }
 
-static inline void _edgecolor_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _edgecolor_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
-    VisualTest* vt = ev.user_data;
+    VisualTest* vt = ev->user_data;
     ANN(vt);
 
     float* angle = (float*)vt->user_data;
@@ -480,9 +480,9 @@ int test_mesh_surface(TstSuite* suite)
 
 
 
-static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
-    VisualTest* vt = ev.user_data;
+    VisualTest* vt = ev->user_data;
     ANN(vt);
 
     vec4* color = (vec4*)vt->user_data;

@@ -92,9 +92,9 @@ int test_volume_1(TstSuite* suite)
 
 
 
-static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev)
+static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 {
-    VisualTest* vt = (VisualTest*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev->user_data;
     ANN(vt);
 
     DvzVisual* visual = vt->visual;

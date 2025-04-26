@@ -109,7 +109,7 @@ typedef struct DvzList DvzList;
 typedef struct DvzFifo DvzFifo;
 
 // Callback types.
-typedef void (*DvzAppGuiCallback)(DvzApp* app, DvzId canvas_id, DvzGuiEvent ev);
+typedef void (*DvzAppGuiCallback)(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev);
 typedef void (*DvzAppMouseCallback)(DvzApp* app, DvzId window_id, DvzMouseEvent* ev);
 typedef void (*DvzAppKeyboardCallback)(DvzApp* app, DvzId window_id, DvzKeyboardEvent* ev);
 typedef void (*DvzAppFrameCallback)(DvzApp* app, DvzId window_id, DvzFrameEvent ev);
