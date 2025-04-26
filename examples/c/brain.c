@@ -7,7 +7,7 @@
 
 
 // Callback function called at every mouse event (mouse, click, drag...)
-static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
@@ -16,7 +16,7 @@ static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
         return;
 
     // The user data is passed as last argument in dvz_app_on_mouse().
-    DvzArcball* arcball = (DvzArcball*)ev.user_data;
+    DvzArcball* arcball = (DvzArcball*)ev->user_data;
     ANN(arcball);
 
     // Get the arcball angles and display them.

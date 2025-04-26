@@ -4044,7 +4044,7 @@ Create a generic mouse event.
     ``` python
     dvz.mouse_event(
         mouse,  # the mouse (LP_DvzMouse)
-        ev,  # the mouse event (DvzMouseEvent)
+        ev,  # the mouse event (LP_DvzMouseEvent)
     )
     ```
 
@@ -4053,7 +4053,7 @@ Create a generic mouse event.
     ``` c
     void dvz_mouse_event(
         DvzMouse* mouse,  // the mouse
-        DvzMouseEvent ev,  // the mouse event
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -4064,7 +4064,7 @@ Create a mouse move event.
 === "Python"
 
     ``` python
-    dvz.mouse_move(  # returns: the generated mouse event (DvzMouseEvent)
+    dvz.mouse_move(
         mouse,  # the mouse (LP_DvzMouse)
         pos,  # the cursor position, in pixels (vec2)
         mods,  # the keyboard modifier flags (int, 32-bit signed)
@@ -4074,10 +4074,9 @@ Create a mouse move event.
 === "C"
 
     ``` c
-    DvzMouseEvent dvz_mouse_move(  // returns: the generated mouse event
+    void dvz_mouse_move(
         DvzMouse* mouse,  // the mouse
-        vec2 pos,  // the cursor position, in pixels
-        int mods,  // the keyboard modifier flags
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -4088,7 +4087,7 @@ Create a mouse press event.
 === "Python"
 
     ``` python
-    dvz.mouse_press(  # returns: the generated mouse event (DvzMouseEvent)
+    dvz.mouse_press(
         mouse,  # the mouse (LP_DvzMouse)
         button,  # the mouse button (enum int) (DvzMouseButton)
         mods,  # the keyboard modifier flags (int, 32-bit signed)
@@ -4098,10 +4097,9 @@ Create a mouse press event.
 === "C"
 
     ``` c
-    DvzMouseEvent dvz_mouse_press(  // returns: the generated mouse event
+    void dvz_mouse_press(
         DvzMouse* mouse,  // the mouse
-        DvzMouseButton button,  // the mouse button (enum int)
-        int mods,  // the keyboard modifier flags
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -4112,7 +4110,7 @@ Create a mouse release event.
 === "Python"
 
     ``` python
-    dvz.mouse_release(  # returns: the generated mouse event (DvzMouseEvent)
+    dvz.mouse_release(
         mouse,  # the mouse (LP_DvzMouse)
         button,  # the mouse button (enum int) (DvzMouseButton)
         mods,  # the keyboard modifier flags (int, 32-bit signed)
@@ -4122,10 +4120,9 @@ Create a mouse release event.
 === "C"
 
     ``` c
-    DvzMouseEvent dvz_mouse_release(  // returns: the generated mouse event
+    void dvz_mouse_release(
         DvzMouse* mouse,  // the mouse
-        DvzMouseButton button,  // the mouse button (enum int)
-        int mods,  // the keyboard modifier flags
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -4136,7 +4133,7 @@ Create a mouse wheel event.
 === "Python"
 
     ``` python
-    dvz.mouse_wheel(  # returns: the generated mouse event (DvzMouseEvent)
+    dvz.mouse_wheel(
         mouse,  # the mouse (LP_DvzMouse)
         dir,  # the mouse wheel direction (x, y) (vec2)
         mods,  # the keyboard modifier flags (int, 32-bit signed)
@@ -4146,10 +4143,9 @@ Create a mouse wheel event.
 === "C"
 
     ``` c
-    DvzMouseEvent dvz_mouse_wheel(  // returns: the generated mouse event
+    void dvz_mouse_wheel(
         DvzMouse* mouse,  // the mouse
-        vec2 dir,  // the mouse wheel direction (x, y)
-        int mods,  // the keyboard modifier flags
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -5088,7 +5084,7 @@ Register a mouse event to a panzoom.
     ``` python
     dvz.panzoom_mouse(  # returns: whether the panzoom is affected by the mouse event (c_bool)
         pz,  # the panzoom (LP_DvzPanzoom)
-        ev,  # the mouse event (DvzMouseEvent)
+        ev,  # the mouse event (LP_DvzMouseEvent)
     )
     ```
 
@@ -5097,7 +5093,7 @@ Register a mouse event to a panzoom.
     ``` c
     bool dvz_panzoom_mouse(  // returns: whether the panzoom is affected by the mouse event
         DvzPanzoom* pz,  // the panzoom
-        DvzMouseEvent ev,  // the mouse event
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -6363,7 +6359,7 @@ Manually pass a mouse event to the scene.
     dvz.scene_mouse(
         scene,  # the scene (LP_DvzScene)
         fig,  # the figure (LP_DvzFigure)
-        ev,  # the mouse event (DvzMouseEvent)
+        ev,  # the mouse event (LP_DvzMouseEvent)
     )
     ```
 
@@ -6373,7 +6369,7 @@ Manually pass a mouse event to the scene.
     void dvz_scene_mouse(
         DvzScene* scene,  // the scene
         DvzFigure* fig,  // the figure
-        DvzMouseEvent ev,  // the mouse event
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 
@@ -6395,7 +6391,7 @@ Placeholder.
     void dvz_scene_render(
         DvzScene* scene,  // the scene
         DvzFigure* fig,  // the figure
-        DvzMouseEvent ev,  // the mouse event
+        DvzMouseEvent* ev,  // the mouse event
     );
     ```
 

@@ -410,28 +410,28 @@ void dvz_panzoom_destroy(DvzPanzoom* pz)
 /*  Panzoom event functions                                                                      */
 /*************************************************************************************************/
 
-bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
+bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent* ev)
 {
     ANN(pz);
 
-    switch (ev.type)
+    switch (ev->type)
     {
     // Dragging: pan.
     case DVZ_MOUSE_EVENT_DRAG:
-        if (ev.button == DVZ_MOUSE_BUTTON_LEFT && ev.content.d.is_press_valid)
+        if (ev->button == DVZ_MOUSE_BUTTON_LEFT && ev->content.d.is_press_valid)
         {
-            dvz_panzoom_pan_shift(pz, ev.content.d.shift, (vec2){0});
+            dvz_panzoom_pan_shift(pz, ev->content.d.shift, (vec2){0});
         }
-        else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT && ev.content.d.is_press_valid)
+        else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT && ev->content.d.is_press_valid)
         {
             vec2 shift = {0};
-            glm_vec2_copy(ev.content.d.shift, shift);
+            glm_vec2_copy(ev->content.d.shift, shift);
 
             // Flag: keep aspect ratio.
             if ((pz->flags & DVZ_PANZOOM_FLAGS_KEEP_ASPECT) != 0)
                 shift[1] = -shift[0];
 
-            dvz_panzoom_zoom_shift(pz, shift, ev.content.d.press_pos);
+            dvz_panzoom_zoom_shift(pz, shift, ev->content.d.press_pos);
         }
         break;
 
@@ -442,7 +442,7 @@ bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev)
 
     // Mouse wheel.
     case DVZ_MOUSE_EVENT_WHEEL:
-        dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.pos);
+        dvz_panzoom_zoom_wheel(pz, ev->content.w.dir, ev->pos);
         break;
 
     // Double-click

@@ -2701,15 +2701,8 @@ Requester = DvzRequester
 
 
 
-class DvzKeyboardEventRef(DvzKeyboardEvent):
-    @classmethod
-    def from_param(cls, obj):
-        if isinstance(obj, P_(DvzKeyboardEvent)):
-            return obj.contents
-        return obj
-
 on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
-on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
+on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzMouseEvent))
 on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
 on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
 on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
@@ -3066,13 +3059,13 @@ scene : DvzScene*
     the scene
 fig : DvzFigure*
     the figure
-ev : DvzMouseEvent
+ev : DvzMouseEvent*
     the mouse event
 """
 scene_mouse.argtypes = [
     ctypes.POINTER(DvzScene),  # DvzScene* scene
     ctypes.POINTER(DvzFigure),  # DvzFigure* fig
-    DvzMouseEvent,  # DvzMouseEvent ev
+    ctypes.POINTER(DvzMouseEvent),  # DvzMouseEvent* ev
 ]
 
 # Function dvz_scene_destroy()
@@ -3117,10 +3110,7 @@ pos : vec2
     the cursor position, in pixels
 mods : int
     the keyboard modifier flags
-
-Returns
--------
-type
+ev : unknown (out parameter)
     the generated mouse event
 """
 mouse_move.argtypes = [
@@ -3128,7 +3118,6 @@ mouse_move.argtypes = [
     vec2,  # vec2 pos
     ctypes.c_int,  # int mods
 ]
-mouse_move.restype = DvzMouseEvent
 
 # Function dvz_mouse_press()
 mouse_press = dvz.dvz_mouse_press
@@ -3143,10 +3132,7 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
-
-Returns
--------
-type
+ev : unknown (out parameter)
     the generated mouse event
 """
 mouse_press.argtypes = [
@@ -3154,7 +3140,6 @@ mouse_press.argtypes = [
     DvzMouseButton,  # DvzMouseButton button
     ctypes.c_int,  # int mods
 ]
-mouse_press.restype = DvzMouseEvent
 
 # Function dvz_mouse_release()
 mouse_release = dvz.dvz_mouse_release
@@ -3169,10 +3154,7 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
-
-Returns
--------
-type
+ev : unknown (out parameter)
     the generated mouse event
 """
 mouse_release.argtypes = [
@@ -3180,7 +3162,6 @@ mouse_release.argtypes = [
     DvzMouseButton,  # DvzMouseButton button
     ctypes.c_int,  # int mods
 ]
-mouse_release.restype = DvzMouseEvent
 
 # Function dvz_mouse_wheel()
 mouse_wheel = dvz.dvz_mouse_wheel
@@ -3195,10 +3176,7 @@ dir : vec2
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
-
-Returns
--------
-type
+ev : unknown (out parameter)
     the generated mouse event
 """
 mouse_wheel.argtypes = [
@@ -3206,7 +3184,6 @@ mouse_wheel.argtypes = [
     vec2,  # vec2 dir
     ctypes.c_int,  # int mods
 ]
-mouse_wheel.restype = DvzMouseEvent
 
 # Function dvz_mouse_event()
 mouse_event = dvz.dvz_mouse_event
@@ -3217,12 +3194,12 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-ev : DvzMouseEvent
+ev : DvzMouseEvent*
     the mouse event
 """
 mouse_event.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
-    DvzMouseEvent,  # DvzMouseEvent ev
+    ctypes.POINTER(DvzMouseEvent),  # DvzMouseEvent* ev
 ]
 
 # Function dvz_mouse_destroy()
@@ -9460,7 +9437,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-ev : DvzMouseEvent
+ev : DvzMouseEvent*
     the mouse event
 
 Returns
@@ -9470,7 +9447,7 @@ type
 """
 panzoom_mouse.argtypes = [
     ctypes.POINTER(DvzPanzoom),  # DvzPanzoom* pz
-    DvzMouseEvent,  # DvzMouseEvent ev
+    ctypes.POINTER(DvzMouseEvent),  # DvzMouseEvent* ev
 ]
 panzoom_mouse.restype = ctypes.c_bool
 

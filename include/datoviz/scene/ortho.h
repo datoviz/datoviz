@@ -68,7 +68,7 @@ DvzOrtho* dvz_ortho(float width, float height, int flags); // inner viewport siz
 /**
  *
  */
-bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent ev);
+bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent* ev);
 
 
 

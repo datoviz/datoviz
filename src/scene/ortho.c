@@ -304,23 +304,23 @@ void dvz_ortho_destroy(DvzOrtho* ortho)
 /*  Ortho event functions                                                                      */
 /*************************************************************************************************/
 
-bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent ev)
+bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent* ev)
 {
     ANN(ortho);
 
-    switch (ev.type)
+    switch (ev->type)
     {
     // Dragging: pan.
     case DVZ_MOUSE_EVENT_DRAG:
-        if (ev.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev->button == DVZ_MOUSE_BUTTON_LEFT)
         {
-            dvz_ortho_pan_shift(ortho, ev.content.d.shift, (vec2){0});
+            dvz_ortho_pan_shift(ortho, ev->content.d.shift, (vec2){0});
         }
-        else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT)
+        else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT)
         {
             vec2 shift = {0};
-            glm_vec2_copy(ev.content.d.shift, shift);
-            dvz_ortho_zoom_shift(ortho, shift, ev.content.d.press_pos);
+            glm_vec2_copy(ev->content.d.shift, shift);
+            dvz_ortho_zoom_shift(ortho, shift, ev->content.d.press_pos);
         }
         break;
 
@@ -331,7 +331,7 @@ bool dvz_ortho_mouse(DvzOrtho* ortho, DvzMouseEvent ev)
 
     // Mouse wheel.
     case DVZ_MOUSE_EVENT_WHEEL:
-        dvz_ortho_zoom_wheel(ortho, ev.content.w.dir, ev.pos);
+        dvz_ortho_zoom_wheel(ortho, ev->content.w.dir, ev->pos);
         break;
 
     // Double-click

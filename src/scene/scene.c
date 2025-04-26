@@ -59,11 +59,11 @@ static void _panzoom_ortho_size(DvzPanel* panel)
 }
 
 
-static inline bool _is_drag(DvzMouseEvent ev)
+static inline bool _is_drag(DvzMouseEvent* ev)
 {
-    return ev.type == DVZ_MOUSE_EVENT_DRAG ||       //
-           ev.type == DVZ_MOUSE_EVENT_DRAG_START || //
-           ev.type == DVZ_MOUSE_EVENT_DRAG_STOP;    //
+    return ev->type == DVZ_MOUSE_EVENT_DRAG ||       //
+           ev->type == DVZ_MOUSE_EVENT_DRAG_START || //
+           ev->type == DVZ_MOUSE_EVENT_DRAG_STOP;    //
 }
 
 
@@ -1125,11 +1125,11 @@ static inline bool _is_in_margins(vec2 pos, vec2 shape, vec2 margins)
     return in_margins;
 }
 
-static void _scene_on_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _scene_on_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
-    DvzScene* scene = (DvzScene*)ev.user_data;
+    DvzScene* scene = (DvzScene*)ev->user_data;
     ANN(scene);
 
     DvzFigure* fig = dvz_scene_figure(scene, window_id);
@@ -1187,7 +1187,7 @@ static void _scene_onframe(DvzApp* app, DvzId window_id, DvzFrameEvent ev)
 
 
 
-void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
+void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
 {
     ANN(scene);
     ANN(fig);
@@ -1197,24 +1197,24 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
     DvzPanel* panel = NULL;
     if (_is_drag(ev))
     {
-        panel = dvz_panel_at(fig, ev.content.d.press_pos);
+        panel = dvz_panel_at(fig, ev->content.d.press_pos);
     }
     else
     {
-        panel = dvz_panel_at(fig, ev.pos);
+        panel = dvz_panel_at(fig, ev->pos);
     }
     if (panel == NULL)
     {
         log_debug(
             "no panel found at (%.0f, %.0f) (mouse event type %d)", //
-            ev.pos[0], ev.pos[1], ev.type);
+            ev->pos[0], ev->pos[1], ev->type);
         return;
     }
 
     // Localize the mouse event (viewport offset).
     // NOTE: this function detects whether the press position is in the margins.
     DvzMouseEvent mev =
-        dvz_view_mouse(panel->view, ev, ev.content_scale, DVZ_MOUSE_REFERENCE_LOCAL);
+        dvz_view_mouse(panel->view, *ev, ev->content_scale, DVZ_MOUSE_REFERENCE_LOCAL);
 
     // HACK: we indicate here, in the local mouse event, whether the press position is valid,
     // i.e. whether the press position was NOT within the panel's margins.
@@ -1244,7 +1244,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
             return;
         }
         // Pass the mouse event to the panzoom object.
-        if (dvz_panzoom_mouse(pz, mev))
+        if (dvz_panzoom_mouse(pz, &mev))
         {
             _update_panzoom(panel);
             dvz_transform_update(tr);
@@ -1262,7 +1262,7 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
             return;
         }
         // Pass the mouse event to the ortho object.
-        if (dvz_ortho_mouse(ortho, mev))
+        if (dvz_ortho_mouse(ortho, &mev))
         {
             _update_ortho(panel);
             dvz_transform_update(tr);
@@ -1280,15 +1280,15 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev)
             return;
         }
         // Pass the mouse event to the arcball object.
-        if (dvz_arcball_mouse(arcball, mev))
+        if (dvz_arcball_mouse(arcball, &mev))
         {
             _update_arcball(panel);
         }
 
         // Camera zoom.
-        if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
+        if (ev->type == DVZ_MOUSE_EVENT_WHEEL)
         {
-            _camera_zoom(panel->camera, ev.content.w.dir[1]);
+            _camera_zoom(panel->camera, ev->content.w.dir[1]);
             _update_camera(panel);
         }
 

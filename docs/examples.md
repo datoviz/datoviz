@@ -476,6 +476,7 @@ figure = dvz.figure(scene, 800, 600, 0)
 
 @dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
+    ev = ev.contents
     action = {dvz.KEYBOARD_EVENT_RELEASE: "released",
               dvz.KEYBOARD_EVENT_PRESS: "pressed"}.get(ev.type)
     print(f"{action} key {ev.key} ({dvz.key_name(ev.key)})")
@@ -871,7 +872,7 @@ Scatter plot example
 
 
 // Callback function called at every mouse event (mouse, click, drag...)
-static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
@@ -880,7 +881,7 @@ static void show_arcball_angles(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
         return;
 
     // The user data is passed as last argument in dvz_app_on_mouse().
-    DvzArcball* arcball = (DvzArcball*)ev.user_data;
+    DvzArcball* arcball = (DvzArcball*)ev->user_data;
     ANN(arcball);
 
     // Get the arcball angles and display them.

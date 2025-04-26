@@ -170,14 +170,14 @@ static void _set_strings_2(DvzVisual* visual)
         (cvec4){0, 255, 255, 255}, (vec2){0, 0}, (vec2){0, 0});
 }
 
-static void _switch_strings(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _switch_strings(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
-    VisualTest* vt = (VisualTest*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev->user_data;
     ANN(vt);
 
-    if (ev.type == DVZ_MOUSE_EVENT_CLICK)
+    if (ev->type == DVZ_MOUSE_EVENT_CLICK)
     {
         if (vt->m % 2 == 1)
             _set_strings_1(vt->visual);

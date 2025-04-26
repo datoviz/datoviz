@@ -28,7 +28,7 @@
 /*  Mouse util functions                                                                         */
 /*************************************************************************************************/
 
-static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
+static void _callbacks(DvzMouse* mouse, DvzMouseEvent* event)
 {
     ANN(mouse);
     if (!mouse->callbacks)
@@ -41,8 +41,8 @@ static void _callbacks(DvzMouse* mouse, DvzMouseEvent event)
     for (uint32_t i = 0; i < n; i++)
     {
         payload = (DvzMousePayload*)dvz_list_get(mouse->callbacks, i).p;
-        event.user_data = payload->user_data;
-        if (payload->type == event.type || payload->type == DVZ_MOUSE_EVENT_ALL)
+        event->user_data = payload->user_data;
+        if (payload->type == event->type || payload->type == DVZ_MOUSE_EVENT_ALL)
         {
             payload->callback(mouse, event);
         }
@@ -284,50 +284,46 @@ DvzMouse* dvz_mouse(void)
 
 
 
-DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
+void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_move(mouse, pos, mods);
-    _callbacks(mouse, ev);
-    return ev;
+    _callbacks(mouse, &ev);
 }
 
 
 
-DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
+void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_press(mouse, button, mods);
-    _callbacks(mouse, ev);
-    return ev;
+    _callbacks(mouse, &ev);
 }
 
 
 
-DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
+void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_release(mouse, button, mods);
-    _callbacks(mouse, ev);
-    return ev;
+    _callbacks(mouse, &ev);
 }
 
 
 
-DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
+void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods)
 {
     ANN(mouse);
 
     // This call may change the mouse state, and return an output transition.
     DvzMouseEvent ev = _after_wheel(mouse, dir, mods);
-    _callbacks(mouse, ev);
-    return ev;
+    _callbacks(mouse, &ev);
 }
 
 
@@ -354,47 +350,47 @@ void dvz_mouse_callback(
 
 
 
-void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev)
+void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent* ev)
 {
     ANN(mouse);
     int delay = (int)(1000.0 * DVZ_MOUSE_CLICK_MAX_DELAY / 10.0);
-    switch (ev.type)
+    switch (ev->type)
     {
 
     case DVZ_MOUSE_EVENT_PRESS:
-        dvz_mouse_press(mouse, ev.button, ev.mods);
+        dvz_mouse_press(mouse, ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_RELEASE:
-        dvz_mouse_release(mouse, ev.button, ev.mods);
+        dvz_mouse_release(mouse, ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_CLICK:
-        dvz_mouse_press(mouse, ev.button, ev.mods);
+        dvz_mouse_press(mouse, ev->button, ev->mods);
         dvz_sleep((int)(1000.0 * DVZ_MOUSE_CLICK_MAX_DELAY / 10.0));
-        dvz_mouse_release(mouse, ev.button, ev.mods);
+        dvz_mouse_release(mouse, ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
         // First click.
-        dvz_mouse_press(mouse, ev.button, ev.mods);
+        dvz_mouse_press(mouse, ev->button, ev->mods);
         dvz_sleep(delay);
-        dvz_mouse_release(mouse, ev.button, ev.mods);
+        dvz_mouse_release(mouse, ev->button, ev->mods);
 
         dvz_sleep(delay);
 
         // Second click.
-        dvz_mouse_press(mouse, ev.button, ev.mods);
+        dvz_mouse_press(mouse, ev->button, ev->mods);
         dvz_sleep(delay);
-        dvz_mouse_release(mouse, ev.button, ev.mods);
+        dvz_mouse_release(mouse, ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_MOVE:
-        dvz_mouse_move(mouse, ev.pos, ev.mods);
+        dvz_mouse_move(mouse, ev->pos, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_WHEEL:
-        dvz_mouse_wheel(mouse, ev.content.w.dir, ev.mods);
+        dvz_mouse_wheel(mouse, ev->content.w.dir, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_START:
@@ -404,7 +400,7 @@ void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev)
         break;
 
     default:
-        log_warn("mouse event type #%d not supported", ev.type);
+        log_warn("mouse event type #%d not supported", ev->type);
         break;
     }
 }

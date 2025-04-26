@@ -307,7 +307,7 @@ DVZ_EXPORT void dvz_scene_run(DvzScene* scene, DvzApp* app, uint64_t frame_count
  * @param fig the figure
  * @param ev the mouse event
  */
-DVZ_EXPORT void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent ev);
+DVZ_EXPORT void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev);
 
 
 
@@ -339,9 +339,9 @@ DVZ_EXPORT DvzMouse* dvz_mouse(void);
  * @param mouse the mouse
  * @param pos the cursor position, in pixels
  * @param mods the keyboard modifier flags
- * @returns the generated mouse event
+ * @param[out] ev the generated mouse event
  */
-DVZ_EXPORT DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
+DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
 
 
 
@@ -351,9 +351,9 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
- * @returns the generated mouse event
+ * @param[out] ev the generated mouse event
  */
-DVZ_EXPORT DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
+DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
@@ -363,9 +363,9 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button,
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
- * @returns the generated mouse event
+ * @param[out] ev the generated mouse event
  */
-DVZ_EXPORT DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
+DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
 
 
 
@@ -375,9 +375,9 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_release(DvzMouse* mouse, DvzMouseButton butto
  * @param mouse the mouse
  * @param dir the mouse wheel direction (x, y)
  * @param mods the keyboard modifier flags
- * @returns the generated mouse event
+ * @param[out] ev the generated mouse event
  */
-DVZ_EXPORT DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
+DVZ_EXPORT void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
 
 
 
@@ -387,7 +387,7 @@ DVZ_EXPORT DvzMouseEvent dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
  * @param mouse the mouse
  * @param ev the mouse event
  */
-DVZ_EXPORT void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent ev);
+DVZ_EXPORT void dvz_mouse_event(DvzMouse* mouse, DvzMouseEvent* ev);
 
 
 
@@ -3976,7 +3976,7 @@ DVZ_EXPORT void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, double ymin, doubl
  * @param ev the mouse event
  * @returns whether the panzoom is affected by the mouse event
  */
-DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent ev);
+DVZ_EXPORT bool dvz_panzoom_mouse(DvzPanzoom* pz, DvzMouseEvent* ev);
 
 
 

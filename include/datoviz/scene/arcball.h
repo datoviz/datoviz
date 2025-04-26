@@ -67,7 +67,7 @@ DvzArcball* dvz_arcball(float width, float height, int flags); // inner viewport
 /**
  *
  */
-bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent ev);
+bool dvz_arcball_mouse(DvzArcball* arcball, DvzMouseEvent* ev);
 
 
 

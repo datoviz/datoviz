@@ -32,11 +32,11 @@
 /*  Input callbacks                                                                              */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
+static void _on_mouse(DvzMouse* mouse, DvzMouseEvent* ev)
 {
     ANN(mouse);
 
-    DvzWindow* window = (DvzWindow*)ev.user_data;
+    DvzWindow* window = (DvzWindow*)ev->user_data;
     ANN(window);
 
     // Do not process input events if the window is being captured by ImGui.
@@ -49,11 +49,11 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
     DvzClientEvent cev = {0};
     cev.type = DVZ_CLIENT_EVENT_MOUSE;
     cev.window_id = window->obj.id;
-    cev.content.m = ev;
+    cev.content.m = *ev;
 
     // Content scale, used for mouse event localization.
     if (window->width > 0)
-        ev.content_scale = cev.content_scale = window->framebuffer_width / window->width;
+        ev->content_scale = cev.content_scale = window->framebuffer_width / window->width;
 
     dvz_client_event(client, cev);
 }

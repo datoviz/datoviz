@@ -37,61 +37,61 @@
 /*  Input tests                                                                                  */
 /*************************************************************************************************/
 
-static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
+static void _on_mouse(DvzMouse* mouse, DvzMouseEvent* ev)
 {
     ANN(mouse);
 
-    switch (ev.type)
+    switch (ev->type)
     {
 
     case DVZ_MOUSE_EVENT_CLICK:
         log_debug(
             "mouse click button #%d at (%.1f, %.1f), mods %d", //
-            ev.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev->button, ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DOUBLE_CLICK:
         log_debug(
             "mouse double click button #%d at (%.1f, %.1f), mods %d", //
-            ev.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev->button, ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG:
         log_debug(
             "mouse drag button #%d at (%.1f, %.1f), mods %d", //
-            ev.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev->button, ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_START:
         log_debug(
             "mouse drag start button #%d at (%.1f, %.1f), mods %d", //
-            ev.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev->button, ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_DRAG_STOP:
         log_debug(
             "mouse drag stop button #%d at (%.1f, %.1f), mods %d", //
-            ev.button, ev.pos[0], ev.pos[1], ev.mods);
+            ev->button, ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_MOVE:
         log_debug(
             "mouse move to (%.1f, %.1f), mods %d", //
-            ev.pos[0], ev.pos[1], ev.mods);
+            ev->pos[0], ev->pos[1], ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_PRESS:
-        log_debug("mouse press button #%d, mods %d", ev.button, ev.mods);
+        log_debug("mouse press button #%d, mods %d", ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_RELEASE:
-        log_debug("mouse release button #%d, mods %d", ev.button, ev.mods);
+        log_debug("mouse release button #%d, mods %d", ev->button, ev->mods);
         break;
 
     case DVZ_MOUSE_EVENT_WHEEL:
         log_debug(
             "mouse wheel at (%.1f, %.1f), dir (%.1f, %.1f), mods %d", //
-            ev.pos[0], ev.pos[1], ev.content.w.dir[0], ev.content.w.dir[1], ev.mods);
+            ev->pos[0], ev->pos[1], ev->content.w.dir[0], ev->content.w.dir[1], ev->mods);
         break;
 
     default:

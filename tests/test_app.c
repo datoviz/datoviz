@@ -87,11 +87,11 @@ struct AnimStruct
 /*  App tests                                                                                    */
 /*************************************************************************************************/
 
-static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
-    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    PanzoomStruct* ps = (PanzoomStruct*)ev->user_data;
     ANN(ps);
 
     DvzPanzoom* pz = ps->pz;
@@ -178,11 +178,11 @@ int test_app_scatter(TstSuite* suite)
 
 
 
-static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
-    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ArcballStruct* arc = (ArcballStruct*)ev->user_data;
     ANN(arc);
 
     DvzArcball* arcball = arc->arcball;
@@ -197,40 +197,40 @@ static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
     DvzId mvp_id = arc->mvp_id;
 
     // Dragging: pan.
-    if (ev.type == DVZ_MOUSE_EVENT_DRAG)
+    if (ev->type == DVZ_MOUSE_EVENT_DRAG)
     {
-        if (ev.button == DVZ_MOUSE_BUTTON_LEFT)
+        if (ev->button == DVZ_MOUSE_BUTTON_LEFT)
         {
             float width = arcball->viewport_size[0];
             float height = arcball->viewport_size[1];
 
             vec2 cur_pos, last_pos;
-            cur_pos[0] = -1 + 2 * ev.pos[0] / width;
-            cur_pos[1] = +1 - 2 * ev.pos[1] / height;
-            last_pos[0] = -1 + 2 * ev.content.d.press_pos[0] / width; // press position
-            last_pos[1] = +1 - 2 * ev.content.d.press_pos[1] / height;
+            cur_pos[0] = -1 + 2 * ev->pos[0] / width;
+            cur_pos[1] = +1 - 2 * ev->pos[1] / height;
+            last_pos[0] = -1 + 2 * ev->content.d.press_pos[0] / width; // press position
+            last_pos[1] = +1 - 2 * ev->content.d.press_pos[1] / height;
 
             dvz_arcball_rotate(arcball, cur_pos, last_pos);
         }
-        // else if (ev.button == DVZ_MOUSE_BUTTON_RIGHT)
+        // else if (ev->button == DVZ_MOUSE_BUTTON_RIGHT)
         // {
         // }
     }
 
     // Stop dragging.
-    if (ev.type == DVZ_MOUSE_EVENT_DRAG_STOP)
+    if (ev->type == DVZ_MOUSE_EVENT_DRAG_STOP)
     {
         dvz_arcball_end(arcball);
     }
 
     // // Mouse wheel.
-    // if (ev.type == DVZ_MOUSE_EVENT_WHEEL)
+    // if (ev->type == DVZ_MOUSE_EVENT_WHEEL)
     // {
-    //     dvz_panzoom_zoom_wheel(pz, ev.content.w.dir, ev.content.w.pos);
+    //     dvz_panzoom_zoom_wheel(pz, ev->content.w.dir, ev->content.w.pos);
     // }
 
     // Double-click
-    if (ev.type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
+    if (ev->type == DVZ_MOUSE_EVENT_DOUBLE_CLICK)
     {
         dvz_arcball_reset(arcball);
     }
@@ -485,11 +485,11 @@ int test_app_pixel(TstSuite* suite)
 
 
 
-static void _viewset_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent ev)
+static void _viewset_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
 {
     ANN(app);
 
-    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    PanzoomStruct* ps = (PanzoomStruct*)ev->user_data;
     ANN(ps);
 
     DvzPanzoom* pz = ps->pz;
