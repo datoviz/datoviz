@@ -101,7 +101,8 @@ int test_glyph_1(TstSuite* suite)
 
 
     // Create the atlas.
-    DvzAtlasFont af = dvz_atlas_font(font_size);
+    DvzAtlasFont af = {0};
+    dvz_atlas_font(font_size, &af);
 
     // Upload the atlas texture to the glyph visual.
     dvz_glyph_atlas_font(visual, &af);
@@ -200,7 +201,8 @@ int test_glyph_strings(TstSuite* suite)
 
     // Create the atlas.
     float font_size = 48;
-    DvzAtlasFont af = dvz_atlas_font(font_size);
+    DvzAtlasFont af = {0};
+    dvz_atlas_font(font_size, &af);
     dvz_glyph_atlas_font(visual, &af);
 
     _set_strings_1(visual);

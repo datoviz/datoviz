@@ -53,7 +53,7 @@ dvz_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymin, double ymax,
     ANN(axes);
 
     float font_size = 18;
-    axes->af = dvz_atlas_font(font_size);
+    dvz_atlas_font(font_size, &axes->af);
     axes->axis[DVZ_DIM_X] = dvz_axis(batch, &axes->af, DVZ_DIM_X, 0);
     axes->axis[DVZ_DIM_Y] = dvz_axis(batch, &axes->af, DVZ_DIM_Y, 0);
 

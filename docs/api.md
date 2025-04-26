@@ -317,16 +317,17 @@ Load the default atlas and font.
 === "Python"
 
     ``` python
-    dvz.atlas_font(  # returns: a DvzAtlasFont struct with DvzAtlas and DvzFont objects. (DvzAtlasFont)
+    dvz.atlas_font(
         font_size,  # the font size (float, 32-bit)
+        the,  # returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (LP_DvzAtlasFont)
     )
     ```
 
 === "C"
 
     ``` c
-    DvzAtlasFont dvz_atlas_font(  // returns: a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
-        double font_size,  // the font size
+    void dvz_atlas_font(
+        DvzAtlas* atlas,  // the atlas
     );
     ```
 

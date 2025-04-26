@@ -6465,16 +6465,13 @@ Parameters
 ----------
 font_size : double
     the font size
-
-Returns
--------
-type
-    a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
+the : unknown (out parameter)
+    returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
 """
 atlas_font.argtypes = [
     ctypes.c_double,  # double font_size
+    ctypes.POINTER(DvzAtlasFont),  # DvzAtlasFont* af
 ]
-atlas_font.restype = DvzAtlasFont
 
 # Function dvz_atlas_destroy()
 atlas_destroy = dvz.dvz_atlas_destroy

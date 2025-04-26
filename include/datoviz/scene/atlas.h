@@ -132,14 +132,14 @@ DvzTexture* dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
 
 /**
  */
-DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file);
+void dvz_atlas_export(const char* font_name, const char* output_file, DvzAtlasFont* af);
 
 
 
 /**
  */
 DVZ_EXPORT
-DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name);
+void dvz_atlas_import(const char* font_name, const char* atlas_name, DvzAtlasFont* af);
 
 
 

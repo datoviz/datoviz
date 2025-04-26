@@ -130,7 +130,8 @@ void dvz_demo(void)
     // Create a scene.
     DvzScene* scene = dvz_scene(batch);
 
-    DvzAtlasFont af = dvz_atlas_font(LEGEND_FONT_SIZE);
+    DvzAtlasFont af = {0};
+    dvz_atlas_font(LEGEND_FONT_SIZE, &af);
 
     // Create a figure.
     uint32_t W = 1000;

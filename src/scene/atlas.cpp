@@ -101,11 +101,10 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
-DvzAtlasFont dvz_atlas_font(double font_size)
+void dvz_atlas_font(double font_size, DvzAtlasFont* af)
 {
-    DvzAtlasFont af = dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas");
-    dvz_font_size(af.font, font_size);
-    return af;
+    dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas", af);
+    dvz_font_size(af->font, font_size);
 }
 
 
@@ -578,10 +577,11 @@ deserializeDvzAtlas(DvzAtlas& atlas, unsigned long atlas_size, unsigned char* at
 
 #endif
 
-DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
+void dvz_atlas_export(const char* font_name, const char* output_file, DvzAtlasFont* af)
 {
     ANN(font_name);
     ANN(output_file);
+    ANN(af);
 
     // Load the font ttf bytes.
     unsigned long ttf_size = 0;
@@ -603,19 +603,19 @@ DvzAtlasFont dvz_atlas_export(const char* font_name, const char* output_file)
     // Serialize to a binary file.
     serializeDvzAtlas(*atlas, output_file);
 
-    DvzAtlasFont af = {};
-    af.ttf_size = ttf_size;
-    af.ttf_bytes = ttf_bytes;
-    af.atlas = atlas;
-    af.font = font;
-    return af;
+    af->ttf_size = ttf_size;
+    af->ttf_bytes = ttf_bytes;
+    af->atlas = atlas;
+    af->font = font;
 }
 
 
 
-DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
+void dvz_atlas_import(const char* font_name, const char* atlas_name, DvzAtlasFont* af)
 {
     ANN(atlas_name);
+    ANN(af);
+
     log_debug("importing from font %s, atlas %s", font_name, atlas_name);
 
     // Load the font ttf bytes.
@@ -640,10 +640,8 @@ DvzAtlasFont dvz_atlas_import(const char* font_name, const char* atlas_name)
 
     deserializeDvzAtlas(*atlas, atlas_size, atlas_bytes);
 
-    DvzAtlasFont af = {};
-    af.ttf_size = ttf_size;
-    af.ttf_bytes = ttf_bytes;
-    af.atlas = atlas;
-    af.font = font;
-    return af;
+    af->ttf_size = ttf_size;
+    af->ttf_bytes = ttf_bytes;
+    af->atlas = atlas;
+    af->font = font;
 }

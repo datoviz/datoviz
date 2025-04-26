@@ -71,7 +71,8 @@ int test_axis_1(TstSuite* suite)
     double glyph_size = font_size;
 
     // Create the atlas.
-    DvzAtlasFont af = dvz_atlas_font(font_size);
+    DvzAtlasFont af = {0};
+    dvz_atlas_font(font_size, &af);
 
     // Create the reference frame.
     DvzRef* ref = dvz_ref(0);

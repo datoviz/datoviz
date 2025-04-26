@@ -2230,9 +2230,9 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
  * Load the default atlas and font.
  *
  * @param font_size the font size
- * @returns a DvzAtlasFont struct with DvzAtlas and DvzFont objects.
+ * @param[out] the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
  */
-DVZ_EXPORT DvzAtlasFont dvz_atlas_font(double font_size);
+DVZ_EXPORT void dvz_atlas_font(double font_size, DvzAtlasFont* af);
 
 
 
