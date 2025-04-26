@@ -9871,18 +9871,22 @@ Normalize the array.
 === "Python"
 
     ``` python
-    dvz.normalize_bytes(  # returns: the normalized array (ndpointer_|u1_C_CONTIGUOUS)
+    dvz.normalize_bytes(
+        min_max,  # the minimum and maximum values, mapped to 0 and 255, the result will be clipped (vec2)
         count,  # the number of values (int, 32-bit unsigned)
         values,  # an array of float numbers (ndpointer_<f4_C_CONTIGUOUS)
+        out,  # the out uint8 array (ndpointer_|u1_C_CONTIGUOUS)
     )
     ```
 
 === "C"
 
     ``` c
-    uint8_t* dvz_normalize_bytes(  // returns: the normalized array
+    void dvz_normalize_bytes(
+        vec2 min_max,  // the minimum and maximum values, mapped to 0 and 255, the result will be clipped
         uint32_t count,  // the number of values
         float* values,  // an array of float numbers
+        uint8_t* out,  // the out uint8 array
     );
     ```
 

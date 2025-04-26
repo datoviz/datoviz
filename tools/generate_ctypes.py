@@ -18,11 +18,6 @@ SPDX-License-Identifier: MIT
 # WARNING: DO NOT EDIT: automatically-generated file
 '''.lstrip()
 
-INIT_HEADER = '''
-from .clib import *
-from .wrapper import App
-'''
-
 EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
@@ -234,7 +229,7 @@ def convert_javadoc_to_numpy(javadoc_str, func_info):
     return numpy_doc.strip()
 
 
-def generate_ctypes_bindings(headers_json_path, init_path, output_path, version_path):
+def generate_ctypes_bindings(headers_json_path, output_path, version_path):
     version = extract_version(version_path)
 
     with open(headers_json_path, 'r') as file:
@@ -379,14 +374,6 @@ def generate_ctypes_bindings(headers_json_path, init_path, output_path, version_
             forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
-    # Write the __init__.py file.
-    with open(init_path, 'w') as file:
-        file.write(HEADER)
-        file.write(INIT_HEADER)
-        file.write(dedent(f'''
-        __version__ = "{version}"
-        '''))
-
     # Write the clib.py file.
     with open(output_path, 'w') as file:
         def _include_py(file, filename, skip=4):
@@ -396,6 +383,9 @@ def generate_ctypes_bindings(headers_json_path, init_path, output_path, version_
                 file.write(f.read())
 
         file.write(HEADER)
+        file.write(dedent(f'''
+        __version__ = "{version}"
+        '''))
         _include_py(file, "ctypes_header.py")
 
         # Color type.
@@ -412,8 +402,7 @@ def generate_ctypes_bindings(headers_json_path, init_path, output_path, version_
 
 if __name__ == "__main__":
     headers_json_path = ROOT_DIR / 'tools/headers.json'
-    init_path = ROOT_DIR / 'datoviz/__init__.py'
     output_path = ROOT_DIR / 'datoviz/clib.py'
     version_path = ROOT_DIR / 'include/datoviz_version.h'
 
-    generate_ctypes_bindings(headers_json_path, init_path, output_path, version_path)
+    generate_ctypes_bindings(headers_json_path, output_path, version_path)

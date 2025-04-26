@@ -145,13 +145,12 @@ inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
 
 
 
-inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
+inline void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uint8_t* out)
 {
     ASSERT(count > 0);
     ANN(values);
+    ANN(out);
 
-    vec2 min_max = {0};
-    dvz_min_max(count, values, min_max);
     float m = min_max[0];
     float M = min_max[1];
     if (m == M)
@@ -159,14 +158,13 @@ inline uint8_t* dvz_normalize_bytes(uint32_t count, float* values)
     ASSERT(m < M);
     float d = 1. / (M - m);
 
-    uint8_t* out = (uint8_t*)malloc(count * sizeof(uint8_t));
-
+    float x = 0;
     for (uint32_t i = 0; i < count; i++)
     {
-        out[i] = round((values[i] - m) * d * 255);
+        x = (values[i] - m) * d;
+        x = CLIP(x, 0, 1);
+        out[i] = round(x * 255);
     }
-
-    return out;
 }
 
 

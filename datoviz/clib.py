@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 # WARNING: DO NOT EDIT: automatically-generated file
 
+__version__ = "0.2.4-dev"
+
 
 # ===============================================================================
 # Imports
@@ -13,7 +15,6 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from ctypes import POINTER as P_
-from ctypes import c_char_p
 import faulthandler
 import os
 import pathlib
@@ -24,8 +25,6 @@ from enum import IntEnum
 
 try:
     import numpy as np
-    from numpy import float32
-    from numpy.ctypeslib import as_ctypes_type as _ctype
     from numpy.ctypeslib import ndpointer as ndpointer_
 except ImportError:
     float32 = object
@@ -230,26 +229,6 @@ class Out:
 # Array wrappers
 # ===============================================================================
 
-def array_pointer(x, dtype=None):
-    if not isinstance(x, np.ndarray):
-        return x
-    dtype = dtype or x.dtype
-    if not x.flags.c_contiguous:
-        print(
-            f"Warning: array is not C contiguous, ensure your array is in row-major (C) order "
-            "to avoid potential issues"
-        )
-    if dtype and x.dtype != dtype:
-        x = x.astype(dtype)
-    return x.ctypes.data_as(P_(_ctype(dtype)))
-
-
-def pointer_array(pointer, length, n_components, dtype=np.float32):
-    np_array = np.ctypeslib.as_array(pointer, shape=(length,))
-    np_array = np_array.view(dtype=dtype).reshape(length, n_components)
-    return np_array
-
-
 # HACK: accept None ndarrays as arguments, see https://stackoverflow.com/a/37664693/1595060
 def ndpointer(*args, **kwargs):
     ndim = kwargs.pop("ndim", None)
@@ -275,22 +254,6 @@ def ndpointer(*args, **kwargs):
         return out
 
     return type(base.__name__, (base,), {"from_param": from_param})
-
-
-def char_pointer(s):
-    if isinstance(s, list):
-        return (c_char_p * len(s))(*[c_char_p(str(_).encode("utf-8")) for _ in s])
-    return str(s).encode("utf-8")
-
-
-def pointer_image(rgb, width, height, n_channels=3):
-    """
-    Return a NumPy array of uint8 with shape (height, width, n_channels=3) from an ndpointer
-    referring to a C pointer to a buffer of RGB uint8 values.
-    """
-    c_ptr = ctypes.cast(rgb.value, ctypes.POINTER(ctypes.c_ubyte))
-    arr = np.ctypeslib.as_array(c_ptr, shape=(height, width, n_channels))
-    return arr
 
 
 # ===============================================================================
@@ -376,64 +339,6 @@ class VkCommandBuffer(ctypes.Structure):
 
 DEFAULT_CLEAR_COLOR = cvec4()
 DEFAULT_VIEWPORT = vec2()
-
-from_array = array_pointer
-from_pointer = pointer_array
-
-
-# ===============================================================================
-# Helpers
-# ===============================================================================
-
-def get_version():
-    return {
-        'ctypes_wrapper': __version__,
-        'libdatoviz': version().decode('utf-8'),
-    }
-
-
-def from_enum(enum_cls, value):
-    for name, val in enum_cls.__dict__.items():
-        if not name.startswith("_") and isinstance(val, int) and val == value:
-            return name
-    return None
-
-
-def to_enum(enumstr):
-    return globals().get(enumstr.upper())
-
-
-def key_name(key_code):
-    name = from_enum(KeyCode, key_code)
-    name = name.replace("DVZ_KEY_", "")
-    return name
-
-
-def button_name(button):
-    name = from_enum(MouseButton, button)
-    name = name.replace("DVZ_MOUSE_BUTTON_", "")
-    return name
-
-
-def cmap(cm, values, vmin=0.0, vmax=10.):
-    values = np.asanyarray(values, dtype=np.float32)
-    # shape = values.shape
-    n = values.size
-    colors = np.full((n, 4), 255, dtype=np.uint8)
-    colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
-    return colors
-
-
-def merge_shapes(shapes):
-    return shape_merge(len(shapes), (Shape * len(shapes))(*shapes))
-
-
-def to_byte(arr, vmin, vmax):
-    assert vmin < vmax
-    normalized = (arr - vmin) * 1. / (vmax - vmin)
-    normalized = np.clip(normalized, 0, 1)
-    normalized *= 255
-    return normalized.astype(np.uint8)
 DVZ_ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
 DvzColor = cvec4
@@ -11260,21 +11165,21 @@ Normalize the array.
 
 Parameters
 ----------
+min_max : vec2
+    the minimum and maximum values, mapped to 0 and 255, the result will be clipped
 count : uint32_t
     the number of values
 values : float*
     an array of float numbers
-
-Returns
--------
-type
-    the normalized array
+out : uint8_t*
+    the out uint8 array
 """
 normalize_bytes.argtypes = [
+    vec2,  # vec2 min_max
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* values
+    ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint8_t* out
 ]
-normalize_bytes.restype = ndpointer(dtype=np.uint8, ndim=1, ncol=1, flags="C_CONTIGUOUS")
 
 # Function dvz_range()
 range = dvz.dvz_range

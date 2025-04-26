@@ -611,11 +611,12 @@ DVZ_EXPORT void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max);
 /**
  * Normalize the array.
  *
+ * @param min_max the minimum and maximum values, mapped to 0 and 255, the result will be clipped
  * @param count the number of values
  * @param values an array of float numbers
- * @returns the normalized array
+ * @param out the out uint8 array
  */
-DVZ_EXPORT uint8_t* dvz_normalize_bytes(uint32_t count, float* values);
+DVZ_EXPORT void dvz_normalize_bytes(vec2 min_max, uint32_t count, float* values, uint8_t* out);
 
 
 
