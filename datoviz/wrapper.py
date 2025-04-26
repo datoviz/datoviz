@@ -61,7 +61,7 @@ PROPS = {
         'aspect': {'type': 'enum', 'enum': 'DVZ_MARKER_ASPECT'},
         'shape': {'type': 'enum', 'enum': 'DVZ_MARKER_SHAPE'},
 
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
     'segment': {
@@ -96,7 +96,7 @@ PROPS = {
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
 
         'bgcolor': {'type': dvz.vec4},
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
     'image': {
@@ -112,7 +112,7 @@ PROPS = {
         'ardius': {'type': float},
         'colormap': {'type': 'enum', 'enum': 'DVZ_CMAP'},
 
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
     'mesh': {
@@ -133,7 +133,7 @@ PROPS = {
         'linewidth': {'type': float},
         'density': {'type': int},
 
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
     'sphere': {
@@ -150,14 +150,14 @@ PROPS = {
         'permutation': {'type': dvz.ivec3},
         'slice': {'type': int},
         'transfer': {'type': dvz.vec4},
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
     'slice': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
         'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
         'alpha': {'type': float},
-        'tex': {'type': 'tex'},
+        'texture': {'type': 'texture'},
     },
 
 }
@@ -223,29 +223,30 @@ class App:
     # Objects
     # ---------------------------------------------------------------------------------------------
 
-    def tex(self,
-            image: np.ndarray = None,
-            ndim: int = 2,
-            shape: tuple = None,
-            n_channels: int = None,
-            dtype: np.dtype = None,
-            interpolation: str = 'nearest',
-            address_mode: str = 'clamp_to_border',
-            ):
+    def texture(self,
+                image: np.ndarray = None,
+                ndim: int = 2,
+                shape: tuple = None,
+                n_channels: int = None,
+                dtype: np.dtype = None,
+                interpolation: str = 'nearest',
+                address_mode: str = 'clamp_to_border',
+                ):
         if image is not None:
             shape = shape or image.shape[:ndim]
             n_channels = n_channels or (image.shape[-1] if ndim == image.ndim - 1 else 1)
             dtype = dtype or image.dtype
-        format = dtype_to_format(dtype)
+        c_format = dtype_to_format(dtype)
         shape = dvz.uvec3(*shape)
-        tex = dvz.create_tex(self.c_batch, getattr(dvz, f'TEX_{ndim}D'), format, shape, 0).id
-        return Tex(tex, interpolation=interpolation, address_mode=address_mode)
-
-    def sampler(self, interpolation, address_mode):
+        texture = dvz.texture(self.c_batch, getattr(dvz, f'TEX_{ndim}D'), 0)
         c_filter = dvz.to_enum(f'filter_{interpolation}')
         c_address_mode = dvz.to_enum(f'sampler_address_mode_{address_mode}')
-        sampler = dvz.create_sampler(self.c_batch, c_filter, c_address_mode).id
-        return sampler
+        dvz.texture_format(texture, c_format)
+        dvz.texture_filter(texture, c_filter)
+        dvz.texture_address_mode(texture, c_address_mode)
+        if image is not None:
+            dvz.texture_data(texture, image)
+        return Texture(texture)
 
     # Visuals
     # ---------------------------------------------------------------------------------------------
@@ -411,11 +412,10 @@ class Visual:
                 values = (value,)
 
             # texture
-            elif prop_type == 'tex':
+            elif prop_type == 'texture':
                 if isinstance(value, np.ndarray):
-                    tex = self.app.tex(value)
-                c_sampler = self.app.sampler(tex.interpolation, tex.address_mode)
-                values = (tex.c_tex, c_sampler)
+                    texture = self.app.texture(value)
+                values = (texture.c_tex, texture.c_sampler)
 
             elif prop_type in VEC_TYPES:
                 assert hasattr(value, '__len__')
@@ -533,19 +533,15 @@ class Prop:
         self.set(offset, length, pvalue)
 
 
-class Tex:
+class Texture:
     c_tex: dvz.DvzId = None
-    interpolation: str = DEFAULT_INTERPOLATION
-    address_mode: str = DEFAULT_ADDRESS_MODE
+    c_sampler: dvz.DvzId = None
 
-    def __init__(
-            self, c_tex: dvz.DvzId = None,
-            interpolation=DEFAULT_INTERPOLATION,
-            address_mode=DEFAULT_ADDRESS_MODE):
+    def __init__(self, c_tex: dvz.DvzId = None, c_sampler: dvz.DvzId = None):
         assert c_tex is not None
+        assert c_sampler is not None
         self.c_tex = c_tex
-        self.interpolation = interpolation
-        self.address_mode = address_mode
+        self.c_sampler = c_sampler
 
 
 # -------------------------------------------------------------------------------------------------
