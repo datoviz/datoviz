@@ -214,7 +214,8 @@ def convert_javadoc_to_numpy(javadoc_str, func_info):
     # Start building the NumPy-style docstring
     numpy_doc = f"{description}\n\n"
 
-    args = {item['name']: item['dtype'] for item in func_info['args']}
+    args = {item['name']: item['dtype']
+            for item in func_info['args'] if not item.get('varargs', False)}
     if params:
         numpy_doc += "Parameters\n----------\n"
         for out, param, desc in params:
@@ -346,6 +347,9 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
                         ndpointer = arg["name"] == 'data'
                     else:
                         ndpointer = True
+
+                    if arg.get('varargs', False):
+                        continue
 
                     mtype = map_type(
                         arg["dtype"],

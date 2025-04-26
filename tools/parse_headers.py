@@ -199,12 +199,10 @@ def parse_functions(text):
     inline = Keyword("inline")
     dtype = Word(alphanums + "_*")
     identifier = Word(alphanums, alphanums + "_")
-    argDecl = Group(
-        Optional(const("const")) +
-        Optional(unsigned("unsigned")) +
-        dtype("dtype") +
-        Optional(identifier("name")
-                 ) + Optional(COMMA))
+    ellipsis = Literal("...")("ellipsis")
+    argType = Optional(const("const")) + Optional(unsigned("unsigned")) + \
+        dtype("dtype") + Optional(identifier("name"))
+    argDecl = Group((argType | ellipsis)) + Optional(COMMA)
     args = Group(ZeroOrMore(argDecl))
     # NOTE: make DVZ_EXPORT mandatory to avoid parsing non-functions such as DvzErrorCallback
     # in datoviz_macros.h
@@ -227,6 +225,8 @@ def parse_functions(text):
             b = Bunch(
                 dtype=entry.dtype,
                 name=entry.name)
+            if entry.ellipsis:
+                b.varargs = True
             if entry.const:
                 b.const = entry.const
             if entry.name in out_params:

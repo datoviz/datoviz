@@ -96,6 +96,7 @@ dvz_gui_moving
 dvz_gui_node
 dvz_gui_pop
 dvz_gui_pos
+dvz_gui_progress
 dvz_gui_resized
 dvz_gui_resizing
 dvz_gui_selectable
@@ -103,6 +104,7 @@ dvz_gui_size
 dvz_gui_slider
 dvz_gui_style
 dvz_gui_table
+dvz_gui_text
 dvz_gui_textbox
 dvz_gui_tree
 dvz_gui_viewport

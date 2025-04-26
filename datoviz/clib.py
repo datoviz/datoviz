@@ -10212,6 +10212,20 @@ gui_begin.argtypes = [
     ctypes.c_int,  # int flags
 ]
 
+# Function dvz_gui_text()
+gui_text = dvz.dvz_gui_text
+gui_text.__doc__ = """
+Add a text item in a dialog.
+
+Parameters
+----------
+fmt : char*
+    the format string
+"""
+gui_text.argtypes = [
+    CStringBuffer,  # char* fmt
+]
+
 # Function dvz_gui_textbox()
 gui_textbox = dvz.dvz_gui_textbox
 gui_textbox.__doc__ = """
@@ -10345,6 +10359,29 @@ gui_dropdown.argtypes = [
     ctypes.c_int,  # int flags
 ]
 gui_dropdown.restype = ctypes.c_bool
+
+# Function dvz_gui_progress()
+gui_progress = dvz.dvz_gui_progress
+gui_progress.__doc__ = """
+Add a progress widget.
+
+Parameters
+----------
+fraction : float
+    the fraction between 0 and 1
+width : float
+    the widget width
+height : float
+    the widget height
+fmt : char*
+    the format string
+"""
+gui_progress.argtypes = [
+    ctypes.c_float,  # float fraction
+    ctypes.c_float,  # float width
+    ctypes.c_float,  # float height
+    CStringBuffer,  # char* fmt
+]
 
 # Function dvz_gui_image()
 gui_image = dvz.dvz_gui_image
