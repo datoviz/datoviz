@@ -101,6 +101,7 @@ dvz.panel_update(panel)
 
 @dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
+    ev = ev.contents
     global eye
 
     # Camera movement offset.

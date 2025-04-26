@@ -11660,33 +11660,29 @@ view : mat4
     the view matrix
 proj : mat4
     the projection matrix
-
-Returns
--------
-type
+mvp : DvzMVP* (out parameter)
     the MVP structure
 """
 mvp.argtypes = [
     mat4,  # mat4 model
     mat4,  # mat4 view
     mat4,  # mat4 proj
+    Out,  # out DvzMVP* mvp
 ]
-mvp.restype = DvzMVP
 
 # Function dvz_mvp_default()
 mvp_default = dvz.dvz_mvp_default
 mvp_default.__doc__ = """
 Return a default DvzMVP struct
 
-
-Returns
--------
-type
+Parameters
+----------
+mvp : DvzMVP* (out parameter)
     the DvzMVP struct
 """
 mvp_default.argtypes = [
+    Out,  # out DvzMVP* mvp
 ]
-mvp_default.restype = DvzMVP
 
 # Function dvz_viewport_default()
 viewport_default = dvz.dvz_viewport_default

@@ -432,7 +432,8 @@ void dvz_panel_mvp(DvzPanel* panel, DvzMVP* mvp)
 void dvz_panel_mvpmat(DvzPanel* panel, mat4 model, mat4 view, mat4 proj)
 {
     ANN(panel);
-    DvzMVP mvp = dvz_mvp(model, view, proj);
+    DvzMVP mvp = {0};
+    dvz_mvp(model, view, proj, &mvp);
     dvz_panel_mvp(panel, &mvp);
 }
 

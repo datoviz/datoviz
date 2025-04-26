@@ -30,7 +30,8 @@
 int test_mvp_1(TstSuite* suite)
 {
     ANN(suite);
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     vec4 p = {1, 0, 0, 1};
     vec4 out = {0};
 

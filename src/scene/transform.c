@@ -42,7 +42,8 @@ DvzTransform* dvz_transform(DvzBatch* batch, int flags)
     dvz_batch_desc(batch, "MVP");
 
     // Initialize the MVP on initialization.
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     dvz_transform_set(tr, &mvp);
     dvz_transform_update(tr);
 

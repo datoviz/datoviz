@@ -23,24 +23,22 @@
 /*  MVP functions                                                                                */
 /*************************************************************************************************/
 
-DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj)
+void dvz_mvp(mat4 model, mat4 view, mat4 proj, DvzMVP* mvp)
 {
-    DvzMVP mvp = {0};
-    glm_mat4_copy(model, mvp.model);
-    glm_mat4_copy(view, mvp.view);
-    glm_mat4_copy(proj, mvp.proj);
-    return mvp;
+    ANN(mvp);
+    glm_mat4_copy(model, mvp->model);
+    glm_mat4_copy(view, mvp->view);
+    glm_mat4_copy(proj, mvp->proj);
 }
 
 
 
-DvzMVP dvz_mvp_default(void)
+void dvz_mvp_default(DvzMVP* mvp)
 {
-    DvzMVP mvp = {0};
-    glm_mat4_identity(mvp.model);
-    glm_mat4_identity(mvp.view);
-    glm_mat4_identity(mvp.proj);
-    return mvp;
+    ANN(mvp);
+    glm_mat4_identity(mvp->model);
+    glm_mat4_identity(mvp->view);
+    glm_mat4_identity(mvp->proj);
 }
 
 

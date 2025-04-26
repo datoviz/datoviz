@@ -60,7 +60,8 @@ int test_panzoom_1(TstSuite* suite)
     ANN(suite);
 
     DvzPanzoom* pz = dvz_panzoom(WIDTH, HEIGHT, 0);
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
 
     // Test pan.
     {

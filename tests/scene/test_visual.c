@@ -50,7 +50,8 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
 
     // MVP.
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     dvz_visual_mvp(visual, &mvp);
 
     // Viewport.

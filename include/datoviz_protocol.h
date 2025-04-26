@@ -105,18 +105,18 @@ DVZ_EXPORT void dvz_requester_destroy(DvzRequester* rqr);
  * @param model the model matrix
  * @param view the view matrix
  * @param proj the projection matrix
- * @returns the MVP structure
+ * @param[out] mvp the MVP structure
  */
-DVZ_EXPORT DvzMVP dvz_mvp(mat4 model, mat4 view, mat4 proj);
+DVZ_EXPORT void dvz_mvp(mat4 model, mat4 view, mat4 proj, DvzMVP* mvp);
 
 
 
 /**
  * Return a default DvzMVP struct
  *
- * @returns the DvzMVP struct
+ * @param[out] mvp the DvzMVP struct
  */
-DVZ_EXPORT DvzMVP dvz_mvp_default(void);
+DVZ_EXPORT void dvz_mvp_default(DvzMVP* mvp);
 
 
 

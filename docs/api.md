@@ -10772,20 +10772,22 @@ Create a MVP structure.
 === "Python"
 
     ``` python
-    dvz.mvp(  # returns: the MVP structure (DvzMVP)
+    dvz.mvp(
         model,  # the model matrix (mat4)
         view,  # the view matrix (mat4)
         proj,  # the projection matrix (mat4)
+        mvp,  # the MVP structure (Out)
     )
     ```
 
 === "C"
 
     ``` c
-    DvzMVP dvz_mvp(  // returns: the MVP structure
+    void dvz_mvp(
         mat4 model,  // the model matrix
         mat4 view,  // the view matrix
         mat4 proj,  // the projection matrix
+        DvzMVP* mvp,  // the MVP structure
     );
     ```
 
@@ -10796,13 +10798,17 @@ Return a default DvzMVP struct
 === "Python"
 
     ``` python
-    dvz.mvp_default()  # returns: the DvzMVP struct (DvzMVP)
+    dvz.mvp_default(
+        mvp,  # the DvzMVP struct (Out)
+    )
     ```
 
 === "C"
 
     ``` c
-    DvzMVP dvz_mvp_default();  // returns: the DvzMVP struct
+    void dvz_mvp_default(
+        DvzMVP* mvp,  // the DvzMVP struct
+    );
     ```
 
 ### `dvz_record_begin()`

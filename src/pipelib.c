@@ -30,7 +30,8 @@ static DvzDat* _make_dat_mvp(DvzContext* ctx)
     DvzDat* dat_mvp = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), 0);
     ANN(dat_mvp);
 
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     // TODO OPTIM: not wait here but later at the end of the pipelib graphics creation
     // will need dvz_resources_wait()
     dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);

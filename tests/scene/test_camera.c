@@ -38,7 +38,8 @@ int test_camera_1(TstSuite* suite)
     ANN(suite);
     DvzCamera* camera = dvz_camera(WIDTH, HEIGHT, 0);
 
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     dvz_camera_mvp(camera, &mvp);
 
     dvz_camera_print(camera);

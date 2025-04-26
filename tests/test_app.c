@@ -107,7 +107,7 @@ static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
         return;
 
     // Update the MVP matrices.
-    *mvp = dvz_mvp_default();
+    dvz_mvp_default(mvp);
     dvz_panzoom_mvp(pz, mvp);
 
     // This batch will be destroyed automatically in the event loop by the presenter.
@@ -326,8 +326,8 @@ int test_app_arcball(TstSuite* suite)
         .mvp_id = wrapper.mvp_id,
         .arcball = arcball,
         .cam = camera,
-        .mvp = dvz_mvp_default(),
     };
+    dvz_mvp_default(&arc.mvp);
     dvz_camera_mvp(camera, &arc.mvp); // set the view and proj matrices
 
     // Submit a dat upload request with the new MVP matrices.
@@ -449,7 +449,8 @@ int test_app_pixel(TstSuite* suite)
     // Manual setting of common bindings.
 
     // MVP.
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     dvz_visual_mvp(pixel, &mvp);
 
     // Viewport.

@@ -261,7 +261,8 @@ int test_loop_cube(TstSuite* suite)
     // Create a MVP dat manually.
     DvzDat* dat_mvp =
         dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzMVP), DVZ_DAT_FLAGS_PERSISTENT_STAGING);
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     dvz_dat_upload(dat_mvp, 0, sizeof(mvp), &mvp, true);
     dvz_pipe_dat(pipe, 0, dat_mvp);
 

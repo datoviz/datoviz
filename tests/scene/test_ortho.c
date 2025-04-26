@@ -57,7 +57,8 @@ int test_ortho_1(TstSuite* suite)
     ANN(suite);
 
     DvzOrtho* ortho = dvz_ortho(WIDTH, HEIGHT, 0);
-    DvzMVP mvp = dvz_mvp_default();
+    DvzMVP mvp = {0};
+    dvz_mvp_default(&mvp);
     float a = (float)WIDTH / HEIGHT;
 
     // Test pan.

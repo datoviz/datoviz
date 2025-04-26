@@ -43,7 +43,9 @@
 
 #define TRIANGLE_VERTICES                                                                         \
     {                                                                                             \
-        {{-1, +1, 0}, {1, 0, 0, 1}}, {{+1, +1, 0}, {0, 1, 0, 1}}, {{+0, -1, 0}, {0, 0, 1, 1}},    \
+        {{-1, +1, 0}, {1, 0, 0, 1}},                                                              \
+        {{+1, +1, 0}, {0, 1, 0, 1}},                                                              \
+        {{+0, -1, 0}, {0, 0, 1, 1}},                                                              \
     }
 
 
@@ -394,7 +396,7 @@ graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, in
 
     req = dvz_bind_dat(batch, wrapper->graphics_id, 0, wrapper->mvp_id, 0);
 
-    wrapper->mvp = dvz_mvp_default();
+    dvz_mvp_default(&wrapper->mvp);
     req = dvz_upload_dat(batch, wrapper->mvp_id, 0, sizeof(DvzMVP), &wrapper->mvp, 0);
 
     // Binding #1: viewport.

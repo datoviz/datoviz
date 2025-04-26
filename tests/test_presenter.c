@@ -234,7 +234,8 @@ int test_presenter_2(TstSuite* suite)
         mvp_id = req.id;
         req = dvz_bind_dat(batch, graphics_id, 0, mvp_id, 0);
 
-        DvzMVP mvp = dvz_mvp_default();
+        DvzMVP mvp = {0};
+        dvz_mvp_default(&mvp);
         // dvz_show_base64(sizeof(mvp), &mvp);
         req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
@@ -815,7 +816,8 @@ int test_presenter_multi(TstSuite* suite)
         req = dvz_bind_dat(batch, graphics_id_0, 0, mvp_id, 0);
         req = dvz_bind_dat(batch, graphics_id_1, 0, mvp_id, 0);
 
-        DvzMVP mvp = dvz_mvp_default();
+        DvzMVP mvp = {0};
+        dvz_mvp_default(&mvp);
         // dvz_show_base64(sizeof(mvp), &mvp);
         req = dvz_upload_dat(batch, mvp_id, 0, sizeof(DvzMVP), &mvp, 0);
 
