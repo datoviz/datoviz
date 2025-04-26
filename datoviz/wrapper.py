@@ -69,8 +69,7 @@ PROPS = {
         'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
         'linewidth': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
-
-        'cap': {'type': 'enum', 'enum': 'DVZ_CAP'},
+        'cap': {'type': np.ndarray, 'dtype': np.int32, 'shape': (-1,)},
     },
 
     'path': {
@@ -317,6 +316,42 @@ class App:
 
         return visual
 
+    def segment(
+            self,
+            initial: np.ndarray = None,
+            terminal: np.ndarray = None,
+            shift: np.ndarray = None,
+            color: np.ndarray = None,
+            linewidth: np.ndarray = None,
+            cap_initial: np.ndarray = None,
+            cap_terminal: np.ndarray = None,
+    ):
+
+        c_visual = dvz.segment(self.c_batch, 0)
+        visual = Visual(self, c_visual, 'segment')
+
+        class SegmentProp(Prop):
+            def prepare_data(self, value):
+                initial, terminal = value
+                pinitial, size = super().prepare_data(initial)
+                pterminal, size = super().prepare_data(terminal)
+                return (pinitial, pterminal), size
+
+            def set(self, offset, length, pvalue, flags: int = 0):
+                initial, terminal = pvalue
+                self.call(self.visual.c_visual, offset, length, initial, terminal, 0)
+
+        visual.set_prop_class('position', SegmentProp)
+        visual.set_prop_class('cap', SegmentProp)
+
+        visual.position[:] = (initial, terminal)
+        visual.shift[:] = shift
+        visual.color[:] = color
+        visual.linewidth[:] = linewidth
+        visual.cap[:] = (cap_initial, cap_terminal)
+
+        return visual
+
 
 # -------------------------------------------------------------------------------------------------
 # Figure
@@ -383,7 +418,8 @@ class Visual:
             prop_cls = self._prop_classes.get(prop_name, Prop)
             return prop_cls(self, prop_name)
         else:
-            raise Exception(f"Prop '{prop_name}' is not a valid array property for visual {self}")
+            raise Exception(
+                f"Prop '{prop_name}' is not a valid array property for visual {self.visual_name}")
 
     def __setattr__(self, prop_name: str, value: object):
         # handle visual.prop = value
@@ -578,17 +614,20 @@ if __name__ == '__main__':
     panel = fig.panel()
     panzoom = panel.panzoom()
 
-    n = 1_000
+    n = 100
     position = np.random.normal(size=(n, 3), scale=.25)
+    position_2 = np.random.normal(size=(n, 3), scale=.25)
     color = np.random.randint(size=(n, 4), low=100, high=255)
     size = np.random.uniform(size=(n,), low=20, high=40)
 
-    visual = app.marker(
-        position=position, color=color, size=size,
-        shape='asterisk',
-        edgecolor=(255, 255, 255, 255),
-        linewidth=1.0,
-        aspect='outline')
+    visual = app.segment(
+        initial=position,
+        terminal=position_2,
+        color=color,
+        linewidth=20.0,
+        cap_initial=2,
+        cap_terminal=3,
+    )
 
     panel.add(visual)
     app.run()
