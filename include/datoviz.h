@@ -1527,7 +1527,7 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color);
  * @param row_count number of rows
  * @param col_count number of cols
  * @param heights a pointer to row_count*col_count height values (floats)
- * @param colors a pointer to row_count*col_count color values (cvec4 or vec4)
+ * @param colors a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4)
  * @param o the origin
  * @param u the unit vector parallel to each column
  * @param v the unit vector parallel to each row
@@ -2520,7 +2520,7 @@ dvz_glyph_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* val
  * @param visual the visual
  * @param bgcolor the background color
  */
-DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
+DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, DvzColor bgcolor);
 
 
 
@@ -4380,7 +4380,7 @@ DVZ_EXPORT void dvz_gui_size(vec2 size);
  * @param color the color
  *
  */
-DVZ_EXPORT void dvz_gui_color(int type, cvec4 color);
+DVZ_EXPORT void dvz_gui_color(int type, DvzColor color);
 
 
 

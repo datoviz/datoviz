@@ -531,7 +531,7 @@ void dvz_gui_size(vec2 size)
 
 
 
-void dvz_gui_color(int type, cvec4 color)
+void dvz_gui_color(int type, DvzColor color)
 {
     ImGui::PushStyleColor(type, IM_COL32(color[0], color[1], color[2], color[3]));
 }

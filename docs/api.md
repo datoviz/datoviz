@@ -1509,7 +1509,7 @@ Set the glyph background color.
     ``` python
     dvz.glyph_bgcolor(
         visual,  # the visual (LP_DvzVisual)
-        bgcolor,  # the background color (vec4)
+        bgcolor,  # the background color (cvec4)
     )
     ```
 
@@ -1518,7 +1518,7 @@ Set the glyph background color.
     ``` c
     void dvz_glyph_bgcolor(
         DvzVisual* visual,  // the visual
-        vec4 bgcolor,  // the background color
+        DvzColor bgcolor,  // the background color
     );
     ```
 
@@ -1982,7 +1982,7 @@ Set the color of an element.
     ``` c
     void dvz_gui_color(
         int type,  // the element type for which to change the color
-        cvec4 color,  // the color
+        DvzColor color,  // the color
     );
     ```
 
@@ -2264,6 +2264,32 @@ Set the position of the next GUI dialog.
     );
     ```
 
+### `dvz_gui_progress()`
+
+Add a progress widget.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_progress(
+        fraction,  # the fraction between 0 and 1 (float, 64-bit)
+        width,  # the widget width (float, 64-bit)
+        height,  # the widget height (float, 64-bit)
+        fmt,  # the format string (CStringBuffer)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_gui_progress(
+        float fraction,  // the fraction between 0 and 1
+        float width,  // the widget width
+        float height,  // the widget height
+        char* fmt,  // the format string
+    );
+    ```
+
 ### `dvz_gui_resized()`
 
 Return whether a dialog has just been resized.
@@ -2411,6 +2437,26 @@ Display a table with selectable rows.
         char** labels,  // all cell labels
         bool* selected,  // a pointer to an array of boolean indicated which rows are selected
         int flags,  // the Dear ImGui flags
+    );
+    ```
+
+### `dvz_gui_text()`
+
+Add a text item in a dialog.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_text(
+        fmt,  # the format string (CStringBuffer)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_gui_text(
+        char* fmt,  // the format string
     );
     ```
 
@@ -7285,7 +7331,7 @@ Create a grid shape.
         row_count,  # number of rows (int, 32-bit unsigned)
         col_count,  # number of cols (int, 32-bit unsigned)
         heights,  # a pointer to row_count*col_count height values (floats) (ndpointer_<f4_C_CONTIGUOUS)
-        colors,  # a pointer to row_count*col_count color values (cvec4 or vec4) (ndpointer_|u1_C_CONTIGUOUS)
+        colors,  # a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4) (ndpointer_|u1_C_CONTIGUOUS)
         o,  # the origin (vec3)
         u,  # the unit vector parallel to each column (vec3)
         v,  # the unit vector parallel to each row (vec3)
@@ -7300,7 +7346,7 @@ Create a grid shape.
         uint32_t row_count,  // number of rows
         uint32_t col_count,  // number of cols
         float* heights,  // a pointer to row_count*col_count height values (floats)
-        DvzColor* colors,  // a pointer to row_count*col_count color values (cvec4 or vec4)
+        DvzColor* colors,  // a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4)
         vec3 o,  // the origin
         vec3 u,  // the unit vector parallel to each column
         vec3 v,  // the unit vector parallel to each row

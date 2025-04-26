@@ -5216,7 +5216,7 @@ col_count : uint32_t
 heights : float*
     a pointer to row_count*col_count height values (floats)
 colors : DvzColor*
-    a pointer to row_count*col_count color values (cvec4 or vec4)
+    a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4)
 o : vec3
     the origin
 u : vec3
@@ -6977,12 +6977,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-bgcolor : vec4
+bgcolor : DvzColor
     the background color
 """
 glyph_bgcolor.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    vec4,  # vec4 bgcolor
+    DvzColor,  # DvzColor bgcolor
 ]
 
 # Function dvz_glyph_texture()
@@ -10141,12 +10141,12 @@ Parameters
 ----------
 type : int
     the element type for which to change the color
-color : cvec4
+color : DvzColor
     the color
 """
 gui_color.argtypes = [
     ctypes.c_int,  # int type
-    cvec4,  # cvec4 color
+    DvzColor,  # DvzColor color
 ]
 
 # Function dvz_gui_style()

@@ -55,8 +55,8 @@
 #define LENGTH_MAJOR 16
 #define LENGTH_MINOR 10
 
-#define LABEL_COLOR   (cvec4){0, 0, 0, 255}
-#define LABEL_BGCOLOR (vec4){1, 1, 1, 1}
+#define LABEL_COLOR   (DvzColor){0, 0, 0, 255}
+#define LABEL_BGCOLOR (DvzColor){255, 255, 255, 255}
 
 #define COLOR_GLYPH                                                                               \
     (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }

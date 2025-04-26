@@ -251,10 +251,16 @@ void dvz_glyph_color(
 
 
 
-void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor)
+void dvz_glyph_bgcolor(DvzVisual* visual, DvzColor bgcolor)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, 1, bgcolor);
+    vec4 bgcolor_float = {
+        FROM_BYTE(bgcolor[0]), //
+        FROM_BYTE(bgcolor[1]), //
+        FROM_BYTE(bgcolor[2]), //
+        FROM_BYTE(bgcolor[3]), //
+    };
+    dvz_visual_param(visual, 2, 1, bgcolor_float);
 }
 
 
