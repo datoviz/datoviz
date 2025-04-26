@@ -922,26 +922,27 @@ int main(int argc, char** argv)
     snprintf(path, sizeof(path), "data/mesh/brain.obj");
 
     // Load the obj file.
-    DvzShape shape = dvz_shape_obj(path);
-    if (!shape.vertex_count)
+    DvzShape* shape = dvz_shape();
+    dvz_shape_obj(shape, path);
+    if (!shape->vertex_count)
     {
-        dvz_shape_destroy(&shape);
+        dvz_shape_destroy(shape);
         return 0;
     }
 
     // Set the color of every vertex (the shape comes with an already allocated color array).
-    for (uint32_t i = 0; i < shape.vertex_count; i++)
+    for (uint32_t i = 0; i < shape->vertex_count; i++)
     {
         // Generate colors using the "bwr" colormap, in reverse (blue -> red).
         // dvz_colormap_scale(
-        //     DVZ_CMAP_COOLWARM, shape.vertex_count - 1 - i, 0, shape.vertex_count,
-        //     shape.color[i]);
-        // shape.color[i][0] = shape.color[i][1] = shape.color[i][2] = 128;
-        shape.color[i][3] = 32;
+        //     DVZ_CMAP_COOLWARM, shape->vertex_count - 1 - i, 0, shape->vertex_count,
+        //     shape->color[i]);
+        // shape->color[i][0] = shape->color[i][1] = shape->color[i][2] = 128;
+        shape->color[i][3] = 32;
     }
 
     // Create a mesh visual with basic lightingsupport.
-    DvzVisual* visual = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
+    DvzVisual* visual = dvz_mesh_shape(batch, shape, DVZ_MESH_FLAGS_LIGHTING);
 
     // NOTE: transparent meshes require special care.
     dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE); // disable depth test

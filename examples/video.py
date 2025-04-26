@@ -40,7 +40,8 @@ colors[:, 3] = 255
 colors[[0, 1, 2], [0, 1, 2]] = 255
 colors[3:, :] = 255
 colors[[3, 4, 5], [0, 1, 2]] = 0
-shape = dvz.shape_cube(colors)
+shape = dvz.shape()
+dvz.shape_cube(shape, colors)
 
 
 # Mesh visual.
@@ -79,4 +80,5 @@ with imageio.get_writer(output_file, fps=fps) as writer:
 
 
 # Cleanup.
+dvz.shape_destroy(shape)
 dvz.server_destroy(server)

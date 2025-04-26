@@ -319,7 +319,7 @@ Load the default atlas and font.
     ``` python
     dvz.atlas_font(
         font_size,  # the font size (float, 32-bit)
-        af,  # the returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (Out)
+        af,  # the returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (LP_DvzAtlasFont)
     )
     ```
 
@@ -6830,34 +6830,18 @@ Placeholder.
 
 ### `dvz_shape()`
 
-Create a shape out of an array of vertices and faces.
+Create an empty shape.
 
 === "Python"
 
     ``` python
-    dvz.shape(
-        vertex_count,  # number of vertices (int, 32-bit unsigned)
-        positions,  # 3D positions of the vertices (ndpointer_<f4_C_CONTIGUOUS)
-        normals,  # normal vectors (optional, will be otherwise computed automatically) (ndpointer_<f4_C_CONTIGUOUS)
-        colors,  # vertex vectors (optional) (ndpointer_|u1_C_CONTIGUOUS)
-        texcoords,  # texture uv*a coordinates (optional) (ndpointer_<f4_C_CONTIGUOUS)
-        index_count,  # number of indices (3x the number of triangular faces) (int, 32-bit unsigned)
-        indices,  # vertex indices, three per face (ndpointer_<u4_C_CONTIGUOUS)
-    )
+    dvz.shape()  # returns: the shape (LP_DvzShape)
     ```
 
 === "C"
 
     ``` c
-    DvzShape dvz_shape(
-        uint32_t vertex_count,  // number of vertices
-        vec3* positions,  // 3D positions of the vertices
-        vec3* normals,  // normal vectors (optional, will be otherwise computed automatically)
-        DvzColor* colors,  // vertex vectors (optional)
-        vec4* texcoords,  // texture uv*a coordinates (optional)
-        uint32_t index_count,  // number of indices (3x the number of triangular faces)
-        DvzIndex* indices,  // vertex indices, three per face
-    );
+    DvzShape* dvz_shape();  // returns: the shape
     ```
 
 ### `dvz_shape_begin()`
@@ -6891,7 +6875,8 @@ Create a cone shape.
 === "Python"
 
     ``` python
-    dvz.shape_cone(  # returns: the shape (DvzShape)
+    dvz.shape_cone(
+        shape,  # the shape (LP_DvzShape)
         count,  # the number of points along the disc border (int, 32-bit unsigned)
         color,  # the cone color (cvec4)
     )
@@ -6900,7 +6885,8 @@ Create a cone shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_cone(  // returns: the shape
+    void dvz_shape_cone(
+        DvzShape* shape,  // the shape
         uint32_t count,  // the number of points along the disc border
         DvzColor color,  // the cone color
     );
@@ -6913,7 +6899,8 @@ Create a cube shape.
 === "Python"
 
     ``` python
-    dvz.shape_cube(  # returns: the shape (DvzShape)
+    dvz.shape_cube(
+        shape,  # the shape (LP_DvzShape)
         colors,  # the colors of the six faces (ndpointer_|u1_C_CONTIGUOUS)
     )
     ```
@@ -6921,8 +6908,43 @@ Create a cube shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_cube(  // returns: the shape
+    void dvz_shape_cube(
+        DvzShape* shape,  // the shape
         DvzColor* colors,  // the colors of the six faces
+    );
+    ```
+
+### `dvz_shape_custom()`
+
+Create a shape out of an array of vertices and faces.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_custom(
+        shape,  # the shape (LP_DvzShape)
+        vertex_count,  # number of vertices (int, 32-bit unsigned)
+        positions,  # 3D positions of the vertices (ndpointer_<f4_C_CONTIGUOUS)
+        normals,  # normal vectors (optional, will be otherwise computed automatically) (ndpointer_<f4_C_CONTIGUOUS)
+        colors,  # vertex vectors (optional) (ndpointer_|u1_C_CONTIGUOUS)
+        texcoords,  # texture uv*a coordinates (optional) (ndpointer_<f4_C_CONTIGUOUS)
+        index_count,  # number of indices (3x the number of triangular faces) (int, 32-bit unsigned)
+        indices,  # vertex indices, three per face (ndpointer_<u4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_shape_custom(
+        DvzShape* shape,  // the shape
+        uint32_t vertex_count,  // number of vertices
+        vec3* positions,  // 3D positions of the vertices
+        vec3* normals,  // normal vectors (optional, will be otherwise computed automatically)
+        DvzColor* colors,  // vertex vectors (optional)
+        vec4* texcoords,  // texture uv*a coordinates (optional)
+        uint32_t index_count,  // number of indices (3x the number of triangular faces)
+        DvzIndex* indices,  // vertex indices, three per face
     );
     ```
 
@@ -6933,7 +6955,8 @@ Create a cylinder shape.
 === "Python"
 
     ``` python
-    dvz.shape_cylinder(  # returns: the shape (DvzShape)
+    dvz.shape_cylinder(
+        shape,  # the shape (LP_DvzShape)
         count,  # the number of points along the cylinder border (int, 32-bit unsigned)
         color,  # the cylinder color (cvec4)
     )
@@ -6942,7 +6965,8 @@ Create a cylinder shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_cylinder(  // returns: the shape
+    void dvz_shape_cylinder(
+        DvzShape* shape,  // the shape
         uint32_t count,  // the number of points along the cylinder border
         DvzColor color,  // the cylinder color
     );
@@ -6975,7 +6999,8 @@ Create a disc shape.
 === "Python"
 
     ``` python
-    dvz.shape_disc(  # returns: the shape (DvzShape)
+    dvz.shape_disc(
+        shape,  # the shape (LP_DvzShape)
         count,  # the number of points along the disc border (int, 32-bit unsigned)
         color,  # the disc color (cvec4)
     )
@@ -6984,7 +7009,8 @@ Create a disc shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_disc(  // returns: the shape
+    void dvz_shape_disc(
+        DvzShape* shape,  // the shape
         uint32_t count,  // the number of points along the disc border
         DvzColor color,  // the disc color
     );
@@ -6997,7 +7023,8 @@ Create a dodecahedron.
 === "Python"
 
     ``` python
-    dvz.shape_dodecahedron(  # returns: the shape (DvzShape)
+    dvz.shape_dodecahedron(
+        shape,  # the shape (LP_DvzShape)
         color,  # the color (cvec4)
     )
     ```
@@ -7005,7 +7032,8 @@ Create a dodecahedron.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_dodecahedron(  // returns: the shape
+    void dvz_shape_dodecahedron(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the color
     );
     ```
@@ -7037,7 +7065,8 @@ Create a tetrahedron.
 === "Python"
 
     ``` python
-    dvz.shape_hexahedron(  # returns: the shape (DvzShape)
+    dvz.shape_hexahedron(
+        shape,  # the shape (LP_DvzShape)
         color,  # the color (cvec4)
     )
     ```
@@ -7045,7 +7074,8 @@ Create a tetrahedron.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_hexahedron(  // returns: the shape
+    void dvz_shape_hexahedron(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the color
     );
     ```
@@ -7057,7 +7087,8 @@ Create a icosahedron.
 === "Python"
 
     ``` python
-    dvz.shape_icosahedron(  # returns: the shape (DvzShape)
+    dvz.shape_icosahedron(
+        shape,  # the shape (LP_DvzShape)
         color,  # the color (cvec4)
     )
     ```
@@ -7065,7 +7096,8 @@ Create a icosahedron.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_icosahedron(  // returns: the shape
+    void dvz_shape_icosahedron(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the color
     );
     ```
@@ -7077,18 +7109,20 @@ Merge several shapes.
 === "Python"
 
     ``` python
-    dvz.shape_merge(  # returns: the merged shape (DvzShape)
+    dvz.shape_merge(
+        shape,  # the merged shape (LP_DvzShape)
         count,  # the number of shapes to merge (int, 32-bit unsigned)
-        shapes,  # the shapes to merge (LP_DvzShape)
+        shapes,  # the shapes to merge (LP_LP_DvzShape)
     )
     ```
 
 === "C"
 
     ``` c
-    DvzShape dvz_shape_merge(  // returns: the merged shape
+    void dvz_shape_merge(
+        DvzShape* shape,  // the merged shape
         uint32_t count,  // the number of shapes to merge
-        DvzShape* shapes,  // the shapes to merge
+        DvzShape** shapes,  // the shapes to merge
     );
     ```
 
@@ -7139,7 +7173,8 @@ Load a .obj shape.
 === "Python"
 
     ``` python
-    dvz.shape_obj(  # returns: the shape (DvzShape)
+    dvz.shape_obj(
+        shape,  # the shape (LP_DvzShape)
         file_path,  # the path to the .obj file (CStringBuffer)
     )
     ```
@@ -7147,7 +7182,8 @@ Load a .obj shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_obj(  // returns: the shape
+    void dvz_shape_obj(
+        DvzShape* shape,  // the shape
         char* file_path,  // the path to the .obj file
     );
     ```
@@ -7159,7 +7195,8 @@ Create a octahedron.
 === "Python"
 
     ``` python
-    dvz.shape_octahedron(  # returns: the shape (DvzShape)
+    dvz.shape_octahedron(
+        shape,  # the shape (LP_DvzShape)
         color,  # the color (cvec4)
     )
     ```
@@ -7167,7 +7204,8 @@ Create a octahedron.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_octahedron(  // returns: the shape
+    void dvz_shape_octahedron(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the color
     );
     ```
@@ -7179,7 +7217,8 @@ Create a polygon shape using the simple earcut polygon triangulation algorithm.
 === "Python"
 
     ``` python
-    dvz.shape_polygon(  # returns: the shape (DvzShape)
+    dvz.shape_polygon(
+        shape,  # the shape (LP_DvzShape)
         count,  # the number of points along the polygon border (int, 32-bit unsigned)
         points,  # the points 2D coordinates (ndpointer_<f8_C_CONTIGUOUS)
         color,  # the polygon color (cvec4)
@@ -7189,7 +7228,8 @@ Create a polygon shape using the simple earcut polygon triangulation algorithm.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_polygon(  // returns: the shape
+    void dvz_shape_polygon(
+        DvzShape* shape,  // the shape
         uint32_t count,  // the number of points along the polygon border
         dvec2* points,  // the points 2D coordinates
         DvzColor color,  // the polygon color
@@ -7293,7 +7333,8 @@ Create a sphere shape.
 === "Python"
 
     ``` python
-    dvz.shape_sphere(  # returns: the shape (DvzShape)
+    dvz.shape_sphere(
+        shape,  # the shape (LP_DvzShape)
         rows,  # the number of rows (int, 32-bit unsigned)
         cols,  # the number of columns (int, 32-bit unsigned)
         color,  # the sphere color (cvec4)
@@ -7303,7 +7344,8 @@ Create a sphere shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_sphere(  // returns: the shape
+    void dvz_shape_sphere(
+        DvzShape* shape,  // the shape
         uint32_t rows,  // the number of rows
         uint32_t cols,  // the number of columns
         DvzColor color,  // the sphere color
@@ -7317,7 +7359,8 @@ Create a square shape.
 === "Python"
 
     ``` python
-    dvz.shape_square(  # returns: the shape (DvzShape)
+    dvz.shape_square(
+        shape,  # the shape (LP_DvzShape)
         color,  # the square color (cvec4)
     )
     ```
@@ -7325,7 +7368,8 @@ Create a square shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_square(  // returns: the shape
+    void dvz_shape_square(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the square color
     );
     ```
@@ -7337,7 +7381,8 @@ Create a grid shape.
 === "Python"
 
     ``` python
-    dvz.shape_surface(  # returns: the shape (DvzShape)
+    dvz.shape_surface(
+        shape,  # the shape (LP_DvzShape)
         row_count,  # number of rows (int, 32-bit unsigned)
         col_count,  # number of cols (int, 32-bit unsigned)
         heights,  # a pointer to row_count*col_count height values (floats) (ndpointer_<f4_C_CONTIGUOUS)
@@ -7352,7 +7397,8 @@ Create a grid shape.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_surface(  // returns: the shape
+    void dvz_shape_surface(
+        DvzShape* shape,  // the shape
         uint32_t row_count,  // number of rows
         uint32_t col_count,  // number of cols
         float* heights,  // a pointer to row_count*col_count height values (floats)
@@ -7371,7 +7417,8 @@ Create a tetrahedron.
 === "Python"
 
     ``` python
-    dvz.shape_tetrahedron(  # returns: the shape (DvzShape)
+    dvz.shape_tetrahedron(
+        shape,  # the shape (LP_DvzShape)
         color,  # the color (cvec4)
     )
     ```
@@ -7379,7 +7426,8 @@ Create a tetrahedron.
 === "C"
 
     ``` c
-    DvzShape dvz_shape_tetrahedron(  // returns: the shape
+    void dvz_shape_tetrahedron(
+        DvzShape* shape,  // the shape
         DvzColor color,  // the color
     );
     ```
@@ -10781,7 +10829,7 @@ Create a MVP structure.
         model,  # the model matrix (mat4)
         view,  # the view matrix (mat4)
         proj,  # the projection matrix (mat4)
-        mvp,  # the MVP structure (Out)
+        mvp,  # the MVP structure (LP_DvzMVP)
     )
     ```
 
@@ -10804,7 +10852,7 @@ Return a default DvzMVP struct
 
     ``` python
     dvz.mvp_default(
-        mvp,  # the DvzMVP struct (Out)
+        mvp,  # the DvzMVP struct (LP_DvzMVP)
     )
     ```
 

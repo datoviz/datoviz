@@ -206,16 +206,18 @@ int test_scene_3(TstSuite* suite)
     // Create a visual.
 
     // Disc mesh.
-    DvzShape disc = dvz_shape_cube((DvzColor[]){
-        {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
-        {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-        {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-    });
+    DvzShape* shape = dvz_shape();
+    dvz_shape_cube(
+        shape, (DvzColor[]){
+                   {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
+                   {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+                   {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+               });
     int flags = DVZ_MESH_FLAGS_LIGHTING;
-    DvzVisual* mesh = dvz_mesh_shape(batch, &disc, flags);
+    DvzVisual* mesh = dvz_mesh_shape(batch, shape, flags);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, mesh, 0);
@@ -224,6 +226,7 @@ int test_scene_3(TstSuite* suite)
     dvz_scene_run(scene, app, N_FRAMES);
 
     // Cleanup.
+    dvz_shape_destroy(shape);
     dvz_panel_destroy(panel);
     dvz_figure_destroy(figure);
     dvz_scene_destroy(scene);

@@ -448,8 +448,9 @@ void dvz_demo(void)
     // --------------------------------------------------------------------------------------------
 
     // 3,0  MESH
-    DvzShape shape = dvz_shape_cube(color);
-    DvzVisual* mesh = dvz_mesh_shape(batch, &shape, DVZ_MESH_FLAGS_LIGHTING);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_cube(shape, color);
+    DvzVisual* mesh = dvz_mesh_shape(batch, shape, DVZ_MESH_FLAGS_LIGHTING);
 
     legend(batch, p30, "MESH", &af);
     dvz_arcball_initial(dvz_panel_arcball(p30), (vec3){+0.4, -0.8, +2.9});
@@ -457,7 +458,7 @@ void dvz_demo(void)
         dvz_panel_camera(p30, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p30, mesh, 0);
     dvz_panel_update(p30);
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
 
 
     // 3,1  SPHERE

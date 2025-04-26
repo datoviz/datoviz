@@ -291,6 +291,7 @@ dvz_shape
 dvz_shape_begin
 dvz_shape_cone
 dvz_shape_cube
+dvz_shape_custom
 dvz_shape_cylinder
 dvz_shape_destroy
 dvz_shape_disc

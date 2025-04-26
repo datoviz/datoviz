@@ -33,11 +33,13 @@ int test_shape_1(TstSuite* suite)
     DvzColor color = {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX};
     const uint32_t count = 30;
 
-    DvzShape square = dvz_shape_square(color);
-    DvzShape disc = dvz_shape_disc(count, color);
+    DvzShape* square = dvz_shape();
+    dvz_shape_square(square, color);
+    DvzShape* disc = dvz_shape();
+    dvz_shape_disc(disc, count, color);
 
-    dvz_shape_destroy(&disc);
-    dvz_shape_destroy(&square);
+    dvz_shape_destroy(disc);
+    dvz_shape_destroy(square);
     return 0;
 }
 
@@ -61,11 +63,12 @@ int test_shape_surface(TstSuite* suite)
             heights[idx++] = sin(i) * cos(j);
         }
     }
-    DvzShape shape = dvz_shape_surface(row_count, col_count, heights, NULL, o, u, v, 0);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_surface(shape, row_count, col_count, heights, NULL, o, u, v, 0);
 
-    dvz_shape_print(&shape);
+    dvz_shape_print(shape);
 
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
     return 0;
 }
 
@@ -78,14 +81,15 @@ int test_shape_transform(TstSuite* suite)
     DvzColor color = {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX};
     const uint32_t count = 30;
 
-    DvzShape square = dvz_shape_square(color);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_square(shape, color);
 
-    dvz_shape_begin(&square, 0, 0);
-    dvz_shape_scale(&square, (vec3){2, .5, 1});
-    dvz_shape_end(&square);
-    dvz_shape_print(&square);
+    dvz_shape_begin(shape, 0, 0);
+    dvz_shape_scale(shape, (vec3){2, .5, 1});
+    dvz_shape_end(shape);
+    dvz_shape_print(shape);
 
-    dvz_shape_destroy(&square);
+    dvz_shape_destroy(shape);
     return 0;
 }
 
@@ -98,8 +102,9 @@ int test_shape_obj(TstSuite* suite)
     char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
 
-    DvzShape shape = dvz_shape_obj(path);
-    dvz_shape_print(&shape);
-    dvz_shape_destroy(&shape);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_obj(shape, path);
+    dvz_shape_print(shape);
+    dvz_shape_destroy(shape);
     return 0;
 }

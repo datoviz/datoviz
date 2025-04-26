@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 # NOTE: this file is NOT automatically generated, only clib.py is.
 
 import ctypes
-from ctypes import c_char_p
+from ctypes import c_char_p, byref
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
 
@@ -95,7 +95,6 @@ def button_name(button):
 
 def cmap(cm, values, vmin=0.0, vmax=10.):
     values = np.asanyarray(values, dtype=np.float32)
-    # shape = values.shape
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
     colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
@@ -103,7 +102,12 @@ def cmap(cm, values, vmin=0.0, vmax=10.):
 
 
 def merge_shapes(shapes):
-    return shape_merge(len(shapes), (Shape * len(shapes))(*shapes))
+    merged = shape()
+    n = len(shapes)
+    array_type = ctypes.POINTER(Shape) * n
+    shapes_array = array_type(*(s for s in shapes))
+    shape_merge(merged, len(shapes), shapes_array)
+    return merged
 
 
 def to_byte(arr, vmin=None, vmax=None):

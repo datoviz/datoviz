@@ -42,26 +42,28 @@ int test_mesh_1(TstSuite* suite)
     VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
 
     // Shape.
-    DvzShape shape = dvz_shape_cube((DvzColor[]){
-        {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
-        {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-        {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-        {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-    });
+    DvzShape* shape = dvz_shape();
+    dvz_shape_cube(
+        shape, (DvzColor[]){
+                   {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
+                   {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+                   {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
+                   {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+               });
 
-    // for (uint32_t i = 0; i < shape.vertex_count; i++)
+    // for (uint32_t i = 0; i < shape->vertex_count; i++)
     // {
-    //     shape.pos[i][0] *= 3;
-    //     shape.pos[i][1] *= 3;
-    //     shape.pos[i][2] *= 3;
-    //     shape.color[i][3] = 128;
+    //     shape->pos[i][0] *= 3;
+    //     shape->pos[i][1] *= 3;
+    //     shape->pos[i][2] *= 3;
+    //     shape->color[i][3] = 128;
     // }
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_TEXTURED | DVZ_MESH_FLAGS_LIGHTING;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
     // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
 
     // Create and upload the texture.
@@ -80,7 +82,7 @@ int test_mesh_1(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
 
     return 0;
 }
@@ -104,22 +106,23 @@ int test_mesh_polygon(TstSuite* suite)
         points[i][1] = r * sin(-(float)i * M_2PI / n);
     }
     DvzColor color = {TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)};
-    DvzShape shape = dvz_shape_polygon(n, (const dvec2*)points, color);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_polygon(shape, n, (const dvec2*)points, color);
     FREE(points);
 
     // // Display the indices.
-    // for (uint32_t i = 0; i < shape.index_count; i++)
+    // for (uint32_t i = 0; i < shape->index_count; i++)
     // {
     //     if (i % 3 == 0)
     //         printf("\n");
-    //     printf("%d ", shape.index[i]);
+    //     printf("%d ", shape->index[i]);
     // }
 
-    dvz_shape_unindex(&shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
+    dvz_shape_unindex(shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
 
     // Set up the wireframe contour parameters.
     dvz_mesh_edgecolor(visual, DVZ_WHITE);
@@ -132,7 +135,7 @@ int test_mesh_polygon(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
 
     return 0;
 }
@@ -448,14 +451,15 @@ int test_mesh_surface(TstSuite* suite)
         }
     }
 
-    // Create the surface shape.
-    DvzShape shape = dvz_shape_surface(row_count, col_count, heights, colors, o, u, v, 0);
-    dvz_shape_unindex(&shape, DVZ_INDEXING_SURFACE | DVZ_CONTOUR_FULL);
+    // Create the surface shape->
+    DvzShape* shape = dvz_shape();
+    dvz_shape_surface(shape, row_count, col_count, heights, colors, o, u, v, 0);
+    dvz_shape_unindex(shape, DVZ_INDEXING_SURFACE | DVZ_CONTOUR_FULL);
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING; // | DVZ_MESH_FLAGS_CONTOUR;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
 
     // Wireframe.
     // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
@@ -473,7 +477,7 @@ int test_mesh_surface(TstSuite* suite)
     // Cleanup.
     FREE(heights);
     FREE(colors);
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
 
     return 0;
 }
@@ -509,46 +513,48 @@ int test_mesh_obj(TstSuite* suite)
 {
     VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
-    // Load obj shape.
+    // Load obj shape->
     char path[1024] = {0};
     snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
-    DvzShape shape = dvz_shape_obj(path);
-    if (!shape.vertex_count)
+    DvzShape* shape = dvz_shape();
+    dvz_shape_obj(shape, path);
+    if (!shape->vertex_count)
     {
-        dvz_shape_destroy(&shape);
+        dvz_shape_destroy(shape);
         return 0;
     }
 
     // Set the color of every vertex (the shape comes with an already allocated color array).
-    // for (uint32_t i = 0; i < shape.vertex_count; i++)
+    // for (uint32_t i = 0; i < shape->vertex_count; i++)
     // {
     //     // Generate colors using the "bwr" colormap, in reverse (blue -> red).
     //     dvz_colormap_scale(
-    //         DVZ_CMAP_COOLWARM, shape.vertex_count - 1 - i, 0, shape.vertex_count,
-    //         shape.color[i]);
-    //     shape.color[i][3] = 64;
+    //         DVZ_CMAP_COOLWARM, shape->vertex_count - 1 - i, 0, shape->vertex_count,
+    //         shape->color[i]);
+    //     shape->color[i][3] = 64;
     // }
 
     bool isoline = false;
 
-    // Set up isoline values in the shape.
+    // Set up isoline values in the shape->
     if (isoline)
     {
-        shape.isoline = (float*)calloc(shape.vertex_count, sizeof(float));
-        for (uint32_t i = 0; i < shape.vertex_count; i++)
+        shape->isoline = (float*)calloc(shape->vertex_count, sizeof(float));
+        for (uint32_t i = 0; i < shape->vertex_count; i++)
         {
-            shape.isoline[i] = .5 * (1 + shape.pos[i][1]) + .1 * sin(1 * M_2PI * shape.pos[i][0]);
+            shape->isoline[i] =
+                .5 * (1 + shape->pos[i][1]) + .1 * sin(1 * M_2PI * shape->pos[i][0]);
         }
     }
 
     // NOTE: we need to use non-indexed meshes for mesh wireframe.
-    dvz_shape_unindex(&shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
+    dvz_shape_unindex(shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_LIGHTING;
     if (isoline)
         flags |= DVZ_MESH_FLAGS_ISOLINE;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
     // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
     // dvz_visual_cull(visual, DVZ_CULL_MODE_BACK);
 
@@ -590,7 +596,7 @@ int test_mesh_obj(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
 
     return 0;
 }
@@ -646,7 +652,7 @@ int test_mesh_geo(TstSuite* suite)
 
     // Triangulate and merge the polygons into a single shape.
     uint32_t vertex_offset = 0, poly_length = 0;
-    DvzShape* shapes = (DvzShape*)calloc(poly_count, sizeof(DvzShape));
+    DvzShape** shapes = (DvzShape**)calloc(poly_count, sizeof(DvzShape*));
     for (uint32_t i = 0; i < poly_count; i++)
     {
         poly_length = poly_lengths[i];
@@ -661,13 +667,19 @@ int test_mesh_geo(TstSuite* suite)
 
         // Polygon triangulation.
         dvec2* polygon = copy_polygon(poly_length, &poly_pos[vertex_offset]);
-        shapes[i] = dvz_shape_polygon(poly_length, (const dvec2*)polygon, color);
-        dvz_shape_unindex(&shapes[i], DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
+        shapes[i] = dvz_shape();
+        dvz_shape_polygon(shapes[i], poly_length, (const dvec2*)polygon, color);
+        dvz_shape_unindex(shapes[i], DVZ_INDEXING_EARCUT | DVZ_CONTOUR_JOINTS);
         FREE(polygon);
 
         vertex_offset += poly_length;
     }
-    DvzShape shape = dvz_shape_merge(poly_count, shapes);
+    DvzShape* shape = dvz_shape();
+    dvz_shape_merge(shape, poly_count, shapes);
+    for (uint32_t i = 0; i < poly_count; i++)
+    {
+        dvz_shape_destroy(shapes[i]);
+    }
     FREE(shapes);
 
 
@@ -675,7 +687,7 @@ int test_mesh_geo(TstSuite* suite)
 
     // Create the visual.
     int flags = DVZ_MESH_FLAGS_CONTOUR;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, &shape, flags);
+    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
 
     // Set up the wireframe contour parameters.
     dvz_mesh_linewidth(visual, 1);
@@ -687,7 +699,7 @@ int test_mesh_geo(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    dvz_shape_destroy(&shape);
+    dvz_shape_destroy(shape);
     FREE(pos_bytes);
     FREE(length_bytes);
 

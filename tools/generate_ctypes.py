@@ -31,6 +31,8 @@ DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 """)
 
 EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
+OUT_PARAMS = ('DvzSize', 'DvzBox', 'DvzKeyCode', 'DvzMouseButton', 'DvzTime')
+# POINTER_STRUCTS = ('DvzShape',)
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
 DvzColor = 'cvec4' if DVZ_COLOR_CVEC4 else 'vec4'
@@ -75,7 +77,7 @@ def c_to_ctype(type, enum_int=False, unsigned=None):
 # Original C type to np.dtype, no pointers.
 def c_to_dtype(type, enum_int=False, unsigned=None):
     import numpy as np
-    assert '*' not in type
+    # assert '*' not in type
     n = _extract_int(type)
     type_ = type if not type.endswith('_t') else type[:-2]
 
@@ -167,17 +169,21 @@ def map_type(type, enum_int=False, unsigned=None, ndpointer=True, out=None, out_
         else:
             return "ctypes.c_void_p"
 
+    elif type == "DvzShape**":
+        return 'ctypes.POINTER(ctypes.POINTER(Shape))'
+
     elif type.endswith('*'):
         if not out or out_type == 'array':
             return cpointer_to_ndpointer(type, unsigned=unsigned, ndpointer=ndpointer)
+        elif type.startswith('Dvz') and type[:-1] not in OUT_PARAMS:
+            assert '*' in type
+            assert type.endswith('*')
+            btype = type[:-1]
+            ctype = c_to_ctype(btype, enum_int=True) or btype
+            return f'ctypes.POINTER({ctype})'
         else:
             # Passing out parameter, normal ctypes Pointer, and caller uses Out(py_var)
             return 'Out'
-            # assert '*' in type
-            # assert type.endswith('*')
-            # btype = type[:-1]
-            # ctype = c_to_ctype(btype, enum_int=True) or btype
-            # return f'ctypes.POINTER({ctype})'
 
     else:
         return c_to_ctype(type, enum_int=enum_int, unsigned=unsigned)

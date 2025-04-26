@@ -10,6 +10,7 @@ This is handled by `just ctypes`.
 
 import ctypes
 from ctypes import POINTER as P_
+from ctypes import byref
 import faulthandler
 import os
 import pathlib

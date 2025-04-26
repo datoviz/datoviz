@@ -1359,11 +1359,11 @@ DVZ_EXPORT void dvz_shape_normals(DvzShape* shape);
 /**
  * Merge several shapes.
  *
+ * @param shape the merged shape
  * @param count the number of shapes to merge
  * @param shapes the shapes to merge
- * @returns the merged shape
  */
-DVZ_EXPORT DvzShape dvz_shape_merge(uint32_t count, DvzShape* shapes);
+DVZ_EXPORT void dvz_shape_merge(DvzShape* shape, uint32_t count, DvzShape** shapes);
 
 
 
@@ -1482,34 +1482,34 @@ DVZ_EXPORT void dvz_shape_end(DvzShape* shape);
 /**
  * Create a square shape.
  *
+ * @param shape the shape
  * @param color the square color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_square(DvzColor color);
+DVZ_EXPORT void dvz_shape_square(DvzShape* shape, DvzColor color);
 
 
 
 /**
  * Create a disc shape.
  *
+ * @param shape the shape
  * @param count the number of points along the disc border
  * @param color the disc color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_disc(uint32_t count, DvzColor color);
+DVZ_EXPORT void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color);
 
 
 
 /**
  * Create a polygon shape using the simple earcut polygon triangulation algorithm.
  *
+ * @param shape the shape
  * @param count the number of points along the polygon border
  * @param points the points 2D coordinates
  * @param color the polygon color
- * @returns the shape
  */
 DVZ_EXPORT
-DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color);
+void dvz_shape_polygon(DvzShape* shape, uint32_t count, const dvec2* points, DvzColor color);
 
 
 
@@ -1518,8 +1518,18 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color);
 /*************************************************************************************************/
 
 /**
+ * Create an empty shape.
+ *
+ * @returns the shape
+ */
+DVZ_EXPORT DvzShape* dvz_shape(void);
+
+
+
+/**
  * Create a grid shape.
  *
+ * @param shape the shape
  * @param row_count number of rows
  * @param col_count number of cols
  * @param heights a pointer to row_count*col_count height values (floats)
@@ -1528,12 +1538,11 @@ DvzShape dvz_shape_polygon(uint32_t count, const dvec2* points, DvzColor color);
  * @param u the unit vector parallel to each column
  * @param v the unit vector parallel to each row
  * @param flags the grid creation flags
- * @returns the shape
  */
 DVZ_EXPORT
-DvzShape dvz_shape_surface(
-    uint32_t row_count, uint32_t col_count, //
-    float* heights, DvzColor* colors,       //
+void dvz_shape_surface(
+    DvzShape* shape, uint32_t row_count, uint32_t col_count, //
+    float* heights, DvzColor* colors,                        //
     vec3 o, vec3 u, vec3 v, int flags);
 
 
@@ -1541,94 +1550,94 @@ DvzShape dvz_shape_surface(
 /**
  * Create a cube shape.
  *
+ * @param shape the shape
  * @param colors the colors of the six faces
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cube(DvzColor* colors);
+DVZ_EXPORT void dvz_shape_cube(DvzShape* shape, DvzColor* colors);
 
 
 
 /**
  * Create a sphere shape.
  *
+ * @param shape the shape
  * @param rows the number of rows
  * @param cols the number of columns
  * @param color the sphere color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_sphere(uint32_t rows, uint32_t cols, DvzColor color);
+DVZ_EXPORT void dvz_shape_sphere(DvzShape* shape, uint32_t rows, uint32_t cols, DvzColor color);
 
 
 
 /**
  * Create a cone shape.
  *
+ * @param shape the shape
  * @param count the number of points along the disc border
  * @param color the cone color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cone(uint32_t count, DvzColor color);
+DVZ_EXPORT void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color);
 
 
 
 /**
  * Create a cylinder shape.
  *
+ * @param shape the shape
  * @param count the number of points along the cylinder border
  * @param color the cylinder color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_cylinder(uint32_t count, DvzColor color);
+DVZ_EXPORT void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color);
 
 
 
 /**
  * Create a tetrahedron.
  *
+ * @param shape the shape
  * @param color the color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_tetrahedron(DvzColor color);
+DVZ_EXPORT void dvz_shape_tetrahedron(DvzShape* shape, DvzColor color);
 
 
 
 /**
  * Create a tetrahedron.
  *
+ * @param shape the shape
  * @param color the color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_hexahedron(DvzColor color);
+DVZ_EXPORT void dvz_shape_hexahedron(DvzShape* shape, DvzColor color);
 
 
 
 /**
  * Create a octahedron.
  *
+ * @param shape the shape
  * @param color the color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_octahedron(DvzColor color);
+DVZ_EXPORT void dvz_shape_octahedron(DvzShape* shape, DvzColor color);
 
 
 
 /**
  * Create a dodecahedron.
  *
+ * @param shape the shape
  * @param color the color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_dodecahedron(DvzColor color);
+DVZ_EXPORT void dvz_shape_dodecahedron(DvzShape* shape, DvzColor color);
 
 
 
 /**
  * Create a icosahedron.
  *
+ * @param shape the shape
  * @param color the color
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_icosahedron(DvzColor color);
+DVZ_EXPORT void dvz_shape_icosahedron(DvzShape* shape, DvzColor color);
 
 
 
@@ -1644,16 +1653,17 @@ DVZ_EXPORT void dvz_shape_normalize(DvzShape* shape);
 /**
  * Load a .obj shape.
  *
+ * @param shape the shape
  * @param file_path the path to the .obj file
- * @returns the shape
  */
-DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
+DVZ_EXPORT void dvz_shape_obj(DvzShape* shape, const char* file_path);
 
 
 
 /**
  * Create a shape out of an array of vertices and faces.
  *
+ * @param shape the shape
  * @param vertex_count number of vertices
  * @param positions 3D positions of the vertices
  * @param normals normal vectors (optional, will be otherwise computed automatically)
@@ -1662,9 +1672,9 @@ DVZ_EXPORT DvzShape dvz_shape_obj(const char* file_path);
  * @param index_count number of indices (3x the number of triangular faces)
  * @param indices vertex indices, three per face
  */
-DVZ_EXPORT DvzShape dvz_shape(
-    uint32_t vertex_count, vec3* positions, vec3* normals, DvzColor* colors, vec4* texcoords,
-    uint32_t index_count, DvzIndex* indices);
+DVZ_EXPORT void dvz_shape_custom(
+    DvzShape* shape, uint32_t vertex_count, vec3* positions, vec3* normals, DvzColor* colors,
+    vec4* texcoords, uint32_t index_count, DvzIndex* indices);
 
 
 

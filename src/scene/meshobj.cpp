@@ -77,12 +77,12 @@ void dvz_shape_normalize(DvzShape* shape)
 
 
 
-DvzShape dvz_shape_obj(const char* file_path)
+void dvz_shape_obj(DvzShape* shape, const char* file_path)
 {
     ANN(file_path);
+    ANN(shape);
 
-    DvzShape shape = {};
-    shape.type = DVZ_SHAPE_OBJ;
+    shape->type = DVZ_SHAPE_OBJ;
 
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -100,7 +100,7 @@ DvzShape dvz_shape_obj(const char* file_path)
     if (!ret)
     {
         log_error("error loading obj file %s", file_path);
-        return shape;
+        return;
     }
 
     // Number of vertices.
@@ -138,14 +138,14 @@ DvzShape dvz_shape_obj(const char* file_path)
     uint32_t vertex_count = nv;
     uint32_t index_count = ni;
 
-    shape.vertex_count = vertex_count;
-    shape.index_count = index_count;
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
 
-    shape.pos = (vec3*)calloc(vertex_count, sizeof(vec3));
-    shape.normal = (vec3*)calloc(vertex_count, sizeof(vec3));
-    shape.color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
-    shape.texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
-    shape.index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
 
     // Loop over shapes
     uint32_t i, index_offset, nf;
@@ -162,29 +162,29 @@ DvzShape dvz_shape_obj(const char* file_path)
     {
         // Vertex position.
         ASSERT(3 * i + 2 < nv_obj);
-        shape.pos[i][0] = attrib.vertices[3 * i + 0];
-        shape.pos[i][1] = attrib.vertices[3 * i + 1];
-        shape.pos[i][2] = attrib.vertices[3 * i + 2];
+        shape->pos[i][0] = attrib.vertices[3 * i + 0];
+        shape->pos[i][1] = attrib.vertices[3 * i + 1];
+        shape->pos[i][2] = attrib.vertices[3 * i + 2];
 
         // Vertex normal.
         ASSERT(3 * i + 2 < nn_obj);
-        shape.normal[i][0] = attrib.normals[3 * i + 0];
-        shape.normal[i][1] = attrib.normals[3 * i + 1];
-        shape.normal[i][2] = attrib.normals[3 * i + 2];
+        shape->normal[i][0] = attrib.normals[3 * i + 0];
+        shape->normal[i][1] = attrib.normals[3 * i + 1];
+        shape->normal[i][2] = attrib.normals[3 * i + 2];
 
         // Vertex tex coords.
         if (nt_obj > 0)
         {
             ASSERT(2 * i + 1 < nt_obj);
-            shape.texcoords[i][0] = attrib.texcoords[2 * i + 0];
-            shape.texcoords[i][1] = attrib.texcoords[2 * i + 1];
+            shape->texcoords[i][0] = attrib.texcoords[2 * i + 0];
+            shape->texcoords[i][1] = attrib.texcoords[2 * i + 1];
         }
         else if (nc_obj > 0)
         {
-            shape.color[i][0] = TO_BYTE(attrib.colors[3 * i + 0]);
-            shape.color[i][1] = TO_BYTE(attrib.colors[3 * i + 1]);
-            shape.color[i][2] = TO_BYTE(attrib.colors[3 * i + 2]);
-            shape.color[i][3] = 255;
+            shape->color[i][0] = TO_BYTE(attrib.colors[3 * i + 0]);
+            shape->color[i][1] = TO_BYTE(attrib.colors[3 * i + 1]);
+            shape->color[i][2] = TO_BYTE(attrib.colors[3 * i + 2]);
+            shape->color[i][3] = 255;
         }
     }
 
@@ -209,14 +209,12 @@ DvzShape dvz_shape_obj(const char* file_path)
             for (v = 0; v < fv; v++)
             {
                 idx = shapes[s].mesh.indices[index_offset + v];
-                shape.index[i++] = (DvzIndex)idx.vertex_index;
+                shape->index[i++] = (DvzIndex)idx.vertex_index;
             }
             index_offset += fv;
         }
     }
     ASSERT(i == ni);
 
-    dvz_shape_normalize(&shape);
-
-    return shape;
+    dvz_shape_normalize(shape);
 }

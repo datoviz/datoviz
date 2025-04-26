@@ -80,7 +80,8 @@ colors = np.array([
     [255, 0, 255, 255],
     [0, 255, 255, 255],
 ], dtype=np.uint8)
-shape = dvz.shape_cube(colors)
+shape = dvz.shape()
+dvz.shape_cube(shape, colors)
 
 # Create a mesh visual directly instantiated with the shape data.
 visual = dvz.mesh_shape(batch, shape, dvz.MESH_FLAGS_LIGHTING)

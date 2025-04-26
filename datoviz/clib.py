@@ -15,6 +15,7 @@ __version__ = "0.2.4-dev"
 
 import ctypes
 from ctypes import POINTER as P_
+from ctypes import byref
 import faulthandler
 import os
 import pathlib
@@ -4917,21 +4918,18 @@ Merge several shapes.
 
 Parameters
 ----------
+shape : DvzShape*
+    the merged shape
 count : uint32_t
     the number of shapes to merge
-shapes : DvzShape*
+shapes : DvzShape**
     the shapes to merge
-
-Returns
--------
-type
-    the merged shape
 """
 shape_merge.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t count
-    ctypes.POINTER(DvzShape),  # DvzShape* shapes
+    ctypes.POINTER(ctypes.POINTER(Shape)),  # DvzShape** shapes
 ]
-shape_merge.restype = DvzShape
 
 # Function dvz_shape_print()
 shape_print = dvz.dvz_shape_print
@@ -5111,18 +5109,15 @@ Create a square shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the square color
-
-Returns
--------
-type
-    the shape
 """
 shape_square.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_square.restype = DvzShape
 
 # Function dvz_shape_disc()
 shape_disc = dvz.dvz_shape_disc
@@ -5131,21 +5126,18 @@ Create a disc shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 count : uint32_t
     the number of points along the disc border
 color : DvzColor
     the disc color
-
-Returns
--------
-type
-    the shape
 """
 shape_disc.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t count
     DvzColor,  # DvzColor color
 ]
-shape_disc.restype = DvzShape
 
 # Function dvz_shape_polygon()
 shape_polygon = dvz.dvz_shape_polygon
@@ -5154,24 +5146,36 @@ Create a polygon shape using the simple earcut polygon triangulation algorithm.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 count : uint32_t
     the number of points along the polygon border
 points : dvec2*
     the points 2D coordinates
 color : DvzColor
     the polygon color
+"""
+shape_polygon.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* points
+    DvzColor,  # DvzColor color
+]
+
+# Function dvz_shape()
+shape = dvz.dvz_shape
+shape.__doc__ = """
+Create an empty shape.
+
 
 Returns
 -------
 type
     the shape
 """
-shape_polygon.argtypes = [
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* points
-    DvzColor,  # DvzColor color
+shape.argtypes = [
 ]
-shape_polygon.restype = DvzShape
+shape.restype = ctypes.POINTER(DvzShape)
 
 # Function dvz_shape_surface()
 shape_surface = dvz.dvz_shape_surface
@@ -5180,6 +5184,8 @@ Create a grid shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 row_count : uint32_t
     number of rows
 col_count : uint32_t
@@ -5196,13 +5202,9 @@ v : vec3
     the unit vector parallel to each row
 flags : int
     the grid creation flags
-
-Returns
--------
-type
-    the shape
 """
 shape_surface.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t row_count
     ctypes.c_uint32,  # uint32_t col_count
     ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* heights
@@ -5212,7 +5214,6 @@ shape_surface.argtypes = [
     vec3,  # vec3 v
     ctypes.c_int,  # int flags
 ]
-shape_surface.restype = DvzShape
 
 # Function dvz_shape_cube()
 shape_cube = dvz.dvz_shape_cube
@@ -5221,18 +5222,15 @@ Create a cube shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 colors : DvzColor*
     the colors of the six faces
-
-Returns
--------
-type
-    the shape
 """
 shape_cube.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # DvzColor* colors
 ]
-shape_cube.restype = DvzShape
 
 # Function dvz_shape_sphere()
 shape_sphere = dvz.dvz_shape_sphere
@@ -5241,24 +5239,21 @@ Create a sphere shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 rows : uint32_t
     the number of rows
 cols : uint32_t
     the number of columns
 color : DvzColor
     the sphere color
-
-Returns
--------
-type
-    the shape
 """
 shape_sphere.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t rows
     ctypes.c_uint32,  # uint32_t cols
     DvzColor,  # DvzColor color
 ]
-shape_sphere.restype = DvzShape
 
 # Function dvz_shape_cone()
 shape_cone = dvz.dvz_shape_cone
@@ -5267,21 +5262,18 @@ Create a cone shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 count : uint32_t
     the number of points along the disc border
 color : DvzColor
     the cone color
-
-Returns
--------
-type
-    the shape
 """
 shape_cone.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t count
     DvzColor,  # DvzColor color
 ]
-shape_cone.restype = DvzShape
 
 # Function dvz_shape_cylinder()
 shape_cylinder = dvz.dvz_shape_cylinder
@@ -5290,21 +5282,18 @@ Create a cylinder shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 count : uint32_t
     the number of points along the cylinder border
 color : DvzColor
     the cylinder color
-
-Returns
--------
-type
-    the shape
 """
 shape_cylinder.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t count
     DvzColor,  # DvzColor color
 ]
-shape_cylinder.restype = DvzShape
 
 # Function dvz_shape_tetrahedron()
 shape_tetrahedron = dvz.dvz_shape_tetrahedron
@@ -5313,18 +5302,15 @@ Create a tetrahedron.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the color
-
-Returns
--------
-type
-    the shape
 """
 shape_tetrahedron.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_tetrahedron.restype = DvzShape
 
 # Function dvz_shape_hexahedron()
 shape_hexahedron = dvz.dvz_shape_hexahedron
@@ -5333,18 +5319,15 @@ Create a tetrahedron.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the color
-
-Returns
--------
-type
-    the shape
 """
 shape_hexahedron.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_hexahedron.restype = DvzShape
 
 # Function dvz_shape_octahedron()
 shape_octahedron = dvz.dvz_shape_octahedron
@@ -5353,18 +5336,15 @@ Create a octahedron.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the color
-
-Returns
--------
-type
-    the shape
 """
 shape_octahedron.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_octahedron.restype = DvzShape
 
 # Function dvz_shape_dodecahedron()
 shape_dodecahedron = dvz.dvz_shape_dodecahedron
@@ -5373,18 +5353,15 @@ Create a dodecahedron.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the color
-
-Returns
--------
-type
-    the shape
 """
 shape_dodecahedron.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_dodecahedron.restype = DvzShape
 
 # Function dvz_shape_icosahedron()
 shape_icosahedron = dvz.dvz_shape_icosahedron
@@ -5393,18 +5370,15 @@ Create a icosahedron.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 color : DvzColor
     the color
-
-Returns
--------
-type
-    the shape
 """
 shape_icosahedron.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     DvzColor,  # DvzColor color
 ]
-shape_icosahedron.restype = DvzShape
 
 # Function dvz_shape_normalize()
 shape_normalize = dvz.dvz_shape_normalize
@@ -5427,26 +5401,25 @@ Load a .obj shape.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 file_path : char*
     the path to the .obj file
-
-Returns
--------
-type
-    the shape
 """
 shape_obj.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     CStringBuffer,  # char* file_path
 ]
-shape_obj.restype = DvzShape
 
-# Function dvz_shape()
-shape = dvz.dvz_shape
-shape.__doc__ = """
+# Function dvz_shape_custom()
+shape_custom = dvz.dvz_shape_custom
+shape_custom.__doc__ = """
 Create a shape out of an array of vertices and faces.
 
 Parameters
 ----------
+shape : DvzShape*
+    the shape
 vertex_count : uint32_t
     number of vertices
 positions : vec3*
@@ -5462,7 +5435,8 @@ index_count : uint32_t
 indices : DvzIndex*
     vertex indices, three per face
 """
-shape.argtypes = [
+shape_custom.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t vertex_count
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* positions
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # vec3* normals
@@ -5471,7 +5445,6 @@ shape.argtypes = [
     ctypes.c_uint32,  # uint32_t index_count
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzIndex* indices
 ]
-shape.restype = DvzShape
 
 # Function dvz_basic()
 basic = dvz.dvz_basic
@@ -6449,7 +6422,7 @@ af : DvzAtlasFont* (out parameter)
 """
 atlas_font.argtypes = [
     ctypes.c_double,  # double font_size
-    Out,  # out DvzAtlasFont* af
+    ctypes.POINTER(DvzAtlasFont),  # out DvzAtlasFont* af
 ]
 
 # Function dvz_atlas_destroy()
@@ -11661,7 +11634,7 @@ mvp.argtypes = [
     mat4,  # mat4 model
     mat4,  # mat4 view
     mat4,  # mat4 proj
-    Out,  # out DvzMVP* mvp
+    ctypes.POINTER(DvzMVP),  # out DvzMVP* mvp
 ]
 
 # Function dvz_mvp_default()
@@ -11675,7 +11648,7 @@ mvp : DvzMVP* (out parameter)
     the DvzMVP struct
 """
 mvp_default.argtypes = [
-    Out,  # out DvzMVP* mvp
+    ctypes.POINTER(DvzMVP),  # out DvzMVP* mvp
 ]
 
 # Function dvz_viewport_default()

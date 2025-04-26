@@ -38,7 +38,8 @@ arcball = dvz.panel_arcball(panel)
 # Load a .OBJ mesh file.
 CURDIR = Path(__file__).parent
 filepath = (CURDIR / "../data/mesh/brain.obj").resolve()
-shape = dvz.shape_obj(filepath)
+shape = dvz.shape()
+dvz.shape_obj(shape, filepath)
 
 # Fill artificial colors.
 nv = shape.vertex_count
@@ -83,5 +84,6 @@ dvz.app_on_timer(app, _on_timer, None)
 dvz.scene_run(scene, app, 0)
 
 # Cleanup.
+dvz.shape_destroy(shape)
 dvz.scene_destroy(scene)
 dvz.app_destroy(app)

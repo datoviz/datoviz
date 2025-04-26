@@ -68,7 +68,8 @@ heights = heights.ravel().astype(np.float32)
 colors = dvz.cmap(dvz.CMAP_PLASMA, heights, hmin, hmax)
 
 # Create the surface shape.
-shape = dvz.shape_surface(row_count, col_count, heights, colors, o, u, v, 0)
+shape = dvz.shape()
+dvz.shape_surface(shape, row_count, col_count, heights, colors, o, u, v, 0)
 
 # Create the mesh visual from the surface shape.
 flags = dvz.MESH_FLAGS_LIGHTING
@@ -102,5 +103,6 @@ dvz.app_on_timer(app, _on_timer, None)
 dvz.scene_run(scene, app, 0)
 
 # Cleanup.
+dvz.shape_destroy(shape)
 dvz.scene_destroy(scene)
 dvz.app_destroy(app)
