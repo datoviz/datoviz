@@ -2700,9 +2700,17 @@ Requester = DvzRequester
 # ===============================================================================
 
 
+
+class DvzKeyboardEventRef(DvzKeyboardEvent):
+    @classmethod
+    def from_param(cls, obj):
+        if isinstance(obj, P_(DvzKeyboardEvent)):
+            return obj.contents
+        return obj
+
 on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
 on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
-on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
+on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
 on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
 on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
 on_resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)

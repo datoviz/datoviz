@@ -60,11 +60,11 @@ static void _on_mouse(DvzMouse* mouse, DvzMouseEvent ev)
 
 
 
-static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
+static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
 {
     ANN(keyboard);
 
-    DvzWindow* window = (DvzWindow*)ev.user_data;
+    DvzWindow* window = (DvzWindow*)ev->user_data;
     ANN(window);
 
     // Do not process input events if the window is being captured by ImGui.
@@ -77,7 +77,7 @@ static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
     DvzClientEvent cev = {0};
     cev.type = DVZ_CLIENT_EVENT_KEYBOARD;
     cev.window_id = window->obj.id;
-    cev.content.k = ev;
+    cev.content.k = *ev;
     dvz_client_event(client, cev);
 }
 

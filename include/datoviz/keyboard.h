@@ -38,7 +38,7 @@
 typedef struct DvzKeyboard DvzKeyboard;
 typedef struct DvzKeyboardPayload DvzKeyboardPayload;
 
-typedef void (*DvzKeyboardCallback)(DvzKeyboard* keyboard, DvzKeyboardEvent ev);
+typedef void (*DvzKeyboardCallback)(DvzKeyboard* keyboard, DvzKeyboardEvent* ev);
 
 
 
@@ -108,7 +108,7 @@ void dvz_keyboard_callback(
 
 
 
-void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent ev);
+void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent* ev);
 
 
 

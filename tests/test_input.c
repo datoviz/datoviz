@@ -122,26 +122,26 @@ int test_input_mouse(TstSuite* suite)
 
 
 
-static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
+static void _on_keyboard(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
 {
     ANN(keyboard);
 
-    switch (ev.type)
+    switch (ev->type)
     {
 
     case DVZ_KEYBOARD_EVENT_PRESS:
-        log_debug("keyboard press key %d, mods %d", ev.key, ev.mods);
+        log_info("keyboard press key %d, mods %d", ev->key, ev->mods);
         break;
 
     case DVZ_KEYBOARD_EVENT_RELEASE:
-        log_debug("keyboard release key %d, mods %d", ev.key, ev.mods);
+        log_info("keyboard release key %d, mods %d", ev->key, ev->mods);
         break;
 
     default:
         break;
     }
 
-    log_debug(
+    log_info(
         "keys pressed: %d %d %d %d", //
         dvz_keyboard_get(keyboard, 0), dvz_keyboard_get(keyboard, 1),
         dvz_keyboard_get(keyboard, 2), dvz_keyboard_get(keyboard, 3));

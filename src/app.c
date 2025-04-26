@@ -134,7 +134,7 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
         // Pass the user_data to the keyboard event.
         ev.content.k.user_data = payload.user_data;
         // Call the keyboard callback.
-        cb(app, window_id, ev.content.k);
+        cb(app, window_id, &ev.content.k);
     }
 
     // Resize callback.

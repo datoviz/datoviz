@@ -44,7 +44,7 @@ static int _key_modifiers(int key_code)
 
 
 
-static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
+static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
 {
     ANN(keyboard);
     ANN(keyboard->callbacks);
@@ -54,10 +54,10 @@ static void _callbacks(DvzKeyboard* keyboard, DvzKeyboardEvent event)
     for (uint32_t i = 0; i < n; i++)
     {
         payload = (DvzKeyboardPayload*)dvz_list_get(keyboard->callbacks, i).p;
-        event.user_data = payload->user_data;
-        if (payload->type == event.type)
+        ev->user_data = payload->user_data;
+        if (payload->type == ev->type)
         {
-            payload->callback(keyboard, event);
+            payload->callback(keyboard, ev);
         }
     }
 }
@@ -96,7 +96,7 @@ void dvz_keyboard_press(DvzKeyboard* keyboard, DvzKeyCode key)
     // Create the PRESS event struct.
     DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_PRESS, .mods = keyboard->mods, .key = key};
     // Call the registered callbacks.
-    _callbacks(keyboard, ev);
+    _callbacks(keyboard, &ev);
 }
 
 
@@ -118,7 +118,7 @@ void dvz_keyboard_repeat(DvzKeyboard* keyboard, DvzKeyCode key)
     // Create the PRESS event struct.
     DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_REPEAT, .mods = keyboard->mods, .key = key};
     // Call the registered callbacks.
-    _callbacks(keyboard, ev);
+    _callbacks(keyboard, &ev);
 }
 
 
@@ -142,7 +142,7 @@ void dvz_keyboard_release(DvzKeyboard* keyboard, DvzKeyCode key)
     // Create the PRESS event struct.
     DvzKeyboardEvent ev = {.type = DVZ_KEYBOARD_EVENT_RELEASE, .mods = keyboard->mods, .key = key};
     // Call the registered callbacks.
-    _callbacks(keyboard, ev);
+    _callbacks(keyboard, &ev);
 }
 
 
@@ -194,22 +194,22 @@ void dvz_keyboard_callback(
 
 
 
-void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent ev)
+void dvz_keyboard_event(DvzKeyboard* keyboard, DvzKeyboardEvent* ev)
 {
     ANN(keyboard);
-    switch (ev.type)
+    switch (ev->type)
     {
 
     case DVZ_KEYBOARD_EVENT_PRESS:
-        dvz_keyboard_press(keyboard, ev.key);
+        dvz_keyboard_press(keyboard, ev->key);
         break;
 
     case DVZ_KEYBOARD_EVENT_RELEASE:
-        dvz_keyboard_release(keyboard, ev.key);
+        dvz_keyboard_release(keyboard, ev->key);
         break;
 
     default:
-        log_warn("keyboard event type #%d not supported", ev.type);
+        log_warn("keyboard event type #%d not supported", ev->type);
         break;
     }
 }

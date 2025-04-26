@@ -18,6 +18,18 @@ SPDX-License-Identifier: MIT
 # WARNING: DO NOT EDIT: automatically-generated file
 '''.lstrip()
 
+FUNCTION_CALLBACKS = dedent("""
+
+                            on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
+on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
+on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, P_(DvzKeyboardEvent))
+on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
+on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
+on_resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
+DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+
+""")
+
 EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 DVZ_COLOR_CVEC4 = 1
 DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
@@ -309,16 +321,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 
     # Function callbacks.
     delim("FUNCTION CALLBACK TYPES")
-    out += dedent("""
-    on_gui = DvzAppGuiCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzGuiEvent)
-    on_mouse = DvzAppMouseCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzMouseEvent)
-    on_keyboard = DvzAppKeyboardCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzKeyboardEvent)
-    on_frame = DvzAppFrameCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzFrameEvent)
-    on_timer = DvzAppTimerCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzTimerEvent)
-    on_resize = DvzAppResizeCallback = ctypes.CFUNCTYPE(None, P_(DvzApp), DvzId, DvzWindowEvent)
-    DvzErrorCallback = ctypes.CFUNCTYPE(None, ctypes.c_char_p)
-
-    """)
+    out += FUNCTION_CALLBACKS
 
     # Generate ctypes function bindings.
     delim("FUNCTIONS")
