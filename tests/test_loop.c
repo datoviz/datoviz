@@ -268,7 +268,8 @@ int test_loop_cube(TstSuite* suite)
 
     // Create a viewport dat manually.
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    DvzViewport viewport = {0};
+    dvz_viewport_default(WIDTH, HEIGHT, &viewport);
     dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
     dvz_pipe_dat(pipe, 1, dat_viewport);
 

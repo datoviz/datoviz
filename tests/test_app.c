@@ -454,7 +454,8 @@ int test_app_pixel(TstSuite* suite)
     dvz_visual_mvp(pixel, &mvp);
 
     // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    DvzViewport viewport = {0};
+    dvz_viewport_default(WIDTH, HEIGHT, &viewport);
     dvz_visual_viewport(pixel, &viewport);
 
 

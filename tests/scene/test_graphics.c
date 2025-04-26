@@ -67,7 +67,8 @@
 #define GRAPHICS_VIEWPORT                                                                         \
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);         \
     ANN(dat_viewport);                                                                            \
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);                                   \
+    DvzViewport viewport = {0};                                                                   \
+    dvz_viewport_default(WIDTH, HEIGHT, &viewport);                                               \
     dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
 
 #define GRAPHICS_SCREENSHOT(name)                                                                 \

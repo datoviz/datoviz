@@ -11713,18 +11713,20 @@ Return a default viewport
 === "Python"
 
     ``` python
-    dvz.viewport_default(  # returns: the viewport (DvzViewport)
+    dvz.viewport_default(
         width,  # the viewport width, in framebuffer pixels (int, 32-bit unsigned)
         height,  # the viewport height, in framebuffer pixels (int, 32-bit unsigned)
+        viewport,  # the viewport (LP_DvzViewport)
     )
     ```
 
 === "C"
 
     ``` c
-    DvzViewport dvz_viewport_default(  // returns: the viewport
+    void dvz_viewport_default(
         uint32_t width,  // the viewport width, in framebuffer pixels
         uint32_t height,  // the viewport height, in framebuffer pixels
+        DvzViewport* viewport,  // the viewport
     );
     ```
 

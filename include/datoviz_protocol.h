@@ -125,9 +125,9 @@ DVZ_EXPORT void dvz_mvp_default(DvzMVP* mvp);
  *
  * @param width the viewport width, in framebuffer pixels
  * @param height the viewport height, in framebuffer pixels
- * @returns the viewport
+ * @param[out] viewport the viewport
  */
-DVZ_EXPORT DvzViewport dvz_viewport_default(uint32_t width, uint32_t height);
+DVZ_EXPORT void dvz_viewport_default(uint32_t width, uint32_t height, DvzViewport* viewport);
 
 
 

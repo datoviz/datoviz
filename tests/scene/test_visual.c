@@ -55,7 +55,8 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_mvp(visual, &mvp);
 
     // Viewport.
-    DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    DvzViewport viewport = {0};
+    dvz_viewport_default(WIDTH, HEIGHT, &viewport);
     dvz_visual_viewport(visual, &viewport);
 
     // Create the visual.

@@ -94,7 +94,8 @@ _normalize_pos(vec2* pos, vec2 offset, vec2 shape, float content_scale, DvzMouse
 static inline void _update_viewport(DvzView* view)
 {
     ANN(view);
-    DvzViewport viewport = dvz_viewport(view->offset, view->shape, 0);
+    DvzViewport viewport = {0};
+    dvz_viewport(view->offset, view->shape, 0, &viewport);
     dvz_viewport_margins(&viewport, view->margins);
     // dvz_viewport_print(&viewport);
     dvz_dual_data(&view->dual, 0, 1, &viewport);

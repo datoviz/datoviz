@@ -244,7 +244,8 @@ int test_presenter_2(TstSuite* suite)
         viewport_id = req.id;
         req = dvz_bind_dat(batch, graphics_id, 1, viewport_id, 0);
 
-        DvzViewport viewport = dvz_viewport_default(WIDTH, HEIGHT);
+        DvzViewport viewport = {0};
+        dvz_viewport_default(WIDTH, HEIGHT, &viewport);
         // dvz_show_base64(sizeof(viewport), &viewport);
         req = dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 
@@ -828,7 +829,8 @@ int test_presenter_multi(TstSuite* suite)
         dvz_bind_dat(batch, graphics_id_0, 1, viewport_id, 0);
         dvz_bind_dat(batch, graphics_id_1, 1, viewport_id, 0);
 
-        DvzViewport viewport = dvz_viewport_default(WIDTH / 2, HEIGHT / 2);
+        DvzViewport viewport = {0};
+        dvz_viewport_default(WIDTH / 2, HEIGHT / 2, &viewport);
         // dvz_show_base64(sizeof(viewport), &viewport);
         dvz_upload_dat(batch, viewport_id, 0, sizeof(DvzViewport), &viewport, 0);
 

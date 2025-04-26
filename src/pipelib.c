@@ -48,7 +48,8 @@ static DvzDat* _make_dat_viewport(DvzContext* ctx, uvec2 size)
     DvzDat* dat_viewport = dvz_dat(ctx, DVZ_BUFFER_TYPE_UNIFORM, sizeof(DvzViewport), 0);
     ANN(dat_viewport);
 
-    DvzViewport viewport = dvz_viewport_default(size[0], size[1]);
+    DvzViewport viewport = {0};
+    dvz_viewport_default(size[0], size[1], &viewport);
     // TODO OPTIM: not wait here but later at the end of the pipelib graphics creation
     dvz_dat_upload(dat_viewport, 0, sizeof(viewport), &viewport, true);
 

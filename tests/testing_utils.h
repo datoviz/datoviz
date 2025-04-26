@@ -406,7 +406,7 @@ graphics_request(DvzBatch* batch, const uint32_t n, GraphicsWrapper* wrapper, in
 
     req = dvz_bind_dat(batch, wrapper->graphics_id, 1, wrapper->viewport_id, 0);
 
-    wrapper->viewport = dvz_viewport_default(WIDTH, HEIGHT);
+    dvz_viewport_default(WIDTH, HEIGHT, &wrapper->viewport);
     req =
         dvz_upload_dat(batch, wrapper->viewport_id, 0, sizeof(DvzViewport), &wrapper->viewport, 0);
 

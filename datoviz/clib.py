@@ -11662,17 +11662,14 @@ width : uint32_t
     the viewport width, in framebuffer pixels
 height : uint32_t
     the viewport height, in framebuffer pixels
-
-Returns
--------
-type
+viewport : DvzViewport* (out parameter)
     the viewport
 """
 viewport_default.argtypes = [
     ctypes.c_uint32,  # uint32_t width
     ctypes.c_uint32,  # uint32_t height
+    ctypes.POINTER(DvzViewport),  # out DvzViewport* viewport
 ]
-viewport_default.restype = DvzViewport
 
 # Function dvz_batch()
 batch = dvz.dvz_batch

@@ -49,9 +49,10 @@ EXTERN_C_ON
  *
  * @param offset the viewport's offset
  * @param shape the viewport's shape
- * @returns the viewport
+ * @param flags the flags
+ * @param[out] viewport the viewport
  */
-DvzViewport dvz_viewport(vec2 offset, vec2 shape, int flags);
+void dvz_viewport(vec2 offset, vec2 shape, int flags, DvzViewport* viewport);
 
 
 
