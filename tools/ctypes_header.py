@@ -1,5 +1,5 @@
 """
-This file is automatically included at the top of __init__.py during the ctypes wrapper generation.
+This file is automatically included at the top of clib.py during the ctypes wrapper generation.
 This is handled by `just ctypes`.
 """
 

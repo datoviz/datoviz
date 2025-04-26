@@ -3825,7 +3825,9 @@ Set the text.
     ``` python
     dvz.monoglyph_glyph(
         visual,  # the visual (LP_DvzVisual)
-        text,  # the ASCII test (string length without the null terminal byte = number of glyphs) (int, 32-bit unsigned)
+        first,  # the first item (int, 32-bit unsigned)
+        text,  # the ASCII test (string length without the null terminal byte = number of glyphs) (CStringBuffer)
+        flags,  # the upload flags (int, 32-bit signed)
     )
     ```
 
@@ -3834,7 +3836,9 @@ Set the text.
     ``` c
     void dvz_monoglyph_glyph(
         DvzVisual* visual,  // the visual
+        uint32_t first,  // the first item
         char* text,  // the ASCII test (string length without the null terminal byte = number of glyphs)
+        int flags,  // the upload flags
     );
     ```
 
@@ -7879,7 +7883,7 @@ Set the texture's associated sampler's filter (nearest or linear).
     ``` python
     dvz.texture_filter(
         texture,  # the texture (LP_DvzTexture)
-        texture,  # the filter (DvzFilter)
+        filter,  # the filter (DvzFilter)
     )
     ```
 
@@ -7888,7 +7892,7 @@ Set the texture's associated sampler's filter (nearest or linear).
     ``` c
     void dvz_texture_filter(
         DvzTexture* texture,  // the texture
-        DvzTexture* texture,  // the filter
+        DvzFilter filter,  // the filter
     );
     ```
 

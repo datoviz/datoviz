@@ -1116,7 +1116,7 @@ DVZ_EXPORT void dvz_texture_format(DvzTexture* texture, DvzFormat format);
  * Set the texture's associated sampler's filter (nearest or linear).
  *
  * @param texture the texture
- * @param texture the filter
+ * @param filter the filter
  */
 DVZ_EXPORT void dvz_texture_filter(DvzTexture* texture, DvzFilter filter);
 
@@ -2660,7 +2660,9 @@ DVZ_EXPORT void dvz_monoglyph_color(
  * Set the text.
  *
  * @param visual the visual
+ * @param first the first item
  * @param text the ASCII test (string length without the null terminal byte = number of glyphs)
+ * @param flags the upload flags
  */
 DVZ_EXPORT void
 dvz_monoglyph_glyph(DvzVisual* visual, uint32_t first, const char* text, int flags);
