@@ -22,6 +22,7 @@
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "scene/graphics.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -259,39 +260,11 @@ void dvz_image_colormap(DvzVisual* visual, DvzColormap cmap)
 
 
 
-void dvz_image_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
+void dvz_image_texture(DvzVisual* visual, DvzTexture* texture)
 {
     ANN(visual);
+    ANN(texture);
 
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
-
-    // Bind texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
-}
-
-
-
-/*************************************************************************************************/
-/*  Utils                                                                                        */
-/*************************************************************************************************/
-
-DvzId dvz_tex_image(
-    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data, int flags)
-{
-    ANN(batch);
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-
-    uvec3 shape = {width, height, 1};
-    DvzSize size = width * height * _format_size(format);
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, format, shape, flags).id;
-
-    if (data != NULL)
-        dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data, 0);
-
-    return tex;
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }

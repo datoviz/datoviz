@@ -2169,6 +2169,10 @@ class DvzTex(ctypes.Structure):
     pass
 
 
+class DvzTexture(ctypes.Structure):
+    pass
+
+
 class DvzTimerItem(ctypes.Structure):
     pass
 
@@ -4496,6 +4500,257 @@ visual_param.argtypes = [
     ctypes.c_void_p,  # void* item
 ]
 
+# Function dvz_texture()
+texture = dvz.dvz_texture
+texture.__doc__ = """
+Create a texture.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+dims : DvzTexDims
+    the number of dimensions in the texture
+flags : int
+    the texture creation flags
+
+Returns
+-------
+type
+    the texture
+"""
+texture.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzTexDims,  # DvzTexDims dims
+    ctypes.c_int,  # int flags
+]
+texture.restype = ctypes.POINTER(DvzTexture)
+
+# Function dvz_texture_shape()
+texture_shape = dvz.dvz_texture_shape
+texture_shape.__doc__ = """
+Set the texture shape.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+width : uint32_t
+    the width
+height : uint32_t
+    the height
+depth : uint32_t
+    the depth
+"""
+texture_shape.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ctypes.c_uint32,  # uint32_t depth
+]
+
+# Function dvz_texture_format()
+texture_format = dvz.dvz_texture_format
+texture_format.__doc__ = """
+Set the texture format.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+format : DvzFormat
+    the format
+"""
+texture_format.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+    DvzFormat,  # DvzFormat format
+]
+
+# Function dvz_texture_filter()
+texture_filter = dvz.dvz_texture_filter
+texture_filter.__doc__ = """
+Set the texture's associated sampler's filter (nearest or linear).
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+texture : DvzTexture*
+    the filter
+"""
+texture_filter.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+    DvzFilter,  # DvzFilter filter
+]
+
+# Function dvz_texture_address_mode()
+texture_address_mode = dvz.dvz_texture_address_mode
+texture_address_mode.__doc__ = """
+Set the texture's associated sampler's address mode.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+address_mode : DvzSamplerAddressMode
+    the address mode
+"""
+texture_address_mode.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+]
+
+# Function dvz_texture_data()
+texture_data = dvz.dvz_texture_data
+texture_data.__doc__ = """
+Upload all or part of the the texture data.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+xoffset : uint32_t
+    the x offset inside the texture
+yoffset : uint32_t
+    the y offset inside the texture
+zoffset : uint32_t
+    the z offset inside the texture
+width : uint32_t
+    the width of the uploaded image
+height : uint32_t
+    the height of the uploaded image
+depth : uint32_t
+    the depth of the uploaded image
+size : DvzSize
+    the size of the data buffer
+data : void*
+    the data buffer
+"""
+texture_data.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+    ctypes.c_uint32,  # uint32_t xoffset
+    ctypes.c_uint32,  # uint32_t yoffset
+    ctypes.c_uint32,  # uint32_t zoffset
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ctypes.c_uint32,  # uint32_t depth
+    DvzSize,  # DvzSize size
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
+]
+
+# Function dvz_texture_create()
+texture_create = dvz.dvz_texture_create
+texture_create.__doc__ = """
+Create the texture once set.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+"""
+texture_create.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+]
+
+# Function dvz_texture_destroy()
+texture_destroy = dvz.dvz_texture_destroy
+texture_destroy.__doc__ = """
+Destroy a texture.
+
+Parameters
+----------
+texture : DvzTexture*
+    the texture
+"""
+texture_destroy.argtypes = [
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
+]
+
+# Function dvz_texture_image()
+texture_image = dvz.dvz_texture_image
+texture_image.__doc__ = """
+Create a 2D texture to be used in an image visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+filter : DvzFilter
+    the filter
+address_mode : DvzSamplerAddressMode
+    the address mode
+width : uint32_t
+    the texture width
+height : uint32_t
+    the texture height
+data : void*
+    the texture data to upload
+flags : int
+    the texture creation flags
+
+Returns
+-------
+type
+    the texture
+"""
+texture_image.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzFormat,  # DvzFormat format
+    DvzFilter,  # DvzFilter filter
+    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
+    ctypes.c_int,  # int flags
+]
+texture_image.restype = ctypes.POINTER(DvzTexture)
+
+# Function dvz_texture_volume()
+texture_volume = dvz.dvz_texture_volume
+texture_volume.__doc__ = """
+Create a 3D texture to be used in a volume visual.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+filter : DvzFilter
+    the filter
+address_mode : DvzSamplerAddressMode
+    the address mode
+width : uint32_t
+    the texture width
+height : uint32_t
+    the texture height
+depth : uint32_t
+    the texture depth
+data : void*
+    the texture data to upload
+flags : int
+    the texture creation flags
+
+Returns
+-------
+type
+    the texture
+"""
+texture_volume.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzFormat,  # DvzFormat format
+    DvzFilter,  # DvzFilter filter
+    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.c_uint32,  # uint32_t width
+    ctypes.c_uint32,  # uint32_t height
+    ctypes.c_uint32,  # uint32_t depth
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
+    ctypes.c_int,  # int flags
+]
+texture_volume.restype = ctypes.POINTER(DvzTexture)
+
 # Function dvz_colormap()
 colormap = dvz.dvz_colormap
 colormap.__doc__ = """
@@ -5921,24 +6176,21 @@ marker_linewidth.argtypes = [
     ctypes.c_float,  # float width
 ]
 
-# Function dvz_marker_tex()
-marker_tex = dvz.dvz_marker_tex
-marker_tex.__doc__ = """
+# Function dvz_marker_texture()
+marker_texture = dvz.dvz_marker_texture
+marker_texture.__doc__ = """
 Set the marker texture.
 
 Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
-sampler : DvzId
-    the sampler ID
+texture : DvzTexture*
+    the texture
 """
-marker_tex.argtypes = [
+marker_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
-    DvzId,  # DvzId sampler
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_marker_tex_scale()
@@ -6488,7 +6740,7 @@ size : uvec3 (out parameter)
 Returns
 -------
 type
-    a tex ID
+    the texture
 """
 font_texture.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
@@ -6497,7 +6749,7 @@ font_texture.argtypes = [
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
     uvec3,  # out uvec3 size
 ]
-font_texture.restype = DvzId
+font_texture.restype = ctypes.POINTER(DvzTexture)
 
 # Function dvz_font_destroy()
 font_destroy = dvz.dvz_font_destroy
@@ -6839,12 +7091,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
+texture : DvzTexture*
+    the texture
 """
 glyph_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_glyph_atlas_font()
@@ -7324,18 +7576,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
-filter : DvzFilter
-    the texture filtering mode
-address_mode : DvzSamplerAddressMode
-    the texture address mode
+texture : DvzTexture*
+    the texture
 """
 image_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
-    DvzFilter,  # DvzFilter filter
-    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_image_edgecolor()
@@ -7439,41 +7685,6 @@ image_alloc.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t item_count
 ]
-
-# Function dvz_tex_image()
-tex_image = dvz.dvz_tex_image
-tex_image.__doc__ = """
-Create a 2D texture to be used in an image visual.
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-format : DvzFormat
-    the texture format
-width : uint32_t
-    the texture width
-height : uint32_t
-    the texture height
-data : void*
-    the texture data to upload
-flags : int
-    the texture creation flags
-
-Returns
--------
-type
-    the texture ID
-"""
-tex_image.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzFormat,  # DvzFormat format
-    ctypes.c_uint32,  # uint32_t width
-    ctypes.c_uint32,  # uint32_t height
-    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
-    ctypes.c_int,  # int flags
-]
-tex_image.restype = DvzId
 
 # Function dvz_mesh()
 mesh = dvz.dvz_mesh
@@ -7715,18 +7926,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
-filter : DvzFilter
-    the texture filtering mode
-address_mode : DvzSamplerAddressMode
-    the texture address mode
+texture : DvzTexture*
+    the texture
 """
 mesh_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
-    DvzFilter,  # DvzFilter filter
-    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_mesh_index()
@@ -8113,18 +8318,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
-filter : DvzFilter
-    the texture filtering mode
-address_mode : DvzSamplerAddressMode
-    the texture address mode
+texture : DvzTexture*
+    the 3D texture
 """
 volume_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
-    DvzFilter,  # DvzFilter filter
-    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_volume_bounds()
@@ -8220,41 +8419,6 @@ volume_transfer.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     vec4,  # vec4 transfer
 ]
-
-# Function dvz_tex_volume()
-tex_volume = dvz.dvz_tex_volume
-tex_volume.__doc__ = """
-Create a 3D texture to be used in a volume visual.
-
-Parameters
-----------
-batch : DvzBatch*
-    the batch
-format : DvzFormat
-    the texture format
-width : uint32_t
-    the texture width
-height : uint32_t
-    the texture height
-depth : uint32_t
-    the texture depth
-data : void*
-    the texture data to upload
-
-Returns
--------
-type
-    the texture ID
-"""
-tex_volume.argtypes = [
-    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
-    DvzFormat,  # DvzFormat format
-    ctypes.c_uint32,  # uint32_t width
-    ctypes.c_uint32,  # uint32_t height
-    ctypes.c_uint32,  # uint32_t depth
-    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
-]
-tex_volume.restype = DvzId
 
 # Function dvz_slice()
 slice = dvz.dvz_slice
@@ -8358,18 +8522,12 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-tex : DvzId
-    the texture ID
-filter : DvzFilter
-    the texture filtering mode
-address_mode : DvzSamplerAddressMode
-    the texture address mode
+texture : DvzTexture*
+    the texture
 """
 slice_texture.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    DvzId,  # DvzId tex
-    DvzFilter,  # DvzFilter filter
-    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
 # Function dvz_slice_alloc()

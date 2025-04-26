@@ -103,11 +103,8 @@ int test_marker_bitmap(TstSuite* suite)
 
     // Create and upload the texture.
     uvec3 tex_shape = {0};
-    DvzId tex = load_crate_texture(vt.batch, tex_shape);
-    DvzId sampler = dvz_create_sampler(
-                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                        .id;
-    dvz_marker_tex(visual, tex, sampler);
+    DvzTexture* texture = load_crate_texture(vt.batch, tex_shape);
+    dvz_marker_texture(visual, texture);
 
     // Visual allocation.
     dvz_marker_alloc(visual, n);
@@ -162,11 +159,10 @@ static void _disc_sdf(DvzVisual* visual, uint32_t size)
         texdata[i] = value;
     }
 
-    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32_SFLOAT, size, size, texdata, 0);
-    DvzId sampler = dvz_create_sampler(
-                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                        .id;
-    dvz_marker_tex(visual, tex, sampler);
+    DvzTexture* texture = dvz_texture_image(
+        visual->batch, DVZ_FORMAT_R32_SFLOAT, DVZ_FILTER_LINEAR,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, size, size, texdata, 0);
+    dvz_marker_texture(visual, texture);
     FREE(texdata);
 }
 
@@ -269,11 +265,10 @@ int test_marker_msdf(TstSuite* suite)
     FREE(msdf);
 
     // Upload the MSDF image to a texture.
-    DvzId tex = dvz_tex_image(visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, w, h, msdf_alpha, 0);
-    DvzId sampler = dvz_create_sampler(
-                        visual->batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
-                        .id;
-    dvz_marker_tex(visual, tex, sampler);
+    DvzTexture* texture = dvz_texture_image(
+        visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, DVZ_FILTER_LINEAR,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, w, h, msdf_alpha, 0);
+    dvz_marker_texture(visual, texture);
     FREE(msdf_alpha);
 
     // Visual allocation.

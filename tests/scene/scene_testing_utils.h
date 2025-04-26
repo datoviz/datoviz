@@ -77,8 +77,9 @@ static int render_requests(DvzBatch* batch, DvzGpu* gpu, DvzId canvas_id, const 
 
 
 
-static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
+static DvzTexture* load_crate_texture(DvzBatch* batch, uvec3 out_shape)
 {
+    ANN(batch);
     unsigned long png_size = 0;
     unsigned char* png_bytes = dvz_resource_testdata("crate", &png_size);
     ASSERT(png_size > 0);
@@ -95,16 +96,17 @@ static DvzId load_crate_texture(DvzBatch* batch, uvec3 out_shape)
     out_shape[0] = w;
     out_shape[1] = w;
 
-    DvzId tex =
-        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_shape[0], out_shape[1], png_bytes, 0);
+    DvzTexture* texture = dvz_texture_image(
+        batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, out_shape[0], out_shape[1], png_bytes, 0);
 
     // FREE(crate_data);
-    return tex;
+    return texture;
 }
 
 
 
-static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_volume)
+static DvzTexture* load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_volume)
 {
     // Path to the .npy.gz file.
     char path[1024] = {0};
@@ -118,7 +120,7 @@ static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_vo
     if (size == 0 || npy_bytes == NULL)
     {
         log_error("file not found: %s", path);
-        return DVZ_ID_NONE;
+        return NULL;
     }
     ASSERT(size > 0);
 
@@ -127,15 +129,17 @@ static DvzId load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_rgb_vo
     if (volume == NULL)
     {
         log_error("unable to load the volume file: %s", path);
-        return DVZ_ID_NONE;
+        return NULL;
     }
 
     log_info("loaded the Allen Mouse Brain volume (%s)", pretty_size(size));
     DvzFormat format = use_rgb_volume ? DVZ_FORMAT_R8G8B8A8_UNORM : DVZ_FORMAT_R16_UNORM;
-    DvzId tex = dvz_tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume);
+    DvzTexture* texture = dvz_texture_volume(
+        batch, format, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, MOUSE_W,
+        MOUSE_H, MOUSE_D, volume, 0);
     FREE(volume);
 
-    return tex;
+    return texture;
 }
 
 

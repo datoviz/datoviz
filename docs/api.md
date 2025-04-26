@@ -1307,7 +1307,7 @@ Generate a texture with a rendered text.
 === "Python"
 
     ``` python
-    dvz.font_texture(  # returns: a tex ID (c_ulong)
+    dvz.font_texture(  # returns: the texture (LP_DvzTexture)
         font,  # the font (LP_DvzFont)
         batch,  # the batch (LP_DvzBatch)
         length,  # the number of Unicode codepoints (int, 32-bit unsigned)
@@ -1319,7 +1319,7 @@ Generate a texture with a rendered text.
 === "C"
 
     ``` c
-    DvzId dvz_font_texture(  // returns: a tex ID
+    DvzTexture* dvz_font_texture(  // returns: the texture
         DvzFont* font,  // the font
         DvzBatch* batch,  // the batch
         uint32_t length,  // the number of Unicode codepoints
@@ -1761,7 +1761,7 @@ Assign a texture to a glyph visual.
     ``` python
     dvz.glyph_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
+        texture,  # the texture (LP_DvzTexture)
     )
     ```
 
@@ -1770,7 +1770,7 @@ Assign a texture to a glyph visual.
     ``` c
     void dvz_glyph_texture(
         DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
+        DvzTexture* texture,  // the texture
     );
     ```
 
@@ -2819,9 +2819,7 @@ Assign a texture to an image visual.
     ``` python
     dvz.image_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
-        filter,  # the texture filtering mode (DvzFilter)
-        address_mode,  # the texture address mode (DvzSamplerAddressMode)
+        texture,  # the texture (LP_DvzTexture)
     )
     ```
 
@@ -2830,9 +2828,7 @@ Assign a texture to an image visual.
     ``` c
     void dvz_image_texture(
         DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
-        DvzFilter filter,  // the texture filtering mode
-        DvzSamplerAddressMode address_mode,  // the texture address mode
+        DvzTexture* texture,  // the texture
     );
     ```
 
@@ -3178,30 +3174,6 @@ Set the marker sizes.
     );
     ```
 
-### `dvz_marker_tex()`
-
-Set the marker texture.
-
-=== "Python"
-
-    ``` python
-    dvz.marker_tex(
-        visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
-        sampler,  # the sampler ID (int, 64-bit unsigned)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_marker_tex(
-        DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
-        DvzId sampler,  // the sampler ID
-    );
-    ```
-
 ### `dvz_marker_tex_scale()`
 
 Set the texture scale.
@@ -3221,6 +3193,28 @@ Set the texture scale.
     void dvz_marker_tex_scale(
         DvzVisual* visual,  // the visual
         float scale,  // the texture scale
+    );
+    ```
+
+### `dvz_marker_texture()`
+
+Set the marker texture.
+
+=== "Python"
+
+    ``` python
+    dvz.marker_texture(
+        visual,  # the visual (LP_DvzVisual)
+        texture,  # the texture (LP_DvzTexture)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_marker_texture(
+        DvzVisual* visual,  // the visual
+        DvzTexture* texture,  // the texture
     );
     ```
 
@@ -3715,9 +3709,7 @@ Assign a 2D texture to a mesh visual.
     ``` python
     dvz.mesh_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
-        filter,  # the texture filtering mode (DvzFilter)
-        address_mode,  # the texture address mode (DvzSamplerAddressMode)
+        texture,  # the texture (LP_DvzTexture)
     )
     ```
 
@@ -3726,9 +3718,7 @@ Assign a 2D texture to a mesh visual.
     ``` c
     void dvz_mesh_texture(
         DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
-        DvzFilter filter,  // the texture filtering mode
-        DvzSamplerAddressMode address_mode,  // the texture address mode
+        DvzTexture* texture,  // the texture
     );
     ```
 
@@ -7543,9 +7533,7 @@ Assign a texture to a slice visual.
     ``` python
     dvz.slice_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
-        filter,  # the texture filtering mode (DvzFilter)
-        address_mode,  # the texture address mode (DvzSamplerAddressMode)
+        texture,  # the texture (LP_DvzTexture)
     )
     ```
 
@@ -7554,9 +7542,7 @@ Assign a texture to a slice visual.
     ``` c
     void dvz_slice_texture(
         DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
-        DvzFilter filter,  // the texture filtering mode
-        DvzSamplerAddressMode address_mode,  // the texture address mode
+        DvzTexture* texture,  // the texture
     );
     ```
 
@@ -7732,36 +7718,6 @@ Set the sphere sizes.
     );
     ```
 
-### `dvz_tex_image()`
-
-Create a 2D texture to be used in an image visual.
-
-=== "Python"
-
-    ``` python
-    dvz.tex_image(  # returns: the texture ID (c_ulong)
-        batch,  # the batch (LP_DvzBatch)
-        format,  # the texture format (DvzFormat)
-        width,  # the texture width (int, 32-bit unsigned)
-        height,  # the texture height (int, 32-bit unsigned)
-        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
-        flags,  # the texture creation flags (int, 32-bit signed)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    DvzId dvz_tex_image(  // returns: the texture ID
-        DvzBatch* batch,  // the batch
-        DvzFormat format,  // the texture format
-        uint32_t width,  // the texture width
-        uint32_t height,  // the texture height
-        void* data,  // the texture data to upload
-        int flags,  // the texture creation flags
-    );
-    ```
-
 ### `dvz_tex_slice()`
 
 Create a 3D texture to be used in a slice visual.
@@ -7792,33 +7748,265 @@ Create a 3D texture to be used in a slice visual.
     );
     ```
 
-### `dvz_tex_volume()`
+### `dvz_texture()`
 
-Create a 3D texture to be used in a volume visual.
+Create a texture.
 
 === "Python"
 
     ``` python
-    dvz.tex_volume(  # returns: the texture ID (c_ulong)
+    dvz.texture(  # returns: the texture (LP_DvzTexture)
         batch,  # the batch (LP_DvzBatch)
-        format,  # the texture format (DvzFormat)
-        width,  # the texture width (int, 32-bit unsigned)
-        height,  # the texture height (int, 32-bit unsigned)
-        depth,  # the texture depth (int, 32-bit unsigned)
-        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        dims,  # the number of dimensions in the texture (DvzTexDims)
+        flags,  # the texture creation flags (int, 32-bit signed)
     )
     ```
 
 === "C"
 
     ``` c
-    DvzId dvz_tex_volume(  // returns: the texture ID
+    DvzTexture* dvz_texture(  // returns: the texture
+        DvzBatch* batch,  // the batch
+        DvzTexDims dims,  // the number of dimensions in the texture
+        int flags,  // the texture creation flags
+    );
+    ```
+
+### `dvz_texture_address_mode()`
+
+Set the texture's associated sampler's address mode.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_address_mode(
+        texture,  # the texture (LP_DvzTexture)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_address_mode(
+        DvzTexture* texture,  // the texture
+        DvzSamplerAddressMode address_mode,  // the address mode
+    );
+    ```
+
+### `dvz_texture_create()`
+
+Create the texture once set.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_create(
+        texture,  # the texture (LP_DvzTexture)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_create(
+        DvzTexture* texture,  // the texture
+    );
+    ```
+
+### `dvz_texture_data()`
+
+Upload all or part of the the texture data.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_data(
+        texture,  # the texture (LP_DvzTexture)
+        xoffset,  # the x offset inside the texture (int, 32-bit unsigned)
+        yoffset,  # the y offset inside the texture (int, 32-bit unsigned)
+        zoffset,  # the z offset inside the texture (int, 32-bit unsigned)
+        width,  # the width of the uploaded image (int, 32-bit unsigned)
+        height,  # the height of the uploaded image (int, 32-bit unsigned)
+        depth,  # the depth of the uploaded image (int, 32-bit unsigned)
+        size,  # the size of the data buffer (int, 64-bit unsigned)
+        data,  # the data buffer (ndpointer_any_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_data(
+        DvzTexture* texture,  // the texture
+        uint32_t xoffset,  // the x offset inside the texture
+        uint32_t yoffset,  // the y offset inside the texture
+        uint32_t zoffset,  // the z offset inside the texture
+        uint32_t width,  // the width of the uploaded image
+        uint32_t height,  // the height of the uploaded image
+        uint32_t depth,  // the depth of the uploaded image
+        DvzSize size,  // the size of the data buffer
+        void* data,  // the data buffer
+    );
+    ```
+
+### `dvz_texture_destroy()`
+
+Destroy a texture.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_destroy(
+        texture,  # the texture (LP_DvzTexture)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_destroy(
+        DvzTexture* texture,  // the texture
+    );
+    ```
+
+### `dvz_texture_filter()`
+
+Set the texture's associated sampler's filter (nearest or linear).
+
+=== "Python"
+
+    ``` python
+    dvz.texture_filter(
+        texture,  # the texture (LP_DvzTexture)
+        texture,  # the filter (DvzFilter)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_filter(
+        DvzTexture* texture,  // the texture
+        DvzTexture* texture,  // the filter
+    );
+    ```
+
+### `dvz_texture_format()`
+
+Set the texture format.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_format(
+        texture,  # the texture (LP_DvzTexture)
+        format,  # the format (DvzFormat)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_format(
+        DvzTexture* texture,  // the texture
+        DvzFormat format,  // the format
+    );
+    ```
+
+### `dvz_texture_image()`
+
+Create a 2D texture to be used in an image visual.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_image(  # returns: the texture (LP_DvzTexture)
+        batch,  # the batch (LP_DvzBatch)
+        format,  # the texture format (DvzFormat)
+        filter,  # the filter (DvzFilter)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the texture creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzTexture* dvz_texture_image(  // returns: the texture
         DvzBatch* batch,  // the batch
         DvzFormat format,  // the texture format
+        DvzFilter filter,  // the filter
+        DvzSamplerAddressMode address_mode,  // the address mode
+        uint32_t width,  // the texture width
+        uint32_t height,  // the texture height
+        void* data,  // the texture data to upload
+        int flags,  // the texture creation flags
+    );
+    ```
+
+### `dvz_texture_shape()`
+
+Set the texture shape.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_shape(
+        texture,  # the texture (LP_DvzTexture)
+        width,  # the width (int, 32-bit unsigned)
+        height,  # the height (int, 32-bit unsigned)
+        depth,  # the depth (int, 32-bit unsigned)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_texture_shape(
+        DvzTexture* texture,  // the texture
+        uint32_t width,  // the width
+        uint32_t height,  // the height
+        uint32_t depth,  // the depth
+    );
+    ```
+
+### `dvz_texture_volume()`
+
+Create a 3D texture to be used in a volume visual.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_volume(  # returns: the texture (LP_DvzTexture)
+        batch,  # the batch (LP_DvzBatch)
+        format,  # the texture format (DvzFormat)
+        filter,  # the filter (DvzFilter)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        depth,  # the texture depth (int, 32-bit unsigned)
+        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the texture creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzTexture* dvz_texture_volume(  // returns: the texture
+        DvzBatch* batch,  // the batch
+        DvzFormat format,  // the texture format
+        DvzFilter filter,  // the filter
+        DvzSamplerAddressMode address_mode,  // the address mode
         uint32_t width,  // the texture width
         uint32_t height,  // the texture height
         uint32_t depth,  // the texture depth
         void* data,  // the texture data to upload
+        int flags,  // the texture creation flags
     );
     ```
 
@@ -8673,9 +8861,7 @@ Assign a 3D texture to a volume visual.
     ``` python
     dvz.volume_texture(
         visual,  # the visual (LP_DvzVisual)
-        tex,  # the texture ID (int, 64-bit unsigned)
-        filter,  # the texture filtering mode (DvzFilter)
-        address_mode,  # the texture address mode (DvzSamplerAddressMode)
+        texture,  # the 3D texture (LP_DvzTexture)
     )
     ```
 
@@ -8684,9 +8870,7 @@ Assign a 3D texture to a volume visual.
     ``` c
     void dvz_volume_texture(
         DvzVisual* visual,  // the visual
-        DvzId tex,  // the texture ID
-        DvzFilter filter,  // the texture filtering mode
-        DvzSamplerAddressMode address_mode,  // the texture address mode
+        DvzTexture* texture,  // the 3D texture
     );
     ```
 

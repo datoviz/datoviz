@@ -99,7 +99,7 @@ dvz.panel_update(panel)
 # Keyboard event callback function.
 
 
-@dvz.keyboard
+@dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
     global eye
 
@@ -474,7 +474,7 @@ scene = dvz.scene(batch)
 figure = dvz.figure(scene, 800, 600, 0)
 
 
-@dvz.keyboard
+@dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
     action = {dvz.KEYBOARD_EVENT_RELEASE: "released",
               dvz.KEYBOARD_EVENT_PRESS: "pressed"}.get(ev.type)

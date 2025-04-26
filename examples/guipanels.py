@@ -28,16 +28,17 @@ def load_mouse_volume():
     shape = volume_data.shape
     MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
     format = dvz.FORMAT_R8G8B8A8_UNORM
-    tex = dvz.tex_volume(batch, format, MOUSE_W, MOUSE_H, MOUSE_D, volume_data)
-    return tex, MOUSE_D, MOUSE_H, MOUSE_W
+    texture = dvz.texture_volume(
+        batch, format, dvz.FILTER_LINEAR,
+        dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, MOUSE_W, MOUSE_H, MOUSE_D, volume_data, 0)
+    return texture, MOUSE_D, MOUSE_H, MOUSE_W
 
 
-def create_volume(tex, MOUSE_D, MOUSE_H, MOUSE_W):
+def create_volume(texture, MOUSE_D, MOUSE_H, MOUSE_W):
     volume = dvz.volume(batch, dvz.VOLUME_FLAGS_RGBA)
 
     scaling = 1.0 / MOUSE_D
-    dvz.volume_texture(
-        volume, tex, dvz.FILTER_LINEAR, dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE)
+    dvz.volume_texture(volume, texture)
 
     x, y, z = MOUSE_W * scaling, MOUSE_H * scaling, 1
     dvz.volume_bounds(volume, vec2(-x, +x), vec2(-y, +y), vec2(-z, +z))

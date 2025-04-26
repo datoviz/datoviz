@@ -23,6 +23,7 @@
 #include "scene/atlas.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -258,18 +259,13 @@ void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor)
 
 
 
-void dvz_glyph_texture(DvzVisual* visual, DvzId tex)
+void dvz_glyph_texture(DvzVisual* visual, DvzTexture* texture)
 {
     ANN(visual);
-
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler =
-        dvz_create_sampler(batch, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT).id;
+    ANN(texture);
 
     // Bind texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }
 
 
@@ -288,15 +284,15 @@ void dvz_glyph_atlas_font(DvzVisual* visual, DvzAtlasFont* af)
     visual->user_data = (void*)af;
 
     // Create the atlas texture.
-    DvzId tex = dvz_atlas_texture(af->atlas, batch);
-    if (tex == DVZ_ID_NONE)
+    DvzTexture* texture = dvz_atlas_texture(af->atlas, batch);
+    if (texture == NULL)
     {
         log_error("failed creating atlas texture");
         return;
     }
 
     // Bind the texture to the glyph visual.
-    dvz_glyph_texture(visual, tex);
+    dvz_glyph_texture(visual, texture);
 }
 
 

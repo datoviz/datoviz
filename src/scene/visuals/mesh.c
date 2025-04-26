@@ -24,6 +24,7 @@
 #include "scene/baker.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -284,10 +285,10 @@ void dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* 
 
 
 
-void dvz_mesh_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
+void dvz_mesh_texture(DvzVisual* visual, DvzTexture* texture)
 {
     ANN(visual);
+    ANN(texture);
 
     if (!(visual->flags & DVZ_MESH_FLAGS_TEXTURED))
     {
@@ -295,13 +296,8 @@ void dvz_mesh_texture(
         return;
     }
 
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
-
-    // Bind texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }
 
 

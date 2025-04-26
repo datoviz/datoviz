@@ -52,7 +52,7 @@ int test_image_1(TstSuite* suite)
 
     // Create and upload the texture.
     uvec3 tex_shape = {0};
-    DvzId tex = load_crate_texture(vt.batch, tex_shape);
+    DvzTexture* texture = load_crate_texture(vt.batch, tex_shape);
     float w = tex_shape[0], h = tex_shape[1];
 
     // Create the visual.
@@ -89,7 +89,7 @@ int test_image_1(TstSuite* suite)
     dvz_panel_visual(vt.panel, visual, 0);
 
     // Attach the texture to the image visual.
-    dvz_image_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_image_texture(visual, texture);
 
     // Run the test.
     visual_test_end(vt);
@@ -164,7 +164,7 @@ int test_image_2(TstSuite* suite)
     uint32_t length = 0;
     uint32_t* codepoints = utf32_codepoints(text, &length);
     uvec3 tex_size = {0};
-    DvzId tex = dvz_font_texture(font, vt.batch, length, codepoints, tex_size);
+    DvzTexture* texture = dvz_font_texture(font, vt.batch, length, codepoints, tex_size);
     FREE(codepoints);
     dvz_font_destroy(font);
     float w = tex_size[0];
@@ -196,7 +196,7 @@ int test_image_2(TstSuite* suite)
     dvz_panel_visual(vt.panel, visual, 0);
 
     // Attach the texture to the image visual.
-    dvz_image_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_image_texture(visual, texture);
 
     // Run the test.
     visual_test_end(vt);

@@ -8,8 +8,8 @@
 /*************************************************************************************************/
 
 #include "scene/atlas.h"
-#include "_pointer.h"
 #include "_macros.h"
+#include "_pointer.h"
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "fileio.h"
@@ -379,9 +379,10 @@ void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename)
 
 
 
-DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
+DvzTexture* dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
 {
     ANN(atlas);
+    ANN(batch);
 
     if (atlas->rgb == NULL)
     {
@@ -395,20 +396,19 @@ DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
     ASSERT(shape[1] > 0);
     ASSERT(shape[2] == 1);
 
-    // TODO: mtsdf with 4 channels
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_2D, DVZ_FORMAT_R8G8B8A8_UNORM, shape, 0).id;
-
     DvzSize size = atlas->width * atlas->height * 4;
-
-    ANN(atlas->rgb);
 
     // HACK: Vulkan does not support RGB textures so we create a RGBA texture with a full alpha
     // channel.
+    ANN(atlas->rgb);
     uint8_t* rgba = dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb);
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, rgba, 0);
+    // TODO: mtsdf with 4 channels
+    DvzTexture* texture = dvz_texture_image(
+        batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, atlas->width, atlas->height, rgba, 0);
     FREE(rgba);
 
-    return tex;
+    return texture;
 }
 
 

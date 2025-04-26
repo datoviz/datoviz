@@ -823,6 +823,7 @@ add_library(datoviz_scene OBJECT
     "src/scene/scene.c"
     "src/scene/sdf.cpp"
     "src/scene/shape.c"
+    "src/scene/texture.c"
     "src/scene/ticks.c"
     "src/scene/transform.c"
     "src/scene/viewport.c"

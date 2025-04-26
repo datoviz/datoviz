@@ -78,10 +78,12 @@ int test_volume_1(TstSuite* suite)
     };
 
     // Create the texture and upload the volume data.
-    DvzId tex = dvz_tex_volume(vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, 3, 2, 1, tex_data);
+    DvzTexture* texture = dvz_texture_volume(
+        vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT,
+        3, 2, 1, tex_data, 0);
 
     // Bind the volume texture to the visual.
-    dvz_volume_texture(visual, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+    dvz_volume_texture(visual, texture);
 
     visual_test_end(vt);
 
@@ -136,13 +138,12 @@ int test_volume_2(TstSuite* suite)
 
         // Create the texture and upload the volume data.
         uvec3 shape = {0};
-        DvzId tex = load_brain_volume(vt.batch, shape, true);
+        DvzTexture* texture = load_brain_volume(vt.batch, shape, true);
 
-        if (tex != DVZ_ID_NONE)
+        if (texture != NULL)
         {
             // Bind the volume texture to the visual.
-            dvz_volume_texture(
-                visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+            dvz_volume_texture(visual, texture);
         }
 
         // GUI callback.
@@ -171,7 +172,7 @@ int test_volume_2(TstSuite* suite)
 
     //     // Create and upload the texture.
     //     uvec3 tex_shape = {0};
-    //     DvzId tex_img = load_crate_texture(vt.batch, tex_shape);
+    //     DvzTexture* tex_img = load_crate_texture(vt.batch, tex_shape);
 
     //     dvz_image_texture(image, tex_img, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
     // }

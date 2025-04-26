@@ -22,6 +22,7 @@
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "scene/graphics.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 #include "scene/visuals/volume.h"
@@ -244,18 +245,13 @@ void dvz_slice_texcoords(
 
 
 
-void dvz_slice_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
+void dvz_slice_texture(DvzVisual* visual, DvzTexture* texture)
 {
     ANN(visual);
+    ANN(texture);
 
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
-
-    // Bind texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }
 
 

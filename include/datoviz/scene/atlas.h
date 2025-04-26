@@ -33,6 +33,7 @@ typedef struct DvzAtlas DvzAtlas;
 // Forward declarations.
 typedef struct DvzFont DvzFont;
 typedef struct DvzBatch DvzBatch;
+typedef struct DvzTexture DvzTexture;
 
 
 
@@ -121,7 +122,7 @@ void dvz_atlas_png(DvzAtlas* atlas, const char* png_filename);
 
 /**
  */
-DvzId dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
+DvzTexture* dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch);
 
 
 

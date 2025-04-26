@@ -68,8 +68,8 @@ int test_mesh_1(TstSuite* suite)
     if (flags & DVZ_MESH_FLAGS_TEXTURED)
     {
         uvec3 tex_shape = {0};
-        DvzId tex = load_crate_texture(vt.batch, tex_shape);
-        dvz_mesh_texture(visual, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+        DvzTexture* texture = load_crate_texture(vt.batch, tex_shape);
+        dvz_mesh_texture(visual, texture);
     }
 
 

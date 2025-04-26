@@ -21,6 +21,7 @@
 #include "fileio.h"
 #include "scene/graphics.h"
 #include "scene/scene.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -196,7 +197,11 @@ void dvz_marker_tex_scale(DvzVisual* visual, float scale)
 
 
 
-void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler)
+void dvz_marker_texture(DvzVisual* visual, DvzTexture* texture)
 {
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+    ANN(visual);
+    ANN(texture);
+
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }

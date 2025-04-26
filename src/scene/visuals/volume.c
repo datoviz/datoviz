@@ -21,6 +21,7 @@
 #include "datoviz_types.h"
 #include "fileio.h"
 #include "scene/graphics.h"
+#include "scene/texture.h"
 #include "scene/viewset.h"
 #include "scene/visual.h"
 
@@ -101,18 +102,13 @@ DvzVisual* dvz_volume(DvzBatch* batch, int flags)
 
 
 
-void dvz_volume_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode)
+void dvz_volume_texture(DvzVisual* visual, DvzTexture* texture)
 {
     ANN(visual);
+    ANN(texture);
 
-    DvzBatch* batch = visual->batch;
-    ANN(batch);
-
-    DvzId sampler = dvz_create_sampler(batch, filter, address_mode).id;
-
-    // Bind the texture to the visual.
-    dvz_visual_tex(visual, 3, tex, sampler, DVZ_ZERO_OFFSET);
+    dvz_texture_create(texture); // only create it if it is not already created
+    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }
 
 
@@ -233,22 +229,4 @@ void dvz_volume_slice(DvzVisual* visual, int32_t face_index)
     int32_t* p = _get_param(visual, 2, 6);
     ivec4 permutation = {p[0], p[1], p[2], face_index};
     dvz_visual_param(visual, 2, 6, permutation);
-}
-
-
-
-DvzId dvz_tex_volume(
-    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, uint32_t depth, void* data)
-{
-    ASSERT(width > 0);
-    ASSERT(height > 0);
-    ASSERT(depth > 0);
-    ANN(data);
-
-    uvec3 shape = {width, height, depth};
-    DvzSize size = width * height * depth * _format_size(format);
-    DvzId tex = dvz_create_tex(batch, DVZ_TEX_3D, format, shape, 0).id;
-    dvz_upload_tex(batch, tex, DVZ_ZERO_OFFSET, shape, size, data, 0);
-
-    return tex;
 }

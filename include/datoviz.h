@@ -51,29 +51,29 @@ Datoviz is still an early stage library and the API may change at any time.
 /*************************************************************************************************/
 
 typedef struct DvzApp DvzApp;
-typedef struct DvzServer DvzServer;
-typedef struct DvzBatch DvzBatch;
-typedef struct DvzMouse DvzMouse;
-typedef struct DvzKeyboard DvzKeyboard;
-typedef struct DvzRenderer DvzRenderer;
-typedef struct DvzScene DvzScene;
-typedef struct DvzFigure DvzFigure;
-typedef struct DvzPanel DvzPanel;
-typedef struct DvzVisual DvzVisual;
-typedef struct DvzTransform DvzTransform;
-typedef struct DvzMVP DvzMVP;
-typedef struct DvzCamera DvzCamera;
 typedef struct DvzArcball DvzArcball;
-typedef struct DvzPanzoom DvzPanzoom;
+typedef struct DvzAtlas DvzAtlas;
+typedef struct DvzBatch DvzBatch;
+typedef struct DvzBox DvzBox;
+typedef struct DvzCamera DvzCamera;
+typedef struct DvzFigure DvzFigure;
+typedef struct DvzFont DvzFont;
+typedef struct DvzKeyboard DvzKeyboard;
+typedef struct DvzMouse DvzMouse;
+typedef struct DvzMVP DvzMVP;
 typedef struct DvzOrtho DvzOrtho;
+typedef struct DvzPanel DvzPanel;
+typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzParams DvzParams;
 typedef struct DvzRef DvzRef;
-
+typedef struct DvzRenderer DvzRenderer;
+typedef struct DvzScene DvzScene;
+typedef struct DvzServer DvzServer;
 typedef struct DvzShape DvzShape;
-typedef struct DvzFont DvzFont;
-typedef struct DvzAtlas DvzAtlas;
 typedef struct DvzTex DvzTex;
-typedef struct DvzBox DvzBox;
+typedef struct DvzTexture DvzTexture;
+typedef struct DvzTransform DvzTransform;
+typedef struct DvzVisual DvzVisual;
 
 
 
@@ -1074,6 +1074,141 @@ dvz_visual_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx, void* 
 
 
 /*************************************************************************************************/
+/*  Texture                                                                                      */
+/*************************************************************************************************/
+
+/**
+ * Create a texture.
+ *
+ * @param batch the batch
+ * @param dims the number of dimensions in the texture
+ * @param flags the texture creation flags
+ * @returns the texture
+ */
+DVZ_EXPORT DvzTexture* dvz_texture(DvzBatch* batch, DvzTexDims dims, int flags);
+
+
+
+/**
+ * Set the texture shape.
+ *
+ * @param texture the texture
+ * @param width the width
+ * @param height the height
+ * @param depth the depth
+ */
+DVZ_EXPORT void
+dvz_texture_shape(DvzTexture* texture, uint32_t width, uint32_t height, uint32_t depth);
+
+
+
+/**
+ * Set the texture format.
+ *
+ * @param texture the texture
+ * @param format the format
+ */
+DVZ_EXPORT void dvz_texture_format(DvzTexture* texture, DvzFormat format);
+
+
+
+/**
+ * Set the texture's associated sampler's filter (nearest or linear).
+ *
+ * @param texture the texture
+ * @param texture the filter
+ */
+DVZ_EXPORT void dvz_texture_filter(DvzTexture* texture, DvzFilter filter);
+
+
+
+/**
+ * Set the texture's associated sampler's address mode.
+ *
+ * @param texture the texture
+ * @param address_mode the address mode
+ */
+DVZ_EXPORT void dvz_texture_address_mode(DvzTexture* texture, DvzSamplerAddressMode address_mode);
+
+
+
+/**
+ * Upload all or part of the the texture data.
+ *
+ * @param texture the texture
+ * @param xoffset the x offset inside the texture
+ * @param yoffset the y offset inside the texture
+ * @param zoffset the z offset inside the texture
+ * @param width the width of the uploaded image
+ * @param height the height of the uploaded image
+ * @param depth the depth of the uploaded image
+ * @param size the size of the data buffer
+ * @param data the data buffer
+ */
+DVZ_EXPORT void dvz_texture_data(
+    DvzTexture* texture, uint32_t xoffset, uint32_t yoffset, uint32_t zoffset, //
+    uint32_t width, uint32_t height, uint32_t depth, DvzSize size, void* data);
+
+
+
+/**
+ * Create the texture once set.
+ *
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_texture_create(DvzTexture* texture);
+
+
+
+/**
+ * Destroy a texture.
+ *
+ * @param texture the texture
+ */
+DVZ_EXPORT void dvz_texture_destroy(DvzTexture* texture);
+
+
+
+/**
+ * Create a 2D texture to be used in an image visual.
+ *
+ * @param batch the batch
+ * @param format the texture format
+ * @param filter the filter
+ * @param address_mode the address mode
+ * @param width the texture width
+ * @param height the texture height
+ * @param data the texture data to upload
+ * @param flags the texture creation flags
+ * @returns the texture
+ */
+DVZ_EXPORT DvzTexture* dvz_texture_image(
+    DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
+    uint32_t width, uint32_t height, void* data, int flags);
+
+
+
+/**
+ * Create a 3D texture to be used in a volume visual.
+ *
+ * @param batch the batch
+ * @param format the texture format
+ * @param filter the filter
+ * @param address_mode the address mode
+ * @param width the texture width
+ * @param height the texture height
+ * @param depth the texture depth
+ * @param data the texture data to upload
+ * @param flags the texture creation flags
+ * @returns the texture
+ */
+DVZ_EXPORT DvzTexture* dvz_texture_volume(
+    DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode, //
+    uint32_t width, uint32_t height, uint32_t depth, void* data, int flags);
+
+
+
+/*************************************************************************************************/
 /*  Colormap functions                                                                           */
 /*************************************************************************************************/
 
@@ -1872,10 +2007,9 @@ DVZ_EXPORT void dvz_marker_linewidth(DvzVisual* visual, float width);
  * Set the marker texture.
  *
  * @param visual the visual
- * @param tex the texture ID
- * @param sampler the sampler ID
+ * @param texture the texture
  */
-DVZ_EXPORT void dvz_marker_tex(DvzVisual* visual, DvzId tex, DvzId sampler);
+DVZ_EXPORT void dvz_marker_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 
@@ -2185,10 +2319,10 @@ DVZ_EXPORT uint8_t* dvz_font_draw(
  * @param length the number of Unicode codepoints
  * @param codepoints the Unicode codepoints
  * @param[out] size the generated texture size
- * @returns a tex ID
+ * @returns the texture
  *
  */
-DVZ_EXPORT DvzId dvz_font_texture(
+DVZ_EXPORT DvzTexture* dvz_font_texture(
     DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 size);
 
 
@@ -2394,9 +2528,9 @@ DVZ_EXPORT void dvz_glyph_bgcolor(DvzVisual* visual, vec4 bgcolor);
  * Assign a texture to a glyph visual.
  *
  * @param visual the visual
- * @param tex the texture ID
+ * @param texture the texture
  */
-DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzId tex);
+DVZ_EXPORT void dvz_glyph_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 
@@ -2674,12 +2808,9 @@ DVZ_EXPORT void dvz_image_facecolor(
  * Assign a texture to an image visual.
  *
  * @param visual the visual
- * @param tex the texture ID
- * @param filter the texture filtering mode
- * @param address_mode the texture address mode
+ * @param texture the texture
  */
-DVZ_EXPORT void dvz_image_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+DVZ_EXPORT void dvz_image_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 
@@ -2759,22 +2890,6 @@ DVZ_EXPORT void dvz_image_colormap(DvzVisual* visual, DvzColormap cmap);
  * @param item_count the total number of images to allocate for this visual
  */
 DVZ_EXPORT void dvz_image_alloc(DvzVisual* visual, uint32_t item_count);
-
-
-
-/**
- * Create a 2D texture to be used in an image visual.
- *
- * @param batch the batch
- * @param format the texture format
- * @param width the texture width
- * @param height the texture height
- * @param data the texture data to upload
- * @param flags the texture creation flags
- * @returns the texture ID
- */
-DVZ_EXPORT DvzId dvz_tex_image(
-    DvzBatch* batch, DvzFormat format, uint32_t width, uint32_t height, void* data, int flags);
 
 
 
@@ -2912,12 +3027,9 @@ dvz_mesh_contour(DvzVisual* visual, uint32_t first, uint32_t count, cvec4* value
  * Assign a 2D texture to a mesh visual.
  *
  * @param visual the visual
- * @param tex the texture ID
- * @param filter the texture filtering mode
- * @param address_mode the texture address mode
+ * @param texture the texture
  */
-DVZ_EXPORT void dvz_mesh_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+DVZ_EXPORT void dvz_mesh_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 
@@ -3139,12 +3251,9 @@ DVZ_EXPORT DvzVisual* dvz_volume(DvzBatch* batch, int flags);
  * Assign a 3D texture to a volume visual.
  *
  * @param visual the visual
- * @param tex the texture ID
- * @param filter the texture filtering mode
- * @param address_mode the texture address mode
+ * @param texture the 3D texture
  */
-DVZ_EXPORT void dvz_volume_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+DVZ_EXPORT void dvz_volume_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 
@@ -3198,23 +3307,6 @@ DVZ_EXPORT void dvz_volume_slice(DvzVisual* visual, int32_t face_index);
  * @param transfer transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
  */
 DVZ_EXPORT void dvz_volume_transfer(DvzVisual* visual, vec4 transfer);
-
-
-
-/**
- * Create a 3D texture to be used in a volume visual.
- *
- * @param batch the batch
- * @param format the texture format
- * @param width the texture width
- * @param height the texture height
- * @param depth the texture depth
- * @param data the texture data to upload
- * @returns the texture ID
- */
-DVZ_EXPORT DvzId dvz_tex_volume(
-    DvzBatch* batch, DvzFormat format, //
-    uint32_t width, uint32_t height, uint32_t depth, void* data);
 
 
 
@@ -3273,12 +3365,9 @@ DVZ_EXPORT void dvz_slice_texcoords(
  * Assign a texture to a slice visual.
  *
  * @param visual the visual
- * @param tex the texture ID
- * @param filter the texture filtering mode
- * @param address_mode the texture address mode
+ * @param texture the texture
  */
-DVZ_EXPORT void dvz_slice_texture(
-    DvzVisual* visual, DvzId tex, DvzFilter filter, DvzSamplerAddressMode address_mode);
+DVZ_EXPORT void dvz_slice_texture(DvzVisual* visual, DvzTexture* texture);
 
 
 

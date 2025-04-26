@@ -345,7 +345,7 @@ uint8_t* dvz_font_draw(
 
 
 
-DvzId dvz_font_texture(
+DvzTexture* dvz_font_texture(
     DvzFont* font, DvzBatch* batch, uint32_t length, uint32_t* codepoints, uvec3 out_size)
 {
     ANN(font);
@@ -354,14 +354,15 @@ DvzId dvz_font_texture(
     vec4* xywh = dvz_font_layout(font, length, codepoints);
     uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_FLAGS_RGBA, out_size);
     out_size[2] = 1;
-    DvzId tex =
-        dvz_tex_image(batch, DVZ_FORMAT_R8G8B8A8_UNORM, out_size[0], out_size[1], bitmap, 0);
+    DvzTexture* texture = dvz_texture_image(
+        batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
+        DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, out_size[0], out_size[1], bitmap, 0);
 
     // Cleanup.
     FREE(bitmap);
     FREE(xywh);
 
-    return tex;
+    return texture;
 }
 
 

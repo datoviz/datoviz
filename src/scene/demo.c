@@ -419,14 +419,16 @@ void dvz_demo(void)
                     DVZ_CMAP_VIRIDIS, value, vmin, vmax, (DvzAlpha*)&imgdata[j * wi + i]);
             }
         }
-        DvzId tex = dvz_tex_image(batch, DVZ_FORMAT_COLOR, wi, hi, imgdata, 0);
+        DvzTexture* texture = dvz_texture_image(
+            batch, DVZ_FORMAT_COLOR, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT, wi, hi,
+            imgdata, 0);
 
         dvz_image_alloc(image, 1);
         dvz_image_position(image, 0, 1, (vec3[]){{0, 0, 0}}, 0);
         dvz_image_size(image, 0, 1, (vec2[]){{wi, hi}}, 0);
         dvz_image_anchor(image, 0, 1, (vec2[]){{0, +.15}}, 0);
         dvz_image_texcoords(image, 0, 1, (vec4[]){{0, 0, +1, +1}}, 0);
-        dvz_image_texture(image, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+        dvz_image_texture(image, texture);
 
         FREE(imgdata);
     }
@@ -479,7 +481,7 @@ void dvz_demo(void)
 
     // 3,2  VOLUME
     DvzVisual* volume = dvz_volume(batch, DVZ_VOLUME_FLAGS_RGBA | DVZ_VOLUME_FLAGS_BACK_FRONT);
-    DvzId tex = 0;
+    DvzTexture* texture = NULL;
     {
         float v = .5;
         dvz_volume_bounds(volume, (vec2){-v, v}, (vec2){-v, v}, (vec2){-v, v});
@@ -517,8 +519,10 @@ void dvz_demo(void)
             }
         }
 
-        tex = dvz_tex_volume(batch, DVZ_FORMAT_R8G8B8A8_UNORM, va, vb, vc, tex_data);
-        dvz_volume_texture(volume, tex, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT);
+        texture = dvz_texture_volume(
+            batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT,
+            va, vb, vc, tex_data, 0);
+        dvz_volume_texture(volume, texture);
         FREE(tex_data);
     }
 
@@ -590,7 +594,7 @@ void dvz_demo(void)
         dvz_slice_texcoords(slice, 0, n, uvw0, uvw1, uvw2, uvw3, 0);
 
         dvz_slice_alpha(slice, .5);
-        dvz_slice_texture(slice, tex, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
+        dvz_slice_texture(slice, texture);
 
         FREE(p0);
         FREE(p1);
