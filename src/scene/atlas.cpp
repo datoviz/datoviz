@@ -182,14 +182,13 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords)
 
 
 
-// NOTE: the caller must FREE the returned pointer.
-vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
+void dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* out_coords)
 {
     ANN(atlas);
     ASSERT(count > 0);
     ANN(codepoints);
+    ANN(out_coords);
 
-    vec4* out_coords = (vec4*)calloc(count, sizeof(vec4));
     for (uint32_t i = 0; i < count; i++)
     {
         int result = dvz_atlas_glyph(atlas, codepoints[i], out_coords[i]);
@@ -198,7 +197,6 @@ vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints)
             log_warn("code point %d not found in the font atlas", codepoints[i]);
         }
     }
-    return out_coords;
 }
 
 

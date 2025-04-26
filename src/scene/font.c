@@ -91,18 +91,6 @@ DvzFont* dvz_font(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
-// DvzFont* dvz_font_default()
-// {
-//     unsigned long ttf_size = 0;
-//     unsigned char* ttf_bytes = dvz_resource_font("Roboto_Medium", &ttf_size);
-//     ASSERT(ttf_size > 0);
-//     ANN(ttf_bytes);
-//     DvzFont* font = dvz_font(ttf_size, ttf_bytes);
-//     return font;
-// }
-
-
-
 void dvz_font_size(DvzFont* font, double size)
 {
     ANN(font);
@@ -127,8 +115,7 @@ void dvz_font_size(DvzFont* font, double size)
 
 
 
-// The caller must FREE the returned pointer.
-vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints)
+void dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh)
 {
     ANN(font);
     ANN(codepoints);
@@ -139,7 +126,7 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     if (!face)
     {
         log_error("font was not initialized");
-        return NULL;
+        return;
     }
 
     int pen_x = 0;
@@ -148,7 +135,6 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
     uint32_t w = 0;
     uint32_t h = 0;
 
-    vec4* xywh = (vec4*)calloc(length, sizeof(vec4));
     int x_min = +1000000;
     int y_offset = 0;
 
@@ -200,16 +186,12 @@ vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints
             xywh[i][0] -= x_min;
         }
     }
-
-    return xywh;
-#else
-    return NULL;
 #endif
 }
 
 
 
-vec4* dvz_font_ascii(DvzFont* font, const char* string)
+void dvz_font_ascii(DvzFont* font, const char* string, vec4* xywh)
 {
     ANN(font);
     ANN(string);
@@ -217,7 +199,8 @@ vec4* dvz_font_ascii(DvzFont* font, const char* string)
     uint32_t count = 0;
     uint32_t* codepoints = _ascii_to_utf32(string, &count);
 
-    return dvz_font_layout(font, count, codepoints);
+    ASSERT(count > 0);
+    dvz_font_layout(font, count, codepoints, xywh);
 }
 
 
@@ -351,7 +334,8 @@ DvzTexture* dvz_font_texture(
     ANN(font);
 
     // Compute the layout of the text.
-    vec4* xywh = dvz_font_layout(font, length, codepoints);
+    vec4* xywh = (vec4*)calloc(length, sizeof(vec4));
+    dvz_font_layout(font, length, codepoints, xywh);
     uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_FLAGS_RGBA, out_size);
     out_size[2] = 1;
     DvzTexture* texture = dvz_texture_image(

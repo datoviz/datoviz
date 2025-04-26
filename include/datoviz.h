@@ -2272,22 +2272,21 @@ DVZ_EXPORT void dvz_font_size(DvzFont* font, double size);
  * @param font the font
  * @param length the number of glyphs
  * @param codepoints the Unicode codepoints of the glyphs
- * @returns an array of (x,y,w,h) shifts
+ * @param xywh an array of (x,y,w,h) shifts
  */
-DVZ_EXPORT vec4* dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints);
+DVZ_EXPORT void
+dvz_font_layout(DvzFont* font, uint32_t length, const uint32_t* codepoints, vec4* xywh);
 
 
 
 /**
  * Compute the shift of each glyph in an ASCII string, using the Freetype library.
  *
- * Note: the caller must free the output after use.
- *
  * @param font the font
  * @param string the ASCII string
- * @returns an array of (x,y,w,h) shifts
+ * @param xywh the returned array of (x,y,w,h) shifts
  */
-DVZ_EXPORT vec4* dvz_font_ascii(DvzFont* font, const char* string);
+DVZ_EXPORT void dvz_font_ascii(DvzFont* font, const char* string, vec4* xywh);
 
 
 

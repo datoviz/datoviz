@@ -53,7 +53,8 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasF
     dvz_glyph_color(glyph, 0, n, color, 0);
     dvz_glyph_ascii(glyph, text);
 
-    vec4* xywh = dvz_font_ascii(af->font, text);
+    vec4* xywh = (vec4*)calloc(n, sizeof(vec4));
+    dvz_font_ascii(af->font, text, xywh);
     dvz_glyph_xywh(glyph, 0, n, xywh, (vec2){LEGEND_ANCHOR}, 0);
 
     FREE(pos);
@@ -322,7 +323,9 @@ void dvz_demo(void)
         dvz_glyph_size(glyph, 0, n, (vec2*)size2, 0);
 
         dvz_glyph_ascii(glyph, text);
-        vec4* xywh = dvz_font_ascii(af.font, text);
+
+        vec4* xywh = (vec4*)calloc(n, sizeof(vec4));
+        dvz_font_ascii(af.font, text, xywh);
         // NOTE: set the offset of each glyph to (0,0) for this demo.
         // We still need the glyph size.
         for (uint32_t i = 0; i < n; i++)

@@ -1189,18 +1189,20 @@ Compute the shift of each glyph in an ASCII string, using the Freetype library.
 === "Python"
 
     ``` python
-    dvz.font_ascii(  # returns: an array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
+    dvz.font_ascii(
         font,  # the font (LP_DvzFont)
         string,  # the ASCII string (CStringBuffer)
+        xywh,  # the returned array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
 === "C"
 
     ``` c
-    vec4* dvz_font_ascii(  // returns: an array of (x,y,w,h) shifts
+    void dvz_font_ascii(
         DvzFont* font,  // the font
         char* string,  // the ASCII string
+        vec4* xywh,  // the returned array of (x,y,w,h) shifts
     );
     ```
 
@@ -1261,20 +1263,22 @@ Compute the shift of each glyph in a Unicode string, using the Freetype library.
 === "Python"
 
     ``` python
-    dvz.font_layout(  # returns: an array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
+    dvz.font_layout(
         font,  # the font (LP_DvzFont)
         length,  # the number of glyphs (int, 32-bit unsigned)
         codepoints,  # the Unicode codepoints of the glyphs (ndpointer_<u4_C_CONTIGUOUS)
+        xywh,  # an array of (x,y,w,h) shifts (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
 === "C"
 
     ``` c
-    vec4* dvz_font_layout(  // returns: an array of (x,y,w,h) shifts
+    void dvz_font_layout(
         DvzFont* font,  // the font
         uint32_t length,  // the number of glyphs
         uint32_t* codepoints,  // the Unicode codepoints of the glyphs
+        vec4* xywh,  // an array of (x,y,w,h) shifts
     );
     ```
 

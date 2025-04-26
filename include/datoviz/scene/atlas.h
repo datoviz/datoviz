@@ -75,7 +75,7 @@ int dvz_atlas_glyph(DvzAtlas* atlas, uint32_t codepoint, vec4 out_coords);
 
 /**
  */
-vec4* dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints);
+void dvz_atlas_glyphs(DvzAtlas* atlas, uint32_t count, uint32_t* codepoints, vec4* out_coords);
 
 
 

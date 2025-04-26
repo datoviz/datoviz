@@ -6551,23 +6551,20 @@ length : uint32_t
     the number of glyphs
 codepoints : uint32_t*
     the Unicode codepoints of the glyphs
-
-Returns
--------
-type
+xywh : vec4*
     an array of (x,y,w,h) shifts
 """
 font_layout.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     ctypes.c_uint32,  # uint32_t length
     ndpointer(dtype=np.uint32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # uint32_t* codepoints
+    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* xywh
 ]
-font_layout.restype = ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
 # Function dvz_font_ascii()
 font_ascii = dvz.dvz_font_ascii
 font_ascii.__doc__ = """
-Compute the shift of each glyph in an ASCII string, using the Freetype library.  Note: the caller must free the output after use.
+Compute the shift of each glyph in an ASCII string, using the Freetype library.
 
 Parameters
 ----------
@@ -6575,17 +6572,14 @@ font : DvzFont*
     the font
 string : char*
     the ASCII string
-
-Returns
--------
-type
-    an array of (x,y,w,h) shifts
+xywh : vec4*
+    the returned array of (x,y,w,h) shifts
 """
 font_ascii.argtypes = [
     ctypes.POINTER(DvzFont),  # DvzFont* font
     CStringBuffer,  # char* string
+    ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # vec4* xywh
 ]
-font_ascii.restype = ndpointer(dtype=np.float32, ndim=2, ncol=4, flags="C_CONTIGUOUS")
 
 # Function dvz_font_draw()
 font_draw = dvz.dvz_font_draw

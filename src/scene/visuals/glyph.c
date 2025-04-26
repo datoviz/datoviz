@@ -305,7 +305,6 @@ void dvz_glyph_atlas_font(DvzVisual* visual, DvzAtlasFont* af)
 
 void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints)
 {
-
     ANN(visual);
     ANN(codepoints);
     ASSERT(count > 0);
@@ -324,11 +323,12 @@ void dvz_glyph_unicode(DvzVisual* visual, uint32_t count, uint32_t* codepoints)
     float w = shape[0];
     float h = shape[1];
 
-    vec4* texcoords = dvz_atlas_glyphs(af->atlas, count, codepoints); // to free
+    vec4* texcoords = (vec4*)calloc(count, sizeof(vec4));
+    dvz_atlas_glyphs(af->atlas, count, codepoints, texcoords);
 
-    // HACK: remove the padding around the glyphs in the atlas, because the freetype positioning
-    // implementation assumes no padding, whereas the atlas requires them to prevent edge effects
-    // in the fragment shader.
+    // HACK: remove the padding around the glyphs in the atlas, because the freetype
+    // positioning implementation assumes no padding, whereas the atlas requires them to
+    // prevent edge effects in the fragment shader.
     float padw = 1.25;
     float padh = 1.5;
 
@@ -468,9 +468,11 @@ static inline void set_glyphs(
     ASSERT(glyph_count > 0);
     ASSERT(string_count > 0);
 
-    // Set the size and shift properties of the glyph vsual by using the font to compute the
+    // Set the size and shift properties of the glyph visual by using the font to compute the
     // layout.
-    vec4* xywh = dvz_font_ascii(af->font, concatenated);
+    uint32_t size = strnlen(concatenated, 4096);
+    vec4* xywh = (vec4*)calloc(size, sizeof(vec4));
+    dvz_font_ascii(af->font, concatenated, xywh);
 
     // Prepare a copy of the string with all glyphs concatenated, but without the spaces
     // between the groups.
@@ -488,6 +490,9 @@ static inline void set_glyphs(
         x0 = xywh[idx][0];
         for (uint32_t j = 0; j < string_sizes[i]; j++)
         {
+            ASSERT(idx + j < size);
+            ASSERT(k < glyph_count);
+
             // NOTE: remove the x0 offset for each group.
             xywh_trimmed[k][0] = xywh[idx + j][0] - x0;
             xywh_trimmed[k][1] = xywh[idx + j][1];
@@ -501,6 +506,7 @@ static inline void set_glyphs(
     ASSERT(k == glyph_count);
 
     dvz_glyph_xywh(glyph, 0, glyph_count, xywh_trimmed, offset, 0);
+    FREE(xywh_trimmed);
     FREE(xywh);
 
     vec2* anchors = (vec2*)_repeat(glyph_count, sizeof(vec2), (void*)anchor);

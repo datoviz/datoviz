@@ -111,7 +111,8 @@ int test_glyph_1(TstSuite* suite)
 
 
     // For shift and size, we will use a font to compute the layout (positions of the letters).
-    vec4* xywh = dvz_font_ascii(af.font, text);
+    vec4* xywh = (vec4*)calloc(n, sizeof(vec4));
+    dvz_font_ascii(af.font, text, xywh);
     // for (uint32_t i = 0; i < n; i++)
     // {
     //     log_info(
