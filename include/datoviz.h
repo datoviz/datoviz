@@ -339,7 +339,6 @@ DVZ_EXPORT DvzMouse* dvz_mouse(void);
  * @param mouse the mouse
  * @param pos the cursor position, in pixels
  * @param mods the keyboard modifier flags
- * @param[out] ev the generated mouse event
  */
 DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
 
@@ -351,7 +350,6 @@ DVZ_EXPORT void dvz_mouse_move(DvzMouse* mouse, vec2 pos, int mods);
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
- * @param[out] ev the generated mouse event
  */
 DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods);
 
@@ -363,7 +361,6 @@ DVZ_EXPORT void dvz_mouse_press(DvzMouse* mouse, DvzMouseButton button, int mods
  * @param mouse the mouse
  * @param button the mouse button (enum int)
  * @param mods the keyboard modifier flags
- * @param[out] ev the generated mouse event
  */
 DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mods);
 
@@ -375,7 +372,6 @@ DVZ_EXPORT void dvz_mouse_release(DvzMouse* mouse, DvzMouseButton button, int mo
  * @param mouse the mouse
  * @param dir the mouse wheel direction (x, y)
  * @param mods the keyboard modifier flags
- * @param[out] ev the generated mouse event
  */
 DVZ_EXPORT void dvz_mouse_wheel(DvzMouse* mouse, vec2 dir, int mods);
 
@@ -1327,7 +1323,7 @@ DVZ_EXPORT void dvz_rgb_to_rgba_char(uint32_t count, uint8_t* rgb, uint8_t* rgba
  *
  * @param count the number of pixels (and NOT the number of bytes) in the float texture
  * @param rgb the RGB texture
- * @params rgba the returned RGBA texture
+ * @param rgba the returned RGBA texture
  */
 DVZ_EXPORT void dvz_rgb_to_rgba_float(uint32_t count, float* rgb, float* rgba);
 
@@ -2230,7 +2226,7 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
  * Load the default atlas and font.
  *
  * @param font_size the font size
- * @param[out] the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
+ * @param[out] af the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
  */
 DVZ_EXPORT void dvz_atlas_font(double font_size, DvzAtlasFont* af);
 

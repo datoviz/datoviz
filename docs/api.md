@@ -319,7 +319,7 @@ Load the default atlas and font.
     ``` python
     dvz.atlas_font(
         font_size,  # the font size (float, 32-bit)
-        the,  # returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (LP_DvzAtlasFont)
+        af,  # the returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (Out)
     )
     ```
 
@@ -327,7 +327,8 @@ Load the default atlas and font.
 
     ``` c
     void dvz_atlas_font(
-        DvzAtlas* atlas,  // the atlas
+        double font_size,  // the font size
+        DvzAtlasFont* af,  // the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
     );
     ```
 
@@ -4076,7 +4077,8 @@ Create a mouse move event.
     ``` c
     void dvz_mouse_move(
         DvzMouse* mouse,  // the mouse
-        DvzMouseEvent* ev,  // the mouse event
+        vec2 pos,  // the cursor position, in pixels
+        int mods,  // the keyboard modifier flags
     );
     ```
 
@@ -4099,7 +4101,8 @@ Create a mouse press event.
     ``` c
     void dvz_mouse_press(
         DvzMouse* mouse,  // the mouse
-        DvzMouseEvent* ev,  // the mouse event
+        DvzMouseButton button,  // the mouse button (enum int)
+        int mods,  // the keyboard modifier flags
     );
     ```
 
@@ -4122,7 +4125,8 @@ Create a mouse release event.
     ``` c
     void dvz_mouse_release(
         DvzMouse* mouse,  // the mouse
-        DvzMouseEvent* ev,  // the mouse event
+        DvzMouseButton button,  // the mouse button (enum int)
+        int mods,  // the keyboard modifier flags
     );
     ```
 
@@ -4145,7 +4149,8 @@ Create a mouse wheel event.
     ``` c
     void dvz_mouse_wheel(
         DvzMouse* mouse,  // the mouse
-        DvzMouseEvent* ev,  // the mouse event
+        vec2 dir,  // the mouse wheel direction (x, y)
+        int mods,  // the keyboard modifier flags
     );
     ```
 
@@ -6253,7 +6258,7 @@ Convert an RGB float texture to an RGBA one.
     dvz.rgb_to_rgba_float(
         count,  # the number of pixels (and NOT the number of bytes) in the float texture (int, 32-bit unsigned)
         rgb,  # the RGB texture (ndpointer_<f4_C_CONTIGUOUS)
-        s,  # rgba the returned RGBA texture (ndpointer_<f4_C_CONTIGUOUS)
+        rgba,  # the returned RGBA texture (ndpointer_<f4_C_CONTIGUOUS)
     )
     ```
 
@@ -6261,9 +6266,9 @@ Convert an RGB float texture to an RGBA one.
 
     ``` c
     void dvz_rgb_to_rgba_float(
-        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the byte texture
-        uint8_t* rgb,  // the RGB texture
-        uint8_t* rgba,  // the returned RGBA texture
+        uint32_t count,  // the number of pixels (and NOT the number of bytes) in the float texture
+        float* rgb,  // the RGB texture
+        float* rgba,  // the returned RGBA texture
     );
     ```
 

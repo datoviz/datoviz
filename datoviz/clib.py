@@ -3110,8 +3110,6 @@ pos : vec2
     the cursor position, in pixels
 mods : int
     the keyboard modifier flags
-ev : unknown (out parameter)
-    the generated mouse event
 """
 mouse_move.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
@@ -3132,8 +3130,6 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
-ev : unknown (out parameter)
-    the generated mouse event
 """
 mouse_press.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
@@ -3154,8 +3150,6 @@ button : DvzMouseButton
     the mouse button (enum int)
 mods : int
     the keyboard modifier flags
-ev : unknown (out parameter)
-    the generated mouse event
 """
 mouse_release.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
@@ -3176,8 +3170,6 @@ dir : vec2
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
-ev : unknown (out parameter)
-    the generated mouse event
 """
 mouse_wheel.argtypes = [
     ctypes.POINTER(DvzMouse),  # DvzMouse* mouse
@@ -4869,6 +4861,8 @@ count : uint32_t
     the number of pixels (and NOT the number of bytes) in the float texture
 rgb : float*
     the RGB texture
+rgba : float*
+    the returned RGBA texture
 """
 rgb_to_rgba_float.argtypes = [
     ctypes.c_uint32,  # uint32_t count
@@ -6450,12 +6444,12 @@ Parameters
 ----------
 font_size : double
     the font size
-the : unknown (out parameter)
-    returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
+af : DvzAtlasFont* (out parameter)
+    the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
 """
 atlas_font.argtypes = [
     ctypes.c_double,  # double font_size
-    ctypes.POINTER(DvzAtlasFont),  # DvzAtlasFont* af
+    Out,  # out DvzAtlasFont* af
 ]
 
 # Function dvz_atlas_destroy()
