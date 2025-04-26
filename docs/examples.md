@@ -321,7 +321,7 @@ slider = Out(25.0)  # Warning: needs to be a float as it is passed to a function
 # GUI system. This means the GUI is recreated from scratch at every frame.
 
 
-@dvz.gui
+@dvz.on_gui
 def on_gui(app, fid, ev):
 
     # Set the size of the next GUI dialog.
@@ -439,7 +439,7 @@ visual = dvz.demo_panel_2D(panel)
 visible = Out(True)
 
 
-@dvz.gui
+@dvz.on_gui
 def on_gui(app, fid, ev):
     dvz.gui_begin("GUI", 0)
     if dvz.gui_checkbox("Visible?", visible):

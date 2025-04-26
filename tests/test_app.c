@@ -348,11 +348,11 @@ int test_app_arcball(TstSuite* suite)
 
 
 
-static void _anim_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
+static void _anim_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
 {
     ANN(app);
 
-    AnimStruct* anim = (AnimStruct*)ev.user_data;
+    AnimStruct* anim = (AnimStruct*)ev->user_data;
     ANN(anim);
 
     DvzGraphicsPointVertex* data = (DvzGraphicsPointVertex*)anim->data;
@@ -362,7 +362,7 @@ static void _anim_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     ASSERT(n > 0);
 
     const double dur = 2.0;
-    double t = fmod(ev.time / dur, 1);
+    double t = fmod(ev->time / dur, 1);
     for (uint32_t i = 0; i < n; i++)
     {
         data[i].pos[1] = .9 * (-1 + 2 * dvz_easing((DvzEasing)i, t));

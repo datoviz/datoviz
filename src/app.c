@@ -164,7 +164,7 @@ static void _client_callback(DvzClient* client, DvzClientEvent ev)
         // Pass the user_data to the timer event.
         ev.content.t.user_data = payload.user_data;
         // Call the timer callback.
-        cb(app, window_id, ev.content.t);
+        cb(app, window_id, &ev.content.t);
     }
 }
 

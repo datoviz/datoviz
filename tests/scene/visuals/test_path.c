@@ -108,11 +108,11 @@ int test_path_1(TstSuite* suite)
 
 
 
-static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
+static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
 {
     ANN(app);
 
-    VisualTest* vt = (VisualTest*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev->user_data;
     ANN(vt);
 
     DvzVisual* visual = vt->visual;
@@ -126,7 +126,7 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
     uint32_t n_paths = vt->n;
     uint32_t N = vt->m;
     uint32_t k = 0;
-    int64_t step = (int64_t)ev.step_idx;
+    int64_t step = (int64_t)ev->step_idx;
     for (uint32_t j = 0; j < n_paths; j++)
     {
         for (int32_t i = 0; i < (int32_t)N; i++)

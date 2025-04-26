@@ -34,14 +34,14 @@
 /*  Glyph tests                                                                                  */
 /*************************************************************************************************/
 
-static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent ev)
+static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
 {
-    VisualTest* vt = (VisualTest*)ev.user_data;
+    VisualTest* vt = (VisualTest*)ev->user_data;
     ANN(vt);
 
     DvzVisual* visual = vt->visual;
     ANN(visual);
-    float t = ev.time;
+    float t = ev->time;
 
     uint32_t n = vt->n;
     ASSERT(n > 0);
