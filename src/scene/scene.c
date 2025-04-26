@@ -1138,16 +1138,16 @@ static void _scene_on_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
     dvz_scene_mouse(scene, fig, ev);
 }
 
-static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
+static void _scene_onresize(DvzApp* app, DvzId window_id, DvzWindowEvent* ev)
 {
     ANN(app);
 
-    float w = ev.screen_width;
-    float h = ev.screen_height;
+    float w = ev->screen_width;
+    float h = ev->screen_height;
 
     log_debug("window 0x%" PRIx64 " resized to %.0fx%.0f", window_id, w, h);
 
-    DvzScene* scene = (DvzScene*)ev.user_data;
+    DvzScene* scene = (DvzScene*)ev->user_data;
     ANN(scene);
 
     // Retrieve the figure that is being resize, thanks to the id that is the same between the

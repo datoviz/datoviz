@@ -144,6 +144,7 @@ d = .2
 # Keyboard event callback function.
 @dvz.on_keyboard
 def on_keyboard(app, window_id, ev):
+    ev = ev.contents
     global eye
     # Keyboard events are PRESS, RELEASE, and REPEAT.
     if ev.type != dvz.KEYBOARD_EVENT_RELEASE:

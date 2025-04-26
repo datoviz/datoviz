@@ -121,11 +121,11 @@ static void _scatter_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
     dvz_app_submit(app);
 }
 
-static void _scatter_resize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
+static void _scatter_resize(DvzApp* app, DvzId window_id, DvzWindowEvent* ev)
 {
     ANN(app);
 
-    PanzoomStruct* ps = (PanzoomStruct*)ev.user_data;
+    PanzoomStruct* ps = (PanzoomStruct*)ev->user_data;
     ANN(ps);
 
     DvzPanzoom* pz = ps->pz;
@@ -135,8 +135,8 @@ static void _scatter_resize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
     DvzBatch* batch = dvz_app_batch(app);
     ANN(batch);
 
-    uint32_t width = ev.screen_width;
-    uint32_t height = ev.screen_height;
+    uint32_t width = ev->screen_width;
+    uint32_t height = ev->screen_height;
     log_info("window 0x%" PRIx64 " resized to %dx%d", window_id, width, height);
 
     dvz_panzoom_resize(pz, width, height);
@@ -248,15 +248,15 @@ static void _arcball_mouse(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)
     dvz_app_submit(app);
 }
 
-static void _arcball_resize(DvzApp* app, DvzId window_id, DvzWindowEvent ev)
+static void _arcball_resize(DvzApp* app, DvzId window_id, DvzWindowEvent* ev)
 {
     ANN(app);
 
-    uint32_t width = ev.screen_width;
-    uint32_t height = ev.screen_height;
+    uint32_t width = ev->screen_width;
+    uint32_t height = ev->screen_height;
     log_info("window 0x%" PRIx64 " resized to %dx%d", window_id, width, height);
 
-    ArcballStruct* arc = (ArcballStruct*)ev.user_data;
+    ArcballStruct* arc = (ArcballStruct*)ev->user_data;
     ANN(arc);
 
     DvzMVP* mvp = &arc->mvp;
