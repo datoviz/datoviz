@@ -29,10 +29,10 @@
 #if OS_MACOS
 // HACK: touchpad wheel too sensitive on macOS
 #define DVZ_ORTHO_ZOOM_DRAG_COEF  .001
-#define DVZ_ORTHO_ZOOM_WHEEL_COEF -2.0
+#define DVZ_ORTHO_ZOOM_WHEEL_COEF -12.0
 #else
 #define DVZ_ORTHO_ZOOM_DRAG_COEF  .001
-#define DVZ_ORTHO_ZOOM_WHEEL_COEF 30.0
+#define DVZ_ORTHO_ZOOM_WHEEL_COEF 60.0
 #endif
 
 
@@ -241,7 +241,7 @@ void dvz_ortho_zoom_wheel(DvzOrtho* ortho, vec2 dir, vec2 center_px)
     float d = dir[1];
     if (d != 0)
     {
-        d /= (float)fabs((double)d);
+        d /= 4.0;
         vec2 shift = {0};
         shift[0] = DVZ_ORTHO_ZOOM_WHEEL_COEF * d;
         shift[1] = -a * shift[0];
