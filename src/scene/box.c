@@ -305,6 +305,6 @@ void dvz_box_inverse(DvzBox source, DvzBox target, vec3 pos, dvec3* out)
 void dvz_box_print(DvzBox box)
 {
     printf(
-        "Box: x:%.3f..%.3f, y:%.3f..%.3f, z:%.3f..%.3f\n", //
+        "Box: x: [%g, %g], y: [%g, %g], z: [%g, %g]\n", //
         box.xmin, box.xmax, box.ymin, box.ymax, box.zmin, box.zmax);
 }

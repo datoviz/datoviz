@@ -46,6 +46,12 @@ struct DvzPanzoom
     vec2 pan_center;
     vec2 zoom;
     vec2 zoom_center;
+
+    // Lock.
+    vec2 pan_lock;
+    vec2 zoom_lock;
+    bool pan_locked[2];
+    bool zoom_locked[2];
 };
 
 

@@ -132,7 +132,7 @@ inline void dvz_min_max(uint32_t n, const float* values, vec2 out_min_max)
 {
     ASSERT(n > 0);
     ASSERT(values != NULL);
-    float m = 0, M = 0;
+    float m = +INFINITY, M = -INFINITY;
     for (uint32_t i = 0; i < n; i++)
     {
         m = MIN(m, values[i]);
