@@ -503,13 +503,12 @@ DVZ_EXPORT DvzBatch* dvz_panel_batch(DvzPanel* panel);
 
 
 /**
- * Get or create a Reference for a panel.
+ * Get the panel's reference.
  *
  * @param panel the panel
- * @param flags the reference creation flags.
  * @returns the reference
  */
-DVZ_EXPORT DvzRef* dvz_panel_ref(DvzPanel* panel, int flags);
+DVZ_EXPORT DvzRef* dvz_panel_ref(DvzPanel* panel);
 
 
 

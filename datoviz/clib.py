@@ -3401,14 +3401,12 @@ panel_batch.restype = ctypes.POINTER(DvzBatch)
 # Function dvz_panel_ref()
 panel_ref = dvz.dvz_panel_ref
 panel_ref.__doc__ = """
-Get or create a Reference for a panel.
+Get the panel's reference.
 
 Parameters
 ----------
 panel : DvzPanel*
     the panel
-flags : int
-    the reference creation flags.
 
 Returns
 -------
@@ -3417,7 +3415,6 @@ type
 """
 panel_ref.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
-    ctypes.c_int,  # int flags
 ]
 panel_ref.restype = ctypes.POINTER(DvzRef)
 

@@ -87,8 +87,8 @@ DvzAxes* dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymi
     ANN(xaxis);
     ANN(yaxis);
 
-    // Get or create the DvzRef.
-    DvzRef* ref = dvz_panel_ref(panel, 0);
+    // Get the DvzRef.
+    DvzRef* ref = dvz_panel_ref(panel);
 
     // Set the ref extent.
     dvz_ref_set(ref, DVZ_DIM_X, xmin, xmax);
@@ -150,15 +150,22 @@ DvzAxis* dvz_axes_axis(DvzAxes* axes, DvzDim dim)
 
 
 
-void dvz_axes_update(DvzAxes* axes)
+void dvz_axes_update(DvzAxes* axes, DvzPanel* panel, DvzPanzoom* panzoom)
 {
     ANN(axes);
-    /*
-    // TODO
-    dvz_axis_size()
-    dvz_axis_update(dim) for each dim
-    when command buffer is being rebuilt, call axis_update()
-    */
+    ANN(panel);
+
+    DvzRef* ref = dvz_panel_ref(panel);
+    ANN(ref);
+
+    DvzAxis* xaxis = dvz_axes_axis(panel->axes, DVZ_DIM_X);
+    DvzAxis* yaxis = dvz_axes_axis(panel->axes, DVZ_DIM_Y);
+
+    ANN(xaxis);
+    ANN(yaxis);
+
+    dvz_axis_on_panzoom(xaxis, panzoom, ref);
+    dvz_axis_on_panzoom(yaxis, panzoom, ref);
 }
 
 

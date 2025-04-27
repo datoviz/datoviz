@@ -651,20 +651,49 @@ bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref)
     dvz_panzoom_extent(pz, &box);
     dvec3 pos = {0};
 
-    dvz_ref_inverse(ref, (vec3){box.xmin, 0, 0}, &pos);
-    double xmin = pos[0];
+    // Minimum value.
+    vec3 pos_tr = {0};
+    if (axis->dim == DVZ_DIM_X)
+    {
+        pos_tr[0] = box.xmin;
+        pos_tr[1] = 0;
+        pos_tr[2] = 0;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        pos_tr[0] = 0;
+        pos_tr[1] = box.ymin;
+        pos_tr[2] = 0;
+    }
+    dvz_ref_inverse(ref, pos_tr, &pos);
+    double vmin = pos[axis->dim];
 
-    dvz_ref_inverse(ref, (vec3){box.xmax, 0, 0}, &pos);
-    double xmax = pos[0];
+
+    // Maximum value.
+    if (axis->dim == DVZ_DIM_X)
+    {
+        pos_tr[0] = box.xmax;
+        pos_tr[1] = 0;
+        pos_tr[2] = 0;
+    }
+    else if (axis->dim == DVZ_DIM_Y)
+    {
+        pos_tr[0] = 0;
+        pos_tr[1] = box.ymax;
+        pos_tr[2] = 0;
+    }
+    dvz_ref_inverse(ref, pos_tr, &pos);
+    double vmax = pos[axis->dim];
+
 
     // If the extent is the same, do not recompute the ticks.
-    if ((fabs(xmin - ticks->dmin) < 1e-12) && (fabs(xmax - ticks->dmax) < 1e-12))
+    if ((fabs(vmin - ticks->dmin) < 1e-12) && (fabs(vmax - ticks->dmax) < 1e-12))
     {
         return false;
     }
 
     // Otherwise, recompute the ticks and only update the axes if the ticks have changed.
-    bool updated = dvz_axis_update(axis, ref, xmin, xmax);
+    bool updated = dvz_axis_update(axis, ref, vmin, vmax);
 
     return updated;
 }

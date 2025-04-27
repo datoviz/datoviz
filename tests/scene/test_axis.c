@@ -75,7 +75,7 @@ int test_axis_1(TstSuite* suite)
     dvz_atlas_font(font_size, &af);
 
     // Create the reference frame.
-    DvzRef* ref = dvz_panel_ref(vt.panel, 0);
+    DvzRef* ref = dvz_panel_ref(vt.panel);
     dvz_ref_set(ref, dim, dmin, dmax);
 
     // DvzAtlasFont af_label = dvz_atlas_font(28);

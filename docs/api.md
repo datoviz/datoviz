@@ -4832,14 +4832,13 @@ Set panzoom interactivity for a panel.
 
 ### `dvz_panel_ref()`
 
-Get or create a Reference for a panel.
+Get the panel's reference.
 
 === "Python"
 
     ``` python
     dvz.panel_ref(  # returns: the reference (LP_DvzRef)
         panel,  # the panel (LP_DvzPanel)
-        flags,  # the reference creation flags. (int, 32-bit signed)
     )
     ```
 
@@ -4848,7 +4847,6 @@ Get or create a Reference for a panel.
     ``` c
     DvzRef* dvz_panel_ref(  // returns: the reference
         DvzPanel* panel,  // the panel
-        int flags,  // the reference creation flags.
     );
     ```
 

@@ -20,6 +20,7 @@
 #include "datoviz.h"
 #include "datoviz_protocol.h"
 #include "scene/arcball.h"
+#include "scene/axes.h"
 #include "scene/baker.h"
 #include "scene/camera.h"
 #include "scene/graphics.h"
@@ -384,7 +385,7 @@ DvzBatch* dvz_panel_batch(DvzPanel* panel)
 
 
 
-DvzRef* dvz_panel_ref(DvzPanel* panel, int flags)
+DvzRef* dvz_panel_ref(DvzPanel* panel)
 {
     ANN(panel);
     ANN(panel->ref);
@@ -1257,6 +1258,12 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
         {
             _update_panzoom(panel);
             dvz_transform_update(tr);
+
+            // Update the axes if any.
+            if (panel->axes != NULL)
+            {
+                dvz_axes_update(panel->axes, panel, pz);
+            }
         }
     }
 

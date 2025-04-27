@@ -81,7 +81,7 @@ DVZ_EXPORT DvzAxis* dvz_axes_axis(DvzAxes* axes, DvzDim dim);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void dvz_axes_update(DvzAxes* axes);
+DVZ_EXPORT void dvz_axes_update(DvzAxes* axes, DvzPanel* panel, DvzPanzoom* panzoom);
 
 
 
