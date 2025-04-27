@@ -46,8 +46,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_attr(visual, 1, sizeof(vec3), sizeof(DvzColor), DVZ_FORMAT_COLOR, 0);
 
     // Slots.
-    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    _common_setup(visual);
 
     // MVP.
     DvzMVP mvp = {0};

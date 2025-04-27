@@ -87,8 +87,7 @@ DvzVisual* dvz_glyph(DvzBatch* batch, int flags)
     dvz_visual_stride(visual, 0, sizeof(DvzGlyphVertex));
 
     // Slots.
-    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    _common_setup(visual);
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
     dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
 

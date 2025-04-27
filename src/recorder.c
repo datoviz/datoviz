@@ -12,6 +12,9 @@
 #include "canvas.h"
 #include "renderer.h"
 
+// HACK: we need the scale push constant offset common to all visuals.
+#include "scene/visual.h"
+
 
 
 /*************************************************************************************************/
@@ -34,6 +37,11 @@
         log_error("cannot draw pipe with incomplete descriptor bindings");                        \
         return;                                                                                   \
     }
+
+#define PUSH_CANVAS_SCALE                                                                         \
+    dvz_cmd_push(                                                                                 \
+        cmds, img_idx, pipe->descriptors.dslots, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT,         \
+        DVZ_PUSH_SCALE_OFFSET, DVZ_PUSH_SCALE_SIZE, &canvas->scale);
 
 
 
@@ -119,6 +127,9 @@ static void _process_draw(
 
     GET_PIPE(record->contents.draw.pipe_id)
 
+    // HACK: push the canvas scale to the GPU shaders.
+    PUSH_CANVAS_SCALE
+
     dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
 }
 
@@ -140,6 +151,9 @@ static void _process_draw_indexed(
 
     GET_PIPE(record->contents.draw_indexed.pipe_id)
 
+    // HACK: push the canvas scale to the GPU shaders.
+    PUSH_CANVAS_SCALE
+
     dvz_pipe_draw_indexed(
         pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
         instance_count);
@@ -158,6 +172,9 @@ static void _process_draw_indirect(
     DvzDat* dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
     ANN(dat_indirect);
 
+    // HACK: push the canvas scale to the GPU shaders.
+    PUSH_CANVAS_SCALE
+
     dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
 }
 
@@ -173,6 +190,9 @@ static void _process_draw_indexed_indirect(
 
     DvzDat* dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
     ANN(dat_indirect);
+
+    // HACK: push the canvas scale to the GPU shaders.
+    PUSH_CANVAS_SCALE
 
     dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
 }

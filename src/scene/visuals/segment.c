@@ -76,8 +76,7 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
 
     // Uniforms.
-    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    _common_setup(visual);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);

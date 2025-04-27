@@ -76,8 +76,7 @@ DvzVisual* dvz_path(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 5, FIELD(DvzPathVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, attr_flag);
 
     // Uniforms.
-    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+    _common_setup(visual);
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
 
     // Visual draw callback.

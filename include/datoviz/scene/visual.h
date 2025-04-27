@@ -20,6 +20,7 @@
 #include "../_atomic.h"
 #include "_enums.h"
 #include "_obj.h"
+#include "datoviz.h"
 #include "datoviz_types.h"
 #include "mvp.h"
 #include "params.h"
@@ -32,6 +33,14 @@
 /*************************************************************************************************/
 
 #define FIELD(t, f) offsetof(t, f), fsizeof(t, f)
+
+// NOTE: we push the canvas scale as a push constant to all built-in graphics pipelines in all
+// visuals. This gives us a mechanism to send client-specific data to the GPU without the scene API
+// to be aware of it (because the renderer knows the canvas scale).
+// NOTE: the minimum limit of push constant max size is 128 bytes so we put the scale at the very
+// end of this range.
+#define DVZ_PUSH_SCALE_OFFSET 124
+#define DVZ_PUSH_SCALE_SIZE   sizeof(float)
 
 
 
@@ -305,6 +314,20 @@ static void* _get_param(DvzVisual* visual, uint32_t slot_idx, uint32_t attr_idx)
     ANN(params);
 
     return dvz_params_get(params, attr_idx);
+}
+
+
+
+static void _common_setup(DvzVisual* visual)
+{
+    ANN(visual);
+
+    dvz_visual_slot(visual, 0, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, 1, DVZ_SLOT_DAT);
+
+    dvz_visual_push(
+        visual, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT, //
+        DVZ_PUSH_SCALE_OFFSET, DVZ_PUSH_SCALE_SIZE);
 }
 
 

@@ -73,6 +73,10 @@ struct VkViewport
     float x, y, w, h, dmin, dmax;
 };
 
+layout(push_constant) uniform push {
+    float scale;
+} canvas_scale;
+
 layout(std140, binding = 1) uniform Viewport
 {
     VkViewport viewport; // Vulkan viewport
@@ -336,6 +340,13 @@ bool clip_viewport(vec2 frag_coords)
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
 
+    w *= canvas_scale.scale;
+    h *= canvas_scale.scale;
+    top *= canvas_scale.scale;
+    right *= canvas_scale.scale;
+    bottom *= canvas_scale.scale;
+    left *= canvas_scale.scale;
+
     return (uv.y < 0 + top || uv.x >w - right || uv.y > h - bottom || uv.x < 0 + left);
 }
 
@@ -352,6 +363,13 @@ bool clip_viewport(vec2 frag_coords, int coord)
     float right = viewport.margins.y;
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
+
+    w *= canvas_scale.scale;
+    h *= canvas_scale.scale;
+    top *= canvas_scale.scale;
+    right *= canvas_scale.scale;
+    bottom *= canvas_scale.scale;
+    left *= canvas_scale.scale;
 
     // Discard top and right edges.
     // NOTE: extra margin: 10, 30px
