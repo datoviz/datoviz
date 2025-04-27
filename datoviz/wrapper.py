@@ -396,6 +396,12 @@ class Visual:
     def get_count(self):
         return self.count
 
+    def set_data(self, **kwargs):
+        for key, value in kwargs.items():
+            fn = getattr(self, f'set_{key}', None)
+            if fn:
+                fn(value)
+
     def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
         self._prop_classes[prop_name] = prop_cls
 

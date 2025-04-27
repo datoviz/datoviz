@@ -93,7 +93,7 @@ def button_name(button):
     return name
 
 
-def cmap(cm, values, vmin=0.0, vmax=10.):
+def cmap(cm, values, vmin=0.0, vmax=1.):
     values = np.asanyarray(values, dtype=np.float32)
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
