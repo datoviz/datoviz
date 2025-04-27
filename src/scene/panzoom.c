@@ -269,7 +269,8 @@ void dvz_panzoom_zoom_wheel(DvzPanzoom* pz, vec2 dir, vec2 center_px)
     float d = dir[1];
     if (d != 0)
     {
-        d /= (float)fabs((double)d);
+        // d /= (float)fabs((double)d);
+        d /= 4.0;
         vec2 shift = {0};
         shift[0] = DVZ_PANZOOM_ZOOM_WHEEL_COEF * (d);
         shift[1] = -a * shift[0];
