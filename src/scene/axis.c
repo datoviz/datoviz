@@ -36,14 +36,16 @@
 #define ANCHOR_H        (vec2){+.5, 0}
 #define OFFSET_H        (vec2){0, -35}
 #define DIR_H           (vec2){0, -1}
-#define FACTOR_OFFSET_H 70, -50
-#define LABEL_OFFSET_H  0, -50
 #define POS_H           -1
+#define FACTOR_OFFSET_H 70, -70
+#define LABEL_OFFSET_H  0, -70
 
-#define ANCHOR_V (vec2){+1, 0}
-#define OFFSET_V (vec2){-50, -10}
-#define DIR_V    (vec2){-1, 0}
-#define POS_V    -1
+#define ANCHOR_V        (vec2){+1, 0}
+#define OFFSET_V        (vec2){-50, -10}
+#define DIR_V           (vec2){-1, 0}
+#define POS_V           -1
+#define FACTOR_OFFSET_V 20, +70
+#define LABEL_OFFSET_V  0, 0
 
 #define WIDTH_LIM   2
 #define WIDTH_GRID  1
@@ -285,6 +287,8 @@ static void axis_vertical_params(DvzAxis* axis)
     dvz_axis_offset(axis, OFFSET_V);
     dvz_axis_dir(axis, DIR_V);
     dvz_axis_pos(axis, POS_V);
+    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_V);
+    dvz_axis_label_layout(axis, DVZ_ALIGN_HIGH, LABEL_OFFSET_V);
 
     dvz_visual_fixed(axis->glyph, true, false, false);
     dvz_visual_fixed(axis->segment, true, false, false);
@@ -488,9 +492,7 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
 
     for (uint32_t i = 0; i < 2; i++)
     {
-        compute_layout(
-            axis->factor_layout.align[i], axis->factor_layout.pos[i], //
-            &pos[i]);
+        compute_layout(axis->factor_layout.align[i], axis->factor_layout.pos[i], &pos[i]);
     }
 
     vec2 anchor = {0};
@@ -502,7 +504,7 @@ void dvz_axis_factor(DvzAxis* axis, int32_t exponent, double offset)
     else if (axis->dim == DVZ_DIM_Y)
     {
         anchor[0] = -1;
-        anchor[1] = -1;
+        anchor[1] = +1;
     }
 
     dvz_glyph_strings(
