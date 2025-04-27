@@ -327,9 +327,16 @@ vec3 axis_zoom()
 bool clip_viewport(vec2 frag_coords)
 {
     vec2 uv = frag_coords - viewport.offset;
-    return (
-        uv.y < 0 + viewport.margins.x || uv.x > viewport.size.x - viewport.margins.y ||
-        uv.y > viewport.size.y - viewport.margins.z || uv.x < 0 + viewport.margins.w);
+
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+
+    float top = viewport.margins.x;
+    float right = viewport.margins.y;
+    float bottom = viewport.margins.z;
+    float left = viewport.margins.w;
+
+    return (uv.y < 0 + top || uv.x >w - right || uv.y > h - bottom || uv.x < 0 + left);
 }
 
 
