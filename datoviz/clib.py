@@ -1989,6 +1989,10 @@ class DvzAtlas(ctypes.Structure):
     pass
 
 
+class DvzAxes(ctypes.Structure):
+    pass
+
+
 class DvzBox(ctypes.Structure):
     pass
 
@@ -2100,6 +2104,7 @@ class DvzAtlasFont(ctypes.Structure):
         ("ttf_bytes", ctypes.POINTER(ctypes.c_char)),
         ("atlas", ctypes.POINTER(DvzAtlas)),
         ("font", ctypes.POINTER(DvzFont)),
+        ("font_size", ctypes.c_float),
     ]
 
 
@@ -3415,6 +3420,58 @@ panel_ref.argtypes = [
     ctypes.c_int,  # int flags
 ]
 panel_ref.restype = ctypes.POINTER(DvzRef)
+
+# Function dvz_panel_axes()
+panel_axes = dvz.dvz_panel_axes
+panel_axes.__doc__ = """
+Get the axes.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+
+Returns
+-------
+type
+    the axes
+"""
+panel_axes.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+]
+panel_axes.restype = ctypes.POINTER(DvzAxes)
+
+# Function dvz_panel_axes_2D()
+panel_axes_2D = dvz.dvz_panel_axes_2D
+panel_axes_2D.__doc__ = """
+Create 2D axes.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+xmin : double
+    xmin
+xmax : double
+    xmax
+ymin : double
+    ymin
+ymax : double
+    ymax
+
+Returns
+-------
+type
+    the axes
+"""
+panel_axes_2D.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_double,  # double xmin
+    ctypes.c_double,  # double xmax
+    ctypes.c_double,  # double ymin
+    ctypes.c_double,  # double ymax
+]
+panel_axes_2D.restype = ctypes.POINTER(DvzAxes)
 
 # Function dvz_panel_figure()
 panel_figure = dvz.dvz_panel_figure
@@ -6415,13 +6472,13 @@ Load the default atlas and font.
 
 Parameters
 ----------
-font_size : double
+font_size : float
     the font size
 af : DvzAtlasFont* (out parameter)
     the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
 """
 atlas_font.argtypes = [
-    ctypes.c_double,  # double font_size
+    ctypes.c_float,  # float font_size
     ctypes.POINTER(DvzAtlasFont),  # out DvzAtlasFont* af
 ]
 
@@ -9628,6 +9685,29 @@ ref.argtypes = [
 ]
 ref.restype = ctypes.POINTER(DvzRef)
 
+# Function dvz_ref_is_set()
+ref_is_set = dvz.dvz_ref_is_set
+ref_is_set.__doc__ = """
+Indicate whether the reference is set on a given axis.
+
+Parameters
+----------
+ref : DvzRef*
+    the reference frame
+dim : DvzDim
+    the dimension axis
+
+Returns
+-------
+type
+    whether the ref is set on this axis.
+"""
+ref_is_set.argtypes = [
+    ctypes.POINTER(DvzRef),  # DvzRef* ref
+    DvzDim,  # DvzDim dim
+]
+ref_is_set.restype = ctypes.c_bool
+
 # Function dvz_ref_set()
 ref_set = dvz.dvz_ref_set
 ref_set.__doc__ = """
@@ -9737,9 +9817,9 @@ ref_expand_3D.argtypes = [
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
 ]
 
-# Function dvz_ref_transform1D()
-ref_transform1D = dvz.dvz_ref_transform1D
-ref_transform1D.__doc__ = """
+# Function dvz_ref_transform_1D()
+ref_transform_1D = dvz.dvz_ref_transform_1D
+ref_transform_1D.__doc__ = """
 Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9755,7 +9835,7 @@ pos : double*
 pos_tr : vec3* (out parameter)
     (array) the transformed positions
 """
-ref_transform1D.argtypes = [
+ref_transform_1D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     DvzDim,  # DvzDim dim
     ctypes.c_uint32,  # uint32_t count

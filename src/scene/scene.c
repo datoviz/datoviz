@@ -324,6 +324,10 @@ DvzPanel* dvz_panel(DvzFigure* fig, float x, float y, float width, float height)
     // Default static transform.
     panel->static_transform = dvz_transform(fig->scene->batch, 0);
 
+    // Default reference, unset by default.
+    // TODO: ref flags?
+    panel->ref = dvz_ref(0);
+
     // Append the figure to the scene's figures.
     dvz_list_append(fig->panels, (DvzListItem){.p = (void*)panel});
 
@@ -383,12 +387,16 @@ DvzBatch* dvz_panel_batch(DvzPanel* panel)
 DvzRef* dvz_panel_ref(DvzPanel* panel, int flags)
 {
     ANN(panel);
-    if (panel->ref == NULL)
-    {
-        panel->ref = dvz_ref(flags);
-    }
     ANN(panel->ref);
     return panel->ref;
+}
+
+
+
+DvzAxes* dvz_panel_axes(DvzPanel* panel)
+{
+    ANN(panel);
+    return panel->axes;
 }
 
 

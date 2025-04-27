@@ -189,6 +189,8 @@ dvz_ortho_zoom_wheel
 dvz_panel
 dvz_panel_arcball
 dvz_panel_at
+dvz_panel_axes
+dvz_panel_axes_2D
 dvz_panel_batch
 dvz_panel_camera
 dvz_panel_contains
@@ -256,8 +258,9 @@ dvz_ref_expand_2D
 dvz_ref_expand_3D
 dvz_ref_get
 dvz_ref_inverse
+dvz_ref_is_set
 dvz_ref_set
-dvz_ref_transform1D
+dvz_ref_transform_1D
 dvz_ref_transform_2D
 dvz_ref_transform_3D
 dvz_ref_transform_polygon

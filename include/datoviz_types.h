@@ -128,6 +128,7 @@ struct DvzAtlasFont
     unsigned char* ttf_bytes;
     DvzAtlas* atlas;
     DvzFont* font;
+    float font_size;
 };
 
 

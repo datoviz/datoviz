@@ -90,8 +90,8 @@ struct DvzAxis
     DvzVisual* label;   // axis label
     DvzVisual* spine;   // spine
 
-    DvzRef* ref;
     DvzTicks* ticks;
+    DvzPanel* panel; // HACK: avoid putting an axis several times to a given panel
 
     DvzDim dim;
     int flags;
@@ -109,15 +109,6 @@ struct DvzAxis
  * @param placeholder placeholder
  */
 DVZ_EXPORT DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags);
-
-
-
-/**
- * Create an axis.
- *
- * @param placeholder placeholder
- */
-DVZ_EXPORT void dvz_axis_ref(DvzAxis* axis, DvzRef* ref);
 
 
 
@@ -172,7 +163,7 @@ dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orientati
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax);
+DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax);
 
 
 
@@ -181,7 +172,7 @@ DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz);
+DVZ_EXPORT bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref);
 
 
 

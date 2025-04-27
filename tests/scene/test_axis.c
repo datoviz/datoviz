@@ -45,7 +45,7 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
     ANN(axis);
 
     // Update the axis if the panzoom has been updated and if the ticks have changed.
-    dvz_axis_onpanzoom(axis, pz);
+    dvz_axis_on_panzoom(axis, pz, vt->panel->ref);
 }
 
 int test_axis_1(TstSuite* suite)
@@ -75,21 +75,20 @@ int test_axis_1(TstSuite* suite)
     dvz_atlas_font(font_size, &af);
 
     // Create the reference frame.
-    DvzRef* ref = dvz_ref(0);
+    DvzRef* ref = dvz_panel_ref(vt.panel, 0);
     dvz_ref_set(ref, dim, dmin, dmax);
 
     // DvzAtlasFont af_label = dvz_atlas_font(28);
 
     // Create the axis.
     DvzAxis* axis = dvz_axis(vt.batch, &af, dim, 0);
-    dvz_axis_ref(axis, ref);
     dvz_axis_size(axis, range_size, glyph_size);
     dvz_axis_horizontal(axis, 0);
     dvz_axis_label(axis, "Axis", 10, DVZ_ORIENTATION_DEFAULT);
     vt.haxis = axis;
 
     // Compute ticks.
-    dvz_axis_update(axis, dmin, dmax);
+    dvz_axis_update(axis, ref, dmin, dmax);
 
     // Add the axis to the panel.
     dvz_axis_panel(axis, vt.panel);

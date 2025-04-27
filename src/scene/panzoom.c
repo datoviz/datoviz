@@ -365,7 +365,7 @@ void dvz_panzoom_xlim(DvzPanzoom* pz, DvzRef* ref, double xmin, double xmax)
 
     // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
     vec3 xlim_ndc[2];
-    dvz_ref_transform1D(ref, DVZ_DIM_X, 2, (double[]){xmin, xmax}, xlim_ndc);
+    dvz_ref_transform_1D(ref, DVZ_DIM_X, 2, (double[]){xmin, xmax}, xlim_ndc);
     float xmin_ndc = xlim_ndc[0][DVZ_DIM_X];
     float xmax_ndc = xlim_ndc[1][DVZ_DIM_X];
 
@@ -385,7 +385,7 @@ void dvz_panzoom_ylim(DvzPanzoom* pz, DvzRef* ref, double ymin, double ymax)
 
     // Convert the passed limits to NDC so that we can appropriately set the panzoom extent.
     vec3 ylim_ndc[2];
-    dvz_ref_transform1D(ref, DVZ_DIM_Y, 2, (double[]){ymin, ymax}, ylim_ndc);
+    dvz_ref_transform_1D(ref, DVZ_DIM_Y, 2, (double[]){ymin, ymax}, ylim_ndc);
     float ymin_ndc = ylim_ndc[0][DVZ_DIM_Y];
     float ymax_ndc = ylim_ndc[1][DVZ_DIM_Y];
 

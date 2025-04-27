@@ -101,10 +101,13 @@ DvzAtlas* dvz_atlas(unsigned long ttf_size, unsigned char* ttf_bytes)
 
 
 
-void dvz_atlas_font(double font_size, DvzAtlasFont* af)
+void dvz_atlas_font(float font_size, DvzAtlasFont* af)
 {
+    ASSERT(font_size > 0);
+    ANN(af);
     dvz_atlas_import("Roboto_Medium", "Roboto_Medium_atlas", af);
     dvz_font_size(af->font, font_size);
+    af->font_size = font_size;
 }
 
 

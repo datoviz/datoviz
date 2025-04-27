@@ -39,8 +39,9 @@ int test_axes_1(TstSuite* suite)
 #endif
     VisualTest vt = visual_test_start("axes", VISUAL_TEST_PANZOOM, DVZ_APP_FLAGS_WHITE_BACKGROUND);
 
-    DvzAxes* axes = dvz_axes_2D(vt.panel, 0, 10, -1, 1, 0);
+    DvzAxes* axes = dvz_panel_axes_2D(vt.panel, 0, 10, -1, 1);
 
+    visual_test_end(vt);
     dvz_axes_destroy(axes);
     return 0;
 }

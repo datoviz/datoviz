@@ -39,8 +39,9 @@ typedef struct DvzRef DvzRef;
 
 struct DvzRef
 {
-    int flags;
     DvzBox box;
+    bool is_set[DVZ_DIM_COUNT];
+    int flags;
 };
 
 

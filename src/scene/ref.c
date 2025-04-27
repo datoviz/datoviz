@@ -39,6 +39,16 @@ DvzRef* dvz_ref(int flags)
 
 
 
+bool dvz_ref_is_set(DvzRef* ref, DvzDim dim)
+{
+    ANN(ref);
+    ASSERT(dim >= 0);
+    ASSERT(dim < DVZ_DIM_COUNT);
+    return ref->is_set[dim];
+}
+
+
+
 void dvz_ref_set(DvzRef* ref, DvzDim dim, double vmin, double vmax)
 {
     ANN(ref);
@@ -46,16 +56,19 @@ void dvz_ref_set(DvzRef* ref, DvzDim dim, double vmin, double vmax)
     {
         ref->box.xmin = vmin;
         ref->box.xmax = vmax;
+        ref->is_set[DVZ_DIM_X] = true;
     }
     else if (dim == DVZ_DIM_Y)
     {
         ref->box.ymin = vmin;
         ref->box.ymax = vmax;
+        ref->is_set[DVZ_DIM_Y] = true;
     }
     else if (dim == DVZ_DIM_Z)
     {
         ref->box.zmin = vmin;
         ref->box.zmax = vmax;
+        ref->is_set[DVZ_DIM_Z] = true;
     }
     else
     {
@@ -159,7 +172,7 @@ void dvz_ref_expand_3D(DvzRef* ref, uint32_t count, dvec3* pos)
 
 
 
-void dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr)
+void dvz_ref_transform_1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr)
 {
     ANN(ref);
     ANN(pos);

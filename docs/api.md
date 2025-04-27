@@ -318,7 +318,7 @@ Load the default atlas and font.
 
     ``` python
     dvz.atlas_font(
-        font_size,  # the font size (float, 32-bit)
+        font_size,  # the font size (float, 64-bit)
         af,  # the returned DvzAtlasFont object with DvzAtlas and DvzFont objects. (LP_DvzAtlasFont)
     )
     ```
@@ -327,7 +327,7 @@ Load the default atlas and font.
 
     ``` c
     void dvz_atlas_font(
-        double font_size,  // the font size
+        float font_size,  // the font size
         DvzAtlasFont* af,  // the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
     );
     ```
@@ -4496,6 +4496,54 @@ Return the panel containing a given point.
     );
     ```
 
+### `dvz_panel_axes()`
+
+Get the axes.
+
+=== "Python"
+
+    ``` python
+    dvz.panel_axes(  # returns: the axes (LP_DvzAxes)
+        panel,  # the panel (LP_DvzPanel)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzAxes* dvz_panel_axes(  // returns: the axes
+        DvzPanel* panel,  // the panel
+    );
+    ```
+
+### `dvz_panel_axes_2D()`
+
+Create 2D axes.
+
+=== "Python"
+
+    ``` python
+    dvz.panel_axes_2D(  # returns: the axes (LP_DvzAxes)
+        panel,  # the panel (LP_DvzPanel)
+        xmin,  # xmin (float, 32-bit)
+        xmax,  # xmax (float, 32-bit)
+        ymin,  # ymin (float, 32-bit)
+        ymax,  # ymax (float, 32-bit)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzAxes* dvz_panel_axes_2D(  // returns: the axes
+        DvzPanel* panel,  // the panel
+        double xmin,  // xmin
+        double xmax,  // xmax
+        double ymin,  // ymin
+        double ymax,  // ymax
+    );
+    ```
+
 ### `dvz_panel_batch()`
 
 Return the batch from a panel.
@@ -6068,6 +6116,28 @@ Inverse transform from normalized device coordinates [-1..+1] to the reference f
     );
     ```
 
+### `dvz_ref_is_set()`
+
+Indicate whether the reference is set on a given axis.
+
+=== "Python"
+
+    ``` python
+    dvz.ref_is_set(  # returns: whether the ref is set on this axis. (c_bool)
+        ref,  # the reference frame (LP_DvzRef)
+        dim,  # the dimension axis (DvzDim)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_ref_is_set(  // returns: whether the ref is set on this axis.
+        DvzRef* ref,  // the reference frame
+        DvzDim dim,  // the dimension axis
+    );
+    ```
+
 ### `dvz_ref_set()`
 
 Set the range on a given axis.
@@ -6094,14 +6164,14 @@ Set the range on a given axis.
     );
     ```
 
-### `dvz_ref_transform1D()`
+### `dvz_ref_transform_1D()`
 
 Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
 
 === "Python"
 
     ``` python
-    dvz.ref_transform1D(
+    dvz.ref_transform_1D(
         ref,  # the reference frame (LP_DvzRef)
         dim,  # which dimension (DvzDim)
         count,  # the number of positions (int, 32-bit unsigned)
@@ -6113,7 +6183,7 @@ Transform 1D data from the reference frame to normalized device coordinates [-1.
 === "C"
 
     ``` c
-    void dvz_ref_transform1D(
+    void dvz_ref_transform_1D(
         DvzRef* ref,  // the reference frame
         DvzDim dim,  // which dimension
         uint32_t count,  // the number of positions
@@ -12732,6 +12802,7 @@ struct DvzAtlasFont
     unsigned char* ttf_bytes
     DvzAtlas* atlas
     DvzFont* font
+    float font_size
 ```
 
 ### `DvzBatch`

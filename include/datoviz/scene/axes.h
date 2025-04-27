@@ -63,8 +63,7 @@ struct DvzAxes
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT DvzAxes*
-dvz_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymin, double ymax, int flags);
+DVZ_EXPORT DvzAxes* dvz_axes_2D(DvzBatch* batch, int flags);
 
 
 

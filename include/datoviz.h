@@ -53,6 +53,8 @@ Datoviz is still an early stage library and the API may change at any time.
 typedef struct DvzApp DvzApp;
 typedef struct DvzArcball DvzArcball;
 typedef struct DvzAtlas DvzAtlas;
+typedef struct DvzAxes DvzAxes;
+typedef struct DvzAxis DvzAxis;
 typedef struct DvzBatch DvzBatch;
 typedef struct DvzBox DvzBox;
 typedef struct DvzCamera DvzCamera;
@@ -508,6 +510,31 @@ DVZ_EXPORT DvzBatch* dvz_panel_batch(DvzPanel* panel);
  * @returns the reference
  */
 DVZ_EXPORT DvzRef* dvz_panel_ref(DvzPanel* panel, int flags);
+
+
+
+/**
+ * Get the axes.
+ *
+ * @param panel the panel
+ * @returns the axes
+ */
+DVZ_EXPORT DvzAxes* dvz_panel_axes(DvzPanel* panel);
+
+
+
+/**
+ * Create 2D axes.
+ *
+ * @param panel the panel
+ * @param xmin xmin
+ * @param xmax xmax
+ * @param ymin ymin
+ * @param ymax ymax
+ * @returns the axes
+ */
+DVZ_EXPORT DvzAxes*
+dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymin, double ymax);
 
 
 
@@ -2238,7 +2265,7 @@ DVZ_EXPORT void dvz_path_alloc(DvzVisual* visual, uint32_t total_point_count);
  * @param font_size the font size
  * @param[out] af the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
  */
-DVZ_EXPORT void dvz_atlas_font(double font_size, DvzAtlasFont* af);
+DVZ_EXPORT void dvz_atlas_font(float font_size, DvzAtlasFont* af);
 
 
 
@@ -4118,6 +4145,17 @@ DVZ_EXPORT DvzRef* dvz_ref(int flags);
 
 
 /**
+ * Indicate whether the reference is set on a given axis.
+ *
+ * @param ref the reference frame
+ * @param dim the dimension axis
+ * @returns whether the ref is set on this axis.
+ */
+DVZ_EXPORT bool dvz_ref_is_set(DvzRef* ref, DvzDim dim);
+
+
+
+/**
  * Set the range on a given axis.
  *
  * @param ref the reference frame
@@ -4185,7 +4223,7 @@ DVZ_EXPORT void dvz_ref_expand_3D(DvzRef* ref, uint32_t count, dvec3* pos);
  * @param[out] pos_tr (array) the transformed positions
  */
 DVZ_EXPORT void
-dvz_ref_transform1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
+dvz_ref_transform_1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
 
 
 

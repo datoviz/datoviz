@@ -416,18 +416,6 @@ DvzAxis* dvz_axis(DvzBatch* batch, DvzAtlasFont* af, DvzDim dim, int flags)
 
 
 
-void dvz_axis_ref(DvzAxis* axis, DvzRef* ref)
-{
-    ANN(axis);
-    ANN(ref);
-
-    // the axis needs the ref to do the normalization of the glyph and ticks, which are positioned
-    // in [lmin, lmax] and then normalized to positions via DvzRef
-    axis->ref = ref;
-}
-
-
-
 void dvz_axis_size(DvzAxis* axis, double range_size, double glyph_size)
 {
     ANN(axis);
@@ -440,7 +428,6 @@ void dvz_axis_glyph(DvzAxis* axis, uint32_t tick_count, char** labels, vec3* pos
 {
     ANN(axis);
     ANN(axis->glyph);
-    ANN(axis->ref);
 
     dvz_glyph_strings(
         axis->glyph, tick_count, labels, positions, NULL, LABEL_COLOR, axis->spec.offset,
@@ -548,7 +535,7 @@ void dvz_axis_label(DvzAxis* axis, char* text, float margin, DvzOrientation orie
 
 
 
-bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
+bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax)
 {
     ANN(axis);
     if (dmin >= dmax)
@@ -561,8 +548,17 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
     ANN(ticks);
 
     // req_count depends on the viewport size vs glyph size.
+    ASSERT(ticks->glyph_size > 0);
     uint32_t req_count = TICK_DENSITY * ticks->range_size / ticks->glyph_size;
     // log_debug("request %d ticks on [%g, %g]", req_count, dmin, dmax);
+    if (req_count == 0)
+    {
+        log_trace(
+            "requesting 0 ticks on range [%g, %g] (range size %g, glyph size %g), skipping "
+            "dvz_axis_update()",
+            dmin, dmax, ticks->range_size, ticks->glyph_size);
+        return false;
+    }
     ASSERT(req_count > 0);
 
     bool has_changed = dvz_ticks_compute(ticks, dmin, dmax, req_count);
@@ -595,7 +591,7 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
     // Normalize the tick positions using the reference frame.
     vec3* positions = calloc(tick_count, sizeof(vec3));
     ANN(positions);
-    dvz_ref_transform1D(axis->ref, axis->dim, tick_count, tick_pos, positions);
+    dvz_ref_transform_1D(ref, axis->dim, tick_count, tick_pos, positions);
 
     // Fixed dimension.
     uint32_t fixed_dim = 0;
@@ -641,16 +637,14 @@ bool dvz_axis_update(DvzAxis* axis, double dmin, double dmax)
 
 
 
-bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz)
+bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref)
 {
     ANN(axis);
     ANN(pz);
+    ANN(ref);
 
     DvzTicks* ticks = axis->ticks;
     ANN(ticks);
-
-    DvzRef* ref = axis->ref;
-    ANN(ref);
 
     // Find the extent.
     DvzBox box = {0};
@@ -670,7 +664,7 @@ bool dvz_axis_onpanzoom(DvzAxis* axis, DvzPanzoom* pz)
     }
 
     // Otherwise, recompute the ticks and only update the axes if the ticks have changed.
-    bool updated = dvz_axis_update(axis, xmin, xmax);
+    bool updated = dvz_axis_update(axis, ref, xmin, xmax);
 
     return updated;
 }
@@ -682,12 +676,20 @@ void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
     ANN(axis);
     ANN(panel);
 
+    if (axis->panel != NULL)
+    {
+        log_trace("avoid adding a panel to an axis twice");
+        return;
+    }
+
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(panel, axis->glyph, 0);
     dvz_panel_visual(panel, axis->segment, 0);
     dvz_panel_visual(panel, axis->factor, 0);
     dvz_panel_visual(panel, axis->label, 0);
     dvz_panel_visual(panel, axis->spine, 0);
+
+    axis->panel = panel;
 }
 
 
