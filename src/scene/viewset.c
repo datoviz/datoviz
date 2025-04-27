@@ -98,17 +98,6 @@ static inline void _update_viewport(DvzView* view)
     dvz_viewport(view->offset, view->shape, 0, &viewport);
     dvz_viewport_margins(&viewport, view->margins);
 
-    // Scale.
-    float scale = view->viewset->scale;
-    view->offset[0] *= scale;
-    view->offset[1] *= scale;
-    view->margins[0] *= scale;
-    view->margins[1] *= scale;
-    view->margins[2] *= scale;
-    view->margins[3] *= scale;
-    view->shape[0] *= scale;
-    view->shape[1] *= scale;
-
     // dvz_viewport_print(&viewport);
     dvz_dual_data(&view->dual, 0, 1, &viewport);
     dvz_dual_update(&view->dual);
