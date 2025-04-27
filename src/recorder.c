@@ -26,6 +26,16 @@
     DvzCanvas* canvas = dvz_renderer_canvas(rd, record->canvas_id);                               \
     ANN(canvas);
 
+#define GET_PIPE(pipe_id)                                                                         \
+    DvzPipe* pipe = dvz_renderer_pipe(rd, pipe_id);                                               \
+    ANN(pipe);                                                                                    \
+    if (!dvz_pipe_complete(pipe))                                                                 \
+    {                                                                                             \
+        log_error("cannot draw pipe with incomplete descriptor bindings");                        \
+        return;                                                                                   \
+    }
+
+
 
 static void _process_begin(
     DvzRecorder* recorder, DvzRenderer* rd, DvzCommands* cmds, uint32_t img_idx, //
@@ -77,14 +87,7 @@ static void _process_push(
 
     log_debug("recorder: push constant offset=%d, size=%d", p->offset, p->size);
 
-    DvzPipe* pipe = dvz_renderer_pipe(rd, p->pipe_id);
-    ANN(pipe);
-
-    if (!dvz_pipe_complete(pipe))
-    {
-        log_error("cannot draw pipe with incomplete descriptor bindings");
-        return;
-    }
+    GET_PIPE(p->pipe_id)
 
     dvz_cmd_push(
         cmds, img_idx, pipe->descriptors.dslots, (VkShaderStageFlagBits)p->shader_stages, //
@@ -114,18 +117,9 @@ static void _process_draw(
     // NOTE: this function lazily create the pipe if needed, this is when the graphics pipeline
     // is created on the Vulkan side.
 
-    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw.pipe_id);
-    ANN(pipe);
+    GET_PIPE(record->contents.draw.pipe_id)
 
-    if (!dvz_pipe_complete(pipe))
-    {
-        log_error("cannot draw pipe with incomplete descriptor bindings");
-    }
-    else
-    {
-        dvz_pipe_draw(
-            pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
-    }
+    dvz_pipe_draw(pipe, cmds, img_idx, first_vertex, vertex_count, first_instance, instance_count);
 }
 
 static void _process_draw_indexed(
@@ -144,19 +138,11 @@ static void _process_draw_indexed(
         "recorder: draw indexed from index #%d for %d indices (#%d)", //
         first_index, index_count, img_idx);
 
-    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indexed.pipe_id);
-    ANN(pipe);
+    GET_PIPE(record->contents.draw_indexed.pipe_id)
 
-    if (!dvz_pipe_complete(pipe))
-    {
-        log_error("cannot draw pipe with incomplete descriptor bindings");
-    }
-    else
-    {
-        dvz_pipe_draw_indexed(
-            pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
-            instance_count);
-    }
+    dvz_pipe_draw_indexed(
+        pipe, cmds, img_idx, first_index, vertex_offset, index_count, first_instance,
+        instance_count);
 }
 
 static void _process_draw_indirect(
@@ -165,24 +151,14 @@ static void _process_draw_indirect(
 {
     GET_CANVAS
 
-    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-    ANN(pipe);
+    GET_PIPE(record->contents.draw_indirect.pipe_id)
 
-    if (!dvz_pipe_complete(pipe))
-    {
-        log_error("cannot draw pipe with incomplete descriptor bindings");
-    }
-    else
-    {
+    uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
-        uint32_t draw_count = record->contents.draw_indirect.draw_count;
+    DvzDat* dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
+    ANN(dat_indirect);
 
-        DvzDat* dat_indirect =
-            dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
-        ANN(dat_indirect);
-
-        dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
-    }
+    dvz_pipe_draw_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
 }
 
 static void _process_draw_indexed_indirect(
@@ -191,23 +167,14 @@ static void _process_draw_indexed_indirect(
 {
     GET_CANVAS
 
-    DvzPipe* pipe = dvz_renderer_pipe(rd, record->contents.draw_indirect.pipe_id);
-    ANN(pipe);
+    GET_PIPE(record->contents.draw_indirect.pipe_id)
 
-    if (!dvz_pipe_complete(pipe))
-    {
-        log_error("cannot draw pipe with incomplete descriptor bindings");
-    }
-    else
-    {
-        uint32_t draw_count = record->contents.draw_indirect.draw_count;
+    uint32_t draw_count = record->contents.draw_indirect.draw_count;
 
-        DvzDat* dat_indirect =
-            dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
-        ANN(dat_indirect);
+    DvzDat* dat_indirect = dvz_renderer_dat(rd, record->contents.draw_indirect.dat_indirect_id);
+    ANN(dat_indirect);
 
-        dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
-    }
+    dvz_pipe_draw_indexed_indirect(pipe, cmds, img_idx, dat_indirect, draw_count);
 }
 
 static void _process_end(
