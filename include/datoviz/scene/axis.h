@@ -172,7 +172,7 @@ DVZ_EXPORT bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double 
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref);
+DVZ_EXPORT bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref, bool force);
 
 
 

@@ -64,6 +64,52 @@ DvzAxes* dvz_axes_2D(DvzBatch* batch, int flags)
 
 
 
+void dvz_axes_resize(DvzAxes* axes, DvzView* view)
+{
+    ANN(axes);
+    ANN(view);
+
+    DvzAxis* xaxis = dvz_axes_axis(axes, DVZ_DIM_X);
+    DvzAxis* yaxis = dvz_axes_axis(axes, DVZ_DIM_Y);
+
+    ANN(xaxis);
+    ANN(yaxis);
+
+    // TODO: different margins on each side.
+    // HACK: assume same margin.
+    float m = view->margins[0];
+
+    // Sizes.
+    double glyph_size = axes->af.font_size;
+    ASSERT(glyph_size > 0);
+
+    // x axis.
+    {
+        double range_size = view->shape[0] - 2 * m;
+        if (range_size < 10 * glyph_size)
+        {
+            log_warn("axes range size too small");
+            range_size = glyph_size = 1;
+        }
+        dvz_axis_size(xaxis, range_size, glyph_size);
+    }
+
+    // y axis.
+    {
+        double range_size = view->shape[1] - 2 * m;
+        if (range_size < 10 * glyph_size)
+        {
+            log_warn("axes range size too small");
+            range_size = glyph_size = 1;
+        }
+        dvz_axis_size(yaxis, range_size, glyph_size);
+    }
+
+    // log_info("resize %f %f", range_size, glyph_size);
+}
+
+
+
 DvzAxes* dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymin, double ymax)
 {
     ANN(panel);
@@ -94,28 +140,18 @@ DvzAxes* dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymi
     dvz_ref_set(ref, DVZ_DIM_X, xmin, xmax);
     dvz_ref_set(ref, DVZ_DIM_Y, ymin, ymax);
 
-    // Set the margins.
     float m = DEFAULT_MARGIN;
     // TODO: different margins on each side.
     dvz_panel_margins(panel, m, m, m, m);
 
-    // Sizes.
-    double range_size = panel->view->shape[0] - 2 * m;
-    double glyph_size = panel->axes->af.font_size;
-    if (range_size < 10 * glyph_size)
-    {
-        log_warn("axes range size too small");
-        range_size = glyph_size = 1;
-    }
-    ASSERT(glyph_size > 0);
+    // Set the margins.
+    dvz_axes_resize(panel->axes, panel->view);
 
     // X axis parameters.
-    dvz_axis_size(xaxis, range_size, glyph_size);
     dvz_axis_horizontal(xaxis, 0);
     dvz_axis_label(xaxis, "Axis", 10, DVZ_ORIENTATION_DEFAULT);
 
     // Y axis parameters.
-    dvz_axis_size(yaxis, range_size, glyph_size);
     dvz_axis_vertical(yaxis, 0);
     // dvz_axis_label(yaxis, "Axis", 10, DVZ_ORIENTATION_DEFAULT);
 
@@ -150,22 +186,22 @@ DvzAxis* dvz_axes_axis(DvzAxes* axes, DvzDim dim)
 
 
 
-void dvz_axes_update(DvzAxes* axes, DvzPanel* panel, DvzPanzoom* panzoom)
+void dvz_axes_update(DvzAxes* axes, DvzRef* ref, DvzPanzoom* panzoom, bool force)
 {
     ANN(axes);
-    ANN(panel);
-
-    DvzRef* ref = dvz_panel_ref(panel);
     ANN(ref);
 
-    DvzAxis* xaxis = dvz_axes_axis(panel->axes, DVZ_DIM_X);
-    DvzAxis* yaxis = dvz_axes_axis(panel->axes, DVZ_DIM_Y);
+    DvzAxis* xaxis = dvz_axes_axis(axes, DVZ_DIM_X);
+    DvzAxis* yaxis = dvz_axes_axis(axes, DVZ_DIM_Y);
 
     ANN(xaxis);
     ANN(yaxis);
 
-    dvz_axis_on_panzoom(xaxis, panzoom, ref);
-    dvz_axis_on_panzoom(yaxis, panzoom, ref);
+    if (panzoom != NULL)
+    {
+        dvz_axis_on_panzoom(xaxis, panzoom, ref, force);
+        dvz_axis_on_panzoom(yaxis, panzoom, ref, force);
+    }
 }
 
 

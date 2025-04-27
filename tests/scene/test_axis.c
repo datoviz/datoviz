@@ -45,7 +45,7 @@ static void _on_frame(DvzApp* app, DvzId window_id, DvzFrameEvent* ev)
     ANN(axis);
 
     // Update the axis if the panzoom has been updated and if the ticks have changed.
-    dvz_axis_on_panzoom(axis, pz, vt->panel->ref);
+    dvz_axis_on_panzoom(axis, pz, vt->panel->ref, false);
 }
 
 int test_axis_1(TstSuite* suite)

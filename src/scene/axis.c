@@ -639,7 +639,7 @@ bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax)
 
 
 
-bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref)
+bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref, bool force)
 {
     ANN(axis);
     ANN(pz);
@@ -689,7 +689,7 @@ bool dvz_axis_on_panzoom(DvzAxis* axis, DvzPanzoom* pz, DvzRef* ref)
 
 
     // If the extent is the same, do not recompute the ticks.
-    if ((fabs(vmin - ticks->dmin) < 1e-12) && (fabs(vmax - ticks->dmax) < 1e-12))
+    if (!force && (fabs(vmin - ticks->dmin) < 1e-12) && (fabs(vmax - ticks->dmax) < 1e-12))
     {
         return false;
     }

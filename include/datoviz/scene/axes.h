@@ -34,6 +34,7 @@ typedef struct DvzAxes DvzAxes;
 typedef struct DvzVisual DvzVisual;
 typedef struct DvzPanzoom DvzPanzoom;
 typedef struct DvzPanel DvzPanel;
+typedef struct DvzView DvzView;
 typedef struct DvzRef DvzRef;
 typedef struct DvzTicks DvzTicks;
 typedef struct DvzAxis DvzAxis;
@@ -81,7 +82,16 @@ DVZ_EXPORT DvzAxis* dvz_axes_axis(DvzAxes* axes, DvzDim dim);
  *
  * @param placeholder placeholder
  */
-DVZ_EXPORT void dvz_axes_update(DvzAxes* axes, DvzPanel* panel, DvzPanzoom* panzoom);
+DVZ_EXPORT void dvz_axes_resize(DvzAxes* axes, DvzView* view);
+
+
+
+/**
+ * Create an axis.
+ *
+ * @param placeholder placeholder
+ */
+DVZ_EXPORT void dvz_axes_update(DvzAxes* axes, DvzRef* ref, DvzPanzoom* panzoom, bool force);
 
 
 

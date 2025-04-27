@@ -247,6 +247,14 @@ void dvz_figure_resize(DvzFigure* fig, uint32_t width, uint32_t height)
 
         // Update the view offset and shape.
         dvz_panel_resize(panel, x, y, w, h);
+
+        if (panel->axes != NULL && panel->panzoom != NULL)
+        {
+            DvzRef* ref = dvz_panel_ref(panel);
+            ANN(ref);
+            dvz_axes_resize(panel->axes, panel->view);
+            dvz_axes_update(panel->axes, ref, panel->panzoom, true);
+        }
     }
 }
 
@@ -1273,7 +1281,10 @@ void dvz_scene_mouse(DvzScene* scene, DvzFigure* fig, DvzMouseEvent* ev)
             // Update the axes if any.
             if (panel->axes != NULL)
             {
-                dvz_axes_update(panel->axes, panel, pz);
+                DvzRef* ref = dvz_panel_ref(panel);
+                ANN(ref);
+                dvz_axes_resize(panel->axes, panel->view);
+                dvz_axes_update(panel->axes, ref, pz, false);
             }
         }
     }
