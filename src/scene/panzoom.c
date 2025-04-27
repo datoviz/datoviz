@@ -34,7 +34,7 @@
 // HACK: touchpad wheel too sensitive on macOS
 // TODO
 #define DVZ_PANZOOM_ZOOM_DRAG_COEF  .003
-#define DVZ_PANZOOM_ZOOM_WHEEL_COEF -20.0
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF -12.0
 #else
 // TODO: test on linux/Windows.
 #define DVZ_PANZOOM_ZOOM_DRAG_COEF  .002
