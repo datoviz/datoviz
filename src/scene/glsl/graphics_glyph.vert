@@ -42,7 +42,8 @@ void main()
     trans += shift * s;  // NOTE: we multiply the shift by the glyph scaling
 
     // NOTE: the x anchor is relative to the group size
-    trans -= anchor * (group_shape != vec2(0) ? group_shape : size);
+    vec2 anch = .5 * (vec2(anchor.x + 1, -anchor.y + 1)); // local coordinate system (-1..+1)
+    trans -= anch * (group_shape != vec2(0) ? group_shape : size);
 
     // mat4 mvp = mvp.proj * mvp.view * mvp.model;
     mat4 rot = get_rotation_matrix(axis, angle);
