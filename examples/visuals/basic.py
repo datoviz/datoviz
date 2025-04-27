@@ -45,8 +45,7 @@ figure = app.figure()
 panel = figure.panel()
 panzoom = panel.panzoom()
 
-visual = app.basic('line_strip')
-visual.set_data(position=position, color=color, group=group)
+visual = app.basic('line_strip', position=position, color=color, group=group)
 panel.add(visual)
 
 app.run()

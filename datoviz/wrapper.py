@@ -21,6 +21,8 @@ import datoviz as dvz
 
 DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
+DEFAULT_FONT_SIZE = 30
+DEFAULT_GLYPH_COLOR = (0, 0, 0, 255)
 DEFAULT_INTERPOLATION = 'linear'
 DEFAULT_ADDRESS_MODE = 'clamp_to_border'
 VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
@@ -275,65 +277,77 @@ class App:
     # Visuals
     # ---------------------------------------------------------------------------------------------
 
-    def basic(self, topology: str = None):
+    def basic(self, topology: str = None, **kwargs):
         c_topology = dvz.to_enum(f'primitive_topology_{topology}')
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
         visual = Basic(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def pixel(self):
+    def pixel(self, **kwargs):
         c_visual = dvz.pixel(self.c_batch, 0)
         visual = Pixel(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def point(self, ):
+    def point(self, **kwargs):
         c_visual = dvz.point(self.c_batch, 0)
         visual = Point(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def marker(self):
+    def marker(self, **kwargs):
         c_visual = dvz.marker(self.c_batch, 0)
         visual = Marker(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def segment(self):
+    def segment(self, **kwargs):
         c_visual = dvz.segment(self.c_batch, 0)
         visual = Segment(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def path(self):
+    def path(self, **kwargs):
         c_visual = dvz.path(self.c_batch, 0)
         visual = Path(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def glyph(self):
+    def glyph(self, font_size: int = DEFAULT_FONT_SIZE, **kwargs):
         c_visual = dvz.glyph(self.c_batch, 0)
-        visual = Glyph(self, c_visual)
+        visual = Glyph(self, c_visual, font_size=font_size)
+        visual.set_data(**kwargs)
         return visual
 
-    def image(self):
+    def image(self, **kwargs):
         c_visual = dvz.image(self.c_batch, 0)
         visual = Image(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def mesh(self):
+    def mesh(self, **kwargs):
         c_visual = dvz.mesh(self.c_batch, 0)
         visual = Mesh(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def sphere(self):
+    def sphere(self, **kwargs):
         c_visual = dvz.sphere(self.c_batch, 0)
         visual = Sphere(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def volume(self):
+    def volume(self, **kwargs):
         c_visual = dvz.volume(self.c_batch, 0)
         visual = Volume(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
-    def slice(self):
+    def slice(self, **kwargs):
         c_visual = dvz.slice(self.c_batch, 0)
         visual = Slice(self, c_visual)
+        visual.set_data(**kwargs)
         return visual
 
 
@@ -409,6 +423,7 @@ class Visual:
         pass
 
     def __getattr__(self, prop_name: str):
+        print(f"Calling __getattr__() on {self.visual_name}.{prop_name}")
         prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
         if prop_type == np.ndarray:
             prop_cls = self._prop_classes.get(prop_name, Prop)
@@ -712,6 +727,36 @@ class Path(Visual):
 
 class Glyph(Visual):
     visual_name = 'glyph'
+    _af = None
+
+    def __init__(self, *args, font_size: int = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._af = dvz.AtlasFont()
+        dvz.atlas_font(font_size, self._af)
+        dvz.glyph_atlas_font(self.c_visual, self._af)
+
+    def set_strings(
+            self, strings: tp.List[str],
+            string_pos: np.ndarray = None,
+            scales: np.ndarray = None,
+            color: tuple = DEFAULT_GLYPH_COLOR,
+            anchor: tuple = (0, 0),
+            offset: tuple = (0, 0),
+    ):
+        assert strings
+        assert string_pos is not None
+        assert scales is not None
+        string_count = len(strings)
+        dvz.glyph_strings(
+            self.c_visual,
+            string_count,
+            strings,
+            string_pos,
+            scales,
+            dvz.cvec4(*color),
+            dvz.vec2(*offset),
+            dvz.vec2(*anchor),
+        )
 
     def set_position(self, array: np.ndarray, offset: int = 0):
         self.position[offset:] = array
