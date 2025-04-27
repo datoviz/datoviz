@@ -143,6 +143,16 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     DvzFigure* fig = (DvzFigure*)calloc(1, sizeof(DvzFigure));
     fig->scene = scene;
     fig->flags = flags;
+    fig->scale = 1;
+
+// UGLY HACK: currently, we have no way for the scene API to know the canvas scale, which is
+// determined by the client in the presenter _create_canvas(), but when we reach this point the
+// figure has been created and the DvzViewport structure has been already uploaded to the GPU. The
+// recorder can still multiply by the scale because it happens after canvas creation. We will need
+// a better mechanism in Datoviz v0.4.
+#if OS_MACOS
+    fig->scale = 2;
+#endif
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
     fig->shape[0] = width;
@@ -165,6 +175,7 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
 
     // Create the viewset;
     fig->viewset = dvz_viewset(batch, fig->canvas_id);
+    fig->viewset->scale = fig->scale;
 
     // Append the figure to the scene's figures.
     dvz_list_append(scene->figures, (DvzListItem){.p = (void*)fig});

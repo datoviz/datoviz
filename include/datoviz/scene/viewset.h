@@ -78,6 +78,7 @@ struct DvzViewset
     DvzBatch* batch;
     DvzAtomic status;
     DvzId canvas_id;
+    float scale;
     DvzList* views;
 };
 

@@ -84,6 +84,7 @@ struct DvzFigure
     DvzScene* scene;
     DvzList* panels;
     vec2 shape, shape_init; // NOTE: in screen coordinates
+    float scale;
     int flags;
 
     DvzViewset* viewset;
