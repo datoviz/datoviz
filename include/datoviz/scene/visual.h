@@ -37,9 +37,7 @@
 // NOTE: we push the canvas scale as a push constant to all built-in graphics pipelines in all
 // visuals. This gives us a mechanism to send client-specific data to the GPU without the scene API
 // to be aware of it (because the renderer knows the canvas scale).
-// NOTE: the minimum limit of push constant max size is 128 bytes so we put the scale at the very
-// end of this range.
-#define DVZ_PUSH_SCALE_OFFSET 124
+#define DVZ_PUSH_SCALE_OFFSET 0
 #define DVZ_PUSH_SCALE_SIZE   sizeof(float)
 
 
