@@ -28,6 +28,7 @@ DEFAULT_ADDRESS_MODE = 'clamp_to_border'
 VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
 DTYPE_FORMATS = {
     ('uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
+    ('float32', 4): dvz.FORMAT_R32G32B32A32_SFLOAT,
 }
 PROPS = {
     'basic': {
@@ -360,8 +361,13 @@ class Figure:
         assert c_figure
         self.c_figure = c_figure
 
-    def panel(self):
-        c_panel = dvz.panel_default(self.c_figure)
+    def panel(self, offset: tuple = None, size: tuple = None):
+        if not offset and not size:
+            c_panel = dvz.panel_default(self.c_figure)
+        else:
+            x, y = offset
+            w, h = size
+            c_panel = dvz.panel(self.c_figure, x, y, w, h)
         return Panel(c_panel)
 
     def on_mouse(self):
@@ -643,6 +649,9 @@ class Marker(Visual):
 
     def set_shape(self, value: str):
         self.shape = value
+
+    def set_tex_scale(self, value: float):
+        self.tex_scale = value
 
     def set_texture(self, texture: Texture):
         dvz.marker_texture(self.c_visual, texture.c_texture)
