@@ -47,7 +47,7 @@ PROPS = {
     'point': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
-        'size': {'type': float},
+        'size': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
     },
 
     'marker': {
