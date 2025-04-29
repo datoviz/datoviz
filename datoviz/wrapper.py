@@ -77,7 +77,6 @@ PROPS = {
 
     'path': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
-        'shift': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
         'color': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
         'linewidth': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1,)},
 
@@ -697,24 +696,26 @@ class Segment(Visual):
 class Path(Visual):
     visual_name = 'path'
 
-    def set_position(self, positions: tp.List[np.ndarray], offset: int = 0):
-        if isinstance(positions, np.ndarray):
-            if positions.ndim == 2:
-                positions = list(positions)
-            elif positions.ndim == 3:
-                positions = list(positions)
-        point_count = sum(map(len, positions))
-        path_count = len(positions)
-        path_lengths = np.array([len(p) for p in positions], dtype=np.uint32)
+    def set_position(self, position: tp.List[np.ndarray], n_groups: int = 0, offset: int = 0):
+        if isinstance(position, np.ndarray):
+            if n_groups is not None:
+                k = position.shape[0] // n_groups
+                position = [position[i*k: (i+1)*k] for i in range(n_groups)]
+            elif position.ndim == 2:
+                position = list(position)
+            elif position.ndim == 3:
+                position = list(position)
+        point_count = sum(map(len, position))
+        path_count = len(position)
+        path_lengths = np.array([len(p) for p in position], dtype=np.uint32)
 
-        positions_concat = np.concatenate(positions, axis=0).astype(np.float32)
-        assert positions_concat.ndim == 2
-        assert positions_concat.shape[1] == 3
-        positions_concat = prepare_data_array(self.name, np.float32, (-1, 3), positions_concat)
-        dvz.path_position(self, offset, point_count, positions_concat, path_count, path_lengths, 0)
-
-    def set_shift(self, array: np.ndarray, offset: int = 0):
-        self.shift[offset:] = array
+        position_concat = np.vstack(position).astype(np.float32)
+        assert position_concat.ndim == 2
+        assert position_concat.shape[1] == 3
+        position_concat = prepare_data_array(
+            self.visual_name, np.float32, (-1, 3), position_concat)
+        dvz.path_position(self.c_visual, offset, point_count,
+                          position_concat, path_count, path_lengths, 0)
 
     def set_color(self, array: np.ndarray, offset: int = 0):
         self.color[offset:] = array
@@ -725,8 +726,8 @@ class Path(Visual):
     def set_cap(self, value: str):
         self.cap = value
 
-    def set_joint(self, value: str):
-        self.joint = value
+    def set_join(self, value: str):
+        self.join = value
 
 
 class Glyph(Visual):
