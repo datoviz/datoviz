@@ -963,6 +963,10 @@ class Panel:
         c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
         return Panzoom(c_panzoom)
 
+    def arcball(self, flags: int = None):
+        c_arcball = dvz.panel_arcball(self.c_panel, flags)
+        return Panzoom(c_arcball)
+
 
 if __name__ == '__main__':
     app = App()
