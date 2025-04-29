@@ -27,7 +27,7 @@ DEFAULT_INTERPOLATION = 'linear'
 DEFAULT_ADDRESS_MODE = 'clamp_to_border'
 VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
 DTYPE_FORMATS = {
-    ('np.uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
+    ('uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
 }
 PROPS = {
     'basic': {
@@ -262,17 +262,15 @@ class App:
             shape = shape or image.shape[:ndim]
             n_channels = n_channels or (image.shape[-1] if ndim == image.ndim - 1 else 1)
             dtype = dtype or image.dtype
-        c_format = dtype_to_format(dtype)
+        assert n_channels > 0
+        c_format = dtype_to_format(dtype.name, n_channels)
         shape = dvz.uvec3(*shape)
-        texture = dvz.texture(self.c_batch, getattr(dvz, f'TEX_{ndim}D'), 0)
+        width, height, _ = shape
         c_filter = dvz.to_enum(f'filter_{interpolation}')
         c_address_mode = dvz.to_enum(f'sampler_address_mode_{address_mode}')
-        dvz.texture_format(texture, c_format)
-        dvz.texture_filter(texture, c_filter)
-        dvz.texture_address_mode(texture, c_address_mode)
-        if image is not None:
-            dvz.texture_data(texture, image)
-        return Texture(texture)
+        c_texture = dvz.texture_image(
+            self.c_batch, c_format, c_filter, c_address_mode, width, height, image, 0)
+        return Texture(c_texture)
 
     # Visuals
     # ---------------------------------------------------------------------------------------------
@@ -563,14 +561,11 @@ class Prop:
 # -------------------------------------------------------------------------------------------------
 
 class Texture:
-    c_tex: dvz.DvzId = None
-    c_sampler: dvz.DvzId = None
+    c_texture: dvz.DvzTexture = None
 
-    def __init__(self, c_tex: dvz.DvzId = None, c_sampler: dvz.DvzId = None):
-        assert c_tex is not None
-        assert c_sampler is not None
-        self.c_tex = c_tex
-        self.c_sampler = c_sampler
+    def __init__(self, c_texture: dvz.DvzTexture):
+        assert c_texture is not None
+        self.c_texture = c_texture
 
 
 # -------------------------------------------------------------------------------------------------
