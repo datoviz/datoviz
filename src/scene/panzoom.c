@@ -38,7 +38,7 @@
 #else
 // TODO: test on linux/Windows.
 #define DVZ_PANZOOM_ZOOM_DRAG_COEF  .002
-#define DVZ_PANZOOM_ZOOM_WHEEL_COEF 60.0
+#define DVZ_PANZOOM_ZOOM_WHEEL_COEF 120.0
 #endif
 
 
