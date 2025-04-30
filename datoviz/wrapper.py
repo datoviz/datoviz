@@ -209,6 +209,13 @@ def prepare_data_scalar(name, dtype, size, value):
     return pvalue
 
 
+def mesh_flags(lighting: bool = True):
+    c_flags = 0
+    if lighting:
+        c_flags |= dvz.MESH_FLAGS_LIGHTING
+    return c_flags
+
+
 # -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
@@ -325,22 +332,21 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def mesh(self, **kwargs):
-        c_visual = dvz.mesh(self.c_batch, 0)
+    def _mesh(self, c_visual, **kwargs):
         visual = Mesh(self, c_visual)
         visual.set_data(**kwargs)
         return visual
 
-    def mesh_shape(self, shape: ShapeCollection, **kwargs):
+    def mesh(self, lighting: bool = True, **kwargs):
+        c_flags = mesh_flags(lighting=lighting)
+        return self._mesh(dvz.mesh(self.c_batch, c_flags))
+
+    def mesh_shape(self, shape: ShapeCollection, lighting: bool = True, **kwargs):
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
-        c_flags = dvz.MESH_FLAGS_LIGHTING
-        c_visual = dvz.mesh_shape(self.c_batch, c_merged, c_flags)
-
-        visual = Mesh(self, c_visual)
-        visual.set_data(**kwargs)
-        return visual
+        c_flags = mesh_flags(lighting=lighting)
+        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags))
 
     def sphere(self, **kwargs):
         c_visual = dvz.sphere(self.c_batch, 0)
