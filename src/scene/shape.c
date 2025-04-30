@@ -237,7 +237,6 @@ void dvz_compute_normals(
     uint32_t vertex_count, uint32_t index_count, vec3* pos, DvzIndex* index, vec3* normal)
 {
     ANN(pos);
-    ANN(index);
     ANN(normal);
 
     DvzIndex i0, i1, i2;
@@ -248,10 +247,11 @@ void dvz_compute_normals(
     // Default indices.
     if (index_count == 0)
     {
-        if (index != NULL)
-        {
-            FREE(index)
-        };
+        ASSERT(index == NULL);
+        // if (index != NULL)
+        // {
+        //     FREE(index)
+        // };
         index_count = vertex_count;
         index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
         for (uint32_t i = 0; i < index_count; i++)
@@ -363,7 +363,7 @@ void dvz_shape_normals(DvzShape* shape)
 {
     ANN(shape);
     ANN(shape->pos);
-    ANN(shape->index);
+    // ANN(shape->index);
 
     uint32_t vertex_count = shape->vertex_count;
     uint32_t index_count = shape->index_count;
@@ -836,13 +836,10 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
     shape->vertex_count = index_count;
     shape->index_count = 0;
+    FREE(shape->index);
 
     FREE(left);
     FREE(right);
-
-    // NOTE: we keep shape->index around although we disable indexed rendering with index_count=0.
-    // This is why this is commented.
-    // FREE(shape->index);
 }
 
 
