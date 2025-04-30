@@ -200,6 +200,12 @@ class ShapeCollection:
         dvz.shape_surface(c_shape, row_count, col_count, heights, colors, o, u, v, 0)
         self.add(c_shape, scale=scale, transform=transform)
 
+    def add_obj(self, file_path: str, contour: str = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
+        c_shape = dvz.shape()
+        dvz.shape_obj(c_shape, file_path)
+        dvz.shape_unindex(c_shape, dvz.to_enum(f'contour_{contour}'))
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
     def merge(self):
         self.c_merged = merge_shapes(self.c_shapes)
 

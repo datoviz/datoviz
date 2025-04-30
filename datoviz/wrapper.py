@@ -26,11 +26,21 @@ DEFAULT_FONT_SIZE = 30
 DEFAULT_GLYPH_COLOR = (0, 0, 0, 255)
 DEFAULT_INTERPOLATION = 'linear'
 DEFAULT_ADDRESS_MODE = 'clamp_to_border'
+
+DEFAULT_CAMERA_POS = (0, 0, 4)
+DEFAULT_CAMERA_LOOKAT = (0, 0, 0)
+DEFAULT_CAMERA_UP = (0, 1, 0)
+
+DEFAULT_LIGHT_DIR = (0.25, -0.25, -1)
+DEFAULT_LIGHT_COLOR = (255, 255, 255, 255)
+DEFAULT_LIGHT_PARAMS = (.25, .75, .75, 16)
+
 VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
 DTYPE_FORMATS = {
     ('uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
     ('float32', 4): dvz.FORMAT_R32G32B32A32_SFLOAT,
 }
+
 PROPS = {
     'basic': {
         'position': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
@@ -163,6 +173,9 @@ PROPS = {
 
 }
 
+# TODO: put elsewhere
+Vec3 = tp.Tuple[float, float, float]
+
 
 # -------------------------------------------------------------------------------------------------
 # Utils
@@ -209,10 +222,12 @@ def prepare_data_scalar(name, dtype, size, value):
     return pvalue
 
 
-def mesh_flags(lighting: bool = True):
+def mesh_flags(lighting: bool = True, contour: bool = False):
     c_flags = 0
     if lighting:
         c_flags |= dvz.MESH_FLAGS_LIGHTING
+    if contour:
+        c_flags |= dvz.MESH_FLAGS_CONTOUR
     return c_flags
 
 
@@ -339,16 +354,21 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def mesh(self, lighting: bool = True, **kwargs):
-        c_flags = mesh_flags(lighting=lighting)
-        return self._mesh(dvz.mesh(self.c_batch, c_flags))
+    def mesh(self, lighting: bool = True, contour: bool = False, **kwargs):
+        c_flags = mesh_flags(lighting=lighting, contour=contour)
+        return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
-    def mesh_shape(self, shape: ShapeCollection, lighting: bool = True, **kwargs):
+    def mesh_shape(self, shape: ShapeCollection, lighting: bool = True, contour: bool = False, **kwargs):
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
-        c_flags = mesh_flags(lighting=lighting)
-        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags))
+
+        # Force contour flag.
+        if kwargs.get('linewidth', None) is not None or kwargs.get('edgecolor', None) is not None:
+            contour = True
+
+        c_flags = mesh_flags(lighting=lighting, contour=contour)
+        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags), **kwargs)
 
     def sphere(self, **kwargs):
         c_visual = dvz.sphere(self.c_batch, 0)
@@ -445,6 +465,8 @@ class Visual:
             fn = getattr(self, f'set_{key}', None)
             if fn:
                 fn(value)
+            else:
+                raise ValueError(f"Method '{self.__class__.__name__}.set_{key}' not found")
 
     def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
         self._prop_classes[prop_name] = prop_cls
@@ -453,8 +475,11 @@ class Visual:
         pass
 
     def __getattr__(self, prop_name: str):
-        print(f"Calling __getattr__() on {self.visual_name}.{prop_name}")
+        # assert not prop_name.startswith('set_')
+        # print(f"Calling __getattr__() with {self.visual_name}.{prop_name}")
         prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
+        if prop_type is None:
+            return super().__getattr__(prop_name)
         if prop_type == np.ndarray:
             prop_cls = self._prop_classes.get(prop_name, Prop)
             return prop_cls(self, prop_name)
@@ -885,23 +910,26 @@ class Mesh(Visual):
     def set_index(self, array: np.ndarray, offset: int = 0):
         self.index[offset:] = array
 
-    def set_light_dir(self, value: tuple):
-        self.light_dir = value
+    def set_light_dir(self, value: tuple, idx: int = 0):
+        value = value if value is not None else DEFAULT_LIGHT_DIR
+        dvz.mesh_light_dir(self.c_visual, idx, dvz.vec3(*value))
 
-    def set_light_color(self, value: tuple):
-        self.light_color = value
+    def set_light_color(self, value: tuple, idx: int = 0):
+        value = value if value is not None else DEFAULT_LIGHT_COLOR
+        dvz.mesh_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
-    def set_light_params(self, value: tuple):
-        self.light_params = value
+    def set_light_params(self, value: tuple, idx: int = 0):
+        value = value if value is not None else DEFAULT_LIGHT_PARAMS
+        dvz.mesh_light_params(self.c_visual, idx, dvz.vec4(*value))
 
-    def set_light_edgecolor(self, value: tuple):
-        self.light_edgecolor = value
+    def set_edgecolor(self, value: tuple):
+        self.edgecolor = value
 
-    def set_light_linewidth(self, value: float):
-        self.light_linewidth = value
+    def set_linewidth(self, value: float):
+        self.linewidth = value
 
-    def set_light_density(self, value: int):
-        self.light_density = value
+    def set_density(self, value: int):
+        self.density = value
 
     def set_texture(self, texture: Texture):
         dvz.image_texture(self.c_visual, texture.c_texture)
@@ -984,6 +1012,14 @@ class Arcball:
         self.c_arcball = c_arcball
 
 
+class Camera:
+    c_camera: dvz.DvzCamera = None
+
+    def __init__(self, c_camera: dvz.DvzCamera):
+        assert c_camera
+        self.c_camera = c_camera
+
+
 class Panel:
     c_panel: dvz.DvzPanel = None
     c_figure: dvz.DvzFigure = None
@@ -997,16 +1033,26 @@ class Panel:
         assert visual
         dvz.panel_visual(self.c_panel, visual.c_visual, 0)
 
-    def panzoom(self, flags: int = None):
+    def panzoom(self, flags: int = 0):
         c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
         return Panzoom(c_panzoom)
 
-    def arcball(self, initial: tp.Tuple[float, float, float] = None, flags: int = None):
+    def arcball(self, initial: Vec3 = None, flags: int = 0):
         c_arcball = dvz.panel_arcball(self.c_panel, flags)
         if initial is not None:
             dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
             self.update()
         return Arcball(c_arcball)
+
+    def camera(self, initial: Vec3 = None, initial_lookat: Vec3 = None, initial_up: Vec3 = None, flags: int = 0):
+        c_camera = dvz.panel_camera(self.c_panel, flags)
+        pos = initial if initial is not None else DEFAULT_CAMERA_POS
+        lookat = initial_lookat if initial_lookat is not None else DEFAULT_CAMERA_LOOKAT
+        up = initial_up if initial_up is not None else DEFAULT_CAMERA_UP
+        if initial is not None:
+            dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
+            self.update()
+        return Camera(c_camera)
 
     def update(self):
         dvz.panel_update(self.c_panel)
