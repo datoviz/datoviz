@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
 import typing as tp
 import numpy as np
 import datoviz as dvz
+from .shape_collection import ShapeCollection
 
 
 # -------------------------------------------------------------------------------------------------
@@ -326,6 +327,17 @@ class App:
 
     def mesh(self, **kwargs):
         c_visual = dvz.mesh(self.c_batch, 0)
+        visual = Mesh(self, c_visual)
+        visual.set_data(**kwargs)
+        return visual
+
+    def mesh_shape(self, shape: ShapeCollection, **kwargs):
+        if not shape.c_merged:
+            shape.merge()
+        c_merged = shape.c_merged
+        c_flags = dvz.MESH_FLAGS_LIGHTING
+        c_visual = dvz.mesh_shape(self.c_batch, c_merged, c_flags)
+
         visual = Mesh(self, c_visual)
         visual.set_data(**kwargs)
         return visual
@@ -949,6 +961,14 @@ class Panzoom:
         self.c_panzoom = c_panzoom
 
 
+class Arcball:
+    c_arcball: dvz.DvzArcball = None
+
+    def __init__(self, c_arcball: dvz.DvzArcball):
+        assert c_arcball
+        self.c_arcball = c_arcball
+
+
 class Panel:
     c_panel: dvz.DvzPanel = None
 
@@ -964,9 +984,15 @@ class Panel:
         c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
         return Panzoom(c_panzoom)
 
-    def arcball(self, flags: int = None):
+    def arcball(self, initial: tp.Tuple[float, float, float] = None, flags: int = None):
         c_arcball = dvz.panel_arcball(self.c_panel, flags)
-        return Panzoom(c_arcball)
+        if initial is not None:
+            dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
+            self.update()
+        return Arcball(c_arcball)
+
+    def update(self):
+        dvz.panel_update(self.c_panel)
 
 
 if __name__ == '__main__':

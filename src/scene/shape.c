@@ -849,6 +849,8 @@ void dvz_shape_unindex(DvzShape* shape, int flags)
 
 void dvz_shape_destroy(DvzShape* shape)
 {
+    log_trace("destroy shape");
+
     ANN(shape);
     FREE(shape->pos);
     FREE(shape->color);

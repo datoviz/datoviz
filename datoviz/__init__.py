@@ -7,12 +7,13 @@ SPDX-License-Identifier: MIT
 # NOTE: this file is NOT automatically generated, only clib.py is.
 
 import ctypes
-from ctypes import c_char_p, byref
+from ctypes import c_char_p
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
 
-from .clib import *
-from .wrapper import App
+from .clib import *  # noqa
+from .wrapper import App  # noqa
+from .shape_collection import ShapeCollection  # noqa
 
 
 # ===============================================================================
@@ -99,15 +100,6 @@ def cmap(cm, values, vmin=0.0, vmax=1.):
     colors = np.full((n, 4), 255, dtype=np.uint8)
     colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
     return colors
-
-
-def merge_shapes(shapes):
-    merged = shape()
-    n = len(shapes)
-    array_type = ctypes.POINTER(Shape) * n
-    shapes_array = array_type(*(s for s in shapes))
-    shape_merge(merged, len(shapes), shapes_array)
-    return merged
 
 
 def to_byte(arr, vmin=None, vmax=None):
