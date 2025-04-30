@@ -221,19 +221,21 @@ def mesh_flags(lighting: bool = True):
 # -------------------------------------------------------------------------------------------------
 
 class App:
-    _flags: int = 0
+    c_flags: int = 0
     c_app: dvz.DvzApp = None
     c_batch: dvz.DvzBatch = None
     c_scene: dvz.DvzScene = None
 
-    def __init__(self, flags: int = 0):
-        self._flags = flags
-        self.c_app = dvz.app(flags)
+    def __init__(self, c_flags: int = 0):
+        self.c_flags = c_flags
+        self.c_app = dvz.app(c_flags)
         self.c_batch = dvz.app_batch(self.c_app)
         self.c_scene = dvz.scene(self.c_batch)
 
-    def figure(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT):
-        c_figure = dvz.figure(self.c_scene, width, height, 0)
+    def figure(self, width: int = DEFAULT_WIDTH, height: int = DEFAULT_HEIGHT, c_flags: int = 0, gui: bool = False):
+        if gui:
+            c_flags |= dvz.CANVAS_FLAGS_IMGUI
+        c_figure = dvz.figure(self.c_scene, width, height, c_flags)
         return Figure(c_figure)
 
     def on_timer(self):
@@ -366,6 +368,13 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
+    # GUI
+    # ---------------------------------------------------------------------------------------------
+
+    def arcball_gui(self, panel, arcball):
+        c_figure = panel.c_figure
+        dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
+
 
 # -------------------------------------------------------------------------------------------------
 # Figure
@@ -385,7 +394,7 @@ class Figure:
             x, y = offset
             w, h = size
             c_panel = dvz.panel(self.c_figure, x, y, w, h)
-        return Panel(c_panel)
+        return Panel(c_panel, c_figure=self.c_figure)
 
     def on_mouse(self):
         pass
@@ -977,10 +986,12 @@ class Arcball:
 
 class Panel:
     c_panel: dvz.DvzPanel = None
+    c_figure: dvz.DvzFigure = None
 
-    def __init__(self, c_panel: dvz.DvzPanel):
+    def __init__(self, c_panel: dvz.DvzPanel, c_figure: dvz.DvzFigure = None):
         assert c_panel
         self.c_panel = c_panel
+        self.c_figure = c_figure
 
     def add(self, visual: Visual):
         assert visual

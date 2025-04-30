@@ -84,8 +84,10 @@ class ShapeCollection:
 
     def add_cube(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
         c_shape = dvz.shape()
-        c_color = dvz.cvec4(*color) if color is not None else WHITE
-        dvz.shape_cube(c_shape, c_color)
+        colors = np.zeros((6, 4), dtype=np.uint8)
+        for i in range(6):
+            colors[i] = color if color is not None else WHITE
+        dvz.shape_cube(c_shape, colors)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_sphere(self, rows: int = None, cols: int = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
@@ -201,9 +203,9 @@ class ShapeCollection:
     def destroy(self):
         for c_shape in self.c_shapes:
             if c_shape:
-                print("destroy shape", c_shape)
+                # print("destroy shape", c_shape)
                 dvz.shape_destroy(c_shape)
 
         if self.c_merged:
-            print("destroy merged", self.c_merged)
+            # print("destroy merged", self.c_merged)
             dvz.shape_destroy(self.c_merged)

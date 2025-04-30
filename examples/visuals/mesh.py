@@ -8,9 +8,6 @@ import numpy as np
 import datoviz as dvz
 
 
-# move_shape(dodecahedron, -.5, -.5)
-# move_shape(icosahedron, +.5, -.5)
-
 N = 5
 colors = dvz.cmap(dvz.CMAP_SPRING, np.linspace(0, 1, N))
 scale = 0.35
