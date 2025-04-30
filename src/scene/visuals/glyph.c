@@ -401,18 +401,18 @@ void dvz_glyph_xywh(
         for (uint32_t i = 0; i < group_count; i++)
         {
             // Reset the width of the current group.
-            group_width = 0;
             group_height = 0;
 
             // Loop over the glyphs in each group.
             for (uint32_t j = 0; j < group_size[i]; j++)
             {
-                // NOTE: we add the width of all glyphs, but we take the max of the height of all
-                // glyphs, to get the group width and height (group shape).
-                group_width += size[k][0];
+                // NOTE: we take the max of the height of all glyphs to get the group height
                 group_height = MAX(group_height, size[k][1]);
                 k++;
             }
+
+            // The total group width is the offset of the last glyph + its width.
+            group_width = values[k - 1][0] + size[k - 1][0];
 
             group_shapes[i][0] = group_width;
             group_shapes[i][1] = group_height;
