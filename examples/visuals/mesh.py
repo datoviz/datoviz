@@ -30,4 +30,4 @@ panel.add(visual)
 app.run()
 app.destroy()
 
-# sc.destroy()
+sc.destroy()

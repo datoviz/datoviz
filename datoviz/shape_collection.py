@@ -49,10 +49,13 @@ def _shape_transform(c_shape: dvz.Shape, offset: tp.Tuple[float, float, float] =
 def merge_shapes(c_shapes):
     merged = dvz.shape()
     n = len(c_shapes)
-    array_type = ctypes.POINTER(dvz.Shape) * n
-    shapes_array = array_type(*(s for s in c_shapes))
-    dvz.shape_merge(merged, len(c_shapes), shapes_array)
-    return merged
+    if n == 0:
+        return None
+    else:
+        array_type = ctypes.POINTER(dvz.Shape) * n
+        shapes_array = array_type(*(s for s in c_shapes))
+        dvz.shape_merge(merged, len(c_shapes), shapes_array)
+        return merged
 
 
 # -------------------------------------------------------------------------------------------------

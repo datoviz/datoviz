@@ -28,7 +28,6 @@ panel = figure.panel()
 arcball = panel.arcball(initial=(-1, -.1, -.25))
 
 visual = app.mesh_shape(sc)
-dvz.visual_cull(visual.c_visual, dvz.CULL_MODE_NONE)
 panel.add(visual)
 
 app.run()
