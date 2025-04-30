@@ -33,15 +33,15 @@
 #define TICK_DENSITY             0.2
 #define MINOR_TICKS_PER_INTERVAL 4
 
-#define ANCHOR_H        (vec2){+.5, 0}
+#define ANCHOR_H        (vec2){0, 0}
 #define OFFSET_H        (vec2){0, -35}
 #define DIR_H           (vec2){0, -1}
 #define POS_H           -1
-#define FACTOR_OFFSET_H 70, -70
+#define FACTOR_OFFSET_H 80, -70
 #define LABEL_OFFSET_H  0, -70
 
 #define ANCHOR_V        (vec2){+1, 0}
-#define OFFSET_V        (vec2){-50, -10}
+#define OFFSET_V        (vec2){-25, 0}
 #define DIR_V           (vec2){-1, 0}
 #define POS_V           -1
 #define FACTOR_OFFSET_V 20, +70
