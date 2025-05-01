@@ -1,5 +1,5 @@
 """
-This file is automatically included at the end of clib.py during the ctypes wrapper generation.
+This file is automatically included at the end of _ctypes.py during the ctypes wrapper generation.
 This is handled by `just ctypes`.
 """
 

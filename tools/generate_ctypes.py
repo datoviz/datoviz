@@ -387,7 +387,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
             forward += f"class {dtype}(ctypes.Structure):\n    pass\n\n\n"
     out = out.replace('{forward}', forward)
 
-    # Write the clib.py file.
+    # Write the _ctypes.py file.
     with open(output_path, 'w') as file:
         def _include_py(file, filename, skip=4):
             with open(ROOT_DIR / "tools" / filename, "r") as f:
@@ -415,7 +415,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 
 if __name__ == "__main__":
     headers_json_path = ROOT_DIR / 'tools/headers.json'
-    output_path = ROOT_DIR / 'datoviz/clib.py'
+    output_path = ROOT_DIR / 'datoviz/_ctypes.py'
     version_path = ROOT_DIR / 'include/datoviz_version.h'
 
     generate_ctypes_bindings(headers_json_path, output_path, version_path)
