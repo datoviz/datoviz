@@ -19,7 +19,7 @@ from . import _constants as cst
 from ._constants import Vec3, PROPS, VEC_TYPES
 from .utils import (
     mesh_flags, from_enum, to_enum, key_name, button_name,
-    get_size, prepare_data_array, dtype_to_format)
+    get_size, prepare_data_scalar, prepare_data_array, dtype_to_format)
 from .shape_collection import ShapeCollection
 
 
@@ -299,27 +299,35 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def _mesh(self, c_visual, **kwargs):
+    def _mesh(self, c_visual, vertex_count: int = None, index_count: int = None, **kwargs):
         from .visuals import Mesh
         visual = Mesh(c_visual)
+        if vertex_count is not None and index_count is not None:
+            visual.allocate(vertex_count, index_count)
         visual.set_data(**kwargs)
         return visual
 
-    def mesh(self, lighting: bool = None, contour: bool = False, **kwargs):
-        c_flags = mesh_flags(lighting=lighting, contour=contour)
+    def mesh(self, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
+        c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
         return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
-    def mesh_shape(self, shape: ShapeCollection, lighting: bool = None, contour: bool = False, **kwargs):
+    def mesh_shape(self, shape: ShapeCollection, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
+
+        # Allocate the visual with the right number of vertices and indices.
+        nv = dvz.shape_vertex_count(c_merged)
+        ni = dvz.shape_index_count(c_merged)
+        if ni == 0:
+            indexed = False
 
         # Force contour flag.
         if kwargs.get('linewidth', None) is not None or kwargs.get('edgecolor', None) is not None:
             contour = True
 
-        c_flags = mesh_flags(lighting=lighting, contour=contour)
-        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags), **kwargs)
+        c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
+        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags), vertex_count=nv, index_count=ni, **kwargs)
 
     def sphere(self, **kwargs):
         from .visuals import Sphere
@@ -438,11 +446,12 @@ class App:
 # -------------------------------------------------------------------------------------------------
 
 class Visual:
-    # app: App = None
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
     count: int = 0
+
     _prop_classes: dict = None
+    _fn_alloc: tp.Callable = None
 
     def __init__(self, c_visual: dvz.DvzVisual, visual_name: str = None):
         # assert app
@@ -459,6 +468,8 @@ class Visual:
         self.c_visual = c_visual
         self._prop_classes = {}
 
+        self._fn_alloc = getattr(dvz, f"{self.visual_name}_alloc", None)
+
         self.set_prop_classes()
 
     def show(self, is_visible: bool = True):
@@ -471,14 +482,21 @@ class Visual:
         c_clip = to_enum(f'viewport_clip_{clip}')
         dvz.visual_clip(self.c_visual, c_clip)
 
-    # Internal
+    # Counts
     # ---------------------------------------------------------------------------------------------
 
-    def set_count(self, count):
+    def allocate(self, count: int,):
+        self._fn_alloc(self.c_visual, count)
+        self.set_count(count)
+
+    def set_count(self, count: int):
         self.count = count
 
     def get_count(self):
         return self.count
+
+    # Internal
+    # ---------------------------------------------------------------------------------------------
 
     def set_data(self, **kwargs):
         for key, value in kwargs.items():
@@ -499,6 +517,7 @@ class Visual:
         # print(f"Calling __getattr__() with {self.visual_name}.{prop_name}")
         prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
         if prop_type is None:
+            print(f"Prop type {prop_name} not found")
             return super().__getattr__(prop_name)
         if prop_type == np.ndarray:
             prop_cls = self._prop_classes.get(prop_name, Prop)
@@ -564,7 +583,6 @@ class Prop:
     visual_name: str = ''
     prop_name: str = ''
     _fn: tp.Callable = None
-    _fn_alloc: tp.Callable = None
 
     def __init__(self, visual: Visual, prop_name: str):
         assert visual
@@ -575,7 +593,6 @@ class Prop:
         self.prop_name = prop_name
 
         self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}", None)
-        self._fn_alloc = getattr(dvz, f"{visual.visual_name}_alloc", None)
 
     @property
     def dtype(self):
@@ -595,7 +612,7 @@ class Prop:
     def name(self):
         return f'{self.visual_name}.{self.prop_name}'
 
-    def prepare_data(self, value, size):
+    def prepare_data(self, value, size: int):
         if not isinstance(value, np.ndarray):
             # if doing visual.prop[idx] = scalar, need to create an array
             return prepare_data_scalar(self.name, self.dtype, size, value)
@@ -603,15 +620,14 @@ class Prop:
             # otherwise, just need to prepare the array with the right shape and dtype
             return prepare_data_array(self.name, self.dtype, self.shape, value)
 
-    def allocate(self, count):
-        self._fn_alloc(self.visual.c_visual, count)
-        self.visual.set_count(count)
-
     def set(self, offset, length, pvalue, c_flags: int = 0):
         self.call(self.visual.c_visual, offset, length, pvalue, c_flags)
 
     def call(self, *args):
         return self._fn(*args)
+
+    def allocate(self, count: int):
+        self.visual.allocate(count)
 
     def __setitem__(self, idx, value):
         if value is None:

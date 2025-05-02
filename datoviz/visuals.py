@@ -284,8 +284,38 @@ class Image(Visual):
         dvz.image_texture(self.c_visual, texture.c_texture)
 
 
+class MeshIndexProp(Prop):
+    def allocate(self, count: int):
+        # NOTE: set_index() results in allocating the index buffer, not the vertex buffer.
+        self.visual.allocate(self.visual.count, count)
+
+
 class Mesh(Visual):
     visual_name = 'mesh'
+    index_count: int = None
+
+    def set_prop_classes(self):
+        self.set_prop_class('index', MeshIndexProp)
+
+    def set_data(self, **kwargs):
+        if 'position' in kwargs and 'index' in kwargs:
+            self.allocate(kwargs['position'].shape[0], kwargs['index'].size)
+        super().set_data(**kwargs)
+
+    def allocate(self, count: int, index_count: int = None):
+        if index_count is not None:
+            dvz.mesh_alloc(self.c_visual, count, index_count)
+            self.set_count(count, index_count)
+
+    def set_count(self, count: int, index_count: int = None):
+        self.count = count
+        self.index_count = index_count
+
+    def get_index_count(self):
+        return self.index_count
+
+    # Setters
+    # ---------------------------------------------------------------------------------------------
 
     def set_position(self, array: np.ndarray, offset: int = 0):
         self.position[offset:] = array
@@ -303,6 +333,8 @@ class Mesh(Visual):
         self.isoline[offset:] = array
 
     def set_index(self, array: np.ndarray, offset: int = 0):
+        self.index_count = array.size
+        self.allocate(self.count, self.index_count)
         self.index[offset:] = array
 
     def set_light_dir(self, value: tuple, idx: int = 0):

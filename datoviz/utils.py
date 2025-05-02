@@ -177,9 +177,12 @@ def prepare_data_scalar(name, dtype, size, value):
     return pvalue
 
 
-def mesh_flags(lighting: bool = None, contour: bool = False):
+def mesh_flags(indexed: bool = None, lighting: bool = None, contour: bool = False):
     c_flags = 0
     lighting = lighting if lighting is not None else cst.DEFAULT_LIGHTING
+    indexed = indexed if indexed is not None else cst.DEFAULT_MESH_INDEXED
+    if indexed:
+        c_flags |= dvz.VISUAL_FLAGS_INDEXED
     if lighting:
         c_flags |= dvz.MESH_FLAGS_LIGHTING
     if contour:
