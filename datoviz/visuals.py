@@ -297,9 +297,20 @@ class Mesh(Visual):
     def set_prop_classes(self):
         self.set_prop_class('index', MeshIndexProp)
 
-    def set_data(self, **kwargs):
+    def set_data(self, vertex_count: int = None, index_count: int = None, compute_normals: bool = None, **kwargs):
         if 'position' in kwargs and 'index' in kwargs:
-            self.allocate(kwargs['position'].shape[0], kwargs['index'].size)
+            nv, ni = kwargs['position'].shape[0], kwargs['index'].size
+            self.allocate(nv, ni)
+
+            # Automatic normal computation.
+            if compute_normals:
+                normals = np.zeros((nv, 3), dtype=np.float32)
+                dvz.compute_normals(nv, ni, kwargs['position'], kwargs['index'], normals)
+                kwargs['normal'] = normals
+
+        if vertex_count is not None and index_count is not None:
+            self.allocate(vertex_count, index_count)
+
         super().set_data(**kwargs)
 
     def allocate(self, count: int, index_count: int = None):

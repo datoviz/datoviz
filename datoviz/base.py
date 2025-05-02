@@ -307,9 +307,7 @@ class App:
     def _mesh(self, c_visual, vertex_count: int = None, index_count: int = None, **kwargs):
         from .visuals import Mesh
         visual = Mesh(c_visual)
-        if vertex_count is not None and index_count is not None:
-            visual.allocate(vertex_count, index_count)
-        visual.set_data(**kwargs)
+        visual.set_data(vertex_count=vertex_count, index_count=index_count, **kwargs)
         return visual
 
     def mesh(self, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
@@ -503,9 +501,13 @@ class Visual:
     # Internal
     # ---------------------------------------------------------------------------------------------
 
-    def set_data(self, depth_test: bool = None, **kwargs):
+    def set_data(self, depth_test: bool = None, cull: str = None, **kwargs):
         if depth_test is not None:
             dvz.visual_depth(self.c_visual, depth_test)
+
+        if cull is not None:
+            dvz.visual_cull(self.c_visual, to_enum(f'CULL_MODE_{cull}'))
+
         for key, value in kwargs.items():
             fn = getattr(self, f'set_{key}', None)
             if fn:
