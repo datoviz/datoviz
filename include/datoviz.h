@@ -1421,6 +1421,26 @@ DVZ_EXPORT void dvz_shape_print(DvzShape* shape);
 
 
 /**
+ * Return the number of vertices of a shape.
+ *
+ * @param shape the shape
+ * @returns the number of vertices
+ */
+DVZ_EXPORT uint32_t dvz_shape_vertex_count(DvzShape* shape);
+
+
+
+/**
+ * Return the number of index of a shape.
+ *
+ * @param shape the shape
+ * @returns the number of index
+ */
+DVZ_EXPORT uint32_t dvz_shape_index_count(DvzShape* shape);
+
+
+
+/**
  * Convert an indexed shape to a non-indexed one by duplicating the vertex values according
  * to the indices.
  *

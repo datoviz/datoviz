@@ -535,6 +535,22 @@ void dvz_shape_print(DvzShape* shape)
 
 
 
+uint32_t dvz_shape_vertex_count(DvzShape* shape)
+{
+    ANN(shape);
+    return shape->vertex_count;
+}
+
+
+
+uint32_t dvz_shape_index_count(DvzShape* shape)
+{
+    ANN(shape);
+    return shape->index_count;
+}
+
+
+
 void dvz_shape_unindex(DvzShape* shape, int flags)
 {
     ANN(shape);
