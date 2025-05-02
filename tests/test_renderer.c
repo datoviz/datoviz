@@ -80,6 +80,9 @@ int test_renderer_1(TstSuite* suite)
     req = dvz_create_graphics(batch, DVZ_GRAPHICS_TRIANGLE, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
 
+    // Canvas scale push constant shared by all shaders (common.glsl)
+    dvz_set_push(batch, graphics_id, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT, 0, sizeof(float));
+
     // Create the vertex buffer dat.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
     DvzId dat_id = req.id;
@@ -185,6 +188,9 @@ int test_renderer_graphics(TstSuite* suite)
     // Create a custom graphics.
     req = dvz_create_graphics(batch, DVZ_GRAPHICS_CUSTOM, DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN);
     DvzId graphics_id = req.id;
+
+    // Canvas scale push constant shared by all shaders (common.glsl)
+    dvz_set_push(batch, graphics_id, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT, 0, sizeof(float));
 
     // Load shaders.
     _load_shader(batch, graphics_id, DVZ_SHADER_VERTEX, "graphics_trivial_vert");
@@ -341,7 +347,8 @@ int test_renderer_push(TstSuite* suite)
     dvz_set_attr(batch, graphics_id, 0, 1, DVZ_FORMAT_COLOR, offsetof(DvzVertex, color));
 
     // Push constant.
-    dvz_set_push(batch, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(vec3));
+    dvz_set_push(batch, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(float) + sizeof(vec4));
+    dvz_set_push(batch, graphics_id, DVZ_SHADER_FRAGMENT, 0, sizeof(float));
 
     // Create the vertex buffer dat.
     req = dvz_create_dat(batch, DVZ_BUFFER_TYPE_VERTEX, 3 * sizeof(DvzVertex), 0);
@@ -361,8 +368,11 @@ int test_renderer_push(TstSuite* suite)
     // Commands.
     dvz_record_begin(batch, canvas_id);
     dvz_record_viewport(batch, canvas_id, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    // dvz_record_push(
+    //     batch, canvas_id, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(vec3), (vec3){1, 1, 0});
     dvz_record_push(
-        batch, canvas_id, graphics_id, DVZ_SHADER_VERTEX, 0, sizeof(vec3), (vec3){1, 1, 0});
+        batch, canvas_id, graphics_id, DVZ_SHADER_VERTEX, sizeof(float), sizeof(vec3),
+        (vec3){1, 1, 0});
     dvz_record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1);
     dvz_record_end(batch, canvas_id);
 
