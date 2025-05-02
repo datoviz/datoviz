@@ -18,6 +18,8 @@ pos, color = data['pos'], data['color']
 print(f"Loaded LIDAR data with {len(pos)} points.")
 N = pos.shape[0]
 
+# -------------------------------------------------------------------------------------------------
+
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel()

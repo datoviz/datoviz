@@ -129,9 +129,14 @@ class App:
     c_batch: dvz.DvzBatch = None
     c_scene: dvz.DvzScene = None
 
-    def __init__(self, c_flags: int = 0, offscreen: bool = False):
+    def __init__(self, c_flags: int = 0, offscreen: bool = False, background: str = None):
         if offscreen:
             c_flags |= dvz.APP_FLAGS_OFFSCREEN
+
+        # HACK: this will change in the next version
+        if background == 'white':
+            c_flags |= dvz.APP_FLAGS_WHITE_BACKGROUND
+
         self.c_flags = c_flags
         self.c_app = dvz.app(c_flags)
         self.c_batch = dvz.app_batch(self.c_app)
