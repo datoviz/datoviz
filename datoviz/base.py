@@ -454,8 +454,8 @@ class Prop:
         self._fn_alloc(self.visual.c_visual, count)
         self.visual.set_count(count)
 
-    def set(self, offset, length, pvalue, flags: int = 0):
-        self.call(self.visual.c_visual, offset, length, pvalue, 0)
+    def set(self, offset, length, pvalue, c_flags: int = 0):
+        self.call(self.visual.c_visual, offset, length, pvalue, c_flags)
 
     def call(self, *args):
         return self._fn(*args)
@@ -577,23 +577,23 @@ class Panel:
         assert visual
         dvz.panel_visual(self.c_panel, visual.c_visual, 0)
 
-    def panzoom(self, flags: int = 0):
-        c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
+    def panzoom(self, c_flags: int = 0):
+        c_panzoom = dvz.panel_panzoom(self.c_panel, c_flags)
         return Panzoom(c_panzoom, self.c_panel)
 
-    def ortho(self, flags: int = 0):
-        c_ortho = dvz.panel_ortho(self.c_panel, flags)
+    def ortho(self, c_flags: int = 0):
+        c_ortho = dvz.panel_ortho(self.c_panel, c_flags)
         return Ortho(c_ortho, self.c_panel)
 
-    def arcball(self, initial: Vec3 = None, flags: int = 0):
-        c_arcball = dvz.panel_arcball(self.c_panel, flags)
+    def arcball(self, initial: Vec3 = None, c_flags: int = 0):
+        c_arcball = dvz.panel_arcball(self.c_panel, c_flags)
         if initial is not None:
             dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
             self.update()
         return Arcball(c_arcball, self.c_panel)
 
-    def camera(self, initial: Vec3 = None, initial_lookat: Vec3 = None, initial_up: Vec3 = None, flags: int = 0):
-        c_camera = dvz.panel_camera(self.c_panel, flags)
+    def camera(self, initial: Vec3 = None, initial_lookat: Vec3 = None, initial_up: Vec3 = None, c_flags: int = 0):
+        c_camera = dvz.panel_camera(self.c_panel, c_flags)
         pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
         lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
         up = initial_up if initial_up is not None else cst.DEFAULT_CAMERA_UP
@@ -607,6 +607,10 @@ class Panel:
 
     def demo_3D(self):
         dvz.demo_panel_3D(self.c_panel)
+
+    def gui(self, title: str = None, c_flags: int = 0):
+        title = title or 'Panel'
+        dvz.panel_gui(self.c_panel, title, c_flags)
 
     def update(self):
         dvz.panel_update(self.c_panel)
