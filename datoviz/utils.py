@@ -10,10 +10,16 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+import ctypes
+from ctypes import c_char_p
 import typing as tp
+
 import numpy as np
+from numpy.ctypeslib import as_ctypes_type as _ctype
+
 from . import _constants as cst
 from . import _ctypes as dvz
+from ._ctypes import P_, __version__, version
 
 
 # -------------------------------------------------------------------------------------------------
@@ -26,7 +32,7 @@ def array_pointer(x, dtype=None):
     dtype = dtype or x.dtype
     if not x.flags.c_contiguous:
         print(
-            f"Warning: array is not C contiguous, ensure your array is in row-major (C) order "
+            "Warning: array is not C contiguous, ensure your array is in row-major (C) order "
             "to avoid potential issues"
         )
     if dtype and x.dtype != dtype:

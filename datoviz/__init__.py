@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 # NOTE: this file is NOT automatically generated, only _ctypes.py is.
 
-# from numpy.ctypeslib import as_ctypes_type as _ctype
 from ._ctypes import *  # noqa
 from .base import App  # noqa
 from .shape_collection import ShapeCollection  # noqa
