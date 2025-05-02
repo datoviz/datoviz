@@ -412,6 +412,26 @@ class App:
                 return self.on_gui(figure)(fun)
         return decorator
 
+    def timer(self, delay: float = 0.0, period: float = 1.0, max_count: int = 0):
+        def decorator(fun):
+            @dvz.on_timer
+            def on_timer(app, window_id, ev_):
+                ev = ev_.contents
+                fun(ev)
+            dvz.app_on_timer(self.c_app, on_timer, None)
+            self._callbacks.append(on_timer)
+            return fun
+
+        dvz.app_timer(self.c_app, delay, period, max_count)
+        return decorator
+
+    def timestamps(self, figure: Figure, count: int):
+        assert figure
+        seconds = np.zeros(count, dtype=np.uint64)  # epoch, in seconds
+        nanoseconds = np.zeros(count, dtype=np.uint64)  # number of ns within the second
+        dvz.app_timestamps(self.c_app, figure.figure_id(), count, seconds, nanoseconds)
+        return seconds, nanoseconds
+
 
 # -------------------------------------------------------------------------------------------------
 # Visual
