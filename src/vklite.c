@@ -2176,6 +2176,13 @@ void dvz_slots_push(
     dslots->push_offsets[idx] = offset;
     dslots->push_sizes[idx] = size;
 
+    // NOTE: it turns out we cannot have multiple push ranges on the same shader stages.
+    if (dslots->push_count >= 1)
+    {
+        log_warn(
+            "you should ensure the multiple push constant ranges have no overlapping shader "
+            "stages, as per the Vulkan specification");
+    }
     dslots->push_count++;
 }
 
