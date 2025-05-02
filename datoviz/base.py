@@ -11,12 +11,36 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
+from functools import wraps
+
 import numpy as np
+
 from . import _ctypes as dvz
 from . import _constants as cst
 from ._constants import Vec3, PROPS, VEC_TYPES
 from .utils import mesh_flags, to_enum, get_size, prepare_data_array, dtype_to_format
 from .shape_collection import ShapeCollection
+
+
+# -------------------------------------------------------------------------------------------------
+# Figure
+# -------------------------------------------------------------------------------------------------
+
+class Figure:
+    c_figure: dvz.DvzFigure = None
+
+    def __init__(self, c_figure: dvz.DvzFigure):
+        assert c_figure
+        self.c_figure = c_figure
+
+    def panel(self, offset: tuple = None, size: tuple = None):
+        if not offset and not size:
+            c_panel = dvz.panel_default(self.c_figure)
+        else:
+            x, y = offset
+            w, h = size
+            c_panel = dvz.panel(self.c_figure, x, y, w, h)
+        return Panel(c_panel, c_figure=self.c_figure)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -34,6 +58,10 @@ class App:
         self.c_app = dvz.app(c_flags)
         self.c_batch = dvz.app_batch(self.c_app)
         self.c_scene = dvz.scene(self.c_batch)
+
+        # NOTE: keep a reference to callbacks defined inside functions to avoid them being
+        # garbage-collected, resulting in a segfault.
+        self._callbacks = []
 
     def figure(self, width: int = cst.DEFAULT_WIDTH, height: int = cst.DEFAULT_HEIGHT, c_flags: int = 0, gui: bool = False):
         if gui:
@@ -241,32 +269,26 @@ class App:
         c_figure = panel.c_figure
         dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
 
-
-# -------------------------------------------------------------------------------------------------
-# Figure
-# -------------------------------------------------------------------------------------------------
-
-class Figure:
-    c_figure: dvz.DvzFigure = None
-
-    def __init__(self, c_figure: dvz.DvzFigure):
-        assert c_figure
-        self.c_figure = c_figure
-
-    def panel(self, offset: tuple = None, size: tuple = None):
-        if not offset and not size:
-            c_panel = dvz.panel_default(self.c_figure)
-        else:
-            x, y = offset
-            w, h = size
-            c_panel = dvz.panel(self.c_figure, x, y, w, h)
-        return Panel(c_panel, c_figure=self.c_figure)
+    # Events
+    # ---------------------------------------------------------------------------------------------
 
     def on_mouse(self):
         pass
 
-    def on_keyboard(self):
-        pass
+    def on_keyboard(self, figure: Figure):
+        assert figure
+
+        def decorator(fun):
+            @dvz.on_keyboard
+            def on_keyboard(app, window_id, ev_):
+                if dvz.figure_id(figure.c_figure) == window_id:
+                    ev = ev_.contents
+                    fun(ev)
+            dvz.app_on_keyboard(self.c_app, on_keyboard, None)
+            self._callbacks.append(on_keyboard)
+            return fun
+
+        return decorator
 
     def on_gui(self):
         pass
@@ -477,32 +499,39 @@ class Texture:
 
 class Panzoom:
     c_panzoom: dvz.DvzPanzoom = None
+    c_panel: dvz.DvzPanel = None
 
-    def __init__(self, c_panzoom: dvz.DvzPanzoom):
+    def __init__(self, c_panzoom: dvz.DvzPanzoom, c_panel: dvz.DvzPanel = None):
         assert c_panzoom
         self.c_panzoom = c_panzoom
+        self.c_panel = c_panel
 
 
 class Ortho:
     c_ortho: dvz.DvzOrtho = None
+    c_panel: dvz.DvzPanel = None
 
-    def __init__(self, c_ortho: dvz.DvzOrtho):
+    def __init__(self, c_ortho: dvz.DvzOrtho, c_panel: dvz.DvzPanel = None):
         assert c_ortho
         self.c_ortho = c_ortho
+        self.c_panel = c_panel
 
 
 class Arcball:
     c_arcball: dvz.DvzArcball = None
+    c_panel: dvz.DvzPanel = None
 
-    def __init__(self, c_arcball: dvz.DvzArcball):
+    def __init__(self, c_arcball: dvz.DvzArcball, c_panel: dvz.DvzPanel = None):
         assert c_arcball
         self.c_arcball = c_arcball
+        self.c_panel = c_panel
 
     def reset(self):
         dvz.arcball_reset(self.c_arcball)
 
     def set(self, angles: tuple):
         dvz.arcball_set(self.c_arcball, dvz.vec3(*angles))
+        dvz.panel_update(self.c_panel)
 
     def get(self):
         out_angles = dvz.vec3(0)
@@ -512,10 +541,27 @@ class Arcball:
 
 class Camera:
     c_camera: dvz.DvzCamera = None
+    c_panel: dvz.DvzPanel = None
 
-    def __init__(self, c_camera: dvz.DvzCamera):
+    def __init__(self, c_camera: dvz.DvzCamera, c_panel: dvz.DvzPanel = None):
         assert c_camera
         self.c_camera = c_camera
+        self.c_panel = c_panel
+
+    def set(self, eye: tuple = None, lookat: tuple = None, up: tuple = None):
+        if eye is not None:
+            eye = dvz.vec3(*eye)
+            dvz.camera_position(self.c_camera, eye)
+
+        if lookat is not None:
+            lookat = dvz.vec3(*lookat)
+            dvz.camera_lookat(self.c_camera, lookat)
+
+        if up is not None:
+            up = dvz.vec3(*up)
+            dvz.camera_up(self.c_camera, up)
+
+        dvz.panel_update(self.c_panel)
 
 
 class Panel:
@@ -533,18 +579,18 @@ class Panel:
 
     def panzoom(self, flags: int = 0):
         c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
-        return Panzoom(c_panzoom)
+        return Panzoom(c_panzoom, self.c_panel)
 
     def ortho(self, flags: int = 0):
         c_ortho = dvz.panel_ortho(self.c_panel, flags)
-        return Ortho(c_ortho)
+        return Ortho(c_ortho, self.c_panel)
 
     def arcball(self, initial: Vec3 = None, flags: int = 0):
         c_arcball = dvz.panel_arcball(self.c_panel, flags)
         if initial is not None:
             dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
             self.update()
-        return Arcball(c_arcball)
+        return Arcball(c_arcball, self.c_panel)
 
     def camera(self, initial: Vec3 = None, initial_lookat: Vec3 = None, initial_up: Vec3 = None, flags: int = 0):
         c_camera = dvz.panel_camera(self.c_panel, flags)
@@ -554,7 +600,7 @@ class Panel:
         if initial is not None:
             dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
             self.update()
-        return Camera(c_camera)
+        return Camera(c_camera, self.c_panel)
 
     def demo_2D(self):
         dvz.demo_panel_2D(self.c_panel)
