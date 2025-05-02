@@ -33,19 +33,19 @@
 #define TICK_DENSITY             0.2
 #define MINOR_TICKS_PER_INTERVAL 4
 
-#define ANCHOR_H        (vec2){0, 0}
-#define OFFSET_H        (vec2){0, -35}
-#define DIR_H           (vec2){0, -1}
-#define POS_H           -1
-#define FACTOR_OFFSET_H 80, -70
-#define LABEL_OFFSET_H  0, -70
+#define ANCHOR_X        (vec2){0, 0}
+#define OFFSET_X        (vec2){0, -35}
+#define DIR_X           (vec2){0, -1}
+#define POS_X           -1
+#define FACTOR_OFFSET_X -20, -70
+#define LABEL_OFFSET_X  0, -70
 
-#define ANCHOR_V        (vec2){+1, 0}
-#define OFFSET_V        (vec2){-25, 0}
-#define DIR_V           (vec2){-1, 0}
-#define POS_V           -1
-#define FACTOR_OFFSET_V 20, +70
-#define LABEL_OFFSET_V  0, 0
+#define ANCHOR_Y        (vec2){+1, 0}
+#define OFFSET_Y        (vec2){-25, 0}
+#define DIR_Y           (vec2){-1, 0}
+#define POS_Y           -1
+#define FACTOR_OFFSET_Y 20, -30
+#define LABEL_OFFSET_Y  0, 0
 
 #define WIDTH_LIM   2
 #define WIDTH_GRID  1
@@ -263,12 +263,12 @@ static void axis_horizontal_params(DvzAxis* axis)
 {
     ANN(axis);
 
-    dvz_axis_anchor(axis, ANCHOR_H);
-    dvz_axis_offset(axis, OFFSET_H);
-    dvz_axis_dir(axis, DIR_H);
-    dvz_axis_pos(axis, POS_H);
-    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_H);
-    dvz_axis_label_layout(axis, DVZ_ALIGN_MIDDLE, LABEL_OFFSET_H);
+    dvz_axis_anchor(axis, ANCHOR_X);
+    dvz_axis_offset(axis, OFFSET_X);
+    dvz_axis_dir(axis, DIR_X);
+    dvz_axis_pos(axis, POS_X);
+    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_X);
+    dvz_axis_label_layout(axis, DVZ_ALIGN_MIDDLE, LABEL_OFFSET_X);
 
     dvz_visual_fixed(axis->glyph, false, true, false);
     dvz_visual_fixed(axis->segment, false, true, false);
@@ -283,12 +283,12 @@ static void axis_vertical_params(DvzAxis* axis)
 {
     ANN(axis);
 
-    dvz_axis_anchor(axis, ANCHOR_V);
-    dvz_axis_offset(axis, OFFSET_V);
-    dvz_axis_dir(axis, DIR_V);
-    dvz_axis_pos(axis, POS_V);
-    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_V);
-    dvz_axis_label_layout(axis, DVZ_ALIGN_HIGH, LABEL_OFFSET_V);
+    dvz_axis_anchor(axis, ANCHOR_Y);
+    dvz_axis_offset(axis, OFFSET_Y);
+    dvz_axis_dir(axis, DIR_Y);
+    dvz_axis_pos(axis, POS_Y);
+    dvz_axis_factor_layout(axis, DVZ_ALIGN_HIGH, FACTOR_OFFSET_Y);
+    dvz_axis_label_layout(axis, DVZ_ALIGN_HIGH, LABEL_OFFSET_Y);
 
     dvz_visual_fixed(axis->glyph, true, false, false);
     dvz_visual_fixed(axis->segment, true, false, false);

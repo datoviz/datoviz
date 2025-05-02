@@ -75,9 +75,10 @@ void dvz_axes_resize(DvzAxes* axes, DvzView* view)
     ANN(xaxis);
     ANN(yaxis);
 
-    // TODO: different margins on each side.
-    // HACK: assume same margin.
-    float m = view->margins[0];
+    float top = view->margins[0];
+    float right = view->margins[1];
+    float bottom = view->margins[2];
+    float left = view->margins[3];
 
     // Sizes.
     double glyph_size = axes->af.font_size;
@@ -85,7 +86,7 @@ void dvz_axes_resize(DvzAxes* axes, DvzView* view)
 
     // x axis.
     {
-        double range_size = view->shape[0] - 2 * m;
+        double range_size = view->shape[0] - left - right;
         if (range_size < 10 * glyph_size)
         {
             log_warn("axes range size too small");
@@ -96,7 +97,7 @@ void dvz_axes_resize(DvzAxes* axes, DvzView* view)
 
     // y axis.
     {
-        double range_size = view->shape[1] - 2 * m;
+        double range_size = view->shape[1] - top - bottom;
         if (range_size < 10 * glyph_size)
         {
             log_warn("axes range size too small");
@@ -141,8 +142,7 @@ DvzAxes* dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymi
     dvz_ref_set(ref, DVZ_DIM_Y, ymin, ymax);
 
     float m = DEFAULT_MARGIN;
-    // TODO: different margins on each side.
-    dvz_panel_margins(panel, m, m, m, m);
+    dvz_panel_margins(panel, 0, 0, m, m);
 
     // Set the margins.
     dvz_axes_resize(panel->axes, panel->view);
