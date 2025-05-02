@@ -60,6 +60,29 @@ def merge_shapes(c_shapes):
         return merged
 
 
+def unindex(
+    c_shape: dvz.Shape,
+    contour: str = None,
+    indexing: str = None,
+):
+    c_flags = 0
+
+    if contour is not None:
+        # NOTE: contour can be a boolean, in which case it defaults to the default contour
+        if contour is True:
+            contour = None
+        contour = contour or cst.DEFAULT_CONTOUR
+        c_contour = to_enum(f'contour_{contour}')
+        c_flags |= c_contour
+
+    if indexing is not None:
+        indexing = indexing or cst.DEFAULT_INDEXING
+        c_indexing = to_enum(f'indexing_{indexing}')
+        c_flags |= c_indexing
+
+    dvz.shape_unindex(c_shape, c_flags)
+
+
 # -------------------------------------------------------------------------------------------------
 # Shape collection
 # -------------------------------------------------------------------------------------------------
@@ -198,30 +221,38 @@ class ShapeCollection:
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_polygon(c_shape, points.shape[0], points, c_color)
 
-        # Unindexing for contours.
         if contour or indexing:
-            # NOTE: contour can be a boolean, in which case it defaults to the default contour
-            if contour is True:
-                contour = None
-            contour = contour or cst.DEFAULT_CONTOUR
-            indexing = indexing or cst.DEFAULT_INDEXING
-            c_contour = to_enum(f'contour_{contour}')
-            c_indexing = to_enum(f'indexing_{indexing}')
-            c_flags = c_contour | c_indexing
-            dvz.shape_unindex(c_shape, c_flags)
+            unindex(self.c_shape, contour=contour, indexing=indexing)
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_surface(self, heights: np.ndarray, colors: np.ndarray, u: tp.Tuple[float, float, float] = None, v: tp.Tuple[float, float, float] = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
+    def add_surface(
+        self,
+        heights: np.ndarray,
+        colors: np.ndarray,
+        contour: str = None,
+        indexing: str = None,
+        u: tp.Tuple[float, float, float] = None,
+        v: tp.Tuple[float, float, float] = None,
+        offset: tp.Tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ):
+        heights = np.asanyarray(heights, dtype=np.float32)
         row_count, col_count = heights.shape
-        offset = offset if offset is not None else (0, 0, 0)
+        offset = offset if offset is not None else (-1, 0, -1)
         u = u if u is not None else (0, 0, 2.0 / (col_count - 1))
         v = v if v is not None else (2.0 / (row_count - 1), 0, 0)
         o = dvz.vec3(*offset)
         u = dvz.vec3(*u)
         v = dvz.vec3(*v)
         c_shape = dvz.shape()
-        dvz.shape_surface(c_shape, row_count, col_count, heights, colors, o, u, v, 0)
+        dvz.shape_surface(c_shape, row_count, col_count, heights.ravel(), colors, o, u, v, 0)
+
+        if contour or indexing:
+            indexing = indexing or 'surface'
+            unindex(c_shape, contour=contour, indexing=indexing)
+
         self.add(c_shape, scale=scale, transform=transform)
 
     def add_obj(self, file_path: str, contour: str = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
