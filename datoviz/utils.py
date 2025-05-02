@@ -93,7 +93,7 @@ def key_name(key_code):
 
 
 def button_name(button):
-    name = from_enum(MouseButton, button)
+    name = from_enum(dvz.MouseButton, button)
     name = name.replace("DVZ_MOUSE_BUTTON_", "")
     return name
 

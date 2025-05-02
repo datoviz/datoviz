@@ -18,7 +18,7 @@ from . import _ctypes as dvz
 from . import _constants as cst
 from ._constants import Vec3, PROPS, VEC_TYPES
 from .utils import (
-    mesh_flags, from_enum, to_enum, key_name,
+    mesh_flags, from_enum, to_enum, key_name, button_name,
     get_size, prepare_data_array, dtype_to_format)
 from .shape_collection import ShapeCollection
 
@@ -53,19 +53,67 @@ class Figure:
 
 class Event:
     c_ev = None
+    event_type: str = None
 
-    def __init__(self, c_ev):
+    def __init__(self, c_ev, event_type: str):
         assert c_ev
         self.c_ev = c_ev
+        self.event_type = event_type
+
+    # Properties
+    # ---------------------------------------------------------------------------------------------
+
+    @property
+    def type(self):
+        return self.c_ev.type
+
+    # Mouse
+    # ---------------------------------------------------------------------------------------------
+
+    def is_mouse(self):
+        return self.event_type == 'mouse'
+
+    def mouse_event(self, prettify: bool = True):
+        if self.is_mouse():
+            return from_enum(dvz.MouseEventType, self.c_ev.type, prettify=prettify)
+
+    def button(self):
+        if self.is_mouse():
+            return self.c_ev.button
+
+    def button_name(self):
+        if self.is_mouse():
+            return button_name(self.button())
+
+    def pos(self):
+        if self.is_mouse():
+            return tuple(self.c_ev.pos)
+
+    def press_pos(self):
+        if self.is_mouse() and self.mouse_event() in ('drag_start', 'drag_stop', 'drag'):
+            return tuple(self.c_ev.content.d.press_pos)
+
+    def wheel(self):
+        if self.is_mouse() and self.mouse_event() in ('wheel',):
+            return float(self.c_ev.content.w.dir[1])
+
+    # Keyboard
+    # ---------------------------------------------------------------------------------------------
+
+    def is_keyboard(self):
+        return self.event_type == 'keyboard'
 
     def key_event(self, prettify: bool = True):
-        return from_enum(dvz.KeyboardEventType, self.c_ev.type, prettify=prettify)
+        if self.is_keyboard():
+            return from_enum(dvz.KeyboardEventType, self.c_ev.type, prettify=prettify)
 
     def key(self):
-        return self.c_ev.key
+        if self.is_keyboard():
+            return self.c_ev.key
 
     def key_name(self):
-        return key_name(self.key())
+        if self.is_keyboard():
+            return key_name(self.key())
 
 
 # -------------------------------------------------------------------------------------------------
@@ -297,8 +345,20 @@ class App:
     # Events
     # ---------------------------------------------------------------------------------------------
 
-    def on_mouse(self):
-        pass
+    def on_mouse(self, figure: Figure):
+        assert figure
+
+        def decorator(fun):
+            @dvz.on_mouse
+            def on_mouse(app, window_id, ev_):
+                if dvz.figure_id(figure.c_figure) == window_id:
+                    ev = ev_.contents
+                    fun(Event(ev, 'mouse'))
+            dvz.app_on_mouse(self.c_app, on_mouse, None)
+            self._callbacks.append(on_mouse)
+            return fun
+
+        return decorator
 
     def on_keyboard(self, figure: Figure):
         assert figure
@@ -308,7 +368,7 @@ class App:
             def on_keyboard(app, window_id, ev_):
                 if dvz.figure_id(figure.c_figure) == window_id:
                     ev = ev_.contents
-                    fun(Event(ev))
+                    fun(Event(ev, 'keyboard'))
             dvz.app_on_keyboard(self.c_app, on_keyboard, None)
             self._callbacks.append(on_keyboard)
             return fun
@@ -329,6 +389,18 @@ class App:
             self._callbacks.append(on_gui)
             return fun
 
+        return decorator
+
+    def connect(self, figure: Figure):
+        assert figure
+
+        def decorator(fun):
+            if fun.__name__ == 'on_mouse':
+                return self.on_mouse(figure)(fun)
+            elif fun.__name__ == 'on_keyboard':
+                return self.on_keyboard(figure)(fun)
+            elif fun.__name__ == 'on_gui':
+                return self.on_gui(figure)(fun)
         return decorator
 
 
