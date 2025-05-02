@@ -71,9 +71,15 @@ def get_version():
     }
 
 
-def from_enum(enum_cls, value):
+def from_enum(enum_cls, value, prettify=True):
+    # Find the common prefix for prettify
+    if prettify:
+        strs = [_ for _ in enum_cls.__dict__.keys() if _.startswith('DVZ_')]
+        prefix = ''.join(c[0] for c in zip(*strs) if len(set(c)) == 1)
     for name, val in enum_cls.__dict__.items():
         if not name.startswith("_") and isinstance(val, int) and val == value:
+            if prettify:
+                name = name.replace(prefix, '').lower()
             return name
     return None
 
@@ -83,9 +89,7 @@ def to_enum(enumstr):
 
 
 def key_name(key_code):
-    name = from_enum(KeyCode, key_code)
-    name = name.replace("DVZ_KEY_", "")
-    return name
+    return from_enum(dvz.KeyCode, key_code)
 
 
 def button_name(button):

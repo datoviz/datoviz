@@ -11,14 +11,15 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
-from functools import wraps
 
 import numpy as np
 
 from . import _ctypes as dvz
 from . import _constants as cst
 from ._constants import Vec3, PROPS, VEC_TYPES
-from .utils import mesh_flags, to_enum, get_size, prepare_data_array, dtype_to_format
+from .utils import (
+    mesh_flags, from_enum, to_enum, key_name,
+    get_size, prepare_data_array, dtype_to_format)
 from .shape_collection import ShapeCollection
 
 
@@ -44,6 +45,27 @@ class Figure:
 
     def update(self):
         dvz.figure_update(self.c_figure)
+
+
+# -------------------------------------------------------------------------------------------------
+# Event
+# -------------------------------------------------------------------------------------------------
+
+class Event:
+    c_ev = None
+
+    def __init__(self, c_ev):
+        assert c_ev
+        self.c_ev = c_ev
+
+    def key_event(self, prettify: bool = True):
+        return from_enum(dvz.KeyboardEventType, self.c_ev.type, prettify=prettify)
+
+    def key(self):
+        return self.c_ev.key
+
+    def key_name(self):
+        return key_name(self.key())
 
 
 # -------------------------------------------------------------------------------------------------
@@ -286,7 +308,7 @@ class App:
             def on_keyboard(app, window_id, ev_):
                 if dvz.figure_id(figure.c_figure) == window_id:
                     ev = ev_.contents
-                    fun(ev)
+                    fun(Event(ev))
             dvz.app_on_keyboard(self.c_app, on_keyboard, None)
             self._callbacks.append(on_keyboard)
             return fun
