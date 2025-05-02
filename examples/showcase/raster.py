@@ -15,11 +15,10 @@ CURDIR = Path(__file__).resolve().parent.parent.parent
 N = 1_000_000  # maximum number of spikes
 
 # Load the data.
-file_path = CURDIR / 'data/misc/raster.npz'
+file_path = CURDIR / 'data/misc/raster_1M.npz'
 data = np.load(file_path)
 t = data['times'][:N]  # Spike times in seconds
 d = data['depths'][:N]  # Depth in microns
-print(t.shape)
 
 # Normalization.
 t_min, t_max = t.min(), t.max()

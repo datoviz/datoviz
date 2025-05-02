@@ -6,9 +6,10 @@ Show the mesh visual with predefined shapes.
 
 import gzip
 from pathlib import Path
+
 import numpy as np
+
 import datoviz as dvz
-from datoviz import vec2, vec3, vec4
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
