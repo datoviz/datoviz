@@ -498,6 +498,17 @@ class Arcball:
         assert c_arcball
         self.c_arcball = c_arcball
 
+    def reset(self):
+        dvz.arcball_reset(self.c_arcball)
+
+    def set(self, angles: tuple):
+        dvz.arcball_set(self.c_arcball, dvz.vec3(*angles))
+
+    def get(self):
+        out_angles = dvz.vec3(0)
+        dvz.arcball_angles(self.c_arcball, out_angles)
+        return (out_angles[0], out_angles[1], out_angles[2])
+
 
 class Camera:
     c_camera: dvz.DvzCamera = None
@@ -544,6 +555,12 @@ class Panel:
             dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
             self.update()
         return Camera(c_camera)
+
+    def demo_2D(self):
+        dvz.demo_panel_2D(self.c_panel)
+
+    def demo_3D(self):
+        dvz.demo_panel_3D(self.c_panel)
 
     def update(self):
         dvz.panel_update(self.c_panel)
