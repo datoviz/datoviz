@@ -47,8 +47,8 @@ class Pixel(Visual):
     def set_color(self, array: np.ndarray, offset: int = 0):
         self.color[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
-        self.size[offset:] = array
+    def set_size(self, value: float):
+        self.size = value
 
 
 class Point(Visual):
