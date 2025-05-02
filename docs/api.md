@@ -7170,6 +7170,26 @@ Create a icosahedron.
     );
     ```
 
+### `dvz_shape_index_count()`
+
+Return the number of index of a shape.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_index_count(  # returns: the number of index (c_uint)
+        shape,  # the shape (LP_DvzShape)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    uint32_t dvz_shape_index_count(  // returns: the number of index
+        DvzShape* shape,  // the shape
+    );
+    ```
+
 ### `dvz_shape_merge()`
 
 Merge several shapes.
@@ -7563,6 +7583,26 @@ Convert an indexed shape to a non-indexed one by duplicating the vertex values a
     void dvz_shape_unindex(
         DvzShape* shape,  // the shape
         int flags,  // the flags
+    );
+    ```
+
+### `dvz_shape_vertex_count()`
+
+Return the number of vertices of a shape.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_vertex_count(  # returns: the number of vertices (c_uint)
+        shape,  # the shape (LP_DvzShape)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    uint32_t dvz_shape_vertex_count(  // returns: the number of vertices
+        DvzShape* shape,  // the shape
     );
     ```
 
@@ -12819,7 +12859,8 @@ DVZ_GRAPHICS_REQUEST_FLAGS_OFFSCREEN
 
 ```
 DVZ_PRINT_FLAGS_NONE
-DVZ_PRINT_FLAGS_DATA
+DVZ_PRINT_FLAGS_ALL
+DVZ_PRINT_FLAGS_SMALL
 ```
 
 ## Structures

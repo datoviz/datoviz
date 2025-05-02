@@ -302,6 +302,7 @@ dvz_shape_dodecahedron
 dvz_shape_end
 dvz_shape_hexahedron
 dvz_shape_icosahedron
+dvz_shape_index_count
 dvz_shape_merge
 dvz_shape_normalize
 dvz_shape_normals
@@ -319,6 +320,7 @@ dvz_shape_tetrahedron
 dvz_shape_transform
 dvz_shape_translate
 dvz_shape_unindex
+dvz_shape_vertex_count
 dvz_slice
 dvz_slice_alloc
 dvz_slice_alpha

@@ -37,6 +37,7 @@ DEFAULT_LIGHT_PARAMS = (.25, .75, .75, 16)
 
 DEFAULT_INDEXING = 'earcut'
 DEFAULT_CONTOUR = 'joints'
+DEFAULT_MESH_INDEXED = True
 
 VOLUME_MODES = ('colormap', 'rgba')
 

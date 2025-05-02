@@ -1243,7 +1243,8 @@ class DvzGraphicsRequestFlags(CtypesEnum):
 
 class DvzPrintFlagsFlags(CtypesEnum):
     DVZ_PRINT_FLAGS_NONE = 0x0000
-    DVZ_PRINT_FLAGS_DATA = 0x0001
+    DVZ_PRINT_FLAGS_ALL = 0x0001
+    DVZ_PRINT_FLAGS_SMALL = 0x0003
 
 
 # Function aliases
@@ -1859,8 +1860,9 @@ PRIMITIVE_TOPOLOGY_POINT_LIST = 0
 PRIMITIVE_TOPOLOGY_TRIANGLE_FAN = 5
 PRIMITIVE_TOPOLOGY_TRIANGLE_LIST = 3
 PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP = 4
-PRINT_FLAGS_DATA = 0x0001
+PRINT_FLAGS_ALL = 0x0001
 PRINT_FLAGS_NONE = 0x0000
+PRINT_FLAGS_SMALL = 0x0003
 RECORDER_BEGIN = 1
 RECORDER_COUNT = 9
 RECORDER_DRAW = 2
@@ -5036,6 +5038,46 @@ shape : DvzShape*
 shape_print.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
 ]
+
+# Function dvz_shape_vertex_count()
+shape_vertex_count = dvz.dvz_shape_vertex_count
+shape_vertex_count.__doc__ = """
+Return the number of vertices of a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+
+Returns
+-------
+type
+    the number of vertices
+"""
+shape_vertex_count.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+shape_vertex_count.restype = ctypes.c_uint32
+
+# Function dvz_shape_index_count()
+shape_index_count = dvz.dvz_shape_index_count
+shape_index_count.__doc__ = """
+Return the number of index of a shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+
+Returns
+-------
+type
+    the number of index
+"""
+shape_index_count.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+]
+shape_index_count.restype = ctypes.c_uint32
 
 # Function dvz_shape_unindex()
 shape_unindex = dvz.dvz_shape_unindex
