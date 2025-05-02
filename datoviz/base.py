@@ -498,7 +498,9 @@ class Visual:
     # Internal
     # ---------------------------------------------------------------------------------------------
 
-    def set_data(self, **kwargs):
+    def set_data(self, depth_test: bool = None, **kwargs):
+        if depth_test is not None:
+            dvz.visual_depth(self.c_visual, depth_test)
         for key, value in kwargs.items():
             fn = getattr(self, f'set_{key}', None)
             if fn:

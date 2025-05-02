@@ -8,5 +8,5 @@ SPDX-License-Identifier: MIT
 
 from ._ctypes import *  # noqa
 from .base import App  # noqa
-from .shape_collection import ShapeCollection  # noqa
+from .shape_collection import ShapeCollection, merge_shapes  # noqa
 from .utils import to_byte, key_name, from_enum, to_enum, cmap  # noqa
