@@ -175,6 +175,8 @@ PROPS = {
         'texture': {'type': 'texture'},
     },
 
+    'demo_2D': {},
+    'demo_3D': {},
 }
 
 

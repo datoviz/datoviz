@@ -42,6 +42,9 @@ class Figure:
             c_panel = dvz.panel(self.c_figure, x, y, w, h)
         return Panel(c_panel, c_figure=self.c_figure)
 
+    def update(self):
+        dvz.figure_update(self.c_figure)
+
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -164,62 +167,62 @@ class App:
         c_topology = to_enum(f'primitive_topology_{topology}')
         assert c_topology
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
-        visual = Basic(self, c_visual)
+        visual = Basic(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def pixel(self, **kwargs):
         from .visuals import Pixel
         c_visual = dvz.pixel(self.c_batch, 0)
-        visual = Pixel(self, c_visual)
+        visual = Pixel(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def point(self, **kwargs):
         from .visuals import Point
         c_visual = dvz.point(self.c_batch, 0)
-        visual = Point(self, c_visual)
+        visual = Point(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def marker(self, **kwargs):
         from .visuals import Marker
         c_visual = dvz.marker(self.c_batch, 0)
-        visual = Marker(self, c_visual)
+        visual = Marker(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def segment(self, **kwargs):
         from .visuals import Segment
         c_visual = dvz.segment(self.c_batch, 0)
-        visual = Segment(self, c_visual)
+        visual = Segment(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def path(self, **kwargs):
         from .visuals import Path
         c_visual = dvz.path(self.c_batch, 0)
-        visual = Path(self, c_visual)
+        visual = Path(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def glyph(self, font_size: int = cst.DEFAULT_FONT_SIZE, **kwargs):
         from .visuals import Glyph
         c_visual = dvz.glyph(self.c_batch, 0)
-        visual = Glyph(self, c_visual, font_size=font_size)
+        visual = Glyph(c_visual, font_size=font_size)
         visual.set_data(**kwargs)
         return visual
 
     def image(self, **kwargs):
         from .visuals import Image
         c_visual = dvz.image(self.c_batch, 0)
-        visual = Image(self, c_visual)
+        visual = Image(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def _mesh(self, c_visual, **kwargs):
         from .visuals import Mesh
-        visual = Mesh(self, c_visual)
+        visual = Mesh(c_visual)
         visual.set_data(**kwargs)
         return visual
 
@@ -242,7 +245,7 @@ class App:
     def sphere(self, **kwargs):
         from .visuals import Sphere
         c_visual = dvz.sphere(self.c_batch, 0)
-        visual = Sphere(self, c_visual)
+        visual = Sphere(c_visual)
         visual.set_data(**kwargs)
         return visual
 
@@ -251,14 +254,14 @@ class App:
         assert mode in cst.VOLUME_MODES
         c_flags = to_enum(f'volume_flags_{mode}')
         c_visual = dvz.volume(self.c_batch, c_flags)
-        visual = Volume(self, c_visual)
+        visual = Volume(c_visual)
         visual.set_data(**kwargs)
         return visual
 
     def slice(self, **kwargs):
         from .visuals import Slice
         c_visual = dvz.slice(self.c_batch, 0)
-        visual = Slice(self, c_visual)
+        visual = Slice(c_visual)
         visual.set_data(**kwargs)
         return visual
 
@@ -312,14 +315,14 @@ class App:
 # -------------------------------------------------------------------------------------------------
 
 class Visual:
-    app: App = None
+    # app: App = None
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
     count: int = 0
     _prop_classes: dict = None
 
-    def __init__(self, app: App, c_visual: dvz.DvzVisual, visual_name: str = None):
-        assert app
+    def __init__(self, c_visual: dvz.DvzVisual, visual_name: str = None):
+        # assert app
         assert c_visual
 
         # UGLY HACK: we override __setattr__() which only works AFTER self.visual_name has been
@@ -329,7 +332,7 @@ class Visual:
             assert visual_name in PROPS
             self.__dict__['visual_name'] = visual_name
 
-        self.app = app
+        # self.app = app
         self.c_visual = c_visual
         self._prop_classes = {}
 
@@ -354,6 +357,12 @@ class Visual:
 
     def set_prop_classes(self):
         pass
+
+    def show(self, is_visible: bool = True):
+        dvz.visual_show(self.c_visual, is_visible)
+
+    def hide(self):
+        self.show(False)
 
     def __getattr__(self, prop_name: str):
         # assert not prop_name.startswith('set_')
@@ -396,9 +405,10 @@ class Visual:
 
             # texture
             elif prop_type == 'texture':
-                if isinstance(value, np.ndarray):
-                    texture = self.app.texture(value)
-                values = (texture.c_tex, texture.c_sampler)
+                assert isinstance(value, Texture)
+                # if isinstance(value, np.ndarray):
+                #     texture = self.app.texture(value)
+                values = (value.c_tex, value.c_sampler)
 
             elif prop_type in VEC_TYPES:
                 assert hasattr(value, '__len__')
@@ -616,10 +626,14 @@ class Panel:
         return Camera(c_camera, self.c_panel)
 
     def demo_2D(self):
-        dvz.demo_panel_2D(self.c_panel)
+        c_visual = dvz.demo_panel_2D(self.c_panel)
+        visual = Visual(c_visual, 'demo_2D')
+        return visual
 
     def demo_3D(self):
-        dvz.demo_panel_3D(self.c_panel)
+        c_visual = dvz.demo_panel_3D(self.c_panel)
+        visual = Visual(c_visual, 'demo_3D')
+        return visual
 
     def gui(self, title: str = None, c_flags: int = 0):
         title = title or 'Panel'
