@@ -30,9 +30,15 @@ DEFAULT_CAMERA_POS = (0, 0, 4)
 DEFAULT_CAMERA_LOOKAT = (0, 0, 0)
 DEFAULT_CAMERA_UP = (0, 1, 0)
 
+DEFAULT_LIGHTING = False
 DEFAULT_LIGHT_DIR = (0.25, -0.25, -1)
 DEFAULT_LIGHT_COLOR = (255, 255, 255, 255)
 DEFAULT_LIGHT_PARAMS = (.25, .75, .75, 16)
+
+DEFAULT_INDEXING = 'earcut'
+DEFAULT_CONTOUR = 'joints'
+
+VOLUME_MODES = ('colormap', 'rgba')
 
 
 # -------------------------------------------------------------------------------------------------

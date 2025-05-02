@@ -18,12 +18,6 @@ from ._constants import Vec3, PROPS, VEC_TYPES
 from .utils import mesh_flags, to_enum, get_size, prepare_data_array, dtype_to_format
 from .shape_collection import ShapeCollection
 
-# -------------------------------------------------------------------------------------------------
-# Constants
-# -------------------------------------------------------------------------------------------------
-
-VOLUME_MODES = ('colormap', 'rgba')
-
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -201,11 +195,11 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def mesh(self, lighting: bool = True, contour: bool = False, **kwargs):
+    def mesh(self, lighting: bool = None, contour: bool = False, **kwargs):
         c_flags = mesh_flags(lighting=lighting, contour=contour)
         return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
-    def mesh_shape(self, shape: ShapeCollection, lighting: bool = True, contour: bool = False, **kwargs):
+    def mesh_shape(self, shape: ShapeCollection, lighting: bool = None, contour: bool = False, **kwargs):
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
@@ -226,7 +220,7 @@ class App:
 
     def volume(self, mode: str = 'colormap', **kwargs):
         from .visuals import Volume
-        assert mode in VOLUME_MODES
+        assert mode in cst.VOLUME_MODES
         c_flags = to_enum(f'volume_flags_{mode}')
         c_visual = dvz.volume(self.c_batch, c_flags)
         visual = Volume(self, c_visual)
@@ -489,6 +483,14 @@ class Panzoom:
         self.c_panzoom = c_panzoom
 
 
+class Ortho:
+    c_ortho: dvz.DvzOrtho = None
+
+    def __init__(self, c_ortho: dvz.DvzOrtho):
+        assert c_ortho
+        self.c_ortho = c_ortho
+
+
 class Arcball:
     c_arcball: dvz.DvzArcball = None
 
@@ -521,6 +523,10 @@ class Panel:
     def panzoom(self, flags: int = 0):
         c_panzoom = dvz.panel_panzoom(self.c_panel, flags)
         return Panzoom(c_panzoom)
+
+    def ortho(self, flags: int = 0):
+        c_ortho = dvz.panel_ortho(self.c_panel, flags)
+        return Ortho(c_ortho)
 
     def arcball(self, initial: Vec3 = None, flags: int = 0):
         c_arcball = dvz.panel_arcball(self.c_panel, flags)

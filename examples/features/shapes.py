@@ -27,10 +27,9 @@ figure = app.figure()
 panel = figure.panel()
 arcball = panel.arcball(initial=(-1, -.1, -.25))
 
-visual = app.mesh_shape(sc)
+visual = app.mesh_shape(sc, lighting=True)
 panel.add(visual)
 
 app.run()
 app.destroy()
-
 sc.destroy()

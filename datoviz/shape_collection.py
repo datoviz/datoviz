@@ -14,6 +14,7 @@ import ctypes
 import typing as tp
 import numpy as np
 from .utils import to_enum
+from . import _constants as cst
 from . import _ctypes as dvz
 
 
@@ -181,12 +182,34 @@ class ShapeCollection:
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_polygon(self, points: np.ndarray, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_polygon(
+        self,
+        points: np.ndarray,
+        offset: tp.Tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+        contour: str = None,
+        indexing: str = None,
+    ):
         assert points.ndim == 2
         assert points.shape[1] == 2
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_polygon(c_shape, points.shape[0], points, c_color)
+
+        # Unindexing for contours.
+        if contour or indexing:
+            # NOTE: contour can be a boolean, in which case it defaults to the default contour
+            if contour is True:
+                contour = None
+            contour = contour or cst.DEFAULT_CONTOUR
+            indexing = indexing or cst.DEFAULT_INDEXING
+            c_contour = to_enum(f'contour_{contour}')
+            c_indexing = to_enum(f'indexing_{indexing}')
+            c_flags = c_contour | c_indexing
+            dvz.shape_unindex(c_shape, c_flags)
+
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_surface(self, heights: np.ndarray, colors: np.ndarray, u: tp.Tuple[float, float, float] = None, v: tp.Tuple[float, float, float] = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
