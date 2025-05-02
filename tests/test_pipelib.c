@@ -56,6 +56,9 @@ int test_pipelib_1(TstSuite* suite)
         lib, ctx, &renderpass, DVZ_GRAPHICS_TRIANGLE,
         DVZ_PIPELIB_FLAGS_CREATE_MVP | DVZ_PIPELIB_FLAGS_CREATE_VIEWPORT);
 
+    VkShaderStageFlagBits stages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    dvz_graphics_push(&pipe->u.graphics, stages, 0, sizeof(float));
+
     // NOTE: we now have to create the pipe manually (or automatically when using recorder.c).
     dvz_pipe_create(pipe);
 
@@ -76,6 +79,7 @@ int test_pipelib_1(TstSuite* suite)
     DvzCommands cmds = dvz_commands(gpu, DVZ_DEFAULT_QUEUE_RENDER, 1);
     dvz_board_begin(&board, &cmds, 0);
     dvz_board_viewport(&board, &cmds, 0, DVZ_DEFAULT_VIEWPORT, DVZ_DEFAULT_VIEWPORT);
+    // dvz_cmd_push(&cmds, 0, &pipe->u.graphics.dslots, stages, 0, sizeof(float), (float[]){1});
     dvz_pipe_draw(pipe, &cmds, 0, 0, 3, 0, 1);
     dvz_board_end(&board, &cmds, 0);
     dvz_cmd_submit_sync(&cmds, DVZ_DEFAULT_QUEUE_RENDER);

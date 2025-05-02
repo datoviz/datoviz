@@ -942,9 +942,8 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     bool proceed = true;
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
     {
-        log_warn(
-            "buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
-            "data cannot be kept while resizing it");
+        log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
+                 "data cannot be kept while resizing it");
         proceed = false;
     }
     new_buffer.size = size;
@@ -2179,9 +2178,8 @@ void dvz_slots_push(
     // NOTE: it turns out we cannot have multiple push ranges on the same shader stages.
     if (dslots->push_count >= 1)
     {
-        log_warn(
-            "you should ensure the multiple push constant ranges have no overlapping shader "
-            "stages, as per the Vulkan specification");
+        log_warn("you should ensure the multiple push constant ranges have no overlapping shader "
+                 "stages, as per the Vulkan specification");
     }
     dslots->push_count++;
 }
@@ -2917,7 +2915,7 @@ void dvz_graphics_create(DvzGraphics* graphics)
 void dvz_graphics_destroy(DvzGraphics* graphics)
 {
     ANN(graphics);
-    if (graphics->obj.status <= DVZ_OBJECT_STATUS_INIT || graphics->gpu == NULL)
+    if (graphics->gpu == NULL)
     {
         log_trace(
             "skip destruction of already-destroyed graphics, status %d", graphics->obj.status);
