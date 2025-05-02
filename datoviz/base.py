@@ -290,8 +290,21 @@ class App:
 
         return decorator
 
-    def on_gui(self):
-        pass
+    def on_gui(self, figure: Figure):
+        assert figure
+        fid = dvz.figure_id(figure.c_figure)
+
+        def decorator(fun):
+            @dvz.on_gui
+            def on_gui(app, window_id, ev_):
+                if fid == window_id:
+                    ev = ev_.contents
+                    fun(ev)
+            dvz.app_gui(self.c_app, fid, on_gui, None)
+            self._callbacks.append(on_gui)
+            return fun
+
+        return decorator
 
 
 # -------------------------------------------------------------------------------------------------
