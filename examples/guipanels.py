@@ -28,7 +28,7 @@ def load_mouse_volume():
     shape = volume_data.shape
     MOUSE_D, MOUSE_H, MOUSE_W = shape[:3]
     format = dvz.FORMAT_R8G8B8A8_UNORM
-    texture = dvz.texture_volume(
+    texture = dvz.texture_3D(
         batch, format, dvz.FILTER_LINEAR,
         dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, MOUSE_W, MOUSE_H, MOUSE_D, volume_data, 0)
     return texture, MOUSE_D, MOUSE_H, MOUSE_W

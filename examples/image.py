@@ -37,7 +37,7 @@ with Image.open(filepath) as f:
     address_mode = dvz.SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER
 
     # Create a texture out of a RGB image.
-    tex = dvz.texture_image(batch, format, filter, address_mode, width, height, image, 0)
+    tex = dvz.texture_2D(batch, format, filter, address_mode, width, height, image, 0)
 
 
 # Create a figure 1000x1000.

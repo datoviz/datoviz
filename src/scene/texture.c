@@ -124,7 +124,31 @@ void dvz_texture_create(DvzTexture* texture)
 
 
 
-DvzTexture* dvz_texture_image(
+DvzTexture* dvz_texture_1D(
+    DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
+    uint32_t width, void* data, int flags)
+{
+    ANN(batch);
+    ASSERT(width > 0);
+
+    uvec3 shape = {width, 1, 1};
+    DvzSize size = width * 1 * _format_size(format);
+
+    DvzTexture* texture = dvz_texture(batch, DVZ_TEX_2D, flags);
+    dvz_texture_format(texture, format);
+    dvz_texture_shape(texture, width, 1, 1);
+    dvz_texture_filter(texture, filter);
+    dvz_texture_address_mode(texture, address_mode);
+
+    if (data != NULL)
+        dvz_texture_data(texture, 0, 0, 0, width, 1, 1, size, data);
+
+    return texture;
+}
+
+
+
+DvzTexture* dvz_texture_2D(
     DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
     uint32_t width, uint32_t height, void* data, int flags)
 {
@@ -149,7 +173,7 @@ DvzTexture* dvz_texture_image(
 
 
 
-DvzTexture* dvz_texture_volume(
+DvzTexture* dvz_texture_3D(
     DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
     uint32_t width, uint32_t height, uint32_t depth, void* data, int flags)
 {

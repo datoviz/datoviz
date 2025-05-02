@@ -7948,6 +7948,108 @@ Create a texture.
     );
     ```
 
+### `dvz_texture_1D()`
+
+Create a 1D texture.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_1D(  # returns: the texture (LP_DvzTexture)
+        batch,  # the batch (LP_DvzBatch)
+        format,  # the texture format (DvzFormat)
+        filter,  # the filter (DvzFilter)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+        width,  # the texture width (int, 32-bit unsigned)
+        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the texture creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzTexture* dvz_texture_1D(  // returns: the texture
+        DvzBatch* batch,  // the batch
+        DvzFormat format,  // the texture format
+        DvzFilter filter,  // the filter
+        DvzSamplerAddressMode address_mode,  // the address mode
+        uint32_t width,  // the texture width
+        void* data,  // the texture data to upload
+        int flags,  // the texture creation flags
+    );
+    ```
+
+### `dvz_texture_2D()`
+
+Create a 2D texture to be used in an image visual.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_2D(  # returns: the texture (LP_DvzTexture)
+        batch,  # the batch (LP_DvzBatch)
+        format,  # the texture format (DvzFormat)
+        filter,  # the filter (DvzFilter)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the texture creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzTexture* dvz_texture_2D(  // returns: the texture
+        DvzBatch* batch,  // the batch
+        DvzFormat format,  // the texture format
+        DvzFilter filter,  // the filter
+        DvzSamplerAddressMode address_mode,  // the address mode
+        uint32_t width,  // the texture width
+        uint32_t height,  // the texture height
+        void* data,  // the texture data to upload
+        int flags,  // the texture creation flags
+    );
+    ```
+
+### `dvz_texture_3D()`
+
+Create a 3D texture to be used in a volume visual.
+
+=== "Python"
+
+    ``` python
+    dvz.texture_3D(  # returns: the texture (LP_DvzTexture)
+        batch,  # the batch (LP_DvzBatch)
+        format,  # the texture format (DvzFormat)
+        filter,  # the filter (DvzFilter)
+        address_mode,  # the address mode (DvzSamplerAddressMode)
+        width,  # the texture width (int, 32-bit unsigned)
+        height,  # the texture height (int, 32-bit unsigned)
+        depth,  # the texture depth (int, 32-bit unsigned)
+        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
+        flags,  # the texture creation flags (int, 32-bit signed)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    DvzTexture* dvz_texture_3D(  // returns: the texture
+        DvzBatch* batch,  // the batch
+        DvzFormat format,  // the texture format
+        DvzFilter filter,  // the filter
+        DvzSamplerAddressMode address_mode,  // the address mode
+        uint32_t width,  // the texture width
+        uint32_t height,  // the texture height
+        uint32_t depth,  // the texture depth
+        void* data,  // the texture data to upload
+        int flags,  // the texture creation flags
+    );
+    ```
+
 ### `dvz_texture_address_mode()`
 
 Set the texture's associated sampler's address mode.
@@ -8090,40 +8192,6 @@ Set the texture format.
     );
     ```
 
-### `dvz_texture_image()`
-
-Create a 2D texture to be used in an image visual.
-
-=== "Python"
-
-    ``` python
-    dvz.texture_image(  # returns: the texture (LP_DvzTexture)
-        batch,  # the batch (LP_DvzBatch)
-        format,  # the texture format (DvzFormat)
-        filter,  # the filter (DvzFilter)
-        address_mode,  # the address mode (DvzSamplerAddressMode)
-        width,  # the texture width (int, 32-bit unsigned)
-        height,  # the texture height (int, 32-bit unsigned)
-        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
-        flags,  # the texture creation flags (int, 32-bit signed)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    DvzTexture* dvz_texture_image(  // returns: the texture
-        DvzBatch* batch,  // the batch
-        DvzFormat format,  // the texture format
-        DvzFilter filter,  // the filter
-        DvzSamplerAddressMode address_mode,  // the address mode
-        uint32_t width,  // the texture width
-        uint32_t height,  // the texture height
-        void* data,  // the texture data to upload
-        int flags,  // the texture creation flags
-    );
-    ```
-
 ### `dvz_texture_shape()`
 
 Set the texture shape.
@@ -8147,42 +8215,6 @@ Set the texture shape.
         uint32_t width,  // the width
         uint32_t height,  // the height
         uint32_t depth,  // the depth
-    );
-    ```
-
-### `dvz_texture_volume()`
-
-Create a 3D texture to be used in a volume visual.
-
-=== "Python"
-
-    ``` python
-    dvz.texture_volume(  # returns: the texture (LP_DvzTexture)
-        batch,  # the batch (LP_DvzBatch)
-        format,  # the texture format (DvzFormat)
-        filter,  # the filter (DvzFilter)
-        address_mode,  # the address mode (DvzSamplerAddressMode)
-        width,  # the texture width (int, 32-bit unsigned)
-        height,  # the texture height (int, 32-bit unsigned)
-        depth,  # the texture depth (int, 32-bit unsigned)
-        data,  # the texture data to upload (ndpointer_any_C_CONTIGUOUS)
-        flags,  # the texture creation flags (int, 32-bit signed)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    DvzTexture* dvz_texture_volume(  // returns: the texture
-        DvzBatch* batch,  // the batch
-        DvzFormat format,  // the texture format
-        DvzFilter filter,  // the filter
-        DvzSamplerAddressMode address_mode,  // the address mode
-        uint32_t width,  // the texture width
-        uint32_t height,  // the texture height
-        uint32_t depth,  // the texture depth
-        void* data,  // the texture data to upload
-        int flags,  // the texture creation flags
     );
     ```
 

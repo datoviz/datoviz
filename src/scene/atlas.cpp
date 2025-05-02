@@ -404,7 +404,7 @@ DvzTexture* dvz_atlas_texture(DvzAtlas* atlas, DvzBatch* batch)
     uint8_t* rgba = (uint8_t*)calloc(size, sizeof(uint8_t));
     dvz_rgb_to_rgba_char(atlas->width * atlas->height, atlas->rgb, rgba);
     // TODO: mtsdf with 4 channels
-    DvzTexture* texture = dvz_texture_image(
+    DvzTexture* texture = dvz_texture_2D(
         batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, atlas->width, atlas->height, rgba, 0);
     FREE(rgba);

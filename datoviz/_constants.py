@@ -177,7 +177,16 @@ PROPS = {
 # -------------------------------------------------------------------------------------------------
 
 DTYPE_FORMATS = {
+    ('uint8', 1): dvz.FORMAT_R8_UNORM,
+    ('uint8', 2): dvz.FORMAT_R8G8_UNORM,
     ('uint8', 4): dvz.FORMAT_R8G8B8A8_UNORM,
+
+    ('uint16', 1): dvz.FORMAT_R16_UNORM,
+
+    ('int16', 1): dvz.FORMAT_R16_SNORM,
+
+    ('float32', 1): dvz.FORMAT_R32_SFLOAT,
+    ('float32', 2): dvz.FORMAT_R32G32_SFLOAT,
     ('float32', 4): dvz.FORMAT_R32G32B32A32_SFLOAT,
 }
 

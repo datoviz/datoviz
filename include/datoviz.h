@@ -1192,6 +1192,24 @@ DVZ_EXPORT void dvz_texture_destroy(DvzTexture* texture);
 
 
 /**
+ * Create a 1D texture.
+ *
+ * @param batch the batch
+ * @param format the texture format
+ * @param filter the filter
+ * @param address_mode the address mode
+ * @param width the texture width
+ * @param data the texture data to upload
+ * @param flags the texture creation flags
+ * @returns the texture
+ */
+DVZ_EXPORT DvzTexture* dvz_texture_1D(
+    DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
+    uint32_t width, void* data, int flags);
+
+
+
+/**
  * Create a 2D texture to be used in an image visual.
  *
  * @param batch the batch
@@ -1204,7 +1222,7 @@ DVZ_EXPORT void dvz_texture_destroy(DvzTexture* texture);
  * @param flags the texture creation flags
  * @returns the texture
  */
-DVZ_EXPORT DvzTexture* dvz_texture_image(
+DVZ_EXPORT DvzTexture* dvz_texture_2D(
     DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode,
     uint32_t width, uint32_t height, void* data, int flags);
 
@@ -1224,7 +1242,7 @@ DVZ_EXPORT DvzTexture* dvz_texture_image(
  * @param flags the texture creation flags
  * @returns the texture
  */
-DVZ_EXPORT DvzTexture* dvz_texture_volume(
+DVZ_EXPORT DvzTexture* dvz_texture_3D(
     DvzBatch* batch, DvzFormat format, DvzFilter filter, DvzSamplerAddressMode address_mode, //
     uint32_t width, uint32_t height, uint32_t depth, void* data, int flags);
 

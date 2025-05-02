@@ -78,7 +78,7 @@ int test_volume_1(TstSuite* suite)
     };
 
     // Create the texture and upload the volume data.
-    DvzTexture* texture = dvz_texture_volume(
+    DvzTexture* texture = dvz_texture_3D(
         vt.batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_NEAREST, DVZ_SAMPLER_ADDRESS_MODE_REPEAT,
         3, 2, 1, tex_data, 0);
 

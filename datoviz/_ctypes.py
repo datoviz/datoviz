@@ -4601,9 +4601,47 @@ texture_destroy.argtypes = [
     ctypes.POINTER(DvzTexture),  # DvzTexture* texture
 ]
 
-# Function dvz_texture_image()
-texture_image = dvz.dvz_texture_image
-texture_image.__doc__ = """
+# Function dvz_texture_1D()
+texture_1D = dvz.dvz_texture_1D
+texture_1D.__doc__ = """
+Create a 1D texture.
+
+Parameters
+----------
+batch : DvzBatch*
+    the batch
+format : DvzFormat
+    the texture format
+filter : DvzFilter
+    the filter
+address_mode : DvzSamplerAddressMode
+    the address mode
+width : uint32_t
+    the texture width
+data : void*
+    the texture data to upload
+flags : int
+    the texture creation flags
+
+Returns
+-------
+type
+    the texture
+"""
+texture_1D.argtypes = [
+    ctypes.POINTER(DvzBatch),  # DvzBatch* batch
+    DvzFormat,  # DvzFormat format
+    DvzFilter,  # DvzFilter filter
+    DvzSamplerAddressMode,  # DvzSamplerAddressMode address_mode
+    ctypes.c_uint32,  # uint32_t width
+    ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
+    ctypes.c_int,  # int flags
+]
+texture_1D.restype = ctypes.POINTER(DvzTexture)
+
+# Function dvz_texture_2D()
+texture_2D = dvz.dvz_texture_2D
+texture_2D.__doc__ = """
 Create a 2D texture to be used in an image visual.
 
 Parameters
@@ -4630,7 +4668,7 @@ Returns
 type
     the texture
 """
-texture_image.argtypes = [
+texture_2D.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzFormat,  # DvzFormat format
     DvzFilter,  # DvzFilter filter
@@ -4640,11 +4678,11 @@ texture_image.argtypes = [
     ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
-texture_image.restype = ctypes.POINTER(DvzTexture)
+texture_2D.restype = ctypes.POINTER(DvzTexture)
 
-# Function dvz_texture_volume()
-texture_volume = dvz.dvz_texture_volume
-texture_volume.__doc__ = """
+# Function dvz_texture_3D()
+texture_3D = dvz.dvz_texture_3D
+texture_3D.__doc__ = """
 Create a 3D texture to be used in a volume visual.
 
 Parameters
@@ -4673,7 +4711,7 @@ Returns
 type
     the texture
 """
-texture_volume.argtypes = [
+texture_3D.argtypes = [
     ctypes.POINTER(DvzBatch),  # DvzBatch* batch
     DvzFormat,  # DvzFormat format
     DvzFilter,  # DvzFilter filter
@@ -4684,7 +4722,7 @@ texture_volume.argtypes = [
     ndpointer(dtype=None, ndim=None, flags="C_CONTIGUOUS"),  # void* data
     ctypes.c_int,  # int flags
 ]
-texture_volume.restype = ctypes.POINTER(DvzTexture)
+texture_3D.restype = ctypes.POINTER(DvzTexture)
 
 # Function dvz_colormap()
 colormap = dvz.dvz_colormap

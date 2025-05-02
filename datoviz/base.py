@@ -18,6 +18,12 @@ from ._constants import Vec3, PROPS, VEC_TYPES
 from .utils import mesh_flags, to_enum, get_size, prepare_data_array, dtype_to_format
 from .shape_collection import ShapeCollection
 
+# -------------------------------------------------------------------------------------------------
+# Constants
+# -------------------------------------------------------------------------------------------------
+
+VOLUME_MODES = ('colormap', 'rgba')
+
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -62,28 +68,69 @@ class App:
     # Objects
     # ---------------------------------------------------------------------------------------------
 
-    def texture(self,
-                image: np.ndarray = None,
-                ndim: int = 2,
-                shape: tuple = None,
-                n_channels: int = None,
-                dtype: np.dtype = None,
-                interpolation: str = 'nearest',
-                address_mode: str = 'clamp_to_border',
-                ):
+    def texture(
+        self,
+        image: np.ndarray = None,
+        ndim: int = 2,
+        shape: tuple = None,
+        n_channels: int = None,
+        dtype: np.dtype = None,
+        interpolation: str = None,
+        address_mode: str = None,
+    ):
         if image is not None:
+            if image.ndim == 4:
+                ndim = 3
+            # NOTE: ambiguity if image.ndim == 3, may be 2D rgba or 3D single channel
             shape = shape or image.shape[:ndim]
             n_channels = n_channels or (image.shape[-1] if ndim == image.ndim - 1 else 1)
             dtype = dtype or image.dtype
+            assert 0 <= image.ndim - ndim <= 1
+
         assert n_channels > 0
         c_format = dtype_to_format(dtype.name, n_channels)
         shape = dvz.uvec3(*shape)
-        width, height, _ = shape
+        width, height, depth = shape
+
+        interpolation = interpolation or cst.DEFAULT_INTERPOLATION
         c_filter = to_enum(f'filter_{interpolation}')
+        address_mode = address_mode or cst.DEFAULT_ADDRESS_MODE
         c_address_mode = to_enum(f'sampler_address_mode_{address_mode}')
-        c_texture = dvz.texture_image(
-            self.c_batch, c_format, c_filter, c_address_mode, width, height, image, 0)
+
+        if ndim == 1:
+            c_texture = dvz.texture_1D(
+                self.c_batch, c_format, c_filter, c_address_mode, width, image, 0)
+        elif ndim == 2:
+            c_texture = dvz.texture_2D(
+                self.c_batch, c_format, c_filter, c_address_mode, width, height, image, 0)
+        elif ndim == 3:
+            c_texture = dvz.texture_3D(
+                self.c_batch, c_format, c_filter, c_address_mode, width, height, depth, image, 0)
+
         return Texture(c_texture)
+
+    def texture_1D(
+        self, data: np.ndarray,
+        interpolation: str = None,
+        address_mode: str = None,
+    ):
+        return self.texture(data, ndim=1, interpolation=interpolation, address_mode=address_mode)
+
+    def texture_2D(
+        self, image: np.ndarray,
+        interpolation: str = None,
+        address_mode: str = None,
+    ):
+        return self.texture(image, ndim=2, interpolation=interpolation, address_mode=address_mode)
+
+    def texture_3D(
+        self, volume: np.ndarray,
+        shape: tuple = None,
+        interpolation: str = None,
+        address_mode: str = None,
+    ):
+        return self.texture(
+            volume, ndim=3, shape=shape, interpolation=interpolation, address_mode=address_mode)
 
     # Visuals
     # ---------------------------------------------------------------------------------------------
@@ -177,9 +224,11 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def volume(self, **kwargs):
+    def volume(self, mode: str = 'colormap', **kwargs):
         from .visuals import Volume
-        c_visual = dvz.volume(self.c_batch, 0)
+        assert mode in VOLUME_MODES
+        c_flags = to_enum(f'volume_flags_{mode}')
+        c_visual = dvz.volume(self.c_batch, c_flags)
         visual = Volume(self, c_visual)
         visual.set_data(**kwargs)
         return visual
@@ -356,8 +405,8 @@ class Prop:
         self.visual_name = visual.visual_name
         self.prop_name = prop_name
 
-        self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}")
-        self._fn_alloc = getattr(dvz, f"{visual.visual_name}_alloc")
+        self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}", None)
+        self._fn_alloc = getattr(dvz, f"{visual.visual_name}_alloc", None)
 
     @property
     def dtype(self):

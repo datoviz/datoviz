@@ -351,7 +351,7 @@ class Volume(Visual):
     visual_name = 'volume'
 
     def set_bounds(self, xlim: tuple, ylim: tuple, zlim: tuple):
-        dvz.volume_bounds(self.c_visual, dvz.vec2(xlim), dvz.vec2(ylim), dvz.vec2(zlim))
+        dvz.volume_bounds(self.c_visual, dvz.vec2(*xlim), dvz.vec2(*ylim), dvz.vec2(*zlim))
 
     def set_texcoords(self, uvw0: tuple, uvw1: tuple):
         dvz.volume_texcoords(self.c_visual, dvz.vec3(uvw0), dvz.vec3(uvw1))

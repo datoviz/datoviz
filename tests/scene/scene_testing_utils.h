@@ -96,7 +96,7 @@ static DvzTexture* load_crate_texture(DvzBatch* batch, uvec3 out_shape)
     out_shape[0] = w;
     out_shape[1] = w;
 
-    DvzTexture* texture = dvz_texture_image(
+    DvzTexture* texture = dvz_texture_2D(
         batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, out_shape[0], out_shape[1], png_bytes, 0);
 
@@ -134,7 +134,7 @@ static DvzTexture* load_brain_volume(DvzBatch* batch, uvec3 out_shape, bool use_
 
     log_info("loaded the Allen Mouse Brain volume (%s)", pretty_size(size));
     DvzFormat format = use_rgb_volume ? DVZ_FORMAT_R8G8B8A8_UNORM : DVZ_FORMAT_R16_UNORM;
-    DvzTexture* texture = dvz_texture_volume(
+    DvzTexture* texture = dvz_texture_3D(
         batch, format, DVZ_FILTER_LINEAR, DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, MOUSE_W,
         MOUSE_H, MOUSE_D, volume, 0);
     FREE(volume);

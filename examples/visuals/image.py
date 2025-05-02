@@ -50,7 +50,7 @@ panel = figure.panel()
 panzoom = panel.panzoom()
 
 visual = app.image(position=position, size=size, anchor=anchor, texcoords=texcoords)
-texture = app.texture(image)
+texture = app.texture_2D(image)
 visual.set_texture(texture)
 panel.add(visual)
 

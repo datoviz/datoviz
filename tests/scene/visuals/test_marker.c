@@ -159,7 +159,7 @@ static void _disc_sdf(DvzVisual* visual, uint32_t size)
         texdata[i] = value;
     }
 
-    DvzTexture* texture = dvz_texture_image(
+    DvzTexture* texture = dvz_texture_2D(
         visual->batch, DVZ_FORMAT_R32_SFLOAT, DVZ_FILTER_LINEAR,
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, size, size, texdata, 0);
     dvz_marker_texture(visual, texture);
@@ -266,7 +266,7 @@ int test_marker_msdf(TstSuite* suite)
     FREE(msdf);
 
     // Upload the MSDF image to a texture.
-    DvzTexture* texture = dvz_texture_image(
+    DvzTexture* texture = dvz_texture_2D(
         visual->batch, DVZ_FORMAT_R32G32B32A32_SFLOAT, DVZ_FILTER_LINEAR,
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, w, h, msdf_alpha, 0);
     dvz_marker_texture(visual, texture);

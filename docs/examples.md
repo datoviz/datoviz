@@ -9,10 +9,12 @@
     * [Visibility example](#visibility-example)
     * [Keyboard example](#keyboard-example)
     * [Mouse example](#mouse-example)
+    * [Mesh visual example](#mesh-visual-example)
     * [Offscreen example](#offscreen-example)
     * [Panel example](#panel-example)
     * [Panzoom example](#panzoom-example)
     * [PyQt6 local example](#pyqt6-local-example)
+    * [Shapes](#shapes)
     * [Timestamps example](#timestamps-example)
     * [Video example](#video-example)
 * [C Examples](#c-examples)
@@ -540,6 +542,47 @@ dvz.app_destroy(app)
 ```
 </details>
 
+## Mesh visual example
+
+Show the mesh visual with predefined shapes.
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/obj.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/obj.py</code></summary>
+
+```python
+from pathlib import Path
+import datoviz as dvz
+
+
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+file_path = ROOT_DIR / 'data/mesh/bunny.obj'
+
+linewidth = .1
+edgecolor = (0, 0, 0, 96)
+light_params = (.25, .75, .25, 16)
+
+sc = dvz.ShapeCollection()
+sc.add_obj(file_path, contour='full')
+
+app = dvz.App()
+figure = app.figure()
+panel = figure.panel()
+arcball = panel.arcball(initial=(.35, 0, 0))
+camera = panel.camera(initial=(0, 0, 3))
+
+visual = app.mesh_shape(
+    sc, lighting=True, linewidth=linewidth,  edgecolor=edgecolor, light_params=light_params)
+panel.add(visual)
+
+app.run()
+app.destroy()
+
+sc.destroy()
+```
+</details>
+
 ## Offscreen example
 
 Show how to render an offscreen image.
@@ -715,6 +758,49 @@ if __name__ == "__main__":
     mw = ExampleWindow()
     mw.show()
     sys.exit(app.exec())
+```
+</details>
+
+## Shapes
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/shapes.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/shapes.py</code></summary>
+
+```python
+import numpy as np
+import datoviz as dvz
+
+
+rows = 12
+cols = 16
+N = rows * cols
+t = np.linspace(0, 1, N)
+
+x, y = np.meshgrid(np.linspace(-1, 1, rows), np.linspace(-1, 1, cols))
+z = np.zeros_like(x)
+
+offsets = np.c_[x.flat, y.flat, z.flat]
+scales = 1.0 / rows * (1 + .25 * np.sin(5 * 2 * np.pi * t))
+colors = dvz.cmap(dvz.CMAP_HSV, np.mod(t, 1))
+
+sc = dvz.ShapeCollection()
+for offset, scale, color in zip(offsets, scales, colors):
+    sc.add_cube(offset=offset, scale=scale, color=color)
+
+app = dvz.App()
+figure = app.figure()
+panel = figure.panel()
+arcball = panel.arcball(initial=(-1, -.1, -.25))
+
+visual = app.mesh_shape(sc)
+panel.add(visual)
+
+app.run()
+app.destroy()
+
+sc.destroy()
 ```
 </details>
 

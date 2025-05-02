@@ -338,7 +338,7 @@ DvzTexture* dvz_font_texture(
     dvz_font_layout(font, length, codepoints, xywh);
     uint8_t* bitmap = dvz_font_draw(font, length, codepoints, xywh, DVZ_FONT_FLAGS_RGBA, out_size);
     out_size[2] = 1;
-    DvzTexture* texture = dvz_texture_image(
+    DvzTexture* texture = dvz_texture_2D(
         batch, DVZ_FORMAT_R8G8B8A8_UNORM, DVZ_FILTER_LINEAR,
         DVZ_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER, out_size[0], out_size[1], bitmap, 0);
 
