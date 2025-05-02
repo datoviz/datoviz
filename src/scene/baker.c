@@ -351,7 +351,7 @@ void dvz_baker_repeat(
     ANN(baker);
     if (baker->attr_count == 0)
     {
-        log_error("unitialized baker (attribute #%d)", attr_idx);
+        log_error("unitialized baker (attribute #%d), have you allocated the visual?", attr_idx);
         return;
     }
     ASSERT(attr_idx < baker->attr_count);

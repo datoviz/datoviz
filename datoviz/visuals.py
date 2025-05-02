@@ -159,6 +159,8 @@ class Path(Visual):
         assert position_concat.shape[1] == 3
         position_concat = prepare_data_array(
             self.visual_name, np.float32, (-1, 3), position_concat)
+
+        dvz.path_alloc(self.c_visual, point_count)
         dvz.path_position(self.c_visual, offset, point_count,
                           position_concat, path_count, path_lengths, 0)
 
