@@ -26,7 +26,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DVZ_FPS_MAX_COUNT 1000
+#define DVZ_FPS_MAX_COUNT 100
 #define DVZ_FPS_BINS      50
 #define DVZ_FPS_HEIGHT    50.0f
 #define DVZ_FPS_CUTOFF    2.0
