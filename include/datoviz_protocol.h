@@ -52,7 +52,8 @@ typedef enum
 typedef enum
 {
     DVZ_PRINT_FLAGS_NONE = 0x0000,
-    DVZ_PRINT_FLAGS_DATA = 0x0001,
+    DVZ_PRINT_FLAGS_ALL = 0x0001,
+    DVZ_PRINT_FLAGS_SMALL = 0x0003,
 } DvzPrintFlagsFlags;
 
 

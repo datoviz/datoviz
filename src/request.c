@@ -53,8 +53,6 @@
     (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "0", 1) != 0) &&                    \
      (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) != 0) && (size < VERBOSE_MAX_BASE64))
 
-#define IF_VERBOSE_DATA if ((flags & DVZ_PRINT_FLAGS_DATA) > 0)
-
 
 
 /*************************************************************************************************/
@@ -106,26 +104,51 @@ static int write_file(const char* filename, DvzSize block_size, uint32_t block_c
 }
 
 
-static char* show_data(const unsigned char* src, size_t len)
+static inline char* show_hex(const unsigned char* src, size_t len)
 {
-    if (len > 1024)
+    char* buf = (char*)calloc(3 * len + 1, sizeof(char));
+    int index = 0;
+    uint32_t is_zero = 0;
+    unsigned char value = 0;
+    for (uint32_t i = 0; i < len; i++)
     {
-        return b64_encode(src, len);
-    }
-    else
-    {
-        char* buf = (char*)calloc(3 * len + 1, sizeof(char));
-        int index = 0;
-        for (uint32_t i = 0; i < len; i++)
+        value = src[i];
+        // printf("%hhu ", value);
+
+        if (!is_zero)
         {
-            // printf("%hhu ", src[i]);
-            index += sprintf(&buf[index], "%02X ", src[i]);
+            index += sprintf(&buf[index], "%02X ", value);
+            if (value == 0)
+                is_zero = 1;
         }
-        return buf;
+        else
+        {
+            is_zero++;
+        }
+
+        if (is_zero && value != 0)
+        {
+            index += sprintf(&buf[index], "(x%d) ", is_zero);
+            is_zero = 0;
+        }
     }
+    return buf;
 }
 
-static char* show_string(const char* src)
+static inline char* show_data(const unsigned char* src, size_t len, int flags)
+{
+    if ((flags & DVZ_PRINT_FLAGS_SMALL) > 0)
+    {
+        return len <= 1024 ? show_hex(src, len) : "<snip>";
+    }
+    else if ((flags & DVZ_PRINT_FLAGS_ALL) > 0)
+    {
+        return len <= 1024 ? show_hex(src, len) : b64_encode(src, len);
+    }
+    return NULL;
+}
+
+static inline char* show_string(const char* src)
 {
     if (!src)
         return NULL;
@@ -301,13 +324,7 @@ static void _print_upload_dat(DvzRequest* req, int flags)
     DvzSize offset = req->content.dat_upload.offset;
     void* data = req->content.dat_upload.data;
 
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-
-    IF_VERBOSE_DATA
-    encoded = show_data((const unsigned char*)data, size);
-
-    else encoded = "<snip>";
+    char* encoded = show_data((const unsigned char*)data, size, flags);
     printf(
         "- action: upload\n"
         "  type: dat\n"
@@ -318,10 +335,11 @@ static void _print_upload_dat(DvzRequest* req, int flags)
         "    data:\n"
         "      mode: %s\n"
         "      buffer: %s\n",
-        dat, offset, size, encoded[2] == ' ' ? "hex" : "base64", encoded);
+        dat, offset, size, encoded && encoded[2] == ' ' ? "hex" : "base64",
+        encoded ? encoded : "");
 
-    IF_VERBOSE_DATA
-    free(encoded);
+    if (encoded && encoded[0] != '<')
+        FREE(encoded);
 }
 
 static void _print_delete_dat(DvzRequest* req)
@@ -380,12 +398,7 @@ static void _print_upload_tex(DvzRequest* req, int flags)
 
     void* data = req->content.tex_upload.data;
 
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-    IF_VERBOSE_DATA
-    encoded = show_data((const unsigned char*)data, size);
-
-    else encoded = "<snip>";
+    char* encoded = show_data((const unsigned char*)data, size, flags);
     printf(
         "- action: upload\n"
         "  type: tex\n"
@@ -398,10 +411,10 @@ static void _print_upload_tex(DvzRequest* req, int flags)
         "      mode: %s\n"
         "      buffer: %s\n",
         tex, size, offset[0], offset[1], offset[2], shape[0], shape[1], shape[2],
-        encoded[2] == ' ' ? "hex" : "base64", encoded);
+        encoded && encoded[2] == ' ' ? "hex" : "base64", encoded ? encoded : "");
 
-    IF_VERBOSE_DATA
-    free(encoded);
+    if (encoded && encoded[0] != '<')
+        FREE(encoded);
 }
 
 static void _print_delete_tex(DvzRequest* req)
@@ -460,14 +473,9 @@ static void _print_create_shader(DvzRequest* req, int flags)
                                     : (void*)req->content.shader.code);
     ANN(code_buffer);
 
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-
-    IF_VERBOSE_DATA
-    encoded = format == DVZ_SHADER_SPIRV ? show_data((const unsigned char*)code_buffer, size)
-                                         : show_string(code_buffer);
-    else encoded = "<snip>";
-
+    char* encoded = format == DVZ_SHADER_SPIRV
+                        ? show_data((const unsigned char*)code_buffer, size, flags)
+                        : show_string(code_buffer);
     printf(
         "- action: create\n"
         "  type: shader\n"
@@ -480,11 +488,11 @@ static void _print_create_shader(DvzRequest* req, int flags)
         "      mode: %s\n"
         "      buffer: %s\n",
         req->id, shader_type, format == DVZ_SHADER_SPIRV ? "spirv" : "glsl", //
-        size, format == DVZ_SHADER_SPIRV ? "buffer" : "code", encoded[2] == ' ' ? "hex" : "base64",
-        encoded);
+        size, format == DVZ_SHADER_SPIRV ? "buffer" : "code",
+        encoded && encoded[2] == ' ' ? "hex" : "base64", encoded ? encoded : "");
 
-    IF_VERBOSE_DATA
-    free(encoded);
+    if (encoded && encoded[0] != '<')
+        FREE(encoded);
 }
 
 
@@ -761,13 +769,7 @@ static void _print_set_specialization(DvzRequest* req, int flags)
     ASSERT(size > 0);
     ANN(value);
 
-    char* encoded = NULL;
-    // NOTE: avoid computing the base64 of large arrays.
-
-    IF_VERBOSE_DATA
-    encoded = show_data((const unsigned char*)value, size);
-    else encoded = "<snip>";
-
+    char* encoded = show_data((const unsigned char*)value, size, flags);
     printf(
         "- action: set\n"
         "  type: specialization\n"
@@ -779,10 +781,11 @@ static void _print_set_specialization(DvzRequest* req, int flags)
         "    value:\n"
         "      mode: %s\n"
         "      buffer: %s\n",
-        req->id, idx, shader, size, encoded[2] == ' ' ? "hex" : "base64", encoded);
+        req->id, idx, shader, size, encoded && encoded[2] == ' ' ? "hex" : "base64",
+        encoded ? encoded : "");
 
-    IF_VERBOSE_DATA
-    free(encoded);
+    if (encoded && encoded[0] != '<')
+        FREE(encoded);
 }
 
 
@@ -1221,7 +1224,7 @@ void dvz_batch_yaml(DvzBatch* batch, const char* filename)
         return;
     }
 
-    dvz_batch_print(batch, DVZ_PRINT_FLAGS_DATA);
+    dvz_batch_print(batch, DVZ_PRINT_FLAGS_ALL);
 
     fclose(file);
 }
@@ -1727,7 +1730,7 @@ DvzRequest dvz_create_glsl(DvzBatch* batch, DvzShaderType shader_type, const cha
     req.content.shader.size = size;
     req.content.shader.code = _cpy(size, code); // NOTE: the renderer will need to free it
 
-    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_DATA);
+    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_SMALL);
 
     RETURN_REQUEST
 }
@@ -1747,7 +1750,7 @@ DvzRequest dvz_create_spirv(
     req.content.shader.size = size;
     req.content.shader.buffer = _cpy(size, buffer); // NOTE: the renderer will need to free it
 
-    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_DATA);
+    IF_VERBOSE _print_create_shader(&req, DVZ_PRINT_FLAGS_SMALL);
 
     RETURN_REQUEST
 }
@@ -1973,7 +1976,7 @@ DvzRequest dvz_set_push(
     req.content.set_push.size = size;
 
     IF_VERBOSE
-    _print_set_push(&req, DVZ_PRINT_FLAGS_DATA);
+    _print_set_push(&req, DVZ_PRINT_FLAGS_ALL);
 
     RETURN_REQUEST
 }
@@ -1996,7 +1999,7 @@ DvzRequest dvz_set_specialization(
         _cpy(size, value); // NOTE: the renderer will have to free it.
 
     IF_VERBOSE
-    _print_set_specialization(&req, DVZ_PRINT_FLAGS_DATA);
+    _print_set_specialization(&req, DVZ_PRINT_FLAGS_ALL);
 
     RETURN_REQUEST
 }

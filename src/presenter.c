@@ -688,7 +688,7 @@ void dvz_presenter_submit(DvzPresenter* prt, DvzBatch* batch)
 
     // Use environment variable "DVZ_VERBOSE=prt" to see the requests processed by the presenter.
     if (getenv("DVZ_VERBOSE") && (strncmp(getenv("DVZ_VERBOSE"), "prt", 3) == 0))
-        dvz_batch_print(batch, 0);
+        dvz_batch_print(batch, DVZ_PRINT_FLAGS_SMALL);
 
     // Use DVZ_DRP=filename.yml to export DRP requests to a YAML file.
     if (getenv("DVZ_DRP") != NULL)
