@@ -46,6 +46,9 @@ class Figure:
     def update(self):
         dvz.figure_update(self.c_figure)
 
+    def figure_id(self):
+        return dvz.figure_id(self.c_figure)
+
 
 # -------------------------------------------------------------------------------------------------
 # Event
@@ -126,7 +129,9 @@ class App:
     c_batch: dvz.DvzBatch = None
     c_scene: dvz.DvzScene = None
 
-    def __init__(self, c_flags: int = 0):
+    def __init__(self, c_flags: int = 0, offscreen: bool = False):
+        if offscreen:
+            c_flags |= dvz.APP_FLAGS_OFFSCREEN
         self.c_flags = c_flags
         self.c_app = dvz.app(c_flags)
         self.c_batch = dvz.app_batch(self.c_app)
@@ -150,6 +155,10 @@ class App:
 
     def run(self, frame_count: int = 0):
         dvz.scene_run(self.c_scene, self.c_app, frame_count)
+
+    def screenshot(self, figure: Figure, png_path: str):
+        self.run(1)
+        dvz.app_screenshot(self.c_app, figure.figure_id(), png_path)
 
     def __del__(self):
         self.destroy()
