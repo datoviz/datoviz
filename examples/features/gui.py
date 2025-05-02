@@ -35,7 +35,7 @@ app = dvz.App()
 figure = app.figure(gui=True)
 
 
-@app.on_gui(figure)
+@app.connect(figure)
 def on_gui(ev):
 
     # Set the size of the next GUI dialog.

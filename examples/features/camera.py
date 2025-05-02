@@ -28,14 +28,14 @@ mapping = {
 }
 
 
-@app.on_keyboard(figure)
+@app.connect(figure)
 def on_keyboard(ev):
     global eye
 
     # Keyboard events are PRESS, RELEASE, and REPEAT.
-    if ev.type != dvz.KEYBOARD_EVENT_RELEASE:
+    if ev.key_event() != 'release':
         # Move the camera position depending on the pressed keys.
-        i, dp = mapping.get(ev.key, (0, 0))
+        i, dp = mapping.get(ev.key(), (0, 0))
         eye[i] += dp
         lookat = (eye[0], eye[1], eye[2] - 1)
 

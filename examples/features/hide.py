@@ -17,7 +17,7 @@ visual = panel.demo_2D()
 visible = Out(True)
 
 
-@app.on_gui(figure)
+@app.connect(figure)
 def on_gui(ev):
     dvz.gui_begin("GUI", 0)
     if dvz.gui_checkbox("Visible?", visible):
