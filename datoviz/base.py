@@ -169,7 +169,7 @@ class App:
             dvz.app_destroy(self.c_app)
             self.c_app = None
 
-    # Objects
+    # Textures
     # ---------------------------------------------------------------------------------------------
 
     def texture(
@@ -441,6 +441,19 @@ class Visual:
 
         self.set_prop_classes()
 
+    def show(self, is_visible: bool = True):
+        dvz.visual_show(self.c_visual, is_visible)
+
+    def hide(self):
+        self.show(False)
+
+    def clip(self, clip: str):
+        c_clip = to_enum(f'viewport_clip_{clip}')
+        dvz.visual_clip(self.c_visual, c_clip)
+
+    # Internal
+    # ---------------------------------------------------------------------------------------------
+
     def set_count(self, count):
         self.count = count
 
@@ -460,12 +473,6 @@ class Visual:
 
     def set_prop_classes(self):
         pass
-
-    def show(self, is_visible: bool = True):
-        dvz.visual_show(self.c_visual, is_visible)
-
-    def hide(self):
-        self.show(False)
 
     def __getattr__(self, prop_name: str):
         # assert not prop_name.startswith('set_')
@@ -703,6 +710,15 @@ class Panel:
         assert visual
         dvz.panel_visual(self.c_panel, visual.c_visual, 0)
 
+    def update(self):
+        dvz.panel_update(self.c_panel)
+
+    def margins(self, top: float = 0, right: float = 0, bottom: float = 0, left: float = 0):
+        dvz.panel_margins(self.c_panel, top, right, bottom, left)
+
+    # Interactivity
+    # ---------------------------------------------------------------------------------------------
+
     def panzoom(self, c_flags: int = 0):
         c_panzoom = dvz.panel_panzoom(self.c_panel, c_flags)
         return Panzoom(c_panzoom, self.c_panel)
@@ -728,6 +744,9 @@ class Panel:
             self.update()
         return Camera(c_camera, self.c_panel)
 
+    # Demo visuals
+    # ---------------------------------------------------------------------------------------------
+
     def demo_2D(self):
         c_visual = dvz.demo_panel_2D(self.c_panel)
         visual = Visual(c_visual, 'demo_2D')
@@ -738,9 +757,9 @@ class Panel:
         visual = Visual(c_visual, 'demo_3D')
         return visual
 
+    # GUI
+    # ---------------------------------------------------------------------------------------------
+
     def gui(self, title: str = None, c_flags: int = 0):
         title = title or 'Panel'
         dvz.panel_gui(self.c_panel, title, c_flags)
-
-    def update(self):
-        dvz.panel_update(self.c_panel)
