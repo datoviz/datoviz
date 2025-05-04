@@ -14,19 +14,19 @@ import typing as tp
 
 import numpy as np
 
-from . import _ctypes as dvz
 from . import _constants as cst
+from . import _ctypes as dvz
 from . import visuals as vs
 from ._event import Event
-from ._texture import Texture
 from ._figure import Figure
-from .utils import mesh_flags, to_enum,  dtype_to_format
+from ._texture import Texture
 from .shape_collection import ShapeCollection
-
+from .utils import dtype_to_format, mesh_flags, to_enum
 
 # -------------------------------------------------------------------------------------------------
 # App
 # -------------------------------------------------------------------------------------------------
+
 
 class App:
     c_flags: int = 0
@@ -51,7 +51,13 @@ class App:
         # garbage-collected, resulting in a segfault.
         self._callbacks = []
 
-    def figure(self, width: int = cst.DEFAULT_WIDTH, height: int = cst.DEFAULT_HEIGHT, c_flags: int = 0, gui: bool = False):
+    def figure(
+        self,
+        width: int = cst.DEFAULT_WIDTH,
+        height: int = cst.DEFAULT_HEIGHT,
+        c_flags: int = 0,
+        gui: bool = False,
+    ):
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
@@ -113,45 +119,60 @@ class App:
 
         if ndim == 1:
             c_texture = dvz.texture_1D(
-                self.c_batch, c_format, c_filter, c_address_mode, width, image, 0)
+                self.c_batch, c_format, c_filter, c_address_mode, width, image, 0
+            )
         elif ndim == 2:
             c_texture = dvz.texture_2D(
-                self.c_batch, c_format, c_filter, c_address_mode, width, height, image, 0)
+                self.c_batch, c_format, c_filter, c_address_mode, width, height, image, 0
+            )
         elif ndim == 3:
             c_texture = dvz.texture_3D(
-                self.c_batch, c_format, c_filter, c_address_mode, width, height, depth, image, 0)
+                self.c_batch, c_format, c_filter, c_address_mode, width, height, depth, image, 0
+            )
 
         return Texture(c_texture)
 
     def texture_1D(
-        self, data: np.ndarray,
+        self,
+        data: np.ndarray,
         interpolation: str = None,
         address_mode: str = None,
     ):
         return self.texture(data, ndim=1, interpolation=interpolation, address_mode=address_mode)
 
     def texture_2D(
-        self, image: np.ndarray,
+        self,
+        image: np.ndarray,
         interpolation: str = None,
         address_mode: str = None,
     ):
         return self.texture(image, ndim=2, interpolation=interpolation, address_mode=address_mode)
 
     def texture_3D(
-        self, volume: np.ndarray,
+        self,
+        volume: np.ndarray,
         shape: tuple = None,
         interpolation: str = None,
         address_mode: str = None,
     ):
         return self.texture(
-            volume, ndim=3, shape=shape, interpolation=interpolation, address_mode=address_mode)
+            volume, ndim=3, shape=shape, interpolation=interpolation, address_mode=address_mode
+        )
 
     # Visuals
     # ---------------------------------------------------------------------------------------------
 
     # TODO: put the actual keywords instead of kwargs in the signatures, and write the docstrings
 
-    def _visual(self, fn: tp.Callable = None, cls: tp.Type = None, c_visual=None, c_flags: int = 0, fixed=None, **kwargs):
+    def _visual(
+        self,
+        fn: tp.Callable = None,
+        cls: type = None,
+        c_visual=None,
+        c_flags: int = 0,
+        fixed=None,
+        **kwargs,
+    ):
         c_visual = c_visual or fn(self.c_batch, c_flags)
         visual = cls(c_visual)
         visual.set_data(**kwargs)
@@ -190,13 +211,26 @@ class App:
         return self._visual(dvz.image, vs.Image, **kwargs)
 
     def _mesh(self, c_visual, vertex_count: int = None, index_count: int = None, **kwargs):
-        return self._visual(c_visual=c_visual, cls=vs.Mesh, vertex_count=vertex_count, index_count=index_count, **kwargs)
+        return self._visual(
+            c_visual=c_visual,
+            cls=vs.Mesh,
+            vertex_count=vertex_count,
+            index_count=index_count,
+            **kwargs,
+        )
 
     def mesh(self, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
         c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
         return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
-    def mesh_shape(self, shape: ShapeCollection, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
+    def mesh_shape(
+        self,
+        shape: ShapeCollection,
+        indexed: bool = None,
+        lighting: bool = None,
+        contour: bool = False,
+        **kwargs,
+    ):
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
@@ -212,7 +246,12 @@ class App:
             contour = True
 
         c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
-        return self._mesh(dvz.mesh_shape(self.c_batch, c_merged, c_flags), vertex_count=nv, index_count=ni, **kwargs)
+        return self._mesh(
+            dvz.mesh_shape(self.c_batch, c_merged, c_flags),
+            vertex_count=nv,
+            index_count=ni,
+            **kwargs,
+        )
 
     def sphere(self, **kwargs):
         return self._visual(dvz.sphere, vs.Sphere, **kwargs)
@@ -244,6 +283,7 @@ class App:
                 if dvz.figure_id(figure.c_figure) == window_id:
                     ev = ev_.contents
                     fun(Event(ev, 'mouse'))
+
             dvz.app_on_mouse(self.c_app, on_mouse, None)
             self._callbacks.append(on_mouse)
             return fun
@@ -259,6 +299,7 @@ class App:
                 if dvz.figure_id(figure.c_figure) == window_id:
                     ev = ev_.contents
                     fun(Event(ev, 'keyboard'))
+
             dvz.app_on_keyboard(self.c_app, on_keyboard, None)
             self._callbacks.append(on_keyboard)
             return fun
@@ -275,6 +316,7 @@ class App:
                 if fid == window_id:
                     ev = ev_.contents
                     fun(ev)
+
             dvz.app_gui(self.c_app, fid, on_gui, None)
             self._callbacks.append(on_gui)
             return fun
@@ -291,6 +333,7 @@ class App:
                 return self.on_keyboard(figure)(fun)
             elif fun.__name__ == 'on_gui':
                 return self.on_gui(figure)(fun)
+
         return decorator
 
     def timer(self, delay: float = 0.0, period: float = 1.0, max_count: int = 0):
@@ -299,6 +342,7 @@ class App:
             def on_timer(app, window_id, ev_):
                 ev = ev_.contents
                 fun(ev)
+
             dvz.app_on_timer(self.c_app, on_timer, None)
             self._callbacks.append(on_timer)
             return fun

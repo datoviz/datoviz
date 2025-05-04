@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from ctypes import c_char_p
-import typing as tp
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
@@ -21,10 +20,10 @@ from . import _constants as cst
 from . import _ctypes as dvz
 from ._ctypes import P_, __version__, version
 
-
 # -------------------------------------------------------------------------------------------------
 # Array wrappers
 # -------------------------------------------------------------------------------------------------
+
 
 def array_pointer(x, dtype=None):
     if not isinstance(x, np.ndarray):
@@ -32,8 +31,8 @@ def array_pointer(x, dtype=None):
     dtype = dtype or x.dtype
     if not x.flags.c_contiguous:
         print(
-            "Warning: array is not C contiguous, ensure your array is in row-major (C) order "
-            "to avoid potential issues"
+            'Warning: array is not C contiguous, ensure your array is in row-major (C) order '
+            'to avoid potential issues'
         )
     if dtype and x.dtype != dtype:
         x = x.astype(dtype)
@@ -48,8 +47,8 @@ def pointer_array(pointer, length, n_components, dtype=np.float32):
 
 def char_pointer(s):
     if isinstance(s, list):
-        return (c_char_p * len(s))(*[c_char_p(str(_).encode("utf-8")) for _ in s])
-    return str(s).encode("utf-8")
+        return (c_char_p * len(s))(*[c_char_p(str(_).encode('utf-8')) for _ in s])
+    return str(s).encode('utf-8')
 
 
 def pointer_image(rgb, width, height, n_channels=3):
@@ -70,6 +69,7 @@ from_pointer = pointer_array
 # Helpers
 # -------------------------------------------------------------------------------------------------
 
+
 def get_version():
     return {
         'ctypes_wrapper': __version__,
@@ -83,7 +83,7 @@ def from_enum(enum_cls, value, prettify=True):
         strs = [_ for _ in enum_cls.__dict__.keys() if _.startswith('DVZ_')]
         prefix = ''.join(c[0] for c in zip(*strs) if len(set(c)) == 1)
     for name, val in enum_cls.__dict__.items():
-        if not name.startswith("_") and isinstance(val, int) and val == value:
+        if not name.startswith('_') and isinstance(val, int) and val == value:
             if prettify:
                 name = name.replace(prefix, '').lower()
             return name
@@ -100,11 +100,11 @@ def key_name(key_code):
 
 def button_name(button):
     name = from_enum(dvz.MouseButton, button)
-    name = name.replace("DVZ_MOUSE_BUTTON_", "")
+    name = name.replace('DVZ_MOUSE_BUTTON_', '')
     return name
 
 
-def cmap(cm, values, vmin=0.0, vmax=1.):
+def cmap(cm, values, vmin=0.0, vmax=1.0):
     values = np.asanyarray(values, dtype=np.float32)
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
@@ -126,7 +126,7 @@ def to_byte(arr, vmin=None, vmax=None):
     # return normalized
 
     # NumPy version
-    normalized = (arr - vmin) * 1. / (vmax - vmin)
+    normalized = (arr - vmin) * 1.0 / (vmax - vmin)
     normalized = np.clip(normalized, 0, 1)
     normalized *= 255
     return normalized.astype(np.uint8)
@@ -135,6 +135,7 @@ def to_byte(arr, vmin=None, vmax=None):
 # -------------------------------------------------------------------------------------------------
 # Utils
 # -------------------------------------------------------------------------------------------------
+
 
 def get_size(idx, value, total_size=0):
     if isinstance(value, np.ndarray):
@@ -161,18 +162,18 @@ def prepare_data_array(name, dtype, shape, value):
             pvalue = np.atleast_3d(pvalue)
     elif pvalue.ndim > ndim:
         raise ValueError(
-            f"Visual property {name} should have shape {shape} instead of {pvalue.shape}")
+            f'Visual property {name} should have shape {shape} instead of {pvalue.shape}'
+        )
     assert ndim == pvalue.ndim
     for dim in range(ndim):
         if shape[dim] > 0 and pvalue.shape[dim] != shape[dim]:
-            raise ValueError(f"Incorrect shape {pvalue.shape[dim]} != {shape[dim]}")
+            raise ValueError(f'Incorrect shape {pvalue.shape[dim]} != {shape[dim]}')
     return pvalue
 
 
 def prepare_data_scalar(name, dtype, size, value):
     if size == 0:
-        raise ValueError(
-            f"Property {name} needs to be set after the position")
+        raise ValueError(f'Property {name} needs to be set after the position')
     pvalue = np.full(size, value, dtype=dtype)
     return pvalue
 

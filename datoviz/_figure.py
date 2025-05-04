@@ -10,14 +10,13 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-import typing as tp
-from ._panel import Panel
 from . import _ctypes as dvz
-
+from ._panel import Panel
 
 # -------------------------------------------------------------------------------------------------
 # Figure
 # -------------------------------------------------------------------------------------------------
+
 
 class Figure:
     c_figure: dvz.DvzFigure = None

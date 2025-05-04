@@ -10,24 +10,17 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-import typing as tp
-
-import numpy as np
-
-from . import _ctypes as dvz
 from . import _constants as cst
-from . import visuals as vs
+from . import _ctypes as dvz
+from ._constants import Vec3
+from .interact import Arcball, Camera, Ortho, Panzoom
+from .utils import button_name, from_enum, key_name
 from .visuals import Visual
-from ._constants import Vec3, PROPS, VEC_TYPES
-from .utils import (
-    mesh_flags, from_enum, to_enum, key_name, button_name,
-    get_size, prepare_data_scalar, prepare_data_array, dtype_to_format)
-from .shape_collection import ShapeCollection
-
 
 # -------------------------------------------------------------------------------------------------
 # Event
 # -------------------------------------------------------------------------------------------------
+
 
 class Event:
     c_ev = None
@@ -98,6 +91,7 @@ class Event:
 # Texture
 # -------------------------------------------------------------------------------------------------
 
+
 class Texture:
     c_texture: dvz.DvzTexture = None
 
@@ -109,6 +103,7 @@ class Texture:
 # -------------------------------------------------------------------------------------------------
 # Panel
 # -------------------------------------------------------------------------------------------------
+
 
 class Panel:
     c_panel: dvz.DvzPanel = None
@@ -147,7 +142,13 @@ class Panel:
             self.update()
         return Arcball(c_arcball, self.c_panel)
 
-    def camera(self, initial: Vec3 = None, initial_lookat: Vec3 = None, initial_up: Vec3 = None, c_flags: int = 0):
+    def camera(
+        self,
+        initial: Vec3 = None,
+        initial_lookat: Vec3 = None,
+        initial_up: Vec3 = None,
+        c_flags: int = 0,
+    ):
         c_camera = dvz.panel_camera(self.c_panel, c_flags)
         pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
         lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT

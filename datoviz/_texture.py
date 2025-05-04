@@ -10,23 +10,12 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-import typing as tp
-
-import numpy as np
-
 from . import _ctypes as dvz
-from . import _constants as cst
-from . import visuals as vs
-from ._constants import Vec3, PROPS, VEC_TYPES
-from .utils import (
-    mesh_flags, from_enum, to_enum, key_name, button_name,
-    get_size, prepare_data_scalar, prepare_data_array, dtype_to_format)
-from .shape_collection import ShapeCollection
-
 
 # -------------------------------------------------------------------------------------------------
 # Texture
 # -------------------------------------------------------------------------------------------------
+
 
 class Texture:
     c_texture: dvz.DvzTexture = None

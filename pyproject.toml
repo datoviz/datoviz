@@ -37,7 +37,8 @@ package-data = {"datoviz" = [
 [tool.ruff]
 format.quote-style = "single"
 exclude = [
-    "datoviz/_ctypes.py"
+    "datoviz/_ctypes.py",
+    "datoviz/backends/*.py",
 ]
 line-length = 99
 lint.select = [
@@ -79,7 +80,7 @@ lint.ignore = [
     "PGH004",
 ]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "examples/*.py" = ["D103"]
 
 #    "F",      # TODO: enable Pyflakes rules

@@ -11,20 +11,20 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import ctypes
-import typing as tp
+
 import numpy as np
-from .utils import to_enum
+
 from . import _constants as cst
 from . import _ctypes as dvz
-
+from .utils import to_enum
 
 # -------------------------------------------------------------------------------------------------
 # Types
 # -------------------------------------------------------------------------------------------------
 
-Color = tp.Tuple[int, int, int, int]
-Vec4 = tp.Tuple[float, float, float, float]
-Mat4 = tp.Tuple[float, ...]
+Color = tuple[int, int, int, int]
+Vec4 = tuple[float, float, float, float]
+Mat4 = tuple[float, ...]
 
 DEFAULT_SIZE = 100
 WHITE = dvz.cvec4(255, 255, 255, 255)
@@ -34,10 +34,16 @@ WHITE = dvz.cvec4(255, 255, 255, 255)
 # Utils
 # -------------------------------------------------------------------------------------------------
 
-def _shape_transform(c_shape: dvz.Shape, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
+
+def _shape_transform(
+    c_shape: dvz.Shape,
+    offset: tuple[float, float, float] = None,
+    scale: float = None,
+    transform: Mat4 = None,
+):
     dvz.shape_begin(c_shape, 0, 0)
     if scale is not None:
-        dvz.shape_scale(c_shape,  dvz.vec3(scale, scale, scale))
+        dvz.shape_scale(c_shape, dvz.vec3(scale, scale, scale))
     if offset is not None:
         dvz.shape_translate(c_shape, dvz.vec3(*offset))
     # TODO
@@ -87,6 +93,7 @@ def unindex(
 # Shape collection
 # -------------------------------------------------------------------------------------------------
 
+
 class ShapeCollection:
     c_shapes = None
 
@@ -94,23 +101,48 @@ class ShapeCollection:
         self.c_shapes = []
         self.c_merged = None
 
-    def add(self, c_shape: dvz.Shape, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
+    def add(
+        self,
+        c_shape: dvz.Shape,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ):
         _shape_transform(c_shape, offset=offset, scale=scale, transform=transform)
         self.c_shapes.append(c_shape)
 
-    def add_square(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_square(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_square(c_shape, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_disc(self, size: int = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_disc(
+        self,
+        size: int = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_disc(c_shape, size, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_cube(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_cube(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         colors = np.zeros((6, 4), dtype=np.uint8)
         for i in range(6):
@@ -118,7 +150,15 @@ class ShapeCollection:
         dvz.shape_cube(c_shape, colors)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_sphere(self, rows: int = None, cols: int = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_sphere(
+        self,
+        rows: int = None,
+        cols: int = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         rows = rows or DEFAULT_SIZE
         cols = cols or DEFAULT_SIZE
         c_shape = dvz.shape()
@@ -126,21 +166,41 @@ class ShapeCollection:
         dvz.shape_sphere(c_shape, rows, cols, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_cone(self, size: int = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_cone(
+        self,
+        size: int = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         size = size or DEFAULT_SIZE
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_cone(c_shape, size, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_cylinder(self, size: int = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_cylinder(
+        self,
+        size: int = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         size = size or DEFAULT_SIZE
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_cylinder(c_shape, size, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_tetrahedron(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_tetrahedron(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_tetrahedron(c_shape, c_color)
@@ -153,7 +213,13 @@ class ShapeCollection:
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_hexahedron(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_hexahedron(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_hexahedron(c_shape, c_color)
@@ -166,7 +232,13 @@ class ShapeCollection:
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_octahedron(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_octahedron(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_octahedron(c_shape, c_color)
@@ -179,7 +251,13 @@ class ShapeCollection:
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_dodecahedron(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_dodecahedron(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_dodecahedron(c_shape, c_color)
@@ -192,7 +270,13 @@ class ShapeCollection:
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_icosahedron(self, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None, color: Color = None):
+    def add_icosahedron(
+        self,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ):
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_icosahedron(c_shape, c_color)
@@ -208,7 +292,7 @@ class ShapeCollection:
     def add_polygon(
         self,
         points: np.ndarray,
-        offset: tp.Tuple[float, float, float] = None,
+        offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
@@ -232,9 +316,9 @@ class ShapeCollection:
         colors: np.ndarray,
         contour: str = None,
         indexing: str = None,
-        u: tp.Tuple[float, float, float] = None,
-        v: tp.Tuple[float, float, float] = None,
-        offset: tp.Tuple[float, float, float] = None,
+        u: tuple[float, float, float] = None,
+        v: tuple[float, float, float] = None,
+        offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
     ):
@@ -255,7 +339,14 @@ class ShapeCollection:
 
         self.add(c_shape, scale=scale, transform=transform)
 
-    def add_obj(self, file_path: str, contour: str = None, offset: tp.Tuple[float, float, float] = None, scale: float = None, transform: Mat4 = None):
+    def add_obj(
+        self,
+        file_path: str,
+        contour: str = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ):
         c_shape = dvz.shape()
         dvz.shape_obj(c_shape, file_path)
         dvz.shape_unindex(c_shape, to_enum(f'contour_{contour}'))

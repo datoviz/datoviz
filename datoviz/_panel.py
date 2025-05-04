@@ -10,19 +10,15 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-import typing as tp
-
-import numpy as np
-
-from . import _ctypes as dvz
 from . import _constants as cst
-from .interact import Arcball, Camera, Panzoom, Ortho
+from . import _ctypes as dvz
+from .interact import Arcball, Camera, Ortho, Panzoom
 from .visuals import Visual
-
 
 # -------------------------------------------------------------------------------------------------
 # Panel
 # -------------------------------------------------------------------------------------------------
+
 
 class Panel:
     c_panel: dvz.DvzPanel = None
@@ -61,7 +57,13 @@ class Panel:
             self.update()
         return Arcball(c_arcball, self.c_panel)
 
-    def camera(self, initial: cst.Vec3 = None, initial_lookat: cst.Vec3 = None, initial_up: cst.Vec3 = None, c_flags: int = 0):
+    def camera(
+        self,
+        initial: cst.Vec3 = None,
+        initial_lookat: cst.Vec3 = None,
+        initial_up: cst.Vec3 = None,
+        c_flags: int = 0,
+    ):
         c_camera = dvz.panel_camera(self.c_panel, c_flags)
         pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
         lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT

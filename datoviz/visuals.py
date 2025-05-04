@@ -11,17 +11,19 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
+
 import numpy as np
-from . import _ctypes as dvz
+
 from . import _constants as cst
+from . import _ctypes as dvz
 from ._constants import PROPS, VEC_TYPES
 from ._texture import Texture
-from .utils import prepare_data_array, to_enum, get_size, get_fixed_params
-
+from .utils import get_fixed_params, get_size, prepare_data_array, prepare_data_scalar, to_enum
 
 # -------------------------------------------------------------------------------------------------
 # Visual
 # -------------------------------------------------------------------------------------------------
+
 
 class Visual:
     c_visual: dvz.DvzVisual = None
@@ -46,7 +48,7 @@ class Visual:
         self.c_visual = c_visual
         self._prop_classes = {}
 
-        self._fn_alloc = getattr(dvz, f"{self.visual_name}_alloc", None)
+        self._fn_alloc = getattr(dvz, f'{self.visual_name}_alloc', None)
 
         self.set_prop_classes()
 
@@ -66,7 +68,10 @@ class Visual:
     # Counts
     # ---------------------------------------------------------------------------------------------
 
-    def allocate(self, count: int,):
+    def allocate(
+        self,
+        count: int,
+    ):
         self._fn_alloc(self.c_visual, count)
         self.set_count(count)
 
@@ -93,7 +98,7 @@ class Visual:
             else:
                 raise ValueError(f"Method '{self.__class__.__name__}.set_{key}' not found")
 
-    def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
+    def set_prop_class(self, prop_name: str, prop_cls: type):
         self._prop_classes[prop_name] = prop_cls
 
     def set_prop_classes(self):
@@ -104,14 +109,15 @@ class Visual:
         # print(f"Calling __getattr__() with {self.visual_name}.{prop_name}")
         prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
         if prop_type is None:
-            print(f"Prop type {prop_name} not found")
+            print(f'Prop type {prop_name} not found')
             return super().__getattr__(prop_name)
         if prop_type == np.ndarray:
             prop_cls = self._prop_classes.get(prop_name, Prop)
             return prop_cls(self, prop_name)
         else:
             raise Exception(
-                f"Prop '{prop_name}' is not a valid array property for visual {self.visual_name}")
+                f"Prop '{prop_name}' is not a valid array property for visual {self.visual_name}"
+            )
 
     def __setattr__(self, prop_name: str, value: object):
         # handle visual.prop = value
@@ -162,7 +168,8 @@ class Visual:
         else:
             raise Exception(
                 f"Prop '{prop_name}' is not a valid scalar property "
-                f"for visual '{self.visual_name}'")
+                f"for visual '{self.visual_name}'"
+            )
 
 
 class Prop:
@@ -179,7 +186,7 @@ class Prop:
         self.visual_name = visual.visual_name
         self.prop_name = prop_name
 
-        self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}", None)
+        self._fn = getattr(dvz, f'{visual.visual_name}_{prop_name}', None)
 
     @property
     def dtype(self):
@@ -240,6 +247,7 @@ class Prop:
 # -------------------------------------------------------------------------------------------------
 # Visuals
 # -------------------------------------------------------------------------------------------------
+
 
 class Basic(Visual):
     visual_name = 'basic'
@@ -360,11 +368,11 @@ class Segment(Visual):
 class Path(Visual):
     visual_name = 'path'
 
-    def set_position(self, position: tp.List[np.ndarray], n_groups: int = 0, offset: int = 0):
+    def set_position(self, position: list[np.ndarray], n_groups: int = 0, offset: int = 0):
         if isinstance(position, np.ndarray):
             if n_groups is not None:
                 k = position.shape[0] // n_groups
-                position = [position[i*k: (i+1)*k] for i in range(n_groups)]
+                position = [position[i * k : (i + 1) * k] for i in range(n_groups)]
             elif position.ndim == 2:
                 position = list(position)
             elif position.ndim == 3:
@@ -377,11 +385,13 @@ class Path(Visual):
         assert position_concat.ndim == 2
         assert position_concat.shape[1] == 3
         position_concat = prepare_data_array(
-            self.visual_name, np.float32, (-1, 3), position_concat)
+            self.visual_name, np.float32, (-1, 3), position_concat
+        )
 
         dvz.path_alloc(self.c_visual, point_count)
-        dvz.path_position(self.c_visual, offset, point_count,
-                          position_concat, path_count, path_lengths, 0)
+        dvz.path_position(
+            self.c_visual, offset, point_count, position_concat, path_count, path_lengths, 0
+        )
 
     def set_color(self, array: np.ndarray, offset: int = 0):
         self.color[offset:] = array
@@ -407,12 +417,13 @@ class Glyph(Visual):
         dvz.glyph_atlas_font(self.c_visual, self._af)
 
     def set_strings(
-            self, strings: tp.List[str],
-            string_pos: np.ndarray = None,
-            scales: np.ndarray = None,
-            color: tuple = cst.DEFAULT_GLYPH_COLOR,
-            anchor: tuple = (0, 0),
-            offset: tuple = (0, 0),
+        self,
+        strings: list[str],
+        string_pos: np.ndarray = None,
+        scales: np.ndarray = None,
+        color: tuple = cst.DEFAULT_GLYPH_COLOR,
+        anchor: tuple = (0, 0),
+        offset: tuple = (0, 0),
     ):
         assert strings
         assert string_pos is not None
@@ -516,7 +527,13 @@ class Mesh(Visual):
     def set_prop_classes(self):
         self.set_prop_class('index', MeshIndexProp)
 
-    def set_data(self, vertex_count: int = None, index_count: int = None, compute_normals: bool = None, **kwargs):
+    def set_data(
+        self,
+        vertex_count: int = None,
+        index_count: int = None,
+        compute_normals: bool = None,
+        **kwargs,
+    ):
         if 'position' in kwargs and 'index' in kwargs:
             nv, ni = kwargs['position'].shape[0], kwargs['index'].size
             self.allocate(nv, ni)
