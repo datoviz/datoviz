@@ -1,4 +1,5 @@
-"""# Mesh example
+"""
+# Mesh example
 
 Show a 3D mesh.
 
@@ -6,12 +7,11 @@ Show a 3D mesh.
 
 from pathlib import Path
 
+import nibabel as nib
 import numpy as np
 from nilearn import datasets
-import nibabel as nib
 
 import datoviz as dvz
-
 
 # -------------------------------------------------------------------------------------------------
 # Brain with scalar field

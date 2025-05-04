@@ -1,4 +1,5 @@
-"""# Raster plot
+"""
+# Raster plot
 
 Show a raster plot (spikes in 2D, time on the x axis, neuron depth on the y axis) using
 the Pixel visual.
@@ -6,9 +7,10 @@ the Pixel visual.
 """
 
 from pathlib import Path
-import numpy as np
-import datoviz as dvz
 
+import numpy as np
+
+import datoviz as dvz
 
 CURDIR = Path(__file__).resolve().parent.parent.parent
 

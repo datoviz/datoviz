@@ -1,4 +1,5 @@
-"""# Mesh example
+"""
+# Mesh example
 
 Show a 3D mesh.
 
@@ -9,7 +10,6 @@ from pathlib import Path
 import numpy as np
 
 import datoviz as dvz
-
 
 # -------------------------------------------------------------------------------------------------
 # Load VTK file
@@ -23,7 +23,7 @@ normal = data['normal']
 curvature = data['curvature']
 index = data['index']
 nv, ni = pos.shape[0], index.shape[0]
-print(f"Loaded mesh with {nv} vertices and {ni // 3} faces.")
+print(f'Loaded mesh with {nv} vertices and {ni // 3} faces.')
 
 colors = np.full((nv, 4), 255, dtype=np.uint8)
 

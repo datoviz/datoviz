@@ -1,4 +1,5 @@
-"""# Mesh example
+"""
+# Mesh example
 
 Show a 3D mesh.
 
@@ -9,7 +10,6 @@ from pathlib import Path
 import numpy as np
 
 import datoviz as dvz
-
 
 CURDIR = Path(__file__).resolve().parent.parent.parent
 data = np.load(CURDIR / 'data/mesh/brain.npz')
