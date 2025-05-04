@@ -1,11 +1,11 @@
-"""# Fixed example
+"""
+# Fixed example
 
 Show how to fix a visual in the panel on one or several axes.
 
 """
 
 import datoviz as dvz
-
 
 app = dvz.App()
 figure = app.figure()

@@ -1,4 +1,5 @@
-"""# Timestamps example
+"""
+# Timestamps example
 
 Show how to retrieve the exact timestamps of the presentation of the last frames to the screen.
 This may be useful in specific use-cases (e.g. hardware synchronization in scientific experimental
@@ -7,6 +8,7 @@ setups).
 """
 
 import numpy as np
+
 import datoviz as dvz
 
 app = dvz.App()
@@ -23,7 +25,7 @@ def on_timer(ev):
     seconds, nanoseconds = app.timestamps(figure, 5)
 
     # We display the values.
-    print("Last 5 frames:")
+    print('Last 5 frames:')
     print(np.c_[seconds, nanoseconds])
 
 

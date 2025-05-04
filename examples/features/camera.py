@@ -1,4 +1,5 @@
-"""# Camera example
+"""
+# Camera example
 
 Show how to manipulate a camera.
 
@@ -19,7 +20,7 @@ lookat = [0, 0, 0]
 # Get or create the panel's 3D perspective camera.
 camera = panel.camera(initial=eye, initial_up=up, initial_lookat=lookat)
 
-d = .1
+d = 0.1
 mapping = {
     dvz.KEY_UP: (2, -d),
     dvz.KEY_DOWN: (2, +d),

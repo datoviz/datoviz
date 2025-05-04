@@ -1,4 +1,5 @@
-"""# Surface example
+"""
+# Surface example
 
 Show a rotating surface in 3D.
 
@@ -41,15 +42,15 @@ d = np.sqrt((xv - center_x) ** 2 + (yv - center_y) ** 2)
 # Heights.
 a = 4.0 * 2 * np.pi / row_count
 b = 3.0 * 2 * np.pi / col_count
-c = .5
-hmin = -.5
-hmax = +.5
-heights = np.exp(-.0001 * d ** 2) * np.sin(a*xv) * np.cos(b*yv)
+c = 0.5
+hmin = -0.5
+hmax = +0.5
+heights = np.exp(-0.0001 * d**2) * np.sin(a * xv) * np.cos(b * yv)
 
 # Colors.
 colors = dvz.cmap(dvz.CMAP_PLASMA, heights, hmin, hmax)
 
-linewidth = .1
+linewidth = 0.1
 edgecolor = (0, 0, 0, 64)
 
 # -------------------------------------------------------------------------------------------------
@@ -63,8 +64,8 @@ panel = figure.panel()
 arcball = panel.arcball(initial=(0.42339, -0.39686, -0.00554))
 
 visual = app.mesh_shape(
-    sc, lighting=True, contour=HAS_CONTOUR,
-    linewidth=linewidth, edgecolor=edgecolor)
+    sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
+)
 panel.add(visual)
 
 app.run()

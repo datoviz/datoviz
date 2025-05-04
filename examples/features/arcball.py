@@ -1,4 +1,5 @@
-"""# Arcball example
+"""
+# Arcball example
 
 Show how to manipulate an arcball.
 
@@ -22,7 +23,7 @@ app.arcball_gui(panel, arcball)
 angles = (-1.5, 0.0, +2.5)
 arcball.set(angles)
 angles = arcball.get()
-print("Arcball angles:", angles)
+print('Arcball angles:', angles)
 
 app.run()
 app.destroy()

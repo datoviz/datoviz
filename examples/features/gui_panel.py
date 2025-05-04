@@ -1,4 +1,5 @@
-"""# GUI panel example
+"""
+# GUI panel example
 
 Show how to create a GUI panel.
 
@@ -18,8 +19,8 @@ panel2 = figure.panel((400, 100), (300, 300))
 panel2.demo_2D()
 
 # We transform the static panels into GUI panels (experimental).
-panel1.gui("First panel")
-panel2.gui("Second panel")
+panel1.gui('First panel')
+panel2.gui('Second panel')
 
 app.run()
 app.destroy()

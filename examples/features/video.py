@@ -1,4 +1,5 @@
-"""# Video example
+"""
+# Video example
 
 Show how to generate an offscreen video.
 
@@ -6,20 +7,19 @@ NOTE: experimental, the API will change.
 
 """
 
-from pathlib import Path
 import os
+
 import numpy as np
 
 try:
-    import tqdm
     import imageio
-except ImportError as e:
-    print("This example requires the tqdm and imageio dependencies. Aborting")
+    import tqdm
+except ImportError:
+    print('This example requires the tqdm and imageio dependencies. Aborting')
     exit()
 
 import datoviz as dvz
 from datoviz import vec3
-
 
 # Image size.
 WIDTH, HEIGHT = 1920, 1280
@@ -56,18 +56,18 @@ laps = 1  # number of rotations
 lap_duration = 4.0  # duration of each rotation
 frame_count = int(lap_duration * laps * fps)  # total number of frames to generate
 # path to video file to write
-output_file = "video.mp4"
+output_file = 'video.mp4'
 kwargs = dict(
     fps=fps,
-    format="FFMPEG",
-    mode="I",
+    format='FFMPEG',
+    mode='I',
     # Quality FFMPEG presets
-    codec="libx264",
+    codec='libx264',
     output_params=(
-        "-preset slow -crf 18 -color_range 1 -colorspace bt709 "
-        "-color_primaries bt709 -color_trc bt709"
-    ).split(" "),
-    pixelformat="yuv420p",
+        '-preset slow -crf 18 -color_range 1 -colorspace bt709 '
+        '-color_primaries bt709 -color_trc bt709'
+    ).split(' '),
+    pixelformat='yuv420p',
 )
 if 'DVZ_CAPTURE' not in os.environ:  # HACK: avoid recording the video with `just runexamples`
     with imageio.get_writer(output_file, **kwargs) as writer:

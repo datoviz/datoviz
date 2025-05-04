@@ -1,4 +1,5 @@
-"""# Offscreen example
+"""
+# Offscreen example
 
 Show how to render an offscreen image.
 
@@ -14,6 +15,6 @@ panel = figure.panel()
 panel.demo_2D()
 
 # Save a PNG screenshot.
-app.screenshot(figure, "offscreen_python.png")
+app.screenshot(figure, 'offscreen_python.png')
 
 app.destroy()
