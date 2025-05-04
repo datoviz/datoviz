@@ -14,8 +14,224 @@ import typing as tp
 import numpy as np
 from . import _ctypes as dvz
 from . import _constants as cst
-from .base import Visual, Prop, Texture
-from .utils import prepare_data_array
+from ._constants import PROPS, VEC_TYPES
+from ._texture import Texture
+from .utils import prepare_data_array, to_enum, get_size
+
+
+# -------------------------------------------------------------------------------------------------
+# Visual
+# -------------------------------------------------------------------------------------------------
+
+class Visual:
+    c_visual: dvz.DvzVisual = None
+    visual_name: str = ''
+    count: int = 0
+
+    _prop_classes: dict = None
+    _fn_alloc: tp.Callable = None
+
+    def __init__(self, c_visual: dvz.DvzVisual, visual_name: str = None):
+        # assert app
+        assert c_visual
+
+        # UGLY HACK: we override __setattr__() which only works AFTER self.visual_name has been
+        # set, but we can't set self.visual_name the usual way because it calls __setattr__()
+        # which requires self.visual_name! So we directly manipulate the __dict__ instead.
+        if visual_name:
+            assert visual_name in PROPS
+            self.__dict__['visual_name'] = visual_name
+
+        # self.app = app
+        self.c_visual = c_visual
+        self._prop_classes = {}
+
+        self._fn_alloc = getattr(dvz, f"{self.visual_name}_alloc", None)
+
+        self.set_prop_classes()
+
+    def show(self, is_visible: bool = True):
+        dvz.visual_show(self.c_visual, is_visible)
+
+    def hide(self):
+        self.show(False)
+
+    def clip(self, clip: str):
+        c_clip = to_enum(f'viewport_clip_{clip}')
+        dvz.visual_clip(self.c_visual, c_clip)
+
+    # Counts
+    # ---------------------------------------------------------------------------------------------
+
+    def allocate(self, count: int,):
+        self._fn_alloc(self.c_visual, count)
+        self.set_count(count)
+
+    def set_count(self, count: int):
+        self.count = count
+
+    def get_count(self):
+        return self.count
+
+    # Internal
+    # ---------------------------------------------------------------------------------------------
+
+    def set_data(self, depth_test: bool = None, cull: str = None, **kwargs):
+        if depth_test is not None:
+            dvz.visual_depth(self.c_visual, depth_test)
+
+        if cull is not None:
+            dvz.visual_cull(self.c_visual, to_enum(f'CULL_MODE_{cull}'))
+
+        for key, value in kwargs.items():
+            fn = getattr(self, f'set_{key}', None)
+            if fn:
+                fn(value)
+            else:
+                raise ValueError(f"Method '{self.__class__.__name__}.set_{key}' not found")
+
+    def set_prop_class(self, prop_name: str, prop_cls: tp.Type):
+        self._prop_classes[prop_name] = prop_cls
+
+    def set_prop_classes(self):
+        pass
+
+    def __getattr__(self, prop_name: str):
+        # assert not prop_name.startswith('set_')
+        # print(f"Calling __getattr__() with {self.visual_name}.{prop_name}")
+        prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
+        if prop_type is None:
+            print(f"Prop type {prop_name} not found")
+            return super().__getattr__(prop_name)
+        if prop_type == np.ndarray:
+            prop_cls = self._prop_classes.get(prop_name, Prop)
+            return prop_cls(self, prop_name)
+        else:
+            raise Exception(
+                f"Prop '{prop_name}' is not a valid array property for visual {self.visual_name}")
+
+    def __setattr__(self, prop_name: str, value: object):
+        # handle visual.prop = value
+        prop_info = PROPS[self.visual_name].get(prop_name, {})
+        prop_type = prop_info.get('type', None)
+        if not prop_type:
+            return super().__setattr__(prop_name, value)
+
+        # case where value is not an array
+        elif prop_type != np.ndarray:
+            # generic or custom Prop class
+            prop_cls = self._prop_classes.get(prop_name, Prop)
+
+            # instantiate the Prop
+            prop = prop_cls(self, prop_name)
+
+            # do nothing if the value is None
+            if value is None:
+                return
+
+            # enum props
+            if prop_type == 'enum':
+                enum_prefix = prop_info['enum']
+                enum_prefix = enum_prefix.replace('DVZ_', '')
+                value = to_enum(f'{enum_prefix}_{value}')
+                values = (value,)
+
+            # texture
+            elif prop_type == 'texture':
+                assert isinstance(value, Texture)
+                # if isinstance(value, np.ndarray):
+                #     texture = self.app.texture(value)
+                values = (value.c_tex, value.c_sampler)
+
+            elif prop_type in VEC_TYPES:
+                assert hasattr(value, '__len__')
+                value = prop_type(*value)
+                values = (value,)
+
+            # Python type props
+            else:
+                value = prop_type(value)
+                values = (value,)
+
+            # call the prop function
+            prop.call(self.c_visual, *values)
+
+        else:
+            raise Exception(
+                f"Prop '{prop_name}' is not a valid scalar property "
+                f"for visual '{self.visual_name}'")
+
+
+class Prop:
+    visual: Visual = None
+    visual_name: str = ''
+    prop_name: str = ''
+    _fn: tp.Callable = None
+
+    def __init__(self, visual: Visual, prop_name: str):
+        assert visual
+        assert prop_name
+
+        self.visual = visual
+        self.visual_name = visual.visual_name
+        self.prop_name = prop_name
+
+        self._fn = getattr(dvz, f"{visual.visual_name}_{prop_name}", None)
+
+    @property
+    def dtype(self):
+        info = PROPS[self.visual_name][self.prop_name]
+        return info.get('dtype', None)
+
+    @property
+    def shape(self):
+        info = PROPS[self.visual_name][self.prop_name]
+        return info.get('shape', None)
+
+    @property
+    def size(self):
+        return self.visual.get_count()
+
+    @property
+    def name(self):
+        return f'{self.visual_name}.{self.prop_name}'
+
+    def prepare_data(self, value, size: int):
+        if not isinstance(value, np.ndarray):
+            # if doing visual.prop[idx] = scalar, need to create an array
+            return prepare_data_scalar(self.name, self.dtype, size, value)
+        else:
+            # otherwise, just need to prepare the array with the right shape and dtype
+            return prepare_data_array(self.name, self.dtype, self.shape, value)
+
+    def set(self, offset, length, pvalue, c_flags: int = 0):
+        self.call(self.visual.c_visual, offset, length, pvalue, c_flags)
+
+    def call(self, *args):
+        return self._fn(*args)
+
+    def allocate(self, count: int):
+        self.visual.allocate(count)
+
+    def __setitem__(self, idx, value):
+        if value is None:
+            return
+
+        # Find the offset and size.
+        offset = idx.start if isinstance(idx, slice) else 0
+        size = get_size(idx, value, total_size=self.size)
+        count = offset + size
+        assert offset >= 0
+        assert count > 0
+
+        # Convert the data to a ndarray to be passed to the setter function.
+        pvalue = self.prepare_data(value, size)
+
+        # Allocate the data and register the item count.
+        self.allocate(count)
+
+        # Call the C property setter.
+        self.set(offset, size, pvalue)
 
 
 # -------------------------------------------------------------------------------------------------

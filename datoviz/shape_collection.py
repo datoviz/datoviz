@@ -222,7 +222,7 @@ class ShapeCollection:
         dvz.shape_polygon(c_shape, points.shape[0], points, c_color)
 
         if contour or indexing:
-            unindex(self.c_shape, contour=contour, indexing=indexing)
+            unindex(c_shape, contour=contour, indexing=indexing)
 
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
