@@ -1,10 +1,12 @@
-"""# Point visual example
+"""
+# Point visual example
 
 Show the point visual.
 
 """
 
 import numpy as np
+
 import datoviz as dvz
 
 

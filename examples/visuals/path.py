@@ -1,10 +1,12 @@
-"""# Path visual example
+"""
+# Path visual example
 
 Show the path visual.
 
 """
 
 import numpy as np
+
 import datoviz as dvz
 
 

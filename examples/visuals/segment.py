@@ -1,10 +1,12 @@
-"""# Segment visual example
+"""
+# Segment visual example
 
 Show the segment visual.
 
 """
 
 import numpy as np
+
 import datoviz as dvz
 
 

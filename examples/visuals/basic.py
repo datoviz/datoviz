@@ -1,10 +1,12 @@
-"""# Basic visual example
+"""
+# Basic visual example
 
 Show the basic visual with line strip topology and groups.
 
 """
 
 import numpy as np
+
 import datoviz as dvz
 
 

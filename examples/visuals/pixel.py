@@ -1,17 +1,18 @@
-"""# Pixel visual example
+"""
+# Pixel visual example
 
 Show the pixel visual.
 
 """
 
-import numpy as np
 import matplotlib.colors as mcolors
+import numpy as np
+
 import datoviz as dvz
 
 
 def generate_data():
     """This function returns N, positions (N,3) float32, colors (N,4) uint8"""
-
     # Parameters
     n_arms = 5
     n_particles_per_arm = 200_000
@@ -23,9 +24,7 @@ def generate_data():
     r = rng.power(2.0, size=n_total)  # values in [0, 1), biased toward 0
 
     # Angle with swirl per arm and some noise
-    base_theta = np.repeat(
-        np.linspace(0, 2 * np.pi, n_arms, endpoint=False), n_particles_per_arm
-    )
+    base_theta = np.repeat(np.linspace(0, 2 * np.pi, n_arms, endpoint=False), n_particles_per_arm)
     swirl = r * 3  # spiral effect
     noise = rng.normal(scale=0.2, size=n_total)
     theta = base_theta + swirl + noise

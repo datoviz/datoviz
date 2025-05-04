@@ -1,13 +1,13 @@
-"""# Glyph visual example
+"""
+# Glyph visual example
 
 Show the glyph visual.
 
 """
 
 import numpy as np
-import datoviz as dvz
-from datoviz import vec2, cvec4
 
+import datoviz as dvz
 
 app = dvz.App()
 figure = app.figure()
@@ -15,7 +15,7 @@ panel = figure.panel()
 panzoom = panel.panzoom()
 
 # Define the strings and string parameters.
-strings = ["Hello world"] * 8
+strings = ['Hello world'] * 8
 string_count = len(strings)
 glyph_count = sum(map(len, strings))
 string_pos = np.zeros((string_count, 3), dtype=np.float32)

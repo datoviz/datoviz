@@ -1,12 +1,13 @@
-"""# Sphere visual example
+"""
+# Sphere visual example
 
 Show the sphere visual.
 
 """
 
 import numpy as np
+
 import datoviz as dvz
-from datoviz import vec3, vec4
 
 
 def generate_ndc_grid(n):
@@ -42,8 +43,12 @@ panel = figure.panel()
 arcball = panel.arcball()
 
 visual = app.sphere(
-    position=position, color=color, size=size,
-    light_pos=(-5, +5, +100), light_params=(.4, .8, 2, 32))
+    position=position,
+    color=color,
+    size=size,
+    light_pos=(-5, +5, +100),
+    light_params=(0.4, 0.8, 2, 32),
+)
 panel.add(visual)
 
 # dvz.arcball_initial(arcball, vec3(.6, .1, 1.5))

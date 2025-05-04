@@ -1,4 +1,5 @@
-"""# Mesh visual example
+"""
+# Mesh visual example
 
 Show the mesh visual with predefined shapes.
 
@@ -11,12 +12,11 @@ import numpy as np
 
 import datoviz as dvz
 
-
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def load_mouse_brain():
-    filepath = (ROOT_DIR / "data/volumes/allen_mouse_brain_rgba.npy.gz").resolve()
+    filepath = (ROOT_DIR / 'data/volumes/allen_mouse_brain_rgba.npy.gz').resolve()
     with gzip.open(filepath, 'rb') as f:
         return np.load(f)
 
@@ -34,7 +34,7 @@ panel = figure.panel()
 arcball = panel.arcball(initial=(-2.25, 0.65, 1.5))
 camera = panel.camera(initial=(0, 0, 3))
 
-visual = app.volume(mode='rgba', transfer=(.2, 0, 0, 0))
+visual = app.volume(mode='rgba', transfer=(0.2, 0, 0, 0))
 visual.set_bounds((-x, +x), (-y, +y), (-z, +z))
 
 texture = app.texture_3D(volume, shape=(W, H, D), interpolation='linear')

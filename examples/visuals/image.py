@@ -1,12 +1,15 @@
-"""# Image visual example
+"""
+# Image visual example
 
 Show the image visual.
 
 """
 
 from pathlib import Path
-from PIL import Image
+
 import numpy as np
+from PIL import Image
+
 import datoviz as dvz
 
 
@@ -30,9 +33,9 @@ def generate_fractal(size):
 
 def load_image():
     ROOT_DIR = Path(__file__).resolve().parent.parent.parent
-    filepath = ROOT_DIR / "data/textures/image.png"
+    filepath = ROOT_DIR / 'data/textures/image.png'
     with Image.open(filepath) as f:
-        return np.array(f.convert("RGBA"), dtype=np.uint8)
+        return np.array(f.convert('RGBA'), dtype=np.uint8)
 
 
 image = load_image()
