@@ -18,8 +18,25 @@ from . import _ctypes as dvz
 
 
 class Texture:
+    """
+    Represents a texture in the application.
+
+    Attributes
+    ----------
+    c_texture : dvz.DvzTexture
+        The underlying C texture object.
+    """
+
     c_texture: dvz.DvzTexture = None
 
-    def __init__(self, c_texture: dvz.DvzTexture):
+    def __init__(self, c_texture: dvz.DvzTexture) -> None:
+        """
+        Initialize a Texture instance.
+
+        Parameters
+        ----------
+        c_texture : dvz.DvzTexture
+            The underlying C texture object.
+        """
         assert c_texture is not None
         self.c_texture = c_texture
