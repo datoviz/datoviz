@@ -12,6 +12,7 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from ctypes import c_char_p
+from typing import Optional
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
@@ -409,18 +410,28 @@ def prepare_data_scalar(name: str, dtype: str, size: int, value: float) -> np.nd
     return pvalue
 
 
-def mesh_flags(indexed: bool = None, lighting: bool = None, contour: bool = False) -> int:
+def mesh_flags(
+    indexed: bool = Optional[None],
+    textured: bool = Optional[None],
+    lighting: bool = Optional[None],
+    contour: bool = Optional[None],
+    isoline: bool = Optional[None],
+) -> int:
     """
     Compute the C mesh flags based on the given options.
 
     Parameters
     ----------
-    indexed : bool, optional
-        Whether the mesh is indexed, by default None.
-    lighting : bool, optional
-        Whether lighting is enabled, by default None.
-    contour : bool, optional
-        Whether contour is enabled, by default False.
+    indexed : bool
+        Whether the mesh is indexed.
+    textured : bool
+        Whether to use a texture for the mesh.
+    lighting : bool
+        Whether lighting is enabled.
+    contour : bool
+        Whether contour is enabled.
+    isoline : bool
+        Whether to show isolines.
 
     Returns
     -------
@@ -432,10 +443,14 @@ def mesh_flags(indexed: bool = None, lighting: bool = None, contour: bool = Fals
     indexed = indexed if indexed is not None else cst.DEFAULT_MESH_INDEXED
     if indexed:
         c_flags |= dvz.VISUAL_FLAGS_INDEXED
+    if textured:
+        c_flags |= dvz.MESH_FLAGS_TEXTURED
     if lighting:
         c_flags |= dvz.MESH_FLAGS_LIGHTING
     if contour:
         c_flags |= dvz.MESH_FLAGS_CONTOUR
+    if isoline:
+        c_flags |= dvz.MESH_FLAGS_ISOLINE
     return c_flags
 
 

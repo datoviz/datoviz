@@ -502,12 +502,15 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def image(self, **kwargs) -> vs.Image:
+    def image(self, mode: str = None, **kwargs) -> vs.Image:
         """
         Create an image visual.
 
         Parameters
         ----------
+        mode
+            The image mode: `rgba` (RGBA image), `colormap` (single-channel image with colormap),
+            `fill` (uniform color).
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -516,6 +519,9 @@ class App:
         vs.Image
             The created image visual instance.
         """
+        if mode is not None:
+            c_flags = kwargs.get('c_flags', 0)
+            c_flags |= to_enum(f'image_flags_{mode}')
         return self._visual(dvz.image, vs.Image, **kwargs)
 
     def _mesh(
@@ -555,8 +561,10 @@ class App:
     def mesh(
         self,
         indexed: tp.Optional[bool] = None,
+        textured: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
-        contour: bool = False,
+        contour: tp.Optional[bool] = None,
+        isoline: tp.Optional[bool] = None,
         **kwargs,
     ) -> vs.Mesh:
         """
@@ -564,12 +572,16 @@ class App:
 
         Parameters
         ----------
-        indexed : bool, optional
-            Whether the mesh is indexed, by default None.
-        lighting : bool, optional
-            Whether lighting is enabled, by default None.
-        contour : bool, optional
-            Whether contour is enabled, by default False.
+        indexed : bool
+            Whether the mesh is indexed.
+        textured : bool
+            Whether to use a texture for the mesh.
+        lighting : bool
+            Whether lighting is enabled.
+        contour : bool
+            Whether contour is enabled.
+        isoline : bool
+            Whether to show isolines.
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -578,15 +590,19 @@ class App:
         vs.Mesh
             The created mesh visual instance.
         """
-        c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
+        c_flags = mesh_flags(
+            indexed=indexed, textured=textured, lighting=lighting, contour=contour, isoline=isoline
+        )
         return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
     def mesh_shape(
         self,
         shape: ShapeCollection,
         indexed: tp.Optional[bool] = None,
+        textured: tp.Optional[bool] = None,
         lighting: tp.Optional[bool] = None,
-        contour: bool = False,
+        contour: tp.Optional[bool] = None,
+        isoline: tp.Optional[bool] = None,
         **kwargs,
     ) -> vs.Mesh:
         """
@@ -596,12 +612,16 @@ class App:
         ----------
         shape : ShapeCollection
             Shape collection.
-        indexed : bool, optional
-            Whether the mesh is indexed, by default None.
-        lighting : bool, optional
-            Whether lighting is enabled, by default None.
-        contour : bool, optional
-            Whether contour is enabled, by default False.
+        indexed : bool
+            Whether the mesh is indexed.
+        textured : bool
+            Whether to use a texture for the mesh.
+        lighting : bool
+            Whether lighting is enabled.
+        contour : bool
+            Whether contour is enabled.
+        isoline : bool
+            Whether to show isolines.
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -624,7 +644,9 @@ class App:
         if kwargs.get('linewidth', None) is not None or kwargs.get('edgecolor', None) is not None:
             contour = True
 
-        c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
+        c_flags = mesh_flags(
+            indexed=indexed, textured=textured, lighting=lighting, contour=contour, isoline=isoline
+        )
         return self._mesh(
             dvz.mesh_shape(self.c_batch, c_merged, c_flags),
             vertex_count=nv,

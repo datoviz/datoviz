@@ -21,11 +21,28 @@ from ._texture import Texture
 from .utils import get_fixed_params, get_size, prepare_data_array, prepare_data_scalar, to_enum
 
 # -------------------------------------------------------------------------------------------------
-# Visual
+# Base Visual class
 # -------------------------------------------------------------------------------------------------
 
 
 class Visual:
+    """
+    Base class for all visuals.
+
+    Attributes
+    ----------
+    c_visual : dvz.DvzVisual
+        The underlying C visual object.
+    visual_name : str
+        The name of the visual's elements.
+    count : int
+        The number of elements in the visual.
+    _prop_classes : dict
+        A dictionary mapping property names to their classes.
+    _fn_alloc : Callable
+        The allocation function for the visual.
+    """
+
     c_visual: dvz.DvzVisual = None
     visual_name: str = ''
     count: int = 0
@@ -33,18 +50,23 @@ class Visual:
     _prop_classes: dict = None
     _fn_alloc: tp.Callable = None
 
-    def __init__(self, c_visual: dvz.DvzVisual, visual_name: str = None):
-        # assert app
+    def __init__(self, c_visual: dvz.DvzVisual, visual_name: str = None) -> None:
+        """
+        Initialize a Visual instance.
+
+        Parameters
+        ----------
+        c_visual : dvz.DvzVisual
+            The underlying C visual object.
+        visual_name : str, optional
+            The name of the visual, by default None.
+        """
         assert c_visual
 
-        # UGLY HACK: we override __setattr__() which only works AFTER self.visual_name has been
-        # set, but we can't set self.visual_name the usual way because it calls __setattr__()
-        # which requires self.visual_name! So we directly manipulate the __dict__ instead.
         if visual_name:
             assert visual_name in PROPS
             self.__dict__['visual_name'] = visual_name
 
-        # self.app = app
         self.c_visual = c_visual
         self._prop_classes = {}
 
@@ -52,39 +74,98 @@ class Visual:
 
         self.set_prop_classes()
 
-    def show(self, is_visible: bool = True):
+    def show(self, is_visible: bool = True) -> None:
+        """
+        Show or hide the visual.
+
+        Parameters
+        ----------
+        is_visible : bool, optional
+            Whether to show the visual, by default True.
+        """
         dvz.visual_show(self.c_visual, is_visible)
 
-    def hide(self):
+    def hide(self) -> None:
+        """
+        Hide the visual.
+        """
         self.show(False)
 
-    def clip(self, clip: str):
+    def clip(self, clip: str) -> None:
+        """
+        Set the clipping mode for the visual.
+
+        Parameters
+        ----------
+        clip : str
+            The clipping mode:
+            - `inner` (clip everything inside the internal viewport)
+            - `outer` (clip everything outside the interval viewport)
+            - `bottom` (clip everything below the inferior border of the internal viewport)
+            - `left` (clip everything to the left of the internal viewport)
+        """
         c_clip = to_enum(f'viewport_clip_{clip}')
         dvz.visual_clip(self.c_visual, c_clip)
 
-    def fixed(self, fixed):
+    def fixed(self, fixed: tp.Union[bool, str]) -> None:
+        """
+        Set whether the visual is fixed along certain axes.
+
+        Parameters
+        ----------
+        fixed : bool or str
+            Use True to fix all x, y, z dimensions, or `x` or `x,y` etc to fix only some of the
+            axes.
+        """
         dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
 
-    # Counts
-    # ---------------------------------------------------------------------------------------------
+    def allocate(self, count: int) -> None:
+        """
+        Allocate memory for the visual.
 
-    def allocate(
-        self,
-        count: int,
-    ):
+        Parameters
+        ----------
+        count : int
+            The number of elements to allocate.
+        """
         self._fn_alloc(self.c_visual, count)
         self.set_count(count)
 
-    def set_count(self, count: int):
+    def set_count(self, count: int) -> None:
+        """
+        Set the number of elements in the visual.
+
+        Parameters
+        ----------
+        count : int
+            The number of elements.
+        """
         self.count = count
 
-    def get_count(self):
+    def get_count(self) -> int:
+        """
+        Get the number of elements in the visual.
+
+        Returns
+        -------
+        int
+            The number of elements.
+        """
         return self.count
 
-    # Internal
-    # ---------------------------------------------------------------------------------------------
+    def set_data(self, depth_test: bool = None, cull: str = None, **kwargs) -> None:
+        """
+        Set data for the visual.
 
-    def set_data(self, depth_test: bool = None, cull: str = None, **kwargs):
+        Parameters
+        ----------
+        depth_test : bool, optional
+            Whether to enable depth testing, by default None.
+        cull : str, optional
+            The culling mode, None, `front`, or `back`
+        **kwargs
+            Additional data to set.
+        """
         if depth_test is not None:
             dvz.visual_depth(self.c_visual, depth_test)
 
@@ -98,15 +179,38 @@ class Visual:
             else:
                 raise ValueError(f"Method '{self.__class__.__name__}.set_{key}' not found")
 
-    def set_prop_class(self, prop_name: str, prop_cls: type):
+    def set_prop_class(self, prop_name: str, prop_cls: type) -> None:
+        """
+        Set the class for a property.
+
+        Parameters
+        ----------
+        prop_name : str
+            The name of the property.
+        prop_cls : type
+            The class of the property.
+        """
         self._prop_classes[prop_name] = prop_cls
 
-    def set_prop_classes(self):
-        pass
+    def set_prop_classes(self) -> None:
+        """
+        Set the classes for all properties.
+        """
 
-    def __getattr__(self, prop_name: str):
-        # assert not prop_name.startswith('set_')
-        # print(f"Calling __getattr__() with {self.visual_name}.{prop_name}")
+    def __getattr__(self, prop_name: str) -> tp.Any:
+        """
+        Get a property of the visual's elements.
+
+        Parameters
+        ----------
+        prop_name : str
+            The name of the property.
+
+        Returns
+        -------
+        Any
+            The property value.
+        """
         prop_type = PROPS[self.visual_name].get(prop_name, {}).get('type', None)
         if prop_type is None:
             print(f'Prop type {prop_name} not found')
@@ -119,37 +223,37 @@ class Visual:
                 f"Prop '{prop_name}' is not a valid array property for visual {self.visual_name}"
             )
 
-    def __setattr__(self, prop_name: str, value: object):
-        # handle visual.prop = value
+    def __setattr__(self, prop_name: str, value: tp.Any) -> None:
+        """
+        Set a property of the visual's elements.
+
+        Parameters
+        ----------
+        prop_name : str
+            The name of the property.
+        value : Any
+            The value to set.
+        """
         prop_info = PROPS[self.visual_name].get(prop_name, {})
         prop_type = prop_info.get('type', None)
         if not prop_type:
             return super().__setattr__(prop_name, value)
 
-        # case where value is not an array
         elif prop_type != np.ndarray:
-            # generic or custom Prop class
             prop_cls = self._prop_classes.get(prop_name, Prop)
-
-            # instantiate the Prop
             prop = prop_cls(self, prop_name)
 
-            # do nothing if the value is None
             if value is None:
                 return
 
-            # enum props
             if prop_type == 'enum':
                 enum_prefix = prop_info['enum']
                 enum_prefix = enum_prefix.replace('DVZ_', '')
                 value = to_enum(f'{enum_prefix}_{value}')
                 values = (value,)
 
-            # texture
             elif prop_type == 'texture':
                 assert isinstance(value, Texture)
-                # if isinstance(value, np.ndarray):
-                #     texture = self.app.texture(value)
                 values = (value.c_tex, value.c_sampler)
 
             elif prop_type in VEC_TYPES:
@@ -157,12 +261,10 @@ class Visual:
                 value = prop_type(*value)
                 values = (value,)
 
-            # Python type props
             else:
                 value = prop_type(value)
                 values = (value,)
 
-            # call the prop function
             prop.call(self.c_visual, *values)
 
         else:
@@ -172,13 +274,43 @@ class Visual:
             )
 
 
+# -------------------------------------------------------------------------------------------------
+# Base Prop class
+# -------------------------------------------------------------------------------------------------
+
+
 class Prop:
+    """
+    Represents a property of a visual.
+
+    Attributes
+    ----------
+    visual : Visual
+        The visual to which the property belongs.
+    visual_name : str
+        The name of the visual's elements.
+    prop_name : str
+        The name of the property.
+    _fn : Callable
+        The function to set the property.
+    """
+
     visual: Visual = None
     visual_name: str = ''
     prop_name: str = ''
     _fn: tp.Callable = None
 
-    def __init__(self, visual: Visual, prop_name: str):
+    def __init__(self, visual: Visual, prop_name: str) -> None:
+        """
+        Initialize a Prop instance.
+
+        Parameters
+        ----------
+        visual : Visual
+            The visual to which the property belongs.
+        prop_name : str
+            The name of the property.
+        """
         assert visual
         assert prop_name
 
@@ -189,186 +321,663 @@ class Prop:
         self._fn = getattr(dvz, f'{visual.visual_name}_{prop_name}', None)
 
     @property
-    def dtype(self):
+    def dtype(self) -> tp.Optional[type]:
+        """
+        Get the data type of the property.
+
+        Returns
+        -------
+        type or None
+            The data type of the property.
+        """
         info = PROPS[self.visual_name][self.prop_name]
         return info.get('dtype', None)
 
     @property
-    def shape(self):
+    def shape(self) -> tp.Optional[tuple[int, ...]]:
+        """
+        Get the shape of the property.
+
+        Returns
+        -------
+        tuple of int or None
+            The shape of the property.
+        """
         info = PROPS[self.visual_name][self.prop_name]
         return info.get('shape', None)
 
     @property
-    def size(self):
+    def size(self) -> int:
+        """
+        Get the size of the property.
+
+        Returns
+        -------
+        int
+            The size of the property.
+        """
         return self.visual.get_count()
 
     @property
-    def name(self):
+    def name(self) -> str:
+        """
+        Get the full name of the property.
+
+        Returns
+        -------
+        str
+            The full name of the property.
+        """
         return f'{self.visual_name}.{self.prop_name}'
 
-    def prepare_data(self, value, size: int):
+    def prepare_data(self, value: tp.Any, size: int) -> np.ndarray:
+        """
+        Prepare data for the property.
+
+        Parameters
+        ----------
+        value : Any
+            The value to prepare.
+        size : int
+            The size of the data.
+
+        Returns
+        -------
+        np.ndarray
+            The prepared data.
+        """
         if not isinstance(value, np.ndarray):
-            # if doing visual.prop[idx] = scalar, need to create an array
             return prepare_data_scalar(self.name, self.dtype, size, value)
         else:
-            # otherwise, just need to prepare the array with the right shape and dtype
             return prepare_data_array(self.name, self.dtype, self.shape, value)
 
-    def set(self, offset, length, pvalue, c_flags: int = 0):
+    def set(self, offset: int, length: int, pvalue: np.ndarray, c_flags: int = 0) -> None:
+        """
+        Set the property value.
+
+        Parameters
+        ----------
+        offset : int
+            The offset at which to start setting the value.
+        length : int
+            The length of the value.
+        pvalue : np.ndarray
+            The value to set.
+        c_flags : int, optional
+            Additional flags, by default 0.
+        """
         self.call(self.visual.c_visual, offset, length, pvalue, c_flags)
 
-    def call(self, *args):
+    def call(self, *args) -> tp.Any:
+        """
+        Call the property setter function.
+
+        Parameters
+        ----------
+        *args
+            The arguments to pass to the function.
+
+        Returns
+        -------
+        Any
+            The result of the function call.
+        """
         return self._fn(*args)
 
-    def allocate(self, count: int):
+    def allocate(self, count: int) -> None:
+        """
+        Allocate memory for the property's visual.
+
+        Parameters
+        ----------
+        count : int
+            The number of elements to allocate.
+        """
         self.visual.allocate(count)
 
-    def __setitem__(self, idx, value):
+    def __setitem__(self, idx: tp.Union[int, slice], value: tp.Any) -> None:
+        """
+        Set a value for a slice of the property.
+
+        Parameters
+        ----------
+        idx : int or slice
+            The index or slice to set.
+        value : Any
+            The value to set.
+        """
         if value is None:
             return
 
-        # Find the offset and size.
         offset = idx.start if isinstance(idx, slice) else 0
         size = get_size(idx, value, total_size=self.size)
         count = offset + size
         assert offset >= 0
         assert count > 0
 
-        # Convert the data to a ndarray to be passed to the setter function.
         pvalue = self.prepare_data(value, size)
 
-        # Allocate the data and register the item count.
         self.allocate(count)
 
-        # Call the C property setter.
         self.set(offset, size, pvalue)
 
 
 # -------------------------------------------------------------------------------------------------
-# Visuals
+# Basic visual
 # -------------------------------------------------------------------------------------------------
 
 
 class Basic(Visual):
+    """
+    A basic visual using the default graphical primitives (points, lines, triangles).
+    """
+
     visual_name = 'basic'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the visual's elements.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the visual's elements.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_group(self, array: np.ndarray, offset: int = 0):
+    def set_group(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the groups.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The group array.
+        offset : int, optional
+            The offset at which to start setting the group, by default 0.
+        """
         self.group[offset:] = array
 
-    def set_size(self, value: float):
+    def set_size(self, value: float) -> None:
+        """
+        Set the common size of the visual's elements.
+
+        Parameters
+        ----------
+        value : float
+            The size value.
+        """
         self.size = value
+
+
+# -------------------------------------------------------------------------------------------------
+# Pixel visual
+# -------------------------------------------------------------------------------------------------
 
 
 class Pixel(Visual):
+    """
+    A visual for rendering individual pixels.
+    """
+
     visual_name = 'pixel'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the pixels.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the pixels.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_size(self, value: float):
+    def set_size(self, value: float) -> None:
+        """
+        Set the size of the pixels.
+
+        Parameters
+        ----------
+        value : float
+            The size value.
+        """
         self.size = value
 
 
+# -------------------------------------------------------------------------------------------------
+# Point visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Point(Visual):
+    """
+    A visual for rendering points.
+    """
+
     visual_name = 'point'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of points.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of points.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
+    def set_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the size of points.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The size array, in pixels.
+        offset : int, optional
+            The offset at which to start setting the size, by default 0.
+        """
         self.size[offset:] = array
+
+
+# -------------------------------------------------------------------------------------------------
+# Marker visual
+# -------------------------------------------------------------------------------------------------
 
 
 class Marker(Visual):
+    """
+    A visual for rendering markers.
+    """
+
     visual_name = 'marker'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the markers.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the markers.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
+    def set_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the size of the markers.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The size array.
+        offset : int, optional
+            The offset at which to start setting the size, by default 0.
+        """
         self.size[offset:] = array
 
-    def set_angle(self, array: np.ndarray, offset: int = 0):
+    def set_angle(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the angle of the markers.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The angle array.
+        offset : int, optional
+            The offset at which to start setting the angle, by default 0.
+        """
         self.angle[offset:] = array
 
-    def set_linewidth(self, value: float):
+    def set_linewidth(self, value: float) -> None:
+        """
+        Set the common linewidth of the markers.
+
+        Parameters
+        ----------
+        value : float
+            The linewidth value.
+        """
         self.linewidth = value
 
-    def set_edgecolor(self, value: tuple):
+    def set_edgecolor(self, value: tuple) -> None:
+        """
+        Set the common edge color of the markers.
+
+        Parameters
+        ----------
+        value : tuple
+            The edge color value.
+        """
         self.edgecolor = value
 
-    def set_mode(self, value: str):
+    def set_mode(self, value: str) -> None:
+        """
+        Set the marker mode.
+
+        Parameters
+        ----------
+        value : str
+            The mode value:
+            - `code` (the shape is defined in the shader code)
+            - `bitmap` (the marker is defined in a bitmap texture)
+            - `sdf` (the marker shape is defined as a signed distance field)
+            - `msdf` (the marker shaped is defined as a multichannel signed distance field)
+        """
         self.mode = value
 
-    def set_aspect(self, value: str):
+    def set_aspect(self, value: str) -> None:
+        """
+        Set the aspect ratio of the visual's elements.
+
+        Parameters
+        ----------
+        value : str
+            The aspect ratio value.
+        """
         self.aspect = value
 
-    def set_shape(self, value: str):
+    def set_shape(self, value: str) -> None:
+        """
+        Set the shape of the visual's elements.
+
+        Parameters
+        ----------
+        value : str
+            The shape value, one of:
+            - `disc`
+            - `asterisk`
+            - `chevron`
+            - `clover`
+            - `club`
+            - `cross`
+            - `diamond`
+            - `arrow`
+            - `ellipse`
+            - `hbar`
+            - `heart`
+            - `infinity`
+            - `pin`
+            - `ring`
+            - `spade`
+            - `square`
+            - `tag`
+            - `triangle`
+            - `vbar`
+            - `rounded_rect`
+        """
         self.shape = value
 
-    def set_tex_scale(self, value: float):
+    def set_tex_scale(self, value: float) -> None:
+        """
+        Set the common texture scale.
+
+        Parameters
+        ----------
+        value : float
+            The texture scale value.
+        """
         self.tex_scale = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the texture with the bitmap, SDF, or MSDF data.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.marker_texture(self.c_visual, texture.c_texture)
 
 
+# -------------------------------------------------------------------------------------------------
+# Segment visual
+# -------------------------------------------------------------------------------------------------
+
+
 class SegmentProp(Prop):
-    def prepare_data(self, value, size):
+    """
+    A property for segment visuals.
+    """
+
+    def prepare_data(
+        self, value: tuple[np.ndarray, np.ndarray], size: int
+    ) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Prepare data for the segment property.
+
+        Parameters
+        ----------
+        value : tuple of np.ndarray
+            The initial and terminal positions.
+        size : int
+            The size of the data.
+
+        Returns
+        -------
+        tuple of np.ndarray
+            The prepared data.
+        """
         initial, terminal = value
         pinitial = super().prepare_data(initial, size)
         pterminal = super().prepare_data(terminal, size)
         return pinitial, pterminal
 
-    def set(self, offset, length, pvalue, flags: int = 0):
+    def set(
+        self, offset: int, length: int, pvalue: tuple[np.ndarray, np.ndarray], flags: int = 0
+    ) -> None:
+        """
+        Set the segment property value.
+
+        Parameters
+        ----------
+        offset : int
+            The offset at which to start setting the value.
+        length : int
+            The length of the value.
+        pvalue : tuple of np.ndarray
+            The value to set.
+        flags : int, optional
+            Additional flags, by default 0.
+        """
         initial, terminal = pvalue
         self.call(self.visual.c_visual, offset, length, initial, terminal, flags)
 
 
 class Segment(Visual):
+    """
+    A visual for rendering line segments.
+    """
+
     visual_name = 'segment'
 
-    def set_prop_classes(self):
+    def set_prop_classes(self) -> None:
+        """
+        Set the property classes for the segment visual.
+        """
         self.set_prop_class('position', SegmentProp)
         self.set_prop_class('cap', SegmentProp)
 
-    def set_position(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0):
+    def set_position(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the line segments.
+
+        Parameters
+        ----------
+        initial : np.ndarray
+            The initial positions.
+        terminal : np.ndarray
+            The terminal positions.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         n = initial.shape[0]
         self.set_count(offset + n)
         self.position[offset:] = initial, terminal
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of line segments.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_linewidth(self, array: np.ndarray, offset: int = 0):
+    def set_linewidth(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the linewidth of line segments.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The linewidth array.
+        offset : int, optional
+            The offset at which to start setting the linewidth, by default 0.
+        """
         self.linewidth[offset:] = array
 
-    def set_shift(self, array: np.ndarray, offset: int = 0):
+    def set_shift(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the pixel shift of line segments.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The shift array.
+        offset : int, optional
+            The offset at which to start setting the shift, by default 0.
+        """
         self.shift[offset:] = array
 
-    def set_cap(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0):
+    def set_cap(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the cap of line segments.
+
+        The two arrays are enumerations of integers with the following correspondance.
+
+        - `round` = 1
+        - `triangle_in` = 2
+        - `triangle_out` = 3
+        - `square` = 4
+        - `butt` = 5
+
+        Parameters
+        ----------
+        initial : np.ndarray
+            The initial cap positions.
+        terminal : np.ndarray
+            The terminal cap positions.
+        offset : int, optional
+            The offset at which to start setting the cap, by default 0.
+
+
+        Warnings:
+        --------
+        .. warning::
+            TODO: support strings or lists of strings instead.
+
+        """
         self.cap[offset:] = (initial, terminal)
 
 
+# -------------------------------------------------------------------------------------------------
+# Path visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Path(Visual):
+    """
+    A visual for rendering paths.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'path'.
+    """
+
     visual_name = 'path'
 
-    def set_position(self, position: list[np.ndarray], n_groups: int = 0, offset: int = 0):
+    def set_position(self, position: list[np.ndarray], n_groups: int = 0, offset: int = 0) -> None:
+        """
+        Set the position of the paths.
+
+        Parameters
+        ----------
+        position : list of np.ndarray
+            A list of arrays representing the positions of the paths.
+        n_groups : int, optional
+            The number of groups, by default 0.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         if isinstance(position, np.ndarray):
             if n_groups is not None:
                 k = position.shape[0] // n_groups
@@ -393,24 +1002,82 @@ class Path(Visual):
             self.c_visual, offset, point_count, position_concat, path_count, path_lengths, 0
         )
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the individual points in each path.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_linewidth(self, array: np.ndarray, offset: int = 0):
+    def set_linewidth(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the linewidth of the individual points in each path.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The linewidth array.
+        offset : int, optional
+            The offset at which to start setting the linewidth, by default 0.
+        """
         self.linewidth[offset:] = array
 
-    def set_cap(self, value: str):
+    def set_cap(self, value: str) -> None:
+        """
+        Set the common cap style of all paths.
+
+        Parameters
+        ----------
+        value : str
+            The cap style.
+        """
         self.cap = value
 
-    def set_join(self, value: str):
+    def set_join(self, value: str) -> None:
+        """
+        Set the common join style of all paths.
+
+        Parameters
+        ----------
+        value : str
+            The join style.
+        """
         self.join = value
 
 
+# -------------------------------------------------------------------------------------------------
+# Glyph visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Glyph(Visual):
+    """
+    A visual for rendering glyphs.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'glyph'.
+    """
+
     visual_name = 'glyph'
     _af = None
 
-    def __init__(self, *args, font_size: int = None, **kwargs):
+    def __init__(self, *args, font_size: int = None, **kwargs) -> None:
+        """
+        Initialize a Glyph visual.
+
+        Parameters
+        ----------
+        font_size : int, optional
+            The font size, by default None.
+        """
         super().__init__(*args, **kwargs)
         self._af = dvz.AtlasFont()
         dvz.atlas_font(font_size, self._af)
@@ -424,7 +1091,29 @@ class Glyph(Visual):
         color: tuple = cst.DEFAULT_GLYPH_COLOR,
         anchor: tuple = (0, 0),
         offset: tuple = (0, 0),
-    ):
+    ) -> None:
+        """
+        Set the strings to render as glyphs.
+
+        This is a helper function to set several strings at different locations and scales but
+        with the same color, anchor, and offset. To use different values for each string, use the
+        other methods.
+
+        Parameters
+        ----------
+        strings : list of str
+            The list of strings to render.
+        string_pos : np.ndarray, optional
+            The positions of each string, by default None.
+        scales : np.ndarray, optional
+            The scales of each string, by default None.
+        color : tuple, optional
+            The common color of all glyphs, by default cst.DEFAULT_GLYPH_COLOR.
+        anchor : tuple, optional
+            The common anchor point of all strings, by default (0, 0).
+        offset : tuple, optional
+            The common offset of all strings, by default (0, 0).
+        """
         assert strings
         assert string_pos is not None
         assert scales is not None
@@ -440,91 +1129,356 @@ class Glyph(Visual):
             dvz.vec2(*anchor),
         )
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_axis(self, array: np.ndarray, offset: int = 0):
+    def set_axis(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the 3D rotation axis of the glyphs.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The axis array.
+        offset : int, optional
+            The offset at which to start setting the axis, by default 0.
+
+        Warnings:
+        --------
+        .. warning::
+            This is not implemented yet.
+
+        """
         self.axis[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
+    def set_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the size of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The size array.
+        offset : int, optional
+            The offset at which to start setting the size, by default 0.
+        """
         self.size[offset:] = array
 
-    def set_anchor(self, array: np.ndarray, offset: int = 0):
+    def set_anchor(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the anchor of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The anchor array.
+        offset : int, optional
+            The offset at which to start setting the anchor, by default 0.
+        """
         self.anchor[offset:] = array
 
-    def set_shift(self, array: np.ndarray, offset: int = 0):
+    def set_shift(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the pixel shift of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The shift array.
+        offset : int, optional
+            The offset at which to start setting the shift, by default 0.
+        """
         self.shift[offset:] = array
 
-    def set_texcoords(self, array: np.ndarray, offset: int = 0):
+    def set_texcoords(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the texture coordinates of each glyph (relative to the font atlas texture).
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The texture coordinates array.
+        offset : int, optional
+            The offset at which to start setting the texture coordinates, by default 0.
+        """
         self.texcoords[offset:] = array
 
-    def set_group_size(self, array: np.ndarray, offset: int = 0):
+    def set_group_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the string size of each glyph (the value should be the same across all glyphs of
+        each string).
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The group size array.
+        offset : int, optional
+            The offset at which to start setting the group size, by default 0.
+        """
         self.group_size[offset:] = array
 
-    def set_scale(self, array: np.ndarray, offset: int = 0):
+    def set_scale(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the scale of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The scale array.
+        offset : int, optional
+            The offset at which to start setting the scale, by default 0.
+        """
         self.scale[offset:] = array
 
-    def set_angle(self, array: np.ndarray, offset: int = 0):
+    def set_angle(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the angle of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The angle array.
+        offset : int, optional
+            The offset at which to start setting the angle, by default 0.
+        """
         self.angle[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of each glyph.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_bgcolor(self, value: tuple):
+    def set_bgcolor(self, value: tuple) -> None:
+        """
+        Set the common background color for all glyphs.
+
+        Parameters
+        ----------
+        value : tuple
+            The background color value.
+        """
         self.bgcolor = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the texture with the font atlas.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.glyph_texture(self.c_visual, texture.c_texture)
 
 
+# -------------------------------------------------------------------------------------------------
+# Image visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Image(Visual):
+    """
+    A visual for displaying images.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'image'.
+    """
+
     visual_name = 'image'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of each image.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
+    def set_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the pixel size of each image.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The size array.
+        offset : int, optional
+            The offset at which to start setting the size, by default 0.
+        """
         self.size[offset:] = array
 
-    def set_anchor(self, array: np.ndarray, offset: int = 0):
+    def set_anchor(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the anchor of each image.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The anchor array.
+        offset : int, optional
+            The offset at which to start setting the anchor, by default 0.
+        """
         self.anchor[offset:] = array
 
-    def set_texcoords(self, array: np.ndarray, offset: int = 0):
+    def set_texcoords(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the texture coordinates of each image.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The texture coordinates array.
+        offset : int, optional
+            The offset at which to start setting the texture coordinates, by default 0.
+        """
         self.texcoords[offset:] = array
 
-    def set_facecolor(self, array: np.ndarray, offset: int = 0):
+    def set_facecolor(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the face color of the image (when using a fill mode instead of texture mode).
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The face color array.
+        offset : int, optional
+            The offset at which to start setting the face color, by default 0.
+        """
         self.facecolor[offset:] = array
 
-    def set_edgecolor(self, value: tuple):
+    def set_edgecolor(self, value: tuple) -> None:
+        """
+        Set the common edge color of all images.
+
+        Parameters
+        ----------
+        value : tuple
+            The edge color value.
+        """
         self.edgecolor = value
 
-    def set_permutation(self, value: tuple):
+    def set_permutation(self, value: tuple) -> None:
+        """
+        Set the permutation axes of the image.
+
+        Parameters
+        ----------
+        value : tuple
+            The permutation value.
+        """
         self.permutation = value
 
-    def set_linewidth(self, value: float):
+    def set_linewidth(self, value: float) -> None:
+        """
+        Set the common linewidth of all images when using an image border.
+
+        Parameters
+        ----------
+        value : float
+            The linewidth value.
+        """
         self.linewidth = value
 
-    def set_radius(self, value: float):
+    def set_radius(self, value: float) -> None:
+        """
+        Set the common border radius of all images when using an image border.
+
+        Parameters
+        ----------
+        value : float
+            The radius value.
+        """
         self.radius = value
 
-    def set_colormap(self, value: str):
+    def set_colormap(self, value: str) -> None:
+        """
+        Set the colormap of the image when using the `colormap` image mode.
+
+        Parameters
+        ----------
+        value : str
+            The colormap value.
+        """
         self.colormap = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the image texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.image_texture(self.c_visual, texture.c_texture)
 
 
+# -------------------------------------------------------------------------------------------------
+# Mesh visual
+# -------------------------------------------------------------------------------------------------
+
+
 class MeshIndexProp(Prop):
-    def allocate(self, count: int):
-        # NOTE: set_index() results in allocating the index buffer, not the vertex buffer.
+    """
+    A property for mesh indices.
+    """
+
+    def allocate(self, count: int) -> None:
+        """
+        Allocate memory for the mesh indices.
+
+        Parameters
+        ----------
+        count : int
+            The number of elements to allocate.
+        """
         self.visual.allocate(self.visual.count, count)
 
 
 class Mesh(Visual):
+    """
+    A visual for rendering meshes.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'mesh'.
+    index_count : int
+        The number of indices in the mesh.
+    """
+
     visual_name = 'mesh'
     index_count: int = None
 
-    def set_prop_classes(self):
+    def set_prop_classes(self) -> None:
+        """
+        Set the property classes for the mesh visual.
+        """
         self.set_prop_class('index', MeshIndexProp)
 
     def set_data(
@@ -533,7 +1487,21 @@ class Mesh(Visual):
         index_count: int = None,
         compute_normals: bool = None,
         **kwargs,
-    ):
+    ) -> None:
+        """
+        Set data for the mesh.
+
+        Parameters
+        ----------
+        vertex_count : int, optional
+            The number of vertices, by default None.
+        index_count : int, optional
+            The number of indices, by default None.
+        compute_normals : bool, optional
+            Whether to compute normals, by default None.
+        **kwargs
+            Additional data to set.
+        """
         if 'position' in kwargs and 'index' in kwargs:
             nv, ni = kwargs['position'].shape[0], kwargs['index'].size
             self.allocate(nv, ni)
@@ -549,118 +1517,448 @@ class Mesh(Visual):
 
         super().set_data(**kwargs)
 
-    def allocate(self, count: int, index_count: int = None):
+    def allocate(self, count: int, index_count: int = None) -> None:
+        """
+        Allocate memory for the mesh.
+
+        Parameters
+        ----------
+        count : int
+            The number of vertices to allocate.
+        index_count : int, optional
+            The number of indices to allocate, by default None.
+        """
         if index_count is not None:
             dvz.mesh_alloc(self.c_visual, count, index_count)
             self.set_count(count, index_count)
 
-    def set_count(self, count: int, index_count: int = None):
+    def set_count(self, count: int, index_count: int = None) -> None:
+        """
+        Set the number of vertices and indices in the mesh.
+
+        Parameters
+        ----------
+        count : int
+            The number of vertices.
+        index_count : int, optional
+            The number of indices, by default None.
+        """
         self.count = count
         self.index_count = index_count
 
-    def get_index_count(self):
+    def get_index_count(self) -> int:
+        """
+        Get the number of indices in the mesh.
+
+        Returns
+        -------
+        int
+            The number of indices.
+        """
         return self.index_count
 
-    # Setters
-    # ---------------------------------------------------------------------------------------------
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the mesh vertices.
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the mesh vertices.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_texcoords(self, array: np.ndarray, offset: int = 0):
+    def set_texcoords(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the texture coordinates of the mesh vertices.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The texture coordinates array.
+        offset : int, optional
+            The offset at which to start setting the texture coordinates, by default 0.
+        """
         self.texcoords[offset:] = array
 
-    def set_normal(self, array: np.ndarray, offset: int = 0):
+    def set_normal(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the normals of the mesh vertices.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The normals array.
+        offset : int, optional
+            The offset at which to start setting the normals, by default 0.
+        """
         self.normal[offset:] = array
 
-    def set_isoline(self, array: np.ndarray, offset: int = 0):
+    def set_isoline(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the isolines of the mesh vertices.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The isolines array.
+        offset : int, optional
+            The offset at which to start setting the isolines, by default 0.
+        """
         self.isoline[offset:] = array
 
-    def set_index(self, array: np.ndarray, offset: int = 0):
+    def set_index(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the indices of the mesh.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The indices array.
+        offset : int, optional
+            The offset at which to start setting the indices, by default 0.
+        """
         self.index_count = array.size
         self.allocate(self.count, self.index_count)
         self.index[offset:] = array
 
-    def set_light_dir(self, value: tuple, idx: int = 0):
+    def set_light_dir(self, value: tuple, idx: int = 0) -> None:
+        """
+        Set the direction of the light.
+
+        Parameters
+        ----------
+        value : tuple
+            The light direction value.
+        idx : int, optional
+            The index of the light, by default 0.
+        """
         value = value if value is not None else cst.DEFAULT_LIGHT_DIR
         dvz.mesh_light_dir(self.c_visual, idx, dvz.vec3(*value))
 
-    def set_light_color(self, value: tuple, idx: int = 0):
+    def set_light_color(self, value: tuple, idx: int = 0) -> None:
+        """
+        Set the color of the light.
+
+        Parameters
+        ----------
+        value : tuple
+            The light color value.
+        idx : int, optional
+            The index of the light, by default 0.
+        """
         value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
         dvz.mesh_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
-    def set_light_params(self, value: tuple, idx: int = 0):
+    def set_light_params(self, value: tuple, idx: int = 0) -> None:
+        """
+        Set the parameters of the light.
+
+        Parameters
+        ----------
+        value : tuple
+            The light parameters (diffuse, ambient, specular, exponent).
+        idx : int, optional
+            The index of the light, by default 0.
+        """
         value = value if value is not None else cst.DEFAULT_LIGHT_PARAMS
         dvz.mesh_light_params(self.c_visual, idx, dvz.vec4(*value))
 
-    def set_edgecolor(self, value: tuple):
+    def set_edgecolor(self, value: tuple) -> None:
+        """
+        Set the edge color of the contour, if showing a contour.
+
+        Parameters
+        ----------
+        value : tuple
+            The edge color value.
+        """
         self.edgecolor = value
 
-    def set_linewidth(self, value: float):
+    def set_linewidth(self, value: float) -> None:
+        """
+        Set the line width of the contour, if showing a contour.
+
+        Parameters
+        ----------
+        value : float
+            The linewidth value.
+        """
         self.linewidth = value
 
-    def set_density(self, value: int):
+    def set_density(self, value: int) -> None:
+        """
+        Set the density of the isolines, if showing isolines.
+
+        Parameters
+        ----------
+        value : int
+            The density value.
+        """
         self.density = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the mesh texture.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.image_texture(self.c_visual, texture.c_texture)
+
+
+# -------------------------------------------------------------------------------------------------
+# 3D sphere visual
+# -------------------------------------------------------------------------------------------------
 
 
 class Sphere(Visual):
+    """
+    A visual for rendering spheres.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'sphere'.
+    """
+
     visual_name = 'sphere'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the spheres.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_color(self, array: np.ndarray, offset: int = 0):
+    def set_color(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the color of the spheres.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The color array.
+        offset : int, optional
+            The offset at which to start setting the color, by default 0.
+        """
         self.color[offset:] = array
 
-    def set_size(self, array: np.ndarray, offset: int = 0):
+    def set_size(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the size of the spheres.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The size array.
+        offset : int, optional
+            The offset at which to start setting the size, by default 0.
+        """
         self.size[offset:] = array
 
-    def set_light_pos(self, value: tuple):
+    def set_light_pos(self, value: tuple) -> None:
+        """
+        Set the position of the light source.
+
+        Parameters
+        ----------
+        value : tuple
+            The light position.
+        """
         self.light_pos = value
 
-    def set_light_params(self, value: tuple):
+    def set_light_params(self, value: tuple) -> None:
+        """
+        Set the parameters of the light source.
+
+        Parameters
+        ----------
+        value : tuple
+            The light parameters (diffuse, ambient, specular, exponent).
+        """
         self.light_params = value
 
 
+# -------------------------------------------------------------------------------------------------
+# Volume visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Volume(Visual):
+    """
+    A visual for rendering volumetric data.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'volume'.
+    """
+
     visual_name = 'volume'
 
-    def set_bounds(self, xlim: tuple, ylim: tuple, zlim: tuple):
+    def set_bounds(self, xlim: tuple, ylim: tuple, zlim: tuple) -> None:
+        """
+        Set the bounds of the volume.
+
+        Parameters
+        ----------
+        xlim : tuple
+            The x-axis bounds.
+        ylim : tuple
+            The y-axis bounds.
+        zlim : tuple
+            The z-axis bounds.
+        """
         dvz.volume_bounds(self.c_visual, dvz.vec2(*xlim), dvz.vec2(*ylim), dvz.vec2(*zlim))
 
-    def set_texcoords(self, uvw0: tuple, uvw1: tuple):
+    def set_texcoords(self, uvw0: tuple, uvw1: tuple) -> None:
+        """
+        Set the texture coordinates of the volume.
+
+        Parameters
+        ----------
+        uvw0 : tuple
+            The texture coordinates of the point `(xlim[0], ylim[0], zlim[0])`.
+        uvw1 : tuple
+            The texture coordinates of the point `(xlim[1], ylim[1], zlim[1])`.
+        """
         dvz.volume_texcoords(self.c_visual, dvz.vec3(uvw0), dvz.vec3(uvw1))
 
-    def set_permutation(self, value: tuple):
+    def set_permutation(self, value: tuple) -> None:
+        """
+        Set the axis permutation of the volume 3D array.
+
+        Parameters
+        ----------
+        value : tuple
+            The permutation of the axes, by default (0, 1, 2) (corresponding to u, v, w).
+        """
         self.permutation = value
 
-    def set_slice(self, value: int):
+    def set_slice(self, value: int) -> None:
+        """
+        Set the slice index for the volume.
+
+        Parameters
+        ----------
+        value : int
+            The slice index.
+
+        Warnings:
+        --------
+        .. warning::
+            This is not implemented yet.
+        """
         self.slice = value
 
-    def set_transfer(self, value: tuple):
+    def set_transfer(self, value: tuple) -> None:
+        """
+        Set the transfer function for the volume.
+
+        Parameters
+        ----------
+        value : tuple
+            The transfer function parameters.
+        """
         self.transfer = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the texture for the volume.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.image_texture(self.c_visual, texture.c_texture)
 
 
+# -------------------------------------------------------------------------------------------------
+# Slice visual
+# -------------------------------------------------------------------------------------------------
+
+
 class Slice(Visual):
+    """
+    A visual for rendering 2D slices of volumetric data.
+
+    Attributes
+    ----------
+    visual_name : str
+        The name of the visual, set to 'slice'.
+    """
+
     visual_name = 'slice'
 
-    def set_position(self, array: np.ndarray, offset: int = 0):
+    def set_position(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the position of the slice.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The position array.
+        offset : int, optional
+            The offset at which to start setting the position, by default 0.
+        """
         self.position[offset:] = array
 
-    def set_texcoords(self, array: np.ndarray, offset: int = 0):
+    def set_texcoords(self, array: np.ndarray, offset: int = 0) -> None:
+        """
+        Set the texture coordinates of the slice.
+
+        Parameters
+        ----------
+        array : np.ndarray
+            The texture coordinates array.
+        offset : int, optional
+            The offset at which to start setting the texture coordinates, by default 0.
+        """
         self.texcoords[offset:] = array
 
-    def set_alpha(self, value: float):
+    def set_alpha(self, value: float) -> None:
+        """
+        Set the alpha transparency of the slice.
+
+        Parameters
+        ----------
+        value : float
+            The alpha transparency value.
+        """
         self.alpha = value
 
-    def set_texture(self, texture: Texture):
+    def set_texture(self, texture: Texture) -> None:
+        """
+        Set the texture for the slice.
+
+        Parameters
+        ----------
+        texture : Texture
+            The texture object.
+        """
         dvz.image_texture(self.c_visual, texture.c_texture)
