@@ -29,12 +29,46 @@ from .utils import dtype_to_format, mesh_flags, to_enum
 
 
 class App:
+    """
+    Main application class for managing figures, textures, visuals, and events.
+
+    Attributes
+    ----------
+    c_flags : int
+        Datoviz flags for the application.
+    c_app : dvz.DvzApp
+        Internal application instance.
+    c_batch : dvz.DvzBatch
+        Internal batch instance.
+    c_scene : dvz.DvzScene
+        Internal scene instance.
+    """
+
     c_flags: int = 0
     c_app: dvz.DvzApp = None
     c_batch: dvz.DvzBatch = None
     c_scene: dvz.DvzScene = None
 
-    def __init__(self, c_flags: int = 0, offscreen: bool = False, background: str = None):
+    def __init__(
+        self, c_flags: int = 0, offscreen: bool = False, background: tp.Optional[str] = None
+    ) -> None:
+        """
+        Initialize the App instance.
+
+        Parameters
+        ----------
+        c_flags : int, optional
+            Datoviz flags for the application, by default 0.
+        offscreen : bool, optional
+            Whether to run in offscreen mode, by default False.
+        background : str or None, optional
+            Background color ('white' or None), by default None (black).
+
+        Warnings
+        --------
+        .. warning::
+            The `background` parameter is likely to change in future versions.
+        """
         if offscreen:
             c_flags |= dvz.APP_FLAGS_OFFSCREEN
 
@@ -57,29 +91,93 @@ class App:
         height: int = cst.DEFAULT_HEIGHT,
         c_flags: int = 0,
         gui: bool = False,
-    ):
+    ) -> Figure:
+        """
+        Create a new figure.
+
+        Parameters
+        ----------
+        width : int, optional
+            Width of the figure, by default cst.DEFAULT_WIDTH.
+        height : int, optional
+            Height of the figure, by default cst.DEFAULT_HEIGHT.
+        c_flags : int, optional
+            Flags for the figure, by default 0.
+        gui : bool, optional
+            Whether to enable GUI, by default False.
+
+        Returns
+        -------
+        Figure
+            The created figure instance.
+
+        Warnings
+        --------
+        .. warning::
+            The `gui` parameter *must* be `True` when a GUI is used in the figure, and *must* be
+            `False` otherwise. This may change in versions.
+        """
         if gui:
             c_flags |= dvz.CANVAS_FLAGS_IMGUI
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
         return Figure(c_figure)
 
-    def on_timer(self):
-        pass
+    def on_timer(self) -> None:
+        """
+        Handle timer events.
 
-    def on_frame(self):
-        pass
+        Warnings:
+        --------
+        .. warning::
+            This method is not yet implemented.
+        """
+        raise NotImplementedError()
 
-    def run(self, frame_count: int = 0):
+    def on_frame(self) -> None:
+        """
+        Handle frame events.
+
+        Warnings:
+        --------
+        .. warning::
+            This method is not yet implemented.
+        """
+        raise NotImplementedError()
+
+    def run(self, frame_count: int = 0) -> None:
+        """
+        Run the application.
+
+        Parameters
+        ----------
+        frame_count : int, optional
+            Number of frames to run. 0 for infinite, by default 0.
+        """
         dvz.scene_run(self.c_scene, self.c_app, frame_count)
 
-    def screenshot(self, figure: Figure, png_path: str):
+    def screenshot(self, figure: Figure, png_path: str) -> None:
+        """
+        Take a screenshot of the given figure.
+
+        This function first runs one frame before saving the screenshot.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to capture.
+        png_path : str
+            Path to save the screenshot.
+        """
         self.run(1)
         dvz.app_screenshot(self.c_app, figure.figure_id(), png_path)
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
+        """
+        Destroy the application and release resources.
+        """
         if self.c_app is not None:
             dvz.scene_destroy(self.c_scene)
             dvz.app_destroy(self.c_app)
@@ -90,14 +188,41 @@ class App:
 
     def texture(
         self,
-        image: np.ndarray = None,
+        image: tp.Optional[np.ndarray] = None,
         ndim: int = 2,
-        shape: tuple = None,
-        n_channels: int = None,
-        dtype: np.dtype = None,
-        interpolation: str = None,
-        address_mode: str = None,
-    ):
+        shape: tp.Optional[tuple[int, ...]] = None,
+        n_channels: tp.Optional[int] = None,
+        dtype: tp.Optional[np.dtype] = None,
+        interpolation: tp.Optional[str] = None,
+        address_mode: tp.Optional[str] = None,
+    ) -> Texture:
+        """
+        Create a texture, either with or without initial image data. If without, all texture
+        parameters must be specified.
+
+        Parameters
+        ----------
+        image : np.ndarray, optional
+            Image data for the texture, by default None.
+        ndim : int, optional
+            Number of texture dimensions (1, 2, or 3), by default 2.
+        shape : tuple of int, optional
+            Shape of the texture, inferred from `image` if set.
+        n_channels : int, optional
+            Number of color channels, inferred from `image` if set.
+        dtype : np.dtype, optional
+            Data type of the texture, inferred from `image` if set.
+        interpolation : str, optional
+            Interpolation mode, `nearest` (default) or `linear`.
+        address_mode : str, optional
+            Address mode: `repeat`, `mirrored_repeat`, `clamp_to_edge`,
+            `clamp_to_border` (default), `mirror_clamp_to_edge`.
+
+        Returns
+        -------
+        Texture
+            The created texture instance.
+        """
         if image is not None:
             if image.ndim == 4:
                 ndim = 3
@@ -135,34 +260,85 @@ class App:
     def texture_1D(
         self,
         data: np.ndarray,
-        interpolation: str = None,
-        address_mode: str = None,
-    ):
+        interpolation: tp.Optional[str] = None,
+        address_mode: tp.Optional[str] = None,
+    ) -> Texture:
+        """
+        Create a 1D texture.
+
+        Parameters
+        ----------
+        data : np.ndarray
+            Data for the texture.
+        interpolation : str, optional
+            Interpolation mode (see `texture()`)
+        address_mode : str, optional
+            Address mode (see `texture()`)
+
+        Returns
+        -------
+        Texture
+            The created 1D texture instance.
+        """
         return self.texture(data, ndim=1, interpolation=interpolation, address_mode=address_mode)
 
     def texture_2D(
         self,
         image: np.ndarray,
-        interpolation: str = None,
-        address_mode: str = None,
-    ):
+        interpolation: tp.Optional[str] = None,
+        address_mode: tp.Optional[str] = None,
+    ) -> Texture:
+        """
+        Create a 2D texture.
+
+        Parameters
+        ----------
+        image : np.ndarray
+            Image data for the texture.
+        interpolation : str, optional
+            Interpolation mode (see `texture()`)
+        address_mode : str, optional
+            Address mode (see `texture()`)
+
+        Returns
+        -------
+        Texture
+            The created 2D texture instance.
+        """
         return self.texture(image, ndim=2, interpolation=interpolation, address_mode=address_mode)
 
     def texture_3D(
         self,
         volume: np.ndarray,
-        shape: tuple = None,
-        interpolation: str = None,
-        address_mode: str = None,
-    ):
+        shape: tp.Optional[tuple[int, ...]] = None,
+        interpolation: tp.Optional[str] = None,
+        address_mode: tp.Optional[str] = None,
+    ) -> Texture:
+        """
+        Create a 3D texture.
+
+        Parameters
+        ----------
+        volume : np.ndarray
+            Volume data for the texture.
+        shape : tuple of int, optional
+            Shape of the texture, by default None.
+        interpolation : str, optional
+            Interpolation mode (see `texture()`)
+        address_mode : str, optional
+            Address mode (see `texture()`)
+
+        Returns
+        -------
+        Texture
+            The created 3D texture instance.
+        """
         return self.texture(
             volume, ndim=3, shape=shape, interpolation=interpolation, address_mode=address_mode
         )
 
     # Visuals
     # ---------------------------------------------------------------------------------------------
-
-    # TODO: put the actual keywords instead of kwargs in the signatures, and write the docstrings
 
     def _visual(
         self,
@@ -172,7 +348,30 @@ class App:
         c_flags: int = 0,
         fixed=None,
         **kwargs,
-    ):
+    ) -> vs.Visual:
+        """
+        Create a visual.
+
+        Parameters
+        ----------
+        fn : Callable, optional
+            Function to create the visual.
+        cls : type, optional
+            Class of the visual.
+        c_visual : optional
+            Visual instance.
+        c_flags : int, optional
+            Flags for the visual, by default 0.
+        fixed : optional
+            Fixed data for the visual, by default None.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Visual
+            The created visual instance.
+        """
         c_visual = c_visual or fn(self.c_batch, c_flags)
         visual = cls(c_visual)
         visual.set_data(**kwargs)
@@ -180,37 +379,171 @@ class App:
             visual.fixed(fixed)
         return visual
 
-    def basic(self, topology: str = None, **kwargs):
+    def basic(self, topology: str, **kwargs) -> vs.Basic:
+        """
+        Create a basic visual.
+
+        Parameters
+        ----------
+        topology : str
+            Topology type: `point_list`, `line_list`, `line_strip`, `triangle_list`,
+            `triangle_strip`, `triangle_fan`.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Basic
+            The created basic visual instance.
+        """
         c_topology = to_enum(f'primitive_topology_{topology}')
         assert c_topology
         c_visual = dvz.basic(self.c_batch, c_topology, 0)
         return self._visual(cls=vs.Basic, c_visual=c_visual, **kwargs)
 
-    def pixel(self, **kwargs):
+    def pixel(self, **kwargs) -> vs.Pixel:
+        """
+        Create a pixel visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Pixel
+            The created pixel visual instance.
+        """
         return self._visual(dvz.pixel, vs.Pixel, **kwargs)
 
-    def point(self, **kwargs):
+    def point(self, **kwargs) -> vs.Point:
+        """
+        Create a point visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Point
+            The created point visual instance.
+        """
         return self._visual(dvz.point, vs.Point, **kwargs)
 
-    def marker(self, **kwargs):
+    def marker(self, **kwargs) -> vs.Marker:
+        """
+        Create a marker visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Marker
+            The created marker visual instance.
+        """
         return self._visual(dvz.marker, vs.Marker, **kwargs)
 
-    def segment(self, **kwargs):
+    def segment(self, **kwargs) -> vs.Segment:
+        """
+        Create a segment visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Segment
+            The created segment visual instance.
+        """
         return self._visual(dvz.segment, vs.Segment, **kwargs)
 
-    def path(self, **kwargs):
+    def path(self, **kwargs) -> vs.Path:
+        """
+        Create a path visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Path
+            The created path visual instance.
+        """
         return self._visual(dvz.path, vs.Path, **kwargs)
 
-    def glyph(self, font_size: int = cst.DEFAULT_FONT_SIZE, **kwargs):
+    def glyph(self, font_size: int = cst.DEFAULT_FONT_SIZE, **kwargs) -> vs.Glyph:
+        """
+        Create a glyph visual.
+
+        Parameters
+        ----------
+        font_size : int, optional
+            Font size for the glyph, by default cst.DEFAULT_FONT_SIZE.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Glyph
+            The created glyph visual instance.
+        """
         c_visual = dvz.glyph(self.c_batch, 0)
         visual = vs.Glyph(c_visual, font_size=font_size)
         visual.set_data(**kwargs)
         return visual
 
-    def image(self, **kwargs):
+    def image(self, **kwargs) -> vs.Image:
+        """
+        Create an image visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Image
+            The created image visual instance.
+        """
         return self._visual(dvz.image, vs.Image, **kwargs)
 
-    def _mesh(self, c_visual, vertex_count: int = None, index_count: int = None, **kwargs):
+    def _mesh(
+        self,
+        c_visual,
+        vertex_count: tp.Optional[int] = None,
+        index_count: tp.Optional[int] = None,
+        **kwargs,
+    ) -> vs.Mesh:
+        """
+        Create a mesh visual.
+
+        Parameters
+        ----------
+        c_visual : optional
+            Visual instance, by default None.
+        vertex_count : int, optional
+            Number of vertices, by default None.
+        index_count : int, optional
+            Number of indices, by default None.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Mesh
+            The created mesh visual instance.
+        """
         return self._visual(
             c_visual=c_visual,
             cls=vs.Mesh,
@@ -219,18 +552,64 @@ class App:
             **kwargs,
         )
 
-    def mesh(self, indexed: bool = None, lighting: bool = None, contour: bool = False, **kwargs):
+    def mesh(
+        self,
+        indexed: tp.Optional[bool] = None,
+        lighting: tp.Optional[bool] = None,
+        contour: bool = False,
+        **kwargs,
+    ) -> vs.Mesh:
+        """
+        Create a mesh visual.
+
+        Parameters
+        ----------
+        indexed : bool, optional
+            Whether the mesh is indexed, by default None.
+        lighting : bool, optional
+            Whether lighting is enabled, by default None.
+        contour : bool, optional
+            Whether contour is enabled, by default False.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Mesh
+            The created mesh visual instance.
+        """
         c_flags = mesh_flags(indexed=indexed, lighting=lighting, contour=contour)
         return self._mesh(dvz.mesh(self.c_batch, c_flags), **kwargs)
 
     def mesh_shape(
         self,
         shape: ShapeCollection,
-        indexed: bool = None,
-        lighting: bool = None,
+        indexed: tp.Optional[bool] = None,
+        lighting: tp.Optional[bool] = None,
         contour: bool = False,
         **kwargs,
-    ):
+    ) -> vs.Mesh:
+        """
+        Create a mesh visual from a shape collection.
+
+        Parameters
+        ----------
+        shape : ShapeCollection
+            Shape collection.
+        indexed : bool, optional
+            Whether the mesh is indexed, by default None.
+        lighting : bool, optional
+            Whether lighting is enabled, by default None.
+        contour : bool, optional
+            Whether contour is enabled, by default False.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Mesh
+            The created mesh visual instance.
+        """
         if not shape.c_merged:
             shape.merge()
         c_merged = shape.c_merged
@@ -253,28 +632,92 @@ class App:
             **kwargs,
         )
 
-    def sphere(self, **kwargs):
+    def sphere(self, **kwargs) -> vs.Sphere:
+        """
+        Create a sphere visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Sphere
+            The created sphere visual instance.
+        """
         return self._visual(dvz.sphere, vs.Sphere, **kwargs)
 
-    def volume(self, mode: str = 'colormap', **kwargs):
+    def volume(self, mode: str = 'colormap', **kwargs) -> vs.Volume:
+        """
+        Create a volume visual.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Volume mode ('colormap', 'mip', etc.), by default 'colormap'.
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Volume
+            The created volume visual instance.
+        """
         assert mode in cst.VOLUME_MODES
         c_flags = to_enum(f'volume_flags_{mode}')
         return self._visual(dvz.volume, vs.Volume, c_flags=c_flags, **kwargs)
 
-    def slice(self, **kwargs):
+    def slice(self, **kwargs) -> vs.Slice:
+        """
+        Create a slice visual.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments for the visual.
+
+        Returns
+        -------
+        vs.Slice
+            The created slice visual instance.
+        """
         return self._visual(dvz.slice, vs.Slice, **kwargs)
 
     # GUI
     # ---------------------------------------------------------------------------------------------
 
-    def arcball_gui(self, panel, arcball):
+    def arcball_gui(self, panel, arcball) -> None:
+        """
+        Attach an arcball GUI to a panel.
+
+        Parameters
+        ----------
+        panel : Panel
+            Panel instance.
+        arcball : Arcball
+            Arcball instance.
+        """
         c_figure = panel.c_figure
         dvz.arcball_gui(arcball.c_arcball, self.c_app, dvz.figure_id(c_figure), panel.c_panel)
 
     # Events
     # ---------------------------------------------------------------------------------------------
 
-    def on_mouse(self, figure: Figure):
+    def on_mouse(self, figure: Figure) -> tp.Callable:
+        """
+        Register a mouse event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the mouse event handler.
+        """
         assert figure
 
         def decorator(fun):
@@ -290,7 +733,20 @@ class App:
 
         return decorator
 
-    def on_keyboard(self, figure: Figure):
+    def on_keyboard(self, figure: Figure) -> tp.Callable:
+        """
+        Register a keyboard event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the keyboard event handler.
+        """
         assert figure
 
         def decorator(fun):
@@ -306,7 +762,20 @@ class App:
 
         return decorator
 
-    def on_gui(self, figure: Figure):
+    def on_gui(self, figure: Figure) -> tp.Callable:
+        """
+        Register a GUI event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the GUI event handler.
+        """
         assert figure
         fid = dvz.figure_id(figure.c_figure)
 
@@ -323,7 +792,22 @@ class App:
 
         return decorator
 
-    def connect(self, figure: Figure):
+    def connect(self, figure: Figure) -> tp.Callable:
+        """
+        Connect an event handler to the given figure, using the decorated function name to
+        determine the event to attach it to. The name of the decorated function can be `on_mouse`,
+        `on_keyboard`, or `on_gui`.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to connect handlers to.
+
+        Returns
+        -------
+        Callable
+            A decorator for event handlers.
+        """
         assert figure
 
         def decorator(fun):
@@ -333,10 +817,29 @@ class App:
                 return self.on_keyboard(figure)(fun)
             elif fun.__name__ == 'on_gui':
                 return self.on_gui(figure)(fun)
+            # TODO: on_frame
 
         return decorator
 
-    def timer(self, delay: float = 0.0, period: float = 1.0, max_count: int = 0):
+    def timer(self, delay: float = 0.0, period: float = 1.0, max_count: int = 0) -> tp.Callable:
+        """
+        Register a timer event.
+
+        Parameters
+        ----------
+        delay : float, optional
+            Initial delay before the timer starts, by default 0.0.
+        period : float, optional
+            Period of the timer in seconds, by default 1.0 second.
+        max_count : int, optional
+            Maximum number of timer events, or 0 for unlimited timer ticks, by default 0.
+
+        Returns
+        -------
+        Callable
+            A decorator for the timer event handler.
+        """
+
         def decorator(fun):
             @dvz.on_timer
             def on_timer(app, window_id, ev_):
@@ -350,7 +853,22 @@ class App:
         dvz.app_timer(self.c_app, delay, period, max_count)
         return decorator
 
-    def timestamps(self, figure: Figure, count: int):
+    def timestamps(self, figure: Figure, count: int) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Get presentation timestamps for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to get timestamps for.
+        count : int
+            Number of timestamps.
+
+        Returns
+        -------
+        tuple of np.ndarray
+            Seconds and nanoseconds arrays.
+        """
         assert figure
         seconds = np.zeros(count, dtype=np.uint64)  # epoch, in seconds
         nanoseconds = np.zeros(count, dtype=np.uint64)  # number of ns within the second
