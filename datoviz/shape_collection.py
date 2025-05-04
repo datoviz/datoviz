@@ -40,7 +40,21 @@ def _shape_transform(
     offset: tuple[float, float, float] = None,
     scale: float = None,
     transform: Mat4 = None,
-):
+) -> None:
+    """
+    Apply transformations to a shape.
+
+    Parameters
+    ----------
+    c_shape : dvz.Shape
+        The shape to transform.
+    offset : tuple of float, optional
+        The (x, y, z) offset to apply, by default None.
+    scale : float, optional
+        The scale factor to apply, by default None.
+    transform : Mat4, optional
+        A 4x4 transformation matrix, by default None.
+    """
     dvz.shape_begin(c_shape, 0, 0)
     if scale is not None:
         dvz.shape_scale(c_shape, dvz.vec3(scale, scale, scale))
@@ -54,7 +68,20 @@ def _shape_transform(
     dvz.shape_end(c_shape)
 
 
-def merge_shapes(c_shapes):
+def merge_shapes(c_shapes: list[dvz.Shape]) -> dvz.Shape:
+    """
+    Merge multiple shapes into a single shape.
+
+    Parameters
+    ----------
+    c_shapes : list of dvz.Shape
+        The list of shapes to merge.
+
+    Returns
+    -------
+    dvz.Shape
+        The merged shape.
+    """
     merged = dvz.shape()
     n = len(c_shapes)
     if n == 0:
@@ -70,7 +97,23 @@ def unindex(
     c_shape: dvz.Shape,
     contour: str = None,
     indexing: str = None,
-):
+) -> None:
+    """
+    Unindex a shape, optionally applying contour and indexing flags.
+
+    This takes an indexed mesh and converts it into a non-indexed one, which is necessary with
+    contours.
+
+    Parameters
+    ----------
+    c_shape : dvz.Shape
+        The shape to unindex.
+    contour : str, optional
+        The contour type to apply, `edges`, `joints` (default), `full`.
+    indexing : str, optional
+        The indexing type to apply, `earcut` (when using polygons) or `surfaces` (when using
+        surfaces).
+    """
     c_flags = 0
 
     if contour is not None:
@@ -95,9 +138,24 @@ def unindex(
 
 
 class ShapeCollection:
-    c_shapes = None
+    """
+    A collection of shapes that can be transformed, merged, and rendered.
 
-    def __init__(self):
+    Attributes
+    ----------
+    c_shapes : list of dvz.Shape
+        The list of shapes in the collection.
+    c_merged : dvz.Shape or None
+        The merged shape, if applicable.
+    """
+
+    c_shapes: list[dvz.Shape] = None
+    c_merged: dvz.Shape = None
+
+    def __init__(self) -> None:
+        """
+        Initialize an empty ShapeCollection.
+        """
         self.c_shapes = []
         self.c_merged = None
 
@@ -107,7 +165,21 @@ class ShapeCollection:
         offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
-    ):
+    ) -> None:
+        """
+        Add a shape to the collection with optional transformations.
+
+        Parameters
+        ----------
+        c_shape : dvz.Shape
+            The shape to add.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
         _shape_transform(c_shape, offset=offset, scale=scale, transform=transform)
         self.c_shapes.append(c_shape)
 
@@ -117,7 +189,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a square shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the square, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_square(c_shape, c_color)
@@ -130,7 +216,23 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a disc shape to the collection.
+
+        Parameters
+        ----------
+        size : int, optional
+            The size of the disc, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the disc, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_disc(c_shape, size, c_color)
@@ -142,7 +244,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a cube shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cube, by default None.
+        """
         c_shape = dvz.shape()
         colors = np.zeros((6, 4), dtype=np.uint8)
         for i in range(6):
@@ -158,7 +274,25 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a sphere shape to the collection.
+
+        Parameters
+        ----------
+        rows : int, optional
+            The number of rows in the sphere, by default None.
+        cols : int, optional
+            The number of columns in the sphere, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the sphere, by default None.
+        """
         rows = rows or DEFAULT_SIZE
         cols = cols or DEFAULT_SIZE
         c_shape = dvz.shape()
@@ -173,7 +307,28 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a cone shape to the collection.
+
+        Parameters
+        ----------
+        size : int, optional
+            The size of the cone, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cone, by default None.
+
+        Warnings:
+        --------
+        .. warning::
+            This method is not yet implemented.
+        """
         size = size or DEFAULT_SIZE
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
@@ -187,7 +342,28 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a cylinder shape to the collection.
+
+        Parameters
+        ----------
+        size : int, optional
+            The size of the cylinder, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cylinder, by default None.
+
+        Warnings:
+        --------
+        .. warning::
+            This method is not yet implemented.
+        """
         size = size or DEFAULT_SIZE
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
@@ -200,7 +376,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a tetrahedron shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the tetrahedron, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_tetrahedron(c_shape, c_color)
@@ -219,7 +409,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a hexahedron shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the hexahedron, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_hexahedron(c_shape, c_color)
@@ -238,7 +442,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add an octahedron shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the octahedron, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_octahedron(c_shape, c_color)
@@ -257,7 +475,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add a dodecahedron shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the dodecahedron, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_dodecahedron(c_shape, c_color)
@@ -276,7 +508,21 @@ class ShapeCollection:
         scale: float = None,
         transform: Mat4 = None,
         color: Color = None,
-    ):
+    ) -> None:
+        """
+        Add an icosahedron shape to the collection.
+
+        Parameters
+        ----------
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the icosahedron, by default None.
+        """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
         dvz.shape_icosahedron(c_shape, c_color)
@@ -298,7 +544,35 @@ class ShapeCollection:
         color: Color = None,
         contour: str = None,
         indexing: str = None,
-    ):
+    ) -> None:
+        """
+        Add a polygon shape to the collection.
+
+        This function uses earcut to triangulate the polygon. More sophisticated triangulations
+        methods will be added in a future version.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            The points defining the polygon.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the polygon, by default None.
+        contour : str, optional
+            The contour type to apply, by default None.
+        indexing : str, optional
+            The indexing type to apply, by default None.
+
+        Warnings:
+        --------
+        .. warning::
+            This method is not yet implemented.
+        """
         assert points.ndim == 2
         assert points.shape[1] == 2
         c_shape = dvz.shape()
@@ -321,7 +595,31 @@ class ShapeCollection:
         offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
-    ):
+    ) -> None:
+        """
+        Add a surface shape to the collection.
+
+        Parameters
+        ----------
+        heights : np.ndarray
+            The height values of the surface.
+        colors : np.ndarray
+            The color values of the surface.
+        contour : str, optional
+            The contour type to apply, by default None.
+        indexing : str, optional
+            The indexing type to apply, by default None.
+        u : tuple of float, optional
+            The u vector for the surface, by default None.
+        v : tuple of float, optional
+            The v vector for the surface, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
         heights = np.asanyarray(heights, dtype=np.float32)
         row_count, col_count = heights.shape
         offset = offset if offset is not None else (-1, 0, -1)
@@ -346,16 +644,38 @@ class ShapeCollection:
         offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
-    ):
+    ) -> None:
+        """
+        Add a shape from an OBJ file to the collection.
+
+        Parameters
+        ----------
+        file_path : str
+            The path to the OBJ file.
+        contour : str, optional
+            The contour type to apply, by default None.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
         c_shape = dvz.shape()
         dvz.shape_obj(c_shape, file_path)
         dvz.shape_unindex(c_shape, to_enum(f'contour_{contour}'))
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def merge(self):
+    def merge(self) -> None:
+        """
+        Merge all shapes in the collection into a single shape.
+        """
         self.c_merged = merge_shapes(self.c_shapes)
 
-    def destroy(self):
+    def destroy(self) -> None:
+        """
+        Destroy all shapes in the collection and release resources.
+        """
         for c_shape in self.c_shapes:
             if c_shape:
                 # print("destroy shape", c_shape)
