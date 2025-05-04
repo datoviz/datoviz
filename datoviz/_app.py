@@ -151,10 +151,12 @@ class App:
 
     # TODO: put the actual keywords instead of kwargs in the signatures, and write the docstrings
 
-    def _visual(self, fn: tp.Callable = None, cls: tp.Type = None, c_visual=None, c_flags: int = 0, **kwargs):
+    def _visual(self, fn: tp.Callable = None, cls: tp.Type = None, c_visual=None, c_flags: int = 0, fixed=None, **kwargs):
         c_visual = c_visual or fn(self.c_batch, c_flags)
         visual = cls(c_visual)
         visual.set_data(**kwargs)
+        if fixed is not None:
+            visual.fixed(fixed)
         return visual
 
     def basic(self, topology: str = None, **kwargs):

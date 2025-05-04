@@ -16,7 +16,7 @@ from . import _ctypes as dvz
 from . import _constants as cst
 from ._constants import PROPS, VEC_TYPES
 from ._texture import Texture
-from .utils import prepare_data_array, to_enum, get_size
+from .utils import prepare_data_array, to_enum, get_size, get_fixed_params
 
 
 # -------------------------------------------------------------------------------------------------
@@ -59,6 +59,9 @@ class Visual:
     def clip(self, clip: str):
         c_clip = to_enum(f'viewport_clip_{clip}')
         dvz.visual_clip(self.c_visual, c_clip)
+
+    def fixed(self, fixed):
+        dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
 
     # Counts
     # ---------------------------------------------------------------------------------------------

@@ -188,3 +188,11 @@ def mesh_flags(indexed: bool = None, lighting: bool = None, contour: bool = Fals
     if contour:
         c_flags |= dvz.MESH_FLAGS_CONTOUR
     return c_flags
+
+
+def get_fixed_params(fixed):
+    if fixed is True:
+        return (True, True, True)
+    elif isinstance(fixed, str):
+        return ('x' in fixed, 'y' in fixed, 'z' in fixed)
+    return (False, False, False)
