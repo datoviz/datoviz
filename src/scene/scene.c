@@ -606,7 +606,7 @@ void dvz_panel_destroy(DvzPanel* panel)
 /*  Controllers                                                                                  */
 /*************************************************************************************************/
 
-DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
+DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel, int flags)
 {
     ANN(panel);
     ANN(panel->view);
@@ -635,7 +635,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
     float h = panel->view->shape[1];
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
-    panel->panzoom = dvz_panzoom(w, h, 0);
+    panel->panzoom = dvz_panzoom(w, h, flags);
     _panzoom_ortho_size(panel); // Takes panel margins into account.
 
     panel->transform = dvz_transform(scene->batch, 0);
@@ -646,7 +646,7 @@ DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
 
 
 
-DvzOrtho* dvz_panel_ortho(DvzPanel* panel)
+DvzOrtho* dvz_panel_ortho(DvzPanel* panel, int flags)
 {
     ANN(panel);
     ANN(panel->view);
@@ -673,7 +673,7 @@ DvzOrtho* dvz_panel_ortho(DvzPanel* panel)
     float h = panel->view->shape[1];
 
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
-    panel->ortho = dvz_ortho(w, h, 0);
+    panel->ortho = dvz_ortho(w, h, flags);
     _panzoom_ortho_size(panel); // Takes panel margins into account.
 
     panel->transform = dvz_transform(scene->batch, 0);
@@ -690,7 +690,7 @@ DvzOrtho* dvz_panel_ortho(DvzPanel* panel)
 
 
 
-DvzArcball* dvz_panel_arcball(DvzPanel* panel)
+DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags)
 {
     ANN(panel);
     ANN(panel->view);
@@ -713,7 +713,7 @@ DvzArcball* dvz_panel_arcball(DvzPanel* panel)
 
     log_trace("create a new Arcball instance");
     // NOTE: the size is in screen coordinates, not framebuffer coordinates.
-    panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], 0);
+    panel->arcball = dvz_arcball(panel->view->shape[0], panel->view->shape[1], flags);
     // panel->transform = dvz_transform(scene->batch, 0);
     // panel->transform_to_destroy = true;
 

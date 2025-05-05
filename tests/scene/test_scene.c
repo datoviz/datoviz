@@ -77,7 +77,7 @@ int test_scene_1(TstSuite* suite)
     // ANN(pz);
 
     // Ortho.
-    DvzOrtho* ortho = dvz_panel_ortho(panel);
+    DvzOrtho* ortho = dvz_panel_ortho(panel, 0);
     ANN(ortho);
 
     // Create a visual.
@@ -150,7 +150,7 @@ int test_scene_2(TstSuite* suite)
     // Transforms.
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(panel_0);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel_0, 0);
     ANN(pz);
 
     dvz_panel_transform(panel_1, panel_0->transform);
@@ -200,7 +200,7 @@ int test_scene_3(TstSuite* suite)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Arcball.
-    DvzArcball* arcball = dvz_panel_arcball(panel);
+    DvzArcball* arcball = dvz_panel_arcball(panel, 0);
     ANN(arcball);
 
     // Create a visual.

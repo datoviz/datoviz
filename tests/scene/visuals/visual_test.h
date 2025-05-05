@@ -128,7 +128,7 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
     case VISUAL_TEST_ARCBALL:
 
         // Arcball.
-        arcball = dvz_panel_arcball(panel);
+        arcball = dvz_panel_arcball(panel, 0);
         ANN(arcball);
 
         // Perspective camera.
@@ -137,11 +137,11 @@ static VisualTest visual_test_start(const char* name, VisualTestType type, int f
         break;
 
     case VISUAL_TEST_PANZOOM:
-        panzoom = dvz_panel_panzoom(panel);
+        panzoom = dvz_panel_panzoom(panel, 0);
         break;
 
     case VISUAL_TEST_ORTHO:
-        ortho = dvz_panel_ortho(panel);
+        ortho = dvz_panel_ortho(panel, 0);
         break;
 
     default:

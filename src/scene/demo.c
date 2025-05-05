@@ -85,7 +85,7 @@ DvzVisual* dvz_demo_panel_2D(DvzPanel* panel)
     dvz_point_color(visual, 0, n, color, 0);
     dvz_point_size(visual, 0, n, size, 0);
 
-    dvz_panel_panzoom(panel);
+    dvz_panel_panzoom(panel, 0);
     dvz_panel_visual(panel, visual, 0);
 
     return visual;
@@ -108,7 +108,7 @@ DvzVisual* dvz_demo_panel_3D(DvzPanel* panel)
     dvz_sphere_color(visual, 0, n, color, 0);
     dvz_sphere_size(visual, 0, n, size, 0);
 
-    dvz_panel_arcball(panel);
+    dvz_panel_arcball(panel, 0);
     dvz_panel_visual(panel, visual, 0);
     dvz_camera_initial(dvz_panel_camera(panel, 0), (vec3){0, 0, 3}, (vec3){0}, (vec3){0, 1, 0});
 
@@ -193,7 +193,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p00, "LINE LIST", &af);
-    dvz_panel_panzoom(p00);
+    dvz_panel_panzoom(p00, 0);
     dvz_panel_visual(p00, line_list, 0);
 
 
@@ -206,7 +206,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p01, "LINE STRIP", &af);
-    dvz_panel_panzoom(p01);
+    dvz_panel_panzoom(p01, 0);
     dvz_panel_visual(p01, line_strip, 0);
 
 
@@ -219,7 +219,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p02, "TRIANGLE LIST", &af);
-    dvz_panel_panzoom(p02);
+    dvz_panel_panzoom(p02, 0);
     dvz_panel_visual(p02, triangle_list, 0);
 
 
@@ -232,7 +232,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p03, "TRIANGLE STRIP", &af);
-    dvz_panel_panzoom(p03);
+    dvz_panel_panzoom(p03, 0);
     dvz_panel_visual(p03, triangle_strip, 0);
 
 
@@ -251,7 +251,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p10, "POINT LIST", &af);
-    dvz_panel_panzoom(p10);
+    dvz_panel_panzoom(p10, 0);
     dvz_panel_visual(p10, point_list, 0);
 
 
@@ -264,7 +264,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p11, "PIXEL", &af);
-    dvz_panel_panzoom(p11);
+    dvz_panel_panzoom(p11, 0);
     dvz_panel_visual(p11, pixel, 0);
 
 
@@ -278,7 +278,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p12, "POINT", &af);
-    dvz_panel_panzoom(p12);
+    dvz_panel_panzoom(p12, 0);
     dvz_panel_visual(p12, point, 0);
 
 
@@ -301,7 +301,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p13, "MARKER", &af);
-    dvz_panel_panzoom(p13);
+    dvz_panel_panzoom(p13, 0);
     dvz_panel_visual(p13, marker, 0);
 
 
@@ -339,7 +339,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p20, "GLYPH", &af);
-    dvz_panel_panzoom(p20);
+    dvz_panel_panzoom(p20, 0);
     dvz_panel_visual(p20, glyph, 0);
 
 
@@ -368,7 +368,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p21, "SEGMENT", &af);
-    dvz_panel_panzoom(p21);
+    dvz_panel_panzoom(p21, 0);
     dvz_panel_visual(p21, segment, 0);
 
 
@@ -392,7 +392,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p22, "PATH", &af);
-    dvz_panel_panzoom(p22);
+    dvz_panel_panzoom(p22, 0);
     dvz_panel_visual(p22, path, 0);
 
 
@@ -438,7 +438,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p23, "IMAGE", &af);
-    dvz_panel_panzoom(p23);
+    dvz_panel_panzoom(p23, 0);
     dvz_panel_visual(p23, image, 0);
 
 
@@ -453,7 +453,7 @@ void dvz_demo(void)
     DvzVisual* mesh = dvz_mesh_shape(batch, shape, DVZ_MESH_FLAGS_LIGHTING);
 
     legend(batch, p30, "MESH", &af);
-    dvz_arcball_initial(dvz_panel_arcball(p30), (vec3){+0.4, -0.8, +2.9});
+    dvz_arcball_initial(dvz_panel_arcball(p30, 0), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(
         dvz_panel_camera(p30, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p30, mesh, 0);
@@ -477,7 +477,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p31, "SPHERE", &af);
-    dvz_arcball_initial(dvz_panel_arcball(p31), (vec3){+0.4, -0.8, +2.9});
+    dvz_arcball_initial(dvz_panel_arcball(p31, 0), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(
         dvz_panel_camera(p31, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p31, sphere, 0);
@@ -532,7 +532,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p32, "VOLUME", &af);
-    dvz_arcball_initial(dvz_panel_arcball(p32), (vec3){+0.4, -0.8, +2.9});
+    dvz_arcball_initial(dvz_panel_arcball(p32, 0), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(
         dvz_panel_camera(p32, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p32, volume, 0);
@@ -612,7 +612,7 @@ void dvz_demo(void)
     }
 
     legend(batch, p33, "SLICE", &af);
-    dvz_arcball_initial(dvz_panel_arcball(p33), (vec3){+0.4, -0.8, +2.9});
+    dvz_arcball_initial(dvz_panel_arcball(p33, 0), (vec3){+0.4, -0.8, +2.9});
     dvz_camera_initial(
         dvz_panel_camera(p33, 0), (vec3){0, 0, 3}, (vec3){0, 0, 0}, (vec3){0, 1, 0});
     dvz_panel_visual(p33, slice, 0);

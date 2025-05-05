@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Panzoom.
-    DvzPanzoom* pz = dvz_panel_panzoom(panel);
+    DvzPanzoom* pz = dvz_panel_panzoom(panel, 0);
 
     // Create a visual.
     DvzVisual* visual = dvz_point(batch, 0);

@@ -664,9 +664,10 @@ DVZ_EXPORT DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags);
  * Set panzoom interactivity for a panel.
  *
  * @param panel the panel
+ * @param flags the flags
  * @returns the panzoom
  */
-DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
+DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel, int flags);
 
 
 
@@ -674,9 +675,10 @@ DVZ_EXPORT DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel);
  * Set ortho interactivity for a panel.
  *
  * @param panel the panel
+ * @param flags the flags
  * @returns the ortho
  */
-DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel);
+DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel, int flags);
 
 
 
@@ -684,9 +686,10 @@ DVZ_EXPORT DvzOrtho* dvz_panel_ortho(DvzPanel* panel);
  * Set arcball interactivity for a panel.
  *
  * @param panel the panel
+ * @param flags the flags
  * @returns the arcball
  */
-DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel);
+DVZ_EXPORT DvzArcball* dvz_panel_arcball(DvzPanel* panel, int flags);
 
 
 

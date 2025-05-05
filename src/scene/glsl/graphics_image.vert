@@ -44,7 +44,11 @@ void main()
     // Do not keep aspect ratio.
     else if (RESCALE == 2)
     {
-        zoom = axis_zoom().xy;
+        vec3 az = axis_zoom();
+        if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_X) ==0)
+            zoom.x = az.x;
+        if ((TRANSFORM_FLAGS & DVZ_TRANSFORM_FIXED_Y) ==0)
+            zoom.y = az.y;
         d *= zoom;
     }
     tr.xy += (SIZE_NDC == 0 ? d * 2. / viewport.size : d);

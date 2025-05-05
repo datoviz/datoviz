@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     DvzPanel* panel = dvz_panel_default(figure);
 
     // Arcball.
-    DvzArcball* arcball = dvz_panel_arcball(panel);
+    DvzArcball* arcball = dvz_panel_arcball(panel, 0);
 
     // Set the initial arcball angles.
     dvz_arcball_initial(arcball, (vec3){+0.6, -1.2, +3.0});
