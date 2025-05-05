@@ -91,7 +91,8 @@ class Event:
         Returns
         -------
         str or None
-            The mouse event type, or None if not a mouse event.
+            The mouse event type (`click`, `double_click`, `drag`, `drag_start`, `drag_stop`,
+            `move`, `press`, `release`, `wheel`), or None if not a mouse event.
         """
         if self.is_mouse():
             return from_enum(dvz.MouseEventType, self.c_ev.type, prettify=prettify)
