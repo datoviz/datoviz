@@ -1,5 +1,5 @@
-"""PyQt6 backend
-
+"""
+PyQt6 backend
 """
 
 # -------------------------------------------------------------------------------------------------
@@ -9,17 +9,16 @@
 import ctypes
 
 try:
-    from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout
-    from PyQt6.QtGui import QImage, QPixmap
     from PyQt6.QtCore import Qt
+    from PyQt6.QtGui import QImage, QPixmap
+    from PyQt6.QtWidgets import QLabel, QVBoxLayout, QWidget
 except:
-    from PyQt5.QtWidgets import QLabel, QWidget, QVBoxLayout
-    from PyQt5.QtGui import QImage, QPixmap
     from PyQt5.QtCore import Qt
+    from PyQt5.QtGui import QImage, QPixmap
+    from PyQt5.QtWidgets import QLabel, QVBoxLayout, QWidget
 
 import datoviz as dvz
 from datoviz import vec2
-
 
 # -------------------------------------------------------------------------------------------------
 # Constants
@@ -38,6 +37,7 @@ BUTTON_MAPPING = {
 # -------------------------------------------------------------------------------------------------
 # Qt figure
 # -------------------------------------------------------------------------------------------------
+
 
 class QtFigure(QWidget):
     def __init__(self, figure, server=None, scene=None):
@@ -76,8 +76,7 @@ class QtFigure(QWidget):
             return
 
         data_bytes = bytearray(ctypes.string_at(data, w * h * 3))
-        self.image = QImage(data_bytes, w, h, 3 * w,
-                            QImage.Format.Format_RGB888)
+        self.image = QImage(data_bytes, w, h, 3 * w, QImage.Format.Format_RGB888)
         self.pixmap = QPixmap.fromImage(self.image)
         self.label.setPixmap(self.pixmap)
 
@@ -152,6 +151,7 @@ class QtFigure(QWidget):
 # -------------------------------------------------------------------------------------------------
 # Qt offscreen server
 # -------------------------------------------------------------------------------------------------
+
 
 class QtServer:
     def __init__(self):

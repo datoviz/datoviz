@@ -2,8 +2,10 @@
 
 * [Datoviz Features Examples](#datoviz-features-examples)
     * [Arcball example](#arcball-example)
+    * [Axes example](#axes-example)
     * [Camera example](#camera-example)
     * [Datoviz Rendering Protocol (DRP) example](#datoviz-rendering-protocol-(drp)-example)
+    * [Fixed example](#fixed-example)
     * [GUI example](#gui-example)
     * [GUI panel example](#gui-panel-example)
     * [Visibility example](#visibility-example)
@@ -13,8 +15,10 @@
     * [Offscreen example](#offscreen-example)
     * [Panel example](#panel-example)
     * [Panzoom example](#panzoom-example)
+    * [Polygon example](#polygon-example)
     * [PyQt6 local example](#pyqt6-local-example)
     * [Shapes](#shapes)
+    * [Surface example](#surface-example)
     * [Timestamps example](#timestamps-example)
     * [Video example](#video-example)
 * [C Examples](#c-examples)
@@ -37,31 +41,74 @@ Show how to manipulate an arcball.
 
 ```python
 import datoviz as dvz
-from datoviz import vec3
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
-figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
-panel = dvz.panel_default(figure)
-visual = dvz.demo_panel_3D(panel)
-
-# Get or create an arcball interaction for a panel.
-arcball = dvz.panel_arcball(panel)
+app = dvz.App()
+# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
+figure = app.figure(gui=True)
+panel = figure.panel()
+panel.demo_3D()
 
 # Set initial angles for the arcball (which modifies the model matrix).
-dvz.arcball_initial(arcball, vec3(-1.5, 0.0, +1.5))
-
-# NOTE: at the moment, we need to tell Datoviz that the panel transform has changed.
-dvz.panel_update(panel)
+arcball = panel.arcball(initial=(-1.5, 0.0, +1.5))
 
 # Display a little GUI widget with sliders to control the arcball angles.
-dvz.arcball_gui(arcball, app, dvz.figure_id(figure), panel)
+app.arcball_gui(panel, arcball)
 
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+# Angles can be set and retrieved as follws:
+angles = (-1.5, 0.0, +2.5)
+arcball.set(angles)
+angles = arcball.get()
+print('Arcball angles:', angles)
+
+app.run()
+app.destroy()
+```
+</details>
+
+## Axes example
+
+Show how to use 2D axes.
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/axes.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/axes.py</code></summary>
+
+```python
+import numpy as np
+
+import datoviz as dvz
+
+n = 10
+xmin, xmax = 1, 10
+ymin, ymax = 100, 1000
+x, y = np.meshgrid(np.linspace(xmin, xmax, n), np.linspace(ymin, ymax, n))
+nn = x.size
+color = np.random.randint(low=100, high=240, size=(nn, 4)).astype(np.uint8)
+size = np.full(nn, 20)
+
+app = dvz.App(background='white')
+figure = app.figure()
+panel = figure.panel()
+axes = panel.axes((xmin, xmax), (ymin, ymax))
+
+visual = app.point(
+    position=axes.normalize(x, y),
+    color=color,
+    size=size,
+)
+panel.add(visual)
+
+
+@app.connect(figure)
+def on_mouse(ev):
+    if ev.mouse_event() == 'drag':
+        xlim, ylim = axes.bounds()
+        print(f'x: [{xlim[0]:g}, {xlim[1]:g}] ; y: [{ylim[0]:g}, {ylim[1]:g}]')
+
+
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -76,74 +123,46 @@ Show how to manipulate a camera.
 
 ```python
 import datoviz as dvz
-from datoviz import vec3
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
-figure = dvz.figure(scene, 800, 600, 0)
-panel = dvz.panel_default(figure)
-visual = dvz.demo_panel_3D(panel)
-
-# Get or create the panel's 3D perspective camera.
-camera = dvz.panel_camera(panel, 0)
+app = dvz.App()
+# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
+figure = app.figure()
+panel = figure.panel()
+panel.demo_3D()
 
 # Camera initial parameters (the ones used when calling camera_reset()).
-eye = vec3(0, 0, 2)
-up = vec3(0, 1, 0)
-lookat = vec3(0, 0, 0)
-dvz.camera_initial(camera, eye, lookat, up)
+eye = [0, 0, 2]
+up = [0, 1, 0]
+lookat = [0, 0, 0]
+# Get or create the panel's 3D perspective camera.
+camera = panel.camera(initial=eye, initial_up=up, initial_lookat=lookat)
 
-# NOTE: at the moment, we need to tell Datoviz that the panel transform has changed.
-dvz.panel_update(panel)
+d = 0.1
+mapping = {
+    dvz.KEY_UP: (2, -d),
+    dvz.KEY_DOWN: (2, +d),
+    dvz.KEY_LEFT: (0, -d),
+    dvz.KEY_RIGHT: (0, +d),
+}
 
-# Keyboard event callback function.
 
-
-@dvz.on_keyboard
-def on_keyboard(app, window_id, ev):
-    ev = ev.contents
+@app.connect(figure)
+def on_keyboard(ev):
     global eye
 
-    # Camera movement offset.
-    d = .1
-
     # Keyboard events are PRESS, RELEASE, and REPEAT.
-    if ev.type != dvz.KEYBOARD_EVENT_RELEASE:
-
+    if ev.key_event() != 'release':
         # Move the camera position depending on the pressed keys.
-        if ev.key == dvz.KEY_UP:
-            eye[2] -= d
-        elif ev.key == dvz.KEY_DOWN:
-            eye[2] += d
-        elif ev.key == dvz.KEY_LEFT:
-            eye[0] -= d
-        elif ev.key == dvz.KEY_RIGHT:
-            eye[0] += d
+        i, dp = mapping.get(ev.key(), (0, 0))
+        eye[i] += dp
+        lookat = (eye[0], eye[1], eye[2] - 1)
 
-        # Update the camera position.
-        dvz.camera_position(camera, eye)
-
-        # Update the lookat position (just forward looking).
-        lookat = vec3(*eye)
-        lookat[2] -= 1
-        dvz.camera_lookat(camera, lookat)
-
-        # Optional here, this is just to show how to update the up vector of the camera.
-        dvz.camera_up(camera, vec3(0, 1, 0))
-
-        # Important: we must update the panel after the panel transformation parameters
-        # have changed.
-        dvz.panel_update(panel)
+        # Update the camera.
+        camera.set(eye=eye, lookat=lookat, up=up)
 
 
-# We register the keyboard callback function.
-dvz.app_on_keyboard(app, on_keyboard, None)
-
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -158,6 +177,7 @@ Show a simple triangle using raw DRP requests.
 
 ```python
 import numpy as np
+
 import datoviz as dvz
 
 app = dvz.app(0)
@@ -168,10 +188,12 @@ width = 1024
 height = 768
 
 # Define the Vertex dtype
-vertex_dtype = np.dtype([
-    ('pos', np.float32, (3,)),  # 3D position (vec3)
-    ('color', np.uint8, (4,))   # RGBA color (cvec4)
-])
+vertex_dtype = np.dtype(
+    [
+        ('pos', np.float32, (3,)),  # 3D position (vec3)
+        ('color', np.uint8, (4,)),  # RGBA color (cvec4)
+    ]
+)
 vertex_size = vertex_dtype.itemsize
 pos_offset = vertex_dtype.fields['pos'][1]
 color_offset = vertex_dtype.fields['color'][1]
@@ -202,8 +224,7 @@ void main()
 }
 """
 
-req = dvz.create_glsl(
-    batch, dvz.SHADER_VERTEX, vertex_glsl)
+req = dvz.create_glsl(batch, dvz.SHADER_VERTEX, vertex_glsl)
 
 # Assign the shader to the graphics pipe.
 vertex_id = req.id
@@ -223,8 +244,7 @@ void main()
 }
 """
 
-req = dvz.create_glsl(
-    batch, dvz.SHADER_FRAGMENT, fragment_glsl)
+req = dvz.create_glsl(batch, dvz.SHADER_FRAGMENT, fragment_glsl)
 
 # Assign the shader to the graphics pipe.
 fragment_id = req.id
@@ -239,8 +259,7 @@ dvz.set_polygon(batch, graphics_id, dvz.POLYGON_MODE_FILL)
 
 
 # Vertex binding.
-dvz.set_vertex(
-    batch, graphics_id, 0, vertex_size, dvz.VERTEX_INPUT_RATE_VERTEX)
+dvz.set_vertex(batch, graphics_id, 0, vertex_size, dvz.VERTEX_INPUT_RATE_VERTEX)
 
 # Vertex attrs.
 dvz.set_attr(batch, graphics_id, 0, 0, dvz.FORMAT_R32G32B32_SFLOAT, pos_offset)
@@ -255,18 +274,20 @@ dat_id = req.id
 req = dvz.bind_vertex(batch, graphics_id, 0, dat_id, 0)
 
 # Upload the triangle data.
-data = np.array([
-    ((-1, +1, 0), (255, 0, 0, 255)),
-    ((+1, +1, 0), (0, 255, 0, 255)),
-    ((+0, -1, 0), (0, 0, 255, 255)),
-], dtype=vertex_dtype)
+data = np.array(
+    [
+        ((-1, +1, 0), (255, 0, 0, 255)),
+        ((+1, +1, 0), (0, 255, 0, 255)),
+        ((+0, -1, 0), (0, 0, 255, 255)),
+    ],
+    dtype=vertex_dtype,
+)
 req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, data, 0)
 
 
 # Commands.
 dvz.record_begin(batch, canvas_id)
-dvz.record_viewport(
-    batch, canvas_id, dvz.DEFAULT_VIEWPORT, dvz.DEFAULT_VIEWPORT)
+dvz.record_viewport(batch, canvas_id, dvz.DEFAULT_VIEWPORT, dvz.DEFAULT_VIEWPORT)
 dvz.record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1)
 dvz.record_end(batch, canvas_id)
 
@@ -282,6 +303,29 @@ dvz.app_destroy(app)
 ```
 </details>
 
+## Fixed example
+
+Show how to fix a visual in the panel on one or several axes.
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/fixed.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/fixed.py</code></summary>
+
+```python
+import datoviz as dvz
+
+app = dvz.App()
+figure = app.figure()
+panel = figure.panel()
+visual = panel.demo_2D()
+visual.fixed('y')  # or 'x', or 'z', or 'x, y'... or True for all axes
+
+app.run()
+app.destroy()
+```
+</details>
+
 ## GUI example
 
 Show how to create a GUI dialog.
@@ -292,31 +336,22 @@ Show how to create a GUI dialog.
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/gui.py</code></summary>
 
 ```python
-import ctypes
 import numpy as np
-import datoviz as dvz
-from datoviz import vec2, vec3, Out
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
-figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
+import datoviz as dvz
+from datoviz import Out, vec2, vec3
 
 # Dialog width.
 w = 300
 
-labels = [
-    "col0", "col1", "col2",
-    "0",    "1",    "2",
-    "3",    "4",    "5"]
+labels = ['col0', 'col1', 'col2', '0', '1', '2', '3', '4', '5']
 rows = 2
 cols = 3
 selected = np.array([False, True], dtype=np.bool)
 
 # IMPORTANT: these values need to be defined outside of the GUI callback.
 checked = Out(True)
-color = vec3(.7, .5, .3)
+color = vec3(0.7, 0.5, 0.3)
 
 slider = Out(25.0)  # Warning: needs to be a float as it is passed to a function expecting a float
 
@@ -324,60 +359,60 @@ slider = Out(25.0)  # Warning: needs to be a float as it is passed to a function
 # GUI system. This means the GUI is recreated from scratch at every frame.
 
 
-@dvz.on_gui
-def on_gui(app, fid, ev):
+app = dvz.App()
+# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
+figure = app.figure(gui=True)
 
+
+@app.connect(figure)
+def on_gui(ev):
     # Set the size of the next GUI dialog.
     dvz.gui_pos(vec2(25, 25), vec2(0, 0))
     dvz.gui_size(vec2(w + 20, 550))
 
     # Start a GUI dialog, specifying a dialog title.
-    dvz.gui_begin("My GUI", 0)
+    dvz.gui_begin('My GUI', 0)
 
     # Add a button. The function returns whether the button was pressed during this frame.
-    if dvz.gui_button("Button", w, 30):
-        print("button clicked")
+    if dvz.gui_button('Button', w, 30):
+        print('button clicked')
 
     # Create a tree, this call returns True if this node is unfolded.
-    if dvz.gui_node("Item 1"):
+    if dvz.gui_node('Item 1'):
         # Display an item in the tree.
-        dvz.gui_selectable("Hello inside item 1")
+        dvz.gui_selectable('Hello inside item 1')
         # Return True if this item was clicked.
         if dvz.gui_clicked():
-            print("clicked sub item 1")
+            print('clicked sub item 1')
         # Go up one level.
         dvz.gui_pop()
 
-    if dvz.gui_node("Item 2"):
-        if dvz.gui_node("Item 2.1"):
-            dvz.gui_selectable("Hello inside item 2")
+    if dvz.gui_node('Item 2'):
+        if dvz.gui_node('Item 2.1'):
+            dvz.gui_selectable('Hello inside item 2')
             if dvz.gui_clicked():
-                print("clicked sub item 2")
+                print('clicked sub item 2')
             dvz.gui_pop()
         dvz.gui_pop()
 
-    if dvz.gui_table("table", rows, cols, labels, selected, 0):
-        print("Selected rows:", np.nonzero(selected)[0])
+    if dvz.gui_table('table', rows, cols, labels, selected, 0):
+        print('Selected rows:', np.nonzero(selected)[0])
 
-    if dvz.gui_checkbox("Checkbox", checked):
-        print("Checked status:", checked.value)
+    if dvz.gui_checkbox('Checkbox', checked):
+        print('Checked status:', checked.value)
 
-    if dvz.gui_colorpicker("Color picker", color, 0):
-        print("Color:", color)
+    if dvz.gui_colorpicker('Color picker', color, 0):
+        print('Color:', color)
 
-    if dvz.gui_slider("Slider", 0.0, 100.0, slider):
-        print("Slider value:", slider.value)
+    if dvz.gui_slider('Slider', 0.0, 100.0, slider):
+        print('Slider value:', slider.value)
 
     # End the GUI dialog.
     dvz.gui_end()
 
 
-# Associate a GUI callback function with a figure.
-dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
-
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -393,26 +428,23 @@ Show how to create a GUI panel.
 ```python
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
-figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
+app = dvz.App()
+# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
+figure = app.figure(gui=True)
 
 # Create a panel, specifying the panel offset and size (x, y, width, height, in pixels).
-panel1 = dvz.panel(figure, 50, 50, 300, 300)
-dvz.demo_panel_3D(panel1)
+panel1 = figure.panel((50, 50), (300, 300))
+panel1.demo_3D()
 
-# Wrap a panel in a GUI dialog.
-dvz.panel_gui(panel1, "Panel 1", 0)
+panel2 = figure.panel((400, 100), (300, 300))
+panel2.demo_2D()
 
-panel2 = dvz.panel(figure, 400, 100, 300, 300)
-dvz.demo_panel_2D(panel2)
-dvz.panel_gui(panel2, "Panel 2", 0)
+# We transform the static panels into GUI panels (experimental).
+panel1.gui('First panel')
+panel2.gui('Second panel')
 
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -426,36 +458,29 @@ Show how to show/hide a visual.
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/hide.py</code></summary>
 
 ```python
-import ctypes
-import numpy as np
 import datoviz as dvz
-from datoviz import vec2, vec3, Out
+from datoviz import Out
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-# NOTE: at the moment, you need to set this flag when creating a figure if you intend to use ImGui.
-figure = dvz.figure(scene, 800, 600, dvz.CANVAS_FLAGS_IMGUI)
-panel = dvz.panel_default(figure)
-visual = dvz.demo_panel_2D(panel)
+app = dvz.App()
+# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
+figure = app.figure(gui=True)
+panel = figure.panel()
+visual = panel.demo_2D()
 
 visible = Out(True)
 
 
-@dvz.on_gui
-def on_gui(app, fid, ev):
-    dvz.gui_begin("GUI", 0)
-    if dvz.gui_checkbox("Visible?", visible):
-        dvz.visual_show(visual, visible.value)
-        dvz.figure_update(figure)
+@app.connect(figure)
+def on_gui(ev):
+    dvz.gui_begin('GUI', 0)
+    if dvz.gui_checkbox('Visible?', visible):
+        visual.show(visible.value)
+        figure.update()
     dvz.gui_end()
 
 
-dvz.app_gui(app, dvz.figure_id(figure), on_gui, None)
-
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -471,25 +496,17 @@ Show how to react to keyboard events.
 ```python
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
+app = dvz.App()
+figure = app.figure()
 
 
-@dvz.on_keyboard
-def on_keyboard(app, window_id, ev):
-    ev = ev.contents
-    action = {dvz.KEYBOARD_EVENT_RELEASE: "released",
-              dvz.KEYBOARD_EVENT_PRESS: "pressed"}.get(ev.type)
-    print(f"{action} key {ev.key} ({dvz.key_name(ev.key)})")
+@app.connect(figure)
+def on_keyboard(ev):
+    print(f'{ev.key_event()} key {ev.key()} ({ev.key_name()})')
 
 
-dvz.app_on_keyboard(app, on_keyboard, None)
-
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -505,40 +522,34 @@ Show how to react to mouse events.
 ```python
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
+app = dvz.App()
+figure = app.figure()
 
 
-@dvz.on_mouse
-def on_mouse(app, window_id, ev):
-    ev = ev.contents
-    action = dvz.from_enum(dvz.MouseEventType, ev.type)
-    x, y = ev.pos
-    print(f"{action} ({x:.0f}, {y:.0f}) ", end="")
+@app.connect(figure)
+def on_mouse(ev):
+    action = ev.mouse_event()
+    x, y = ev.pos()
+    print(f'{action} ({x:.0f}, {y:.0f}) ', end='')
 
-    if ev.type in (dvz.MOUSE_EVENT_CLICK, dvz.MOUSE_EVENT_DOUBLE_CLICK):
-        button = ev.button
-        print(f"{dvz.button_name(button)} button", end="")
+    if action in ('click', 'double_click'):
+        button = ev.button_name()
+        print(f'{button} button', end='')
 
-    if ev.type in (dvz.MOUSE_EVENT_DRAG_START, dvz.MOUSE_EVENT_DRAG_STOP, dvz.MOUSE_EVENT_DRAG):
-        button = ev.button
-        xd, yd = ev.content.d.press_pos
-        print(f"{dvz.button_name(button)} button pressed at ({xd:.0f}, {yd:.0f})", end="")
+    if action in ('drag_start', 'drag_stop', 'drag'):
+        button = ev.button_name()
+        xd, yd = ev.press_pos()
+        print(f'{button} button pressed at ({xd:.0f}, {yd:.0f})', end='')
 
-    if ev.type == dvz.MOUSE_EVENT_WHEEL:
-        w = ev.content.w.dir[1]
-        print(f"wheel direction {w}", end="")
+    if action == 'wheel':
+        w = ev.wheel()
+        print(f'wheel direction {w}', end='')
 
     print()
 
 
-dvz.app_on_mouse(app, on_mouse, None)
-
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -553,15 +564,15 @@ Show the mesh visual with predefined shapes.
 
 ```python
 from pathlib import Path
-import datoviz as dvz
 
+import datoviz as dvz
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 file_path = ROOT_DIR / 'data/mesh/bunny.obj'
 
-linewidth = .1
+linewidth = 0.1
 edgecolor = (0, 0, 0, 96)
-light_params = (.25, .75, .25, 16)
+light_params = (0.25, 0.75, 0.25, 16)
 
 sc = dvz.ShapeCollection()
 sc.add_obj(file_path, contour='full')
@@ -569,11 +580,12 @@ sc.add_obj(file_path, contour='full')
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel()
-arcball = panel.arcball(initial=(.35, 0, 0))
+arcball = panel.arcball(initial=(0.35, 0, 0))
 camera = panel.camera(initial=(0, 0, 3))
 
 visual = app.mesh_shape(
-    sc, lighting=True, linewidth=linewidth,  edgecolor=edgecolor, light_params=light_params)
+    sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor, light_params=light_params
+)
 panel.add(visual)
 
 app.run()
@@ -597,20 +609,15 @@ NOTE: the API for this feature may change in an upcoming version.
 ```python
 import datoviz as dvz
 
-app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
-dvz.demo_panel_2D(dvz.panel_default(figure))
-
-# Need to run at least one frame before capturing a screenshot.
-dvz.scene_run(scene, app, 1)
+app = dvz.App(offscreen=True)
+figure = app.figure()
+panel = figure.panel()
+panel.demo_2D()
 
 # Save a PNG screenshot.
-dvz.app_screenshot(app, dvz.figure_id(figure), "offscreen_python.png")
+app.screenshot(figure, 'offscreen_python.png')
 
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.destroy()
 ```
 </details>
 
@@ -626,28 +633,26 @@ Show how to create several panels.
 ```python
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
+app = dvz.App()
+figure = app.figure()
 
 # Create two panels side-by-side.
-panel1 = dvz.panel(figure, 0, 0, 400, 600)
-panel2 = dvz.panel(figure, 400, 0, 400, 600)
+panel1 = figure.panel((0, 0), (400, 600))
+panel2 = figure.panel((400, 0), (400, 600))
 
 # Add demo visuals to the panels.
-visual1 = dvz.demo_panel_2D(panel1)
-visual2 = dvz.demo_panel_3D(panel2)
+visual1 = panel1.demo_2D()
+visual2 = panel2.demo_3D()
 
 # Set some margins for the first panel, which affects the panel's coordinate systems.
 # [-1, +1] map to the "inner" viewport.
-dvz.panel_margins(panel1, 20, 100, 20, 20)  # top, right, bottom, left, like in CSS
-# Indicate that the first visual should be hidden inside the margins, outside of [-1, +1].
-dvz.visual_clip(visual1, dvz.VIEWPORT_CLIP_OUTER)
+panel1.margins(20, 100, 20, 20)  # top, right, bottom, left
 
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+# Indicate that the first visual should be hidden inside the margins, outside of [-1, +1].
+visual1.clip('outer')
+
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -664,13 +669,12 @@ Show how to manipulate a panzoom.
 import datoviz as dvz
 from datoviz import dvec2
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
-panel = dvz.panel_default(figure)
-panzoom = dvz.panel_panzoom(panel)
-visual = dvz.demo_panel_2D(panel)
+app = dvz.App()
+figure = app.figure(gui=True)
+panel = figure.panel()
+panzoom = panel.panzoom()
+visual = panel.demo_2D()
+
 
 # Create a data coordinate system [0, 100] x [0, 10].
 ref = dvz.ref(0)
@@ -686,14 +690,58 @@ dvz.panzoom_xlim(panzoom, ref, xlim)
 xlim[1] /= 2.0
 dvz.panzoom_xlim(panzoom, ref, xlim)
 
-# NOTE: at the moment, we need to tell Datoviz that the panel transform has changed.
 dvz.panel_update(panel)
 
-dvz.scene_run(scene, app, 0)
 
-dvz.ref_destroy(ref)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
+```
+</details>
+
+## Polygon example
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/polygon.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/polygon.py</code></summary>
+
+```python
+import numpy as np
+
+import datoviz as dvz
+
+
+def make_polygon(n, center, radius):
+    # WARNING: watch the direction (-t) otherwise the contour_joints won't work!
+    t = np.linspace(0, 2 * np.pi, n + 1) - ((np.pi / 2.0) if n != 4 else np.pi / 4)
+    t = t[:-1]
+    x = center[0] + radius * np.cos(-t)
+    y = center[1] + radius * np.sin(-t)
+    return np.c_[x, y]
+
+
+# Generate the shapes.
+r = 0.25
+w = 0.9
+shapes = []
+sizes = (4, 5, 6, 8)
+colors = dvz.cmap(dvz.CMAP_BWR, np.linspace(0, 1, 4))
+sc = dvz.ShapeCollection()
+for n, x, color in zip(sizes, np.linspace(-w, w, 4), colors):
+    points = make_polygon(n, (x, 0), r)
+    sc.add_polygon(points, color=color, contour=True)
+
+app = dvz.App()
+figure = app.figure()
+panel = figure.panel()
+ortho = panel.ortho()
+
+visual = app.mesh_shape(sc, linewidth=15, edgecolor=(255, 255, 255, 200))
+panel.add(visual)
+
+app.run()
+app.destroy()
+sc.destroy()
 ```
 </details>
 
@@ -702,7 +750,7 @@ dvz.app_destroy(app)
 Show how to integrate offscreen Datoviz figures into a PyQt6 application, using the Datoviz
 server API which provides a fully offscreen renderer with support for multiple canvases.
 
-NOTE: this API will change in an upcoming release.
+NOTE: this API is experimental and will change in an upcoming release.
 
 ![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/pyqt_offscreen.png)
 
@@ -713,15 +761,14 @@ NOTE: this API will change in an upcoming release.
 import sys
 
 try:
-    from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
     from PyQt6.QtCore import Qt
+    from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
 except:
-    from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter
     from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter
 
 import datoviz as dvz
 from datoviz.backends.pyqt6 import QtServer
-
 
 WIDTH, HEIGHT = 800, 600
 
@@ -770,8 +817,8 @@ if __name__ == "__main__":
 
 ```python
 import numpy as np
-import datoviz as dvz
 
+import datoviz as dvz
 
 rows = 12
 cols = 16
@@ -782,7 +829,7 @@ x, y = np.meshgrid(np.linspace(-1, 1, rows), np.linspace(-1, 1, cols))
 z = np.zeros_like(x)
 
 offsets = np.c_[x.flat, y.flat, z.flat]
-scales = 1.0 / rows * (1 + .25 * np.sin(5 * 2 * np.pi * t))
+scales = 1.0 / rows * (1 + 0.25 * np.sin(5 * 2 * np.pi * t))
 colors = dvz.cmap(dvz.CMAP_HSV, np.mod(t, 1))
 
 sc = dvz.ShapeCollection()
@@ -792,14 +839,92 @@ for offset, scale, color in zip(offsets, scales, colors):
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel()
-arcball = panel.arcball(initial=(-1, -.1, -.25))
+arcball = panel.arcball(initial=(-1, -0.1, -0.25))
 
-visual = app.mesh_shape(sc)
+visual = app.mesh_shape(sc, lighting=True)
 panel.add(visual)
 
 app.run()
 app.destroy()
+sc.destroy()
+```
+</details>
 
+## Surface example
+
+Show a rotating surface in 3D.
+
+Illustrates:
+
+- White background
+- Surface shape
+- Mesh visual and surface mesh
+- Arcball interactivity
+- Initial arcball angles
+
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/surface.png)
+
+<details>
+<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/surface.py</code></summary>
+
+```python
+import numpy as np
+
+import datoviz as dvz
+
+HAS_CONTOUR = True
+
+# Grid parameters.
+row_count = 200
+col_count = row_count
+# n = row_count * col_count
+
+# Allocate heights and colors arrays.
+grid = np.meshgrid(row_count, col_count)
+shape = (row_count, col_count)
+heights = np.zeros(shape, dtype=np.float32)
+
+# Create grid of coordinates
+x = np.arange(col_count)
+y = np.arange(row_count)
+xv, yv = np.meshgrid(x, y)
+
+# Distances.
+center_x = col_count / 2
+center_y = row_count / 2
+d = np.sqrt((xv - center_x) ** 2 + (yv - center_y) ** 2)
+
+# Heights.
+a = 4.0 * 2 * np.pi / row_count
+b = 3.0 * 2 * np.pi / col_count
+c = 0.5
+hmin = -0.5
+hmax = +0.5
+heights = np.exp(-0.0001 * d**2) * np.sin(a * xv) * np.cos(b * yv)
+
+# Colors.
+colors = dvz.cmap(dvz.CMAP_PLASMA, heights, hmin, hmax)
+
+linewidth = 0.1
+edgecolor = (0, 0, 0, 64)
+
+# -------------------------------------------------------------------------------------------------
+
+sc = dvz.ShapeCollection()
+sc.add_surface(heights=heights, colors=colors, contour='edges')
+
+app = dvz.App(background='white')
+figure = app.figure()
+panel = figure.panel()
+arcball = panel.arcball(initial=(0.42339, -0.39686, -0.00554))
+
+visual = app.mesh_shape(
+    sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
+)
+panel.add(visual)
+
+app.run()
+app.destroy()
 sc.destroy()
 ```
 </details>
@@ -817,44 +942,29 @@ setups).
 
 ```python
 import numpy as np
+
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
-figure = dvz.figure(scene, 800, 600, 0)
-panel = dvz.panel_default(figure)
-dvz.demo_panel_2D(panel)
-
-# Frame presentation timestamps.
-# Every second, we show the timestamps of the last `count` frames.
-count = 5
-
-# We prepare the arrays holding the data.
-seconds = np.zeros(count, dtype=np.uint64)  # epoch, in seconds
-nanoseconds = np.zeros(count, dtype=np.uint64)  # number of ns within the second
+app = dvz.App()
+figure = app.figure()
+panel = figure.panel()
+panel.demo_2D()
 
 
-@dvz.on_timer
-def on_timer(app, window_id, ev):
-    #  The timestamps are automatically recorded at every frame, this call fetches the last
-    # `count` ones.
-    dvz.app_timestamps(app, dvz.figure_id(figure), count, seconds, nanoseconds)
+@app.timer(delay=0.0, period=1.0, max_count=0)
+def on_timer(ev):
+    # Every second, we show the timestamps of the last `count` frames.
+    # NOTE: it is currently impossible to call dvz.app_timestamps() after the window was closed.
+    # The timestamps are automatically recorded at every frame, this call fetches the last 5.
+    seconds, nanoseconds = app.timestamps(figure, 5)
 
     # We display the values.
-    print(f"Last {count} frames:")
+    print('Last 5 frames:')
     print(np.c_[seconds, nanoseconds])
 
 
-# Timer: retrieve and display the timestamps every second.
-# NOTE: it is currently impossible to call dvz.app_timestamps() after the window has been closed.
-dvz.app_on_timer(app, on_timer, None)
-dvz.app_timer(app, 0, 1, 0)
-
-# Run the application and cleanup.
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
+app.run()
+app.destroy()
 ```
 </details>
 
@@ -862,26 +972,27 @@ dvz.app_destroy(app)
 
 Show how to generate an offscreen video.
 
+NOTE: experimental, the API will change.
+
 ![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/video.png)
 
 <details>
 <summary><strong>👨‍💻 Expand the code</strong> from <code>examples/video.py</code></summary>
 
 ```python
-from pathlib import Path
 import os
+
 import numpy as np
 
 try:
-    import tqdm
     import imageio
-except ImportError as e:
-    print("This example requires the tqdm and imageio dependencies. Aborting")
+    import tqdm
+except ImportError:
+    print('This example requires the tqdm and imageio dependencies. Aborting')
     exit()
 
 import datoviz as dvz
 from datoviz import vec3
-
 
 # Image size.
 WIDTH, HEIGHT = 1920, 1280
@@ -908,7 +1019,7 @@ def render(angle):
 
     # Get the image as a NumPy array (3*uint8 for RGB components).
     rgb = dvz.server_grab(server, dvz.figure_id(figure), 0)
-    img = dvz.pointer_image(rgb, WIDTH, HEIGHT)
+    img = dvz.utils.pointer_image(rgb, WIDTH, HEIGHT)
     return img
 
 
@@ -918,18 +1029,18 @@ laps = 1  # number of rotations
 lap_duration = 4.0  # duration of each rotation
 frame_count = int(lap_duration * laps * fps)  # total number of frames to generate
 # path to video file to write
-output_file = Path(__file__).parent / "video.mp4"
+output_file = 'video.mp4'
 kwargs = dict(
     fps=fps,
-    format="FFMPEG",
-    mode="I",
+    format='FFMPEG',
+    mode='I',
     # Quality FFMPEG presets
-    codec="libx264",
+    codec='libx264',
     output_params=(
-        "-preset slow -crf 18 -color_range 1 -colorspace bt709 "
-        "-color_primaries bt709 -color_trc bt709"
-    ).split(" "),
-    pixelformat="yuv420p",
+        '-preset slow -crf 18 -color_range 1 -colorspace bt709 '
+        '-color_primaries bt709 -color_trc bt709'
+    ).split(' '),
+    pixelformat='yuv420p',
 )
 if 'DVZ_CAPTURE' not in os.environ:  # HACK: avoid recording the video with `just runexamples`
     with imageio.get_writer(output_file, **kwargs) as writer:

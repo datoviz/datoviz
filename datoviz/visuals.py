@@ -1075,8 +1075,12 @@ class Glyph(Visual):
 
         Parameters
         ----------
+        args : tuple
+            Positional arguments for the parent class `Visual`.
         font_size : int, optional
             The font size, by default None.
+        kwargs : dict
+            Keyword arguments for the parent class `Visual`.
         """
         super().__init__(*args, **kwargs)
         self._af = dvz.AtlasFont()

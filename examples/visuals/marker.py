@@ -1,20 +1,21 @@
-"""# Marker visual example
+"""
+# Marker visual example
 
 Show the different types of marker visuals.
 
 """
 
 from pathlib import Path
-import numpy as np
-import datoviz as dvz
-from datoviz import cvec4
 
+import numpy as np
+
+import datoviz as dvz
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 W, H = 800, 600
 HW, HH = W / 2.0, H / 2.0
 MS = 64
-svg_path = "M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z"
+svg_path = 'M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z'
 
 
 def generate_data():
@@ -48,7 +49,7 @@ def generate_data():
 def load_texture_rgba(path, size=MS):
     from PIL import Image
 
-    img = Image.open(path).convert("RGBA")
+    img = Image.open(path).convert('RGBA')
     img = img.resize((size, size), Image.LANCZOS)
     rgba = np.array(img).astype(np.uint8)
     return rgba
@@ -72,7 +73,10 @@ def make_visual(panel):
     N, position, color, size = generate_data()
     angle = np.linspace(0, 2 * np.pi, N)
     visual = app.marker(
-        position=position, color=color, size=size, angle=angle,
+        position=position,
+        color=color,
+        size=size,
+        angle=angle,
         edgecolor=(255, 255, 255, 255),
         linewidth=2.0,
     )
@@ -96,7 +100,7 @@ visual = make_visual(panel)
 visual.set_mode('bitmap')
 visual.set_aspect('filled')
 visual.set_shape('club')
-image = load_texture_rgba(ROOT_DIR / "data/textures/pushpin.png", size=MS)
+image = load_texture_rgba(ROOT_DIR / 'data/textures/pushpin.png', size=MS)
 texture = make_texture(image)
 visual.set_texture(texture)  # bitmap textures
 

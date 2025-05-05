@@ -1,3 +1,8 @@
+"""
+# Molecule
+
+"""
+
 import glob
 from pathlib import Path
 
@@ -14,7 +19,6 @@ def load_data():
 
     files = sorted(glob.glob(ROOT_DIR / 'data/misc/molecule/6qzp-pdb-bundle*.pdb'))
     universes = [mda.Universe(f) for f in files]
-    print(set(atom.element for u in universes for atom in u.atoms))
 
     positions = np.concatenate([u.atoms.positions for u in universes], axis=0)
 

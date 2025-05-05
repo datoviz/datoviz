@@ -12,7 +12,7 @@ import datoviz as dvz
 
 
 def generate_data():
-    """This function returns N, positions (N,3) float32, colors (N,4) uint8"""
+    """Return N, positions (N,3) float32, colors (N,4) uint8"""
     # Parameters
     n_arms = 5
     n_particles_per_arm = 200_000
