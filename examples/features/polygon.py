@@ -22,7 +22,7 @@ r = 0.25
 w = 0.9
 shapes = []
 sizes = (4, 5, 6, 8)
-colors = dvz.cmap(dvz.CMAP_BWR, np.linspace(0, 1, 4))
+colors = dvz.cmap('BWR', np.linspace(0, 1, 4))
 sc = dvz.ShapeCollection()
 for n, x, color in zip(sizes, np.linspace(-w, w, 4), colors):
     points = make_polygon(n, (x, 0), r)

@@ -25,7 +25,7 @@ def generate_data():
     linewidths = np.linspace(2, 30, N).astype(np.float32)
 
     t = np.linspace(0, 1, N).astype(np.float32)
-    colors = dvz.cmap(dvz.CMAP_HSV, t, 0.0, 1.0)
+    colors = dvz.cmap('hsv', t, 0.0, 1.0)
 
     initial_caps = np.array([(2 * i) % DVZ_CAP_COUNT for i in range(N)], dtype=np.uint8)
     terminal_caps = np.array([(2 * i + 1) % DVZ_CAP_COUNT for i in range(N)], dtype=np.uint8)

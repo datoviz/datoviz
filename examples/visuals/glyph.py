@@ -24,7 +24,7 @@ string_pos[:, 1] = 1 - 1.8 * np.linspace(0.3, 1, string_count) ** 2
 scales = np.linspace(1, 4, string_count).astype(np.float32)
 
 # Per-glyph parameters.
-colors = dvz.cmap(dvz.CMAP_HSV, np.mod(np.linspace(0, 2, glyph_count), 1))
+colors = dvz.cmap('hsv', np.mod(np.linspace(0, 2, glyph_count), 1))
 
 visual = app.glyph()
 visual.set_strings(strings, string_pos=string_pos, scales=scales)

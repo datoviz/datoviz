@@ -48,7 +48,7 @@ hmax = +0.5
 heights = np.exp(-0.0001 * d**2) * np.sin(a * xv) * np.cos(b * yv)
 
 # Colors.
-colors = dvz.cmap(dvz.CMAP_PLASMA, heights, hmin, hmax)
+colors = dvz.cmap('plasma', heights, hmin, hmax)
 
 linewidth = 0.1
 edgecolor = (0, 0, 0, 64)

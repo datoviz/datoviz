@@ -35,7 +35,7 @@ def generate_data(n_groups=20, n_samples=1_000):
 
     t = np.linspace(0, n_groups - 0.25, N)
     t = np.mod(t, 1).astype(np.float32)
-    colors = dvz.cmap(dvz.CMAP_HSV, t, 0, 1)
+    colors = dvz.cmap('hsv', t, 0, 1)
     positions[:, 1] *= 0.9
     return N, positions, colors, groups
 

@@ -28,7 +28,7 @@ def generate_fractal(size):
         escape[mask & diverged] = i
         mask &= ~diverged
     h, w = Z.shape
-    return dvz.cmap(dvz.CMAP_INFERNO, escape / max_iter).reshape((h, w, 4))
+    return dvz.cmap('inferno', escape / max_iter).reshape((h, w, 4))
 
 
 def load_image():

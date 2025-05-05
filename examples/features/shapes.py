@@ -17,7 +17,7 @@ z = np.zeros_like(x)
 
 offsets = np.c_[x.flat, y.flat, z.flat]
 scales = 1.0 / rows * (1 + 0.25 * np.sin(5 * 2 * np.pi * t))
-colors = dvz.cmap(dvz.CMAP_HSV, np.mod(t, 1))
+colors = dvz.cmap('hsv', np.mod(t, 1))
 
 sc = dvz.ShapeCollection()
 for offset, scale, color in zip(offsets, scales, colors):

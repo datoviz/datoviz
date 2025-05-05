@@ -10,7 +10,7 @@ import numpy as np
 import datoviz as dvz
 
 N = 5
-colors = dvz.cmap(dvz.CMAP_SPRING, np.linspace(0, 1, N))
+colors = dvz.cmap('spring', np.linspace(0, 1, N))
 scale = 0.35
 
 sc = dvz.ShapeCollection()

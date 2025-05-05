@@ -28,7 +28,7 @@ def generate_data():
 
     # Hue along x-axis
     hue = (x_flat + 1) / 2
-    colors = dvz.cmap(dvz.CMAP_HSV, hue)
+    colors = dvz.cmap('hsv', hue)
 
     # Size: exponential growth from 10px to 50px along y-axis
     y_norm = (y_flat + 1) / 2

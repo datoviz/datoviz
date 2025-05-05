@@ -41,7 +41,7 @@ normals = np.zeros_like(pos, dtype=np.float32)
 dvz.compute_normals(nv, ni, pos.astype(np.float32), index.astype(np.uint32), normals)
 
 f = sulc_map
-colors = dvz.cmap(dvz.CMAP_BINARY, f.astype(np.float32), f.min(), f.max())
+colors = dvz.cmap('binary', f.astype(np.float32), f.min(), f.max())
 
 light_dir = (+1, -1, -1)
 light_params = (0.5, 0.5, 0.5, 16)
