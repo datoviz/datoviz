@@ -234,7 +234,7 @@ class App:
             assert 0 <= image.ndim - ndim <= 1
 
         assert n_channels > 0
-        c_format = dtype_to_format(dtype.name, n_channels)
+        c_format = dtype_to_format(np.dtype(dtype).name, n_channels)
         shape = dvz.uvec3(*shape)
         width, height, depth = shape
 
