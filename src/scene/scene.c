@@ -795,13 +795,21 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags)
 /*  Camera                                                                                       */
 /*************************************************************************************************/
 
+// TODO REFACTOR: move this into camera or arcball...
+
 static void _camera_zoom(DvzCamera* camera, float dz)
 {
     ANN(camera);
+
     vec3 pos = {0};
     _vec3_copy(camera->pos, pos);
-    pos[2] *= (1 - .025 * dz);
+    pos[2] -= .025 * dz;
     dvz_camera_position(camera, pos);
+
+    vec3 lookat = {0};
+    _vec3_copy(camera->lookat, lookat);
+    lookat[2] -= .025 * dz;
+    dvz_camera_lookat(camera, lookat);
 }
 
 

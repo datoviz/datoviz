@@ -3793,6 +3793,16 @@ DVZ_EXPORT void dvz_camera_position(DvzCamera* camera, vec3 pos);
 
 
 /**
+ * Get the camera position.
+ *
+ * @param camera the camera
+ * @param[out] pos the pos
+ */
+DVZ_EXPORT void dvz_camera_get_position(DvzCamera* camera, vec3 pos);
+
+
+
+/**
  * Set a camera lookat position.
  *
  * @param camera the camera
@@ -3803,12 +3813,32 @@ DVZ_EXPORT void dvz_camera_lookat(DvzCamera* camera, vec3 lookat);
 
 
 /**
+ * Get the camera lookat position.
+ *
+ * @param camera the camera
+ * @param[out] lookat the lookat position
+ */
+DVZ_EXPORT void dvz_camera_get_lookat(DvzCamera* camera, vec3 lookat);
+
+
+
+/**
  * Set a camera up vector.
  *
  * @param camera the camera
  * @param up the up vector
  */
 DVZ_EXPORT void dvz_camera_up(DvzCamera* camera, vec3 up);
+
+
+
+/**
+ * Get the camera up vector.
+ *
+ * @param camera the camera
+ * @param[out] up the up vector
+ */
+DVZ_EXPORT void dvz_camera_get_up(DvzCamera* camera, vec3 up);
 
 
 

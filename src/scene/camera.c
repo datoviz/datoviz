@@ -128,6 +128,14 @@ void dvz_camera_position(DvzCamera* camera, vec3 pos)
 
 
 
+void dvz_camera_get_position(DvzCamera* camera, vec3 pos)
+{
+    ANN(camera);
+    glm_vec3_copy(camera->pos, pos);
+}
+
+
+
 void dvz_camera_lookat(DvzCamera* camera, vec3 lookat)
 {
     ANN(camera);
@@ -136,10 +144,26 @@ void dvz_camera_lookat(DvzCamera* camera, vec3 lookat)
 
 
 
+void dvz_camera_get_lookat(DvzCamera* camera, vec3 lookat)
+{
+    ANN(camera);
+    glm_vec3_copy(camera->lookat, lookat);
+}
+
+
+
 void dvz_camera_up(DvzCamera* camera, vec3 up)
 {
     ANN(camera);
     glm_vec3_copy(up, camera->up);
+}
+
+
+
+void dvz_camera_get_up(DvzCamera* camera, vec3 up)
+{
+    ANN(camera);
+    glm_vec3_copy(camera->up, up);
 }
 
 
