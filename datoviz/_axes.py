@@ -118,6 +118,44 @@ class Axes:
         return (xmin, xmax), (ymin, ymax)
 
     def normalize(self, x: np.ndarray, y: np.ndarray = None, z: np.ndarray = None):
+        """
+        Normalize input coordinates to a standard range.
+
+        This function normalizes 1D, 2D, or 3D input coordinates using a reference
+        normalization method. The input can be provided as a single array or as
+        separate arrays for each dimension.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            The array representing the x-coordinates. If `y` and `z` are not provided,
+            this is treated as the full input array.
+        y : np.ndarray, optional
+            The array representing the y-coordinates. If not provided, the input is
+            assumed to be 1D.
+        z : np.ndarray, optional
+            The array representing the z-coordinates. If not provided, the input is
+            assumed to be 2D.
+
+        Returns
+        -------
+        np.ndarray
+            A normalized array of shape `(n, 3)` where `n` is the number of input
+            points. The output is always 3D, with unused dimensions filled with zeros.
+
+        Raises
+        ------
+        AssertionError
+            If the input array does not have the correct dimensions.
+        NotImplementedError
+            If the input dimensionality is not 1D, 2D, or 3D.
+
+        Notes
+        -----
+        This function uses `dvz.ref_normalize_1D`, `dvz.ref_normalize_2D`, or
+        `dvz.ref_normalize_3D` for normalization, depending on the dimensionality
+        of the input.
+        """
         if y is None and z is None:
             pos = x
         else:
@@ -147,4 +185,33 @@ class Axes:
         else:
             raise NotImplementedError()
 
+        return pos_tr
+
+    def normalize_polygon(self, points: np.ndarray):
+        """
+        Normalize a polygon by transforming its points.
+
+        Parameters
+        ----------
+        points : np.ndarray
+            A 2D array of shape (n, 2) containing the coordinates of the polygon's points.
+            The array must have a dtype of `np.float64`.
+
+        Returns
+        -------
+        np.ndarray
+            A 2D array of shape (n, 2) containing the normalized coordinates of the polygon's points.
+
+        Raises
+        ------
+        AssertionError
+            If `points` is not a 2D array or does not have a shape of (n, 2).
+        """
+        if points.dtype != np.float64:
+            print(f'Polygon points should be in float64 instead of {points.dtype}')
+        assert points.ndim == 2
+        assert points.shape[1] == 2
+        n = points.shape[0]
+        pos_tr = np.empty_like(points, dtype=np.float64)
+        dvz.ref_normalize_polygon(self.c_ref, n, points, pos_tr)
         return pos_tr

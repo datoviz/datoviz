@@ -571,7 +571,8 @@ class ShapeCollection:
         Warnings:
         --------
         .. warning::
-            This method is not yet implemented.
+            Polygon contour is still experimental, it may not work well in some instances.
+
         """
         assert points.ndim == 2
         assert points.shape[1] == 2
