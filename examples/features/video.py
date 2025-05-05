@@ -31,7 +31,7 @@ batch = dvz.scene_batch(scene)
 figure = dvz.figure(scene, WIDTH, HEIGHT, 0)
 panel = dvz.panel_default(figure)
 visual = dvz.demo_panel_3D(panel)
-arcball = dvz.panel_arcball(panel)
+arcball = dvz.panel_arcball(panel, 0)
 camera = dvz.panel_camera(panel, 0)
 
 

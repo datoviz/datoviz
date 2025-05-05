@@ -4529,6 +4529,7 @@ Set arcball interactivity for a panel.
     ``` python
     dvz.panel_arcball(  # returns: the arcball (LP_DvzArcball)
         panel,  # the panel (LP_DvzPanel)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -4537,6 +4538,7 @@ Set arcball interactivity for a panel.
     ``` c
     DvzArcball* dvz_panel_arcball(  // returns: the arcball
         DvzPanel* panel,  // the panel
+        int flags,  // the flags
     );
     ```
 
@@ -4865,6 +4867,7 @@ Set ortho interactivity for a panel.
     ``` python
     dvz.panel_ortho(  # returns: the ortho (LP_DvzOrtho)
         panel,  # the panel (LP_DvzPanel)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -4873,6 +4876,7 @@ Set ortho interactivity for a panel.
     ``` c
     DvzOrtho* dvz_panel_ortho(  // returns: the ortho
         DvzPanel* panel,  // the panel
+        int flags,  // the flags
     );
     ```
 
@@ -4885,6 +4889,7 @@ Set panzoom interactivity for a panel.
     ``` python
     dvz.panel_panzoom(  # returns: the panzoom (LP_DvzPanzoom)
         panel,  # the panel (LP_DvzPanel)
+        flags,  # the flags (int, 32-bit signed)
     )
     ```
 
@@ -4893,6 +4898,7 @@ Set panzoom interactivity for a panel.
     ``` c
     DvzPanzoom* dvz_panel_panzoom(  // returns: the panzoom
         DvzPanel* panel,  // the panel
+        int flags,  // the flags
     );
     ```
 

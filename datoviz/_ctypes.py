@@ -3721,6 +3721,8 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
+flags : int
+    the flags
 
 Returns
 -------
@@ -3729,6 +3731,7 @@ type
 """
 panel_panzoom.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
 ]
 panel_panzoom.restype = ctypes.POINTER(DvzPanzoom)
 
@@ -3741,6 +3744,8 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
+flags : int
+    the flags
 
 Returns
 -------
@@ -3749,6 +3754,7 @@ type
 """
 panel_ortho.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
 ]
 panel_ortho.restype = ctypes.POINTER(DvzOrtho)
 
@@ -3761,6 +3767,8 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
+flags : int
+    the flags
 
 Returns
 -------
@@ -3769,6 +3777,7 @@ type
 """
 panel_arcball.argtypes = [
     ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ctypes.c_int,  # int flags
 ]
 panel_arcball.restype = ctypes.POINTER(DvzArcball)
 
