@@ -52,8 +52,19 @@ figure = app.figure()
 panel = figure.panel()
 panzoom = panel.panzoom()
 
-visual = app.image(position=position, size=size, anchor=anchor, texcoords=texcoords)
-texture = app.texture_2D(image)
+visual = app.image(
+    rescale='keep_ratio',
+    position=position,
+    size=size,
+    anchor=anchor,
+    texcoords=texcoords,
+    #
+    # Image border
+    linewidth=10,
+    edgecolor=(255, 255, 255, 255),
+    radius=50,
+)
+texture = app.texture_2D(image, interpolation='linear')  # by default, no interpolation)
 visual.set_texture(texture)
 panel.add(visual)
 

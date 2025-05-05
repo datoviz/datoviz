@@ -198,7 +198,7 @@ def to_enum(enumstr: str | int) -> int:
     int
         The enum value.
     """
-    return getattr(dvz, enumstr.upper(), enumstr)
+    return getattr(dvz, enumstr.upper(), 0 if isinstance(enumstr, str) else enumstr)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -436,6 +436,64 @@ def prepare_data_scalar(name: str, dtype: str, size: int, value: float) -> np.nd
 # -------------------------------------------------------------------------------------------------
 # Visual helpers
 # -------------------------------------------------------------------------------------------------
+
+
+def image_flags(
+    unit: str = Optional[None],
+    mode: str = Optional[None],
+    rescale: str = Optional[None],
+    border: bool = Optional[None],
+) -> int:
+    """
+    Compute the image flags for rendering based on the provided options.
+
+    Parameters
+    ----------
+    unit : str, optional
+        Specifies the unit for the image size. Can be:
+        - `pixels` (default): Image size is specified in pixels.
+        - `ndc`: Image size depends on the normalized device coordinates (NDC) of the panel.
+    mode : str, optional
+        Specifies the image mode. Can be:
+        - `rgba` (default): RGBA image mode.
+        - `colormap`: Single-channel image with a colormap applied.
+        - `fill`: Uniform color fill mode.
+    rescale : str, optional
+        Specifies how the image should be rescaled with transformations. Can be:
+        - `None` (default): No rescaling.
+        - `rescale`: Rescale the image with the panel size.
+        - `keep_ratio`: Rescale the image while maintaining its aspect ratio.
+    border : bool, optional
+        Indicates whether to display a border around the image. Defaults to `False`.
+
+    Returns
+    -------
+    int
+        The computed image flags as an integer bitmask.
+    """
+    c_flags = 0
+
+    # Image size unit.
+    unit = unit if unit is not None else cst.DEFAULT_IMAGE_UNIT
+    c_flags |= to_enum(f'image_flags_size_{unit}')
+
+    # Image mode.
+    mode = mode if mode is not None else cst.DEFAULT_IMAGE_MODE
+    c_flags |= to_enum(f'image_flags_mode_{mode}')
+
+    # Image rescaling.
+    rescale = rescale if rescale is not None else cst.DEFAULT_IMAGE_RESCALE
+    if rescale is True or rescale == 'rescale':
+        c_flags |= dvz.IMAGE_FLAGS_RESCALE
+    elif rescale == 'keep_ratio':
+        c_flags |= dvz.IMAGE_FLAGS_RESCALE_KEEP_RATIO
+
+    # Border.
+    border = border if border is not None else cst.DEFAULT_IMAGE_BORDER
+    if border:
+        c_flags |= dvz.IMAGE_FLAGS_BORDER
+
+    return c_flags
 
 
 def mesh_flags(

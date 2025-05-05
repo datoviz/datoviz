@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
+from typing import Optional
 
 import numpy as np
 
@@ -21,7 +22,7 @@ from ._event import Event
 from ._figure import Figure
 from ._texture import Texture
 from .shape_collection import ShapeCollection
-from .utils import dtype_to_format, mesh_flags, to_enum
+from .utils import dtype_to_format, image_flags, mesh_flags, to_enum
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -502,15 +503,36 @@ class App:
         visual.set_data(**kwargs)
         return visual
 
-    def image(self, mode: str = None, **kwargs) -> vs.Image:
+    def image(
+        self,
+        unit: str = Optional[None],
+        mode: str = Optional[None],
+        rescale: str = Optional[None],
+        border: bool = Optional[None],
+        **kwargs,
+    ) -> vs.Image:
         """
         Create an image visual.
 
         Parameters
         ----------
-        mode
-            The image mode: `rgba` (RGBA image), `colormap` (single-channel image with colormap),
-            `fill` (uniform color).
+        unit : str, optional
+            Specifies the unit for the image size. Can be:
+            - `pixels` (default): Image size is specified in pixels.
+            - `ndc`: Image size depends on the normalized device coordinates (NDC) of the panel.
+        mode : str, optional
+            Specifies the image mode. Can be:
+            - `rgba` (default): RGBA image mode.
+            - `colormap`: Single-channel image with a colormap applied.
+            - `fill`: Uniform color fill mode.
+        rescale : str, optional
+            Specifies how the image should be rescaled with transformations. Can be:
+            - `None` (default): No rescaling.
+            - `rescale`: Rescale the image with the panel size.
+            - `keep_ratio`: Rescale the image while maintaining its aspect ratio.
+        border : bool, optional
+            Indicates whether to display a border around the image. Defaults to `False`.
+
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -519,10 +541,15 @@ class App:
         vs.Image
             The created image visual instance.
         """
-        if mode is not None:
-            c_flags = kwargs.get('c_flags', 0)
-            c_flags |= to_enum(f'image_flags_{mode}')
-        return self._visual(dvz.image, vs.Image, **kwargs)
+        if kwargs.get('linewidth', 0) or kwargs.get('radius', 0) or kwargs.get('edgecolor', 0):
+            border = True
+        c_flags = image_flags(
+            unit=unit,
+            mode=mode,
+            rescale=rescale,
+            border=border,
+        )
+        return self._visual(dvz.image, vs.Image, c_flags=c_flags, **kwargs)
 
     def _mesh(
         self,

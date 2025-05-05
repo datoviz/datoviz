@@ -22,7 +22,7 @@ DEFAULT_WIDTH = 800
 DEFAULT_HEIGHT = 600
 DEFAULT_FONT_SIZE = 30
 DEFAULT_GLYPH_COLOR = (0, 0, 0, 255)
-DEFAULT_INTERPOLATION = 'linear'
+DEFAULT_INTERPOLATION = 'nearest'
 DEFAULT_ADDRESS_MODE = 'clamp_to_border'
 
 DEFAULT_CAMERA_POS = (0, 0, 4)
@@ -37,6 +37,11 @@ DEFAULT_LIGHT_PARAMS = (0.25, 0.75, 0.75, 16)
 DEFAULT_INDEXING = 'earcut'
 DEFAULT_CONTOUR = 'joints'
 DEFAULT_MESH_INDEXED = True
+
+DEFAULT_IMAGE_UNIT = 'pixels'
+DEFAULT_IMAGE_MODE = 'rgba'
+DEFAULT_IMAGE_RESCALE = None
+DEFAULT_IMAGE_BORDER = False
 
 VOLUME_MODES = ('colormap', 'rgba')
 
@@ -111,7 +116,7 @@ PROPS = {
         'anchor': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 2)},
         'texcoords': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 4)},
         'facecolor': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
-        'edgecolor': {'type': dvz.vec4},
+        'edgecolor': {'type': dvz.cvec4},
         'permutation': {'type': dvz.ivec2},
         'linewidth': {'type': float},
         'radius': {'type': float},
