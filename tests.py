@@ -7,9 +7,8 @@ import numpy as np
 
 import datoviz as dvz
 
-
 CURDIR = Path(__file__).parent
-IMGDIR = (CURDIR / "build/artifacts").resolve()
+IMGDIR = (CURDIR / 'build/artifacts').resolve()
 IMGDIR.mkdir(exist_ok=True, parents=True)
 
 
@@ -32,25 +31,23 @@ class DatovizTests(unittest.TestCase):
 
     def test_offscreen(self):
         """Generate an offscreen image and check that it worked."""
-
         app = dvz.app(dvz.APP_FLAGS_OFFSCREEN)
         batch = dvz.app_batch(app)
         scene = dvz.scene(batch)
 
         figure = dvz.figure(scene, 800, 600, 0)
         panel = dvz.panel_default(figure)
-        pz = dvz.panel_panzoom(panel)
+        pz = dvz.panel_panzoom(panel, 0)
 
         visual = dvz.point(batch, 0)
 
         n = 1000
         dvz.point_alloc(visual, n)
 
-        pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
+        pos = np.random.normal(size=(n, 3), scale=0.25).astype(np.float32)
         dvz.point_position(visual, 0, n, pos, 0)
 
-        color = np.random.uniform(
-            size=(n, 4), low=50, high=240).astype(np.uint8)
+        color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
         dvz.point_color(visual, 0, n, color, 0)
 
         size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
@@ -59,7 +56,7 @@ class DatovizTests(unittest.TestCase):
         dvz.panel_visual(panel, visual, 0)
         dvz.scene_run(scene, app, 0)
 
-        path = IMGDIR / "offscreen_python.png"
+        path = IMGDIR / 'offscreen_python.png'
         self.assertFalse(path.exists())
 
         dvz.app_screenshot(app, dvz.figure_id(figure), path)

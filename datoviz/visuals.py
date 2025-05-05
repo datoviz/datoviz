@@ -16,7 +16,7 @@ import numpy as np
 
 from . import _constants as cst
 from . import _ctypes as dvz
-from ._constants import PROPS, VEC_TYPES
+from ._constants import PROPS
 from ._texture import Texture
 from .utils import get_fixed_params, get_size, prepare_data_array, prepare_data_scalar, to_enum
 
@@ -256,7 +256,7 @@ class Visual:
                 assert isinstance(value, Texture)
                 values = (value.c_tex, value.c_sampler)
 
-            elif prop_type in VEC_TYPES:
+            elif prop_type in dvz.VEC_TYPES:
                 assert hasattr(value, '__len__')
                 value = prop_type(*value)
                 values = (value,)

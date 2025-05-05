@@ -14,15 +14,14 @@ __version__ = "0.2.4-dev"
 # ===============================================================================
 
 import ctypes
-from ctypes import POINTER as P_
-from ctypes import byref
 import faulthandler
 import os
 import pathlib
-from pathlib import Path
 import platform
-
+from ctypes import POINTER as P_  # noqa
+from ctypes import byref  # noqa
 from enum import IntEnum
+from pathlib import Path
 
 try:
     import numpy as np
@@ -275,8 +274,11 @@ class CVectorBase(ctypes.Array):
         return f"{self._name_}({vals})"
 
 
+VEC_TYPES = []
+
+
 def make_vector_type(name, ctype, length):
-    return type(
+    t = type(
         name,
         (CVectorBase,),
         {
@@ -285,6 +287,8 @@ def make_vector_type(name, ctype, length):
             "_name_": name,
         },
     )
+    VEC_TYPES.append(t)
+    return t
 
 
 vec2 = make_vector_type("vec2", ctypes.c_float, 2)

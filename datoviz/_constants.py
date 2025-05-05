@@ -180,6 +180,4 @@ DTYPE_FORMATS = {
     ('float32', 4): dvz.FORMAT_R32G32B32A32_SFLOAT,
 }
 
-VEC_TYPES = (dvz.vec3, dvz.vec4, dvz.cvec4)  # TODO: others
-
 Vec3 = tuple[float, float, float]

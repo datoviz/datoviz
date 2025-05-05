@@ -211,7 +211,7 @@ class Panel:
 
             c_axes = dvz.panel_axes_2D(self.c_panel, xmin, xmax, ymin, ymax)
             c_ref = dvz.panel_ref(self.c_panel)
-            c_panzoom = dvz.panel_panzoom(self.c_panel)
+            c_panzoom = dvz.panel_panzoom(self.c_panel, 0)
 
             self._axes = Axes(c_axes, c_ref, c_panzoom, self.c_panel)
         return self._axes
