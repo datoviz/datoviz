@@ -4,7 +4,6 @@
     * [Arcball example](#arcball-example)
     * [Axes example](#axes-example)
     * [Camera example](#camera-example)
-    * [Datoviz Rendering Protocol (DRP) example](#datoviz-rendering-protocol-(drp)-example)
     * [Fixed example](#fixed-example)
     * [GUI example](#gui-example)
     * [GUI panel example](#gui-panel-example)
@@ -14,9 +13,7 @@
     * [Mesh visual example](#mesh-visual-example)
     * [Offscreen example](#offscreen-example)
     * [Panel example](#panel-example)
-    * [Panzoom example](#panzoom-example)
     * [Polygon example](#polygon-example)
-    * [PyQt6 local example](#pyqt6-local-example)
     * [Shapes](#shapes)
     * [Surface example](#surface-example)
     * [Timestamps example](#timestamps-example)
@@ -131,175 +128,37 @@ panel = figure.panel()
 panel.demo_3D()
 
 # Camera initial parameters (the ones used when calling camera_reset()).
-eye = [0, 0, 2]
-up = [0, 1, 0]
-lookat = [0, 0, 0]
+eye = (0, 0, 2)
+up = (0, 1, 0)
+lookat = (0, 0, 0)
 # Get or create the panel's 3D perspective camera.
 camera = panel.camera(initial=eye, initial_up=up, initial_lookat=lookat)
 
 d = 0.1
 mapping = {
-    dvz.KEY_UP: (2, -d),
-    dvz.KEY_DOWN: (2, +d),
-    dvz.KEY_LEFT: (0, -d),
-    dvz.KEY_RIGHT: (0, +d),
+    'up': (2, -d),
+    'down': (2, +d),
+    'left': (0, -d),
+    'right': (0, +d),
 }
 
 
 @app.connect(figure)
 def on_keyboard(ev):
-    global eye
-
     # Keyboard events are PRESS, RELEASE, and REPEAT.
     if ev.key_event() != 'release':
         # Move the camera position depending on the pressed keys.
-        i, dp = mapping.get(ev.key(), (0, 0))
+        i, dp = mapping.get(ev.key_name(), (0, 0))
+        eye = list(camera.eye())
         eye[i] += dp
         lookat = (eye[0], eye[1], eye[2] - 1)
 
         # Update the camera.
-        camera.set(eye=eye, lookat=lookat, up=up)
+        camera.set(eye=eye, lookat=lookat)
 
 
 app.run()
 app.destroy()
-```
-</details>
-
-## Datoviz Rendering Protocol (DRP) example
-
-Show a simple triangle using raw DRP requests.
-
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/drp.png)
-
-<details>
-<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/drp.py</code></summary>
-
-```python
-import numpy as np
-
-import datoviz as dvz
-
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-
-# Constants.
-width = 1024
-height = 768
-
-# Define the Vertex dtype
-vertex_dtype = np.dtype(
-    [
-        ('pos', np.float32, (3,)),  # 3D position (vec3)
-        ('color', np.uint8, (4,)),  # RGBA color (cvec4)
-    ]
-)
-vertex_size = vertex_dtype.itemsize
-pos_offset = vertex_dtype.fields['pos'][1]
-color_offset = vertex_dtype.fields['color'][1]
-
-
-# Create a canvas.
-req = dvz.create_canvas(batch, width, height, dvz.DEFAULT_CLEAR_COLOR, 0)
-canvas_id = req.id
-
-
-# Create a custom graphics.
-req = dvz.create_graphics(batch, dvz.GRAPHICS_CUSTOM, 0)
-graphics_id = req.id
-
-
-# Vertex shader.
-vertex_glsl = """
-#version 450
-
-layout(location = 0) in vec3 pos;
-layout(location = 1) in vec4 color;
-layout(location = 0) out vec4 out_color;
-
-void main()
-{
-    gl_Position = vec4(pos, 1.0);
-    out_color = color;
-}
-"""
-
-req = dvz.create_glsl(batch, dvz.SHADER_VERTEX, vertex_glsl)
-
-# Assign the shader to the graphics pipe.
-vertex_id = req.id
-dvz.set_shader(batch, graphics_id, vertex_id)
-
-
-# Fragment shader.
-fragment_glsl = """
-#version 450
-
-layout(location = 0) in vec4 in_color;
-layout(location = 0) out vec4 out_color;
-
-void main()
-{
-    out_color = in_color;
-}
-"""
-
-req = dvz.create_glsl(batch, dvz.SHADER_FRAGMENT, fragment_glsl)
-
-# Assign the shader to the graphics pipe.
-fragment_id = req.id
-dvz.set_shader(batch, graphics_id, fragment_id)
-
-
-# Primitive topology.
-dvz.set_primitive(batch, graphics_id, dvz.PRIMITIVE_TOPOLOGY_TRIANGLE_LIST)
-
-# Polygon mode.
-dvz.set_polygon(batch, graphics_id, dvz.POLYGON_MODE_FILL)
-
-
-# Vertex binding.
-dvz.set_vertex(batch, graphics_id, 0, vertex_size, dvz.VERTEX_INPUT_RATE_VERTEX)
-
-# Vertex attrs.
-dvz.set_attr(batch, graphics_id, 0, 0, dvz.FORMAT_R32G32B32_SFLOAT, pos_offset)
-dvz.set_attr(batch, graphics_id, 0, 1, dvz.FORMAT_R8G8B8A8_UNORM, color_offset)
-
-
-# Create the vertex buffer dat.
-req = dvz.create_dat(batch, dvz.BUFFER_TYPE_VERTEX, 3 * vertex_size, 0)
-dat_id = req.id
-
-# Bind the vertex buffer dat to the graphics pipe.
-req = dvz.bind_vertex(batch, graphics_id, 0, dat_id, 0)
-
-# Upload the triangle data.
-data = np.array(
-    [
-        ((-1, +1, 0), (255, 0, 0, 255)),
-        ((+1, +1, 0), (0, 255, 0, 255)),
-        ((+0, -1, 0), (0, 0, 255, 255)),
-    ],
-    dtype=vertex_dtype,
-)
-req = dvz.upload_dat(batch, dat_id, 0, 3 * vertex_size, data, 0)
-
-
-# Commands.
-dvz.record_begin(batch, canvas_id)
-dvz.record_viewport(batch, canvas_id, dvz.DEFAULT_VIEWPORT, dvz.DEFAULT_VIEWPORT)
-dvz.record_draw(batch, canvas_id, graphics_id, 0, 3, 0, 1)
-dvz.record_end(batch, canvas_id)
-
-
-# Run the application.
-
-# NOTE: disabling this example for now as the current stable version of Datoviz is NOT built with
-# shaderc support, due to compatibility issues on Linux. We'll fix it later.
-# dvz.app_run(app, 0)
-
-# Cleanup.
-dvz.app_destroy(app)
 ```
 </details>
 
@@ -656,48 +515,6 @@ app.destroy()
 ```
 </details>
 
-## Panzoom example
-
-Show how to manipulate a panzoom.
-
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/panzoom.png)
-
-<details>
-<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/panzoom.py</code></summary>
-
-```python
-import datoviz as dvz
-from datoviz import dvec2
-
-app = dvz.App()
-figure = app.figure(gui=True)
-panel = figure.panel()
-panzoom = panel.panzoom()
-visual = panel.demo_2D()
-
-
-# Create a data coordinate system [0, 100] x [0, 10].
-ref = dvz.ref(0)
-dvz.ref_set(ref, dvz.DIM_X, 0, 100)
-dvz.ref_set(ref, dvz.DIM_Y, 0, 10)
-
-# When passed a zero vector, dvz.panzoom_xlim() returns the current xmin and xmax in data
-# coordinates.
-xlim = dvec2(0)
-dvz.panzoom_xlim(panzoom, ref, xlim)
-
-# When passed a non-zero vector, dvz.panzoom_xlim() sets the current xmin and xmax.
-xlim[1] /= 2.0
-dvz.panzoom_xlim(panzoom, ref, xlim)
-
-dvz.panel_update(panel)
-
-
-app.run()
-app.destroy()
-```
-</details>
-
 ## Polygon example
 
 ![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/polygon.png)
@@ -742,69 +559,6 @@ panel.add(visual)
 app.run()
 app.destroy()
 sc.destroy()
-```
-</details>
-
-## PyQt6 local example
-
-Show how to integrate offscreen Datoviz figures into a PyQt6 application, using the Datoviz
-server API which provides a fully offscreen renderer with support for multiple canvases.
-
-NOTE: this API is experimental and will change in an upcoming release.
-
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/pyqt_offscreen.png)
-
-<details>
-<summary><strong>👨‍💻 Expand the code</strong> from <code>examples/pyqt_offscreen.py</code></summary>
-
-```python
-import sys
-
-try:
-    from PyQt6.QtCore import Qt
-    from PyQt6.QtWidgets import QApplication, QMainWindow, QSplitter
-except:
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtWidgets import QApplication, QMainWindow, QSplitter
-
-import datoviz as dvz
-from datoviz.backends.pyqt6 import QtServer
-
-WIDTH, HEIGHT = 800, 600
-
-
-class ExampleWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Example Qt Datoviz window")
-
-        # Create a Qt Datoviz server.
-        self.qt_server = QtServer()
-
-        # Create two figures (special Qt widgets with a Datoviz figure).
-        w, h = WIDTH // 2, HEIGHT
-        self.qt_figure1 = self.qt_server.create_figure(w, h)
-        self.qt_figure2 = self.qt_server.create_figure(w, h)
-
-        # Fill the figures with mock data.
-        dvz.demo_panel_2D(dvz.panel(self.qt_figure1.figure, 0, 0, w, h))
-        dvz.demo_panel_2D(dvz.panel(self.qt_figure2.figure, 0, 0, w, h))
-
-        # Add the two figures in the main window.
-        splitter = QSplitter(Qt.Orientation.Horizontal)
-        splitter.addWidget(self.qt_figure1)
-        splitter.addWidget(self.qt_figure2)
-        splitter.setCollapsible(0, False)
-        splitter.setCollapsible(1, False)
-        self.setCentralWidget(splitter)
-        self.resize(WIDTH, HEIGHT)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    mw = ExampleWindow()
-    mw.show()
-    sys.exit(app.exec())
 ```
 </details>
 
