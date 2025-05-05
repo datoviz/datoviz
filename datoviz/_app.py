@@ -256,7 +256,7 @@ class App:
                 self.c_batch, c_format, c_filter, c_address_mode, width, height, depth, image, 0
             )
 
-        return Texture(c_texture)
+        return Texture(c_texture, c_batch=self.c_batch, ndim=ndim)
 
     def texture_1D(
         self,
