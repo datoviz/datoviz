@@ -268,6 +268,7 @@ void dvz_visual_dynamic(DvzVisual* visual, uint32_t attr_idx, uint32_t binding_i
 void dvz_visual_clip(DvzVisual* visual, DvzViewportClip clip)
 {
     ANN(visual);
+    log_trace("use clip %d for visual", clip);
     dvz_visual_specialization(
         visual, DVZ_SHADER_FRAGMENT, DVZ_SPECIALIZATION_VIEWPORT, sizeof(int), &clip);
 }

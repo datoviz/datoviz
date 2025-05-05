@@ -615,8 +615,10 @@ DvzPanzoom* dvz_panel_panzoom(DvzPanel* panel)
     DvzScene* scene = panel->figure->scene;
     ANN(scene);
 
-    if (panel->panzoom)
+    if (panel->panzoom != NULL)
+    {
         return panel->panzoom;
+    }
 
     if (panel->transform != NULL)
     {
@@ -770,6 +772,18 @@ void dvz_panel_visual(DvzPanel* panel, DvzVisual* visual, int flags)
 
     // Add the visual to the view, and bind the common (shared) descriptors.
     dvz_view_add(view, visual, 0, visual->item_count, 0, 1, tr, 0);
+
+    // NOTE: viewport clip flags
+    if ((flags & 0xF) != 0)
+    {
+        dvz_visual_clip(visual, flags & 0xF);
+    }
+    else if (((flags & DVZ_VIEW_FLAGS_NOCLIP) == 0) && panel->axes != NULL)
+    {
+        // By default, when adding a visual with no viewport clipping flags to a panel with axes,
+        // use outer clipping.
+        dvz_visual_clip(visual, DVZ_VIEWPORT_CLIP_OUTER);
+    }
 
     // Send the buffer upload requests.
     dvz_visual_update(visual);

@@ -101,7 +101,6 @@ int test_axis_1(TstSuite* suite)
     // Cleanup.
     dvz_font_destroy(af.font);
     dvz_atlas_destroy(af.atlas);
-    dvz_ref_destroy(ref);
 
     return 0;
 }

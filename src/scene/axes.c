@@ -124,6 +124,11 @@ DvzAxes* dvz_panel_axes_2D(DvzPanel* panel, double xmin, double xmax, double ymi
         DvzBatch* batch = panel->figure->scene->batch;
         ANN(batch);
 
+        // NOTE: ensure we create a panzoom before adding the axes visuals, otherwise a mock
+        // transform will be automatically added and we won't be able to add a panzoom transform
+        // anymore.
+        dvz_panel_panzoom(panel);
+
         panel->axes = dvz_axes_2D(batch, 0); // TODO: flags
     }
     ANN(panel->axes);

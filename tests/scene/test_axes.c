@@ -42,7 +42,6 @@ int test_axes_1(TstSuite* suite)
     DvzAxes* axes = dvz_panel_axes_2D(vt.panel, 0, 10, -1, 1);
 
     DvzVisual* visual = dvz_demo_panel_2D(vt.panel);
-    dvz_visual_clip(visual, DVZ_VIEWPORT_CLIP_OUTER);
 
     visual_test_end(vt);
     dvz_axes_destroy(axes);

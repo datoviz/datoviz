@@ -247,14 +247,14 @@ static void axis_common_params(DvzAxis* axis)
 
     dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
 
-    if (axis->factor != NULL)
-    {
-        dvz_visual_fixed(axis->factor, true, true, true);
-    }
-    if (axis->label != NULL)
-    {
-        dvz_visual_fixed(axis->label, true, true, true);
-    }
+    // if (axis->factor != NULL)
+    // {
+    //     dvz_visual_fixed(axis->factor, true, true, true);
+    // }
+    // if (axis->label != NULL)
+    // {
+    //     dvz_visual_fixed(axis->label, true, true, true);
+    // }
 }
 
 
@@ -365,7 +365,7 @@ static void create_spine(DvzVisual* spine, DvzDim dim)
     dvz_segment_position(spine, 0, 1, &start, &end, 0);
     dvz_segment_color(spine, 0, 1, (DvzColor[]){{0, 0, 0, 255}}, 0);
     dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
-    dvz_visual_fixed(spine, true, true, true);
+    // dvz_visual_fixed(spine, true, true, true);
 }
 
 
@@ -593,7 +593,7 @@ bool dvz_axis_update(DvzAxis* axis, DvzRef* ref, double dmin, double dmax)
     // Normalize the tick positions using the reference frame.
     vec3* positions = calloc(tick_count, sizeof(vec3));
     ANN(positions);
-    dvz_ref_transform_1D(ref, axis->dim, tick_count, tick_pos, positions);
+    dvz_ref_normalize_1D(ref, axis->dim, tick_count, tick_pos, positions);
 
     // Fixed dimension.
     uint32_t fixed_dim = 0;
@@ -714,11 +714,12 @@ void dvz_axis_panel(DvzAxis* axis, DvzPanel* panel)
     }
 
     // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(panel, axis->glyph, 0);
-    dvz_panel_visual(panel, axis->segment, 0);
-    dvz_panel_visual(panel, axis->factor, 0);
-    dvz_panel_visual(panel, axis->label, 0);
-    dvz_panel_visual(panel, axis->spine, 0);
+    dvz_panel_visual(panel, axis->glyph, DVZ_VIEW_FLAGS_NOCLIP);
+    dvz_panel_visual(panel, axis->segment, DVZ_VIEW_FLAGS_NOCLIP);
+
+    dvz_panel_visual(panel, axis->factor, DVZ_VIEW_FLAGS_STATIC | DVZ_VIEW_FLAGS_NOCLIP);
+    dvz_panel_visual(panel, axis->label, DVZ_VIEW_FLAGS_STATIC | DVZ_VIEW_FLAGS_NOCLIP);
+    dvz_panel_visual(panel, axis->spine, DVZ_VIEW_FLAGS_STATIC | DVZ_VIEW_FLAGS_NOCLIP);
 
     axis->panel = panel;
 }
