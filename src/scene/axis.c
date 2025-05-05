@@ -30,7 +30,7 @@
 /*************************************************************************************************/
 
 // TODO: customizable
-#define TICK_DENSITY             0.2
+#define TICK_DENSITY             0.15
 #define MINOR_TICKS_PER_INTERVAL 4
 
 #define ANCHOR_X        (vec2){0, 0}
