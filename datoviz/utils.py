@@ -131,7 +131,7 @@ from_pointer = pointer_array
 
 
 # -------------------------------------------------------------------------------------------------
-# Helpers
+# Misc
 # -------------------------------------------------------------------------------------------------
 
 
@@ -148,6 +148,11 @@ def get_version() -> dict[str, str]:
         'ctypes_wrapper': __version__,
         'libdatoviz': version().decode('utf-8'),
     }
+
+
+# -------------------------------------------------------------------------------------------------
+# Enumerations
+# -------------------------------------------------------------------------------------------------
 
 
 def from_enum(enum_cls: type, value: int, prettify: bool = True) -> str | None:
@@ -179,21 +184,26 @@ def from_enum(enum_cls: type, value: int, prettify: bool = True) -> str | None:
     return None
 
 
-def to_enum(enumstr: str) -> int:
+def to_enum(enumstr: str | int) -> int:
     """
     Convert an enum string to its corresponding value.
 
     Parameters
     ----------
-    enumstr : str
-        The enum string.
+    enumstr : str or int
+        The enum string or value (no-op).
 
     Returns
     -------
     int
         The enum value.
     """
-    return getattr(dvz, enumstr.upper())
+    return getattr(dvz, enumstr.upper(), enumstr)
+
+
+# -------------------------------------------------------------------------------------------------
+# User events
+# -------------------------------------------------------------------------------------------------
 
 
 def key_name(key_code: int) -> str:
@@ -232,14 +242,19 @@ def button_name(button: int) -> str:
     return name
 
 
-def cmap(cm: int, values: np.ndarray, vmin: float = 0.0, vmax: float = 1.0) -> np.ndarray:
+# -------------------------------------------------------------------------------------------------
+# Color maps
+# -------------------------------------------------------------------------------------------------
+
+
+def cmap(cm: str | int, values: np.ndarray, vmin: float = 0.0, vmax: float = 1.0) -> np.ndarray:
     """
     Apply a colormap to an array of values.
 
     Parameters
     ----------
-    cm : int
-        The colormap identifier.
+    cm : str or int
+        The colormap identifier, either as a string name or an integer.
     values : np.ndarray
         The array of values to map.
     vmin : float, optional
@@ -252,11 +267,19 @@ def cmap(cm: int, values: np.ndarray, vmin: float = 0.0, vmax: float = 1.0) -> n
     np.ndarray
         An array of RGBA colors.
     """
+    if isinstance(cm, str):
+        cm = to_enum(f'cmap_{cm}')
+    assert isinstance(cm, int)
     values = np.asanyarray(values, dtype=np.float32)
     n = values.size
     colors = np.full((n, 4), 255, dtype=np.uint8)
     dvz.colormap_array(cm, n, values.ravel(), vmin, vmax, colors)
     return colors
+
+
+# -------------------------------------------------------------------------------------------------
+# Data preparation
+# -------------------------------------------------------------------------------------------------
 
 
 def to_byte(arr: np.ndarray, vmin: float = None, vmax: float = None) -> np.ndarray:
@@ -408,6 +431,11 @@ def prepare_data_scalar(name: str, dtype: str, size: int, value: float) -> np.nd
         raise ValueError(f'Property {name} needs to be set after the position')
     pvalue = np.full(size, value, dtype=dtype)
     return pvalue
+
+
+# -------------------------------------------------------------------------------------------------
+# Visual helpers
+# -------------------------------------------------------------------------------------------------
 
 
 def mesh_flags(
