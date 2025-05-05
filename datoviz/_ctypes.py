@@ -508,7 +508,8 @@ class DvzVisualFlags(CtypesEnum):
 
 class DvzViewFlags(CtypesEnum):
     DVZ_VIEW_FLAGS_NONE = 0x0000
-    DVZ_VIEW_FLAGS_STATIC = 0x0001
+    DVZ_VIEW_FLAGS_STATIC = 0x0010
+    DVZ_VIEW_FLAGS_NOCLIP = 0x0020
 
 
 class DvzDatFlags(CtypesEnum):
@@ -1962,8 +1963,9 @@ VIEWPORT_CLIP_BOTTOM = 0x0004
 VIEWPORT_CLIP_INNER = 0x0001
 VIEWPORT_CLIP_LEFT = 0x0008
 VIEWPORT_CLIP_OUTER = 0x0002
+VIEW_FLAGS_NOCLIP = 0x0020
 VIEW_FLAGS_NONE = 0x0000
-VIEW_FLAGS_STATIC = 0x0001
+VIEW_FLAGS_STATIC = 0x0010
 VISUAL_FLAGS_DEFAULT = 0x000000
 VISUAL_FLAGS_INDEXED = 0x010000
 VISUAL_FLAGS_INDEX_MAPPABLE = 0x800000
@@ -9894,9 +9896,9 @@ ref_expand_3D.argtypes = [
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos
 ]
 
-# Function dvz_ref_transform_1D()
-ref_transform_1D = dvz.dvz_ref_transform_1D
-ref_transform_1D.__doc__ = """
+# Function dvz_ref_normalize_1D()
+ref_normalize_1D = dvz.dvz_ref_normalize_1D
+ref_normalize_1D.__doc__ = """
 Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9912,7 +9914,7 @@ pos : double*
 pos_tr : vec3* (out parameter)
     (array) the transformed positions
 """
-ref_transform_1D.argtypes = [
+ref_normalize_1D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     DvzDim,  # DvzDim dim
     ctypes.c_uint32,  # uint32_t count
@@ -9920,9 +9922,9 @@ ref_transform_1D.argtypes = [
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
-# Function dvz_ref_transform_2D()
-ref_transform_2D = dvz.dvz_ref_transform_2D
-ref_transform_2D.__doc__ = """
+# Function dvz_ref_normalize_2D()
+ref_normalize_2D = dvz.dvz_ref_normalize_2D
+ref_normalize_2D.__doc__ = """
 Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9936,16 +9938,16 @@ pos : dvec2*
 pos_tr : vec3* (out parameter)
     (array) the transformed 3D positions
 """
-ref_transform_2D.argtypes = [
+ref_normalize_2D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
     ndpointer(dtype=np.float32, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # out vec3* pos_tr
 ]
 
-# Function dvz_ref_transform_polygon()
-ref_transform_polygon = dvz.dvz_ref_transform_polygon
-ref_transform_polygon.__doc__ = """
+# Function dvz_ref_normalize_polygon()
+ref_normalize_polygon = dvz.dvz_ref_normalize_polygon
+ref_normalize_polygon.__doc__ = """
 Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
 
 Parameters
@@ -9959,16 +9961,16 @@ pos : dvec2*
 pos_tr : dvec2* (out parameter)
     (array) the transformed 2D positions
 """
-ref_transform_polygon.argtypes = [
+ref_normalize_polygon.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # dvec2* pos
     ndpointer(dtype=np.double, ndim=2, ncol=2, flags="C_CONTIGUOUS"),  # out dvec2* pos_tr
 ]
 
-# Function dvz_ref_transform_3D()
-ref_transform_3D = dvz.dvz_ref_transform_3D
-ref_transform_3D.__doc__ = """
+# Function dvz_ref_normalize_3D()
+ref_normalize_3D = dvz.dvz_ref_normalize_3D
+ref_normalize_3D.__doc__ = """
 Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
 
 Parameters
@@ -9982,7 +9984,7 @@ pos : dvec3*
 pos_tr : vec3* (out parameter)
     (array) the transformed positions
 """
-ref_transform_3D.argtypes = [
+ref_normalize_3D.argtypes = [
     ctypes.POINTER(DvzRef),  # DvzRef* ref
     ctypes.c_uint32,  # uint32_t count
     ndpointer(dtype=np.double, ndim=2, ncol=3, flags="C_CONTIGUOUS"),  # dvec3* pos

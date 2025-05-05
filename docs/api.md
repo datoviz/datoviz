@@ -6136,6 +6136,112 @@ Indicate whether the reference is set on a given axis.
     );
     ```
 
+### `dvz_ref_normalize_1D()`
+
+Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
+
+=== "Python"
+
+    ``` python
+    dvz.ref_normalize_1D(
+        ref,  # the reference frame (LP_DvzRef)
+        dim,  # which dimension (DvzDim)
+        count,  # the number of positions (int, 32-bit unsigned)
+        pos,  # the 1D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_ref_normalize_1D(
+        DvzRef* ref,  // the reference frame
+        DvzDim dim,  // which dimension
+        uint32_t count,  // the number of positions
+        double* pos,  // the 1D positions
+        vec3* pos_tr,  // (array) the transformed positions
+    );
+    ```
+
+### `dvz_ref_normalize_2D()`
+
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
+
+=== "Python"
+
+    ``` python
+    dvz.ref_normalize_2D(
+        ref,  # the reference frame (LP_DvzRef)
+        count,  # the number of positions (int, 32-bit unsigned)
+        pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed 3D positions (ndpointer_<f4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_ref_normalize_2D(
+        DvzRef* ref,  // the reference frame
+        uint32_t count,  // the number of positions
+        dvec2* pos,  // the 2D positions
+        vec3* pos_tr,  // (array) the transformed 3D positions
+    );
+    ```
+
+### `dvz_ref_normalize_3D()`
+
+Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
+
+=== "Python"
+
+    ``` python
+    dvz.ref_normalize_3D(
+        ref,  # the reference frame (LP_DvzRef)
+        count,  # the number of positions (int, 32-bit unsigned)
+        pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_ref_normalize_3D(
+        DvzRef* ref,  // the reference frame
+        uint32_t count,  // the number of positions
+        dvec3* pos,  // the 3D positions
+        vec3* pos_tr,  // (array) the transformed positions
+    );
+    ```
+
+### `dvz_ref_normalize_polygon()`
+
+Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
+
+=== "Python"
+
+    ``` python
+    dvz.ref_normalize_polygon(
+        ref,  # the reference frame (LP_DvzRef)
+        count,  # the number of positions (int, 32-bit unsigned)
+        pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+        pos_tr,  # (array) the transformed 2D positions (ndpointer_<f8_C_CONTIGUOUS)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_ref_normalize_polygon(
+        DvzRef* ref,  // the reference frame
+        uint32_t count,  // the number of positions
+        dvec2* pos,  // the 2D positions
+        dvec2* pos_tr,  // (array) the transformed 2D positions
+    );
+    ```
+
 ### `dvz_ref_set()`
 
 Set the range on a given axis.
@@ -6159,112 +6265,6 @@ Set the range on a given axis.
         DvzDim dim,  // the dimension axis
         double vmin,  // the minimum value
         double vmax,  // the maximum value
-    );
-    ```
-
-### `dvz_ref_transform_1D()`
-
-Transform 1D data from the reference frame to normalized device coordinates [-1..+1].
-
-=== "Python"
-
-    ``` python
-    dvz.ref_transform_1D(
-        ref,  # the reference frame (LP_DvzRef)
-        dim,  # which dimension (DvzDim)
-        count,  # the number of positions (int, 32-bit unsigned)
-        pos,  # the 1D positions (ndpointer_<f8_C_CONTIGUOUS)
-        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_ref_transform_1D(
-        DvzRef* ref,  // the reference frame
-        DvzDim dim,  // which dimension
-        uint32_t count,  // the number of positions
-        double* pos,  // the 1D positions
-        vec3* pos_tr,  // (array) the transformed positions
-    );
-    ```
-
-### `dvz_ref_transform_2D()`
-
-Transform 2D data from the reference frame to normalized device coordinates [-1..+1].
-
-=== "Python"
-
-    ``` python
-    dvz.ref_transform_2D(
-        ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (int, 32-bit unsigned)
-        pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
-        pos_tr,  # (array) the transformed 3D positions (ndpointer_<f4_C_CONTIGUOUS)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_ref_transform_2D(
-        DvzRef* ref,  // the reference frame
-        uint32_t count,  // the number of positions
-        dvec2* pos,  // the 2D positions
-        vec3* pos_tr,  // (array) the transformed 3D positions
-    );
-    ```
-
-### `dvz_ref_transform_3D()`
-
-Transform 3D data from the reference frame to normalized device coordinates [-1..+1].
-
-=== "Python"
-
-    ``` python
-    dvz.ref_transform_3D(
-        ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (int, 32-bit unsigned)
-        pos,  # the 3D positions (ndpointer_<f8_C_CONTIGUOUS)
-        pos_tr,  # (array) the transformed positions (ndpointer_<f4_C_CONTIGUOUS)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_ref_transform_3D(
-        DvzRef* ref,  // the reference frame
-        uint32_t count,  // the number of positions
-        dvec3* pos,  // the 3D positions
-        vec3* pos_tr,  // (array) the transformed positions
-    );
-    ```
-
-### `dvz_ref_transform_polygon()`
-
-Transform 2D data from the reference frame to normalized device coordinates [-1..+1] in 2D.
-
-=== "Python"
-
-    ``` python
-    dvz.ref_transform_polygon(
-        ref,  # the reference frame (LP_DvzRef)
-        count,  # the number of positions (int, 32-bit unsigned)
-        pos,  # the 2D positions (ndpointer_<f8_C_CONTIGUOUS)
-        pos_tr,  # (array) the transformed 2D positions (ndpointer_<f8_C_CONTIGUOUS)
-    )
-    ```
-
-=== "C"
-
-    ``` c
-    void dvz_ref_transform_polygon(
-        DvzRef* ref,  // the reference frame
-        uint32_t count,  // the number of positions
-        dvec2* pos,  // the 2D positions
-        dvec2* pos_tr,  // (array) the transformed 2D positions
     );
     ```
 
@@ -12690,6 +12690,7 @@ DVZ_VERTEX_INPUT_RATE_INSTANCE
 ```
 DVZ_VIEW_FLAGS_NONE
 DVZ_VIEW_FLAGS_STATIC
+DVZ_VIEW_FLAGS_NOCLIP
 ```
 
 ### `DvzViewportClip`

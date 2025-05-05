@@ -259,11 +259,11 @@ dvz_ref_expand_3D
 dvz_ref_get
 dvz_ref_inverse
 dvz_ref_is_set
+dvz_ref_normalize_1D
+dvz_ref_normalize_2D
+dvz_ref_normalize_3D
+dvz_ref_normalize_polygon
 dvz_ref_set
-dvz_ref_transform_1D
-dvz_ref_transform_2D
-dvz_ref_transform_3D
-dvz_ref_transform_polygon
 dvz_resample
 dvz_rgb_to_rgba_char
 dvz_rgb_to_rgba_float
