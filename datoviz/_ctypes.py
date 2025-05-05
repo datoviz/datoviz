@@ -9100,6 +9100,23 @@ camera_position.argtypes = [
     vec3,  # vec3 pos
 ]
 
+# Function dvz_camera_get_position()
+camera_get_position = dvz.dvz_camera_get_position
+camera_get_position.__doc__ = """
+Get the camera position.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+pos : vec3 (out parameter)
+    the pos
+"""
+camera_get_position.argtypes = [
+    ctypes.POINTER(DvzCamera),  # DvzCamera* camera
+    vec3,  # out vec3 pos
+]
+
 # Function dvz_camera_lookat()
 camera_lookat = dvz.dvz_camera_lookat
 camera_lookat.__doc__ = """
@@ -9117,6 +9134,23 @@ camera_lookat.argtypes = [
     vec3,  # vec3 lookat
 ]
 
+# Function dvz_camera_get_lookat()
+camera_get_lookat = dvz.dvz_camera_get_lookat
+camera_get_lookat.__doc__ = """
+Get the camera lookat position.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+lookat : vec3 (out parameter)
+    the lookat position
+"""
+camera_get_lookat.argtypes = [
+    ctypes.POINTER(DvzCamera),  # DvzCamera* camera
+    vec3,  # out vec3 lookat
+]
+
 # Function dvz_camera_up()
 camera_up = dvz.dvz_camera_up
 camera_up.__doc__ = """
@@ -9132,6 +9166,23 @@ up : vec3
 camera_up.argtypes = [
     ctypes.POINTER(DvzCamera),  # DvzCamera* camera
     vec3,  # vec3 up
+]
+
+# Function dvz_camera_get_up()
+camera_get_up = dvz.dvz_camera_get_up
+camera_get_up.__doc__ = """
+Get the camera up vector.
+
+Parameters
+----------
+camera : DvzCamera*
+    the camera
+up : vec3 (out parameter)
+    the up vector
+"""
+camera_get_up.argtypes = [
+    ctypes.POINTER(DvzCamera),  # DvzCamera* camera
+    vec3,  # out vec3 up
 ]
 
 # Function dvz_camera_perspective()

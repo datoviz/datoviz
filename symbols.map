@@ -19,6 +19,9 @@ dvz_basic_color
 dvz_basic_group
 dvz_basic_position
 dvz_basic_size
+dvz_camera_get_lookat
+dvz_camera_get_position
+dvz_camera_get_up
 dvz_camera_initial
 dvz_camera_lookat
 dvz_camera_mvp

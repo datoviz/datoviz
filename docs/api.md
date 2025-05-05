@@ -484,6 +484,72 @@ Set the point size (for POINT_LIST topology only).
     );
     ```
 
+### `dvz_camera_get_lookat()`
+
+Get the camera lookat position.
+
+=== "Python"
+
+    ``` python
+    dvz.camera_get_lookat(
+        camera,  # the camera (LP_DvzCamera)
+        lookat,  # the lookat position (vec3)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_camera_get_lookat(
+        DvzCamera* camera,  // the camera
+        vec3 lookat,  // the lookat position
+    );
+    ```
+
+### `dvz_camera_get_position()`
+
+Get the camera position.
+
+=== "Python"
+
+    ``` python
+    dvz.camera_get_position(
+        camera,  # the camera (LP_DvzCamera)
+        pos,  # the pos (vec3)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_camera_get_position(
+        DvzCamera* camera,  // the camera
+        vec3 pos,  // the pos
+    );
+    ```
+
+### `dvz_camera_get_up()`
+
+Get the camera up vector.
+
+=== "Python"
+
+    ``` python
+    dvz.camera_get_up(
+        camera,  # the camera (LP_DvzCamera)
+        up,  # the up vector (vec3)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_camera_get_up(
+        DvzCamera* camera,  // the camera
+        vec3 up,  // the up vector
+    );
+    ```
+
 ### `dvz_camera_initial()`
 
 Set the initial camera parameters.

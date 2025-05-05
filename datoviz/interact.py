@@ -171,6 +171,19 @@ class Camera:
         self.c_camera = c_camera
         self.c_panel = c_panel
 
+    def eye(self) -> tuple[float, float, float]:
+        """
+        Get the camera position.
+
+        Returns
+        -------
+        tuple
+            The (x, y, z) position of the camera.
+        """
+        eye = dvz.vec3(0)
+        dvz.camera_get_position(self.c_camera, eye)
+        return tuple(eye)
+
     def set(
         self,
         eye: tuple[float, float, float] = None,
