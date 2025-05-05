@@ -25,6 +25,7 @@
 layout(constant_id = DVZ_SPECIALIZATION_TRANSFORM) const int TRANSFORM_FLAGS = 0;
 layout(constant_id = DVZ_SPECIALIZATION_VIEWPORT) const int VIEWPORT_FLAGS = 0;
 
+#define ANTIALIAS 1.0
 
 // colormaps
 #define CPAL032_OFS     240
@@ -340,6 +341,11 @@ bool clip_viewport(vec2 frag_coords)
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
 
+    // top += ANTIALIAS;
+    // bottom -= ANTIALIAS;
+    // left += ANTIALIAS;
+    // right -= ANTIALIAS;
+
     w *= canvas_scale.scale;
     h *= canvas_scale.scale;
     top *= canvas_scale.scale;
@@ -347,7 +353,7 @@ bool clip_viewport(vec2 frag_coords)
     bottom *= canvas_scale.scale;
     left *= canvas_scale.scale;
 
-    return (uv.y < 0 + top || uv.x >w - right || uv.y > h - bottom || uv.x < 0 + left);
+    return (uv.y <= 0 + top || uv.x >= w - right || uv.y >= h - bottom || uv.x <= 0 + left);
 }
 
 
@@ -363,6 +369,11 @@ bool clip_viewport(vec2 frag_coords, int coord)
     float right = viewport.margins.y;
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
+
+    // top += ANTIALIAS;
+    // bottom -= ANTIALIAS;
+    // left += ANTIALIAS;
+    // right -= ANTIALIAS;
 
     w *= canvas_scale.scale;
     h *= canvas_scale.scale;

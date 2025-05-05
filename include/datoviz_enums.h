@@ -219,7 +219,8 @@ typedef enum
 typedef enum
 {
     DVZ_VIEW_FLAGS_NONE = 0x0000,
-    DVZ_VIEW_FLAGS_STATIC = 0x0001,
+    DVZ_VIEW_FLAGS_STATIC = 0x0010,
+    DVZ_VIEW_FLAGS_NOCLIP = 0x0020,
 } DvzViewFlags;
 
 

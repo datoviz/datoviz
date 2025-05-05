@@ -4260,7 +4260,7 @@ DVZ_EXPORT void dvz_ref_expand_3D(DvzRef* ref, uint32_t count, dvec3* pos);
  * @param[out] pos_tr (array) the transformed positions
  */
 DVZ_EXPORT void
-dvz_ref_transform_1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
+dvz_ref_normalize_1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3* pos_tr);
 
 
 
@@ -4272,7 +4272,7 @@ dvz_ref_transform_1D(DvzRef* ref, DvzDim dim, uint32_t count, double* pos, vec3*
  * @param pos the 2D positions
  * @param[out] pos_tr (array) the transformed 3D positions
  */
-DVZ_EXPORT void dvz_ref_transform_2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
+DVZ_EXPORT void dvz_ref_normalize_2D(DvzRef* ref, uint32_t count, dvec2* pos, vec3* pos_tr);
 
 
 
@@ -4284,7 +4284,7 @@ DVZ_EXPORT void dvz_ref_transform_2D(DvzRef* ref, uint32_t count, dvec2* pos, ve
  * @param pos the 2D positions
  * @param[out] pos_tr (array) the transformed 2D positions
  */
-DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* pos, dvec2* pos_tr);
+DVZ_EXPORT void dvz_ref_normalize_polygon(DvzRef* ref, uint32_t count, dvec2* pos, dvec2* pos_tr);
 
 
 
@@ -4296,7 +4296,7 @@ DVZ_EXPORT void dvz_ref_transform_polygon(DvzRef* ref, uint32_t count, dvec2* po
  * @param pos the 3D positions
  * @param[out] pos_tr (array) the transformed positions
  */
-DVZ_EXPORT void dvz_ref_transform_3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
+DVZ_EXPORT void dvz_ref_normalize_3D(DvzRef* ref, uint32_t count, dvec3* pos, vec3* pos_tr);
 
 
 
