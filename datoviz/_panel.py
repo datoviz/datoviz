@@ -4,7 +4,7 @@ Licensed under the MIT license. See LICENSE file in the project root for details
 SPDX-License-Identifier: MIT
 """
 
-# Base classes
+# Panel
 
 # -------------------------------------------------------------------------------------------------
 # Imports
@@ -14,6 +14,7 @@ from typing import Optional
 
 from . import _constants as cst
 from . import _ctypes as dvz
+from ._axes import Axes
 from ._constants import Vec3
 from .interact import Arcball, Camera, Ortho, Panzoom
 from .visuals import Visual
@@ -37,6 +38,12 @@ class Panel:
 
     c_panel: dvz.DvzPanel = None
     c_figure: Optional[dvz.DvzFigure] = None
+
+    _panzoom: Panzoom = None
+    _ortho: Ortho = None
+    _arcball: Arcball = None
+    _camera: Camera = None
+    _axes: Axes = None
 
     def __init__(self, c_panel: dvz.DvzPanel, c_figure: Optional[dvz.DvzFigure] = None) -> None:
         """
@@ -107,8 +114,10 @@ class Panel:
         Panzoom
             The panzoom interactivity instance.
         """
-        c_panzoom = dvz.panel_panzoom(self.c_panel, c_flags)
-        return Panzoom(c_panzoom, self.c_panel)
+        if not self._panzoom:
+            c_panzoom = dvz.panel_panzoom(self.c_panel, c_flags)
+            self._panzoom = Panzoom(c_panzoom, self.c_panel)
+        return self._panzoom
 
     def ortho(self, c_flags: int = 0) -> Ortho:
         """
@@ -124,8 +133,10 @@ class Panel:
         Ortho
             The orthographic interactivity instance.
         """
-        c_ortho = dvz.panel_ortho(self.c_panel, c_flags)
-        return Ortho(c_ortho, self.c_panel)
+        if not self._ortho:
+            c_ortho = dvz.panel_ortho(self.c_panel, c_flags)
+            self._ortho = Ortho(c_ortho, self.c_panel)
+        return self._ortho
 
     def arcball(self, initial: Optional[Vec3] = None, c_flags: int = 0) -> Arcball:
         """
@@ -143,11 +154,13 @@ class Panel:
         Arcball
             The arcball interactivity instance.
         """
-        c_arcball = dvz.panel_arcball(self.c_panel, c_flags)
-        if initial is not None:
-            dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
-            self.update()
-        return Arcball(c_arcball, self.c_panel)
+        if not self._arcball:
+            c_arcball = dvz.panel_arcball(self.c_panel, c_flags)
+            if initial is not None:
+                dvz.arcball_initial(c_arcball, dvz.vec3(*initial))
+                self.update()
+            self._arcball = Arcball(c_arcball, self.c_panel)
+        return self._arcball
 
     def camera(
         self,
@@ -175,14 +188,33 @@ class Panel:
         Camera
             The camera interactivity instance.
         """
-        c_camera = dvz.panel_camera(self.c_panel, c_flags)
-        pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
-        lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
-        up = initial_up if initial_up is not None else cst.DEFAULT_CAMERA_UP
-        if initial is not None:
-            dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
-            self.update()
-        return Camera(c_camera, self.c_panel)
+        if not self._camera:
+            c_camera = dvz.panel_camera(self.c_panel, c_flags)
+            pos = initial if initial is not None else cst.DEFAULT_CAMERA_POS
+            lookat = initial_lookat if initial_lookat is not None else cst.DEFAULT_CAMERA_LOOKAT
+            up = initial_up if initial_up is not None else cst.DEFAULT_CAMERA_UP
+            if initial is not None:
+                dvz.camera_initial(c_camera, dvz.vec3(*pos), dvz.vec3(*lookat), dvz.vec3(*up))
+                self.update()
+            self._camera = Camera(c_camera, self.c_panel)
+        return self._camera
+
+    # Axes
+    # ---------------------------------------------------------------------------------------------
+
+    def axes(self, xlim: tuple[float, float] = None, ylim: tuple[float, float] = None):
+        if self._axes is None:
+            xlim = xlim or cst.NDC
+            ylim = ylim or cst.NDC
+            xmin, xmax = xlim
+            ymin, ymax = ylim
+
+            c_axes = dvz.panel_axes_2D(self.c_panel, xmin, xmax, ymin, ymax)
+            c_ref = dvz.panel_ref(self.c_panel)
+            c_panzoom = dvz.panel_panzoom(self.c_panel)
+
+            self._axes = Axes(c_axes, c_ref, c_panzoom, self.c_panel)
+        return self._axes
 
     # Demo visuals
     # ---------------------------------------------------------------------------------------------

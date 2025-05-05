@@ -4,7 +4,7 @@ Licensed under the MIT license. See LICENSE file in the project root for details
 SPDX-License-Identifier: MIT
 """
 
-# Base classes
+# Event
 
 # -------------------------------------------------------------------------------------------------
 # Imports

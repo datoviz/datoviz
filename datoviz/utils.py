@@ -375,7 +375,7 @@ def prepare_data_array(
     assert ndim == pvalue.ndim
     for dim in range(ndim):
         if shape[dim] > 0 and pvalue.shape[dim] != shape[dim]:
-            raise ValueError(f'Incorrect shape {pvalue.shape[dim]} != {shape[dim]}')
+            raise ValueError(f'Incorrect shape for {name}: {pvalue.shape[dim]} != {shape[dim]}')
     return pvalue
 
 
