@@ -30,7 +30,6 @@ vec4 lighting(vec4 frag_pos, vec4 frag_color, vec3 normal,
 {
     normal = normalize(normal);
 
-    //vec4 material = light_params;
     vec3 light_dir = normalize(light_pos.xyz - frag_pos.xyz);
     light_dir.y *= -1.0;           // Correction for vulkan y direction.
 

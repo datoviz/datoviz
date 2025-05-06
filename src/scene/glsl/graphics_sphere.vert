@@ -25,7 +25,7 @@ layout(location = 3) out vec4 out_cam_pos;
 
 void main()
 {
-    out_radius = size / 2.0;       // Needs to be reltive to screen in fragment shader.
+    out_radius = size / 2.0;
     out_color = color;
 
     // Calculate position and eye-space position

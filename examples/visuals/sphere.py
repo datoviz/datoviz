@@ -21,8 +21,8 @@ def generate_ndc_grid(n):
     z_norm = (z + 1) / 2
 
     # Radius increases linearly in all directions (can be tuned)
-    radius = 10 + 4 * np.exp(1 * (x_norm + y_norm + z_norm))
-    radius = radius.flatten()
+    size = 10 + 4 * np.exp(1 * (x_norm + y_norm + z_norm))
+    size = size.flatten()
 
     r = x_norm.flatten()
     g = y_norm.flatten()
@@ -31,7 +31,7 @@ def generate_ndc_grid(n):
     rgb = np.stack([r[::-1], g[::-1], b, a], axis=1)
     rgb = (255 * rgb).astype(np.uint8)
 
-    return radius.size, positions, rgb, radius
+    return size.size, positions, rgb, size
 
 
 N, position, color, size = generate_ndc_grid(8)
