@@ -5,7 +5,6 @@
 */
 
 #version 450
-#include "antialias.glsl"
 #include "common.glsl"
 
 layout(binding = 2) uniform SphereParams
@@ -18,14 +17,42 @@ params;
 layout(location = 0) in vec4 in_color;
 layout(location = 1) in vec4 in_pos;
 layout(location = 2) in float in_radius;
-layout(location = 3) in vec4 in_eye_pos;
+layout(location = 3) in vec4 in_cam_pos;
 
 layout(location = 0) out vec4 out_color;
 
 
-const vec3 light_color = vec3(1.0);
+const vec4 light_color = vec4(1.0);
 
-#define EPSILON 0
+
+vec4 lighting(vec4 frag_pos, vec4 frag_color, vec3 normal,
+              vec4 cam_pos, vec4 light_pos, vec4 light_color, vec4 light_params)
+{
+    normal = normalize(normal);
+
+    //vec4 material = light_params;
+    vec3 light_dir = normalize(light_pos.xyz - frag_pos.xyz);
+    light_dir.y *= -1.0;           // Correction for vulkan y direction.
+
+    float ambient = light_params.x;
+    ambient *= .75 + .25 * min(dot(normal, light_dir), 0.0);   //  Dark side gradient.
+
+    float diffuse = light_params.y * max(dot(normal, light_dir), 0.0);
+
+    vec3 view_dir = normalize(cam_pos.xyz - frag_pos.xyz);
+    view_dir.y *= -1.0;
+
+    vec3 halfAngle = normalize(view_dir + light_dir);
+    float spec_term = pow(max(dot(normal, halfAngle), 0.0), light_params.w);
+    float specular = light_params.z * spec_term;
+
+    vec4 color = ambient * frag_color * light_color;
+    color += (1.0 - color) * diffuse * frag_color * light_color;
+    color += (1.0 - color) * specular * light_color;
+
+    color.a = 1.0;
+    return color;
+}
 
 
 void main()
@@ -33,41 +60,22 @@ void main()
     // Calculate the normalized coordinates of the fragment within the point sprite
     vec2 coord = 2.0 * gl_PointCoord - 1.0;
     float dist_squared = dot(coord, coord);
-
-    if (dist_squared > 1.0 + EPSILON)
+    if (dist_squared > 1.0)
         discard;
 
     // Calculate the normal of the sphere at this fragment
     vec3 normal = vec3(coord, sqrt(1.0 - dist_squared));
 
-    // Update depth
-    vec4 view_pos = in_eye_pos;
-    float d = length(view_pos * viewport.size.x);
-    view_pos.xyz += (in_radius * normal)/d;
-    gl_FragDepth = 1.0 - 1.0/(1.0 + length(view_pos.xyz));
+    // Update position in world space.
+    vec3 cam_dir = normalize(in_cam_pos.xyz - in_pos.xyz);
+    vec4 pos = in_pos;
+    pos.xyz += in_radius * cam_dir * normal.z;
 
-    // Calculate the lighting
-    vec3 light_pos = params.light_pos.xyz;
+    // Update depth buffer to match new position.
+    float clip_depth = (mvp.proj * mvp.view * pos).w;
+    gl_FragDepth = 1.0 - 1.0/(1.0 + clip_depth);
 
-    vec3 light_dir = normalize(light_pos.xyz - in_pos.xyz);
-    light_dir.y *= -1.0;  // Correction for vulkan y positions reversed.
-    vec3 view_dir = normalize(-view_pos.xyz);
-    vec3 reflect_dir = reflect(light_dir, normal);
-
-    float spec = pow(max(dot(view_dir, -reflect_dir), 0.0), params.light_params.w);
-    vec3 specular = params.light_params.z * spec * light_color;
-    vec3 color = specular * smoothstep(0.0, 0.5, normal.z);  // Reduced at edges.
-
-    float diff = max(dot(normal, light_dir), 0.0);
-    vec3 diffuse = params.light_params.y * diff * light_color;
-    color += diffuse * (1.0 - color) * in_color.xyz;
-
-    float ambient = params.light_params.x;
-    color += ambient * (1.0 - color) * in_color.xyz;
-
-    // TODO: border antialias.
-    float alpha = in_color.a;
-    // if (dist_squared > 1.0)
-    //     alpha *= compute_distance(dist_squared - 1, 1.0).z;
-    out_color = vec4(color, alpha);
+    // Get lighting.  (Reqires LightParams structure to be set.
+    out_color = lighting(pos, in_color, normal, in_cam_pos,
+                         params.light_pos, light_color, params.light_params);
 }
