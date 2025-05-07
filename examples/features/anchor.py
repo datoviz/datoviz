@@ -1,0 +1,73 @@
+"""
+# Anchor feature example
+
+Show how to use the image anchor. The anchor is a pair (x, y) within [-1, +1]^2 that indicates,
+in normalized coordinates within the image, the position within the image corresponding to the
+image position specified in Image.set_position().
+This normalized coordinate system within the image is centered around the center of the image,
+x goes right, y goes up.
+
+"""
+
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+
+import datoviz as dvz
+
+
+def load_image():
+    ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+    filepath = ROOT_DIR / 'data/textures/image.png'
+    with Image.open(filepath) as f:
+        return np.array(f.convert('RGBA'), dtype=np.uint8)
+
+
+image = load_image()
+height, width, _ = image.shape
+
+position = np.array([[0, 0, 0]], dtype=np.float32)
+size = np.array([[1, 1]], dtype=np.float32)
+anchor = np.array([[0, 0]], dtype=np.float32)
+texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
+
+app = dvz.App()
+figure = app.figure(800, 600, gui=True)
+panel = figure.panel()
+panzoom = panel.panzoom()
+
+visual = app.image(
+    position=position,
+    size=size,
+    anchor=anchor,
+    texcoords=texcoords,
+    rescale='keep_ratio',
+    unit='ndc',
+)
+texture = app.texture_2D(image, interpolation='linear')
+visual.set_texture(texture)
+panel.add(visual)
+
+
+x_anchor = dvz.Out(0.0)
+y_anchor = dvz.Out(0.0)
+
+
+@app.connect(figure)
+def on_gui(ev):
+    dvz.gui_size(dvz.vec2(400, 100))
+    dvz.gui_begin('Change the image anchor', 0)
+    has_changed = False
+    has_changed |= dvz.gui_slider('x anchor', -1, +1, x_anchor)
+    has_changed |= dvz.gui_slider('y anchor', -1, +1, y_anchor)
+    dvz.gui_end()
+
+    if has_changed:
+        anchor[0, 0] = x_anchor.value
+        anchor[0, 1] = y_anchor.value
+        visual.set_anchor(anchor)
+
+
+app.run()
+app.destroy()

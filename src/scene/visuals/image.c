@@ -104,6 +104,7 @@ DvzVisual* dvz_image(DvzBatch* batch, int flags)
         rescale = 1;
     if ((flags & DVZ_IMAGE_FLAGS_RESCALE) > 0)
         rescale = 2;
+    log_trace("image rescaling specialization constant value: %d", rescale);
     dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 1, sizeof(int), &rescale);
 
 

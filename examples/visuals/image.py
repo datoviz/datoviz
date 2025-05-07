@@ -64,7 +64,7 @@ visual = app.image(
     edgecolor=(255, 255, 255, 255),
     radius=50,
 )
-texture = app.texture_2D(image, interpolation='linear')  # by default, no interpolation)
+texture = app.texture_2D(image, interpolation='linear')  # by default, no interpolation
 visual.set_texture(texture)
 panel.add(visual)
 
