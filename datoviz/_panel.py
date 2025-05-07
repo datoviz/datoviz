@@ -100,7 +100,7 @@ class Panel:
     # Interactivity
     # ---------------------------------------------------------------------------------------------
 
-    def panzoom(self, c_flags: int = 0) -> Panzoom:
+    def panzoom(self, c_flags: int = 0, fixed: Optional[str] = None) -> Panzoom:
         """
         Add panzoom interactivity to the panel.
 
@@ -108,6 +108,8 @@ class Panel:
         ----------
         c_flags : int, optional
             Datoviz flags for the panzoom interactivity, by default 0.
+        fixed : str, optional
+            'x' or 'y' to fix the panzoom interactivity along a given axis.
 
         Returns
         -------
@@ -115,6 +117,11 @@ class Panel:
             The panzoom interactivity instance.
         """
         if not self._panzoom:
+            if fixed is not None:
+                if 'x' in fixed:
+                    c_flags |= dvz.PANZOOM_FLAGS_FIXED_X
+                if 'y' in fixed:
+                    c_flags |= dvz.PANZOOM_FLAGS_FIXED_Y
             c_panzoom = dvz.panel_panzoom(self.c_panel, c_flags)
             self._panzoom = Panzoom(c_panzoom, self.c_panel)
         return self._panzoom
