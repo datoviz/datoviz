@@ -37,6 +37,8 @@ vec2 ds[6] = {
 
 void main()
 {
+    vec2 vp = get_inner_viewport();
+
     vec4 tr = transform(pos);
 
     // NOTE: we are here in Vulkan CDS with y reversed. For the image vertex displacement, we
@@ -47,7 +49,7 @@ void main()
     // Keep aspect ratio?
     float k = 1.0;
     if (RESCALE == 1) {
-        k = viewport.size.x / float(viewport.size.y);
+        k = vp.x / float(vp.y);
     }
 
 
@@ -56,7 +58,12 @@ void main()
 
     // If the size is in pixels, we convert it into NDC.
     if (SIZE_NDC == 0) {
-        s *= 2. / viewport.size;
+        s *= 2. / vp;
+    }
+    // If the size is in NDC, we need to rescale it to take the margins into account.
+    else {
+
+        s *= vp / viewport.size;
     }
 
 
@@ -119,7 +126,7 @@ void main()
     out_uv = uv;
 
     // The fragment shader expects the size in pixels, whereas "s" is in NDC here.
-    out_size.xy = s * viewport.size / 2.0;
+    out_size.xy = s * vp / 2.0;
     out_size.z = .5 * (zoom.x + zoom.y);
 
     out_color = facecolor;

@@ -329,6 +329,20 @@ vec3 axis_zoom()
 /*  Clipping                                                                                     */
 /*************************************************************************************************/
 
+vec2 get_inner_viewport() {
+    float w = viewport.size.x;
+    float h = viewport.size.y;
+
+    float top = viewport.margins.x;
+    float right = viewport.margins.y;
+    float bottom = viewport.margins.z;
+    float left = viewport.margins.w;
+
+    return vec2(w - left - right, h - top - bottom);
+}
+
+
+
 bool clip_viewport(vec2 frag_coords)
 {
     vec2 uv = frag_coords - viewport.offset;
