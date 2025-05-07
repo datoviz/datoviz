@@ -1935,44 +1935,56 @@ void dvz_images_copy_from_buffer(
 
     log_debug("copy buffer to image (%s)", pretty_size(size));
 
-    // Take transfer cmd buf.
-    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
-    // DvzCommands* cmds = &cmds_;
     DvzCommands* cmds = &gpu->cmd;
     dvz_cmd_reset(cmds, 0);
     dvz_cmd_begin(cmds, 0);
 
-    // Image transition.
+    // ------------------------------
+    // Transition image: UNDEFINED -> TRANSFER_DST_OPTIMAL
     DvzBarrier barrier = dvz_barrier(gpu);
-    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-    ANN(img);
-    ANN(img);
+    dvz_barrier_stages(
+        &barrier, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
     dvz_barrier_images(&barrier, img);
     dvz_barrier_images_layout(
         &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
     dvz_cmd_barrier(cmds, 0, &barrier);
 
-    // Copy to staging buffer
+    // ------------------------------
+    // Copy buffer -> image
     dvz_cmd_copy_buffer_to_image(cmds, 0, buffer, buf_offset, img, tex_offset, shape);
 
-    // Image transition.
+    // ------------------------------
+    // Transition image: TRANSFER_DST_OPTIMAL -> final layout (e.g. SHADER_READ_ONLY_OPTIMAL)
+    dvz_barrier_stages(
+        &barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, img->layout);
-    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+
+    VkAccessFlags dst_access = 0;
+    switch (img->layout)
+    {
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        dst_access = VK_ACCESS_SHADER_READ_BIT;
+        break;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        dst_access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+        break;
+    default:
+        log_error("Unsupported target layout after transfer!");
+        ASSERT(0);
+    }
+
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access);
     dvz_cmd_barrier(cmds, 0, &barrier);
+
+    // ------------------------------
 
     dvz_cmd_end(cmds, 0);
 
-    // Wait for the render queue to be idle.
-    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
-
-    // Submit the commands to the transfer queue.
+    // Submit the commands
     DvzSubmit submit = dvz_submit(gpu);
     dvz_submit_commands(&submit, cmds);
     dvz_submit_send(&submit, 0, NULL, 0);
-
-    // Wait for the transfer queue to be idle.
-    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
 }
 
 
