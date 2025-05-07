@@ -227,7 +227,10 @@ class App:
             if image.ndim == 4:
                 ndim = 3
             # NOTE: ambiguity if image.ndim == 3, may be 2D rgba or 3D single channel
-            shape = shape or image.shape[:ndim]
+            if shape is None:
+                shape = image.shape[:ndim]
+                # WARNING: when inferring a shape from an image, the width and height are reversed
+                shape = (shape[1], shape[0]) + shape[2:]
             n_channels = n_channels or (image.shape[-1] if ndim == image.ndim - 1 else 1)
             dtype = dtype or image.dtype
             assert 0 <= image.ndim - ndim <= 1
