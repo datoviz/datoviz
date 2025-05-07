@@ -323,7 +323,7 @@ vec3* dvz_mock_line(uint32_t count, vec3 p0, vec3 p1)
 float* dvz_mock_uniform(uint32_t count, float vmin, float vmax)
 {
     ASSERT(count > 0);
-    ASSERT(vmin < vmax);
+    ASSERT(vmin <= vmax);
     float* size = (float*)calloc(count, sizeof(float));
     float a = vmax - vmin;
     for (uint32_t i = 0; i < count; i++)

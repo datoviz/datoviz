@@ -68,6 +68,10 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
     _common_setup(visual);
     dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
 
+    // Size specialization constant.
+    int size_pixels = (flags & DVZ_SPHERE_FLAGS_SIZE_PIXELS) > 0;
+    dvz_visual_specialization(visual, DVZ_SHADER_VERTEX, 0, sizeof(int), &size_pixels);
+
     // Params.
     DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzSphereParams));
     dvz_params_attr(params, 0, FIELD(DvzSphereParams, light_pos));
