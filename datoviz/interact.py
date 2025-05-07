@@ -171,7 +171,7 @@ class Camera:
         self.c_camera = c_camera
         self.c_panel = c_panel
 
-    def eye(self) -> tuple[float, float, float]:
+    def position(self) -> tuple[float, float, float]:
         """
         Get the camera position.
 
@@ -180,13 +180,13 @@ class Camera:
         tuple
             The (x, y, z) position of the camera.
         """
-        eye = dvz.vec3(0)
-        dvz.camera_get_position(self.c_camera, eye)
-        return tuple(eye)
+        position = dvz.vec3(0)
+        dvz.camera_get_position(self.c_camera, position)
+        return tuple(position)
 
     def set(
         self,
-        eye: tuple[float, float, float] = None,
+        position: tuple[float, float, float] = None,
         lookat: tuple[float, float, float] = None,
         up: tuple[float, float, float] = None,
     ) -> None:
@@ -195,16 +195,16 @@ class Camera:
 
         Parameters
         ----------
-        eye : tuple of float, optional
+        position : tuple of float, optional
             The (x, y, z) position of the camera, by default None.
         lookat : tuple of float, optional
             The (x, y, z) position the camera is looking at, by default None.
         up : tuple of float, optional
             The (x, y, z) up vector of the camera, by default None.
         """
-        if eye is not None:
-            eye = dvz.vec3(*eye)
-            dvz.camera_position(self.c_camera, eye)
+        if position is not None:
+            position = dvz.vec3(*position)
+            dvz.camera_position(self.c_camera, position)
 
         if lookat is not None:
             lookat = dvz.vec3(*lookat)

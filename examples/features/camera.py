@@ -14,11 +14,11 @@ panel = figure.panel()
 panel.demo_3D()
 
 # Camera initial parameters (the ones used when calling camera_reset()).
-eye = (0, 0, 2)
+position = (0, 0, 2)
 up = (0, 1, 0)
 lookat = (0, 0, 0)
 # Get or create the panel's 3D perspective camera.
-camera = panel.camera(initial=eye, initial_up=up, initial_lookat=lookat)
+camera = panel.camera(initial=position, initial_up=up, initial_lookat=lookat)
 
 d = 0.1
 mapping = {
@@ -35,12 +35,12 @@ def on_keyboard(ev):
     if ev.key_event() != 'release':
         # Move the camera position depending on the pressed keys.
         i, dp = mapping.get(ev.key_name(), (0, 0))
-        eye = list(camera.eye())
-        eye[i] += dp
-        lookat = (eye[0], eye[1], eye[2] - 1)
+        position = list(camera.position())
+        position[i] += dp
+        lookat = (position[0], position[1], position[2] - 1)
 
         # Update the camera.
-        camera.set(eye=eye, lookat=lookat)
+        camera.set(position=position, lookat=lookat)
 
 
 app.run()

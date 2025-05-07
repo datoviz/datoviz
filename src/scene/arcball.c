@@ -195,7 +195,7 @@ void dvz_arcball_rotate(DvzArcball* arcball, vec2 cur_pos, vec2 last_pos)
 
 //     vec3 delta = {0};
 //     glm_vec2_sub(last_pos, cur_pos, delta);
-//     // glm_vec2_scale(delta, -.5 * arcball->camera.eye[2], delta);
+//     // glm_vec2_scale(delta, -.5 * arcball->camera.position[2], delta);
 //     // Convert translation vector back to original coordinate system.
 //     glm_mat4_mulv3(arcball->inv_model, delta, 1, delta);
 //     glm_translate(arcball->translate, delta);
