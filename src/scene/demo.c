@@ -25,7 +25,7 @@
 /*************************************************************************************************/
 
 #define LEGEND_FONT_SIZE 24
-#define LEGEND_ANCHOR    +10, -25
+#define LEGEND_ANCHOR    -20, 0
 
 
 
@@ -33,7 +33,7 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
-static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasFont* af)
+static void legend(DvzBatch* batch, DvzPanel* panel, char* text, DvzAtlasFont* af)
 {
     ANN(batch);
     ANN(panel);
@@ -42,25 +42,9 @@ static void legend(DvzBatch* batch, DvzPanel* panel, const char* text, DvzAtlasF
 
     DvzVisual* glyph = dvz_glyph(batch, 0);
     dvz_glyph_atlas_font(glyph, af);
-
-    uint32_t n = strnlen(text, 1024);
-    dvz_glyph_alloc(glyph, n);
-
-    vec3* pos = dvz_mock_fixed(n, (vec3){-1, +1, 0});
-    dvz_glyph_position(glyph, 0, n, pos, 0);
-
-    DvzColor* color = dvz_mock_monochrome(n, (DvzColor){10, 10, 10, 255});
-    dvz_glyph_color(glyph, 0, n, color, 0);
-    dvz_glyph_ascii(glyph, text);
-
-    vec4* xywh = (vec4*)calloc(n, sizeof(vec4));
-    dvz_font_ascii(af->font, text, xywh);
-    dvz_glyph_xywh(glyph, 0, n, xywh, (vec2){LEGEND_ANCHOR}, 0);
-
-    FREE(pos);
-    FREE(color);
-    FREE(xywh);
-
+    dvz_glyph_strings(
+        glyph, 1, (char*[]){text}, (vec3[]){{0, .85, 0}}, NULL, //
+        (cvec4){0, 0, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
     dvz_panel_visual(panel, glyph, DVZ_VIEW_FLAGS_STATIC);
 }
 
