@@ -810,6 +810,35 @@ class App:
 
         return decorator
 
+    def on_frame(self, figure: Figure) -> tp.Callable:
+        """
+        Register a frame event handler for the given figure.
+
+        Parameters
+        ----------
+        figure : Figure
+            The figure to attach the handler to.
+
+        Returns
+        -------
+        Callable
+            A decorator for the frame event handler.
+        """
+        assert figure
+
+        def decorator(fun):
+            @dvz.on_frame
+            def on_frame(app, window_id, ev_):
+                if dvz.figure_id(figure.c_figure) == window_id:
+                    ev = ev_.contents
+                    fun(Event(ev, 'frame'))
+
+            dvz.app_on_frame(self.c_app, on_frame, None)
+            self._callbacks.append(on_frame)
+            return fun
+
+        return decorator
+
     def on_gui(self, figure: Figure) -> tp.Callable:
         """
         Register a GUI event handler for the given figure.
@@ -863,6 +892,8 @@ class App:
                 return self.on_mouse(figure)(fun)
             elif fun.__name__ == 'on_keyboard':
                 return self.on_keyboard(figure)(fun)
+            elif fun.__name__ == 'on_frame':
+                return self.on_frame(figure)(fun)
             elif fun.__name__ == 'on_gui':
                 return self.on_gui(figure)(fun)
             # TODO: on_frame
