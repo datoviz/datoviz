@@ -468,7 +468,7 @@ void dvz_demo(void)
         dvz_sphere_position(sphere, 0, n, pos, 0);
         dvz_sphere_color(sphere, 0, n, color, 0);
 
-        float* sphere_size = dvz_mock_linspace(n, 50, 100);
+        float* sphere_size = dvz_mock_linspace(n, .1, .25);
         dvz_sphere_size(sphere, 0, n, sphere_size, 0);
         FREE(sphere_size);
 
