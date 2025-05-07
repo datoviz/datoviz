@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from ctypes import c_char_p
-from typing import Optional
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
@@ -439,10 +438,10 @@ def prepare_data_scalar(name: str, dtype: str, size: int, value: float) -> np.nd
 
 
 def image_flags(
-    unit: str = Optional[None],
-    mode: str = Optional[None],
-    rescale: str = Optional[None],
-    border: bool = Optional[None],
+    unit: str = None,
+    mode: str = None,
+    rescale: str = None,
+    border: bool = None,
 ) -> int:
     """
     Compute the image flags for rendering based on the provided options.
@@ -497,11 +496,11 @@ def image_flags(
 
 
 def mesh_flags(
-    indexed: bool = Optional[None],
-    textured: bool = Optional[None],
-    lighting: bool = Optional[None],
-    contour: bool = Optional[None],
-    isoline: bool = Optional[None],
+    indexed: bool = None,
+    textured: bool = None,
+    lighting: bool = None,
+    contour: bool = None,
+    isoline: bool = None,
 ) -> int:
     """
     Compute the C mesh flags based on the given options.

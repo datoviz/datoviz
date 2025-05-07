@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import typing as tp
-from typing import Optional
 
 import numpy as np
 
@@ -505,10 +504,10 @@ class App:
 
     def image(
         self,
-        unit: str = Optional[None],
-        mode: str = Optional[None],
-        rescale: str = Optional[None],
-        border: bool = Optional[None],
+        unit: str = None,
+        mode: str = None,
+        rescale: str = None,
+        border: bool = None,
         **kwargs,
     ) -> vs.Image:
         """
