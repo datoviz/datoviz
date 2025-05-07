@@ -21,7 +21,7 @@ def generate_ndc_grid(n):
     z_norm = (z + 1) / 2
 
     # Radius increases linearly in all directions (can be tuned)
-    size = 10 + 4 * np.exp(1 * (x_norm + y_norm + z_norm))
+    size = 0.01 + 0.01 * np.exp(1 * (x_norm + y_norm + z_norm))
     size = size.flatten()
 
     r = x_norm.flatten()
@@ -31,7 +31,7 @@ def generate_ndc_grid(n):
     rgb = np.stack([r[::-1], g[::-1], b, a], axis=1)
     rgb = (255 * rgb).astype(np.uint8)
 
-    return size.size, positions, rgb, size
+    return positions.shape[0], positions, rgb, size
 
 
 N, position, color, size = generate_ndc_grid(8)
@@ -39,13 +39,13 @@ N, position, color, size = generate_ndc_grid(8)
 width, height = 800, 600
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel(offset=(0,0), size=(width, height))
+panel = figure.panel(offset=(0, 0), size=(width, height))
 arcball = panel.arcball()
 
 visual = app.sphere(
     position=position,
     color=color,
-    size=size/height,            # Pixels to normalized screen size.
+    size=size,
     light_pos=(-5, +5, +100),
     light_params=(0.4, 0.8, 1, 32),
 )
