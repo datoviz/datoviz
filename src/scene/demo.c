@@ -388,6 +388,10 @@ void dvz_demo(void)
         dvz_path_position(path, 0, n2, positions, 1, (uint32_t[]){n2}, 0);
         dvz_path_color(path, 0, n2, color2, 0);
 
+        float* linewidth = dvz_mock_linspace(n2, 2, 20);
+        dvz_path_linewidth(path, 0, n2, linewidth, 0);
+        FREE(linewidth)
+
         FREE(positions)
     }
 
