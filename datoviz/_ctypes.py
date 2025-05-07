@@ -10442,6 +10442,93 @@ gui_slider.argtypes = [
 ]
 gui_slider.restype = ctypes.c_bool
 
+# Function dvz_gui_slider_vec2()
+gui_slider_vec2 = dvz.dvz_gui_slider_vec2
+gui_slider_vec2.__doc__ = """
+Add a slider with 2 values.
+
+Parameters
+----------
+name : char*
+    the slider name
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+value : vec2 (out parameter)
+    the pointer to the value
+
+Returns
+-------
+type
+    whether the value has changed
+"""
+gui_slider_vec2.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_float,  # float vmin
+    ctypes.c_float,  # float vmax
+    vec2,  # out vec2 value
+]
+gui_slider_vec2.restype = ctypes.c_bool
+
+# Function dvz_gui_slider_vec3()
+gui_slider_vec3 = dvz.dvz_gui_slider_vec3
+gui_slider_vec3.__doc__ = """
+Add a slider with 3 values.
+
+Parameters
+----------
+name : char*
+    the slider name
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+value : vec3 (out parameter)
+    the pointer to the value
+
+Returns
+-------
+type
+    whether the value has changed
+"""
+gui_slider_vec3.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_float,  # float vmin
+    ctypes.c_float,  # float vmax
+    vec3,  # out vec3 value
+]
+gui_slider_vec3.restype = ctypes.c_bool
+
+# Function dvz_gui_slider_vec4()
+gui_slider_vec4 = dvz.dvz_gui_slider_vec4
+gui_slider_vec4.__doc__ = """
+Add a slider with 4 values.
+
+Parameters
+----------
+name : char*
+    the slider name
+vmin : float
+    the minimum value
+vmax : float
+    the maximum value
+value : vec4 (out parameter)
+    the pointer to the value
+
+Returns
+-------
+type
+    whether the value has changed
+"""
+gui_slider_vec4.argtypes = [
+    CStringBuffer,  # char* name
+    ctypes.c_float,  # float vmin
+    ctypes.c_float,  # float vmax
+    vec4,  # out vec4 value
+]
+gui_slider_vec4.restype = ctypes.c_bool
+
 # Function dvz_gui_button()
 gui_button = dvz.dvz_gui_button
 gui_button.__doc__ = """

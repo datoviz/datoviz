@@ -2460,6 +2460,84 @@ Add a slider.
     );
     ```
 
+### `dvz_gui_slider_vec2()`
+
+Add a slider with 2 values.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_slider_vec2(  # returns: whether the value has changed (c_bool)
+        name,  # the slider name (CStringBuffer)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
+        value,  # the pointer to the value (vec2)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_slider_vec2(  // returns: whether the value has changed
+        char* name,  // the slider name
+        float vmin,  // the minimum value
+        float vmax,  // the maximum value
+        vec2 value,  // the pointer to the value
+    );
+    ```
+
+### `dvz_gui_slider_vec3()`
+
+Add a slider with 3 values.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_slider_vec3(  # returns: whether the value has changed (c_bool)
+        name,  # the slider name (CStringBuffer)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
+        value,  # the pointer to the value (vec3)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_slider_vec3(  // returns: whether the value has changed
+        char* name,  // the slider name
+        float vmin,  // the minimum value
+        float vmax,  // the maximum value
+        vec3 value,  // the pointer to the value
+    );
+    ```
+
+### `dvz_gui_slider_vec4()`
+
+Add a slider with 4 values.
+
+=== "Python"
+
+    ``` python
+    dvz.gui_slider_vec4(  # returns: whether the value has changed (c_bool)
+        name,  # the slider name (CStringBuffer)
+        vmin,  # the minimum value (float, 64-bit)
+        vmax,  # the maximum value (float, 64-bit)
+        value,  # the pointer to the value (vec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    bool dvz_gui_slider_vec4(  // returns: whether the value has changed
+        char* name,  // the slider name
+        float vmin,  // the minimum value
+        float vmax,  // the maximum value
+        vec4 value,  // the pointer to the value
+    );
+    ```
+
 ### `dvz_gui_style()`
 
 Set the style of an element.

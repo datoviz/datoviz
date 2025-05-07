@@ -105,6 +105,9 @@ dvz_gui_resizing
 dvz_gui_selectable
 dvz_gui_size
 dvz_gui_slider
+dvz_gui_slider_vec2
+dvz_gui_slider_vec3
+dvz_gui_slider_vec4
 dvz_gui_style
 dvz_gui_table
 dvz_gui_text
