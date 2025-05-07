@@ -74,84 +74,8 @@ class Visual:
 
         self.set_prop_classes()
 
-    def show(self, is_visible: bool = True) -> None:
-        """
-        Show or hide the visual.
-
-        Parameters
-        ----------
-        is_visible : bool, optional
-            Whether to show the visual, by default True.
-        """
-        dvz.visual_show(self.c_visual, is_visible)
-
-    def hide(self) -> None:
-        """
-        Hide the visual.
-        """
-        self.show(False)
-
-    def clip(self, clip: str) -> None:
-        """
-        Set the clipping mode for the visual.
-
-        Parameters
-        ----------
-        clip : str
-            The clipping mode:
-            - `inner` (clip everything inside the internal viewport)
-            - `outer` (clip everything outside the interval viewport)
-            - `bottom` (clip everything below the inferior border of the internal viewport)
-            - `left` (clip everything to the left of the internal viewport)
-        """
-        c_clip = to_enum(f'viewport_clip_{clip}')
-        dvz.visual_clip(self.c_visual, c_clip)
-
-    def fixed(self, fixed: tp.Union[bool, str]) -> None:
-        """
-        Set whether the visual is fixed along certain axes.
-
-        Parameters
-        ----------
-        fixed : bool or str
-            Use True to fix all x, y, z dimensions, or `x` or `x,y` etc to fix only some of the
-            axes.
-        """
-        dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
-
-    def allocate(self, count: int) -> None:
-        """
-        Allocate memory for the visual.
-
-        Parameters
-        ----------
-        count : int
-            The number of elements to allocate.
-        """
-        self._fn_alloc(self.c_visual, count)
-        self.set_count(count)
-
-    def set_count(self, count: int) -> None:
-        """
-        Set the number of elements in the visual.
-
-        Parameters
-        ----------
-        count : int
-            The number of elements.
-        """
-        self.count = count
-
-    def get_count(self) -> int:
-        """
-        Get the number of elements in the visual.
-
-        Returns
-        -------
-        int
-            The number of elements.
-        """
-        return self.count
+    # Internals
+    # ---------------------------------------------------------------------------------------------
 
     def set_data(self, depth_test: bool = None, cull: str = None, **kwargs) -> None:
         """
@@ -272,6 +196,97 @@ class Visual:
                 f"Prop '{prop_name}' is not a valid scalar property "
                 f"for visual '{self.visual_name}'"
             )
+
+    # Public properties
+    # ---------------------------------------------------------------------------------------------
+
+    def update(self) -> None:
+        """
+        Update the visual.
+        """
+        dvz.visual_update(self.c_visual)
+
+    def show(self, is_visible: bool = True) -> None:
+        """
+        Show or hide the visual.
+
+        Parameters
+        ----------
+        is_visible : bool, optional
+            Whether to show the visual, by default True.
+        """
+        dvz.visual_show(self.c_visual, is_visible)
+
+    def hide(self) -> None:
+        """
+        Hide the visual.
+        """
+        self.show(False)
+
+    def clip(self, clip: str) -> None:
+        """
+        Set the clipping mode for the visual.
+
+        Parameters
+        ----------
+        clip : str
+            The clipping mode:
+            - `inner` (clip everything inside the internal viewport)
+            - `outer` (clip everything outside the interval viewport)
+            - `bottom` (clip everything below the inferior border of the internal viewport)
+            - `left` (clip everything to the left of the internal viewport)
+        """
+        c_clip = to_enum(f'viewport_clip_{clip}')
+        dvz.visual_clip(self.c_visual, c_clip)
+
+    def fixed(self, fixed: tp.Union[bool, str]) -> None:
+        """
+        Set whether the visual is fixed along certain axes.
+
+        Parameters
+        ----------
+        fixed : bool or str
+            Use True to fix all x, y, z dimensions, or `x` or `x,y` etc to fix only some of the
+            axes.
+        """
+        dvz.visual_fixed(self.c_visual, *get_fixed_params(fixed))
+
+    # Elements
+    # ---------------------------------------------------------------------------------------------
+
+    def allocate(self, count: int) -> None:
+        """
+        Allocate memory for the visual.
+
+        Parameters
+        ----------
+        count : int
+            The number of elements to allocate.
+        """
+        self._fn_alloc(self.c_visual, count)
+        self.set_count(count)
+
+    def set_count(self, count: int) -> None:
+        """
+        Set the number of elements in the visual.
+
+        Parameters
+        ----------
+        count : int
+            The number of elements.
+        """
+        self.count = count
+
+    def get_count(self) -> int:
+        """
+        Get the number of elements in the visual.
+
+        Returns
+        -------
+        int
+            The number of elements.
+        """
+        return self.count
 
 
 # -------------------------------------------------------------------------------------------------
