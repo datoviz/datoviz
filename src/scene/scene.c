@@ -36,6 +36,10 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+#define ARCBALL_WHEEL_COEF .05
+
+
+
 static void _panzoom_ortho_size(DvzPanel* panel)
 {
     ANN(panel);
@@ -803,12 +807,12 @@ static void _camera_zoom(DvzCamera* camera, float dz)
 
     vec3 pos = {0};
     _vec3_copy(camera->pos, pos);
-    pos[2] -= .025 * dz;
+    pos[2] -= ARCBALL_WHEEL_COEF * dz;
     dvz_camera_position(camera, pos);
 
     vec3 lookat = {0};
     _vec3_copy(camera->lookat, lookat);
-    lookat[2] -= .025 * dz;
+    lookat[2] -= ARCBALL_WHEEL_COEF * dz;
     dvz_camera_lookat(camera, lookat);
 }
 
