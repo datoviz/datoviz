@@ -4574,6 +4574,45 @@ DVZ_EXPORT bool dvz_gui_slider(const char* name, float vmin, float vmax, float* 
 
 
 /**
+ * Add a slider with 2 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_vec2(const char* name, float vmin, float vmax, vec2 value);
+
+
+
+/**
+ * Add a slider with 3 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_vec3(const char* name, float vmin, float vmax, vec3 value);
+
+
+
+/**
+ * Add a slider with 4 values.
+ *
+ * @param name the slider name
+ * @param vmin the minimum value
+ * @param vmax the maximum value
+ * @param[out] value the pointer to the value
+ * @returns whether the value has changed
+ */
+DVZ_EXPORT bool dvz_gui_slider_vec4(const char* name, float vmin, float vmax, vec4 value);
+
+
+
+/**
  * Add a button.
  *
  * @param name the button name
