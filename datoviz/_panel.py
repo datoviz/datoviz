@@ -17,7 +17,7 @@ from . import _ctypes as dvz
 from ._axes import Axes
 from ._constants import Vec3
 from .interact import Arcball, Camera, Ortho, Panzoom
-from .visuals import Visual
+from .visuals import Point, Sphere, Visual
 
 # -------------------------------------------------------------------------------------------------
 # Panel
@@ -236,7 +236,7 @@ class Panel:
             The 2D demo visual instance.
         """
         c_visual = dvz.demo_panel_2D(self.c_panel)
-        visual = Visual(c_visual, 'demo_2D')
+        visual = Point(c_visual)
         return visual
 
     def demo_3D(self) -> Visual:
@@ -249,7 +249,7 @@ class Panel:
             The 3D demo visual instance.
         """
         c_visual = dvz.demo_panel_3D(self.c_panel)
-        visual = Visual(c_visual, 'demo_3D')
+        visual = Sphere(c_visual)
         return visual
 
     # GUI
