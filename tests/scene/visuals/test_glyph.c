@@ -53,10 +53,6 @@ static void _on_timer(DvzApp* app, DvzId window_id, DvzTimerEvent* ev)
     dvz_glyph_anchor(visual, 0, n, anchor, 0);
     FREE(anchor);
 
-    vec2* group_size = (vec2*)_repeat(n, sizeof(vec2), (vec2){300, 50});
-    dvz_glyph_group_size(visual, 0, n, group_size, 0);
-    FREE(group_size);
-
     dvz_visual_update(visual);
 }
 
@@ -126,6 +122,9 @@ int test_glyph_1(TstSuite* suite)
     dvz_glyph_xywh(visual, 0, n, xywh, (vec2){-250, -20}, 0);
     FREE(xywh);
 
+    vec2* group_size = (vec2*)_repeat(n, sizeof(vec2), (vec2){300, 50});
+    dvz_glyph_group_size(visual, 0, n, group_size, 0);
+    FREE(group_size);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
