@@ -36,8 +36,11 @@
 /*  Utils                                                                                        */
 /*************************************************************************************************/
 
+#if OS_MACOS
+#define ARCBALL_WHEEL_COEF -.05
+#else
 #define ARCBALL_WHEEL_COEF .05
-
+#endif
 
 
 static void _panzoom_ortho_size(DvzPanel* panel)
