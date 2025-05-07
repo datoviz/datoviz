@@ -54,14 +54,14 @@ int test_sphere_1(TstSuite* suite)
     dvz_sphere_color(visual, 0, n, color, 0);
 
     // Size.
-    float* size = dvz_mock_uniform(n, 50, 100);
+    float* size = dvz_mock_uniform(n, .01, .1);
     dvz_sphere_size(visual, 0, n, size, 0);
 
     // Light position.
     dvz_sphere_light_pos(visual, (vec3){-1, +1, +10});
 
     // Light parameters.
-    dvz_sphere_light_params(visual, (vec4){.3, .6, 2, 32});
+    dvz_sphere_light_params(visual, (vec4){.4, .8, 1, 32});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

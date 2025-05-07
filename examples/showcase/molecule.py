@@ -17,10 +17,10 @@ def load_data():
     # comes from: https://www.rcsb.org/structure/6QZP
     import MDAnalysis as mda
 
-    files = sorted(glob.glob(ROOT_DIR / 'data/misc/molecule/6qzp-pdb-bundle*.pdb'))
+    files = sorted(glob.glob(str(ROOT_DIR / 'data/misc/molecule/6qzp-pdb-bundle*.pdb')))
     universes = [mda.Universe(f) for f in files]
 
-    positions = np.concatenate([u.atoms.positions for u in universes], axis=0)
+    position = np.concatenate([u.atoms.positions for u in universes], axis=0)
 
     element_colors_u8 = {
         'H': (255, 255, 255),
@@ -33,7 +33,7 @@ def load_data():
         'Zn': (165, 42, 42),
     }
 
-    colors = np.concatenate(
+    color = np.concatenate(
         [
             np.array([element_colors_u8[atom.element] for atom in u.atoms], dtype=np.uint8)
             for u in universes
@@ -41,7 +41,7 @@ def load_data():
         axis=0,
     )
 
-    colors = np.concatenate([colors, np.full((len(colors), 1), 255, dtype=np.uint8)], axis=1)
+    color = np.concatenate([color, np.full((len(color), 1), 255, dtype=np.uint8)], axis=1)
 
     vdw_radii = {
         'H': 1.20,
@@ -57,24 +57,28 @@ def load_data():
     atomic_radii = np.concatenate(
         [np.array([vdw_radii[atom.element] for atom in u.atoms]) for u in universes]
     )
-
-    sizes = 5 + 10 * (atomic_radii - atomic_radii.min()) / (
-        atomic_radii.max() - atomic_radii.min()
-    )
-    sizes = sizes.astype(np.float32)
-
-    positions -= positions.mean(axis=0)
-    positions /= np.max(np.linalg.norm(positions, axis=1))
-
-    return positions, colors, sizes
+    size = atomic_radii.astype(np.float32)
+    return position, color, size
 
 
+# # Save the data file
+# p, c, s = load_data()
+# np.savez(ROOT_DIR / 'data/misc/molecule/mol.npz', position=p, color=c, size=s)
+
+
+# Load the data
 data = np.load(ROOT_DIR / 'data/misc/molecule/mol.npz')
-positions = data['positions']
-colors = data['colors']
-sizes = data['sizes']
-N = len(positions)
+position = data['position']
+color = data['color']
+size = data['size']
+N = len(position)
 print(f'Loaded {N} atoms')
+
+
+# Normalization.
+position -= position.mean(axis=0)
+position /= np.max(np.linalg.norm(position, axis=1))
+size = 0.005 + 0.015 * (size - size.min()) / (size.max() - size.min()).astype(np.float32)
 
 
 app = dvz.App()
@@ -84,11 +88,11 @@ arcball = panel.arcball()
 camera = panel.camera()
 
 visual = app.sphere(
-    position=positions,
-    color=colors,
-    size=sizes,
+    position=position,
+    color=color,
+    size=size,
     light_pos=(-5, +5, +100),
-    light_params=(0.4, 0.8, 2, 32),
+    light_params=(0.4, 0.8, 1, 32),
 )
 panel.add(visual)
 
