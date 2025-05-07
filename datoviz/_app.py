@@ -122,28 +122,6 @@ class App:
         c_figure = dvz.figure(self.c_scene, width, height, c_flags)
         return Figure(c_figure)
 
-    def on_timer(self) -> None:
-        """
-        Handle timer events.
-
-        Warnings:
-        --------
-        .. warning::
-            This method is not yet implemented.
-        """
-        raise NotImplementedError()
-
-    def on_frame(self) -> None:
-        """
-        Handle frame events.
-
-        Warnings:
-        --------
-        .. warning::
-            This method is not yet implemented.
-        """
-        raise NotImplementedError()
-
     def run(self, frame_count: int = 0) -> None:
         """
         Run the application.
@@ -545,6 +523,8 @@ class App:
         """
         if kwargs.get('linewidth', 0) or kwargs.get('radius', 0) or kwargs.get('edgecolor', 0):
             border = True
+        if kwargs.get('colormap', None) is not None:
+            mode = 'colormap'
         c_flags = image_flags(
             unit=unit,
             mode=mode,
