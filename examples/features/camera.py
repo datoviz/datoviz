@@ -8,7 +8,6 @@ Show how to manipulate a camera.
 import datoviz as dvz
 
 app = dvz.App()
-# NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure()
 panel = figure.panel()
 panel.demo_3D()

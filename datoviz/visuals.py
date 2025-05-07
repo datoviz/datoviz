@@ -161,6 +161,7 @@ class Visual:
         prop_info = PROPS[self.visual_name].get(prop_name, {})
         prop_type = prop_info.get('type', None)
         if not prop_type:
+            # print(f'Prop {prop_name} not found in visual {self.visual_name}')
             return super().__setattr__(prop_name, value)
 
         elif prop_type != np.ndarray:

@@ -911,9 +911,9 @@ typedef enum
 
 #define DVZ_DEFAULT_CLEAR_COLOR (cvec4){0, 0, 0, 0}
 
-#define DVZ_DEFAULT_LIGHT_POS (vec3){-1, 0, +10}
+#define DVZ_DEFAULT_LIGHT_POS (vec3){-5, +5, +5}
 
-#define DVZ_DEFAULT_LIGHT_DIR (vec3){0.25, -0.25, -1}
+#define DVZ_DEFAULT_LIGHT_DIR (vec3){0.577, -0.577, -0.577}
 
 #if DVZ_COLOR_CVEC4
 #define DVZ_DEFAULT_LIGHT_COLOR (cvec4){255, 255, 255, 255}
@@ -921,7 +921,7 @@ typedef enum
 #define DVZ_DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
 #endif
 
-#define DVZ_DEFAULT_LIGHT_PARAMS (vec4){.25, .75, .75, 16}
+#define DVZ_DEFAULT_LIGHT_PARAMS (vec4){0.75, 0.5, 0.75, 32}
 
 
 
