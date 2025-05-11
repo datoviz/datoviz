@@ -12,7 +12,7 @@ x goes right, y goes up.
 from pathlib import Path
 
 import numpy as np
-from PIL import Image
+import imageio.v3 as iio
 
 import datoviz as dvz
 
@@ -20,8 +20,9 @@ import datoviz as dvz
 def load_image():
     ROOT_DIR = Path(__file__).resolve().parent.parent.parent
     filepath = ROOT_DIR / 'data/textures/image.png'
-    with Image.open(filepath) as f:
-        return np.array(f.convert('RGBA'), dtype=np.uint8)
+    arr = iio.imread(filepath)
+    h, w, _ = arr.shape
+    return np.dstack((arr, np.full((h, w), 255))).astype(np.uint8)
 
 
 image = load_image()

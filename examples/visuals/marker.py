@@ -8,13 +8,13 @@ Show the different types of marker visuals.
 from pathlib import Path
 
 import numpy as np
+import imageio.v3 as iio
 
 import datoviz as dvz
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 W, H = 800, 600
 HW, HH = W / 2.0, H / 2.0
-MS = 64
 svg_path = 'M50,10 L61.8,35.5 L90,42 L69,61 L75,90 L50,75 L25,90 L31,61 L10,42 L38.2,35.5 Z'
 
 
@@ -46,13 +46,9 @@ def generate_data():
     return N, positions, colors, sizes
 
 
-def load_texture_rgba(path, size=MS):
-    from PIL import Image
-
-    img = Image.open(path).convert('RGBA')
-    img = img.resize((size, size), Image.LANCZOS)
-    rgba = np.array(img).astype(np.uint8)
-    return rgba
+def load_texture_rgba(path):
+    arr = iio.imread(path)
+    return arr
 
 
 def make_texture(image):
@@ -62,7 +58,7 @@ def make_texture(image):
     return app.texture(image)
 
 
-def make_svg_msdf_texture(svg_path, size=MS):
+def make_svg_msdf_texture(svg_path, size=64):
     msdf = dvz.msdf_from_svg(svg_path, size, size)
     msdf_alpha = np.empty((size, size, 4), dtype=np.float32)
     dvz.rgb_to_rgba_float(size * size, msdf, msdf_alpha.ravel())
@@ -100,7 +96,7 @@ visual = make_visual(panel)
 visual.set_mode('bitmap')
 visual.set_aspect('filled')
 visual.set_shape('club')
-image = load_texture_rgba(ROOT_DIR / 'data/textures/pushpin.png', size=MS)
+image = load_texture_rgba(ROOT_DIR / 'data/textures/pushpin.png')
 texture = make_texture(image)
 visual.set_texture(texture)  # bitmap textures
 
