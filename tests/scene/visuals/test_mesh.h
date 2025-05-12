@@ -27,6 +27,8 @@
 
 int test_mesh_1(TstSuite*);
 
+int test_mesh_2(TstSuite*);
+
 int test_mesh_polygon(TstSuite*);
 
 int test_mesh_edgecolor(TstSuite*);

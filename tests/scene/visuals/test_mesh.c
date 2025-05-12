@@ -39,7 +39,7 @@
 
 int test_mesh_1(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh", VISUAL_TEST_ARCBALL, 0);
+    VisualTest vt = visual_test_start("mesh_1", VISUAL_TEST_ARCBALL, 0);
 
     // Shape.
     DvzShape* shape = dvz_shape();
@@ -84,6 +84,71 @@ int test_mesh_1(TstSuite* suite)
     // Cleanup.
     dvz_shape_destroy(shape);
 
+    return 0;
+}
+
+
+int test_mesh_2(TstSuite* suite)
+{
+    VisualTest vt = visual_test_start("mesh_2", VISUAL_TEST_ARCBALL, 0);
+
+    const float spacing = 1;
+    uint32_t shape_count = 5;
+    const float y_offset = 0;
+
+    DvzShape* shapes[5] = {0};
+
+    uint8_t alpha = 255;
+
+    // Sphere
+    shapes[0] = dvz_shape();
+    dvz_shape_sphere(shapes[0], 32, 32, (DvzColor){255, 128, 64, alpha});
+
+    // Cylinder
+    shapes[1] = dvz_shape();
+    dvz_shape_cylinder(shapes[1], 32, (DvzColor){64, 200, 255, alpha});
+
+    // Cone
+    shapes[2] = dvz_shape();
+    dvz_shape_cone(shapes[2], 32, (DvzColor){128, 255, 128, alpha});
+
+    // Arrow
+    shapes[3] = dvz_shape();
+    dvz_shape_arrow(shapes[3], 0.3f, 0.2f, 0.05f, (DvzColor){255, 64, 128, alpha});
+
+    // Torus
+    shapes[4] = dvz_shape();
+    dvz_shape_torus(shapes[4], 64, 16, 0.1f, (DvzColor){64, 128, 255, alpha});
+
+    // Translate each shape to a position in the XZ plane
+    for (uint32_t i = 0; i < shape_count; i++)
+    {
+        dvz_shape_begin(shapes[i], 0, shapes[i]->vertex_count);
+        dvz_shape_scale(shapes[i], (vec3){.75, .75, .75});
+        vec3 t = {spacing * ((float)i - (shape_count - 1) / 2.0f), y_offset, 0};
+        dvz_shape_translate(shapes[i], t);
+        dvz_shape_end(shapes[i]);
+    }
+
+    // Merge all shapes into one visual
+    DvzShape* merged = dvz_shape();
+    dvz_shape_merge(merged, shape_count, shapes);
+
+    dvz_shape_unindex(merged, DVZ_CONTOUR_FULL);
+
+    DvzVisual* visual =
+        dvz_mesh_shape(vt.batch, merged, DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR);
+    dvz_mesh_edgecolor(visual, (DvzColor){255, 255, 255, 64});
+    dvz_mesh_linewidth(visual, .1);
+    // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
+    dvz_panel_visual(vt.panel, visual, 0);
+
+    // Cleanup
+    for (uint32_t i = 0; i < shape_count; i++)
+        dvz_shape_destroy(shapes[i]);
+    dvz_shape_destroy(merged);
+
+    visual_test_end(vt);
     return 0;
 }
 
