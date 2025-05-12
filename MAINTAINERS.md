@@ -8,6 +8,8 @@ Your local setup is supposed to look like this:
 
 ```
 /path/to/datoviz/
+/path/to/datoviz/build/         [build subdirectory]
+/path/to/datoviz/data/          [git submodule]
 /path/to/datoviz.github.io/
 ```
 
@@ -34,12 +36,13 @@ Release checklist from a Linux development machine:
     * For each of Linux, macOS arm64, macOS x86_64, Windows, do:
         * `just checkartifact`
         * Fix and go back to (2) if there is any problem.
-5. **Release.**
+5. **Merge dev branch.**
     * `git fetch --all && git status` : check we're up to date and on the `dev` branch.
     * `git checkout main && git pull` : switch to `main` before merging.
     * `git merge dev`: merge `dev` to `main`.
     * `just tag $version`: once on `main`, tag with the new version.
     * `git push origin main && git push origin --tags`: push the tag.
+6. **Release.**
     * `just draft`: create a new GitHub Release draft with the built wheels.
     * Edit and publish the [GitHub Release](https://github.com/datoviz/datoviz/releases).
     * `just upload`: upload the wheels to PyPI.
