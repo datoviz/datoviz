@@ -2,7 +2,7 @@ site_name: Datoviz Documentation
 site_url: https://datoviz.org
 repo_url: https://github.com/datoviz/datoviz
 docs_dir: docs
-site_description: '⚡ Datoviz: high-performance GPU scientific data visualization C/C++/Python library'
+site_description: '⚡ Datoviz: high-performance scientific data visualization'
 site_author: Cyrille Rossant
 theme:
   name: material
@@ -41,16 +41,38 @@ hooks:
 nav:
   - Home: 'index.md'
   - User guide:
-    - User API: 'userguide.md'
-    - Datoviz Rendering Protocol: 'drp.md'
-  - Examples:
-    - Examples: 'examples.md'
+    - Overview: 'guide/index.md'
+    - Figure, panels, axes: 'guide/common.md'
+    - Visuals:
+      - Overview: 'guide/visuals.md'
+      - Basic: 'visuals/basic.md'
+      - Pixel: 'visuals/pixel.md'
+      - Point: 'visuals/point.md'
+      - Marker: 'visuals/marker.md'
+      - Segment: 'visuals/segment.md'
+      - Path: 'visuals/path.md'
+      - Image: 'visuals/image.md'
+      - Text: 'visuals/text.md'
+      - Mesh: 'visuals/mesh.md'
+      - Volume: 'visuals/volume.md'
+      - Slice: 'visuals/slice.md'
+    - Interactivity: 'guide/interactivity.md'
+    - User events: 'guide/events.md'
+    - Graphical user interfaces: 'guide/gui.md'
+    - Datoviz Rendering Protocol: 'guide/drp.md'
+    - Using Datoviz in C: 'guide/c.md'
+  - Gallery:
+    - Overview: 'gallery/index.md'
+    - Visuals: 'gallery/visuals/index.md'
+    - Features: 'gallery/features/index.md'
+    - Showcase: 'gallery/showcase/index.md'
   - Reference:
-    - Colormaps reference: 'colormaps.md'
-    - API reference: 'api.md'
+    - Python API reference: 'reference/api_py.md'
+    - C API reference: 'reference/api_c.md'
+    - Colormaps reference: 'reference/colormaps.md'
   - Discussions:
-    - Architecture: 'ARCHITECTURE.md'
-    - Building instructions: 'BUILD.md'
-    - Contributing notes: 'CONTRIBUTING.md'
-    - Maintainers instructions: 'MAINTAINERS.md'
-    - License: 'LICENSE.md'
+    - Architecture: 'discussions/ARCHITECTURE.md'
+    - Build instructions: 'discussions/BUILD.md'
+    - Contribution guidelines: 'discussions/CONTRIBUTING.md'
+    - Maintainer guidelines: 'discussions/MAINTAINERS.md'
+    - License: 'discussions/LICENSE.md'

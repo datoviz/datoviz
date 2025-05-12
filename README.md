@@ -3,7 +3,7 @@
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
 [**[User guide]**](docs/userguide.md) &nbsp;
-[**[Examples]**](docs/examples.md) &nbsp;
+[**[Examples]**](examples/) &nbsp;
 [**[API reference]**](docs/api.md) &nbsp;
 
 <!-- INTRODUCTION -->
@@ -140,7 +140,7 @@ app.destroy()
 ## 📚 Documentation
 
 * [**📖 User guide**](docs/userguide.md)
-* [**🐍 Examples**](docs/examples.md)
+* [**🐍 Examples**](examples/)
 * [**📚 API** reference](docs/api.md)
 * [**🏛️ Architecture** overview](ARCHITECTURE.md)
 * [**🏗️ Build** instructions](BUILD.md)
