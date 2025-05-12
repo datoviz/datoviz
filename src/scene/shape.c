@@ -1392,30 +1392,336 @@ void dvz_shape_sphere(DvzShape* shape, uint32_t rows, uint32_t cols, DvzColor co
     ANN(shape);
 
     shape->type = DVZ_SHAPE_SPHERE;
-    // TODO
-    log_error("dvz_shape_sphere() not yet implemented");
-}
 
+    const float radius = 0.5f;
+    const uint32_t vertex_count = (rows + 1) * (cols + 1);
+    const uint32_t index_count = 6 * rows * cols;
 
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
 
-void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
-{
-    ASSERT(count > 0);
-    ANN(shape);
-    shape->type = DVZ_SHAPE_CONE;
-    // TODO
-    log_error("dvz_shape_cone() not yet implemented");
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+
+    uint32_t point_idx = 0;
+    for (uint32_t i = 0; i <= rows; i++)
+    {
+        float theta = M_PI * i / rows; // [0, PI]
+        float y = cosf(theta);         // vertical axis
+        float r = sinf(theta);
+
+        for (uint32_t j = 0; j <= cols; j++)
+        {
+            float phi = 2.0f * M_PI * j / cols; // [0, 2PI]
+            float x = r * cosf(phi);
+            float z = r * sinf(phi);
+
+            // Position.
+            shape->pos[point_idx][0] = radius * x;
+            shape->pos[point_idx][1] = radius * y;
+            shape->pos[point_idx][2] = radius * z;
+
+            // Normal.
+            glm_vec3_copy((vec3){x, y, z}, shape->normal[point_idx]);
+            glm_vec3_normalize(shape->normal[point_idx]);
+
+            // Color.
+            memcpy(shape->color[point_idx], color, sizeof(DvzColor));
+
+            // Texcoords.
+            shape->texcoords[point_idx][0] = j / (float)cols;
+            shape->texcoords[point_idx][1] = i / (float)rows;
+            shape->texcoords[point_idx][3] = 1; // alpha
+
+            point_idx++;
+        }
+    }
+
+    // Indices.
+    uint32_t index = 0;
+    for (uint32_t i = 0; i < rows; i++)
+    {
+        for (uint32_t j = 0; j < cols; j++)
+        {
+            uint32_t i0 = i * (cols + 1) + j;
+            uint32_t i1 = (i + 1) * (cols + 1) + j;
+            uint32_t i2 = i * (cols + 1) + (j + 1);
+            uint32_t i3 = (i + 1) * (cols + 1) + (j + 1);
+
+            shape->index[index++] = i0;
+            shape->index[index++] = i1;
+            shape->index[index++] = i2;
+
+            shape->index[index++] = i1;
+            shape->index[index++] = i3;
+            shape->index[index++] = i2;
+        }
+    }
 }
 
 
 
 void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color)
 {
-    ASSERT(count > 0);
+    ASSERT(count > 2);
     ANN(shape);
     shape->type = DVZ_SHAPE_CYLINDER;
-    // TODO
-    log_error("dvz_shape_cylinder() not yet implemented");
+
+    const float radius = 0.5f;
+    const float half_height = 0.5f;
+
+    const uint32_t vertex_count = 2 * count    // side vertices
+                                  + 2          // center top/bottom
+                                  + 2 * count; // cap ring vertices
+    const uint32_t index_count = 12 * count;
+
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
+
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+
+    uint32_t vi = 0, ii = 0;
+
+    // --- SIDE VERTICES (bottom and top rings)
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = 2.0f * M_PI * i / count;
+        float x = cosf(angle), z = sinf(angle);
+
+        // Bottom ring
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = -half_height;
+        shape->pos[vi][2] = radius * z;
+        glm_vec3_copy((vec3){x, 0, z}, shape->normal[vi]);
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = i / (float)count;
+        shape->texcoords[vi][1] = 0;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+
+        // Top ring
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = +half_height;
+        shape->pos[vi][2] = radius * z;
+        glm_vec3_copy((vec3){x, 0, z}, shape->normal[vi]);
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = i / (float)count;
+        shape->texcoords[vi][1] = 1;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+    }
+
+    // --- SIDE INDICES
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t i_bot_0 = (2 * i + 0) % (2 * count);
+        uint32_t i_top_0 = (2 * i + 1) % (2 * count);
+        uint32_t i_bot_1 = (2 * ((i + 1) % count) + 0);
+        uint32_t i_top_1 = (2 * ((i + 1) % count) + 1);
+
+        shape->index[ii++] = i_bot_0;
+        shape->index[ii++] = i_bot_1;
+        shape->index[ii++] = i_top_0;
+
+        shape->index[ii++] = i_top_0;
+        shape->index[ii++] = i_bot_1;
+        shape->index[ii++] = i_top_1;
+    }
+
+    // --- CAP CENTERS
+    uint32_t center_bottom = vi++;
+    shape->pos[center_bottom][0] = 0;
+    shape->pos[center_bottom][1] = -half_height;
+    shape->pos[center_bottom][2] = 0;
+    glm_vec3_copy((vec3){0, -1, 0}, shape->normal[center_bottom]);
+    memcpy(shape->color[center_bottom], color, sizeof(DvzColor));
+    shape->texcoords[center_bottom][0] = 0.5f;
+    shape->texcoords[center_bottom][1] = 0.5f;
+    shape->texcoords[center_bottom][3] = 1;
+
+    uint32_t center_top = vi++;
+    shape->pos[center_top][0] = 0;
+    shape->pos[center_top][1] = +half_height;
+    shape->pos[center_top][2] = 0;
+    glm_vec3_copy((vec3){0, +1, 0}, shape->normal[center_top]);
+    memcpy(shape->color[center_top], color, sizeof(DvzColor));
+    shape->texcoords[center_top][0] = 0.5f;
+    shape->texcoords[center_top][1] = 0.5f;
+    shape->texcoords[center_top][3] = 1;
+
+    // --- CAP RING VERTICES (flat normals)
+    uint32_t base_ring_bottom = vi;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = 2.0f * M_PI * i / count;
+        float x = cosf(angle), z = sinf(angle);
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = -half_height;
+        shape->pos[vi][2] = radius * z;
+        glm_vec3_copy((vec3){0, -1, 0}, shape->normal[vi]);
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = 0.5f + 0.5f * x;
+        shape->texcoords[vi][1] = 0.5f + 0.5f * z;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+    }
+
+    uint32_t base_ring_top = vi;
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = 2.0f * M_PI * i / count;
+        float x = cosf(angle), z = sinf(angle);
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = +half_height;
+        shape->pos[vi][2] = radius * z;
+        glm_vec3_copy((vec3){0, +1, 0}, shape->normal[vi]);
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = 0.5f + 0.5f * x;
+        shape->texcoords[vi][1] = 0.5f + 0.5f * z;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+    }
+
+    // --- CAP INDICES
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t i1 = base_ring_bottom + i;
+        uint32_t i2 = base_ring_bottom + (i + 1) % count;
+        shape->index[ii++] = center_bottom;
+        shape->index[ii++] = i2;
+        shape->index[ii++] = i1;
+
+        i1 = base_ring_top + i;
+        i2 = base_ring_top + (i + 1) % count;
+        shape->index[ii++] = center_top;
+        shape->index[ii++] = i1;
+        shape->index[ii++] = i2;
+    }
+}
+
+
+
+void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
+{
+    ASSERT(count > 2); // At least 3 segments for a valid cone base
+    ANN(shape);
+    shape->type = DVZ_SHAPE_CONE;
+
+    const float radius = 0.5f;
+    const float half_height = 0.5f;
+
+    const uint32_t verts_side = count + 1; // base ring + apex
+    const uint32_t verts_base = count + 1; // base ring + center
+    const uint32_t vertex_count = verts_side + verts_base;
+
+    const uint32_t tris_side = count;
+    const uint32_t tris_base = count;
+    const uint32_t index_count = 3 * (tris_side + tris_base);
+
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
+
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+
+    uint32_t vi = 0;
+    uint32_t ii = 0;
+
+    // --- Side vertices (base ring)
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = 2.0f * M_PI * i / count;
+        float x = cosf(angle);
+        float z = sinf(angle);
+
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = -half_height;
+        shape->pos[vi][2] = radius * z;
+
+        // Approximate normal using the cone slope
+        vec3 n = {x, radius / 1.0f, z}; // dy = height, dx = radius
+        glm_vec3_normalize_to(n, shape->normal[vi]);
+
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = i / (float)count;
+        shape->texcoords[vi][1] = 0;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+    }
+
+    // Apex vertex.
+    uint32_t apex_index = vi;
+    shape->pos[vi][0] = 0;
+    shape->pos[vi][1] = +half_height;
+    shape->pos[vi][2] = 0;
+    glm_vec3_copy((vec3){0, 1, 0}, shape->normal[vi]);
+    memcpy(shape->color[vi], color, sizeof(DvzColor));
+    shape->texcoords[vi][0] = 0.5;
+    shape->texcoords[vi][1] = 1.0;
+    shape->texcoords[vi][3] = 1;
+    vi++;
+
+    // Side indices.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t i0 = i;
+        uint32_t i1 = (i + 1) % count;
+        shape->index[ii++] = apex_index;
+        shape->index[ii++] = i1;
+        shape->index[ii++] = i0;
+    }
+
+    // --- Base center
+    uint32_t base_center_index = vi;
+    shape->pos[vi][0] = 0;
+    shape->pos[vi][1] = -half_height;
+    shape->pos[vi][2] = 0;
+    glm_vec3_copy((vec3){0, -1, 0}, shape->normal[vi]);
+    memcpy(shape->color[vi], color, sizeof(DvzColor));
+    shape->texcoords[vi][0] = 0.5;
+    shape->texcoords[vi][1] = 0.5;
+    shape->texcoords[vi][3] = 1;
+    vi++;
+
+    // Base ring vertices (again, for flat normals)
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = 2.0f * M_PI * i / count;
+        float x = cosf(angle);
+        float z = sinf(angle);
+
+        shape->pos[vi][0] = radius * x;
+        shape->pos[vi][1] = -half_height;
+        shape->pos[vi][2] = radius * z;
+
+        glm_vec3_copy((vec3){0, -1, 0}, shape->normal[vi]);
+        memcpy(shape->color[vi], color, sizeof(DvzColor));
+        shape->texcoords[vi][0] = 0.5f + 0.5f * x;
+        shape->texcoords[vi][1] = 0.5f + 0.5f * z;
+        shape->texcoords[vi][3] = 1;
+        vi++;
+    }
+
+    // Base indices.
+    for (uint32_t i = 0; i < count; i++)
+    {
+        uint32_t i0 = base_center_index;
+        uint32_t i1 = base_center_index + 1 + i;
+        uint32_t i2 = base_center_index + 1 + ((i + 1) % count);
+        shape->index[ii++] = i0;
+        shape->index[ii++] = i1;
+        shape->index[ii++] = i2;
+    }
 }
 
 
