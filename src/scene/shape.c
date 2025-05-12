@@ -1195,6 +1195,80 @@ void dvz_shape_sector(
 
 
 
+void dvz_shape_histogram(DvzShape* shape, uint32_t count, float* heights, DvzColor color)
+{
+    ASSERT(count > 0);
+    ASSERT(heights != NULL);
+    ANN(shape);
+
+    shape->type = DVZ_SHAPE_HISTOGRAM;
+
+    const uint32_t vertex_count = 4 * count;
+    const uint32_t index_count = 6 * count;
+
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
+
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+
+    float x0 = -0.5f;
+    float bin_width = 1.0f / count;
+
+    uint32_t vi = 0;
+    uint32_t ii = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float h = heights[i];
+        float x_left = x0 + i * bin_width;
+        float x_right = x0 + (i + 1) * bin_width;
+        float y_bottom = 0.0f;
+        float y_top = h;
+
+        // Four vertices: bottom-left, bottom-right, top-right, top-left
+        shape->pos[vi + 0][0] = x_left;
+        shape->pos[vi + 0][1] = y_bottom;
+        shape->pos[vi + 1][0] = x_right;
+        shape->pos[vi + 1][1] = y_bottom;
+        shape->pos[vi + 2][0] = x_right;
+        shape->pos[vi + 2][1] = y_top;
+        shape->pos[vi + 3][0] = x_left;
+        shape->pos[vi + 3][1] = y_top;
+
+        for (uint32_t j = 0; j < 4; j++)
+        {
+            shape->pos[vi + j][2] = 0.0f; // z = 0
+            shape->normal[vi + j][0] = 0.0f;
+            shape->normal[vi + j][1] = 0.0f;
+            shape->normal[vi + j][2] = 1.0f; // +Z normal
+            memcpy(shape->color[vi + j], color, sizeof(DvzColor));
+
+            // texcoords map the square locally
+            shape->texcoords[vi + j][0] = (j == 1 || j == 2) ? 1.0f : 0.0f;
+            shape->texcoords[vi + j][1] = (j >= 2) ? 1.0f : 0.0f;
+            shape->texcoords[vi + j][3] = 1.0f;
+        }
+
+        // Indices: two triangles (0, 1, 2) and (2, 3, 0)
+        shape->index[ii + 0] = vi + 0;
+        shape->index[ii + 1] = vi + 1;
+        shape->index[ii + 2] = vi + 2;
+
+        shape->index[ii + 3] = vi + 2;
+        shape->index[ii + 4] = vi + 3;
+        shape->index[ii + 5] = vi + 0;
+
+        vi += 4;
+        ii += 6;
+    }
+}
+
+
+
 void dvz_shape_polygon(DvzShape* shape, uint32_t count, const dvec2* points, DvzColor color)
 {
     ASSERT(count > 2);

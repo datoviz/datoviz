@@ -1582,6 +1582,19 @@ DVZ_EXPORT void dvz_shape_sector(
 
 
 /**
+ * Create a histogram shape.
+ *
+ * @param shape the shape
+ * @param count the number of bars
+ * @param heights the height of each bar
+ * @param color the sector color
+ */
+DVZ_EXPORT void
+dvz_shape_histogram(DvzShape* shape, uint32_t count, float* heights, DvzColor color);
+
+
+
+/**
  * Create a polygon shape using the simple earcut polygon triangulation algorithm.
  *
  * @param shape the shape
