@@ -16,7 +16,7 @@ import numpy as np
 
 from . import _constants as cst
 from . import _ctypes as dvz
-from ._constants import PROPS
+from ._props import PROPS
 from ._texture import Texture
 from .utils import get_fixed_params, get_size, prepare_data_array, prepare_data_scalar, to_enum
 
