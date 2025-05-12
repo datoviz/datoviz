@@ -3,6 +3,12 @@
 
 Show the sphere visual.
 
+---
+tags:
+  - sphere
+  - arcball
+---
+
 """
 
 import numpy as np

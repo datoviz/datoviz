@@ -1,6 +1,12 @@
 """
 # Molecule
 
+---
+tags:
+  - sphere
+  - arcball
+---
+
 """
 
 import glob

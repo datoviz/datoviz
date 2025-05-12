@@ -3,6 +3,12 @@
 
 Show how to manipulate a camera.
 
+---
+tags:
+  - camera
+  - keyboard
+---
+
 """
 
 import datoviz as dvz

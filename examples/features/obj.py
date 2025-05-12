@@ -3,6 +3,14 @@
 
 Show the mesh visual with predefined shapes.
 
+---
+tags:
+  - mesh
+  - shape
+  - obj
+  - arcball
+---
+
 """
 
 from pathlib import Path

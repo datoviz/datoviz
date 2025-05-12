@@ -3,6 +3,13 @@
 
 Show how to manipulate lights.
 
+---
+tags:
+  - sphere
+  - light
+  - gui
+---
+
 """
 
 import datoviz as dvz

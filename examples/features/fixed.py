@@ -3,6 +3,11 @@
 
 Show how to fix a visual in the panel on one or several axes.
 
+---
+tags:
+  - fixed
+---
+
 """
 
 import datoviz as dvz

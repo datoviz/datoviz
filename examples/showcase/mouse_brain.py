@@ -2,6 +2,11 @@
 # Mesh example
 
 Show a 3D mesh.
+---
+tags:
+  - mesh
+  - arcball
+---
 
 """
 

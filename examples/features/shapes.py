@@ -1,6 +1,14 @@
 """
 # Shapes
 
+---
+tags:
+  - shape
+  - colormap
+  - arcball
+  - mesh
+---
+
 """
 
 import numpy as np

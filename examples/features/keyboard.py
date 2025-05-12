@@ -3,6 +3,11 @@
 
 Show how to react to keyboard events.
 
+---
+tags:
+  - keyboard
+---
+
 """
 
 import datoviz as dvz

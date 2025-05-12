@@ -3,6 +3,15 @@
 
 Show a choropleth map.
 
+---
+tags:
+  - mesh
+  - shape
+  - colormap
+  - polygon
+  - ortho
+---
+
 """
 
 from pathlib import Path

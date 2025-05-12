@@ -5,6 +5,11 @@ Show how to render an offscreen image.
 
 NOTE: the API for this feature may change in an upcoming version.
 
+---
+tags:
+  - offscreen
+---
+
 """
 
 import datoviz as dvz

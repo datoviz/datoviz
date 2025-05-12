@@ -3,6 +3,11 @@
 
 Show a raster plot (spikes in 2D, time on the x axis, neuron depth on the y axis) using
 the Pixel visual.
+---
+tags:
+  - pixel
+  - panzoom
+---
 
 """
 
@@ -41,7 +46,6 @@ app = dvz.App(background='white')
 figure = app.figure()
 panel = figure.panel()
 panzoom = panel.panzoom()
-camera = panel.camera(initial=(0, 0, 1.5))
 
 visual = app.pixel(position=positions, color=colors)
 panel.add(visual)

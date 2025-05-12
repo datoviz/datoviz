@@ -3,6 +3,14 @@
 
 Show the mesh visual with predefined shapes.
 
+---
+tags:
+  - volume
+  - arcball
+  - camera
+  - texture
+---
+
 """
 
 import gzip

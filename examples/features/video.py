@@ -5,6 +5,12 @@ Show how to generate an offscreen video.
 
 NOTE: experimental, the API will change.
 
+---
+tags:
+  - offscreen
+  - video
+---
+
 """
 
 import os

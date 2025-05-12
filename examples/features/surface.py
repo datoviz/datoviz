@@ -3,13 +3,14 @@
 
 Show a rotating surface in 3D.
 
-Illustrates:
-
-- White background
-- Surface shape
-- Mesh visual and surface mesh
-- Arcball interactivity
-- Initial arcball angles
+---
+tags:
+  - background
+  - colormap
+  - shape
+  - arcball
+  - mesh
+---
 
 """
 

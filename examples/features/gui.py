@@ -3,6 +3,14 @@
 
 Show how to create a GUI dialog.
 
+---
+tags:
+  - gui
+  - table
+  - tree
+  - widgets
+---
+
 """
 
 import numpy as np

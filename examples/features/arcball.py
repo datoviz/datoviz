@@ -3,6 +3,11 @@
 
 Show how to manipulate an arcball.
 
+---
+tags:
+  - arcball
+---
+
 """
 
 import datoviz as dvz

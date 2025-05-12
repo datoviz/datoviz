@@ -3,6 +3,12 @@
 
 Show how to create several panels.
 
+---
+tags:
+  - panel
+  - clip
+---
+
 """
 
 import datoviz as dvz

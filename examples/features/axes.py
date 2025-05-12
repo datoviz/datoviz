@@ -3,6 +3,13 @@
 
 Show how to use 2D axes.
 
+---
+tags:
+  - point
+  - axes
+  - mouse
+---
+
 """
 
 import numpy as np

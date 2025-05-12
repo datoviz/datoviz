@@ -3,6 +3,12 @@
 
 Show the point visual.
 
+---
+tags:
+  - point
+  - panzoom
+---
+
 """
 
 import numpy as np

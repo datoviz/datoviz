@@ -3,6 +3,11 @@
 
 Show how to create a GUI panel.
 
+---
+tags:
+  - gui panel
+---
+
 """
 
 import datoviz as dvz

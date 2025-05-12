@@ -3,6 +3,12 @@
 
 Show the path visual.
 
+---
+tags:
+  - path
+  - panzoom
+---
+
 """
 
 import numpy as np

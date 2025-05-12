@@ -3,6 +3,14 @@
 
 Show the segment visual.
 
+---
+tags:
+  - segment
+  - colormap
+  - cap
+  - panzoom
+---
+
 """
 
 import numpy as np

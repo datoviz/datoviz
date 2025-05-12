@@ -5,6 +5,12 @@ Show how to retrieve the exact timestamps of the presentation of the last frames
 This may be useful in specific use-cases (e.g. hardware synchronization in scientific experimental
 setups).
 
+---
+tags:
+  - timer
+  - timestamps
+---
+
 """
 
 import numpy as np

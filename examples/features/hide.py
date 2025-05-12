@@ -3,6 +3,12 @@
 
 Show how to show/hide a visual.
 
+---
+tags:
+  - gui
+  - show
+---
+
 """
 
 import datoviz as dvz

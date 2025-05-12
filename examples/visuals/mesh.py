@@ -3,6 +3,13 @@
 
 Show the mesh visual with predefined shapes.
 
+---
+tags:
+  - mesh
+  - shape
+  - arcball
+---
+
 """
 
 import numpy as np

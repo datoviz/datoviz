@@ -3,6 +3,13 @@
 
 Show the glyph visual.
 
+---
+tags:
+  - glyph
+  - colormap
+  - panzoom
+---
+
 """
 
 import numpy as np

@@ -7,12 +7,20 @@ image position specified in Image.set_position().
 This normalized coordinate system within the image is centered around the center of the image,
 x goes right, y goes up.
 
+---
+tags:
+  - image
+  - anchor
+  - texture
+  - gui
+---
+
 """
 
 from pathlib import Path
 
-import numpy as np
 import imageio.v3 as iio
+import numpy as np
 
 import datoviz as dvz
 

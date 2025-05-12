@@ -3,6 +3,12 @@
 
 Show the basic visual with line strip topology and groups.
 
+---
+tags:
+  - basic
+  - panzoom
+---
+
 """
 
 import numpy as np

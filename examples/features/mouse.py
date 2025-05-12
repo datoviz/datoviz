@@ -3,6 +3,11 @@
 
 Show how to react to mouse events.
 
+---
+tags:
+  - mouse
+---
+
 """
 
 import datoviz as dvz

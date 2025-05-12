@@ -3,6 +3,12 @@
 
 Show the pixel visual.
 
+---
+tags:
+  - pixel
+  - panzoom
+---
+
 """
 
 import matplotlib.colors as mcolors

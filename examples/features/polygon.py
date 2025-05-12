@@ -1,6 +1,15 @@
 """
 # Polygon example
 
+---
+tags:
+  - mesh
+  - shape
+  - colormap
+  - polygon
+  - ortho
+---
+
 """
 
 import numpy as np

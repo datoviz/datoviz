@@ -3,6 +3,12 @@
 
 Data origin: https://lidarpayload.com/sample-data/, RESEPI-M2X-100m10ms-FOV90-On RangerPro.laz
 
+---
+tags:
+  - pixel
+  - arcball
+---
+
 """
 
 from pathlib import Path

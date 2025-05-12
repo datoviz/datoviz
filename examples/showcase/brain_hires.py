@@ -3,6 +3,12 @@
 
 Show a 3D mesh.
 
+---
+tags:
+  - mesh
+  - arcball
+---
+
 """
 
 from pathlib import Path

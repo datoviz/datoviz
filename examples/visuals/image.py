@@ -3,12 +3,19 @@
 
 Show the image visual.
 
+---
+tags:
+  - image
+  - panzoom
+  - texture
+---
+
 """
 
 from pathlib import Path
 
-import numpy as np
 import imageio.v3 as iio
+import numpy as np
 
 import datoviz as dvz
 
