@@ -942,8 +942,9 @@ void dvz_buffer_resize(DvzBuffer* buffer, VkDeviceSize size)
     bool proceed = true;
     if ((new_buffer.usage & VK_BUFFER_USAGE_TRANSFER_DST_BIT) == 0)
     {
-        log_warn("buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
-                 "data cannot be kept while resizing it");
+        log_warn(
+            "buffer was not created with VK_BUFFER_USAGE_TRANSFER_DST_BIT and therefore the "
+            "data cannot be kept while resizing it");
         proceed = false;
     }
     new_buffer.size = size;
@@ -1914,8 +1915,25 @@ void dvz_images_copy(
 }
 
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
-void dvz_images_copy_from_buffer(
+/*
+HACK: the logic to copy data from a buffer to an image (when uploading a texture) is not the same
+depending on the queues that we have.
+
+When there is a separate queue for transfers, we should handle the transition of the image to a
+layout adapted to sampling from the fragment buffer.
+
+Otherwise, we get Vulkan errors on either e.g. macOS (single queue) or NVIDIA (multiple queues).
+
+We should deal properly with this, not at the level of vklite.c, but the level of
+transfers/resources. These functions should be moved elsewhere and should be aware of the different
+command buffers and queues at our disposal, which is not the case at the level of vklite.c.
+
+This will be tackled at during the low-level refactoring for Datoviz v0.4.
+*/
+
+static void _dvz_images_copy_from_buffer_single_queue(
     DvzImages* img, uvec3 tex_offset, uvec3 shape, //
     DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
 {
@@ -1986,6 +2004,96 @@ void dvz_images_copy_from_buffer(
     dvz_submit_commands(&submit, cmds);
     dvz_submit_send(&submit, 0, NULL, 0);
 }
+
+
+
+static void _dvz_images_copy_from_buffer_multiple_queues(
+    DvzImages* img, uvec3 tex_offset, uvec3 shape, //
+    DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
+{
+    ANN(img);
+    DvzGpu* gpu = img->gpu;
+    ANN(gpu);
+
+    DvzBuffer* buffer = br.buffer;
+    ANN(buffer);
+    buf_offset = br.offsets[0] + buf_offset;
+
+    for (uint32_t i = 0; i < 3; i++)
+    {
+        ASSERT(shape[i] > 0);
+        ASSERT(tex_offset[i] + shape[i] <= img->shape[i]);
+    }
+
+    log_debug("copy buffer to image (%s)", pretty_size(size));
+
+    // Take transfer cmd buf.
+    // DvzCommands cmds_ = dvz_commands(gpu, 0, 1);
+    // DvzCommands* cmds = &cmds_;
+    DvzCommands* cmds = &gpu->cmd;
+    dvz_cmd_reset(cmds, 0);
+    dvz_cmd_begin(cmds, 0);
+
+    // Image transition.
+    DvzBarrier barrier = dvz_barrier(gpu);
+    dvz_barrier_stages(&barrier, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
+    ANN(img);
+    ANN(img);
+    dvz_barrier_images(&barrier, img);
+    dvz_barrier_images_layout(
+        &barrier, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    dvz_barrier_images_access(&barrier, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+
+    // Copy to staging buffer
+    dvz_cmd_copy_buffer_to_image(cmds, 0, buffer, buf_offset, img, tex_offset, shape);
+
+    // Image transition.
+    dvz_barrier_images_layout(&barrier, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, img->layout);
+    dvz_barrier_images_access(&barrier, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_MEMORY_READ_BIT);
+    dvz_cmd_barrier(cmds, 0, &barrier);
+
+    dvz_cmd_end(cmds, 0);
+
+    // Wait for the render queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_RENDER);
+
+    // Submit the commands to the transfer queue.
+    DvzSubmit submit = dvz_submit(gpu);
+    dvz_submit_commands(&submit, cmds);
+    dvz_submit_send(&submit, 0, NULL, 0);
+
+    // Wait for the transfer queue to be idle.
+    // dvz_queue_wait(gpu, DVZ_DEFAULT_QUEUE_TRANSFER);
+}
+
+
+
+void dvz_images_copy_from_buffer(
+    DvzImages* img, uvec3 tex_offset, uvec3 shape, //
+    DvzBufferRegions br, VkDeviceSize buf_offset, VkDeviceSize size)
+{
+
+    ANN(img);
+    DvzGpu* gpu = img->gpu;
+    ANN(gpu);
+
+    // Determine if graphics and transfer queues are distinct
+    uint32_t render_qf = gpu->queues.queue_families[DVZ_DEFAULT_QUEUE_RENDER];
+    uint32_t transfer_qf = gpu->queues.queue_families[DVZ_DEFAULT_QUEUE_TRANSFER];
+    bool separate_queues = (render_qf != transfer_qf);
+
+    if (separate_queues)
+    {
+        _dvz_images_copy_from_buffer_multiple_queues(img, tex_offset, shape, br, buf_offset, size);
+    }
+    else
+    {
+        _dvz_images_copy_from_buffer_single_queue(img, tex_offset, shape, br, buf_offset, size);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -2190,8 +2298,9 @@ void dvz_slots_push(
     // NOTE: it turns out we cannot have multiple push ranges on the same shader stages.
     if (dslots->push_count >= 1)
     {
-        log_warn("you should ensure the multiple push constant ranges have no overlapping shader "
-                 "stages, as per the Vulkan specification");
+        log_warn(
+            "you should ensure the multiple push constant ranges have no overlapping shader "
+            "stages, as per the Vulkan specification");
     }
     dslots->push_count++;
 }
