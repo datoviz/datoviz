@@ -308,6 +308,7 @@ dvz_shape_disc
 dvz_shape_dodecahedron
 dvz_shape_end
 dvz_shape_hexahedron
+dvz_shape_histogram
 dvz_shape_icosahedron
 dvz_shape_index_count
 dvz_shape_merge
@@ -320,6 +321,7 @@ dvz_shape_print
 dvz_shape_rescaling
 dvz_shape_rotate
 dvz_shape_scale
+dvz_shape_sector
 dvz_shape_sphere
 dvz_shape_square
 dvz_shape_surface

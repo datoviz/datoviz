@@ -5304,6 +5304,55 @@ shape_disc.argtypes = [
     DvzColor,  # DvzColor color
 ]
 
+# Function dvz_shape_sector()
+shape_sector = dvz.dvz_shape_sector
+shape_sector.__doc__ = """
+Create a sector shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+count : uint32_t
+    the number of points along the sector border
+angle_start : float
+    the initial angle
+angle_stop : unknown
+    the final angle
+color : DvzColor
+    the sector color
+"""
+shape_sector.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float,  # float angle_start
+    ctypes.c_float,  # float angle_end
+    DvzColor,  # DvzColor color
+]
+
+# Function dvz_shape_histogram()
+shape_histogram = dvz.dvz_shape_histogram
+shape_histogram.__doc__ = """
+Create a histogram shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+count : uint32_t
+    the number of bars
+heights : float*
+    the height of each bar
+color : DvzColor
+    the sector color
+"""
+shape_histogram.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count
+    ndpointer(dtype=np.float32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # float* heights
+    DvzColor,  # DvzColor color
+]
+
 # Function dvz_shape_polygon()
 shape_polygon = dvz.dvz_shape_polygon
 shape_polygon.__doc__ = """

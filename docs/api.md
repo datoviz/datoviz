@@ -7326,6 +7326,32 @@ Create a tetrahedron.
     );
     ```
 
+### `dvz_shape_histogram()`
+
+Create a histogram shape.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_histogram(
+        shape,  # the shape (LP_DvzShape)
+        count,  # the number of bars (int, 32-bit unsigned)
+        heights,  # the height of each bar (ndpointer_<f4_C_CONTIGUOUS)
+        color,  # the sector color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_shape_histogram(
+        DvzShape* shape,  // the shape
+        uint32_t count,  // the number of bars
+        float* heights,  // the height of each bar
+        DvzColor color,  // the sector color
+    );
+    ```
+
 ### `dvz_shape_icosahedron()`
 
 Create a icosahedron.
@@ -7587,6 +7613,31 @@ Append a scaling transform to a shape.
 
     ``` c
     void dvz_shape_scale(
+        DvzShape* shape,  // the shape
+        vec3 scale,  // the scaling factors
+    );
+    ```
+
+### `dvz_shape_sector()`
+
+Create a sector shape.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_sector(
+        shape,  # the shape (LP_DvzShape)
+        count,  # the number of points along the sector border (int, 32-bit unsigned)
+        angle_start,  # the initial angle (float, 64-bit)
+        angle_stop,  # the final angle (float, 64-bit)
+        color,  # the sector color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_shape_sector(
         DvzShape* shape,  // the shape
         vec3 scale,  // the scaling factors
     );
