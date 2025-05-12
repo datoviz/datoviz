@@ -7062,6 +7062,34 @@ Create an empty shape.
     DvzShape* dvz_shape();  // returns: the shape
     ```
 
+### `dvz_shape_arrow()`
+
+Create a 3D arrow using a cylinder and cone.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_arrow(
+        shape,  # the shape (LP_DvzShape)
+        head_length,  # the length of the head (float, 64-bit)
+        head_radius,  # the radius of the head (float, 64-bit)
+        shaft_radius,  # the radius of the shaft (float, 64-bit)
+        color,  # the arrow color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_shape_arrow(
+        DvzShape* shape,  // the shape
+        float head_length,  // the length of the head
+        float head_radius,  // the radius of the head
+        float shaft_radius,  // the radius of the shaft
+        DvzColor color,  // the arrow color
+    );
+    ```
+
 ### `dvz_shape_begin()`
 
 Start a transformation sequence.
@@ -7667,6 +7695,34 @@ Create a tetrahedron.
     void dvz_shape_tetrahedron(
         DvzShape* shape,  // the shape
         DvzColor color,  // the color
+    );
+    ```
+
+### `dvz_shape_torus()`
+
+Create a torus shape.
+
+=== "Python"
+
+    ``` python
+    dvz.shape_torus(
+        shape,  # the shape (LP_DvzShape)
+        count_radial,  # the number of points around the ring (int, 32-bit unsigned)
+        count_tubular,  # the number of points in each cross-section (int, 32-bit unsigned)
+        tube_radius,  # the radius of the tube. (float, 64-bit)
+        color,  # the torus color (cvec4)
+    )
+    ```
+
+=== "C"
+
+    ``` c
+    void dvz_shape_torus(
+        DvzShape* shape,  // the shape
+        uint32_t count_radial,  // the number of points around the ring
+        uint32_t count_tubular,  // the number of points in each cross-section
+        float tube_radius,  // the radius of the tube.
+        DvzColor color,  // the torus color
     );
     ```
 
@@ -12783,11 +12839,15 @@ DVZ_INDEXING_SURFACE
 DVZ_SHAPE_NONE
 DVZ_SHAPE_SQUARE
 DVZ_SHAPE_DISC
+DVZ_SHAPE_SECTOR
 DVZ_SHAPE_POLYGON
+DVZ_SHAPE_HISTOGRAM
 DVZ_SHAPE_CUBE
 DVZ_SHAPE_SPHERE
 DVZ_SHAPE_CYLINDER
 DVZ_SHAPE_CONE
+DVZ_SHAPE_TORUS
+DVZ_SHAPE_ARROW
 DVZ_SHAPE_TETRAHEDRON
 DVZ_SHAPE_HEXAHEDRON
 DVZ_SHAPE_OCTAHEDRON
@@ -12804,6 +12864,13 @@ DVZ_SHAPE_OTHER
 DVZ_SLOT_DAT
 DVZ_SLOT_TEX
 DVZ_SLOT_COUNT
+```
+
+### `DvzSphereFlags`
+
+```
+DVZ_SPHERE_FLAGS_NONE
+DVZ_SPHERE_FLAGS_SIZE_PIXELS
 ```
 
 ### `DvzTexDims`

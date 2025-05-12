@@ -297,6 +297,7 @@ dvz_server_mouse
 dvz_server_resize
 dvz_server_submit
 dvz_shape
+dvz_shape_arrow
 dvz_shape_begin
 dvz_shape_cone
 dvz_shape_cube
@@ -323,6 +324,7 @@ dvz_shape_sphere
 dvz_shape_square
 dvz_shape_surface
 dvz_shape_tetrahedron
+dvz_shape_torus
 dvz_shape_transform
 dvz_shape_translate
 dvz_shape_unindex

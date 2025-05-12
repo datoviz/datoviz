@@ -843,19 +843,23 @@ class DvzShapeType(CtypesEnum):
     DVZ_SHAPE_NONE = 0
     DVZ_SHAPE_SQUARE = 1
     DVZ_SHAPE_DISC = 2
-    DVZ_SHAPE_POLYGON = 3
-    DVZ_SHAPE_CUBE = 4
-    DVZ_SHAPE_SPHERE = 5
-    DVZ_SHAPE_CYLINDER = 6
-    DVZ_SHAPE_CONE = 7
-    DVZ_SHAPE_TETRAHEDRON = 8
-    DVZ_SHAPE_HEXAHEDRON = 9
-    DVZ_SHAPE_OCTAHEDRON = 10
-    DVZ_SHAPE_DODECAHEDRON = 11
-    DVZ_SHAPE_ICOSAHEDRON = 12
-    DVZ_SHAPE_SURFACE = 13
-    DVZ_SHAPE_OBJ = 14
-    DVZ_SHAPE_OTHER = 15
+    DVZ_SHAPE_SECTOR = 3
+    DVZ_SHAPE_POLYGON = 4
+    DVZ_SHAPE_HISTOGRAM = 5
+    DVZ_SHAPE_CUBE = 6
+    DVZ_SHAPE_SPHERE = 7
+    DVZ_SHAPE_CYLINDER = 8
+    DVZ_SHAPE_CONE = 9
+    DVZ_SHAPE_TORUS = 10
+    DVZ_SHAPE_ARROW = 11
+    DVZ_SHAPE_TETRAHEDRON = 12
+    DVZ_SHAPE_HEXAHEDRON = 13
+    DVZ_SHAPE_OCTAHEDRON = 14
+    DVZ_SHAPE_DODECAHEDRON = 15
+    DVZ_SHAPE_ICOSAHEDRON = 16
+    DVZ_SHAPE_SURFACE = 17
+    DVZ_SHAPE_OBJ = 18
+    DVZ_SHAPE_OTHER = 19
 
 
 class DvzContourFlags(CtypesEnum):
@@ -869,6 +873,11 @@ class DvzShapeIndexingFlags(CtypesEnum):
     DVZ_INDEXING_NONE = 0x00
     DVZ_INDEXING_EARCUT = 0x10
     DVZ_INDEXING_SURFACE = 0x20
+
+
+class DvzSphereFlags(CtypesEnum):
+    DVZ_SPHERE_FLAGS_NONE = 0x0000
+    DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0001
 
 
 class DvzMeshFlags(CtypesEnum):
@@ -1313,6 +1322,7 @@ ShaderType = DvzShaderType
 ShapeIndexingFlags = DvzShapeIndexingFlags
 ShapeType = DvzShapeType
 SlotType = DvzSlotType
+SphereFlags = DvzSphereFlags
 TexDims = DvzTexDims
 TexFlags = DvzTexFlags
 UploadFlags = DvzUploadFlags
@@ -1935,25 +1945,31 @@ SHADER_SPIRV = 1
 SHADER_TESSELLATION_CONTROL = 0x00000002
 SHADER_TESSELLATION_EVALUATION = 0x00000004
 SHADER_VERTEX = 0x00000001
-SHAPE_CONE = 7
-SHAPE_CUBE = 4
-SHAPE_CYLINDER = 6
+SHAPE_ARROW = 11
+SHAPE_CONE = 9
+SHAPE_CUBE = 6
+SHAPE_CYLINDER = 8
 SHAPE_DISC = 2
-SHAPE_DODECAHEDRON = 11
-SHAPE_HEXAHEDRON = 9
-SHAPE_ICOSAHEDRON = 12
+SHAPE_DODECAHEDRON = 15
+SHAPE_HEXAHEDRON = 13
+SHAPE_HISTOGRAM = 5
+SHAPE_ICOSAHEDRON = 16
 SHAPE_NONE = 0
-SHAPE_OBJ = 14
-SHAPE_OCTAHEDRON = 10
-SHAPE_OTHER = 15
-SHAPE_POLYGON = 3
-SHAPE_SPHERE = 5
+SHAPE_OBJ = 18
+SHAPE_OCTAHEDRON = 14
+SHAPE_OTHER = 19
+SHAPE_POLYGON = 4
+SHAPE_SECTOR = 3
+SHAPE_SPHERE = 7
 SHAPE_SQUARE = 1
-SHAPE_SURFACE = 13
-SHAPE_TETRAHEDRON = 8
+SHAPE_SURFACE = 17
+SHAPE_TETRAHEDRON = 12
+SHAPE_TORUS = 10
 SLOT_COUNT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
+SPHERE_FLAGS_NONE = 0x0000
+SPHERE_FLAGS_SIZE_PIXELS = 0x0001
 TEX_1D = 1
 TEX_2D = 2
 TEX_3D = 3
@@ -5404,6 +5420,26 @@ shape_sphere.argtypes = [
     DvzColor,  # DvzColor color
 ]
 
+# Function dvz_shape_cylinder()
+shape_cylinder = dvz.dvz_shape_cylinder
+shape_cylinder.__doc__ = """
+Create a cylinder shape.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+count : uint32_t
+    the number of points along the cylinder border
+color : DvzColor
+    the cylinder color
+"""
+shape_cylinder.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count
+    DvzColor,  # DvzColor color
+]
+
 # Function dvz_shape_cone()
 shape_cone = dvz.dvz_shape_cone
 shape_cone.__doc__ = """
@@ -5424,23 +5460,55 @@ shape_cone.argtypes = [
     DvzColor,  # DvzColor color
 ]
 
-# Function dvz_shape_cylinder()
-shape_cylinder = dvz.dvz_shape_cylinder
-shape_cylinder.__doc__ = """
-Create a cylinder shape.
+# Function dvz_shape_arrow()
+shape_arrow = dvz.dvz_shape_arrow
+shape_arrow.__doc__ = """
+Create a 3D arrow using a cylinder and cone.  The total length is 1.
 
 Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
-    the number of points along the cylinder border
+head_length : float
+    the length of the head
+head_radius : float
+    the radius of the head
+shaft_radius : float
+    the radius of the shaft
 color : DvzColor
-    the cylinder color
+    the arrow color
 """
-shape_cylinder.argtypes = [
+shape_arrow.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
-    ctypes.c_uint32,  # uint32_t count
+    ctypes.c_float,  # float head_length
+    ctypes.c_float,  # float head_radius
+    ctypes.c_float,  # float shaft_radius
+    DvzColor,  # DvzColor color
+]
+
+# Function dvz_shape_torus()
+shape_torus = dvz.dvz_shape_torus
+shape_torus.__doc__ = """
+Create a torus shape.  The radius of the ring is 0.5.
+
+Parameters
+----------
+shape : DvzShape*
+    the shape
+count_radial : uint32_t
+    the number of points around the ring
+count_tubular : uint32_t
+    the number of points in each cross-section
+tube_radius : float
+    the radius of the tube.
+color : DvzColor
+    the torus color
+"""
+shape_torus.argtypes = [
+    ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count_radial
+    ctypes.c_uint32,  # uint32_t count_tubular
+    ctypes.c_float,  # float tube_radius
     DvzColor,  # DvzColor color
 ]
 
