@@ -28,6 +28,8 @@
 /*  Macros and utils                                                                             */
 /*************************************************************************************************/
 
+#define ARROW_SIDE_COUNT 32
+
 #define COPY_SCALAR(x, idx, y) x[3 * i + idx] = shape->x[y];
 
 #define COPY_VEC3(x, idx, y)                                                                      \
@@ -1388,7 +1390,7 @@ void dvz_shape_cube(DvzShape* shape, DvzColor* colors)
 void dvz_shape_sphere(DvzShape* shape, uint32_t rows, uint32_t cols, DvzColor color)
 {
     ASSERT(rows > 0);
-    ASSERT(cols > 0);
+    ASSERT(cols > 2);
     ANN(shape);
 
     shape->type = DVZ_SHAPE_SPHERE;
@@ -1721,6 +1723,144 @@ void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
         shape->index[ii++] = i0;
         shape->index[ii++] = i1;
         shape->index[ii++] = i2;
+    }
+}
+
+
+
+void dvz_shape_arrow(
+    DvzShape* shape, float head_length, float head_radius, float shaft_radius, DvzColor color)
+{
+    ANN(shape);
+    ASSERT(head_length > 0);
+    ASSERT(head_radius > 0);
+    ASSERT(shaft_radius > 0);
+    shape->type = DVZ_SHAPE_ARROW;
+
+    const float total_height = 1.0f;
+    ASSERT(head_length < total_height);
+    float shaft_length = total_height - head_length;
+
+    // Create shaft.
+    DvzShape* shaft = dvz_shape();
+    dvz_shape_cylinder(shaft, ARROW_SIDE_COUNT, color);
+    dvz_shape_begin(shaft, 0, shaft->vertex_count);
+    vec3 scale_shaft = {shaft_radius, shaft_length, shaft_radius};
+    dvz_shape_scale(shaft, scale_shaft);
+    vec3 trans_shaft = {0, -0.5f + shaft_length / 2.0f, 0};
+    dvz_shape_translate(shaft, trans_shaft);
+    dvz_shape_end(shaft);
+
+    // Create head.
+    DvzShape* head = dvz_shape();
+    dvz_shape_cone(head, ARROW_SIDE_COUNT, color);
+    dvz_shape_begin(head, 0, head->vertex_count);
+    vec3 scale_head = {head_radius, head_length, head_radius};
+    dvz_shape_scale(head, scale_head);
+    vec3 trans_head = {0, 0.5f - head_length / 2.0f, 0};
+    dvz_shape_translate(head, trans_head);
+    dvz_shape_end(head);
+
+    // Merge both parts.
+    DvzShape* parts[] = {shaft, head};
+    dvz_shape_merge(shape, 2, parts);
+    dvz_shape_normals(shape);
+
+    dvz_shape_destroy(shaft);
+    dvz_shape_destroy(head);
+}
+
+
+
+void dvz_shape_torus(
+    DvzShape* shape, uint32_t count_radial, uint32_t count_tubular, float tube_radius,
+    DvzColor color)
+{
+    ANN(shape);
+    ASSERT(count_radial > 2);
+    ASSERT(count_tubular > 2);
+    ASSERT(tube_radius > 0);
+
+    shape->type = DVZ_SHAPE_TORUS;
+
+    const float R = 0.5f; // Major radius of the torus (center of tube path)
+    const float r = tube_radius;
+
+    const uint32_t vertex_count = (count_radial + 1) * (count_tubular + 1);
+    const uint32_t index_count = 6 * count_radial * count_tubular;
+
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
+
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+
+    uint32_t vi = 0;
+    for (uint32_t i = 0; i <= count_radial; i++)
+    {
+        float u = (float)i / count_radial;
+        float theta = u * 2.0f * M_PI;
+
+        float cos_theta = cosf(theta);
+        float sin_theta = sinf(theta);
+
+        for (uint32_t j = 0; j <= count_tubular; j++)
+        {
+            float v = (float)j / count_tubular;
+            float phi = v * 2.0f * M_PI;
+
+            float cos_phi = cosf(phi);
+            float sin_phi = sinf(phi);
+
+            float x = (R + r * cos_phi) * cos_theta;
+            float y = r * sin_phi;
+            float z = (R + r * cos_phi) * sin_theta;
+
+            shape->pos[vi][0] = x;
+            shape->pos[vi][1] = y;
+            shape->pos[vi][2] = z;
+
+            // Normal: from torus center ring to surface
+            shape->normal[vi][0] = cos_theta * cos_phi;
+            shape->normal[vi][1] = sin_phi;
+            shape->normal[vi][2] = sin_theta * cos_phi;
+
+            glm_vec3_normalize(shape->normal[vi]);
+
+            // Texcoords
+            shape->texcoords[vi][0] = u;
+            shape->texcoords[vi][1] = v;
+            shape->texcoords[vi][3] = 1;
+
+            // Color
+            memcpy(shape->color[vi], color, sizeof(DvzColor));
+
+            vi++;
+        }
+    }
+
+    // Indices
+    uint32_t ii = 0;
+    for (uint32_t i = 0; i < count_radial; i++)
+    {
+        for (uint32_t j = 0; j < count_tubular; j++)
+        {
+            uint32_t a = (i * (count_tubular + 1)) + j;
+            uint32_t b = ((i + 1) * (count_tubular + 1)) + j;
+            uint32_t c = ((i + 1) * (count_tubular + 1)) + (j + 1);
+            uint32_t d = (i * (count_tubular + 1)) + (j + 1);
+
+            shape->index[ii++] = a;
+            shape->index[ii++] = b;
+            shape->index[ii++] = d;
+
+            shape->index[ii++] = b;
+            shape->index[ii++] = c;
+            shape->index[ii++] = d;
+        }
     }
 }
 

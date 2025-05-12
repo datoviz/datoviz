@@ -1637,6 +1637,17 @@ DVZ_EXPORT void dvz_shape_sphere(DvzShape* shape, uint32_t rows, uint32_t cols, 
 
 
 /**
+ * Create a cylinder shape.
+ *
+ * @param shape the shape
+ * @param count the number of points along the cylinder border
+ * @param color the cylinder color
+ */
+DVZ_EXPORT void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color);
+
+
+
+/**
  * Create a cone shape.
  *
  * @param shape the shape
@@ -1648,13 +1659,35 @@ DVZ_EXPORT void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color);
 
 
 /**
- * Create a cylinder shape.
+ * Create a 3D arrow using a cylinder and cone.
+ *
+ * The total length is 1.
  *
  * @param shape the shape
- * @param count the number of points along the cylinder border
- * @param color the cylinder color
+ * @param head_length the length of the head
+ * @param head_radius the radius of the head
+ * @param shaft_radius the radius of the shaft
+ * @param color the arrow color
  */
-DVZ_EXPORT void dvz_shape_cylinder(DvzShape* shape, uint32_t count, DvzColor color);
+DVZ_EXPORT void dvz_shape_arrow(
+    DvzShape* shape, float head_length, float head_radius, float shaft_radius, DvzColor color);
+
+
+
+/**
+ * Create a torus shape.
+ *
+ * The radius of the ring is 0.5.
+ *
+ * @param shape the shape
+ * @param count_radial the number of points around the ring
+ * @param count_tubular the number of points in each cross-section
+ * @param tube_radius the radius of the tube.
+ * @param color the torus color
+ */
+DVZ_EXPORT void dvz_shape_torus(
+    DvzShape* shape, uint32_t count_radial, uint32_t count_tubular, float tube_radius,
+    DvzColor color);
 
 
 
