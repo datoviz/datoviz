@@ -18,7 +18,7 @@ Written by one of the original creators of [VisPy](https://vispy.org), a GPU-bas
 
 The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](https://www.glfw.org/) for windowing, and [Dear ImGui](https://github.com/ocornut/imgui/) for GUIs.
 
-**⚠️ Warning:** Datoviz is in an **early development stage**. While we aim to keep the API stable, breaking changes may still occur.
+> **⚠️ Warning:** Datoviz is in an **early development stage**. While we aim to keep the API stable, breaking changes may still occur.
 
 
 <!-- SCREENSHOTS -->
