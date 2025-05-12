@@ -1568,6 +1568,20 @@ DVZ_EXPORT void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color);
 
 
 /**
+ * Create a sector shape.
+ *
+ * @param shape the shape
+ * @param count the number of points along the sector border
+ * @param angle_start the initial angle
+ * @param angle_stop the final angle
+ * @param color the sector color
+ */
+DVZ_EXPORT void dvz_shape_sector(
+    DvzShape* shape, uint32_t count, float angle_start, float angle_end, DvzColor color);
+
+
+
+/**
  * Create a polygon shape using the simple earcut polygon triangulation algorithm.
  *
  * @param shape the shape

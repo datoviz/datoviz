@@ -1120,6 +1120,81 @@ void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color)
 
 
 
+void dvz_shape_sector(
+    DvzShape* shape, uint32_t count, float angle_start, float angle_end, DvzColor color)
+{
+    ASSERT(count > 0);
+    ANN(shape);
+
+    shape->type = DVZ_SHAPE_SECTOR;
+
+    const float angle_range = angle_end - angle_start;
+    const uint32_t triangle_count = count;
+    const uint32_t vertex_count = triangle_count + 1;
+    const uint32_t index_count = 3 * triangle_count;
+
+    shape->vertex_count = vertex_count;
+    shape->index_count = index_count;
+
+    // Position.
+    shape->pos = (vec3*)calloc(vertex_count, sizeof(vec3));
+    shape->pos[0][0] = 0.0f;
+    shape->pos[0][1] = 0.0f;
+    shape->pos[0][2] = 0.0f;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float angle = angle_start + (angle_range * (float)i / (float)(count - 1));
+        shape->pos[i + 1][0] = 0.5f * cosf(angle);
+        shape->pos[i + 1][1] = 0.5f * sinf(angle);
+        shape->pos[i + 1][2] = 0.0f;
+    }
+
+    // Normal.
+    shape->normal = (vec3*)calloc(vertex_count, sizeof(vec3));
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        shape->normal[i][0] = 0.0f;
+        shape->normal[i][1] = 0.0f;
+        shape->normal[i][2] = 1.0f;
+    }
+
+    // Color.
+    shape->color = (DvzColor*)calloc(vertex_count, sizeof(DvzColor));
+    for (uint32_t i = 0; i < vertex_count; i++)
+    {
+        memcpy(shape->color[i], color, sizeof(DvzColor));
+    }
+
+    // Texcoords (center at (0.5, 0.5), rim maps accordingly)
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+    shape->texcoords[0][0] = 0.5f;
+    shape->texcoords[0][1] = 0.5f;
+    shape->texcoords[0][2] = 0.0f;
+    shape->texcoords[0][3] = 1.0f;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        float x = shape->pos[i + 1][0];
+        float y = shape->pos[i + 1][1];
+        shape->texcoords[i + 1][0] = 0.5f + x;
+        shape->texcoords[i + 1][1] = 0.5f + y;
+        shape->texcoords[i + 1][2] = 0.0f;
+        shape->texcoords[i + 1][3] = 1.0f;
+    }
+
+    // Indices.
+    shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
+    for (uint32_t i = 0; i < triangle_count - 1; i++)
+    {
+        shape->index[3 * i + 0] = 0;
+        shape->index[3 * i + 1] = i + 1;
+        shape->index[3 * i + 2] = i + 2;
+    }
+}
+
+
+
 void dvz_shape_polygon(DvzShape* shape, uint32_t count, const dvec2* points, DvzColor color)
 {
     ASSERT(count > 2);
