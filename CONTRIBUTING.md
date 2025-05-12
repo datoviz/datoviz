@@ -100,3 +100,9 @@ Set the following environment variables to enable performance-related diagnostic
 - `DVZ_MONITOR=1` — Show a GPU memory monitor (allocated memory usage).
 
 > **Note:** The current FPS computation is suboptimal and may not reflect true frame rate. Improvements are planned — contributions are welcome!
+
+
+
+## Styling
+
+TODO

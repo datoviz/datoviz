@@ -4,19 +4,82 @@
 
 Work in progress.
 
-### Ongoing developments
+### Ongoing developments [planned for v0.4.0, late 2025?]
 
-* Internal backend-related refactoring to better support Qt and offscreen rendering
-* Better support for compute shaders
+* Internal backend-related refactoring to better support Qt and offscreen rendering.
+* Better support for compute shaders.
 * More Vulkan/graphics features: multipass rendering, antialiasing, order-independent transparency...
 * Integration with other GPU APIs such as CUDA/CuPy.
 
 
-## v0.2.3 (2025-03-26) [LATEST RELEASE]
+---
+
+## v0.3.0 (2025-05-XX) [LATEST RELEASE]
+
+### Python API
+
+* Introduced a new **Pythonic API** built on top of the raw `ctypes` bindings (`dvz.App`).
+* Added `dvz.ShapeCollection()` for easy creation and manipulation of 2D/3D shapes.
+* Rewrote all examples to use the new high-level API.
+* Reformatted all Python code using [ruff](https://docs.astral.sh/ruff/) for consistency.
+
+
+### Axes & ticks
+
+* Added support for **2D axes**, including automatic tick positioning and optional value factoring.
+* Implemented standalone **ticks** and **labels** components.
+* Introduced axis rendering and layout within panels.
+
+
+### Shapes
+
+* Added support for new 2D and 3D shapes:
+  * **2D**: sector, histograms
+  * **3D**: sphere, cone, cylinder, 3D arrow, torus, five Platonic solids
+
+
+### Examples
+
+* Reorganized examples into categories: `visuals`, `features`, `showcase`.
+* Added many new examples demonstrating the new Pythonic API, visuals, and features.
+* Added histogram and shape rendering examples.
+
 
 ### Visuals
 
-* Fixed lighting and positioning in sphere visual ([#80](https://github.com/datoviz/datoviz/issues/80) by @ron-adam).
+#### Glyph
+
+* Added `dvz_glyph_strings()` helper.
+
+#### Image
+
+* Improved **image visual** with respect to anchoring options and rendering modes.
+
+
+#### Sphere
+
+* Fixed scaling and lighting in the **sphere visual** ([#84](https://github.com/datoviz/datoviz/pull/84) by @ron-adam).
+
+
+### GUI
+
+* Added a tree GUI widget
+
+
+### API
+
+* Renamed several functions for a more consistent API.
+* Implemented various bug fixes and rendering improvements.
+* Started minor internal refactor to better support upcoming WebAssembly and WebGPU backends.
+
+
+---
+
+## v0.2.3 (2025-03-26)
+
+### Visuals
+
+* Fixed lighting and positioning in sphere visual ([#80](https://github.com/datoviz/datoviz/pull/80) by @ron-adam).
 
 ### GUI
 
@@ -40,6 +103,8 @@ Work in progress.
 
 * Implemented various bug fixes and optimizations.
 
+
+---
 
 ## v0.2.2 (2025-01-19)
 
@@ -76,6 +141,8 @@ Minor release with a few improvements to the mesh visual, a couple of new GUI fe
 * Added initial support for OpenMP multicore parallelization of tight loops (not yet active because of compatibility issues on Windows).
 * Added support for the [*shaderc*](https://github.com/google/shaderc/) to support GLSL to SPIR-V compilation from Datoviz.
 
+
+---
 
 ## v0.2.1 (2024-09-17)
 
@@ -141,6 +208,8 @@ Minor release with various improvements to visuals and CI/CD system.
 - Set up automated wheel building on GitHub Actions: Linux, macOS, Windows.
 
 
+---
+
 ## v0.2.0 (2024-08-05)
 
 - Full internal architecture rewrite.
@@ -148,6 +217,8 @@ Minor release with various improvements to visuals and CI/CD system.
 - Auto-generated Python bindings based on ctypes instead of Cython.
 - Prebuilt binary Python wheels for Linux (manylinux), macOS, Windows.
 
+
+---
 
 ## v0.1.0 (2021-02-17) [DEPRECATED]
 
