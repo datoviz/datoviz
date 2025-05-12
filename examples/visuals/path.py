@@ -64,7 +64,7 @@ panel = figure.panel()
 panzoom = panel.panzoom()
 
 visual = app.path()
-visual.set_position(position, n_groups=n_groups)
+visual.set_position(position, groups=n_groups)
 visual.set_data(color=color, linewidth=linewidth, cap='round', join='round')
 panel.add(visual)
 

@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 # -------------------------------------------------------------------------------------------------
 
 import ctypes
+from collections.abc import Iterable
 from ctypes import c_char_p
 
 import numpy as np
@@ -147,6 +148,11 @@ def get_version() -> dict[str, str]:
         'ctypes_wrapper': __version__,
         'libdatoviz': version().decode('utf-8'),
     }
+
+
+def is_enumerable(x) -> bool:
+    """Return whether a variable is an enumerable."""
+    return isinstance(x, Iterable) and not isinstance(x, (str, bytes))
 
 
 # -------------------------------------------------------------------------------------------------

@@ -18,7 +18,14 @@ from . import _constants as cst
 from . import _ctypes as dvz
 from ._props import PROPS
 from ._texture import Texture
-from .utils import get_fixed_params, get_size, prepare_data_array, prepare_data_scalar, to_enum
+from .utils import (
+    get_fixed_params,
+    get_size,
+    is_enumerable,
+    prepare_data_array,
+    prepare_data_scalar,
+    to_enum,
+)
 
 # -------------------------------------------------------------------------------------------------
 # Base Visual class
@@ -981,31 +988,44 @@ class Path(Visual):
 
     visual_name = 'path'
 
-    def set_position(self, position: list[np.ndarray], n_groups: int = 0, offset: int = 0) -> None:
+    def set_position(
+        self,
+        position: np.ndarray | list[np.ndarray],
+        groups: int | np.ndarray = 0,
+        offset: int = 0,
+    ) -> None:
         """
         Set the position of the paths.
 
         Parameters
         ----------
-        position : list of np.ndarray
+        position : ndarray, or list of ndarray
             A list of arrays representing the positions of the paths.
-        n_groups : int, optional
-            The number of groups, by default 0.
+        groups : int or ndarray, optional
+            The number of uniformly-sized groups, by default 0, or the sizes of each group.
         offset : int, optional
             The offset at which to start setting the position, by default 0.
         """
         if isinstance(position, np.ndarray):
-            if n_groups is not None:
-                k = position.shape[0] // n_groups
-                position = [position[i * k : (i + 1) * k] for i in range(n_groups)]
-            elif position.ndim == 2:
+            if position.ndim == 3:
                 position = list(position)
-            elif position.ndim == 3:
-                position = list(position)
+            elif groups is None:
+                # By default: a single group
+                position = [position]
+            elif isinstance(groups, int):
+                k = position.shape[0] // groups
+                position = [position[i * k : (i + 1) * k] for i in range(groups)]
+            elif is_enumerable(groups):
+                indices = np.cumsum([0] + list(groups))
+                position = [position[indices[i] : indices[i + 1]] for i in range(len(groups))]
+
+        # Ensure we get a list of positions in the end.
+        assert isinstance(position, list)
         point_count = sum(map(len, position))
         path_count = len(position)
         path_lengths = np.array([len(p) for p in position], dtype=np.uint32)
 
+        # Concatenation of all positions.
         position_concat = np.vstack(position).astype(np.float32)
         assert position_concat.ndim == 2
         assert position_concat.shape[1] == 3
