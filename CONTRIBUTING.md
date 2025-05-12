@@ -103,6 +103,47 @@ Set the following environment variables to enable performance-related diagnostic
 
 
 
-## Styling
+## Styling Guide
 
-TODO
+This section provides guidelines for maintaining consistent code style in the Datoviz project, for both C source code and the Python wrapper. Consistency helps readability and maintainability. Most formatting is automatically handled by tools.
+
+---
+
+### C Code Style
+
+#### Code Formatting
+
+- **Automatic formatting**: We use `clang-format` with a custom configuration. The `.clang-format` file is located at the root of the repository.
+- **Auto-format on save**: It is assumed that your IDE or editor is configured to automatically format C/C++ files on save using this configuration.
+
+
+#### Additional conventions
+
+- Use comment banners (`/*****...*****/`) to clearly separate sections.
+- Group includes and sort them logically: system headers, followed by local headers.
+- Use `ANN(ptr)` (assert not null) for pointer assertions and `ASSERT(condition)` for general assertions.
+- Keep function definitions short and readable; use blocks and whitespace to visually separate logic when helpful.
+- Prefer function names with consistent prefixes (e.g., `dvz_axes_resize`, `dvz_demo_panel_3D`).
+- Avoid trailing whitespace and excessive blank lines (more than 3 is trimmed by clang-format).
+
+
+
+### Python Wrapper Style
+
+#### Code Formatting and Linting
+
+- We use Ruff for linting and formatting.
+- The configuration is in `pyproject.toml`.
+- Python files should be auto-formatted and linted using `ruff format` and `ruff check`.
+
+
+#### Additional conventions
+
+- Use PEP8 naming and structure wherever possible.
+- Keep line length ≤ 99 characters.
+- Docstrings should follow NumPy-style (`""" """`) format, with `Parameters`, `Returns`, etc.
+- Prefer `assert` for internal sanity checks in constructors.
+- Type hints should be used consistently, including in attribute declarations.
+- Wrap class-level attributes with type annotations (e.g., `c_axes: dvz.DvzAxes = None`).
+- Group code sections using banners and comments (e.g., `# Axes`,` # ----...----`).
+- Avoid complex logic in wrapper code; keep it minimal and declarative.
