@@ -1,4 +1,4 @@
-# Datoviz: high-performance GPU scientific data visualization C/C++ library
+# Datoviz: high-performance scientific data visualization
 
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
@@ -8,34 +8,17 @@
 
 <!-- INTRODUCTION -->
 
-**⚡️ Datoviz** is a cross-platform, open-source, high-performance GPU scientific data visualization library written in **C/C++** on top of the [**Khronos Vulkan**](https://www.vulkan.org/) graphics API and the [**glfw**](https://www.glfw.org/) window library. It provides raw ctypes bindings in **Python 🐍**. In the long term, Datoviz will mostly be used as a **VisPy 2.0 backend**.
+**⚡️ Datoviz** is an open-source, cross-platform, high-performance library for **scientific data visualization**.
 
-Designed for speed, visual quality, and scalability to datasets comprising millions of points, it supports 2D/3D interactive rendering and minimal GUIs via [Dear ImGui](https://github.com/ocornut/imgui/).
+It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
-**⚠️ Warning:** Although Datoviz has been years in the making, it is still in its **early stages** and would greatly benefit from increased **community feedback**, particularly concerning package and hardware compatibility. The API is still evolving, so expect regular (though hopefully minimal) **breaking changes** for now.
+Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
 
-<!-- ROADMAP -->
+Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
 
-## 🕐 Current status and roadmap [March 2025]
+The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](https://www.glfw.org/) for windowing, and [Dear ImGui](https://github.com/ocornut/imgui/) for GUIs.
 
-**The current version is v0.2.3**. Next expected milestones are:
-
-* v0.3 (mid 2025?): 2D axes
-* After v0.3 is released, we will focus on improving many internal aspects of Datoviz in order to support more features in the near future:
-
-    * 📐 More visuals: arrows, polygons, graphs planar straight-line graphs (PSLG)...
-    * 🧊 Improved 3D rendering of meshes and volumes (correct transparency)
-    * ✨ Multisample Anti-Aliasing
-    * 🎯 Picking
-    * 📈 Nonlinear transforms
-    * ⚡ CUDA compatibility
-    * 🧮 Vulkan compute shaders (similar to CUDA kernels)
-    * 🖌️ Dynamic shaders
-    * 🎛️ Mixing GPGPU compute and graphics
-    * 🔗 Sharing GPU data across visuals
-    * 🐍 IPython integration
-    * 🖥️ Qt backend
-    * 🌐 WebGPU backend
+**⚠️ Warning:** Datoviz is in an **early development stage**. While we aim to keep the API stable, breaking changes may still occur.
 
 
 <!-- SCREENSHOTS -->
@@ -46,102 +29,112 @@ Designed for speed, visual quality, and scalability to datasets comprising milli
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
+<!-- CURRENT STATUS -->
+
+## 🕐 Current status [May 2025]
+
+**The current version is v0.3.**
+This release introduces major updates over v0.2, including 2D axes, a new Pythonic API, numerous improvements, and bug fixes.
+
 
 <!-- FEATURES -->
 
 ## ✨ Current features
 
 * **📊 High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
+* **📈 2D axes**
 * **🌐 3D visuals**: meshes, volumes, volume slices
 * **🌈 150 colormaps** included (from matplotlib, colorcet, MATLAB)
 * **🖱️ High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
 * **🎥 Manual control of cameras**: custom interactivity
 * **𓈈 Figure subplots** (aka "panels")
-* **🖥️ Minimal GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
+* **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
+
 
 ### List of visuals
 
 ![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
 
 
+
+<!-- ROADMAP -->
+
+## 🕐 Roadmap [May 2025]
+
+Looking ahead, the upcoming v0.4 release (late 2025) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
+
+* 🧊 Correct transparency in 3D mesh and volume rendering
+* ✨ Multisample anti-aliasing (MSAA)
+* 🎯 Object picking
+* 📈 Nonlinear coordinate transforms
+* ⚡ CUDA interoperability
+* 🧮 Vulkan compute shaders (similar to CUDA kernels)
+* 🖌️ Dynamic and customizable shaders
+* 🎛️ Combined GPGPU compute and graphics workflows
+* 🔗 GPU memory sharing across visuals
+* 🐍 IPython integration
+* 🖥️ Qt backend support
+* 🌐 WebGPU backend
+
+
 <!-- INSTALLATION -->
 
 ## 🛠️ Installation instructions
 
-Requirements:
+### Requirements
 
-- A supported OS (Linux, macOS 12+, Windows 10+)
-- A Vulkan-capable graphics chipset (either integrated or dedicated graphics process unit)
-- Python and NumPy
+- A supported operating system: Linux, macOS 12+, or Windows 10+
+- A Vulkan-capable GPU (most integrated or dedicated GPUs from the past decade should work)
+- Python 3 and NumPy
 
-_Note_: You no longer need to install the Vulkan SDK or to manually build the library. Precompiled wheels for Linux, Windows, and macOS have been uploaded to PyPI.
-
+### Install with pip
 
 ```bash
 pip install datoviz
 ```
 
-<!-- ### Ubuntu 24.04
-
-1. Download the .deb package.
-2. Install the .deb package on your system:
-
-    ```bash
-    sudo dpkg -i libdatoviz*.deb
-    ```
-
-3. Try to run the built-in demo:
-
-    ```bash
-    # The .deb package should have installed the shared library libdatoviz.so into /usr/local/lib
-    # This line loads this shared library and calls the exposed dvz_demo() C function from Python.
-    python3 -c "import ctypes; ctypes.cdll.LoadLibrary('libdatoviz.so').dvz_demo()"
-    ``` -->
-
+This command installs a Python wheel that includes the C library, automatically precompiled for your system.
 
 
 <!-- DOCUMENTATION -->
 
-
 ## 🚀 Usage
 
-Simple scatter plot example (points with random positions, colors, and sizes) in Python, which closely follow the C API.
+Here’s a simple 2D scatter plot example with axes in Python, displaying points with random positions, colors, and sizes.
 
 ```python
 import numpy as np
 import datoviz as dvz
 
-app = dvz.app(0)
-batch = dvz.app_batch(app)
-scene = dvz.scene(batch)
+n = 1000
+x = np.random.normal(scale=0.2, size=n)
+y = np.random.normal(scale=0.2, size=n)
 
-figure = dvz.figure(scene, 800, 600, 0)
-panel = dvz.panel_default(figure)
-dvz.panel_panzoom(panel)
-visual = dvz.point(batch, 0)
+color = np.random.randint(size=(n, 4), low=100, high=240, dtype=np.uint8)
+color[:, 3] = 255
 
-n = 100_000
-dvz.point_alloc(visual, n)
+size = np.random.uniform(low=10, high=30, size=n)
 
-pos = np.random.normal(size=(n, 3), scale=.25).astype(np.float32)
-dvz.point_position(visual, 0, n, pos, 0)
+app = dvz.App(background='white')
+figure = app.figure(800, 600)
+panel = figure.panel()
 
-color = np.random.uniform(size=(n, 4), low=50, high=240).astype(np.uint8)
-dvz.point_color(visual, 0, n, color, 0)
+xmin, xmax = -1, +1
+ymin, ymax = -1, +1
+axes = panel.axes((xmin, xmax), (ymin, ymax))
 
-size = np.random.uniform(size=(n,), low=10, high=30).astype(np.float32)
-dvz.point_size(visual, 0, n, size, 0)
+visual = app.point(
+    position=axes.normalize(x, y),
+    color=color,
+    size=size,
+)
+panel.add(visual)
 
-dvz.panel_visual(panel, visual, 0)
-dvz.scene_run(scene, app, 0)
-dvz.scene_destroy(scene)
-dvz.app_destroy(app)
-
+app.run()
+app.destroy()
 ```
 
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/examples/scatter.png)
-
-Check out the [examples documentation](docs/examples.md) for more usage examples.
+![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/quickstart.png)
 
 
 ## 📚 Documentation
@@ -157,24 +150,23 @@ Check out the [examples documentation](docs/examples.md) for more usage examples
 
 ## 🕰️ History
 
-In **2012**, developers of various GPU scientific visualization libraries (Galry, Glumpy, pyqtgraph, visvis) collaborated to create [**VisPy**](https://vispy.org/), an OpenGL-based scientific visualization library for Python.
+Datoviz builds on more than a decade of open-source GPU-based scientific visualization work:
 
-In **2015**, [**Vulkan**](https://www.khronos.org/vulkan/), the successor to OpenGL, was announced by Khronos, [sparking the idea of a future Vulkan-based visualization library](https://cyrille.rossant.net/compiler-data-visualization/).
+- **2012** — Developers of several GPU visualization libraries (Galry, Glumpy, pyqtgraph, visvis) joined forces to create [**VisPy**](https://vispy.org/), a high-performance OpenGL-based visualization library for Python.
 
-In **2019**, [Cyrille Rossant](https://cyrille.rossant.net/), one of the original VisPy developers, began experimenting with Vulkan.
+- **2015** — The [**Vulkan API**](https://www.khronos.org/vulkan/) was introduced as a modern low-level successor to OpenGL, [inspiring early ideas](https://cyrille.rossant.net/compiler-data-visualization/) for a future visualization library built on Vulkan.
 
-In **2021**, the [first experimental version of Datoviz **v0.1** was released](https://cyrille.rossant.net/datoviz/). This initial release laid the groundwork for further development.
+- **2019** — [Cyrille Rossant](https://cyrille.rossant.net/), a VisPy cofounder, began experimenting with Vulkan as the foundation for a new graphics engine tailored to scientific visualization.
 
-Over the next three years, the technology matured, aided by a [Chan Zuckerberg Initiative (CZI) grant](https://chanzuckerberg.com/eoss/proposals/) awarded to VisPy in **2021**.
+- **2021** — The first experimental release of **Datoviz v0.1** laid the foundation for future development. That same year, a [Chan Zuckerberg Initiative (CZI)](https://chanzuckerberg.com/eoss/proposals/) grant to VisPy helped support the ecosystem.
 
-In **2024**, Datoviz **v0.2** is released. This version is redesigned from the ground up to enhance modularity and stability, ensuring it can keep pace with the continuous advancements in GPU hardware and graphics rendering APIs.
-It features a modular architecture that will allow the porting of Datoviz technology to non-Vulkan environments, such as WebGPU-enabled web browsers (thanks to a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/)).
+- **2024** — Datoviz **v0.2** was released with a full redesign. It introduced a modular architecture focused on stability and extensibility, paving the way for cross-platform rendering (including WebGPU) with support from a second [CZI grant](https://chanzuckerberg.com/eoss/proposals/).
 
-In **2025**, development continues towards v0.3 and v0.4 who will bring many more features.
+- **2025** — Datoviz **v0.3** added 2D axes, a more Pythonic API, and core improvements in usability and flexibility.
 
-Datoviz is closely related to **VisPy**, as it is being developed by one of the VisPy cofounders. VisPy 2.0, initiated by Cyrille Rossant and Nicolas Rougier, will offer a high-level scientific API on top of Datoviz, matplotlib, and other renderers via a common medium-level visualization layer called "graphics server protocol (GSP)".
+Datoviz remains closely tied to **VisPy** and is being developed by one of its original authors. As part of the **VisPy 2.0** initiative (led by Cyrille Rossant and Nicolas Rougier), Datoviz will act as a low-level backend beneath a unified scientific visualization layer called the **Graphics Server Protocol (GSP)**, enabling frontends to target multiple renderers (Datoviz, Matplotlib, etc.).
 
-The long-term vision is for high-performance GPU-based 2D/3D scientific visualization to be uniformly available across multiple platforms, environments (desktop, web, cloud-based remote visualization), and programming languages (C/C++, Python, Julia, Rust, etc.).
+The long-term vision is to enable high-performance 2D/3D scientific visualization across platforms (desktop, web, cloud) and languages (C/C++, Python, Julia, Rust).
 
 
 ## 🤝 Contributing
@@ -189,6 +181,12 @@ See the [MIT license](LICENSE).
 
 ## 🙏 Credits
 
-Datoviz is developed by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a consortium of neuroscience research labs around the world.
+**Datoviz** is developed by [Cyrille Rossant](https://cyrille.rossant.net) at the [International Brain Laboratory](http://internationalbrainlab.org/), a global consortium of neuroscience research labs.
 
-It is funded notably by [Chan Zuckerberg Initiative](https://chanzuckerberg.com/)'s [Essential Open Source Software for Science program](https://chanzuckerberg.com/eoss/).
+### 💸 Funding
+
+Datoviz is supported by:
+
+- <img src="https://upload.wikimedia.org/wikipedia/commons/5/58/Wellcome_Trust_logo.svg" alt="Wellcome Trust" width="100"> [Wellcome Trust](https://wellcome.org/)
+- <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/Simons_Foundation_logo.png" alt="Simons Foundation" width="100"> [Simons Foundation](https://www.simonsfoundation.org/)
+- <img src="https://upload.wikimedia.org/wikipedia/fr/f/f0/Chan_Zuckerberg_Initiative_Logo.png" alt="Chan Zuckerberg Initiative" width="100"> [Chan Zuckerberg Initiative](https://chanzuckerberg.com/), through the [Essential Open Source Software for Science program](https://chanzuckerberg.com/eoss/)
