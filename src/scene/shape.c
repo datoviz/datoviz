@@ -1037,7 +1037,19 @@ void dvz_shape_square(DvzShape* shape, DvzColor color)
         memcpy(shape->color[i], color, sizeof(DvzColor));
     }
 
-    // TODO: texcoords
+    // Texcoords.
+    shape->texcoords = (vec4*)calloc(shape->vertex_count, sizeof(vec4));
+    memcpy(
+        shape->texcoords,
+        (vec4[]){
+            {0, 0, 0, 1},
+            {1, 0, 0, 1},
+            {1, 1, 0, 1},
+            {1, 1, 0, 1},
+            {0, 1, 0, 1},
+            {0, 0, 0, 1},
+        },
+        shape->vertex_count * sizeof(vec4));
 }
 
 
@@ -1079,7 +1091,21 @@ void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color)
         memcpy(shape->color[i], color, sizeof(DvzColor));
     }
 
-    // TODO: texcoords
+    // Texcoords.
+    shape->texcoords = (vec4*)calloc(vertex_count, sizeof(vec4));
+    shape->texcoords[0][0] = 0.5f;
+    shape->texcoords[0][1] = 0.5f;
+    shape->texcoords[0][2] = 0.0f;
+    shape->texcoords[0][3] = 1.0f;
+    for (uint32_t i = 1; i < vertex_count; i++)
+    {
+        float x = shape->pos[i][0];
+        float y = shape->pos[i][1];
+        shape->texcoords[i][0] = 0.5f + x;
+        shape->texcoords[i][1] = 0.5f + y;
+        shape->texcoords[i][2] = 0.0f;
+        shape->texcoords[i][3] = 1.0f;
+    }
 
     // Index.
     shape->index = (DvzIndex*)calloc(index_count, sizeof(DvzIndex));
