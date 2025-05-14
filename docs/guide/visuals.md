@@ -98,8 +98,7 @@ All visuals are created using the `app.<type>()` functions:
 
 ```python
 visual = app.point(position=..., color=..., size=...)
-panel.add(visual)
-````
+```
 
 Attributes can also be set or modified as follows:
 
@@ -111,7 +110,13 @@ visual.set_color(color)
 
 The `position` is usually an `(N, 3)` NumPy array (converted to `float32` if needed), and `color` is an `(N, 4)` array of RGBA values in the 0–255 range, automatically cast to `uint8`.
 
-Visuals must be added to a panel. All visuals require positions in 3D **NDC**, and most support additional attributes like color, size, or shape depending on the visual type.
+Visuals must be added to a panel:
+
+```python
+panel.add(visual)
+```
+
+All visuals require positions in 3D **NDC**, and most support additional attributes like color, size, or shape depending on the visual type.
 
 For more details, see each visual's documentation page.
 

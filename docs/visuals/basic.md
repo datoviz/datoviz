@@ -110,6 +110,14 @@ This approach is memory-efficient and avoids multiple draw calls.
 
 ---
 
+## Example
+
+```python
+--8<-- "examples/visuals/basic.py"
+```
+
+---
+
 ## Summary
 
 The `basic` visual provides direct access to the core rendering capabilities of Datoviz. It's powerful, fast, and flexible — ideal for high-volume data when you don’t need complex styling.

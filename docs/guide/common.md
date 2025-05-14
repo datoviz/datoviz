@@ -85,5 +85,3 @@ This approach keeps your data in its original units while making it compatible w
 * Panels are defined in **pixel coordinates** and resize proportionally.
 * **Axes are 2D**, provide labels/ticks, and enable interactivity.
 * **All visuals require NDC input** — use `axes.normalize()` to transform and align your data easily.
-
-```

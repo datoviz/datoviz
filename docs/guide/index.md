@@ -40,7 +40,7 @@ Explore these pages to customize behavior or build more complex apps:
 
 - 🖱️ [Interactivity](interactivity.md) — built-in pan, zoom, and arcball camera controls
 - 🎮 [Input](input.md) — define keyboard and mouse event callbacks
-- ⏱️ [Timers and Frame Events](timers.md) — run code every frame or at regular time intervals
+- ⏱️ [Timers and Frame Events](events.md) — run code every frame or at regular time intervals
 - 🧰 [GUI Support (ImGui)](gui.md) — use Datoviz’s built-in ImGui layer for interactive widgets
 - 🔧 [Datoviz Rendering Protocol (DRP)](drp.md) — internal low-level rendering architecture
 - ⚙️ [Using Datoviz in C](c.md) — native C interface for full performance and control
