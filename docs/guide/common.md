@@ -43,7 +43,9 @@ This:
 
 ## Positioning Data: NDC model
 
-All visuals in Datoviz expect their `position` input in **Normalized Device Coordinates (NDC)** — a coordinate system where all values lie in the range `[-1, +1]` on each axis.
+All visuals in Datoviz expect their `position` input in **3D Normalized Device Coordinates (NDC)** — a 3D coordinate system where all values lie in the range `[-1, +1]` on each axis.
+
+![](../images/cds2.svg)
 
 The position is always an `(N, 3)` array with `x, y, z` components in NDC.
 
