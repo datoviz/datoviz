@@ -40,10 +40,10 @@ hooks:
   - tools/mkdocs_hooks.py
 nav:
   - Home: 'index.md'
-  - User guide:
-    - Overview: 'guide/index.md'
+
+  - Learn:
     - Quickstart: 'quickstart.md'
-    - Figure, panels, axes: 'guide/common.md'
+    - Layout and Axes: 'guide/common.md'
     - Visuals:
       - Overview: 'guide/visuals.md'
       - Basic: 'visuals/basic.md'
@@ -58,22 +58,28 @@ nav:
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'
     - Interactivity: 'guide/interactivity.md'
-    - User events: 'guide/events.md'
-    - Graphical user interfaces: 'guide/gui.md'
-    - Datoviz Rendering Protocol: 'guide/drp.md'
+
+  - Advanced:
+    - User Input: 'guide/input.md'
+    - Timers and Frame Events: 'guide/events.md'
+    - GUI Integration: 'guide/gui.md'
+    - Datoviz Rendering Protocol (DRP): 'guide/drp.md'
     - Using Datoviz in C: 'guide/c.md'
+
   - Gallery:
     - Overview: 'gallery/index.md'
     - Visuals: 'gallery/visuals/index.md'
     - Features: 'gallery/features/index.md'
     - Showcase: 'gallery/showcase/index.md'
+
   - Reference:
-    - Python API reference: 'reference/api_py.md'
-    - C API reference: 'reference/api_c.md'
-    - Colormaps reference: 'reference/colormaps.md'
+    - Python API Reference: 'reference/api_py.md'
+    - C API Reference: 'reference/api_c.md'
+    - Colormaps: 'reference/colormaps.md'
+
   - Discussions:
     - Architecture: 'discussions/ARCHITECTURE.md'
-    - Build instructions: 'discussions/BUILD.md'
-    - Contribution guidelines: 'discussions/CONTRIBUTING.md'
-    - Maintainer guidelines: 'discussions/MAINTAINERS.md'
+    - Build Instructions: 'discussions/BUILD.md'
+    - Contribution Guidelines: 'discussions/CONTRIBUTING.md'
+    - Maintainer Guidelines: 'discussions/MAINTAINERS.md'
     - License: 'discussions/LICENSE.md'
