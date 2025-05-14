@@ -42,6 +42,7 @@ nav:
   - Home: 'index.md'
   - User guide:
     - Overview: 'guide/index.md'
+    - Quickstart: 'quickstart.md'
     - Figure, panels, axes: 'guide/common.md'
     - Visuals:
       - Overview: 'guide/visuals.md'
