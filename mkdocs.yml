@@ -59,6 +59,7 @@ nav:
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'
     - Interactivity: 'guide/interactivity.md'
+    - Shapes: 'guide/shape.md'
 
   - Advanced:
     - User Input: 'guide/input.md'
