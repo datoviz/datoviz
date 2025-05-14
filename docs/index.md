@@ -19,6 +19,16 @@ Whether you're building research tools, real-time visual interfaces, or custom s
 - 🧪 C and Python bindings, ideal for integrating with existing workflows
 
 
+## What Datoviz is — and isn't
+
+**Datoviz is a relatively low-level visualization library.** It focuses on rendering visual primitives like points, lines, images, and meshes — efficiently and interactively.
+
+Unlike libraries such as **Matplotlib**, Datoviz does **not** provide high-level plotting functions like `plt.plot()`, `plt.scatter()`, or `plt.imshow()`. Its goal is **not** to replace plotting libraries, but to serve as a powerful rendering backend for scientific graphics.
+
+A higher-level plotting API is being developed as part of **Vispy 2.0**, which will use Datoviz as a rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API.
+
+
+
 ## Who is it for?
 
 Datoviz is built for people who need performance, control, and precision:
