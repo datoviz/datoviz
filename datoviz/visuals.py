@@ -753,12 +753,17 @@ class Marker(Visual):
 
     def set_aspect(self, value: str) -> None:
         """
-        Set the aspect ratio of the visual's elements.
+        Set the rendering style of the marker.
 
         Parameters
         ----------
         value : str
-            The aspect ratio value.
+            One of:
+            - 'filled': fill only (no border)
+            - 'outline': border only (transparent interior)
+            - 'stroke': fill with border
+
+        This controls how the marker uses color, edgecolor, and linewidth.
         """
         self.aspect = value
 
