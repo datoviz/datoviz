@@ -26,6 +26,24 @@ Use the basic visual when you need:
 
 ---
 
+## Attributes
+
+### Per-vertex
+
+| Attribute  | Type             | Description                                 |
+|------------|------------------|---------------------------------------------|
+| `position` | `(N, 3) float32` | Vertex positions in NDC                     |
+| `color`    | `(N, 4) uint8`   | RGBA color per vertex                       |
+| `group`    | `(N,) float32`   | Group ID used to separate primitives        |
+
+### Uniform
+
+| Attribute | Type   | Description                     |
+|-----------|--------|---------------------------------|
+| `size`    | `float`  | Pixel size for `point` topology |
+
+---
+
 ## Topologies
 
 ### Points
@@ -51,9 +69,6 @@ You can also use the `group` attribute to draw multiple line strips in one call:
 ```python
 visual = app.basic('line_strip', position=position, color=color, group=group)
 ```
-
-The `group` attribute is a 1D array of consecutive integers from `0` to `n_groups - 1`, where each group ID identifies a set of connected vertices. Connections are broken between points with different group IDs.
-
 
 ---
 

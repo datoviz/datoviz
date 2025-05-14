@@ -24,6 +24,23 @@ Use the pixel visual when:
 
 ---
 
+## Attributes
+
+### Per-vertex
+
+| Attribute  | Type             | Description                     |
+|------------|------------------|---------------------------------|
+| `position` | `(N, 3) float32` | 3D positions in NDC             |
+| `color`    | `(N, 4) uint8`   | RGBA color per pixel            |
+
+### Uniform
+
+| Attribute | Type  | Description                                 |
+|-----------|-------|---------------------------------------------|
+| `size`    | float | Side length of each pixel in framebuffer pixels |
+
+---
+
 ## Basic usage
 
 ```python
