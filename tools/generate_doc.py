@@ -3,35 +3,34 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from operator import itemgetter
-from textwrap import indent, dedent
-import json
 import itertools
-from pathlib import Path
+import json
 import re
 import sys
-
+from operator import itemgetter
+from pathlib import Path
+from textwrap import dedent, indent
 
 # Constants
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-HEADERS_FILE = ROOT_DIR / "tools/headers.json"
-API_OUTPUT = ROOT_DIR / "docs/api.md"
-EXAMPLES_PATH = ROOT_DIR / "docs/examples.md"
-EXAMPLES_DIR = ROOT_DIR / "examples/"
+HEADERS_FILE = ROOT_DIR / 'tools/headers.json'
+API_OUTPUT = ROOT_DIR / 'docs/api.md'
+EXAMPLES_PATH = ROOT_DIR / 'docs/examples.md'
+EXAMPLES_DIR = ROOT_DIR / 'examples/'
 EXAMPLE_TYPES = {
     # "showcase": "Datoviz Showcase Examples",  # TODO
-    "features": "Datoviz Features Examples",
-    "c": "C Examples",
+    'features': 'Datoviz Features Examples',
+    'c': 'C Examples',
 }
 
-ITEM_HEADER = re.compile(r"^#+\s+", flags=re.MULTILINE)
-GRAPHICS_CODE = re.compile(r"```c\n([a-zA-Z0-9\_]+)\n```")
+ITEM_HEADER = re.compile(r'^#+\s+', flags=re.MULTILINE)
+GRAPHICS_CODE = re.compile(r'```c\n([a-zA-Z0-9\_]+)\n```')
 MAX_LINE_LENGTH = 76
-INDEX_LINK = re.compile(r"\]\(docs/([^\)]+\.md)\)")
-INSERT_CODE = re.compile(r"<!-- CODE_([^ ]+) ([^ ]+) -->")
-INSERT_IMAGE = re.compile(r"<!-- IMAGE ([^ ]+) -->")
+INDEX_LINK = re.compile(r'\]\(docs/([^\)]+\.md)\)')
+INSERT_CODE = re.compile(r'<!-- CODE_([^ ]+) ([^ ]+) -->')
+INSERT_IMAGE = re.compile(r'<!-- IMAGE ([^ ]+) -->')
 
 EXAMPLE_TEMPLATE = """
 {description}
@@ -48,29 +47,29 @@ EXAMPLE_TEMPLATE = """
 
 """.strip()
 PYTHON_DESC_REGEX = re.compile(r'"""([^"]+)"""')
-C_DESC_REGEX = re.compile(r"/\*+/\n/\*\s*([^\*]+)\s*\*/")
+C_DESC_REGEX = re.compile(r'/\*+/\n/\*\s*([^\*]+)\s*\*/')
 
 ICONS = {
-    "in": ":octicons-arrow-right-16:",
-    "out": ":octicons-arrow-left-16:",
+    'in': ':octicons-arrow-right-16:',
+    'out': ':octicons-arrow-left-16:',
 }
 
 MTYPE_MAPPING = {
-    "c_bool": "bool",
-    "c_char_p": "string",
-    "c_double": "float, 32-bit",
-    "c_float": "float, 64-bit",
-    "c_int": "int, 32-bit signed",
-    "c_long": "int, 64-bit signed",
-    "c_ubyte": "int, 8-bit unsigned",
-    "c_uint": "int, 32-bit unsigned",
-    "c_ulong": "int, 64-bit unsigned",
-    "c_void_p": "array",
+    'c_bool': 'bool',
+    'c_char_p': 'string',
+    'c_double': 'float, 32-bit',
+    'c_float': 'float, 64-bit',
+    'c_int': 'int, 32-bit signed',
+    'c_long': 'int, 64-bit signed',
+    'c_ubyte': 'int, 8-bit unsigned',
+    'c_uint': 'int, 32-bit unsigned',
+    'c_ulong': 'int, 64-bit unsigned',
+    'c_void_p': 'array',
 }
 
 LANG_MAPPING = {
-    ".py": "python",
-    ".c": "c",
+    '.py': 'python',
+    '.c': 'c',
 }
 
 
@@ -319,33 +318,33 @@ def _display_mtype(mtype):
 
 def generate_examples():
     readme = EXAMPLES_PATH
-    out = ""
-    toc = ""
+    out = ''
+    toc = ''
 
     for subfolder, section in EXAMPLE_TYPES.items():
-        anchor = section.lower().replace(" ", "-")
-        toc += f"* [{section}](#{anchor})\n"
-        out += f"# {section}\n\n"
+        anchor = section.lower().replace(' ', '-')
+        toc += f'* [{section}](#{anchor})\n'
+        out += f'# {section}\n\n'
 
-        examples = list((EXAMPLES_DIR / subfolder).glob("*.py"))
-        examples.extend(list((EXAMPLES_DIR / subfolder).glob("*.c")))
+        examples = list((EXAMPLES_DIR / subfolder).glob('*.py'))
+        examples.extend(list((EXAMPLES_DIR / subfolder).glob('*.c')))
         examples = sorted(examples)
 
         for f in examples:
-            print(f"Generating example {f.name}")
+            print(f'Generating example {f.name}')
 
             code = f.read_text()
-            if f.suffix == ".py":
+            if f.suffix == '.py':
                 m = PYTHON_DESC_REGEX.match(code)
                 assert m
                 desc = m.group(1).strip()
-                desc = "#" + desc
+                desc = '#' + desc
 
                 title = desc.splitlines()[0][2:].strip()
 
                 # NOTE: only remove the first docstring.
-                code = PYTHON_DESC_REGEX.sub("", code, count=1).strip()
-            elif f.suffix == ".c":
+                code = PYTHON_DESC_REGEX.sub('', code, count=1).strip()
+            elif f.suffix == '.c':
                 m = C_DESC_REGEX.match(code)
                 assert m
                 desc = m.group(1).strip()
@@ -360,25 +359,25 @@ def generate_examples():
                 lang=lang,
             )
 
-            anchor = title.lower().replace(" ", "-")
-            toc += f"    * [{title}](#{anchor})\n"
+            anchor = title.lower().replace(' ', '-')
+            toc += f'    * [{title}](#{anchor})\n'
 
-            out += f"{doc}\n\n"
+            out += f'{doc}\n\n'
 
-    with open(readme, "w", encoding="utf-8") as fr:
-        out = f"# Examples\n\n{toc}\n\n{out}"
+    with open(readme, 'w', encoding='utf-8') as fr:
+        out = f'# Examples\n\n{toc}\n\n{out}'
         fr.write(out)
 
 
 def parse_doxygen_docstring(docstring):
     # Regular expression patterns for different components of the docstring
-    description_pattern = re.compile(r"/\*\*\s*\n\s*([^\n]+)", re.DOTALL)
-    param_pattern = re.compile(r"@param\s*(?:\[\w+\])?\s*(\w+)\s+([^\n]+)", re.DOTALL)
-    returns_pattern = re.compile(r"@returns\s+([^\n]+)", re.DOTALL)
+    description_pattern = re.compile(r'/\*\*\s*\n\s*([^\n]+)', re.DOTALL)
+    param_pattern = re.compile(r'@param\s*(?:\[\w+\])?\s*(\w+)\s+([^\n]+)', re.DOTALL)
+    returns_pattern = re.compile(r'@returns\s+([^\n]+)', re.DOTALL)
 
     # Extract the description
     description_match = description_pattern.search(docstring)
-    description = description_match.group(1).strip() if description_match else ""
+    description = description_match.group(1).strip() if description_match else ''
 
     # Extract parameters
     params = []
@@ -389,15 +388,15 @@ def parse_doxygen_docstring(docstring):
 
     # Extract return value
     returns_match = returns_pattern.search(docstring)
-    returns = returns_match.group(1).strip() if returns_match else ""
+    returns = returns_match.group(1).strip() if returns_match else ''
 
-    return {"description": description, "params": params, "returns": returns}
+    return {'description': description, 'params': params, 'returns': returns}
 
 
 def generate_api():
     import datoviz as dvz
 
-    with open(HEADERS_FILE, "r") as f:
+    with open(HEADERS_FILE) as f:
         objects = json.load(f)
     md = dedent("""
     # API Reference
@@ -405,45 +404,44 @@ def generate_api():
     """).lstrip()
 
     # Functions
-    md += f"## Main functions\n\n"
+    md += '## Main functions\n\n'
 
     # HACK: put DRP functions at the end.
     files = sorted(objects.keys())
-    files.remove("datoviz_protocol.h")
-    files += ["datoviz_protocol.h"]
+    files.remove('datoviz_protocol.h')
+    files += ['datoviz_protocol.h']
 
     for filename in files:
-        if filename == "datoviz_protocol.h":
-            md += f"## Datoviz Rendering Protocol functions\n\n"
+        if filename == 'datoviz_protocol.h':
+            md += '## Datoviz Rendering Protocol functions\n\n'
 
         items = objects[filename]
-        for func_name, func_info in sorted(
-            items["functions"].items(), key=itemgetter(0)
-        ):
-            md += f"### `{func_name}()`\n\n"
+        for func_name, func_info in sorted(items['functions'].items(), key=itemgetter(0)):
+            md += f'### `{func_name}()`\n\n'
 
-            docstring = func_info["docstring"]
+            docstring = func_info['docstring']
             parsed_docstring = parse_doxygen_docstring(docstring)
 
-            return_type = func_info["returns"]
-            return_type_ = return_type + " " if return_type else ""
+            return_type = func_info['returns']
+            return_type_ = return_type + ' ' if return_type else ''
 
-            return_desc = parsed_docstring["returns"]
-            dtypes = {_["name"]: _["dtype"] for _ in func_info["args"]}
+            return_desc = parsed_docstring['returns']
+            dtypes = {_['name']: _['dtype'] for _ in func_info['args']}
 
             # Consistency check.
-            arg_names_ds = [_[0] for _ in parsed_docstring["params"] if _]
-            arg_names_func = [arg['name'] for arg in func_info["args"] if arg['name']]
+            arg_names_ds = [_[0] for _ in parsed_docstring['params'] if _]
+            arg_names_func = [arg['name'] for arg in func_info['args'] if arg['name']]
             if arg_names_func != arg_names_ds:
                 print(
-                    f"Function arguments mismatch for {func_name}: {arg_names_func} != {arg_names_ds}")
+                    f'Function arguments mismatch for {func_name}: {arg_names_func} != {arg_names_ds}'
+                )
 
-            desc = parsed_docstring["description"].replace("* ", "")
+            desc = parsed_docstring['description'].replace('* ', '')
 
-            md += desc + "\n\n"
+            md += desc + '\n\n'
 
             # Python-style
-            py_func_name = func_name.replace("dvz_", "")
+            py_func_name = func_name.replace('dvz_', '')
 
             # ctypes argument type mapping
             mtypes = []
@@ -451,75 +449,71 @@ def generate_api():
             if func:
                 mtypes = [_display_mtype(_.__name__) for _ in func.argtypes]
 
-            py_args = "\n".join(
-                f"    {arg_name},  # {arg_desc} ({arg_type})"
-                for (arg_name, arg_desc), arg_type in zip(
-                    parsed_docstring["params"], mtypes
-                )
+            py_args = '\n'.join(
+                f'    {arg_name},  # {arg_desc} ({arg_type})'
+                for (arg_name, arg_desc), arg_type in zip(parsed_docstring['params'], mtypes)
             )
             py_return_type = func.restype.__name__
             py_return_desc = (
-                f"  # returns: {return_desc} ({py_return_type})" if return_desc else ""
+                f'  # returns: {return_desc} ({py_return_type})' if return_desc else ''
             )
-            py_func_desc = f"``` python\ndvz.{py_func_name}("
+            py_func_desc = f'``` python\ndvz.{py_func_name}('
             if py_args:
-                py_func_desc += f"{py_return_desc}\n{py_args}\n)"
+                py_func_desc += f'{py_return_desc}\n{py_args}\n)'
             else:
-                py_func_desc += f"){py_return_desc}"
-            py_func_desc += "\n```\n\n"
-            md += f"""=== "Python"\n\n{indent(py_func_desc, "    ")}"""
+                py_func_desc += f'){py_return_desc}'
+            py_func_desc += '\n```\n\n'
+            md += f"""=== "Python"\n\n{indent(py_func_desc, '    ')}"""
 
             # C-style
             try:
-                args = "\n".join(
-                    f"    {dtypes[arg_name]} {arg_name},  // {arg_desc}"
-                    for (arg_name, arg_desc) in parsed_docstring["params"]
+                args = '\n'.join(
+                    f'    {dtypes[arg_name]} {arg_name},  // {arg_desc}'
+                    for (arg_name, arg_desc) in parsed_docstring['params']
                 )
-            except KeyError as e:
+            except KeyError:
                 # print(f"Argument mismatch on {e} in docstring with function {func_name}")
                 pass
-            return_desc = f"  // returns: {return_desc}" if return_desc else ""
-            func_desc = f"``` c\n{return_type_}{func_name}("
+            return_desc = f'  // returns: {return_desc}' if return_desc else ''
+            func_desc = f'``` c\n{return_type_}{func_name}('
             if args:
-                func_desc += f"{return_desc}\n{args}\n);"
+                func_desc += f'{return_desc}\n{args}\n);'
             else:
-                func_desc += f");{return_desc}"
-            func_desc += "\n```\n\n"
-            md += f"""=== "C"\n\n{indent(func_desc, "    ")}"""
+                func_desc += f');{return_desc}'
+            func_desc += '\n```\n\n'
+            md += f"""=== "C"\n\n{indent(func_desc, '    ')}"""
 
     # Enumerations
-    md += f"## Enumerations"
+    md += '## Enumerations'
 
     for filename, items in sorted(objects.items(), key=itemgetter(0)):
-        for enum_name, enum_info in sorted(items["enums"].items(), key=itemgetter(0)):
-            md += f"\n\n### `{enum_name}`\n\n"
-            md += "```\n"
-            md += "\n".join(f"{value[0]}" for value in enum_info["values"])
-            md += "\n```"
+        for enum_name, enum_info in sorted(items['enums'].items(), key=itemgetter(0)):
+            md += f'\n\n### `{enum_name}`\n\n'
+            md += '```\n'
+            md += '\n'.join(f'{value[0]}' for value in enum_info['values'])
+            md += '\n```'
 
     # Structures
-    md += f"\n\n## Structures\n\n"
+    md += '\n\n## Structures\n\n'
     for filename, items in sorted(objects.items(), key=itemgetter(0)):
-        for struct_name, struct_info in sorted(
-            items["structs"].items(), key=itemgetter(0)
-        ):
-            md += f"### `{struct_name}`\n\n"
+        for struct_name, struct_info in sorted(items['structs'].items(), key=itemgetter(0)):
+            md += f'### `{struct_name}`\n\n'
 
-            md += f"```\n{struct_info['type']} {struct_name}\n"
-            for field in struct_info["fields"]:
-                unsigned = "unsigned " if field.get("unsigned", None) else ""
-                md += f"    {unsigned}{field['dtype']} {field['name']}\n"
-            md += "```\n\n"
+            md += f'```\n{struct_info["type"]} {struct_name}\n'
+            for field in struct_info['fields']:
+                unsigned = 'unsigned ' if field.get('unsigned', None) else ''
+                md += f'    {unsigned}{field["dtype"]} {field["name"]}\n'
+            md += '```\n\n'
 
     # Write the output.
-    with open(API_OUTPUT, "w") as f:
+    with open(API_OUTPUT, 'w') as f:
         f.write(md)
 
 
-if __name__ == "__main__":
-    if "api" in sys.argv:
+if __name__ == '__main__':
+    if 'api' in sys.argv:
         generate_api()
-    if "examples" in sys.argv:
-        generate_examples()
-    if "api" not in sys.argv and "examples" not in sys.argv:
+    # if "examples" in sys.argv:
+    #     generate_examples()
+    if 'api' not in sys.argv and 'examples' not in sys.argv:
         print("Please pass 'api' or 'examples' as argument")
