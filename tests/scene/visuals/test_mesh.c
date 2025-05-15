@@ -114,7 +114,7 @@ int test_mesh_2(TstSuite* suite)
 
     // Arrow
     shapes[3] = dvz_shape();
-    dvz_shape_arrow(shapes[3], 0.3f, 0.2f, 0.05f, (DvzColor){255, 64, 128, alpha});
+    dvz_shape_arrow(shapes[3], 32, 0.3f, 0.2f, 0.05f, (DvzColor){255, 64, 128, alpha});
 
     // Torus
     shapes[4] = dvz_shape();

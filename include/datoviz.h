@@ -1577,7 +1577,7 @@ DVZ_EXPORT void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color);
  * @param color the sector color
  */
 DVZ_EXPORT void dvz_shape_sector(
-    DvzShape* shape, uint32_t count, float angle_start, float angle_end, DvzColor color);
+    DvzShape* shape, uint32_t count, float angle_start, float angle_stop, DvzColor color);
 
 
 
@@ -1691,13 +1691,15 @@ DVZ_EXPORT void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color);
  * The total length is 1.
  *
  * @param shape the shape
+ * @param count the number of sides to the shaft and head
  * @param head_length the length of the head
  * @param head_radius the radius of the head
  * @param shaft_radius the radius of the shaft
  * @param color the arrow color
  */
 DVZ_EXPORT void dvz_shape_arrow(
-    DvzShape* shape, float head_length, float head_radius, float shaft_radius, DvzColor color);
+    DvzShape* shape, uint32_t count, float head_length, float head_radius, float shaft_radius,
+    DvzColor color);
 
 
 

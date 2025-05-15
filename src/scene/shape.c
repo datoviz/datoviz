@@ -28,8 +28,6 @@
 /*  Macros and utils                                                                             */
 /*************************************************************************************************/
 
-#define ARROW_SIDE_COUNT 32
-
 #define COPY_SCALAR(x, idx, y) x[3 * i + idx] = shape->x[y];
 
 #define COPY_VEC3(x, idx, y)                                                                      \
@@ -1121,14 +1119,14 @@ void dvz_shape_disc(DvzShape* shape, uint32_t count, DvzColor color)
 
 
 void dvz_shape_sector(
-    DvzShape* shape, uint32_t count, float angle_start, float angle_end, DvzColor color)
+    DvzShape* shape, uint32_t count, float angle_start, float angle_stop, DvzColor color)
 {
     ASSERT(count > 0);
     ANN(shape);
 
     shape->type = DVZ_SHAPE_SECTOR;
 
-    const float angle_range = angle_end - angle_start;
+    const float angle_range = angle_stop - angle_start;
     const uint32_t triangle_count = count;
     const uint32_t vertex_count = triangle_count + 1;
     const uint32_t index_count = 3 * triangle_count;
@@ -1904,7 +1902,8 @@ void dvz_shape_cone(DvzShape* shape, uint32_t count, DvzColor color)
 
 
 void dvz_shape_arrow(
-    DvzShape* shape, float head_length, float head_radius, float shaft_radius, DvzColor color)
+    DvzShape* shape, uint32_t count, float head_length, float head_radius, float shaft_radius,
+    DvzColor color)
 {
     ANN(shape);
     ASSERT(head_length > 0);
@@ -1918,7 +1917,7 @@ void dvz_shape_arrow(
 
     // Create shaft.
     DvzShape* shaft = dvz_shape();
-    dvz_shape_cylinder(shaft, ARROW_SIDE_COUNT, color);
+    dvz_shape_cylinder(shaft, count, color);
     dvz_shape_begin(shaft, 0, shaft->vertex_count);
     vec3 scale_shaft = {shaft_radius, shaft_length, shaft_radius};
     dvz_shape_scale(shaft, scale_shaft);
@@ -1928,7 +1927,7 @@ void dvz_shape_arrow(
 
     // Create head.
     DvzShape* head = dvz_shape();
-    dvz_shape_cone(head, ARROW_SIDE_COUNT, color);
+    dvz_shape_cone(head, count, color);
     dvz_shape_begin(head, 0, head->vertex_count);
     vec3 scale_head = {head_radius, head_length, head_radius};
     dvz_shape_scale(head, scale_head);

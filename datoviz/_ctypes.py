@@ -5317,7 +5317,7 @@ count : uint32_t
     the number of points along the sector border
 angle_start : float
     the initial angle
-angle_stop : unknown
+angle_stop : float
     the final angle
 color : DvzColor
     the sector color
@@ -5326,7 +5326,7 @@ shape_sector.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
     ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float angle_start
-    ctypes.c_float,  # float angle_end
+    ctypes.c_float,  # float angle_stop
     DvzColor,  # DvzColor color
 ]
 
@@ -5518,6 +5518,8 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
+count : uint32_t
+    the number of sides to the shaft and head
 head_length : float
     the length of the head
 head_radius : float
@@ -5529,6 +5531,7 @@ color : DvzColor
 """
 shape_arrow.argtypes = [
     ctypes.POINTER(DvzShape),  # DvzShape* shape
+    ctypes.c_uint32,  # uint32_t count
     ctypes.c_float,  # float head_length
     ctypes.c_float,  # float head_radius
     ctypes.c_float,  # float shaft_radius
