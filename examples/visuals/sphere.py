@@ -53,7 +53,7 @@ visual = app.sphere(
     color=color,
     size=size,
     light_pos=(-5, +5, +100),
-    light_params=(0.4, 0.8, 1, 32),
+    light_params=(0.1, 0.8, 0.9, 0.9),
 )
 panel.add(visual)
 

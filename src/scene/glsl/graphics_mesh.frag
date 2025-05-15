@@ -8,6 +8,7 @@
 #include "common.glsl"
 #include "constants.glsl"
 #include "params_mesh.glsl"
+#include "lighting.glsl"
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
@@ -18,7 +19,7 @@ const float eps = .00001;
 const float antialias_ = 2 * antialias;
 
 // Varying variables.
-layout(location = 0) in vec3 in_pos;
+layout(location = 0) in vec4 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_uvcolor;
 layout(location = 3) in vec3 in_barycentric;
@@ -141,10 +142,10 @@ void main()
     // if (in_clip < -eps)
     //     discard;
 
-    vec3 normal, light_dir, light_color, ambient, diffuse, view_dir, reflect_dir, specular, color;
-    vec4 lpar;
-    vec3 lpos;
-    float diff, spec, view_facing;
+    //vec3 normal, light_dir, light_color, ambient, diffuse, view_dir, reflect_dir, specular, color;
+    //vec4 lpar;
+    //vec3 lpos;
+    //float diff, spec, view_facing;
 
     // Stroke parameters.
     float linewidth = params.linewidth;
@@ -152,69 +153,42 @@ void main()
     float edge_alpha = params.edgecolor.a;
     vec3 pos_tr;
 
-    normal = normalize(in_normal);
-    out_color = vec4(0, 0, 0, 1);
-    diffuse = vec3(0);
-    specular = vec3(0);
+    vec3 normal = normalize(in_normal);
+
+//    out_color = vec4(0, 0, 0, 1);
+//    diffuse = vec3(0);
+//    specular = vec3(0);
 
     // Texture.
+    vec4 color;
     if (MESH_TEXTURED > 0)
     {
         // in this case, in_uvcolor.xy is uv coordinates
-        color = texture(tex, in_uvcolor.xy).xyz;
+        color = texture(tex, in_uvcolor.xy);
     }
     // Color.
     else
     {
-        color = in_uvcolor.xyz; // rgb
+        color = in_uvcolor; // rgba
     }
 
     // Lighting.
     if (MESH_LIGHTING > 0)
     {
-        pos_tr = ((mvp.model * vec4(in_pos, 1.0))).xyz;
-        view_dir = normalize(-mvp.view[3].xyz - pos_tr);
+        vec4 cam_pos = inverse(mvp.view) * vec4(0.0, 0.0, 0.0, 1.0);  // Better in vertex shader?
 
-        for (int i = 0; i < 4; i++)
+        mat4 light_pos = params.light_dir;
+        mat4 light_color = params.light_color;
+        mat4 material = params.light_params;
+
+        // Current visual setters don't set w and a.
+        for (int i=0; i<4; i++)
         {
-            // Light position and params.
-            lpar = params.light_params[i];
-            if (length(lpar) == 0)
-                continue;
-
-            // Light direction.
-            // light_dir = normalize(lpos - pos_tr);
-            // TODO OPTIM: normalize on the CPU instead, in dvz_mesh_light_dir()
-            light_dir = normalize(params.light_dir[i].xyz);
-
-            // Color.
-            light_color = params.light_color[i].xyz;
-            ambient = light_color;
-
-            // Diffuse component.
-            view_facing = max(dot(normal, view_dir), 0.0);
-            diff = max(dot(normal, -light_dir), 0.0);
-            // HACK: normals on both faces
-            // diff = max(diff, max(dot(light_dir, -normal), 0.0));
-            diffuse = diff * view_facing * light_color;
-
-            // Specular component.
-            reflect_dir = reflect(light_dir, normal);
-            spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-            specular = spec * view_facing * light_color;
-
-            // Total color.
-            out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
+            light_pos[i].w = 1.0;      // w greater than 0.0 is a position.
+            light_color[i].a = 1.0;    // Alpha greater than 1.0 is on.
         }
 
-        // by convention, alpha channel is in 4th component of this attribute
-        out_color.a = in_uvcolor.a;
-    }
-    else
-    {
-        // NOTE: the 4th component of in_uvcolor is always the alpha channel, both in the
-        // color case (rgba) or the uv tex case (uv*a).
-        out_color = vec4(color, in_uvcolor.a);
+        out_color = advanced_lighting(in_pos, color, material, normal, cam_pos, light_pos, light_color);
     }
 
     // Stroke.

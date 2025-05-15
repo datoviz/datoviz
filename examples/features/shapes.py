@@ -37,6 +37,23 @@ panel = figure.panel()
 arcball = panel.arcball(initial=(-1, -0.1, -0.25))
 
 visual = app.mesh_shape(sc, lighting=True)
+
+visual.set_light_color((  0,   0, 255), 0)    # Blue
+visual.set_light_color((  0, 255,   0), 1)    # Green
+visual.set_light_color((200, 200,   0), 2)    # Yellow
+visual.set_light_color((255,   0,   0), 3)    # Red
+
+visual.set_light_dir(( -9, 1, 5), 0)
+visual.set_light_dir(( -3, 1, 5), 1)
+visual.set_light_dir((  3, 1, 5), 2)
+visual.set_light_dir((  9, 1, 5), 3)
+
+# Was this intended?
+visual.set_light_params(( .01,  .01,  .01,  .01), 0)    # Ambient
+visual.set_light_params(( .8,  .8,  .8,  .8), 1)    # Diffuse
+visual.set_light_params(( 1,  1,  1,  1), 2)    # Specular
+visual.set_light_params(( 1,  1,  1,  1), 3)    # Exponent
+
 panel.add(visual)
 
 app.run()

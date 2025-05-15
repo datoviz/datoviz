@@ -11,7 +11,7 @@ tags:
 ---
 
 """
-
+import numpy as np
 import datoviz as dvz
 
 app = dvz.App()
@@ -22,8 +22,16 @@ visual = panel.demo_3D()
 
 
 light_pos = dvz.vec3(-5, +5, +5)
-light_params = dvz.vec4(0.75, 0.5, 0.75, 0.32)
+light_params = dvz.vec4(0.25, 0.5, 0.5, 0.5)
 
+# GUI callback
+def update_params():
+    lp = (light_params[0], light_params[1], light_params[2], light_params[3])
+    visual.set_light_pos(light_pos)
+    visual.set_light_params(lp)
+    visual.update()
+
+update_params()
 
 @app.connect(figure)
 def on_gui(ev):
@@ -35,10 +43,7 @@ def on_gui(ev):
     dvz.gui_end()
 
     if has_changed:
-        lp = (light_params[0], light_params[1], light_params[2], light_params[3] * 100)
-        visual.set_light_pos(light_pos)
-        visual.set_light_params(lp)
-        visual.update()
+        update_params()
 
 
 app.run()
