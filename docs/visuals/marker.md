@@ -29,13 +29,13 @@ Use the marker visual when:
 The following predefined marker shapes are supported when using `mode='code'`:
 
 - disc (default)
+- arrow
 - asterisk
 - chevron
 - clover
 - club
 - cross
-- diamond,
-- arrow
+- diamond
 - ellipse
 - hbar
 - heart
