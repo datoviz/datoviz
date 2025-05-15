@@ -44,11 +44,13 @@ visual.set_light_dir(( -3, 1, 5), 1)
 visual.set_light_dir((  3, 1, 5), 2)
 visual.set_light_dir((  9, 1, 5), 3)
 
-# Was this intended?
-visual.set_light_params(( .1,  .1,  .1,  .1), 0)    # Ambient
-visual.set_light_params(( .8,  .8,  .8,  .8), 1)    # Diffuse
-visual.set_light_params(( .9,  .9,  .9,  .9), 2)    # Specular
-visual.set_light_params(( .5,  .5,  .5,  .5), 3)    # Exponent
+
+# TODO: Change to set_material_params()  Use only one call.
+# Material affect on colors      R    G    B
+visual.set_light_params(( .2,  .2,  .2), 0)    # Ambient
+visual.set_light_params(( .8,  .8,  .8), 1)    # Diffuse
+visual.set_light_params(( .8,  .8,  .8), 2)    # Specular
+visual.set_light_params(( .9,  .9,  .9), 3)    # Exponent
 
 panel.add(visual)
 

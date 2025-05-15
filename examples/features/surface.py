@@ -69,6 +69,7 @@ visual = app.mesh_shape(
     sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
 )
 
+# TODO: move light settings to panel.
 visual.set_light_color((  0,   0, 255), 0)    # Blue
 visual.set_light_color((  0, 255,   0), 1)    # Green
 visual.set_light_color((200, 200,   0), 2)    # Yellow
@@ -79,6 +80,8 @@ visual.set_light_dir(( -3, 1, 5), 1)
 visual.set_light_dir((  3, 1, 5), 2)
 visual.set_light_dir((  9, 1, 5), 3)
 
+
+# TODO: Change to set_material_params()  Use only one call.
 # Material affect on colors      R    G    B
 visual.set_light_params(( .2,  .2,  .2), 0)    # Ambient
 visual.set_light_params(( .8,  .8,  .8), 1)    # Diffuse

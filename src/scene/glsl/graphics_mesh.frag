@@ -142,11 +142,6 @@ void main()
     // if (in_clip < -eps)
     //     discard;
 
-    //vec3 normal, light_dir, light_color, ambient, diffuse, view_dir, reflect_dir, specular, color;
-    //vec4 lpar;
-    //vec3 lpos;
-    //float diff, spec, view_facing;
-
     // Stroke parameters.
     float linewidth = params.linewidth;
     vec3 edgecolor = params.edgecolor.rgb;
@@ -154,10 +149,6 @@ void main()
     vec3 pos_tr;
 
     vec3 normal = normalize(in_normal);
-
-//    out_color = vec4(0, 0, 0, 1);
-//    diffuse = vec3(0);
-//    specular = vec3(0);
 
     // Texture.
     vec4 color;
@@ -181,6 +172,7 @@ void main()
         mat4 light_color = params.light_color;
         mat4 material = params.light_params;
 
+        // TODO:  Update visual and panel setter functions.
         // Current visual setters don't set w and a.
         for (int i=0; i<4; i++)
         {

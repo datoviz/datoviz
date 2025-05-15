@@ -9,6 +9,9 @@
 #include "lighting.glsl"
 
 // TODO: Use binding as defined in lighting.glsl
+//      This should include color and postion, and light specific paramters
+//      that are needed to implement differently kind of lights.
+//
 layout(binding = 2) uniform SphereParams
 {
     vec4 light_pos;
@@ -46,10 +49,13 @@ void main()
     gl_FragDepth = 1.0 - 1.0/(1.0 + clip_depth);
 
     // Temporary fix until new binding is created.
+    // Todo: Create new binding and initializations for bindings.
     vec4 light_color = vec4(1.0);
     vec4 light_pos = params.light_pos;
-    light_pos.y *= -1;                      // Flip y axis for vulkan.
     vec4 material = params.light_params;
+
+    // Flip y direction in shader matches y direction in gl_Postition.
+    light_pos.y *= -1;                      // Flip y axis for vulkan.
 
     // Get lighting.  (Reqires LightParams structure to be set.
     out_color = basic_lighting(pos, in_color, material, normal, in_cam_pos, light_pos, light_color);

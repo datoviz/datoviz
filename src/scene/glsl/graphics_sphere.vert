@@ -9,13 +9,6 @@
 
 layout(constant_id = 0) const int SIZE_PIXELS = 0;
 
-//layout(binding = 2) uniform SphereParams
-//{
-//    vec4 light_pos;
-//    vec4 light_params;
-//}
-//params;
-
 layout(location = 0) in vec3 pos;
 layout(location = 1) in vec4 color;
 layout(location = 2) in float size; // in NDC or in pixels

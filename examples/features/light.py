@@ -18,6 +18,7 @@ app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure(gui=True)
 panel = figure.panel()
+
 visual = panel.demo_3D()
 
 
