@@ -110,8 +110,8 @@ The `aspect` attribute controls how each marker is rendered:
 | Aspect value | Description                                    |
 |--------------|------------------------------------------------|
 | `filled`     | Fill only, no border (default)                 |
-| `outline`    | Border only, transparent interior              |
-| `stroke`     | Fill with border (outline + fill combined)     |
+| `stroke`     | Border only, transparent interior              |
+| `outline`    | Fill with border (filled + stroke combined)    |
 
 This affects how `color`, `edgecolor`, and `linewidth` are interpreted:
 
@@ -122,9 +122,9 @@ This affects how `color`, `edgecolor`, and `linewidth` are interpreted:
 ### Examples:
 
 ```python
-visual.set_aspect('filled')      # Solid shape, no outline
-visual.set_aspect('outline')     # Transparent fill, outlined only
-visual.set_aspect('stroke')      # Filled shape with visible border
+visual.set_aspect('filled')
+visual.set_aspect('stroke')
+visual.set_aspect('outline')
 ```
 
 ---

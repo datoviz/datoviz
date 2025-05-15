@@ -760,8 +760,8 @@ class Marker(Visual):
         value : str
             One of:
             - 'filled': fill only (no border)
-            - 'outline': border only (transparent interior)
-            - 'stroke': fill with border
+            - 'stroke': border only (transparent interior)
+            - 'outline': fill with border
 
         This controls how the marker uses color, edgecolor, and linewidth.
         """
