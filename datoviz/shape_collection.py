@@ -27,6 +27,11 @@ Vec4 = tuple[float, float, float, float]
 Mat4 = tuple[float, ...]
 
 DEFAULT_SIZE = 100
+DEFAULT_ARROW_HEAD_LENGTH = 0.3
+DEFAULT_ARROW_RADIUS = 0.2
+DEFAULT_ARROW_SHAFT_RADIUS = 0.05
+DEFAULT_TORE_TUBE_RADIUS = 0.1
+
 WHITE = dvz.cvec4(255, 255, 255, 255)
 
 
@@ -211,7 +216,7 @@ class ShapeCollection:
 
     def add_disc(
         self,
-        size: int = None,
+        count: int,
         offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
@@ -222,8 +227,8 @@ class ShapeCollection:
 
         Parameters
         ----------
-        size : int, optional
-            The size of the disc, by default None.
+        count : int
+            The number of sides in the disc.
         offset : tuple of float, optional
             The (x, y, z) offset to apply, by default None.
         scale : float, optional
@@ -235,7 +240,42 @@ class ShapeCollection:
         """
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
-        dvz.shape_disc(c_shape, size, c_color)
+        dvz.shape_disc(c_shape, count, c_color)
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_sector(
+        self,
+        count: int,
+        angle_start: float,
+        angle_stop: float,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ) -> None:
+        """
+        Add a disc shape to the collection.
+
+        Parameters
+        ----------
+        count : int
+            The number of sides in the disc.
+        angle_start : float
+            The start angle, in radians.
+        angle_stop : float
+            The stop angle, in radians.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the disc, by default None.
+        """
+        c_shape = dvz.shape()
+        c_color = dvz.cvec4(*color) if color is not None else WHITE
+        dvz.shape_sector(c_shape, count, angle_start, angle_stop, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_cube(
@@ -300,44 +340,9 @@ class ShapeCollection:
         dvz.shape_sphere(c_shape, rows, cols, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
-    def add_cone(
-        self,
-        size: int = None,
-        offset: tuple[float, float, float] = None,
-        scale: float = None,
-        transform: Mat4 = None,
-        color: Color = None,
-    ) -> None:
-        """
-        Add a cone shape to the collection.
-
-        Parameters
-        ----------
-        size : int, optional
-            The size of the cone, by default None.
-        offset : tuple of float, optional
-            The (x, y, z) offset to apply, by default None.
-        scale : float, optional
-            The scale factor to apply, by default None.
-        transform : Mat4, optional
-            A 4x4 transformation matrix, by default None.
-        color : Color, optional
-            The color of the cone, by default None.
-
-        Warnings:
-        --------
-        .. warning::
-            This method is not yet implemented.
-        """
-        size = size or DEFAULT_SIZE
-        c_shape = dvz.shape()
-        c_color = dvz.cvec4(*color) if color is not None else WHITE
-        dvz.shape_cone(c_shape, size, c_color)
-        self.add(c_shape, offset=offset, scale=scale, transform=transform)
-
     def add_cylinder(
         self,
-        size: int = None,
+        count: int = None,
         offset: tuple[float, float, float] = None,
         scale: float = None,
         transform: Mat4 = None,
@@ -348,8 +353,8 @@ class ShapeCollection:
 
         Parameters
         ----------
-        size : int, optional
-            The size of the cylinder, by default None.
+        count : int, optional
+            The number of edges.
         offset : tuple of float, optional
             The (x, y, z) offset to apply, by default None.
         scale : float, optional
@@ -358,16 +363,123 @@ class ShapeCollection:
             A 4x4 transformation matrix, by default None.
         color : Color, optional
             The color of the cylinder, by default None.
-
-        Warnings:
-        --------
-        .. warning::
-            This method is not yet implemented.
         """
-        size = size or DEFAULT_SIZE
+        count = count or DEFAULT_SIZE
         c_shape = dvz.shape()
         c_color = dvz.cvec4(*color) if color is not None else WHITE
-        dvz.shape_cylinder(c_shape, size, c_color)
+        dvz.shape_cylinder(c_shape, count, c_color)
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_cone(
+        self,
+        count: int = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ) -> None:
+        """
+        Add a cone shape to the collection.
+
+        Parameters
+        ----------
+        count : int, optional
+            The number of edges.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cone, by default None.
+        """
+        count = count or DEFAULT_SIZE
+        c_shape = dvz.shape()
+        c_color = dvz.cvec4(*color) if color is not None else WHITE
+        dvz.shape_cone(c_shape, count, c_color)
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_arrow(
+        self,
+        count: int = None,
+        head_length: float = None,
+        head_radius: float = None,
+        shaft_radius: float = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ) -> None:
+        """
+        Add a 3D arrow (a cylinder and a cone), total length is 1.
+
+        Use offset, scale, transform to modify its size.
+
+        Parameters
+        ----------
+        count : int
+            The number of edges.
+        head_length : float
+            The head length.
+        head_radius : float
+            The head radius.
+        shaft_radius : float
+            The shaft length.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cone, by default None.
+        """
+        count = count or DEFAULT_SIZE
+        head_length = head_length or DEFAULT_ARROW_HEAD_LENGTH
+        head_radius = head_radius or DEFAULT_ARROW_RADIUS
+        shaft_radius = shaft_radius or DEFAULT_ARROW_SHAFT_RADIUS
+        c_shape = dvz.shape()
+        c_color = dvz.cvec4(*color) if color is not None else WHITE
+        dvz.shape_arrow(c_shape, count, head_length, head_radius, shaft_radius, c_color)
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
+    def add_torus(
+        self,
+        count_radial: int = None,
+        count_tubular: int = None,
+        tube_radius: float = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+        color: Color = None,
+    ) -> None:
+        """
+        Add a torus shape to the collection.
+
+        Parameters
+        ----------
+        count_radial : int, optional
+            The number of edges.
+        count_tubular : int, optional
+            The number of edges around a circular cross-section.
+        tube_radius : float, optional
+            The radius of the tube, in NDC.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        color : Color, optional
+            The color of the cylinder, by default None.
+        """
+        count_radial = count_radial or DEFAULT_SIZE
+        count_tubular = count_tubular or DEFAULT_SIZE
+        tube_radius = tube_radius or DEFAULT_TORE_TUBE_RADIUS
+        c_shape = dvz.shape()
+        c_color = dvz.cvec4(*color) if color is not None else WHITE
+        dvz.shape_torus(c_shape, count_radial, count_tubular, tube_radius, c_color)
         self.add(c_shape, offset=offset, scale=scale, transform=transform)
 
     def add_tetrahedron(
