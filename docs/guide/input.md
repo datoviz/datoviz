@@ -23,7 +23,7 @@ To register input callbacks, decorate a function with:
 @app.connect(figure)
 def on_mouse(ev):
     ...
-````
+```
 
 The function name determines the event type:
 
@@ -37,7 +37,7 @@ The function name determines the event type:
 ## Mouse event example
 
 ```python
---8<-- "examples/guide/input_mouse.py"
+--8<-- "examples/features/mouse.py"
 ```
 
 Mouse events include actions like move, click, drag, and scroll:
@@ -64,7 +64,7 @@ def on_mouse(ev):
 ## Keyboard event example
 
 ```python
---8<-- "examples/guide/input_keyboard.py"
+--8<-- "examples/features/keyboard.py"
 ```
 
 Keyboard callbacks receive key presses and releases:
