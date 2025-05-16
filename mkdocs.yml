@@ -57,6 +57,7 @@ nav:
       - Image: 'visuals/image.md'
       - Glyph: 'visuals/glyph.md'
       - Mesh: 'visuals/mesh.md'
+      - Sphere: 'visuals/sphere.md'
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'
     - Interactivity: 'guide/interactivity.md'
