@@ -28,12 +28,15 @@ material = (vec3(.2, .2, .2),     # Ambient    R, G, B
             vec3(.9, .9, .9))     # Shininess  R, G, B
 
 sc = dvz.ShapeCollection()
-sc.add_obj(file_path, contour='full')
+sc.add_obj(file_path)
 
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure(gui=True)
-panel = figure.panel()
+
+# Offset the panel to the right so that is not over the controls.
+panel = figure.panel((300, 0), (500, 400))
+
 arcball = panel.arcball(initial=(0.35, 0, 0))
 
 visual = app.mesh_shape(sc, lighting=True)
@@ -53,22 +56,26 @@ def update_params():
 
 update_params()
 
-@app.connect(figure)
+@app.connect(panel)
 def on_gui(ev):
-    dvz.gui_size(dvz.vec2(500, 350))
+    dvz.gui_size(dvz.vec2(300, 420))
+    dvz.gui_pos(dvz.vec2(10, 10), dvz.vec2(0, 0))
     dvz.gui_begin('Change the light', 0)
     has_changed = False
 
-    has_changed |= dvz.gui_slider_vec3('Pos 0 XYZ', -10, +10, light_pos[0])
-    has_changed |= dvz.gui_slider_vec3('Pos 1 XYZ', -10, +10, light_pos[1])
-    has_changed |= dvz.gui_slider_vec3('Pos 2 XYZ', -10, +10, light_pos[2])
-    has_changed |= dvz.gui_slider_vec3('Pos 3 XYZ', -10, +10, light_pos[3])
+    dvz.gui_text("Light positions:")
+    has_changed |= dvz.gui_slider_vec3('Pos 0 XYZ', -20, +20, light_pos[0])
+    has_changed |= dvz.gui_slider_vec3('Pos 1 XYZ', -20, +20, light_pos[1])
+    has_changed |= dvz.gui_slider_vec3('Pos 2 XYZ', -20, +20, light_pos[2])
+    has_changed |= dvz.gui_slider_vec3('Pos 3 XYZ', -20, +20, light_pos[3])
 
+    dvz.gui_text("Light colors:")
     has_changed |= dvz.gui_slider_vec3('Color 0 RGB', 0, 1, light_color[0])
     has_changed |= dvz.gui_slider_vec3('Color 1 RGB', 0, 1, light_color[1])
     has_changed |= dvz.gui_slider_vec3('Color 2 RGB', 0, 1, light_color[2])
     has_changed |= dvz.gui_slider_vec3('Color 3 RGB', 0, 1, light_color[3])
 
+    dvz.gui_text("Material properties:")
     has_changed |= dvz.gui_slider_vec3('Ambient RGB', 0, 1, material[0])
     has_changed |= dvz.gui_slider_vec3('Diffuse RGB', 0, 1, material[1])
     has_changed |= dvz.gui_slider_vec3('Specular RGB', 0, 1, material[2])
