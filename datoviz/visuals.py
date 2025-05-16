@@ -1071,7 +1071,13 @@ class Path(Visual):
 
     def set_cap(self, value: str) -> None:
         """
-        Set the common cap style of all paths.
+        Set the common cap style of all paths, one of the following:
+
+        - `round`
+        - `triangle_in`
+        - `triangle_out`
+        - `square`
+        - `butt`
 
         Parameters
         ----------
@@ -1082,7 +1088,10 @@ class Path(Visual):
 
     def set_join(self, value: str) -> None:
         """
-        Set the common join style of all paths.
+        Set the common join style of all paths, one of the following:
+
+        - `square`
+        - `round`
 
         Parameters
         ----------

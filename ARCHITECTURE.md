@@ -2,7 +2,7 @@
 
 This document provides a high-level overview of the Datoviz v0.3 code architecture.
 
-**⚠️ Warning:** Some architectural details described here are expected to change in Datoviz v0.4.
+> **⚠️ Warning:** Some architectural details described here are expected to change in Datoviz v0.4.
 
 ## Main components
 

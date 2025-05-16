@@ -59,9 +59,9 @@ nav:
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'
     - Interactivity: 'guide/interactivity.md'
-    - Shapes: 'guide/shape.md'
 
   - Advanced:
+    - Shapes: 'guide/shape.md'
     - User Input: 'guide/input.md'
     - Timers and Frame Events: 'guide/events.md'
     - GUI Integration: 'guide/gui.md'
