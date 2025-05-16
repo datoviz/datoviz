@@ -1308,8 +1308,8 @@ runexample name="":
     ./build/example_{{name}}.exe
 #
 
-example section name="":
-    gcc -o build/example_{{name}} examples/{{section}}/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+example name="":
+    gcc -o build/example_{{name}} examples/c/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
     just runexample {{name}}
 #
 

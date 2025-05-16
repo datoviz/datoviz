@@ -67,8 +67,8 @@ nav:
     - User Input: 'guide/input.md'
     - Timers and Frame Events: 'guide/events.md'
     - GUI Integration: 'guide/gui.md'
-    - Datoviz Rendering Protocol (DRP): 'guide/drp.md'
     - Using Datoviz in C: 'guide/c.md'
+    - Datoviz Rendering Protocol (DRP): 'guide/drp.md'
 
   - Gallery:
     - Overview: 'gallery/index.md'
