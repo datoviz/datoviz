@@ -55,7 +55,7 @@ nav:
       - Segment: 'visuals/segment.md'
       - Path: 'visuals/path.md'
       - Image: 'visuals/image.md'
-      - Text: 'visuals/text.md'
+      - Glyph: 'visuals/glyph.md'
       - Mesh: 'visuals/mesh.md'
       - Volume: 'visuals/volume.md'
       - Slice: 'visuals/slice.md'

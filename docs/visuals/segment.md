@@ -62,7 +62,7 @@ Use `visual.set_cap(initial, terminal)` to set per-endpoint cap styles. Both arg
 
 ```python
 --8<-- "examples/visuals/segment.py"
-````
+```
 
 ---
 

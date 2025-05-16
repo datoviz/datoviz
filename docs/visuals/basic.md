@@ -52,7 +52,7 @@ Renders one dot per vertex. Useful for unstyled scatter plots or debugging posit
 
 ```python
 visual = app.basic('point', position=position, color=color)
-````
+```
 
 ---
 

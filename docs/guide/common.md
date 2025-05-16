@@ -11,7 +11,7 @@ A **figure** is a window or drawing surface. It contains one or more **panels**,
 ```python
 figure = app.figure(800, 600)
 panel = figure.panel((50, 50), (700, 500))
-````
+```
 
 * The panel's position and size are given in **pixels**: `(x, y)` for the top-left corner and `(w, h)` for the dimensions.
 * Panels automatically resize **proportionally** when the figure window is resized.

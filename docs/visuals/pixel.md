@@ -45,7 +45,7 @@ Use the pixel visual when:
 
 ```python
 visual = app.pixel(position=position, color=color, size=4)
-````
+```
 
 * `position`: a `(N, 3)` array in **Normalized Device Coordinates (NDC)**
 * `color`: a `(N, 4)` array of `uint8` RGBA values

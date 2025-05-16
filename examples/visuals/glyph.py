@@ -33,7 +33,7 @@ scales = np.linspace(1, 4, string_count).astype(np.float32)
 # Per-glyph parameters.
 colors = dvz.cmap('hsv', np.mod(np.linspace(0, 2, glyph_count), 1))
 
-visual = app.glyph()
+visual = app.glyph(font_size=30)
 visual.set_strings(strings, string_pos=string_pos, scales=scales)
 visual.set_color(colors)
 

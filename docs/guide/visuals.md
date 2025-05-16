@@ -64,7 +64,7 @@ For large-scale time-series (more than 10,000s of points), you may want to use a
 2D images (RGBA or single-channel with colormap support).
 Anchored at panel coordinates.
 
-### [Text](../visuals/text.md)
+### [Glyph](../visuals/glyph.md)
 
 Glyph-based text rendering.
 Supports positioning, anchoring, and sizing — ideal for annotations or labels.
