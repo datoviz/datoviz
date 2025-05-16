@@ -24,6 +24,7 @@ markdown_extensions:
   - abbr
   - admonition
   - attr_list
+  - pymdownx.blocks.caption
   - pymdownx.tilde
   - pymdownx.highlight
   - pymdownx.snippets:

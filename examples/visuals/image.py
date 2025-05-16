@@ -20,24 +20,6 @@ import numpy as np
 import datoviz as dvz
 
 
-def generate_fractal(size):
-    x = np.linspace(-2, 2, size)
-    y = np.linspace(-2, 2, size)
-    X, Y = np.meshgrid(x, y)
-    Z = X + 1j * Y
-    c = complex(-0.8, 0.156)
-    max_iter = 200
-    escape = np.zeros(Z.shape, dtype=np.float32)
-    mask = np.full(Z.shape, True, dtype=bool)
-    for i in range(max_iter):
-        Z[mask] = Z[mask] * Z[mask] + c
-        diverged = np.abs(Z) > 4.0
-        escape[mask & diverged] = i
-        mask &= ~diverged
-    h, w = Z.shape
-    return dvz.cmap('inferno', escape / max_iter).reshape((h, w, 4))
-
-
 def load_image():
     ROOT_DIR = Path(__file__).resolve().parent.parent.parent
     filepath = ROOT_DIR / 'data/textures/image.png'
