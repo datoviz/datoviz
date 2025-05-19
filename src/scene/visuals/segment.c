@@ -72,14 +72,24 @@ DvzVisual* dvz_segment(DvzBatch* batch, int flags)
     dvz_visual_attr(visual, 2, FIELD(DvzSegmentVertex, shift), DVZ_FORMAT_R32G32B32A32_SFLOAT, af);
     dvz_visual_attr(visual, 3, FIELD(DvzSegmentVertex, color), DVZ_FORMAT_COLOR, af);
     dvz_visual_attr(visual, 4, FIELD(DvzSegmentVertex, linewidth), DVZ_FORMAT_R32_SFLOAT, af);
-    dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, af);
-    dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
+    // dvz_visual_attr(visual, 5, FIELD(DvzSegmentVertex, cap0), DVZ_FORMAT_R32_SINT, af);
+    // dvz_visual_attr(visual, 6, FIELD(DvzSegmentVertex, cap1), DVZ_FORMAT_R32_SINT, af);
 
     // Uniforms.
     _common_setup(visual);
+    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
 
     // Visual draw callback.
     dvz_visual_callback(visual, _visual_callback);
+
+    // Params.
+    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzSegmentParams));
+    dvz_params_attr(params, 0, FIELD(DvzSegmentParams, cap0));
+    dvz_params_attr(params, 1, FIELD(DvzSegmentParams, cap1));
+
+    // Default params.
+    dvz_visual_param(visual, 2, 0, (int32_t[]){DVZ_CAP_SQUARE});
+    dvz_visual_param(visual, 2, 1, (int32_t[]){DVZ_CAP_SQUARE});
 
     return visual;
 }
@@ -150,11 +160,9 @@ void dvz_segment_linewidth(
 
 
 
-void dvz_segment_cap(
-    DvzVisual* visual, uint32_t first, uint32_t count, //
-    DvzCapType* initial, DvzCapType* terminal, int flags)
+void dvz_segment_cap(DvzVisual* visual, DvzCapType initial, DvzCapType terminal)
 {
     ANN(visual);
-    dvz_visual_data(visual, 5, first, count, (void*)initial);
-    dvz_visual_data(visual, 6, first, count, (void*)terminal);
+    dvz_visual_param(visual, 2, 0, (int32_t[]){(int32_t)initial});
+    dvz_visual_param(visual, 2, 1, (int32_t[]){(int32_t)terminal});
 }

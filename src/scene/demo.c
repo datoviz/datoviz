@@ -331,24 +331,22 @@ void dvz_demo(void)
     DvzVisual* segment = dvz_segment(batch, 0);
     {
         dvz_segment_alloc(segment, n);
+        dvz_segment_cap(segment, DVZ_CAP_SQUARE, DVZ_CAP_SQUARE);
 
         vec3* initial = dvz_mock_line(n / 2, (vec3){-a / 2, -a / 2, 0}, (vec3){+a / 2, -a / 2, 0});
         vec3* terminal =
             dvz_mock_line(n / 2, (vec3){-a / 2, +a / 2, 0}, (vec3){+a / 2, +a / 2, 0});
         DvzColor* segment_color = dvz_mock_cmap(n / 2, DVZ_CMAP_VIRIDIS, DVZ_ALPHA_MAX);
         float* linewidth = dvz_mock_linspace(n, 20.0, 80.0);
-        DvzCapType* cap = (DvzCapType*)dvz_mock_range(n / 2, 1);
 
         dvz_segment_position(segment, 0, n / 2, initial, terminal, 0);
         dvz_segment_color(segment, 0, n / 2, segment_color, 0);
         dvz_segment_linewidth(segment, 0, n, linewidth, 0);
-        dvz_segment_cap(segment, 0, n, cap, cap, 0);
 
         FREE(initial);
         FREE(terminal);
         FREE(segment_color);
         FREE(linewidth);
-        FREE(cap);
     }
 
     legend(batch, p21, "SEGMENT", &af);

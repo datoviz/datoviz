@@ -887,7 +887,6 @@ class Segment(Visual):
         Set the property classes for the segment visual.
         """
         self.set_prop_class('position', SegmentProp)
-        self.set_prop_class('cap', SegmentProp)
 
     def set_position(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0) -> None:
         """
@@ -945,7 +944,7 @@ class Segment(Visual):
         """
         self.shift[offset:] = array
 
-    def set_cap(self, initial: np.ndarray, terminal: np.ndarray, offset: int = 0) -> None:
+    def set_cap(self, initial: int, terminal: int) -> None:
         """
         Set the cap of line segments.
 
@@ -959,21 +958,13 @@ class Segment(Visual):
 
         Parameters
         ----------
-        initial : np.ndarray
-            The initial cap positions.
-        terminal : np.ndarray
-            The terminal cap positions.
-        offset : int, optional
-            The offset at which to start setting the cap, by default 0.
-
-
-        Warnings:
-        --------
-        .. warning::
-            TODO: support strings or lists of strings instead.
+        initial : int
+            The initial cap.
+        terminal : int
+            The terminal cap.
 
         """
-        self.cap[offset:] = (initial, terminal)
+        dvz.segment_cap(self.c_visual, initial, terminal)
 
 
 # -------------------------------------------------------------------------------------------------

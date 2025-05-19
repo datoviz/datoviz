@@ -6482,24 +6482,15 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
-    the index of the first item to update
-count : uint32_t
-    the number of items to update
-initial : DvzCapType*
-    the initial segment cap types
-terminal : DvzCapType*
-    the terminal segment cap types
-flags : int
-    the data update flags
+initial : DvzCapType
+    the initial segment cap type
+terminal : DvzCapType
+    the terminal segment cap type
 """
 segment_cap.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    ctypes.c_uint32,  # uint32_t first
-    ctypes.c_uint32,  # uint32_t count
-    ndpointer(dtype=np.int32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzCapType* initial
-    ndpointer(dtype=np.int32, ndim=1, ncol=1, flags="C_CONTIGUOUS"),  # DvzCapType* terminal
-    ctypes.c_int,  # int flags
+    DvzCapType,  # DvzCapType initial
+    DvzCapType,  # DvzCapType terminal
 ]
 
 # Function dvz_segment_alloc()

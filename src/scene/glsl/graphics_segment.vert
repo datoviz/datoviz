@@ -8,13 +8,20 @@
 #include "common.glsl"
 #include "constants.glsl"
 
+layout(std140, binding = USER_BINDING) uniform Params
+{
+    int cap0;
+    int cap1;
+}
+params;
+
 layout(location = 0) in vec3 P0;
 layout(location = 1) in vec3 P1;
 layout(location = 2) in vec4 shift;
 layout(location = 3) in vec4 color;
 layout(location = 4) in float linewidth;
-layout(location = 5) in int cap0;
-layout(location = 6) in int cap1;
+// layout(location = 5) in int cap0;
+// layout(location = 6) in int cap1;
 
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec2 out_texcoord;
@@ -28,6 +35,9 @@ void main(void)
     out_linewidth = linewidth;
 
     int index = gl_VertexIndex % 4;
+
+    int cap0 = params.cap0;
+    int cap1 = params.cap1;
 
     vec4 P0_ = transform(P0, shift.xy);
     vec4 P1_ = transform(P1, shift.zw);

@@ -2244,15 +2244,10 @@ dvz_segment_linewidth(DvzVisual* visual, uint32_t first, uint32_t count, float* 
  * Set the segment cap types.
  *
  * @param visual the visual
- * @param first the index of the first item to update
- * @param count the number of items to update
- * @param initial the initial segment cap types
- * @param terminal the terminal segment cap types
- * @param flags the data update flags
+ * @param initial the initial segment cap type
+ * @param terminal the terminal segment cap type
  */
-DVZ_EXPORT void dvz_segment_cap(
-    DvzVisual* visual, uint32_t first, uint32_t count, //
-    DvzCapType* initial, DvzCapType* terminal, int flags);
+DVZ_EXPORT void dvz_segment_cap(DvzVisual* visual, DvzCapType initial, DvzCapType terminal);
 
 
 

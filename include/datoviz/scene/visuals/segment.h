@@ -28,6 +28,7 @@
 /*************************************************************************************************/
 
 typedef struct DvzSegmentVertex DvzSegmentVertex;
+typedef struct DvzSegmentParams DvzSegmentParams;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -46,8 +47,14 @@ struct DvzSegmentVertex
     vec4 shift;      /* shift of start (xy) and end (zw) positions, in pixels */
     DvzColor color;  /* color */
     float linewidth; /* line width, in pixels */
-    DvzCapType cap0; /* start cap enum */
-    DvzCapType cap1; /* end cap enum */
+};
+
+
+
+struct DvzSegmentParams
+{
+    DvzCapType cap0; /* type of the ends of the segment */
+    DvzCapType cap1; /* type of the ends of the segment */
 };
 
 

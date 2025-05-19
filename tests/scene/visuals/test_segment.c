@@ -54,8 +54,6 @@ int test_segment_1(TstSuite* suite)
     vec3* terminal = (vec3*)calloc(n, sizeof(vec3));
     DvzColor* color = (DvzColor*)calloc(n, sizeof(DvzColor));
     float* linewidth = (float*)calloc(n, sizeof(float));
-    DvzCapType* initial_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
-    DvzCapType* terminal_cap = (DvzCapType*)calloc(n, sizeof(DvzCapType));
 
     for (uint32_t i = 0; i < n; i++)
     {
@@ -70,15 +68,12 @@ int test_segment_1(TstSuite* suite)
         color[i][3] = TO_ALPHA(216);
 
         linewidth[i] = 10.0f;
-
-        initial_cap[i] = i % DVZ_CAP_COUNT;
-        terminal_cap[i] = i % DVZ_CAP_COUNT;
     }
 
     dvz_segment_position(visual, 0, n, initial, terminal, 0);
     dvz_segment_color(visual, 0, n, color, 0);
     dvz_segment_linewidth(visual, 0, n, linewidth, 0);
-    dvz_segment_cap(visual, 0, n, initial_cap, terminal_cap, 0);
+    dvz_segment_cap(visual, DVZ_CAP_ROUND, DVZ_CAP_ROUND);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);
@@ -87,8 +82,6 @@ int test_segment_1(TstSuite* suite)
     visual_test_end(vt);
 
     // Cleanup.
-    FREE(initial);
-    FREE(terminal);
     FREE(color);
     FREE(linewidth);
 
