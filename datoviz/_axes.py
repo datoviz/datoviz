@@ -200,7 +200,8 @@ class Axes:
         Returns
         -------
         np.ndarray
-            A 2D array of shape (n, 2) containing the normalized coordinates of the polygon's points.
+            A 2D array of shape (n, 2) containing the normalized coordinates of the polygon's
+            points.
 
         Raises
         ------

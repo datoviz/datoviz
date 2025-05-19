@@ -188,6 +188,52 @@ class ShapeCollection:
         _shape_transform(c_shape, offset=offset, scale=scale, transform=transform)
         self.c_shapes.append(c_shape)
 
+    def add_custom(
+        self,
+        positions: np.ndarray,
+        normals: np.ndarray = None,
+        colors: np.ndarray = None,
+        texcoords: np.ndarray = None,
+        indices: np.ndarray = None,
+        offset: tuple[float, float, float] = None,
+        scale: float = None,
+        transform: Mat4 = None,
+    ):
+        """
+        Add a custom shape to the collection with optional transformations.
+
+        Parameters
+        ----------
+        positions : np.ndarray
+            An (N, 3) array with the vertex positions.
+        normals : np.ndarray, optional
+            An (N, 3) array with the vertex normal vectors.
+        colors : np.ndarray, optional
+            An (N, 4) array with the vertex colors.
+        texcoords : np.ndarray, optional
+            An (N, 4) array with the vertex texture coordinates.
+        indices : np.ndarray, optional
+            An (M,) array with the face indices.
+        offset : tuple of float, optional
+            The (x, y, z) offset to apply, by default None.
+        scale : float, optional
+            The scale factor to apply, by default None.
+        transform : Mat4, optional
+            A 4x4 transformation matrix, by default None.
+        """
+        c_shape = dvz.shape()
+        dvz.shape_custom(
+            c_shape,
+            positions.shape[0],
+            positions,
+            normals,
+            colors,
+            texcoords,
+            indices.size if indices is not None else 0,
+            indices,
+        )
+        self.add(c_shape, offset=offset, scale=scale, transform=transform)
+
     def add_square(
         self,
         offset: tuple[float, float, float] = None,
