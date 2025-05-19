@@ -8,13 +8,12 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
-
 # -------------------------------------------------------------------------------------------------
 # Constants
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-HEADERS_JSON = ROOT_DIR / "tools/headers.json"
+HEADERS_JSON = ROOT_DIR / "build/headers.json"
 FUNCTIONS_TXT = ROOT_DIR / "wasm_functions.txt"
 WRAPPERS_JS = ROOT_DIR / "build/wrappers.js"
 

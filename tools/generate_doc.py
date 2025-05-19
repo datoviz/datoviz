@@ -15,7 +15,7 @@ from textwrap import dedent, indent
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
-HEADERS_FILE = ROOT_DIR / 'tools/headers.json'
+HEADERS_FILE = ROOT_DIR / 'build/headers.json'
 API_OUTPUT = ROOT_DIR / 'docs/api.md'
 EXAMPLES_PATH = ROOT_DIR / 'docs/examples.md'
 EXAMPLES_DIR = ROOT_DIR / 'examples/'

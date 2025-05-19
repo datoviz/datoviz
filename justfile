@@ -1041,12 +1041,12 @@ headers:
 [linux]
 [macos]
 symbols:
-    @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/tools/headers.json > {{justfile_directory()}}/symbols.map
+    @jq -r '.[] | .functions | keys[]' {{justfile_directory()}}/build/headers.json > {{justfile_directory()}}/symbols.map
 #
 
 [windows]
 symbols:
-    @jq -r ".[] | .functions | keys[]" "{{justfile_directory()}}\\tools\\headers.json" > "{{justfile_directory()}}\\symbols.map"
+    @jq -r ".[] | .functions | keys[]" "{{justfile_directory()}}\\build\\headers.json" > "{{justfile_directory()}}\\symbols.map"
 #
 
 

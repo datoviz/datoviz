@@ -414,7 +414,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
 
 
 if __name__ == "__main__":
-    headers_json_path = ROOT_DIR / 'tools/headers.json'
+    headers_json_path = ROOT_DIR / 'build/headers.json'
     output_path = ROOT_DIR / 'datoviz/_ctypes.py'
     version_path = ROOT_DIR / 'include/datoviz_version.h'
 

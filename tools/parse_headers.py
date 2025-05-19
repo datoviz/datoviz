@@ -3,29 +3,30 @@
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from functools import lru_cache
 import json
-from pathlib import Path
-import os
-from pprint import pprint
 import re
-import sys
-from textwrap import indent
+from functools import lru_cache
+from pathlib import Path
 
-from tqdm import tqdm
-import pyparsing as pp
 from pyparsing import (
-    Suppress, Word, alphas, alphanums, nums, Optional, Group, ZeroOrMore, empty, restOfLine,
-    Keyword, cStyleComment, Empty, Literal
+    Group,
+    Keyword,
+    Literal,
+    Optional,
+    Suppress,
+    Word,
+    ZeroOrMore,
+    alphanums,
+    cStyleComment,
 )
-
+from tqdm import tqdm
 
 # Constants
 # -------------------------------------------------------------------------------------------------
 
 ROOT_DIR = Path(__file__).parent.parent
 HEADER_DIR = (ROOT_DIR / 'include').resolve()
-CACHE_PATH = ROOT_DIR / 'tools/headers.json'
+CACHE_PATH = ROOT_DIR / 'build/headers.json'
 EXCLUDE_DEFINES = (
     'DVZ_COLOR_CVEC4',
     'DvzColor',
@@ -72,7 +73,7 @@ def _resolve_defines(defines, ctx=None):
             try:
                 defines[k] = eval(v, ctx)
                 ctx.update(defines.copy())
-            except Exception as e:
+            except Exception:
                 # print(f"Error parsing {k}={v}: {e}")
                 defines[k] = None
             # print(k, v, defines[k])
@@ -202,7 +203,7 @@ def parse_functions(text):
     ellipsis = Literal("...")("ellipsis")
     argType = Optional(const("const")) + Optional(unsigned("unsigned")) + \
         dtype("dtype") + Optional(identifier("name"))
-    argDecl = Group((argType | ellipsis)) + Optional(COMMA)
+    argDecl = Group(argType | ellipsis) + Optional(COMMA)
     args = Group(ZeroOrMore(argDecl))
     # NOTE: make DVZ_EXPORT mandatory to avoid parsing non-functions such as DvzErrorCallback
     # in datoviz_macros.h
@@ -283,7 +284,7 @@ def parse_headers():
 def load_headers():
     if not Path(CACHE_PATH).exists():
         parse_headers()
-    with open(CACHE_PATH, 'r') as f:
+    with open(CACHE_PATH) as f:
         return json.load(f)
 
 

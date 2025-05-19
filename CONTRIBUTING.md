@@ -25,7 +25,7 @@ Datoviz provides two layers of Python bindings:
 
 The low-level bindings are automatically generated from the C headers and written to `datoviz/_ctypes_.py`. This file is committed to the repository but **should not be edited manually**.
 
-The C header files are parsed by `tools/parse_headers.py`, which outputs a structured representation to `tools/headers.json`. This JSON file serves as the source for both:
+The C header files are parsed by `tools/parse_headers.py`, which outputs a structured representation to `build/headers.json`. This JSON file serves as the source for both:
 
 - The generation of the `ctypes` Python bindings.
 - The generation of the C API documentation.
