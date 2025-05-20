@@ -14,7 +14,7 @@ It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitiv
 
 > ⚠️ **Note:** Datoviz is a relatively low-level library focused on rendering graphical primitives (points, lines, images, etc.).
 > It does **not** provide high-level plotting functions like `plt.plot()` or `plt.imshow()`, but offers a flexible and efficient API for building visualizations.
-> A higher-level plotting layer will be available in **Vispy 2.0**, with Datoviz as the rendering backend via the upcoming **GSP** (Graphics Server Protocol).
+> A higher-level plotting layer will be available in **VisPy 2.0**, with Datoviz as the rendering backend via the upcoming **GSP** (Graphics Server Protocol).
 
 
 Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.

@@ -13,10 +13,11 @@ Whether you're building research tools, real-time visual interfaces, or custom s
 
 - 🔬 Designed for **scientific data**: high-dimensional, large-scale, precise
 - 🚀 **GPU-accelerated** rendering with Vulkan (and WebGPU support in progress)
-- 🎯 Minimal core API, no unnecessary dependencies
+- 🖥️ **Integrated GUIs** with Dear ImGui
 - 🧩 Support for multiple **visual primitives**: points, lines, images, meshes, volumes, and more
-- 🔁 Built-in interactivity: pan, zoom, arcball, user input, event hooks
-- 🧪 C and Python bindings, ideal for integrating with existing workflows
+- 🎯 Minimal core API, no unnecessary dependencies
+- 🔁 Built-in interactivity: pan & zoom, arcball, keyboard & mouse input, event hooks
+- 🧪 C/C++ and Python bindings
 
 
 ## What Datoviz is — and isn't
@@ -25,7 +26,7 @@ Whether you're building research tools, real-time visual interfaces, or custom s
 
 Unlike libraries such as **Matplotlib**, Datoviz does **not** provide high-level plotting functions like `plt.plot()`, `plt.scatter()`, or `plt.imshow()`. Its goal is **not** to replace plotting libraries, but to serve as a powerful rendering backend for scientific graphics.
 
-A higher-level plotting API is being developed as part of **Vispy 2.0**, which will use Datoviz as a rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API.
+A higher-level plotting API is being developed as part of **VisPy 2.0**, which will use Datoviz as a rendering backend. An intermediate layer called **GSP** (Graphics Specification Protocol) will provide a backend-agnostic API.
 
 
 

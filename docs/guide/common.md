@@ -27,7 +27,7 @@ panel = figure.panel()
 
 ## Axes (2D only)
 
-Datoviz currently supports **2D axes only** (3D views have now axes for now). You can add axes to a panel using:
+Datoviz currently supports **2D axes only** (3D views have no axes for now). You can add axes to a panel using:
 
 ```python
 axes = panel.axes((xmin, xmax), (ymin, ymax))
