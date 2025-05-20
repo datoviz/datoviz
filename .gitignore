@@ -57,7 +57,7 @@ __pycache__
 datoviz/*.c
 
 # Datoviz-specific
-build*
+build*/
 screenshots
 .vs
 .vscode
@@ -85,3 +85,5 @@ site
 release_artifacts
 bugs
 notes.md
+
+docs/gallery/

@@ -1,0 +1,122 @@
+#!/usr/bin/env python3
+import re
+from pathlib import Path
+from textwrap import dedent
+
+import yaml
+
+EXAMPLES_DIR = Path('examples')
+GALLERY_DIR = Path('docs/gallery')
+CATEGORIES = ['showcase', 'visuals', 'features']
+GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/main/gallery'
+
+
+def extract_metadata(script_path):
+    content = script_path.read_text(encoding='utf-8')
+
+    # Match top-level docstring
+    match = re.match(r'\s*[ru]?["\']{3}(.*?["\']{3})', content, re.DOTALL)
+    if not match:
+        raise ValueError(f'No docstring found in {script_path}')
+    docstring = match.group(1).strip().rstrip('\'"')
+
+    # Extract title: first line starting with #
+    lines = docstring.splitlines()
+    title_line = (
+        next((line for line in lines if line.strip().startswith('#')), '').lstrip('#').strip()
+    )
+
+    # Extract YAML block
+    yaml_match = re.search(r'^---(.*?)---', docstring, re.DOTALL | re.MULTILINE)
+    yaml_raw = yaml_match.group(1).strip() if yaml_match else ''
+    metadata = yaml.safe_load(yaml_raw) if yaml_raw else {}
+    tags = metadata.get('tags', [])
+
+    # Extract description: all lines between title and YAML block
+    yaml_start = docstring.find('---')
+    title_index = next(i for i, line in enumerate(lines) if line.strip().startswith('#'))
+    description_lines = []
+    for i in range(title_index + 1, len(lines)):
+        if lines[i].strip().startswith('---'):
+            break
+        description_lines.append(lines[i].strip())
+    description = '\n'.join(description_lines).strip()
+
+    # Remove docstring from the rest of the code
+    code_body = re.sub(
+        r'^\s*[ru]?["\']{3}.*?["\']{3}', '', content, count=1, flags=re.DOTALL
+    ).lstrip()
+
+    return {
+        'title': title_line,
+        'description': description,
+        'tags': tags,
+        'code': dedent(code_body).rstrip(),
+    }
+
+
+def generate_example_page(category, script_path, output_path):
+    name = script_path.stem
+    meta = extract_metadata(script_path)
+    screenshot_url = f'{GITHUB_IMG_BASE}/{category}/{name}.png'
+    back_link = f'[← Back to gallery](../index.md#{category})'
+
+    md = f"""\
+# {meta['title']}
+
+{meta['description']}
+
+**Tags**: {', '.join(meta['tags'])}
+
+![Screenshot]({screenshot_url})
+
+=== "Python code"
+
+    ```python
+    {meta['code'].replace('\n', '\n    ')}
+    ```
+
+{back_link}
+"""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(md.strip() + '\n', encoding='utf-8')
+
+
+def generate_index(pages):
+    lines = ['# Gallery\n']
+    for category in CATEGORIES:
+        lines.append(f'## {category.capitalize()}\n')
+        lines.append('<div class="grid cards" markdown="1">\n')
+        for name, title in pages.get(category, []):
+            screenshot_url = f'{GITHUB_IMG_BASE}/{category}/{name}.png'
+            page_url = f'{category}/{name}/'
+            lines.append(f"""\
+<div class="card">
+  <a href="{page_url}">
+    <img src="{screenshot_url}" alt="{title}" />
+    <div class="card-title">{title}</div>
+  </a>
+</div>
+""")
+        lines.append('</div>\n')
+    return '\n'.join(lines)
+
+
+def main():
+    all_pages = {}
+    for category in CATEGORIES:
+        example_dir = EXAMPLES_DIR / category
+        output_dir = GALLERY_DIR / category
+        for script_path in sorted(example_dir.glob('*.py')):
+            name = script_path.stem
+            output_path = output_dir / f'{name}.md'
+            metadata = extract_metadata(script_path)
+            generate_example_page(category, script_path, output_path)
+            all_pages.setdefault(category, []).append((name, metadata['title']))
+    index_path = GALLERY_DIR / 'index.md'
+    index_md = generate_index(all_pages)
+    index_path.write_text(index_md, encoding='utf-8')
+
+
+if __name__ == '__main__':
+    main()

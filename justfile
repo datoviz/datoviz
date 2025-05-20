@@ -1091,7 +1091,7 @@ tryimport:
     python -c "import datoviz"
 #
 
-api: headers symbols ctypes doc docexamples tryimport # after every API update
+api: headers symbols ctypes doc tryimport # after every API update
 #
 
 
@@ -1293,45 +1293,36 @@ python *args:
 # Examples
 # -------------------------------------------------------------------------------------------------
 
-[linux]
-runexample name="":
-    ./build/example_{{name}}
-#
+# [linux]
+# runexample name="":
+#     ./build/example_{{name}}
+# #
 
-[macos]
-runexample name="":
-    @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
-#
+# [macos]
+# runexample name="":
+#     @VK_DRIVER_FILES="libs/vulkan/macos/MoltenVK_icd.json" ./build/example_{{name}}
+# #
 
-[windows]
-runexample name="":
-    ./build/example_{{name}}.exe
-#
+# [windows]
+# runexample name="":
+#     ./build/example_{{name}}.exe
+# #
 
-example name="":
-    gcc -o build/example_{{name}} examples/c/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
-    just runexample {{name}}
-#
+# example name="":
+#     gcc -o build/example_{{name}} examples/c/{{name}}.c -Iinclude/ -Lbuild/ -Wl,-rpath,build -lm -ldatoviz
+#     just runexample {{name}}
+# #
 
-runexamples:
-    #!/usr/bin/env sh
-    # set -e  # do not stop if one example fails
-    mkdir -p data/screenshots/examples
-    for file in examples/*/*.py; do
-        bn=$(basename $file)
-        name="${bn%.*}"
-        echo "Running $name..."
-        DVZ_CAPTURE_PNG=data/screenshots/examples/$name.png python $file
-        echo ""
-    done
-#
+# Run all Python examples and generate a screenshot in data/gallery/
+examples:
+    @echo "Generating screenshots from examples..."
+    @python tools/run_examples.py
 
-docexamples:
-    @python tools/generate_doc.py examples
-#
 
-examples: runexamples docexamples
-#
+# Build the gallery Markdown files
+gallery:
+    @echo "Generating the gallery Markdown files..."
+    @python tools/build_gallery.py
 
 
 # -------------------------------------------------------------------------------------------------
