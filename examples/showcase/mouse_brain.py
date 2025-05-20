@@ -1,5 +1,5 @@
 """
-# Mesh example
+# Mesh example: mouse brain surface
 
 Show a 3D mesh.
 ---

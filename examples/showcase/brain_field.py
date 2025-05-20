@@ -1,5 +1,5 @@
 """
-# Mesh example
+# Mesh example: scalar field on brain surface
 
 Show a 3D mesh.
 

@@ -1,5 +1,5 @@
 """
-# Molecule
+# Molecule using 3D spheres
 
 ---
 tags:

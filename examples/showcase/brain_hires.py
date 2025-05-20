@@ -1,5 +1,5 @@
 """
-# Mesh example
+# Mesh example: high-resolution 3D mesh surface of human brain
 
 Show a 3D mesh.
 
