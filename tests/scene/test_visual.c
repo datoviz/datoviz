@@ -74,8 +74,9 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_update(visual);
 
     // Create a canvas.
-    DvzRequest req =
-        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    DvzRequest req = dvz_create_canvas(
+        batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR,
+        DVZ_APP_FLAGS_OFFSCREEN | DVZ_CANVAS_FLAGS_PUSH_SCALE);
     DvzId canvas_id = req.id;
     req = dvz_set_background(batch, canvas_id, (cvec4){32, 64, 128, 255});
 

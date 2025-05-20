@@ -146,6 +146,10 @@ DvzFigure* dvz_figure(DvzScene* scene, uint32_t width, uint32_t height, int flag
     if (checkenv("DVZ_VSYNC"))
         flags |= DVZ_CANVAS_FLAGS_VSYNC;
 
+    // HACK: when using the Scene API, all shaders expect a canvas scale push constant which is
+    // automatically added by the recorder (which checks the existence of this flag in the canvas).
+    flags |= DVZ_CANVAS_FLAGS_PUSH_SCALE;
+
     // Initialize the structure.
     DvzFigure* fig = (DvzFigure*)calloc(1, sizeof(DvzFigure));
     fig->scene = scene;

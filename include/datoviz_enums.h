@@ -49,6 +49,7 @@ typedef enum
     DVZ_CANVAS_FLAGS_MONITOR = 0x0005, // NOTE: 1 bit for ImGUI, 1 bit for Monitor
     DVZ_CANVAS_FLAGS_VSYNC = 0x0010,
     DVZ_CANVAS_FLAGS_PICK = 0x0020,
+    DVZ_CANVAS_FLAGS_PUSH_SCALE = 0x0040, // HACK: shaders expect a push constant with scaling
 } DvzCanvasFlags;
 
 

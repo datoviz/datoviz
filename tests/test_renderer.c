@@ -69,8 +69,9 @@ int test_renderer_1(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create an offscreen canvas.
-    req =
-        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    req = dvz_create_canvas(
+        batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR,
+        DVZ_APP_FLAGS_OFFSCREEN | DVZ_CANVAS_FLAGS_PUSH_SCALE);
     DvzId canvas_id = req.id;
 
     // Canvas clear color.
@@ -177,8 +178,9 @@ int test_renderer_graphics(TstSuite* suite)
     DvzRequest req = {0};
 
     // Create an offscreen canvas.
-    req =
-        dvz_create_canvas(batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR, DVZ_APP_FLAGS_OFFSCREEN);
+    req = dvz_create_canvas(
+        batch, WIDTH, HEIGHT, DVZ_DEFAULT_CLEAR_COLOR,
+        DVZ_APP_FLAGS_OFFSCREEN | DVZ_CANVAS_FLAGS_PUSH_SCALE);
     DvzId canvas_id = req.id;
 
     // Canvas clear color.

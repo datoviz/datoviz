@@ -41,9 +41,12 @@
 #define PUSH_CANVAS_SCALE                                                                         \
     float scale = canvas->scale;                                                                  \
     scale = scale == 0 ? 1 : scale;                                                               \
-    dvz_cmd_push(                                                                                 \
-        cmds, img_idx, pipe->descriptors.dslots, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT,         \
-        DVZ_PUSH_SCALE_OFFSET, DVZ_PUSH_SCALE_SIZE, &scale);
+    if ((canvas->flags & DVZ_CANVAS_FLAGS_PUSH_SCALE) != 0)                                       \
+    {                                                                                             \
+        dvz_cmd_push(                                                                             \
+            cmds, img_idx, pipe->descriptors.dslots, DVZ_SHADER_VERTEX | DVZ_SHADER_FRAGMENT,     \
+            DVZ_PUSH_SCALE_OFFSET, DVZ_PUSH_SCALE_SIZE, &scale);                                  \
+    }
 
 
 
