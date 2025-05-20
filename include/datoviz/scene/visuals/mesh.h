@@ -28,7 +28,10 @@
 
 typedef struct DvzMeshColorVertex DvzMeshColorVertex;
 typedef struct DvzMeshTexturedVertex DvzMeshTexturedVertex;
-typedef struct DvzMeshParams DvzMeshParams;
+typedef struct DvzMeshLight DvzMeshLight;
+typedef struct DvzMeshMaterial DvzMeshMaterial;
+typedef struct DvzMeshContour DvzMeshContour;
+
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -66,29 +69,49 @@ struct DvzMeshTexturedVertex
 };
 
 
-
-struct DvzMeshParams
-{
-    mat4 light_dir;         /* x, y, z, *** */
-    mat4 light_color;       /* r, g, b, *** */
-    mat4 light_params;      /* ambient, diffuse, specular, exponent */
-    vec4 edgecolor;         /* r, g, b, a contour color */
-    float linewidth;        /* contour line width */
-    uint32_t isoline_count; /* number of isolines */
+struct DvzMeshLight {
+    mat4 pos;        // w=0 indicates it's a direction with no position.
+    mat4 color;      // alpha value indicates it's on.
 };
 
+struct DvzMeshMaterial {
+    mat4 params;          /* (r, g, b, -) X (ambient, specular, diffuse, emission) */
+    float shine;          /* specular amount */
+    float emit;           /* emission level */
+};
+
+struct DvzMeshContour {
+    vec4 edgecolor;      /* r, g, b, a */
+    float linewidth;     /* contour line width */
+    int isoline_count;   /* number of isolines */
+};
 
 
 typedef enum
 {
-    DVZ_MESH_PARAMS_LIGHT_DIR,
-    DVZ_MESH_PARAMS_LIGHT_COLOR,
-    DVZ_MESH_PARAMS_LIGHT_PARAMS,
+    DVZ_LIGHT_PARAMS_POS,
+    DVZ_LIGHT_PARAMS_COLOR,
+} DvzLightParamsEnum;
+
+
+typedef enum
+{
+    //DVZ_MESH_PARAMS_AMBIENT_COLOR,
+    //DVZ_MESH_PARAMS_DIFFUSE_COLOR,
+    //DVZ_MESH_PARAMS_SPECULAR_COLOR,
+    //DVZ_MESH_PARAMS_EMISSION_COLOR,
+    DVZ_MESH_PARAMS_PARAMS,
+    DVZ_MESH_PARAMS_SHINE,
+    DVZ_MESH_PARAMS_EMIT,
+} DvzMeshParamsEnum;
+
+
+typedef enum
+{
     DVZ_MESH_PARAMS_EDGECOLOR,
     DVZ_MESH_PARAMS_LINEWIDTH,
     DVZ_MESH_PARAMS_ISOLINE_COUNT,
-} DvzMeshParamsEnum;
-
+} DvzMeshContourEnum;
 
 
 #endif

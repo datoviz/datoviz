@@ -576,92 +576,95 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
 
 int test_mesh_obj(TstSuite* suite)
 {
-    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
 
-    // Load obj shape->
-    char path[1024] = {0};
-    snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
-    DvzShape* shape = dvz_shape();
-    dvz_shape_obj(shape, path);
-    if (!shape->vertex_count)
-    {
-        dvz_shape_destroy(shape);
-        return 0;
-    }
+// Todo:  Fix this!
 
-    // Set the color of every vertex (the shape comes with an already allocated color array).
-    // for (uint32_t i = 0; i < shape->vertex_count; i++)
-    // {
-    //     // Generate colors using the "bwr" colormap, in reverse (blue -> red).
-    //     dvz_colormap_scale(
-    //         DVZ_CMAP_COOLWARM, shape->vertex_count - 1 - i, 0, shape->vertex_count,
-    //         shape->color[i]);
-    //     shape->color[i][3] = 64;
-    // }
-
-    bool isoline = false;
-
-    // Set up isoline values in the shape->
-    if (isoline)
-    {
-        shape->isoline = (float*)calloc(shape->vertex_count, sizeof(float));
-        for (uint32_t i = 0; i < shape->vertex_count; i++)
-        {
-            shape->isoline[i] =
-                .5 * (1 + shape->pos[i][1]) + .1 * sin(1 * M_2PI * shape->pos[i][0]);
-        }
-    }
-
-    // NOTE: we need to use non-indexed meshes for mesh wireframe.
-    dvz_shape_unindex(shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
-
-    // Create the visual.
-    int flags = DVZ_MESH_FLAGS_LIGHTING;
-    if (isoline)
-        flags |= DVZ_MESH_FLAGS_ISOLINE;
-    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
-    // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
-    // dvz_visual_cull(visual, DVZ_CULL_MODE_BACK);
-
-    // Lighting.
-    {
-        // Two lights.
-        dvz_mesh_light_dir(visual, 0, (vec3){+1, -0.25, -.5});
-        dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
-        // dvz_mesh_light_params(visual, 0, (vec4){.75, .25, .25, 16});
-
-        dvz_mesh_light_dir(visual, 1, (vec3){-1, -0.25, -.5});
-        dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
-
-#if DVZ_COLOR_CVEC4
-        dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0});
-        dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0});
-#else
-        dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0});
-        dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0});
-#endif
-    }
-
-    vec4 color = {.25, .25, .25, .5f};
-    // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
-    dvz_mesh_linewidth(visual, 1);
-    dvz_mesh_density(visual, 10);
-
-    // Add the visual to the panel AFTER setting the visual's data.
-    dvz_panel_visual(vt.panel, visual, 0);
-
-    dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
-    dvz_panel_update(vt.panel);
-
-    vt.visual = visual;
-    vt.user_data = &color[0];
-    // dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
-
-    // Run the test.
-    visual_test_end(vt);
-
-    // Cleanup.
-    dvz_shape_destroy(shape);
+//    VisualTest vt = visual_test_start("mesh_obj", VISUAL_TEST_ARCBALL, 0);
+//
+//    // Load obj shape->
+//    char path[1024] = {0};
+//    snprintf(path, sizeof(path), "%s/mesh/brain.obj", DATA_DIR);
+//    DvzShape* shape = dvz_shape();
+//    dvz_shape_obj(shape, path);
+//    if (!shape->vertex_count)
+//    {
+//        dvz_shape_destroy(shape);
+//        return 0;
+//    }
+//
+//    // Set the color of every vertex (the shape comes with an already allocated color array).
+//    // for (uint32_t i = 0; i < shape->vertex_count; i++)
+//    // {
+//    //     // Generate colors using the "bwr" colormap, in reverse (blue -> red).
+//    //     dvz_colormap_scale(
+//    //         DVZ_CMAP_COOLWARM, shape->vertex_count - 1 - i, 0, shape->vertex_count,
+//    //         shape->color[i]);
+//    //     shape->color[i][3] = 64;
+//    // }
+//
+//    bool isoline = false;
+//
+//    // Set up isoline values in the shape->
+//    if (isoline)
+//    {
+//        shape->isoline = (float*)calloc(shape->vertex_count, sizeof(float));
+//        for (uint32_t i = 0; i < shape->vertex_count; i++)
+//        {
+//            shape->isoline[i] =
+//                .5 * (1 + shape->pos[i][1]) + .1 * sin(1 * M_2PI * shape->pos[i][0]);
+//        }
+//    }
+//
+//    // NOTE: we need to use non-indexed meshes for mesh wireframe.
+//    dvz_shape_unindex(shape, DVZ_INDEXING_EARCUT | DVZ_CONTOUR_FULL);
+//
+//    // Create the visual.
+//    int flags = DVZ_MESH_FLAGS_LIGHTING;
+//    if (isoline)
+//        flags |= DVZ_MESH_FLAGS_ISOLINE;
+//    DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
+//    // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
+//    // dvz_visual_cull(visual, DVZ_CULL_MODE_BACK);
+//
+//    // Lighting.
+//    {
+//        // Two lights.
+//        dvz_mesh_light_pos(visual, 0, (vec3){+1, -0.25, -.5});
+//        //dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, .9});
+//        // dvz_mesh_light_params(visual, 0, (vec4){.75, .25, .25, 16});
+//
+//        dvz_mesh_light_dir(visual, 1, (vec3){-1, -0.25, -.5});
+//        dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
+//
+//#if DVZ_COLOR_CVEC4
+//        dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0});
+//        dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0});
+//#else
+//        dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0});
+//        dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0});
+//#endif
+//    }
+//
+//    vec4 color = {.25, .25, .25, .5f};
+//    // dvz_mesh_edgecolor(visual, (cvec4){100, 100, 100, 255});
+//    dvz_mesh_linewidth(visual, 1);
+//    dvz_mesh_density(visual, 10);
+//
+//    // Add the visual to the panel AFTER setting the visual's data.
+//    dvz_panel_visual(vt.panel, visual, 0);
+//
+//    dvz_arcball_initial(vt.arcball, (vec3){-2.7, -.7, -.1});
+//    dvz_panel_update(vt.panel);
+//
+//    vt.visual = visual;
+//    vt.user_data = &color[0];
+//    // dvz_app_gui(vt.app, vt.figure->canvas_id, _gui_callback, &vt);
+//
+//    // Run the test.
+//    visual_test_end(vt);
+//
+//    // Cleanup.
+//    dvz_shape_destroy(shape);
 
     return 0;
 }

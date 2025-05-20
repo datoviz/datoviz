@@ -936,7 +936,7 @@ typedef enum
 #define DVZ_DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
 #endif
 
-#define DVZ_DEFAULT_LIGHT_PARAMS (vec4){0.75, 0.5, 0.75, 32}
+#define DVZ_DEFAULT_LIGHT_PARAMS (vec4){0.2, 0.7, 0.7, .9}
 
 
 

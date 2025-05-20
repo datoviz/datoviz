@@ -7,8 +7,15 @@
 #version 450
 #include "common.glsl"
 #include "constants.glsl"
-#include "params_mesh.glsl"
+// #include "params_mesh.glsl"
 #include "lighting.glsl"
+
+// mvp --> slot 0
+// viewport --> slot 1
+#define MESH_SLOT_LIGHT 2
+#define MESH_SLOT_MATERIAL 3
+#define MESH_SLOT_CONTOUR 4
+#define MESH_SLOT_TEX 5
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
@@ -30,7 +37,32 @@ layout(location = 7) in float in_isoline;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
+
+// Only used here.
+struct Mesh_Contour {
+    vec4 edgecolor;      /* r, g, b, a */
+    float linewidth;     /* contour line width */
+    int isoline_count;   /* number of isolines */
+};
+
+
+layout(std140, binding = MESH_SLOT_LIGHT) uniform u_light {
+    Light light;
+};
+
+
+layout(std140, binding = MESH_SLOT_MATERIAL) uniform u_material {
+    Material material;
+};
+
+
+layout(std140, binding = MESH_SLOT_CONTOUR) uniform u_contour {
+    Mesh_Contour contour;
+};
+
+
+layout(binding = MESH_SLOT_TEX) uniform sampler2D tex;
+
 
 // Replacement for fwidth, using L2 norm of gradient instead of L1 norm.
 float fwidth2(float p) { return sqrt(pow(abs(dFdx(p)), 2) + pow(abs(dFdy(p)), 2)); }
@@ -143,9 +175,9 @@ void main()
     //     discard;
 
     // Stroke parameters.
-    float linewidth = params.linewidth;
-    vec3 edgecolor = params.edgecolor.rgb;
-    float edge_alpha = params.edgecolor.a;
+    float linewidth = contour.linewidth;
+    vec3 edgecolor = contour.edgecolor.rgb;
+    float edge_alpha = contour.edgecolor.a;
     vec3 pos_tr;
 
     vec3 normal = normalize(in_normal);
@@ -167,20 +199,7 @@ void main()
     if (MESH_LIGHTING > 0)
     {
         vec4 cam_pos = inverse(mvp.view) * vec4(0.0, 0.0, 0.0, 1.0);  // Better in vertex shader?
-
-        mat4 light_pos = params.light_dir;
-        mat4 light_color = params.light_color;
-        mat4 material = params.light_params;
-
-        // TODO:  Update visual and panel setter functions.
-        // Current visual setters don't set w and a.
-        for (int i=0; i<4; i++)
-        {
-            light_pos[i].w = 1.0;      // w greater than 0.0 is a position.
-            light_color[i].a = 1.0;    // Alpha greater than 1.0 is on.
-        }
-
-        out_color = advanced_lighting(in_pos, color, material, normal, cam_pos, light_pos, light_color);
+        out_color = lighting(in_pos, color, normal, cam_pos, light, material);
     }
 
     // Stroke.
@@ -227,7 +246,7 @@ void main()
     {
         // Calculate the normalized distance to the nearest contour line
         float value = in_isoline; //(1 + in_pos.y)
-        float isoline = logContours(value, params.isoline_count, linewidth);
+        float isoline = logContours(value, contour.isoline_count, linewidth);
         out_color.rgb = mix(out_color.rgb, edgecolor, isoline);
     }
 }

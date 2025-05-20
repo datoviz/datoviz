@@ -7,25 +7,29 @@ Show how to manipulate advanced mesh lights.
 from pathlib import Path
 
 import datoviz as dvz
-from datoviz import vec3
+from datoviz import Out, vec3, vec4
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 file_path = ROOT_DIR / 'data/mesh/bunny.obj'
 
-light_color = (vec3( 0,  0,  1),    # Blue
-               vec3( 0,  1,  0),    # Green
-               vec3(.7, .7,  0),    # Yellow
-               vec3( 1,  0,  0))    # Red
+light_pos = (vec3(-9, 5, 15),      # Pos 0  x,y,z
+             vec3(-3, 5, 15),      # Pos 1  x,y,z
+             vec3( 3, 5, 15),      # Pos 2  x,y,z
+             vec3( 9, 5, 15))      # Pos 3  x,y,z
 
-light_pos = (vec3(-9, 1, 5),      # Pos 0  x,y,z
-             vec3(-3, 1, 5),      # Pos 1  x,y,z
-             vec3( 3, 1, 5),      # Pos 2  x,y,z
-             vec3( 9, 1, 5))      # Pos 3  x,y,z
+light_color = (vec4( 0,  0, 1, 1),    # Blue
+               vec4( 0,  1, 0, 1),    # Green
+               vec4(.7, .7, 0, 1),    # Yellow
+               vec4( 1,  0, 0, 1))    # Red
 
-material = (vec3(.2, .2, .2),     # Ambient    R, G, B
-            vec3(.8, .8, .8),     # Diffuse    R, G, B
-            vec3(.8, .8, .8),     # Specular   R, G, B
-            vec3(.9, .9, .9))     # Shininess  R, G, B
+material = (vec3(.2, .2, .2),     # Ambient   R, G, B
+            vec3(.7, .7, .7),     # Diffuse   R, G, B
+            vec3(.7, .7, .7),     # Specular  R, G, B
+            vec3(.5, .5, .5))     # Emission  R, G, B
+
+shine = Out(0.9)
+emit = Out(0.0)
+
 
 sc = dvz.ShapeCollection()
 sc.add_obj(file_path)
@@ -49,37 +53,47 @@ def update_params():
         c = light_color[i]
         visual.set_light_color((int(c[0] * 255),
                                 int(c[1] * 255),
-                                int(c[2] * 255)) , i)
+                                int(c[2] * 255),
+                                int(c[3] * 255)), i)
         visual.set_light_dir(light_pos[i], i)
-        visual.set_light_params(material[i], i)
+        visual.set_material_params(material[i], i)   # for ambient, specular, diffuse, and emission.
+    visual.set_shine(shine.value)
+    visual.set_emit(emit.value)
     visual.update()
 
 update_params()
 
 @app.connect(panel)
 def on_gui(ev):
-    dvz.gui_size(dvz.vec2(300, 420))
+    dvz.gui_size(dvz.vec2(300, 600))
     dvz.gui_pos(dvz.vec2(10, 10), dvz.vec2(0, 0))
+
     dvz.gui_begin('Change the light', 0)
     has_changed = False
 
-    dvz.gui_text("Light positions:")
+    dvz.gui_text("Light 1:")
     has_changed |= dvz.gui_slider_vec3('Pos 0 XYZ', -20, +20, light_pos[0])
-    has_changed |= dvz.gui_slider_vec3('Pos 1 XYZ', -20, +20, light_pos[1])
-    has_changed |= dvz.gui_slider_vec3('Pos 2 XYZ', -20, +20, light_pos[2])
-    has_changed |= dvz.gui_slider_vec3('Pos 3 XYZ', -20, +20, light_pos[3])
+    has_changed |= dvz.gui_slider_vec4('Color 0 RGBA', 0, 1, light_color[0])
 
-    dvz.gui_text("Light colors:")
-    has_changed |= dvz.gui_slider_vec3('Color 0 RGB', 0, 1, light_color[0])
-    has_changed |= dvz.gui_slider_vec3('Color 1 RGB', 0, 1, light_color[1])
-    has_changed |= dvz.gui_slider_vec3('Color 2 RGB', 0, 1, light_color[2])
-    has_changed |= dvz.gui_slider_vec3('Color 3 RGB', 0, 1, light_color[3])
+    dvz.gui_text("Light 2:")
+    has_changed |= dvz.gui_slider_vec3('Pos 1 XYZ', -20, +20, light_pos[1])
+    has_changed |= dvz.gui_slider_vec4('Color 1 RGBA', 0, 1, light_color[1])
+
+    dvz.gui_text("Light 3:")
+    has_changed |= dvz.gui_slider_vec3('Pos 2 XYZ', -20, +20, light_pos[2])
+    has_changed |= dvz.gui_slider_vec4('Color 2 RGBA', 0, 1, light_color[2])
+
+    dvz.gui_text("Light 4:")
+    has_changed |= dvz.gui_slider_vec3('Pos 3 XYZ', -20, +20, light_pos[3])
+    has_changed |= dvz.gui_slider_vec4('Color 3 RGBA', 0, 1, light_color[3])
 
     dvz.gui_text("Material properties:")
     has_changed |= dvz.gui_slider_vec3('Ambient RGB', 0, 1, material[0])
     has_changed |= dvz.gui_slider_vec3('Diffuse RGB', 0, 1, material[1])
     has_changed |= dvz.gui_slider_vec3('Specular RGB', 0, 1, material[2])
-    has_changed |= dvz.gui_slider_vec3('Shininess RGB', 0, 1, material[3])
+    has_changed |= dvz.gui_slider_vec3('Emission RGB', 0, 1, material[3])
+    has_changed |= dvz.gui_slider('Shininess level', 0, 1, shine)
+    has_changed |= dvz.gui_slider('Emission level', 0, 1, emit)
 
     dvz.gui_end()
 

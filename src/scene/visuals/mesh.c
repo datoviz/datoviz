@@ -31,11 +31,29 @@
 
 
 /*************************************************************************************************/
+/*  Slots                                                                                        */
+/*************************************************************************************************/
+
+/*
+   mvp 0
+   viewport 1
+*/
+#define MESH_SLOT_LIGHT 2
+#define MESH_SLOT_MATERIAL 3
+#define MESH_SLOT_CONTOUR 4
+#define MESH_SLOT_TEX 5
+
+
+
+/*************************************************************************************************/
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define EDGECOLOR TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
-#define LINEWIDTH 2.0f
+#define DEFAULT_MATERIAL_PARAMS (vec4){0.2, 0.7, 0.7, .9}
+#define DEFAULT_SHINE 0.5f
+#define DEFAULT_EMIT 0.0f
+#define DEFAULT_EDGECOLOR TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
+#define DEFAULT_LINEWIDTH 2.0f
 
 
 
@@ -143,31 +161,44 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 
     // Slots.
     _common_setup(visual);
-    dvz_visual_slot(visual, 2, DVZ_SLOT_DAT);
-    dvz_visual_slot(visual, 3, DVZ_SLOT_TEX);
+    dvz_visual_slot(visual, MESH_SLOT_LIGHT, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, MESH_SLOT_MATERIAL, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, MESH_SLOT_CONTOUR, DVZ_SLOT_DAT);
+    dvz_visual_slot(visual, MESH_SLOT_TEX, DVZ_SLOT_TEX);
 
-    // Params.
-    DvzParams* params = dvz_visual_params(visual, 2, sizeof(DvzMeshParams));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_DIR, FIELD(DvzMeshParams, light_dir));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_COLOR, FIELD(DvzMeshParams, light_color));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_LIGHT_PARAMS, FIELD(DvzMeshParams, light_params));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_EDGECOLOR, FIELD(DvzMeshParams, edgecolor));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_LINEWIDTH, FIELD(DvzMeshParams, linewidth));
-    dvz_params_attr(params, DVZ_MESH_PARAMS_ISOLINE_COUNT, FIELD(DvzMeshParams, isoline_count));
+    // Lights.
+    DvzParams* light_params = dvz_visual_params(visual, MESH_SLOT_LIGHT, sizeof(DvzMeshLight));
+    dvz_params_attr(light_params, DVZ_LIGHT_PARAMS_POS, FIELD(DvzMeshLight, pos));
+    dvz_params_attr(light_params, DVZ_LIGHT_PARAMS_COLOR, FIELD(DvzMeshLight, color));
+
+    // Material.
+    DvzParams* material_params = dvz_visual_params(visual, MESH_SLOT_MATERIAL, sizeof(DvzMeshMaterial));
+    dvz_params_attr(material_params, DVZ_MESH_PARAMS_PARAMS, FIELD(DvzMeshMaterial, params));
+    dvz_params_attr(material_params, DVZ_MESH_PARAMS_SHINE, FIELD(DvzMeshMaterial, shine));
+    dvz_params_attr(material_params, DVZ_MESH_PARAMS_EMIT, FIELD(DvzMeshMaterial, emit));
+
+    // Contour.
+    DvzParams* params = dvz_visual_params(visual, MESH_SLOT_CONTOUR, sizeof(DvzMeshContour));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_EDGECOLOR, FIELD(DvzMeshContour, edgecolor));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_LINEWIDTH, FIELD(DvzMeshContour, linewidth));
+    dvz_params_attr(params, DVZ_MESH_PARAMS_ISOLINE_COUNT, FIELD(DvzMeshContour, isoline_count));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
-        visual, 3, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
+        visual, MESH_SLOT_TEX, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
 
     // Default light parameters.
     if (lighting > 0)
     {
+        dvz_mesh_light_pos(visual, 0, DVZ_DEFAULT_LIGHT_POS);
         dvz_mesh_light_color(visual, 0, DVZ_DEFAULT_LIGHT_COLOR);
-        dvz_mesh_light_dir(visual, 0, DVZ_DEFAULT_LIGHT_DIR);
-        dvz_mesh_light_params(visual, 0, DVZ_DEFAULT_LIGHT_PARAMS);
+
+        dvz_mesh_material_params(visual, 0, DEFAULT_MATERIAL_PARAMS);
+        dvz_mesh_shine(visual, DEFAULT_SHINE);
+        dvz_mesh_emit(visual, DEFAULT_EMIT);
     }
-    dvz_mesh_edgecolor(visual, (DvzColor){EDGECOLOR});
-    dvz_mesh_linewidth(visual, LINEWIDTH);
+    dvz_mesh_edgecolor(visual, (DvzColor){DEFAULT_EDGECOLOR});
+    dvz_mesh_linewidth(visual, DEFAULT_LINEWIDTH);
     dvz_mesh_density(visual, 10);
 
     // Visual draw callback.
@@ -296,12 +327,12 @@ void dvz_mesh_texture(DvzVisual* visual, DvzTexture* texture)
     }
 
     dvz_texture_create(texture); // only create it if it is not already created
-    dvz_visual_tex(visual, 3, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
+    dvz_visual_tex(visual, MESH_SLOT_TEX, texture->tex, texture->sampler, DVZ_ZERO_OFFSET);
 }
 
 
 
-void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir)
+void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec3 pos)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -311,15 +342,15 @@ void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir)
         return;
     }
 
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_DIR;
-    mat4* light_dir = _get_param(visual, slot_idx, attr_idx);
+    uint32_t slot_idx = MESH_SLOT_LIGHT;
+    uint32_t attr_idx = DVZ_LIGHT_PARAMS_POS;
+    mat4* light_pos = _get_param(visual, slot_idx, attr_idx);
 
     // NOTE: matrix order is transposed between C and glsl
-    light_dir[0][idx][0] = dir[0];
-    light_dir[0][idx][1] = dir[1];
-    light_dir[0][idx][2] = dir[2];
-    dvz_visual_param(visual, slot_idx, attr_idx, light_dir);
+    light_pos[0][idx][0] = pos[0];
+    light_pos[0][idx][1] = pos[1];
+    light_pos[0][idx][2] = pos[2];
+    dvz_visual_param(visual, slot_idx, attr_idx, light_pos);
 }
 
 
@@ -334,8 +365,8 @@ void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
         return;
     }
 
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_COLOR;
+    uint32_t slot_idx = MESH_SLOT_LIGHT;
+    uint32_t attr_idx = DVZ_LIGHT_PARAMS_COLOR;
     mat4* light_color = _get_param(visual, slot_idx, attr_idx);
 
     // NOTE: matrix order is transposed between C and glsl
@@ -345,10 +376,12 @@ void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
     light_color[0][idx][0] = rgba[0] / 255.0;
     light_color[0][idx][1] = rgba[1] / 255.0;
     light_color[0][idx][2] = rgba[2] / 255.0;
+    light_color[0][idx][3] = rgba[3] / 255.0;
 #else
     light_color[0][idx][0] = rgba[0];
     light_color[0][idx][1] = rgba[1];
     light_color[0][idx][2] = rgba[2];
+    light_color[0][idx][3] = rgba[3];
 #endif
 
     dvz_visual_param(visual, slot_idx, attr_idx, light_color);
@@ -356,7 +389,7 @@ void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
 
 
 
-void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params)
+void dvz_mesh_material_params(DvzVisual* visual, uint32_t idx, vec3 params)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -366,16 +399,32 @@ void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params)
         return;
     }
 
-    uint32_t slot_idx = 2;
-    uint32_t attr_idx = DVZ_MESH_PARAMS_LIGHT_PARAMS;
-    mat4* light_params = _get_param(visual, slot_idx, attr_idx);
+    uint32_t slot_idx = MESH_SLOT_MATERIAL;
+    uint32_t attr_idx = DVZ_MESH_PARAMS_PARAMS;
+    mat4* material_params = _get_param(visual, slot_idx, attr_idx);
 
     // NOTE: matrix order is transposed between C and glsl
-    light_params[0][idx][0] = params[0];
-    light_params[0][idx][1] = params[1];
-    light_params[0][idx][2] = params[2];
-    light_params[0][idx][3] = params[3];
-    dvz_visual_param(visual, slot_idx, attr_idx, light_params);
+    material_params[0][idx][0] = params[0];
+    material_params[0][idx][1] = params[1];
+    material_params[0][idx][2] = params[2];
+    material_params[0][idx][3] = 1.0;  //params[3];
+    dvz_visual_param(visual, slot_idx, attr_idx, material_params);
+}
+
+
+
+void dvz_mesh_shine(DvzVisual* visual, float shine)
+{
+    ANN(visual);
+    dvz_visual_param(visual, MESH_SLOT_MATERIAL, DVZ_MESH_PARAMS_SHINE, &shine);
+}
+
+
+
+void dvz_mesh_emit(DvzVisual* visual, float emit)
+{
+    ANN(visual);
+    dvz_visual_param(visual, MESH_SLOT_MATERIAL, DVZ_MESH_PARAMS_EMIT, &emit);
 }
 
 
@@ -396,7 +445,7 @@ void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba)
     color[2] = rgba[2];
     color[3] = rgba[3];
 #endif
-    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_EDGECOLOR, color);
+    dvz_visual_param(visual, MESH_SLOT_CONTOUR, DVZ_MESH_PARAMS_EDGECOLOR, color);
 }
 
 
@@ -404,7 +453,7 @@ void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba)
 void dvz_mesh_linewidth(DvzVisual* visual, float linewidth)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_LINEWIDTH, &linewidth);
+    dvz_visual_param(visual, MESH_SLOT_CONTOUR, DVZ_MESH_PARAMS_LINEWIDTH, &linewidth);
 }
 
 
@@ -412,7 +461,7 @@ void dvz_mesh_linewidth(DvzVisual* visual, float linewidth)
 void dvz_mesh_density(DvzVisual* visual, uint32_t count)
 {
     ANN(visual);
-    dvz_visual_param(visual, 2, DVZ_MESH_PARAMS_ISOLINE_COUNT, &count);
+    dvz_visual_param(visual, MESH_SLOT_CONTOUR, DVZ_MESH_PARAMS_ISOLINE_COUNT, &count);
 }
 
 

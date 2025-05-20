@@ -1339,7 +1339,7 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
  * @param idx the light index (0, 1, 2, or 3)
  * @param dir the light direction
  */
-DVZ_EXPORT void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir);
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec3 pos);
 
 
 
@@ -1355,13 +1355,33 @@ DVZ_EXPORT void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor r
 
 
 /**
- * Set the light parameters.
+ * Set the mesh material parameters.
  *
  * @param visual the mesh
- * @param idx the light index (0, 1, 2, or 3)
- * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
+ * @param idx the mesh index (0, 1, 2, or 3)
+ * @param params the material parameters (vec4 ambient, diffuse, specular, exponent)
  */
-DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params);
+DVZ_EXPORT void dvz_mesh_material_params(DvzVisual* visual, uint32_t idx, vec3 params);
+
+
+
+/**
+ * Set the mesh surface shine level.
+ *
+ * @param visual the mesh
+ * @param shine the surface shininess
+ */
+DVZ_EXPORT void dvz_mesh_shine(DvzVisual* visual, float shine);
+
+
+
+/**
+ * Set the mesh surface emission level.
+ *
+ * @param visual the mesh
+ * @param emit the emission level
+ */
+DVZ_EXPORT void dvz_mesh_emit(DvzVisual* visual, float emit);
 
 
 
