@@ -1,13 +1,16 @@
 """
+# Quickstart example
+
+A minimal 2D scatter plot using Datoviz with interactive axes.
+
 ---
-title: Quickstart example
-description: A minimal 2D scatter plot using Datoviz with interactive axes.
 tags:
   - axes
   - point
   - scatter
   - quickstart
 ---
+
 """
 
 import numpy as np
