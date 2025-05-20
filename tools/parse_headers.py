@@ -84,13 +84,23 @@ def _resolve_defines(defines, ctx=None):
 
 def parse_doxygen_docstring(docstring):
     # Regular expression patterns for different components of the docstring
-    description_pattern = re.compile(r'/\*\*\s*\n\s*\*\s*([^\n]+)', re.DOTALL)
     param_pattern = re.compile(r'@param\s*(?:\[\w+\])?\s*(\w+)\s+([^\n]+)', re.DOTALL)
     returns_pattern = re.compile(r'@returns\s+([^\n]+)', re.DOTALL)
 
-    # Extract the description
-    description_match = description_pattern.search(docstring)
-    description = description_match.group(1).strip() if description_match else ''
+    # Extract all lines inside the comment block
+    lines = re.findall(r'^\s*\*\s?(.*)', docstring, re.MULTILINE)
+
+    # Join lines and separate into description and tagged sections
+    description_lines = []
+    for line in lines:
+        line = line.strip()
+        if line.startswith('* '):
+            line = line[2:].strip()
+        if line.startswith(('@param', '@returns')):
+            break
+        description_lines.append(line)
+
+    description = '\n'.join(description_lines).strip()
 
     # Extract parameters
     params = []
