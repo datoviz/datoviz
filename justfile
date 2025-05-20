@@ -805,7 +805,7 @@ pydev: # install the Python binding on a development machine
 #
 
 ctypes:
-    @python tools/generate_ctypes.py
+    @python tools/build_ctypes.py
 #
 
 pytest: && examples
@@ -1329,8 +1329,8 @@ gallery:
 # Documentation
 # -------------------------------------------------------------------------------------------------
 
-doc: #headers
-    @python tools/generate_doc.py api
+doc: #gallery #headers
+    @python tools/build_api_c.py
 #
 
 serve:
