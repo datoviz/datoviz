@@ -94,8 +94,12 @@ def parse_doxygen_docstring(docstring):
     description_lines = []
     for line in lines:
         line = line.strip()
+        if line.startswith('*/'):
+            continue
         if line.startswith('* '):
             line = line[2:].strip()
+        if line == '/':
+            continue
         if line.startswith(('@param', '@returns')):
             break
         description_lines.append(line)
@@ -274,6 +278,8 @@ def parse_functions(text):
                 b.varargs = True
             if entry.const:
                 b.const = entry.const
+            if not entry.name.strip():
+                continue
             if entry.name in out_params:
                 b.out = True
                 if ' (array) ' in item.docstring:
