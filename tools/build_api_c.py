@@ -26,7 +26,7 @@ SECTION_NAMES = {
 }
 
 
-# Functions
+# Classification
 # -------------------------------------------------------------------------------------------------
 
 
@@ -63,13 +63,21 @@ def group_by_section_and_object(headers):
     return sections
 
 
+# Formatting
+# -------------------------------------------------------------------------------------------------
+
+
 def format_signature_py(fn):
-    lines = [f'dvz.{fn["name"][4:]}(']
+    ret = fn.get('returns', {})
+    ret_type = ret.get('dtype', 'void')
+    ret_desc = ret.get('docstring', '')
+    if ret_desc:
+        ret_desc = f'  # returns {ret_desc} : {ret_type}'
+    lines = [f'dvz.{fn["name"][4:]}({ret_desc}']
     for arg in fn.get('args', []):
         name = arg.get('name', '')
         doc = arg.get('docstring', '')
         pytype = map_python_type(arg)
-        # print(arg['dtype'], pytype)
         if name:
             lines.append(f'    {name},  # {doc} : {pytype}')
     lines.append(')')
@@ -82,7 +90,9 @@ def format_signature_c(fn):
     ret = fn.get('returns', {})
     ret_type = ret.get('dtype', 'void')
     ret_desc = ret.get('docstring', '')
-    lines.append(f'{ret_type} {fn["name"]}(  // {ret_desc}')
+    if ret_desc:
+        ret_desc = '  // returns ' + ret_desc
+    lines.append(f'{ret_type} {fn["name"]}({ret_desc}')
 
     args = fn.get('args', [])
     for arg in args:
@@ -101,10 +111,10 @@ def format_function(fn):
     out = [f'#### `{fn["name"]}()`\n']
     if docstring:
         out.append(docstring + '\n')
-    out.append('=== "Python"\n')
-    out.append('    ```python\n' + indent(format_signature_py(fn), '    ') + '\n    ```')
     out.append('=== "C"\n')
     out.append('    ```c\n' + indent(format_signature_c(fn), '    ') + '\n    ```')
+    out.append('=== "Python"\n')
+    out.append('    ```python\n' + indent(format_signature_py(fn), '    ') + '\n    ```')
     return '\n'.join(out) + '\n---\n'
 
 
@@ -114,8 +124,8 @@ def format_enum(name, enum_data):
 
 
 def format_struct(name, struct_data):
-    fields = '\n'.join(f'{f["dtype"]} {f["name"]}' for f in struct_data['fields'])
-    return f'### `{name}`\n```c\n{fields}\n```' + '\n\n---\n'
+    fields = '\n'.join(f'    {f["dtype"]} {f["name"]};' for f in struct_data['fields'])
+    return f'### `{name}`\n```c\nstruct {struct_data["name"]} {{\n{fields}\n}};\n```' + '\n\n---\n'
 
 
 def format_define(name, value):
@@ -154,18 +164,20 @@ def build_api_c():
     for contents in data.values():
         structs.update(contents.get('structs', {}))
     if structs:
-        out.append('\n## Structures')
+        out.append(
+            '\n## Structures\n\n> **Note**: The information about these structures is provided for reference only, do not use them in production as the structures may change with each release.\n\n'
+        )
         for name in sorted(structs):
             out.append(format_struct(name, structs[name]))
 
-    # Defines
-    defines = {}
-    for contents in data.values():
-        defines.update(contents.get('defines', {}))
-    if defines:
-        out.append('\n## Defines')
-        for name in sorted(defines):
-            out.append(format_define(name, defines[name]))
+    # # Defines
+    # defines = {}
+    # for contents in data.values():
+    #     defines.update(contents.get('defines', {}))
+    # if defines:
+    #     out.append('\n## Defines')
+    #     for name in sorted(defines):
+    #         out.append(format_define(name, defines[name]))
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT_PATH.write_text('\n\n'.join(out), encoding='utf-8')
