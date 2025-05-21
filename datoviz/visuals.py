@@ -1683,7 +1683,7 @@ class Mesh(Visual):
         self.allocate(self.count, self.index_count)
         self.index[offset:] = array
 
-    def set_light_dir(self, value: tuple, idx: int = 0) -> None:
+    def set_light_pos(self, value: tuple, idx: int = 0) -> None:
         """
         Set the direction of the light.
 
@@ -1694,8 +1694,8 @@ class Mesh(Visual):
         idx : int, optional
             The index of the light, by default 0.
         """
-        value = value if value is not None else cst.DEFAULT_LIGHT_DIR
-        dvz.mesh_light_pos(self.c_visual, idx, dvz.vec3(*value))
+        value = value if value is not None else cst.DEFAULT_LIGHT_POS
+        dvz.mesh_light_pos(self.c_visual, idx, dvz.vec4(*value))
 
     def set_light_color(self, value: tuple, idx: int = 0) -> None:
         """

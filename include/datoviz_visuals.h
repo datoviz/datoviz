@@ -1339,7 +1339,7 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
  * @param idx the light index (0, 1, 2, or 3)
  * @param dir the light direction
  */
-DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec3 pos);
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos);
 
 
 

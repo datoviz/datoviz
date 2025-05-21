@@ -332,7 +332,7 @@ void dvz_mesh_texture(DvzVisual* visual, DvzTexture* texture)
 
 
 
-void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec3 pos)
+void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos)
 {
     ANN(visual);
     if (!(visual->flags & DVZ_MESH_FLAGS_LIGHTING))
@@ -350,6 +350,7 @@ void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec3 pos)
     light_pos[0][idx][0] = pos[0];
     light_pos[0][idx][1] = pos[1];
     light_pos[0][idx][2] = pos[2];
+    light_pos[0][idx][3] = pos[3];
     dvz_visual_param(visual, slot_idx, attr_idx, light_pos);
 }
 

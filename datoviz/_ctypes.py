@@ -7383,7 +7383,7 @@ dir : unknown
 mesh_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
     ctypes.c_uint32,  # uint32_t idx
-    vec3,  # vec3 pos
+    vec4,  # vec4 pos
 ]
 
 # Function dvz_mesh_light_color()
