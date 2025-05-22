@@ -8,11 +8,16 @@ theme:
   name: material
   logo: images/logow.png
   features:
+    - content.tabs.link
+    - navigation.footer
+    - navigation.path
+    - navigation.sections
     - navigation.tabs
     - navigation.tabs.sticky
-    - navigation.expand
-    - toc.integrate
-    - content.tabs.link
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - toc.follow
   icon:
     repo: fontawesome/brands/github
 extra_css:
@@ -38,6 +43,27 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
 plugins:
   - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_section_style: table
+            docstring_style: numpy
+            filters: ["!^_"]
+            inherited_members: true
+            merge_init_into_class: true
+            parameter_headings: false
+            separate_signature: true
+            show_docstring_attributes: false
+            show_docstring_modules: false
+            show_object_full_path: false
+            show_root_heading: true
+            show_root_members_full_path: false
+            show_signature_annotations: true
+            show_source: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            heading_level: 2
 hooks:
   - tools/mkdocs_hooks.py
 nav:
