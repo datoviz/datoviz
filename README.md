@@ -37,19 +37,11 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 *Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
-<!-- CURRENT STATUS -->
-
-## 🕐 Current status [May 2025]
-
-**The current version is v0.3.**
-This release introduces major updates over v0.2, including 2D axes, a new Pythonic API, numerous improvements, and bug fixes.
-
-
 <!-- FEATURES -->
 
 ## ✨ Current features
 
-* **📊 High-quality antialiased 2D visuals**: markers, lines, paths, glyphs
+* **📊 2D visuals**: antialiased points, markers, line segments, paths, text, images
 * **📈 2D axes**
 * **🌐 3D visuals**: meshes, volumes, volume slices
 * **🌈 150 colormaps** included (from matplotlib, colorcet, MATLAB)
@@ -65,11 +57,21 @@ This release introduces major updates over v0.2, including 2D axes, a new Python
 
 
 
+<!-- CURRENT STATUS -->
+
+## 🕐 Current status [May 2025]
+
+**The current version is v0.3.**
+This release introduces major updates over v0.2, including 2D axes and a new Pythonic API.
+
+
+
+
 <!-- ROADMAP -->
 
 ## 🕐 Roadmap [May 2025]
 
-Looking ahead, the upcoming v0.4 release (late 2025) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
+Looking ahead, the upcoming v0.4 release (late 2025-early 2026) will focus on foundational improvements to the low-level engine, paving the way for the following key features in future versions:
 
 * 🧊 Correct transparency in 3D mesh and volume rendering
 * ✨ Multisample anti-aliasing (MSAA)
@@ -147,13 +149,13 @@ app.destroy()
 
 ## 📚 Documentation
 
-* [**📖 User guide**](docs/userguide.md)
-* [**🐍 Examples**](examples/)
-* [**📚 API** reference](docs/api.md)
-* [**🏛️ Architecture** overview](ARCHITECTURE.md)
-* [**🏗️ Build** instructions](BUILD.md)
-* [**👥 Contributors** instructions](CONTRIBUTING.md)
-* [**🛠️ Maintainers** instructions](MAINTAINERS.md)
+* [**📖 User guide**](https://datoviz.org/guide/)
+* [**🐍 Examples**](https://datoviz.org/gallery/)
+* [**📚 API** reference](https://datoviz.org/reference/api_py/)
+* [**🏛️ Architecture** overview](https://datoviz.org/discussions/ARCHITECTURE/)
+* [**🏗️ Build** instructions](https://datoviz.org/discussions/BUILD/)
+* [**👥 Contributors** instructions](https://datoviz.org/discussions/CONTRIBUTING/)
+* [**🛠️ Maintainers** instructions](https://datoviz.org/discussions/MAINTAINERS/)
 
 
 ## 🕰️ History
@@ -172,7 +174,7 @@ Datoviz builds on more than a decade of open-source GPU-based scientific visuali
 
 - **2025** — Datoviz **v0.3** added 2D axes, a more Pythonic API, and core improvements in usability and flexibility.
 
-Datoviz remains closely tied to **VisPy** and is being developed by one of its original authors. As part of the **VisPy 2.0** initiative (led by Cyrille Rossant and Nicolas Rougier), Datoviz will act as a low-level backend beneath a unified scientific visualization layer called the **Graphics Server Protocol (GSP)**, enabling frontends to target multiple renderers (Datoviz, Matplotlib, etc.).
+Datoviz remains closely tied to **VisPy** and is being developed by one of its original authors. As part of the **VisPy 2.0** initiative (led by Cyrille Rossant and Nicolas Rougier, two of the original creators of VisPy), Datoviz will act as a low-level backend beneath a unified scientific visualization layer called the **Graphics Server Protocol (GSP)**, enabling frontends to target multiple renderers (Datoviz, Matplotlib, etc.).
 
 The long-term vision is to enable high-performance 2D/3D scientific visualization across platforms (desktop, web, cloud) and languages (C/C++, Python, Julia, Rust).
 
@@ -198,3 +200,11 @@ Datoviz is supported by:
 - <img src="https://upload.wikimedia.org/wikipedia/commons/5/58/Wellcome_Trust_logo.svg" alt="Wellcome Trust" width="100"> [Wellcome Trust](https://wellcome.org/)
 - <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/Simons_Foundation_logo.png" alt="Simons Foundation" width="100"> [Simons Foundation](https://www.simonsfoundation.org/)
 - <img src="https://upload.wikimedia.org/wikipedia/fr/f/f0/Chan_Zuckerberg_Initiative_Logo.png" alt="Chan Zuckerberg Initiative" width="100"> [Chan Zuckerberg Initiative](https://chanzuckerberg.com/), through the [Essential Open Source Software for Science program](https://chanzuckerberg.com/eoss/)
+
+
+
+## 📚 References
+
+- Khronos Group (2025). [Datoviz: Ultra-fast, high-performance GPU scientific visualization library built on Vulkan](https://www.khronos.org/blog/datoviz-ultra-fast-high-performance-gpu-scientific-visualization-library-built-on-vulkan)
+- Rossant, C. & Rougier, N. (2021). [Datoviz: A GPU Scientific Visualization Library Based on Vulkan](https://ieeexplore.ieee.org/document/9500108). *2021 IEEE Visualization Conference (VIS)*.
+- Rossant, C. (2015). [A compiler for data visualization](https://cyrille.rossant.net/compiler-data-visualization/)
