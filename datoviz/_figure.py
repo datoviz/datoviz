@@ -10,12 +10,20 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
+from ctypes import c_uint8
+from . import _constants as cst
 from . import _ctypes as dvz
 from ._panel import Panel
 
 # -------------------------------------------------------------------------------------------------
 # Figure
 # -------------------------------------------------------------------------------------------------
+
+
+def to_cvec4_array(colors):
+    cvec4 = c_uint8 * 4
+    cvec4_array = cvec4 * len(colors)
+    return cvec4_array(*(cvec4(*rgba) for rgba in colors))
 
 
 class Figure:
@@ -42,7 +50,17 @@ class Figure:
         assert c_figure
         self.c_figure = c_figure
 
-    def panel(self, offset: tuple[float, float] = None, size: tuple[float, float] = None) -> Panel:
+    def panel(
+        self,
+        offset: tuple[float, float] = None,
+        size: tuple[float, float] = None,
+        background: tuple[
+            tuple[int, int, int, int],
+            tuple[int, int, int, int],
+            tuple[int, int, int, int],
+            tuple[int, int, int, int],
+        ] = None,
+    ) -> Panel:
         """
         Create a new panel in the figure.
 
@@ -52,6 +70,10 @@ class Figure:
             The (x, y) offset of the panel, in pixels, by default (0, 0).
         size : tuple of float, optional
             The (width, height) size of the panel, by default the entire window size.
+        background : tuple or boolean, optional
+            If True, show a default gradient background. Otherwise, a tuple of
+            four RGBA colors, for each corner of the panel (top-left, top-right, bottom-left,
+            bottom-right).
 
         Returns
         -------
@@ -64,6 +86,10 @@ class Figure:
             x, y = offset
             w, h = size
             c_panel = dvz.panel(self.c_figure, x, y, w, h)
+        if background:
+            if background is True:
+                background = cst.DEFAULT_BACKGROUND
+            dvz.panel_background(c_panel, to_cvec4_array(background))
         return Panel(c_panel, c_figure=self.c_figure)
 
     def update(self) -> None:

@@ -79,6 +79,7 @@ dvz_panel_arcball
 dvz_panel_at
 dvz_panel_axes
 dvz_panel_axes_2D
+dvz_panel_background
 dvz_panel_batch
 dvz_panel_camera
 dvz_panel_contains

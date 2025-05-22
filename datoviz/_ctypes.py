@@ -2834,7 +2834,7 @@ Placeholder.
 
 Parameters
 ----------
-qapp : QApplication*
+qapp : np.ndarray[QApplication]
     placeholder
 flags : int
     
@@ -3010,9 +3010,9 @@ server : DvzServer*
     placeholder
 canvas_id : DvzId
     
-width : uint32_t
+width : int
     
-height : uint32_t
+height : int
 """
 server_resize.argtypes = [
     ctypes.POINTER(DvzServer),  # DvzServer* server
@@ -3133,7 +3133,7 @@ scene : DvzScene*
     the scene
 app : DvzApp*
     the app
-frame_count : uint64_t
+frame_count : int
     the maximum number of frames, 0 for infinite loop
 """
 scene_run.argtypes = [
@@ -3204,7 +3204,7 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-pos : vec2
+pos : tuple[float, float]
     the cursor position, in pixels
 mods : int
     the keyboard modifier flags
@@ -3267,7 +3267,7 @@ Parameters
 ----------
 mouse : DvzMouse*
     the mouse
-dir : vec2
+dir : tuple[float, float]
     the mouse wheel direction (x, y)
 mods : int
     the keyboard modifier flags
@@ -3321,9 +3321,9 @@ Parameters
 ----------
 scene : DvzScene*
     the scene
-width : uint32_t
+width : int
     the window width
-height : uint32_t
+height : int
     the window height
 flags : int
     the figure creation flags (not yet stabilized)
@@ -3372,9 +3372,9 @@ Parameters
 ----------
 fig : DvzFigure*
     the figure
-width : uint32_t
+width : int
     the window width
-height : uint32_t
+height : int
     the window height
 """
 figure_resize.argtypes = [
@@ -3510,6 +3510,24 @@ panel_batch.restype = ctypes.POINTER(DvzBatch)
 
 
 # -------------------------------------------------------------------------------------------------
+panel_background = dvz.dvz_panel_background
+panel_background.__doc__ = """
+Set a colored background for a panel.
+
+Parameters
+----------
+panel : DvzPanel*
+    the panel
+background : np.ndarray[cvec4]
+    the colors of the four corners (top-left, top-right, bottom left,
+"""
+panel_background.argtypes = [
+    ctypes.POINTER(DvzPanel),  # DvzPanel* panel
+    ndpointer(dtype=np.uint8, ndim=2, ncol=4, flags="C_CONTIGUOUS"),  # cvec4* background
+]
+
+
+# -------------------------------------------------------------------------------------------------
 panel_ref = dvz.dvz_panel_ref
 panel_ref.__doc__ = """
 Get the panel's reference.
@@ -3560,13 +3578,13 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
-xmin : double
+xmin : float
     xmin
-xmax : double
+xmax : float
     xmax
-ymin : double
+ymin : float
     ymin
-ymax : double
+ymax : float
     ymax
 
 Returns
@@ -3614,7 +3632,7 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
-title : char*
+title : np.ndarray[char]
     the GUI dialog title
 flags : int
     the GUI dialog flags (unused at the moment)
@@ -3770,7 +3788,7 @@ Parameters
 ----------
 panel : DvzPanel*
     the panel
-pos : vec2
+pos : tuple[float, float]
     the position
 
 Returns
@@ -3794,7 +3812,7 @@ Parameters
 ----------
 figure : DvzFigure*
     the figure
-pos : vec2
+pos : tuple[float, float]
     the position
 
 Returns
@@ -4025,9 +4043,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-attr_idx : uint32_t
+attr_idx : int
     the attribute index
-binding_idx : uint32_t
+binding_idx : int
     the binding index (0 = common vertex buffer, use 1 or 2, 3... for each
 """
 visual_dynamic.argtypes = [
@@ -4216,11 +4234,11 @@ visual : DvzVisual*
     the visual
 shader : DvzShaderType
     the shader type
-idx : uint32_t
+idx : int
     the specialization constant index
 size : DvzSize
     the size, in bytes, of the value passed to this function
-value : void*
+value : np.ndarray
     a pointer to the value to use for that specialization constant
 """
 visual_specialization.argtypes = [
@@ -4245,7 +4263,7 @@ type : DvzShaderType
     the shader type
 size : DvzSize
     the size, in bytes, of the SPIR-V buffer
-buffer : char*
+buffer : np.ndarray[char]
     a pointer to the SPIR-V buffer
 """
 visual_spirv.argtypes = [
@@ -4265,7 +4283,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-name : char*
+name : np.ndarray[char]
     the built-in resource name of the shader (_vert and _frag are appended)
 """
 visual_shader.argtypes = [
@@ -4283,11 +4301,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the number of items
-vertex_count : uint32_t
+vertex_count : int
     the number of vertices
-index_count : uint32_t
+index_count : int
     the number of indices (0 if there is no index buffer)
 """
 visual_resize.argtypes = [
@@ -4307,9 +4325,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-group_count : uint32_t
+group_count : int
     the number of groups
-group_sizes : uint32_t*
+group_sizes : np.ndarray[uint32_t]
     the size of each group
 """
 visual_groups.argtypes = [
@@ -4328,7 +4346,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-attr_idx : uint32_t
+attr_idx : int
     the attribute index
 offset : DvzSize
     the attribute offset within the vertex buffer, in bytes
@@ -4358,7 +4376,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-binding_idx : uint32_t
+binding_idx : int
     the binding index
 stride : DvzSize
     the binding stride, in bytes
@@ -4379,7 +4397,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index
 type : DvzSlotType
     the slot type
@@ -4400,7 +4418,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index of the uniform buffer storing the parameter values
 size : DvzSize
     the size, in bytes, of that uniform buffer
@@ -4426,7 +4444,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index
 dat : DvzId
     the dat ID
@@ -4447,13 +4465,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index
 tex : DvzId
     the tex ID
 sampler : DvzId
     the sampler ID
-offset : uvec3
+offset : tuple[int, int, int]
     the texture offset
 """
 visual_tex.argtypes = [
@@ -4474,11 +4492,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the number of items
-vertex_count : uint32_t
+vertex_count : int
     the number of vertices
-index_count : uint32_t
+index_count : int
     the number of indices
 """
 visual_alloc.argtypes = [
@@ -4500,7 +4518,7 @@ visual : DvzVisual*
     the visual
 tr : DvzTransform*
     the transform
-vertex_attr : uint32_t
+vertex_attr : int
     the vertex attribute on which the transform applies to
 """
 visual_transform.argtypes = [
@@ -4519,13 +4537,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-attr_idx : uint32_t
+attr_idx : int
     the attribute index
-first : uint32_t
+first : int
     the index of the first item to set
-count : uint32_t
+count : int
     the number of items to set
-data : void*
+data : np.ndarray
     a pointer to the data buffer
 """
 visual_data.argtypes = [
@@ -4546,13 +4564,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-attr_idx : uint32_t
+attr_idx : int
     the attribute index
-first : uint32_t
+first : int
     the index of the first item to set
-count : uint32_t
+count : int
     the number of items to set
-tl_br : vec4*
+tl_br : np.ndarray[vec4]
     a pointer to a buffer of vec4 with the 2D coordinates of the top-left and
 """
 visual_quads.argtypes = [
@@ -4573,9 +4591,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first index to set
-count : uint32_t
+count : int
     the number of indices
 data : DvzIndex*
     a pointer to a buffer of DvzIndex (uint32_t) values with the indices
@@ -4597,11 +4615,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index
-attr_idx : uint32_t
+attr_idx : int
     the index of the parameter attribute within the params structure
-item : void*
+item : np.ndarray
     a pointer to the value to use for that parameter
 """
 visual_param.argtypes = [
@@ -4648,11 +4666,11 @@ Parameters
 ----------
 texture : DvzTexture*
     the texture
-width : uint32_t
+width : int
     the width
-height : uint32_t
+height : int
     the height
-depth : uint32_t
+depth : int
     the depth
 """
 texture_shape.argtypes = [
@@ -4726,21 +4744,21 @@ Parameters
 ----------
 texture : DvzTexture*
     the texture
-xoffset : uint32_t
+xoffset : int
     the x offset inside the texture
-yoffset : uint32_t
+yoffset : int
     the y offset inside the texture
-zoffset : uint32_t
+zoffset : int
     the z offset inside the texture
-width : uint32_t
+width : int
     the width of the uploaded image
-height : uint32_t
+height : int
     the height of the uploaded image
-depth : uint32_t
+depth : int
     the depth of the uploaded image
 size : DvzSize
     the size of the data buffer
-data : void*
+data : np.ndarray
     the data buffer
 """
 texture_data.argtypes = [
@@ -4801,9 +4819,9 @@ filter : DvzFilter
     the filter
 address_mode : DvzSamplerAddressMode
     the address mode
-width : uint32_t
+width : int
     the texture width
-data : void*
+data : np.ndarray
     the texture data to upload
 flags : int
     the texture creation flags
@@ -4840,11 +4858,11 @@ filter : DvzFilter
     the filter
 address_mode : DvzSamplerAddressMode
     the address mode
-width : uint32_t
+width : int
     the texture width
-height : uint32_t
+height : int
     the texture height
-data : void*
+data : np.ndarray
     the texture data to upload
 flags : int
     the texture creation flags
@@ -4882,13 +4900,13 @@ filter : DvzFilter
     the filter
 address_mode : DvzSamplerAddressMode
     the address mode
-width : uint32_t
+width : int
     the texture width
-height : uint32_t
+height : int
     the texture height
-depth : uint32_t
+depth : int
     the texture depth
-data : void*
+data : np.ndarray
     the texture data to upload
 flags : int
     the texture creation flags
@@ -4923,7 +4941,7 @@ cmap : DvzColormap
     the colormap
 value : uint8_t
     the value
-color : DvzColor (out parameter)
+color : tuple[int, int, int, int] (out parameter)
     the fetched color
 """
 colormap.argtypes = [
@@ -4969,7 +4987,7 @@ vmin : float
     the minimum value
 vmax : float
     the maximum value
-color : DvzColor (out parameter)
+color : tuple[int, int, int, int] (out parameter)
     the fetched color
 """
 colormap_scale.argtypes = [
@@ -4990,15 +5008,15 @@ Parameters
 ----------
 cmap : DvzColormap
     the colormap
-count : uint32_t
+count : int
     the number of values
-values : float*
+values : np.ndarray[float]
     pointer to the array of float numbers
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-out : DvzColor* (out parameter)
+out : Out[DvzColor*] (out parameter)
     (array) the fetched colors
 """
 colormap_array.argtypes = [
@@ -5018,11 +5036,11 @@ Generate an SDF from an SVG path.
 
 Parameters
 ----------
-svg_path : char*
+svg_path : np.ndarray[char]
     the SVG path
-width : uint32_t
+width : int
     the width of the generated SDF, in pixels
-height : uint32_t
+height : int
     the height of the generated SDF, in pixels
 
 Returns
@@ -5045,11 +5063,11 @@ Generate a multichannel SDF from an SVG path.
 
 Parameters
 ----------
-svg_path : char*
+svg_path : np.ndarray[char]
     the SVG path
-width : uint32_t
+width : int
     the width of the generated SDF, in pixels
-height : uint32_t
+height : int
     the height of the generated SDF, in pixels
 
 Returns
@@ -5072,11 +5090,11 @@ Convert an SDF float texture to a byte texture.
 
 Parameters
 ----------
-sdf : float*
+sdf : np.ndarray[float]
     the SDF float texture
-width : uint32_t
+width : int
     the width of the texture
-height : uint32_t
+height : int
     the height of the texture
 
 Returns
@@ -5099,11 +5117,11 @@ Convert a multichannel SDF float texture to a byte texture.
 
 Parameters
 ----------
-sdf : float*
+sdf : np.ndarray[float]
     the SDF float texture
-width : uint32_t
+width : int
     the width of the texture
-height : uint32_t
+height : int
     the height of the texture
 
 Returns
@@ -5126,11 +5144,11 @@ Convert an RGB byte texture to an RGBA one.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of pixels (and NOT the number of bytes) in the byte texture
-rgb : uint8_t*
+rgb : np.ndarray[uint8_t]
     the RGB texture
-rgba : uint8_t*
+rgba : np.ndarray[uint8_t]
     the returned RGBA texture
 """
 rgb_to_rgba_char.argtypes = [
@@ -5147,11 +5165,11 @@ Convert an RGB float texture to an RGBA one.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of pixels (and NOT the number of bytes) in the float texture
-rgb : float*
+rgb : np.ndarray[float]
     the RGB texture
-rgba : float*
+rgba : np.ndarray[float]
     the returned RGBA texture
 """
 rgb_to_rgba_float.argtypes = [
@@ -5168,15 +5186,15 @@ Compute face normals.
 
 Parameters
 ----------
-vertex_count : uint32_t
+vertex_count : int
     number of vertices
-index_count : uint32_t
+index_count : int
     number of indices (triple of the number of faces)
-pos : vec3*
+pos : np.ndarray[vec3]
     array of vec3 positions
 index : DvzIndex*
     pos array of uint32_t indices
-normal : vec3* (out parameter)
+normal : np.ndarray[vec3] (out parameter)
     (array) the vec3 normals (to be overwritten by this function)
 """
 compute_normals.argtypes = [
@@ -5212,7 +5230,7 @@ Parameters
 ----------
 shape : DvzShape*
     the merged shape
-count : uint32_t
+count : int
     the number of shapes to merge
 shapes : DvzShape**
     the shapes to merge
@@ -5326,9 +5344,9 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-first : uint32_t
+first : int
     the first vertex to modify
-count : uint32_t
+count : int
     the number of vertices to modify
 """
 shape_begin.argtypes = [
@@ -5347,7 +5365,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-scale : vec3
+scale : tuple[float, float, float]
     the scaling factors
 """
 shape_scale.argtypes = [
@@ -5365,7 +5383,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-translate : vec3
+translate : tuple[float, float, float]
     the translation vector
 """
 shape_translate.argtypes = [
@@ -5385,7 +5403,7 @@ shape : DvzShape*
     the shape
 angle : float
     the rotation angle
-axis : vec3
+axis : tuple[float, float, float]
     the rotation axis
 """
 shape_rotate.argtypes = [
@@ -5424,7 +5442,7 @@ shape : DvzShape*
     the shape
 flags : int
     the rescaling flags
-out_scale : vec3 (out parameter)
+out_scale : tuple[float, float, float] (out parameter)
     the computed scaling factors
 
 Returns
@@ -5463,7 +5481,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the square color
 """
 shape_square.argtypes = [
@@ -5481,9 +5499,9 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of points along the disc border
-color : DvzColor
+color : tuple[int, int, int, int]
     the disc color
 """
 shape_disc.argtypes = [
@@ -5502,13 +5520,13 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of points along the sector border
 angle_start : float
     the initial angle
 angle_stop : float
     the final angle
-color : DvzColor
+color : tuple[int, int, int, int]
     the sector color
 """
 shape_sector.argtypes = [
@@ -5529,11 +5547,11 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of bars
-heights : float*
+heights : np.ndarray[float]
     the height of each bar
-color : DvzColor
+color : tuple[int, int, int, int]
     the sector color
 """
 shape_histogram.argtypes = [
@@ -5553,11 +5571,11 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of points along the polygon border
-points : dvec2*
+points : np.ndarray[dvec2]
     the points 2D coordinates
-color : DvzColor
+color : tuple[int, int, int, int]
     the polygon color
 """
 shape_polygon.argtypes = [
@@ -5593,19 +5611,19 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-row_count : uint32_t
+row_count : int
     number of rows
-col_count : uint32_t
+col_count : int
     number of cols
-heights : float*
+heights : np.ndarray[float]
     a pointer to row_count*col_count height values (floats)
 colors : DvzColor*
     a pointer to row_count*col_count color values (DvzColor: cvec4 or vec4)
-o : vec3
+o : tuple[float, float, float]
     the origin
-u : vec3
+u : tuple[float, float, float]
     the unit vector parallel to each column
-v : vec3
+v : tuple[float, float, float]
     the unit vector parallel to each row
 flags : int
     the grid creation flags
@@ -5650,11 +5668,11 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-rows : uint32_t
+rows : int
     the number of rows
-cols : uint32_t
+cols : int
     the number of columns
-color : DvzColor
+color : tuple[int, int, int, int]
     the sphere color
 """
 shape_sphere.argtypes = [
@@ -5674,9 +5692,9 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of points along the cylinder border
-color : DvzColor
+color : tuple[int, int, int, int]
     the cylinder color
 """
 shape_cylinder.argtypes = [
@@ -5695,9 +5713,9 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of points along the disc border
-color : DvzColor
+color : tuple[int, int, int, int]
     the cone color
 """
 shape_cone.argtypes = [
@@ -5717,7 +5735,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count : uint32_t
+count : int
     the number of sides to the shaft and head
 head_length : float
     the length of the head
@@ -5725,7 +5743,7 @@ head_radius : float
     the radius of the head
 shaft_radius : float
     the radius of the shaft
-color : DvzColor
+color : tuple[int, int, int, int]
     the arrow color
 """
 shape_arrow.argtypes = [
@@ -5748,13 +5766,13 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-count_radial : uint32_t
+count_radial : int
     the number of points around the ring
-count_tubular : uint32_t
+count_tubular : int
     the number of points in each cross-section
 tube_radius : float
     the radius of the tube.
-color : DvzColor
+color : tuple[int, int, int, int]
     the torus color
 """
 shape_torus.argtypes = [
@@ -5775,7 +5793,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 shape_tetrahedron.argtypes = [
@@ -5793,7 +5811,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 shape_hexahedron.argtypes = [
@@ -5811,7 +5829,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 shape_octahedron.argtypes = [
@@ -5829,7 +5847,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 shape_dodecahedron.argtypes = [
@@ -5847,7 +5865,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 shape_icosahedron.argtypes = [
@@ -5880,7 +5898,7 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-file_path : char*
+file_path : np.ndarray[char]
     the path to the .obj file
 """
 shape_obj.argtypes = [
@@ -5898,17 +5916,17 @@ Parameters
 ----------
 shape : DvzShape*
     the shape
-vertex_count : uint32_t
+vertex_count : int
     number of vertices
-positions : vec3*
+positions : np.ndarray[vec3]
     3D positions of the vertices
-normals : vec3*
+normals : np.ndarray[vec3]
     normal vectors (optional, will be otherwise computed automatically)
 colors : DvzColor*
     vertex vectors (optional)
-texcoords : vec4*
+texcoords : np.ndarray[vec4]
     texture uv*a coordinates (optional)
-index_count : uint32_t
+index_count : int
     number of indices (3x the number of triangular faces)
 indices : DvzIndex*
     vertex indices, three per face
@@ -5934,7 +5952,7 @@ Parameters
 ----------
 font_size : float
     the font size
-af : DvzAtlasFont* (out parameter)
+af : Out[DvzAtlasFont*] (out parameter)
     the returned DvzAtlasFont object with DvzAtlas and DvzFont objects.
 """
 atlas_font.argtypes = [
@@ -5967,7 +5985,7 @@ Parameters
 ----------
 ttf_size : long
     size in bytes of a TTF font raw buffer
-ttf_bytes : char*
+ttf_bytes : np.ndarray[char]
     TTF font raw buffer
 
 Returns
@@ -5991,7 +6009,7 @@ Parameters
 ----------
 font : DvzFont*
     the font
-size : double
+size : float
     the font size
 """
 font_size.argtypes = [
@@ -6009,11 +6027,11 @@ Parameters
 ----------
 font : DvzFont*
     the font
-length : uint32_t
+length : int
     the number of glyphs
-codepoints : uint32_t*
+codepoints : np.ndarray[uint32_t]
     the Unicode codepoints of the glyphs
-xywh : vec4*
+xywh : np.ndarray[vec4]
     an array of (x,y,w,h) shifts
 """
 font_layout.argtypes = [
@@ -6033,9 +6051,9 @@ Parameters
 ----------
 font : DvzFont*
     the font
-string : char*
+string : np.ndarray[char]
     the ASCII string
-xywh : vec4*
+xywh : np.ndarray[vec4]
     the returned array of (x,y,w,h) shifts
 """
 font_ascii.argtypes = [
@@ -6055,15 +6073,15 @@ Parameters
 ----------
 font : DvzFont*
     the font
-length : uint32_t
+length : int
     the number of glyphs
-codepoints : uint32_t*
+codepoints : np.ndarray[uint32_t]
     the Unicode codepoints of the glyphs
-xywh : vec4*
+xywh : np.ndarray[vec4]
     an array of (x,y,w,h) shifts, returned by dvz_font_layout()
 flags : int
     the font flags
-out_size : uvec2 (out parameter)
+out_size : tuple[int, int] (out parameter)
     the number of bytes in the returned image
 
 Returns
@@ -6093,11 +6111,11 @@ font : DvzFont*
     the font
 batch : DvzBatch*
     the batch
-length : uint32_t
+length : int
     the number of Unicode codepoints
-codepoints : uint32_t*
+codepoints : np.ndarray[uint32_t]
     the Unicode codepoints
-size : uvec3 (out parameter)
+size : tuple[int, int, int] (out parameter)
     the generated texture size
 
 Returns
@@ -6137,11 +6155,11 @@ Normalize a value in an interval.
 
 Parameters
 ----------
-t0 : double
+t0 : float
     the interval start
-t1 : double
+t1 : float
     the interval end
-t : double
+t : float
     the value within the interval
 
 Returns
@@ -6166,7 +6184,7 @@ Parameters
 ----------
 easing : DvzEasing
     the easing mode
-t : double
+t : float
     the normalized value
 
 Returns
@@ -6188,7 +6206,7 @@ Generate a 2D circular motion.
 
 Parameters
 ----------
-center : vec2
+center : tuple[float, float]
     the circle center
 radius : float
     the circle radius
@@ -6196,7 +6214,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : vec2 (out parameter)
+out : tuple[float, float] (out parameter)
     the 2D position
 """
 circular_2D.argtypes = [
@@ -6215,11 +6233,11 @@ Generate a 3D circular motion.
 
 Parameters
 ----------
-center : vec3
+center : tuple[float, float, float]
     the circle center
-u : vec3
+u : tuple[float, float, float]
     the first 3D vector defining the plane containing the circle
-v : vec3
+v : tuple[float, float, float]
     the second 3D vector defining the plane containing the circle
 radius : float
     the circle radius
@@ -6227,7 +6245,7 @@ angle : float
     the initial angle
 t : float
     the normalized value
-out : vec3 (out parameter)
+out : tuple[float, float, float] (out parameter)
     the 3D position
 """
 circular_3D.argtypes = [
@@ -6275,13 +6293,13 @@ Make a linear interpolation between two 2D points.
 
 Parameters
 ----------
-p0 : vec2
+p0 : tuple[float, float]
     the first point
-p1 : vec2
+p1 : tuple[float, float]
     the second point
 t : float
     the normalized value
-out : vec2 (out parameter)
+out : tuple[float, float] (out parameter)
     the interpolated point
 """
 interpolate_2D.argtypes = [
@@ -6299,13 +6317,13 @@ Make a linear interpolation between two 3D points.
 
 Parameters
 ----------
-p0 : vec3
+p0 : tuple[float, float, float]
     the first point
-p1 : vec3
+p1 : tuple[float, float, float]
     the second point
 t : float
     the normalized value
-out : vec3 (out parameter)
+out : tuple[float, float, float] (out parameter)
     the interpolated point
 """
 interpolate_3D.argtypes = [
@@ -6325,7 +6343,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-angles : vec3
+angles : tuple[float, float, float]
     the initial angles
 """
 arcball_initial.argtypes = [
@@ -6397,7 +6415,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-constrain : vec3
+constrain : tuple[float, float, float]
     the constrain values
 """
 arcball_constrain.argtypes = [
@@ -6415,7 +6433,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-angles : vec3
+angles : tuple[float, float, float]
     the angles
 """
 arcball_set.argtypes = [
@@ -6433,7 +6451,7 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-out_angles : vec3 (out parameter)
+out_angles : tuple[float, float, float] (out parameter)
     the arcball angles
 """
 arcball_angles.argtypes = [
@@ -6451,9 +6469,9 @@ Parameters
 ----------
 arcball : DvzArcball*
     the arcball
-cur_pos : vec2
+cur_pos : tuple[float, float]
     the initial position
-last_pos : vec2
+last_pos : tuple[float, float]
     the final position
 """
 arcball_rotate.argtypes = [
@@ -6562,11 +6580,11 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : vec3
+pos : tuple[float, float, float]
     the initial position
-lookat : vec3
+lookat : tuple[float, float, float]
     the lookat position
-up : vec3
+up : tuple[float, float, float]
     the up vector
 """
 camera_initial.argtypes = [
@@ -6670,7 +6688,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : vec3
+pos : tuple[float, float, float]
     the pos
 """
 camera_position.argtypes = [
@@ -6688,7 +6706,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-pos : vec3 (out parameter)
+pos : tuple[float, float, float] (out parameter)
     the pos
 """
 camera_get_position.argtypes = [
@@ -6706,7 +6724,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-lookat : vec3
+lookat : tuple[float, float, float]
     the lookat position
 """
 camera_lookat.argtypes = [
@@ -6724,7 +6742,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-lookat : vec3 (out parameter)
+lookat : tuple[float, float, float] (out parameter)
     the lookat position
 """
 camera_get_lookat.argtypes = [
@@ -6742,7 +6760,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-up : vec3
+up : tuple[float, float, float]
     the up vector
 """
 camera_up.argtypes = [
@@ -6760,7 +6778,7 @@ Parameters
 ----------
 camera : DvzCamera*
     the camera
-up : vec3 (out parameter)
+up : tuple[float, float, float] (out parameter)
     the up vector
 """
 camera_get_up.argtypes = [
@@ -6931,7 +6949,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-pan : vec2
+pan : tuple[float, float]
     the pan, in NDC
 """
 panzoom_pan.argtypes = [
@@ -6949,7 +6967,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-zoom : vec2
+zoom : tuple[float, float]
     the zoom, in NDC
 """
 panzoom_zoom.argtypes = [
@@ -6967,9 +6985,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-shift_px : vec2
+shift_px : tuple[float, float]
     the shift value, in pixels
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 panzoom_pan_shift.argtypes = [
@@ -6988,9 +7006,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-shift_px : vec2
+shift_px : tuple[float, float]
     the shift value, in pixels
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 panzoom_zoom_shift.argtypes = [
@@ -7024,9 +7042,9 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-dir : vec2
+dir : tuple[float, float]
     the wheel direction
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 panzoom_zoom_wheel.argtypes = [
@@ -7068,7 +7086,7 @@ Parameters
 ----------
 pz : DvzPanzoom*
     the panzoom
-extent : DvzBox* (out parameter)
+extent : Out[DvzBox*] (out parameter)
     the extent box in normalized coordinates
 """
 panzoom_extent.argtypes = [
@@ -7124,13 +7142,13 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-xmin : double* (out parameter)
+xmin : np.ndarray[double] (out parameter)
     xmin
-xmax : double* (out parameter)
+xmax : np.ndarray[double] (out parameter)
     xmax
-ymin : double* (out parameter)
+ymin : np.ndarray[double] (out parameter)
     ymin
-ymax : double* (out parameter)
+ymax : np.ndarray[double] (out parameter)
     ymax
 """
 panzoom_bounds.argtypes = [
@@ -7154,9 +7172,9 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-xmin : double
+xmin : float
     xmin
-xmax : double
+xmax : float
     xmax
 """
 panzoom_xlim.argtypes = [
@@ -7178,9 +7196,9 @@ pz : DvzPanzoom*
     the panzoom
 ref : DvzRef*
     the ref
-ymin : double
+ymin : float
     ymin
-ymax : double
+ymax : float
     ymax
 """
 panzoom_ylim.argtypes = [
@@ -7293,7 +7311,7 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-pan : vec2
+pan : tuple[float, float]
     the pan, in NDC
 """
 ortho_pan.argtypes = [
@@ -7329,9 +7347,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-shift_px : vec2
+shift_px : tuple[float, float]
     the shift value, in pixels
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 ortho_pan_shift.argtypes = [
@@ -7350,9 +7368,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-shift_px : vec2
+shift_px : tuple[float, float]
     the shift value, in pixels
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 ortho_zoom_shift.argtypes = [
@@ -7386,9 +7404,9 @@ Parameters
 ----------
 ortho : DvzOrtho*
     the ortho
-dir : vec2
+dir : tuple[float, float]
     the wheel direction
-center_px : vec2
+center_px : tuple[float, float]
     the center position, in pixels
 """
 ortho_zoom_wheel.argtypes = [
@@ -7472,9 +7490,9 @@ ref : DvzRef*
     the reference frame
 dim : DvzDim
     the dimension axis
-vmin : double
+vmin : float
     the minimum value
-vmax : double
+vmax : float
     the maximum value
 """
 ref_set.argtypes = [
@@ -7496,9 +7514,9 @@ ref : DvzRef*
     the reference frame
 dim : DvzDim
     the dimension axis
-vmin : double* (out parameter)
+vmin : np.ndarray[double] (out parameter)
     the minimum value
-vmax : double* (out parameter)
+vmax : np.ndarray[double] (out parameter)
     the maximum value
 """
 ref_get.argtypes = [
@@ -7520,9 +7538,9 @@ ref : DvzRef*
     the reference frame
 dim : DvzDim
     the dimension axis
-vmin : double
+vmin : float
     the minimum value
-vmax : double
+vmax : float
     the maximum value
 """
 ref_expand.argtypes = [
@@ -7542,9 +7560,9 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-count : uint32_t
+count : int
     the number of positions
-pos : dvec2*
+pos : np.ndarray[dvec2]
     the 2D positions
 """
 ref_expand_2D.argtypes = [
@@ -7563,9 +7581,9 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-count : uint32_t
+count : int
     the number of positions
-pos : dvec3*
+pos : np.ndarray[dvec3]
     the 3D positions
 """
 ref_expand_3D.argtypes = [
@@ -7586,11 +7604,11 @@ ref : DvzRef*
     the reference frame
 dim : DvzDim
     which dimension
-count : uint32_t
+count : int
     the number of positions
-pos : double*
+pos : np.ndarray[double]
     the 1D positions
-pos_tr : vec3* (out parameter)
+pos_tr : np.ndarray[vec3] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_1D.argtypes = [
@@ -7611,11 +7629,11 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-count : uint32_t
+count : int
     the number of positions
-pos : dvec2*
+pos : np.ndarray[dvec2]
     the 2D positions
-pos_tr : vec3* (out parameter)
+pos_tr : np.ndarray[vec3] (out parameter)
     (array) the transformed 3D positions
 """
 ref_normalize_2D.argtypes = [
@@ -7635,11 +7653,11 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-count : uint32_t
+count : int
     the number of positions
-pos : dvec2*
+pos : np.ndarray[dvec2]
     the 2D positions
-pos_tr : dvec2* (out parameter)
+pos_tr : np.ndarray[dvec2] (out parameter)
     (array) the transformed 2D positions
 """
 ref_normalize_polygon.argtypes = [
@@ -7659,11 +7677,11 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-count : uint32_t
+count : int
     the number of positions
-pos : dvec3*
+pos : np.ndarray[dvec3]
     the 3D positions
-pos_tr : vec3* (out parameter)
+pos_tr : np.ndarray[vec3] (out parameter)
     (array) the transformed positions
 """
 ref_normalize_3D.argtypes = [
@@ -7683,9 +7701,9 @@ Parameters
 ----------
 ref : DvzRef*
     the reference frame
-pos_tr : vec3
+pos_tr : tuple[float, float, float]
     the 3D position in normalized device coordinates
-pos : dvec3* (out parameter)
+pos : np.ndarray[dvec3] (out parameter)
     the original position
 """
 ref_inverse.argtypes = [
@@ -7778,7 +7796,7 @@ app : DvzApp*
     the app
 callback : DvzAppFrameCallback
     the callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_on_frame.argtypes = [
@@ -7799,7 +7817,7 @@ app : DvzApp*
     the app
 callback : DvzAppMouseCallback
     the callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_on_mouse.argtypes = [
@@ -7820,7 +7838,7 @@ app : DvzApp*
     the app
 callback : DvzAppKeyboardCallback
     the callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_on_keyboard.argtypes = [
@@ -7841,7 +7859,7 @@ app : DvzApp*
     the app
 callback : DvzAppResizeCallback
     the callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_on_resize.argtypes = [
@@ -7860,11 +7878,11 @@ Parameters
 ----------
 app : DvzApp*
     the app
-delay : double
+delay : float
     the delay, in seconds, until the first event
-period : double
+period : float
     the period, in seconds, between two events
-max_count : uint64_t
+max_count : int
     the maximum number of events
 
 Returns
@@ -7892,7 +7910,7 @@ app : DvzApp*
     the app
 callback : DvzAppTimerCallback
     the timer callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_on_timer.argtypes = [
@@ -7915,7 +7933,7 @@ canvas_id : DvzId
     the canvas ID
 callback : DvzAppGuiCallback
     the GUI callback
-user_data : void*
+user_data : np.ndarray
     the user data
 """
 app_gui.argtypes = [
@@ -7935,7 +7953,7 @@ Parameters
 ----------
 app : DvzApp*
     the app
-frame_count : uint64_t
+frame_count : int
     the maximum number of frames, 0 for infinite loop
 """
 app_run.argtypes = [
@@ -7970,7 +7988,7 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the ID of the canvas
-filename : char*
+filename : np.ndarray[char]
     the path to the PNG file with the screenshot
 """
 app_screenshot.argtypes = [
@@ -7991,11 +8009,11 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the ID of the canvas
-count : uint32_t
+count : int
     number of frames
-seconds : uint64_t* (out parameter)
+seconds : np.ndarray[uint64_t] (out parameter)
     (array) a buffer holding at least `count` uint64_t values (seconds)
-nanoseconds : uint64_t* (out parameter)
+nanoseconds : np.ndarray[uint64_t] (out parameter)
     (array) a buffer holding at least `count` uint64_t values (nanoseconds)
 """
 app_timestamps.argtypes = [
@@ -8044,7 +8062,7 @@ Get the current time.
 
 Parameters
 ----------
-time : DvzTime* (out parameter)
+time : Out[DvzTime*] (out parameter)
     fill a structure with seconds and nanoseconds integers
 """
 time.argtypes = [
@@ -8078,11 +8096,11 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the canvas id
-x : double* (out parameter)
+x : np.ndarray[double] (out parameter)
     a pointer to the mouse x position
-y : double* (out parameter)
+y : np.ndarray[double] (out parameter)
     a pointer to the mouse y position
-button : DvzMouseButton* (out parameter)
+button : Out[DvzMouseButton*] (out parameter)
     a pointer to the pressed button
 """
 app_mouse.argtypes = [
@@ -8105,7 +8123,7 @@ app : DvzApp*
     the app
 canvas_id : DvzId
     the canvas id
-key : DvzKeyCode* (out parameter)
+key : Out[DvzKeyCode*] (out parameter)
     a pointer to the last pressed key
 """
 app_keyboard.argtypes = [
@@ -8122,7 +8140,7 @@ Free a pointer.
 
 Parameters
 ----------
-pointer : void*
+pointer : np.ndarray
     a pointer
 """
 free.argtypes = [
@@ -8141,9 +8159,9 @@ rd : DvzRenderer*
     the renderer
 visual : DvzVisual*
     the visual
-binding_idx : uint32_t
+binding_idx : int
     the binding index of the dat that is being used as vertex buffer
-offset : DvzSize* (out parameter)
+offset : Out[DvzSize*] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8171,7 +8189,7 @@ rd : DvzRenderer*
     the renderer
 visual : DvzVisual*
     the visual
-offset : DvzSize* (out parameter)
+offset : Out[DvzSize*] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8198,9 +8216,9 @@ rd : DvzRenderer*
     the renderer
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index of the dat
-offset : DvzSize* (out parameter)
+offset : Out[DvzSize*] (out parameter)
     the offset, in bytes, of the dat, within the buffer containing that dat
 
 Returns
@@ -8228,9 +8246,9 @@ rd : DvzRenderer*
     the renderer
 visual : DvzVisual*
     the visual
-slot_idx : uint32_t
+slot_idx : int
     the slot index of the tex
-offset : DvzSize* (out parameter)
+offset : Out[DvzSize*] (out parameter)
     the offset, in bytes, of the tex's staging dat, within the buffer containing
 
 Returns
@@ -8384,9 +8402,9 @@ Set the position of the next GUI dialog.
 
 Parameters
 ----------
-pos : vec2
+pos : tuple[float, float]
     the dialog position
-pivot : vec2
+pivot : tuple[float, float]
     the pivot
 """
 gui_pos.argtypes = [
@@ -8402,9 +8420,9 @@ Set a fixed position for a GUI dialog.
 
 Parameters
 ----------
-pos : vec2
+pos : tuple[float, float]
     the dialog position
-pivot : vec2
+pivot : tuple[float, float]
     the pivot
 """
 gui_fixed.argtypes = [
@@ -8420,7 +8438,7 @@ Get the position and size of the current dialog.
 
 Parameters
 ----------
-viewport : vec4
+viewport : tuple[float, float, float, float]
     the x, y, w, h values
 """
 gui_viewport.argtypes = [
@@ -8437,7 +8455,7 @@ Parameters
 ----------
 corner : DvzCorner
     which corner
-pad : vec2
+pad : tuple[float, float]
     the pad
 """
 gui_corner.argtypes = [
@@ -8453,7 +8471,7 @@ Set the size of the next GUI dialog.
 
 Parameters
 ----------
-size : vec2
+size : tuple[float, float]
     the size
 """
 gui_size.argtypes = [
@@ -8470,7 +8488,7 @@ Parameters
 ----------
 type : int
     the element type for which to change the color
-color : DvzColor
+color : tuple[int, int, int, int]
     the color
 """
 gui_color.argtypes = [
@@ -8539,7 +8557,7 @@ Start a new dialog.
 
 Parameters
 ----------
-title : char*
+title : np.ndarray[char]
     the dialog title
 flags : int
     the flags
@@ -8557,7 +8575,7 @@ Add a text item in a dialog.
 
 Parameters
 ----------
-fmt : char*
+fmt : np.ndarray[char]
     the format string
 """
 gui_text.argtypes = [
@@ -8572,11 +8590,11 @@ Add a text box in a dialog.
 
 Parameters
 ----------
-label : char*
+label : np.ndarray[char]
     the label
-str_len : uint32_t
+str_len : int
     the size of the str buffer
-str : char*
+str : np.ndarray[char]
     the modified string
 flags : int
     the flags
@@ -8602,13 +8620,13 @@ Add a slider.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : float* (out parameter)
+value : np.ndarray[float] (out parameter)
     the pointer to the value
 
 Returns
@@ -8632,13 +8650,13 @@ Add a slider with 2 values.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : vec2 (out parameter)
+value : tuple[float, float] (out parameter)
     the pointer to the value
 
 Returns
@@ -8662,13 +8680,13 @@ Add a slider with 3 values.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : vec3 (out parameter)
+value : tuple[float, float, float] (out parameter)
     the pointer to the value
 
 Returns
@@ -8692,13 +8710,13 @@ Add a slider with 4 values.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the slider name
 vmin : float
     the minimum value
 vmax : float
     the maximum value
-value : vec4 (out parameter)
+value : tuple[float, float, float, float] (out parameter)
     the pointer to the value
 
 Returns
@@ -8722,7 +8740,7 @@ Add a button.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the button name
 width : float
     the button width
@@ -8749,9 +8767,9 @@ Add a checkbox.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the button name
-checked : bool* (out parameter)
+checked : np.ndarray[bool] (out parameter)
     whether the checkbox is checked
 
 Returns
@@ -8773,13 +8791,13 @@ Add a dropdown menu.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the menu name
-count : uint32_t
+count : int
     the number of menu items
-items : char**
+items : np.ndarray[char*]
     the item labels
-selected : uint32_t* (out parameter)
+selected : np.ndarray[uint32_t] (out parameter)
     a pointer to the selected index
 flags : int
     the dropdown menu flags
@@ -8811,7 +8829,7 @@ width : float
     the widget width
 height : float
     the widget height
-fmt : char*
+fmt : np.ndarray[char]
     the format string
 """
 gui_progress.argtypes = [
@@ -8850,9 +8868,9 @@ Add a color picker
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the widget name
-color : vec3
+color : tuple[float, float, float]
     the color
 flags : int
     the widget flags
@@ -8876,7 +8894,7 @@ Start a new tree node.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the widget name
 
 Returns
@@ -8920,7 +8938,7 @@ Close the current tree node.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the widget name
 
 Returns
@@ -8940,15 +8958,15 @@ Display a table with selectable rows.
 
 Parameters
 ----------
-name : char*
+name : np.ndarray[char]
     the widget name
-row_count : uint32_t
+row_count : int
     the number of rows
-column_count : uint32_t
+column_count : int
     the number of columns
-labels : char**
+labels : np.ndarray[char*]
     all cell labels
-selected : bool*
+selected : np.ndarray[bool]
     a pointer to an array of boolean indicated which rows are selected
 flags : int
     the Dear ImGui flags
@@ -8980,21 +8998,21 @@ in-place the "visible" array.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of rows
-ids : char**
+ids : np.ndarray[char*]
     short id of each row
-labels : char**
+labels : np.ndarray[char*]
     full label of each row
-levels : uint32_t*
+levels : np.ndarray[uint32_t]
     a positive integer indicate
 colors : DvzColor*
     the color of each square in each row
-folded : bool*
+folded : np.ndarray[bool]
     whether each row is currently folded (modified by this function)
-selected : bool*
+selected : np.ndarray[bool]
     whether each row is currently selected (modified by this function)
-visible : bool*
+visible : np.ndarray[bool]
     whether each row is visible (used for filtering)
 
 Returns
@@ -9097,7 +9115,7 @@ Return the smallest power of 2 larger or equal than a positive integer.
 
 Parameters
 ----------
-x : uint64_t
+x : int
     the value
 
 Returns
@@ -9118,9 +9136,9 @@ Compute the mean of an array of double values.
 
 Parameters
 ----------
-n : uint32_t
+n : int
     the number of values
-values : double*
+values : np.ndarray[double]
     an array of double numbers
 
 Returns
@@ -9142,11 +9160,11 @@ Compute the min and max of an array of float values.
 
 Parameters
 ----------
-n : uint32_t
+n : int
     the number of values
-values : float*
+values : np.ndarray[float]
     an array of float numbers
-out_min_max : vec2
+out_min_max : tuple[float, float]
     the min and max
 """
 min_max.argtypes = [
@@ -9163,13 +9181,13 @@ Normalize the array.
 
 Parameters
 ----------
-min_max : vec2
+min_max : tuple[float, float]
     the minimum and maximum values, mapped to 0 and 255, the result will be clipped
-count : uint32_t
+count : int
     the number of values
-values : float*
+values : np.ndarray[float]
     an array of float numbers
-out : uint8_t*
+out : np.ndarray[uint8_t]
     the out uint8 array
 """
 normalize_bytes.argtypes = [
@@ -9187,9 +9205,9 @@ Compute the range of an array of double values.
 
 Parameters
 ----------
-n : uint32_t
+n : int
     the number of values
-values : double*
+values : np.ndarray[double]
     an array of double numbers
 min_max : dvec2 (out parameter)
     the min and max values
@@ -9208,11 +9226,11 @@ Compute a polygon triangulation with only indexing on the polygon contour vertic
 
 Parameters
 ----------
-point_count : uint32_t
+point_count : int
     the number of points
-polygon : dvec2*
+polygon : np.ndarray[dvec2]
     the polygon 2D positions
-out_index_count : uint32_t* (out parameter)
+out_index_count : np.ndarray[uint32_t] (out parameter)
     the computed index count
 
 Returns
@@ -9315,7 +9333,7 @@ Generate a set of random 2D positions.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
 std : float
     the standard deviation
@@ -9339,7 +9357,7 @@ Generate points on a circle.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
 radius : float
     the radius of the circle
@@ -9363,9 +9381,9 @@ Generate points on a band.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
-size : vec2
+size : tuple[float, float]
     the size of the band
 
 Returns
@@ -9387,7 +9405,7 @@ Generate a set of random 3D positions.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
 std : float
     the standard deviation
@@ -9411,9 +9429,9 @@ Generate identical 3D positions.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
-fixed : vec3
+fixed : tuple[float, float, float]
     the position
 
 Returns
@@ -9435,11 +9453,11 @@ Generate 3D positions on a line.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of positions to generate
-p0 : vec3
+p0 : tuple[float, float, float]
     initial position
-p1 : vec3
+p1 : tuple[float, float, float]
     terminal position
 
 Returns
@@ -9462,7 +9480,7 @@ Generate a set of uniformly random scalar values.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of values to generate
 vmin : float
     the minimum value of the interval
@@ -9489,7 +9507,7 @@ Generate an array with the same value.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of scalars to generate
 value : float
     the value
@@ -9513,9 +9531,9 @@ Generate an array of consecutive positive numbers.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of consecutive integers to generate
-initial : uint32_t
+initial : int
     the initial value
 
 Returns
@@ -9537,7 +9555,7 @@ Generate an array ranging from an initial value to a final value.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of scalars to generate
 initial : float
     the initial value
@@ -9564,7 +9582,7 @@ Generate a set of random colors.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of colors to generate
 alpha : DvzAlpha
     the alpha value
@@ -9588,9 +9606,9 @@ Repeat a color in an array.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of colors to generate
-mono : DvzColor
+mono : tuple[int, int, int, int]
     the color to repeat
 
 Returns
@@ -9612,7 +9630,7 @@ Generate a set of colormap colors.
 
 Parameters
 ----------
-count : uint32_t
+count : int
     the number of colors to generate
 cmap : DvzColormap
     the colormap
@@ -9676,7 +9694,7 @@ view : mat4
     the view matrix
 proj : mat4
     the projection matrix
-mvp : DvzMVP* (out parameter)
+mvp : Out[DvzMVP*] (out parameter)
     the MVP structure
 """
 mvp.argtypes = [
@@ -9694,7 +9712,7 @@ Return a default DvzMVP struct
 
 Parameters
 ----------
-mvp : DvzMVP* (out parameter)
+mvp : Out[DvzMVP*] (out parameter)
     the DvzMVP struct
 """
 mvp_default.argtypes = [
@@ -9709,11 +9727,11 @@ Return a default viewport
 
 Parameters
 ----------
-width : uint32_t
+width : int
     the viewport width, in framebuffer pixels
-height : uint32_t
+height : int
     the viewport height, in framebuffer pixels
-viewport : DvzViewport* (out parameter)
+viewport : Out[DvzViewport*] (out parameter)
     the viewport
 """
 viewport_default.argtypes = [
@@ -9780,7 +9798,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-desc : char*
+desc : np.ndarray[char]
     the description
 """
 batch_desc.argtypes = [
@@ -9856,7 +9874,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : char*
+filename : np.ndarray[char]
     the YAML filename
 """
 batch_yaml.argtypes = [
@@ -9874,7 +9892,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : char*
+filename : np.ndarray[char]
     the dump filename
 
 Returns
@@ -9897,7 +9915,7 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-filename : char*
+filename : np.ndarray[char]
     the dump filename
 """
 batch_load.argtypes = [
@@ -9969,7 +9987,7 @@ Parameters
 ----------
 rqr : DvzRequester*
     the requester
-count : uint32_t* (out parameter)
+count : np.ndarray[uint32_t] (out parameter)
     pointer to the number of requests, set by this function
 
 Returns
@@ -10013,9 +10031,9 @@ Parameters
 ----------
 batch : DvzBatch*
     the batch
-width : uint32_t
+width : int
     the canvas width (in screen pixels)
-height : uint32_t
+height : int
     the canvas height (in screen pixels)
 background : cvec4
     the background color
@@ -10099,9 +10117,9 @@ batch : DvzBatch*
     the batch
 canvas : DvzId
     the canvas id
-width : uint32_t
+width : int
     the new canvas width
-height : uint32_t
+height : int
     the new canvas height
 
 Returns
@@ -10216,7 +10234,7 @@ offset : DvzSize
     the byte offset of the upload transfer
 size : DvzSize
     the number of bytes in data to transfer
-data : void*
+data : np.ndarray
     a pointer to the data to upload
 flags : int
     the upload flags
@@ -10274,7 +10292,7 @@ dims : DvzTexDims
     the number of dimensions, 1, 2, or 3
 format : DvzFormat
     the image format
-shape : uvec3
+shape : tuple[int, int, int]
     the texture shape
 flags : int
     the dat creation flags
@@ -10305,7 +10323,7 @@ batch : DvzBatch*
     the batch
 tex : DvzId
     the tex id
-shape : uvec3
+shape : tuple[int, int, int]
     the new tex shape
 
 Returns
@@ -10334,13 +10352,13 @@ batch : DvzBatch*
     the batch
 tex : DvzId
     the id of the tex to upload to
-offset : uvec3
+offset : tuple[int, int, int]
     the offset
-shape : uvec3
+shape : tuple[int, int, int]
     the shape
 size : DvzSize
     the number of bytes in data to transfer
-data : void*
+data : np.ndarray
     a pointer to the data to upload
 flags : int
     the upload flags
@@ -10448,7 +10466,7 @@ batch : DvzBatch*
     the batch
 shader_type : DvzShaderType
     the shader type
-code : char*
+code : np.ndarray[char]
     an ASCII string with the GLSL code
 
 Returns
@@ -10477,7 +10495,7 @@ shader_type : DvzShaderType
     the shader type
 size : DvzSize
     the size in bytes of the SPIR-V buffer
-buffer : char*
+buffer : np.ndarray[char]
     pointer to a buffer with the SPIR-V bytecode
 
 Returns
@@ -10586,7 +10604,7 @@ batch : DvzBatch*
     the batch
 graphics : DvzId
     the graphics pipe id
-mask : int32_t
+mask : int
     the mask with RGBA boolean masks on the lower bits
 
 Returns
@@ -10748,7 +10766,7 @@ batch : DvzBatch*
     the batch
 graphics : DvzId
     the graphics pipe id
-binding_idx : uint32_t
+binding_idx : int
     the index of the vertex binding
 stride : DvzSize
     the binding stride
@@ -10781,9 +10799,9 @@ batch : DvzBatch*
     the batch
 graphics : DvzId
     the graphics pipe id
-binding_idx : uint32_t
+binding_idx : int
     the index of the vertex binding
-location : uint32_t
+location : int
     the GLSL attribute location
 format : DvzFormat
     the attribute format
@@ -10817,7 +10835,7 @@ batch : DvzBatch*
     the batch
 graphics : DvzId
     the graphics pipe id
-slot_idx : uint32_t
+slot_idx : int
     the index of the GLSL binding slot
 type : DvzDescriptorType
     the descriptor type
@@ -10882,11 +10900,11 @@ graphics : DvzId
     the graphics pipe id
 shader : DvzShaderType
     the shader with the specialization constant
-idx : uint32_t
+idx : int
     the specialization constant index as specified in the GLSL code
 size : DvzSize
     the byte size of the value
-value : void*
+value : np.ndarray
     a pointer to the specialization constant value
 
 Returns
@@ -10940,7 +10958,7 @@ batch : DvzBatch*
     the batch
 graphics : DvzId
     the id of the graphics pipe
-binding_idx : uint32_t
+binding_idx : int
     the vertex binding index
 dat : DvzId
     the id of the dat with the vertex data
@@ -11003,7 +11021,7 @@ batch : DvzBatch*
     the batch
 pipe : DvzId
     the id of the pipe
-slot_idx : uint32_t
+slot_idx : int
     the index of the descriptor slot
 dat : DvzId
     the id of the dat to bind to the pipe
@@ -11036,13 +11054,13 @@ batch : DvzBatch*
     the batch
 pipe : DvzId
     the id of the pipe
-slot_idx : uint32_t
+slot_idx : int
     the index of the descriptor slot
 tex : DvzId
     the id of the tex to bind to the pipe
 sampler : DvzId
     the id of the sampler
-offset : uvec3
+offset : tuple[int, int, int]
     the offset
 
 Returns
@@ -11096,9 +11114,9 @@ batch : DvzBatch*
     the batch
 canvas_id : DvzId
     the id of the canvas
-offset : vec2
+offset : tuple[float, float]
     the viewport offset, in framebuffer pixels
-shape : vec2
+shape : tuple[float, float]
     the viewport size, in framebuffer pixels
 
 Returns
@@ -11128,13 +11146,13 @@ canvas_id : DvzId
     the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
-first_vertex : uint32_t
+first_vertex : int
     the index of the first vertex to draw
-vertex_count : uint32_t
+vertex_count : int
     the number of vertices to draw
-first_instance : uint32_t
+first_instance : int
     the index of the first instance to draw
-instance_count : uint32_t
+instance_count : int
     the number of instances to draw
 
 Returns
@@ -11167,15 +11185,15 @@ canvas_id : DvzId
     the id of the canvas
 graphics : DvzId
     the id of the graphics pipe to draw
-first_index : uint32_t
+first_index : int
     the index of the first index to draw
-vertex_offset : uint32_t
+vertex_offset : int
     the vertex offset within the vertices indexed by the indexes
-index_count : uint32_t
+index_count : int
     the number of indexes to draw
-first_instance : uint32_t
+first_instance : int
     the index of the first instance to draw
-instance_count : uint32_t
+instance_count : int
     the number of instances to draw
 
 Returns
@@ -11211,7 +11229,7 @@ graphics : DvzId
     the id of the graphics pipe to draw
 indirect : DvzId
     the id of the dat containing the indirect draw data
-draw_count : uint32_t
+draw_count : int
     the number of draws to make
 
 Returns
@@ -11244,7 +11262,7 @@ graphics : DvzId
     the id of the graphics pipe to draw
 indirect : DvzId
     the id of the dat containing the indirect draw data
-draw_count : uint32_t
+draw_count : int
     the number of draws to make
 
 Returns
@@ -11281,7 +11299,7 @@ offset : DvzSize
     the byte offset
 size : DvzSize
     the size of the data to upload
-data : void*
+data : np.ndarray
     the push constant data to upload
 
 Returns
@@ -11361,11 +11379,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -11388,9 +11406,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -11415,11 +11433,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the group index of each vertex
 flags : int
     the data update flags
@@ -11460,7 +11478,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 basic_alloc.argtypes = [
@@ -11502,11 +11520,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -11529,9 +11547,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -11574,7 +11592,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 pixel_alloc.argtypes = [
@@ -11616,11 +11634,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -11643,11 +11661,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the sizes of the items to update
 flags : int
     the data update flags
@@ -11670,9 +11688,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -11697,7 +11715,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 point_alloc.argtypes = [
@@ -11793,11 +11811,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -11820,11 +11838,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the colors of the items to update
 flags : int
     the data update flags
@@ -11847,11 +11865,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the angles of the items to update
 flags : int
     the data update flags
@@ -11874,9 +11892,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -11901,7 +11919,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : DvzColor
+color : tuple[int, int, int, int]
     the edge color
 """
 marker_edgecolor.argtypes = [
@@ -11973,7 +11991,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 marker_alloc.argtypes = [
@@ -12015,13 +12033,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-initial : vec3*
+initial : np.ndarray[vec3]
     the initial 3D positions of the segments
-terminal : vec3*
+terminal : np.ndarray[vec3]
     the terminal 3D positions of the segments
 flags : int
     the data update flags
@@ -12045,11 +12063,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec4*
+values : np.ndarray[vec4]
     the dx0,dy0,dx1,dy1 shift quadriplets of the segments to update
 flags : int
     the data update flags
@@ -12072,9 +12090,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -12099,11 +12117,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the segment line widths
 flags : int
     the data update flags
@@ -12147,7 +12165,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 segment_alloc.argtypes = [
@@ -12189,15 +12207,15 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-point_count : uint32_t
+point_count : int
     the total number of points across all paths
-positions : vec3*
+positions : np.ndarray[vec3]
     the path point positions
-path_count : uint32_t
+path_count : int
     the number of different paths
-path_lengths : uint32_t*
+path_lengths : np.ndarray[uint32_t]
     the number of points in each path
 flags : int
     the data update flags
@@ -12222,9 +12240,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -12249,11 +12267,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the line width of the vertex, in pixels
 flags : int
     the data update flags
@@ -12312,7 +12330,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-total_point_count : uint32_t
+total_point_count : int
     the total number of points to allocate for this visual
 """
 path_alloc.argtypes = [
@@ -12354,7 +12372,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 glyph_alloc.argtypes = [
@@ -12372,11 +12390,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -12399,11 +12417,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D axis vectors of the items to update
 flags : int
     the data update flags
@@ -12426,11 +12444,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the sizes (width and height) of the items to update
 flags : int
     the data update flags
@@ -12462,11 +12480,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the anchors (x and y) of the items to update
 flags : int
     the data update flags
@@ -12489,11 +12507,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the shifts (x and y) of the items to update
 flags : int
     the data update flags
@@ -12516,11 +12534,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-coords : vec4*
+coords : np.ndarray[vec4]
     the x,y,w,h texture coordinates
 flags : int
     the data update flags
@@ -12543,11 +12561,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the glyph group shapes (width and height, in pixels)
 flags : int
     the data update flags
@@ -12571,11 +12589,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the scaling of the items to update
 flags : int
     the data update flags
@@ -12598,11 +12616,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the angles of the items to update
 flags : int
     the data update flags
@@ -12625,9 +12643,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -12652,7 +12670,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-bgcolor : DvzColor
+bgcolor : tuple[int, int, int, int]
     the background color
 """
 glyph_bgcolor.argtypes = [
@@ -12706,9 +12724,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-count : uint32_t
+count : int
     the number of glyphs
-codepoints : uint32_t*
+codepoints : np.ndarray[uint32_t]
     the unicode codepoints
 """
 glyph_unicode.argtypes = [
@@ -12727,7 +12745,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-string : char*
+string : np.ndarray[char]
     the characters
 """
 glyph_ascii.argtypes = [
@@ -12745,13 +12763,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec4*
+values : np.ndarray[vec4]
     the xywh values of each glyph
-offset : vec2
+offset : tuple[float, float]
     the xy offsets of each glyph
 flags : int
     the data update flags
@@ -12775,19 +12793,19 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-string_count : uint32_t
+string_count : int
     the number of strings
-strings : char**
+strings : np.ndarray[char*]
     the strings
-positions : vec3*
+positions : np.ndarray[vec3]
     the positions of each string
-scales : float*
+scales : np.ndarray[float]
     the scaling of each string
-color : DvzColor
+color : tuple[int, int, int, int]
     the same color for all strings
-offset : vec2
+offset : tuple[float, float]
     the same offset for all strings
-anchor : vec2
+anchor : tuple[float, float]
     the same anchor for all strings
 """
 glyph_strings.argtypes = [
@@ -12835,11 +12853,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the items to update
 flags : int
     the data update flags
@@ -12862,11 +12880,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : ivec2*
+values : np.ndarray[ivec2]
     the glyph offsets (ivec2 integers: row,column)
 flags : int
     the data update flags
@@ -12889,9 +12907,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the colors of the items to update
@@ -12916,9 +12934,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the first item
-text : char*
+text : np.ndarray[char]
     the ASCII test (string length without the null terminal byte = number of glyphs)
 flags : int
     the upload flags
@@ -12940,7 +12958,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-anchor : vec2
+anchor : tuple[float, float]
     the anchor
 """
 monoglyph_anchor.argtypes = [
@@ -12976,13 +12994,13 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-pos : vec3
+pos : tuple[float, float, float]
     the text position
-color : DvzColor
+color : tuple[int, int, int, int]
     the text color
 size : float
     the glyph size
-text : char*
+text : np.ndarray[char]
     the text, can contain `\n` new lines
 """
 monoglyph_textarea.argtypes = [
@@ -13003,7 +13021,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of items to allocate for this visual
 """
 monoglyph_alloc.argtypes = [
@@ -13045,11 +13063,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D positions of the top left corner
 flags : int
     the data update flags
@@ -13072,11 +13090,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the sizes of each image, in pixels
 flags : int
     the data update flags
@@ -13106,11 +13124,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec2*
+values : np.ndarray[vec2]
     the relative anchors of each image, (0,0 = position pertains to top left corner)
 flags : int
     the data update flags
@@ -13133,11 +13151,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-tl_br : vec4*
+tl_br : np.ndarray[vec4]
     the tex coordinates of the top left and bottom right corners (vec4 u0,v0,u1,v1)
 flags : int
     the data update flags
@@ -13160,9 +13178,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the image colors
@@ -13205,7 +13223,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-color : DvzColor
+color : tuple[int, int, int, int]
     the edge color
 """
 image_edgecolor.argtypes = [
@@ -13223,7 +13241,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-ij : ivec2
+ij : tuple[int, int]
     index permutation
 """
 image_permutation.argtypes = [
@@ -13312,7 +13330,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of images to allocate for this visual
 """
 image_alloc.argtypes = [
@@ -13354,11 +13372,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the 3D vertex positions
 flags : int
     the data update flags
@@ -13381,9 +13399,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzColor*
     the vertex colors
@@ -13408,11 +13426,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec4*
+values : np.ndarray[vec4]
     the vertex texture coordinates (vec4 u,v,*,alpha)
 flags : int
     the data update flags
@@ -13435,11 +13453,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the vertex normal vectors
 flags : int
     the data update flags
@@ -13462,11 +13480,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : float*
+values : np.ndarray[float]
     the scalar field for which to draw isolines
 flags : int
     the data update flags
@@ -13490,11 +13508,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the distance to the left edge adjacent to each triangle vertex
 flags : int
     the data update flags
@@ -13518,11 +13536,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : vec3*
+values : np.ndarray[vec3]
     the distance to the right edge adjacent to each triangle vertex
 flags : int
     the data update flags
@@ -13545,11 +13563,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-values : cvec4*
+values : np.ndarray[cvec4]
     for vertex A, B, C, the least significant bit is 1 if the opposite edge is a
 flags : int
     the data update flags
@@ -13590,9 +13608,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 values : DvzIndex*
     the face indices (three vertex indices per triangle)
@@ -13617,9 +13635,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-vertex_count : uint32_t
+vertex_count : int
     the number of vertices
-index_count : uint32_t
+index_count : int
     the number of indices
 """
 mesh_alloc.argtypes = [
@@ -13638,9 +13656,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-idx : uint32_t
+idx : int
     the light index (0, 1, 2, or 3)
-dir : vec3
+dir : tuple[float, float, float]
     the light direction
 """
 mesh_light_dir.argtypes = [
@@ -13659,9 +13677,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-idx : uint32_t
+idx : int
     the light index (0, 1, 2, or 3)
-rgba : DvzColor
+rgba : tuple[int, int, int, int]
     the light color (rgba, but the a component is ignored)
 """
 mesh_light_color.argtypes = [
@@ -13680,9 +13698,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-idx : uint32_t
+idx : int
     the light index (0, 1, 2, or 3)
-params : vec4
+params : tuple[float, float, float, float]
     the light parameters (vec4 ambient, diffuse, specular, exponent)
 """
 mesh_light_params.argtypes = [
@@ -13702,7 +13720,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-rgba : DvzColor
+rgba : tuple[int, int, int, int]
     the rgba components
 """
 mesh_edgecolor.argtypes = [
@@ -13738,7 +13756,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the mesh
-count : uint32_t
+count : int
     the number of isolines
 """
 mesh_density.argtypes = [
@@ -13825,11 +13843,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-pos : vec3*
+pos : np.ndarray[vec3]
     the 3D positions of the sphere centers
 flags : int
     the data update flags
@@ -13852,9 +13870,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
 color : DvzColor*
     the sphere colors
@@ -13879,11 +13897,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-size : float*
+size : np.ndarray[float]
     the radius of the spheres
 flags : int
     the data update flags
@@ -13906,7 +13924,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of spheres to allocate for this visual
 """
 sphere_alloc.argtypes = [
@@ -13924,7 +13942,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-pos : vec3
+pos : tuple[float, float, float]
     the light position
 """
 sphere_light_pos.argtypes = [
@@ -13942,7 +13960,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-params : vec4
+params : tuple[float, float, float, float]
     the light parameters (vec4 ambient, diffuse, specular, exponent)
 """
 sphere_light_params.argtypes = [
@@ -14002,11 +14020,11 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-xlim : vec2
+xlim : tuple[float, float]
     xmin and xmax
-ylim : vec2
+ylim : tuple[float, float]
     ymin and ymax
-zlim : vec2
+zlim : tuple[float, float]
     zmin and zmax
 """
 volume_bounds.argtypes = [
@@ -14026,9 +14044,9 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-uvw0 : vec3
+uvw0 : tuple[float, float, float]
     coordinates of one of the corner points
-uvw1 : vec3
+uvw1 : tuple[float, float, float]
     coordinates of one of the corner points
 """
 volume_texcoords.argtypes = [
@@ -14047,7 +14065,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-ijk : ivec3
+ijk : tuple[int, int, int]
     index permutation
 """
 volume_permutation.argtypes = [
@@ -14065,7 +14083,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-face_index : int32_t
+face_index : int
     -1 to disable, or the face index between 0 and 5 included
 """
 volume_slice.argtypes = [
@@ -14083,7 +14101,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-transfer : vec4
+transfer : tuple[float, float, float, float]
     transfer function, for now `vec4(x, 0, 0, 0)` where x is a scaling factor
 """
 volume_transfer.argtypes = [
@@ -14125,17 +14143,17 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-p0 : vec3*
+p0 : np.ndarray[vec3]
     the 3D positions of the top left corner
-p1 : vec3*
+p1 : np.ndarray[vec3]
     the 3D positions of the top right corner
-p2 : vec3*
+p2 : np.ndarray[vec3]
     the 3D positions of the bottom left corner
-p3 : vec3*
+p3 : np.ndarray[vec3]
     the 3D positions of the bottom right corner
 flags : int
     the data update flags
@@ -14161,17 +14179,17 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-first : uint32_t
+first : int
     the index of the first item to update
-count : uint32_t
+count : int
     the number of items to update
-uvw0 : vec3*
+uvw0 : np.ndarray[vec3]
     the 3D texture coordinates of the top left corner
-uvw1 : vec3*
+uvw1 : np.ndarray[vec3]
     the 3D texture coordinates of the top right corner
-uvw2 : vec3*
+uvw2 : np.ndarray[vec3]
     the 3D texture coordinates of the bottom left corner
-uvw3 : vec3*
+uvw3 : np.ndarray[vec3]
     the 3D texture coordinates of the bottom right corner
 flags : int
     the data update flags
@@ -14215,7 +14233,7 @@ Parameters
 ----------
 visual : DvzVisual*
     the visual
-item_count : uint32_t
+item_count : int
     the total number of slices to allocate for this visual
 """
 slice_alloc.argtypes = [
@@ -14235,13 +14253,13 @@ batch : DvzBatch*
     the batch
 format : DvzFormat
     the texture format
-width : uint32_t
+width : int
     the texture width
-height : uint32_t
+height : int
     the texture height
-depth : uint32_t
+depth : int
     the texture depth
-data : void*
+data : np.ndarray
     the texture data to upload
 
 Returns

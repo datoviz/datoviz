@@ -59,9 +59,9 @@ edgecolor = (0, 0, 0, 64)
 sc = dvz.ShapeCollection()
 sc.add_surface(heights=heights, colors=colors, contour='edges')
 
-app = dvz.App(background='white')
+app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(0.42339, -0.39686, -0.00554))
 
 visual = app.mesh_shape(
