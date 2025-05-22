@@ -375,6 +375,41 @@ void dvz_panel_flags(DvzPanel* panel, int flags)
 
 
 
+void dvz_panel_background(DvzPanel* panel, cvec4* background)
+{
+    ANN(panel);
+
+    DvzBatch* batch = dvz_panel_batch(panel);
+    ANN(batch);
+
+    DvzVisual* visual = dvz_basic(batch, DVZ_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0);
+    dvz_basic_alloc(visual, 6);
+
+    vec3 pos[] = {
+        {-1, +1, 0}, // top-left
+        {-1, -1, 0}, // bottom-left
+        {+1, +1, 0}, // top-right
+        {+1, -1, 0}, // bottom-right
+        {+1, +1, 0}, // top-right (repeat)
+        {-1, -1, 0}, // bottom-left (repeat)
+    };
+
+    cvec4 col[6] = {0};
+    memcpy(col[0], background[0], 4);
+    memcpy(col[1], background[2], 4);
+    memcpy(col[2], background[1], 4);
+    memcpy(col[3], background[3], 4);
+    memcpy(col[4], background[1], 4);
+    memcpy(col[5], background[2], 4);
+
+    dvz_basic_position(visual, 0, 6, pos, 0);
+    dvz_basic_color(visual, 0, 6, col, 0);
+
+    dvz_panel_visual(panel, visual, DVZ_VIEW_FLAGS_STATIC);
+}
+
+
+
 void dvz_panel_gui(DvzPanel* panel, const char* title, int flags)
 {
     ANN(panel);

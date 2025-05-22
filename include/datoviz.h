@@ -505,6 +505,17 @@ DVZ_EXPORT DvzBatch* dvz_panel_batch(DvzPanel* panel);
 
 
 /**
+ * Set a colored background for a panel.
+ *
+ * @param panel the panel
+ * @param background the colors of the four corners (top-left, top-right, bottom left,
+ * bottom-right)
+ */
+DVZ_EXPORT void dvz_panel_background(DvzPanel* panel, cvec4* background);
+
+
+
+/**
  * Get the panel's reference.
  *
  * @param panel the panel
