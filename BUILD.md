@@ -13,10 +13,16 @@ If precompiled pip wheels are unavailable or not working on your system—or if 
 
 Versions of the various dependencies, including the bundled ones.
 
-* **Datoviz v0.2.2**
+* **Datoviz v0.2.3**
+    * cglm: `v0.9.4`
     * Dear ImGui: `v1.91.7-docking`
-    * Vulkan SDK:
-    * (TODO)
+    * fpng: `v1.0.6`
+    * glfw: `v3.4`
+    * msdf-atlas-gen: `master`
+    * Tiny Obj Loader: `v2.0.0`
+    * tinyxml2: `v10.0.0`
+    * Vulkan Memory Allocator: `v3.2.1`
+    * Vulkan SDK: `v1.3.280`
 
 ## Ubuntu 24.04
 
