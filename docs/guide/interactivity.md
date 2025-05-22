@@ -9,7 +9,9 @@ Datoviz supports basic 2D and 3D interactivity on panels, including:
 
 These modes are attached to a panel and control the panel's internal transformation matrices.
 
-⚠️ **Note:** Interactivity features are still limited and evolving. Some functionality available in the C API is not yet exposed in Python.
+!!! warning
+
+    Interactivity features are still limited and evolving. Some functionality available in the C API is not yet exposed in Python.
 
 ---
 
@@ -44,7 +46,9 @@ ortho = panel.ortho()
 
 This is useful for pixel-perfect rendering or interfaces that require fixed-size panels.
 
-> **⚠️ Warning:** This controller is still experimental.
+!!! warning
+
+    This controller is still experimental.
 
 ---
 

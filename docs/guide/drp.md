@@ -6,7 +6,9 @@ The **Datoviz Rendering Protocol (DRP)** is a low-level specification intended t
 
 ## Status
 
-⚠️ **Note:** DRP is not yet documented in the Python API.
+!!! warning
+
+    DRP is not yet documented in the Python API.
 
 The core infrastructure exists in the C backend, but it depends on runtime compilation of GPU shaders (SPIR-V). We are currently evaluating the best way to bundle a SPIR-V compiler into Datoviz while preserving cross-platform compatibility.
 

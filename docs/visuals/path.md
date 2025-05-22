@@ -2,7 +2,9 @@
 
 The **path** visual renders continuous polylines — sequences of connected line segments that form a single open or closed path. It supports batch rendering with multiple disconnected paths per visual, per-vertex styling and optional variable thickness, making it well-suited for contours, trajectories, and line-based annotations.
 
-> **⚠️ Warning:** This visual is powerful and high-quality, but not optimized or scalable to millions of points. For very large datasets, use the lower-quality but more scalable [Basic](basic.md) visual instead, with the `line_strip` primitive and groups.
+!!! note
+
+    This visual is powerful and high-quality, but not optimized or scalable to millions of points. For very large datasets, use the lower-quality but more scalable [Basic](basic.md) visual instead, with the `line_strip` primitive and groups.
 
 ---
 

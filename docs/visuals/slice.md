@@ -6,9 +6,11 @@ The **slice** visual is designed to render 2D slices extracted from a 3D volume.
 
 ## Status
 
-The slice visual is implemented in the **Datoviz C library**, but is **not yet available in the Python API**.
+!!! warning
 
-Python bindings will be added in a future release. Once available, this visual will support slicing along arbitrary axes with customizable placement, size, and texture coordinates.
+    The slice visual is implemented in the **Datoviz C library**, but is **not yet available in the Python API**.
+
+    Python bindings will be added in a future release. Once available, this visual will support slicing along arbitrary axes with customizable placement, size, and texture coordinates.
 
 ---
 

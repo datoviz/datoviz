@@ -13,7 +13,9 @@ Unlike polylines or paths, each segment is treated as a standalone graphical ele
 - Customizable caps: round, square, triangle, butt, etc.
 - Fast and flexible for disconnected line data
 
-> **Note:** 2D arrows are not yet supported in the segment visual. For now, consider using the [Marker](marker.md) visual with an `arrow` shape, or the 3D [Shape API](../reference/api_py.md) to generate 3D arrows, which can be rendered using the [Mesh](mesh.md) visual.
+!!! note
+
+    2D arrows are not yet supported in the segment visual. For now, consider using the [Marker](marker.md) visual with an `arrow` shape, or the 3D [Shape API](../reference/api_py.md) to generate 3D arrows, which can be rendered using the [Mesh](mesh.md) visual.
 
 ---
 

@@ -2,7 +2,9 @@
 
 The **volume** visual displays 3D scalar fields using ray-based volume rendering. It supports NDC-aligned bounding boxes, axis permutation, basic colormapping, and limited transfer functions.
 
-⚠️ **Note:** Volume rendering is currently a basic implementation. It is neither highly efficient nor visually polished yet. Slicing, advanced transfer functions, and performance improvements are planned for future versions.
+!!! warning
+
+    Volume rendering is currently a basic implementation. It is neither highly efficient nor visually polished yet. Slicing, advanced transfer functions, and performance improvements are planned for future versions.
 
 ---
 

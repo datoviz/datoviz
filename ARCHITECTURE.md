@@ -2,7 +2,9 @@
 
 This document provides a high-level overview of the Datoviz v0.3 code architecture.
 
-> **⚠️ Warning:** Some architectural details described here are expected to change in Datoviz v0.4.
+!!! warning
+
+    Some architectural details described here are expected to change in Datoviz v0.4.
 
 ## Main components
 
@@ -92,7 +94,9 @@ The **Datoviz Intermediate Protocol** is fully defined in `datoviz_protocol.h`.
 
 It provides a generic, intermediate-level GPU visualization interface that resembles the WebGPU API in spirit. This protocol operates **exclusively on GPU objects**, not on visual or graphical primitives. It offers no built-in visuals; instead, it supports arbitrary shaders and graphics pipelines. Graphical primitives and higher-level visualization constructs are implemented separately in the **Visuals** library and the **Scene API** (described below).
 
-> *Note:* The protocol will be expanded in Datoviz v0.4 to support compute shaders, multiple rendering passes, and additional low-level features.
+!!! note
+
+    The protocol will be expanded in Datoviz v0.4 to support compute shaders, multiple rendering passes, and additional low-level features.
 
 Requests are collected sequentially in a **batch**, which is submitted to the renderer for processing during the next iteration of the event loop.
 

@@ -99,7 +99,9 @@ Set the following environment variables to enable performance-related diagnostic
 - `DVZ_FPS=1` — Display an FPS (frames per second) counter.
 - `DVZ_MONITOR=1` — Show a GPU memory monitor (allocated memory usage).
 
-> **Note:** The current FPS computation is suboptimal and may not reflect true frame rate. Improvements are planned — contributions are welcome!
+!!! note
+
+    The current FPS computation is suboptimal and may not reflect true frame rate. Improvements are planned — contributions are welcome!
 
 
 

@@ -2,7 +2,9 @@
 
 Datoviz includes a built-in immediate-mode GUI system based on [Dear ImGui](https://github.com/ocornut/imgui), accessible directly from Python. This system allows you to build interactive widgets like buttons, sliders, checkboxes, tables, and trees.
 
-⚠️ **Note:** The GUI API currently mirrors the underlying C API closely. While powerful, it is relatively low-level and may be simplified in a future version.
+!!! warning
+
+    The GUI API currently mirrors the underlying C API closely. While powerful, it is relatively low-level and may be simplified in a future version.
 
 ---
 

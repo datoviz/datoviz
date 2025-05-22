@@ -755,6 +755,8 @@ class Marker(Visual):
         """
         Set the rendering style of the marker.
 
+        This controls how the marker uses color, edgecolor, and linewidth.
+
         Parameters
         ----------
         value : str
@@ -763,7 +765,6 @@ class Marker(Visual):
             - 'stroke': border only (transparent interior)
             - 'outline': fill with border
 
-        This controls how the marker uses color, edgecolor, and linewidth.
         """
         self.aspect = value
 

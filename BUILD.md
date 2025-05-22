@@ -2,9 +2,11 @@
 
 If precompiled pip wheels are unavailable or not working on your system—or if you need a custom build (e.g. to create a C/C++ application that depends on Datoviz)—you can build Datoviz manually.
 
-> **Note:** Datoviz is currently built and tested with the **Vulkan LunarG SDK v1.3.280**.
-On Linux and macOS, this SDK is bundled automatically and does not need to be installed separately. On Windows, however, manual installation is required.
-We regularly update the supported Vulkan SDK version.
+!!! note
+
+    Datoviz is currently built and tested with the **Vulkan LunarG SDK v1.3.280**.
+    On Linux and macOS, this SDK is bundled automatically and does not need to be installed separately. On Windows, however, manual installation is required.
+    We regularly update the supported Vulkan SDK version.
 
 
 ## Dependencies

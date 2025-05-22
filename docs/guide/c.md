@@ -59,7 +59,9 @@ gcc -std=c11 -O2 -I/path/to/datoviz/include \
     my_program.c -L/path/to/datoviz/build -ldatoviz -lm -o my_program
 ```
 
-> 🔧 **Note:** We plan to provide downloadable builds for major platforms in the future.
+!!! note
+
+    We plan to provide downloadable builds for major platforms in the future.
 
 ---
 
