@@ -38,24 +38,6 @@ arcball = panel.arcball(initial=(-1, -0.1, -0.25))
 
 visual = app.mesh_shape(sc, lighting=True)
 
-visual.set_light_color((  0,   0, 255, 255), 0)    # Blue
-visual.set_light_color((  0, 255,   0, 255), 1)    # Green
-visual.set_light_color((200, 200,   0, 255), 2)    # Yellow
-visual.set_light_color((255,   0,   0, 255), 3)    # Red
-
-visual.set_light_pos(( -9, 1, 5, 1), 0)
-visual.set_light_pos(( -3, 1, 5, 1), 1)
-visual.set_light_pos((  3, 1, 5, 1), 2)
-visual.set_light_pos((  9, 1, 5, 1), 3)
-
-# Material affect on colors      R    G    B
-visual.set_material_params(( .1,  .1,  .1), 0)    # Ambient
-visual.set_material_params(( .8,  .8,  .8), 1)    # Diffuse
-visual.set_material_params(( .9,  .9,  .9), 2)    # Specular
-visual.set_shine(.95)   # Shininess
-
-
-
 panel.add(visual)
 
 app.run()

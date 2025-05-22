@@ -49,11 +49,7 @@
 /*  Constants                                                                                    */
 /*************************************************************************************************/
 
-#define DEFAULT_MATERIAL_PARAMS (vec4){0.2, 0.7, 0.7, .9}
-#define DEFAULT_SHINE 0.5f
-#define DEFAULT_EMIT 0.0f
-#define DEFAULT_EDGECOLOR TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
-#define DEFAULT_LINEWIDTH 2.0f
+// See datoviz_enums.h
 
 
 
@@ -190,15 +186,23 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     // Default light parameters.
     if (lighting > 0)
     {
-        dvz_mesh_light_pos(visual, 0, DVZ_DEFAULT_LIGHT_POS);
-        dvz_mesh_light_color(visual, 0, DVZ_DEFAULT_LIGHT_COLOR);
-
-        dvz_mesh_material_params(visual, 0, DEFAULT_MATERIAL_PARAMS);
-        dvz_mesh_shine(visual, DEFAULT_SHINE);
-        dvz_mesh_emit(visual, DEFAULT_EMIT);
+        dvz_mesh_light_pos(visual, 0, DVZ_DEFAULT_LIGHT0_POS);
+        dvz_mesh_light_color(visual, 0, DVZ_DEFAULT_LIGHT0_COLOR);
+        dvz_mesh_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
+        dvz_mesh_light_color(visual, 1, DVZ_DEFAULT_LIGHT1_COLOR);
+        dvz_mesh_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
+        dvz_mesh_light_color(visual, 2, DVZ_DEFAULT_LIGHT2_COLOR);
+        dvz_mesh_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
+        dvz_mesh_light_color(visual, 3, DVZ_DEFAULT_LIGHT3_COLOR);
+        dvz_mesh_material_params(visual, 0, DVZ_DEFAULT_AMBIENT);
+        dvz_mesh_material_params(visual, 1, DVZ_DEFAULT_DIFFUSE);
+        dvz_mesh_material_params(visual, 2, DVZ_DEFAULT_SPECULAR);
+        dvz_mesh_material_params(visual, 3, DVZ_DEFAULT_EMISSION);
+        dvz_mesh_shine(visual, DVZ_DEFAULT_SHINE);
+        dvz_mesh_emit(visual, DVZ_DEFAULT_EMIT);
     }
-    dvz_mesh_edgecolor(visual, (DvzColor){DEFAULT_EDGECOLOR});
-    dvz_mesh_linewidth(visual, DEFAULT_LINEWIDTH);
+    dvz_mesh_edgecolor(visual, (DvzColor){DVZ_DEFAULT_EDGECOLOR});
+    dvz_mesh_linewidth(visual, DVZ_DEFAULT_LINEWIDTH);
     dvz_mesh_density(visual, 10);
 
     // Visual draw callback.

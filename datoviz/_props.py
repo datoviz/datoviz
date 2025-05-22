@@ -99,7 +99,7 @@ PROPS = {
         'right': {'type': np.ndarray, 'dtype': np.float32, 'shape': (-1, 3)},
         'contour': {'type': np.ndarray, 'dtype': np.uint8, 'shape': (-1, 4)},
         'index': {'type': np.ndarray, 'dtype': np.uint32, 'shape': (-1,)},
-        'light_dir': {'type': vec3},
+        'light_pos': {'type': vec4},
         'light_color': {'type': cvec4},
         'material_params': {'type': vec3},
         'shine': {'type': float},

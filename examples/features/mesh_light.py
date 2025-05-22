@@ -12,15 +12,15 @@ from datoviz import Out, vec3, vec4
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 file_path = ROOT_DIR / 'data/mesh/bunny.obj'
 
-light_pos = (vec4(-9, 5, 15, 1),      # Pos 0  x,y,z
-             vec4(-3, 5, 15, 1),      # Pos 1  x,y,z
-             vec4( 3, 5, 15, 1),      # Pos 2  x,y,z
-             vec4( 9, 5, 15, 1))      # Pos 3  x,y,z
+light_pos = (vec4( 0, 0, 5, 1),      # Pos 0  x,y,z
+             vec4(-5, 0, 5, 1),      # Pos 1  x,y,z
+             vec4( 0, 5, 5, 1),      # Pos 2  x,y,z
+             vec4( 5, 0, 5, 1))      # Pos 3  x,y,z
 
-light_color = (vec4( 0,  0, 1, 1),    # Blue
-               vec4( 0,  1, 0, 1),    # Green
-               vec4(.7, .7, 0, 1),    # Yellow
-               vec4( 1,  0, 0, 1))    # Red
+light_color = (vec4(1, 1, 1, 1),    # White
+               vec4(1, 0, 0, 1),    # Red
+               vec4(0, 1, 0, 1),    # Blue
+               vec4(0, 0, 1, 1))    # Green
 
 material = (vec3(.2, .2, .2),     # Ambient   R, G, B
             vec3(.7, .7, .7),     # Diffuse   R, G, B
@@ -38,14 +38,14 @@ app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure(gui=True)
 
+# Create two panels side-by-side.
+panel1 = figure.panel((0, 0), (400, 600))
+panel2 = figure.panel((400, 0), (400, 600))
+
 # Offset the panel to the right so that is not over the controls.
-panel = figure.panel((360, 00), (400, 500))
-
-arcball = panel.arcball(initial=(0.35, 0, 0))
-
+arcball = panel2.arcball(initial=(0.35, 0, 0))
 visual = app.mesh_shape(sc, lighting=True)
-
-panel.add(visual)
+panel2.add(visual)
 
 # GUI callback
 def update_params():
@@ -63,10 +63,10 @@ def update_params():
 
 update_params()
 
-@app.connect(panel)
+@app.connect(figure)
 def on_gui(ev):
-    dvz.gui_size(dvz.vec2(350, 500))
-    dvz.gui_pos(dvz.vec2(10, 10), dvz.vec2(0, 0))
+    dvz.gui_size(dvz.vec2(350, 450))
+    dvz.gui_pos(dvz.vec2(20, 20), dvz.vec2(0, 0))
 
     dvz.gui_begin('Change the light', 0)
     has_changed = False

@@ -1735,7 +1735,6 @@ class Mesh(Visual):
             The shine value.
         """
         self.shine = value
-        # dvz.mesh_shine(self.c_visual, value)
 
     def set_emit(self, value: float) -> None:
         """
@@ -1747,7 +1746,6 @@ class Mesh(Visual):
             The emit value.
         """
         self.emit = value
-        # dvz.mesh_emit(self.c_visual, value)
 
     def set_edgecolor(self, value: tuple) -> None:
         """

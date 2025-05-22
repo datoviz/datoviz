@@ -926,19 +926,37 @@ typedef enum
 
 #define DVZ_DEFAULT_CLEAR_COLOR (cvec4){0, 0, 0, 0}
 
-#define DVZ_DEFAULT_LIGHT_POS (vec4){-5, +5, +5, 1}
+#define DVZ_DEFAULT_LIGHT0_POS (vec4){ 0,  0, +5, 1}
+#define DVZ_DEFAULT_LIGHT1_POS (vec4){-5,  0, +5, 1}
+#define DVZ_DEFAULT_LIGHT2_POS (vec4){ 0, +5, +5, 1}
+#define DVZ_DEFAULT_LIGHT3_POS (vec4){ 5,  0, +5, 1}
 
 #define DVZ_DEFAULT_LIGHT_DIR (vec4){0.577, -0.577, -0.577, 0.0}
 
 #if DVZ_COLOR_CVEC4
-#define DVZ_DEFAULT_LIGHT_COLOR (cvec4){255, 255, 255, 255}
+#define DVZ_DEFAULT_LIGHT0_COLOR (cvec4){255, 255, 255, 255}
+#define DVZ_DEFAULT_LIGHT1_COLOR (cvec4){255,   0,   0, 255}
+#define DVZ_DEFAULT_LIGHT2_COLOR (cvec4){  0, 255,   0, 255}
+#define DVZ_DEFAULT_LIGHT3_COLOR (cvec4){  0,   0, 255, 255}
 #else
-#define DVZ_DEFAULT_LIGHT_COLOR (vec3){1, 1, 1, 1}
+#define DVZ_DEFAULT_LIGHT0_COLOR (vec4){1, 1, 1, 1}
+#define DVZ_DEFAULT_LIGHT1_COLOR (vec4){1, 0, 0, 1}
+#define DVZ_DEFAULT_LIGHT2_COLOR (vec4){0, 1, 0, 1}
+#define DVZ_DEFAULT_LIGHT3_COLOR (vec4){0, 0, 1, 1}
 #endif
 
+// Used by spheres
 #define DVZ_DEFAULT_LIGHT_PARAMS (vec4){0.2, 0.7, 0.7, 0.9}
 
-
+// R, G, B
+#define DVZ_DEFAULT_AMBIENT (vec4){0.2, 0.2, 0.2}
+#define DVZ_DEFAULT_DIFFUSE (vec4){0.7, 0.7, 0.7}
+#define DVZ_DEFAULT_SPECULAR (vec4){0.5, 0.5, 0.5}
+#define DVZ_DEFAULT_EMISSION (vec4){0.7, 0.7, 0.7}
+#define DVZ_DEFAULT_SHINE 0.7f
+#define DVZ_DEFAULT_EMIT 0.0f
+#define DVZ_DEFAULT_EDGECOLOR TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
+#define DVZ_DEFAULT_LINEWIDTH 2.0f
 
 /*************************************************************************************************/
 /*  Colormap enums                                                                               */
