@@ -51,9 +51,9 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 * **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
-### List of visuals
+<!-- ### List of visuals
 
-![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png)
+![List of visuals](https://raw.githubusercontent.com/datoviz/data/main/screenshots/visuals.png) -->
 
 
 
