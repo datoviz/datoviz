@@ -49,9 +49,6 @@ dvz.compute_normals(nv, ni, pos.astype(np.float32), index.astype(np.uint32), nor
 f = sulc_map
 colors = dvz.cmap('binary', f.astype(np.float32), f.min(), f.max())
 
-light_dir = (+1, -1, -1)
-light_params = (0.5, 0.5, 0.5, 16)
-
 # -------------------------------------------------------------------------------------------------
 
 app = dvz.App()
@@ -65,8 +62,6 @@ visual.set_data(
     normal=normals,
     color=colors,
     index=index,
-    light_dir=light_dir,
-    light_params=light_params,
 )
 panel.add(visual)
 
