@@ -1848,27 +1848,55 @@ class Sphere(Visual):
         """
         self.size[offset:] = array
 
-    def set_light_pos(self, value: tuple) -> None:
+    def set_shine(self, value) -> None:
         """
-        Set the position of the light source.
+        Set the size of the spheres.
+
+        Parameters
+        ----------
+        value : float
+            The amount of surface shininess.
+        """
+        self.shine = value
+
+    def set_emit(self, value) -> None:
+        """
+        Set the size of the spheres.
+
+        Parameters
+        ----------
+        value : float
+            The amount of surface light emission.
+        """
+        self.emit = value
+
+    def set_light_pos(self, value: tuple, idx: int = 0) -> None:
+        """
+        Set the position of light idx.
 
         Parameters
         ----------
         value : tuple
-            The light position.
+            The light position value.
+        idx : int, optional
+            The index of the light, by default 0.
         """
-        self.light_pos = value
+        value = value if value is not None else cst.DEFAULT_LIGHT_POS
+        dvz.sphere_light_pos(self.c_visual, idx, dvz.vec4(*value))
 
-    def set_light_params(self, value: tuple) -> None:
+    def set_light_color(self, value: tuple, idx: int = 0) -> None:
         """
-        Set the parameters of the light source.
+        Set the color of the light idx.
 
         Parameters
         ----------
         value : tuple
-            The light parameters (diffuse, ambient, specular, exponent).
+            The light color value.
+        idx : int, optional
+            The index of the light, by default 0.
         """
-        self.light_params = value
+        value = value if value is not None else cst.DEFAULT_LIGHT_COLOR
+        dvz.sphere_light_color(self.c_visual, idx, dvz.cvec4(*value))
 
 
 # -------------------------------------------------------------------------------------------------

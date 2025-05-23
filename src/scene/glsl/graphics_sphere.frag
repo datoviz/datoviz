@@ -8,16 +8,14 @@
 #include "common.glsl"
 #include "lighting.glsl"
 
-// TODO: Use binding as defined in lighting.glsl
-//      This should include color and postion, and light specific paramters
-//      that are needed to implement differently kind of lights.
-//
-layout(binding = 2) uniform SphereParams
-{
-    vec4 light_pos;
-    vec4 light_params;
-}
-params;
+// mvp --> slot 0
+// viewport --> slot 1
+#define SPHERE_SLOT_LIGHT 2
+#define SPHERE_SLOT_MATERIAL 3
+#define SPHERE_SLOT_TEX 4
+
+layout(constant_id = 0) const int SPHERE_TEXTURED = 0; // 1 to enable
+layout(constant_id = 1) const int SPHERE_LIGHTING = 0; // 1 to enable
 
 layout(location = 0) in vec4 in_color;
 layout(location = 1) in vec4 in_pos;
@@ -26,6 +24,20 @@ layout(location = 3) in vec4 in_cam_pos;
 layout(location = 4) in vec4 in_flags;       // bvec4(use tex, ...)  others to be determined.
 
 layout(location = 0) out vec4 out_color;
+
+
+layout(std140, binding = SPHERE_SLOT_LIGHT) uniform u_light {
+    Light light;
+};
+
+
+layout(std140, binding = SPHERE_SLOT_MATERIAL) uniform u_material {
+    Material material;
+};
+
+
+layout(binding = SPHERE_SLOT_TEX) uniform sampler2D tex;
+
 
 
 void main()
@@ -48,16 +60,13 @@ void main()
     float clip_depth = (mvp.proj * mvp.view * pos).w;
     gl_FragDepth = 1.0 - 1.0/(1.0 + clip_depth);
 
-    // Temporary fix until new binding is created.
-    // Todo: Create new binding and initializations for bindings.
-    vec4 light_color = vec4(1.0);
-    vec4 light_pos = params.light_pos;
-    vec4 material = params.light_params;
-
-    // Flip y direction in shader matches y direction in gl_Postition.
-    light_pos.y *= -1;                      // Flip y axis for vulkan.
-
-    // Get lighting.  (Reqires LightParams structure to be set.
-    out_color = basic_lighting(pos, in_color, material, normal, in_cam_pos, light_pos, light_color);
-
+    if (SPHERE_LIGHTING > 0)
+    {
+        out_color = lighting(pos, in_color, normal, in_cam_pos, light, material);
+    }
+    else
+    {
+        out_color = in_color * (0.2 + 0.8 * normal.z);
+        out_color.a = 1.0;
+    }
 }

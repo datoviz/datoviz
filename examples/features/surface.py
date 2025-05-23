@@ -69,12 +69,6 @@ visual = app.mesh_shape(
     sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
 )
 
-# Material affect on colors      R    G    B
-visual.set_material_params(( .5,  .5,  .5), 0)    # Ambient
-visual.set_material_params(( 1,  1,  1), 1)       # Diffuse
-visual.set_material_params(( .9,  .9,  .9), 2)    # Specular
-visual.set_shine(.9)   # Shininess
-
 panel.add(visual)
 
 app.run()

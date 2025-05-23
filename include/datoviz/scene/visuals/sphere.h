@@ -27,7 +27,8 @@
 /*************************************************************************************************/
 
 typedef struct DvzSphereVertex DvzSphereVertex;
-typedef struct DvzSphereParams DvzSphereParams;
+typedef struct DvzSphereLight DvzSphereLight;
+typedef struct DvzSphereMaterial DvzSphereMaterial;
 
 // Forward declarations.
 typedef struct DvzBatch DvzBatch;
@@ -39,6 +40,18 @@ typedef struct DvzVisual DvzVisual;
 /*  Enums                                                                                        */
 /*************************************************************************************************/
 
+typedef enum
+{
+    DVZ_LIGHT_PARAMS_POS,
+    DVZ_LIGHT_PARAMS_COLOR,
+} DvzLightParamsEnum;
+
+typedef enum
+{
+    DVZ_SPHERE_PARAMS_PARAMS,
+    DVZ_SPHERE_PARAMS_SHINE,
+    DVZ_SPHERE_PARAMS_EMIT,
+} DvzMeshParamsEnum;
 
 
 /*************************************************************************************************/
@@ -52,12 +65,15 @@ struct DvzSphereVertex
     float size;     /* size */
 };
 
+struct DvzSphereLight {
+    mat4 pos;              // w=0 indicates it's a direction with no position.
+    mat4 color;            // alpha value indicates it's on.
+};
 
-
-struct DvzSphereParams
-{
-    vec4 light_pos;   /* light position */
-    vec4 light_param; /* ambient, diffuse, specular coefs */
+struct DvzSphereMaterial {
+    mat4 params;          /* (r, g, b, -) X (ambient, specular, diffuse, emission) */
+    float shine;          /* specular amount */
+    float emit;           /* emission level */
 };
 
 

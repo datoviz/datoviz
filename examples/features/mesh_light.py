@@ -65,7 +65,7 @@ update_params()
 
 @app.connect(figure)
 def on_gui(ev):
-    dvz.gui_size(dvz.vec2(350, 450))
+    dvz.gui_size(dvz.vec2(350, 500))
     dvz.gui_pos(dvz.vec2(20, 20), dvz.vec2(0, 0))
 
     dvz.gui_begin('Change the light', 0)

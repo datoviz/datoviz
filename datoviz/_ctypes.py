@@ -878,7 +878,9 @@ class DvzShapeIndexingFlags(CtypesEnum):
 
 class DvzSphereFlags(CtypesEnum):
     DVZ_SPHERE_FLAGS_NONE = 0x0000
-    DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0001
+    DVZ_SPHERE_FLAGS_TEXTURED = 0x0001
+    DVZ_SPHERE_FLAGS_LIGHTING = 0x0002
+    DVZ_SPHERE_FLAGS_SIZE_PIXELS = 0x0004
 
 
 class DvzMeshFlags(CtypesEnum):
@@ -1970,8 +1972,10 @@ SHAPE_TORUS = 10
 SLOT_COUNT = 2
 SLOT_DAT = 0
 SLOT_TEX = 1
+SPHERE_FLAGS_LIGHTING = 0x0002
 SPHERE_FLAGS_NONE = 0x0000
-SPHERE_FLAGS_SIZE_PIXELS = 0x0001
+SPHERE_FLAGS_SIZE_PIXELS = 0x0004
+SPHERE_FLAGS_TEXTURED = 0x0001
 TEX_1D = 1
 TEX_2D = 2
 TEX_3D = 3
@@ -7377,8 +7381,8 @@ visual : DvzVisual*
     the mesh
 idx : uint32_t
     the light index (0, 1, 2, or 3)
-dir : unknown
-    the light direction
+pos : vec4
+    the light position (w=0 indicates it is a direction.)
 """
 mesh_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -7398,7 +7402,7 @@ visual : DvzVisual*
 idx : uint32_t
     the light index (0, 1, 2, or 3)
 rgba : DvzColor
-    the light color (rgba, but the a component is ignored)
+    the light color (a>0 indicates light is on.)
 """
 mesh_light_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -7416,9 +7420,9 @@ Parameters
 visual : DvzVisual*
     the mesh
 idx : uint32_t
-    the mesh index (0, 1, 2, or 3)
+    the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
 params : vec3
-    the material parameters (vec4 ambient, diffuse, specular, exponent)
+    the material parameters (vec3 r, g, b)
 """
 mesh_material_params.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
@@ -7585,7 +7589,7 @@ Set the sphere positions.
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
+    the sphere
 first : uint32_t
     the index of the first item to update
 count : uint32_t
@@ -7611,7 +7615,7 @@ Set the sphere colors.
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
+    the sphere
 first : uint32_t
     the index of the first item to update
 count : uint32_t
@@ -7637,7 +7641,7 @@ Set the sphere sizes.
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
+    the sphere
 first : uint32_t
     the index of the first item to update
 count : uint32_t
@@ -7663,7 +7667,7 @@ Allocate memory for a visual.
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
+    the sphere
 item_count : uint32_t
     the total number of spheres to allocate for this visual
 """
@@ -7680,30 +7684,90 @@ Set the sphere light position.
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
-pos : vec3
-    the light position
+    the sphere
+idx : uint32_t
+    the light index (0, 1, 2, or 3)
+pos : vec4
+    the light position (w=0 indicates it is a direction.)
 """
 sphere_light_pos.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    vec3,  # vec3 pos
+    ctypes.c_uint32,  # uint32_t idx
+    vec4,  # vec4 pos
 ]
 
-# Function dvz_sphere_light_params()
-sphere_light_params = dvz.dvz_sphere_light_params
-sphere_light_params.__doc__ = """
-Set the sphere light parameters.
+# Function dvz_sphere_light_color()
+sphere_light_color = dvz.dvz_sphere_light_color
+sphere_light_color.__doc__ = """
+Set the light color.
 
 Parameters
 ----------
 visual : DvzVisual*
-    the visual
-params : vec4
-    the light parameters (vec4 ambient, diffuse, specular, exponent)
+    the sphere
+idx : uint32_t
+    the light index (0, 1, 2, or 3)
+rgba : DvzColor
+    the light color (a>0 indicates light is on.)
 """
-sphere_light_params.argtypes = [
+sphere_light_color.argtypes = [
     ctypes.POINTER(DvzVisual),  # DvzVisual* visual
-    vec4,  # vec4 params
+    ctypes.c_uint32,  # uint32_t idx
+    DvzColor,  # DvzColor rgba
+]
+
+# Function dvz_sphere_material_params()
+sphere_material_params = dvz.dvz_sphere_material_params
+sphere_material_params.__doc__ = """
+Set the sphere material parameters.
+
+Parameters
+----------
+visual : DvzVisual*
+    the sphere
+idx : uint32_t
+    the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
+params : vec3
+    the material parameters (vec3 r, g, b)
+"""
+sphere_material_params.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_uint32,  # uint32_t idx
+    vec3,  # vec3 params
+]
+
+# Function dvz_sphere_shine()
+sphere_shine = dvz.dvz_sphere_shine
+sphere_shine.__doc__ = """
+Set the sphere surface shine level.
+
+Parameters
+----------
+visual : DvzVisual*
+    the sphere
+shine : float
+    the surface shininess
+"""
+sphere_shine.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float shine
+]
+
+# Function dvz_sphere_emit()
+sphere_emit = dvz.dvz_sphere_emit
+sphere_emit.__doc__ = """
+Set the mesh surface emission level.
+
+Parameters
+----------
+visual : DvzVisual*
+    the sphere
+emit : float
+    the emission level
+"""
+sphere_emit.argtypes = [
+    ctypes.POINTER(DvzVisual),  # DvzVisual* visual
+    ctypes.c_float,  # float emit
 ]
 
 # Function dvz_volume()

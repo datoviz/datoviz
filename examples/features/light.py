@@ -13,6 +13,7 @@ tags:
 """
 import numpy as np
 import datoviz as dvz
+from datoviz import vec4
 
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
@@ -21,26 +22,49 @@ panel = figure.panel()
 
 visual = panel.demo_3D()
 
+light_pos = (vec4( 0, 0, 5, 1),      # Pos 0  x,y,z
+             vec4(-5, 0, 5, 1),      # Pos 1  x,y,z
+             vec4( 0, 5, 5, 1),      # Pos 2  x,y,z
+             vec4( 5, 0, 5, 1))      # Pos 3  x,y,z
 
-light_pos = dvz.vec3(-5, +5, +5)
-light_params = dvz.vec4(0.25, 0.5, 0.5, 0.5)
+light_color = (vec4(1, 1, 1, 1),    # White
+               vec4(1, 0, 0, 1),    # Red
+               vec4(0, 1, 0, 1),    # Blue
+               vec4(0, 0, 1, 1))    # Green
 
 # GUI callback
 def update_params():
-    lp = (light_params[0], light_params[1], light_params[2], light_params[3])
-    visual.set_light_pos(light_pos)
-    visual.set_light_params(lp)
+    for i in range(4):
+        c = light_color[i]
+        visual.set_light_color((int(c[0] * 255),
+                                int(c[1] * 255),
+                                int(c[2] * 255),
+                                int(c[3] * 255)), i)
+        visual.set_light_pos(light_pos[i], i)
     visual.update()
 
 update_params()
 
 @app.connect(figure)
 def on_gui(ev):
-    dvz.gui_size(dvz.vec2(500, 100))
-    dvz.gui_begin('Change the light', 0)
+    dvz.gui_size(dvz.vec2(400, 350))
+    dvz.gui_begin('Change the lights', 0)
     has_changed = False
-    has_changed |= dvz.gui_slider_vec3('light pos', -10, +10, light_pos)
-    has_changed |= dvz.gui_slider_vec4('light params', 0, 1, light_params)
+    dvz.gui_text("Light 1:")
+    has_changed |= dvz.gui_slider_vec4('Pos 0 XYZ', -20, +20, light_pos[0])
+    has_changed |= dvz.gui_slider_vec4('Color 0 RGBA', 0, 1, light_color[0])
+
+    dvz.gui_text("Light 2:")
+    has_changed |= dvz.gui_slider_vec4('Pos 1 XYZ', -20, +20, light_pos[1])
+    has_changed |= dvz.gui_slider_vec4('Color 1 RGBA', 0, 1, light_color[1])
+
+    dvz.gui_text("Light 3:")
+    has_changed |= dvz.gui_slider_vec4('Pos 2 XYZ', -20, +20, light_pos[2])
+    has_changed |= dvz.gui_slider_vec4('Color 2 RGBA', 0, 1, light_color[2])
+
+    dvz.gui_text("Light 4:")
+    has_changed |= dvz.gui_slider_vec4('Pos 3 XYZ', -20, +20, light_pos[3])
+    has_changed |= dvz.gui_slider_vec4('Color 3 RGBA', 0, 1, light_color[3])
     dvz.gui_end()
 
     if has_changed:

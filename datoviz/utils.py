@@ -545,6 +545,34 @@ def mesh_flags(
     return c_flags
 
 
+def sphere_flags(
+    textured: bool = None,
+    lighting: bool = None,
+) -> int:
+    """
+    Compute the C mesh flags based on the given options.
+
+    Parameters
+    ----------
+    textured : bool
+        Whether to use a texture for the sphere.
+    lighting : bool
+        Whether lighting is enabled.
+
+    Returns
+    -------
+    int
+        The computed sphere flags.
+    """
+    c_flags = 0
+    lighting = lighting if (lighting is not None) else cst.DEFAULT_LIGHTING
+    if textured:
+        c_flags |= dvz.SPHERE_FLAGS_TEXTURED
+    if lighting:
+        c_flags |= dvz.SPHERE_FLAGS_LIGHTING
+    return c_flags
+
+
 def get_fixed_params(fixed: bool | str) -> tuple[bool, bool, bool]:
     """
     Get the fixed parameters for a visual on all three dimensions.

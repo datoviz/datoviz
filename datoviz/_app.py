@@ -21,7 +21,7 @@ from ._event import Event
 from ._figure import Figure
 from ._texture import Texture
 from .shape_collection import ShapeCollection
-from .utils import dtype_to_format, image_flags, mesh_flags, to_enum
+from .utils import dtype_to_format, image_flags, mesh_flags, sphere_flags, to_enum
 
 # -------------------------------------------------------------------------------------------------
 # App
@@ -663,12 +663,20 @@ class App:
             **kwargs,
         )
 
-    def sphere(self, **kwargs) -> vs.Sphere:
+    def sphere(self,
+               textured: tp.Optional[bool] = None,
+               lighting: tp.Optional[bool] = None,
+               **kwargs,
+    ) -> vs.Sphere:
         """
         Create a sphere visual.
 
         Parameters
         ----------
+        textured : bool
+            Whether to use a texture for the sphere.
+        lighting : bool
+            Whether lighting is enabled.
         **kwargs
             Additional keyword arguments for the visual.
 
@@ -677,7 +685,11 @@ class App:
         vs.Sphere
             The created sphere visual instance.
         """
-        return self._visual(dvz.sphere, vs.Sphere, **kwargs)
+
+        c_flags = sphere_flags(
+            textured=textured, lighting=lighting
+        )
+        return self._visual(dvz.sphere, vs.Sphere, c_flags=c_flags, **kwargs)
 
     def volume(self, mode: str = 'colormap', **kwargs) -> vs.Volume:
         """
