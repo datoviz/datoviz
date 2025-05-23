@@ -7,14 +7,6 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
-#include "scene/sdf.h"
-#include "_macros.h"
-#include "_pointer.h"
-#include "datoviz.h"
-#include "datoviz_math.h"
-#include "datoviz_protocol.h"
-#include "fileio.h"
-
 #if HAS_MSDF
 // Include msdfgen
 #pragma GCC diagnostic push
@@ -26,6 +18,16 @@
 
 using namespace msdfgen;
 #endif
+
+// HACK: need to put the macros definitions after msdf-atlas-gen because we redefine the
+// BLACK, WHITE, GRAY constants
+#include "_macros.h"
+#include "_pointer.h"
+#include "datoviz.h"
+#include "datoviz_math.h"
+#include "datoviz_protocol.h"
+#include "fileio.h"
+#include "scene/sdf.h"
 
 
 

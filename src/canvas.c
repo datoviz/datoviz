@@ -11,6 +11,7 @@
 #include "canvas.h"
 #include "canvas_utils.h"
 #include "common.h"
+#include "datoviz_defaults.h"
 #include "host.h"
 #include "vklite.h"
 
@@ -235,14 +236,13 @@ void dvz_canvas_viewport(
 
     dvz_cmd_viewport(
         cmds, idx,
-        (VkViewport){
-            .x = offset[0],
-            .y = offset[1],
-            .width = width,
-            .height = height,
-            // WARNING: do not forget this otherwise depth testing may not work!
-            .minDepth = 0,
-            .maxDepth = 1});
+        (VkViewport){.x = offset[0],
+                     .y = offset[1],
+                     .width = width,
+                     .height = height,
+                     // WARNING: do not forget this otherwise depth testing may not work!
+                     .minDepth = 0,
+                     .maxDepth = 1});
 }
 
 

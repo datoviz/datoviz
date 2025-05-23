@@ -121,9 +121,9 @@ int test_loop_2(TstSuite* suite)
 
     // Upload the triangle data.
     DvzVertex data[] = {
-        {{-1, -1, 0}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},
-        {{+1, -1, 0}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},
-        {{+0, +1, 0}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},
+        {{-1, -1, 0}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},
+        {{+1, -1, 0}, {0, ALPHA_MAX, 0, ALPHA_MAX}},
+        {{+0, +1, 0}, {0, 0, ALPHA_MAX, ALPHA_MAX}},
     };
     dvz_dat_upload(dat_vertex, 0, sizeof(data), data, true);
 
@@ -285,42 +285,42 @@ int test_loop_cube(TstSuite* suite)
     // Cube data.
     float x = .5;
     DvzVertex data[] = {
-        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             // front
-        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
-        {{-x, +x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
-        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, -x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             // right
-        {{+x, -x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, +x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, +x, -x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, +x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
-        {{+x, -x, +x}, {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}},             //
-        {{-x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             // back
-        {{+x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
-        {{+x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
-        {{+x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
-        {{-x, -x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
-        {{-x, +x, -x}, {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}},             //
-        {{-x, -x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, // left
-        {{-x, -x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, +x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, -x, -x}, {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, // bottom
-        {{+x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{+x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, -x, +x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, -x, -x}, {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, // top
-        {{+x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
-        {{+x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
-        {{+x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, -x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
-        {{-x, +x, +x}, {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}}, //
+        {{-x, -x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         // front
+        {{+x, -x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         //
+        {{+x, +x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         //
+        {{+x, +x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         //
+        {{-x, +x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         //
+        {{-x, -x, +x}, {ALPHA_MAX, 0, 0, ALPHA_MAX}},         //
+        {{+x, -x, +x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         // right
+        {{+x, -x, -x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         //
+        {{+x, +x, -x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         //
+        {{+x, +x, -x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         //
+        {{+x, +x, +x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         //
+        {{+x, -x, +x}, {0, ALPHA_MAX, 0, ALPHA_MAX}},         //
+        {{-x, +x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         // back
+        {{+x, +x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         //
+        {{+x, -x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         //
+        {{+x, -x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         //
+        {{-x, -x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         //
+        {{-x, +x, -x}, {0, 0, ALPHA_MAX, ALPHA_MAX}},         //
+        {{-x, -x, -x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, // left
+        {{-x, -x, +x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, +x, +x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, +x, +x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, +x, -x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, -x, -x}, {0, ALPHA_MAX, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, -x, -x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, // bottom
+        {{+x, -x, -x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, //
+        {{+x, -x, +x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, //
+        {{+x, -x, +x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, -x, +x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, -x, -x}, {ALPHA_MAX, 0, ALPHA_MAX, ALPHA_MAX}}, //
+        {{-x, +x, +x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, // top
+        {{+x, +x, +x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, //
+        {{+x, +x, -x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, //
+        {{+x, +x, -x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, //
+        {{-x, +x, -x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, //
+        {{-x, +x, +x}, {ALPHA_MAX, ALPHA_MAX, 0, ALPHA_MAX}}, //
     };
 
     // Upload the vertex data.

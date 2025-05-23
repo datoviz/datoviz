@@ -88,7 +88,7 @@ int test_glyph_1(TstSuite* suite)
     FREE(pos);
 
     // Glyph colors.
-    DvzColor* color = dvz_mock_color(n, DVZ_ALPHA_MAX);
+    DvzColor* color = dvz_mock_color(n, ALPHA_MAX);
     dvz_glyph_color(visual, 0, n, color, 0);
     FREE(color);
 
@@ -155,7 +155,7 @@ static void _set_strings_1(DvzVisual* visual)
         {-.5, +.5, 0}, {+.5, +.5, 0}, {0, 0, 0}, {-.5, -.5, 0}, {+.5, -.5, 0}};
     dvz_glyph_strings(
         visual, string_count, strings, string_positions, NULL, //
-        (cvec4){255, 255, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
+        (DvzColor){YELLOW}, (vec2){0, 0}, (vec2){0, 0});
 }
 
 static void _set_strings_2(DvzVisual* visual)
@@ -166,7 +166,7 @@ static void _set_strings_2(DvzVisual* visual)
 
     dvz_glyph_strings(
         visual, string_count, strings, string_positions, NULL, //
-        (cvec4){0, 255, 255, 255}, (vec2){0, 0}, (vec2){0, 0});
+        (DvzColor){YELLOW}, (vec2){0, 0}, (vec2){0, 0});
 }
 
 static void _switch_strings(DvzApp* app, DvzId window_id, DvzMouseEvent* ev)

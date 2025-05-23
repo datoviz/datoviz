@@ -198,17 +198,8 @@ void dvz_image_edgecolor(DvzVisual* visual, DvzColor color)
         return;
     }
 
-#if DVZ_COLOR_CVEC4
     // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
-    float r = color[0] / 255.0;
-    float g = color[1] / 255.0;
-    float b = color[2] / 255.0;
-    float a = color[3] / 255.0;
-
-    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, (vec4){r, g, b, a});
-#else
-    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, color);
-#endif
+    dvz_visual_param(visual, 2, DVZ_IMAGE_PARAMS_EDGECOLOR, (vec4){COLOR_D2F(color)});
 }
 
 

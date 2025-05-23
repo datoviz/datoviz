@@ -67,7 +67,7 @@ int test_visual_1(TstSuite* suite)
     dvz_visual_data(visual, 0, 0, n, pos);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(128));
     dvz_visual_data(visual, 1, 0, n, color);
 
     // Important: upload the data to the GPU.

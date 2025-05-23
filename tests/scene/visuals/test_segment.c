@@ -65,7 +65,7 @@ int test_segment_1(TstSuite* suite)
         terminal[i][1] = -initial[i][1];
 
         dvz_colormap_scale(DVZ_CMAP_HSV, i, 0, n, color[i]);
-        color[i][3] = TO_ALPHA(216);
+        color[i][3] = ALPHA_U2D(216);
 
         linewidth[i] = 10.0f;
     }

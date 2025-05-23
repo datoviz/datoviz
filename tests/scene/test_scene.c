@@ -91,7 +91,7 @@ int test_scene_1(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(192));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(192));
     dvz_pixel_color(pixel, 0, n, color, 0);
 
 
@@ -139,7 +139,7 @@ int test_scene_2(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(128));
     dvz_pixel_color(pixel, 0, n, color, 0);
 
 
@@ -209,12 +209,12 @@ int test_scene_3(TstSuite* suite)
     DvzShape* shape = dvz_shape();
     dvz_shape_cube(
         shape, (DvzColor[]){
-                   {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
-                   {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-                   {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+                   {RED},
+                   {GREEN},
+                   {PURPLE},
+                   {CYAN},
+                   {PURPLE},
+                   {YELLOW},
                });
     int flags = DVZ_MESH_FLAGS_LIGHTING;
     DvzVisual* mesh = dvz_mesh_shape(batch, shape, flags);
@@ -263,7 +263,7 @@ int test_scene_offscreen(TstSuite* suite)
     dvz_pixel_position(pixel, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(128));
     dvz_pixel_color(pixel, 0, n, color, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.

@@ -50,7 +50,7 @@ int test_pixel_1(TstSuite* suite)
     dvz_pixel_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(128));
     dvz_pixel_color(visual, 0, n, color, 0);
 
     dvz_pixel_size(visual, 2);

@@ -45,12 +45,12 @@ int test_mesh_1(TstSuite* suite)
     DvzShape* shape = dvz_shape();
     dvz_shape_cube(
         shape, (DvzColor[]){
-                   {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX},
-                   {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
-                   {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX},
-                   {DVZ_ALPHA_MAX, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX},
+                   {RED},
+                   {GREEN},
+                   {BLUE},
+                   {CYAN},
+                   {PURPLE},
+                   {YELLOW},
                });
 
     // for (uint32_t i = 0; i < shape->vertex_count; i++)
@@ -102,23 +102,23 @@ int test_mesh_2(TstSuite* suite)
 
     // Sphere
     shapes[0] = dvz_shape();
-    dvz_shape_sphere(shapes[0], 32, 32, (DvzColor){255, 128, 64, alpha});
+    dvz_shape_sphere(shapes[0], 32, 32, (DvzColor){RED});
 
     // Cylinder
     shapes[1] = dvz_shape();
-    dvz_shape_cylinder(shapes[1], 32, (DvzColor){64, 200, 255, alpha});
+    dvz_shape_cylinder(shapes[1], 32, (DvzColor){GREEN});
 
     // Cone
     shapes[2] = dvz_shape();
-    dvz_shape_cone(shapes[2], 32, (DvzColor){128, 255, 128, alpha});
+    dvz_shape_cone(shapes[2], 32, (DvzColor){BLUE});
 
     // Arrow
     shapes[3] = dvz_shape();
-    dvz_shape_arrow(shapes[3], 32, 0.3f, 0.2f, 0.05f, (DvzColor){255, 64, 128, alpha});
+    dvz_shape_arrow(shapes[3], 32, 0.3f, 0.2f, 0.05f, (DvzColor){CYAN});
 
     // Torus
     shapes[4] = dvz_shape();
-    dvz_shape_torus(shapes[4], 64, 16, 0.1f, (DvzColor){64, 128, 255, alpha});
+    dvz_shape_torus(shapes[4], 64, 16, 0.1f, (DvzColor){PURPLE});
 
     // Translate each shape to a position in the XZ plane
     for (uint32_t i = 0; i < shape_count; i++)
@@ -138,7 +138,7 @@ int test_mesh_2(TstSuite* suite)
 
     DvzVisual* visual =
         dvz_mesh_shape(vt.batch, merged, DVZ_MESH_FLAGS_LIGHTING | DVZ_MESH_FLAGS_CONTOUR);
-    dvz_mesh_edgecolor(visual, (DvzColor){255, 255, 255, 64});
+    dvz_mesh_edgecolor(visual, (DvzColor){WHITE_ALPHA(64)});
     dvz_mesh_linewidth(visual, .1);
     // dvz_visual_depth(visual, DVZ_DEPTH_TEST_DISABLE);
     dvz_panel_visual(vt.panel, visual, 0);
@@ -170,9 +170,8 @@ int test_mesh_polygon(TstSuite* suite)
         points[i][0] = r * cos(-(float)i * M_2PI / n);
         points[i][1] = r * sin(-(float)i * M_2PI / n);
     }
-    DvzColor color = {TO_ALPHA(64), TO_ALPHA(128), TO_ALPHA(255), TO_ALPHA(255)};
     DvzShape* shape = dvz_shape();
-    dvz_shape_polygon(shape, n, (const dvec2*)points, color);
+    dvz_shape_polygon(shape, n, (const dvec2*)points, (DvzColor){BLUE});
     FREE(points);
 
     // // Display the indices.
@@ -190,7 +189,7 @@ int test_mesh_polygon(TstSuite* suite)
     DvzVisual* visual = dvz_mesh_shape(vt.batch, shape, flags);
 
     // Set up the wireframe contour parameters.
-    dvz_mesh_edgecolor(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, (DvzColor){WHITE});
     dvz_mesh_linewidth(visual, 10.0);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -229,9 +228,9 @@ int test_mesh_polygon(TstSuite* suite)
 
 #define COUNT (3 * 3)
 
-#define R {DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}
-#define G {0, DVZ_ALPHA_MAX, 0, DVZ_ALPHA_MAX}
-#define B {0, 0, DVZ_ALPHA_MAX, DVZ_ALPHA_MAX}
+#define R {ALPHA_MAX, 0, 0, ALPHA_MAX}
+#define G {0, ALPHA_MAX, 0, ALPHA_MAX}
+#define B {0, 0, ALPHA_MAX, ALPHA_MAX}
 
 static inline float dot_ortho(vec3 p, vec3 q, vec3 a, vec3 b)
 {
@@ -379,11 +378,11 @@ int test_mesh_edgecolor(TstSuite* suite)
     dvz_mesh_alloc(visual, COUNT, 0);
 
     // Mesh color.
-    DvzColor color[] = {B, B, B, R, G, B, R, R, R};
+    DvzColor color[] = {{BLUE}, {BLUE}, {BLUE}, {RED}, {GREEN}, {BLUE}, {RED}, {RED}, {RED}};
     dvz_mesh_color(visual, 0, COUNT, color, 0);
 
     // Stroke.
-    dvz_mesh_edgecolor(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, (DvzColor){WHITE});
     dvz_mesh_linewidth(visual, 50);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -457,11 +456,11 @@ int test_mesh_contour(TstSuite* suite)
     dvz_mesh_contour(visual, 0, 3, (void*)contour, 0);
 
     // Mesh color.
-    DvzColor color[] = {R, G, B};
+    DvzColor color[] = {{RED}, {GREEN}, {BLUE}};
     dvz_mesh_color(visual, 0, 3, color, 0);
 
     // Stroke.
-    dvz_mesh_edgecolor(visual, DVZ_WHITE);
+    dvz_mesh_edgecolor(visual, (DvzColor){WHITE});
     dvz_mesh_linewidth(visual, 20);
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -564,12 +563,7 @@ static inline void _gui_callback(DvzApp* app, DvzId canvas_id, DvzGuiEvent* ev)
     dvz_gui_end();
 
     if (color_changed)
-        dvz_mesh_edgecolor( //
-            vt->visual,
-            (DvzColor){
-                TO_ALPHA(color[0][0] * 255), //
-                TO_ALPHA(color[0][1] * 255), //
-                TO_ALPHA(color[0][2] * 255)});
+        dvz_mesh_edgecolor(vt->visual, (DvzColor){COLOR_F2D(color[0])});
     if (width_changed)
         dvz_mesh_linewidth(vt->visual, color[0][3]);
 }
@@ -626,20 +620,15 @@ int test_mesh_obj(TstSuite* suite)
     // Lighting.
     {
         // Two lights.
-        //dvz_mesh_light_pos(visual, 0, (vec3){+1, -0.25, -.5, 0.0});
-        //dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, .9});
+        // dvz_mesh_light_pos(visual, 0, (vec3){+1, -0.25, -.5, 0.0});
+        // dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, .9});
         // dvz_mesh_light_params(visual, 0, (vec4){.75, .25, .25, 16});
 
         dvz_mesh_light_pos(visual, 1, (vec4){-1, -0.25, -.5, 0.0});
         dvz_mesh_material_params(visual, 1, (vec4){0.1, .5, .5, .7});
 
-#if DVZ_COLOR_CVEC4
-        dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0, 255});
-        dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0, 255});
-#else
-        dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0, 1});
-        dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0, 1});
-#endif
+        dvz_mesh_light_color(visual, 0, (DvzColor){RED});
+        dvz_mesh_light_color(visual, 1, (DvzColor){GREEN});
     }
 
     vec4 color = {.25, .25, .25, .5f};
@@ -685,7 +674,7 @@ static inline dvec2* copy_polygon(uint32_t length, const dvec2* pos)
 
 int test_mesh_geo(TstSuite* suite)
 {
-    DvzColor color = {TO_ALPHA(255), TO_ALPHA(128), TO_ALPHA(64), TO_ALPHA(255)};
+    DvzColor color = {RED};
 
     // Load positions.
     char pos_path[1024] = {0};

@@ -11,6 +11,7 @@
 #include "loop.h"
 #include "canvas.h"
 #include "common.h"
+#include "datoviz_defaults.h"
 #include "glfw_utils.h"
 #include "gui.h"
 #include "host.h"

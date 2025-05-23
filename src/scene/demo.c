@@ -44,7 +44,7 @@ static void legend(DvzBatch* batch, DvzPanel* panel, char* text, DvzAtlasFont* a
     dvz_glyph_atlas_font(glyph, af);
     dvz_glyph_strings(
         glyph, 1, (char*[]){text}, (vec3[]){{0, .85, 0}}, NULL, //
-        (cvec4){0, 0, 0, 255}, (vec2){0, 0}, (vec2){0, 0});
+        (DvzColor){BLACK}, (vec2){0, 0}, (vec2){0, 0});
     dvz_panel_visual(panel, glyph, DVZ_VIEW_FLAGS_STATIC);
 }
 
@@ -280,7 +280,7 @@ void dvz_demo(void)
 
         dvz_marker_aspect(marker, DVZ_MARKER_ASPECT_OUTLINE);
         dvz_marker_shape(marker, DVZ_MARKER_SHAPE_CLUB);
-        dvz_marker_edgecolor(marker, DVZ_WHITE);
+        dvz_marker_edgecolor(marker, (DvzColor){WHITE});
         dvz_marker_linewidth(marker, (float){3.0});
     }
 
@@ -336,7 +336,7 @@ void dvz_demo(void)
         vec3* initial = dvz_mock_line(n / 2, (vec3){-a / 2, -a / 2, 0}, (vec3){+a / 2, -a / 2, 0});
         vec3* terminal =
             dvz_mock_line(n / 2, (vec3){-a / 2, +a / 2, 0}, (vec3){+a / 2, +a / 2, 0});
-        DvzColor* segment_color = dvz_mock_cmap(n / 2, DVZ_CMAP_VIRIDIS, DVZ_ALPHA_MAX);
+        DvzColor* segment_color = dvz_mock_cmap(n / 2, DVZ_CMAP_VIRIDIS, ALPHA_MAX);
         float* linewidth = dvz_mock_linspace(n, 20.0, 80.0);
 
         dvz_segment_position(segment, 0, n / 2, initial, terminal, 0);
@@ -457,9 +457,6 @@ void dvz_demo(void)
         float* sphere_size = dvz_mock_linspace(n, .1, .25);
         dvz_sphere_size(sphere, 0, n, sphere_size, 0);
         FREE(sphere_size);
-
-        //dvz_sphere_light_pos(sphere, 0, (vec4){-1, 0, 10, 1});
-        //dvz_sphere_light_color(sphere, 0, (cvec4){255, 255, 255, 255});
     }
 
     legend(batch, p31, "SPHERE", &af);

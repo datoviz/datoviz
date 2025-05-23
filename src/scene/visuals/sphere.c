@@ -119,14 +119,11 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
     // Default light parameters.
     if (lighting > 0)
     {
-        dvz_sphere_light_pos(visual, 0, DVZ_DEFAULT_LIGHT0_POS);
-        dvz_sphere_light_color(visual, 0, DVZ_DEFAULT_LIGHT0_COLOR);
-        dvz_sphere_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
-        dvz_sphere_light_color(visual, 1, DVZ_DEFAULT_LIGHT1_COLOR);
-        dvz_sphere_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
-        dvz_sphere_light_color(visual, 2, DVZ_DEFAULT_LIGHT2_COLOR);
-        dvz_sphere_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
-        dvz_sphere_light_color(visual, 3, DVZ_DEFAULT_LIGHT3_COLOR);
+        dvz_sphere_light_pos(visual, 0, DVZ_DEFAULT_LIGHT_POS);
+        dvz_sphere_light_color(visual, 0, (DvzColor){DVZ_DEFAULT_LIGHT_COLOR});
+        // dvz_sphere_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
+        // dvz_sphere_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
+        // dvz_sphere_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
         dvz_sphere_material_params(visual, 0, DVZ_DEFAULT_AMBIENT);
         dvz_sphere_material_params(visual, 1, DVZ_DEFAULT_DIFFUSE);
         dvz_sphere_material_params(visual, 2, DVZ_DEFAULT_SPECULAR);
@@ -202,6 +199,7 @@ void dvz_sphere_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos)
 }
 
 
+
 void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
 {
     ANN(visual);
@@ -220,17 +218,10 @@ void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
     // NOTE: matrix order is transposed between C and glsl
 
     // Need to convert to float rgb as this is what the shader expects.
-#if DVZ_COLOR_CVEC4
-    light_color[0][idx][0] = rgba[0] / 255.0;
-    light_color[0][idx][1] = rgba[1] / 255.0;
-    light_color[0][idx][2] = rgba[2] / 255.0;
-    light_color[0][idx][3] = rgba[3] / 255.0;
-#else
-    light_color[0][idx][0] = rgba[0];
-    light_color[0][idx][1] = rgba[1];
-    light_color[0][idx][2] = rgba[2];
-    light_color[0][idx][3] = rgba[3];
-#endif
+    light_color[0][idx][0] = ALPHA_D2F(rgba[0]);
+    light_color[0][idx][1] = ALPHA_D2F(rgba[1]);
+    light_color[0][idx][2] = ALPHA_D2F(rgba[2]);
+    light_color[0][idx][3] = ALPHA_D2F(rgba[3]);
 
     dvz_visual_param(visual, slot_idx, attr_idx, light_color);
 }

@@ -312,8 +312,8 @@ int test_app_arcball(TstSuite* suite)
 
         data[i].size = 4;
 
-        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = TO_ALPHA(128);
+        dvz_colormap(DVZ_CMAP_HSV, ALPHA_F2D(t), data[i].color);
+        data[i].color[3] = ALPHA_U2D(128);
     }
     dvz_upload_dat(batch, wrapper.dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);
 
@@ -401,8 +401,8 @@ int test_app_anim(TstSuite* suite)
 
         data[i].size = 50;
 
-        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = TO_ALPHA(128);
+        dvz_colormap(DVZ_CMAP_HSV, ALPHA_F2D(t), data[i].color);
+        data[i].color[3] = ALPHA_U2D(128);
     }
 
     DvzSize size = n * sizeof(DvzGraphicsPointVertex);

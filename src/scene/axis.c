@@ -57,18 +57,21 @@
 #define LENGTH_MAJOR 16
 #define LENGTH_MINOR 10
 
-#define LABEL_COLOR   (DvzColor){0, 0, 0, 255}
-#define LABEL_BGCOLOR (DvzColor){255, 255, 255, 255}
+#define LABEL_COLOR                                                                               \
+    (DvzColor) { BLACK }
+#define LABEL_BGCOLOR                                                                             \
+    (DvzColor) { WHITE }
 
 #define COLOR_GLYPH                                                                               \
-    (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
-#define COLOR_LIM {0, 0, 0, DVZ_ALPHA_MAX}
+    (DvzColor) { BLACK }
+#define COLOR_LIM                                                                                 \
+    (DvzColor) { BLACK }
 #define COLOR_GRID                                                                                \
-    (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
+    (DvzColor) { BLACK }
 #define COLOR_MAJOR                                                                               \
-    (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
+    (DvzColor) { BLACK }
 #define COLOR_MINOR                                                                               \
-    (DvzColor) { 0, 0, 0, DVZ_ALPHA_MAX }
+    (DvzColor) { BLACK }
 
 
 
@@ -243,7 +246,7 @@ static void axis_common_params(DvzAxis* axis)
 {
     dvz_axis_width(axis, WIDTH_LIM, WIDTH_GRID, WIDTH_MAJOR, WIDTH_MINOR);
     dvz_axis_length(axis, LENGTH_LIM, LENGTH_GRID, LENGTH_MAJOR, LENGTH_MINOR);
-    dvz_axis_color(axis, COLOR_GLYPH, (cvec4)COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
+    dvz_axis_color(axis, COLOR_GLYPH, COLOR_LIM, COLOR_GRID, COLOR_MAJOR, COLOR_MINOR);
 
     dvz_glyph_bgcolor(axis->glyph, LABEL_BGCOLOR);
 
@@ -363,7 +366,7 @@ static void create_spine(DvzVisual* spine, DvzDim dim)
         end[1] = +2;
     }
     dvz_segment_position(spine, 0, 1, &start, &end, 0);
-    dvz_segment_color(spine, 0, 1, (DvzColor[]){{0, 0, 0, 255}}, 0);
+    dvz_segment_color(spine, 0, 1, (DvzColor[]){{BLACK}}, 0);
     dvz_segment_linewidth(spine, 0, 1, (float[]){1}, 0);
     // dvz_visual_fixed(spine, true, true, true);
 }
