@@ -20,6 +20,7 @@
 #include "../_enums.h"
 #include "../_log.h"
 #include "_obj.h"
+#include "datoviz_defaults.h"
 #include "datoviz_math.h"
 #include "datoviz_types.h"
 #include "mvp.h"

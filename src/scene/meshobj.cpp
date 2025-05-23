@@ -181,9 +181,9 @@ void dvz_shape_obj(DvzShape* shape, const char* file_path)
         }
         else if (nc_obj > 0)
         {
-            shape->color[i][0] = TO_BYTE(attrib.colors[3 * i + 0]);
-            shape->color[i][1] = TO_BYTE(attrib.colors[3 * i + 1]);
-            shape->color[i][2] = TO_BYTE(attrib.colors[3 * i + 2]);
+            shape->color[i][0] = ALPHA_F2U(attrib.colors[3 * i + 0]);
+            shape->color[i][1] = ALPHA_F2U(attrib.colors[3 * i + 1]);
+            shape->color[i][2] = ALPHA_F2U(attrib.colors[3 * i + 2]);
             shape->color[i][3] = 255;
         }
     }

@@ -55,7 +55,7 @@ int test_marker_code(TstSuite* suite)
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(192));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(192));
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
@@ -67,7 +67,7 @@ int test_marker_code(TstSuite* suite)
     dvz_marker_angle(visual, 0, n, size, 0);
 
     // Parameters.
-    dvz_marker_edgecolor(visual, DVZ_WHITE);
+    dvz_marker_edgecolor(visual, (DvzColor){WHITE});
     dvz_marker_linewidth(visual, (float){3.0});
 
     // Add the visual to the panel AFTER setting the visual's data.
@@ -114,7 +114,7 @@ int test_marker_bitmap(TstSuite* suite)
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(128));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(128));
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
@@ -192,7 +192,7 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(192));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(192));
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
@@ -204,7 +204,7 @@ int test_marker_sdf(TstSuite* suite)
     dvz_marker_angle(visual, 0, n, angle, 0);
 
     // Parameters.
-    dvz_marker_edgecolor(visual, DVZ_WHITE);
+    dvz_marker_edgecolor(visual, (DvzColor){WHITE});
     dvz_marker_linewidth(visual, (float){2.0});
     // IMPORTANT: need to specify the size of the texture when using SDFs.
     dvz_marker_tex_scale(visual, (float){(float)tex_size});
@@ -280,7 +280,7 @@ int test_marker_msdf(TstSuite* suite)
     dvz_marker_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, TO_ALPHA(192));
+    DvzColor* color = dvz_mock_color(n, ALPHA_U2D(192));
     dvz_marker_color(visual, 0, n, color, 0);
 
     // Size.
@@ -288,7 +288,7 @@ int test_marker_msdf(TstSuite* suite)
     dvz_marker_size(visual, 0, n, size, 0);
 
     // Parameters.
-    dvz_marker_edgecolor(visual, DVZ_WHITE);
+    dvz_marker_edgecolor(visual, (DvzColor){WHITE});
     dvz_marker_linewidth(visual, (float){3.0});
     // IMPORTANT: need to specify the size of the texture when using SDFs.
     dvz_marker_tex_scale(visual, (float){w});
@@ -341,7 +341,7 @@ int test_marker_rotation(TstSuite* suite)
     dvz_marker_position(visual, 0, 1, (vec3[]){{0, 0, 0}}, 0);
     dvz_marker_size(visual, 0, 1, (float[]){250}, 0);
     dvz_marker_angle(visual, 0, 1, (float[]){0}, 0);
-    dvz_marker_color(visual, 0, 1, (DvzColor[]){{DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}}, 0);
+    dvz_marker_color(visual, 0, 1, (DvzColor[]){{RED}}, 0);
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

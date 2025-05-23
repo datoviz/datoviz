@@ -919,44 +919,6 @@ typedef enum
 
 
 /*************************************************************************************************/
-/*  Defaults                                                                                     */
-/*************************************************************************************************/
-
-#define DVZ_DEFAULT_FORMAT DVZ_FORMAT_B8G8R8A8_UNORM
-
-#define DVZ_DEFAULT_VIEWPORT (vec2){0, 0}
-
-#define DVZ_DEFAULT_CLEAR_COLOR (cvec4){0, 0, 0, 0}
-
-#define DVZ_DEFAULT_LIGHT0_POS (vec4){ 0, 0, 10, 1}
-#define DVZ_DEFAULT_LIGHT1_POS (vec4){ 0, 8, 10, 1}
-#define DVZ_DEFAULT_LIGHT2_POS (vec4){-6,-5, 10, 1}
-#define DVZ_DEFAULT_LIGHT3_POS (vec4){ 6,-5, 10, 1}
-
-#define DVZ_DEFAULT_LIGHT_DIR (vec4){0.577, -0.577, -0.577, 0.0}
-
-#if DVZ_COLOR_CVEC4
-#define DVZ_DEFAULT_LIGHT0_COLOR (cvec4){255, 255, 255, 255}
-#define DVZ_DEFAULT_LIGHT1_COLOR (cvec4){255,   0,   0, 255}
-#define DVZ_DEFAULT_LIGHT2_COLOR (cvec4){  0, 255,   0, 255}
-#define DVZ_DEFAULT_LIGHT3_COLOR (cvec4){  0,   0, 255, 255}
-#else
-#define DVZ_DEFAULT_LIGHT0_COLOR (vec4){ 1, 1, 1, 1}
-#define DVZ_DEFAULT_LIGHT1_COLOR (vec4){ 1, 0, 0, 1}
-#define DVZ_DEFAULT_LIGHT2_COLOR (vec4){ 0, 1, 0, 1}
-#define DVZ_DEFAULT_LIGHT3_COLOR (vec4){.2,.2, 1, 1}
-#endif
-
-#define DVZ_DEFAULT_AMBIENT (vec4){0.1, 0.1, 0.1}  // R, G, B
-#define DVZ_DEFAULT_DIFFUSE (vec4){0.8, 0.8, 0.8}
-#define DVZ_DEFAULT_SPECULAR (vec4){0.8, 0.8, 0.8}
-#define DVZ_DEFAULT_EMISSION (vec4){0.5, 0.5, 0.5}
-#define DVZ_DEFAULT_SHINE 0.9f
-#define DVZ_DEFAULT_EMIT 0.0f
-#define DVZ_DEFAULT_EDGECOLOR TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(50), TO_ALPHA(255)
-#define DVZ_DEFAULT_LINEWIDTH 2.0f
-
-/*************************************************************************************************/
 /*  Colormap enums                                                                               */
 /*************************************************************************************************/
 

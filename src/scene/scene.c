@@ -528,6 +528,12 @@ void dvz_panel_resize(DvzPanel* panel, float x, float y, float width, float heig
 
     dvz_view_resize(panel->view, (vec2){x, y}, (vec2){width, height});
 
+    // Take margins into account, for camera and arcball.
+    width -= panel->view->margins[1];
+    width -= panel->view->margins[3];
+    height -= panel->view->margins[0];
+    height -= panel->view->margins[2];
+
     // NOTE: need to resize the panzoom as well.
     _panzoom_ortho_size(panel);
 
@@ -884,7 +890,18 @@ DvzCamera* dvz_panel_camera(DvzPanel* panel, int flags)
 
     // Create a camera.
     log_trace("create a new Camera instance");
-    panel->camera = dvz_camera(panel->view->shape[0], panel->view->shape[1], flags);
+
+    // View shape.
+    float w = panel->view->shape[0];
+    float h = panel->view->shape[1];
+
+    // Take margins into account.
+    w -= panel->view->margins[1];
+    w -= panel->view->margins[3];
+    h -= panel->view->margins[0];
+    h -= panel->view->margins[2];
+
+    panel->camera = dvz_camera(w, h, flags);
     ANN(panel->camera);
 
     // Get the MVP struct of the panel, update it with the camera, and update the buffer on the

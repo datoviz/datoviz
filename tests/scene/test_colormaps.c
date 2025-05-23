@@ -59,26 +59,26 @@ int test_colormaps_scale(TstSuite* suite)
 
     DvzColormap cmap = DVZ_CMAP_HSV;
     DvzColor color = {0};
-    DvzColor expected = {0, 0, 0, DVZ_ALPHA_MAX};
+    DvzColor expected = {0, 0, 0, ALPHA_MAX};
     float vmin = -1;
     float vmax = +1;
 
     dvz_colormap_scale(cmap, -1, vmin, vmax, color);
-    expected[0] = DVZ_ALPHA_MAX;
+    expected[0] = ALPHA_MAX;
     expected[1] = 0;
     expected[2] = 0;
     AEn(4, color, expected);
 
     dvz_colormap_scale(cmap, 0, vmin, vmax, color);
     expected[0] = 0;
-    expected[1] = DVZ_ALPHA_MAX;
-    expected[2] = TO_ALPHA(245);
+    expected[1] = ALPHA_MAX;
+    expected[2] = ALPHA_U2D(245);
     AEn(4, color, expected);
 
     dvz_colormap_scale(cmap, 1, vmin, vmax, color);
-    expected[0] = DVZ_ALPHA_MAX;
+    expected[0] = ALPHA_MAX;
     expected[1] = 0;
-    expected[2] = TO_ALPHA(23);
+    expected[2] = ALPHA_U2D(23);
     AEn(4, color, expected);
 
     return 0;
@@ -107,9 +107,9 @@ int test_colormaps_array(TstSuite* suite)
     // {
     //     printf("%d %d %d %d \n", colors[i][0], colors[i][1], colors[i][2], colors[i][3]);
     // }
-    AT(memcmp(colors[0], (DvzAlpha[]){DVZ_ALPHA_MAX, 0, 0, DVZ_ALPHA_MAX}, sizeof(DvzColor)) == 0);
+    AT(memcmp(colors[0], (DvzAlpha[]){ALPHA_MAX, 0, 0, ALPHA_MAX}, sizeof(DvzColor)) == 0);
     AT(memcmp(
-           colors[n - 1], (DvzAlpha[]){DVZ_ALPHA_MAX, 0, TO_ALPHA(23), DVZ_ALPHA_MAX},
+           colors[n - 1], (DvzAlpha[]){ALPHA_MAX, 0, ALPHA_U2D(23), ALPHA_MAX},
            sizeof(DvzColor)) == 0);
 
     FREE(colors);

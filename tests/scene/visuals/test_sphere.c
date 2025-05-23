@@ -40,7 +40,7 @@ int test_sphere_1(TstSuite* suite)
     const uint32_t n = 1000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_sphere(vt.batch, 0);
+    DvzVisual* visual = dvz_sphere(vt.batch, DVZ_SPHERE_FLAGS_LIGHTING);
 
     // Visual allocation.
     dvz_sphere_alloc(visual, n);
@@ -50,7 +50,7 @@ int test_sphere_1(TstSuite* suite)
     dvz_sphere_position(visual, 0, n, pos, 0);
 
     // Color.
-    DvzColor* color = dvz_mock_color(n, DVZ_ALPHA_MAX);
+    DvzColor* color = dvz_mock_color(n, ALPHA_MAX);
     dvz_sphere_color(visual, 0, n, color, 0);
 
     // Size.
@@ -61,7 +61,7 @@ int test_sphere_1(TstSuite* suite)
     dvz_sphere_light_pos(visual, 0, (vec4){-1, +1, +10, 1});
 
     // Light color.
-    dvz_sphere_light_color(visual, 0, (cvec4){100, 50, 200, 255});
+    dvz_sphere_light_color(visual, 0, (DvzColor){WHITE});
 
     // Add the visual to the panel AFTER setting the visual's data.
     dvz_panel_visual(vt.panel, visual, 0);

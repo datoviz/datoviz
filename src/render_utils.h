@@ -17,6 +17,7 @@
 /*  Includes                                                                                     */
 /*************************************************************************************************/
 
+#include "datoviz_defaults.h"
 #include "resources_utils.h"
 #include "surface.h"
 #include "vklite.h"
@@ -30,8 +31,7 @@
 #ifdef LANG_CPP
 cvec4 BACKGROUND = {102, 153, 204, 255};
 #else
-#define BACKGROUND                                                                                \
-    (cvec4) { 102, 153, 204, 255 }
+#define BACKGROUND (cvec4){102, 153, 204, 255}
 #endif
 
 

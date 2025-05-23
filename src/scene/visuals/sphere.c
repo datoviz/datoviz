@@ -34,9 +34,9 @@
    mvp 0
    viewport 1
 */
-#define SPHERE_SLOT_LIGHT 2
+#define SPHERE_SLOT_LIGHT    2
 #define SPHERE_SLOT_MATERIAL 3
-#define SPHERE_SLOT_TEX 4             // 4 or 5?
+#define SPHERE_SLOT_TEX      4
 
 
 
@@ -64,11 +64,12 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
     ANN(visual);
 
     // Parse flags.
-    int textured = (flags & DVZ_SPHERE_FLAGS_TEXTURED);
-    int lighting = (flags & DVZ_SPHERE_FLAGS_LIGHTING);
-    int size_pixels = (flags & DVZ_SPHERE_FLAGS_SIZE_PIXELS);
-    log_trace("create sphere visual, texture: %d, lighting: %d, size_pixels",
-              textured, lighting, size_pixels);
+    int textured = ((flags & DVZ_SPHERE_FLAGS_TEXTURED) != 0);
+    int lighting = ((flags & DVZ_SPHERE_FLAGS_LIGHTING) != 0);
+    int size_pixels = ((flags & DVZ_SPHERE_FLAGS_SIZE_PIXELS) != 0);
+    log_trace(
+        "create sphere visual, texture: %d, lighting: %d, size_pixels", //
+        textured, lighting, size_pixels);
 
     // Visual shaders.
     dvz_visual_shader(visual, "graphics_sphere");
@@ -104,26 +105,25 @@ DvzVisual* dvz_sphere(DvzBatch* batch, int flags)
     dvz_params_attr(light_params, DVZ_LIGHT_PARAMS_COLOR, FIELD(DvzSphereLight, color));
 
     // Material.
-    DvzParams* material_params = dvz_visual_params(visual, SPHERE_SLOT_MATERIAL, sizeof(DvzSphereMaterial));
+    DvzParams* material_params =
+        dvz_visual_params(visual, SPHERE_SLOT_MATERIAL, sizeof(DvzSphereMaterial));
     dvz_params_attr(material_params, DVZ_SPHERE_PARAMS_PARAMS, FIELD(DvzSphereMaterial, params));
     dvz_params_attr(material_params, DVZ_SPHERE_PARAMS_SHINE, FIELD(DvzSphereMaterial, shine));
     dvz_params_attr(material_params, DVZ_SPHERE_PARAMS_EMIT, FIELD(DvzSphereMaterial, emit));
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
-        visual, SPHERE_SLOT_TEX, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
+        visual, SPHERE_SLOT_TEX, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID,
+        DVZ_ZERO_OFFSET);
 
     // Default light parameters.
     if (lighting > 0)
     {
-        dvz_sphere_light_pos(visual, 0, DVZ_DEFAULT_LIGHT0_POS);
-        dvz_sphere_light_color(visual, 0, DVZ_DEFAULT_LIGHT0_COLOR);
-        dvz_sphere_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
-        dvz_sphere_light_color(visual, 1, DVZ_DEFAULT_LIGHT1_COLOR);
-        dvz_sphere_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
-        dvz_sphere_light_color(visual, 2, DVZ_DEFAULT_LIGHT2_COLOR);
-        dvz_sphere_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
-        dvz_sphere_light_color(visual, 3, DVZ_DEFAULT_LIGHT3_COLOR);
+        dvz_sphere_light_pos(visual, 0, DVZ_DEFAULT_LIGHT_POS);
+        dvz_sphere_light_color(visual, 0, (DvzColor){DVZ_DEFAULT_LIGHT_COLOR});
+        // dvz_sphere_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
+        // dvz_sphere_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
+        // dvz_sphere_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
         dvz_sphere_material_params(visual, 0, DVZ_DEFAULT_AMBIENT);
         dvz_sphere_material_params(visual, 1, DVZ_DEFAULT_DIFFUSE);
         dvz_sphere_material_params(visual, 2, DVZ_DEFAULT_SPECULAR);
@@ -181,7 +181,8 @@ void dvz_sphere_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos)
     if (!(visual->flags & DVZ_SPHERE_FLAGS_LIGHTING))
     {
         log_error(
-            "lighting support needs to be activated with the sphere flag DVZ_SPHERE_FLAGS_LIGHTING");
+            "lighting support needs to be activated with the sphere flag "
+            "DVZ_SPHERE_FLAGS_LIGHTING");
         return;
     }
 
@@ -191,11 +192,12 @@ void dvz_sphere_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos)
 
     // NOTE: matrix order is transposed between C and glsl
     light_pos[0][idx][0] = pos[0];
-    light_pos[0][idx][1] = -pos[1];  // Flip the light y value.
+    light_pos[0][idx][1] = -pos[1]; // Flip the light y value.
     light_pos[0][idx][2] = pos[2];
     light_pos[0][idx][3] = pos[3];
     dvz_visual_param(visual, slot_idx, attr_idx, light_pos);
 }
+
 
 
 void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
@@ -204,7 +206,8 @@ void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
     if (!(visual->flags & DVZ_SPHERE_FLAGS_LIGHTING))
     {
         log_error(
-            "lighting support needs to be activated with the sphere flag DVZ_SPHERE_FLAGS_LIGHTING");
+            "lighting support needs to be activated with the sphere flag "
+            "DVZ_SPHERE_FLAGS_LIGHTING");
         return;
     }
 
@@ -215,17 +218,10 @@ void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
     // NOTE: matrix order is transposed between C and glsl
 
     // Need to convert to float rgb as this is what the shader expects.
-#if DVZ_COLOR_CVEC4
-    light_color[0][idx][0] = rgba[0] / 255.0;
-    light_color[0][idx][1] = rgba[1] / 255.0;
-    light_color[0][idx][2] = rgba[2] / 255.0;
-    light_color[0][idx][3] = rgba[3] / 255.0;
-#else
-    light_color[0][idx][0] = rgba[0];
-    light_color[0][idx][1] = rgba[1];
-    light_color[0][idx][2] = rgba[2];
-    light_color[0][idx][3] = rgba[3];
-#endif
+    light_color[0][idx][0] = ALPHA_D2F(rgba[0]);
+    light_color[0][idx][1] = ALPHA_D2F(rgba[1]);
+    light_color[0][idx][2] = ALPHA_D2F(rgba[2]);
+    light_color[0][idx][3] = ALPHA_D2F(rgba[3]);
 
     dvz_visual_param(visual, slot_idx, attr_idx, light_color);
 }
@@ -238,7 +234,8 @@ void dvz_sphere_material_params(DvzVisual* visual, uint32_t idx, vec3 params)
     if (!(visual->flags & DVZ_SPHERE_FLAGS_LIGHTING))
     {
         log_error(
-            "lighting support needs to be activated with the sphere flag DVZ_SPHERE_FLAGS_LIGHTING");
+            "lighting support needs to be activated with the sphere flag "
+            "DVZ_SPHERE_FLAGS_LIGHTING");
         return;
     }
 
@@ -250,7 +247,7 @@ void dvz_sphere_material_params(DvzVisual* visual, uint32_t idx, vec3 params)
     material_params[0][idx][0] = params[0];
     material_params[0][idx][1] = params[1];
     material_params[0][idx][2] = params[2];
-    material_params[0][idx][3] = 1.0;  //params[3];
+    material_params[0][idx][3] = 1.0; // params[3];
     dvz_visual_param(visual, slot_idx, attr_idx, material_params);
 }
 

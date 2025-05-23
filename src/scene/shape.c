@@ -1366,10 +1366,10 @@ void dvz_shape_surface(
             shape->pos[point_idx][2] += height * normal[2];
 
             // Color.
-            shape->color[point_idx][0] = colors != NULL ? colors[point_idx][0] : DVZ_ALPHA_MAX;
-            shape->color[point_idx][1] = colors != NULL ? colors[point_idx][1] : DVZ_ALPHA_MAX;
-            shape->color[point_idx][2] = colors != NULL ? colors[point_idx][2] : DVZ_ALPHA_MAX;
-            shape->color[point_idx][3] = colors != NULL ? colors[point_idx][3] : DVZ_ALPHA_MAX;
+            shape->color[point_idx][0] = colors != NULL ? colors[point_idx][0] : ALPHA_MAX;
+            shape->color[point_idx][1] = colors != NULL ? colors[point_idx][1] : ALPHA_MAX;
+            shape->color[point_idx][2] = colors != NULL ? colors[point_idx][2] : ALPHA_MAX;
+            shape->color[point_idx][3] = colors != NULL ? colors[point_idx][3] : ALPHA_MAX;
 
             shape->texcoords[point_idx][0] = i / (float)(row_count - 1); // in [0, 1] along i axis
             shape->texcoords[point_idx][1] = j / (float)(col_count - 1); // in [0, 1] along j axis

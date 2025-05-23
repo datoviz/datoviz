@@ -38,10 +38,10 @@
    mvp 0
    viewport 1
 */
-#define MESH_SLOT_LIGHT 2
+#define MESH_SLOT_LIGHT    2
 #define MESH_SLOT_MATERIAL 3
-#define MESH_SLOT_CONTOUR 4
-#define MESH_SLOT_TEX 5
+#define MESH_SLOT_CONTOUR  4
+#define MESH_SLOT_TEX      5
 
 
 
@@ -168,7 +168,8 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
     dvz_params_attr(light_params, DVZ_LIGHT_PARAMS_COLOR, FIELD(DvzMeshLight, color));
 
     // Material.
-    DvzParams* material_params = dvz_visual_params(visual, MESH_SLOT_MATERIAL, sizeof(DvzMeshMaterial));
+    DvzParams* material_params =
+        dvz_visual_params(visual, MESH_SLOT_MATERIAL, sizeof(DvzMeshMaterial));
     dvz_params_attr(material_params, DVZ_MESH_PARAMS_PARAMS, FIELD(DvzMeshMaterial, params));
     dvz_params_attr(material_params, DVZ_MESH_PARAMS_SHINE, FIELD(DvzMeshMaterial, shine));
     dvz_params_attr(material_params, DVZ_MESH_PARAMS_EMIT, FIELD(DvzMeshMaterial, emit));
@@ -181,23 +182,26 @@ DvzVisual* dvz_mesh(DvzBatch* batch, int flags)
 
     // Default texture to avoid Vulkan warning with unbound texture slot.
     dvz_visual_tex(
-        visual, MESH_SLOT_TEX, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID, DVZ_ZERO_OFFSET);
+        visual, MESH_SLOT_TEX, DVZ_SCENE_DEFAULT_TEX_ID, DVZ_SCENE_DEFAULT_SAMPLER_ID,
+        DVZ_ZERO_OFFSET);
 
     // Default light parameters.
     if (lighting > 0)
     {
-        dvz_mesh_light_pos(visual, 0, DVZ_DEFAULT_LIGHT0_POS);
-        dvz_mesh_light_color(visual, 0, DVZ_DEFAULT_LIGHT0_COLOR);
-        dvz_mesh_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
-        dvz_mesh_light_color(visual, 1, DVZ_DEFAULT_LIGHT1_COLOR);
-        dvz_mesh_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
-        dvz_mesh_light_color(visual, 2, DVZ_DEFAULT_LIGHT2_COLOR);
-        dvz_mesh_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
-        dvz_mesh_light_color(visual, 3, DVZ_DEFAULT_LIGHT3_COLOR);
+        dvz_mesh_light_pos(visual, 0, DVZ_DEFAULT_LIGHT_POS);
+        dvz_mesh_light_color(visual, 0, (DvzColor){DVZ_DEFAULT_LIGHT_COLOR});
+        // dvz_mesh_light_pos(visual, 1, DVZ_DEFAULT_LIGHT1_POS);
+        // dvz_mesh_light_pos(visual, 2, DVZ_DEFAULT_LIGHT2_POS);
+        // dvz_mesh_light_pos(visual, 3, DVZ_DEFAULT_LIGHT3_POS);
+        // dvz_mesh_light_color(visual, 1, DVZ_DEFAULT_LIGHT1_COLOR);
+        // dvz_mesh_light_color(visual, 2, DVZ_DEFAULT_LIGHT2_COLOR);
+        // dvz_mesh_light_color(visual, 3, DVZ_DEFAULT_LIGHT3_COLOR);
+
         dvz_mesh_material_params(visual, 0, DVZ_DEFAULT_AMBIENT);
         dvz_mesh_material_params(visual, 1, DVZ_DEFAULT_DIFFUSE);
         dvz_mesh_material_params(visual, 2, DVZ_DEFAULT_SPECULAR);
         dvz_mesh_material_params(visual, 3, DVZ_DEFAULT_EMISSION);
+
         dvz_mesh_shine(visual, DVZ_DEFAULT_SHINE);
         dvz_mesh_emit(visual, DVZ_DEFAULT_EMIT);
     }
@@ -377,17 +381,10 @@ void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba)
     // NOTE: matrix order is transposed between C and glsl
 
     // Need to convert to float rgb as this is what the shader expects.
-#if DVZ_COLOR_CVEC4
-    light_color[0][idx][0] = rgba[0] / 255.0;
-    light_color[0][idx][1] = rgba[1] / 255.0;
-    light_color[0][idx][2] = rgba[2] / 255.0;
-    light_color[0][idx][3] = rgba[3] / 255.0;
-#else
-    light_color[0][idx][0] = rgba[0];
-    light_color[0][idx][1] = rgba[1];
-    light_color[0][idx][2] = rgba[2];
-    light_color[0][idx][3] = rgba[3];
-#endif
+    light_color[0][idx][0] = ALPHA_D2F(rgba[0]);
+    light_color[0][idx][1] = ALPHA_D2F(rgba[1]);
+    light_color[0][idx][2] = ALPHA_D2F(rgba[2]);
+    light_color[0][idx][3] = ALPHA_D2F(rgba[3]);
 
     dvz_visual_param(visual, slot_idx, attr_idx, light_color);
 }
@@ -412,7 +409,7 @@ void dvz_mesh_material_params(DvzVisual* visual, uint32_t idx, vec3 params)
     material_params[0][idx][0] = params[0];
     material_params[0][idx][1] = params[1];
     material_params[0][idx][2] = params[2];
-    material_params[0][idx][3] = 1.0;  //params[3];
+    material_params[0][idx][3] = 1.0; // params[3];
     dvz_visual_param(visual, slot_idx, attr_idx, material_params);
 }
 
@@ -437,19 +434,7 @@ void dvz_mesh_emit(DvzVisual* visual, float emit)
 void dvz_mesh_edgecolor(DvzVisual* visual, DvzColor rgba)
 {
     ANN(visual);
-
-    vec4 color = {0};
-#if DVZ_COLOR_CVEC4
-    color[0] = rgba[0] / 255.0;
-    color[1] = rgba[1] / 255.0;
-    color[2] = rgba[2] / 255.0;
-    color[3] = rgba[3] / 255.0;
-#else
-    color[0] = rgba[0];
-    color[1] = rgba[1];
-    color[2] = rgba[2];
-    color[3] = rgba[3];
-#endif
+    vec4 color = {COLOR_D2F(rgba)};
     dvz_visual_param(visual, MESH_SLOT_CONTOUR, DVZ_MESH_PARAMS_EDGECOLOR, color);
 }
 

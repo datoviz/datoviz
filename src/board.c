@@ -13,6 +13,7 @@
 /*************************************************************************************************/
 
 #include "board.h"
+#include "datoviz_defaults.h"
 #include "render_utils.h"
 #include "resources.h"
 

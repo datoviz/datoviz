@@ -432,8 +432,8 @@ static void* graphics_scatter(DvzBatch* batch, DvzId dat_id, const uint32_t n)
 
         data[i].size = 50;
 
-        dvz_colormap(DVZ_CMAP_HSV, TO_BYTE(t), data[i].color);
-        data[i].color[3] = TO_ALPHA(128);
+        dvz_colormap(DVZ_CMAP_HSV, ALPHA_F2U(t), data[i].color);
+        data[i].color[3] = ALPHA_U2D(128);
     }
 
     dvz_upload_dat(batch, dat_id, 0, n * sizeof(DvzGraphicsPointVertex), data, 0);

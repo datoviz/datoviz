@@ -182,10 +182,9 @@ int test_path_2(TstSuite* suite)
             positions[k][0] = HEIGHT / (double)WIDTH * a * cos(t);
             positions[k][1] = a * sin(t);
 
-            colors[k][0] = 128;
-            colors[k][1] = 128;
-            colors[k][2] = 128;
-            // colors[k][3] = 255;
+            colors[k][0] = ALPHA_U2D(128);
+            colors[k][1] = ALPHA_U2D(128);
+            colors[k][2] = ALPHA_U2D(128);
 
             // Variable line width.
             linewidths[k] = 20.0;
@@ -256,7 +255,7 @@ int test_path_closed(TstSuite* suite)
 
 
     // Colors.
-    DvzColor* colors_0 = dvz_mock_cmap(n, DVZ_CMAP_HSV, 200);
+    DvzColor* colors_0 = dvz_mock_cmap(n, DVZ_CMAP_HSV, ALPHA_U2D(200));
     DvzColor* colors = (DvzColor*)calloc(2 * n, sizeof(DvzColor));
     memcpy(colors, colors_0, n * sizeof(DvzColor));
     memcpy(&colors[n], colors_0, n * sizeof(DvzColor));

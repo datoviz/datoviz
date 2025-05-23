@@ -11,6 +11,7 @@
 #include "vklite.h"
 #include "_pointer.h"
 #include "common.h"
+#include "datoviz_defaults.h"
 #include "host.h"
 #include "shader.h"
 #include "vklite_utils.h"

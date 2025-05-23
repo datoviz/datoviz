@@ -35,6 +35,8 @@ layout(location = 4) out vec3 out_d_left;
 layout(location = 5) out vec3 out_d_right;
 layout(location = 6) out ivec3 out_contour;
 layout(location = 7) out float out_isoline;
+layout(location = 8) out vec4 out_cam_pos;
+
 
 
 void main()
@@ -42,6 +44,8 @@ void main()
     gl_Position = transform(pos);
 
     out_pos = mvp.model * vec4(pos, 1.0);
+    out_cam_pos = inverse(mvp.view) * vec4(0, 0, 0, 1);
+
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
 

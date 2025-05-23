@@ -8,6 +8,7 @@
 #include "_pointer.h"
 #include "canvas.h"
 #include "datoviz.h"
+#include "datoviz_defaults.h"
 #include "datoviz_enums.h"
 #include "fileio.h"
 #include "glfw_utils.h"

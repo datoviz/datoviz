@@ -114,10 +114,10 @@ void dvz_colormap(DvzColormap cmap, uint8_t value, DvzColor color)
 #else
     cvec4 col = {0};
     dvz_colormap_8bit(cmap, value, col);
-    color[0] = FROM_BYTE(col[0]);
-    color[1] = FROM_BYTE(col[1]);
-    color[2] = FROM_BYTE(col[2]);
-    color[3] = FROM_BYTE(col[3]);
+    color[0] = ALPHA_F2U(col[0]);
+    color[1] = ALPHA_F2U(col[1]);
+    color[2] = ALPHA_F2U(col[2]);
+    color[3] = ALPHA_F2U(col[3]);
 #endif
 }
 

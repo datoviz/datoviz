@@ -55,9 +55,7 @@ int test_monoglyph_1(TstSuite* suite)
         }
     }
 
-    dvz_monoglyph_textarea(
-        visual, (vec3){0, 0, 0}, //
-        (DvzColor){TO_ALPHA(255), TO_ALPHA(128), 0, TO_ALPHA(255)}, 5.0f, text);
+    dvz_monoglyph_textarea(visual, (vec3){0, 0, 0}, (DvzColor){RED}, 5.0f, text);
     dvz_monoglyph_anchor(visual, (vec2){+40, -10});
 
     // Add the visual to the panel AFTER setting the visual's data.

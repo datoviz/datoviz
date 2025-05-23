@@ -167,23 +167,15 @@ void dvz_marker_color(
 
 void dvz_marker_edgecolor(DvzVisual* visual, DvzColor color)
 {
-#if DVZ_COLOR_CVEC4
-    // NOTE: convert from cvec4 into vec4 as GLSL uniforms do not support cvec4 (?)
-    float r = color[0] / 255.0;
-    float g = color[1] / 255.0;
-    float b = color[2] / 255.0;
-    float a = color[3] / 255.0;
-
-    dvz_visual_param(visual, 2, 0, (vec4){r, g, b, a});
-#else
-    dvz_visual_param(visual, 2, 0, color);
-#endif
+    ANN(visual);
+    dvz_visual_param(visual, 2, 0, (vec4){COLOR_D2F(color)});
 }
 
 
 
 void dvz_marker_linewidth(DvzVisual* visual, float width)
 {
+    ANN(visual);
     dvz_visual_param(visual, 2, 1, &width);
 }
 
@@ -191,6 +183,7 @@ void dvz_marker_linewidth(DvzVisual* visual, float width)
 
 void dvz_marker_tex_scale(DvzVisual* visual, float scale)
 {
+    ANN(visual);
     dvz_visual_param(visual, 2, 2, &scale);
 }
 

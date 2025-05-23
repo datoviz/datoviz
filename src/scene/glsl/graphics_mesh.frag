@@ -34,6 +34,7 @@ layout(location = 4) in vec3 in_d_left;
 layout(location = 5) in vec3 in_d_right;
 layout(location = 6) flat in ivec3 in_contour;
 layout(location = 7) in float in_isoline;
+layout(location = 8) in vec4 in_cam_pos;
 
 layout(location = 0) out vec4 out_color;
 
@@ -183,7 +184,7 @@ void main()
     vec3 normal = normalize(in_normal);
 
     // Texture.
-    vec4 color;
+    vec4 color = vec4(0);
     if (MESH_TEXTURED > 0)
     {
         // in this case, in_uvcolor.xy is uv coordinates
@@ -195,11 +196,12 @@ void main()
         color = in_uvcolor; // rgba
     }
 
+    out_color = color;
+
     // Lighting.
     if (MESH_LIGHTING > 0)
     {
-        vec4 cam_pos = inverse(mvp.view) * vec4(0.0, 0.0, 0.0, 1.0);  // Better in vertex shader?
-        out_color = lighting(in_pos, color, normal, cam_pos, light, material);
+        out_color = lighting(in_pos, color, normal, in_cam_pos, light, material);
     }
 
     // Stroke.

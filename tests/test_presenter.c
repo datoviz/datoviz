@@ -309,7 +309,7 @@ static void _random_data(uint32_t n, DvzGraphicsPointVertex* data)
         data[i].pos[1] = -1 + 2 * dvz_rand_float(); // 6.1e-5 * fast_rand();
         data[i].size = 5;
         dvz_colormap(DVZ_CMAP_HSV, i % 256, data[i].color);
-        data[i].color[3] = DVZ_ALPHA_MAX;
+        data[i].color[3] = ALPHA_MAX;
     }
 }
 

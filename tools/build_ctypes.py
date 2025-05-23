@@ -41,7 +41,7 @@ EXCLUDE_STRUCTS = ('DvzSize', 'DvzColor')
 OUT_PARAMS = ('DvzSize', 'DvzBox', 'DvzKeyCode', 'DvzMouseButton', 'DvzTime')
 # POINTER_STRUCTS = ('DvzShape',)
 DVZ_COLOR_CVEC4 = 1
-DVZ_ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
+ALPHA_MAX = 255 if DVZ_COLOR_CVEC4 else 1.0
 DvzColor = 'cvec4' if DVZ_COLOR_CVEC4 else 'vec4'
 DvzAlpha = 'ctypes.c_uint8' if DVZ_COLOR_CVEC4 else 'ctypes.c_float'
 
@@ -459,7 +459,7 @@ def generate_ctypes_bindings(headers_json_path, output_path, version_path):
         _include_py(file, 'ctypes_header.py')
 
         # Color type.
-        file.write(f'DVZ_ALPHA_MAX = {DVZ_ALPHA_MAX}\n')
+        file.write(f'ALPHA_MAX = {ALPHA_MAX}\n')
         file.write(f'DVZ_COLOR_CVEC4 = {DVZ_COLOR_CVEC4}\n')
         file.write(f'DvzColor = {DvzColor}\n')
         file.write(f'DvzAlpha = {DvzAlpha}\n')
