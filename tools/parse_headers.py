@@ -31,7 +31,7 @@ EXCLUDE_DEFINES = (
     'DVZ_COLOR_CVEC4',
     'DvzColor',
     'DvzAlpha',
-    'DVZ_ALPHA_MAX',
+    'ALPHA_MAX',
     'DVZ_FORMAT_COLOR',
 )
 

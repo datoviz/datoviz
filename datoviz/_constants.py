@@ -34,9 +34,10 @@ DEFAULT_BACKGROUND = (
     (150, 180, 225, 255),
 )
 
+# TODO: use the C constants instead of redefining Python constants here
 DEFAULT_LIGHTING = False
-DEFAULT_LIGHT_DIR = (0.0, 0.0, 1, 0.0)
-DEFAULT_LIGHT_POS = (0.0, 0.0, 10.0, 1.0)  # Behind camera.
+DEFAULT_LIGHT_DIR = (1.0, -1.0, -1.0, 0.0)
+DEFAULT_LIGHT_POS = (-1.0, +1.0, +10.0, 1.0)  # Behind camera.
 DEFAULT_LIGHT_COLOR = (255, 255, 255, 255)
 
 DEFAULT_MATERIAL_PARAMS = (0.5, 0.5, 0.5)  # r,g,b values.

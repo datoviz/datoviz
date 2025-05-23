@@ -344,7 +344,7 @@ class VkCommandBuffer(ctypes.Structure):
 
 DEFAULT_CLEAR_COLOR = cvec4()
 DEFAULT_VIEWPORT = vec2()
-DVZ_ALPHA_MAX = 255
+ALPHA_MAX = 255
 DVZ_COLOR_CVEC4 = 1
 DvzColor = cvec4
 DvzAlpha = ctypes.c_uint8
@@ -354,8 +354,8 @@ DvzAlpha = ctypes.c_uint8
 # DEFINES
 # ===============================================================================
 
-DVZ_BUFFER_TYPE_COUNT = 6
 DVZ_DEFAULT_FORMAT = 44
+DVZ_BUFFER_TYPE_COUNT = 6
 CMAP_NAT = 144
 CMAP_USR_OFS = 144
 CMAP_USR = 32
@@ -376,6 +376,9 @@ CMAP_COUNT = 256
 CMAP_CUSTOM_COUNT = 16
 CMAP_CUSTOM = 160
 CPAL256_CUSTOM = 224
+COLOR_UINT_MAX = 255
+COLOR_FLOAT_MAX = 1.0
+COLOR_MAX = 1.0
 M_PI = 3.141592653589793
 M_2PI = 6.283185307179586
 M_PI2 = 1.5707963267948966
