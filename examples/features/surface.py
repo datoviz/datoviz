@@ -62,7 +62,8 @@ sc.add_surface(heights=heights, colors=colors, contour='edges')
 app = dvz.App()
 figure = app.figure()
 panel = figure.panel(background=True)
-arcball = panel.arcball(initial=(0.42339, -0.39686, -0.00554))
+arcball = panel.arcball(initial=(0.41, -0.95, 0))
+camera = panel.camera(initial=(0, 0, 3))
 
 visual = app.mesh_shape(
     sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
