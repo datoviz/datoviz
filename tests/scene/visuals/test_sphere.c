@@ -40,7 +40,7 @@ int test_sphere_1(TstSuite* suite)
     const uint32_t n = 1000;
 
     // Create the visual.
-    DvzVisual* visual = dvz_sphere(vt.batch, 0);
+    DvzVisual* visual = dvz_sphere(vt.batch, DVZ_SPHERE_FLAGS_LIGHTING);
 
     // Visual allocation.
     dvz_sphere_alloc(visual, n);

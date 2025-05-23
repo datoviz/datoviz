@@ -21,7 +21,6 @@ layout(location = 0) in vec4 in_color;
 layout(location = 1) in vec4 in_pos;
 layout(location = 2) in float in_radius;
 layout(location = 3) in vec4 in_cam_pos;
-layout(location = 4) in vec4 in_flags;       // bvec4(use tex, ...)  others to be determined.
 
 layout(location = 0) out vec4 out_color;
 
