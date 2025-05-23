@@ -355,10 +355,10 @@ bool clip_viewport(vec2 frag_coords)
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
 
-    // top += ANTIALIAS;
-    // bottom -= ANTIALIAS;
-    // left += ANTIALIAS;
-    // right -= ANTIALIAS;
+    top += 2;
+    bottom += 2;
+    left += 2;
+    right -= 2;
 
     w *= canvas_scale.scale;
     h *= canvas_scale.scale;
@@ -384,10 +384,10 @@ bool clip_viewport(vec2 frag_coords, int coord)
     float bottom = viewport.margins.z;
     float left = viewport.margins.w;
 
-    // top += ANTIALIAS;
-    // bottom -= ANTIALIAS;
-    // left += ANTIALIAS;
-    // right -= ANTIALIAS;
+    top += 2;
+    bottom += 2;
+    left += 2;
+    right -= 2;
 
     w *= canvas_scale.scale;
     h *= canvas_scale.scale;
