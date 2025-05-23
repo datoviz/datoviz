@@ -183,7 +183,7 @@ void main()
     vec3 normal = normalize(in_normal);
 
     // Texture.
-    vec4 color;
+    vec4 color = vec4(0);
     if (MESH_TEXTURED > 0)
     {
         // in this case, in_uvcolor.xy is uv coordinates
@@ -194,6 +194,8 @@ void main()
     {
         color = in_uvcolor; // rgba
     }
+
+    out_color = color;
 
     // Lighting.
     if (MESH_LIGHTING > 0)
