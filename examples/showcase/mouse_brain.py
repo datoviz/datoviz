@@ -24,8 +24,6 @@ color = data['color']
 index = data['index']
 nv, ni = pos.shape[0], index.shape[0]
 
-light_dir = (+1, -1, -1)
-light_params = (0.5, 0.5, 0.5, 16)
 
 angles = (-2.4, -0.9, 0.1)
 
@@ -42,8 +40,6 @@ visual.set_data(
     normal=normal,
     color=color,
     index=index,
-    light_dir=light_dir,
-    light_params=light_params,
 )
 panel.add(visual)
 

@@ -6,7 +6,8 @@
 
 #version 450
 #include "common.glsl"
-#include "params_mesh.glsl"
+// #include "params_mesh.glsl"    // TODO: is needed?
+//#include "params_light.glsl"
 
 // Attributes.
 layout(location = 0) in vec3 pos;
@@ -26,7 +27,7 @@ layout(location = 5) in vec3 d_right;
 layout(location = 6) in ivec4 contour;
 
 // Varying variables.
-layout(location = 0) out vec3 out_pos;
+layout(location = 0) out vec4 out_pos;
 layout(location = 1) out vec3 out_normal;
 layout(location = 2) out vec4 out_uvcolor;
 layout(location = 3) out vec3 out_barycentric;
@@ -40,7 +41,7 @@ void main()
 {
     gl_Position = transform(pos);
 
-    out_pos = pos.xyz;
+    out_pos = mvp.model * vec4(pos, 1.0);
     out_normal = ((transpose(inverse(mvp.model)) * vec4(normal, 1.0))).xyz;
     out_uvcolor = uvcolor;
 

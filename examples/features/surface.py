@@ -68,6 +68,7 @@ camera = panel.camera(initial=(0, 0, 3))
 visual = app.mesh_shape(
     sc, lighting=True, contour=HAS_CONTOUR, linewidth=linewidth, edgecolor=edgecolor
 )
+
 panel.add(visual)
 
 app.run()

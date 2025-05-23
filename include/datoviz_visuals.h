@@ -1337,9 +1337,9 @@ DVZ_EXPORT void dvz_mesh_alloc(DvzVisual* visual, uint32_t vertex_count, uint32_
  *
  * @param visual the mesh
  * @param idx the light index (0, 1, 2, or 3)
- * @param dir the light direction
+ * @param pos the light position (w=0 indicates it is a direction.)
  */
-DVZ_EXPORT void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir);
+DVZ_EXPORT void dvz_mesh_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos);
 
 
 
@@ -1348,20 +1348,40 @@ DVZ_EXPORT void dvz_mesh_light_dir(DvzVisual* visual, uint32_t idx, vec3 dir);
  *
  * @param visual the mesh
  * @param idx the light index (0, 1, 2, or 3)
- * @param rgba the light color (rgba, but the a component is ignored)
+ * @param rgba the light color (a>0 indicates light is on.)
  */
 DVZ_EXPORT void dvz_mesh_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba);
 
 
 
 /**
- * Set the light parameters.
+ * Set the mesh material parameters.
  *
  * @param visual the mesh
- * @param idx the light index (0, 1, 2, or 3)
- * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
+ * @param idx the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
+ * @param params the material parameters (vec3 r, g, b)
  */
-DVZ_EXPORT void dvz_mesh_light_params(DvzVisual* visual, uint32_t idx, vec4 params);
+DVZ_EXPORT void dvz_mesh_material_params(DvzVisual* visual, uint32_t idx, vec3 params);
+
+
+
+/**
+ * Set the mesh surface shine level.
+ *
+ * @param visual the mesh
+ * @param shine the surface shininess
+ */
+DVZ_EXPORT void dvz_mesh_shine(DvzVisual* visual, float shine);
+
+
+
+/**
+ * Set the mesh surface emission level.
+ *
+ * @param visual the mesh
+ * @param emit the emission level
+ */
+DVZ_EXPORT void dvz_mesh_emit(DvzVisual* visual, float emit);
 
 
 
@@ -1437,7 +1457,7 @@ DVZ_EXPORT DvzVisual* dvz_sphere(DvzBatch* batch, int flags);
 /**
  * Set the sphere positions.
  *
- * @param visual the visual
+ * @param visual the sphere
  * @param first the index of the first item to update
  * @param count the number of items to update
  * @param pos the 3D positions of the sphere centers
@@ -1451,7 +1471,7 @@ dvz_sphere_position(DvzVisual* visual, uint32_t first, uint32_t count, vec3* pos
 /**
  * Set the sphere colors.
  *
- * @param visual the visual
+ * @param visual the sphere
  * @param first the index of the first item to update
  * @param count the number of items to update
  * @param color the sphere colors
@@ -1465,7 +1485,7 @@ dvz_sphere_color(DvzVisual* visual, uint32_t first, uint32_t count, DvzColor* co
 /**
  * Set the sphere sizes.
  *
- * @param visual the visual
+ * @param visual the sphere
  * @param first the index of the first item to update
  * @param count the number of items to update
  * @param size the radius of the spheres
@@ -1479,7 +1499,7 @@ dvz_sphere_size(DvzVisual* visual, uint32_t first, uint32_t count, float* size, 
 /**
  * Allocate memory for a visual.
  *
- * @param visual the visual
+ * @param visual the sphere
  * @param item_count the total number of spheres to allocate for this visual
  */
 DVZ_EXPORT void dvz_sphere_alloc(DvzVisual* visual, uint32_t item_count);
@@ -1489,20 +1509,53 @@ DVZ_EXPORT void dvz_sphere_alloc(DvzVisual* visual, uint32_t item_count);
 /**
  * Set the sphere light position.
  *
- * @param visual the visual
- * @param pos the light position
+ * @param visual the sphere
+ * @param idx the light index (0, 1, 2, or 3)
+ * @param pos the light position (w=0 indicates it is a direction.)
  */
-DVZ_EXPORT void dvz_sphere_light_pos(DvzVisual* visual, vec3 pos);
+DVZ_EXPORT void dvz_sphere_light_pos(DvzVisual* visual, uint32_t idx, vec4 pos);
 
 
 
 /**
- * Set the sphere light parameters.
+ * Set the light color.
  *
- * @param visual the visual
- * @param params the light parameters (vec4 ambient, diffuse, specular, exponent)
+ * @param visual the sphere
+ * @param idx the light index (0, 1, 2, or 3)
+ * @param rgba the light color (a>0 indicates light is on.)
  */
-DVZ_EXPORT void dvz_sphere_light_params(DvzVisual* visual, vec4 params);
+DVZ_EXPORT void dvz_sphere_light_color(DvzVisual* visual, uint32_t idx, DvzColor rgba);
+
+
+
+/**
+ * Set the sphere material parameters.
+ *
+ * @param visual the sphere
+ * @param idx the material index (0, 1, 2, or 3) for (ambient, diffuse, specular, exponent)
+ * @param params the material parameters (vec3 r, g, b)
+ */
+DVZ_EXPORT void dvz_sphere_material_params(DvzVisual* visual, uint32_t idx, vec3 params);
+
+
+
+/**
+ * Set the sphere surface shininess.
+ *
+ * @param visual the sphere
+ * @param shine the surface shininess
+ */
+DVZ_EXPORT void dvz_sphere_shine(DvzVisual* visual, float shine);
+
+
+
+/**
+ * Set the mesh surface emission level.
+ *
+ * @param visual the sphere
+ * @param emit the emission level
+ */
+DVZ_EXPORT void dvz_sphere_emit(DvzVisual* visual, float emit);
 
 
 

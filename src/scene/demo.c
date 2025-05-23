@@ -86,7 +86,7 @@ DvzVisual* dvz_demo_panel_3D(DvzPanel* panel)
     DvzColor* color = dvz_mock_color(n, 255);
     float* size = dvz_mock_uniform(n, 0.03, 0.1);
 
-    DvzVisual* visual = dvz_sphere(dvz_panel_batch(panel), 0);
+    DvzVisual* visual = dvz_sphere(dvz_panel_batch(panel), DVZ_SPHERE_FLAGS_LIGHTING);
     dvz_sphere_alloc(visual, n);
     dvz_sphere_position(visual, 0, n, pos, 0);
     dvz_sphere_color(visual, 0, n, color, 0);
@@ -448,7 +448,7 @@ void dvz_demo(void)
 
 
     // 3,1  SPHERE
-    DvzVisual* sphere = dvz_sphere(batch, 0);
+    DvzVisual* sphere = dvz_sphere(batch, DVZ_SPHERE_FLAGS_LIGHTING);
     {
         dvz_sphere_alloc(sphere, n);
         dvz_sphere_position(sphere, 0, n, pos, 0);
@@ -458,8 +458,8 @@ void dvz_demo(void)
         dvz_sphere_size(sphere, 0, n, sphere_size, 0);
         FREE(sphere_size);
 
-        dvz_sphere_light_pos(sphere, (vec3){-1, 0, +10});
-        dvz_sphere_light_params(sphere, (vec4){.5, .5, .5, 16});
+        //dvz_sphere_light_pos(sphere, 0, (vec4){-1, 0, 10, 1});
+        //dvz_sphere_light_color(sphere, 0, (cvec4){255, 255, 255, 255});
     }
 
     legend(batch, p31, "SPHERE", &af);

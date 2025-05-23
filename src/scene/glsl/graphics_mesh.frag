@@ -7,7 +7,15 @@
 #version 450
 #include "common.glsl"
 #include "constants.glsl"
-#include "params_mesh.glsl"
+// #include "params_mesh.glsl"
+#include "lighting.glsl"
+
+// mvp --> slot 0
+// viewport --> slot 1
+#define MESH_SLOT_LIGHT 2
+#define MESH_SLOT_MATERIAL 3
+#define MESH_SLOT_CONTOUR 4
+#define MESH_SLOT_TEX 5
 
 layout(constant_id = 0) const int MESH_TEXTURED = 0; // 1 to enable
 layout(constant_id = 1) const int MESH_LIGHTING = 0; // 1 to enable
@@ -18,7 +26,7 @@ const float eps = .00001;
 const float antialias_ = 2 * antialias;
 
 // Varying variables.
-layout(location = 0) in vec3 in_pos;
+layout(location = 0) in vec4 in_pos;
 layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec4 in_uvcolor;
 layout(location = 3) in vec3 in_barycentric;
@@ -29,7 +37,32 @@ layout(location = 7) in float in_isoline;
 
 layout(location = 0) out vec4 out_color;
 
-layout(binding = (USER_BINDING + 1)) uniform sampler2D tex;
+
+// Only used here.
+struct Mesh_Contour {
+    vec4 edgecolor;      /* r, g, b, a */
+    float linewidth;     /* contour line width */
+    int isoline_count;   /* number of isolines */
+};
+
+
+layout(std140, binding = MESH_SLOT_LIGHT) uniform u_light {
+    Light light;
+};
+
+
+layout(std140, binding = MESH_SLOT_MATERIAL) uniform u_material {
+    Material material;
+};
+
+
+layout(std140, binding = MESH_SLOT_CONTOUR) uniform u_contour {
+    Mesh_Contour contour;
+};
+
+
+layout(binding = MESH_SLOT_TEX) uniform sampler2D tex;
+
 
 // Replacement for fwidth, using L2 norm of gradient instead of L1 norm.
 float fwidth2(float p) { return sqrt(pow(abs(dFdx(p)), 2) + pow(abs(dFdy(p)), 2)); }
@@ -141,80 +174,32 @@ void main()
     // if (in_clip < -eps)
     //     discard;
 
-    vec3 normal, light_dir, light_color, ambient, diffuse, view_dir, reflect_dir, specular, color;
-    vec4 lpar;
-    vec3 lpos;
-    float diff, spec, view_facing;
-
     // Stroke parameters.
-    float linewidth = params.linewidth;
-    vec3 edgecolor = params.edgecolor.rgb;
-    float edge_alpha = params.edgecolor.a;
+    float linewidth = contour.linewidth;
+    vec3 edgecolor = contour.edgecolor.rgb;
+    float edge_alpha = contour.edgecolor.a;
     vec3 pos_tr;
 
-    normal = normalize(in_normal);
-    out_color = vec4(0, 0, 0, 1);
-    diffuse = vec3(0);
-    specular = vec3(0);
+    vec3 normal = normalize(in_normal);
 
     // Texture.
+    vec4 color;
     if (MESH_TEXTURED > 0)
     {
         // in this case, in_uvcolor.xy is uv coordinates
-        color = texture(tex, in_uvcolor.xy).xyz;
+        color = texture(tex, in_uvcolor.xy);
     }
     // Color.
     else
     {
-        color = in_uvcolor.xyz; // rgb
+        color = in_uvcolor; // rgba
     }
 
     // Lighting.
     if (MESH_LIGHTING > 0)
     {
-        pos_tr = ((mvp.model * vec4(in_pos, 1.0))).xyz;
-        view_dir = normalize(-mvp.view[3].xyz - pos_tr);
-
-        for (int i = 0; i < 4; i++)
-        {
-            // Light position and params.
-            lpar = params.light_params[i];
-            if (length(lpar) == 0)
-                continue;
-
-            // Light direction.
-            // light_dir = normalize(lpos - pos_tr);
-            // TODO OPTIM: normalize on the CPU instead, in dvz_mesh_light_dir()
-            light_dir = normalize(params.light_dir[i].xyz);
-
-            // Color.
-            light_color = params.light_color[i].xyz;
-            ambient = light_color;
-
-            // Diffuse component.
-            view_facing = max(dot(normal, view_dir), 0.0);
-            diff = max(dot(normal, -light_dir), 0.0);
-            // HACK: normals on both faces
-            // diff = max(diff, max(dot(light_dir, -normal), 0.0));
-            diffuse = diff * view_facing * light_color;
-
-            // Specular component.
-            reflect_dir = reflect(light_dir, normal);
-            spec = pow(max(dot(view_dir, reflect_dir), 0.0), lpar.w);
-            specular = spec * view_facing * light_color;
-
-            // Total color.
-            out_color.xyz += (lpar.x * ambient + lpar.y * diffuse + lpar.z * specular) * color;
-        }
-
-        // by convention, alpha channel is in 4th component of this attribute
-        out_color.a = in_uvcolor.a;
-    }
-    else
-    {
-        // NOTE: the 4th component of in_uvcolor is always the alpha channel, both in the
-        // color case (rgba) or the uv tex case (uv*a).
-        out_color = vec4(color, in_uvcolor.a);
+        vec4 cam_pos = inverse(mvp.view) * vec4(0.0, 0.0, 0.0, 1.0);  // Better in vertex shader?
+        out_color = lighting(in_pos, color, normal, cam_pos, light, material);
     }
 
     // Stroke.
@@ -261,7 +246,7 @@ void main()
     {
         // Calculate the normalized distance to the nearest contour line
         float value = in_isoline; //(1 + in_pos.y)
-        float isoline = logContours(value, params.isoline_count, linewidth);
+        float isoline = logContours(value, contour.isoline_count, linewidth);
         out_color.rgb = mix(out_color.rgb, edgecolor, isoline);
     }
 }

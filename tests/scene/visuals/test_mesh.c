@@ -626,19 +626,19 @@ int test_mesh_obj(TstSuite* suite)
     // Lighting.
     {
         // Two lights.
-        dvz_mesh_light_dir(visual, 0, (vec3){+1, -0.25, -.5});
-        dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
+        //dvz_mesh_light_pos(visual, 0, (vec3){+1, -0.25, -.5, 0.0});
+        //dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, .9});
         // dvz_mesh_light_params(visual, 0, (vec4){.75, .25, .25, 16});
 
-        dvz_mesh_light_dir(visual, 1, (vec3){-1, -0.25, -.5});
-        dvz_mesh_light_params(visual, 1, (vec4){0.1, .5, .5, 16});
+        dvz_mesh_light_pos(visual, 1, (vec4){-1, -0.25, -.5, 0.0});
+        dvz_mesh_material_params(visual, 1, (vec4){0.1, .5, .5, .7});
 
 #if DVZ_COLOR_CVEC4
-        dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0});
-        dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0});
+        dvz_mesh_light_color(visual, 0, (cvec4){255, 0, 0, 255});
+        dvz_mesh_light_color(visual, 1, (cvec4){0, 255, 0, 255});
 #else
-        dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0});
-        dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0});
+        dvz_mesh_light_color(visual, 0, (vec4){1, 0, 0, 1});
+        dvz_mesh_light_color(visual, 1, (vec4){0, 1, 0, 1});
 #endif
     }
 
