@@ -113,6 +113,7 @@ struct DvzPanel
     DvzLegend* legend;
     DvzTitle* title;
     DvzColorbar* colorbar;
+    DvzVisual* background;
 
     bool transform_to_destroy; // HACK: avoid double destruction with transform sharing
     bool is_press_valid;
