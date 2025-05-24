@@ -12,6 +12,8 @@
 
 It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
+![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
+
 > [!NOTE]
 > Datoviz is a relatively low-level library focused on rendering graphical primitives (points, lines, images, etc.).
 > It does **not** provide high-level plotting functions like `plt.plot()` or `plt.imshow()`, but offers a flexible and efficient API for building visualizations.
@@ -26,15 +28,6 @@ The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](
 
 > [!WARNING]
 > Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
-
-
-
-<!-- SCREENSHOTS -->
-
-## 🖼️ Screenshots from the v0.1 version
-
-![](https://raw.githubusercontent.com/datoviz/data/master/screenshots/datoviz.jpg)
-*Credits: mouse brain volume: [Allen SDK](https://alleninstitute.github.io/AllenSDK/). France: [Natural Earth](https://www.naturalearthdata.com/). Molecule: [Crystal structure of S. pyogenes Cas9 from PDB](https://www.rcsb.org/structure/4cmp) (thanks to Eric for conversion to OBJ mesh). Earth: [Pixabay](https://pixabay.com/fr/illustrations/terre-planet-monde-globe-espace-1617121/). Raster plot: IBL. 3D human brain: [Anneke Alkemade et al. 2020](https://www.frontiersin.org/articles/10.3389/fnana.2020.536838/full), thanks to Pierre-Louis Bazin and Julia Huntenburg.*
 
 
 <!-- FEATURES -->

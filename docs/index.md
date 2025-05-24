@@ -4,11 +4,11 @@
 
 Whether you're building research tools, real-time visual interfaces, or custom scientific apps, Datoviz gives you the control and speed you need — without sacrificing interactivity or clarity.
 
+![Datoviz screenshot](https://raw.githubusercontent.com/datoviz/data/main/hero.jpg)
+
 !!! warning
 
     Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
-
-![Datoviz screenshot](https://raw.githubusercontent.com/datoviz/data/main/screenshots/hero.png)
 
 
 ## Features
