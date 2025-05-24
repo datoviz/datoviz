@@ -31,7 +31,7 @@ angles = (-2.4, -0.9, 0.1)
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=angles)
 
 visual = app.mesh(indexed=True, lighting=True)

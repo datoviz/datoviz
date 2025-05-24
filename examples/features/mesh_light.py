@@ -3,6 +3,13 @@
 
 Show how to manipulate advanced mesh lights.
 
+---
+tags:
+  - mesh
+  - light
+skip: true
+---
+
 """
 
 from pathlib import Path
@@ -17,22 +24,22 @@ light_pos = (
     vec4(0, 0, 5, 1),  # Pos 0  x,y,z
     vec4(-5, 0, 5, 1),  # Pos 1  x,y,z
     vec4(0, 5, 5, 1),  # Pos 2  x,y,z
-    vec4(5, 0, 5, 1),
-)  # Pos 3  x,y,z
+    vec4(5, 0, 5, 1),  # Pos 3  x,y,z
+)
 
 light_color = (
     vec4(1, 1, 1, 1),  # White
     vec4(1, 0, 0, 1),  # Red
     vec4(0, 1, 0, 1),  # Blue
-    vec4(0, 0, 1, 1),
-)  # Green
+    vec4(0, 0, 1, 1),  # Green
+)
 
 material = (
     vec3(0.2, 0.2, 0.2),  # Ambient   R, G, B
     vec3(0.7, 0.7, 0.7),  # Diffuse   R, G, B
     vec3(0.7, 0.7, 0.7),  # Specular  R, G, B
-    vec3(0.5, 0.5, 0.5),
-)  # Emission  R, G, B
+    vec3(0.5, 0.5, 0.5),  # Emission  R, G, B
+)
 
 shine = Out(0.9)
 emit = Out(0.0)
@@ -43,12 +50,12 @@ sc.add_obj(file_path)
 
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
-figure = app.figure(width=1000, gui=True)
+figure = app.figure(width=1200, gui=True)
 
 # Create two panels side-by-side.
-panel = figure.panel()
+panel = figure.panel(background=True)
 # Offset the panel to the right so that is not over the controls.
-panel.margins(0, 0, 0, 400)
+# panel.margins(0, 0, 0, 400)
 
 arcball = panel.arcball(initial=(0.35, 0, 0))
 visual = app.mesh_shape(sc, lighting=True)

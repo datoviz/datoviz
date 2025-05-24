@@ -15,7 +15,7 @@ import datoviz as dvz
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 panel.demo_3D()
 
 # Camera initial parameters (the ones used when calling camera_reset()).

@@ -6,6 +6,7 @@ Show how to react to keyboard events.
 ---
 tags:
   - keyboard
+skip: true
 ---
 
 """

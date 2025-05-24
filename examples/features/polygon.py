@@ -39,7 +39,7 @@ for n, x, color in zip(sizes, np.linspace(-w, w, 4), colors):
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 ortho = panel.ortho()
 
 visual = app.mesh_shape(sc, linewidth=15, edgecolor=(255, 255, 255, 200))

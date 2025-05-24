@@ -13,6 +13,7 @@ tags:
   - anchor
   - texture
   - gui
+skip: true
 ---
 
 """
@@ -43,7 +44,7 @@ texcoords = np.array([[0, 0, 1, 1]], dtype=np.float32)
 
 app = dvz.App()
 figure = app.figure(800, 600, gui=True)
-panel = figure.panel()
+panel = figure.panel(background=True)
 panzoom = panel.panzoom()
 
 visual = app.image(

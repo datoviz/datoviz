@@ -28,10 +28,10 @@ DEFAULT_CAMERA_LOOKAT = (0, 0, 0)
 DEFAULT_CAMERA_UP = (0, 1, 0)
 
 DEFAULT_BACKGROUND = (
-    (213, 232, 247, 255),
-    (180, 210, 235, 255),
-    (180, 210, 235, 255),
-    (150, 180, 225, 255),
+    (10, 30, 70, 255),
+    (10, 10, 30, 255),
+    (10, 10, 20, 255),
+    (10, 10, 20, 255),
 )
 
 # TODO: use the C constants instead of redefining Python constants here

@@ -17,6 +17,7 @@ from . import _ctypes as dvz
 from ._axes import Axes
 from ._constants import Vec3
 from .interact import Arcball, Camera, Ortho, Panzoom
+from .utils import to_cvec4_array
 from .visuals import Point, Sphere, Visual
 
 # -------------------------------------------------------------------------------------------------
@@ -96,6 +97,9 @@ class Panel:
             Left margin in pixels, by default 0.
         """
         dvz.panel_margins(self.c_panel, top, right, bottom, left)
+
+    def background(self, color0: tuple, color1: tuple, color2: tuple, color3: tuple):
+        dvz.panel_background(self.c_panel, to_cvec4_array((color0, color1, color2, color3)))
 
     # Interactivity
     # ---------------------------------------------------------------------------------------------

@@ -28,7 +28,7 @@ N = pos.shape[0]
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(0.5, 0.9, 0.1))
 camera = panel.camera(initial=(0, 0, 1.5))
 

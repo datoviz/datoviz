@@ -29,12 +29,11 @@ sc.add_obj(file_path, contour='full')
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(0.35, 0, 0))
-#camera = panel.camera(initial=(0, 0, 3))
+# camera = panel.camera(initial=(0, 0, 3))
 
-visual = app.mesh_shape(
-    sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor)
+visual = app.mesh_shape(sc, lighting=True, linewidth=linewidth, edgecolor=edgecolor)
 
 panel.add(visual)
 

@@ -5,7 +5,8 @@ Show how to create a GUI panel.
 
 ---
 tags:
-  - gui panel
+  - gui_panel
+skip: true
 ---
 
 """

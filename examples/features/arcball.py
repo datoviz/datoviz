@@ -15,7 +15,7 @@ import datoviz as dvz
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure(gui=True)
-panel = figure.panel()
+panel = figure.panel(background=True)
 panel.demo_3D()
 
 # Set initial angles for the arcball (which modifies the model matrix).

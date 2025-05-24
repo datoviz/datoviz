@@ -7,6 +7,7 @@ Show how to show/hide a visual.
 tags:
   - gui
   - show
+skip: true
 ---
 
 """
@@ -17,7 +18,7 @@ from datoviz import Out
 app = dvz.App()
 # NOTE: at the moment, you must indicate gui=True if you intend to use a GUI in a figure
 figure = app.figure(gui=True)
-panel = figure.panel()
+panel = figure.panel(background=True)
 visual = panel.demo_2D()
 
 visible = Out(True)

@@ -33,7 +33,7 @@ for offset, scale, color in zip(offsets, scales, colors):
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(-1, -0.1, -0.25))
 
 visual = app.mesh_shape(sc, lighting=True)

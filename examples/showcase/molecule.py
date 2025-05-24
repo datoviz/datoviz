@@ -89,7 +89,7 @@ size = 0.005 + 0.015 * (size - size.min()) / (size.max() - size.min()).astype(np
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball()
 camera = panel.camera()
 

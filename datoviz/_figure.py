@@ -10,20 +10,14 @@ SPDX-License-Identifier: MIT
 # Imports
 # -------------------------------------------------------------------------------------------------
 
-from ctypes import c_uint8
 from . import _constants as cst
 from . import _ctypes as dvz
 from ._panel import Panel
+from .utils import to_cvec4_array
 
 # -------------------------------------------------------------------------------------------------
 # Figure
 # -------------------------------------------------------------------------------------------------
-
-
-def to_cvec4_array(colors):
-    cvec4 = c_uint8 * 4
-    cvec4_array = cvec4 * len(colors)
-    return cvec4_array(*(cvec4(*rgba) for rgba in colors))
 
 
 class Figure:

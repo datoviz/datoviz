@@ -69,7 +69,7 @@ pos = (pos - center) / scale
 
 app = dvz.App()
 figure = app.figure()
-panel = figure.panel()
+panel = figure.panel(background=True)
 arcball = panel.arcball(initial=(-1.5, 0.15, 1.5))
 camera = panel.camera(initial=(0, 0, 3))
 

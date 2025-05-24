@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 
 import ctypes
 from collections.abc import Iterable
-from ctypes import c_char_p
+from ctypes import c_char_p, c_uint8
 
 import numpy as np
 from numpy.ctypeslib import as_ctypes_type as _ctype
@@ -128,6 +128,12 @@ def pointer_image(rgb: ctypes.POINTER, width: int, height: int, n_channels: int 
 
 from_array = array_pointer
 from_pointer = pointer_array
+
+
+def to_cvec4_array(colors):
+    cvec4 = c_uint8 * 4
+    cvec4_array = cvec4 * len(colors)
+    return cvec4_array(*(cvec4(*rgba) for rgba in colors))
 
 
 # -------------------------------------------------------------------------------------------------

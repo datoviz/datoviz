@@ -38,6 +38,7 @@ positions = np.c_[t_norm, d_norm, np.zeros_like(t_norm)].astype(np.float32)
 num_points = positions.shape[0]
 
 colors = np.full((num_points, 4), 0, dtype=np.uint8)
+colors[:] = dvz.cmap('kg', d, d_min, d_max)
 colors[:, 3] = 64
 
 # -------------------------------------------------------------------------------------------------
