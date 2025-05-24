@@ -39,7 +39,8 @@ def run_examples():
 
         # Set the environment variable for the screenshot path
         env = os.environ.copy()
-        env['DVZ_CAPTURE_PNG'] = str(png_path)
+        with open(script_path) as f:
+            env['DVZ_CAPTURE_PNG'] = str(png_path) if 'skip: true' not in f.read() else '/dev/null'
 
         try:
             subprocess.run([sys.executable, str(script_path)], env=env, check=True)
