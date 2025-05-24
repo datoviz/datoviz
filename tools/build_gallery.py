@@ -7,6 +7,7 @@ import yaml
 
 EXAMPLES_DIR = Path('examples')
 GALLERY_DIR = Path('docs/gallery')
+DATA_DIR = Path('data')
 CATEGORIES = ['showcase', 'visuals', 'features']
 GITHUB_IMG_BASE = 'https://raw.githubusercontent.com/datoviz/data/main/gallery'
 
@@ -55,10 +56,24 @@ def extract_metadata(script_path):
     }
 
 
+def example_image_exists(category, name):
+    return (DATA_DIR / f'gallery/{category}/{name}.png').exists()
+
+
+def get_screenshot_url(category, name):
+    if example_image_exists(category, name):
+        return f'{GITHUB_IMG_BASE}/{category}/{name}.png'
+    else:
+        return f'{GITHUB_IMG_BASE}/empty.png'
+
+
 def generate_example_page(category, script_path, output_path):
     name = script_path.stem
     meta = extract_metadata(script_path)
-    screenshot_url = f'{GITHUB_IMG_BASE}/{category}/{name}.png'
+    if example_image_exists(category, name):
+        screenshot_image = f'![Screenshot]({get_screenshot_url(category, name)})'
+    else:
+        screenshot_image = ''
     back_link = f'[← Back to gallery](../index.md#{category})'
 
     md = f"""\
@@ -68,7 +83,7 @@ def generate_example_page(category, script_path, output_path):
 
 **Tags**: {', '.join(meta['tags'])}
 
-![Screenshot]({screenshot_url})
+{screenshot_image}
 
 === "Python code"
 
@@ -88,7 +103,7 @@ def generate_index(pages):
         lines.append(f'## {category.capitalize()}\n')
         lines.append('<div class="grid cards" markdown="1">\n')
         for name, title in pages.get(category, []):
-            screenshot_url = f'{GITHUB_IMG_BASE}/{category}/{name}.png'
+            screenshot_url = get_screenshot_url(category, name)
             page_url = f'{category}/{name}/'
             lines.append(f"""\
 <div class="card">
