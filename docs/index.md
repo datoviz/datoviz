@@ -1,25 +1,36 @@
-# Datoviz
+# Datoviz: high-performance rendering for scientific data visualization
 
-**Datoviz** is a high-performance, cross-platform scientific visualization library built for modern GPUs. It provides a minimal, low-overhead API in both **C** and **Python**, enabling fast and interactive rendering of large-scale 2D and 3D data.
+<!-- INTRODUCTION -->
 
-Whether you're building research tools, real-time visual interfaces, or custom scientific apps, Datoviz gives you the control and speed you need — without sacrificing interactivity or clarity.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
 
-![Datoviz screenshot](https://raw.githubusercontent.com/datoviz/data/main/hero.jpg)
+It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
+
+![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
+
+Built from the ground up with performance in mind, Datoviz is written primarily in **C** and **C++**, leveraging the [**Khronos Vulkan graphics API**](https://www.vulkan.org/). It offers a C API, low-level Python bindings via `ctypes`, and a higher-level, idiomatic **Python API 🐍**.
+
+Written by one of the original creators of [VisPy](https://vispy.org), a GPU-based Python scientific visualization library, Datoviz aims to serve as the default backend for the upcoming **VisPy 2.0**.
+
+The library is lightweight with minimal dependencies: mostly Vulkan, [**GLFW**](https://www.glfw.org/) for windowing, and [Dear ImGui](https://github.com/ocornut/imgui/) for GUIs.
 
 !!! warning
 
     Datoviz is a young library. The API is stabilizing, but breaking changes may still occur as the project evolves with broader usage.
 
 
-## Features
+<!-- FEATURES -->
 
-- 🔬 Designed for **scientific data**: high-dimensional, large-scale, precise
-- 🚀 **GPU-accelerated** rendering with Vulkan (and WebGPU support in progress)
-- 🖥️ **Integrated GUIs** with Dear ImGui
-- 🧩 Support for multiple **visual primitives**: points, lines, images, meshes, volumes, and more
-- 🎯 Minimal core API, no unnecessary dependencies
-- 🔁 Built-in interactivity: pan & zoom, arcball, keyboard & mouse input, event hooks
-- 🧪 C/C++ and Python bindings
+## Current features
+
+* **📊 2D visuals**: antialiased points, markers, line segments, paths, text, images
+* **📈 2D axes**
+* **🌐 3D visuals**: meshes, volumes, volume slices
+* **🌈 150 colormaps** included (from matplotlib, colorcet, MATLAB)
+* **🖱️ High-level interactivity**: pan & zoom for 2D, arcball for 3D (more later)
+* **🎥 Manual control of cameras**: custom interactivity
+* **𓈈 Figure subplots** (aka "panels")
+* **🖥️ GUIs** using [Dear ImGui](https://github.com/ocornut/imgui/)
 
 
 ## What Datoviz is — and isn't
@@ -39,8 +50,6 @@ Datoviz is built for people who need performance, control, and precision:
 * **Researchers and analysts** exploring large, complex datasets in real time
 * **Scientists and engineers** creating custom visual interfaces for experiments and simulations
 * **Developers** who want a lightweight, portable alternative to bloated visualization frameworks
-
-Whether you're prototyping, building a GUI, or integrating visualization into a larger system, Datoviz gives you low-level power with high-level usability.
 
 
 ## Get started

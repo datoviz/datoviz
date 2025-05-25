@@ -14,10 +14,10 @@ pip install datoviz
 
 The following script generates 1,000 randomly positioned, colored, and sized points in a 2D scatter plot:
 
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/quickstart.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/gallery/quickstart.png)
 
 ## Example code
 
 ```python
---8<-- "examples/quickstart.py"
+--8<-- "examples/quickstart.py:15:"
 ```

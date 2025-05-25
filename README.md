@@ -1,4 +1,4 @@
-# Datoviz: high-performance scientific data visualization
+# Datoviz: high-performance rendering for scientific data visualization
 
 [**[Installation]**](#%EF%B8%8F-installation-instructions) &nbsp;
 [**[Usage]**](#-usage) &nbsp;
@@ -8,14 +8,14 @@
 
 <!-- INTRODUCTION -->
 
-**⚡️ Datoviz** is an open-source, cross-platform, high-performance library for **scientific data visualization**.
+**⚡️ Datoviz** is an open-source, cross-platform, **high-performance rendering library for scientific data visualization**.
 
 It delivers fast, **high-quality GPU rendering** of 2D and 3D graphical primitives—markers, paths, images, text, meshes, volumes, and more—that scale to millions of elements. Datoviz also supports **graphical user interfaces (GUIs)** for interactive visualization.
 
 ![](https://raw.githubusercontent.com/datoviz/data/master/hero.jpg)
 
 > [!NOTE]
-> Datoviz is a relatively low-level library focused on rendering graphical primitives (points, lines, images, etc.).
+> Datoviz is a relatively low-level library focused on **rendering graphical primitives** (points, lines, images, etc.).
 > It does **not** provide high-level plotting functions like `plt.plot()` or `plt.imshow()`, but offers a flexible and efficient API for building visualizations.
 > A higher-level plotting layer will be available in **VisPy 2.0**, with Datoviz as the rendering backend via the upcoming **GSP** (Graphics Server Protocol).
 

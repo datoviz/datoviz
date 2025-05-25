@@ -2,8 +2,6 @@
 
 Welcome to the Datoviz user guide. This section introduces the main concepts of the library, shows how to create and customize visualizations, and explains advanced usage patterns when you're ready to go deeper.
 
-Whether you're building simple plots or high-performance interactive tools, this guide has you covered.
-
 ---
 
 ## What you'll learn
