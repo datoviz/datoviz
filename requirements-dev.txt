@@ -8,3 +8,4 @@ setuptools
 twine
 mkdocs-material
 mkdocstrings[python]
+pymdown-extensions
