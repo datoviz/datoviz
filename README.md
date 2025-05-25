@@ -137,7 +137,7 @@ app.run()
 app.destroy()
 ```
 
-![](https://raw.githubusercontent.com/datoviz/data/main/screenshots/quickstart.png)
+![](https://raw.githubusercontent.com/datoviz/data/main/gallery/quickstart.png)
 
 
 ## 📚 Documentation
